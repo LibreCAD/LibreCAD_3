@@ -7,6 +7,6 @@ ID::ID() {
     _id = idCounter++;
 }
 
-UNIQUE_CAD_ID ID::id() const {
+ID_DATATYPE ID::id() const {
     return _id;
 }

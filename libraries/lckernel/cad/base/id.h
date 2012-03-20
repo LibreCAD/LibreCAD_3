@@ -3,7 +3,7 @@
 
 
 
-#define UNIQUE_CAD_ID unsigned long
+#define ID_DATATYPE unsigned long
 
 
 /**
@@ -15,7 +15,7 @@ namespace lc {
     class ID {
         public:
             ID();
-            UNIQUE_CAD_ID id() const;
+            ID_DATATYPE id() const;
 
         private:
             unsigned long _id;
