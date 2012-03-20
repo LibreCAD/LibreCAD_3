@@ -10,19 +10,19 @@
 
 namespace lc {
 
-    #define METAINFO_TYPELIST QList<MetaType *>
+#define METAINFO_TYPELIST QList<MetaType *>
 
     class MetaInfo {
         public:
-        MetaInfo();
-        MetaInfo(METAINFO_TYPELIST metaTypes);
-        ~MetaInfo();
+            MetaInfo();
+            MetaInfo(METAINFO_TYPELIST metaTypes);
+            ~MetaInfo();
 
-        MetaType * metaType(CONST::MetaTypes type);
+            MetaType* metaType(CONST::MetaTypes type);
 
 
         private:
-            QHash<int, MetaType*> *metaData;
+            QHash<int, MetaType*>* metaData;
 
     };
 

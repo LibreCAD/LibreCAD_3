@@ -6,9 +6,14 @@
 
 QT       += core gui
 
-TARGET = demo
+TARGET = ../demo
 TEMPLATE = app
 
+# Store intermedia stuff somewhere else
+GENERATED_DIR = ../generated/demo
+# Use common project definitions.
+include(../settings.pro)
+include(../common.pro)
 
 INCLUDEPATH += "../libraries/lckernel"
 

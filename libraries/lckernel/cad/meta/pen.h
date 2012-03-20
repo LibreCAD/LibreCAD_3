@@ -6,16 +6,13 @@
 #include <QVariant>
 
 #include "color.h"
-#include "pen.h"
+#include "linewidth.h"
 #include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
-
 namespace lc {
-    class Color;
-    class LineWidth;
 
-    class Pen : public Variantable, MetaType {
+    class Pen : MetaType {
         public:
 
             Pen();

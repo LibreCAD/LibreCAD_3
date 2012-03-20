@@ -10,8 +10,8 @@
 namespace lc {
     class CADEntity : public ID, public MetaInfo {
         public:
-        CADEntity();
-        CADEntity(METAINFO_TYPELIST metaTypes);
+            CADEntity();
+            CADEntity(METAINFO_TYPELIST metaTypes);
     };
 }
 #endif // CADENTITY_H

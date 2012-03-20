@@ -8,15 +8,19 @@ MetaInfo::MetaInfo() {
 
 MetaInfo::MetaInfo(METAINFO_TYPELIST metaTypes) {
     metaData = new QHash<int, MetaType*>();
-    for (MetaType * mType : metaTypes) {
+
+for (MetaType * mType : metaTypes) {
+        if (!mType->variantValid()) {
+            throw;
+        }
+
         metaData->insert(mType->metaName(), mType);
     }
 }
 
 MetaInfo::~MetaInfo() {
-
     if (metaData != NULL) {
-        for (MetaType * mType : *metaData) {
+for (MetaType * mType : *metaData) {
             delete mType;
         }
 
@@ -24,9 +28,10 @@ MetaInfo::~MetaInfo() {
     }
 }
 
-MetaType * MetaInfo::metaType(CONST::MetaTypes metaType) {
-    if (metaData!=NULL) {
+MetaType* MetaInfo::metaType(CONST::MetaTypes metaType) {
+    if (metaData != NULL) {
         return metaData->value(metaType);
     }
+
     return NULL;
 }

@@ -6,10 +6,10 @@
 #include <QString>
 
 #include "cad/interface/variantable.h"
+#include "cad/meta/pen.h"
 
 
 namespace lc {
-    class Pen;
     class Layer : public Variantable {
         public:
             Layer();

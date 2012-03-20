@@ -17,13 +17,12 @@ namespace lc {
     QDataStream& operator<<(QDataStream&, const LineWidth&);
     QDataStream& operator>>(QDataStream&, LineWidth&);
 
-    class LineWidth : public Variantable, public MetaType {
+    class LineWidth : public MetaType {
         public:
             enum Method {
                 Invalid = -1,
-                ByEntity = 0,
-                ByLayer,
-                ByBlock
+                ByLayer = 0,
+                ByEntity = 1
             };
 
 

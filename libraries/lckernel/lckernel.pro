@@ -37,7 +37,8 @@ SOURCES += lckernel.cpp \
     cad/base/metainfo.cpp \
     cad/interface/variantable.cpp \
     cad/interface/metatype.cpp \
-    cad/base/cadentity.cpp
+    cad/base/cadentity.cpp \
+    cad/primitive/circle.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -52,7 +53,8 @@ HEADERS += lckernel.h\
     cad/base/metainfo.h \
     cad/interface/variantable.h \
     cad/interface/metatype.h \
-    cad/base/cadentity.h
+    cad/base/cadentity.h \
+    cad/primitive/circle.h
 
 
 unix:!symbian {

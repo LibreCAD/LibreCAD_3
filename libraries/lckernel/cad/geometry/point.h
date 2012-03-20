@@ -4,7 +4,7 @@
 #include "lckernel_global.h"
 
 namespace lc {
-    class LCKERNELSHARED_EXPORT Point {
+    class Point {
         public:
             Point(double x, double y, double z);
             Point(double x, double y);
@@ -14,12 +14,11 @@ namespace lc {
             double z() const;
 
         private:
-
             ~Point() {
                 ;
             }
             friend class Line;
-
+            friend class Circle;
 
         private:
             double _x;

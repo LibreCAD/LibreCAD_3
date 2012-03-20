@@ -7,12 +7,11 @@
 
 namespace lc {
 
-    class LCKERNELSHARED_EXPORT Line : public CADEntity {
+    class Line : public CADEntity {
         public:
-        Line(Point* start, Point* end);
-        Line(Point* start, Point* end, METAINFO_TYPELIST metaTypes);
+            Line(Point* start, Point* end);
+            Line(Point* start, Point* end, METAINFO_TYPELIST metaTypes);
 
-            //  T clone();
             Point* start() const;
             Point* end() const;
 

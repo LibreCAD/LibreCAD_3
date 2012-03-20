@@ -17,6 +17,14 @@ LineWidth::LineWidth(const double width) {
 }
 
 LineWidth::LineWidth(LineWidth::Method method) {
+    if (method == LineWidth::Invalid) {
+        throw;
+    }
+
+    if (method == LineWidth::ByEntity) {
+        throw;
+    }
+
     _width = 0.0;
     _method = method;
 }
@@ -26,9 +34,5 @@ LineWidth::Method LineWidth::method() const {
 }
 
 double LineWidth::width() const {
-    if (_method != LineWidth::ByEntity) {
-        throw;
-    }
-
     return _width;
 }

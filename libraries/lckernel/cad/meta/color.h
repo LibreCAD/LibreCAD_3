@@ -15,13 +15,12 @@ namespace lc {
     QDataStream& operator<<(QDataStream&, const Color&);
     QDataStream& operator>>(QDataStream&, Color&);
 
-    class Color : public Variantable, public MetaType {
+    class Color : public MetaType {
         public:
             enum Method {
                 Invalid = -1,
-                ByEntity = 0,
-                ByLayer,
-                ByBlock
+                ByLayer = 0,
+                ByEntity = 1
             };
 
             Color();

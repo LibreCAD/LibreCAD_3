@@ -1,14 +1,13 @@
 #include "color.h"
 #include <QColor>
 
-
 using namespace lc;
 
-Color::Color() {
+Color::Color() : MetaType() {
     _method = Color::Invalid;
 }
 
-Color::Color(const int r, const int g, const int b, const int a) {
+Color::Color(const int r, const int g, const int b, const int a) : MetaType()  {
     _method = Color::ByEntity;
     _r = r;
     _g = g;
@@ -17,7 +16,11 @@ Color::Color(const int r, const int g, const int b, const int a) {
 }
 
 Color::Color(Color::Method method) {
-    if (_method == Color::ByEntity || _method == Color::ByLayer) {
+    if (method == Color::Invalid) {
+        throw;
+    }
+
+    if (method == Color::ByEntity) {
         throw;
     }
 
@@ -28,34 +31,17 @@ Color::Method Color::method() const {
     return _method;
 }
 int Color::red() const {
-    if (_method != Color::ByEntity) {
-        throw;
-    }
-
     return _r;
 }
 int Color::green() const {
-    if (_method != Color::ByEntity) {
-        throw;
-    }
-
     return _g;
 }
 int Color::blue() const {
-    if (_method != Color::ByEntity) {
-        throw;
-    }
-
     return _b;
 }
 int Color::alpha() const {
-    if (_method != Color::ByEntity) {
-        throw;
-    }
-
     return _a;
 }
-
 QColor Color::qColor() const {
     return QColor(_r, _g, _b, _a);
 }

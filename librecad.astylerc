@@ -89,7 +89,7 @@
 # Delete empty lines within a function or method. Empty lines outside of functions
 # or methods are NOT deleted. If used with break-blocks or break-blocks=all it will
 # delete all lines EXCEPT the lines added by the break-blocks options.
---delete-empty-lines
+# --delete-empty-lines
 
 # Fill empty lines with the white space of the previous line.
 #--fill-empty-lines
