@@ -31,14 +31,19 @@ SOURCES += lckernel.cpp \
    cad/meta/linewidth.cpp \
    cad/meta/pen.cpp \
    cad/primitive/line.cpp \
-    cad/geometry/point.cpp \
     cad/base/id.cpp \
-    cad/document.cpp \
+    cad/document/document.cpp \
     cad/base/metainfo.cpp \
     cad/interface/variantable.cpp \
     cad/interface/metatype.cpp \
     cad/base/cadentity.cpp \
-    cad/primitive/circle.cpp
+    cad/primitive/circle.cpp \
+    cad/geometry/coordinate.cpp \
+    cad/document/documentlayer.cpp \
+    cad/document/layermanager.cpp \
+    cad/document/documentimpl.cpp \
+    cad/document/documentlayerimpl.cpp \
+    cad/document/layermanagerimpl.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -47,14 +52,19 @@ HEADERS += lckernel.h\
     cad/meta/linewidth.h \
     cad/meta/pen.h \
     cad/primitive/line.h \
-    cad/geometry/point.h \
     cad/base/id.h \
-    cad/document.h \
+    cad/document/document.h \
     cad/base/metainfo.h \
-    cad/interface/variantable.h \
-    cad/interface/metatype.h \
     cad/base/cadentity.h \
-    cad/primitive/circle.h
+    cad/primitive/circle.h \
+    cad/geometry/coordinate.h \
+    cad/document/documentlayer.h \
+    cad/document/layermanager.h \
+    cad/interface/metatype.h \
+    cad/interface/variantable.h \
+    cad/document/documentimpl.h \
+    cad/document/documentlayerimpl.h \
+    cad/document/layermanagerimpl.h
 
 
 unix:!symbian {

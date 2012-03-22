@@ -1,20 +1,20 @@
-#ifndef POINT_H
-#define POINT_H
+#ifndef COORDINATE_H
+#define COORDINATE_H
 
 #include "lckernel_global.h"
 
 namespace lc {
-    class Point {
+    class Coordinate {
         public:
-            Point(double x, double y, double z);
-            Point(double x, double y);
+            Coordinate(double x, double y, double z);
+            Coordinate(double x, double y);
 
             double x() const;
             double y() const;
             double z() const;
 
         private:
-            ~Point() {
+            virtual ~Coordinate() {
                 ;
             }
             friend class Line;
@@ -26,4 +26,4 @@ namespace lc {
             double _z;
     };
 }
-#endif // POINT_H
+#endif // COORDINATE_H

@@ -60,11 +60,11 @@ namespace lc {
             }
 
 
-            bool variantValid() {
+            bool variantValid() const {
                 return !(_method == LineWidth::Invalid);
             }
 
-            int metaName() {
+            int metaName() const {
                 return CONST::LINEWIDTH;
             }
 

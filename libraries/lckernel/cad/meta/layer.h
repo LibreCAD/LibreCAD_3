@@ -6,30 +6,33 @@
 #include <QString>
 
 #include "cad/interface/variantable.h"
-#include "cad/meta/pen.h"
+#include "cad/meta/linewidth.h"
+#include "cad/meta/color.h"
 
 
 namespace lc {
     class Layer : public Variantable {
         public:
             Layer();
-            Layer(const QString& name, Pen* Pen);
-            ~Layer();
+            Layer(const QString& name, LineWidth *lineWidth, Color *color);
+            virtual ~Layer();
 
-            Pen* pen() const;
+            LineWidth* lineWidth() const;
+            Color* color() const;
             QString name() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);
             }
 
-            bool variantValid() {
-                return !(_pen != NULL);
+            bool variantValid() const {
+                return (_lineWidth != NULL) &&  (_color != NULL);
             }
 
         private:
             QString _name;
-            Pen* _pen;
+            LineWidth* _lineWidth;
+            Color* _color;
     };
 }
 

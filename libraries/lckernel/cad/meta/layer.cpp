@@ -3,22 +3,30 @@
 using namespace lc;
 
 Layer::Layer() {
-    _pen = NULL;
+    _color = NULL;
+    _lineWidth = NULL;
 }
 
 Layer::~Layer() {
-    if (_pen != NULL) {
-        delete _pen;
+    if (_color != NULL) {
+        delete _color;
+    }
+    if (_lineWidth != NULL) {
+        delete _lineWidth;
     }
 }
 
-Layer::Layer(const QString& name, Pen* Pen) {
+Layer::Layer(const QString& name, LineWidth *lineWidth, Color *color) {
     _name = name;
-    _pen = Pen;
+    _lineWidth = lineWidth;
+    _color = color;
 }
 
-Pen* Layer::pen() const {
-    return _pen;
+Color* Layer::color() const {
+    return _color;
+}
+LineWidth* Layer::lineWidth() const {
+    return _lineWidth;
 }
 
 QString Layer::name() const {

@@ -17,7 +17,7 @@ namespace lc {
 
             Pen();
             Pen(Color* color, LineWidth* lineWidth);
-            ~Pen();
+            virtual ~Pen();
 
             LineWidth* lineWidth() const;
             Color* color() const;
@@ -26,11 +26,11 @@ namespace lc {
                 return QVariant::fromValue(*this);
             }
 
-            bool variantValid() {
+            bool variantValid() const {
                 return _color != NULL && _lineWidth != NULL;
             }
 
-            int metaName() {
+            int metaName() const {
                 return CONST::PEN;
             }
 

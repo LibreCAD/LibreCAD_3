@@ -55,11 +55,11 @@ namespace lc {
                 return QVariant::fromValue(*this);
             }
 
-            bool variantValid() {
+            bool variantValid() const {
                 return !(_method == Color::Invalid);
             }
 
-            int metaName() {
+            int metaName() const {
                 return CONST::COLOR;
             }
 

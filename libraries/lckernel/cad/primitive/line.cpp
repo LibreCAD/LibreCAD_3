@@ -2,18 +2,18 @@
 
 using namespace lc;
 
-Line::Line(Point* start, Point* end) : CADEntity() {
+Line::Line(Coordinate* start, Coordinate* end) : CADEntity() {
     this->_start = start;
     this->_end = end;
 }
-Line::Line(Point* start, Point* end, METAINFO_TYPELIST metaTypes) : CADEntity(metaTypes) {
+Line::Line(Coordinate* start, Coordinate* end, METAINFO_TYPELIST metaTypes) : CADEntity(metaTypes) {
     this->_start = start;
     this->_end = end;
 }
 
-Point* Line::start() const {
+Coordinate* Line::start() const {
     return _start;
 }
-Point* Line::end() const {
+Coordinate* Line::end() const {
     return _end;
 }

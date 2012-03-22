@@ -16,14 +16,12 @@ namespace lc {
         public:
             MetaInfo();
             MetaInfo(METAINFO_TYPELIST metaTypes);
-            ~MetaInfo();
+            virtual ~MetaInfo();
 
             MetaType* metaType(CONST::MetaTypes type);
 
-
         private:
-            QHash<int, MetaType*>* metaData;
-
+            QHash<int, MetaType*>* _metaData;
     };
 
 }

@@ -12,7 +12,7 @@
 namespace lc {
     class Variantable {
         public:
-            virtual bool variantValid() = 0;
+            virtual bool variantValid() const = 0;
     };
 }
 

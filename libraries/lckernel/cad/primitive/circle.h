@@ -2,26 +2,26 @@
 #define CIRCLE_H
 
 #include "lckernel_global.h"
-#include "cad/geometry/point.h"
+#include "cad/geometry/Coordinate.h"
 #include "cad/base/cadentity.h"
 
 namespace lc {
     class Circle : public CADEntity {
         public:
-            Circle(Point* center, double radius);
-            Circle(Point* center, double radius, METAINFO_TYPELIST metaTypes);
+            Circle(Coordinate* center, double radius);
+            Circle(Coordinate* center, double radius, METAINFO_TYPELIST metaTypes);
 
-            Point* center() const;
+            Coordinate* center() const;
             double radius() const;
 
         private:
-            ~Circle() {
+            virtual ~Circle() {
                 ;
                 delete _center;
             }
 
         private:
-            Point* _center;
+            Coordinate* _center;
             double _radius;
     };
 }

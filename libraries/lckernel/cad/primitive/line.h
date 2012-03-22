@@ -2,29 +2,29 @@
 #define LINE_H
 
 #include "lckernel_global.h"
-#include "cad/geometry/point.h"
+#include "cad/geometry/Coordinate.h"
 #include "cad/base/cadentity.h"
 
 namespace lc {
 
     class Line : public CADEntity {
         public:
-            Line(Point* start, Point* end);
-            Line(Point* start, Point* end, METAINFO_TYPELIST metaTypes);
+            Line(Coordinate* start, Coordinate* end);
+            Line(Coordinate* start, Coordinate* end, METAINFO_TYPELIST metaTypes);
 
-            Point* start() const;
-            Point* end() const;
+            Coordinate* start() const;
+            Coordinate* end() const;
 
         private:
-            ~Line() {
+            virtual ~Line() {
                 ;
                 delete _start;
                 delete _end;
             }
 
         private:
-            Point* _start;
-            Point* _end;
+            Coordinate* _start;
+            Coordinate* _end;
     };
 }
 #endif // LINE_H
