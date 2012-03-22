@@ -1,8 +1,6 @@
 #ifndef CADENTITY_H
 #define CADENTITY_H
 
-#include <QList>
-
 #include "id.h"
 #include "metainfo.h"
 #include "cad/interface/metatype.h"

@@ -8,7 +8,7 @@ namespace lc {
     class LayerManager {
         public:
             LayerManager();
-            virtual void addEntity(const QString layer, CADEntity *entity) = 0;
+            virtual void addEntity(const QString layer, CADEntity* entity) = 0;
             virtual void removeEntity(ID_DATATYPE id) = 0;
     };
 }

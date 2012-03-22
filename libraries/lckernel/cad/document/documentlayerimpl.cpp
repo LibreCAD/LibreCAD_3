@@ -8,7 +8,7 @@ DocumentLayerImpl::DocumentLayerImpl() {
 }
 DocumentLayerImpl::DocumentLayerImpl(Layer* layer) {
     _layer = layer;
-    _cadentities = new QList<CADEntity*>();
+    _cadentities = new QVector<CADEntity*>();
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
@@ -19,7 +19,6 @@ DocumentLayerImpl::~DocumentLayerImpl() {
 /**
   * Add's a CAD entity to this layer
   */
-void DocumentLayerImpl::addEntity(CADEntity *entity)
-{
+void DocumentLayerImpl::addEntity(CADEntity* entity) {
     _cadentities->append(entity);
 }

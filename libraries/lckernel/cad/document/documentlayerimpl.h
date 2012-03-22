@@ -1,7 +1,7 @@
 #ifndef DOCUMENTLAYERIMPL_H
 #define DOCUMENTLAYERIMPL_H
 
-#include <QList>
+#include <QVector>
 
 #include "documentlayer.h"
 #include "cad/meta/layer.h"
@@ -9,23 +9,23 @@
 
 namespace lc {
     class DocumentLayerImpl : public DocumentLayer {
-    public:
-        DocumentLayerImpl();
-        DocumentLayerImpl(Layer* layer);
-        virtual ~DocumentLayerImpl();
+        public:
+            DocumentLayerImpl();
+            DocumentLayerImpl(Layer* layer);
+            virtual ~DocumentLayerImpl();
 
-        virtual void addEntity(CADEntity *entity);
+            virtual void addEntity(CADEntity* entity);
 
-        operator QVariant() const {
-            return QVariant::fromValue(*this);
-        }
-        bool variantValid() const {
-            return _layer !=NULL && _cadentities!=NULL;
-        }
+            operator QVariant() const {
+                return QVariant::fromValue(*this);
+            }
+            bool variantValid() const {
+                return _layer != NULL && _cadentities != NULL;
+            }
 
-    private:
-        Layer* _layer;
-        QList<CADEntity*>* _cadentities;
+        private:
+            Layer* _layer;
+            QVector<CADEntity*>* _cadentities;
     };
 }
 

@@ -2,7 +2,6 @@
 #define METAINFO_H
 
 #include <QHash>
-#include <QList>
 #include <QVariant>
 #include "cad/const.h"
 

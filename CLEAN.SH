@@ -6,3 +6,4 @@ rm -rf `find . -type d -name generated`
 rm -rf demo.app
 rm -rf unix
 find . -name "*.orig" -exec rm {} \;
+find . -name ".DS_Store" -exec rm {} \;

@@ -14,7 +14,7 @@ namespace lc {
     class Layer : public Variantable {
         public:
             Layer();
-            Layer(const QString& name, LineWidth *lineWidth, Color *color);
+            Layer(const QString& name, LineWidth* lineWidth, Color* color);
             virtual ~Layer();
 
             LineWidth* lineWidth() const;
@@ -26,7 +26,7 @@ namespace lc {
             }
 
             bool variantValid() const {
-                return (_lineWidth != NULL) &&  (_color != NULL);
+                return (_lineWidth != NULL) && (_color != NULL);
             }
 
         private:
