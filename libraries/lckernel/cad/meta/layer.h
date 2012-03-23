@@ -29,6 +29,10 @@ namespace lc {
                 return (_lineWidth != NULL) && (_color != NULL);
             }
 
+            bool operator == (const Layer& layer) const {
+                return (layer._name == _name);
+            }
+
         private:
             QString _name;
             LineWidth* _lineWidth;

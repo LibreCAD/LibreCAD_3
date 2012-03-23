@@ -4,5 +4,4 @@
 
 using namespace lc;
 
-LayerManager::LayerManager() {
-}
+

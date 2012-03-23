@@ -17,6 +17,10 @@ namespace lc {
             ID();
             ID_DATATYPE id() const;
 
+            bool operator == (const ID& id) const {
+                return (id._id == _id);
+            }
+
         private:
             unsigned long _id;
     };

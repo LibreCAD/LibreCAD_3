@@ -8,6 +8,10 @@
 #include "cad/base/cadentity.h"
 
 namespace lc {
+    /**
+     * Implementation class of a complete layer and it's entities
+     *
+     */
     class DocumentLayerImpl : public DocumentLayer {
         public:
             DocumentLayerImpl();
@@ -15,6 +19,9 @@ namespace lc {
             virtual ~DocumentLayerImpl();
 
             virtual void addEntity(CADEntity* entity);
+            virtual void removeEntity(ID_DATATYPE id);
+
+            virtual Layer* layer() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);

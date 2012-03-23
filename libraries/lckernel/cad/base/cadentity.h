@@ -6,6 +6,11 @@
 #include "cad/interface/metatype.h"
 
 namespace lc {
+
+    /**
+     *Class that all CAD entities must inherit
+     *
+     */
     class CADEntity : public ID, public MetaInfo {
         public:
             CADEntity();
