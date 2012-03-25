@@ -9,4 +9,5 @@ TEMPLATE = subdirs
 TARGET = libraries
 
 SUBDIRS     = \
-    lckernel
+    lckernel \
+    lcadviewer

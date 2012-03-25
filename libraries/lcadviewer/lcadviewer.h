@@ -1,7 +1,7 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef LCADVIEWER_H
+#define LCADVIEWER_H
 
-#include <QMainWindow>
+#include <QtGui/QGraphicsView>
 
 #include "cad/primitive/circle.h"
 #include "cad/primitive/line.h"
@@ -16,20 +16,20 @@
 #include "cad/document/document.h"
 #include "cad/document/documentimpl.h"
 
-namespace Ui {
-    class MainWindow;
-}
-
-class MainWindow : public QMainWindow {
+class LCADViewer : public QGraphicsView {
         Q_OBJECT
 
     public:
-        explicit MainWindow(QWidget* parent = 0);
-        virtual ~MainWindow();
+        void setDocument(lc::Document * document);
+
+    public:
+        LCADViewer(QWidget* parent = 0);
+
+        void drawBackground(QPainter *painter, const QRectF &rect);
+
 
     private:
-        Ui::MainWindow* ui;
-        lc::Document *_document;
+        lc::Document * _document;
 };
 
-#endif // MAINWINDOW_H
+#endif

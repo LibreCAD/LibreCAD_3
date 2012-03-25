@@ -4,14 +4,14 @@
 #
 #-------------------------------------------------
 
-QT       -=
+QT       += core
 
 TARGET = lckernel
 TEMPLATE = lib
 
 DESTDIR = ../../generated/lib
 
-#CONFIG += static warn_on
+CONFIG += static
 DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1
@@ -42,8 +42,14 @@ SOURCES += lckernel.cpp \
     cad/document/documentlayer.cpp \
     cad/document/layermanager.cpp \
     cad/document/documentimpl.cpp \
-    cad/document/documentlayerimpl.cpp \
-    cad/document/layermanagerimpl.cpp
+    cad/dochelpers/documentlayerimpl.cpp \
+    cad/dochelpers/layermanagerimpl.cpp \
+    cad/geometry/area.cpp \
+    cad/dochelpers/entityselection.cpp \
+    cad/document/selectionmanager.cpp \
+    cad/dochelpers/selectionmanagerimpl.cpp \
+    cad/geometry/vector.cpp \
+    cad/geometry/sphere.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -63,8 +69,14 @@ HEADERS += lckernel.h\
     cad/interface/metatype.h \
     cad/interface/variantable.h \
     cad/document/documentimpl.h \
-    cad/document/documentlayerimpl.h \
-    cad/document/layermanagerimpl.h
+    cad/dochelpers/documentlayerimpl.h \
+    cad/dochelpers/layermanagerimpl.h \
+    cad/geometry/area.h \
+    cad/dochelpers/entityselection.h \
+    cad/document/selectionmanager.h \
+    cad/dochelpers/selectionmanagerimpl.h \
+    cad/geometry/vector.h \
+    cad/geometry/sphere.h
 
 
 unix:!symbian {

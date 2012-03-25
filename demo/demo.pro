@@ -16,8 +16,9 @@ include(../settings.pro)
 include(../common.pro)
 
 INCLUDEPATH += "../libraries/lckernel"
+INCLUDEPATH += "../libraries/lcadviewer"
 
-LIBS+=  -L../generated/lib -llckernel
+LIBS+=  -L../generated/lib -llckernel  -llcadviewerplugin
 
 SOURCES += main.cpp\
         mainwindow.cpp

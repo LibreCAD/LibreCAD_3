@@ -2,8 +2,9 @@
 #define DOCUMENTLAYERIMPL_H
 
 #include <QVector>
+#include <QObject>
 
-#include "documentlayer.h"
+#include "cad/document/documentlayer.h"
 #include "cad/meta/layer.h"
 #include "cad/base/cadentity.h"
 
@@ -29,6 +30,8 @@ namespace lc {
             bool variantValid() const {
                 return _layer != NULL && _cadentities != NULL;
             }
+
+        private:
 
         private:
             Layer* _layer;

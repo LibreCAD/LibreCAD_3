@@ -2,18 +2,12 @@
 
 using namespace lc;
 
-Line::Line(Coordinate* start, Coordinate* end) : CADEntity() {
-    this->_start = start;
-    this->_end = end;
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end) : CADEntity(), Vector(start, end) {
 }
-Line::Line(Coordinate* start, Coordinate* end, METAINFO_TYPELIST metaTypes) : CADEntity(metaTypes) {
-    this->_start = start;
-    this->_end = end;
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, METAINFO_TYPELIST metaTypes) : CADEntity(metaTypes), Vector(start, end) {
 }
 
-Coordinate* Line::start() const {
-    return _start;
-}
-Coordinate* Line::end() const {
-    return _end;
+
+bool Line::inArea(const geo::Area& area) const {
+    return true;
 }

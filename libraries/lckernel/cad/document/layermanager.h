@@ -4,23 +4,12 @@
 #include <QString>
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
+#include "cad/document/documentlayer.h"
 
 namespace lc {
-    class LayerManager {
+    class LayerManager : public QObject {
+            Q_OBJECT
         public:
-            /**
-             * Add an entity to a specific layer
-             * @param layer
-             * @param entity
-             */
-            virtual void addEntity(const QString layer, CADEntity* entity) const = 0;
-
-            /**
-             * Remove a entity from the specified layer
-             * @param id
-             */
-            virtual void removeEntity(ID_DATATYPE id) const = 0;
-
             /**
              * Add a new layer to the document, default linewidth and color will be given
              *
@@ -40,6 +29,13 @@ namespace lc {
              */
             virtual void removeLayer(const QString& layerName) = 0;
 
+            /**
+             * Return pointer to a DocumentLayer
+             *
+             * @param layerName
+             * @return
+             */
+            virtual DocumentLayer* layer(const QString& layerName) const = 0;
     };
 }
 

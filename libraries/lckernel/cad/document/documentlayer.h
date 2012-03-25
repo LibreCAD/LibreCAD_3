@@ -13,11 +13,9 @@ namespace lc {
      * it provides a interface to interact with the entities on the layer
      *
      */
-    class DocumentLayer : Variantable {
+    class DocumentLayer : public Variantable {
 
         public:
-            DocumentLayer() {};
-
             /**
              * Add a entity to this layer
              * @param entity

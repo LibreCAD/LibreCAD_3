@@ -1,29 +1,28 @@
 #ifndef COORDINATE_H
 #define COORDINATE_H
 
-#include "lckernel_global.h"
-
 namespace lc {
-    class Coordinate {
-        public:
-            Coordinate(double x, double y, double z);
-            Coordinate(double x, double y);
+    namespace geo {
+        class Coordinate {
+            public:
+                Coordinate() {
+                    _x = _y = _z = 0;
+                };
+                Coordinate(double x, double y, double z);
+                Coordinate(double x, double y);
 
-            double x() const;
-            double y() const;
-            double z() const;
+                Coordinate(const Coordinate& coordinate);
+                Coordinate& operator = (const Coordinate& coordinate);
 
-        private:
-            virtual ~Coordinate() {
-                ;
-            }
-            friend class Line;
-            friend class Circle;
+                double x() const;
+                double y() const;
+                double z() const;
 
-        private:
-            double _x;
-            double _y;
-            double _z;
-    };
+            private:
+                double _x;
+                double _y;
+                double _z;
+        };
+    }
 }
 #endif // COORDINATE_H

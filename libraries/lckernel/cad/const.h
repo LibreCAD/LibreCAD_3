@@ -10,6 +10,8 @@ namespace lc {
             LINEWIDTH = 2
         };
     }
+
+#define LAYERMANAGERHELPER_NAME "LAYERMANAGER"
 }
 
 #endif

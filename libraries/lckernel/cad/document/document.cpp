@@ -2,5 +2,3 @@
 
 using namespace lc;
 
-Document::Document() {
-}
