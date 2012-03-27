@@ -58,3 +58,7 @@ DocumentLayer* LayerManagerImpl::layer(const QString& layerName) const {
 
     return docLayer;
 }
+
+QHash <QString, DocumentLayer*>* LayerManagerImpl::allLayers() const {
+    return _documentLayers;
+}

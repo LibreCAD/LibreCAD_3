@@ -21,6 +21,7 @@ namespace lc {
 
             virtual void addEntity(CADEntity* entity);
             virtual void removeEntity(ID_DATATYPE id);
+            virtual QVector<CADEntity*>* allEntities() const;
 
             virtual Layer* layer() const;
 
@@ -30,6 +31,7 @@ namespace lc {
             bool variantValid() const {
                 return _layer != NULL && _cadentities != NULL;
             }
+
 
         private:
 

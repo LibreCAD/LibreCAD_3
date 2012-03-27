@@ -33,6 +33,13 @@ namespace lc {
              * @return
              */
             virtual Layer* layer() const = 0;
+
+            /**
+             * Return a list of all entities
+             *
+             * @return
+             */
+            virtual QVector<CADEntity*>* allEntities() const = 0;
     };
 }
 

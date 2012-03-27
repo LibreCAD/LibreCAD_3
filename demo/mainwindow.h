@@ -29,7 +29,7 @@ class MainWindow : public QMainWindow {
 
     private:
         Ui::MainWindow* ui;
-        lc::Document *_document;
+        lc::Document* _document;
 };
 
 #endif // MAINWINDOW_H

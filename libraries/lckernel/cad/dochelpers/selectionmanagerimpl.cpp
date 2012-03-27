@@ -16,3 +16,4 @@ void SelectionManagerImpl::getEntitiesNearCoordinate(const geo::Coordinate& poin
 void SelectionManagerImpl::getEntitiesInArea(const geo::Area& area) const {
 
 }
+

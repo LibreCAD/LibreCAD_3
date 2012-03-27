@@ -23,6 +23,8 @@ namespace lc {
             virtual void removeLayer(const QString& layerName);
 
             virtual DocumentLayer* layer(const QString& layerName) const;
+            virtual QHash <QString, DocumentLayer*>* allLayers() const;
+
         private:
             QHash <QString, DocumentLayer*>* _documentLayers;
     };

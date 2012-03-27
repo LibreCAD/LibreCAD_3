@@ -20,16 +20,16 @@ class LCADViewer : public QGraphicsView {
         Q_OBJECT
 
     public:
-        void setDocument(lc::Document * document);
+        void setDocument(lc::Document* document);
 
     public:
         LCADViewer(QWidget* parent = 0);
 
-        void drawBackground(QPainter *painter, const QRectF &rect);
+        void drawBackground(QPainter* painter, const QRectF& rect);
 
 
     private:
-        lc::Document * _document;
+        lc::Document* _document;
 };
 
 #endif

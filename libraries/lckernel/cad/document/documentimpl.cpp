@@ -7,6 +7,7 @@ using namespace lc;
 
 DocumentImpl::DocumentImpl(LayerManager* layerManager) : Document() {
     _layerManager = layerManager;
+    releaseLock();
 }
 
 DocumentImpl::~DocumentImpl() {
@@ -14,6 +15,28 @@ DocumentImpl::~DocumentImpl() {
 }
 
 
+
 LayerManager* DocumentImpl::layerManager() const {
     return _layerManager;
+}
+
+
+
+
+
+void DocumentImpl::lock() {
+    _locked = true;
+}
+void DocumentImpl::releaseLock() {
+    _locked = false;
+}
+
+void DocumentImpl::addEntity(CADEntity* cadEntity) const {
+
+}
+void DocumentImpl::replaceEntity(CADEntity* oldEntity, CADEntity* newEntity) const {
+
+}
+void DocumentImpl::removeEntity(ID_DATATYPE id) const {
+
 }

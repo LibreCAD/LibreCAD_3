@@ -49,7 +49,9 @@ SOURCES += lckernel.cpp \
     cad/document/selectionmanager.cpp \
     cad/dochelpers/selectionmanagerimpl.cpp \
     cad/geometry/vector.cpp \
-    cad/geometry/sphere.cpp
+    cad/geometry/sphere.cpp \
+    cad/operations/createentities.cpp \
+    cad/operations/operation.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -76,7 +78,9 @@ HEADERS += lckernel.h\
     cad/document/selectionmanager.h \
     cad/dochelpers/selectionmanagerimpl.h \
     cad/geometry/vector.h \
-    cad/geometry/sphere.h
+    cad/geometry/sphere.h \
+    cad/operations/createentities.h \
+    cad/operations/operation.h
 
 
 unix:!symbian {

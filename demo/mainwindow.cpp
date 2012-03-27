@@ -4,17 +4,19 @@
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow) {
+    ui->setupUi(this);
+
 
     QList<lc::MetaType*> metaTypes;
 
     // Create new LibreCAD Document
     lc::LayerManager* newLayerManager = dynamic_cast< lc::LayerManager*>(new lc::LayerManagerImpl());
     lc::SelectionManager* newSelectionManager = dynamic_cast< lc::SelectionManager*>(new lc::SelectionManagerImpl(newLayerManager, 5.0));
-    lc::Document* document =  dynamic_cast< lc::Document*>(new lc::DocumentImpl(newLayerManager));
+    _document =  dynamic_cast< lc::Document*>(new lc::DocumentImpl(newLayerManager));
 
 
     // Somewhere else we get the layer Manager
-    lc::LayerManager* layerManager = document->layerManager();
+    lc::LayerManager* layerManager = _document->layerManager();
 
     // Add a new layer
     layerManager->addLayer("Layer 2");
@@ -27,7 +29,6 @@ MainWindow::MainWindow(QWidget* parent) :
         documentLayer->addEntity(l1);
     }
 
-    ui->lCADViewer->setDocument(document);
 
 
     // Create a line with meta attributes, Color Width defaults to BYLAYER, Line set to 1.5mm
@@ -43,10 +44,12 @@ MainWindow::MainWindow(QWidget* parent) :
     // Sorry no drawing yet
 
 
-    ui->setupUi(this);
+
+    ui->lCADViewer->setDocument(_document);
+
 }
 
 MainWindow::~MainWindow() {
-    delete _document;
     delete ui;
+    delete _document;
 }

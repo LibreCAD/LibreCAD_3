@@ -37,3 +37,7 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
 
     throw "Entity not found";
 }
+
+QVector<CADEntity*>* DocumentLayerImpl::allEntities() const {
+    return _cadentities;
+}

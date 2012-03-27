@@ -36,6 +36,13 @@ namespace lc {
              * @return
              */
             virtual DocumentLayer* layer(const QString& layerName) const = 0;
+
+            /**
+             * Return a QHash of all layers within the document
+             *
+             * @return
+             */
+            virtual QHash <QString, DocumentLayer*>* allLayers() const = 0;
     };
 }
 
