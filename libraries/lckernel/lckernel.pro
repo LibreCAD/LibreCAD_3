@@ -80,7 +80,12 @@ HEADERS += lckernel.h\
     cad/geometry/vector.h \
     cad/geometry/sphere.h \
     cad/operations/createentities.h \
-    cad/operations/operation.h
+    cad/operations/operation.h \
+    cad/events/beginprocessevent.h \
+    cad/events/commitprocessevent.h \
+    cad/events/addentityevent.h \
+    cad/events/removeentityevent.h \
+    cad/events/replaceentityevent.h
 
 
 unix:!symbian {

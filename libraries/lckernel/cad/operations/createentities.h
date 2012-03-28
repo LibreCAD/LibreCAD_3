@@ -4,12 +4,25 @@
 #include <QVector>
 #include "cad/base/cadentity.h"
 #include "cad/document/document.h"
+#include "operation.h"
 
 namespace lc {
-    class CreateEntities {
+    /**
+     * This class can be used to add or remove entities from the document
+     */
+    class CreateEntities : public Operation {
         public:
-            CreateEntities() {}
-            void create(CADEntity* cadEntity);
+            CreateEntities() : Operation () {}
+            /**
+             * Add a entity to the document, you can call this function as many times as you whish
+             * @param cadEntity
+             */
+            void add(CADEntity* cadEntity);
+
+            /**
+             * Remove a entoty from the document
+             * @param id
+             */
             void remove(ID_DATATYPE id);
 
         private:

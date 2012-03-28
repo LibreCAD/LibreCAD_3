@@ -21,8 +21,10 @@ INCLUDEPATH += "../libraries/lcadviewer"
 LIBS+=  -L../generated/lib -llckernel  -llcadviewerplugin
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    listener.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    listener.h
 
 FORMS    += mainwindow.ui
