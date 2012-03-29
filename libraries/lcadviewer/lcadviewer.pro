@@ -12,6 +12,7 @@ DESTDIR = ../../generated/lib
 
 HEADERS     = lcadviewerplugin.h
 SOURCES     = lcadviewerplugin.cpp
+
 RESOURCES   = icons.qrc
 LIBS        += -L. 
 

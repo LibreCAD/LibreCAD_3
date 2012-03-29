@@ -1,12 +1,12 @@
 #ifndef OPERATIONINTERFACE_H
 #define OPERATIONINTERFACE_H
 
-#include "cad/document/document.h"
+#include "cad/document/abstractdocument.h"
 
 namespace lc {
     class Operation {
         public:
-            Operation (){};
+            Operation() {};
         private:
 
             Q_DISABLE_COPY(Operation)
@@ -15,7 +15,7 @@ namespace lc {
              * This function get's called when a operation starts and when the document is locked for you
              * so you can do your work
              */
-            virtual void process(Document* document) const = 0;
+            virtual void process(AbstractDocument* document) const = 0;
 
             /**
              * This function will get called when the process of this operation starts
@@ -26,7 +26,7 @@ namespace lc {
              */
             virtual void finnish() const {};
 
-            friend class Document;
+            friend class AbstractDocument;
     };
 }
 #endif // OPERATIONINTERFACE_H

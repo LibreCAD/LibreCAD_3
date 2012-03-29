@@ -2,25 +2,13 @@
 #define LCADVIEWER_H
 
 #include <QtGui/QGraphicsView>
-
-#include "cad/primitive/circle.h"
-#include "cad/primitive/line.h"
-#include "cad/meta/color.h"
-#include "cad/meta/linewidth.h"
-#include "cad/interface/metatype.h"
-#include "cad/dochelpers/documentlayerimpl.h"
-#include "cad/document/layermanager.h"
-#include "cad/document/selectionmanager.h"
-#include "cad/dochelpers/layermanagerimpl.h"
-#include "cad/dochelpers/selectionmanagerimpl.h"
-#include "cad/document/document.h"
-#include "cad/document/documentimpl.h"
+#include "cad/document/abstractdocument.h"
 
 class LCADViewer : public QGraphicsView {
         Q_OBJECT
 
     public:
-        void setDocument(lc::Document* document);
+        virtual void setAbstractDocument(lc::AbstractDocument* document);
 
     public:
         LCADViewer(QWidget* parent = 0);
@@ -28,8 +16,10 @@ class LCADViewer : public QGraphicsView {
         void drawBackground(QPainter* painter, const QRectF& rect);
 
 
+    public:
+        void scaleView(qreal scaleFactor);
     private:
-        lc::Document* _document;
+        lc::AbstractDocument* _document;
 };
 
 #endif

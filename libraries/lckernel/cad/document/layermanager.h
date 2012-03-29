@@ -2,12 +2,13 @@
 #define LAYERMANAGER_H
 
 #include <QString>
+#include "basemanager.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
 #include "cad/document/documentlayer.h"
 
 namespace lc {
-    class LayerManager : public QObject {
+    class LayerManager : public BaseManager {
             Q_OBJECT
         public:
             /**

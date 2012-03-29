@@ -10,8 +10,8 @@ void CreateEntities::remove(ID_DATATYPE id) {
     _toDelete.append(id);
 }
 
-void CreateEntities::process(Document* document) const {
+void CreateEntities::process(AbstractDocument* document) const {
     for (int i = 0; i < _toCreate.size(); ++i) {
-        document->addEntity(_toCreate.at(i));
-     }
+        document->addEntity(_layerName, _toCreate.at(i));
+    }
 }

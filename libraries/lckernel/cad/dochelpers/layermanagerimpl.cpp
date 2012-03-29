@@ -17,11 +17,15 @@ LayerManagerImpl::~LayerManagerImpl() {
     delete _documentLayers;
 }
 
+void LayerManagerImpl::document(AbstractDocument* document) {
+    BaseManager::document(document);
+}
+
 void LayerManagerImpl::addLayer(const QString& layerName) {
     DocumentLayer* docLayer = _documentLayers->value(layerName);
 
     if (docLayer != NULL) {
-        throw "Document layer " + layerName + " already exists.";
+        throw "AbstractDocument layer " + layerName + " already exists.";
     }
 
     _documentLayers->insert(layerName, new DocumentLayerImpl(new Layer(layerName, new LineWidth(1.0), new Color(255, 255, 255))));
@@ -31,7 +35,7 @@ void LayerManagerImpl::addLayer(Layer* layer) {
     DocumentLayer* docLayer = _documentLayers->value(layer->name());
 
     if (docLayer != NULL) {
-        throw "Document layer " + layer->name() + " already exists.";
+        throw "AbstractDocument layer " + layer->name() + " already exists.";
     }
 
     _documentLayers->insert(layer->name(), new DocumentLayerImpl(layer));
@@ -41,7 +45,7 @@ void LayerManagerImpl::removeLayer(const QString& layerName) {
     DocumentLayer* docLayer = _documentLayers->value(layerName);
 
     if (docLayer == NULL) {
-        throw "Document layer " + layerName + " not found.";
+        throw "AbstractDocument layer " + layerName + " not found.";
     }
 
     _documentLayers->remove(layerName);
@@ -53,7 +57,7 @@ DocumentLayer* LayerManagerImpl::layer(const QString& layerName) const {
     DocumentLayer* docLayer = _documentLayers->value(layerName);
 
     if (docLayer == NULL) {
-        throw "Document layer " + layerName + " not found.";
+        throw "AbstractDocument layer " + layerName + " not found.";
     }
 
     return docLayer;

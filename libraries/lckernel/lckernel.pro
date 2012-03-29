@@ -32,7 +32,6 @@ SOURCES += lckernel.cpp \
    cad/meta/pen.cpp \
    cad/primitive/line.cpp \
     cad/base/id.cpp \
-    cad/document/document.cpp \
     cad/base/metainfo.cpp \
     cad/interface/variantable.cpp \
     cad/interface/metatype.cpp \
@@ -51,7 +50,8 @@ SOURCES += lckernel.cpp \
     cad/geometry/vector.cpp \
     cad/geometry/sphere.cpp \
     cad/operations/createentities.cpp \
-    cad/operations/operation.cpp
+    cad/dochelpers/entitymanagerimpl.cpp \
+    cad/document/abstractdocument.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -61,7 +61,6 @@ HEADERS += lckernel.h\
     cad/meta/pen.h \
     cad/primitive/line.h \
     cad/base/id.h \
-    cad/document/document.h \
     cad/base/metainfo.h \
     cad/base/cadentity.h \
     cad/primitive/circle.h \
@@ -85,7 +84,11 @@ HEADERS += lckernel.h\
     cad/events/commitprocessevent.h \
     cad/events/addentityevent.h \
     cad/events/removeentityevent.h \
-    cad/events/replaceentityevent.h
+    cad/events/replaceentityevent.h \
+    cad/document/basemanager.h \
+    cad/dochelpers/entitymanagerimpl.h \
+    cad/document/entitymanager.h \
+    cad/document/abstractdocument.h
 
 
 unix:!symbian {

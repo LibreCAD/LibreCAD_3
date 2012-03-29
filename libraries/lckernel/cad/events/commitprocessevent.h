@@ -7,8 +7,7 @@ namespace lc {
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent()
-            {
+            CommitProcessEvent() {
             };
     };
 }

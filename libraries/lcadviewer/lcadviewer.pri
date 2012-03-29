@@ -1,4 +1,8 @@
 HEADERS += \
-    lcadviewer.h
+    lcadviewer.h \
+    scenemanager.h
+
 SOURCES += \
-    lcadviewer.cpp
+    lcadviewer.cpp \
+    scenemanager.cpp
+
