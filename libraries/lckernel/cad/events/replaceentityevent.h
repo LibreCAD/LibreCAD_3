@@ -6,31 +6,28 @@
 namespace lc {
     /**
      * Event that get's emited when a entity was replace.
-     * 
+     *
      * @param oldEntity
      * @param newEntity
      */
     class ReplaceEntityEvent {
         public:
-            ReplaceEntityEvent(CADEntity * oldEntity, CADEntity * newEntity)
-            {
+            ReplaceEntityEvent(CADEntity* oldEntity, CADEntity* newEntity) {
                 _oldEntity = oldEntity;
                 _newEntity = newEntity;
             }
 
-            CADEntity * oldEntity() const
-            {
+            CADEntity* oldEntity() const {
                 return _oldEntity;
             }
 
-            CADEntity * newEntity() const
-            {
+            CADEntity* newEntity() const {
                 return _newEntity;
             }
 
         private:
-            CADEntity * _oldEntity;
-            CADEntity * _newEntity;
+            CADEntity* _oldEntity;
+            CADEntity* _newEntity;
     };
 
 }

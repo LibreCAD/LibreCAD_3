@@ -6,28 +6,26 @@ LCADViewer::LCADViewer(QWidget* parent) :
     QGraphicsView(parent) {
 
     QGraphicsScene* scene = new QGraphicsScene(this);
-    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
+    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
     scene->setSceneRect(-200, -200, 400, 400);
     setScene(scene);
     setCacheMode(CacheBackground);
     setViewportUpdateMode(BoundingRectViewportUpdate);
-    setRenderHint(QPainter::Antialiasing);
+    // setRenderHint(QPainter::Antialiasing);
     setTransformationAnchor(AnchorUnderMouse);
     scale(qreal(0.8), qreal(0.8));
     setMinimumSize(400, 400);
     setWindowTitle(tr("Elastic Nodes"));
-
-
 }
 
-void LCADViewer::setDocument(lc::Document* document) {
+void LCADViewer::setAbstractDocument(lc::AbstractDocument* document) {
     _document = document;
 }
 
 
 void LCADViewer::drawBackground(QPainter* painter, const QRectF& rect) {
     Q_UNUSED(rect);
-
+    return;
     // Shadow
     QRectF sceneRect = this->sceneRect();
     QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
@@ -62,4 +60,15 @@ void LCADViewer::drawBackground(QPainter* painter, const QRectF& rect) {
     painter->drawText(textRect.translated(2, 2), message);
     painter->setPen(Qt::black);
     painter->drawText(textRect, message);
+}
+
+
+void LCADViewer::scaleView(qreal scaleFactor) {
+    qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
+
+    if (factor < 0.1 || factor > 10) {
+        return;
+    }
+
+    scale(scaleFactor, scaleFactor);
 }

@@ -10,17 +10,21 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-            AddEntityEvent(CADEntity * cadEntity)
-            {
-                _cadEntity=cadEntity;
+            AddEntityEvent(const QString& layerName, CADEntity* cadEntity) {
+                _cadEntity = cadEntity;
+                _layerName = layerName;
             }
 
-            CADEntity* entity() const
-            {
+            CADEntity* entity() const {
                 return _cadEntity;
             }
 
+            QString layerName() {
+                return _layerName;
+            }
+
         private:
+            QString _layerName;
             CADEntity* _cadEntity;
     };
 }

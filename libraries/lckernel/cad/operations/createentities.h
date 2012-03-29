@@ -3,7 +3,7 @@
 
 #include <QVector>
 #include "cad/base/cadentity.h"
-#include "cad/document/document.h"
+#include "cad/document/abstractdocument.h"
 #include "operation.h"
 
 namespace lc {
@@ -12,7 +12,10 @@ namespace lc {
      */
     class CreateEntities : public Operation {
         public:
-            CreateEntities() : Operation () {}
+            CreateEntities(const QString& layerName) : Operation() {
+                _layerName = layerName;
+            }
+
             /**
              * Add a entity to the document, you can call this function as many times as you whish
              * @param cadEntity
@@ -27,9 +30,10 @@ namespace lc {
 
         private:
             Q_DISABLE_COPY(CreateEntities)
-            virtual void process(Document* document) const;
+            virtual void process(AbstractDocument* document) const;
 
         private:
+            QString _layerName;
             QVector<CADEntity*> _toCreate;
             QVector<ID_DATATYPE> _toDelete;
     };

@@ -10,13 +10,11 @@ namespace lc {
      */
     class RemoveEntityEvent {
         public:
-            RemoveEntityEvent(ID_DATATYPE id)
-            {
+            RemoveEntityEvent(ID_DATATYPE id) {
                 _id = id;
             }
 
-            ID_DATATYPE id() const
-            {
+            ID_DATATYPE id() const {
                 return _id;
             }
 

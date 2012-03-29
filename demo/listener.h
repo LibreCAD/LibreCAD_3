@@ -4,18 +4,17 @@
 #include <QObject>
 
 #include "cad/events/addentityevent.h"
-#include "cad/document/document.h"
+#include "cad/document/abstractdocument.h"
 
-class Listener : public QObject
-{
-    Q_OBJECT
-public:
-    Listener(lc::Document * _document);
+class Listener : public QObject {
+        Q_OBJECT
+    public:
+        Listener(lc::AbstractDocument* _document);
 
-public slots:
+    public slots:
 
-public slots:
-    void on_addEntityEvent(lc::AddEntityEvent * event);
+    public slots:
+        void on_addEntityEvent(lc::AddEntityEvent* event);
 
 
 };

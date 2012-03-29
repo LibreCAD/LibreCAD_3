@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <QVector>
-#include "cad/document/document.h"
+#include "cad/document/abstractdocument.h"
+#include "cad/document/entitymanager.h"
 #include "cad/document/layermanager.h"
 #include "cad/document/selectionmanager.h"
 #include "cad/operations/operation.h"
@@ -16,13 +17,12 @@
 
 namespace lc {
 
-    class DocumentImpl : public virtual Document {
+    class AbstractDocumentImpl : public virtual AbstractDocument {
             Q_OBJECT
         public:
-            DocumentImpl(LayerManager* layerManager);
-            virtual ~DocumentImpl();
+            AbstractDocumentImpl(LayerManager* layerManager, EntityManager* entityManager);
+            virtual ~AbstractDocumentImpl();
 
-            virtual LayerManager* layerManager() const;
 
             void operateOn(Operation* operation);
 
@@ -32,21 +32,18 @@ namespace lc {
 
         public:
         signals:
-             void beginProcessEvent(BeginProcessEvent * event);
-             void commitProcessEvent(CommitProcessEvent * event);
-
-            /**
-            * All operations that are possible on entities
-            */
-             void addEntityEvent(lc::AddEntityEvent * event);
-             void replaceEntityEvent(ReplaceEntityEvent * event);
-             void removeEntityEvent(RemoveEntityEvent * event);
+            void beginProcessEvent(BeginProcessEvent* event);
+            void commitProcessEvent(CommitProcessEvent* event);
+            void addEntityEvent(lc::AddEntityEvent* event);
+            void replaceEntityEvent(ReplaceEntityEvent* event);
+            void removeEntityEvent(RemoveEntityEvent* event);
 
         public:
-            virtual void addEntity(CADEntity* cadEntity);
+            virtual void addEntity(const QString& layerName, CADEntity* cadEntity);
             virtual void replaceEntity(CADEntity* oldEntity, CADEntity* newEntity);
             virtual void removeEntity(ID_DATATYPE id);
 
+            virtual LayerManager* layerManager() const;
         private:
             virtual void lock();
             virtual void releaseLock() ;

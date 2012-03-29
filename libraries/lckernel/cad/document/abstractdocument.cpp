@@ -1,4 +1,4 @@
-#include "document.h"
+#include "abstractdocument.h"
 #include "cad/operations/operation.h"
 
 #include "cad/events/beginprocessevent.h"
@@ -9,15 +9,12 @@
 
 using namespace lc;
 
-void Document::operationStart(Operation * operation)
-{
+void AbstractDocument::operationStart(Operation* operation) {
     operation->start();
 }
-void Document::operationFinnish(Operation * operation)
-{
+void AbstractDocument::operationFinnish(Operation* operation) {
     operation->finnish();
 }
-void Document::operationProcess(Operation * operation)
-{
+void AbstractDocument::operationProcess(Operation* operation) {
     operation->process(this);
 }

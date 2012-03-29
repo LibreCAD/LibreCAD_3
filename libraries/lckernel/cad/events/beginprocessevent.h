@@ -7,8 +7,7 @@ namespace lc {
      */
     class BeginProcessEvent {
         public:
-            BeginProcessEvent()
-            {
+            BeginProcessEvent() {
             };
     };
 }
