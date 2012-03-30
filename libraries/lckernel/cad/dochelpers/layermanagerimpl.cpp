@@ -14,7 +14,6 @@ LayerManagerImpl::LayerManagerImpl() : LayerManager() {
 
 LayerManagerImpl::~LayerManagerImpl() {
     qDeleteAll(* _documentLayers);
-    delete _documentLayers;
 }
 
 void LayerManagerImpl::document(AbstractDocument* document) {
@@ -50,7 +49,6 @@ void LayerManagerImpl::removeLayer(const QString& layerName) {
 
     _documentLayers->remove(layerName);
     delete docLayer;
-
 }
 
 DocumentLayer* LayerManagerImpl::layer(const QString& layerName) const {

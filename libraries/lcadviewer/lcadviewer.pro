@@ -3,6 +3,8 @@ CONFIG += static
 TARGET      = $$qtLibraryTarget(lcadviewerplugin)
 TEMPLATE    = lib
 
+QT += opengl
+
 GENERATED_DIR = ../../generated/lib/lcadviewer
 # Use common project definitions.
 include(../../settings.pro)

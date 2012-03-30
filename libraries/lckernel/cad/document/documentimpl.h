@@ -44,12 +44,30 @@ namespace lc {
             virtual void removeEntity(ID_DATATYPE id);
 
             virtual LayerManager* layerManager() const;
+
+            virtual CADEntity* findByID(ID_DATATYPE id) const;
         private:
             virtual void lock();
             virtual void releaseLock() ;
         private:
             LayerManager* _layerManager;
             bool _locked;
+
+            // We need to have a betetr way of objects that need to be deleted from memory, and objects that needs to stay in memory
+            // So this is a FIXME PLEASE
+            // In general object lifetime is simple
+            // RULE: The vectors below is a place where we are storing ALL objects that are active in the document, that includes
+            // everything in undo stage
+
+            // We add everything to the vector during a addXXXX (..) operation
+            // When the document is closed we go through all entities in the below vectors and delete them in the destructor of the DocumentImpl
+            // When a operation get0's removed from the undo stack we ask the operation what entities where deleted and we then delete them from the below list and from memory
+            // Note Dongxu suggests to use boost smart pointers might relieve us from the memory mangement
+            QVector<CADEntity*> _allEntites;
+            QVector<void*> _allFonts;
+            QVector<void*> _AllBlocks;
+            QVector<void*> _allLayers;
+
     };
 }
 

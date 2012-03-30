@@ -1,9 +1,10 @@
 #ifndef OPERATIONINTERFACE_H
 #define OPERATIONINTERFACE_H
 
-#include "cad/document/abstractdocument.h"
-
 namespace lc {
+
+    class AbstractDocument;
+
     class Operation {
         public:
             Operation() {};

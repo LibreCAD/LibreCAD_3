@@ -1,3 +1,6 @@
+
+#include <QHashIterator>
+#include <QVector>
 #include "documentimpl.h"
 #include "cad/geometry/coordinate.h"
 
@@ -41,6 +44,8 @@ void AbstractDocumentImpl::commit(Operation* operation) {
 }
 
 void AbstractDocumentImpl::addEntity(const QString& layerName, CADEntity* cadEntity) {
+    // FIXME: during a undo cycle we can get duplicate entries in _allEntites, we should clean this list up right before commit and create a list of single entries
+    _allEntites.append(cadEntity);
     AddEntityEvent event(layerName, cadEntity);
     emit addEntityEvent(& event);
 }
@@ -53,6 +58,29 @@ void AbstractDocumentImpl::removeEntity(ID_DATATYPE id) {
     RemoveEntityEvent event(id);
     emit removeEntityEvent(& event);
 }
+
+
+CADEntity* AbstractDocumentImpl::findByID(ID_DATATYPE id) const {
+    QHash <QString, DocumentLayer*>* allLayers = layerManager()->allLayers();
+    QHashIterator<QString, DocumentLayer*> li(*allLayers);
+
+    while (li.hasNext()) {
+        DocumentLayer* documentLayer = li.value();
+
+        QVector<CADEntity*>* _cadentities = documentLayer->allEntities();
+        long unsigned int size = _cadentities->size();
+
+        for (long unsigned int idx = 0; idx < size; ++idx) {
+            if (_cadentities->at(idx)->id() == id) {
+                return _cadentities->at(idx);
+            }
+        }
+    }
+
+    throw "Entity not found";
+    return NULL;
+}
+
 
 
 

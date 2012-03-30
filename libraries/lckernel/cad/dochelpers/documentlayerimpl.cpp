@@ -12,7 +12,6 @@ DocumentLayerImpl::DocumentLayerImpl(Layer* layer) {
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
-    qDeleteAll(*_cadentities);
     delete _cadentities;
 }
 
@@ -40,4 +39,16 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
 
 QVector<CADEntity*>* DocumentLayerImpl::allEntities() const {
     return _cadentities;
+}
+
+CADEntity* DocumentLayerImpl::findByID(ID_DATATYPE id) const {
+    long unsigned int size = _cadentities->size();
+
+    for (long unsigned int idx = 0; idx < size; ++idx) {
+        if (_cadentities->at(idx)->id() == id) {
+            return _cadentities->at(idx);
+        }
+    }
+
+    throw "Entity not found";
 }

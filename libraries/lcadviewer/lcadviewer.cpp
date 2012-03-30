@@ -1,9 +1,16 @@
 #include "lcadviewer.h"
 
 #include <QtGui>
+#include <QGLWidget>
 
 LCADViewer::LCADViewer(QWidget* parent) :
     QGraphicsView(parent) {
+
+    parent->setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_NoSystemBackground);
+    QGLFormat fmt;
+    fmt.setSampleBuffers(true);
+    setViewport(new QGLWidget(fmt));
 
     QGraphicsScene* scene = new QGraphicsScene(this);
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);

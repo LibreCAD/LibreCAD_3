@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget* parent) :
     QTime t;
     t.start();
 
-    for (int i = 0; i < 25000; i++) {
+    for (int i = 0; i < 10000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -65,6 +65,15 @@ MainWindow::MainWindow(QWidget* parent) :
         double y2 = y1 + randInt(-50, 50);
         lc::Line* l1 = new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2));
         foo->add(l1);
+    }
+
+    for (int i = 0; i < 10000; i++) {
+        double x1 = randInt(-4000, 4000);
+        double y1 = randInt(-4000, 4000);
+
+        double r = randInt(0, 150);
+        lc::Circle* c1 = new lc::Circle(lc::geo::Coordinate(x1, y1), r);
+        foo->add(c1);
     }
 
     qDebug("Time to create entities: %d ms", t.elapsed());

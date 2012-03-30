@@ -1,3 +1,5 @@
+QT += opengl
+
 HEADERS += \
     lcadviewer.h \
     scenemanager.h

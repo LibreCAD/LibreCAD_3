@@ -15,3 +15,15 @@ void CreateEntities::process(AbstractDocument* document) const {
         document->addEntity(_layerName, _toCreate.at(i));
     }
 }
+
+
+void CreateEntities::undo(AbstractDocument* document) const {
+    for (int i = 0; i < _toCreate.size(); ++i) {
+        document->removeEntity(_toCreate.at(i)->id());
+    }
+
+    for (int i = 0; i < _toDelete.size(); ++i) {
+        CADEntity* entity = document->findByID(_toDelete.at(i));
+        document->addEntity(_layerName, entity);
+    }
+}

@@ -39,8 +39,13 @@ namespace lc {
             virtual void operationFinnish(Operation* operation);
             virtual void operationProcess(Operation* operation);
 
+
+        public:
+            virtual CADEntity* findByID(ID_DATATYPE id) const = 0;
+
         public:
             friend class BaseManager;
+
 
     };
 

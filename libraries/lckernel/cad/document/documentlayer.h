@@ -36,10 +36,15 @@ namespace lc {
 
             /**
              * Return a list of all entities
-             *
              * @return
              */
             virtual QVector<CADEntity*>* allEntities() const = 0;
+
+            /**
+             * Return pointer to entity by ID
+             * @return
+             */
+            virtual CADEntity* findByID(ID_DATATYPE) const = 0;
     };
 }
 

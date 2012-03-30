@@ -32,6 +32,7 @@ namespace lc {
                 return _layer != NULL && _cadentities != NULL;
             }
 
+            virtual CADEntity* findByID(ID_DATATYPE) const;
 
         private:
 

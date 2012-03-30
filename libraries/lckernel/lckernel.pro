@@ -39,13 +39,11 @@ SOURCES += lckernel.cpp \
     cad/primitive/circle.cpp \
     cad/geometry/coordinate.cpp \
     cad/document/documentlayer.cpp \
-    cad/document/layermanager.cpp \
     cad/document/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
     cad/geometry/area.cpp \
     cad/dochelpers/entityselection.cpp \
-    cad/document/selectionmanager.cpp \
     cad/dochelpers/selectionmanagerimpl.cpp \
     cad/geometry/vector.cpp \
     cad/geometry/sphere.cpp \
@@ -88,7 +86,9 @@ HEADERS += lckernel.h\
     cad/document/basemanager.h \
     cad/dochelpers/entitymanagerimpl.h \
     cad/document/entitymanager.h \
-    cad/document/abstractdocument.h
+    cad/document/abstractdocument.h \
+    cad/document/undomanager.h \
+    cad/operations/undoable.h
 
 
 unix:!symbian {
