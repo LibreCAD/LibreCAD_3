@@ -2,10 +2,14 @@
 #define SCENEMANAGER_H
 
 #include <QObject>
+#include <QHash>
+#include <QGraphicsItem>
 
 #include "cad/events/addentityevent.h"
+#include "cad/events/removeentityevent.h"
 #include "cad/document/abstractdocument.h"
 #include "lcadviewer.h"
+#include "cad/base/cadentity.h"
 
 class SceneManager: public QObject {
         Q_OBJECT
@@ -14,10 +18,12 @@ class SceneManager: public QObject {
 
     public slots:
         void on_addEntityEvent(lc::AddEntityEvent* event);
+        void on_removeEntityEvent(lc::RemoveEntityEvent* event);
 
     private:
         lc::AbstractDocument* _document;
         LCADViewer* _viewer;
+        QHash <int, QGraphicsItem *> _activeGraphicsItems;
 
 };
 

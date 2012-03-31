@@ -17,11 +17,11 @@
 
 namespace lc {
 
-    class AbstractDocumentImpl : public virtual AbstractDocument {
+    class DocumentImpl : public virtual AbstractDocument {
             Q_OBJECT
         public:
-            AbstractDocumentImpl(LayerManager* layerManager, EntityManager* entityManager);
-            virtual ~AbstractDocumentImpl();
+            DocumentImpl(LayerManager* layerManager, EntityManager* entityManager);
+            virtual ~DocumentImpl();
 
 
             void operateOn(Operation* operation);
@@ -32,11 +32,13 @@ namespace lc {
 
         public:
         signals:
-            void beginProcessEvent(BeginProcessEvent* event);
-            void commitProcessEvent(CommitProcessEvent* event);
+            void beginProcessEvent(lc::BeginProcessEvent* event);
+            void commitProcessEvent(lc::CommitProcessEvent* event);
+
+            // Etity events
             void addEntityEvent(lc::AddEntityEvent* event);
-            void replaceEntityEvent(ReplaceEntityEvent* event);
-            void removeEntityEvent(RemoveEntityEvent* event);
+            void replaceEntityEvent(lc::ReplaceEntityEvent* event);
+            void removeEntityEvent(lc::RemoveEntityEvent* event);
 
         public:
             virtual void addEntity(const QString& layerName, CADEntity* cadEntity);
@@ -45,7 +47,8 @@ namespace lc {
 
             virtual LayerManager* layerManager() const;
 
-            virtual CADEntity* findByID(ID_DATATYPE id) const;
+            virtual CADEntity* findEntityByID(ID_DATATYPE id) const;
+            virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
             virtual void lock();
             virtual void releaseLock() ;

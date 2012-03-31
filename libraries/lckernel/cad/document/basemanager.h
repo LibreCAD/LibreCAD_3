@@ -9,11 +9,19 @@ namespace lc {
     class BaseManager : public QObject {
             Q_OBJECT
         public:
-            virtual AbstractDocument* Document() const {
-                return _document;
-            };
-            virtual void document(AbstractDocument* document) {
+            BaseManager() {
+                _document = NULL;
+            }
+            BaseManager(AbstractDocument* document) {
                 _document = document;
+            }
+
+            virtual void setDocument(AbstractDocument* document) {
+                _document = document;
+            };
+
+            virtual AbstractDocument* document() {
+                return _document;
             };
         private:
             AbstractDocument* _document;

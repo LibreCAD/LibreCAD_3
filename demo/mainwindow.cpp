@@ -17,6 +17,7 @@
 #include "cad/dochelpers/layermanagerimpl.h"
 #include "cad/dochelpers/selectionmanagerimpl.h"
 #include "cad/dochelpers/entitymanagerimpl.h"
+#include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/document/documentimpl.h"
 #include "cad/operations/createentities.h"
 
@@ -37,52 +38,20 @@ MainWindow::MainWindow(QWidget* parent) :
 
 
     // Create new LibreCAD AbstractDocument
-    lc::LayerManager* newLayerManager = dynamic_cast< lc::LayerManager*>(new lc::LayerManagerImpl());
+    lc::LayerManager* newLayerManager = new lc::LayerManagerImpl();
     lc::SelectionManager* newSelectionManager = new lc::SelectionManagerImpl(newLayerManager, 5.0);
 
     lc::EntityManager* entityManager = new lc::EntityManagerImpl();
 
     // Create a new document
-    _document = new lc::AbstractDocumentImpl(newLayerManager, entityManager);
+    _document = new lc::DocumentImpl(newLayerManager, entityManager);
 
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
-
+    _undoManager = new lc::UndoManagerImpl(10);
+    _undoManager->setDocument(_document);
 
     // Listener that listens for document events
     Listener* l = new Listener(_document);
-
-
-    lc::CreateEntities* foo = new  lc::CreateEntities("0");
-
-    QTime t;
-    t.start();
-
-    for (int i = 0; i < 10000; i++) {
-        double x1 = randInt(-4000, 4000);
-        double y1 = randInt(-4000, 4000);
-
-        double x2 = x1 + randInt(-50, 50);
-        double y2 = y1 + randInt(-50, 50);
-        lc::Line* l1 = new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2));
-        foo->add(l1);
-    }
-
-    for (int i = 0; i < 10000; i++) {
-        double x1 = randInt(-4000, 4000);
-        double y1 = randInt(-4000, 4000);
-
-        double r = randInt(0, 150);
-        lc::Circle* c1 = new lc::Circle(lc::geo::Coordinate(x1, y1), r);
-        foo->add(c1);
-    }
-
-    qDebug("Time to create entities: %d ms", t.elapsed());
-    t.start();
-    _document->operateOn(foo);
-    qDebug("Time to add To AbstractDocument: %d ms", t.elapsed());
-
-
-
 
     // Create a line with meta attributes, Color Width defaults to BYLAYER, Line set to 1.5mm
     // QList<lc::MetaType*> metaTypes
@@ -109,4 +78,43 @@ MainWindow::~MainWindow() {
 
 void MainWindow::wheelEvent(QWheelEvent* event) {
     ui->lCADViewer->scaleView(pow((double)2, -event->delta() / 240.0));
+}
+
+void MainWindow::on_addEntities_clicked() {
+    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+
+    for (int i = 0; i < 10000; i++) {
+        double x1 = randInt(-4000, 4000);
+        double y1 = randInt(-4000, 4000);
+
+        double x2 = x1 + randInt(-50, 50);
+        double y2 = y1 + randInt(-50, 50);
+        lc::Line* l1 = new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2));
+        foo->add(l1);
+    }
+
+    _document->operateOn(foo);
+}
+
+void MainWindow::on_addCircles_clicked() {
+    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+
+    for (int i = 0; i < 10000; i++) {
+        double x1 = randInt(-4000, 4000);
+        double y1 = randInt(-4000, 4000);
+
+        double r = randInt(0, 150);
+        lc::Circle* c1 = new lc::Circle(lc::geo::Coordinate(x1, y1), r);
+        foo->add(c1);
+    }
+
+    _document->operateOn(foo);
+}
+
+void MainWindow::on_undoButton_clicked() {
+    _undoManager->undo();
+}
+
+void MainWindow::on_redoButtom_clicked() {
+    _undoManager->redo();
 }

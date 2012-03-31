@@ -16,10 +16,6 @@ LayerManagerImpl::~LayerManagerImpl() {
     qDeleteAll(* _documentLayers);
 }
 
-void LayerManagerImpl::document(AbstractDocument* document) {
-    BaseManager::document(document);
-}
-
 void LayerManagerImpl::addLayer(const QString& layerName) {
     DocumentLayer* docLayer = _documentLayers->value(layerName);
 

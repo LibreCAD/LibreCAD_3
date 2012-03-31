@@ -7,7 +7,12 @@ namespace lc {
 
     class Operation {
         public:
-            Operation() {};
+            Operation(AbstractDocument* document) {
+                _document = document;
+            };
+            AbstractDocument* document() const {
+                return _document;
+            };
         private:
 
             Q_DISABLE_COPY(Operation)
@@ -16,7 +21,7 @@ namespace lc {
              * This function get's called when a operation starts and when the document is locked for you
              * so you can do your work
              */
-            virtual void process(AbstractDocument* document) const = 0;
+            virtual void process() const = 0;
 
             /**
              * This function will get called when the process of this operation starts
@@ -28,6 +33,8 @@ namespace lc {
             virtual void finnish() const {};
 
             friend class AbstractDocument;
+
+            AbstractDocument* _document;
     };
 }
 #endif // OPERATIONINTERFACE_H

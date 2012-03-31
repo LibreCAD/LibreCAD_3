@@ -16,5 +16,5 @@ void AbstractDocument::operationFinnish(Operation* operation) {
     operation->finnish();
 }
 void AbstractDocument::operationProcess(Operation* operation) {
-    operation->process(this);
+    operation->process();
 }
