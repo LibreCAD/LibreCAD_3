@@ -53,21 +53,7 @@ MainWindow::MainWindow(QWidget* parent) :
     // Listener that listens for document events
     Listener* l = new Listener(_document);
 
-    // Create a line with meta attributes, Color Width defaults to BYLAYER, Line set to 1.5mm
-    // QList<lc::MetaType*> metaTypes
-    // lc::Circle* c1 = new lc::Circle(lc::Coordinate(10.0, 10.0), 12.4, metaTypes << new lc::LineWidth(2));
-
-    // This won't work, Line MUST be defined properly
-    // lc::Line* l4 = new lc::Line();
-
-    // This won't work, Color cannot be given by Entity without specifying a color
-    // lc::Color* c = new lc::Color(lc::Color::ByEntity);
-    // Sorry no drawing yet
-
-
-
     ui->lCADViewer->setAbstractDocument(_document);
-
 }
 
 MainWindow::~MainWindow() {
@@ -80,10 +66,20 @@ void MainWindow::wheelEvent(QWheelEvent* event) {
     ui->lCADViewer->scaleView(pow((double)2, -event->delta() / 240.0));
 }
 
+
+
+void MainWindow::on_undoButton_clicked() {
+    _undoManager->undo();
+}
+
+void MainWindow::on_redoButtom_clicked() {
+    _undoManager->redo();
+}
+
 void MainWindow::on_addEntities_clicked() {
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 5000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -99,7 +95,7 @@ void MainWindow::on_addEntities_clicked() {
 void MainWindow::on_addCircles_clicked() {
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 5000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -111,10 +107,3 @@ void MainWindow::on_addCircles_clicked() {
     _document->operateOn(foo);
 }
 
-void MainWindow::on_undoButton_clicked() {
-    _undoManager->undo();
-}
-
-void MainWindow::on_redoButtom_clicked() {
-    _undoManager->redo();
-}

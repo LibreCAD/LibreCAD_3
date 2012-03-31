@@ -39,7 +39,7 @@ void SceneManager::on_addEntityEvent(lc::AddEntityEvent* event) {
         QGraphicsEllipseItem* foo = scene->addEllipse(c->center().x(), c->center().y(), c->radius(), c->radius());
         foo->setFlag(QGraphicsItem::ItemIsMovable);
         foo->setData(0, QVariant((int)c->id()));
-        _activeGraphicsItems.insert(event->entity()->id(), dynamic_cast<QGraphicsItem *>(foo));
+        _activeGraphicsItems.insert(event->entity()->id(), foo);
         return;
     }
 }
