@@ -13,7 +13,7 @@ namespace lc {
      */
     class CreateEntities : public Operation, public Undoable {
         public:
-            CreateEntities(const QString& layerName) : Operation() {
+            CreateEntities(AbstractDocument* document, const QString& layerName) : Operation(document), Undoable("Create entities") {
                 _layerName = layerName;
             }
 
@@ -23,22 +23,16 @@ namespace lc {
              */
             void add(CADEntity* cadEntity);
 
-            /**
-             * Remove a entity from the document
-             * @param id
-             */
-            void remove(ID_DATATYPE id);
-
-            virtual void undo(AbstractDocument* document) const;
+            virtual void undo() const;
+            virtual void redo() const;
 
         private:
             Q_DISABLE_COPY(CreateEntities)
-            virtual void process(AbstractDocument* document) const;
+            virtual void process() const;
 
         private:
             QString _layerName;
             QVector<CADEntity*> _toCreate;
-            QVector<ID_DATATYPE> _toDelete;
     };
 }
 #endif // CREATEENTITIES_H

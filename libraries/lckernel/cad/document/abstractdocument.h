@@ -41,7 +41,8 @@ namespace lc {
 
 
         public:
-            virtual CADEntity* findByID(ID_DATATYPE id) const = 0;
+            virtual CADEntity* findEntityByID(ID_DATATYPE id) const = 0;
+            virtual QString findEntityLayerByID(ID_DATATYPE id) const = 0;
 
         public:
             friend class BaseManager;

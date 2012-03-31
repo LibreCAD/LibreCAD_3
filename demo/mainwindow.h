@@ -5,6 +5,7 @@
 #include <QtGui>
 
 #include "cad/document/abstractdocument.h"
+#include "cad/document/undomanager.h"
 
 
 namespace Ui {
@@ -22,9 +23,19 @@ class MainWindow : public QMainWindow {
 
     protected:
         void wheelEvent(QWheelEvent* event);
+    private slots:
+        void on_addEntities_clicked();
+
+        void on_addCircles_clicked();
+
+        void on_undoButton_clicked();
+
+        void on_redoButtom_clicked();
+
     private:
         Ui::MainWindow* ui;
         lc::AbstractDocument* _document;
+        lc::UndoManager* _undoManager;
 };
 
 #endif // MAINWINDOW_H

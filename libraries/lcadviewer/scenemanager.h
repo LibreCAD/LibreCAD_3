@@ -4,6 +4,7 @@
 #include <QObject>
 
 #include "cad/events/addentityevent.h"
+#include "cad/events/removeentityevent.h"
 #include "cad/document/abstractdocument.h"
 #include "lcadviewer.h"
 
@@ -14,6 +15,7 @@ class SceneManager: public QObject {
 
     public slots:
         void on_addEntityEvent(lc::AddEntityEvent* event);
+        void on_removeEntityEvent(lc::RemoveEntityEvent* event);
 
     private:
         lc::AbstractDocument* _document;

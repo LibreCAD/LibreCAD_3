@@ -19,7 +19,7 @@ namespace lc {
             void on_addEntityEvent(lc::AddEntityEvent* event);
 
         public:
-            virtual void document(AbstractDocument* document);
+            virtual void setDocument(AbstractDocument* document);
     };
 }
 #endif // ENTITYMANAGERIMPL_H

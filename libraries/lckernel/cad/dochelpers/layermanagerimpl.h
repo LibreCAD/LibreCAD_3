@@ -18,8 +18,6 @@ namespace lc {
             virtual ~LayerManagerImpl();
 
         public:
-            virtual void document(AbstractDocument* document);
-
             virtual void addLayer(const QString& layerName);
             virtual void addLayer(Layer* layer);
             virtual void removeLayer(const QString& layerName);

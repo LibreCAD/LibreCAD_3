@@ -49,7 +49,9 @@ SOURCES += lckernel.cpp \
     cad/geometry/sphere.cpp \
     cad/operations/createentities.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
-    cad/document/abstractdocument.cpp
+    cad/document/abstractdocument.cpp \
+    cad/dochelpers/undomanagerimpl.cpp \
+    cad/operations/deleteentities.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -88,7 +90,9 @@ HEADERS += lckernel.h\
     cad/document/entitymanager.h \
     cad/document/abstractdocument.h \
     cad/document/undomanager.h \
-    cad/operations/undoable.h
+    cad/operations/undoable.h \
+    cad/dochelpers/undomanagerimpl.h \
+    cad/operations/deleteentities.h
 
 
 unix:!symbian {
