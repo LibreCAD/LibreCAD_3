@@ -21,7 +21,7 @@ namespace lc {
 
             virtual void addEntity(CADEntity* entity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual QVector<CADEntity*>* allEntities() const;
+            virtual QVector<CADEntity*> allEntities() const;
 
             virtual Layer* layer() const;
 
@@ -29,7 +29,7 @@ namespace lc {
                 return QVariant::fromValue(*this);
             }
             bool variantValid() const {
-                return _layer != NULL && _cadentities != NULL;
+                return _layer != NULL;
             }
 
             virtual CADEntity* findByID(ID_DATATYPE) const;
@@ -38,7 +38,7 @@ namespace lc {
 
         private:
             Layer* _layer;
-            QVector<CADEntity*>* _cadentities;
+            QVector<CADEntity*> _cadentities;
     };
 }
 

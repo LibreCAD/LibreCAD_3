@@ -18,7 +18,7 @@
 #include "cad/dochelpers/selectionmanagerimpl.h"
 #include "cad/dochelpers/entitymanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
-#include "cad/document/documentimpl.h"
+#include "cad/dochelpers/documentimpl.h"
 #include "cad/operations/createentities.h"
 
 #include <QtGui>

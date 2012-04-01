@@ -1,12 +1,16 @@
 #ifndef CADENTITY_H
 #define CADENTITY_H
 
+#include <memory>
+
 #include "id.h"
 #include "metainfo.h"
 #include "cad/interface/metatype.h"
 #include "cad/geometry/area.h"
 
+
 namespace lc {
+
 
     /**
      *Class that all CAD entities must inherit
@@ -20,4 +24,8 @@ namespace lc {
             virtual bool inArea(const geo::Area& area) const = 0;
     };
 }
+typedef std::shared_ptr<lc::CADEntity> CADEntityPtr;
+
+
+
 #endif // CADENTITY_H

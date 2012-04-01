@@ -4,15 +4,12 @@ using namespace lc;
 
 DocumentLayerImpl::DocumentLayerImpl() {
     _layer = NULL;
-    _cadentities = NULL;
 }
 DocumentLayerImpl::DocumentLayerImpl(Layer* layer) {
     _layer = layer;
-    _cadentities = new QVector<CADEntity*>();
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
-    delete _cadentities;
 }
 
 Layer* DocumentLayerImpl::layer() const {
@@ -20,16 +17,16 @@ Layer* DocumentLayerImpl::layer() const {
 }
 
 void DocumentLayerImpl::addEntity(CADEntity* entity) {
-    _cadentities->append(entity);
+    _cadentities.append(entity);
 }
 
 void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
-    long unsigned int size = _cadentities->size();
+    long unsigned int size = _cadentities.size();
 
     for (long unsigned int idx = 0; idx < size; ++idx) {
-        if (_cadentities->at(idx)->id() == id) {
-            delete _cadentities->value(idx);
-            _cadentities->remove(idx);
+        if (_cadentities.at(idx)->id() == id) {
+            delete _cadentities.value(idx);
+            _cadentities.remove(idx);
             return;
         }
     }
@@ -37,16 +34,16 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
     throw "Entity not found";
 }
 
-QVector<CADEntity*>* DocumentLayerImpl::allEntities() const {
+QVector<CADEntity*> DocumentLayerImpl::allEntities() const {
     return _cadentities;
 }
 
 CADEntity* DocumentLayerImpl::findByID(ID_DATATYPE id) const {
-    long unsigned int size = _cadentities->size();
+    long unsigned int size = _cadentities.size();
 
     for (long unsigned int idx = 0; idx < size; ++idx) {
-        if (_cadentities->at(idx)->id() == id) {
-            return _cadentities->at(idx);
+        if (_cadentities.at(idx)->id() == id) {
+            return _cadentities.at(idx);
         }
     }
 

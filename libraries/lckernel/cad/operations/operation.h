@@ -5,6 +5,13 @@ namespace lc {
 
     class AbstractDocument;
 
+    /**
+     * An operation is a grouped set of 'things' we can do on a document
+     * Only one operation can run at a time because the document needs to get locked
+     * during a operaion.
+     *
+     * @param document
+     */
     class Operation {
         public:
             Operation(AbstractDocument* document) {
@@ -13,6 +20,7 @@ namespace lc {
             AbstractDocument* document() const {
                 return _document;
             };
+
         private:
 
             Q_DISABLE_COPY(Operation)

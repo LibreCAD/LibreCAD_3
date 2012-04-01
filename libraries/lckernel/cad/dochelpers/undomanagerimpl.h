@@ -10,6 +10,11 @@
 
 namespace lc {
 
+    /**
+     * UndoManagerImpl manages a stack of operations and allows for
+     * undo or re-do operations that where done on a canvas
+     * @param maximumUndoLevels
+     */
     class UndoManagerImpl: public UndoManager {
             Q_OBJECT
         public:
@@ -24,8 +29,8 @@ namespace lc {
             virtual bool canRedo() const;
 
         private:
-            QList <Undoable *> _unDoables;
-            QStack <Undoable *> _reDoables;
+            QList <Undoable*> _unDoables;
+            QStack <Undoable*> _reDoables;
             int _maximumUndoLevels;
 
             void manageQueue();

@@ -5,7 +5,9 @@
 #include "basemanager.h"
 
 namespace lc {
-
+    /**
+     * Undo manager is a Interface for Undo operations
+     */
     class UndoManager: public BaseManager {
             Q_OBJECT
         public:

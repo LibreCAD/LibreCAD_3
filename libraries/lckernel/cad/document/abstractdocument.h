@@ -28,6 +28,7 @@ namespace lc {
             virtual void addEntity(const QString& layerName, CADEntity* cadEntity) = 0;
             virtual void replaceEntity(CADEntity* oldEntity, CADEntity* newEntity) = 0;
             virtual void removeEntity(ID_DATATYPE id) = 0;
+            virtual void absoleteEntity(CADEntity * absoleteEntity) = 0;
 
             virtual LayerManager* layerManager() const = 0;
         private:

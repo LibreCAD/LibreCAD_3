@@ -38,7 +38,7 @@ namespace lc {
              * Return a list of all entities
              * @return
              */
-            virtual QVector<CADEntity*>* allEntities() const = 0;
+            virtual QVector<CADEntity*> allEntities() const = 0;
 
             /**
              * Return pointer to entity by ID

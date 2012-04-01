@@ -39,7 +39,7 @@ SOURCES += lckernel.cpp \
     cad/primitive/circle.cpp \
     cad/geometry/coordinate.cpp \
     cad/document/documentlayer.cpp \
-    cad/document/documentimpl.cpp \
+    cad/dochelpers/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
     cad/geometry/area.cpp \
@@ -69,7 +69,7 @@ HEADERS += lckernel.h\
     cad/document/layermanager.h \
     cad/interface/metatype.h \
     cad/interface/variantable.h \
-    cad/document/documentimpl.h \
+    cad/dochelpers/documentimpl.h \
     cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
     cad/geometry/area.h \
@@ -92,7 +92,8 @@ HEADERS += lckernel.h\
     cad/document/undomanager.h \
     cad/operations/undoable.h \
     cad/dochelpers/undomanagerimpl.h \
-    cad/operations/deleteentities.h
+    cad/operations/deleteentities.h \
+    cad/events/absoleteentityevent.h
 
 
 unix:!symbian {

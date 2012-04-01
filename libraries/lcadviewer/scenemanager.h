@@ -23,7 +23,7 @@ class SceneManager: public QObject {
     private:
         lc::AbstractDocument* _document;
         LCADViewer* _viewer;
-        QHash <int, QGraphicsItem *> _activeGraphicsItems;
+        QHash <int, QGraphicsItem*> _activeGraphicsItems;
 
 };
 
