@@ -1,6 +1,7 @@
 #ifndef COMMITPROCESSEVENT_H
 #define COMMITPROCESSEVENT_H
 
+#include "cad/const.h"
 
 namespace lc {
 
@@ -11,15 +12,15 @@ namespace lc {
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent(Operation* operation) {
+            CommitProcessEvent(OperationPtr operation) {
                 _operation = operation;
             };
 
-            Operation* operation() {
+            OperationPtr operation() const {
                 return _operation;
             }
         private:
-            Operation* _operation;
+            OperationPtr _operation;
     };
 }
 #endif // COMMITPROCESSEVENT_H

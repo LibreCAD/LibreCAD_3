@@ -5,6 +5,8 @@
 #include <QMetaType>
 #include <QVariant>
 
+#include "cad/const.h"
+
 #include "color.h"
 #include "linewidth.h"
 #include "cad/interface/variantable.h"

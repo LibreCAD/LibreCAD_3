@@ -9,6 +9,8 @@ QT       += core gui opengl
 TARGET = ../demo
 TEMPLATE = app
 
+CONFIG +=
+
 # Store intermedia stuff somewhere else
 GENERATED_DIR = ../generated/demo
 # Use common project definitions.

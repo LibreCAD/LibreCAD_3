@@ -1,7 +1,9 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef GEOVECTOR_H
+#define GEOVECTOR_H
 
-#include "coordinate.h"
+#include "cad/const.h"
+
+#include "geocoordinate.h"
 
 namespace lc {
     namespace geo {
@@ -23,4 +25,4 @@ namespace lc {
 
     }
 }
-#endif // VECTOR_H
+#endif // GEOVECTOR_H

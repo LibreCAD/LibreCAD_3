@@ -2,6 +2,9 @@
 #define LAYERMANAGER_H
 
 #include <QString>
+
+#include "cad/const.h"
+
 #include "basemanager.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
@@ -36,14 +39,14 @@ namespace lc {
              * @param layerName
              * @return
              */
-            virtual DocumentLayer* layer(const QString& layerName) const = 0;
+            virtual DocumentLayerPtr layer(const QString& layerName) const = 0;
 
             /**
              * Return a QHash of all layers within the document
              *
              * @return
              */
-            virtual QHash <QString, DocumentLayer*>* allLayers() const = 0;
+            virtual QHash <QString, DocumentLayerPtr> const& allLayers() const = 0;
     };
 }
 

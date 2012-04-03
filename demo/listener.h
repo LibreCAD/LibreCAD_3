@@ -14,7 +14,7 @@ class Listener : public QObject {
     public slots:
 
     public slots:
-        void on_addEntityEvent(lc::AddEntityEvent* event);
+        void on_addEntityEvent(const lc::AddEntityEvent& event);
 
 
 };

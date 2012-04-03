@@ -2,6 +2,7 @@
 #define ENTITYSELECTION_H
 
 #include <QObject>
+#include "cad/const.h"
 
 namespace lc {
 

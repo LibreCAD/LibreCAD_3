@@ -1,6 +1,8 @@
 #ifndef METATYPE_H
 #define METATYPE_H
 
+#include "cad/const.h"
+
 #include "cad/interface/variantable.h"
 
 /**
@@ -11,7 +13,9 @@
 namespace lc {
     class MetaType : public Variantable {
         public:
-            virtual int metaName() const = 0 ;
+            virtual int metaName() const = 0;
+            virtual ~MetaType() {};
     };
+    typedef shared_ptr<lc::MetaType> MetaTypePtr;
 }
 #endif // METATYPE_H

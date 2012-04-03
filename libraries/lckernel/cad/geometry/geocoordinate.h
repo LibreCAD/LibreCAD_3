@@ -1,5 +1,7 @@
-#ifndef COORDINATE_H
-#define COORDINATE_H
+#ifndef GEOCOORDINATE_H
+#define GEOCOORDINATE_H
+
+#include "cad/const.h"
 
 namespace lc {
     namespace geo {
@@ -25,4 +27,4 @@ namespace lc {
         };
     }
 }
-#endif // COORDINATE_H
+#endif // GEOCOORDINATE_H

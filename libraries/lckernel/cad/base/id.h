@@ -1,6 +1,7 @@
 #ifndef ID_H
 #define ID_H
 
+#include "cad/const.h"
 
 
 #define ID_DATATYPE unsigned long
@@ -24,5 +25,6 @@ namespace lc {
         private:
             unsigned long _id;
     };
+    typedef shared_ptr<lc::ID> IDPtr;
 }
 #endif // ID_H

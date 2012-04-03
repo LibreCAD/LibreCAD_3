@@ -2,6 +2,10 @@
 #define CREATEENTITIES_H
 
 #include <QVector>
+#include <QDebug>
+
+#include "cad/const.h"
+
 #include "cad/base/cadentity.h"
 #include "cad/document/abstractdocument.h"
 #include "operation.h"
@@ -16,12 +20,15 @@ namespace lc {
             CreateEntities(AbstractDocument* document, const QString& layerName) : Operation(document), Undoable("Create entities") {
                 _layerName = layerName;
             }
+            virtual ~CreateEntities() {
+                qDebug() << "CreateEntities removed";
+            }
 
             /**
              * Add a entity to the document, you can call this function as many times as you whish
              * @param cadEntity
              */
-            void add(CADEntity* cadEntity);
+            void add(CADEntityPtr cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;
@@ -32,7 +39,7 @@ namespace lc {
 
         private:
             QString _layerName;
-            QVector<CADEntity*> _toCreate;
+            QList<CADEntityPtr> _toCreate;
     };
 }
 #endif // CREATEENTITIES_H

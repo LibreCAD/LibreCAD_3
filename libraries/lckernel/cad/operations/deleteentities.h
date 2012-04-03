@@ -2,6 +2,9 @@
 #define DELETEENTITIES_H
 
 #include <QVector>
+
+#include "cad/const.h"
+
 #include "cad/base/cadentity.h"
 #include "cad/document/abstractdocument.h"
 #include "operation.h"
@@ -14,6 +17,10 @@ namespace lc {
     class DeleteEntities : public Operation, public Undoable {
         public:
             DeleteEntities(AbstractDocument* document) : Operation(document), Undoable("delete entities") {
+            }
+
+            virtual ~DeleteEntities() {
+
             }
 
             /**

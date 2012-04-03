@@ -4,6 +4,8 @@
 #include <QVector>
 #include <QObject>
 
+#include "cad/const.h"
+
 #include "cad/document/documentlayer.h"
 #include "cad/meta/layer.h"
 #include "cad/base/cadentity.h"
@@ -19,9 +21,9 @@ namespace lc {
             DocumentLayerImpl(Layer* layer);
             virtual ~DocumentLayerImpl();
 
-            virtual void addEntity(CADEntity* entity);
+            virtual void addEntity(CADEntityPtr entity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual QVector<CADEntity*> allEntities() const;
+            virtual  QList<CADEntityPtr> const& allEntities() const;
 
             virtual Layer* layer() const;
 
@@ -32,13 +34,13 @@ namespace lc {
                 return _layer != NULL;
             }
 
-            virtual CADEntity* findByID(ID_DATATYPE) const;
+            virtual CADEntityPtr findByID(ID_DATATYPE) const;
 
         private:
 
         private:
             Layer* _layer;
-            QVector<CADEntity*> _cadentities;
+            QList<CADEntityPtr> _cadentities;
     };
 }
 

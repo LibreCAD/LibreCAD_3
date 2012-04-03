@@ -2,6 +2,9 @@
 #define UNDOMANAGER_H
 
 #include <QString>
+
+#include "cad/const.h"
+
 #include "basemanager.h"
 
 namespace lc {
@@ -16,6 +19,8 @@ namespace lc {
 
             virtual bool canUndo() const = 0;
             virtual bool canRedo() const = 0;
+
+            virtual void removeUndoables() = 0;
     };
 
 }

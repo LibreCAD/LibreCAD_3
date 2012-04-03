@@ -17,8 +17,8 @@ class SceneManager: public QObject {
         SceneManager(LCADViewer* viewer, lc::AbstractDocument* _document);
 
     public slots:
-        void on_addEntityEvent(lc::AddEntityEvent* event);
-        void on_removeEntityEvent(lc::RemoveEntityEvent* event);
+        void on_addEntityEvent(const lc::AddEntityEvent&);
+        void on_removeEntityEvent(const lc::RemoveEntityEvent&);
 
     private:
         lc::AbstractDocument* _document;

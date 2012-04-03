@@ -1,6 +1,8 @@
 #ifndef OPERATIONINTERFACE_H
 #define OPERATIONINTERFACE_H
 
+#include "cad/const.h"
+
 namespace lc {
 
     class AbstractDocument;
@@ -20,6 +22,7 @@ namespace lc {
             AbstractDocument* document() const {
                 return _document;
             };
+            virtual ~Operation() {}
 
         private:
 
@@ -44,5 +47,6 @@ namespace lc {
 
             AbstractDocument* _document;
     };
+    typedef shared_ptr<lc::Operation> OperationPtr;
 }
 #endif // OPERATIONINTERFACE_H

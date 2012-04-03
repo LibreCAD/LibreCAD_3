@@ -39,7 +39,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="4">
+      <item row="0" column="5">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -70,6 +70,13 @@
        <widget class="QPushButton" name="redoButtom">
         <property name="text">
          <string>Redo</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="clearUndoables">
+        <property name="text">
+         <string>clear Undoables</string>
         </property>
        </widget>
       </item>

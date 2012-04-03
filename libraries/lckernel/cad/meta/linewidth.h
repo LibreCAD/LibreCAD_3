@@ -6,6 +6,8 @@
 #include <QString>
 #include <QHash>
 
+#include "cad/const.h"
+
 #include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
@@ -29,6 +31,7 @@ namespace lc {
             LineWidth();
             LineWidth(const double width);
             LineWidth(LineWidth::Method method);
+            virtual ~LineWidth() {}
             Method method() const;
             double width() const;
 

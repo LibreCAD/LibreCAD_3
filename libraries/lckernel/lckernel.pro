@@ -37,24 +37,27 @@ SOURCES += lckernel.cpp \
     cad/interface/metatype.cpp \
     cad/base/cadentity.cpp \
     cad/primitive/circle.cpp \
-    cad/geometry/coordinate.cpp \
     cad/document/documentlayer.cpp \
     cad/dochelpers/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
-    cad/geometry/area.cpp \
     cad/dochelpers/entityselection.cpp \
     cad/dochelpers/selectionmanagerimpl.cpp \
-    cad/geometry/vector.cpp \
-    cad/geometry/sphere.cpp \
     cad/operations/createentities.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
     cad/document/abstractdocument.cpp \
     cad/dochelpers/undomanagerimpl.cpp \
-    cad/operations/deleteentities.cpp
+    cad/operations/deleteentities.cpp \
+    cad/primitive/arc.cpp \
+    cad/geometry/geocircle.cpp \
+    cad/geometry/geoarc.cpp \
+    cad/geometry/geoarea.cpp \
+    cad/geometry/geovector.cpp \
+    cad/geometry/geocoordinate.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
+    cad/const.h\
     cad/meta/color.h \
     cad/meta/layer.h \
     cad/meta/linewidth.h \
@@ -64,7 +67,6 @@ HEADERS += lckernel.h\
     cad/base/metainfo.h \
     cad/base/cadentity.h \
     cad/primitive/circle.h \
-    cad/geometry/coordinate.h \
     cad/document/documentlayer.h \
     cad/document/layermanager.h \
     cad/interface/metatype.h \
@@ -72,12 +74,9 @@ HEADERS += lckernel.h\
     cad/dochelpers/documentimpl.h \
     cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
-    cad/geometry/area.h \
     cad/dochelpers/entityselection.h \
     cad/document/selectionmanager.h \
     cad/dochelpers/selectionmanagerimpl.h \
-    cad/geometry/vector.h \
-    cad/geometry/sphere.h \
     cad/operations/createentities.h \
     cad/operations/operation.h \
     cad/events/beginprocessevent.h \
@@ -93,7 +92,13 @@ HEADERS += lckernel.h\
     cad/operations/undoable.h \
     cad/dochelpers/undomanagerimpl.h \
     cad/operations/deleteentities.h \
-    cad/events/absoleteentityevent.h
+    cad/events/absoleteentityevent.h \
+    cad/primitive/arc.h \
+    cad/geometry/geocircle.h \
+    cad/geometry/geoarc.h \
+    cad/geometry/geoarea.h \
+    cad/geometry/geovector.h \
+    cad/geometry/geocoordinate.h
 
 
 unix:!symbian {
@@ -104,6 +109,3 @@ unix:!symbian {
     }
     INSTALLS += target
 }
-
-OTHER_FILES += \
-    cad/const.h

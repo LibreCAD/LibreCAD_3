@@ -4,7 +4,9 @@
 #include <QObject>
 #include <QPoint>
 
-#include "cad/geometry/area.h"
+#include "cad/const.h"
+
+#include "cad/geometry/geoarea.h"
 
 namespace lc {
 

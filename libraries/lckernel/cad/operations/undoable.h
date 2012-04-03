@@ -3,6 +3,8 @@
 
 #include <QString>
 
+#include "cad/const.h"
+
 namespace lc {
     class AbstractDocument;
 
@@ -18,6 +20,7 @@ namespace lc {
             Undoable(const QString& text) {
                 _text = text;
             }
+            virtual ~Undoable() {}
             /**
              * Undo a given operation
              */
@@ -41,6 +44,8 @@ namespace lc {
             QString _text;
 
     };
+    typedef shared_ptr<lc::Undoable> UndoablePtr;
+
 }
 
 #endif // UNDOABLE_H

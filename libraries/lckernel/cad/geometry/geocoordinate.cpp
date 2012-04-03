@@ -1,4 +1,4 @@
-#include "Coordinate.h"
+#include "geocoordinate.h"
 
 using namespace lc;
 using namespace geo;

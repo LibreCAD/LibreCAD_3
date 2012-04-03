@@ -19,7 +19,7 @@ void DeleteEntities::process() const  {
 
 void DeleteEntities::undo() const {
     for (int i = 0; i < _toDelete.size(); ++i) {
-        CADEntity* entity = document()->findEntityByID(_toDelete.at(i));
+        CADEntityPtr entity = document()->findEntityByID(_toDelete.at(i));
         document()->addEntity(_toDeleteLayer.at(i), entity);
     }
 }

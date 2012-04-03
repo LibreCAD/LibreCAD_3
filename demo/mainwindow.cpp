@@ -1,5 +1,8 @@
 
+#include <memory>
+
 #include <QTime>
+
 #include "mainwindow.h"
 #include "listener.h"
 #include "ui_mainwindow.h"
@@ -79,31 +82,37 @@ void MainWindow::on_redoButtom_clicked() {
 void MainWindow::on_addEntities_clicked() {
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    for (int i = 0; i < 5000; i++) {
+    QTime myTimer;
+    myTimer.start();
+
+    for (int i = 0; i < 10000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
-        lc::Line* l1 = new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2));
-        foo->add(l1);
+        foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2))));
     }
-
-    _document->operateOn(foo);
+    qDebug() << "Create : " << myTimer.elapsed();
+    myTimer.start();
+    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    qDebug() << "Process : " << myTimer.elapsed();
 }
 
 void MainWindow::on_addCircles_clicked() {
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 10000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
         double r = randInt(0, 150);
-        lc::Circle* c1 = new lc::Circle(lc::geo::Coordinate(x1, y1), r);
-        foo->add(c1);
+        foo->add(lc::CADEntityPtr(new lc::Circle(lc::geo::Coordinate(x1, y1), r)));
     }
-
-    _document->operateOn(foo);
+    _document->operateOn(shared_ptr<lc::Operation>(foo));
 }
 
+
+void MainWindow::on_clearUndoables_clicked() {
+    _undoManager->removeUndoables();
+}

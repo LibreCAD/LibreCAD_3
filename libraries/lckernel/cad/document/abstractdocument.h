@@ -3,11 +3,14 @@
 
 #include <QObject>
 #include <QString>
+
+#include "cad/const.h"
+
 #include "layermanager.h"
 #include "selectionmanager.h"
-#include "cad/geometry/coordinate.h"
+#include "cad/geometry/geocoordinate.h"
 #include "cad/base/cadentity.h"
-
+#include "cad/operations/operation.h"
 
 
 namespace lc {
@@ -17,18 +20,18 @@ namespace lc {
     class AbstractDocument : public QObject {
             Q_OBJECT
         public:
-            virtual void operateOn(Operation* operation) = 0;
+            virtual void operateOn(OperationPtr operation) = 0;
 
         protected:
-            virtual void begin(Operation* operation) = 0;
-            virtual void commit(Operation* operation) = 0;
+            virtual void begin(OperationPtr operation) = 0;
+            virtual void commit(OperationPtr operation) = 0;
 
         public:
             // I am not to happy yet that this all needs to be public, however currently in a phase to get the proof of concept working
-            virtual void addEntity(const QString& layerName, CADEntity* cadEntity) = 0;
-            virtual void replaceEntity(CADEntity* oldEntity, CADEntity* newEntity) = 0;
+            virtual void addEntity(const QString& layerName, CADEntityPtr cadEntity) = 0;
+            virtual void replaceEntity(CADEntityPtr oldEntity, CADEntityPtr newEntity) = 0;
             virtual void removeEntity(ID_DATATYPE id) = 0;
-            virtual void absoleteEntity(CADEntity * absoleteEntity) = 0;
+            virtual void absoleteEntity(CADEntityPtr absoleteEntity) = 0;
 
             virtual LayerManager* layerManager() const = 0;
         private:
@@ -36,13 +39,13 @@ namespace lc {
             virtual void releaseLock() = 0;
 
         protected:
-            virtual void operationStart(Operation* operation);
-            virtual void operationFinnish(Operation* operation);
-            virtual void operationProcess(Operation* operation);
+            virtual void operationStart(OperationPtr operation);
+            virtual void operationFinnish(OperationPtr operation);
+            virtual void operationProcess(OperationPtr operation);
 
 
         public:
-            virtual CADEntity* findEntityByID(ID_DATATYPE id) const = 0;
+            virtual CADEntityPtr findEntityByID(ID_DATATYPE id) const = 0;
             virtual QString findEntityLayerByID(ID_DATATYPE id) const = 0;
 
         public:

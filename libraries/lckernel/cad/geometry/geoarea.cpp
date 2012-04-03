@@ -1,6 +1,6 @@
 
 #include <algorithm>
-#include "area.h"
+#include "geoarea.h"
 
 using namespace lc;
 using namespace geo;

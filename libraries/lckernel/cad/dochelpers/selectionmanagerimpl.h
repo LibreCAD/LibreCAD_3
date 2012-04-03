@@ -1,6 +1,8 @@
 #ifndef SELECTIONMANAGERIMPL_H
 #define SELECTIONMANAGERIMPL_H
 
+#include "cad/const.h"
+
 #include "cad/document/selectionmanager.h"
 #include "cad/document/layermanager.h"
 

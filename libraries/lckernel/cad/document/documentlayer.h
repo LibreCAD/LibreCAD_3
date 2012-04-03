@@ -1,6 +1,8 @@
 #ifndef DOCUMENTLAYER_H
 #define DOCUMENTLAYER_H
 
+#include "cad/const.h"
+
 #include "cad/meta/layer.h"
 #include "cad/base/cadentity.h"
 #include "cad/interface/variantable.h"
@@ -20,7 +22,7 @@ namespace lc {
              * Add a entity to this layer
              * @param entity
              */
-            virtual void addEntity(CADEntity* entity) = 0;
+            virtual void addEntity(CADEntityPtr entity) = 0;
 
             /**
              * Remove a entity from this layer
@@ -38,14 +40,15 @@ namespace lc {
              * Return a list of all entities
              * @return
              */
-            virtual QVector<CADEntity*> allEntities() const = 0;
+            virtual QList<CADEntityPtr> const& allEntities() const = 0;
 
             /**
              * Return pointer to entity by ID
              * @return
              */
-            virtual CADEntity* findByID(ID_DATATYPE) const = 0;
+            virtual CADEntityPtr findByID(ID_DATATYPE) const = 0;
     };
+    typedef shared_ptr<lc::DocumentLayer> DocumentLayerPtr;
 }
 
 

@@ -32,10 +32,13 @@ class MainWindow : public QMainWindow {
 
         void on_redoButtom_clicked();
 
+        void on_clearUndoables_clicked();
+
     private:
         Ui::MainWindow* ui;
         lc::AbstractDocument* _document;
         lc::UndoManager* _undoManager;
+
 };
 
 #endif // MAINWINDOW_H

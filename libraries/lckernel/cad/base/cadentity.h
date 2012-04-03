@@ -1,12 +1,11 @@
 #ifndef CADENTITY_H
 #define CADENTITY_H
 
-#include <memory>
-
+#include "cad/const.h"
 #include "id.h"
 #include "metainfo.h"
 #include "cad/interface/metatype.h"
-#include "cad/geometry/area.h"
+#include "cad/geometry/geoarea.h"
 
 
 namespace lc {
@@ -21,10 +20,9 @@ namespace lc {
             CADEntity();
             CADEntity(METAINFO_TYPELIST metaTypes);
 
-            virtual bool inArea(const geo::Area& area) const = 0;
     };
+    typedef shared_ptr<lc::CADEntity> CADEntityPtr;
 }
-typedef std::shared_ptr<lc::CADEntity> CADEntityPtr;
 
 
 

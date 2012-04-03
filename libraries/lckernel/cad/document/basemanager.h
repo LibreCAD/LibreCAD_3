@@ -3,6 +3,9 @@
 
 #include <QObject>
 
+#include "cad/const.h"
+
+
 namespace lc {
 
     class AbstractDocument;

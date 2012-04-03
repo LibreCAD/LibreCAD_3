@@ -8,6 +8,8 @@
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
 
+#include "cad/const.h"
+
 namespace lc {
 
     class Color;
@@ -25,10 +27,11 @@ namespace lc {
 
             Color();
             Color(const int r, const int g, const int b, const int a = 255);
-
             Color(Method method);
+            virtual ~Color() {
+            }
 
-            Color::Method method() const;
+            Method method() const;
             int red() const;
             int green() const;
             int blue() const;

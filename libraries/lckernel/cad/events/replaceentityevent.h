@@ -1,6 +1,8 @@
 #ifndef REPLACEENTITYEVENT_H
 #define REPLACEENTITYEVENT_H
 
+#include "cad/const.h"
+
 #include "cad/base/cadentity.h"
 
 namespace lc {
@@ -12,22 +14,22 @@ namespace lc {
      */
     class ReplaceEntityEvent {
         public:
-            ReplaceEntityEvent(CADEntity* oldEntity, CADEntity* newEntity) {
+            ReplaceEntityEvent(CADEntityPtr oldEntity, CADEntityPtr newEntity) {
                 _oldEntity = oldEntity;
                 _newEntity = newEntity;
             }
 
-            CADEntity* oldEntity() const {
+            CADEntityPtr oldEntity() const {
                 return _oldEntity;
             }
 
-            CADEntity* newEntity() const {
+            CADEntityPtr newEntity() const {
                 return _newEntity;
             }
 
         private:
-            CADEntity* _oldEntity;
-            CADEntity* _newEntity;
+            CADEntityPtr _oldEntity;
+            CADEntityPtr _newEntity;
     };
 
 }

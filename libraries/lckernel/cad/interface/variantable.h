@@ -1,6 +1,8 @@
 #ifndef VARIANTABLE_H
 #define VARIANTABLE_H
 
+#include "cad/const.h"
+
 /**
   * If there are any types that needs to be put into a QVariant, then that class needs to extend Variantable whish enforces
   * the use of a valid function to validate the object before it can be put into the kernel.
@@ -13,6 +15,8 @@ namespace lc {
     class Variantable {
         public:
             virtual bool variantValid() const = 0;
+            virtual ~Variantable() {};
+
     };
 }
 

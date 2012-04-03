@@ -1,6 +1,8 @@
 #ifndef ADDENTITYEVENT_H
 #define ADDENTITYEVENT_H
 
+#include "cad/const.h"
+
 #include "cad/base/cadentity.h"
 
 namespace lc {
@@ -10,22 +12,22 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-            AddEntityEvent(const QString& layerName, CADEntity* cadEntity) {
+            AddEntityEvent(const QString& layerName, CADEntityPtr cadEntity) {
                 _cadEntity = cadEntity;
                 _layerName = layerName;
             }
 
-            CADEntity* entity() const {
+            CADEntityPtr entity() const {
                 return _cadEntity;
             }
 
-            QString layerName() {
+            QString layerName() const {
                 return _layerName;
             }
 
         private:
             QString _layerName;
-            CADEntity* _cadEntity;
+            CADEntityPtr _cadEntity;
     };
 }
 #endif // ADDENTITYEVENT_H

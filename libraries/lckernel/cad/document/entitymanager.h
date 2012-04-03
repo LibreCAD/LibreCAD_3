@@ -1,6 +1,8 @@
 #ifndef ENTITYMANAGER_H
 #define ENTITYMANAGER_H
 
+#include "cad/const.h"
+
 #include "basemanager.h"
 
 namespace lc {

@@ -1,6 +1,8 @@
 #ifndef REMOVEENTITYEVENT_H
 #define REMOVEENTITYEVENT_H
 
+#include "cad/const.h"
+
 #include "cad/base/id.h"
 
 namespace lc {

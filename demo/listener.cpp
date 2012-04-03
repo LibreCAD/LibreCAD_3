@@ -11,6 +11,6 @@ Listener::Listener(lc::AbstractDocument* _document) : QObject() {
 }
 
 
-void Listener::on_addEntityEvent(lc::AddEntityEvent* event) {
-    //  qDebug() << "Entity with ID: " << event->entity()->id() << " was added.";
+void Listener::on_addEntityEvent(const lc::AddEntityEvent& event) {
+    //  qDebug() << "Entity with ID: " << event.entity()->id() << " was added.";
 }

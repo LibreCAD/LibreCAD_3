@@ -1,10 +1,12 @@
 #ifndef ENTITYMANAGERIMPL_H
 #define ENTITYMANAGERIMPL_H
 
+#include "cad/const.h"
 
 #include "cad/document/abstractdocument.h"
 #include "cad/document/entitymanager.h"
 #include "cad/events/addentityevent.h"
+#include "cad/events/removeentityevent.h"
 
 namespace lc {
     /**
@@ -16,7 +18,8 @@ namespace lc {
             Q_OBJECT
 
         public slots:
-            void on_addEntityEvent(lc::AddEntityEvent* event);
+            void on_addEntityEvent(const lc::AddEntityEvent&);
+            void on_removeEntityEvent(const lc::RemoveEntityEvent&);
 
         public:
             virtual void setDocument(AbstractDocument* document);

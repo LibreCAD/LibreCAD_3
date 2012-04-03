@@ -4,6 +4,9 @@
 #include <QHash>
 #include <QObject>
 
+#include "cad/const.h"
+
+
 #include "documentlayerimpl.h"
 #include "cad/document/layermanager.h"
 #include "cad/base/cadentity.h"
@@ -22,12 +25,12 @@ namespace lc {
             virtual void addLayer(Layer* layer);
             virtual void removeLayer(const QString& layerName);
 
-            virtual DocumentLayer* layer(const QString& layerName) const;
-            virtual QHash <QString, DocumentLayer*>* allLayers() const;
+            virtual DocumentLayerPtr layer(const QString& layerName) const;
+            virtual QHash <QString, DocumentLayerPtr> const& allLayers() const;
 
 
         private:
-            QHash <QString, DocumentLayer*>* _documentLayers;
+            QHash <QString, DocumentLayerPtr> _documentLayers;
     };
 }
 

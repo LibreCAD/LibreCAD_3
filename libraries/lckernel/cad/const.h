@@ -1,6 +1,9 @@
 #ifndef CONST_H
 #define CONST_H
 
+// #include "boost/math/constants/constants.hpp"
+ #include "boost/shared_ptr.hpp"
+//#include <memory>
 
 namespace lc {
     namespace CONST {
@@ -13,5 +16,9 @@ namespace lc {
 
 #define LAYERMANAGERHELPER_NAME "LAYERMANAGER"
 }
+
+//const double M_PI = boost::math::constants::pi<double>();
+
+#define shared_ptr boost::shared_ptr
 
 #endif

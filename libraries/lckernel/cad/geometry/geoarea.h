@@ -1,7 +1,9 @@
-#ifndef AREA_H
-#define AREA_H
+#ifndef GEOAREA_H
+#define GEOAREA_H
 
-#include "coordinate.h"
+#include "cad/const.h"
+
+#include "geocoordinate.h"
 
 namespace lc {
     namespace geo {
@@ -22,4 +24,4 @@ namespace lc {
         };
     }
 }
-#endif // AREA_H
+#endif // GEOAREA_H

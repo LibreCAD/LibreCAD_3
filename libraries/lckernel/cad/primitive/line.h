@@ -1,9 +1,10 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "lckernel_global.h"
-#include "cad/geometry/coordinate.h"
-#include "cad/geometry/vector.h"
+#include "cad/const.h"
+
+#include "cad/geometry/geocoordinate.h"
+#include "cad/geometry/geovector.h"
 #include "cad/base/cadentity.h"
 
 namespace lc {
@@ -14,7 +15,6 @@ namespace lc {
             Line(const geo::Coordinate& start, const geo::Coordinate& end, METAINFO_TYPELIST metaTypes);
 
         public:
-            virtual bool inArea(const geo::Area& area) const;
 
 
         private:

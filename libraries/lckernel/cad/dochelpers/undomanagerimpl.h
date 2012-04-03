@@ -3,6 +3,8 @@
 
 #include <QStack>
 
+#include "cad/const.h"
+
 #include "cad/document/abstractdocument.h"
 #include "cad/document/undomanager.h"
 #include "cad/events/commitprocessevent.h"
@@ -28,14 +30,15 @@ namespace lc {
             virtual bool canUndo() const;
             virtual bool canRedo() const;
 
+            virtual void removeUndoables();
+
         private:
-            QList <Undoable*> _unDoables;
-            QStack <Undoable*> _reDoables;
+            QList <UndoablePtr> _unDoables;
+            QStack <UndoablePtr> _reDoables;
             int _maximumUndoLevels;
 
-            void manageQueue();
         public slots:
-            void on_CommitProcessEvent(lc::CommitProcessEvent* commitProcessEvent);
+            void on_CommitProcessEvent(const lc::CommitProcessEvent& event);
 
 
     };

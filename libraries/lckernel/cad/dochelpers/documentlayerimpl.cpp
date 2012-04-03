@@ -1,5 +1,8 @@
 #include "documentlayerimpl.h"
 
+#include <QDebug>
+#include <QVectorIterator>
+
 using namespace lc;
 
 DocumentLayerImpl::DocumentLayerImpl() {
@@ -16,7 +19,7 @@ Layer* DocumentLayerImpl::layer() const {
     return this->_layer;
 }
 
-void DocumentLayerImpl::addEntity(CADEntity* entity) {
+void DocumentLayerImpl::addEntity(CADEntityPtr entity) {
     _cadentities.append(entity);
 }
 
@@ -25,8 +28,7 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
 
     for (long unsigned int idx = 0; idx < size; ++idx) {
         if (_cadentities.at(idx)->id() == id) {
-            delete _cadentities.value(idx);
-            _cadentities.remove(idx);
+            _cadentities.removeAt(idx);
             return;
         }
     }
@@ -34,11 +36,11 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
     throw "Entity not found";
 }
 
-QVector<CADEntity*> DocumentLayerImpl::allEntities() const {
+QList<CADEntityPtr> const& DocumentLayerImpl::allEntities() const {
     return _cadentities;
 }
 
-CADEntity* DocumentLayerImpl::findByID(ID_DATATYPE id) const {
+CADEntityPtr DocumentLayerImpl::findByID(ID_DATATYPE id) const {
     long unsigned int size = _cadentities.size();
 
     for (long unsigned int idx = 0; idx < size; ++idx) {
