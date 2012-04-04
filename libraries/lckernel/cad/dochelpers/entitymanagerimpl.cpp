@@ -28,11 +28,13 @@ void EntityManagerImpl::on_removeEntityEvent(const lc::RemoveEntityEvent& event)
     // FOr 10.000 entities this takes a couple of seconds so this must be optimzed
     QHash <QString, DocumentLayerPtr> allLayers = document()->layerManager()->allLayers();
     QHashIterator<QString, DocumentLayerPtr> li(allLayers);
+
     while (li.hasNext()) {
         li.next();
         DocumentLayerPtr documentLayer = li.value();
+
         try {
-            documentLayer.get()->removeEntity(event.id());
+            documentLayer->removeEntity(event.id());
         } catch (QString e) {
 
         }

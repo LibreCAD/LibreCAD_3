@@ -38,6 +38,7 @@ namespace lc {
              * This function will get called when the process of this operation starts
              */
             virtual void start() const {};
+
             /**
              * This function will get called when the process of this operation is finnished
              */

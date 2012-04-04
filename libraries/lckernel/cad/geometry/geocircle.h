@@ -9,17 +9,13 @@ namespace lc {
     namespace geo {
         class Circle {
             public:
-                Circle();
-
                 Circle(const Coordinate& center, double radius);
-                Coordinate center() const;
+
+                const Coordinate& center() const;
                 double radius() const;
 
-                Circle(const Circle& Circle);
-                Circle& operator = (const Circle& Circle);
-
             private:
-                Coordinate _center;
+                const Coordinate _center;
                 double _radius;
         };
     }

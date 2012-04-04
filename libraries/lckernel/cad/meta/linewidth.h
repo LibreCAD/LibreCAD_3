@@ -68,7 +68,7 @@ namespace lc {
             }
 
             int metaName() const {
-                return CONST::LINEWIDTH;
+                return MetaType::LINEWIDTH;
             }
 
         private:

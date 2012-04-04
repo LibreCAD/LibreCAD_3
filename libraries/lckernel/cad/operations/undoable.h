@@ -21,13 +21,22 @@ namespace lc {
                 _text = text;
             }
             virtual ~Undoable() {}
+
             /**
-             * Undo a given operation
+             * Undo a given operation.
+             *
+             * For any operation that means for example when it added entities to the document
+             * it now needs to remove all created entites on the document.
+             * When the operation added a layer or block, it will call functions to remove that block
              */
             virtual void undo() const = 0;
 
             /**
              * Redo a given operation
+             *
+             * This can get called if we want to redo a operation. Redo is ususally called after a undo
+             * operation. If in the undo operatation entities where removed, it needs to get added again.
+             * it doesn't have to do any re.calculation but just rememebr what entities have been added or removed.
              */
             virtual void redo() const = 0;
 

@@ -18,10 +18,10 @@ namespace lc {
     class CADEntity : public ID, public MetaInfo {
         public:
             CADEntity();
-            CADEntity(METAINFO_TYPELIST metaTypes);
+            CADEntity(QList<MetaTypePtr> metaTypes);
 
     };
-    typedef shared_ptr<lc::CADEntity> CADEntityPtr;
+    typedef shared_ptr<const lc::CADEntity> CADEntityPtr;
 }
 
 

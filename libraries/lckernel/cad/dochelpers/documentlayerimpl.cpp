@@ -20,33 +20,25 @@ Layer* DocumentLayerImpl::layer() const {
 }
 
 void DocumentLayerImpl::addEntity(CADEntityPtr entity) {
-    _cadentities.append(entity);
+    _cadentities.insert(entity->id(), entity);
 }
 
 void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
-    long unsigned int size = _cadentities.size();
-
-    for (long unsigned int idx = 0; idx < size; ++idx) {
-        if (_cadentities.at(idx)->id() == id) {
-            _cadentities.removeAt(idx);
-            return;
-        }
+    if (_cadentities.contains(id)) {
+        _cadentities.remove(id);
+        return;
     }
 
     throw "Entity not found";
 }
 
-QList<CADEntityPtr> const& DocumentLayerImpl::allEntities() const {
+QHash<int, CADEntityPtr> const& DocumentLayerImpl::allEntities() const {
     return _cadentities;
 }
 
 CADEntityPtr DocumentLayerImpl::findByID(ID_DATATYPE id) const {
-    long unsigned int size = _cadentities.size();
-
-    for (long unsigned int idx = 0; idx < size; ++idx) {
-        if (_cadentities.at(idx)->id() == id) {
-            return _cadentities.at(idx);
-        }
+    if (_cadentities.contains(id)) {
+        return _cadentities.value(id);
     }
 
     throw "Entity not found";

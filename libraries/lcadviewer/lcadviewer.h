@@ -16,8 +16,28 @@ class LCADViewer : public QGraphicsView {
         void drawBackground(QPainter* painter, const QRectF& rect);
 
 
-    public:
+    protected:
+        //Holds the current centerpoint for the view, used for panning and zooming
+        QPointF CurrentCenterPoint;
+
+        //From panning the view
+        QPoint LastPanPoint;
+
         void scaleView(qreal scaleFactor);
+
+        //Set the current centerpoint in the
+        void SetCenter(const QPointF& centerPoint);
+        QPointF GetCenter() {
+            return CurrentCenterPoint;
+        }
+
+        //Take over the interaction
+        virtual void mousePressEvent(QMouseEvent* event);
+        virtual void mouseReleaseEvent(QMouseEvent* event);
+        virtual void mouseMoveEvent(QMouseEvent* event);
+        virtual void wheelEvent(QWheelEvent* event);
+        virtual void resizeEvent(QResizeEvent* event);
+
     private:
         lc::AbstractDocument* _document;
 };

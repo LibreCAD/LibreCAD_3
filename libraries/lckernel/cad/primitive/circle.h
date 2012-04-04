@@ -14,9 +14,8 @@ namespace lc {
     class Circle : public CADEntity, public geo::Circle {
         public:
             Circle(const geo::Coordinate& center, double radius);
-            Circle(const geo::Coordinate& center, double radius, METAINFO_TYPELIST metaTypes);
+            Circle(const geo::Coordinate& center, double radius, const QList<MetaTypePtr>& metaTypes);
             ~Circle() {
-               // qDebug() << "Destructing circles";
             }
 
         public:

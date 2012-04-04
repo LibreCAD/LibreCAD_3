@@ -9,18 +9,16 @@
 
 namespace lc {
 
-#define METAINFO_TYPELIST QList<MetaType *>
-
     class MetaInfo {
         public:
             MetaInfo();
-            MetaInfo(METAINFO_TYPELIST metaTypes);
+            MetaInfo(QList<MetaTypePtr> metaTypes);
             virtual ~MetaInfo();
 
-            MetaType* metaType(CONST::MetaTypes type);
+            MetaTypePtr metaType(MetaType::metaTypeId type);
 
         private:
-            QHash<int, MetaType*>* _metaData;
+            QHash<int, MetaTypePtr> _metaTypes;
     };
 
 }

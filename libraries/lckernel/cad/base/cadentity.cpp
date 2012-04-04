@@ -5,5 +5,5 @@ using namespace lc;
 CADEntity::CADEntity() : ID() , MetaInfo() {
 }
 
-CADEntity::CADEntity(METAINFO_TYPELIST metaTypes) : ID() , MetaInfo(metaTypes) {
+CADEntity::CADEntity(QList<MetaTypePtr> metaTypes) : ID() , MetaInfo(metaTypes) {
 }

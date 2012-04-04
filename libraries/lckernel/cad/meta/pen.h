@@ -33,7 +33,7 @@ namespace lc {
             }
 
             int metaName() const {
-                return CONST::PEN;
+                return MetaType::PEN;
             }
 
         private:

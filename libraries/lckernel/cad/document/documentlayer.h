@@ -40,7 +40,7 @@ namespace lc {
              * Return a list of all entities
              * @return
              */
-            virtual QList<CADEntityPtr> const& allEntities() const = 0;
+            virtual QHash<int, CADEntityPtr>  const& allEntities() const = 0;
 
             /**
              * Return pointer to entity by ID

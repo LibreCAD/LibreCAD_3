@@ -68,18 +68,14 @@ CADEntityPtr DocumentImpl::findEntityByID(ID_DATATYPE id) const {
     QHash <QString, DocumentLayerPtr> allLayers = layerManager()->allLayers();
     QHashIterator<QString, DocumentLayerPtr> li(allLayers);
 
-    qDebug() << "findEntityByID: " << id;
-
     while (li.hasNext()) {
         li.next();
         DocumentLayerPtr documentLayer = li.value();
 
-        QListIterator<CADEntityPtr> cad(documentLayer->allEntities());
-        while (cad.hasNext()) {
-           CADEntityPtr cip=cad.next();
-           if (cip->id() == id) {
-               return cip;
-           }
+        try {
+            CADEntityPtr cip = documentLayer->findByID(id);
+        } catch (QString error) {
+            //
         }
     }
 
@@ -94,12 +90,11 @@ QString DocumentImpl::findEntityLayerByID(ID_DATATYPE id) const {
         li.next();
         DocumentLayerPtr documentLayer = li.value();
 
-        QListIterator<CADEntityPtr> cad(documentLayer->allEntities());
-        while (cad.hasNext()) {
-           CADEntityPtr cip=cad.next();
-           if (cip->id() == id) {
-               return documentLayer->layer()->name();
-           }
+        try {
+            CADEntityPtr cip = documentLayer->findByID(id);
+            return documentLayer->layer()->name();
+        } catch (QString error) {
+            //
         }
     }
 

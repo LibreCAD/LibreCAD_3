@@ -66,10 +66,8 @@ MainWindow::~MainWindow() {
 
 
 void MainWindow::wheelEvent(QWheelEvent* event) {
-    ui->lCADViewer->scaleView(pow((double)2, -event->delta() / 240.0));
+    //   ui->lCADViewer->scaleView(pow((double)2, -event->delta() / 240.0));
 }
-
-
 
 void MainWindow::on_undoButton_clicked() {
     _undoManager->undo();
@@ -93,6 +91,7 @@ void MainWindow::on_addEntities_clicked() {
         double y2 = y1 + randInt(-50, 50);
         foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2))));
     }
+
     qDebug() << "Create : " << myTimer.elapsed();
     myTimer.start();
     _document->operateOn(shared_ptr<lc::Operation>(foo));
@@ -109,6 +108,7 @@ void MainWindow::on_addCircles_clicked() {
         double r = randInt(0, 150);
         foo->add(lc::CADEntityPtr(new lc::Circle(lc::geo::Coordinate(x1, y1), r)));
     }
+
     _document->operateOn(shared_ptr<lc::Operation>(foo));
 }
 

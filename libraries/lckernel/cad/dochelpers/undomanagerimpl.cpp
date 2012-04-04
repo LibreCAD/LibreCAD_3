@@ -2,8 +2,6 @@
 
 #include <QDebug>
 
-#include "boost/shared_ptr.hpp"
-
 #include "cad/operations/operation.h"
 #include "cad/operations/undoable.h"
 
@@ -25,7 +23,7 @@ void UndoManagerImpl::setDocument(AbstractDocument* document) {
 
 void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event) {
 
-    UndoablePtr undoable = boost::dynamic_pointer_cast<Undoable>(event.operation());
+    UndoablePtr undoable = dynamic_pointer_cast<Undoable>(event.operation());
 
     if (undoable != NULL) {
         qDebug() << "Process: " << undoable->text();

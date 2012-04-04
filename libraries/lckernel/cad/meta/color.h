@@ -63,7 +63,7 @@ namespace lc {
             }
 
             int metaName() const {
-                return CONST::COLOR;
+                return MetaType::COLOR;
             }
 
         private:

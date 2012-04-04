@@ -6,6 +6,8 @@
 
 TEMPLATE = subdirs
 
+CONFIG += ordered
+
 TARGET = libraries
 
 SUBDIRS     = \

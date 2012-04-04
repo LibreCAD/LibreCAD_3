@@ -25,6 +25,6 @@ namespace lc {
         private:
             unsigned long _id;
     };
-    typedef shared_ptr<lc::ID> IDPtr;
+    typedef shared_ptr<const lc::ID> IDPtr;
 }
 #endif // ID_H

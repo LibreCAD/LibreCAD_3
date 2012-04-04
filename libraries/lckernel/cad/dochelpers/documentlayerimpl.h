@@ -23,7 +23,7 @@ namespace lc {
 
             virtual void addEntity(CADEntityPtr entity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual  QList<CADEntityPtr> const& allEntities() const;
+            virtual QHash<int, CADEntityPtr>  const& allEntities() const;
 
             virtual Layer* layer() const;
 
@@ -40,7 +40,7 @@ namespace lc {
 
         private:
             Layer* _layer;
-            QList<CADEntityPtr> _cadentities;
+            QHash<int, CADEntityPtr> _cadentities;
     };
 }
 

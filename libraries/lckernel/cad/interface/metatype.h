@@ -13,9 +13,16 @@
 namespace lc {
     class MetaType : public Variantable {
         public:
+            enum metaTypeId {
+                PEN = 0,
+                COLOR = 1,
+                LINEWIDTH = 2
+            };
+
+        public:
             virtual int metaName() const = 0;
             virtual ~MetaType() {};
     };
-    typedef shared_ptr<lc::MetaType> MetaTypePtr;
+    typedef shared_ptr<const lc::MetaType> MetaTypePtr;
 }
 #endif // METATYPE_H

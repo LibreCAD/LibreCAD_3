@@ -9,18 +9,14 @@ namespace lc {
     namespace geo {
         class Vector {
             public:
-                Vector() {};
-                Vector(const geo::Coordinate& start, const geo::Coordinate& end);
+                Vector(const Coordinate& start, const Coordinate& end);
 
-                geo::Coordinate start() const;
-                geo::Coordinate end() const;
-
-                Vector(const Vector& vector);
-                Vector& operator = (const Vector& vector);
+                const Coordinate& start() const;
+                const Coordinate& end() const;
 
             private:
-                geo::Coordinate _start;
-                geo::Coordinate _end;
+                const Coordinate _start;
+                const Coordinate _end;
         };
 
     }

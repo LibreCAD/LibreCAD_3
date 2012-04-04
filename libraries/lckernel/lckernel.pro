@@ -9,9 +9,9 @@ QT       += core
 TARGET = lckernel
 TEMPLATE = lib
 
-DESTDIR = ../../generated/lib
+DESTDIR = ../../demo.app/Contents/MacOS
 
-CONFIG += static
+CONFIG +=
 DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1
@@ -53,7 +53,9 @@ SOURCES += lckernel.cpp \
     cad/geometry/geoarc.cpp \
     cad/geometry/geoarea.cpp \
     cad/geometry/geovector.cpp \
-    cad/geometry/geocoordinate.cpp
+    cad/geometry/geocoordinate.cpp \
+    cad/geometry/geoellipse.cpp \
+    cad/primitive/ellipse.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -98,7 +100,9 @@ HEADERS += lckernel.h\
     cad/geometry/geoarc.h \
     cad/geometry/geoarea.h \
     cad/geometry/geovector.h \
-    cad/geometry/geocoordinate.h
+    cad/geometry/geocoordinate.h \
+    cad/geometry/geoellipse.h \
+    cad/primitive/ellipse.h
 
 
 unix:!symbian {
