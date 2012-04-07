@@ -3,8 +3,9 @@
 #include <QDebug>
 #include <QGraphicsLineItem>
 
-#include "cad/primitive/line.h"
-#include "cad/primitive/Circle.h"
+#include "graphicsitems/lccircleitem.h"
+#include "graphicsitems/lcarcitem.h"
+#include "graphicsitems/lclineitem.h"
 
 SceneManager::SceneManager(LCADViewer* viewer, lc::AbstractDocument* document) : QObject() {
     _viewer = viewer;
@@ -23,26 +24,36 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     QGraphicsScene* scene = _viewer->scene();
 
     // Add a line
-    const lc::Line* l = dynamic_cast<const lc::Line*>(event.entity().get());
+    const lc::Line* line = dynamic_cast<const lc::Line*>(event.entity().get());
 
-    if (l != NULL) {
+    if (line != NULL) {
         // This might be slow on clang, I have no idea but it's performs a lot worse
-        QGraphicsLineItem* foo = scene->addLine(l->start().x(), l->start().y(), l->end().x(), l->end().y());
-        foo->setPen(QPen( QPen( QColor( 255,255,255 ))));
-        foo->setFlag(QGraphicsItem::ItemIsMovable);
-        _activeGraphicsItems.insert(l->id(), foo);
+        LCLineItem* foo = new LCLineItem(line);
+        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        scene->addItem(foo);
+        _activeGraphicsItems.insert(line->id(), foo);
         return;
     }
 
     // Add a circle
-    const lc::Circle* c = dynamic_cast<const lc::Circle*>(event.entity().get());
+    const lc::Circle* circle = dynamic_cast<const lc::Circle*>(event.entity().get());
 
-    if (c != NULL) {
-        QGraphicsEllipseItem* foo = scene->addEllipse(c->center().x(), c->center().y(), c->radius(), c->radius());
-        foo->setPen(QPen( QPen( QColor( 255,255,255 ))));
-        foo->setFlag(QGraphicsItem::ItemIsMovable);
-        foo->setData(0, QVariant((int)c->id()));
-        _activeGraphicsItems.insert(event.entity()->id(), foo);
+    if (circle != NULL) {
+        LCCircleItem* foo = new LCCircleItem(circle);
+        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        scene->addItem(foo);
+        _activeGraphicsItems.insert(circle->id(), foo);
+        return;
+    }
+
+    // Add a Arc
+    const lc::Arc* arc = dynamic_cast<const lc::Arc*>(event.entity().get());
+
+    if (arc != NULL) {
+        LCArcItem* foo = new LCArcItem(arc);
+        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        scene->addItem(foo);
+        _activeGraphicsItems.insert(arc->id(), foo);
         return;
     }
 }

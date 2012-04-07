@@ -10,6 +10,7 @@
 #include "scenemanager.h"
 
 #include "cad/primitive/circle.h"
+#include "cad/primitive/arc.h"
 #include "cad/primitive/line.h"
 #include "cad/meta/color.h"
 #include "cad/meta/linewidth.h"
@@ -57,6 +58,13 @@ MainWindow::MainWindow(QWidget* parent) :
     Listener* l = new Listener(_document);
 
     ui->lCADViewer->setAbstractDocument(_document);
+
+    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+    foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, 100), lc::geo::Coordinate(100, -100))));
+    foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, -100), lc::geo::Coordinate(100, 100))));
+    _document->operateOn(shared_ptr<lc::Operation>(foo));
+
+
 }
 
 MainWindow::~MainWindow() {
@@ -83,7 +91,7 @@ void MainWindow::on_addEntities_clicked() {
     QTime myTimer;
     myTimer.start();
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -101,7 +109,7 @@ void MainWindow::on_addEntities_clicked() {
 void MainWindow::on_addCircles_clicked() {
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -115,4 +123,29 @@ void MainWindow::on_addCircles_clicked() {
 
 void MainWindow::on_clearUndoables_clicked() {
     _undoManager->removeUndoables();
+}
+
+void MainWindow::on_addArcs_clicked() {
+    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+
+    for (int i = 0; i < 1000; i++) {
+        double x1 = randInt(-4000, 4000);
+        double y1 = randInt(-4000, 4000);
+
+        double r = randInt(0, 150);
+        double s = randInt(0, 6283) / 1000.0;
+        double e = randInt(0, 6283) / 1000.0;
+
+        if (s < e) {
+            double t = e;
+            e = s;
+            s = t;
+        }
+
+        s = (0 + 45) / (360.0 / PI / 2);
+        e = (180 + 45) / (360.0 / PI / 2);
+        foo->add(lc::CADEntityPtr(new lc::Arc(lc::geo::Coordinate(x1, y1), r, s, e)));
+    }
+
+    _document->operateOn(shared_ptr<lc::Operation>(foo));
 }

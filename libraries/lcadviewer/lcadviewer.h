@@ -17,11 +17,17 @@ class LCADViewer : public QGraphicsView {
 
 
     protected:
+
+
+
+        /**
         //Holds the current centerpoint for the view, used for panning and zooming
         QPointF CurrentCenterPoint;
 
         //From panning the view
         QPoint LastPanPoint;
+
+
 
         void scaleView(qreal scaleFactor);
 
@@ -35,11 +41,23 @@ class LCADViewer : public QGraphicsView {
         virtual void mousePressEvent(QMouseEvent* event);
         virtual void mouseReleaseEvent(QMouseEvent* event);
         virtual void mouseMoveEvent(QMouseEvent* event);
-        virtual void wheelEvent(QWheelEvent* event);
         virtual void resizeEvent(QResizeEvent* event);
+        */
+        // virtual void mousePressEvent(QMouseEvent* event);
+
+        virtual void keyPressEvent(QKeyEvent* event);
+        virtual void keyReleaseEvent(QKeyEvent* event);
+
+        virtual void resizeEvent(QResizeEvent* event);
+        virtual void wheelEvent(QWheelEvent* event);
+        virtual void mouseMoveEvent(QMouseEvent* event);
+
 
     private:
         lc::AbstractDocument* _document;
+
+        QPointF CurrentCenterPoint;
+        bool _altKeyActive; // When true the alt key is current pressed
 };
 
 #endif

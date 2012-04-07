@@ -5,6 +5,10 @@ using namespace geo;
 
 
 Circle::Circle(const Coordinate& center, double radius) : _center(center) {
+    if (radius < 0.0) {
+        throw "Invalid radius";
+    }
+
     _radius = radius;
 }
 

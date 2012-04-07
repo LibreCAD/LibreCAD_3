@@ -15,7 +15,7 @@ namespace lc {
             MetaInfo(QList<MetaTypePtr> metaTypes);
             virtual ~MetaInfo();
 
-            MetaTypePtr metaType(MetaType::metaTypeId type);
+            MetaTypePtr metaType(MetaType::metaTypeId type) const;
 
         private:
             QHash<int, MetaTypePtr> _metaTypes;

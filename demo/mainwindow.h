@@ -34,6 +34,8 @@ class MainWindow : public QMainWindow {
 
         void on_clearUndoables_clicked();
 
+        void on_addArcs_clicked();
+
     private:
         Ui::MainWindow* ui;
         lc::AbstractDocument* _document;

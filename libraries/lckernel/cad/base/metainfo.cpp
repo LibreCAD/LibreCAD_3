@@ -14,6 +14,6 @@ MetaInfo::MetaInfo(QList<MetaTypePtr> metaTypes) {
 MetaInfo::~MetaInfo() {
 }
 
-MetaTypePtr MetaInfo::metaType(MetaType::metaTypeId metaType) {
+MetaTypePtr MetaInfo::metaType(MetaType::metaTypeId metaType) const {
     return _metaTypes.value(metaType);
 }

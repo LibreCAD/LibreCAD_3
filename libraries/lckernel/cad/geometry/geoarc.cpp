@@ -7,11 +7,27 @@ using namespace geo;
 
 
 Arc::Arc(const Coordinate& center, double radius, double startAngle, double endAngle) : _center(center) {
+    /*
+    if (startAngle<0.0 || startAngle>PI2 || startAngle<endAngle) {
+        throw "Invalid start angle";
+    }
+    if (endAngle<0.0 || endAngle> PI2) {
+        throw "Invalid end angle";
+    }
+    if (radius<0.0) {
+        throw "Invalid radius";
+    }*/
+
     _radius = radius;
     _startAngle = startAngle;
     _endAngle = endAngle;
+
+
 }
 
+double Arc::radius() const {
+    return _radius;
+}
 
 double Arc::startAngle()const {
     return _startAngle;

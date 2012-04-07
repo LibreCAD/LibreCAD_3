@@ -17,6 +17,10 @@ namespace lc {
     QDataStream& operator<<(QDataStream&, const Color&);
     QDataStream& operator>>(QDataStream&, Color&);
 
+    /**
+      * Represents a Color
+      *
+      */
     class Color : public MetaType {
         public:
             enum Method {
@@ -26,6 +30,9 @@ namespace lc {
             };
 
             Color();
+            /**
+              * Values for RGBA are 8 bits
+              */
             Color(const int r, const int g, const int b, const int a = 255);
             Color(Method method);
             virtual ~Color() {
