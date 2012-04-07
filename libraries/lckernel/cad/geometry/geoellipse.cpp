@@ -21,15 +21,15 @@ const Coordinate& Ellipse::majorP() const {
     return _majorP;
 }
 
-double Ellipse::minorRadius() {
+double Ellipse::minorRadius() const {
     return _minorRadius;
 }
 
-double Ellipse::startAngle() {
+double Ellipse::startAngle() const {
     return _startAngle;
 }
 
-double Ellipse::endAngle() {
+double Ellipse::endAngle() const {
     return _endAngle;
 }
 

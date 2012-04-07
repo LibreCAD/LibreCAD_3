@@ -3,6 +3,7 @@
 
 #include <QtGui/QGraphicsView>
 #include "cad/document/abstractdocument.h"
+#include "drawitems/lcadviewerdrawitem.h"
 
 class LCADViewer : public QGraphicsView {
         Q_OBJECT
@@ -14,37 +15,12 @@ class LCADViewer : public QGraphicsView {
         LCADViewer(QWidget* parent = 0);
 
         void drawBackground(QPainter* painter, const QRectF& rect);
+        void drawForeground(QPainter* painter, const QRectF& rect);
 
 
+        void addBackgroundItem(LCADViewerDrawItemPtr item);
+        void addForegroundItem(LCADViewerDrawItemPtr item);
     protected:
-
-
-
-        /**
-        //Holds the current centerpoint for the view, used for panning and zooming
-        QPointF CurrentCenterPoint;
-
-        //From panning the view
-        QPoint LastPanPoint;
-
-
-
-        void scaleView(qreal scaleFactor);
-
-        //Set the current centerpoint in the
-        void SetCenter(const QPointF& centerPoint);
-        QPointF GetCenter() {
-            return CurrentCenterPoint;
-        }
-
-        //Take over the interaction
-        virtual void mousePressEvent(QMouseEvent* event);
-        virtual void mouseReleaseEvent(QMouseEvent* event);
-        virtual void mouseMoveEvent(QMouseEvent* event);
-        virtual void resizeEvent(QResizeEvent* event);
-        */
-        // virtual void mousePressEvent(QMouseEvent* event);
-
         virtual void keyPressEvent(QKeyEvent* event);
         virtual void keyReleaseEvent(QKeyEvent* event);
 
@@ -52,12 +28,16 @@ class LCADViewer : public QGraphicsView {
         virtual void wheelEvent(QWheelEvent* event);
         virtual void mouseMoveEvent(QMouseEvent* event);
 
-
     private:
         lc::AbstractDocument* _document;
 
-        QPointF CurrentCenterPoint;
         bool _altKeyActive; // When true the alt key is current pressed
+
+        // FIXME: Create a method so that we can re-order them when they are exchanged
+        // during runtime of librecad. So that for example a grid is always draw on top of a background gradient
+        // so it's visible
+        QList<LCADViewerDrawItemPtr> _backgroundItems;
+        QList<LCADViewerDrawItemPtr> _foregroundItems;
 };
 
 #endif

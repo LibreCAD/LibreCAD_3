@@ -36,6 +36,8 @@ class MainWindow : public QMainWindow {
 
         void on_addArcs_clicked();
 
+        void on_addEllipse_clicked();
+
     private:
         Ui::MainWindow* ui;
         lc::AbstractDocument* _document;

@@ -13,9 +13,9 @@ namespace lc {
 
                 const Coordinate& center() const;
                 const Coordinate& majorP() const;
-                double minorRadius();
-                double startAngle();
-                double endAngle();
+                double minorRadius() const;
+                double startAngle() const;
+                double endAngle() const;
 
             private:
                 const Coordinate _center;

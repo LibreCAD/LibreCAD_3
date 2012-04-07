@@ -1,11 +1,11 @@
 #include "scenemanager.h"
 
 #include <QDebug>
-#include <QGraphicsLineItem>
 
 #include "graphicsitems/lccircleitem.h"
 #include "graphicsitems/lcarcitem.h"
 #include "graphicsitems/lclineitem.h"
+#include "graphicsitems/lcellipseitem.h"
 
 SceneManager::SceneManager(LCADViewer* viewer, lc::AbstractDocument* document) : QObject() {
     _viewer = viewer;
@@ -27,7 +27,6 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     const lc::Line* line = dynamic_cast<const lc::Line*>(event.entity().get());
 
     if (line != NULL) {
-        // This might be slow on clang, I have no idea but it's performs a lot worse
         LCLineItem* foo = new LCLineItem(line);
         foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
@@ -54,6 +53,17 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
         foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(arc->id(), foo);
+        return;
+    }
+
+    // Add Ellipse
+    const lc::Ellipse* ellipse = dynamic_cast<const lc::Ellipse*>(event.entity().get());
+
+    if (ellipse != NULL) {
+        LCEllipseItem* foo = new LCEllipseItem(ellipse);
+        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        scene->addItem(foo);
+        _activeGraphicsItems.insert(ellipse->id(), foo);
         return;
     }
 }

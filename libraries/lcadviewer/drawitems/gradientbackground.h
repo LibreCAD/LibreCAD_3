@@ -1,0 +1,22 @@
+#ifndef GRADIENTBACKGROUND_H
+#define GRADIENTBACKGROUND_H
+
+#include <QColor>
+#include "lcadviewerdrawitem.h"
+
+/**
+  * Create a garident background
+  *
+  */
+
+class GradientBackground : public LCADViewerDrawItem {
+    public:
+        GradientBackground(const QColor& topColor, const QColor& bottomColor);
+
+        void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
+    private:
+        const QColor _topColor;
+        const QColor _bottomColor;
+};
+
+#endif // GRADIENTBACKGROUND_H

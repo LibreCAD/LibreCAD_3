@@ -4,7 +4,6 @@
 #include <QTime>
 
 #include "mainwindow.h"
-#include "listener.h"
 #include "ui_mainwindow.h"
 
 #include "scenemanager.h"
@@ -12,6 +11,7 @@
 #include "cad/primitive/circle.h"
 #include "cad/primitive/arc.h"
 #include "cad/primitive/line.h"
+#include "cad/primitive/ellipse.h"
 #include "cad/meta/color.h"
 #include "cad/meta/linewidth.h"
 #include "cad/interface/metatype.h"
@@ -24,6 +24,9 @@
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
 #include "cad/operations/createentities.h"
+
+#include "drawitems/gradientbackground.h"
+#include "drawitems/metricgrid.h"
 
 #include <QtGui>
 
@@ -40,31 +43,44 @@ MainWindow::MainWindow(QWidget* parent) :
     ui->setupUi(this);
 
 
+    ui->lCADViewer->addBackgroundItem(LCADViewerDrawItemPtr(new GradientBackground(QColor(0x07, 0x25, 0x11), QColor(0x06, 0x15, 0x06))));
+    ui->lCADViewer->addBackgroundItem(LCADViewerDrawItemPtr(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80))));
 
-    // Create new LibreCAD AbstractDocument
+    // Create a scene for this document, each document will have only one scene
+    QGraphicsScene* scene = new QGraphicsScene(this);
+    ui->lCADViewer->setScene(scene);
+    scene->setSceneRect(-15000, -15000, 30000, 30000);
+    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+
+
+    // Layer Manager takes care of creating and removing layers
     lc::LayerManager* newLayerManager = new lc::LayerManagerImpl();
+
+    // Selection manager keeps a list of current selected entities
     lc::SelectionManager* newSelectionManager = new lc::SelectionManagerImpl(newLayerManager, 5.0);
 
+    // Entity manager add's/removes entities to layers
     lc::EntityManager* entityManager = new lc::EntityManagerImpl();
 
-    // Create a new document
+    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = new lc::DocumentImpl(newLayerManager, entityManager);
 
+    // Scene manager listens to the document and takes care that the scene is changed according to what
+    // is added and removed within a document
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
+
+    // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = new lc::UndoManagerImpl(10);
     _undoManager->setDocument(_document);
 
-    // Listener that listens for document events
-    Listener* l = new Listener(_document);
-
+    // Add the document to a LibreCAD Viewer system so we can visualize the document
     ui->lCADViewer->setAbstractDocument(_document);
 
+    // Create a cross at position 0,0
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
     foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, 100), lc::geo::Coordinate(100, -100))));
     foo->add(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, -100), lc::geo::Coordinate(100, 100))));
     _document->operateOn(shared_ptr<lc::Operation>(foo));
-
-
 }
 
 MainWindow::~MainWindow() {
@@ -145,6 +161,34 @@ void MainWindow::on_addArcs_clicked() {
         s = (0 + 45) / (360.0 / PI / 2);
         e = (180 + 45) / (360.0 / PI / 2);
         foo->add(lc::CADEntityPtr(new lc::Arc(lc::geo::Coordinate(x1, y1), r, s, e)));
+    }
+
+    _document->operateOn(shared_ptr<lc::Operation>(foo));
+}
+
+void MainWindow::on_addEllipse_clicked() {
+    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+
+    for (int i = 0; i < 1000; i++) {
+        double x1 = randInt(-4000, 4000);
+        double y1 = randInt(-4000, 4000);
+
+        double x2 = x1 + randInt(-50, 50);
+        double y2 = y1 + randInt(-50, 50);
+
+        double r = randInt(0, 150);
+        double s = randInt(0, 6283) / 1000.0;
+        double e = randInt(0, 6283) / 1000.0;
+
+        if (s < e) {
+            double t = e;
+            e = s;
+            s = t;
+        }
+
+        s = (0 + 45) / (360.0 / PI / 2);
+        e = (180 + 45) / (360.0 / PI / 2);
+        foo->add(lc::CADEntityPtr(new lc::Ellipse(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e)));
     }
 
     _document->operateOn(shared_ptr<lc::Operation>(foo));

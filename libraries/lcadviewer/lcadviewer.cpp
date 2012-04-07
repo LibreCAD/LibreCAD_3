@@ -13,30 +13,16 @@ LCADViewer::LCADViewer(QWidget* parent) :
     /****/
 
 
-    QGraphicsScene* scene = new QGraphicsScene(this);
-
-    setScene(scene);
-
-    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
     // setCacheMode(CacheBackground);
-    // SetCenter(QPointF(0.0, 0.0));
     setViewportUpdateMode(BoundingRectViewportUpdate);
-    // setRenderHint(QPainter::Antialiasing);
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     setWindowTitle(tr("LC Viewer"));
-    //setDragMode(QGraphicsView::RubberBandDrag);
 
     scale(qreal(1), qreal(1));
-    // setSceneRect(-500, -500, 500, 500); // DOn't set this, for some reason it goes 'weird'
-    // SetCenter(QPointF(0.0, 0.0));
-
-    // Set default drag mode
+    centerOn(0.0, 0.0);
     setDragMode(QGraphicsView::RubberBandDrag);
 
-    //setTransformationAnchor(AnchorUnderMouse);
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-
-    setResizeAnchor(QGraphicsView::AnchorUnderMouse); // anchir under the cursor
     this->_altKeyActive = false;
 }
 
@@ -47,26 +33,22 @@ void LCADViewer::setAbstractDocument(lc::AbstractDocument* document) {
 
 void LCADViewer::drawBackground(QPainter* painter, const QRectF& rect) {
 
-    /**
-      * Draw a linear gradient backgound
-      *
-      */
-    QRectF sceneRect = rect.normalized();
-    QLinearGradient gradient(
-        (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.top(),
-        (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.bottom());
-    gradient.setColorAt(0, QColor(0x07, 0x25, 0x11));
-    gradient.setColorAt(1, QColor(0x06, 0x15, 0x06));
-    painter->fillRect(rect.intersect(sceneRect), gradient);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(sceneRect);
+    for (int i = 0; i < _backgroundItems.size(); ++i) {
+        _backgroundItems.at(i)->draw(this, painter, rect);
+    }
+}
+void LCADViewer::drawForeground(QPainter* painter, const QRectF& rect) {
+
+    for (int i = 0; i < _foregroundItems.size(); ++i) {
+        _foregroundItems.at(i)->draw(this, painter, rect);
+    }
 }
 
-/*
-void LCADViewer::mousePressEvent(QMouseEvent* event) {
-    QGraphicsView::mousePressEvent(event);
-}
-*/
+
+/**
+  * Handle key pressing and release to add additional states to this view
+  *
+  */
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
     QGraphicsView::keyReleaseEvent(event);
 
@@ -105,7 +87,7 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
   * interaction after resizing the widget.
   */
 void LCADViewer::resizeEvent(QResizeEvent* event) {
-    setResizeAnchor(QGraphicsView::AnchorViewCenter); // anchir under the cursor
+    setResizeAnchor(QGraphicsView::AnchorViewCenter);
     QGraphicsView::resizeEvent(event);
     return;
 }
@@ -119,9 +101,13 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
     // FIXME: Need to have configurable KeyModifier
     if (event->modifiers().testFlag(Qt::AltModifier)) {
         QWheelEvent* e = event;
+
+        // FIXME: see if we can create scalefactors so that the grid will always be perfectly alligned with the view
         qreal scaleFactor = pow((double)2, -event->delta() / 240.0);
         qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
 
+        // TODO: See if these scale factors are good for us. We have to set a limit else there is a chance
+        // that people zoom in way to much, or zoomout way to much
         if (factor < 0.01 || factor > 100) {
             return;
         }
@@ -140,9 +126,23 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 /**
 *Handles the mouse move event
 */
-/**
-*Handles the mouse move event
-*/
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QGraphicsView::mouseMoveEvent(event);
+}
+
+
+/**
+  * Add a background render item to the viewer.
+  *
+  */
+void LCADViewer::addBackgroundItem(LCADViewerDrawItemPtr item) {
+    this->_backgroundItems.append(item);
+}
+
+/**
+  * Add a foreground render item to the viewer.
+  *
+  */
+void LCADViewer::addForegroundItem(LCADViewerDrawItemPtr item) {
+    this->_foregroundItems.append(item);
 }

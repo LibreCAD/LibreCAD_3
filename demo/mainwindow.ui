@@ -32,42 +32,14 @@
     </item>
     <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="addEntities">
-        <property name="text">
-         <string>Add Lines</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="undoButton">
-        <property name="text">
-         <string>Undo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="redoButtom">
-        <property name="text">
-         <string>Redo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
+      <item row="0" column="6">
        <widget class="QPushButton" name="clearUndoables">
         <property name="text">
          <string>clear Undoables</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="addCircles">
-        <property name="text">
-         <string>Add Circles</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6">
+      <item row="0" column="7">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -80,10 +52,45 @@
         </property>
        </spacer>
       </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="addEntities">
+        <property name="text">
+         <string>Add Lines</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QPushButton" name="redoButtom">
+        <property name="text">
+         <string>Redo</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="addCircles">
+        <property name="text">
+         <string>Add Circles</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="undoButton">
+        <property name="text">
+         <string>Undo</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="addArcs">
         <property name="text">
          <string>Add Arcs</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="addEllipse">
+        <property name="text">
+         <string>addEllipse</string>
         </property>
        </widget>
       </item>

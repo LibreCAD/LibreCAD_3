@@ -24,10 +24,8 @@ INCLUDEPATH += "../libraries/lcadviewer"
 LIBS+=  -L../demo.app/Contents/MacOS -llckernel  -llcadviewerplugin
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    listener.cpp
+        mainwindow.cpp
 
-HEADERS  += mainwindow.h \
-    listener.h
+HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui

@@ -8,6 +8,7 @@ QColor LCGraphicsItem::getScreenColor(const QColor& color) const {
     int r, g, b, a;
     color.getRgb(&r, &g, &b, &a);
 
+    // FIXME: If the background of the screen is dark, or light swap or not swap collors accordingly for dark and light pens
     if (r < 0x10 && g < 0x10 && b < 0x10) {
         return QColor(0xff - r, 0xff - g, 0xff - b);
     }
