@@ -33,15 +33,11 @@ SOURCES += lckernel.cpp \
    cad/primitive/line.cpp \
     cad/base/id.cpp \
     cad/base/metainfo.cpp \
-    cad/interface/variantable.cpp \
-    cad/interface/metatype.cpp \
     cad/base/cadentity.cpp \
     cad/primitive/circle.cpp \
-    cad/document/documentlayer.cpp \
     cad/dochelpers/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
-    cad/dochelpers/entityselection.cpp \
     cad/dochelpers/selectionmanagerimpl.cpp \
     cad/operations/createentities.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
