@@ -20,12 +20,10 @@ namespace lc {
     class UndoManagerImpl: public UndoManager {
             Q_OBJECT
         public:
-            UndoManagerImpl(int maximumUndoLevels);
+            UndoManagerImpl(lc::AbstractDocument* document, int maximumUndoLevels);
 
             virtual void redo();
             virtual void undo();
-
-            virtual void setDocument(AbstractDocument* document);
 
             virtual bool canUndo() const;
             virtual bool canRedo() const;
@@ -33,9 +31,15 @@ namespace lc {
             virtual void removeUndoables();
 
         private:
+            virtual AbstractDocument* document() const {
+                return _document;
+            }
+            AbstractDocument* _document;
+
+        private:
             QList <UndoablePtr> _unDoables;
             QStack <UndoablePtr> _reDoables;
-            int _maximumUndoLevels;
+            const int _maximumUndoLevels;
 
         public slots:
             void on_CommitProcessEvent(const lc::CommitProcessEvent& event);

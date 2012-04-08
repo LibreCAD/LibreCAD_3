@@ -14,6 +14,7 @@ namespace lc {
     class UndoManager: public BaseManager {
             Q_OBJECT
         public:
+
             virtual void undo() = 0;
             virtual void redo() = 0;
 
@@ -21,6 +22,10 @@ namespace lc {
             virtual bool canRedo() const = 0;
 
             virtual void removeUndoables() = 0;
+
+        private:
+
+
     };
 
 }

@@ -10,19 +10,20 @@
 
 using namespace lc;
 
-DocumentImpl::DocumentImpl(LayerManager* layerManager, EntityManager* entityManager) : AbstractDocument() {
-    _layerManager = layerManager;
-    layerManager->setDocument(this);
-    entityManager->setDocument(this);
+DocumentImpl::DocumentImpl() : AbstractDocument() {
+    _layerManager = NULL;
     releaseLock();
 }
 
 DocumentImpl::~DocumentImpl() {
-    delete _layerManager;
 }
 
 LayerManager* DocumentImpl::layerManager() const {
     return _layerManager;
+}
+
+void DocumentImpl::setLayerManager(LayerManager* layerManager) {
+    _layerManager = layerManager;
 }
 
 void DocumentImpl::operateOn(OperationPtr operation) {

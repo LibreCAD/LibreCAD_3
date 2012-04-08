@@ -5,8 +5,9 @@ using namespace lc;
 /**
  * LayerManager that manages a
  */
-LayerManagerImpl::LayerManagerImpl() : LayerManager() {
+LayerManagerImpl::LayerManagerImpl(AbstractDocument* document) : LayerManager(), _document(document) {
     setObjectName(LAYERMANAGERHELPER_NAME);
+
 
     _documentLayers.insert("0", DocumentLayerPtr(new DocumentLayerImpl(new Layer("0", new LineWidth(1.0), new Color(255, 255, 255)))));
 }
@@ -57,3 +58,4 @@ DocumentLayerPtr LayerManagerImpl::layer(const QString& layerName) const {
 QHash <QString, DocumentLayerPtr> const& LayerManagerImpl::allLayers() const {
     return _documentLayers;
 }
+

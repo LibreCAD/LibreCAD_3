@@ -17,7 +17,7 @@ namespace lc {
     class LayerManagerImpl : public LayerManager {
             Q_OBJECT
         public:
-            LayerManagerImpl();
+            LayerManagerImpl(AbstractDocument* document);
             virtual ~LayerManagerImpl();
 
         public:
@@ -31,6 +31,7 @@ namespace lc {
 
         private:
             QHash <QString, DocumentLayerPtr> _documentLayers;
+            AbstractDocument* _document;
     };
 }
 

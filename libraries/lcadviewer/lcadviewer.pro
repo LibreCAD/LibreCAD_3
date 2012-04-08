@@ -17,7 +17,6 @@ DESTDIR = ../../demo.app/Contents/MacOS
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
     scenemanager.h \
-    drawitems/lcadviewerdrawitem.h \
     drawitems/gradientbackground.h \
     graphicsitems/lcviewer.h \
     graphicsitems/lcgraphicsitem.h \
@@ -26,7 +25,14 @@ HEADERS     = lcadviewerplugin.h \
     graphicsitems/lcarcitem.h \
     graphicsitems/lcellipseitem.h \
     const.h \
-    drawitems/metricgrid.h
+    drawitems/metricgrid.h \
+    drawitems/cursor.h \
+    drawitems/lcviewercursoritem.h \
+    drawitems/lcviewerdrawitem.h \
+    qcachedgraphicsview.h \
+    events/MouseMoveEvent.h \
+    helpers/snapmanager.h \
+    helpers/snapmanagerimpl.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
@@ -37,7 +43,10 @@ SOURCES     = lcadviewerplugin.cpp \
     graphicsitems/lccircleitem.cpp \
     graphicsitems/lcarcitem.cpp \
     graphicsitems/lcellipseitem.cpp \
-    drawitems/metricgrid.cpp
+    drawitems/metricgrid.cpp \
+    drawitems/cursor.cpp \
+    qcachedgraphicsview.cpp \
+    helpers/snapmanagerimpl.cpp
 
 
 RESOURCES   = icons.qrc

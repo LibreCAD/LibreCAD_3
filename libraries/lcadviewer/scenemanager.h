@@ -24,7 +24,6 @@ class SceneManager: public QObject {
         lc::AbstractDocument* _document;
         LCADViewer* _viewer;
         QHash <int, QGraphicsItem*> _activeGraphicsItems;
-
 };
 
 #endif // SCENEMANAGER_H

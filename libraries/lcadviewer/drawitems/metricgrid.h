@@ -4,13 +4,13 @@
 #include <QPainter>
 #include <QGraphicsView>
 #include <QVarLengthArray>
-#include "lcadviewerdrawitem.h"
+#include "lcviewerdrawitem.h"
 
 /**
   * Draw a metric grid on a LCGraphics View
   *
   */
-class MetricGrid : public LCADViewerDrawItem {
+class MetricGrid : public LCViewerDrawItem {
     public:
         MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor);
 

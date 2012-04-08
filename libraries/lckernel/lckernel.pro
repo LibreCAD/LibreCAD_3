@@ -102,7 +102,8 @@ HEADERS += lckernel.h\
     cad/geometry/geovector.h \
     cad/geometry/geocoordinate.h \
     cad/geometry/geoellipse.h \
-    cad/primitive/ellipse.h
+    cad/primitive/ellipse.h \
+    cad/interface/snapable.h
 
 
 unix:!symbian {

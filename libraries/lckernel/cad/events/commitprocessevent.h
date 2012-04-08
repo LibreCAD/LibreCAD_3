@@ -2,25 +2,23 @@
 #define COMMITPROCESSEVENT_H
 
 #include "cad/const.h"
+#include "cad/operations/operation.h"
 
 namespace lc {
-
-    class Operation;
 
     /**
      * Event that get's emitted when a operation has been comitted
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent(OperationPtr operation) {
-                _operation = operation;
+            CommitProcessEvent(OperationPtr operation) : _operation(operation) {
             };
 
             OperationPtr operation() const {
                 return _operation;
             }
         private:
-            OperationPtr _operation;
+            const OperationPtr _operation;
     };
 }
 #endif // COMMITPROCESSEVENT_H

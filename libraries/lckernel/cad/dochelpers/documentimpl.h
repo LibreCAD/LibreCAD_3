@@ -23,12 +23,12 @@ namespace lc {
     class DocumentImpl : public AbstractDocument {
             Q_OBJECT
         public:
-            DocumentImpl(LayerManager* layerManager, EntityManager* entityManager);
+            DocumentImpl();
             virtual ~DocumentImpl();
 
-
             void operateOn(OperationPtr operation);
-
+            LayerManager* layerManager() const;
+            void setLayerManager(LayerManager* layerManager);
 
         public:
         signals:
@@ -49,8 +49,6 @@ namespace lc {
             virtual void replaceEntity(CADEntityPtr oldEntity, CADEntityPtr newEntity);
             virtual void removeEntity(ID_DATATYPE id);
             virtual void absoleteEntity(CADEntityPtr entity);
-
-            virtual LayerManager* layerManager() const;
 
             virtual CADEntityPtr findEntityByID(ID_DATATYPE id) const;
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;

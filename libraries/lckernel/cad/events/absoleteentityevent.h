@@ -2,9 +2,7 @@
 #define ABSOLETEENTITYEVENT_H
 
 #include "cad/const.h"
-
 #include "cad/base/cadentity.h"
-
 
 namespace lc {
     /**
@@ -13,8 +11,7 @@ namespace lc {
      */
     class AbsoluteEntityEvent {
         public:
-            AbsoluteEntityEvent(CADEntityPtr cadEntity) {
-                _cadEntity = cadEntity;
+            AbsoluteEntityEvent(CADEntityPtr cadEntity) : _cadEntity(cadEntity) {
             }
 
             CADEntityPtr entity() const {

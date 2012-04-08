@@ -2,7 +2,7 @@
 
 using namespace lc;
 
-void CreateEntities::add(CADEntityPtr cadEntity) {
+void CreateEntities::append(CADEntityPtr cadEntity) {
     _toCreate.append(cadEntity);
 }
 

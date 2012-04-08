@@ -3,9 +3,8 @@
 
 #include "boost/math/constants/constants.hpp"
 
-// Math constant, needs to take this from boost
-const double PI   =   3.141592653589793238462;
-const double PI2  = 2 * 3.141592653589793238462;
+const double PI   =   boost::math::constants::pi<double>();
+const double PI2  = 2 * boost::math::constants::pi<double>();
 
 // #define shared_ptr boost::shared_ptr
 

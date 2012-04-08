@@ -12,6 +12,7 @@ namespace lc {
     class EntityManager : public BaseManager {
             Q_OBJECT
         public:
+
     };
 }
 #endif // ENTITYMANAGER_H

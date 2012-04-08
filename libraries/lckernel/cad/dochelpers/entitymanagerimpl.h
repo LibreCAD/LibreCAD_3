@@ -16,13 +16,19 @@ namespace lc {
      */
     class EntityManagerImpl : public EntityManager {
             Q_OBJECT
+        public:
+            EntityManagerImpl(AbstractDocument* document);
 
         public slots:
             void on_addEntityEvent(const lc::AddEntityEvent&);
             void on_removeEntityEvent(const lc::RemoveEntityEvent&);
 
-        public:
-            virtual void setDocument(AbstractDocument* document);
+        private:
+
+            virtual AbstractDocument* document() const {
+                return _document;
+            }
+            AbstractDocument* _document;
     };
 }
 #endif // ENTITYMANAGERIMPL_H

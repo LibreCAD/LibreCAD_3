@@ -3,9 +3,13 @@
 
 #include <QtGui/QGraphicsView>
 #include "cad/document/abstractdocument.h"
-#include "drawitems/lcadviewerdrawitem.h"
+#include "drawitems/lcviewerdrawitem.h"
+#include "drawitems/lcviewercursoritem.h"
+#include "qcachedgraphicsview.h"
 
-class LCADViewer : public QGraphicsView {
+#include "events/MouseMoveEvent.h"
+
+class LCADViewer : public QCachedGraphicsView {
         Q_OBJECT
 
     public:
@@ -14,30 +18,32 @@ class LCADViewer : public QGraphicsView {
     public:
         LCADViewer(QWidget* parent = 0);
 
-        void drawBackground(QPainter* painter, const QRectF& rect);
-        void drawForeground(QPainter* painter, const QRectF& rect);
+        virtual void drawBackground(QPainter* painter, const QRectF& rect);
+        virtual void drawForeground(QPainter* painter, const QRectF& rect);
 
-
-        void addBackgroundItem(LCADViewerDrawItemPtr item);
-        void addForegroundItem(LCADViewerDrawItemPtr item);
+        void addBackgroundItem(LCViewerDrawItemPtr item);
+        void addForegroundItem(LCViewerDrawItemPtr item);
+        void addCursorItem(LCViewerCursorItemPtr item);
     protected:
         virtual void keyPressEvent(QKeyEvent* event);
         virtual void keyReleaseEvent(QKeyEvent* event);
 
-        virtual void resizeEvent(QResizeEvent* event);
-        virtual void wheelEvent(QWheelEvent* event);
-        virtual void mouseMoveEvent(QMouseEvent* event);
-
     private:
         lc::AbstractDocument* _document;
 
-        bool _altKeyActive; // When true the alt key is current pressed
 
+        bool _altKeyActive; // When true the alt key is current pressed
         // FIXME: Create a method so that we can re-order them when they are exchanged
         // during runtime of librecad. So that for example a grid is always draw on top of a background gradient
         // so it's visible
-        QList<LCADViewerDrawItemPtr> _backgroundItems;
-        QList<LCADViewerDrawItemPtr> _foregroundItems;
+        QList<LCViewerDrawItemPtr> _backgroundItems;
+        QList<LCViewerDrawItemPtr> _foregroundItems;
+        QList<LCViewerCursorItemPtr> _cursorItems;
+
+
+        /*****/
+        QPixmap* _foreGround;
+        QPixmap* _cursor;
 };
 
 #endif

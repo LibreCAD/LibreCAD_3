@@ -2,7 +2,6 @@
 #define REMOVEENTITYEVENT_H
 
 #include "cad/const.h"
-
 #include "cad/base/id.h"
 
 namespace lc {
@@ -12,8 +11,7 @@ namespace lc {
      */
     class RemoveEntityEvent {
         public:
-            RemoveEntityEvent(ID_DATATYPE id) {
-                _id = id;
+            RemoveEntityEvent(ID_DATATYPE id) : _id(id) {
             }
 
             ID_DATATYPE id() const {
@@ -21,7 +19,7 @@ namespace lc {
             }
 
         private:
-            ID_DATATYPE _id;
+            const ID_DATATYPE _id;
     };
 }
 #endif // REMOVEENTITYEVENT_H

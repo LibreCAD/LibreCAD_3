@@ -1,5 +1,5 @@
-#ifndef LCADVIEWERDRAWITEM_H
-#define LCADVIEWERDRAWITEM_H
+#ifndef LCVIEWERDRAWITEM_H
+#define LCVIEWERDRAWITEM_H
 
 #include <QPainter>
 #include <QGraphicsView>
@@ -14,11 +14,11 @@
   * FIXME: Find a better name for this
   */
 
-class LCADViewerDrawItem {
+class LCViewerDrawItem {
     public:
         virtual void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) = 0;
 };
 
-typedef shared_ptr<LCADViewerDrawItem> LCADViewerDrawItemPtr;
+typedef shared_ptr<LCViewerDrawItem> LCViewerDrawItemPtr;
 
-#endif // LCADVIEWERDRAWITEM_H
+#endif // LCVIEWERDRAWITEM_H

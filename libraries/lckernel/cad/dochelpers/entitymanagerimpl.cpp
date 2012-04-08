@@ -6,15 +6,13 @@
 
 using namespace lc;
 
-
-void EntityManagerImpl::setDocument(AbstractDocument* document) {
-    EntityManager::setDocument(document);
+EntityManagerImpl::EntityManagerImpl(AbstractDocument* document) : EntityManager(), _document(document) {
     connect(document, SIGNAL(addEntityEvent(const lc::AddEntityEvent&)),
             this, SLOT(on_addEntityEvent(const lc::AddEntityEvent&)));
     connect(document, SIGNAL(removeEntityEvent(const lc::RemoveEntityEvent&)),
             this, SLOT(on_removeEntityEvent(const lc::RemoveEntityEvent&)));
-
 }
+
 
 void EntityManagerImpl::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Note: This might seem to be slow, but inserting 1000000 entities took 300ms to insert

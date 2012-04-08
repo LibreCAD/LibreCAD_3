@@ -28,7 +28,7 @@ namespace lc {
              * Add a entity to the document, you can call this function as many times as you whish
              * @param cadEntity
              */
-            void add(CADEntityPtr cadEntity);
+            void append(CADEntityPtr cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;

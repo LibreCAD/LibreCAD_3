@@ -33,6 +33,7 @@ namespace lc {
             virtual void removeEntity(ID_DATATYPE id) = 0;
             virtual void absoleteEntity(CADEntityPtr absoleteEntity) = 0;
 
+            virtual void setLayerManager(LayerManager*) = 0;
             virtual LayerManager* layerManager() const = 0;
         private:
             virtual void lock() = 0;

@@ -10,7 +10,7 @@ namespace lc {
     class BeginProcessEvent {
         public:
             BeginProcessEvent() {
-            };
+            }
     };
 }
 #endif // BEGINPROCESSEVENT_H

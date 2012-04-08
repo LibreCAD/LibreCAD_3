@@ -2,7 +2,6 @@
 #define ADDENTITYEVENT_H
 
 #include "cad/const.h"
-
 #include "cad/base/cadentity.h"
 
 namespace lc {
@@ -12,9 +11,7 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-            AddEntityEvent(const QString& layerName, CADEntityPtr cadEntity) {
-                _cadEntity = cadEntity;
-                _layerName = layerName;
+            AddEntityEvent(const QString& layerName, CADEntityPtr cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
             }
 
             CADEntityPtr entity() const {
@@ -26,7 +23,7 @@ namespace lc {
             }
 
         private:
-            QString _layerName;
+            const QString _layerName;
             CADEntityPtr _cadEntity;
     };
 }

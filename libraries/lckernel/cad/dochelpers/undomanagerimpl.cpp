@@ -8,17 +8,11 @@
 using namespace lc;
 
 
-UndoManagerImpl::UndoManagerImpl(int maximumUndoLevels) : UndoManager() {
-    _maximumUndoLevels = maximumUndoLevels;
-}
+UndoManagerImpl::UndoManagerImpl(lc::AbstractDocument* document, int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
 
-void UndoManagerImpl::setDocument(AbstractDocument* document) {
-    UndoManager::setDocument(document);
     connect(document, SIGNAL(commitProcessEvent(const lc::CommitProcessEvent&)),
             this, SLOT(on_CommitProcessEvent(const lc::CommitProcessEvent&)));
 }
-
-
 
 
 void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event) {

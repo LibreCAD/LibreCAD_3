@@ -59,8 +59,6 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
     painter->setPen(QPen(QBrush(_majorColor), 0.0, Qt::DotLine));
     painter->drawLines(lines.data(), lines.size());
 
-
-
     // Draw minor lines
     lines.clear();
     gridSize *= 10;

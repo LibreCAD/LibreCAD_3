@@ -9,8 +9,6 @@ GradientBackground::GradientBackground(const QColor& topColor, const QColor& bot
 
 
 void GradientBackground::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
-
-
     QRectF sceneRect = rect.normalized();
     QLinearGradient gradient(
         (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.top(),
