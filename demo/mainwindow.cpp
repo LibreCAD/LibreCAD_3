@@ -28,6 +28,8 @@
 #include "drawitems/gradientbackground.h"
 #include "drawitems/metricgrid.h"
 #include "drawitems/cursor.h"
+#include "helpers/snapmanager.h"
+#include "helpers/snapmanagerimpl.h"
 
 #include <QtGui>
 
@@ -46,7 +48,7 @@ MainWindow::MainWindow(QWidget* parent) :
     // Should this be done using the events system of QT??
     ui->lCADViewer->addBackgroundItem(LCViewerDrawItemPtr(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
     ui->lCADViewer->addBackgroundItem(LCViewerDrawItemPtr(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80))));
-    ui->lCADViewer->addCursorItem(LCViewerCursorItemPtr(new Cursor(40, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00))));
+
 
     // Create a scene for this document, each document will have only one scene, but can have multiple views
     QGraphicsScene* scene = new QGraphicsScene(this);
@@ -64,6 +66,7 @@ MainWindow::MainWindow(QWidget* parent) :
     // May be the document should create it somehow???
     _document->setLayerManager(layerManager);
 
+
     // Entity manager add's/removes entities to layers
     lc::EntityManager* entityManager = new lc::EntityManagerImpl(_document);
 
@@ -74,8 +77,15 @@ MainWindow::MainWindow(QWidget* parent) :
     // is added and removed within a document
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
+    // Snap manager
+    SnapManager* _snapManager = new SnapManagerImpl(ui->lCADViewer, _document);
+
+    // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
+    Cursor* _cursor = new Cursor(40, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = new lc::UndoManagerImpl(_document, 10);
+
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     ui->lCADViewer->setAbstractDocument(_document);

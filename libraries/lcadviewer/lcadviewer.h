@@ -24,6 +24,7 @@ class LCADViewer : public QCachedGraphicsView {
         void addBackgroundItem(LCViewerDrawItemPtr item);
         void addForegroundItem(LCViewerDrawItemPtr item);
         void addCursorItem(LCViewerCursorItemPtr item);
+
     protected:
         virtual void keyPressEvent(QKeyEvent* event);
         virtual void keyReleaseEvent(QKeyEvent* event);

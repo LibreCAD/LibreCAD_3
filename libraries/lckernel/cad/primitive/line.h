@@ -16,7 +16,7 @@ namespace lc {
             Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<MetaTypePtr>& metaTypes);
 
         public:
-            const QList<geo::Coordinate>& snapPoints(const geo::Coordinate& mousePointer, int maxNumberOfSnapPoints);
+            QList<geo::Coordinate> snapPoints(const geo::Coordinate& mousePointer, int maxNumberOfSnapPoints);
 
         private:
     };

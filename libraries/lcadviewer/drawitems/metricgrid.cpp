@@ -7,7 +7,6 @@ MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor
 
 void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
 
-    QRectF sceneRect = rect.normalized();
     QPointF zeroCorner = view->mapToScene(0, 0);
     QPointF minGridSpaceCorner = view->mapToScene(_minimumGridSpacing, 0);
 
@@ -46,7 +45,6 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
     qreal top = rect.top() - fmod(rect.top(), gridSize);
 
     QVarLengthArray<QLineF, 100> lines;
-    int i = 0;
 
     for (qreal x = left; x < rect.right(); x += gridSize) {
         lines.append(QLineF(x, rect.top(), x, rect.bottom()));

@@ -39,7 +39,7 @@ QIcon LCADViewerPlugin::icon() const {
 }
 
 QString LCADViewerPlugin::toolTip() const {
-    return QLatin1String("");
+    return QLatin1String("LibreCAD viewer");
 }
 
 QString LCADViewerPlugin::whatsThis() const {

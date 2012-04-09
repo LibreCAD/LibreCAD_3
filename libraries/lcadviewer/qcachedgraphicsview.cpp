@@ -39,8 +39,6 @@ void QCachedGraphicsView::wheelEvent(QWheelEvent* event) {
 
     // FIXME: Need to have configurable KeyModifier
     if (event->modifiers().testFlag(Qt::AltModifier)) {
-        QWheelEvent* e = event;
-
         // FIXME: see if we can create scalefactors so that the grid will always be perfectly alligned with the view
         qreal scaleFactor = pow((double)2, -event->delta() / 240.0);
         qreal factor = transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
@@ -87,8 +85,6 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
     _lastMousePosition = this->mapToScene(event->pos());
 
     QPolygonF p = mapToScene(this->rect());
-
-    qDebug() << p;
 
     // Invalidate screen so we can draw the mouse
     // FIXME: See QCachedGraphicsView performance is quite bad because we need to update all layers

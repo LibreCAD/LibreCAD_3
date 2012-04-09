@@ -27,8 +27,16 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0">
-     <widget class="LCADViewer" name="lCADViewer"/>
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>shift-mouse to pan / alt-mouse to zoom in/out</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout_2">
@@ -96,16 +104,8 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>shift-mouse to pan / alt-mouse to zoom in/out</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+    <item row="2" column="0">
+     <widget class="LCADViewer" name="lCADViewer"/>
     </item>
    </layout>
   </widget>

@@ -18,6 +18,7 @@ QColor LCGraphicsItem::getScreenColor(const QColor& color) const {
 
 
 void LCGraphicsItem::paint(const lc::CADEntity* cadEntity, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+    Q_UNUSED(widget)
 
     // If the current item is selected set a selected pen
     if (this->isSelected()) {

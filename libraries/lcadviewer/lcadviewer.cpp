@@ -108,8 +108,6 @@ void LCADViewer::drawBackground(QPainter* painter, const QRectF& rect) {
     }
 }
 void LCADViewer::drawForeground(QPainter* painter, const QRectF& rect) {
-    qDebug() << "drawForeground";
-
     for (int i = 0; i < _foregroundItems.size(); ++i) {
         _foregroundItems.at(i)->draw(this, painter, rect);
     }
@@ -117,7 +115,6 @@ void LCADViewer::drawForeground(QPainter* painter, const QRectF& rect) {
     for (int i = 0; i < _cursorItems.size(); ++i) {
         this->_cursorItems.at(i)->draw(this, painter, rect, lastMousePosition());
     }
-
 
     // Render & PaintEvent
     // PaintEvent calls drawForeground, background and items

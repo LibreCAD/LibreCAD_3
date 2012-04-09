@@ -28,12 +28,12 @@ namespace lc {
                 /**
                   * Add two points to each other and return a new coordinate
                   */
-                const Coordinate& operator + (const Coordinate& coordinate) const;
+                Coordinate operator + (const Coordinate& coordinate) const;
 
                 /**
                   * Substract two points from each other and return a new coordinate
                   */
-                const Coordinate& operator - (const Coordinate& coordinate) const;
+                Coordinate operator - (const Coordinate& coordinate) const;
 
                 /**
                   * Magnitude or lenth of the point relative to zero

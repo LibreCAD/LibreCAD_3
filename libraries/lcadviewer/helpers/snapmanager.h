@@ -7,16 +7,20 @@
 #include "cad/document/abstractdocument.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
+#include "events/snappointevent.h"
 
 class SnapManager  {
 
     public:
 
-    /**
-      * Return the closest coordinate from the current mouse pointer
-      */
-    virtual lc::geo::Coordinate getCloseCoordinate(const lc::geo::Coordinate & foo) const = 0;
+        /**
+          * Return the closest coordinate from the current mouse pointer
+          */
+        virtual lc::geo::Coordinate getCloseCoordinate(const lc::geo::Coordinate& foo) const = 0;
 
+    public:
+    signals:
+        void snapPointEvent(const SnapPointEvent&);
 
 };
 

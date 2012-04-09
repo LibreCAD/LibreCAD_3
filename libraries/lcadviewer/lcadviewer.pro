@@ -32,7 +32,8 @@ HEADERS     = lcadviewerplugin.h \
     qcachedgraphicsview.h \
     events/MouseMoveEvent.h \
     helpers/snapmanager.h \
-    helpers/snapmanagerimpl.h
+    helpers/snapmanagerimpl.h \
+    events/snappointevent.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
