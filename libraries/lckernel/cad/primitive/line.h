@@ -10,13 +10,13 @@
 
 namespace lc {
 
-    class Line : public CADEntity, public geo::Vector, public Snapable {
+    class Line : public CADEntity, public geo::Vector {
         public:
             Line(const geo::Coordinate& start, const geo::Coordinate& end);
             Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<MetaTypePtr>& metaTypes);
 
         public:
-            QList<geo::Coordinate> snapPoints(const geo::Coordinate& mousePointer, int maxNumberOfSnapPoints);
+            virtual QList<geo::Coordinate> snapPoints(const geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 
         private:
     };

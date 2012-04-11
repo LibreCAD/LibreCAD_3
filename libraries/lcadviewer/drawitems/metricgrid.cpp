@@ -37,6 +37,8 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
         gridSize = (100.0 / factor);
     }
 
+    _lastGridSize=gridSize;
+
     // Start Drawing
     painter->setRenderHint(QPainter::Antialiasing, false);
 
@@ -73,4 +75,36 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
 
     painter->setPen(_minorColor);
     painter->drawLines(lines.data(), lines.size());
+}
+
+
+/**
+  * Return a number of snap points, grid will always return 1
+  *
+  */
+QList<lc::geo::Coordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    QList<lc::geo::Coordinate> points;
+
+    double mx=mousePointer.x()*1.0;
+    double my=mousePointer.y()*1.0;
+    double gs=this->_lastGridSize*1.0;
+
+
+    double x,y;
+    if (mx<0.0) {
+         x=(mx-gs/2)-fmod(mx-gs/2, -gs);
+    } else {
+         x=(mx+gs/2)-fmod(mx+gs/2, gs);
+    }
+    if (my<0.0) {
+         y=(my-gs/2)-fmod(my-gs/2, -gs);
+    } else {
+         y=(my+gs/2)-fmod(my+gs/2, gs);
+    }
+
+    qDebug() << "x:" << x << " y:" << y;
+
+    points << lc::geo::Coordinate(x,y);
+
+    return points;
 }

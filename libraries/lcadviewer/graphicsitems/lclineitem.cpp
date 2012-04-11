@@ -16,10 +16,8 @@ void LCLineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
     LCGraphicsItem::paint(_line, painter, option, widget);
 
     painter->drawLine(
-        _line->start().x(),
-        _line->start().y(),
-        _line->end().x(),
-        _line->end().y()
+        QPointF(_line->start().x(), _line->start().y()),
+        QPointF(_line->end().x(), _line->end().y())
     );
 }
 

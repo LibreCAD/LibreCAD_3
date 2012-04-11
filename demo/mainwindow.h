@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QtGui>
 
+#include "cadmdichild.h"
+
 #include "cad/document/abstractdocument.h"
 #include "cad/document/undomanager.h"
 
@@ -21,27 +23,27 @@ class MainWindow : public QMainWindow {
 
         int randInt(int low, int high);
 
+        CadMdiChild * createMdiChild();
+        CadMdiChild *activeMdiChild();
+        void updateMenus();
+        void setActiveSubWindow(QWidget *window);
+
     protected:
-        void wheelEvent(QWheelEvent* event);
     private slots:
-        void on_addEntities_clicked();
 
-        void on_addCircles_clicked();
 
-        void on_undoButton_clicked();
 
-        void on_redoButtom_clicked();
+        void on_actionNew_triggered();
+        void on_actionRedo_triggered();
+        void on_actionUndo_triggered();
+        void on_actionAdd_Random_Circles_triggered();
+        void on_actionAdd_Random_Arc_triggered();
+        void on_actionClear_Undoable_Stack_triggered();
+        void on_actionAdd_Random_Lines_triggered();
 
-        void on_clearUndoables_clicked();
-
-        void on_addArcs_clicked();
-
-        void on_addEllipse_clicked();
-
-    private:
+private:
         Ui::MainWindow* ui;
-        lc::AbstractDocument* _document;
-        lc::UndoManager* _undoManager;
+        QSignalMapper *windowMapper;
 
 };
 

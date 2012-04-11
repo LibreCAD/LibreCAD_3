@@ -45,7 +45,7 @@ void QCachedGraphicsView::wheelEvent(QWheelEvent* event) {
 
         // TODO: See if these scale factors are good for us. We have to set a limit else there is a chance
         // that people zoom in way to much, or zoomout way to much
-        if (factor < 0.01 || factor > 100) {
+        if (factor < 0.001 || factor > 10000) {
             return;
         }
 
@@ -91,6 +91,7 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
     invalidateScene(QRectF(_lastMousePosition.x() - 2, _lastMousePosition.y() - 2, 4, 4), QGraphicsScene::AllLayers);
     update();
 
-    MouseMoveEvent e;
+    // Emit a mouse move event
+    MouseMoveEvent e(this, QRectF(p.at(0), p.at(2)), _lastMousePosition);
     emit mouseMoveEvent(e);
 }

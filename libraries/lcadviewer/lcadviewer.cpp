@@ -7,19 +7,19 @@ LCADViewer::LCADViewer(QWidget* parent) :
     QCachedGraphicsView(parent) {
 
     /******/
-    QGLFormat fmt;
-    fmt.setSampleBuffers(true);
-    setViewport(new QGLWidget(fmt));
+    //QGLFormat fmt;
+    //fmt.setSampleBuffers(true);
+    //setViewport(new QGLWidget(fmt));
     /****/
 
 
     // setCacheMode(CacheBackground);
     setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    this->setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
     setWindowTitle(tr("LC Viewer"));
 
-    scale(qreal(1), qreal(1));
+
+//   scale(qreal(1), qreal(1));
     centerOn(0.0, 0.0);
     setDragMode(QGraphicsView::RubberBandDrag);
 
@@ -29,6 +29,7 @@ LCADViewer::LCADViewer(QWidget* parent) :
     // Track mouse without it beeing pressed down
     setMouseTracking(true);
     parent->setMouseTracking(true);
+
 }
 
 void LCADViewer::setAbstractDocument(lc::AbstractDocument* document) {
@@ -116,20 +117,8 @@ void LCADViewer::drawForeground(QPainter* painter, const QRectF& rect) {
         this->_cursorItems.at(i)->draw(this, painter, rect, lastMousePosition());
     }
 
-    // Render & PaintEvent
-    // PaintEvent calls drawForeground, background and items
-    /*
-    drawBackground(painter, sourceSceneRect);
-    drawItems(painter, numItems, itemArray, styleOptionArray);
-    drawForeground(painter, sourceSceneRect);
-    */
-    /*
-    _cursor = getPixmapForView(_cursor);
-    QPainter p(_cursor);
-    _cursor->fill(Qt::transparent);
-    p.setMatrix(painter->matrix());
-    for (int i = 0; i < _cursorItems.size(); ++i) {
-        this->_cursorItems.at(i)->draw(this, &p, rect, _lastMousePosition);
-    }*/
+    // FIXME: move to cachedgraphicsview class some day
+    DrawEvent event(this, painter, rect, this->lastMousePosition());
+    emit drawEvent(event);
 }
 

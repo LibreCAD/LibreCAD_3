@@ -16,7 +16,7 @@ namespace lc {
               * This function returns a number of snap points up to a maximum number of snappoints ordered
               * by distance from mousePointer
               */
-            const QList<geo::Coordinate>& snapPoints(const geo::Coordinate& mousePointer, int maxNumberOfSnapPoints);
+            virtual QList<geo::Coordinate> snapPoints(const geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const = 0;
     };
     typedef shared_ptr<const lc::Snapable> SnapablePtr;
 }

@@ -10,8 +10,9 @@ Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList
 
 
 
-QList<geo::Coordinate> Line::snapPoints(const geo::Coordinate& mousePointer, int maxNumberOfSnapPoints) {
+QList<geo::Coordinate> Line::snapPoints(const geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     QList<geo::Coordinate> foo;
     foo << this->start() << this->end();
     return foo;
 }
+

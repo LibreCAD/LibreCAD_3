@@ -10,8 +10,9 @@ namespace lc {
           */
         class Coordinate {
             public:
+                Coordinate() {_x=_y=_z=0.0;}
                 Coordinate(double x, double y, double z);
-                Coordinate(double x, double y);
+                    Coordinate(double x, double y);
 
                 double x() const;
                 double y() const;

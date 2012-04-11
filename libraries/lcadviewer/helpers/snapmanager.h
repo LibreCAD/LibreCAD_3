@@ -9,18 +9,11 @@
 #include "cad/geometry/geocoordinate.h"
 #include "events/snappointevent.h"
 
-class SnapManager  {
-
-    public:
-
-        /**
-          * Return the closest coordinate from the current mouse pointer
-          */
-        virtual lc::geo::Coordinate getCloseCoordinate(const lc::geo::Coordinate& foo) const = 0;
-
+class SnapManager : public QObject {
+        Q_OBJECT
     public:
     signals:
-        void snapPointEvent(const SnapPointEvent&);
+        void snapPointEvent(const SnapPointEvent&) ;
 
 };
 

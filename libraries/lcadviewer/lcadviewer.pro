@@ -30,10 +30,11 @@ HEADERS     = lcadviewerplugin.h \
     drawitems/lcviewercursoritem.h \
     drawitems/lcviewerdrawitem.h \
     qcachedgraphicsview.h \
-    events/MouseMoveEvent.h \
     helpers/snapmanager.h \
     helpers/snapmanagerimpl.h \
-    events/snappointevent.h
+    events/snappointevent.h \
+    events/drawevent.h \
+    events/mousemoveevent.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \

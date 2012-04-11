@@ -26,86 +26,9 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>shift-mouse to pan / alt-mouse to zoom in/out</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="0">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="6">
-       <widget class="QPushButton" name="clearUndoables">
-        <property name="text">
-         <string>clear Undoables</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="7">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="addEntities">
-        <property name="text">
-         <string>Add Lines</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="redoButtom">
-        <property name="text">
-         <string>Redo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="addCircles">
-        <property name="text">
-         <string>Add Circles</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="undoButton">
-        <property name="text">
-         <string>Undo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="addArcs">
-        <property name="text">
-         <string>Add Arcs</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="addEllipse">
-        <property name="text">
-         <string>addEllipse</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="2" column="0">
-     <widget class="LCADViewer" name="lCADViewer"/>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QMdiArea" name="mdiArea"/>
     </item>
    </layout>
   </widget>
@@ -122,8 +45,27 @@
     <property name="title">
      <string>Demo Project</string>
     </property>
+    <addaction name="actionNew"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
+   <widget class="QMenu" name="menuDemo">
+    <property name="title">
+     <string>Demo</string>
+    </property>
+    <addaction name="actionAdd_Random_Lines"/>
+    <addaction name="actionAdd_Random_Circles"/>
+    <addaction name="actionAdd_Random_Arc"/>
+    <addaction name="actionClear_Undoable_Stack"/>
    </widget>
    <addaction name="menuDemo_Project"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuDemo"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -134,15 +76,43 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
+  <action name="actionAdd_Random_Lines">
+   <property name="text">
+    <string>Add Random Lines</string>
+   </property>
+  </action>
+  <action name="actionAdd_Random_Circles">
+   <property name="text">
+    <string>Add Random Circles</string>
+   </property>
+  </action>
+  <action name="actionAdd_Random_Arc">
+   <property name="text">
+    <string>Add Random Arc</string>
+   </property>
+  </action>
+  <action name="actionClear_Undoable_Stack">
+   <property name="text">
+    <string>Clear Undoable Stack</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>LCADViewer</class>
-   <extends>QGraphicsView</extends>
-   <header>lcadviewer.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

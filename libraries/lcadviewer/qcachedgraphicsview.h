@@ -4,7 +4,8 @@
 #include <QGraphicsView>
 #include <QtGui>
 
-#include "events/MouseMoveEvent.h"
+#include "events/mousemoveevent.h"
+#include "events/drawevent.h"
 
 /**
   * THis call needs to implement a way to cache various layers
@@ -27,6 +28,7 @@ class QCachedGraphicsView : public QGraphicsView {
     public:
     signals:
         void mouseMoveEvent(const MouseMoveEvent&);
+        void drawEvent(const DrawEvent&);
 
     private:
         QPixmap* getPixmapForView(QPixmap* pm);
