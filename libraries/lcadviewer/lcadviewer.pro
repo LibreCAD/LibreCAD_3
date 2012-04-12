@@ -1,7 +1,15 @@
+#-------------------------------------------------
+#
+# Project created by QtCreator 2012-03-17T15:29:08
+#
+#------------------------------------------------
+
 CONFIG      += designer plugin
 CONFIG +=
 TARGET      = $$qtLibraryTarget(lcadviewerplugin)
 TEMPLATE    = lib
+
+VERSION=0.0.1
 
 QT += opengl
 
@@ -12,7 +20,18 @@ GENERATED_DIR = ../../generated/lib/lcadviewer
 include(../../settings.pro)
 include(../../common.pro)
 
-DESTDIR = ../../demo.app/Contents/MacOS
+win32 {
+    DESTDIR = ../../lcdemo/
+}
+unix {
+    macx {
+        DESTDIR = ../../demo.app/Contents/MacOS
+        LIBS+=  -L../../demo.app/Contents/MacOS -llckernel
+    } else {
+	DESTDIR = ../../lcdemo/
+        LIBS+=  -L../../lcdemo -llckernel
+    }
+}
 
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
@@ -55,7 +74,7 @@ RESOURCES   = icons.qrc
 LIBS        += -L. 
 
 INCLUDEPATH += "../lckernel"
-LIBS+=  -L../../demo.app/Contents/MacOS -llckernel
+
 
 target.path = $$[QT_INSTALL_PLUGINS]/designer
 INSTALLS    += target

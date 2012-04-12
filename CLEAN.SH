@@ -6,5 +6,6 @@ rm -rf `find . -type d -name generated`
 rm -rf demo.app
 rm -rf unix
 rm -rf html
+rm -rf lcdemo
 find . -name "*.orig" -exec rm {} \;
 find . -name ".DS_Store" -exec rm {} \;

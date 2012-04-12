@@ -7,7 +7,7 @@
 #include "drawitems/lcviewercursoritem.h"
 #include "qcachedgraphicsview.h"
 
-#include "events/MouseMoveEvent.h"
+#include "events/mousemoveevent.h"
 
 class LCADViewer : public QCachedGraphicsView {
         Q_OBJECT

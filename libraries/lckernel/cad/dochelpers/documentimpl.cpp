@@ -1,7 +1,7 @@
 
 #include <QHashIterator>
 #include <QVector>
-#include <qDebug>
+#include "qdebug.h"
 
 #include "documentimpl.h"
 #include "cad/geometry/geocoordinate.h"

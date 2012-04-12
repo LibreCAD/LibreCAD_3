@@ -1,6 +1,6 @@
 #include "qcachedgraphicsview.h"
 
-#include "events/MouseMoveEvent.h"
+#include "events/mousemoveevent.h"
 
 QCachedGraphicsView::QCachedGraphicsView(QWidget* parent) : QGraphicsView(parent) {
 }

@@ -4,20 +4,26 @@
 #
 #-------------------------------------------------
 
-QT       += core
-
-TARGET = lckernel
+CONFIG      += plugin
+TARGET      = $$qtLibraryTarget(lckernel)
 TEMPLATE = lib
 
-DESTDIR = ../../demo.app/Contents/MacOS
+QT       += core
 
-CONFIG +=
+win32 {
+    #DESTDIR = ../../lcdemo/
+}
+unix {
+    macx {
+	DESTDIR = ../../demo.app/Contents/MacOS
+    } else {
+	DESTDIR = ../../lcdemo/
+    }
+}
+
 DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1
-
-DLL_NAME = lckernel
-TARGET = $$DLL_NAME
 
 GENERATED_DIR = ../../generated/lib/lckernel
 # Use common project definitions.
@@ -102,11 +108,3 @@ HEADERS += lckernel.h\
     cad/interface/snapable.h
 
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/lib
-    } else {
-        target.path = /usr/lib
-    }
-    INSTALLS += target
-}

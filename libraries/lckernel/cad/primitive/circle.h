@@ -1,7 +1,7 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
 
-#include <qDebug>
+#include "qdebug.h"
 
 #include "cad/const.h"
 

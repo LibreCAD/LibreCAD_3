@@ -6,10 +6,8 @@
 
 QT       += core gui opengl
 
-TARGET = ../demo
+TARGET = ../lcdemo/demo
 TEMPLATE = app
-
-CONFIG += static
 
 # Store intermedia stuff somewhere else
 GENERATED_DIR = ../generated/demo
@@ -21,7 +19,17 @@ include(../common.pro)
 INCLUDEPATH += "../libraries/lckernel"
 INCLUDEPATH += "../libraries/lcadviewer"
 
-LIBS+=  -L../demo.app/Contents/MacOS -llckernel  -llcadviewerplugin
+win32 {
+    DESTDIR = ../../lcdemo/
+}
+unix {
+    macx {
+        LIBS+=  -L../demo.app/Contents/MacOS -llckernel  -llcadviewerplugin
+    } else {
+        LIBS+=  -L../lcdemo -llckernel  -llcadviewerplugin
+    }
+}
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \

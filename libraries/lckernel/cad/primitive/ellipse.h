@@ -4,7 +4,7 @@
 #include "cad/const.h"
 
 #include "lckernel_global.h"
-#include "cad/geometry/geoCoordinate.h"
+#include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoellipse.h"
 #include "cad/base/cadentity.h"
 
