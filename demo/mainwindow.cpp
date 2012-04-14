@@ -40,35 +40,34 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::on_actionNew_triggered()
-{
-    CadMdiChild *child = createMdiChild();
+void MainWindow::on_actionNew_triggered() {
+    CadMdiChild* child = createMdiChild();
     child->newDocument();
     child->showMaximized();
 }
 
-CadMdiChild *MainWindow::createMdiChild()
-{
-    CadMdiChild *child = new CadMdiChild;
+CadMdiChild* MainWindow::createMdiChild() {
+    CadMdiChild* child = new CadMdiChild;
     ui->mdiArea->addSubWindow(child);
     return child;
 }
 
-CadMdiChild *MainWindow::activeMdiChild()
-{
-    if (QMdiSubWindow *activeSubWindow = ui->mdiArea->activeSubWindow())
-        return qobject_cast<CadMdiChild *>(activeSubWindow->widget());
+CadMdiChild* MainWindow::activeMdiChild() {
+    if (QMdiSubWindow* activeSubWindow = ui->mdiArea->activeSubWindow()) {
+        return qobject_cast<CadMdiChild*>(activeSubWindow->widget());
+    }
+
     return 0;
 }
-void MainWindow::setActiveSubWindow(QWidget *window)
-{
-    if (!window)
+void MainWindow::setActiveSubWindow(QWidget* window) {
+    if (!window) {
         return;
-    ui->mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+    }
+
+    ui->mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow*>(window));
 }
 
-void MainWindow::updateMenus()
-{
+void MainWindow::updateMenus() {
     bool hasMdiChild = (activeMdiChild() != 0);
     ui->actionUndo->setEnabled(hasMdiChild);
     ui->actionRedo->setEnabled(hasMdiChild);
@@ -76,32 +75,38 @@ void MainWindow::updateMenus()
 
 
 
-void MainWindow::on_actionRedo_triggered()
-{
-   if (activeMdiChild()) activeMdiChild()->redo();
+void MainWindow::on_actionRedo_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->redo();
+    }
 }
 
-void MainWindow::on_actionUndo_triggered()
-{
-    if (activeMdiChild()) activeMdiChild()->undo();
+void MainWindow::on_actionUndo_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->undo();
+    }
 }
 
-void MainWindow::on_actionAdd_Random_Circles_triggered()
-{
-    if (activeMdiChild()) activeMdiChild()->on_addCircles_clicked();
+void MainWindow::on_actionAdd_Random_Circles_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->on_addCircles_clicked();
+    }
 }
 
-void MainWindow::on_actionAdd_Random_Arc_triggered()
-{
-    if (activeMdiChild()) activeMdiChild()->on_addArcs_clicked();
+void MainWindow::on_actionAdd_Random_Arc_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->on_addArcs_clicked();
+    }
 }
 
-void MainWindow::on_actionClear_Undoable_Stack_triggered()
-{
-    if (activeMdiChild()) activeMdiChild()->on_clearUndoables_clicked();
+void MainWindow::on_actionClear_Undoable_Stack_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->on_clearUndoables_clicked();
+    }
 }
 
-void MainWindow::on_actionAdd_Random_Lines_triggered()
-{
-    if (activeMdiChild()) activeMdiChild()->on_actionAdd_Random_Lines_triggered();
+void MainWindow::on_actionAdd_Random_Lines_triggered() {
+    if (activeMdiChild()) {
+        activeMdiChild()->on_actionAdd_Random_Lines_triggered();
+    }
 }

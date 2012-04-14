@@ -9,17 +9,16 @@
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/base/cadentity.h"
+#include "cad/vo/entitycoordinate.h"
 
 namespace lc {
     class Circle : public CADEntity, public geo::Circle {
         public:
             Circle(const geo::Coordinate& center, double radius);
             Circle(const geo::Coordinate& center, double radius, const QList<MetaTypePtr>& metaTypes);
-            ~Circle() {
-            }
 
         public:
-
     };
+    typedef shared_ptr<const lc::Circle> CirclePtr;
 }
 #endif // CIRCLE_H

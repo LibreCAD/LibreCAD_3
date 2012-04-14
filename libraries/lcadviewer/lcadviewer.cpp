@@ -13,13 +13,15 @@ LCADViewer::LCADViewer(QWidget* parent) :
     /****/
 
 
-    // setCacheMode(CacheBackground);
-    setViewportUpdateMode(BoundingRectViewportUpdate);
+    //    setCacheMode(CacheBackground); // Currently creates artifacts
+    //    setViewportUpdateMode(BoundingRectViewportUpdate);
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     setWindowTitle(tr("LC Viewer"));
 
+    this->setFrameStyle(0);
+    this->setAttribute(Qt::WA_TranslucentBackground);
 
-//   scale(qreal(1), qreal(1));
+    //   scale(qreal(1), qreal(1));
     centerOn(0.0, 0.0);
     setDragMode(QGraphicsView::RubberBandDrag);
 

@@ -12,17 +12,18 @@
 
 class LCEllipseItem : public LCGraphicsItem {
     public:
-        LCEllipseItem(const lc::Ellipse* ellipse);
+        LCEllipseItem(const lc::EllipsePtr ellipse);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+        virtual const lc::CADEntityPtr entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const lc::Ellipse* _ellipse;
+        const lc::EllipsePtr _ellipse;
 };
 
 #endif // LCELLIPSEITEM_H

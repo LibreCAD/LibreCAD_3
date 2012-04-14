@@ -27,7 +27,6 @@ class Cursor : public QObject  {
         const double _cursorSize;
 
         SnapPointEvent _lastSnapEvent;
-
 };
 
 #endif // CURSOR_H

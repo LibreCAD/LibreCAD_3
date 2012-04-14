@@ -14,6 +14,12 @@ Coordinate::Coordinate(double x, double y) {
     this->_z = 0;
 }
 
+Coordinate::Coordinate(const QPointF& qtPoint) {
+    this->_x = qtPoint.x();
+    this->_y = qtPoint.y();
+    this->_z = 0;
+}
+
 
 
 double Coordinate::x() const {
@@ -43,4 +49,22 @@ Coordinate Coordinate::operator - (const Coordinate& coord) const {
 double Coordinate::magnitude() const {
     return sqrt(_x * _x + _y * _y + _z * _z);
 }
+double Coordinate::squared() const {
+    return _x * _x + _y * _y + _z * _z;
+}
+double Coordinate::dot(const Coordinate& coord) const {
+    return _x * coord._x + _y * coord._y + _z * coord._z;
+}
+Coordinate Coordinate::operator * (double s) const {
+    return Coordinate(_x * s, _y * s, _z * s);
+}
+Coordinate Coordinate::operator / (double s) const {
+    return Coordinate(_x / s, _y / s, _z / s);
+}
 
+
+
+QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
+    dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
+    return dbg.space();
+}

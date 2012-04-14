@@ -10,6 +10,7 @@
 #include <cad/interface/metatype.h>
 #include <cad/base/cadentity.h>
 
+
 /**
   * Every primitive graphics item needs to implement LCGraphicsItem
   * THis class will take care of setting correct pen and other relevant items
@@ -27,11 +28,10 @@ class LCGraphicsItem : public QGraphicsItem {
         /**
           * Paint the entity, the default implementation will just set the color
           */
-        virtual void paint(const lc::CADEntity* cadEntity, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+        virtual void paint(lc::CADEntityPtr, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 
-
-
+        virtual const lc::CADEntityPtr entity() const = 0;
 };
 
 #endif // LCGRAPHICSITEM_H

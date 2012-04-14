@@ -94,4 +94,5 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
     // Emit a mouse move event
     MouseMoveEvent e(this, QRectF(p.at(0), p.at(2)), _lastMousePosition);
     emit mouseMoveEvent(e);
+
 }

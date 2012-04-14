@@ -11,17 +11,18 @@
 
 class LCCircleItem : public LCGraphicsItem {
     public:
-        LCCircleItem(const lc::Circle* circle);
+        LCCircleItem(const lc::CirclePtr circle);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+        virtual const lc::CADEntityPtr entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const lc::Circle* _circle;
+        const lc::CirclePtr _circle;
 };
 
 #endif // LCCIRCLEITEM_H

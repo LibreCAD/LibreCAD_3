@@ -44,7 +44,6 @@ SOURCES += lckernel.cpp \
     cad/dochelpers/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
-    cad/dochelpers/selectionmanagerimpl.cpp \
     cad/operations/createentities.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
     cad/document/abstractdocument.cpp \
@@ -78,9 +77,7 @@ HEADERS += lckernel.h\
     cad/dochelpers/documentimpl.h \
     cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
-    cad/dochelpers/entityselection.h \
     cad/document/selectionmanager.h \
-    cad/dochelpers/selectionmanagerimpl.h \
     cad/operations/createentities.h \
     cad/operations/operation.h \
     cad/events/beginprocessevent.h \
@@ -105,6 +102,6 @@ HEADERS += lckernel.h\
     cad/geometry/geocoordinate.h \
     cad/geometry/geoellipse.h \
     cad/primitive/ellipse.h \
-    cad/interface/snapable.h
-
-
+    cad/interface/snapable.h \
+    cad/vo/entitycoordinate.h \
+    cad/vo/entitydistance.h

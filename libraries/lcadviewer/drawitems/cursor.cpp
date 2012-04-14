@@ -17,14 +17,15 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
 
     double minDistancePoints = (minGridSpaceCorner.x() - zeroCorner.x()) / 2.0;
 
-    double x,y;
+    double x, y;
+
     // If we had a snao point, move the mouse to that area
-    if (_lastSnapEvent.status()==true) {
-        x=_lastSnapEvent.snapPoint().x();
-        y=_lastSnapEvent.snapPoint().y();
+    if (_lastSnapEvent.status() == true) {
+        x = _lastSnapEvent.snapPoint().x();
+        y = _lastSnapEvent.snapPoint().y();
     } else {
-        x=event.mousePosition().x();
-        y=event.mousePosition().y();
+        x = event.mousePosition().x();
+        y = event.mousePosition().y();
     }
 
     event.painter()->setRenderHint(QPainter::Antialiasing, false);
@@ -36,5 +37,5 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
 }
 
 void Cursor::on_SnapPoint_Event(const SnapPointEvent& event) {
-    _lastSnapEvent=event;
+    _lastSnapEvent = event;
 }

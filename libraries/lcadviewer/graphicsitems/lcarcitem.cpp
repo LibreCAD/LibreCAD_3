@@ -1,7 +1,7 @@
 #include "lcarcitem.h"
 
 
-LCArcItem::LCArcItem(const lc::Arc* arc) : LCGraphicsItem(), _arc(arc) {
+LCArcItem::LCArcItem(const lc::ArcPtr arc) : LCGraphicsItem(), _arc(arc) {
 }
 
 
@@ -31,3 +31,7 @@ QPainterPath LCArcItem::shape() const {
 }
 
 
+
+const lc::CADEntityPtr LCArcItem::entity() const {
+    return _arc;
+}

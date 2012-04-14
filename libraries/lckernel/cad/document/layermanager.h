@@ -25,7 +25,7 @@ namespace lc {
              * Add a new layer to the document with the given layer meta data
              * @param layer
              */
-            virtual void addLayer(Layer* layer) = 0;
+            virtual void addLayer(LayerPtr layer) = 0;
 
             /**
              * Remove a layer from teh document. This will also destroy all entities on the layer
@@ -48,6 +48,7 @@ namespace lc {
              */
             virtual QHash <QString, DocumentLayerPtr> const& allLayers() const = 0;
     };
+    typedef shared_ptr<lc::LayerManager> LayerManagerPtr;
 }
 
 #endif // LAYERMANAGER_H

@@ -9,15 +9,15 @@
 class SnapManagerImpl : public SnapManager {
         Q_OBJECT
     public:
-        SnapManagerImpl(LCADViewer* viewer, lc::AbstractDocument* document, lc::SnapablePtr grid);
+        SnapManagerImpl(LCADViewer* viewer, lc::SelectionManagerPtr _selectionmanager, lc::SnapablePtr grid, double distanceToSnap);
 
 
     public slots:
         void on_mouseMoveEvent(const MouseMoveEvent&);
 
     private:
-        // Document is used to fetch a number of entities
-        lc::AbstractDocument* _document;
+
+        lc::SelectionManagerPtr _selectionmanager;
 
         // Grid is snapable
         lc::SnapablePtr _grid;
@@ -28,6 +28,8 @@ class SnapManagerImpl : public SnapManager {
         // List of additional points a user can pick
         QList<lc::geo::Coordinate> _smartCoordinates;
 
+        // What the minimal distance is when we send a snap event
+        double _distanceToSnap;
 };
 
 #endif // SNAPMANAGERIMPL_H

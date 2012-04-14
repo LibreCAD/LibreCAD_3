@@ -11,18 +11,17 @@
 using namespace lc;
 
 DocumentImpl::DocumentImpl() : AbstractDocument() {
-    _layerManager = NULL;
     releaseLock();
 }
 
 DocumentImpl::~DocumentImpl() {
 }
 
-LayerManager* DocumentImpl::layerManager() const {
+LayerManagerPtr DocumentImpl::layerManager() const {
     return _layerManager;
 }
 
-void DocumentImpl::setLayerManager(LayerManager* layerManager) {
+void DocumentImpl::setLayerManager(LayerManagerPtr layerManager) {
     _layerManager = layerManager;
 }
 

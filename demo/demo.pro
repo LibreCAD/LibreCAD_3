@@ -6,7 +6,6 @@
 
 QT       += core gui opengl
 
-TARGET = ../lcdemo/demo
 TEMPLATE = app
 
 # Store intermedia stuff somewhere else
@@ -25,8 +24,10 @@ win32 {
 unix {
     macx {
         LIBS+=  -L../demo.app/Contents/MacOS -llckernel  -llcadviewerplugin
+	TARGET = ../demo
     } else {
         LIBS+=  -L../lcdemo -llckernel  -llcadviewerplugin
+	TARGET = ../lcdemo/demo
     }
 }
 

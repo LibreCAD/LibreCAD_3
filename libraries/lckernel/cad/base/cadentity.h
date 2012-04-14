@@ -7,9 +7,7 @@
 #include "cad/interface/metatype.h"
 #include "cad/geometry/geoarea.h"
 
-
 namespace lc {
-
 
     /**
      *Class that all CAD entities must inherit

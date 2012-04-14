@@ -12,16 +12,17 @@
 
 class LCArcItem : public LCGraphicsItem {
     public:
-        LCArcItem(const lc::Arc* arc);
+        LCArcItem(const lc::ArcPtr arc);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+        virtual const lc::CADEntityPtr entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const lc::Arc* _arc;
+        const lc::ArcPtr _arc;
 };
 #endif // LCARCITEM_H

@@ -6,16 +6,14 @@
 using namespace lc;
 
 DocumentLayerImpl::DocumentLayerImpl() {
-    _layer = NULL;
 }
-DocumentLayerImpl::DocumentLayerImpl(Layer* layer) {
-    _layer = layer;
+DocumentLayerImpl::DocumentLayerImpl(LayerPtr layer) : _layer(layer) {
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
 }
 
-Layer* DocumentLayerImpl::layer() const {
+LayerPtr DocumentLayerImpl::layer() const {
     return this->_layer;
 }
 

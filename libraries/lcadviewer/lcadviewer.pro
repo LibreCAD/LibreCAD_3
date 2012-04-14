@@ -53,7 +53,8 @@ HEADERS     = lcadviewerplugin.h \
     helpers/snapmanagerimpl.h \
     events/snappointevent.h \
     events/drawevent.h \
-    events/mousemoveevent.h
+    events/mousemoveevent.h \
+    helpers/selectionmanagerimpl.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
@@ -67,7 +68,8 @@ SOURCES     = lcadviewerplugin.cpp \
     drawitems/metricgrid.cpp \
     drawitems/cursor.cpp \
     qcachedgraphicsview.cpp \
-    helpers/snapmanagerimpl.cpp
+    helpers/snapmanagerimpl.cpp \
+    helpers/selectionmanagerimpl.cpp
 
 
 RESOURCES   = icons.qrc

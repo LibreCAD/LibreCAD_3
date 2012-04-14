@@ -8,4 +8,3 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 
 Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<MetaTypePtr>& metaTypes) : CADEntity(metaTypes),  geo::Arc(center, radius, startAngle, endAngle) {
 }
-

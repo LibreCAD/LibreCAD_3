@@ -4,7 +4,7 @@
 #include "cad/geometry/geocoordinate.h"
 
 /**
-  * Event that get's dispatched each time a potential snap point was found
+  * Event that get's dispatched each time we want to have the cursor snapping to this point
   *
   */
 class SnapPointEvent {
@@ -19,7 +19,9 @@ class SnapPointEvent {
             return _snapPoint;
         }
 
-        bool status() const {return _snapped;}
+        bool status() const {
+            return _snapped;
+        }
 
     private:
         lc::geo::Coordinate _snapPoint;

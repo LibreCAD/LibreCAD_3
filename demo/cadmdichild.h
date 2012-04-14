@@ -10,36 +10,35 @@ namespace Ui {
     class CadMdiChild;
 }
 
-class CadMdiChild : public QWidget
-{
-    Q_OBJECT
+class CadMdiChild : public QWidget {
+        Q_OBJECT
 
-public:
-    explicit CadMdiChild(QWidget *parent = 0);
-    ~CadMdiChild();
+    public:
+        explicit CadMdiChild(QWidget* parent = 0);
+        ~CadMdiChild();
 
-    void newDocument();
+        void newDocument();
 
-public slots:
-    void on_actionAdd_Random_Lines_triggered();
+    public slots:
+        void on_actionAdd_Random_Lines_triggered();
 
-    void on_addCircles_clicked();
+        void on_addCircles_clicked();
 
-    void undo();
-    void redo();
+        void undo();
+        void redo();
 
-    void on_clearUndoables_clicked();
+        void on_clearUndoables_clicked();
 
-    void on_addArcs_clicked();
+        void on_addArcs_clicked();
 
-    void on_addEllipse_clicked();
+        void on_addEllipse_clicked();
 
-private:
-    int randInt(int low, int high);
-    Ui::CadMdiChild *ui;
+    private:
+        int randInt(int low, int high);
+        Ui::CadMdiChild* ui;
 
-    lc::AbstractDocument* _document;
-    lc::UndoManager* _undoManager;
+        lc::AbstractDocument* _document;
+        lc::UndoManager* _undoManager;
 
 };
 

@@ -23,10 +23,10 @@ class MainWindow : public QMainWindow {
 
         int randInt(int low, int high);
 
-        CadMdiChild * createMdiChild();
-        CadMdiChild *activeMdiChild();
+        CadMdiChild* createMdiChild();
+        CadMdiChild* activeMdiChild();
         void updateMenus();
-        void setActiveSubWindow(QWidget *window);
+        void setActiveSubWindow(QWidget* window);
 
     protected:
     private slots:
@@ -41,9 +41,9 @@ class MainWindow : public QMainWindow {
         void on_actionClear_Undoable_Stack_triggered();
         void on_actionAdd_Random_Lines_triggered();
 
-private:
+    private:
         Ui::MainWindow* ui;
-        QSignalMapper *windowMapper;
+        QSignalMapper* windowMapper;
 
 };
 

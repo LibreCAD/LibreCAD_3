@@ -27,8 +27,8 @@ namespace lc {
             virtual ~DocumentImpl();
 
             void operateOn(OperationPtr operation);
-            LayerManager* layerManager() const;
-            void setLayerManager(LayerManager* layerManager);
+            LayerManagerPtr layerManager() const;
+            void setLayerManager(LayerManagerPtr layerManager);
 
         public:
         signals:
@@ -56,7 +56,7 @@ namespace lc {
             virtual void lock();
             virtual void releaseLock() ;
         private:
-            LayerManager* _layerManager;
+            LayerManagerPtr _layerManager;
             bool _locked;
 
     };

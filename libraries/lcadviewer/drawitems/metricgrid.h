@@ -18,7 +18,9 @@ class MetricGrid : public LCViewerDrawItem, public lc::Snapable {
 
         virtual void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
 
-        virtual QList<lc::geo::Coordinate> snapPoints(const lc::geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
+        virtual QList<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
+
+        virtual lc::geo::Coordinate nearestPointOnEntity(const lc::geo::Coordinate& coord) const;
 
     private:
         double gridSize();

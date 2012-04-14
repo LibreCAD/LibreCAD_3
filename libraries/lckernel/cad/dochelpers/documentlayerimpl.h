@@ -18,14 +18,14 @@ namespace lc {
     class DocumentLayerImpl : public DocumentLayer {
         public:
             DocumentLayerImpl();
-            DocumentLayerImpl(Layer* layer);
+            DocumentLayerImpl(LayerPtr layer);
             virtual ~DocumentLayerImpl();
 
             virtual void addEntity(CADEntityPtr entity);
             virtual void removeEntity(ID_DATATYPE id);
             virtual QHash<int, CADEntityPtr>  const& allEntities() const;
 
-            virtual Layer* layer() const;
+            virtual LayerPtr layer() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);
@@ -39,7 +39,7 @@ namespace lc {
         private:
 
         private:
-            Layer* _layer;
+            LayerPtr _layer;
             QHash<int, CADEntityPtr> _cadentities;
     };
 }

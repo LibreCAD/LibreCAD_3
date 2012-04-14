@@ -22,7 +22,7 @@ namespace lc {
 
         public:
             virtual void addLayer(const QString& layerName);
-            virtual void addLayer(Layer* layer);
+            virtual void addLayer(LayerPtr layer);
             virtual void removeLayer(const QString& layerName);
 
             virtual DocumentLayerPtr layer(const QString& layerName) const;

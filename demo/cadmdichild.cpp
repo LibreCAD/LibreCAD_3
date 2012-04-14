@@ -14,7 +14,6 @@
 #include "cad/document/layermanager.h"
 #include "cad/document/selectionmanager.h"
 #include "cad/dochelpers/layermanagerimpl.h"
-#include "cad/dochelpers/selectionmanagerimpl.h"
 #include "cad/dochelpers/entitymanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
@@ -25,17 +24,16 @@
 #include "drawitems/cursor.h"
 #include "helpers/snapmanager.h"
 #include "helpers/snapmanagerimpl.h"
+#include "helpers/selectionmanagerimpl.h"
 #include "cad/interface/snapable.h"
 
-CadMdiChild::CadMdiChild(QWidget *parent) :
+CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
-    ui(new Ui::CadMdiChild)
-{
+    ui(new Ui::CadMdiChild) {
     ui->setupUi(this);
 }
 
-CadMdiChild::~CadMdiChild()
-{
+CadMdiChild::~CadMdiChild() {
     delete ui;
     delete _document;
 }
@@ -69,21 +67,21 @@ void CadMdiChild::newDocument() {
 
     // A layer manager is required for a document to work, but chicken and the egg problem prevents making these referencing them
     // May be the document should create it somehow???
-    _document->setLayerManager(layerManager);
+    _document->setLayerManager(lc::LayerManagerPtr(layerManager));
 
 
     // Entity manager add's/removes entities to layers
     lc::EntityManager* entityManager = new lc::EntityManagerImpl(_document);
 
-    // Selection manager keeps a list of current selected entities
-    lc::SelectionManager* newSelectionManager = new lc::SelectionManagerImpl(layerManager, 5.0);
+    // Selection manager allow for finding entities around a point or within areas
+    lc::SelectionManager* newSelectionManager = new SelectionManagerImpl(lc::LayerManagerPtr(layerManager), ui->lCADViewer);
 
     // Scene manager listens to the document and takes care that the scene is changed according to what
     // is added and removed within a document
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
     // Snap manager
-    SnapManager* _snapManager = new SnapManagerImpl(ui->lCADViewer, _document,  dynamic_pointer_cast<lc::Snapable>(metricGrid));
+    SnapManager* _snapManager = new SnapManagerImpl(ui->lCADViewer, lc::SelectionManagerPtr(newSelectionManager),  dynamic_pointer_cast<lc::Snapable>(metricGrid), 11.0);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
     Cursor* _cursor = new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));

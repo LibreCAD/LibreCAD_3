@@ -34,7 +34,7 @@ namespace lc {
              * Return a pointer to the layer meta object
              * @return
              */
-            virtual Layer* layer() const = 0;
+            virtual LayerPtr layer() const = 0;
 
             /**
              * Return a list of all entities

@@ -1,6 +1,6 @@
 #include "lcellipseitem.h"
 
-LCEllipseItem::LCEllipseItem(const lc::Ellipse* ellipse) : LCGraphicsItem(), _ellipse(ellipse) {
+LCEllipseItem::LCEllipseItem(const lc::EllipsePtr ellipse) : LCGraphicsItem(), _ellipse(ellipse) {
 }
 
 
@@ -32,4 +32,8 @@ QPainterPath LCEllipseItem::shape() const {
     QPainterPath path;
     path.addEllipse(boundingRect());
     return path;
+}
+
+const lc::CADEntityPtr LCEllipseItem::entity() const {
+    return _ellipse;
 }

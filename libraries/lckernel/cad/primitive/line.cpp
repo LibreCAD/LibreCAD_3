@@ -10,9 +10,27 @@ Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList
 
 
 
-QList<geo::Coordinate> Line::snapPoints(const geo::Coordinate& mousePointer, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
-    QList<geo::Coordinate> foo;
-    foo << this->start() << this->end();
-    return foo;
+QList<lc::EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    QList<EntityCoordinate> points;
+
+    points.append(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
+    points.append(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
+
+
+    geo::Coordinate npoe = nearestPointOnEntity(coord);
+    geo::Coordinate rVector = npoe - coord;
+
+    double distance = rVector.magnitude();
+
+    if (distance < minDistanceToSnap) {
+        points.append(EntityCoordinate(npoe, distance, -1));
+    }
+
+    // Sort by distance
+    qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
+    return points;
 }
 
+geo::Coordinate Line::nearestPointOnEntity(const geo::Coordinate& coord) const {
+    return geo::Vector::nearestPointOnEntity(coord);
+}

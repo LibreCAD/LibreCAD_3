@@ -9,7 +9,7 @@ LayerManagerImpl::LayerManagerImpl(AbstractDocument* document) : LayerManager(),
     setObjectName(LAYERMANAGERHELPER_NAME);
 
 
-    _documentLayers.insert("0", DocumentLayerPtr(new DocumentLayerImpl(new Layer("0", new LineWidth(1.0), new Color(255, 255, 255)))));
+    _documentLayers.insert("0", DocumentLayerPtr(new DocumentLayerImpl(LayerPtr(new Layer("0", new LineWidth(1.0), new Color(255, 255, 255))))));
 }
 
 LayerManagerImpl::~LayerManagerImpl() {
@@ -22,10 +22,10 @@ void LayerManagerImpl::addLayer(const QString& layerName) {
         throw "AbstractDocument layer " + layerName + " already exists.";
     }
 
-    _documentLayers.insert(layerName, DocumentLayerPtr(new DocumentLayerImpl(new Layer(layerName, new LineWidth(1.0), new Color(255, 255, 255)))));
+    _documentLayers.insert(layerName, DocumentLayerPtr(new DocumentLayerImpl(LayerPtr(new Layer(layerName, new LineWidth(1.0), new Color(255, 255, 255))))));
 }
 
-void LayerManagerImpl::addLayer(Layer* layer) {
+void LayerManagerImpl::addLayer(LayerPtr layer) {
     DocumentLayerPtr docLayer = _documentLayers.value(layer->name());
 
     if (docLayer != NULL) {

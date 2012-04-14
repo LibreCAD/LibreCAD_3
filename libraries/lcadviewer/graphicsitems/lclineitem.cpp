@@ -1,6 +1,6 @@
 #include "graphicsitems/lclineitem.h"
 
-LCLineItem::LCLineItem(const lc::Line* l) : LCGraphicsItem(), _line(l) {
+LCLineItem::LCLineItem(lc::LinePtr l) : LCGraphicsItem(), _line(l) {
 }
 
 
@@ -26,4 +26,8 @@ QPainterPath LCLineItem::shape() const {
     path.moveTo(_line->start().x(), _line->start().y());
     path.lineTo(_line->end().x(), _line->end().y());
     return path;
+}
+
+const lc::CADEntityPtr LCLineItem::entity() const {
+    return _line;
 }

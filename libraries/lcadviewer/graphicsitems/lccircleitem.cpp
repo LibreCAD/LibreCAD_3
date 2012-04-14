@@ -1,7 +1,7 @@
 #include "lccircleitem.h"
 
 
-LCCircleItem::LCCircleItem(const lc::Circle* circle) : LCGraphicsItem(), _circle(circle) {
+LCCircleItem::LCCircleItem(const lc::CirclePtr circle) : LCGraphicsItem(), _circle(circle) {
 }
 
 
@@ -16,7 +16,6 @@ QRectF LCCircleItem::boundingRect() const {
 }
 
 void LCCircleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
-
     LCGraphicsItem::paint(_circle, painter, option, widget);
 
     painter->drawArc(QRectF(_circle->center().x() - _circle->radius(),
@@ -34,3 +33,6 @@ QPainterPath LCCircleItem::shape() const {
 }
 
 
+const lc::CADEntityPtr LCCircleItem::entity() const {
+    return _circle;
+}
