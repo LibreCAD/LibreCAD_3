@@ -15,7 +15,7 @@ const Coordinate& Vector::end() const {
     return _end;
 }
 
-Coordinate Vector::nearestPointOnEntity(const Coordinate& coord) const {
+Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
     Coordinate direction = this->end() - this->start();
     Coordinate vpc = coord - this->start();
     // At DLI: We don't test if length is 0 because we require that each vector/line is valid when it's created, test needs to be done in the constructor!

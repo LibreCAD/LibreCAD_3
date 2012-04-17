@@ -109,6 +109,6 @@ QList<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& co
 }
 
 
-lc::geo::Coordinate MetricGrid::nearestPointOnEntity(const lc::geo::Coordinate& coord) const {
-    throw "nearestPointOnEntity not available for grid";
+lc::geo::Coordinate MetricGrid::nearestPointOnPath(const lc::geo::Coordinate& coord) const {
+    throw "nearestPointOnPath not available for grid";
 }

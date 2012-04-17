@@ -8,6 +8,7 @@
 #include "qcachedgraphicsview.h"
 #include "events/drawevent.h"
 #include "events/snappointevent.h"
+#include "events/mousereleaseevent.h"
 #include "helpers/snapmanager.h"
 
 
@@ -20,6 +21,11 @@ class Cursor : public QObject  {
     slots:
         void on_Draw_Event(const DrawEvent&);
         void on_SnapPoint_Event(const SnapPointEvent&);
+        void on_MouseRelease_Event(const MouseReleaseEvent&);
+
+    public:
+    signals:
+        void mouseReleaseEvent(const MouseReleaseEvent&);
 
     private:
         const QColor _xAxisColor;
@@ -28,5 +34,7 @@ class Cursor : public QObject  {
 
         SnapPointEvent _lastSnapEvent;
 };
+
+typedef shared_ptr<const Cursor> CursorPtr;
 
 #endif // CURSOR_H

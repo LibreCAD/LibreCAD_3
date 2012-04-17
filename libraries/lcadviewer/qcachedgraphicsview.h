@@ -5,6 +5,7 @@
 #include <QtGui>
 
 #include "events/mousemoveevent.h"
+#include "events/mousereleaseevent.h"
 #include "events/drawevent.h"
 
 /**
@@ -23,11 +24,13 @@ class QCachedGraphicsView : public QGraphicsView {
         virtual void wheelEvent(QWheelEvent* event);
         virtual void resizeEvent(QResizeEvent* event);
         void mouseMoveEvent(QMouseEvent* event);
+        void mouseReleaseEvent(QMouseEvent* event);
         virtual QPointF lastMousePosition() const;
 
     public:
     signals:
         void mouseMoveEvent(const MouseMoveEvent&);
+        void mouseReleaseEvent(const MouseReleaseEvent&);
         void drawEvent(const DrawEvent&);
 
     private:

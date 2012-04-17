@@ -28,7 +28,7 @@ namespace lc {
              * @param bool  when !=null this boolean we show true if the coordinate is on the entities path
              * @return Coordinate on entity that's closest to coord
              */
-            virtual geo::Coordinate nearestPointOnEntity(const geo::Coordinate& coord) const = 0;
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
 
     };
     typedef shared_ptr<const lc::Snapable> SnapablePtr;

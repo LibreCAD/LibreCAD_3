@@ -25,14 +25,12 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
     // Now calculate for each entity if we are near the entities path
     QList<lc::EntityDistance> entities;
 
-    qDebug() << "testing for " << items.count() << " entities";
-
     for (int i = 0; i < items.count(); i++) {
         LCGraphicsItem* item = static_cast<LCGraphicsItem*>(items.at(i));
         lc::SnapablePtr entity = dynamic_pointer_cast<const lc::Snapable>(item->entity());
 
         if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
-            lc::geo::Coordinate eCoordinate = entity->nearestPointOnEntity(point);
+            lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
             lc::geo::Coordinate nearestCoord = eCoordinate - point;
 
             double cDistance = nearestCoord.magnitude();

@@ -34,10 +34,23 @@ unix {
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cadmdichild.cpp
+    cadmdichild.cpp \
+    ui/lcmaintoolbar.cpp \
+    operations/operationstackmanager.cpp \
+    operations/linecreateoperation.cpp
 
 HEADERS  += mainwindow.h \
-    cadmdichild.h
+    cadmdichild.h \
+    ui/lcmaintoolbar.h \
+    operations/operationstackmanager.h \
+    operations/operation.h \
+    const.h \
+    operations/linecreateoperation.h \
+    imainwindow.h
 
 FORMS    += mainwindow.ui \
-    cadmdichild.ui
+    cadmdichild.ui \
+    ui/lcmaintoolbar.ui
+
+RESOURCES += \
+    ui/resource.qrc

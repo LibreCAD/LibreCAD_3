@@ -7,7 +7,7 @@
 #include "ui_mainwindow.h"
 
 
-
+#include "ui/lcmaintoolbar.h"
 
 #include <QtGui>
 
@@ -15,7 +15,7 @@
 
 
 MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent),
+    IMainWindow(parent),
     ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
@@ -32,6 +32,8 @@ MainWindow::MainWindow(QWidget* parent) :
 
     setWindowTitle(tr("LibreCAD "));
     setUnifiedTitleAndToolBarOnMac(true);
+
+    addToolbars();
 
     on_actionNew_triggered();
 }
@@ -109,4 +111,16 @@ void MainWindow::on_actionAdd_Random_Lines_triggered() {
     if (activeMdiChild()) {
         activeMdiChild()->on_actionAdd_Random_Lines_triggered();
     }
+}
+
+void MainWindow::addToolbars() {
+
+    QDockWidget* dockWidget = new QDockWidget("", this);
+    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                Qt::RightDockWidgetArea);
+    dockWidget->setMaximumWidth(33);
+    dockWidget->setWidget(new LCMainToolbar(this));
+    addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+
+
 }

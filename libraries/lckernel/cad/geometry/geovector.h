@@ -14,7 +14,7 @@ namespace lc {
                 const Coordinate& start() const;
                 const Coordinate& end() const;
 
-                geo::Coordinate nearestPointOnEntity(const geo::Coordinate& coord) const;
+                geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 
             private:
                 const Coordinate _start;

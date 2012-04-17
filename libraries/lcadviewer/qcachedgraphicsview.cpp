@@ -96,3 +96,8 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
     emit mouseMoveEvent(e);
 
 }
+
+void QCachedGraphicsView::mouseReleaseEvent(QMouseEvent* event) {
+    MouseReleaseEvent e(this, _lastMousePosition);
+    emit mouseReleaseEvent(e);
+}

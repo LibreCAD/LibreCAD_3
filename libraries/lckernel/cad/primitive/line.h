@@ -18,8 +18,7 @@ namespace lc {
 
         public:
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-
-            virtual geo::Coordinate nearestPointOnEntity(const geo::Coordinate& coord) const;
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
         private:
     };
     typedef shared_ptr<const lc::Line> LinePtr;

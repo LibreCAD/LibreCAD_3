@@ -8,6 +8,9 @@ Cursor::Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManager* s
     connect(snapManager, SIGNAL(snapPointEvent(const SnapPointEvent&)),
             this, SLOT(on_SnapPoint_Event(const SnapPointEvent&)));
 
+    connect(graphicsView, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
+            this, SLOT(on_MouseRelease_Event(const MouseReleaseEvent&)));
+
 }
 
 void Cursor::on_Draw_Event(const DrawEvent& event) {
@@ -38,4 +41,13 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
 
 void Cursor::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
+}
+
+void Cursor::on_MouseRelease_Event(const MouseReleaseEvent& event) {
+    if (_lastSnapEvent.status() == true) {
+        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint());
+        emit mouseReleaseEvent(snappedLocation);
+    } else {
+        emit mouseReleaseEvent(event);
+    }
 }

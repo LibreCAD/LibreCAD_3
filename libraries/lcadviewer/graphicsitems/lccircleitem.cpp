@@ -22,7 +22,8 @@ void LCCircleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opti
                             _circle->center().y() - _circle->radius(),
                             2 * _circle->radius(),
                             2 * _circle->radius()), 0, 5760);
-    // FIXME? Do we need to crite end lines for arc's because of the limitation of teh start/stop angle?
+
+    // TODO: Add a little cross in the middle?
 }
 
 

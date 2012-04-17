@@ -20,7 +20,7 @@ class MetricGrid : public LCViewerDrawItem, public lc::Snapable {
 
         virtual QList<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 
-        virtual lc::geo::Coordinate nearestPointOnEntity(const lc::geo::Coordinate& coord) const;
+        virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const;
 
     private:
         double gridSize();

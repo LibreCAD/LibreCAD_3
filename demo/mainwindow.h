@@ -4,17 +4,20 @@
 #include <QMainWindow>
 #include <QtGui>
 
+#include "const.h"
+
 #include "cadmdichild.h"
 
 #include "cad/document/abstractdocument.h"
 #include "cad/document/undomanager.h"
 
+#include "imainwindow.h"
 
 namespace Ui {
     class MainWindow;
 }
 
-class MainWindow : public QMainWindow {
+class MainWindow : public IMainWindow {
         Q_OBJECT
 
     public:
@@ -23,8 +26,8 @@ class MainWindow : public QMainWindow {
 
         int randInt(int low, int high);
 
-        CadMdiChild* createMdiChild();
-        CadMdiChild* activeMdiChild();
+        virtual CadMdiChild* createMdiChild();
+        virtual CadMdiChild* activeMdiChild();
         void updateMenus();
         void setActiveSubWindow(QWidget* window);
 
@@ -40,6 +43,9 @@ class MainWindow : public QMainWindow {
         void on_actionAdd_Random_Arc_triggered();
         void on_actionClear_Undoable_Stack_triggered();
         void on_actionAdd_Random_Lines_triggered();
+
+    private:
+        void addToolbars();
 
     private:
         Ui::MainWindow* ui;

@@ -14,10 +14,11 @@ QList<lc::EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, doubl
     QList<EntityCoordinate> points;
 
     points.append(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
+
     points.append(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
 
 
-    geo::Coordinate npoe = nearestPointOnEntity(coord);
+    geo::Coordinate npoe = nearestPointOnPath(coord);
     geo::Coordinate rVector = npoe - coord;
 
     double distance = rVector.magnitude();
@@ -28,9 +29,9 @@ QList<lc::EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, doubl
 
     // Sort by distance
     qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
-    return points;
+    return points.mid(0, maxNumberOfSnapPoints);
 }
 
-geo::Coordinate Line::nearestPointOnEntity(const geo::Coordinate& coord) const {
-    return geo::Vector::nearestPointOnEntity(coord);
+geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
+    return geo::Vector::nearestPointOnPath(coord);
 }

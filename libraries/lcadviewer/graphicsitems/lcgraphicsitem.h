@@ -30,7 +30,9 @@ class LCGraphicsItem : public QGraphicsItem {
           */
         virtual void paint(lc::CADEntityPtr, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
-
+        /**
+          * Return the CADentity that this GrapgicsItem manages
+          */
         virtual const lc::CADEntityPtr entity() const = 0;
 };
 

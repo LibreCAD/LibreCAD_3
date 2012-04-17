@@ -84,7 +84,7 @@ void CadMdiChild::newDocument() {
     SnapManager* _snapManager = new SnapManagerImpl(ui->lCADViewer, lc::SelectionManagerPtr(newSelectionManager),  dynamic_pointer_cast<lc::Snapable>(metricGrid), 11.0);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    Cursor* _cursor = new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+    _cursor = CursorPtr(new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00)));
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = new lc::UndoManagerImpl(_document, 10);
@@ -98,7 +98,6 @@ void CadMdiChild::newDocument() {
     foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, 100), lc::geo::Coordinate(100, -100))));
     foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, -100), lc::geo::Coordinate(100, 100))));
     _document->operateOn(shared_ptr<lc::Operation>(foo));
-
 }
 
 
@@ -202,4 +201,9 @@ void CadMdiChild::on_addEllipse_clicked() {
     }
 
     _document->operateOn(shared_ptr<lc::Operation>(foo));
+}
+
+
+QCachedGraphicsView* CadMdiChild::view() const {
+    return ui->lCADViewer;
 }

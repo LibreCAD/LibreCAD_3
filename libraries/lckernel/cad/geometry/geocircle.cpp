@@ -18,3 +18,15 @@ const Coordinate& Circle::center() const {
 double Circle::radius() const {
     return _radius;
 }
+
+
+Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
+    geo::Coordinate vp = coord - center();
+    double d = vp.magnitude();
+    return center() + vp * (radius() / d);
+}
+
+QDebug operator << (QDebug dbg, const lc::geo::Circle& c) {
+    dbg.nospace() << "(" << c.center() << "," << c.radius() << ")";
+    return dbg.space();
+}

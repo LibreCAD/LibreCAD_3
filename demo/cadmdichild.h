@@ -5,6 +5,7 @@
 
 #include "cad/document/abstractdocument.h"
 #include "cad/document/undomanager.h"
+#include "drawitems/cursor.h"
 
 namespace Ui {
     class CadMdiChild;
@@ -33,6 +34,12 @@ class CadMdiChild : public QWidget {
 
         void on_addEllipse_clicked();
 
+    public:
+        CursorPtr cursor() const {
+            return _cursor;
+        }
+        QCachedGraphicsView* view() const;
+
     private:
         int randInt(int low, int high);
         Ui::CadMdiChild* ui;
@@ -40,6 +47,7 @@ class CadMdiChild : public QWidget {
         lc::AbstractDocument* _document;
         lc::UndoManager* _undoManager;
 
+        CursorPtr _cursor;
 };
 
 #endif // CADMDICHILD_H
