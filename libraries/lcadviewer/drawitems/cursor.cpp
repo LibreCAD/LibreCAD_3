@@ -1,11 +1,11 @@
 #include "cursor.h"
 
-Cursor::Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManager* snapManager, const QColor& xAxisColor, const QColor& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
+Cursor::Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManagerPtr snapManager, const QColor& xAxisColor, const QColor& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
 
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_Draw_Event(const DrawEvent&)));
 
-    connect(snapManager, SIGNAL(snapPointEvent(const SnapPointEvent&)),
+    connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
             this, SLOT(on_SnapPoint_Event(const SnapPointEvent&)));
 
     connect(graphicsView, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),

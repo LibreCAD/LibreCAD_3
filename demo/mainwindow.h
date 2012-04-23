@@ -27,7 +27,7 @@ class MainWindow : public IMainWindow {
         int randInt(int low, int high);
 
         virtual CadMdiChild* createMdiChild();
-        virtual CadMdiChild* activeMdiChild();
+        virtual CadMdiChild* activeMdiChild() const;
         void updateMenus();
         void setActiveSubWindow(QWidget* window);
 
@@ -45,6 +45,8 @@ class MainWindow : public IMainWindow {
         void on_actionAdd_Random_Lines_triggered();
 
     private:
+        bool eventFilter(QObject* object, QEvent* event);
+
         void addToolbars();
 
     private:

@@ -1,9 +1,12 @@
 #include "snapmanagerimpl.h"
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* viewer, lc::SelectionManagerPtr selectionmanager, lc::SnapablePtr grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, lc::SelectionManagerPtr selectionmanager, lc::SnapablePtr grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
 
-    connect(viewer, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
+    connect(graphicsView, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
+
+    connect(graphicsView, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
+            this, SLOT(on_mouseRelease_Event(const MouseReleaseEvent&)));
 }
 
 
@@ -28,6 +31,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
         // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());
+        _lastSnapEvent = snapEvent;
         emit snapPointEvent(snapEvent);
         return;
     }
@@ -37,6 +41,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
     if (points.length() > 0) {
         SnapPointEvent snapEvent(points.at(0).coordinate());
+        _lastSnapEvent = snapEvent;
         emit snapPointEvent(snapEvent);
         return;
     }
@@ -44,5 +49,16 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // FIXME: Currently sending a snapEvent so the cursor get's updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
     SnapPointEvent snapEvent;
+    _lastSnapEvent = snapEvent;
     emit snapPointEvent(snapEvent);
+}
+
+
+void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
+    if (_lastSnapEvent.status() == true) {
+        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint());
+        emit mouseReleaseEvent(snappedLocation);
+    } else {
+        emit mouseReleaseEvent(event);
+    }
 }

@@ -6,6 +6,10 @@
 #include "cad/document/abstractdocument.h"
 #include "cad/document/undomanager.h"
 #include "drawitems/cursor.h"
+#include "helpers/snapmanager.h"
+#include "cad/document/layermanager.h"
+
+#include "operations/operationmanager.h"
 
 namespace Ui {
     class CadMdiChild;
@@ -39,6 +43,9 @@ class CadMdiChild : public QWidget {
             return _cursor;
         }
         QCachedGraphicsView* view() const;
+        SnapManagerPtr snapManager() const;
+        OperationManagerPtr operationManager() const;
+        void cancelCurrentOperations();
 
     private:
         int randInt(int low, int high);
@@ -48,6 +55,10 @@ class CadMdiChild : public QWidget {
         lc::UndoManager* _undoManager;
 
         CursorPtr _cursor;
+        SnapManagerPtr _snapManager;
+        lc::LayerManagerPtr _layerManager;
+
+        OperationManagerPtr _operationManager;
 };
 
 #endif // CADMDICHILD_H

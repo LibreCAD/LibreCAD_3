@@ -11,6 +11,9 @@
   */
 class MouseReleaseEvent  {
     public:
+        MouseReleaseEvent() {
+            _view = NULL;
+        }
         MouseReleaseEvent(QGraphicsView* view, const lc::geo::Coordinate& mousePosition) : _view(view), _mousePosition(mousePosition) {
         }
 
@@ -26,5 +29,6 @@ class MouseReleaseEvent  {
         QGraphicsView* _view;
         lc::geo::Coordinate _mousePosition;
 };
+Q_DECLARE_METATYPE(MouseReleaseEvent)
 
 #endif // MouseReleaseEvent_H

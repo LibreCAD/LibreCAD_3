@@ -8,6 +8,7 @@
 
 
 #include "ui/lcmaintoolbar.h"
+#include "ui/clicommand.h"
 
 #include <QtGui>
 
@@ -34,8 +35,10 @@ MainWindow::MainWindow(QWidget* parent) :
     setUnifiedTitleAndToolBarOnMac(true);
 
     addToolbars();
+    installEventFilter(this);
 
     on_actionNew_triggered();
+
 }
 
 MainWindow::~MainWindow() {
@@ -54,7 +57,7 @@ CadMdiChild* MainWindow::createMdiChild() {
     return child;
 }
 
-CadMdiChild* MainWindow::activeMdiChild() {
+CadMdiChild* MainWindow::activeMdiChild() const {
     if (QMdiSubWindow* activeSubWindow = ui->mdiArea->activeSubWindow()) {
         return qobject_cast<CadMdiChild*>(activeSubWindow->widget());
     }
@@ -115,6 +118,7 @@ void MainWindow::on_actionAdd_Random_Lines_triggered() {
 
 void MainWindow::addToolbars() {
 
+    // Left docing are + toolbar
     QDockWidget* dockWidget = new QDockWidget("", this);
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea |
                                 Qt::RightDockWidgetArea);
@@ -122,5 +126,25 @@ void MainWindow::addToolbars() {
     dockWidget->setWidget(new LCMainToolbar(this));
     addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 
+    // Add Cli COmmand interpeter
+    QDockWidget* _cliCommand = new CliCommand(this);
+    addDockWidget(Qt::BottomDockWidgetArea, _cliCommand);
 
+}
+
+
+bool MainWindow::eventFilter(QObject* object, QEvent* event) {
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+
+        if (keyEvent->key() == Qt::Key_Escape) {
+            activeMdiChild()->cancelCurrentOperations();
+            // Special tab handling
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    return false;
 }

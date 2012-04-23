@@ -19,6 +19,8 @@ class LCMainToolbar : public QWidget {
     private slots:
         void on_toolButton_clicked();
 
+        void on_toolButton_2_clicked();
+
     private:
         Ui::LCMainToolbar* ui;
         IMainWindow* _parent;

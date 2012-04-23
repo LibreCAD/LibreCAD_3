@@ -14,6 +14,9 @@
 #include "cad/const.h"
 namespace lc {
 
+    /*!
+     * \deprecated Pen is deperecated a user must use color or linewdith
+     */
     class Pen : MetaType {
         public:
 

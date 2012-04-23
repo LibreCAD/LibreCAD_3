@@ -27,6 +27,8 @@
 #include "helpers/selectionmanagerimpl.h"
 #include "cad/interface/snapable.h"
 
+#include "cadmdichild.h"
+
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
     ui(new Ui::CadMdiChild) {
@@ -63,25 +65,25 @@ void CadMdiChild::newDocument() {
     _document = new lc::DocumentImpl();
 
     // Layer Manager takes care of creating and removing layers
-    lc::LayerManager* layerManager = new lc::LayerManagerImpl(_document);
+    _layerManager = lc::LayerManagerPtr(new lc::LayerManagerImpl(_document));
 
     // A layer manager is required for a document to work, but chicken and the egg problem prevents making these referencing them
     // May be the document should create it somehow???
-    _document->setLayerManager(lc::LayerManagerPtr(layerManager));
+    _document->setLayerManager(_layerManager);
 
 
     // Entity manager add's/removes entities to layers
     lc::EntityManager* entityManager = new lc::EntityManagerImpl(_document);
 
     // Selection manager allow for finding entities around a point or within areas
-    lc::SelectionManager* newSelectionManager = new SelectionManagerImpl(lc::LayerManagerPtr(layerManager), ui->lCADViewer);
+    lc::SelectionManager* newSelectionManager = new SelectionManagerImpl(_layerManager, ui->lCADViewer);
 
     // Scene manager listens to the document and takes care that the scene is changed according to what
     // is added and removed within a document
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
     // Snap manager
-    SnapManager* _snapManager = new SnapManagerImpl(ui->lCADViewer, lc::SelectionManagerPtr(newSelectionManager),  dynamic_pointer_cast<lc::Snapable>(metricGrid), 11.0);
+    _snapManager = SnapManagerPtr(new SnapManagerImpl(ui->lCADViewer, lc::SelectionManagerPtr(newSelectionManager),  dynamic_pointer_cast<lc::Snapable>(metricGrid), 11.0));
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
     _cursor = CursorPtr(new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00)));
@@ -98,6 +100,18 @@ void CadMdiChild::newDocument() {
     foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, 100), lc::geo::Coordinate(100, -100))));
     foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, -100), lc::geo::Coordinate(100, 100))));
     _document->operateOn(shared_ptr<lc::Operation>(foo));
+
+    // Add operation manager
+    _operationManager = OperationManagerPtr(new OperationManager(_document));
+
+    /*
+    QWidget *widget=new QTableWidget();
+    widget->setMaximumHeight(50);
+    widget->setMinimumHeight(50);
+    widget->setMaximumWidth(50);
+    widget->setMinimumWidth(50);
+    QGraphicsProxyWidget * gp=ui->lCADViewer->scene()->addWidget(widget);
+    gp->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable); */
 }
 
 
@@ -207,3 +221,15 @@ void CadMdiChild::on_addEllipse_clicked() {
 QCachedGraphicsView* CadMdiChild::view() const {
     return ui->lCADViewer;
 }
+
+SnapManagerPtr CadMdiChild::snapManager() const {
+    return  _snapManager;
+}
+
+OperationManagerPtr CadMdiChild::operationManager() const {
+    return _operationManager;
+}
+void CadMdiChild::cancelCurrentOperations() {
+    operationManager()->cancel();
+}
+

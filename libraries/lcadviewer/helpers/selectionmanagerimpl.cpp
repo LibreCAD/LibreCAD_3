@@ -26,17 +26,21 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
     QList<lc::EntityDistance> entities;
 
     for (int i = 0; i < items.count(); i++) {
-        LCGraphicsItem* item = static_cast<LCGraphicsItem*>(items.at(i));
-        lc::SnapablePtr entity = dynamic_pointer_cast<const lc::Snapable>(item->entity());
+        LCGraphicsItem* item = dynamic_cast<LCGraphicsItem*>(items.at(i));
 
-        if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
-            lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-            lc::geo::Coordinate nearestCoord = eCoordinate - point;
+        // If item == NULL then this item was not  a type of LCGraphicsItem, so no bother to test it further
+        if (item != NULL) {
+            lc::SnapablePtr entity = dynamic_pointer_cast<const lc::Snapable>(item->entity());
 
-            double cDistance = nearestCoord.magnitude();
+            if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
+                lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
+                lc::geo::Coordinate nearestCoord = eCoordinate - point;
 
-            if (cDistance < distance) {
-                entities.append(lc::EntityDistance(dynamic_pointer_cast<const lc::CADEntity>(entity), cDistance));
+                double cDistance = nearestCoord.magnitude();
+
+                if (cDistance < distance) {
+                    entities.append(lc::EntityDistance(dynamic_pointer_cast<const lc::CADEntity>(entity), cDistance));
+                }
             }
         }
     }

@@ -20,8 +20,6 @@ namespace lc {
 
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
-
-        public:
     };
     typedef shared_ptr<const lc::Circle> CirclePtr;
 }

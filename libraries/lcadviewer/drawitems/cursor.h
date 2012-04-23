@@ -15,7 +15,7 @@
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManager* snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManagerPtr snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
 
         public
     slots:

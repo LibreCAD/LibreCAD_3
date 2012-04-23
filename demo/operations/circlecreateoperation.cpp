@@ -1,16 +1,16 @@
-#include "linecreateoperation.h"
+#include "circlecreateoperation.h"
 
-#include "cad/primitive/line.h"
+#include "cad/primitive/circle.h"
 #include "operationfinishedevent.h"
 
-LineCreateOperation::LineCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager) : Operation(), _graphicsView(graphicsView), _snapManager(snapManager) {
+CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager) : Operation(), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
             this, SLOT(on_SnapPoint_Event(const SnapPointEvent&)));
 
 
-    _waitForFirstClick = new QSnappedState();
+    QSnappedState* _waitForFirstClick = new QSnappedState();
     _waitForSecondClick = new QSnappedState();
     QSnappedState* _finishLine = new QSnappedState();
     QFinalState* finishState = new QFinalState();
@@ -39,44 +39,45 @@ LineCreateOperation::LineCreateOperation(QGraphicsView* graphicsView, SnapManage
     QObject::connect(&_machine, SIGNAL(finished()), this, SLOT(lineCreationFinished()));
 }
 
-void LineCreateOperation::lineCreationFinished() {
+void CircleCreateOperation::lineCreationFinished() {
     OperationFinishedEvent of;
     emit operationFinished(of);
 }
 
-void LineCreateOperation::restart() {
+void CircleCreateOperation::restart() {
     _machine.setInitialState(_waitForFirstClick);
     _machine.start();
 }
 
-lc::CADEntityPtr LineCreateOperation::cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const {
-    return lc::LinePtr(new lc::Line(_startPoint, _endPoint, metaTypes));
+lc::CADEntityPtr CircleCreateOperation::cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const {
+    double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
+    return lc::CirclePtr(new lc::Circle(_startPoint, r, metaTypes));
 }
 
-void LineCreateOperation::on_drawEvent(const DrawEvent& event) {
+void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
     bool s = property("hasStartPoint").toBool();
     bool e = property("hasEndPoint").toBool();
 
     if (s == true && e == false) {
         event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
+        double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
+        event.painter()->drawEllipse(_startPoint.pointF(), r, r);
     }
 
     if (s == true && e == true) {
-        event.painter()->drawLine(_startPoint.pointF(), _endPoint.pointF());
+        double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_endPoint)).magnitude();
+        event.painter()->drawEllipse(_startPoint.pointF(), r, r);
     }
 
 }
 
-void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
+void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
 
-OperationPtr LineCreateOperation::next() const {
+OperationPtr CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
-    LineCreateOperation* lco = new LineCreateOperation(this->_graphicsView, this->_snapManager);
-    lco->_machine.setInitialState(lco->_waitForSecondClick);
-    lco->_machine.start();
-    lco->_startPoint = this->_endPoint;
+    CircleCreateOperation* lco = new CircleCreateOperation(this->_graphicsView, this->_snapManager);
     return OperationPtr(lco);
 }

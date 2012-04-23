@@ -7,60 +7,48 @@
 #include <QGraphicsView>
 
 #include "cad/base/cadentity.h"
-#include "drawitems/cursor.h"
+#include "cad/primitive/line.h"
+
+#include "operationfinishedevent.h"
+
 
 #include "const.h"
 /**
-  * Interface for all operations
+  * \brief Interface for all operations
+  *
+  * A operation is a task execute using document::operateOn(..). All 'creation' operaions will needs to extend this base class
+  *
+  * \sa OperationManager
+  *
+  * \author R. van Twisk <librecad@rvt.dds.nl>
   */
 class Operation : public QObject {
         Q_OBJECT
     public:
+        /*!
+          * \brief create the CAD entity with the additional meta data
+          */
+        virtual lc::CADEntityPtr cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const = 0;
 
-        /**
-          * Called when this operation get's first time started. It allows the operation to start
-          * setting up it's events
-          * @param QGraphicsView a view this operation can connect it's events into
+        /*!
+          * \brief restart this operation
+          */
+        virtual void restart() = 0;
+
+        /*!
+          * \brief OPerationManager will call this function to continue the current operation.
+          *
+          * It allows for a line to continue and connect start/end points automatically.
           *
           */
-        virtual void start(QGraphicsView* graphicsView, CursorPtr cursor) = 0;
-
-        /**
-          * Called when the user decided to undo the last operation. It's up to the operation to
-          * decide if it's going to be undone to the start, or a last action if this operation
-          * can be done in multiple steps
-          *
-          */
-        virtual void undo() = 0;
-
-        /**
-          * If this operation can show a widget with additional settings then it should
-          * be returned here.
-          */
-        // virtual void sceneWidget() = 0;
-
-        /**
-          * Draw the full or partial geometry of this entity
-          * there is no need to set the objects pen for the operation,
-          * this will be pre-set for the action
-          *
-          * @param QPainter painter to draw into
-          */
-        // virtual void on_draw_event(const DrawEvent &) const = 0;
-
-        /**
-          * Do we want to have a method to show 'floating' widgets?
-          *
-          */
-
+        virtual shared_ptr<Operation> next() const = 0 ;
     public:
     signals:
 
-        /**
-          * Signal that a operation needs to emit once the operation is been completed
-          *
+        /*!
+          * \brief Signal that a operation needs to emit once the operation is been completed
           */
-        void operationFinalized();
+        void operationFinished(const OperationFinishedEvent&);
 };
 
 typedef shared_ptr<Operation> OperationPtr;

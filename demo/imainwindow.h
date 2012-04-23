@@ -3,8 +3,8 @@
 
 #include <QMainWindow>
 
+#include "operations/operationmanager.h"
 #include "cadmdichild.h"
-
 
 class IMainWindow : public QMainWindow {
         Q_OBJECT
@@ -12,7 +12,7 @@ class IMainWindow : public QMainWindow {
         IMainWindow(QWidget* parent) : QMainWindow(parent) {
         };
 
-        virtual CadMdiChild* activeMdiChild() = 0;
+        virtual CadMdiChild* activeMdiChild() const = 0;
 };
 
 #endif // IMAINWINDOW_H

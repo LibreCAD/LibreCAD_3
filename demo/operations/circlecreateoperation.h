@@ -1,5 +1,5 @@
-#ifndef LINECREATEOPERATION_H
-#define LINECREATEOPERATION_H
+#ifndef CIRCLECREATEOPERATION_H
+#define CIRCLECREATEOPERATION_H
 
 #include <QState>
 #include <QStateMachine>
@@ -12,17 +12,12 @@
 
 #include "qsnappedstate.h"
 
-/*!
- * \brief Starts a operation to create a new line of the type lc::Line
- *
- *
- */
-class LineCreateOperation : public Operation {
+class CircleCreateOperation : public Operation {
         Q_OBJECT
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        LineCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager);
+        CircleCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager);
 
         virtual lc::CADEntityPtr cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const;
 
@@ -65,4 +60,4 @@ class LineCreateOperation : public Operation {
         SnapManagerPtr _snapManager;
 };
 
-#endif // LINECREATEOPERATION_H
+#endif // CircleCreateOperation_H

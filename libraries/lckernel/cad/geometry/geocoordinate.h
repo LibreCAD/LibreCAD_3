@@ -36,6 +36,10 @@ namespace lc {
                     return *this;
                 }
 
+                QPointF pointF() const {
+                    return QPointF(_x, _y);
+                }
+
                 /**
                   * Calculate the distance between this coordinate and a other coordinate
                   * @return double
@@ -100,6 +104,8 @@ namespace lc {
         };
     }
 }
+
+Q_DECLARE_METATYPE(lc::geo::Coordinate)
 
 /**
   * Used for debugging for example qDebug() << "my Coordinate:" << point;

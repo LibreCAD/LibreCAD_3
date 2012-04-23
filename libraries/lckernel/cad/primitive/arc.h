@@ -14,7 +14,6 @@ namespace lc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle);
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<MetaTypePtr>& metaTypes);
-
     };
     typedef shared_ptr<const lc::Arc> ArcPtr;
 }

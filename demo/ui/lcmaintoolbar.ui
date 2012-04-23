@@ -31,9 +31,24 @@
    <property name="text">
     <string>Lines</string>
    </property>
-   <property name="icon">
-    <iconset>
-     <normaloff>../icons/linesnormal.png</normaloff>../icons/linesnormal.png</iconset>
+   <property name="iconSize">
+    <size>
+     <width>33</width>
+     <height>33</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_2">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>30</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Circle</string>
    </property>
    <property name="iconSize">
     <size>

@@ -36,21 +36,31 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     cadmdichild.cpp \
     ui/lcmaintoolbar.cpp \
-    operations/operationstackmanager.cpp \
-    operations/linecreateoperation.cpp
+    operations/linecreateoperation.cpp \
+    ui/clicommand.cpp \
+    operations/qsnappedstate.cpp \
+    operations/operationmanager.cpp \
+    operations/circlecreateoperation.cpp
 
 HEADERS  += mainwindow.h \
     cadmdichild.h \
     ui/lcmaintoolbar.h \
-    operations/operationstackmanager.h \
     operations/operation.h \
     const.h \
     operations/linecreateoperation.h \
-    imainwindow.h
+    imainwindow.h \
+    operations/groupoperations.h \
+    ui/clicommand.h \
+    operations/qsnappedstate.h \
+    operations/operationmanager.h \
+    operationfinishedevent.h \
+    operations/circlecreateoperation.h
 
 FORMS    += mainwindow.ui \
     cadmdichild.ui \
-    ui/lcmaintoolbar.ui
+    ui/lcmaintoolbar.ui \
+    ui/clicommand.ui \
+    ui/form.ui
 
 RESOURCES += \
     ui/resource.qrc
