@@ -11,19 +11,21 @@ namespace lc {
     /**
      * Abstract class for a Undoable operations
      *
-     * All operations need to implement all pure virtual functions
-     *
      * @param text
      */
     class Undoable {
         public:
+            /*!
+              * \brief Name of this operartion. Keep it as short as possible since it will be used in the UI
+              *
+              */
             Undoable(const QString& text) {
                 _text = text;
             }
             virtual ~Undoable() {}
 
-            /**
-             * Undo a given operation.
+            /*!
+             * \brief Undo a given operation.
              *
              * For any operation that means for example when it added entities to the document
              * it now needs to remove all created entites on the document.
@@ -31,8 +33,8 @@ namespace lc {
              */
             virtual void undo() const = 0;
 
-            /**
-             * Redo a given operation
+            /*!
+             * \brief Redo a given operation
              *
              * This can get called if we want to redo a operation. Redo is ususally called after a undo
              * operation. If in the undo operatation entities where removed, it needs to get added again.
@@ -40,9 +42,12 @@ namespace lc {
              */
             virtual void redo() const = 0;
 
-            /**
+            /*!
+             * \brief Name of the operation
+             *
              * Return the name of the operation. For example when a operation started it can be given the name 'add lines'
              * So in the UI you can say 'Undo add lines' or 'Redo add lines'
+             *
              * @return
              */
             virtual QString text() {

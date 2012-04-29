@@ -18,7 +18,7 @@ const Coordinate& Vector::end() const {
 Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
     Coordinate direction = this->end() - this->start();
     Coordinate vpc = coord - this->start();
-    // At DLI: We don't test if length is 0 because we require that each vector/line is valid when it's created, test needs to be done in the constructor!
+    // At DLI: We don't test if length is 0 because we require that each vector/line  this direction.squared(); is always > 0
     vpc = start() + direction * Coordinate(vpc).dot(direction) / direction.squared();
 
     // test of the generated point is within the lines 'Area', if so return vpc
@@ -37,8 +37,26 @@ Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
     return area.maxP();
 }
 
+QList<Coordinate> Vector::intersect(IntersectablePtr x) const {
+    return x->intersect(*this);
+}
+QList<Coordinate> Vector::intersect(const Vector& x) const {
+    return lcgeoIntersectVectorVector(*this, x);
+}
+QList<Coordinate> Vector::intersect(const Circle& x) const {
+    return geoIntersectCircleLine(x, *this);
+}
+QList<Coordinate> Vector::intersect(const Arc& x) const {
+    return geoIntersectArcLine(x, *this);
+}
+QList<Coordinate> Vector::intersect(const Ellipse& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+
 
 QDebug operator << (QDebug dbg, const lc::geo::Vector& c) {
     dbg.nospace() << "(" << c.start() << "," << c.end() << ")";
     return dbg.space();
 }
+

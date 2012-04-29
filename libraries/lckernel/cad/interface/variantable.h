@@ -16,7 +16,6 @@ namespace lc {
         public:
             virtual bool variantValid() const = 0;
             virtual ~Variantable() {};
-
     };
 }
 

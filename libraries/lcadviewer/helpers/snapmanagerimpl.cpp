@@ -1,5 +1,6 @@
 #include "snapmanagerimpl.h"
 
+
 SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, lc::SelectionManagerPtr selectionmanager, lc::SnapablePtr grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
 
     connect(graphicsView, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
@@ -24,6 +25,34 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // Find all entities that are close to the current mouse pointer
     QList<lc::EntityDistance> entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
 
+    // Emit Snappoint event if a entity intersects with a other entity an is s
+    if (entities.count() > 1) {
+        for (int a = 0; a < entities.count(); a++) {
+            for (int b = a + 1; b < entities.count(); b++) {
+                const lc::geo::IntersectablePtr entityA = dynamic_pointer_cast<const lc::geo::Intersectable>(entities.at(a).entity());
+                const lc::geo::IntersectablePtr entityB = dynamic_pointer_cast<const lc::geo::Intersectable>(entities.at(b).entity());
+
+                if (entityA != NULL && entityB != NULL) {
+                    QList<lc::geo::Coordinate> sp = entityA->intersect(entityB);
+
+                    if (sp.count() > 0) {
+                        qSort(sp.begin(), sp.end(), lc::geo::CoordinateDistanceSort(event.mousePosition()));
+                        lc::geo::Coordinate c = sp.at(0);
+
+                        if ((event.mousePosition() - sp.at(0)).magnitude() < realDistanceForPixels) {
+                            SnapPointEvent snapEvent(sp.at(0));
+                            _lastSnapEvent = snapEvent;
+                            emit snapPointEvent(snapEvent);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    // Eimit snappoint based on closest entity
     if (entities.count() > 0) {
         // Get the snap point that is closest to the mouse pointer from all entities
         qSort(entities.begin(), entities.end(), lc::EntityDistance::sortAscending);

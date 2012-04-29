@@ -26,8 +26,6 @@ namespace lc {
 
         private:
 
-            Q_DISABLE_COPY(Operation)
-
             /**
              * This function get's called when a operation starts and when the document is locked for you
              * so you can do your work
@@ -47,6 +45,7 @@ namespace lc {
             friend class AbstractDocument;
 
             AbstractDocument* _document;
+
     };
     typedef shared_ptr<lc::Operation> OperationPtr;
 }

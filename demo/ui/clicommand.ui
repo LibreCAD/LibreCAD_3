@@ -7,8 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>1120</width>
-    <height>180</height>
+    <height>102</height>
    </rect>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
   </property>
   <property name="floating">
    <bool>false</bool>
@@ -24,6 +27,9 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="margin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QTextEdit" name="textEdit"/>
     </item>

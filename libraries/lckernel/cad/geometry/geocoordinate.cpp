@@ -68,3 +68,17 @@ QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
     dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
     return dbg.space();
 }
+
+
+
+
+
+
+CoordinateDistanceSort::CoordinateDistanceSort(const Coordinate& distanceFrom) : _distanceFrom(distanceFrom) {
+}
+
+bool CoordinateDistanceSort::operator()(const Coordinate& left, const Coordinate& right) const {
+    double d1 = (this->_distanceFrom - left).squared();
+    double d2 = (this->_distanceFrom - right).squared();
+    return d1 < d2;
+}

@@ -33,3 +33,23 @@ double Ellipse::endAngle() const {
     return _endAngle;
 }
 
+QList<Coordinate> Ellipse::intersect(IntersectablePtr x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Ellipse::intersect(const Vector& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Ellipse::intersect(const Circle& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Ellipse::intersect(const Arc& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Ellipse::intersect(const Ellipse& x) const {
+    QList<Coordinate> points;
+    return points;
+}

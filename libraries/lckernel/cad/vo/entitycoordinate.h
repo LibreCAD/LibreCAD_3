@@ -6,9 +6,8 @@
 
 namespace lc {
     /**
-      * Class that represents a coordinate accosiated with a entity and coordinate id
-      * This can be used for example with snappoints where it's needed to know what points
-      * of the entity was snapped against.
+      * \brief Clas sthat represents a Coordinate associated with a distance to a test point and a identifier for the point
+      *
       *
       */
     class EntityCoordinate {
@@ -16,6 +15,7 @@ namespace lc {
             /**
               * EntityCoordinate constructor
               * @param geo::Coordinate Coordinate on the entities path
+              * @param Distance to a calculated point. This was added to allow sorting of a list of EntityCoordinate.
               * @param unsigned int ID number that identitifes the the coordinate
               */
             EntityCoordinate(const geo::Coordinate& point, double distance, int pointId) : _point(point), _distance(distance), _pointId(pointId) {

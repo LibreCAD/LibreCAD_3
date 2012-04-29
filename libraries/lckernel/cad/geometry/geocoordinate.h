@@ -102,6 +102,29 @@ namespace lc {
                 double _y;
                 double _z;
         };
+
+        /*!
+          * \brief sort a Collection in order of distance to a specific coordinate
+          *
+          * \note This routine is not very fast in the sense that it would re-calculate the distance for each comparison. It shouls still be fast enough to sort a collection of let's say 10.000 points
+          *
+          * \code
+          * QList<lc::geo::Coordinate> myList;
+          * myList.append(lc::geo::Coordinate(50.,50.));
+          * myList.append(lc::geo::Coordinate(20.,20.));
+          * myList.append(lc::geo::Coordinate(120.,120.));
+          * qSort(sp.begin(), sp.end(), lc::geo::CoordinateDistanceSort(lc::geo::Coordinate(60.60.)));
+          * \endcode
+          */
+        class CoordinateDistanceSort {
+            public:
+                CoordinateDistanceSort(const Coordinate& distanceFrom);
+                bool operator()(const Coordinate& left, const Coordinate& right) const;
+
+            private:
+                Coordinate _distanceFrom;
+        };
+
     }
 }
 

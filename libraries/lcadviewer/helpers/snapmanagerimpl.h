@@ -4,7 +4,9 @@
 #include <QObject>
 #include "snapmanager.h"
 #include "cad/document/abstractdocument.h"
+#include "cad/geometry/geointersectable.h"
 #include "lcadviewer.h"
+
 
 /*!
  * \brief Implements the SnapManager interface

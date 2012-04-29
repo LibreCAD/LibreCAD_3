@@ -3,8 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-
-
+#include "geointersectable.h"
 
 Arc::Arc(const Coordinate& center, double radius, double startAngle, double endAngle) : _center(center) {
     /*
@@ -39,4 +38,24 @@ double Arc::endAngle() const {
 
 const Coordinate& Arc::center() const {
     return _center;
+}
+
+
+QList<Coordinate> Arc::intersect(IntersectablePtr x) const {
+    return x->intersect(*this);
+}
+QList<Coordinate> Arc::intersect(const Vector& x) const {
+    return geoIntersectArcLine(*this, x);
+}
+QList<Coordinate> Arc::intersect(const Circle& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Arc::intersect(const Arc& x) const {
+    QList<Coordinate> points;
+    return points;
+}
+QList<Coordinate> Arc::intersect(const Ellipse& x) const {
+    QList<Coordinate> points;
+    return points;
 }

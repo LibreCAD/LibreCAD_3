@@ -58,6 +58,8 @@ void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
     bool s = property("hasStartPoint").toBool();
     bool e = property("hasEndPoint").toBool();
 
+    // For drawing we should create a interface to teh drawitems in the viewer so we always
+    // draw something exactly like how the final drawing classes will draw entities
     if (s == true && e == false) {
         event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
         double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
@@ -75,9 +77,17 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-
 OperationPtr CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     CircleCreateOperation* lco = new CircleCreateOperation(this->_graphicsView, this->_snapManager);
     return OperationPtr(lco);
 }
+
+
+
+
+
+
+
+
+

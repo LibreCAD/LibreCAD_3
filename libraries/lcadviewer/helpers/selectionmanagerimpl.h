@@ -18,6 +18,12 @@ class SelectionManagerImpl : public lc::SelectionManager {
     public:
         SelectionManagerImpl(lc::LayerManagerPtr layerManager, QGraphicsView* scene);
 
+        /*!
+          * \brief return a list of entitires that are near a coordinate
+          *
+          * \param Coordinate Point to find entities near
+          * \param double   Minimum distance for a entity to get added
+          */
         virtual QList<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
         virtual QList<lc::CADEntityPtr> getEntitiesInArea(const lc::geo::Area& area) const;
 

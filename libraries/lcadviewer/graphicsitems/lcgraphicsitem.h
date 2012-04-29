@@ -14,6 +14,10 @@
 /**
   * Every primitive graphics item needs to implement LCGraphicsItem
   * THis class will take care of setting correct pen and other relevant items
+  *
+  * \note At some point we will not inherit from Graphicsitem anmyre because possible we will remove the depedency
+  * from graphicsview and graphics scene for the reason that it contains a lot of bloat (from a CAD perspective)
+  * and doesn't support layered drawings.
   */
 class LCGraphicsItem : public QGraphicsItem {
     public:

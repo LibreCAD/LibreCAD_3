@@ -37,14 +37,3 @@ namespace lc {
 #endif // SNAPABLE_H
 
 
-/**
- * Must be overwritten to get the closest coordinate to the
-* given coordinate which is on this entity.
- *
- * @param coord Coordinate (typically a mouse coordinate)
- * @param dist Pointer to a value which will contain the measured
- * distance between \p coord and the point. The passed pointer can
- * also be \p NULL in which case the distance will be lost.
- *
- * @return The closest coordinate.
- */
