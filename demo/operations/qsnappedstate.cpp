@@ -12,6 +12,7 @@ void QSnappedState::onEntry(QEvent* event) {
     QStateMachine::SignalEvent* se = static_cast<QStateMachine::SignalEvent*>(event);
 
     if (event->type() != QEvent::None && se->arguments().count() > 0) {
+        //FIXME: For some reason the first click is a empty event!?!?!
         MouseReleaseEvent mre = se->arguments().at(0).value<MouseReleaseEvent>();
 
         if (_object != NULL) {

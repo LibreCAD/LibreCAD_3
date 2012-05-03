@@ -7,9 +7,13 @@
 namespace lc {
     namespace geo {
 
-        class GeoShape {
+        /*!
+          * \brief Base geomatric shape
+          *
+          *
+          */
+        class Shape {
             public:
-
 
         };
     }

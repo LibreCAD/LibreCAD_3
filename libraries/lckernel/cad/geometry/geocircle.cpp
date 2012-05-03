@@ -4,6 +4,7 @@ using namespace lc;
 using namespace geo;
 
 #include "geointersectable.h"
+#include "geomath.h"
 
 
 Circle::Circle(const Coordinate& center, double radius) : _center(center) {
@@ -23,26 +24,30 @@ double Circle::radius() const {
 
 
 Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
-    geo::Coordinate vp = coord - center();
+    Coordinate vp = coord - center();
     double d = vp.magnitude();
     return center() + vp * (radius() / d);
 }
 
-QList<Coordinate> Circle::intersect(IntersectablePtr x) const {
-    return x->intersect(*this);
+bool Circle::isCoordinateOnPath(const Coordinate& coord) const {
+    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
-QList<Coordinate> Circle::intersect(const Vector& x) const {
-    return geoIntersectCircleLine(*this, x);
+
+QList<Coordinate> Circle::intersect(IntersectablePtr x, Intersectable::Coordinates intersect) const {
+    return x->intersect(*this, intersect);
 }
-QList<Coordinate> Circle::intersect(const Circle& x) const {
+QList<Coordinate> Circle::intersect(const Vector& x, Intersectable::Coordinates intersect) const {
+    return GeoMath::intersectCircleLine(*this, x,  GeoMath::Intersect(intersect));
+}
+QList<Coordinate> Circle::intersect(const Circle& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Circle::intersect(const Arc& x) const {
+QList<Coordinate> Circle::intersect(const Arc& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Circle::intersect(const Ellipse& x) const {
+QList<Coordinate> Circle::intersect(const Ellipse& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }

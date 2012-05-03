@@ -3,7 +3,6 @@
 
 #include "cad/const.h"
 
-#include "geoshape.h"
 #include "geointersectable.h"
 #include "geocoordinate.h"
 
@@ -20,11 +19,14 @@ namespace lc {
                 double startAngle() const;
                 double endAngle() const;
 
-                virtual QList<Coordinate> intersect(IntersectablePtr x) const ;
-                virtual QList<Coordinate> intersect(const Vector& x) const;
-                virtual QList<Coordinate> intersect(const Circle& x) const;
-                virtual QList<Coordinate> intersect(const Arc& x) const;
-                virtual QList<Coordinate> intersect(const Ellipse& x) const;
+                Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+                bool isCoordinateOnPath(const Coordinate& coord) const;
+
+                virtual QList<Coordinate> intersect(IntersectablePtr x, Intersectable::Coordinates intersect = Intersectable::Any) const ;
+                virtual QList<Coordinate> intersect(const Vector& x, Intersectable::Coordinates intersect) const;
+                virtual QList<Coordinate> intersect(const Circle& x, Intersectable::Coordinates intersect) const;
+                virtual QList<Coordinate> intersect(const Arc& x, Intersectable::Coordinates intersect) const;
+                virtual QList<Coordinate> intersect(const Ellipse& x, Intersectable::Coordinates intersect) const;
 
             private:
                 const Coordinate _center;

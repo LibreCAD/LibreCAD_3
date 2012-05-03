@@ -29,27 +29,35 @@ double Ellipse::startAngle() const {
     return _startAngle;
 }
 
+Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
+    return center();
+}
+
+bool Ellipse::isCoordinateOnPath(const Coordinate& coord) const {
+    return false;
+}
+
 double Ellipse::endAngle() const {
     return _endAngle;
 }
 
-QList<Coordinate> Ellipse::intersect(IntersectablePtr x) const {
+QList<Coordinate> Ellipse::intersect(IntersectablePtr x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Ellipse::intersect(const Vector& x) const {
+QList<Coordinate> Ellipse::intersect(const Vector& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Ellipse::intersect(const Circle& x) const {
+QList<Coordinate> Ellipse::intersect(const Circle& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Ellipse::intersect(const Arc& x) const {
+QList<Coordinate> Ellipse::intersect(const Arc& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Ellipse::intersect(const Ellipse& x) const {
+QList<Coordinate> Ellipse::intersect(const Ellipse& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }

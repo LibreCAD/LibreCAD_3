@@ -3,6 +3,7 @@
 
 #include <QList>
 #include "cad/const.h"
+#include "geomath.h"
 
 namespace lc {
     namespace geo {
@@ -22,21 +23,22 @@ namespace lc {
         class Intersectable {
             public:
 
+                enum Coordinates {
+                    MustIntersect = 0,
+                    Any = 1
+                };
+
                 /*!
                   * \brief Calculate intersection points for all know shapes within the engine
                   *
                   * \todo Decide if we should not return a list of QList<EntityCoordinate> so distance sorting is faster
                   */
-                virtual QList<Coordinate> intersect(IntersectablePtr x) const = 0;
-                virtual QList<Coordinate> intersect(const Vector& x) const  = 0;
-                virtual QList<Coordinate> intersect(const Circle& x) const  = 0;
-                virtual QList<Coordinate> intersect(const Arc& x) const  = 0;
-                virtual QList<Coordinate> intersect(const Ellipse& x) const  = 0;
+                virtual QList<Coordinate> intersect(IntersectablePtr x, Intersectable::Coordinates intersect = Intersectable::Any) const = 0;
+                virtual QList<Coordinate> intersect(const Vector& x, Intersectable::Coordinates intersect) const  = 0;
+                virtual QList<Coordinate> intersect(const Circle& x, Intersectable::Coordinates intersect) const  = 0;
+                virtual QList<Coordinate> intersect(const Arc& x, Intersectable::Coordinates intersect) const  = 0;
+                virtual QList<Coordinate> intersect(const Ellipse& x, Intersectable::Coordinates intersect) const  = 0;
 
-
-                QList<Coordinate> lcgeoIntersectVectorVector(const Vector& a, const Vector& b) const;
-                QList<Coordinate> geoIntersectArcLine(const Arc& arc, const Vector& line) const;
-                QList<Coordinate> geoIntersectCircleLine(const Circle& circle, const Vector& line) const;
         };
         typedef shared_ptr<const Intersectable> IntersectablePtr;
     }

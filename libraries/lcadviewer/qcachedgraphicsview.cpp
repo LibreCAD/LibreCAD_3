@@ -89,12 +89,12 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
     // Invalidate screen so we can draw the mouse
     // FIXME: See QCachedGraphicsView performance is quite bad because we need to update all layers
     invalidateScene(QRectF(_lastMousePosition.x() - 2, _lastMousePosition.y() - 2, 4, 4), QGraphicsScene::AllLayers);
-    update();
 
     // Emit a mouse move event
     MouseMoveEvent e(this, QRectF(p.at(0), p.at(2)), _lastMousePosition);
     emit mouseMoveEvent(e);
 
+    update();
 }
 
 void QCachedGraphicsView::mouseReleaseEvent(QMouseEvent* event) {

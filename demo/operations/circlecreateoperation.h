@@ -12,6 +12,11 @@
 
 #include "qsnappedstate.h"
 
+/*!
+  * \brief Create a circle on a center point
+  *
+  * \note Might need to get changed name so it won't conflict with other circle creation operations
+  */
 class CircleCreateOperation : public Operation {
         Q_OBJECT
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)

@@ -1,6 +1,7 @@
 #include "geovector.h"
 
 #include "geoarea.h"
+#include "geomath.h"
 
 using namespace lc;
 using namespace geo;
@@ -37,19 +38,23 @@ Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
     return area.maxP();
 }
 
-QList<Coordinate> Vector::intersect(IntersectablePtr x) const {
-    return x->intersect(*this);
+bool Vector::isCoordinateOnPath(const Coordinate& coord) const {
+    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
-QList<Coordinate> Vector::intersect(const Vector& x) const {
-    return lcgeoIntersectVectorVector(*this, x);
+
+QList<Coordinate> Vector::intersect(IntersectablePtr x, Intersectable::Coordinates intersect) const {
+    return x->intersect(*this, intersect);
 }
-QList<Coordinate> Vector::intersect(const Circle& x) const {
-    return geoIntersectCircleLine(x, *this);
+QList<Coordinate> Vector::intersect(const Vector& x, Intersectable::Coordinates intersect) const {
+    return GeoMath::intersectVectorVector(*this, x,  GeoMath::Intersect(intersect));
 }
-QList<Coordinate> Vector::intersect(const Arc& x) const {
-    return geoIntersectArcLine(x, *this);
+QList<Coordinate> Vector::intersect(const Circle& x, Intersectable::Coordinates intersect) const {
+    return GeoMath::intersectCircleLine(x, *this,  GeoMath::Intersect(intersect));
 }
-QList<Coordinate> Vector::intersect(const Ellipse& x) const {
+QList<Coordinate> Vector::intersect(const Arc& x, Intersectable::Coordinates intersect) const {
+    return GeoMath::intersectArcLine(x, *this, GeoMath::Intersect(intersect));
+}
+QList<Coordinate> Vector::intersect(const Ellipse& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }

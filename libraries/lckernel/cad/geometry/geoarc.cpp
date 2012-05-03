@@ -4,6 +4,7 @@ using namespace lc;
 using namespace geo;
 
 #include "geointersectable.h"
+#include "geomath.h"
 
 Arc::Arc(const Coordinate& center, double radius, double startAngle, double endAngle) : _center(center) {
     /*
@@ -20,8 +21,6 @@ Arc::Arc(const Coordinate& center, double radius, double startAngle, double endA
     _radius = radius;
     _startAngle = startAngle;
     _endAngle = endAngle;
-
-
 }
 
 double Arc::radius() const {
@@ -40,22 +39,31 @@ const Coordinate& Arc::center() const {
     return _center;
 }
 
+Coordinate Arc::nearestPointOnPath(const Coordinate& coord) const {
+    Coordinate vp = coord - center();
+    double d = vp.magnitude();
+    return center() + vp * (radius() / d);
+}
 
-QList<Coordinate> Arc::intersect(IntersectablePtr x) const {
-    return x->intersect(*this);
+bool Arc::isCoordinateOnPath(const Coordinate& coord) const {
+    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
-QList<Coordinate> Arc::intersect(const Vector& x) const {
-    return geoIntersectArcLine(*this, x);
+
+QList<Coordinate> Arc::intersect(IntersectablePtr x, Intersectable::Coordinates intersect) const {
+    return x->intersect(*this, intersect);
 }
-QList<Coordinate> Arc::intersect(const Circle& x) const {
+QList<Coordinate> Arc::intersect(const Vector& x, Intersectable::Coordinates intersect) const {
+    return GeoMath::intersectArcLine(*this, x, GeoMath::Intersect(intersect));
+}
+QList<Coordinate> Arc::intersect(const Circle& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Arc::intersect(const Arc& x) const {
+QList<Coordinate> Arc::intersect(const Arc& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }
-QList<Coordinate> Arc::intersect(const Ellipse& x) const {
+QList<Coordinate> Arc::intersect(const Ellipse& x, Intersectable::Coordinates intersect) const {
     QList<Coordinate> points;
     return points;
 }

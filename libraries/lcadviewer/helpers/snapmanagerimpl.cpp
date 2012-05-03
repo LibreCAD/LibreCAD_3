@@ -33,7 +33,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
                 const lc::geo::IntersectablePtr entityB = dynamic_pointer_cast<const lc::geo::Intersectable>(entities.at(b).entity());
 
                 if (entityA != NULL && entityB != NULL) {
-                    QList<lc::geo::Coordinate> sp = entityA->intersect(entityB);
+                    QList<lc::geo::Coordinate> sp = entityA->intersect(entityB, lc::geo::Intersectable::MustIntersect);
 
                     if (sp.count() > 0) {
                         qSort(sp.begin(), sp.end(), lc::geo::CoordinateDistanceSort(event.mousePosition()));
