@@ -12,26 +12,27 @@ namespace lc {
       */
     class Snapable {
         public:
-            /**
-              * This function returns a number of snap points up to a maximum number of snappoints ordered
-              * by distance from mousePointer
-              * We might need to decide to return Objects that can hold additional information then just
-              * a snapped point
-              * @param
-              */
+            /*!
+             * \brief Find a number of snap points the line has available
+             * This function returns a ordered list, closest to \em coord and can return multiple snap points
+             *
+             * \param coord Coordinate to lookup the nearest coordinate from
+             * \param minDistanceToSnap Minimum distance to the path to
+             * \param maxNumberOfSnapPoints Maximum number of snappoints that have to be looked up
+             *
+             * \sa lc::EntityCoordinate
+             */
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const = 0;
 
-            /**
-             * Find the closest point on the entity from the given coordinate
+            /*!
+             * \brief Find the nearest point on the path for this entity for the coordinate \em coord
              *
-             * @param coord Coordinate from where to lookup the point
-             * @param bool  when !=null this boolean we show true if the coordinate is on the entities path
-             * @return Coordinate on entity that's closest to coord
+             * \param coord Coordinate to lookup the nearest coordinate from
+             * \sa lc::CADEntity
              */
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
 
     };
-    typedef shared_ptr<const lc::Snapable> SnapablePtr;
 }
 
 #endif // SNAPABLE_H

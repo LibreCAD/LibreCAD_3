@@ -14,18 +14,18 @@
 
 class LCLineItem : public LCGraphicsItem {
     public:
-        LCLineItem(lc::LinePtr l);
+        LCLineItem(std::tr1::shared_ptr<const lc::Line> l);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-        virtual const lc::CADEntityPtr entity() const;
+        virtual const std::tr1::shared_ptr<const lc::CADEntity> entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const lc::LinePtr _line;
+        const std::tr1::shared_ptr<const lc::Line> _line;
 
 };
 

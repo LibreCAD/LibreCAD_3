@@ -10,7 +10,7 @@ void DeleteEntities::remove(ID_DATATYPE id) {
 }
 
 
-void DeleteEntities::process() const  {
+void DeleteEntities::processInternal() const  {
     for (int i = 0; i < _toDelete.size(); ++i) {
         document()->removeEntity(_toDelete.at(i));
     }
@@ -19,11 +19,11 @@ void DeleteEntities::process() const  {
 
 void DeleteEntities::undo() const {
     for (int i = 0; i < _toDelete.size(); ++i) {
-        CADEntityPtr entity = document()->findEntityByID(_toDelete.at(i));
+        std::tr1::shared_ptr<const lc::CADEntity> entity = document()->findEntityByID(_toDelete.at(i));
         document()->addEntity(_toDeleteLayer.at(i), entity);
     }
 }
 
 void DeleteEntities::redo() const {
-    process();
+    processInternal();
 }

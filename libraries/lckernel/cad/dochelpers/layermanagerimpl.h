@@ -22,15 +22,15 @@ namespace lc {
 
         public:
             virtual void addLayer(const QString& layerName);
-            virtual void addLayer(LayerPtr layer);
+            virtual void addLayer(std::tr1::shared_ptr<const lc::Layer> layer);
             virtual void removeLayer(const QString& layerName);
 
-            virtual DocumentLayerPtr layer(const QString& layerName) const;
-            virtual QHash <QString, DocumentLayerPtr> const& allLayers() const;
+            virtual std::tr1::shared_ptr<lc::DocumentLayer> layer(const QString& layerName) const;
+            virtual QHash <QString, std::tr1::shared_ptr<lc::DocumentLayer> > const& allLayers() const;
 
 
         private:
-            QHash <QString, DocumentLayerPtr> _documentLayers;
+            QHash <QString, std::tr1::shared_ptr<lc::DocumentLayer> > _documentLayers;
             AbstractDocument* _document;
     };
 }

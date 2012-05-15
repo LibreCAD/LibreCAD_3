@@ -27,6 +27,10 @@ class QCachedGraphicsView : public QGraphicsView {
         void mouseReleaseEvent(QMouseEvent* event);
         virtual QPointF lastMousePosition() const;
 
+        virtual void drawItems(QPainter* painter, int numItems,
+                               QGraphicsItem* items[],
+                               const QStyleOptionGraphicsItem options[]);
+
     public:
     signals:
         void mouseMoveEvent(const MouseMoveEvent&);

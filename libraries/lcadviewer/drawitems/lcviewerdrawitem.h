@@ -19,6 +19,5 @@ class LCViewerDrawItem {
         virtual void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) = 0;
 };
 
-typedef shared_ptr<LCViewerDrawItem> LCViewerDrawItemPtr;
 
-#endif // LCVIEWERDRAWITEM_H
+#endif

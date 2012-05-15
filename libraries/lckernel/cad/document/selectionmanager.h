@@ -29,12 +29,10 @@ namespace lc {
               * Return a list of entities within a specific area
               *
               * @param Area Area to find entities in
-              * @return QList<CADEntityPtr> List of CAD Entities
+              * @return QList<std::tr1::shared_ptr<const lc::CADEntity> > List of CAD Entities
               */
-            virtual QList<CADEntityPtr> getEntitiesInArea(const geo::Area& area) const = 0;
+            virtual QList<std::tr1::shared_ptr<const lc::CADEntity> > getEntitiesInArea(const geo::Area& area) const = 0;
 
     };
-    typedef shared_ptr<lc::SelectionManager> SelectionManagerPtr;
-
 }
 #endif // SELECTIONMANAGER_H

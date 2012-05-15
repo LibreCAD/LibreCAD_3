@@ -39,12 +39,12 @@ class CadMdiChild : public QWidget {
         void on_addEllipse_clicked();
 
     public:
-        CursorPtr cursor() const {
+        std::tr1::shared_ptr<const Cursor>  cursor() const {
             return _cursor;
         }
         QCachedGraphicsView* view() const;
-        SnapManagerPtr snapManager() const;
-        OperationManagerPtr operationManager() const;
+        std::tr1::shared_ptr<SnapManager>  snapManager() const;
+        std::tr1::shared_ptr<OperationManager>  operationManager() const;
         void cancelCurrentOperations();
 
     private:
@@ -54,11 +54,11 @@ class CadMdiChild : public QWidget {
         lc::AbstractDocument* _document;
         lc::UndoManager* _undoManager;
 
-        CursorPtr _cursor;
-        SnapManagerPtr _snapManager;
-        lc::LayerManagerPtr _layerManager;
+        std::tr1::shared_ptr<const Cursor>  _cursor;
+        std::tr1::shared_ptr<SnapManager>  _snapManager;
+        std::tr1::shared_ptr<lc::LayerManager> _layerManager;
 
-        OperationManagerPtr _operationManager;
+        std::tr1::shared_ptr<OperationManager>  _operationManager;
 };
 
 #endif // CADMDICHILD_H

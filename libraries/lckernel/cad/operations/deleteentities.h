@@ -34,7 +34,9 @@ namespace lc {
 
         private:
             Q_DISABLE_COPY(DeleteEntities)
-            virtual void process() const;
+
+        protected:
+            virtual void processInternal() const;
 
         private:
             QVector<ID_DATATYPE> _toDelete;

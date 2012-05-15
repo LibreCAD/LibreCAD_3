@@ -23,6 +23,5 @@ namespace lc {
             virtual int metaName() const = 0;
             virtual ~MetaType() {};
     };
-    typedef shared_ptr<const lc::MetaType> MetaTypePtr;
 }
 #endif // METATYPE_H

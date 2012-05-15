@@ -58,10 +58,8 @@ SOURCES += lckernel.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
     cad/operations/trimentity.cpp \
-    cad/geometry/geointersectable.cpp \
-    cad/geometry/geomath.cpp \
-    cad/geometry/geoshape.cpp \
-    cad/geometry/geoshape.cpp
+    cad/math/geointersect.cpp \
+    cad/functions/intersect.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -111,7 +109,6 @@ HEADERS += lckernel.h\
     cad/vo/entitycoordinate.h \
     cad/vo/entitydistance.h \
     cad/operations/trimentity.h \
-    cad/geometry/geoshape.h \
-    cad/interface/trimable.h \
-    cad/geometry/geointersectable.h \
-    cad/geometry/geomath.h
+    cad/math/geointersect.h \
+    cad/interface/entityinteraction.h \
+    cad/functions/intersect.h

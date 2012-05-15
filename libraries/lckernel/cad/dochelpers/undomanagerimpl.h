@@ -37,8 +37,8 @@ namespace lc {
             AbstractDocument* _document;
 
         private:
-            QList <UndoablePtr> _unDoables;
-            QStack <UndoablePtr> _reDoables;
+            QList <std::tr1::shared_ptr<lc::Undoable> > _unDoables;
+            QStack <std::tr1::shared_ptr<lc::Undoable> > _reDoables;
             const int _maximumUndoLevels;
 
         public slots:

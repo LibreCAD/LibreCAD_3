@@ -40,12 +40,12 @@ SOURCES += main.cpp\
     ui/clicommand.cpp \
     operations/qsnappedstate.cpp \
     operations/operationmanager.cpp \
-    operations/circlecreateoperation.cpp
+    operations/circlecreateoperation.cpp \
+    operations/trimoperation.cpp
 
 HEADERS  += mainwindow.h \
     cadmdichild.h \
     ui/lcmaintoolbar.h \
-    operations/operation.h \
     const.h \
     operations/linecreateoperation.h \
     imainwindow.h \
@@ -53,8 +53,10 @@ HEADERS  += mainwindow.h \
     ui/clicommand.h \
     operations/qsnappedstate.h \
     operations/operationmanager.h \
-    operationfinishedevent.h \
-    operations/circlecreateoperation.h
+    operations/circlecreateoperation.h \
+    operations/trimoperation.h \
+    operations/guioperation.h \
+    guioperationfinishedevent.h
 
 FORMS    += mainwindow.ui \
     cadmdichild.ui \

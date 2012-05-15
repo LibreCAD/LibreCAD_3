@@ -7,17 +7,17 @@ using namespace lc;
 
 DocumentLayerImpl::DocumentLayerImpl() {
 }
-DocumentLayerImpl::DocumentLayerImpl(LayerPtr layer) : _layer(layer) {
+DocumentLayerImpl::DocumentLayerImpl(std::tr1::shared_ptr<const lc::Layer> layer) : _layer(layer) {
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
 }
 
-LayerPtr DocumentLayerImpl::layer() const {
+std::tr1::shared_ptr<const lc::Layer> DocumentLayerImpl::layer() const {
     return this->_layer;
 }
 
-void DocumentLayerImpl::addEntity(CADEntityPtr entity) {
+void DocumentLayerImpl::addEntity(std::tr1::shared_ptr<const lc::CADEntity> entity) {
     _cadentities.insert(entity->id(), entity);
 }
 
@@ -30,11 +30,11 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
     throw "Entity not found";
 }
 
-QHash<int, CADEntityPtr> const& DocumentLayerImpl::allEntities() const {
+QHash<int, std::tr1::shared_ptr<const lc::CADEntity> > DocumentLayerImpl::allEntities() const {
     return _cadentities;
 }
 
-CADEntityPtr DocumentLayerImpl::findByID(ID_DATATYPE id) const {
+std::tr1::shared_ptr<const lc::CADEntity> DocumentLayerImpl::findByID(ID_DATATYPE id) const {
     if (_cadentities.contains(id)) {
         return _cadentities.value(id);
     }

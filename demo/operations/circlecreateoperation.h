@@ -4,7 +4,7 @@
 #include <QState>
 #include <QStateMachine>
 
-#include "operation.h"
+#include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
 #include "helpers/snapmanager.h"
@@ -17,14 +17,14 @@
   *
   * \note Might need to get changed name so it won't conflict with other circle creation operations
   */
-class CircleCreateOperation : public Operation {
+class CircleCreateOperation : public GuiOperation {
         Q_OBJECT
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        CircleCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager);
+        CircleCreateOperation(QGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager);
 
-        virtual lc::CADEntityPtr cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const;
+        virtual std::tr1::shared_ptr<const lc::CADEntity> cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const;
 
         virtual void restart();
 
@@ -45,7 +45,7 @@ class CircleCreateOperation : public Operation {
             return _endPoint;
         }
 
-        virtual OperationPtr next() const;
+        virtual std::tr1::shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
     private slots:
@@ -62,7 +62,7 @@ class CircleCreateOperation : public Operation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        SnapManagerPtr _snapManager;
+        std::tr1::shared_ptr<SnapManager>  _snapManager;
 };
 
 #endif // CircleCreateOperation_H

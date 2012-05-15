@@ -4,7 +4,6 @@
 #include <QObject>
 #include "snapmanager.h"
 #include "cad/document/abstractdocument.h"
-#include "cad/geometry/geointersectable.h"
 #include "lcadviewer.h"
 
 
@@ -24,7 +23,7 @@ class SnapManagerImpl : public SnapManager {
          *
          * \sa lc::SnapManager
          */
-        SnapManagerImpl(LCADViewer* viewer, lc::SelectionManagerPtr _selectionmanager, lc::SnapablePtr grid, double distanceToSnap);
+        SnapManagerImpl(LCADViewer* viewer, std::tr1::shared_ptr<lc::SelectionManager> _selectionmanager, std::tr1::shared_ptr<const lc::Snapable> grid, double distanceToSnap);
 
 
     public slots:
@@ -33,13 +32,13 @@ class SnapManagerImpl : public SnapManager {
 
     private:
 
-        lc::SelectionManagerPtr _selectionmanager;
+        std::tr1::shared_ptr<lc::SelectionManager> _selectionmanager;
 
         // Grid is snapable
-        lc::SnapablePtr _grid;
+        std::tr1::shared_ptr<const lc::Snapable> _grid;
 
         // List of entities that are potential for snapping
-        QList<lc::SnapablePtr> _snapableEntities;
+        QList<std::tr1::shared_ptr<const lc::Snapable> > _snapableEntities;
 
         // List of additional points a user can pick, to be implemented
         QList<lc::geo::Coordinate> _smartCoordinates;

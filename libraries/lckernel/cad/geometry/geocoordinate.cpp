@@ -47,7 +47,7 @@ Coordinate Coordinate::operator - (const Coordinate& coord) const {
     return Coordinate(_x - coord._x, _y - coord._y, _z - coord._z);
 }
 double Coordinate::magnitude() const {
-    return sqrt(_x * _x + _y * _y + _z * _z);
+    return sqrtf(_x * _x + _y * _y + _z * _z);
 }
 double Coordinate::squared() const {
     return _x * _x + _y * _y + _z * _z;
@@ -68,8 +68,6 @@ QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
     dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
     return dbg.space();
 }
-
-
 
 
 

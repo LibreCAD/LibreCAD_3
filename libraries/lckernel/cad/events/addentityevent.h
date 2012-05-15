@@ -11,10 +11,10 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-            AddEntityEvent(const QString& layerName, CADEntityPtr cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
+            AddEntityEvent(const QString& layerName, std::tr1::shared_ptr<const lc::CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
             }
 
-            CADEntityPtr entity() const {
+            std::tr1::shared_ptr<const lc::CADEntity> entity() const {
                 return _cadEntity;
             }
 
@@ -24,7 +24,7 @@ namespace lc {
 
         private:
             const QString _layerName;
-            CADEntityPtr _cadEntity;
+            std::tr1::shared_ptr<const lc::CADEntity> _cadEntity;
     };
 }
 #endif // ADDENTITYEVENT_H

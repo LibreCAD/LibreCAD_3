@@ -41,10 +41,5 @@ class SnapManager : public QObject {
         void mouseReleaseEvent(const MouseReleaseEvent&);
 };
 
-/*!
- * \brief Shared pointer for SnapManager
- */
-typedef shared_ptr<SnapManager> SnapManagerPtr;
-
 
 #endif // SNAPMANAGER_H

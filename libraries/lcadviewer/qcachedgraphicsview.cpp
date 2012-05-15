@@ -8,11 +8,18 @@ QCachedGraphicsView::QCachedGraphicsView(QWidget* parent) : QGraphicsView(parent
 QCachedGraphicsView::QCachedGraphicsView(QGraphicsScene* scene, QWidget* parent) : QGraphicsView(scene, parent) {
 }
 
-
+void QCachedGraphicsView::drawItems(QPainter* painter, int numItems,
+                                    QGraphicsItem* items[],
+                                    const QStyleOptionGraphicsItem options[]) {
+    QGraphicsView::drawItems(painter, numItems, items, options);
+}
 
 
 void QCachedGraphicsView::paintEvent(QPaintEvent* event) {
     QGraphicsView::paintEvent(event);
+
+
+
     // HEre we properly stop calling the paint event and call render to render the scene on a pixmap
     // then we just do normal bitblk.
     // rubber band needs to be worked out!

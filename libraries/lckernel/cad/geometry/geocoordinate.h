@@ -36,6 +36,13 @@ namespace lc {
                     return *this;
                 }
 
+                bool operator==(const Coordinate& coord) const {
+                    return this->_x == coord._x && this->_y == coord._y && this->_z == coord._z;
+                }
+                bool operator!=(const Coordinate& coord) const {
+                    return !(*this == coord);
+                }
+
                 QPointF pointF() const {
                     return QPointF(_x, _y);
                 }
@@ -59,7 +66,7 @@ namespace lc {
                 Coordinate operator - (const Coordinate& coordinate) const;
 
                 /**
-                  * Magnitude or lenth of the point relative to zero : return sqrt(_x * _x + _y * _y + _z * _z)
+                  * Magnitude or lenth of the point relative to zero : return sqrtf(_x * _x + _y * _y + _z * _z)
                   *
                   * @return double  Length of the vector
                   */
@@ -91,7 +98,7 @@ namespace lc {
                 /**
                   * Division by double : return Coordinate(_x / s, _y / s, _z / s)
                   *
-                  * @param dobule
+                  * @param double
                   * @return Coordinate
                   */
                 Coordinate operator / (double s) const;

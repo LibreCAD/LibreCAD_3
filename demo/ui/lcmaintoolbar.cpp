@@ -17,11 +17,11 @@ LCMainToolbar::~LCMainToolbar() {
 }
 
 void LCMainToolbar::on_toolButton_clicked() {
-    OperationPtr lo = OperationPtr(new LineCreateOperation(_parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    std::tr1::shared_ptr<GuiOperation> lo = std::tr1::shared_ptr<GuiOperation>(new LineCreateOperation(_parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_2_clicked() {
-    OperationPtr lo = OperationPtr(new CircleCreateOperation(_parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    std::tr1::shared_ptr<GuiOperation> lo = std::tr1::shared_ptr<GuiOperation>(new CircleCreateOperation(_parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QStack>
-#include "operation.h"
+#include "guioperation.h"
 #include "cad/document/abstractdocument.h"
 
 /**
@@ -29,7 +29,7 @@ class OperationManager : QObject {
          *
          *
          */
-        void startOperation(OperationPtr operation);
+        void startOperation(std::tr1::shared_ptr<GuiOperation> operation);
 
         /**
           * \brief call this function to send a cancel signal to the current operation
@@ -48,24 +48,22 @@ class OperationManager : QObject {
         friend class GroupOperations;
     private:
 
-        QStack<OperationPtr> activeOperations() const;
-        void setActiveOperations(QStack<OperationPtr> operations);
+        QStack<std::tr1::shared_ptr<GuiOperation> > activeOperations() const;
+        void setActiveOperations(QStack<std::tr1::shared_ptr<GuiOperation> > operations);
 
     private slots:
         /*!
           * \brief this function is called internally and will commit all operations on the _activeOperations to the document
           *
-          * \param OperationFinishedEvent Operation Finnished event
+          * \param GuiOperationFinishedEvent Operation Finnished event
           *
           * \author R. van Twisk <librecad@rvt.dds.nl>
           */
-        void on_operationFinished_Event(const OperationFinishedEvent&);
+        void on_guioperationFinished_Event(const GuiOperationFinishedEvent&);
 
     private:
-        QStack<OperationPtr> _activeOperations;
+        QStack<std::tr1::shared_ptr<GuiOperation> > _activeOperations;
         lc::AbstractDocument* _document;
 };
-
-typedef shared_ptr<OperationManager> OperationManagerPtr;
 
 #endif // OperationManager_H

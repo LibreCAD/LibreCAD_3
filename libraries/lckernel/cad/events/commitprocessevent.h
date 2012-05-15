@@ -11,14 +11,14 @@ namespace lc {
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent(OperationPtr operation) : _operation(operation) {
+            CommitProcessEvent(std::tr1::shared_ptr<lc::Operation> operation) : _operation(operation) {
             };
 
-            OperationPtr operation() const {
+            std::tr1::shared_ptr<lc::Operation> operation() const {
                 return _operation;
             }
         private:
-            const OperationPtr _operation;
+            const std::tr1::shared_ptr<lc::Operation> _operation;
     };
 }
 #endif // COMMITPROCESSEVENT_H

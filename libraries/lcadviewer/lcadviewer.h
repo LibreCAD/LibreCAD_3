@@ -21,9 +21,9 @@ class LCADViewer : public QCachedGraphicsView {
         virtual void drawBackground(QPainter* painter, const QRectF& rect);
         virtual void drawForeground(QPainter* painter, const QRectF& rect);
 
-        void addBackgroundItem(LCViewerDrawItemPtr item);
-        void addForegroundItem(LCViewerDrawItemPtr item);
-        void addCursorItem(LCViewerCursorItemPtr item);
+        void addBackgroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item);
+        void addForegroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item);
+        void addCursorItem(std::tr1::shared_ptr<LCViewerCursorItem>  item);
 
     protected:
         virtual void keyPressEvent(QKeyEvent* event);
@@ -37,9 +37,9 @@ class LCADViewer : public QCachedGraphicsView {
         // FIXME: Create a method so that we can re-order them when they are exchanged
         // during runtime of librecad. So that for example a grid is always draw on top of a background gradient
         // so it's visible
-        QList<LCViewerDrawItemPtr> _backgroundItems;
-        QList<LCViewerDrawItemPtr> _foregroundItems;
-        QList<LCViewerCursorItemPtr> _cursorItems;
+        QList<std::tr1::shared_ptr<LCViewerDrawItem> > _backgroundItems;
+        QList<std::tr1::shared_ptr<LCViewerDrawItem> > _foregroundItems;
+        QList<std::tr1::shared_ptr<LCViewerCursorItem> > _cursorItems;
 
 
         /*****/

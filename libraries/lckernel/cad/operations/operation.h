@@ -30,7 +30,9 @@ namespace lc {
              * This function get's called when a operation starts and when the document is locked for you
              * so you can do your work
              */
-            virtual void process() const = 0;
+            void process() {
+                processInternal();
+            }
 
             /**
              * This function will get called when the process of this operation starts
@@ -45,8 +47,13 @@ namespace lc {
             friend class AbstractDocument;
 
             AbstractDocument* _document;
+        protected:
+            /**
+             * This function get's called when a operation starts and when the document is locked for you
+             * so you can do your work
+             */
+            virtual void processInternal() const = 0;
 
     };
-    typedef shared_ptr<lc::Operation> OperationPtr;
 }
 #endif // OPERATIONINTERFACE_H

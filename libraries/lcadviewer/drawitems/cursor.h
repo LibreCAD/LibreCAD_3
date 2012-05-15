@@ -15,7 +15,7 @@
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, SnapManagerPtr snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
 
         public
     slots:
@@ -34,7 +34,5 @@ class Cursor : public QObject  {
 
         SnapPointEvent _lastSnapEvent;
 };
-
-typedef shared_ptr<const Cursor> CursorPtr;
 
 #endif // CURSOR_H

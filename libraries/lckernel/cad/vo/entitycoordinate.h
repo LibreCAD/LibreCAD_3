@@ -52,7 +52,6 @@ namespace lc {
             double _distance;
             int _pointId;
     };
-    typedef shared_ptr<const lc::EntityCoordinate> EntityCoordinatePtr;
 }
 
 /**

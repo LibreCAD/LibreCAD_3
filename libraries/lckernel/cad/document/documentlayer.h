@@ -22,7 +22,7 @@ namespace lc {
              * Add a entity to this layer
              * @param entity
              */
-            virtual void addEntity(CADEntityPtr entity) = 0;
+            virtual void addEntity(std::tr1::shared_ptr<const lc::CADEntity> entity) = 0;
 
             /**
              * Remove a entity from this layer
@@ -34,21 +34,20 @@ namespace lc {
              * Return a pointer to the layer meta object
              * @return
              */
-            virtual LayerPtr layer() const = 0;
+            virtual std::tr1::shared_ptr<const lc::Layer> layer() const = 0;
 
             /**
              * Return a list of all entities
              * @return
              */
-            virtual QHash<int, CADEntityPtr>  const& allEntities() const = 0;
+            virtual QHash<int, std::tr1::shared_ptr<const lc::CADEntity> > allEntities() const = 0;
 
             /**
              * Return pointer to entity by ID
              * @return
              */
-            virtual CADEntityPtr findByID(ID_DATATYPE) const = 0;
+            virtual std::tr1::shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const = 0;
     };
-    typedef shared_ptr<lc::DocumentLayer> DocumentLayerPtr;
 }
 
 

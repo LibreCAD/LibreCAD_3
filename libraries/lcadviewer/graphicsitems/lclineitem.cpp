@@ -1,14 +1,14 @@
 #include "graphicsitems/lclineitem.h"
 
-LCLineItem::LCLineItem(lc::LinePtr l) : LCGraphicsItem(), _line(l) {
+LCLineItem::LCLineItem(std::tr1::shared_ptr<const lc::Line> l) : LCGraphicsItem(), _line(l) {
 }
 
 
 QRectF LCLineItem::boundingRect() const {
     return QRectF(_line->start().x(),
                   _line->start().y(),
-                  _line->end().x() - _line->start().x(),
-                  _line->end().y() - _line->start().y()).normalized();
+                  (_line->end().x() - _line->start().x()),
+                  (_line->end().y() - _line->start().y())).normalized();
 }
 
 void LCLineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
@@ -28,6 +28,6 @@ QPainterPath LCLineItem::shape() const {
     return path;
 }
 
-const lc::CADEntityPtr LCLineItem::entity() const {
+const std::tr1::shared_ptr<const lc::CADEntity> LCLineItem::entity() const {
     return _line;
 }

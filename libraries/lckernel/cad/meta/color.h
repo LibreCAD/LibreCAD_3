@@ -53,11 +53,11 @@ namespace lc {
             }
 
             friend QDataStream& operator>>( QDataStream & stream, Color & yourObject ) {
-                stream >> (qint8&)yourObject._method;
-                stream >> (qint16&)yourObject._r;
-                stream >> (qint16&)yourObject._g;
-                stream >> (qint16&)yourObject._b;
-                stream >> (qint16&)yourObject._a;
+                stream > > (qint8&)yourObject._method;
+                stream > > (qint16&)yourObject._r;
+                stream > > (qint16&)yourObject._g;
+                stream > > (qint16&)yourObject._b;
+                stream > > (qint16&)yourObject._a;
                 return stream;
             }
             */

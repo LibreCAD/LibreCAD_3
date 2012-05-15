@@ -26,9 +26,9 @@ namespace lc {
             DocumentImpl();
             virtual ~DocumentImpl();
 
-            void operateOn(OperationPtr operation);
-            LayerManagerPtr layerManager() const;
-            void setLayerManager(LayerManagerPtr layerManager);
+            void operateOn(std::tr1::shared_ptr<lc::Operation> operation);
+            std::tr1::shared_ptr<lc::LayerManager> layerManager() const;
+            void setLayerManager(std::tr1::shared_ptr<lc::LayerManager> layerManager);
 
         public:
         signals:
@@ -42,21 +42,21 @@ namespace lc {
             void absoleteEntityEvent(const lc::AbsoluteEntityEvent&);
 
         protected:
-            virtual void begin(OperationPtr operation);
-            virtual void commit(OperationPtr operation);
+            virtual void begin(std::tr1::shared_ptr<lc::Operation> operation);
+            virtual void commit(std::tr1::shared_ptr<lc::Operation> operation);
         public:
-            virtual void addEntity(const QString& layerName, CADEntityPtr cadEntity);
-            virtual void replaceEntity(CADEntityPtr oldEntity, CADEntityPtr newEntity);
+            virtual void addEntity(const QString& layerName, std::tr1::shared_ptr<const lc::CADEntity> cadEntity);
+            virtual void replaceEntity(std::tr1::shared_ptr<const lc::CADEntity> oldEntity, std::tr1::shared_ptr<const lc::CADEntity> newEntity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual void absoleteEntity(CADEntityPtr entity);
+            virtual void absoleteEntity(std::tr1::shared_ptr<const lc::CADEntity> entity);
 
-            virtual CADEntityPtr findEntityByID(ID_DATATYPE id) const;
+            virtual std::tr1::shared_ptr<const lc::CADEntity> findEntityByID(ID_DATATYPE id) const;
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
             virtual void lock();
             virtual void releaseLock() ;
         private:
-            LayerManagerPtr _layerManager;
+            std::tr1::shared_ptr<lc::LayerManager> _layerManager;
             bool _locked;
 
     };

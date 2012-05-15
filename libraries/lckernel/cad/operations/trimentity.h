@@ -23,21 +23,27 @@ namespace lc {
                 qDebug() << "TrimEntity removed";
             }
 
-            virtual void addLimitingEntity(CADEntityPtr cadEntity);
-            virtual void removeLimitingEntity(CADEntityPtr cadEntity);
-            virtual void addTrimmedEntity(CADEntityPtr cadEntity);
+            void addLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity);
+            void removeLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity);
+            void addTrimmedEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity);
+            void trimCoordinate(const geo::Coordinate& coord);
 
             virtual void undo() const;
             virtual void redo() const;
+
         private:
-            virtual void process() const;
+            void trimTwoEntities(const std::tr1::shared_ptr<const lc::CADEntity>& trimmedEntity, const std::tr1::shared_ptr<const lc::CADEntity>& limitEntity);
+
+        protected:
+            virtual void processInternal() const;
 
             Q_DISABLE_COPY(TrimEntity)
         private:
-            QList<CADEntityPtr> _limitingEntities;
-            QList<CADEntityPtr> _trimmedEntity;
+            geo::Coordinate _trimCoordinate;
+            QList<std::tr1::shared_ptr<const lc::CADEntity> > _limitingEntities;
+            QList<std::tr1::shared_ptr<const lc::CADEntity> > _trimmingEntities;
 
-            QList<CADEntityPtr> _createdItems;
+            QList<std::tr1::shared_ptr<const lc::CADEntity> > _createdItems;
             QList<ID_DATATYPE> _deletedItems;
     };
 }

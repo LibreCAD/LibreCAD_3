@@ -1,7 +1,7 @@
 #include "lcarcitem.h"
 
 
-LCArcItem::LCArcItem(const lc::ArcPtr arc) : LCGraphicsItem(), _arc(arc) {
+LCArcItem::LCArcItem(const std::tr1::shared_ptr<const lc::Arc> arc) : LCGraphicsItem(), _arc(arc) {
 }
 
 
@@ -17,6 +17,8 @@ void LCArcItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
     LCGraphicsItem::paint(_arc, painter, option, widget);
 
     double factorForQt = (360.0 / PI * 8);
+
+
     painter->drawArc(QRectF(_arc->center().x() - _arc->radius(),
                             _arc->center().y() - _arc->radius(),
                             2 * _arc->radius(),
@@ -34,6 +36,6 @@ QPainterPath LCArcItem::shape() const {
 
 
 
-const lc::CADEntityPtr LCArcItem::entity() const {
+const std::tr1::shared_ptr<const lc::CADEntity> LCArcItem::entity() const {
     return _arc;
 }

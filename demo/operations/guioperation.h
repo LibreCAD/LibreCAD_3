@@ -9,7 +9,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/primitive/line.h"
 
-#include "operationfinishedevent.h"
+#include "guioperationfinishedevent.h"
 
 
 #include "const.h"
@@ -22,13 +22,13 @@
   *
   * \author R. van Twisk <librecad@rvt.dds.nl>
   */
-class Operation : public QObject {
+class GuiOperation : public QObject {
         Q_OBJECT
     public:
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual lc::CADEntityPtr cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const = 0;
+        virtual std::tr1::shared_ptr<const lc::CADEntity> cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const = 0;
 
         /*!
           * \brief restart this operation
@@ -41,16 +41,15 @@ class Operation : public QObject {
           * It allows for a line to continue and connect start/end points automatically.
           *
           */
-        virtual shared_ptr<Operation> next() const = 0 ;
+        virtual std::tr1::shared_ptr<GuiOperation> next() const = 0 ;
     public:
     signals:
 
         /*!
           * \brief Signal that a operation needs to emit once the operation is been completed
           */
-        void operationFinished(const OperationFinishedEvent&);
+        void guiOperationFinished(const GuiOperationFinishedEvent&);
 };
 
-typedef shared_ptr<Operation> OperationPtr;
 
 #endif // OPERATION_H

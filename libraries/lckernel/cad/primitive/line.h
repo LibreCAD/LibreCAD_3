@@ -2,12 +2,14 @@
 #define LINE_H
 
 #include "cad/const.h"
+#include "cad/interface/entityinteraction.h"
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geovector.h"
 #include "cad/base/cadentity.h"
 #include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
+
 
 namespace lc {
 
@@ -20,7 +22,7 @@ namespace lc {
      * \author R. van Twisk
      * \date 2012-04-16
      */
-    class Line : public CADEntity, public geo::Vector, public Snapable {
+    class Line : public std::tr1::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
         public:
             /*!
              * \brief Construct a new line
@@ -38,35 +40,43 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<MetaTypePtr>& metaTypes);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes);
+
+            /*!
+             * \brief Construct a new line
+             *
+             * \param vector Coordinate the line should start and end from
+             * \param metaTypes A list of metatypes associated with this line
+             * \sa lc::Color
+             * \sa lc::LineWidth
+             * \sa lc::MetaType
+             */
+            Line(const geo::Vector& vector, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes);
 
         public:
-            /*!
-             * \brief Find a number of snap points the line has available
-             * This function returns a ordered list, closest to \em coord and can return multiple snap points
-             *
-             * \param coord Coordinate to lookup the nearest coordinate from
-             * \param minDistanceToSnap Minimum distance to the path to
-             * \param maxNumberOfSnapPoints Maximum number of snappoints that have to be looked up
-             *
-             * \sa lc::EntityCoordinate
-             */
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-
-            /*!
-             * \brief Find the nearest point on the path for this entity for the coordinate \em coord
-             *
-             * \param coord Coordinate to lookup the nearest coordinate from
-             * \sa lc::CADEntity
-             */
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+
+        public:
+
+            virtual void accept(std::tr1::shared_ptr<const lc::Line> o, EntityInteraction& ei) const {
+                ei.visitInteraction(shared_from_this(), o);
+            }
+            virtual void accept(std::tr1::shared_ptr<const lc::Circle> o, EntityInteraction& ei) const {
+                ei.visitInteraction(shared_from_this(), o);
+            }
+            virtual void accept(std::tr1::shared_ptr<const lc::Arc> o, EntityInteraction& ei) const {
+                ei.visitInteraction(shared_from_this(), o);
+            }
+            virtual void accept(std::tr1::shared_ptr<const lc::Ellipse> o, EntityInteraction& ei) const {
+                ei.visitInteraction(shared_from_this(), o);
+            }
+            virtual void accept(std::tr1::shared_ptr<const lc::CADEntity> o, EntityInteraction& ei) const {
+                o->accept(shared_from_this(), ei);
+            }
+
         private:
     };
 
-    /*!
-     * \typedef shared pointer to a lc::Line
-     * \sa lc::Line
-     */
-    typedef shared_ptr<const lc::Line> LinePtr;
 }
 #endif // LINE_H

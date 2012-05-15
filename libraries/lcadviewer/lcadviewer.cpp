@@ -7,15 +7,18 @@ LCADViewer::LCADViewer(QWidget* parent) :
     QCachedGraphicsView(parent) {
 
     /******/
-    //QGLFormat fmt;
-    //fmt.setSampleBuffers(true);
-    //setViewport(new QGLWidget(fmt));
+    QGLFormat fmt;
+    fmt.setSampleBuffers(true);
+    setViewport(new QGLWidget(fmt));
     /****/
 
 
     //    setCacheMode(CacheBackground); // Currently creates artifacts
     //    setViewportUpdateMode(BoundingRectViewportUpdate);
-    setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    // this->setOptimizationFlag(DontAdjustForAntialiasing, true);
+    this->setRenderHint(QPainter::Antialiasing, true);
+
+    this->setOptimizationFlag(QGraphicsView::IndirectPainting, true);
     setWindowTitle(tr("LC Viewer"));
 
     this->setFrameStyle(0);
@@ -23,7 +26,7 @@ LCADViewer::LCADViewer(QWidget* parent) :
 
     //   scale(qreal(1), qreal(1));
     centerOn(0.0, 0.0);
-    setDragMode(QGraphicsView::RubberBandDrag);
+    // setDragMode(QGraphicsView::RubberBandDrag);
 
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     this->_altKeyActive = false;
@@ -83,7 +86,7 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
   * Add a background render item to the viewer.
   *
   */
-void LCADViewer::addBackgroundItem(LCViewerDrawItemPtr item) {
+void LCADViewer::addBackgroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) {
     this->_backgroundItems.append(item);
 }
 
@@ -91,7 +94,7 @@ void LCADViewer::addBackgroundItem(LCViewerDrawItemPtr item) {
   * Add a foreground render item to the viewer.
   *
   */
-void LCADViewer::addForegroundItem(LCViewerDrawItemPtr item) {
+void LCADViewer::addForegroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) {
     this->_foregroundItems.append(item);
 }
 
@@ -99,7 +102,7 @@ void LCADViewer::addForegroundItem(LCViewerDrawItemPtr item) {
   * Add cursors to the scene
   *
   */
-void LCADViewer::addCursorItem(LCViewerCursorItemPtr item) {
+void LCADViewer::addCursorItem(std::tr1::shared_ptr<LCViewerCursorItem>  item) {
     this->_cursorItems.append(item);
 }
 

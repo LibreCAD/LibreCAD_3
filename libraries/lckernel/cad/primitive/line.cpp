@@ -5,7 +5,10 @@ using namespace lc;
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end) : CADEntity(), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<MetaTypePtr>& metaTypes) : CADEntity(metaTypes), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(start, end) {
+}
+
+Line::Line(const geo::Vector& vector, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(vector) {
 }
 
 
@@ -35,3 +38,6 @@ QList<lc::EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, doubl
 geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
+
+
+

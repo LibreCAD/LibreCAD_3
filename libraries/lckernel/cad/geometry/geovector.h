@@ -4,13 +4,13 @@
 #include "cad/const.h"
 
 #include "geocoordinate.h"
-#include "geointersectable.h"
 
 namespace lc {
     namespace geo {
-        class Vector : public Intersectable {
+        class Vector  {
             public:
                 Vector(const Coordinate& start, const Coordinate& end);
+                Vector(const Vector& v);
 
                 const Coordinate& start() const;
                 const Coordinate& end() const;
@@ -18,17 +18,11 @@ namespace lc {
                 Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
-                virtual QList<Coordinate> intersect(IntersectablePtr x, Intersectable::Coordinates intersect = Intersectable::Any) const ;
-                virtual QList<Coordinate> intersect(const Vector& x, Intersectable::Coordinates intersect) const;
-                virtual QList<Coordinate> intersect(const Circle& x, Intersectable::Coordinates intersect) const;
-                virtual QList<Coordinate> intersect(const Arc& x, Intersectable::Coordinates intersect) const;
-                virtual QList<Coordinate> intersect(const Ellipse& x, Intersectable::Coordinates intersect) const;
             private:
                 const Coordinate _start;
                 const Coordinate _end;
 
         };
-        typedef shared_ptr<const Vector> VectorPtr;
     }
 }
 

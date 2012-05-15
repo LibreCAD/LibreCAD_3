@@ -40,7 +40,6 @@ namespace lc {
             LineWidth* _lineWidth;
             Color* _color;
     };
-    typedef shared_ptr<const lc::Layer> LayerPtr;
 }
 
 Q_DECLARE_METATYPE(lc::Layer)

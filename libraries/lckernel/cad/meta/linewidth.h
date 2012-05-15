@@ -42,8 +42,8 @@ namespace lc {
                         }
 
                         friend QDataStream& operator>>( QDataStream & stream, LineWidth & yourObject ) {
-                            stream >> (qint8&)yourObject._method;
-                            stream >>  (double&)yourObject._width;
+                            stream > > (qint8&)yourObject._method;
+                            stream > >  (double&)yourObject._width;
                             return stream;
                         }
 

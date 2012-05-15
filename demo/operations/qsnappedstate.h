@@ -37,7 +37,7 @@
   * _machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
   * _machine.start();
   *
-  * // When this operation is finnished called lineCreationFinished, whish in return will send a OperationFinishedEvent
+  * // When this operation is finnished called lineCreationFinished, whish in return will send a GuiOperationFinishedEvent
   * QObject::connect(&_machine, SIGNAL(finished()), this, SLOT(lineCreationFinished()));
   *
   * \endcode

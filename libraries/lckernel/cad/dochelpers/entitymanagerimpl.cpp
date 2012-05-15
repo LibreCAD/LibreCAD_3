@@ -16,7 +16,8 @@ EntityManagerImpl::EntityManagerImpl(AbstractDocument* document) : EntityManager
 
 void EntityManagerImpl::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Note: This might seem to be slow, but inserting 1000000 entities took 300ms to insert
-    DocumentLayerPtr documentLayer = document()->layerManager()->layer(event.layerName());
+    std::tr1::shared_ptr<lc::DocumentLayer> documentLayer = document()->layerManager()->layer(event.layerName());
+
     documentLayer->addEntity(event.entity());
 }
 
@@ -24,12 +25,12 @@ void EntityManagerImpl::on_removeEntityEvent(const lc::RemoveEntityEvent& event)
 
     // Removeal of entities currently needs to go over all layers
     // FOr 10.000 entities this takes a couple of seconds so this must be optimzed
-    QHash <QString, DocumentLayerPtr> allLayers = document()->layerManager()->allLayers();
-    QHashIterator<QString, DocumentLayerPtr> li(allLayers);
+    QHash <QString, std::tr1::shared_ptr<lc::DocumentLayer> > allLayers = document()->layerManager()->allLayers();
+    QHashIterator<QString, std::tr1::shared_ptr<lc::DocumentLayer> > li(allLayers);
 
     while (li.hasNext()) {
         li.next();
-        DocumentLayerPtr documentLayer = li.value();
+        std::tr1::shared_ptr<lc::DocumentLayer> documentLayer = li.value();
 
         try {
             documentLayer->removeEntity(event.id());

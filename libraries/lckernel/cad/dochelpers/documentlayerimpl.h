@@ -18,14 +18,14 @@ namespace lc {
     class DocumentLayerImpl : public DocumentLayer {
         public:
             DocumentLayerImpl();
-            DocumentLayerImpl(LayerPtr layer);
+            DocumentLayerImpl(std::tr1::shared_ptr<const lc::Layer> layer);
             virtual ~DocumentLayerImpl();
 
-            virtual void addEntity(CADEntityPtr entity);
+            virtual void addEntity(std::tr1::shared_ptr<const lc::CADEntity> entity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual QHash<int, CADEntityPtr>  const& allEntities() const;
+            virtual QHash<int, std::tr1::shared_ptr<const lc::CADEntity> > allEntities() const;
 
-            virtual LayerPtr layer() const;
+            virtual std::tr1::shared_ptr<const lc::Layer> layer() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);
@@ -34,13 +34,13 @@ namespace lc {
                 return _layer != NULL;
             }
 
-            virtual CADEntityPtr findByID(ID_DATATYPE) const;
+            virtual std::tr1::shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const;
 
         private:
 
         private:
-            LayerPtr _layer;
-            QHash<int, CADEntityPtr> _cadentities;
+            std::tr1::shared_ptr<const lc::Layer> _layer;
+            QHash<int, std::tr1::shared_ptr<const lc::CADEntity> > _cadentities;
     };
 }
 

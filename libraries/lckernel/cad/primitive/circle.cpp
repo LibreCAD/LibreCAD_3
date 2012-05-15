@@ -6,7 +6,7 @@ Circle::Circle(const geo::Coordinate& center, double radius) : CADEntity(), geo:
 
 }
 
-Circle::Circle(const geo::Coordinate& center, double radius, const QList<MetaTypePtr>& metaTypes) : CADEntity(metaTypes),  geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate& center, double radius, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes),  geo::Circle(center, radius) {
 }
 
 

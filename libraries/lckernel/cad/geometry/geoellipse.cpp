@@ -40,24 +40,3 @@ bool Ellipse::isCoordinateOnPath(const Coordinate& coord) const {
 double Ellipse::endAngle() const {
     return _endAngle;
 }
-
-QList<Coordinate> Ellipse::intersect(IntersectablePtr x, Intersectable::Coordinates intersect) const {
-    QList<Coordinate> points;
-    return points;
-}
-QList<Coordinate> Ellipse::intersect(const Vector& x, Intersectable::Coordinates intersect) const {
-    QList<Coordinate> points;
-    return points;
-}
-QList<Coordinate> Ellipse::intersect(const Circle& x, Intersectable::Coordinates intersect) const {
-    QList<Coordinate> points;
-    return points;
-}
-QList<Coordinate> Ellipse::intersect(const Arc& x, Intersectable::Coordinates intersect) const {
-    QList<Coordinate> points;
-    return points;
-}
-QList<Coordinate> Ellipse::intersect(const Ellipse& x, Intersectable::Coordinates intersect) const {
-    QList<Coordinate> points;
-    return points;
-}

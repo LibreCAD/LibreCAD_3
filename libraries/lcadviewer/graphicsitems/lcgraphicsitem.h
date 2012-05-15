@@ -32,12 +32,12 @@ class LCGraphicsItem : public QGraphicsItem {
         /**
           * Paint the entity, the default implementation will just set the color
           */
-        virtual void paint(lc::CADEntityPtr, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+        virtual void paint(std::tr1::shared_ptr<const lc::CADEntity>, QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
 
         /**
           * Return the CADentity that this GrapgicsItem manages
           */
-        virtual const lc::CADEntityPtr entity() const = 0;
+        virtual const std::tr1::shared_ptr<const lc::CADEntity> entity() const = 0;
 };
 
 #endif // LCGRAPHICSITEM_H

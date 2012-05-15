@@ -7,6 +7,7 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
 
 }
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<MetaTypePtr>& metaTypes)
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes)
     : CADEntity(metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
+

@@ -1,5 +1,8 @@
 #include "trimentity.h"
 
+#include "cad/functions/trim.h"
+
+
 using namespace lc;
 
 TrimEntity::TrimEntity(AbstractDocument* document) : Operation(document), Undoable("Trim Entity") {
@@ -16,20 +19,40 @@ void TrimEntity::redo() const {
 }
 
 
-void TrimEntity::process() const {
+void TrimEntity::processInternal() const {
+
+
 
 }
 
-void TrimEntity::addLimitingEntity(CADEntityPtr cadEntity) {
-    this->_limitingEntities.append(cadEntity);
+void TrimEntity::trimCoordinate(const geo::Coordinate& coord) {
+    _trimCoordinate = coord;
 }
 
-void TrimEntity::removeLimitingEntity(CADEntityPtr cadEntity) {
+void TrimEntity::trimTwoEntities(const std::tr1::shared_ptr<const lc::CADEntity>& trimmedEntity, const std::tr1::shared_ptr<const lc::CADEntity>& limitEntity) {
+
+    // QList<std::tr1::shared_ptr<const lc::CADEntity> > result = trimmedEntity->trim(limitEntity, this->_trimCoordinate);
+
+
+
+    //    QList<geo::Coordinate> geo::GeoIntersect::Intersect()
+}
+
+void TrimEntity::addLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
+    if (_limitingEntities.indexOf(cadEntity) == -1) {
+        this->_trimmingEntities.append(cadEntity);
+    }
+}
+
+void TrimEntity::removeLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
     this->_limitingEntities.removeOne(cadEntity);
 }
 
-void TrimEntity::addTrimmedEntity(CADEntityPtr cadEntity) {
-    this->_trimmedEntity.append(cadEntity);
+void TrimEntity::addTrimmedEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
+    // We cannot trim to ourselve
+    if (_limitingEntities.indexOf(cadEntity) == -1) {
+        this->_trimmingEntities.append(cadEntity);
+    }
 }
 
 

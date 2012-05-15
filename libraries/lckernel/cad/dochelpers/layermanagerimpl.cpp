@@ -9,34 +9,34 @@ LayerManagerImpl::LayerManagerImpl(AbstractDocument* document) : LayerManager(),
     setObjectName(LAYERMANAGERHELPER_NAME);
 
 
-    _documentLayers.insert("0", DocumentLayerPtr(new DocumentLayerImpl(LayerPtr(new Layer("0", new LineWidth(1.0), new Color(255, 255, 255))))));
+    _documentLayers.insert("0", std::tr1::shared_ptr<lc::DocumentLayer>(new DocumentLayerImpl(std::tr1::shared_ptr<const lc::Layer>(new Layer("0", new LineWidth(1.0), new Color(255, 255, 255))))));
 }
 
 LayerManagerImpl::~LayerManagerImpl() {
 }
 
 void LayerManagerImpl::addLayer(const QString& layerName) {
-    DocumentLayerPtr docLayer = _documentLayers.value(layerName);
+    std::tr1::shared_ptr<lc::DocumentLayer> docLayer = _documentLayers.value(layerName);
 
     if (docLayer != NULL) {
         throw "AbstractDocument layer " + layerName + " already exists.";
     }
 
-    _documentLayers.insert(layerName, DocumentLayerPtr(new DocumentLayerImpl(LayerPtr(new Layer(layerName, new LineWidth(1.0), new Color(255, 255, 255))))));
+    _documentLayers.insert(layerName, std::tr1::shared_ptr<lc::DocumentLayer>(new DocumentLayerImpl(std::tr1::shared_ptr<const lc::Layer>(new Layer(layerName, new LineWidth(1.0), new Color(255, 255, 255))))));
 }
 
-void LayerManagerImpl::addLayer(LayerPtr layer) {
-    DocumentLayerPtr docLayer = _documentLayers.value(layer->name());
+void LayerManagerImpl::addLayer(std::tr1::shared_ptr<const lc::Layer> layer) {
+    std::tr1::shared_ptr<const lc::DocumentLayer> docLayer = _documentLayers.value(layer->name());
 
     if (docLayer != NULL) {
         throw "AbstractDocument layer " + layer->name() + " already exists.";
     }
 
-    _documentLayers.insert(layer->name(), DocumentLayerPtr(new DocumentLayerImpl(layer)));
+    _documentLayers.insert(layer->name(), std::tr1::shared_ptr<lc::DocumentLayer>(new DocumentLayerImpl(layer)));
 }
 
 void LayerManagerImpl::removeLayer(const QString& layerName) {
-    DocumentLayerPtr docLayer = _documentLayers.value(layerName);
+    std::tr1::shared_ptr<lc::DocumentLayer> docLayer = _documentLayers.value(layerName);
 
     if (docLayer == NULL) {
         throw "AbstractDocument layer " + layerName + " not found.";
@@ -45,8 +45,8 @@ void LayerManagerImpl::removeLayer(const QString& layerName) {
     _documentLayers.remove(layerName);
 }
 
-DocumentLayerPtr LayerManagerImpl::layer(const QString& layerName) const {
-    DocumentLayerPtr docLayer = _documentLayers.value(layerName);
+std::tr1::shared_ptr<lc::DocumentLayer> LayerManagerImpl::layer(const QString& layerName) const {
+    std::tr1::shared_ptr<lc::DocumentLayer> docLayer = _documentLayers.value(layerName);
 
     if (docLayer == NULL) {
         throw "AbstractDocument layer " + layerName + " not found.";
@@ -55,7 +55,7 @@ DocumentLayerPtr LayerManagerImpl::layer(const QString& layerName) const {
     return docLayer;
 }
 
-QHash <QString, DocumentLayerPtr> const& LayerManagerImpl::allLayers() const {
+QHash <QString, std::tr1::shared_ptr<lc::DocumentLayer> > const& LayerManagerImpl::allLayers() const {
     return _documentLayers;
 }
 

@@ -1,9 +1,9 @@
 #include "linecreateoperation.h"
 
 #include "cad/primitive/line.h"
-#include "operationfinishedevent.h"
+#include "guioperationfinishedevent.h"
 
-LineCreateOperation::LineCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager) : Operation(), _graphicsView(graphicsView), _snapManager(snapManager) {
+LineCreateOperation::LineCreateOperation(QGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager) : GuiOperation(), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -40,8 +40,8 @@ LineCreateOperation::LineCreateOperation(QGraphicsView* graphicsView, SnapManage
 }
 
 void LineCreateOperation::lineCreationFinished() {
-    OperationFinishedEvent of;
-    emit operationFinished(of);
+    GuiOperationFinishedEvent of;
+    emit guiOperationFinished(of);
 }
 
 void LineCreateOperation::restart() {
@@ -49,8 +49,8 @@ void LineCreateOperation::restart() {
     _machine.start();
 }
 
-lc::CADEntityPtr LineCreateOperation::cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const {
-    return lc::LinePtr(new lc::Line(_startPoint, _endPoint, metaTypes));
+std::tr1::shared_ptr<const lc::CADEntity> LineCreateOperation::cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const {
+    return std::tr1::shared_ptr<const lc::Line>(new lc::Line(_startPoint, _endPoint, metaTypes));
 }
 
 void LineCreateOperation::on_drawEvent(const DrawEvent& event) {
@@ -74,11 +74,11 @@ void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
 }
 
 
-OperationPtr LineCreateOperation::next() const {
+std::tr1::shared_ptr<GuiOperation> LineCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     LineCreateOperation* lco = new LineCreateOperation(this->_graphicsView, this->_snapManager);
     lco->_machine.setInitialState(lco->_waitForSecondClick);
     lco->_machine.start();
     lco->_startPoint = this->_endPoint;
-    return OperationPtr(lco);
+    return std::tr1::shared_ptr<GuiOperation>(lco);
 }

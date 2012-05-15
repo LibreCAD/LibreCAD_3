@@ -1,15 +1,15 @@
-#include "geomath.h"
+#include "geointersect.h"
 
-#include "geocircle.h"
-#include "geocoordinate.h"
-#include "geoarc.h"
-#include "geoellipse.h"
-#include "geovector.h"
+#include "cad/geometry/geocircle.h"
+#include "cad/geometry/geocoordinate.h"
+#include "cad/geometry/geoarc.h"
+#include "cad/geometry/geoellipse.h"
+#include "cad/geometry/geovector.h"
 
 using namespace lc;
 using namespace geo;
 
-QList<Coordinate> GeoMath::intersectVectorVector(const Vector& a, const Vector& b, GeoMath::Intersect intersect) {
+QList<Coordinate> GeoIntersect::intersectVectorVector(const Vector& a, const Vector& b, GeoIntersect::Intersect intersect) {
     QList<Coordinate> points;
 
     Coordinate p1 = a.start();
@@ -27,7 +27,7 @@ QList<Coordinate> GeoMath::intersectVectorVector(const Vector& a, const Vector& 
         double ys = p1.y() + u * (p2.y() - p1.y());
         Coordinate c(xs, ys);
 
-        if (intersect == Intersectable::Any || (intersect == GeoMath::MustIntersect && a.isCoordinateOnPath(c) && b.isCoordinateOnPath(c))) {
+        if (intersect == GeoIntersect::Any || (intersect == GeoIntersect::MustIntersect && a.isCoordinateOnPath(c) && b.isCoordinateOnPath(c))) {
             points.append(c);
         }
     }
@@ -36,7 +36,7 @@ QList<Coordinate> GeoMath::intersectVectorVector(const Vector& a, const Vector& 
 }
 
 
-QList<Coordinate> GeoMath::intersectArcLine(const Arc& arc, const Vector& line, GeoMath::Intersect intersect) {
+QList<Coordinate> GeoIntersect::intersectArcLine(const Arc& arc, const Vector& line, GeoIntersect::Intersect intersect) {
     QList<Coordinate> points;
 
     Coordinate nearest = line.nearestPointOnPath(arc.center());
@@ -65,16 +65,16 @@ QList<Coordinate> GeoMath::intersectArcLine(const Arc& arc, const Vector& line, 
     if (discriminant < - 1.0e-4) {
         return points;
     } else {
-        double t = sqrt(fabs(discriminant));
+        double t = sqrtf(fabs(discriminant));
         //two intersections
         Coordinate c1(line.start() + d * (t - a1) / d2);
         Coordinate c2(line.start() - d * (t + a1) / d2);
 
-        if (intersect == Intersectable::Any || (intersect == GeoMath::MustIntersect && arc.isCoordinateOnPath(c1) && line.isCoordinateOnPath(c1))) {
+        if (intersect == GeoIntersect::Any || (intersect == GeoIntersect::MustIntersect && arc.isCoordinateOnPath(c1) && line.isCoordinateOnPath(c1))) {
             points.append(c1);
         }
 
-        if (intersect == Intersectable::Any || (intersect == GeoMath::MustIntersect && arc.isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
+        if (intersect == GeoIntersect::Any || (intersect == GeoIntersect::MustIntersect && arc.isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
             points.append(c2);
         }
 
@@ -82,7 +82,7 @@ QList<Coordinate> GeoMath::intersectArcLine(const Arc& arc, const Vector& line, 
     }
 }
 
-QList<Coordinate> GeoMath::intersectCircleLine(const Circle& circle, const Vector& line, Intersect intersect) {
+QList<Coordinate> GeoIntersect::intersectCircleLine(const Circle& circle, const Vector& line, Intersect intersect) {
     return intersectArcLine(Arc(circle.center(), circle.radius(), 0., PI2), line, intersect);
 }
 

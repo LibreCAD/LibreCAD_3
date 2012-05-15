@@ -1,9 +1,9 @@
 #include "circlecreateoperation.h"
 
 #include "cad/primitive/circle.h"
-#include "operationfinishedevent.h"
+#include "guioperationfinishedevent.h"
 
-CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, SnapManagerPtr snapManager) : Operation(), _graphicsView(graphicsView), _snapManager(snapManager) {
+CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager) : GuiOperation(), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -40,8 +40,8 @@ CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, SnapMa
 }
 
 void CircleCreateOperation::lineCreationFinished() {
-    OperationFinishedEvent of;
-    emit operationFinished(of);
+    GuiOperationFinishedEvent of;
+    emit guiOperationFinished(of);
 }
 
 void CircleCreateOperation::restart() {
@@ -49,9 +49,9 @@ void CircleCreateOperation::restart() {
     _machine.start();
 }
 
-lc::CADEntityPtr CircleCreateOperation::cadEntity(const QList<lc::MetaTypePtr>& metaTypes) const {
+std::tr1::shared_ptr<const lc::CADEntity> CircleCreateOperation::cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const {
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    return lc::CirclePtr(new lc::Circle(_startPoint, r, metaTypes));
+    return std::tr1::shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes));
 }
 
 void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
@@ -77,10 +77,10 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-OperationPtr CircleCreateOperation::next() const {
+std::tr1::shared_ptr<GuiOperation> CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     CircleCreateOperation* lco = new CircleCreateOperation(this->_graphicsView, this->_snapManager);
-    return OperationPtr(lco);
+    return std::tr1::shared_ptr<GuiOperation>(lco);
 }
 
 

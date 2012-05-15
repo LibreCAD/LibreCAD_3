@@ -50,8 +50,8 @@ void CadMdiChild::newDocument() {
 
 
     // Should this be done using the events system of QT??
-    ui->lCADViewer->addBackgroundItem(LCViewerDrawItemPtr(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
-    LCViewerDrawItemPtr metricGrid = LCViewerDrawItemPtr(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
+    ui->lCADViewer->addBackgroundItem(std::tr1::shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
+    std::tr1::shared_ptr<LCViewerDrawItem> metricGrid = std::tr1::shared_ptr<LCViewerDrawItem>(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
     ui->lCADViewer->addBackgroundItem(metricGrid);
 
 
@@ -65,7 +65,7 @@ void CadMdiChild::newDocument() {
     _document = new lc::DocumentImpl();
 
     // Layer Manager takes care of creating and removing layers
-    _layerManager = lc::LayerManagerPtr(new lc::LayerManagerImpl(_document));
+    _layerManager = std::tr1::shared_ptr<lc::LayerManager>(new lc::LayerManagerImpl(_document));
 
     // A layer manager is required for a document to work, but chicken and the egg problem prevents making these referencing them
     // May be the document should create it somehow???
@@ -83,10 +83,10 @@ void CadMdiChild::newDocument() {
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
     // Snap manager
-    _snapManager = SnapManagerPtr(new SnapManagerImpl(ui->lCADViewer, lc::SelectionManagerPtr(newSelectionManager),  dynamic_pointer_cast<lc::Snapable>(metricGrid), 50.));
+    _snapManager = std::tr1::shared_ptr<SnapManager> (new SnapManagerImpl(ui->lCADViewer, std::tr1::shared_ptr<lc::SelectionManager>(newSelectionManager),  std::tr1::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.));
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = CursorPtr(new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00)));
+    _cursor = std::tr1::shared_ptr<const Cursor> (new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00)));
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = new lc::UndoManagerImpl(_document, 10);
@@ -97,12 +97,15 @@ void CadMdiChild::newDocument() {
 
     // Create a cross at position 0,0
     lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
-    foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, 100), lc::geo::Coordinate(100, -100))));
-    foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(-100, -100), lc::geo::Coordinate(100, 100))));
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.))));
+    foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.))));
+    foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0))));
+    foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0))));
+
+    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
 
     // Add operation manager
-    _operationManager = OperationManagerPtr(new OperationManager(_document));
+    _operationManager = std::tr1::shared_ptr<OperationManager> (new OperationManager(_document));
 
     /*
     QWidget *widget=new QTableWidget();
@@ -136,12 +139,12 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
-        foo->append(lc::CADEntityPtr(new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2))));
+        foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2))));
     }
 
     qDebug() << "Create : " << myTimer.elapsed();
     myTimer.start();
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
     qDebug() << "Process : " << myTimer.elapsed();
 }
 
@@ -153,10 +156,10 @@ void CadMdiChild::on_addCircles_clicked() {
         double y1 = randInt(-4000, 4000);
 
         double r = randInt(0, 150);
-        foo->append(lc::CADEntityPtr(new lc::Circle(lc::geo::Coordinate(x1, y1), r)));
+        foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(x1, y1), r)));
     }
 
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
 }
 
 
@@ -183,10 +186,10 @@ void CadMdiChild::on_addArcs_clicked() {
 
         s = (0 + 45) / (360.0 / PI / 2);
         e = (180 + 45) / (360.0 / PI / 2);
-        foo->append(lc::CADEntityPtr(new lc::Arc(lc::geo::Coordinate(x1, y1), r, s, e)));
+        foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Arc(lc::geo::Coordinate(x1, y1), r, s, e)));
     }
 
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
@@ -211,10 +214,10 @@ void CadMdiChild::on_addEllipse_clicked() {
 
         s = (0 + 45) / (360.0 / PI / 2);
         e = (180 + 45) / (360.0 / PI / 2);
-        foo->append(lc::CADEntityPtr(new lc::Ellipse(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e)));
+        foo->append(std::tr1::shared_ptr<const lc::CADEntity>(new lc::Ellipse(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e)));
     }
 
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
 }
 
 
@@ -222,11 +225,11 @@ QCachedGraphicsView* CadMdiChild::view() const {
     return ui->lCADViewer;
 }
 
-SnapManagerPtr CadMdiChild::snapManager() const {
+std::tr1::shared_ptr<SnapManager>  CadMdiChild::snapManager() const {
     return  _snapManager;
 }
 
-OperationManagerPtr CadMdiChild::operationManager() const {
+std::tr1::shared_ptr<OperationManager>  CadMdiChild::operationManager() const {
     return _operationManager;
 }
 void CadMdiChild::cancelCurrentOperations() {

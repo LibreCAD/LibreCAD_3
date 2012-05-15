@@ -42,7 +42,6 @@ namespace lc {
                 const Coordinate _minP;
                 const Coordinate _maxP;
         };
-        typedef shared_ptr<const Area> AreaPtr;
     }
 }
 #endif // GEOAREA_H

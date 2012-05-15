@@ -25,44 +25,44 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
 
     // Add a line
-    const lc::LinePtr line = dynamic_pointer_cast<const lc::Line>(event.entity());
+    const std::tr1::shared_ptr<const lc::Line> line = std::tr1::dynamic_pointer_cast<const lc::Line>(event.entity());
 
     if (line != NULL) {
         LCLineItem* foo = new LCLineItem(line);
-        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(line->id(), foo);
         return;
     }
 
     // Add a circle
-    const lc::CirclePtr circle = dynamic_pointer_cast<const lc::Circle>(event.entity());
+    const std::tr1::shared_ptr<const lc::Circle> circle = std::tr1::dynamic_pointer_cast<const lc::Circle>(event.entity());
 
     if (circle != NULL) {
         LCCircleItem* foo = new LCCircleItem(circle);
-        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(circle->id(), foo);
         return;
     }
 
     // Add a Arc
-    const lc::ArcPtr arc = dynamic_pointer_cast<const lc::Arc>(event.entity());
+    const std::tr1::shared_ptr<const lc::Arc> arc = std::tr1::dynamic_pointer_cast<const lc::Arc>(event.entity());
 
     if (arc != NULL) {
         LCArcItem* foo = new LCArcItem(arc);
-        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(arc->id(), foo);
         return;
     }
 
     // Add Ellipse
-    const lc::EllipsePtr ellipse = dynamic_pointer_cast<const lc::Ellipse>(event.entity());
+    const std::tr1::shared_ptr<const lc::Ellipse> ellipse = std::tr1::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
     if (ellipse != NULL) {
         LCEllipseItem* foo = new LCEllipseItem(ellipse);
-        foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(ellipse->id(), foo);
         return;

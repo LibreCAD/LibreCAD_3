@@ -58,8 +58,6 @@ namespace lc {
             QString _text;
 
     };
-    typedef shared_ptr<lc::Undoable> UndoablePtr;
-
 }
 
 #endif // UNDOABLE_H

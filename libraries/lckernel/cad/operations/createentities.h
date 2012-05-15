@@ -28,18 +28,20 @@ namespace lc {
              * Add a entity to the document, you can call this function as many times as you whish
              * @param cadEntity
              */
-            void append(CADEntityPtr cadEntity);
+            void append(std::tr1::shared_ptr<const lc::CADEntity> cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;
 
         private:
             Q_DISABLE_COPY(CreateEntities)
-            virtual void process() const;
+
+        protected:
+            virtual void processInternal() const;
 
         private:
             QString _layerName;
-            QList<CADEntityPtr> _toCreate;
+            QList<std::tr1::shared_ptr<const lc::CADEntity> > _toCreate;
     };
 }
 #endif // CREATEENTITIES_H
