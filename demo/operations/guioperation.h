@@ -8,9 +8,11 @@
 
 #include "cad/base/cadentity.h"
 #include "cad/primitive/line.h"
+#include "cad/operations/operation.h"
 
-#include "guioperationfinishedevent.h"
 
+
+class GuiOperationFinishedEvent;
 
 #include "const.h"
 /**
@@ -25,10 +27,11 @@
 class GuiOperation : public QObject {
         Q_OBJECT
     public:
+        GuiOperation(lc::AbstractDocument* document) : _document(document) {}
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual std::tr1::shared_ptr<const lc::CADEntity> cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const = 0;
+        virtual shared_ptr<lc::Operation> operation() const = 0;
 
         /*!
           * \brief restart this operation
@@ -41,7 +44,10 @@ class GuiOperation : public QObject {
           * It allows for a line to continue and connect start/end points automatically.
           *
           */
-        virtual std::tr1::shared_ptr<GuiOperation> next() const = 0 ;
+        virtual shared_ptr<GuiOperation> next() const = 0 ;
+    protected:
+        lc::AbstractDocument* document() const {return _document;}
+
     public:
     signals:
 
@@ -49,6 +55,8 @@ class GuiOperation : public QObject {
           * \brief Signal that a operation needs to emit once the operation is been completed
           */
         void guiOperationFinished(const GuiOperationFinishedEvent&);
+    private:
+        lc::AbstractDocument* _document;
 };
 
 

@@ -1,35 +1,28 @@
 #ifndef TRIM_H
 #define TRIM_H
 
+#include "cad/base/cadentity.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/interface/entityinteraction.h"
+#include "cad/interface/entityvisitor.h"
+#include "cad/interface/entitydispatch.h"
 
 namespace lc {
-    class Trim : public EntityInteraction {
+
+    class Trim : public EntityDispatch {
         public:
-            Trim(geo::Coordinate trimPoint);
-            virtual void visitInteraction(std::shared_ptr<const Line>, std::shared_ptr<const Line>);
-            virtual void visitInteraction(std::shared_ptr<const Line>, std::shared_ptr<const Circle>);
-            virtual void visitInteraction(std::shared_ptr<const Line>, std::shared_ptr<const Arc>);
-            virtual void visitInteraction(std::shared_ptr<const Line>, std::shared_ptr<const Ellipse>);
+            Trim(QList<shared_ptr<const lc::CADEntity> > limitingEntities, shared_ptr<const lc::CADEntity> trimmedShape, geo::Coordinate trimPoint);
 
-            virtual void visitInteraction(std::shared_ptr<const Circle>, std::shared_ptr<const Line>);
-            virtual void visitInteraction(std::shared_ptr<const Circle>, std::shared_ptr<const Circle>);
-            virtual void visitInteraction(std::shared_ptr<const Circle>, std::shared_ptr<const Arc>);
-            virtual void visitInteraction(std::shared_ptr<const Circle>, std::shared_ptr<const Ellipse>);
-
-            virtual void visitInteraction(std::shared_ptr<const Arc>, std::shared_ptr<const Line>);
-            virtual void visitInteraction(std::shared_ptr<const Arc>, std::shared_ptr<const Circle>);
-            virtual void visitInteraction(std::shared_ptr<const Arc>, std::shared_ptr<const Arc>);
-            virtual void visitInteraction(std::shared_ptr<const Arc>, std::shared_ptr<const Ellipse>);
-
-            virtual void visitInteraction(std::shared_ptr<const Ellipse>, std::shared_ptr<const Line>);
-            virtual void visitInteraction(std::shared_ptr<const Ellipse>, std::shared_ptr<const Circle>);
-            virtual void visitInteraction(std::shared_ptr<const Ellipse>, std::shared_ptr<const Arc>);
-            virtual void visitInteraction(std::shared_ptr<const Ellipse>, std::shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const lc::Line>);
+            virtual void visit(shared_ptr<const lc::Circle>);
+            virtual void visit(shared_ptr<const lc::Arc>);
+            virtual void visit(shared_ptr<const lc::Ellipse>);
+            QList<shared_ptr<const lc::CADEntity> > result();
+            shared_ptr<const lc::CADEntity> trimmedShape() const;
 
         private:
-            QList<std::tr1::shared_ptr<const lc::CADEntity> > _newEntities;
+            QList<shared_ptr<const lc::CADEntity> > _limitingEntities;
+            shared_ptr<const lc::CADEntity> _trimmedShape;
+            QList<shared_ptr<const lc::CADEntity> > _newEntities;
             geo::Coordinate _trimPoint;
     };
 }

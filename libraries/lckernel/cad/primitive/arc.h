@@ -2,7 +2,8 @@
 #define ARC_H
 
 #include "cad/const.h"
-#include "cad/interface/entityinteraction.h"
+#include "cad/interface/entityvisitor.h"
+#include "cad/interface/entitydispatch.h"
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
@@ -14,24 +15,28 @@ namespace lc {
     class Arc : public std::tr1::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle);
-            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes);
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
 
         public:
-            virtual void accept(std::tr1::shared_ptr<const lc::Line> o, EntityInteraction& ei) const {
-                ei.visitInteraction(shared_from_this(), o);
+            virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::tr1::shared_ptr<const lc::Circle> o, EntityInteraction& ei) const {
-                ei.visitInteraction(shared_from_this(), o);
+            virtual void accept(shared_ptr<const lc::Circle> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::tr1::shared_ptr<const lc::Arc> o, EntityInteraction& ei) const {
-                ei.visitInteraction(shared_from_this(), o);
+            virtual void accept(shared_ptr<const lc::Arc> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::tr1::shared_ptr<const lc::Ellipse> o, EntityInteraction& ei) const {
-                ei.visitInteraction(shared_from_this(), o);
+            virtual void accept(shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::tr1::shared_ptr<const lc::CADEntity> o, EntityInteraction& ei) const {
+            virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
+            virtual void dispatch(EntityDispatch& ed) const {
+                ed.visit(shared_from_this());
+            }
+
     };
 }
 

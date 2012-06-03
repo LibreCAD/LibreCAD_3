@@ -12,17 +12,17 @@
 
 class LCArcItem : public LCGraphicsItem {
     public:
-        LCArcItem(const std::tr1::shared_ptr<const lc::Arc> arc);
+        LCArcItem(const shared_ptr<const lc::Arc> arc);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-        virtual const std::tr1::shared_ptr<const lc::CADEntity> entity() const;
+        virtual const shared_ptr<const lc::CADEntity> entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const std::tr1::shared_ptr<const lc::Arc> _arc;
+        const shared_ptr<const lc::Arc> _arc;
 };
 #endif // LCARCITEM_H

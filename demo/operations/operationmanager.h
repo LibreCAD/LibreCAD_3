@@ -29,7 +29,7 @@ class OperationManager : QObject {
          *
          *
          */
-        void startOperation(std::tr1::shared_ptr<GuiOperation> operation);
+        void startOperation(shared_ptr<GuiOperation> operation);
 
         /**
           * \brief call this function to send a cancel signal to the current operation
@@ -48,12 +48,11 @@ class OperationManager : QObject {
         friend class GroupOperations;
     private:
 
-        QStack<std::tr1::shared_ptr<GuiOperation> > activeOperations() const;
-        void setActiveOperations(QStack<std::tr1::shared_ptr<GuiOperation> > operations);
+        QStack<shared_ptr<GuiOperation> > activeOperations() const;
 
     private slots:
         /*!
-          * \brief this function is called internally and will commit all operations on the _activeOperations to the document
+          * \brief this function is called internally and will commit all operations on the _activeGuiOperations to the document
           *
           * \param GuiOperationFinishedEvent Operation Finnished event
           *
@@ -62,7 +61,9 @@ class OperationManager : QObject {
         void on_guioperationFinished_Event(const GuiOperationFinishedEvent&);
 
     private:
-        QStack<std::tr1::shared_ptr<GuiOperation> > _activeOperations;
+        // Created as a stack of operation because LibreCAD 2.x has that. However, not sure where this is used exactly
+        // it might aswell be that later this is going ot be changed to one single Operation that can be active
+        QStack<shared_ptr<GuiOperation> > _activeGuiOperations;
         lc::AbstractDocument* _document;
 };
 

@@ -1,7 +1,8 @@
 #include "snapmanagerimpl.h"
 #include "cad/functions/intersect.h"
+#include "cad/vo/entitydistance.h"
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, std::tr1::shared_ptr<lc::SelectionManager> selectionmanager, std::tr1::shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, shared_ptr<lc::SelectionManager> selectionmanager, shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
 
     connect(graphicsView, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
@@ -22,22 +23,23 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // We should call this function only if the mouse haven't moved for XX milli seconds
 
     // Find all entities that are close to the current mouse pointer
-    QList<lc::EntityDistance> entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
+    _entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
 
-    qDebug() << "c:" << entities.count();
+    if (_entities.count()>0) {
+        qDebug() << "Found" << _entities.count() << "entities close to the cursor";
+    }
 
-    // Emit Snappoint event if a entity intersects with a other entity an is s
-    if (entities.count() > 1) {
-        for (int a = 0; a < entities.count(); a++) {
-            for (int b = a + 1; b < entities.count(); b++) {
-
-
-                std::tr1::shared_ptr<const lc::CADEntity> i1 = entities.at(a).entity();
-                std::tr1::shared_ptr<const lc::CADEntity> i2 = entities.at(b).entity();
+    // Emit Snappoint event if a entity intersects with a other entity
+    // TODO: Need some modification to find the closest intersection point
+    if (_entities.count() > 1) {
+        qSort(_entities.begin() , _entities.end(), lc::EntityDistance::sortAscending);
+        for (int a = 0; a < _entities.count(); a++) {
+            for (int b = a + 1; b < _entities.count(); b++) {
+                shared_ptr<const lc::CADEntity> i1 = _entities.at(a).entity();
+                shared_ptr<const lc::CADEntity> i2 = _entities.at(b).entity();
 
                 lc::Intersect intersect(lc::Intersect::MustIntersect);
                 i1->accept(i2, intersect);
-
                 if (intersect.result().count() > 0) {
                     QList<lc::geo::Coordinate> coords = intersect.result();
                     qSort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(event.mousePosition()));
@@ -54,11 +56,11 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
         }
     }
 
-    // Eimit snappoint based on closest entity
-    if (entities.count() > 0) {
+    // Emit snappoint based on closest entity
+    if (_entities.count() > 0) {
         // Get the snap point that is closest to the mouse pointer from all entities
-        qSort(entities.begin(), entities.end(), lc::EntityDistance::sortAscending);
-        const std::tr1::shared_ptr<const lc::Snapable> captr = std::tr1::dynamic_pointer_cast<const lc::Snapable>(entities.at(0).entity());
+        qSort(_entities.begin(), _entities.end(), lc::EntityDistance::sortAscending);
+        const shared_ptr<const lc::Snapable> captr = std::tr1::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
         // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());
@@ -87,9 +89,17 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
 void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
     if (_lastSnapEvent.status() == true) {
-        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint());
-        emit mouseReleaseEvent(snappedLocation);
+        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint(), event.mouseEvent(), _entities);
+        if (event.mouseEvent()->button() & Qt::RightButton) {
+            emit mouseRightReleaseEvent(snappedLocation);
+        } else {
+            emit mouseReleaseEvent(snappedLocation);
+        }
     } else {
-        emit mouseReleaseEvent(event);
+        if (event.mouseEvent()->button() & Qt::RightButton) {
+            emit mouseRightReleaseEvent(event);
+        } else {
+            emit mouseReleaseEvent(event);
+        }
     }
 }

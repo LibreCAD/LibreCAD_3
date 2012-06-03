@@ -5,55 +5,40 @@
 
 using namespace lc;
 
-TrimEntity::TrimEntity(AbstractDocument* document) : Operation(document), Undoable("Trim Entity") {
+TrimEntity::TrimEntity(AbstractDocument* document,  shared_ptr<lc::Trim> trim) : Operation(document), _trim(trim), Undoable("Trim Entity") {
+    _entityLayer = document->findEntityLayerByID(trim->trimmedShape()->id());
 }
 
+void TrimEntity::processInternal() const {
+    QList<shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
 
+    if (newEntities.size() > 0) {
+        for (int i = 0; i < newEntities.size(); ++i) {
+            document()->addEntity(_entityLayer, newEntities.at(i));
+        }
+
+        document()->removeEntity(_trim->trimmedShape()->id());
+    }
+}
 
 void TrimEntity::undo() const {
+    QList<shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
 
+    if (newEntities.size() > 0) {
+        for (int i = 0; i < newEntities.size(); ++i) {
+            document()->removeEntity(newEntities.at(i)->id());
+        }
+
+        document()->addEntity(_entityLayer, _trim->trimmedShape());
+    }
 }
 
 void TrimEntity::redo() const {
-
+    processInternal();
 }
 
 
-void TrimEntity::processInternal() const {
 
-
-
-}
-
-void TrimEntity::trimCoordinate(const geo::Coordinate& coord) {
-    _trimCoordinate = coord;
-}
-
-void TrimEntity::trimTwoEntities(const std::tr1::shared_ptr<const lc::CADEntity>& trimmedEntity, const std::tr1::shared_ptr<const lc::CADEntity>& limitEntity) {
-
-    // QList<std::tr1::shared_ptr<const lc::CADEntity> > result = trimmedEntity->trim(limitEntity, this->_trimCoordinate);
-
-
-
-    //    QList<geo::Coordinate> geo::GeoIntersect::Intersect()
-}
-
-void TrimEntity::addLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
-    if (_limitingEntities.indexOf(cadEntity) == -1) {
-        this->_trimmingEntities.append(cadEntity);
-    }
-}
-
-void TrimEntity::removeLimitingEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
-    this->_limitingEntities.removeOne(cadEntity);
-}
-
-void TrimEntity::addTrimmedEntity(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
-    // We cannot trim to ourselve
-    if (_limitingEntities.indexOf(cadEntity) == -1) {
-        this->_trimmingEntities.append(cadEntity);
-    }
-}
 
 
 

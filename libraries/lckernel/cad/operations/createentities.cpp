@@ -2,7 +2,7 @@
 
 using namespace lc;
 
-void CreateEntities::append(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) {
+void CreateEntities::append(shared_ptr<const lc::CADEntity> cadEntity) {
     _toCreate.append(cadEntity);
 }
 

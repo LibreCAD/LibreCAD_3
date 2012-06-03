@@ -1,7 +1,7 @@
 #include "lcarcitem.h"
 
 
-LCArcItem::LCArcItem(const std::tr1::shared_ptr<const lc::Arc> arc) : LCGraphicsItem(), _arc(arc) {
+LCArcItem::LCArcItem(const shared_ptr<const lc::Arc> arc) : LCGraphicsItem(), _arc(arc) {
 }
 
 
@@ -36,6 +36,6 @@ QPainterPath LCArcItem::shape() const {
 
 
 
-const std::tr1::shared_ptr<const lc::CADEntity> LCArcItem::entity() const {
+const shared_ptr<const lc::CADEntity> LCArcItem::entity() const {
     return _arc;
 }

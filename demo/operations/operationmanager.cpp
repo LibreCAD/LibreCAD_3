@@ -2,53 +2,43 @@
 
 #include "cad/operations/createentities.h"
 #include "cad/base/metainfo.h"
+#include "guioperationfinishedevent.h"
 
 OperationManager::OperationManager(lc::AbstractDocument* document) : _document(document) {
 }
 
 void OperationManager::cancel() {
-    _activeOperations.clear();
+    _activeGuiOperations.clear();
 }
 
-void OperationManager::startOperation(std::tr1::shared_ptr<GuiOperation> operation) {
-    _activeOperations.clear();
-    _activeOperations.append(operation);
+void OperationManager::startOperation(shared_ptr<GuiOperation> operation) {
+    if (_activeGuiOperations.count()>0) {
+        throw "We currently only support one operation";
+    }
+
+    _activeGuiOperations.clear();
+    _activeGuiOperations.append(operation);
 
     connect(operation.get(), SIGNAL(guiOperationFinished(const GuiOperationFinishedEvent&)),
             this, SLOT(on_guioperationFinished_Event(const GuiOperationFinishedEvent&)));
-
-
 }
 
 void OperationManager::restart() {
-    if (!_activeOperations.empty()) {
-        std::tr1::shared_ptr<GuiOperation> lastOperation = _activeOperations.top();
+    if (!_activeGuiOperations.empty()) {
+        shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
         lastOperation->restart();
     }
 
 }
 
-QStack<std::tr1::shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
-    return this->_activeOperations;
-}
-
-void OperationManager::setActiveOperations(QStack<std::tr1::shared_ptr<GuiOperation> > operations) {
-    _activeOperations = operations;
+QStack<shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
+    return this->_activeGuiOperations;
 }
 
 void OperationManager::on_guioperationFinished_Event(const GuiOperationFinishedEvent& event) {
-    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
 
-    std::tr1::shared_ptr<GuiOperation> lastOperation = _activeOperations.top();
-
-    for (int i = 0; i < _activeOperations.count(); i++) {
-        std::tr1::shared_ptr<GuiOperation> o = _activeOperations.at(0);
-        QList<std::tr1::shared_ptr<const lc::MetaType> > metaTypes;
-        foo->append(o->cadEntity(metaTypes));
-    }
-
-    _activeOperations.clear();
-    _document->operateOn(std::tr1::shared_ptr<lc::Operation>(foo));
-
+    shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
+    _document->operateOn(event.guiOperation().operation());
+    _activeGuiOperations.clear();
     startOperation(lastOperation->next());
 }

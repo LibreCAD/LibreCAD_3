@@ -11,15 +11,15 @@ namespace lc {
      */
     class AbsoluteEntityEvent {
         public:
-            AbsoluteEntityEvent(std::tr1::shared_ptr<const lc::CADEntity> cadEntity) : _cadEntity(cadEntity) {
+            AbsoluteEntityEvent(shared_ptr<const lc::CADEntity> cadEntity) : _cadEntity(cadEntity) {
             }
 
-            std::tr1::shared_ptr<const lc::CADEntity> entity() const {
+            shared_ptr<const lc::CADEntity> entity() const {
                 return _cadEntity;
             }
 
         private:
-            std::tr1::shared_ptr<const lc::CADEntity> _cadEntity;
+            shared_ptr<const lc::CADEntity> _cadEntity;
     };
 
 }

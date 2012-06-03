@@ -105,6 +105,7 @@ void QCachedGraphicsView::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void QCachedGraphicsView::mouseReleaseEvent(QMouseEvent* event) {
-    MouseReleaseEvent e(this, _lastMousePosition);
+    QList<lc::EntityDistance> emptyList;
+    MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     emit mouseReleaseEvent(e);
 }

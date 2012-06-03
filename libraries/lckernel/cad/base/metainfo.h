@@ -12,16 +12,16 @@ namespace lc {
     class MetaInfo {
         public:
             MetaInfo();
-            MetaInfo(QList<std::tr1::shared_ptr<const lc::MetaType> > metaTypes);
+            MetaInfo(QList<shared_ptr<const lc::MetaType> > metaTypes);
             virtual ~MetaInfo();
 
-            std::tr1::shared_ptr<const lc::MetaType> metaType(MetaType::metaTypeId type) const;
+            shared_ptr<const lc::MetaType> metaType(MetaType::metaTypeId type) const;
 
         private:
             /**
               *Holds list of meta type. Metatypes < 1024 are reserved for LibreCAD internall
               */
-            QHash<int, std::tr1::shared_ptr<const lc::MetaType> > _metaTypes;
+            QHash<int, shared_ptr<const lc::MetaType> > _metaTypes;
     };
 }
 #endif // METAINFO_H

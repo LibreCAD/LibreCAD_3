@@ -39,6 +39,17 @@ class SnapManager : public QObject {
          * \sa lc::MouseReleaseEvent
          */
         void mouseReleaseEvent(const MouseReleaseEvent&);
+
+        /*!
+         * \brief mouseRelease event get's emitted when the user release the left mouse button
+         *
+         * When the user release the left mouse butten this events get's emitted with the coordination
+         * of the last snap position. If no snap position was found the current mouse coordinate will be used
+         *
+         * \sa lc::MouseReleaseEvent
+         */
+        void mouseRightReleaseEvent(const MouseReleaseEvent&);
+
 };
 
 

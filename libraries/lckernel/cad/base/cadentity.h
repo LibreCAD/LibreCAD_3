@@ -16,7 +16,8 @@ namespace lc {
     class Ellipse;
     class CADEntity;
 
-    class EntityInteraction;
+    class EntityVisitor;
+    class EntityDispatch;
 
     /**
      *Class that all CAD entities must inherit
@@ -25,15 +26,14 @@ namespace lc {
     class CADEntity : public ID, public MetaInfo {
         public:
             CADEntity();
-            CADEntity(QList<std::tr1::shared_ptr<const lc::MetaType> > metaTypes);
-            virtual void accept(std::tr1::shared_ptr<const lc::Line>, EntityInteraction&) const = 0;
-            virtual void accept(std::tr1::shared_ptr<const lc::Circle>, EntityInteraction&) const = 0;
-            virtual void accept(std::tr1::shared_ptr<const lc::Arc>, EntityInteraction&) const = 0;
-            virtual void accept(std::tr1::shared_ptr<const lc::Ellipse>, EntityInteraction&) const = 0;
-            virtual void accept(std::tr1::shared_ptr<const lc::CADEntity>, EntityInteraction&) const = 0;
+            CADEntity(QList<shared_ptr<const lc::MetaType> > metaTypes);
+            virtual void accept(shared_ptr<const lc::Line>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::Circle>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::Arc>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::Ellipse>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
+            virtual void dispatch(EntityDispatch&) const = 0;
     };
 }
-
-
 
 #endif // CADENTITY_H

@@ -15,7 +15,7 @@
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
 
         public
     slots:
@@ -25,6 +25,9 @@ class Cursor : public QObject  {
 
     public:
     signals:
+        /**
+          * \deprecated well, just may be...
+          */
         void mouseReleaseEvent(const MouseReleaseEvent&);
 
     private:

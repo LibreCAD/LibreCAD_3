@@ -9,6 +9,7 @@
 #include "events/mousereleaseevent.h"
 #include "helpers/snapmanager.h"
 #include "drawitems/cursor.h"
+#include "cad/operations/operation.h"
 
 #include "qsnappedstate.h"
 
@@ -22,9 +23,9 @@ class LineCreateOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        LineCreateOperation(QGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager);
+        LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
-        virtual std::tr1::shared_ptr<const lc::CADEntity> cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const;
+        virtual shared_ptr<lc::Operation> operation() const;
 
         virtual void restart();
 
@@ -45,7 +46,7 @@ class LineCreateOperation : public GuiOperation {
             return _endPoint;
         }
 
-        virtual std::tr1::shared_ptr<GuiOperation> next() const;
+        virtual shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
     private slots:
@@ -62,7 +63,7 @@ class LineCreateOperation : public GuiOperation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        std::tr1::shared_ptr<SnapManager>  _snapManager;
+        shared_ptr<SnapManager>  _snapManager;
 };
 
 #endif // LINECREATEOPERATION_H

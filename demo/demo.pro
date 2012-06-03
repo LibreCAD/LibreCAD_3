@@ -56,7 +56,7 @@ HEADERS  += mainwindow.h \
     operations/circlecreateoperation.h \
     operations/trimoperation.h \
     operations/guioperation.h \
-    guioperationfinishedevent.h
+    operations/guioperationfinishedevent.h
 
 FORMS    += mainwindow.ui \
     cadmdichild.ui \

@@ -5,7 +5,7 @@
   * \brief Add this on the stack to goup a set of operations to beable to group a set of operation
   *
   * This allows you to create for example a polyline function that is groupped together into one container
-  * \TODO Needs to be implemented still
+  * \todo Needs to be implemented still
   */
 class GroupOperations {
     public:

@@ -86,7 +86,7 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
   * Add a background render item to the viewer.
   *
   */
-void LCADViewer::addBackgroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) {
+void LCADViewer::addBackgroundItem(shared_ptr<LCViewerDrawItem> item) {
     this->_backgroundItems.append(item);
 }
 
@@ -94,7 +94,7 @@ void LCADViewer::addBackgroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) 
   * Add a foreground render item to the viewer.
   *
   */
-void LCADViewer::addForegroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) {
+void LCADViewer::addForegroundItem(shared_ptr<LCViewerDrawItem> item) {
     this->_foregroundItems.append(item);
 }
 
@@ -102,7 +102,7 @@ void LCADViewer::addForegroundItem(std::tr1::shared_ptr<LCViewerDrawItem> item) 
   * Add cursors to the scene
   *
   */
-void LCADViewer::addCursorItem(std::tr1::shared_ptr<LCViewerCursorItem>  item) {
+void LCADViewer::addCursorItem(shared_ptr<LCViewerCursorItem>  item) {
     this->_cursorItems.append(item);
 }
 

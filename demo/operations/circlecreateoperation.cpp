@@ -2,8 +2,9 @@
 
 #include "cad/primitive/circle.h"
 #include "guioperationfinishedevent.h"
+#include "cad/operations/createentities.h"
 
-CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager) : GuiOperation(), _graphicsView(graphicsView), _snapManager(snapManager) {
+CircleCreateOperation::CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -36,22 +37,26 @@ CircleCreateOperation::CircleCreateOperation(QGraphicsView* graphicsView, std::t
     _machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
     _machine.start();
 
-    QObject::connect(&_machine, SIGNAL(finished()), this, SLOT(lineCreationFinished()));
+    QObject::connect(&_machine, SIGNAL(finished()), this, SLOT(circleCreationFinished()));
 }
 
-void CircleCreateOperation::lineCreationFinished() {
-    GuiOperationFinishedEvent of;
+void CircleCreateOperation::circleCreationFinished() {
+    const GuiOperationFinishedEvent of(*this);
     emit guiOperationFinished(of);
+}
+
+
+shared_ptr<lc::Operation> CircleCreateOperation::operation() const {
+    QList<shared_ptr<const lc::MetaType> > metaTypes;
+    double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
+    shared_ptr<lc::CreateEntities> foo = shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0") );
+    foo->append(shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes)));
+    return foo;
 }
 
 void CircleCreateOperation::restart() {
     _machine.setInitialState(_waitForFirstClick);
     _machine.start();
-}
-
-std::tr1::shared_ptr<const lc::CADEntity> CircleCreateOperation::cadEntity(const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) const {
-    double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    return std::tr1::shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes));
 }
 
 void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
@@ -77,10 +82,10 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-std::tr1::shared_ptr<GuiOperation> CircleCreateOperation::next() const {
+shared_ptr<GuiOperation> CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
-    CircleCreateOperation* lco = new CircleCreateOperation(this->_graphicsView, this->_snapManager);
-    return std::tr1::shared_ptr<GuiOperation>(lco);
+    CircleCreateOperation* lco = new CircleCreateOperation(document(), this->_graphicsView, this->_snapManager);
+    return shared_ptr<GuiOperation>(lco);
 }
 
 

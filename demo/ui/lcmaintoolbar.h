@@ -21,7 +21,9 @@ class LCMainToolbar : public QWidget {
 
         void on_toolButton_2_clicked();
 
-    private:
+        void on_toolButton_3_clicked();
+
+private:
         Ui::LCMainToolbar* ui;
         IMainWindow* _parent;
 };

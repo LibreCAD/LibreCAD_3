@@ -5,10 +5,10 @@ using namespace lc;
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end) : CADEntity(), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(start, end) {
 }
 
-Line::Line(const geo::Vector& vector, const QList<std::tr1::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(vector) {
+Line::Line(const geo::Vector& vector, const QList<shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes), Vector(vector) {
 }
 
 

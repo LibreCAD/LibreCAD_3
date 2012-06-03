@@ -1,6 +1,6 @@
 #include "cursor.h"
 
-Cursor::Cursor(int cursorSize, QCachedGraphicsView* graphicsView, std::tr1::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
+Cursor::Cursor(int cursorSize, QCachedGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
 
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_Draw_Event(const DrawEvent&)));
@@ -45,7 +45,7 @@ void Cursor::on_SnapPoint_Event(const SnapPointEvent& event) {
 
 void Cursor::on_MouseRelease_Event(const MouseReleaseEvent& event) {
     if (_lastSnapEvent.status() == true) {
-        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint());
+        MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint(), event.mouseEvent(), event.entities());
         emit mouseReleaseEvent(snappedLocation);
     } else {
         emit mouseReleaseEvent(event);
