@@ -58,4 +58,4 @@ QString LCADViewerPlugin::includeFile() const {
     return QLatin1String("lcadviewer.h");
 }
 
-Q_EXPORT_PLUGIN2(lcadviewerplugin, LCADViewerPlugin)
+//Q_EXPORT_PLUGIN2(lcadviewerplugin, LCADViewerPlugin)

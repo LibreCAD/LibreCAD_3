@@ -18,7 +18,7 @@ void GradientBackground::draw(const QGraphicsView* view, QPainter* painter, cons
         (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.bottom());
     gradient.setColorAt(0, _topColor);
     gradient.setColorAt(1, _bottomColor);
-    painter->fillRect(rect.intersect(sceneRect), gradient);
+    painter->fillRect(rect.intersected(sceneRect), gradient);
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(sceneRect);
 }
