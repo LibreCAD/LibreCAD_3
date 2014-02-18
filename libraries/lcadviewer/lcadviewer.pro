@@ -4,14 +4,18 @@
 #
 #------------------------------------------------
 
-CONFIG      += plugin
-CONFIG +=
 TARGET      = $$qtLibraryTarget(lcadviewerplugin)
 TEMPLATE    = lib
 
 VERSION=0.0.1
 
+#if QT_VERSION > 0x050000
 QT += opengl designer
+CONFIG      += plugin
+#else
+QT += opengl
+CONFIG += designer plugin
+#endif
 
 OTHER_FILES = CustomWidget.json
 
