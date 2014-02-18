@@ -1,7 +1,7 @@
 #ifndef LCADVIEWER_H
 #define LCADVIEWER_H
 
-#include <QtGui/QGraphicsView>
+#include <QGraphicsView>
 #include "cad/document/abstractdocument.h"
 #include "drawitems/lcviewerdrawitem.h"
 #include "drawitems/lcviewercursoritem.h"

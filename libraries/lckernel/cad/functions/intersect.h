@@ -60,4 +60,4 @@ namespace lc {
     };
 }
 
-#endif  INTERSECT_H
+#endif  //INTERSECT_H

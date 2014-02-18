@@ -5,6 +5,7 @@
 
 class LCADViewerPlugin : public QObject, public QDesignerCustomWidgetInterface {
         Q_OBJECT
+        Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QDesignerCustomWidgetInterface" FILE "CustomWidget.json")
         Q_INTERFACES(QDesignerCustomWidgetInterface)
 
     public:
