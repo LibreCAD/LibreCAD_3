@@ -9,7 +9,7 @@ TEMPLATE    = lib
 
 VERSION=0.0.1
 
-#if QT_VERSION > 0x050000
+#ifdef QT_VERSION > 0x040806
 QT += opengl designer
 CONFIG      += plugin
 #else
