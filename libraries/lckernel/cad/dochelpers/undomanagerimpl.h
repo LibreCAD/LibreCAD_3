@@ -37,8 +37,8 @@ namespace lc {
             AbstractDocument* _document;
 
         private:
-            QList <shared_ptr<lc::Undoable> > _unDoables;
-            QStack <shared_ptr<lc::Undoable> > _reDoables;
+            QList <boost::shared_ptr<lc::Undoable> > _unDoables;
+            QStack <boost::shared_ptr<lc::Undoable> > _reDoables;
             const int _maximumUndoLevels;
 
         public slots:

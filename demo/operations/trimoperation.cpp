@@ -4,7 +4,7 @@
 #include "guioperationfinishedevent.h"
 #include <typeinfo>
 
-TrimOperation::TrimOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager, shared_ptr<lc::SelectionManager> selectionManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
+TrimOperation::TrimOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, boost::shared_ptr<SnapManager>  snapManager, boost::shared_ptr<lc::SelectionManager> selectionManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -48,8 +48,8 @@ void TrimOperation::trimFinished() {
     emit guiOperationFinished(of);
 }
 
-shared_ptr<lc::Operation> TrimOperation::operation() const {
-    shared_ptr<lc::CreateEntities> foo = shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0"));
+boost::shared_ptr<lc::Operation> TrimOperation::operation() const {
+    boost::shared_ptr<lc::CreateEntities> foo = boost::shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0"));
     return foo;
 }
 
@@ -63,7 +63,7 @@ void TrimOperation::on_LimitPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.count()>0) {
-        shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
+        boost::shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
@@ -72,7 +72,7 @@ void TrimOperation::on_TrimPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.count()>0) {
-        shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
+        boost::shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
@@ -82,7 +82,7 @@ void TrimOperation::restart() {
     _machine.start();
 }
 
-shared_ptr<GuiOperation> TrimOperation::next() const {
-    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new TrimOperation(document(), _graphicsView, _snapManager, _selectionManager));
+boost::shared_ptr<GuiOperation> TrimOperation::next() const {
+    boost::shared_ptr<GuiOperation> lo = boost::shared_ptr<GuiOperation>(new TrimOperation(document(), _graphicsView, _snapManager, _selectionManager));
     return lo;
 }

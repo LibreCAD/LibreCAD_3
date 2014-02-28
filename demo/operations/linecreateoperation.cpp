@@ -4,7 +4,7 @@
 #include "guioperationfinishedevent.h"
 #include "cad/operations/createentities.h"
 
-LineCreateOperation::LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
+LineCreateOperation::LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, boost::shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -45,11 +45,11 @@ void LineCreateOperation::lineCreationFinished() {
     emit guiOperationFinished(of);
 }
 
-shared_ptr<lc::Operation> LineCreateOperation::operation() const {
+boost::shared_ptr<lc::Operation> LineCreateOperation::operation() const {
 
-    QList<shared_ptr<const lc::MetaType> > metaTypes;
-    shared_ptr<lc::CreateEntities> foo = shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0"));
-    foo->append(shared_ptr<const lc::Line>(new lc::Line(_startPoint, _endPoint, metaTypes)));
+    QList<boost::shared_ptr<const lc::MetaType> > metaTypes;
+    boost::shared_ptr<lc::CreateEntities> foo = boost::shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0"));
+    foo->append(boost::shared_ptr<const lc::Line>(new lc::Line(_startPoint, _endPoint, metaTypes)));
     return foo;
 }
 
@@ -81,11 +81,11 @@ void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
 }
 
 
-shared_ptr<GuiOperation> LineCreateOperation::next() const {
+boost::shared_ptr<GuiOperation> LineCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     LineCreateOperation* lco = new LineCreateOperation(document(), this->_graphicsView, this->_snapManager);
     lco->_machine.setInitialState(lco->_waitForSecondClick);
     lco->_machine.start();
     lco->_startPoint = this->_endPoint;
-    return shared_ptr<GuiOperation>(lco);
+    return boost::shared_ptr<GuiOperation>(lco);
 }

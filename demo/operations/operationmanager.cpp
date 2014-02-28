@@ -11,10 +11,11 @@ void OperationManager::cancel() {
     _activeGuiOperations.clear();
 }
 
-void OperationManager::startOperation(shared_ptr<GuiOperation> operation) {
-    if (_activeGuiOperations.count()>0) {
-        throw "We currently only support one operation";
-    }
+void OperationManager::startOperation(boost::shared_ptr<GuiOperation> operation) {
+
+//    if (_activeGuiOperations.count()>0) {
+//        throw "We currently only support one operation";
+//    }
 
     _activeGuiOperations.clear();
     _activeGuiOperations.append(operation);
@@ -25,19 +26,19 @@ void OperationManager::startOperation(shared_ptr<GuiOperation> operation) {
 
 void OperationManager::restart() {
     if (!_activeGuiOperations.empty()) {
-        shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
+        boost::shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
         lastOperation->restart();
     }
 
 }
 
-QStack<shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
+QStack<boost::shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
     return this->_activeGuiOperations;
 }
 
 void OperationManager::on_guioperationFinished_Event(const GuiOperationFinishedEvent& event) {
 
-    shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
+    boost::shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
     _document->operateOn(event.guiOperation().operation());
     _activeGuiOperations.clear();
     startOperation(lastOperation->next());

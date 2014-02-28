@@ -22,7 +22,7 @@ class CircleCreateOperation :  public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
+        CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, boost::shared_ptr<SnapManager>  snapManager);
 
         virtual void restart();
 
@@ -43,11 +43,11 @@ class CircleCreateOperation :  public GuiOperation {
             return _endPoint;
         }
 
-        virtual shared_ptr<GuiOperation> next() const;
+        virtual boost::shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
 
-        virtual shared_ptr<lc::Operation> operation() const;
+        virtual boost::shared_ptr<lc::Operation> operation() const;
     private slots:
         void circleCreationFinished();
 
@@ -62,7 +62,7 @@ class CircleCreateOperation :  public GuiOperation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        shared_ptr<SnapManager>  _snapManager;
+        boost::shared_ptr<SnapManager>  _snapManager;
 };
 
 #endif // CircleCreateOperation_H

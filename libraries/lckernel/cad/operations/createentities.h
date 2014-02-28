@@ -28,7 +28,7 @@ namespace lc {
              * Add a entity to the document, you can call this function as many times as you whish
              * @param cadEntity
              */
-            void append(shared_ptr<const lc::CADEntity> cadEntity);
+            void append(boost::shared_ptr<const lc::CADEntity> cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;
@@ -41,7 +41,7 @@ namespace lc {
 
         private:
             QString _layerName;
-            QList<shared_ptr<const lc::CADEntity> > _toCreate;
+            QList<boost::shared_ptr<const lc::CADEntity> > _toCreate;
     };
 }
 #endif // CREATEENTITIES_H

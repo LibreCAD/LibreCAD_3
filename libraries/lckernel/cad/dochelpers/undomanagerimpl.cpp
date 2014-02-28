@@ -17,7 +17,7 @@ UndoManagerImpl::UndoManagerImpl(lc::AbstractDocument* document, int maximumUndo
 
 void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event) {
 
-    shared_ptr<lc::Undoable>  undoable = std::tr1::dynamic_pointer_cast<Undoable>(event.operation());
+    boost::shared_ptr<lc::Undoable>  undoable = boost::dynamic_pointer_cast<Undoable>(event.operation());
 
     if (undoable != NULL) {
         qDebug() << "Process: " << undoable->text();
@@ -25,7 +25,7 @@ void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event)
         // Check if Redo is possible, if so we might need to purge objects from memory
         // as long as we can redo, purge these objects
         while (canRedo()) {
-            shared_ptr<lc::Undoable>  undoable = _reDoables.pop();
+            boost::shared_ptr<lc::Undoable>  undoable = _reDoables.pop();
             // Need to get a list of absolete entities, they are all entities that are created in the _reDoables list
             // document()->absolueteEntity(entity);
 
@@ -47,14 +47,14 @@ void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event)
 
 void UndoManagerImpl::redo() {
     if (canRedo()) {
-        shared_ptr<lc::Undoable>  undoable = _reDoables.pop();
+        boost::shared_ptr<lc::Undoable>  undoable = _reDoables.pop();
         undoable->redo();
         _unDoables.append(undoable);
     }
 }
 void UndoManagerImpl::undo() {
     if (canUndo()) {
-        shared_ptr<lc::Undoable>  undoable = _unDoables.last();
+        boost::shared_ptr<lc::Undoable>  undoable = _unDoables.last();
         _unDoables.pop_back();
         undoable->undo();
         _reDoables.push(undoable);

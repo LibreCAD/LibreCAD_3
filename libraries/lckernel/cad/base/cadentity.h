@@ -26,12 +26,12 @@ namespace lc {
     class CADEntity : public ID, public MetaInfo {
         public:
             CADEntity();
-            CADEntity(QList<shared_ptr<const lc::MetaType> > metaTypes);
-            virtual void accept(shared_ptr<const lc::Line>, EntityVisitor&) const = 0;
-            virtual void accept(shared_ptr<const lc::Circle>, EntityVisitor&) const = 0;
-            virtual void accept(shared_ptr<const lc::Arc>, EntityVisitor&) const = 0;
-            virtual void accept(shared_ptr<const lc::Ellipse>, EntityVisitor&) const = 0;
-            virtual void accept(shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
+            CADEntity(QList<boost::shared_ptr<const lc::MetaType> > metaTypes);
+            virtual void accept(boost::shared_ptr<const lc::Line>, EntityVisitor&) const = 0;
+            virtual void accept(boost::shared_ptr<const lc::Circle>, EntityVisitor&) const = 0;
+            virtual void accept(boost::shared_ptr<const lc::Arc>, EntityVisitor&) const = 0;
+            virtual void accept(boost::shared_ptr<const lc::Ellipse>, EntityVisitor&) const = 0;
+            virtual void accept(boost::shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
     };
 }

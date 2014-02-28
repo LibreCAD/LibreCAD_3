@@ -25,7 +25,7 @@ namespace lc {
              * Add a new layer to the document with the given layer meta data
              * @param layer
              */
-            virtual void addLayer(shared_ptr<const lc::Layer> layer) = 0;
+            virtual void addLayer(boost::shared_ptr<const lc::Layer> layer) = 0;
 
             /**
              * Remove a layer from teh document. This will also destroy all entities on the layer
@@ -39,14 +39,14 @@ namespace lc {
              * @param layerName
              * @return
              */
-            virtual shared_ptr<lc::DocumentLayer> layer(const QString& layerName) const = 0;
+            virtual boost::shared_ptr<lc::DocumentLayer> layer(const QString& layerName) const = 0;
 
             /**
              * Return a QHash of all layers within the document
              *
              * @return
              */
-            virtual QHash <QString, shared_ptr<lc::DocumentLayer> > const& allLayers() const = 0;
+            virtual QHash <QString, boost::shared_ptr<lc::DocumentLayer> > const& allLayers() const = 0;
     };
 }
 

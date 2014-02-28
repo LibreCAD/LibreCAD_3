@@ -26,9 +26,9 @@ namespace lc {
             DocumentImpl();
             virtual ~DocumentImpl();
 
-            void operateOn(shared_ptr<lc::Operation> operation);
-            shared_ptr<lc::LayerManager> layerManager() const;
-            void setLayerManager(shared_ptr<lc::LayerManager> layerManager);
+            void operateOn(boost::shared_ptr<lc::Operation> operation);
+            boost::shared_ptr<lc::LayerManager> layerManager() const;
+            void setLayerManager(boost::shared_ptr<lc::LayerManager> layerManager);
 
         public:
         signals:
@@ -42,21 +42,21 @@ namespace lc {
             void absoleteEntityEvent(const lc::AbsoluteEntityEvent&);
 
         protected:
-            virtual void begin(shared_ptr<lc::Operation> operation);
-            virtual void commit(shared_ptr<lc::Operation> operation);
+            virtual void begin(boost::shared_ptr<lc::Operation> operation);
+            virtual void commit(boost::shared_ptr<lc::Operation> operation);
         public:
-            virtual void addEntity(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity);
-            virtual void replaceEntity(shared_ptr<const lc::CADEntity> oldEntity, shared_ptr<const lc::CADEntity> newEntity);
+            virtual void addEntity(const QString& layerName, boost::shared_ptr<const lc::CADEntity> cadEntity);
+            virtual void replaceEntity(boost::shared_ptr<const lc::CADEntity> oldEntity, boost::shared_ptr<const lc::CADEntity> newEntity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual void absoleteEntity(shared_ptr<const lc::CADEntity> entity);
+            virtual void absoleteEntity(boost::shared_ptr<const lc::CADEntity> entity);
 
-            virtual shared_ptr<const lc::CADEntity> findEntityByID(ID_DATATYPE id) const;
+            virtual boost::shared_ptr<const lc::CADEntity> findEntityByID(ID_DATATYPE id) const;
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
             virtual void lock();
             virtual void releaseLock() ;
         private:
-            shared_ptr<lc::LayerManager> _layerManager;
+            boost::shared_ptr<lc::LayerManager> _layerManager;
             bool _locked;
 
     };

@@ -23,7 +23,7 @@ class SnapManagerImpl : public SnapManager {
          *
          * \sa lc::SnapManager
          */
-        SnapManagerImpl(LCADViewer* viewer, shared_ptr<lc::SelectionManager> _selectionmanager, shared_ptr<const lc::Snapable> grid, double distanceToSnap);
+        SnapManagerImpl(LCADViewer* viewer, boost::shared_ptr<lc::SelectionManager> _selectionmanager, boost::shared_ptr<const lc::Snapable> grid, double distanceToSnap);
 
 
     public slots:
@@ -32,13 +32,13 @@ class SnapManagerImpl : public SnapManager {
 
     private:
 
-        shared_ptr<lc::SelectionManager> _selectionmanager;
+        boost::shared_ptr<lc::SelectionManager> _selectionmanager;
 
         // Grid is snapable
-        shared_ptr<const lc::Snapable> _grid;
+        boost::shared_ptr<const lc::Snapable> _grid;
 
         // List of entities that are potential for snapping
-        QList<shared_ptr<const lc::Snapable> > _snapableEntities;
+        QList<boost::shared_ptr<const lc::Snapable> > _snapableEntities;
 
         // List of additional points a user can pick, to be implemented
         QList<lc::geo::Coordinate> _smartCoordinates;

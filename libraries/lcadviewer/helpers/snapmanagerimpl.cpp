@@ -2,7 +2,7 @@
 #include "cad/functions/intersect.h"
 #include "cad/vo/entitydistance.h"
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, shared_ptr<lc::SelectionManager> selectionmanager, shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, boost::shared_ptr<lc::SelectionManager> selectionmanager, boost::shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
 
     connect(graphicsView, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
@@ -35,8 +35,8 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
         qSort(_entities.begin() , _entities.end(), lc::EntityDistance::sortAscending);
         for (int a = 0; a < _entities.count(); a++) {
             for (int b = a + 1; b < _entities.count(); b++) {
-                shared_ptr<const lc::CADEntity> i1 = _entities.at(a).entity();
-                shared_ptr<const lc::CADEntity> i2 = _entities.at(b).entity();
+                boost::shared_ptr<const lc::CADEntity> i1 = _entities.at(a).entity();
+                boost::shared_ptr<const lc::CADEntity> i2 = _entities.at(b).entity();
 
                 lc::Intersect intersect(lc::Intersect::MustIntersect);
                 i1->accept(i2, intersect);
@@ -60,7 +60,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     if (_entities.count() > 0) {
         // Get the snap point that is closest to the mouse pointer from all entities
         qSort(_entities.begin(), _entities.end(), lc::EntityDistance::sortAscending);
-        const shared_ptr<const lc::Snapable> captr = std::tr1::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
+        const boost::shared_ptr<const lc::Snapable> captr = boost::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
         // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());
