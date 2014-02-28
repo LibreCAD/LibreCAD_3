@@ -19,7 +19,7 @@ const double PI2  = 2 * boost::math::constants::pi<double>();
 #define boost::shared_ptr boost::boost::shared_ptr
 #define dynamic_pointer_cast boost::dynamic_pointer_cast;
 #define static_pointer_cast boost::static_pointer_cast;
-#else*/
+#else
 #include <memory>
 
 #if __GNUC__ == 4
@@ -30,7 +30,7 @@ const double PI2  = 2 * boost::math::constants::pi<double>();
 //using std::tr1::boost::shared_ptr;
 using std::tr1::static_pointer_cast;
 
-//#endif
-
+#endif
+*/
 
 #endif

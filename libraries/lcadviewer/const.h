@@ -7,7 +7,7 @@ const double PI   =   boost::math::constants::pi<double>();
 const double PI2  = 2 * boost::math::constants::pi<double>();
 
 // #define boost::shared_ptr boost::boost::shared_ptr
-
+/*
 #ifdef USE_BOOST_boost::shared_ptr
 #include <boost/boost::shared_ptr.hpp>
 #define boost::shared_ptr boost::boost::shared_ptr
@@ -24,5 +24,5 @@ const double PI2  = 2 * boost::math::constants::pi<double>();
 using std::tr1::static_pointer_cast;
 
 #endif
-
+*/
 #endif
