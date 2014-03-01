@@ -17,7 +17,7 @@ QList<geo::Coordinate> Intersect::result() const {
 }
 
 
-void Intersect::visit(boost::shared_ptr<const lc::Line> l1, boost::shared_ptr<const lc::Line> l2) {
+void Intersect::visit(shared_ptr<const lc::Line> l1, shared_ptr<const lc::Line> l2) {
 
     geo::Coordinate p1 = l1->start();
     geo::Coordinate p2 = l1->end();
@@ -40,11 +40,11 @@ void Intersect::visit(boost::shared_ptr<const lc::Line> l1, boost::shared_ptr<co
     }
 }
 
-void Intersect::visit(boost::shared_ptr<const lc::Line> line, boost::shared_ptr<const lc::Circle> circle) {
-    visit(line, boost::shared_ptr<const lc::Arc>(new Arc(circle->center(), circle->radius(), 0., PI2)));
+void Intersect::visit(shared_ptr<const lc::Line> line, shared_ptr<const lc::Circle> circle) {
+    visit(line, shared_ptr<const lc::Arc>(new Arc(circle->center(), circle->radius(), 0., PI2)));
 }
 
-void Intersect::visit(boost::shared_ptr<const lc::Line> line, boost::shared_ptr<const lc::Arc> arc) {
+void Intersect::visit(shared_ptr<const lc::Line> line, shared_ptr<const lc::Arc> arc) {
 
     geo::Coordinate nearest = line->nearestPointOnPath(arc->center());
     double dist = arc->center().distanceTo(nearest);
@@ -86,69 +86,69 @@ void Intersect::visit(boost::shared_ptr<const lc::Line> line, boost::shared_ptr<
         }
     }
 }
-void Intersect::visit(boost::shared_ptr<const lc::Line>, boost::shared_ptr<const lc::Ellipse>) {
+void Intersect::visit(shared_ptr<const lc::Line>, shared_ptr<const lc::Ellipse>) {
 
     return;
 }
 
 
 
-void Intersect::visit(boost::shared_ptr<const lc::Circle> circle, boost::shared_ptr<const lc::Line> line) {
-    visit(line, boost::shared_ptr<const lc::Arc>(new Arc(circle->center(), circle->radius(), 0., PI2)));
+void Intersect::visit(shared_ptr<const lc::Circle> circle, shared_ptr<const lc::Line> line) {
+    visit(line, shared_ptr<const lc::Arc>(new Arc(circle->center(), circle->radius(), 0., PI2)));
 }
-void Intersect::visit(boost::shared_ptr<const lc::Circle>, boost::shared_ptr<const lc::Circle>) {
+void Intersect::visit(shared_ptr<const lc::Circle>, shared_ptr<const lc::Circle>) {
 
     return;
 }
-void Intersect::visit(boost::shared_ptr<const lc::Circle>, boost::shared_ptr<const lc::Arc>) {
+void Intersect::visit(shared_ptr<const lc::Circle>, shared_ptr<const lc::Arc>) {
 
     return;
 }
-void Intersect::visit(boost::shared_ptr<const lc::Circle>, boost::shared_ptr<const lc::Ellipse>) {
+void Intersect::visit(shared_ptr<const lc::Circle>, shared_ptr<const lc::Ellipse>) {
 
     return;
 }
 
 
 
-void Intersect::visit(boost::shared_ptr<const lc::Arc> arc, boost::shared_ptr<const lc::Line> line) {
+void Intersect::visit(shared_ptr<const lc::Arc> arc, shared_ptr<const lc::Line> line) {
     visit(line, arc);
 }
-void Intersect::visit(boost::shared_ptr<const lc::Arc>, boost::shared_ptr<const lc::Circle>) {
+void Intersect::visit(shared_ptr<const lc::Arc>, shared_ptr<const lc::Circle>) {
 
     return;
 }
-void Intersect::visit(boost::shared_ptr<const lc::Arc>, boost::shared_ptr<const lc::Arc>) {
+void Intersect::visit(shared_ptr<const lc::Arc>, shared_ptr<const lc::Arc>) {
 
     return;
 }
-void Intersect::visit(boost::shared_ptr<const lc::Arc>, boost::shared_ptr<const lc::Ellipse>) {
-
-    return;
-}
-
-
-
-void Intersect::visit(boost::shared_ptr<const lc::Ellipse>, boost::shared_ptr<const lc::Line>) {
-
-    return;
-}
-void Intersect::visit(boost::shared_ptr<const lc::Ellipse>, boost::shared_ptr<const lc::Circle>) {
-
-    return;
-}
-void Intersect::visit(boost::shared_ptr<const lc::Ellipse>, boost::shared_ptr<const lc::Arc>) {
-
-    return;
-}
-void Intersect::visit(boost::shared_ptr<const lc::Ellipse>, boost::shared_ptr<const lc::Ellipse>) {
+void Intersect::visit(shared_ptr<const lc::Arc>, shared_ptr<const lc::Ellipse>) {
 
     return;
 }
 
 
 
-IntersectMany::IntersectMany(QList<boost::shared_ptr<const CADEntity> > entities, Intersect::Method method) : _entities(entities), _method(method) {
+void Intersect::visit(shared_ptr<const lc::Ellipse>, shared_ptr<const lc::Line>) {
+
+    return;
+}
+void Intersect::visit(shared_ptr<const lc::Ellipse>, shared_ptr<const lc::Circle>) {
+
+    return;
+}
+void Intersect::visit(shared_ptr<const lc::Ellipse>, shared_ptr<const lc::Arc>) {
+
+    return;
+}
+void Intersect::visit(shared_ptr<const lc::Ellipse>, shared_ptr<const lc::Ellipse>) {
+
+    return;
+}
+
+
+
+IntersectMany::IntersectMany(QList<shared_ptr<const CADEntity> > entities, Intersect::Method method) : _entities(entities), _method(method) {
 }
 
 QList<geo::Coordinate> IntersectMany::result() const {

@@ -19,7 +19,7 @@ void DeleteEntities::processInternal() const  {
 
 void DeleteEntities::undo() const {
     for (int i = 0; i < _toDelete.size(); ++i) {
-        boost::shared_ptr<const lc::CADEntity> entity = document()->findEntityByID(_toDelete.at(i));
+        shared_ptr<const lc::CADEntity> entity = document()->findEntityByID(_toDelete.at(i));
         document()->addEntity(_toDeleteLayer.at(i), entity);
     }
 }

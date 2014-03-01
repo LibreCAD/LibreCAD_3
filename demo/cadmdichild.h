@@ -39,14 +39,14 @@ class CadMdiChild : public QWidget {
         void on_addEllipse_clicked();
 
     public:
-        boost::shared_ptr<const Cursor>  cursor() const {
+        shared_ptr<const Cursor>  cursor() const {
             return _cursor;
         }
         QCachedGraphicsView* view() const;
         lc::AbstractDocument* document() const;
-        boost::shared_ptr<SnapManager>  snapManager() const;
-        boost::shared_ptr<OperationManager>  operationManager() const;
-        boost::shared_ptr<lc::SelectionManager> selectionManager() const;
+        shared_ptr<SnapManager>  snapManager() const;
+        shared_ptr<OperationManager>  operationManager() const;
+        shared_ptr<lc::SelectionManager> selectionManager() const;
         void cancelCurrentOperations();
 
     private:
@@ -56,12 +56,12 @@ class CadMdiChild : public QWidget {
         lc::AbstractDocument* _document;
         lc::UndoManager* _undoManager;
 
-        boost::shared_ptr<const Cursor>  _cursor;
-        boost::shared_ptr<SnapManager>  _snapManager;
-        boost::shared_ptr<lc::LayerManager> _layerManager;
-        boost::shared_ptr<lc::SelectionManager> _selectionManager;
+        shared_ptr<const Cursor>  _cursor;
+        shared_ptr<SnapManager>  _snapManager;
+        shared_ptr<lc::LayerManager> _layerManager;
+        shared_ptr<lc::SelectionManager> _selectionManager;
 
-        boost::shared_ptr<OperationManager>  _operationManager;
+        shared_ptr<OperationManager>  _operationManager;
 };
 
 #endif // CADMDICHILD_H

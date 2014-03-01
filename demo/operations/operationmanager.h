@@ -29,7 +29,7 @@ class OperationManager : QObject {
          *
          *
          */
-        void startOperation(boost::shared_ptr<GuiOperation> operation);
+        void startOperation(shared_ptr<GuiOperation> operation);
 
         /**
           * \brief call this function to send a cancel signal to the current operation
@@ -48,7 +48,7 @@ class OperationManager : QObject {
         friend class GroupOperations;
     private:
 
-        QStack<boost::shared_ptr<GuiOperation> > activeOperations() const;
+        QStack<shared_ptr<GuiOperation> > activeOperations() const;
 
     private slots:
         /*!
@@ -63,7 +63,7 @@ class OperationManager : QObject {
     private:
         // Created as a stack of operation because LibreCAD 2.x has that. However, not sure where this is used exactly
         // it might aswell be that later this is going ot be changed to one single Operation that can be active
-        QStack<boost::shared_ptr<GuiOperation> > _activeGuiOperations;
+        QStack<shared_ptr<GuiOperation> > _activeGuiOperations;
         lc::AbstractDocument* _document;
 };
 

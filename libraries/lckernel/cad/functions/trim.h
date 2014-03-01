@@ -10,19 +10,19 @@ namespace lc {
 
     class Trim : public EntityDispatch {
         public:
-            Trim(QList<boost::shared_ptr<const lc::CADEntity> > limitingEntities, boost::shared_ptr<const lc::CADEntity> trimmedShape, geo::Coordinate trimPoint);
+            Trim(QList<shared_ptr<const lc::CADEntity> > limitingEntities, shared_ptr<const lc::CADEntity> trimmedShape, geo::Coordinate trimPoint);
 
-            virtual void visit(boost::shared_ptr<const lc::Line>);
-            virtual void visit(boost::shared_ptr<const lc::Circle>);
-            virtual void visit(boost::shared_ptr<const lc::Arc>);
-            virtual void visit(boost::shared_ptr<const lc::Ellipse>);
-            QList<boost::shared_ptr<const lc::CADEntity> > result();
-            boost::shared_ptr<const lc::CADEntity> trimmedShape() const;
+            virtual void visit(shared_ptr<const lc::Line>);
+            virtual void visit(shared_ptr<const lc::Circle>);
+            virtual void visit(shared_ptr<const lc::Arc>);
+            virtual void visit(shared_ptr<const lc::Ellipse>);
+            QList<shared_ptr<const lc::CADEntity> > result();
+            shared_ptr<const lc::CADEntity> trimmedShape() const;
 
         private:
-            QList<boost::shared_ptr<const lc::CADEntity> > _limitingEntities;
-            boost::shared_ptr<const lc::CADEntity> _trimmedShape;
-            QList<boost::shared_ptr<const lc::CADEntity> > _newEntities;
+            QList<shared_ptr<const lc::CADEntity> > _limitingEntities;
+            shared_ptr<const lc::CADEntity> _trimmedShape;
+            QList<shared_ptr<const lc::CADEntity> > _newEntities;
             geo::Coordinate _trimPoint;
     };
 }

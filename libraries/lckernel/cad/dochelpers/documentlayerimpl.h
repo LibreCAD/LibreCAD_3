@@ -18,14 +18,14 @@ namespace lc {
     class DocumentLayerImpl : public DocumentLayer {
         public:
             DocumentLayerImpl();
-            DocumentLayerImpl(boost::shared_ptr<const lc::Layer> layer);
+            DocumentLayerImpl(shared_ptr<const lc::Layer> layer);
             virtual ~DocumentLayerImpl();
 
-            virtual void addEntity(boost::shared_ptr<const lc::CADEntity> entity);
+            virtual void addEntity(shared_ptr<const lc::CADEntity> entity);
             virtual void removeEntity(ID_DATATYPE id);
-            virtual QHash<int, boost::shared_ptr<const lc::CADEntity> > allEntities() const;
+            virtual QHash<int, shared_ptr<const lc::CADEntity> > allEntities() const;
 
-            virtual boost::shared_ptr<const lc::Layer> layer() const;
+            virtual shared_ptr<const lc::Layer> layer() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);
@@ -34,13 +34,13 @@ namespace lc {
                 return _layer != NULL;
             }
 
-            virtual boost::shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const;
+            virtual shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const;
 
         private:
 
         private:
-            boost::shared_ptr<const lc::Layer> _layer;
-            QHash<int, boost::shared_ptr<const lc::CADEntity> > _cadentities;
+            shared_ptr<const lc::Layer> _layer;
+            QHash<int, shared_ptr<const lc::CADEntity> > _cadentities;
     };
 }
 

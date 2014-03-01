@@ -23,9 +23,9 @@ class LineCreateOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, boost::shared_ptr<SnapManager>  snapManager);
+        LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
-        virtual boost::shared_ptr<lc::Operation> operation() const;
+        virtual shared_ptr<lc::Operation> operation() const;
 
         virtual void restart();
 
@@ -46,7 +46,7 @@ class LineCreateOperation : public GuiOperation {
             return _endPoint;
         }
 
-        virtual boost::shared_ptr<GuiOperation> next() const;
+        virtual shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
     private slots:
@@ -63,7 +63,7 @@ class LineCreateOperation : public GuiOperation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        boost::shared_ptr<SnapManager>  _snapManager;
+        shared_ptr<SnapManager>  _snapManager;
 };
 
 #endif // LINECREATEOPERATION_H

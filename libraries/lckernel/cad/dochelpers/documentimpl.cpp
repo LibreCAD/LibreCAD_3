@@ -17,40 +17,40 @@ DocumentImpl::DocumentImpl() : AbstractDocument() {
 DocumentImpl::~DocumentImpl() {
 }
 
-boost::shared_ptr<lc::LayerManager> DocumentImpl::layerManager() const {
+shared_ptr<lc::LayerManager> DocumentImpl::layerManager() const {
     return _layerManager;
 }
 
-void DocumentImpl::setLayerManager(boost::shared_ptr<lc::LayerManager> layerManager) {
+void DocumentImpl::setLayerManager(shared_ptr<lc::LayerManager> layerManager) {
     _layerManager = layerManager;
 }
 
-void DocumentImpl::operateOn(boost::shared_ptr<lc::Operation> operation) {
+void DocumentImpl::operateOn(shared_ptr<lc::Operation> operation) {
     begin(operation);
     this->operationProcess(operation);
     commit(operation);
 }
 
-void DocumentImpl::begin(boost::shared_ptr<lc::Operation> operation) {
+void DocumentImpl::begin(shared_ptr<lc::Operation> operation) {
     lock();
     this->operationStart(operation);
     BeginProcessEvent event;
     emit beginProcessEvent(event);
 }
 
-void DocumentImpl::commit(boost::shared_ptr<lc::Operation> operation) {
+void DocumentImpl::commit(shared_ptr<lc::Operation> operation) {
     CommitProcessEvent event(operation);
     emit commitProcessEvent(event);
     this->operationFinnish(operation);
     releaseLock();
 }
 
-void DocumentImpl::addEntity(const QString& layerName, boost::shared_ptr<const lc::CADEntity> cadEntity) {
+void DocumentImpl::addEntity(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity) {
     AddEntityEvent event(layerName, cadEntity);
     emit addEntityEvent(event);
 }
 
-void DocumentImpl::replaceEntity(boost::shared_ptr<const lc::CADEntity> oldEntity, boost::shared_ptr<const lc::CADEntity> newEntity) {
+void DocumentImpl::replaceEntity(shared_ptr<const lc::CADEntity> oldEntity, shared_ptr<const lc::CADEntity> newEntity) {
     ReplaceEntityEvent event(oldEntity, newEntity);
     emit replaceEntityEvent(event);
 }
@@ -58,22 +58,22 @@ void DocumentImpl::removeEntity(ID_DATATYPE id) {
     RemoveEntityEvent event(id);
     emit removeEntityEvent(event);
 }
-void DocumentImpl::absoleteEntity(boost::shared_ptr<const lc::CADEntity> entity) {
+void DocumentImpl::absoleteEntity(shared_ptr<const lc::CADEntity> entity) {
     AbsoluteEntityEvent event(entity);
     emit absoleteEntityEvent(event);
 }
 
 
-boost::shared_ptr<const lc::CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) const {
-    QHash <QString, boost::shared_ptr<lc::DocumentLayer> > allLayers = layerManager()->allLayers();
-    QHashIterator<QString, boost::shared_ptr<lc::DocumentLayer> > li(allLayers);
+shared_ptr<const lc::CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) const {
+    QHash <QString, shared_ptr<lc::DocumentLayer> > allLayers = layerManager()->allLayers();
+    QHashIterator<QString, shared_ptr<lc::DocumentLayer> > li(allLayers);
 
     while (li.hasNext()) {
         li.next();
-        boost::shared_ptr<lc::DocumentLayer> documentLayer = li.value();
+        shared_ptr<lc::DocumentLayer> documentLayer = li.value();
 
         try {
-            boost::shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);
+            shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);
         } catch (QString error) {
             //
         }
@@ -83,15 +83,15 @@ boost::shared_ptr<const lc::CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE 
 }
 
 QString DocumentImpl::findEntityLayerByID(ID_DATATYPE id) const {
-    QHash <QString, boost::shared_ptr<lc::DocumentLayer> > allLayers = layerManager()->allLayers();
-    QHashIterator<QString, boost::shared_ptr<lc::DocumentLayer> > li(allLayers);
+    QHash <QString, shared_ptr<lc::DocumentLayer> > allLayers = layerManager()->allLayers();
+    QHashIterator<QString, shared_ptr<lc::DocumentLayer> > li(allLayers);
 
     while (li.hasNext()) {
         li.next();
-        boost::shared_ptr<lc::DocumentLayer> documentLayer = li.value();
+        shared_ptr<lc::DocumentLayer> documentLayer = li.value();
 
         try {
-            boost::shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);
+            shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);
             return documentLayer->layer()->name();
         } catch (QString error) {
             //

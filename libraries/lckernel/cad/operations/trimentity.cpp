@@ -5,12 +5,12 @@
 
 using namespace lc;
 
-TrimEntity::TrimEntity(AbstractDocument* document,  boost::shared_ptr<lc::Trim> trim) : Operation(document), _trim(trim), Undoable("Trim Entity") {
+TrimEntity::TrimEntity(AbstractDocument* document,  shared_ptr<lc::Trim> trim) : Operation(document), _trim(trim), Undoable("Trim Entity") {
     _entityLayer = document->findEntityLayerByID(trim->trimmedShape()->id());
 }
 
 void TrimEntity::processInternal() const {
-    QList<boost::shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
+    QList<shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
@@ -22,7 +22,7 @@ void TrimEntity::processInternal() const {
 }
 
 void TrimEntity::undo() const {
-    QList<boost::shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
+    QList<shared_ptr<const lc::CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {

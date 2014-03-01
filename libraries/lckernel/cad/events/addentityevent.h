@@ -11,10 +11,10 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-            AddEntityEvent(const QString& layerName, boost::shared_ptr<const lc::CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
+            AddEntityEvent(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
             }
 
-            boost::shared_ptr<const lc::CADEntity> entity() const {
+            shared_ptr<const lc::CADEntity> entity() const {
                 return _cadEntity;
             }
 
@@ -24,7 +24,7 @@ namespace lc {
 
         private:
             const QString _layerName;
-            boost::shared_ptr<const lc::CADEntity> _cadEntity;
+            shared_ptr<const lc::CADEntity> _cadEntity;
     };
 }
 #endif // ADDENTITYEVENT_H

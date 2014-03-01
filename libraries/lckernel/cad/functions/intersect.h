@@ -19,25 +19,25 @@ namespace lc {
             };
 
             Intersect(Method method);
-            virtual void visit(boost::shared_ptr<const Line>, boost::shared_ptr<const Line>);
-            virtual void visit(boost::shared_ptr<const Line>, boost::shared_ptr<const Circle>);
-            virtual void visit(boost::shared_ptr<const Line>, boost::shared_ptr<const Arc>);
-            virtual void visit(boost::shared_ptr<const Line>, boost::shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const Line>, shared_ptr<const Line>);
+            virtual void visit(shared_ptr<const Line>, shared_ptr<const Circle>);
+            virtual void visit(shared_ptr<const Line>, shared_ptr<const Arc>);
+            virtual void visit(shared_ptr<const Line>, shared_ptr<const Ellipse>);
 
-            virtual void visit(boost::shared_ptr<const Circle>, boost::shared_ptr<const Line>);
-            virtual void visit(boost::shared_ptr<const Circle>, boost::shared_ptr<const Circle>);
-            virtual void visit(boost::shared_ptr<const Circle>, boost::shared_ptr<const Arc>);
-            virtual void visit(boost::shared_ptr<const Circle>, boost::shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Line>);
+            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Circle>);
+            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Arc>);
+            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Ellipse>);
 
-            virtual void visit(boost::shared_ptr<const Arc>, boost::shared_ptr<const Line>);
-            virtual void visit(boost::shared_ptr<const Arc>, boost::shared_ptr<const Circle>);
-            virtual void visit(boost::shared_ptr<const Arc>, boost::shared_ptr<const Arc>);
-            virtual void visit(boost::shared_ptr<const Arc>, boost::shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Line>);
+            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Circle>);
+            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Arc>);
+            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Ellipse>);
 
-            virtual void visit(boost::shared_ptr<const Ellipse>, boost::shared_ptr<const Line>);
-            virtual void visit(boost::shared_ptr<const Ellipse>, boost::shared_ptr<const Circle>);
-            virtual void visit(boost::shared_ptr<const Ellipse>, boost::shared_ptr<const Arc>);
-            virtual void visit(boost::shared_ptr<const Ellipse>, boost::shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Line>);
+            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Circle>);
+            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Arc>);
+            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Ellipse>);
 
             QList<geo::Coordinate> result() const;
         private:
@@ -52,10 +52,10 @@ namespace lc {
       */
     class IntersectMany {
         public:
-            IntersectMany(QList<boost::shared_ptr<const CADEntity> >,  Intersect::Method);
+            IntersectMany(QList<shared_ptr<const CADEntity> >,  Intersect::Method);
             QList<geo::Coordinate> result() const;
         private:
-            QList<boost::shared_ptr<const CADEntity> > _entities;
+            QList<shared_ptr<const CADEntity> > _entities;
             Intersect::Method _method;
     };
 }

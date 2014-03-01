@@ -17,28 +17,28 @@
 namespace lc {
 
 
-    class Circle : public boost::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+    class Circle : public enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
         public:
             Circle(const geo::Coordinate& center, double radius);
-            Circle(const geo::Coordinate& center, double radius, const QList<boost::shared_ptr<const lc::MetaType> >& metaTypes);
+            Circle(const geo::Coordinate& center, double radius, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
 
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 
         public:
-            virtual void accept(boost::shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Circle> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Circle> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Arc> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Arc> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
             virtual void dispatch(EntityDispatch& ed) const {

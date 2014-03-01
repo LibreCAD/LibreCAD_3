@@ -22,7 +22,7 @@ namespace lc {
              * Add a entity to this layer
              * @param entity
              */
-            virtual void addEntity(boost::shared_ptr<const lc::CADEntity> entity) = 0;
+            virtual void addEntity(shared_ptr<const lc::CADEntity> entity) = 0;
 
             /**
              * Remove a entity from this layer
@@ -34,19 +34,19 @@ namespace lc {
              * Return a pointer to the layer meta object
              * @return
              */
-            virtual boost::shared_ptr<const lc::Layer> layer() const = 0;
+            virtual shared_ptr<const lc::Layer> layer() const = 0;
 
             /**
              * Return a list of all entities
              * @return
              */
-            virtual QHash<int, boost::shared_ptr<const lc::CADEntity> > allEntities() const = 0;
+            virtual QHash<int, shared_ptr<const lc::CADEntity> > allEntities() const = 0;
 
             /**
              * Return pointer to entity by ID
              * @return
              */
-            virtual boost::shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const = 0;
+            virtual shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const = 0;
     };
 }
 

@@ -6,23 +6,28 @@
 const double PI   =   boost::math::constants::pi<double>();
 const double PI2  = 2 * boost::math::constants::pi<double>();
 
-// #define boost::shared_ptr boost::boost::shared_ptr
-/*
-#ifdef USE_BOOST_boost::shared_ptr
-#include <boost/boost::shared_ptr.hpp>
-#define boost::shared_ptr boost::boost::shared_ptr
-#define boost::dynamic_pointer_cast boost::boost::dynamic_pointer_cast;
-#define const_pointer_cast boost::const_pointer_cast;
+#define USE_BOOST_LIBS
+
+#ifdef USE_BOOST_LIBS
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/pointer_cast.hpp>
+#include <boost/cast.hpp>
+using boost::shared_ptr;
+using boost::static_pointer_cast;
+using boost::enable_shared_from_this;
+using boost::dynamic_pointer_cast;
 #else
 #include <memory>
+
 #if __GNUC__ == 4
 #include <tr1/memory>
-#endif
-
-//using boost::dynamic_pointer_cast;
-//using std::tr1::boost::shared_ptr;
+using std::tr1::dynamic_pointer_cast;
 using std::tr1::static_pointer_cast;
+using std::tr1::shared_ptr;
+using std::tr1::enable_shared_from_this;
+#endif
 
 #endif
-*/
+
 #endif

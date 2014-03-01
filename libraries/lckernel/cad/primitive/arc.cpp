@@ -6,5 +6,5 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 
 }
 
-Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<boost::shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes),  geo::Arc(center, radius, startAngle, endAngle) {
+Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes) : CADEntity(metaTypes),  geo::Arc(center, radius, startAngle, endAngle) {
 }

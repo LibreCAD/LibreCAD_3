@@ -2,7 +2,7 @@
 
 using namespace lc;
 
-void CreateEntities::append(boost::shared_ptr<const lc::CADEntity> cadEntity) {
+void CreateEntities::append(shared_ptr<const lc::CADEntity> cadEntity) {
     _toCreate.append(cadEntity);
 }
 

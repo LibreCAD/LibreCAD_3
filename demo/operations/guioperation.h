@@ -31,7 +31,7 @@ class GuiOperation : public QObject {
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual boost::shared_ptr<lc::Operation> operation() const = 0;
+        virtual shared_ptr<lc::Operation> operation() const = 0;
 
         /*!
           * \brief restart this operation
@@ -44,7 +44,7 @@ class GuiOperation : public QObject {
           * It allows for a line to continue and connect start/end points automatically.
           *
           */
-        virtual boost::shared_ptr<GuiOperation> next() const = 0 ;
+        virtual shared_ptr<GuiOperation> next() const = 0 ;
     protected:
         lc::AbstractDocument* document() const {return _document;}
 

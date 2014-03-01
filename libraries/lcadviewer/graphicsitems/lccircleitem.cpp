@@ -1,7 +1,7 @@
 #include "lccircleitem.h"
 
 
-LCCircleItem::LCCircleItem(const boost::shared_ptr<const lc::Circle> circle) : LCGraphicsItem(), _circle(circle) {
+LCCircleItem::LCCircleItem(const shared_ptr<const lc::Circle> circle) : LCGraphicsItem(), _circle(circle) {
 }
 
 
@@ -35,6 +35,6 @@ QPainterPath LCCircleItem::shape() const {
 }
 
 
-const boost::shared_ptr<const lc::CADEntity> LCCircleItem::entity() const {
+const shared_ptr<const lc::CADEntity> LCCircleItem::entity() const {
     return _circle;
 }

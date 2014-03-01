@@ -23,7 +23,7 @@ namespace lc {
      * \author R. van Twisk
      * \date 2012-04-16
      */
-    class Line : public boost::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
+    class Line : public enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
         public:
             /*!
              * \brief Construct a new line
@@ -41,7 +41,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<boost::shared_ptr<const lc::MetaType> >& metaTypes);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
 
             /*!
              * \brief Construct a new line
@@ -52,26 +52,26 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            Line(const geo::Vector& vector, const QList<boost::shared_ptr<const lc::MetaType> >& metaTypes);
+            Line(const geo::Vector& vector, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
 
         public:
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 
         public:
-            virtual void accept(boost::shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Circle> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Circle> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Arc> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Arc> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(boost::shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
+            virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
             virtual void dispatch(EntityDispatch& ed) const {

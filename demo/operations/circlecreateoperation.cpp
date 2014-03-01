@@ -4,7 +4,7 @@
 #include "guioperationfinishedevent.h"
 #include "cad/operations/createentities.h"
 
-CircleCreateOperation::CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, boost::shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
+CircleCreateOperation::CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -46,11 +46,11 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-boost::shared_ptr<lc::Operation> CircleCreateOperation::operation() const {
-    QList<boost::shared_ptr<const lc::MetaType> > metaTypes;
+shared_ptr<lc::Operation> CircleCreateOperation::operation() const {
+    QList<shared_ptr<const lc::MetaType> > metaTypes;
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    boost::shared_ptr<lc::CreateEntities> foo = boost::shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0") );
-    foo->append(boost::shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes)));
+    shared_ptr<lc::CreateEntities> foo = shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0") );
+    foo->append(shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes)));
     return foo;
 }
 
@@ -82,10 +82,10 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-boost::shared_ptr<GuiOperation> CircleCreateOperation::next() const {
+shared_ptr<GuiOperation> CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     CircleCreateOperation* lco = new CircleCreateOperation(document(), this->_graphicsView, this->_snapManager);
-    return boost::shared_ptr<GuiOperation>(lco);
+    return shared_ptr<GuiOperation>(lco);
 }
 
 

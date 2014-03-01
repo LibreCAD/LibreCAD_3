@@ -18,7 +18,7 @@ namespace lc {
      */
     class TrimEntity : public Operation, public Undoable {
         public:
-            TrimEntity(AbstractDocument* document,  boost::shared_ptr<lc::Trim> trim) ;
+            TrimEntity(AbstractDocument* document,  shared_ptr<lc::Trim> trim) ;
 
             virtual ~TrimEntity() {
                 qDebug() << "TrimEntity removed";
@@ -34,7 +34,7 @@ namespace lc {
 
             Q_DISABLE_COPY(TrimEntity)
         private:
-            boost::shared_ptr<lc::Trim> _trim;
+            shared_ptr<lc::Trim> _trim;
             QString _entityLayer;
 
     };

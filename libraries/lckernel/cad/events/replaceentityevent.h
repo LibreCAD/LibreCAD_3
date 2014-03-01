@@ -13,20 +13,20 @@ namespace lc {
      */
     class ReplaceEntityEvent {
         public:
-            ReplaceEntityEvent(boost::shared_ptr<const lc::CADEntity> oldEntity, boost::shared_ptr<const lc::CADEntity> newEntity) : _oldEntity(oldEntity), _newEntity(newEntity) {
+            ReplaceEntityEvent(shared_ptr<const lc::CADEntity> oldEntity, shared_ptr<const lc::CADEntity> newEntity) : _oldEntity(oldEntity), _newEntity(newEntity) {
             }
 
-            boost::shared_ptr<const lc::CADEntity> oldEntity() const {
+            shared_ptr<const lc::CADEntity> oldEntity() const {
                 return _oldEntity;
             }
 
-            boost::shared_ptr<const lc::CADEntity> newEntity() const {
+            shared_ptr<const lc::CADEntity> newEntity() const {
                 return _newEntity;
             }
 
         private:
-            boost::shared_ptr<const lc::CADEntity> _oldEntity;
-            boost::shared_ptr<const lc::CADEntity> _newEntity;
+            shared_ptr<const lc::CADEntity> _oldEntity;
+            shared_ptr<const lc::CADEntity> _newEntity;
     };
 
 }
