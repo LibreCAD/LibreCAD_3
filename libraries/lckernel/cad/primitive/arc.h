@@ -12,7 +12,7 @@
 #include "cad/vo/entitycoordinate.h"
 
 namespace lc {
-    class Arc : public std::tr1::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
+    class Arc : public enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle);
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);

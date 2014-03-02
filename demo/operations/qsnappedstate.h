@@ -5,7 +5,7 @@
 #include <QAbstractState>
 #include <QVariant>
 #include <QString>
-
+#include <string>
 /*!
   * \brief QSnappedState can be used to fetch Coordinates and assign them as properties to your class
   *

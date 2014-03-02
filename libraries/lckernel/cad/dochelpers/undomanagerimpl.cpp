@@ -17,7 +17,7 @@ UndoManagerImpl::UndoManagerImpl(lc::AbstractDocument* document, int maximumUndo
 
 void UndoManagerImpl::on_CommitProcessEvent(const lc::CommitProcessEvent& event) {
 
-    shared_ptr<lc::Undoable>  undoable = std::tr1::dynamic_pointer_cast<Undoable>(event.operation());
+    shared_ptr<lc::Undoable>  undoable = dynamic_pointer_cast<Undoable>(event.operation());
 
     if (undoable != NULL) {
         qDebug() << "Process: " << undoable->text();

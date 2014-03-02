@@ -25,7 +25,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
 
     // Add a line
-    const shared_ptr<const lc::Line> line = std::tr1::dynamic_pointer_cast<const lc::Line>(event.entity());
+    const shared_ptr<const lc::Line> line = dynamic_pointer_cast<const lc::Line>(event.entity());
 
     if (line != NULL) {
         LCLineItem* foo = new LCLineItem(line);
@@ -36,7 +36,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a circle
-    const shared_ptr<const lc::Circle> circle = std::tr1::dynamic_pointer_cast<const lc::Circle>(event.entity());
+    const shared_ptr<const lc::Circle> circle = dynamic_pointer_cast<const lc::Circle>(event.entity());
 
     if (circle != NULL) {
         LCCircleItem* foo = new LCCircleItem(circle);
@@ -47,7 +47,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a Arc
-    const shared_ptr<const lc::Arc> arc = std::tr1::dynamic_pointer_cast<const lc::Arc>(event.entity());
+    const shared_ptr<const lc::Arc> arc = dynamic_pointer_cast<const lc::Arc>(event.entity());
 
     if (arc != NULL) {
         LCArcItem* foo = new LCArcItem(arc);
@@ -58,7 +58,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add Ellipse
-    const shared_ptr<const lc::Ellipse> ellipse = std::tr1::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
+    const shared_ptr<const lc::Ellipse> ellipse = dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
     if (ellipse != NULL) {
         LCEllipseItem* foo = new LCEllipseItem(ellipse);

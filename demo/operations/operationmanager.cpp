@@ -12,9 +12,10 @@ void OperationManager::cancel() {
 }
 
 void OperationManager::startOperation(shared_ptr<GuiOperation> operation) {
-    if (_activeGuiOperations.count()>0) {
-        throw "We currently only support one operation";
-    }
+
+//    if (_activeGuiOperations.count()>0) {
+//        throw "We currently only support one operation";
+//    }
 
     _activeGuiOperations.clear();
     _activeGuiOperations.append(operation);

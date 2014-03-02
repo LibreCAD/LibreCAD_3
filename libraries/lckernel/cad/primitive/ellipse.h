@@ -23,7 +23,7 @@ namespace lc {
      *
      * \date 2012-04-16
      */
-    class Ellipse : public std::tr1::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
+    class Ellipse : public enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);

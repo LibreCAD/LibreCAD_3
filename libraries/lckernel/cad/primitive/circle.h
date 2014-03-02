@@ -17,7 +17,7 @@
 namespace lc {
 
 
-    class Circle : public std::tr1::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+    class Circle : public enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
         public:
             Circle(const geo::Coordinate& center, double radius);
             Circle(const geo::Coordinate& center, double radius, const QList<shared_ptr<const lc::MetaType> >& metaTypes);

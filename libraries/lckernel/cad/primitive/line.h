@@ -11,7 +11,6 @@
 #include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
 
-
 namespace lc {
 
     /*!
@@ -23,7 +22,7 @@ namespace lc {
      * \author R. van Twisk
      * \date 2012-04-16
      */
-    class Line : public std::tr1::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
+    class Line : public enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
         public:
             /*!
              * \brief Construct a new line

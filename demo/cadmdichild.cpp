@@ -83,7 +83,7 @@ void CadMdiChild::newDocument() {
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
     // Snap manager
-    _snapManager = shared_ptr<SnapManager> (new SnapManagerImpl(ui->lCADViewer, _selectionManager,  std::tr1::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.));
+    _snapManager = shared_ptr<SnapManager> (new SnapManagerImpl(ui->lCADViewer, _selectionManager,  dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.));
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
     _cursor = shared_ptr<const Cursor> (new Cursor(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00)));

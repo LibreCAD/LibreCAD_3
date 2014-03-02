@@ -11,7 +11,7 @@
 #include "ui/clicommand.h"
 
 #include <QtGui>
-
+#include <QMdiSubWindow>
 #include <math.h>
 
 

@@ -60,7 +60,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     if (_entities.count() > 0) {
         // Get the snap point that is closest to the mouse pointer from all entities
         qSort(_entities.begin(), _entities.end(), lc::EntityDistance::sortAscending);
-        const shared_ptr<const lc::Snapable> captr = std::tr1::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
+        const shared_ptr<const lc::Snapable> captr = dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
         // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());
