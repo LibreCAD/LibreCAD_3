@@ -13,7 +13,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
-#include <boost/enable_shared_from_this.hpp>
+
 namespace lc {
 
 

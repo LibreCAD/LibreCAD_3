@@ -11,7 +11,6 @@
 #include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
 
-#include <boost/enable_shared_from_this.hpp>
 namespace lc {
 
     /*!

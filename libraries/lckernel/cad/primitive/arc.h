@@ -11,8 +11,6 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 
-#include <boost/enable_shared_from_this.hpp>
-
 namespace lc {
     class Arc : public enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
