@@ -32,10 +32,10 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
     }
 
     event.painter()->setRenderHint(QPainter::Antialiasing, false);
-    event.painter()->setPen(_xAxisColor);
+    event.painter()->setPen(QPen(QBrush(_xAxisColor), 0.0, Qt::SolidLine));
     event.painter()->drawLine(QPointF(-minDistancePoints + x, y), QPointF(minDistancePoints + x, y));
 
-    event.painter()->setPen(_yAxisColor);
+    event.painter()->setPen(QPen(QBrush(_yAxisColor), 0.0, Qt::SolidLine));
     event.painter()->drawLine(QPointF(x, minDistancePoints + y), QPointF(x, -minDistancePoints + y));
 }
 

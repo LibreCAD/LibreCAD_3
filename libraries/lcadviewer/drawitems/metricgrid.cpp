@@ -73,7 +73,7 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
         lines.append(QLineF(rect.left(), y, rect.right(), y));
     }
 
-    painter->setPen(_minorColor);
+    painter->setPen(QPen(QBrush(_minorColor), 0.0, Qt::SolidLine));
     painter->drawLines(lines.data(), lines.size());
 }
 
