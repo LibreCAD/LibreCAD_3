@@ -5,8 +5,7 @@
 #------------------------------------------------
 
 # Use common project definitions.
-include(../../settings.pro)
-include(../../common.pro)
+include(../settings.pri)
 
 TARGET      = $$qtLibraryTarget(lcadviewerplugin)
 TEMPLATE    = lib
@@ -20,25 +19,29 @@ OTHER_FILES = CustomWidget.json
 
 VERSION=0.0.1
 
-GENERATED_DIR = ../../generated/lib/lcadviewer
-
-CONFIG(debug, debug|release) {
-    LIBS += -llckernel_debug
-} else {
-    LIBS += -llckernel
-}
+RESOURCES   = icons.qrc
 
 win32 {
-    DESTDIR = ../../lcdemo/
+    #DESTDIR = ../lcdemo/
 }
 unix {
     macx {
-	QMAKE_LIBDIR += ../../demo.app/Contents/MacOS
-        DESTDIR = ../../demo.app/Contents/MacOS
+        DESTDIR = ../demo.app/Contents/MacOS
     } else {
-	DESTDIR = ../../lcdemo/
+        DESTDIR = ../lcdemo
     }
 }
+
+CONFIG(debug, debug|release) {
+    LIBS += -L$$DESTDIR -llckernel_debug
+} else {
+    LIBS += -L$$DESTDIR -llckernel
+}
+
+INCLUDEPATH += $$PWD/../lckernel
+DEPENDPATH += $$PWD/../lckernel
+
+
 
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
@@ -79,11 +82,3 @@ SOURCES     = lcadviewerplugin.cpp \
     helpers/selectionmanagerimpl.cpp
 
 
-RESOURCES   = icons.qrc
-LIBS        += -L. 
-
-INCLUDEPATH += "../lckernel"
-
-
-target.path = $$[QT_INSTALL_PLUGINS]/designer
-INSTALLS    += target

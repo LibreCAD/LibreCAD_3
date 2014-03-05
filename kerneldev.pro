@@ -1,9 +1,7 @@
 TEMPLATE = subdirs
 TARGET = demo
 CONFIG += ordered
-INCLUDEPATH += /usr/include/boost
 SUBDIRS     = \
-    libraries \
+    lckernel \
+    lcadviewer \
     demo
-
-exists( custom.pro ):include( custom.pro )

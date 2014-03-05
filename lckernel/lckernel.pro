@@ -5,8 +5,7 @@
 #-------------------------------------------------
 
 # Use common project definitions.
-include(../../settings.pro)
-include(../../common.pro)
+include(../settings.pri)
 
 CONFIG      += plugin
 TARGET      = $$qtLibraryTarget(lckernel)
@@ -14,23 +13,22 @@ TEMPLATE = lib
 
 QT       += core
 
-win32 {
-    #DESTDIR = ../../lcdemo/
-}
-unix {
-    macx {
-	DESTDIR = ../../demo.app/Contents/MacOS
-    } else {
-	DESTDIR = ../../lcdemo/
-    }
-}
-
 DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1
 
-GENERATED_DIR = ../../generated/lib/lckernel
+message ($$qtLibraryTarget(lckernel))
 
+win32 {
+    #DESTDIR = ../lcdemo/
+}
+unix {
+    macx {
+        DESTDIR = ../demo.app/Contents/MacOS
+    } else {
+        DESTDIR = ../lcdemo/
+    }
+}
 
 SOURCES += lckernel.cpp \
    cad/meta/color.cpp \

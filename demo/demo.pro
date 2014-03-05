@@ -5,38 +5,48 @@
 #-------------------------------------------------
 
 # Use common project definitions.
-include(../settings.pro)
-include(../common.pro)
+include(../settings.pri)
 
 QT       += core gui opengl
-
 TEMPLATE = app
 
-# Store intermedia stuff somewhere else
-GENERATED_DIR = ../generated/demo
-
-
-INCLUDEPATH += "../libraries/lckernel"
-INCLUDEPATH += "../libraries/lcadviewer"
-
-CONFIG(debug, debug|release) {
-    LIBS+= -llckernel_debug -llcadviewerplugin_debug
-} else {
-    LIBS+= -llckernel -llcadviewerplugin
-}
-
 win32 {
-    DESTDIR = ../../lcdemo/
+    DESTDIR = ../lcdemo
 }
+
 unix {
     macx {
-	QMAKE_LIBDIR += ../demo.app/Contents/MacOS
 	TARGET = ../demo
     } else {
-	QMAKE_LIBDIR += ../lcdemo
 	TARGET = ../lcdemo/demo
     }
 }
+
+CONFIG(debug, debug|release) {
+    LIBS += -L$$PWD/../lckernel -llckernel_debug
+    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin_debug
+} else {
+    LIBS += -L$$PWD/../lckernel -llckernel
+    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+}
+
+win32 {
+    QMAKE_LIBDIR += ../lcdemo
+}
+unix {
+    macx {
+        QMAKE_LIBDIR += ../demo.app/Contents/MacOS
+    } else {
+        QMAKE_LIBDIR += ../lcdemo
+    }
+}
+
+
+INCLUDEPATH += $$PWD/../lckernel
+DEPENDPATH += $$PWD/../lckernel
+
+INCLUDEPATH += $$PWD/../lcadviewer
+DEPENDPATH += $$PWD/../lcadviewer
 
 
 SOURCES += main.cpp\
@@ -73,3 +83,7 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     ui/resource.qrc
+
+
+
+

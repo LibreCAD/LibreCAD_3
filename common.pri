@@ -4,7 +4,8 @@ CONFIG -= debug_and_release
 isEmpty(GENERATED_DIR){
  GENERATED_DIR = generated
 }
- # Store intermedia stuff somewhere else
+
+# Store intermedia stuff somewhere else
 OBJECTS_DIR = $${GENERATED_DIR}/obj
 MOC_DIR = $${GENERATED_DIR}/moc
 RCC_DIR = $${GENERATED_DIR}/rcc
@@ -12,26 +13,12 @@ UI_DIR = $${GENERATED_DIR}/ui
 UI_HEADERS_DIR = $${GENERATED_DIR}/ui
 UI_SOURCES_DIR = $${GENERATED_DIR}/ui
 
-
 # Copy command
 win32 {
-    COPY = copy /y
+    QMAKE_COPY = copy /y
 } else {
-    COPY = cp
+    QMAKE_COPY = cp
 }
-
-
-# Boost
-exists($${BOOST_DIR}){
-    INCLUDEPATH += "$${BOOST_DIR}"
-    LIBS += -L"$${BOOST_LIBDIR}" $${BOOST_LIBS}
-    HEADERS += "$${BOOST_DIR}"
-}
-
-!exists($${BOOST_DIR}) {
-   # error(Boost was not found, please install boost!)
-}
-message(Using boost libraries in $${BOOST_DIR}.)
 
 # Windows compiler settings
 win32 {
@@ -54,10 +41,25 @@ win32 {
        # in the header file `xloctime` (a Vc7 header after all!).
        QMAKE_CXXFLAGS += /wd4100
     }
+
+    INCLUDEPATH += "$${BOOST_DIR}"
+    LIBS += -L"$${BOOST_LIBDIR}" $${BOOST_LIBS}
+    HEADERS += "$${BOOST_DIR}"
 }
 
+# Copies the given files to the destination directory
+defineTest(copyToDestdir) {
+    files = $$1
+    dir = $$2
 
-# c++11 is now obligatory for LibreCAD
-#QMAKE_CXXFLAGS_DEBUG += -std=c++0x -O0
-#QMAKE_CXXFLAGS += -std=c++0x
+    for(FILE, files) {
 
+        # Replace slashes in paths with backslashes for Windows
+        win32:FILE ~= s,/,\\,g
+        win32:DDIR ~= s,/,\\,g
+
+        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$FILE) $$quote($$dir) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
