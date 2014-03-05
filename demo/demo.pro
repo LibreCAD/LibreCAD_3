@@ -4,6 +4,10 @@
 #
 #-------------------------------------------------
 
+# Use common project definitions.
+include(../settings.pro)
+include(../common.pro)
+
 QT       += core gui opengl
 
 TEMPLATE = app
@@ -11,22 +15,25 @@ TEMPLATE = app
 # Store intermedia stuff somewhere else
 GENERATED_DIR = ../generated/demo
 
-# Use common project definitions.
-include(../settings.pro)
-include(../common.pro)
 
 INCLUDEPATH += "../libraries/lckernel"
 INCLUDEPATH += "../libraries/lcadviewer"
+
+CONFIG(debug, debug|release) {
+    LIBS+= -llckernel_debug -llcadviewerplugin_debug
+} else {
+    LIBS+= -llckernel -llcadviewerplugin
+}
 
 win32 {
     DESTDIR = ../../lcdemo/
 }
 unix {
     macx {
-        LIBS+=  -L../demo.app/Contents/MacOS -llckernel  -llcadviewerplugin
+	QMAKE_LIBDIR += ../demo.app/Contents/MacOS
 	TARGET = ../demo
     } else {
-        LIBS+=  -L../lcdemo -llckernel  -llcadviewerplugin
+	QMAKE_LIBDIR += ../lcdemo
 	TARGET = ../lcdemo/demo
     }
 }

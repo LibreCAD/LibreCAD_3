@@ -4,38 +4,39 @@
 #
 #------------------------------------------------
 
+# Use common project definitions.
+include(../../settings.pro)
+include(../../common.pro)
+
 TARGET      = $$qtLibraryTarget(lcadviewerplugin)
 TEMPLATE    = lib
 
 VERSION=0.0.1
 
-#ifdef QT_VERSION > 0x040806
 QT += opengl designer
 CONFIG      += plugin
-#else
-QT += opengl
-CONFIG += designer plugin
-#endif
 
 OTHER_FILES = CustomWidget.json
 
 VERSION=0.0.1
 
 GENERATED_DIR = ../../generated/lib/lcadviewer
-# Use common project definitions.
-include(../../settings.pro)
-include(../../common.pro)
+
+CONFIG(debug, debug|release) {
+    LIBS += -llckernel_debug
+} else {
+    LIBS += -llckernel
+}
 
 win32 {
     DESTDIR = ../../lcdemo/
 }
 unix {
     macx {
+	QMAKE_LIBDIR += ../../demo.app/Contents/MacOS
         DESTDIR = ../../demo.app/Contents/MacOS
-        LIBS+=  -L../../demo.app/Contents/MacOS -llckernel
     } else {
 	DESTDIR = ../../lcdemo/
-        LIBS+=  -L../../lcdemo -llckernel
     }
 }
 
@@ -43,7 +44,6 @@ HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
     scenemanager.h \
     drawitems/gradientbackground.h \
-    graphicsitems/lcviewer.h \
     graphicsitems/lcgraphicsitem.h \
     graphicsitems/lclineitem.h \
     graphicsitems/lccircleitem.h \

@@ -4,6 +4,10 @@
 #
 #-------------------------------------------------
 
+# Use common project definitions.
+include(../../settings.pro)
+include(../../common.pro)
+
 CONFIG      += plugin
 TARGET      = $$qtLibraryTarget(lckernel)
 TEMPLATE = lib
@@ -26,9 +30,6 @@ DEFINES += lckernel_LIBRARY
 VERSION=0.0.1
 
 GENERATED_DIR = ../../generated/lib/lckernel
-# Use common project definitions.
-include(../../settings.pro)
-include(../../common.pro)
 
 
 SOURCES += lckernel.cpp \

@@ -1,4 +1,4 @@
-
+CONFIG -= debug_and_release
 
 # Store intermedia stuff somewhere else
 isEmpty(GENERATED_DIR){
@@ -58,8 +58,6 @@ win32 {
 
 
 # c++11 is now obligatory for LibreCAD
-message(We will be using CPP11 features)
-QMAKE_CXXFLAGS_DEBUG += -std=c++0x -O0
-QMAKE_CXXFLAGS += -std=c++0x
-
+#QMAKE_CXXFLAGS_DEBUG += -std=c++0x -O0
+#QMAKE_CXXFLAGS += -std=c++0x
 
