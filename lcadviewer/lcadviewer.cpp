@@ -6,6 +6,8 @@
 LCADViewer::LCADViewer(QWidget* parent) :
     QCachedGraphicsView(parent) {
 
+    this->_altKeyActive = false;
+
     /******/
     QGLFormat fmt;
     fmt.setSampleBuffers(true);
@@ -13,8 +15,8 @@ LCADViewer::LCADViewer(QWidget* parent) :
     /****/
 
 
-    //    setCacheMode(CacheBackground); // Currently creates artifacts
-    //    setViewportUpdateMode(BoundingRectViewportUpdate);
+    setCacheMode(CacheBackground); // Currently creates artifacts
+    // setViewportUpdateMode(BoundingRectViewportUpdate);
     // this->setOptimizationFlag(DontAdjustForAntialiasing, true);
     this->setRenderHint(QPainter::Antialiasing, true);
 
@@ -112,6 +114,7 @@ void LCADViewer::drawBackground(QPainter* painter, const QRectF& rect) {
     for (int i = 0; i < _backgroundItems.size(); ++i) {
         _backgroundItems.at(i)->draw(this, painter, rect);
     }
+
 }
 void LCADViewer::drawForeground(QPainter* painter, const QRectF& rect) {
     for (int i = 0; i < _foregroundItems.size(); ++i) {

@@ -37,6 +37,7 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
 
     event.painter()->setPen(QPen(QBrush(_yAxisColor), 0.0, Qt::SolidLine));
     event.painter()->drawLine(QPointF(x, minDistancePoints + y), QPointF(x, -minDistancePoints + y));
+
 }
 
 void Cursor::on_SnapPoint_Event(const SnapPointEvent& event) {

@@ -12,6 +12,7 @@ void QCachedGraphicsView::drawItems(QPainter* painter, int numItems,
                                     QGraphicsItem* items[],
                                     const QStyleOptionGraphicsItem options[]) {
     QGraphicsView::drawItems(painter, numItems, items, options);
+
 }
 
 

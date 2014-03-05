@@ -9,6 +9,7 @@ SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, shared_ptr<lc::Select
 
     connect(graphicsView, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
             this, SLOT(on_mouseRelease_Event(const MouseReleaseEvent&)));
+
 }
 
 
