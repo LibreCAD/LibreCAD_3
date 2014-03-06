@@ -32,16 +32,18 @@ win32 {
 unix {
     macx {
         DESTDIR = ../demo.app/Contents/MacOS
+	CONFIG(debug, debug|release) {
+	    LIBS += -L$$DESTDIR -llckernel_debug
+	} else {
+	    LIBS += -L$$DESTDIR -llckernel
+	}
     } else {
         DESTDIR = ../lcdemo
+	LIBS += -L$$DESTDIR -llckernel
     }
 }
 
-CONFIG(debug, debug|release) {
-    LIBS += -L$$DESTDIR -llckernel_debug
-} else {
-    LIBS += -L$$DESTDIR -llckernel
-}
+
 
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel

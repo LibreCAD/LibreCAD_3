@@ -17,18 +17,20 @@ win32 {
 unix {
     macx {
 	TARGET = ../demo
+	CONFIG(debug, debug|release) {
+	    LIBS += -L$$PWD/../lckernel -llckernel_debug
+	    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin_debug
+	} else {
+	    LIBS += -L$$PWD/../lckernel -llckernel
+	    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+	}
     } else {
 	TARGET = ../lcdemo/demo
+	LIBS += -L$$PWD/../lckernel -llckernel
+	LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
     }
 }
 
-CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/../lckernel -llckernel_debug
-    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin_debug
-} else {
-    LIBS += -L$$PWD/../lckernel -llckernel
-    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
-}
 
 win32 {
     QMAKE_LIBDIR += ../lcdemo
