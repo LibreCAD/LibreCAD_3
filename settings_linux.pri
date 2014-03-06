@@ -1,4 +1,1 @@
-
-CONFIG += link_pkgconfig
-PKGCONFIG += boost
-
+include(boost.pri)
