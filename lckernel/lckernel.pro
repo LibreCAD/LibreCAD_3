@@ -61,7 +61,8 @@ SOURCES += lckernel.cpp \
     cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
     cad/functions/trim.cpp \
-    cad/geometry/geotext.cpp
+    cad/geometry/geotext.cpp \
+    cad/operations/moveentities.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -117,5 +118,6 @@ HEADERS += lckernel.h\
     cad/functions/intersect.h \
     cad/interface/entityvisitor.h \
     cad/interface/entitydispatch.h \
-    cad/primitive/text.h
+    cad/primitive/text.h \
+    cad/operations/moveentities.h
 
