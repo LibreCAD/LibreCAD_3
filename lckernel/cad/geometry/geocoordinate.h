@@ -103,13 +103,6 @@ namespace lc {
                   */
                 Coordinate operator / (double s) const;
 
-                /**
-                 * Moves this vector by the given offset. Equal to the operator +=.
-                 *
-                 * @param Coordinate
-                 * @return Coordinate
-                 */
-
             private:
                 double _x;
                 double _y;
