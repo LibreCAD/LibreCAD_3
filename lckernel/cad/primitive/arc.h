@@ -28,6 +28,9 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(shared_ptr<const lc::Ellipse> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);                
+            }
+            virtual void accept(shared_ptr<const lc::Text> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {

@@ -49,6 +49,10 @@ void Trim::visit(shared_ptr<const lc::Ellipse> ellipse) {
 
 }
 
+void Trim::visit(shared_ptr<const lc::Text> text) {
+
+}
+
 QList<shared_ptr<const lc::CADEntity> > Trim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;
