@@ -41,3 +41,10 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
 
     return pointOnPath;
 }
+
+shared_ptr<const lc::CADEntity> Circle::move(const geo::Coordinate& offset) const {
+    Circle *cir = new lc::Circle(this->center() + offset, this->radius());
+    cir->setID(this->id());
+    shared_ptr<const lc::Circle> newCircle= shared_ptr<const lc::Circle>(cir);
+    return newCircle;
+}

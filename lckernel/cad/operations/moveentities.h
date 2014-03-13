@@ -15,8 +15,9 @@ namespace lc {
 
 class MoveEntities : public Operation, public Undoable {
     public:
-        MoveEntities(AbstractDocument* document, const QString& layerName) : Operation(document), Undoable("Create entities") {
+        MoveEntities(AbstractDocument* document, const QString& layerName, const lc::geo::Coordinate& offset) : Operation(document), Undoable("Create entities") {
             _layerName = layerName;
+            _offset = offset;
         }
         virtual ~MoveEntities() {
             qDebug() << "MoveEntities removed";
@@ -39,6 +40,7 @@ class MoveEntities : public Operation, public Undoable {
 
     private:
         QString _layerName;
+        lc::geo::Coordinate _offset;
         QList<shared_ptr<const lc::CADEntity> > _toMove;
 };
 }

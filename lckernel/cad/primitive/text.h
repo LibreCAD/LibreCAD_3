@@ -16,7 +16,7 @@ namespace lc {
         public:
             Text(const geo::Coordinate& insertion_point, double height, QString text_value);
             Text(const geo::Coordinate& insertion_point, double height, QString text_value, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
-
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

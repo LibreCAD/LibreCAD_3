@@ -10,7 +10,7 @@ void MoveEntities::append(shared_ptr<const lc::CADEntity> cadEntity) {
 void MoveEntities::processInternal() const {
     for (int i = 0; i < _toMove.size(); ++i) {
         document()->removeEntity(_toMove.at(i)->id());
-        document()->addEntity(_layerName,_toMove.at(i));
+        document()->addEntity(_layerName,_toMove.at(i)->move(_offset));
     }
 }
 

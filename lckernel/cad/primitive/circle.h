@@ -21,7 +21,7 @@ namespace lc {
         public:
             Circle(const geo::Coordinate& center, double radius);
             Circle(const geo::Coordinate& center, double radius, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
-
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 

@@ -16,14 +16,16 @@ namespace lc {
     class ID {
         public:
             ID();
-            ID_DATATYPE id() const;
+            ID_DATATYPE id() const ;
 
             bool operator == (const ID& id) const {
                 return (id._id == _id);
             }
+            void setID(ID_DATATYPE _ID);
 
         private:
             unsigned long _id;
+            ID_DATATYPE _ID;
     };
 }
 #endif // ID_H
