@@ -11,3 +11,9 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
     : CADEntity(metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
+shared_ptr<const lc::CADEntity> Ellipse::move(const geo::Coordinate& offset) const {
+    Ellipse* ell = new lc::Ellipse(this->center() + offset, this->majorP() + offset, this->minorRadius(), this->startAngle(), this ->endAngle());
+    ell->setID(this->id());
+    shared_ptr<const lc::Ellipse> newEllipse = shared_ptr<const lc::Ellipse>(ell);
+    return newEllipse;
+}

@@ -63,7 +63,6 @@ Coordinate Coordinate::operator / (double s) const {
 }
 
 
-
 QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
     dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
     return dbg.space();

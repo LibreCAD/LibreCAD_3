@@ -39,5 +39,10 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
-
+shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset) const {
+    Line * l = new lc::Line(this->start() + offset, this->end() + offset);
+    l->setID(this->id());
+    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(l);
+    return newLine;
+}
 

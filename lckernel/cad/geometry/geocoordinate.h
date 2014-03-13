@@ -103,7 +103,6 @@ namespace lc {
                   */
                 Coordinate operator / (double s) const;
 
-
             private:
                 double _x;
                 double _y;

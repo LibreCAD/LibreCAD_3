@@ -1,7 +1,5 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
-
-#include "qdebug.h"
+#ifndef TEXT_H
+#define TEXT_H
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -9,22 +7,16 @@
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geocircle.h"
+#include "cad/geometry/geotext.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/interface/snapable.h"
 
 namespace lc {
-
-
-    class Circle : public enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+    class Text : public enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
-            Circle(const geo::Coordinate& center, double radius);
-            Circle(const geo::Coordinate& center, double radius, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
+            Text(const geo::Coordinate& insertion_point, double height, QString text_value);
+            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
             virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
-            virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
-
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -50,4 +42,6 @@ namespace lc {
 
     };
 }
-#endif // CIRCLE_H
+
+
+#endif // TEXT_H

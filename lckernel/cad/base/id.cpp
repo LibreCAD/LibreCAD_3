@@ -10,3 +10,7 @@ ID::ID() {
 ID_DATATYPE ID::id() const {
     return _id;
 }
+
+void ID::setID(ID_DATATYPE _ID) {
+    _id = _ID;
+}

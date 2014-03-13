@@ -16,6 +16,7 @@ namespace lc {
             virtual void visit(shared_ptr<const lc::Circle>);
             virtual void visit(shared_ptr<const lc::Arc>);
             virtual void visit(shared_ptr<const lc::Ellipse>);
+            virtual void visit(shared_ptr<const lc::Text>);
             QList<shared_ptr<const lc::CADEntity> > result();
             shared_ptr<const lc::CADEntity> trimmedShape() const;
 

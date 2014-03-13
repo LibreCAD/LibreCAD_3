@@ -56,10 +56,13 @@ SOURCES += lckernel.cpp \
     cad/geometry/geocoordinate.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
+    cad/primitive/text.cpp \
     cad/operations/trimentity.cpp \
     cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
-    cad/functions/trim.cpp
+    cad/functions/trim.cpp \
+    cad/geometry/geotext.cpp \
+    cad/operations/moveentities.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -100,6 +103,7 @@ HEADERS += lckernel.h\
     cad/primitive/arc.h \
     cad/geometry/geocircle.h \
     cad/geometry/geoarc.h \
+    cad/geometry/geotext.h \
     cad/geometry/geoarea.h \
     cad/geometry/geovector.h \
     cad/geometry/geocoordinate.h \
@@ -113,4 +117,7 @@ HEADERS += lckernel.h\
     cad/functions/trim.h \
     cad/functions/intersect.h \
     cad/interface/entityvisitor.h \
-    cad/interface/entitydispatch.h
+    cad/interface/entitydispatch.h \
+    cad/primitive/text.h \
+    cad/operations/moveentities.h
+
