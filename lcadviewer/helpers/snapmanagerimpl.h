@@ -26,6 +26,9 @@ class SnapManagerImpl : public SnapManager {
         SnapManagerImpl(LCADViewer* viewer, shared_ptr<lc::SelectionManager> _selectionmanager, shared_ptr<const lc::Snapable> grid, double distanceToSnap);
 
 
+        virtual void setGridSnappable(bool gridSnappable);
+        virtual bool isGridSnappable() const;
+
     public slots:
         void on_mouseMoveEvent(const MouseMoveEvent& event);
         void on_mouseRelease_Event(const MouseReleaseEvent& event);
@@ -36,6 +39,9 @@ class SnapManagerImpl : public SnapManager {
 
         // Grid is snapable
         shared_ptr<const lc::Snapable> _grid;
+
+        // TRE when snapping to grid is evaluated
+        bool _gridSnappable;
 
         // List of entities that are potential for snapping
         QList<shared_ptr<const lc::Snapable> > _snapableEntities;

@@ -50,6 +50,9 @@ class SnapManager : public QObject {
          */
         void mouseRightReleaseEvent(const MouseReleaseEvent&);
 
+    public:
+        virtual void setGridSnappable(bool gridSnappable) = 0;
+        virtual bool isGridSnappable() const = 0;
 };
 
 

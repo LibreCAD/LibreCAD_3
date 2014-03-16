@@ -66,24 +66,29 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());
         _lastSnapEvent = snapEvent;
+        qDebug() << "Snap to entity";
         emit snapPointEvent(snapEvent);
         return;
     }
 
     // If no entity was found to snap against, then snap to grid
-    QList<lc::EntityCoordinate> points = _grid->snapPoints(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()), realDistanceForPixels, 1);
+    if (_gridSnappable == true) {
+        QList<lc::EntityCoordinate> points = _grid->snapPoints(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()), realDistanceForPixels, 1);
 
-    if (points.length() > 0) {
-        SnapPointEvent snapEvent(points.at(0).coordinate());
-        _lastSnapEvent = snapEvent;
-        emit snapPointEvent(snapEvent);
-        return;
+        if (points.length() > 0) {
+            SnapPointEvent snapEvent(points.at(0).coordinate());
+            _lastSnapEvent = snapEvent;
+            qDebug() << "Snap to Grid";
+            emit snapPointEvent(snapEvent);
+            return;
+        }
     }
 
     // FIXME: Currently sending a snapEvent so the cursor get's updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
-    SnapPointEvent snapEvent;
+    SnapPointEvent snapEvent(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()));
     _lastSnapEvent = snapEvent;
+    qDebug() << "Snap to Free";
     emit snapPointEvent(snapEvent);
 }
 
@@ -103,4 +108,13 @@ void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
             emit mouseReleaseEvent(event);
         }
     }
+}
+
+
+void SnapManagerImpl::setGridSnappable(bool gridSnappable) {
+    _gridSnappable = gridSnappable;
+}
+
+bool SnapManagerImpl::isGridSnappable() const {
+    return _gridSnappable;
 }

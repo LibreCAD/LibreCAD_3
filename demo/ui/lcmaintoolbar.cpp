@@ -33,3 +33,13 @@ void LCMainToolbar::on_toolButton_3_clicked()
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 
 }
+
+void LCMainToolbar::on_toolButton_4_clicked()
+{
+    if (_parent->activeMdiChild()->snapManager()->isGridSnappable()) {
+        _parent->activeMdiChild()->snapManager()->setGridSnappable(false);
+    } else {
+        _parent->activeMdiChild()->snapManager()->setGridSnappable(true);
+    }
+
+}

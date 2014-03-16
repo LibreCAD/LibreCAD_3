@@ -31,7 +31,6 @@ namespace lc {
              * \sa lc::CADEntity
              */
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
-
     };
 }
 
