@@ -14,7 +14,7 @@ QRectF LCArcItem::boundingRect() const {
 
 void LCArcItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
 
-    LCGraphicsItem::paint(_arc, painter, option, widget);
+    LCGraphicsItem::paint(painter, option, widget);
 
     double factorForQt = (360.0 / PI * 8);
 
