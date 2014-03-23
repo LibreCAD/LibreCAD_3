@@ -24,7 +24,7 @@ class MoveEntities : public Operation, public Undoable {
         }
 
         /**
-         * Add a entity to the document, you can call this function as many times as you whish
+         * Move an Entity in the document. Can be called as many times you wish.
          * @param cadEntity
          */
         void append(shared_ptr<const lc::CADEntity> cadEntity);

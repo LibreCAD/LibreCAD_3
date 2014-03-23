@@ -15,3 +15,7 @@ shared_ptr<const lc::CADEntity> Text::move(const geo::Coordinate &offset) const 
     shared_ptr<const lc::Text> newText = shared_ptr<const lc::Text>(tex);
     return newText;
 }
+
+shared_ptr<const lc::CADEntity> Text::rotate(const double& angle) const {
+    //return;
+}

@@ -15,3 +15,7 @@ shared_ptr<const lc::CADEntity> Arc::move(const geo::Coordinate& offset) const {
     shared_ptr<const lc::Arc> newArc = shared_ptr<const lc::Arc>(ar);
     return newArc;
 }
+
+shared_ptr<const lc::CADEntity> Arc::rotate(const double& angle) const {
+    //return;
+}

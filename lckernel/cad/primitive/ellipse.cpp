@@ -17,3 +17,7 @@ shared_ptr<const lc::CADEntity> Ellipse::move(const geo::Coordinate& offset) con
     shared_ptr<const lc::Ellipse> newEllipse = shared_ptr<const lc::Ellipse>(ell);
     return newEllipse;
 }
+
+shared_ptr<const lc::CADEntity> Ellipse::rotate(const double& angle) const {
+    //return;
+}

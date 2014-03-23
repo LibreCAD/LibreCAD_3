@@ -17,12 +17,31 @@ namespace lc {
      */
     class DocumentLayerImpl : public DocumentLayer {
         public:
+            /*!
+             * \brief Document layer implementor.
+             */
             DocumentLayerImpl();
+            /*!
+             * \brief Document layer implementor with a layer.
+             * \param laye
+             */
             DocumentLayerImpl(shared_ptr<const lc::Layer> layer);
             virtual ~DocumentLayerImpl();
 
+            /*!
+             * \brief add an entity to the document.
+             * \param entity entity to be added to the document.
+             */
             virtual void addEntity(shared_ptr<const lc::CADEntity> entity);
+            /*!
+             * \brief remove an Entity from the document.
+             * \param id Entity ID of entity which is to be removed.
+             */
             virtual void removeEntity(ID_DATATYPE id);
+            /*!
+             * \brief return all the entities present in the document.
+             * \return QHash Entity ID and Entity.
+             */
             virtual QHash<int, shared_ptr<const lc::CADEntity> > allEntities() const;
 
             virtual shared_ptr<const lc::Layer> layer() const;
@@ -34,13 +53,17 @@ namespace lc {
                 return _layer != NULL;
             }
 
+            /*!
+             * \brief finds entity by entity ID
+             * \return CADEntity shared_ptr
+             */
             virtual shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const;
 
         private:
 
         private:
-            shared_ptr<const lc::Layer> _layer;
-            QHash<int, shared_ptr<const lc::CADEntity> > _cadentities;
+            shared_ptr<const lc::Layer> _layer; /*!< Layer shared pointer */
+            QHash<int, shared_ptr<const lc::CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
     };
 }
 

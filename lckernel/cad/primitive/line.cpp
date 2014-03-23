@@ -46,3 +46,6 @@ shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset) const 
     return newLine;
 }
 
+shared_ptr<const lc::CADEntity> Line::rotate(const double& angle) const {
+    //return ;
+}

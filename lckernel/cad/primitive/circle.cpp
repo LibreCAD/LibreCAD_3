@@ -48,3 +48,7 @@ shared_ptr<const lc::CADEntity> Circle::move(const geo::Coordinate& offset) cons
     shared_ptr<const lc::Circle> newCircle= shared_ptr<const lc::Circle>(cir);
     return newCircle;
 }
+
+shared_ptr<const lc::CADEntity> Circle::rotate(const double& angle) const {
+    //return;
+}
