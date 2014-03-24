@@ -23,7 +23,7 @@ namespace lc {
             DocumentLayerImpl();
             /*!
              * \brief Document layer implementor with a layer.
-             * \param laye
+             * \param layer
              */
             DocumentLayerImpl(shared_ptr<const lc::Layer> layer);
             virtual ~DocumentLayerImpl();

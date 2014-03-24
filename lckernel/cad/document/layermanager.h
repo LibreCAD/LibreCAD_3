@@ -37,14 +37,14 @@ namespace lc {
              * Return pointer to a DocumentLayer
              *
              * @param layerName
-             * @return
+             * @return layer
              */
             virtual shared_ptr<lc::DocumentLayer> layer(const QString& layerName) const = 0;
 
             /**
              * Return a QHash of all layers within the document
              *
-             * @return
+             * @return QHash Layername, layer.
              */
             virtual QHash <QString, shared_ptr<lc::DocumentLayer> > const& allLayers() const = 0;
     };

@@ -14,6 +14,10 @@ namespace lc {
             RemoveEntityEvent(ID_DATATYPE id) : _id(id) {
             }
 
+            /*!
+             * \brief Returns the ID
+             * \return ID_DATATYPE id of the entity.
+             */
             ID_DATATYPE id() const {
                 return _id;
             }

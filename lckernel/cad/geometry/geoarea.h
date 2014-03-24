@@ -16,8 +16,8 @@ namespace lc {
                   * Create a new Area. The coordinates coordA and coordB will be ordered so that minP wil always be < maxP
                   * The corordinates are not allowed to describe a volume
                   *
-                  * @param Coordinate   First coordinate of a area
-                  * @param Coordinate   Second coordinate of a area
+                  * @param CoordA First coordinate of a area
+                  * @param CoordB Second coordinate of a area
                   */
                 Area(const Coordinate& coordA, const Coordinate& coordB) ;
 
@@ -33,8 +33,8 @@ namespace lc {
 
                 /**
                   * Test of a specific point lies within a area
-                  * @param Coordinate   Point to test agains
-                  * @return boolean     true of the point is within the area
+                  * @param point Point to test agains
+                  * @return boolean true of the point is within the area
                   */
                 bool inArea(const Coordinate& point) const;
 
