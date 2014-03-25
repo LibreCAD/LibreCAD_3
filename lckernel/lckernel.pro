@@ -63,7 +63,7 @@ SOURCES += lckernel.cpp \
     cad/functions/trim.cpp \
     cad/geometry/geotext.cpp \
     cad/operations/moveentities.cpp \
-    cad/operations/rotateentites.cpp
+    cad/operations/rotateentities.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \

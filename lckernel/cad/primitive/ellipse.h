@@ -28,7 +28,7 @@ namespace lc {
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
             virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
-            virtual shared_ptr<const lc::CADEntity> rotate(const double& angle) const;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate &rotation_point, const double& angle) const;
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

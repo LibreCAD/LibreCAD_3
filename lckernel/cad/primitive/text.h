@@ -17,7 +17,7 @@ namespace lc {
             Text(const geo::Coordinate& insertion_point, double height, QString text_value);
             Text(const geo::Coordinate& insertion_point, double height, QString text_value, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
             virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
-            virtual shared_ptr<const lc::CADEntity> rotate(const double& angle) const;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate &rotation_point, const double& angle) const;
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

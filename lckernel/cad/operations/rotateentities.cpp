@@ -10,7 +10,7 @@ void RotateEntities::append(shared_ptr<const lc::CADEntity> cadEntity) {
 void RotateEntities::processInternal() const {
     for (int i = 0; i < _toRotate.size(); ++i) {
         document()->removeEntity(_toRotate.at(i)->id());
-        document()->addEntity(_layerName,_toRotate.at(i)->rotate(_angle));
+        document()->addEntity(_layerName,_toRotate.at(i)->rotate(_rotation_point, _angle));
     }
 }
 

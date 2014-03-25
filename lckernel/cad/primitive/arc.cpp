@@ -10,12 +10,17 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 }
 
 shared_ptr<const lc::CADEntity> Arc::move(const geo::Coordinate& offset) const {
-    Arc *ar = new lc::Arc(this->center() + offset, this->radius(), this->startAngle(), this->endAngle());
+    Arc *ar = new lc::Arc(this->center() + offset, this->radius(),
+                          this->startAngle(), this->endAngle());
     ar->setID(this->id());
     shared_ptr<const lc::Arc> newArc = shared_ptr<const lc::Arc>(ar);
     return newArc;
 }
 
-shared_ptr<const lc::CADEntity> Arc::rotate(const double& angle) const {
-    //return;
+shared_ptr<const lc::CADEntity> Arc::rotate(const lc::geo::Coordinate& rotation_point, const double& angle) const {
+    Arc *ar = new lc::Arc(center().rotate(rotation_point,angle), this->radius(),
+                          this->startAngle()+ angle, this->endAngle() + angle);
+    ar->setID(this->id());
+    shared_ptr<const lc::Arc> newArc = shared_ptr<const lc::Arc>(ar);
+    return newArc;
 }

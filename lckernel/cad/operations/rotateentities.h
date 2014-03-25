@@ -15,7 +15,7 @@ namespace lc {
 
 class RotateEntities : public Operation, public Undoable {
     public:
-        RotateEntities(AbstractDocument* document, const QString& layerName, const double& angle) : Operation(document), Undoable("Create entities") {
+        RotateEntities(AbstractDocument* document, const QString& layerName, const double& angle, lc::geo::Coordinate& rotation_point) : Operation(document), Undoable("Create entities") {
             _layerName = layerName;
             _angle = angle;
         }
@@ -41,6 +41,7 @@ class RotateEntities : public Operation, public Undoable {
     private:
         QString _layerName;
         double _angle;
+        lc::geo::Coordinate _rotation_point;
         QList<shared_ptr<const lc::CADEntity> > _toRotate;
 };
 }

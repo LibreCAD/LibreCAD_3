@@ -49,19 +49,19 @@ namespace lc {
             virtual void accept(shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
             /*!
-             * \brief Virtual function for Move
+             * \brief Function for Move
              *
              * \param offset the offset by which entity is to be moved
              * \return CADEntity shared_ptr
              */
             virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const = 0;
             /*!
-             * \brief Virtual function implementation for rotate.
+             * \brief Function implementation for rotate.
              *
              * \param angle angle by which the entity is to be rotated.
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> rotate(const double& angle) const = 0;
+            virtual shared_ptr<const lc::CADEntity> rotate(const lc::geo::Coordinate& rotation_point, const double& angle) const = 0;
     };
 }
 

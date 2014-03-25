@@ -24,7 +24,7 @@ namespace lc {
             virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
             virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
-            virtual shared_ptr<const lc::CADEntity> rotate(const double& angle) const;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate &rotation_point, const double& angle) const;
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
