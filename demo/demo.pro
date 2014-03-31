@@ -19,7 +19,7 @@ unix {
 	TARGET = ../demo
 	CONFIG(debug, debug|release) {
 	    LIBS += -L$$PWD/../lckernel -llckernel_debug
-	    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin_debug
+            LIBS += -llcadviewerplugin_debug
 	} else {
 	    LIBS += -L$$PWD/../lckernel -llckernel
 	    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
@@ -30,7 +30,6 @@ unix {
 	LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
     }
 }
-
 
 win32 {
     QMAKE_LIBDIR += ../lcdemo
