@@ -1,5 +1,7 @@
-#include "qcachedgraphicsview.h"
 
+#include <QGraphicsSceneDragDropEvent>
+
+#include "qcachedgraphicsview.h"
 #include "events/mousemoveevent.h"
 
 QCachedGraphicsView::QCachedGraphicsView(QWidget* parent) : QGraphicsView(parent) {
@@ -84,6 +86,11 @@ QPointF QCachedGraphicsView::lastMousePosition() const {
     return _lastMousePosition;
 }
 
+void QCachedGraphicsView::mousePressEvent(QMouseEvent * event) {
+    QGraphicsView::mousePressEvent(event);
+
+}
+
 /**
 *Handles the mouse move event
 */
@@ -110,3 +117,24 @@ void QCachedGraphicsView::mouseReleaseEvent(QMouseEvent* event) {
     MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     emit mouseReleaseEvent(e);
 }
+
+
+
+void QCachedGraphicsView::dragEnterEvent ( QDragEnterEvent * event ) {
+    QCachedGraphicsView::dragEnterEvent(event);
+     qDebug() << "dragEnterEvent";
+}
+
+void QCachedGraphicsView::dragLeaveEvent ( QDragLeaveEvent * event ) {
+    QCachedGraphicsView::dragLeaveEvent(event);
+    qDebug() << "dragLeaveEvent";
+}
+
+void QCachedGraphicsView::dragMoveEvent ( QDragMoveEvent * event ) {
+    QCachedGraphicsView::dragMoveEvent(event);
+    qDebug() << "dragMoveEvent";
+}
+
+
+
+

@@ -71,7 +71,8 @@ HEADERS     = lcadviewerplugin.h \
     events/drawevent.h \
     events/mousemoveevent.h \
     helpers/selectionmanagerimpl.h \
-    events/mousereleaseevent.h
+    events/mousereleaseevent.h \
+    events/selecteditemsevent.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \

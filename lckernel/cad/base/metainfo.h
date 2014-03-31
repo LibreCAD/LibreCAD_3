@@ -17,6 +17,11 @@ namespace lc {
 
             shared_ptr<const lc::MetaType> metaType(MetaType::metaTypeId type) const;
 
+
+            QHash<int, shared_ptr<const lc::MetaType> >  getMetaTypes() const {
+                return _metaTypes;
+            }
+
         private:
             /**
               *Holds list of meta type. Metatypes < 1024 are reserved for LibreCAD internall
