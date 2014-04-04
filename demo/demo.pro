@@ -20,14 +20,17 @@ unix {
 	CONFIG(debug, debug|release) {
 	    LIBS += -L$$PWD/../lckernel -llckernel_debug
             LIBS += -llcadviewerplugin_debug
-	} else {
+            LIBS += -llcadluascript_debug
+        } else {
 	    LIBS += -L$$PWD/../lckernel -llckernel
-	    LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
-	}
+            LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+            LIBS += -L$$PWD/../lcadluascript -llcadluascriptplugin
+        }
     } else {
 	TARGET = ../lcdemo/demo
 	LIBS += -L$$PWD/../lckernel -llckernel
-	LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+        LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+        LIBS += -L$$PWD/../lcadluascript -llcadluascript
     }
 }
 
@@ -49,6 +52,9 @@ DEPENDPATH += $$PWD/../lckernel
 INCLUDEPATH += $$PWD/../lcadviewer
 DEPENDPATH += $$PWD/../lcadviewer
 
+INCLUDEPATH += $$PWD/../lcadluascript
+DEPENDPATH += $$PWD/../lcadluascript
+
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -59,7 +65,8 @@ SOURCES += main.cpp\
     operations/qsnappedstate.cpp \
     operations/operationmanager.cpp \
     operations/circlecreateoperation.cpp \
-    operations/trimoperation.cpp
+    operations/trimoperation.cpp \
+    ui/luascript.cpp
 
 HEADERS  += mainwindow.h \
     cadmdichild.h \
@@ -74,13 +81,15 @@ HEADERS  += mainwindow.h \
     operations/circlecreateoperation.h \
     operations/trimoperation.h \
     operations/guioperation.h \
-    operations/guioperationfinishedevent.h
+    operations/guioperationfinishedevent.h \
+    ui/luascript.h
 
 FORMS    += mainwindow.ui \
     cadmdichild.ui \
     ui/lcmaintoolbar.ui \
     ui/clicommand.ui \
-    ui/form.ui
+    ui/form.ui \
+    ui/luascript.ui
 
 RESOURCES += \
     ui/resource.qrc

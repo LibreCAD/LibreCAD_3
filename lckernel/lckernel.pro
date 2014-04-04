@@ -17,8 +17,6 @@ DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1
 
-message ($$qtLibraryTarget(lckernel))
-
 win32 {
     #DESTDIR = ../lcdemo/
 }

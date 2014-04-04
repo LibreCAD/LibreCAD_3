@@ -14,6 +14,8 @@
 #include <QMdiSubWindow>
 #include <math.h>
 
+#include <ui/luascript.h>
+
 
 MainWindow::MainWindow(QWidget* parent) :
     IMainWindow(parent),
@@ -129,6 +131,10 @@ void MainWindow::addToolbars() {
     // Add Cli COmmand interpeter
     QDockWidget* _cliCommand = new CliCommand(this);
     addDockWidget(Qt::BottomDockWidgetArea, _cliCommand);
+
+    // Add Lua Script
+    QDockWidget* _luaScript = new LuaScript(this);
+    addDockWidget(Qt::RightDockWidgetArea, _luaScript);
 
 }
 
