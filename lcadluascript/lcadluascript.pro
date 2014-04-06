@@ -12,7 +12,6 @@ TEMPLATE = lib
 
 DEFINES += LCADLUASCRIPT_LIBRARY
 
-include(lua.pri)
 
 unix {
     target.path = /usr/lib
@@ -28,9 +27,12 @@ unix {
         } else {
             LIBS += -L$$DESTDIR -llckernel
         }
+	include(lua.pri)
     } else {
         DESTDIR = ../lcdemo
         LIBS += -L$$DESTDIR -llckernel
+	CONFIG+=link_pkgconfig
+	PKGCONFIG+=lua5.2
     }
 }
 
