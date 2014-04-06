@@ -1,6 +1,6 @@
 kerneldev.pro.user
 *.autosave
-demo*
+demo.*
 *generated*
 *.pro.user
 *Makefile
