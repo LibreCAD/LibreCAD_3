@@ -54,14 +54,15 @@ namespace lc {
              * \param offset the offset by which entity is to be moved
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const = 0;
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const = 0;
+            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const = 0;
             /*!
              * \brief Function implementation for rotate.
              *
              * \param angle angle by which the entity is to be rotated.
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> rotate(const lc::geo::Coordinate& rotation_point, const double& angle) const = 0;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const bool with_same_id) const = 0;
     };
 }
 

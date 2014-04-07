@@ -62,8 +62,9 @@ SOURCES += lckernel.cpp \
     cad/functions/intersect.cpp \
     cad/functions/trim.cpp \
     cad/geometry/geotext.cpp \
-    cad/operations/moveentities.cpp \
-    cad/operations/rotateentities.cpp
+    cad/operations/moveoperation.cpp \
+    cad/operations/rotateoperation.cpp \
+    cad/operations/copyoperation.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -120,6 +121,7 @@ HEADERS += lckernel.h\
     cad/interface/entityvisitor.h \
     cad/interface/entitydispatch.h \
     cad/primitive/text.h \
-    cad/operations/moveentities.h \
-    cad/operations/rotateentities.h
+    cad/operations/copyoperation.h \
+    cad/operations/moveoperation.h \
+    cad/operations/rotateoperation.h
 
