@@ -14,7 +14,7 @@ class LuaScript : public QDockWidget
 
 public:
     explicit LuaScript(IMainWindow* parent = 0);
-    ~LuaScript();
+    virtual ~LuaScript();
 
 private slots:
     void on_luaRun_clicked();

@@ -4,3 +4,4 @@ demo.*
 *generated*
 *.pro.user
 *Makefile
+lcdemo*
