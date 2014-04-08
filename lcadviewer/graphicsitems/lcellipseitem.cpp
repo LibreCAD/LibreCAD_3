@@ -21,7 +21,7 @@ void LCEllipseItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* opt
                             2 * _ellipse->radius(),
                             2 * _ellipse->radius()), _ellipse->startAngle() * (360.0 / PI * 8), _ellipse->endAngle() * (360.0 / PI * 8) - _ellipse->startAngle() * (360.0 / PI * 8));
     */
-    LCGraphicsItem::paint(_ellipse, painter, option, widget);
+    LCGraphicsItem::paint(painter, option, widget);
 
     // True ellipse drawing needs to be implemented
     painter->drawText(_ellipse->center().x(), _ellipse->center().y(), "Ellipse here");

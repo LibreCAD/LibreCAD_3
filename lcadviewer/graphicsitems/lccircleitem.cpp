@@ -16,7 +16,7 @@ QRectF LCCircleItem::boundingRect() const {
 }
 
 void LCCircleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
-    LCGraphicsItem::paint(_circle, painter, option, widget);
+    LCGraphicsItem::paint(painter, option, widget);
 
     // See qt_curves_for_arc, at high zoom levels the arc renders inaccurate when the arc os much larger then the screen
     // and I think this can be corrected by adding more control points.

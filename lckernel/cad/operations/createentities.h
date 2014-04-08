@@ -29,6 +29,7 @@ namespace lc {
              * @param cadEntity
              */
             void append(shared_ptr<const lc::CADEntity> cadEntity);
+            void add(lc::CADEntity *cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;

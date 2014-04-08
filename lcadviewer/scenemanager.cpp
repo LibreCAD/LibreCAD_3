@@ -29,7 +29,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     if (line != NULL) {
         LCLineItem* foo = new LCLineItem(line);
-        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(line->id(), foo);
         return;
@@ -40,7 +40,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     if (circle != NULL) {
         LCCircleItem* foo = new LCCircleItem(circle);
-        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(circle->id(), foo);
         return;
@@ -51,7 +51,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     if (arc != NULL) {
         LCArcItem* foo = new LCArcItem(arc);
-        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(arc->id(), foo);
         return;
@@ -62,7 +62,7 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     if (ellipse != NULL) {
         LCEllipseItem* foo = new LCEllipseItem(ellipse);
-        //foo->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
         _activeGraphicsItems.insert(ellipse->id(), foo);
         return;

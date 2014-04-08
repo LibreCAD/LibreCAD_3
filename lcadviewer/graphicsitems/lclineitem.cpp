@@ -13,7 +13,7 @@ QRectF LCLineItem::boundingRect() const {
 
 void LCLineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
 
-    LCGraphicsItem::paint(_line, painter, option, widget);
+    LCGraphicsItem::paint(painter, option, widget);
 
     painter->drawLine(
         QPointF(_line->start().x(), _line->start().y()),

@@ -91,7 +91,6 @@ void CadMdiChild::newDocument() {
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = new lc::UndoManagerImpl(_document, 10);
 
-
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     ui->lCADViewer->setAbstractDocument(_document);
 
@@ -106,15 +105,6 @@ void CadMdiChild::newDocument() {
 
     // Add operation manager
     _operationManager = shared_ptr<OperationManager> (new OperationManager(_document));
-
-    /*
-    QWidget *widget=new QTableWidget();
-    widget->setMaximumHeight(50);
-    widget->setMinimumHeight(50);
-    widget->setMaximumWidth(50);
-    widget->setMinimumWidth(50);
-    QGraphicsProxyWidget * gp=ui->lCADViewer->scene()->addWidget(widget);
-    gp->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable); */
 }
 
 

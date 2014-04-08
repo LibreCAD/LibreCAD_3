@@ -6,6 +6,10 @@ void CreateEntities::append(shared_ptr<const lc::CADEntity> cadEntity) {
     _toCreate.append(cadEntity);
 }
 
+void CreateEntities::add(lc::CADEntity *cadEntity) {
+    _toCreate.append(shared_ptr<const lc::CADEntity> (cadEntity));
+}
+
 
 void CreateEntities::processInternal() const {
     for (int i = 0; i < _toCreate.size(); ++i) {

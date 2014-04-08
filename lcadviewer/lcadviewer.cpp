@@ -37,6 +37,11 @@ LCADViewer::LCADViewer(QWidget* parent) :
     setMouseTracking(true);
     parent->setMouseTracking(true);
 
+    this->setDragMode(RubberBandDrag);
+
+    // We might need to change this based on if we move the rubberband 'negative' or positive
+    this->setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
+
 }
 
 void LCADViewer::setAbstractDocument(lc::AbstractDocument* document) {

@@ -31,16 +31,9 @@ namespace lc {
             bool operator == (const ID& id) const {
                 return (id._id == _id);
             }
-
-            /*!
-             * \brief Sets the ID of an entity
-             * \param _ID
-             */
-            void setID(ID_DATATYPE _ID);
-
+            void setID(ID_DATATYPE _id);
         private:
-            unsigned long _id;
-            ID_DATATYPE _ID;
+            ID_DATATYPE _id;
     };
 }
 #endif // ID_H

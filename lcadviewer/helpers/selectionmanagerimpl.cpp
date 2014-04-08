@@ -53,5 +53,13 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
 
 
 QList<shared_ptr<const lc::CADEntity> > SelectionManagerImpl::getEntitiesInArea(const lc::geo::Area& area) const {
+   // QList<LCGraphicsItem*> items = _view->items();
+   // QList<lc::EntityDistance> entities;
+
+    //for (int i = 0; i < items.count(); i++) {
+     //   entities.append(items.at(i)->entity());
+    //}
+
+
 }
 

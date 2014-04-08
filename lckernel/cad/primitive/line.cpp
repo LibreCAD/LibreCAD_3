@@ -39,25 +39,6 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
-//shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset) const {
-//    Line * l = new lc::Line(this->start() + offset, this->end() + offset);
-//    l->setID(this->id());
-//    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(l);
-//    return newLine;
-//}
-
-//shared_ptr<const lc::CADEntity> Line::rotate(const geo::Coordinate &rotation_point, const double& rotation_angle) const {
-//    Line * l = new lc::Line(this->start().rotate(rotation_point, rotation_angle),
-//                            this->end().rotate(rotation_point, rotation_angle));
-//    l->setID(this->id());
-//    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(l);
-//    return newLine;
-//}
-
-//shared_ptr<const lc::CADEntity> Line::copy(const geo::Coordinate& offset, const double& rotation_angle) const {
-
-//}
-
 shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
 //    Line *newline = new lc::Line((this->start().rotate(rotation_center, rotation_angle)) + offset,
 //                                 (this->end().rotate(rotation_center, rotation_angle)) + offset);
