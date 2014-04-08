@@ -1,3 +1,5 @@
-Playground for LibreCAD 3 new version.
+This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modularity and the design, the LibreCAD is divided into 3 parts.
+1) The UI
+2) The kernel
+3) The CADViewer
 
-WARNING: THis is pre-alpha code and loads of thinsg will change still.

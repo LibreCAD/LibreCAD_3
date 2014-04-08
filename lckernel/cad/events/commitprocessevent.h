@@ -13,12 +13,15 @@ namespace lc {
         public:
             CommitProcessEvent(shared_ptr<lc::Operation> operation) : _operation(operation) {
             };
-
+            /*!
+             * \brief operation
+             * \return lc::Operation Operation.
+             */
             shared_ptr<lc::Operation> operation() const {
                 return _operation;
             }
         private:
-            const shared_ptr<lc::Operation> _operation;
+            const shared_ptr<lc::Operation> _operation; /*!< lc::operation _operation */
     };
 }
 #endif // COMMITPROCESSEVENT_H

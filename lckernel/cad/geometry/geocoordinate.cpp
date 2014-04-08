@@ -14,6 +14,11 @@ Coordinate::Coordinate(double x, double y) {
     this->_z = 0;
 }
 
+Coordinate::Coordinate(double angle) {
+    this->_x = cos(angle);
+    this->_y = sin(angle);
+}
+
 Coordinate::Coordinate(const QPointF& qtPoint) {
     this->_x = qtPoint.x();
     this->_y = qtPoint.y();
@@ -68,8 +73,24 @@ QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
     return dbg.space();
 }
 
+Coordinate Coordinate::rotate(const Coordinate& angleVector) const {
+    double x0 = _x * angleVector._x - _y * angleVector._y;
+    double y0 = _x * angleVector._y + _y * angleVector._x;
+    return Coordinate(x0, y0);
+}
 
+Coordinate Coordinate::rotate(const double& angle) const {
+    return rotate(Coordinate(angle));
+}
 
+Coordinate Coordinate::rotate(const lc::geo::Coordinate &point, const Coordinate &angleVector) const {
+    Coordinate new_center = point + (*this - point).rotate(angleVector);
+    return new_center;
+}
+
+Coordinate Coordinate::rotate(const lc::geo::Coordinate &point, const double &angle) const {
+    return rotate(point, Coordinate(angle));
+}
 
 CoordinateDistanceSort::CoordinateDistanceSort(const Coordinate& distanceFrom) : _distanceFrom(distanceFrom) {
 }

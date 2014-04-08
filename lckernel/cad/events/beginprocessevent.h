@@ -9,6 +9,9 @@ namespace lc {
      */
     class BeginProcessEvent {
         public:
+            /*!
+             * \brief BeginProcessEvent
+             */
             BeginProcessEvent() {
             }
     };

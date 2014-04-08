@@ -19,7 +19,7 @@ namespace lc {
                 Coordinate(double x, double y, double z);
                 Coordinate(double x, double y);
                 Coordinate(const QPointF& qtPoint);  // Convenience
-
+                Coordinate(double angle) ;
                 double x() const;
                 double y() const;
                 double z() const;
@@ -103,6 +103,10 @@ namespace lc {
                   */
                 Coordinate operator / (double s) const;
 
+                Coordinate rotate(const Coordinate& angleVector) const;
+                Coordinate rotate(const double& angle) const;
+                Coordinate rotate(const lc::geo::Coordinate& point, const Coordinate& angleVector) const;
+                Coordinate rotate(const lc::geo::Coordinate &point, const double &angle) const;
             private:
                 double _x;
                 double _y;

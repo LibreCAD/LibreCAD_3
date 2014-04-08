@@ -12,6 +12,14 @@ namespace lc {
     class MetaInfo {
         public:
             MetaInfo();
+            /*!
+             * \brief Construct a new metainfo
+             *
+             * \param metaTypes A list of metatypes associated with this line
+             * \sa lc::Color
+             * \sa lc::LineWidth
+             * \sa lc::MetaType
+             */
             MetaInfo(QList<shared_ptr<const lc::MetaType> > metaTypes);
             virtual ~MetaInfo();
 
