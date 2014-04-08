@@ -16,7 +16,12 @@ namespace lc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle);
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
-            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
+
+        public:
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const;
+            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const;
+
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

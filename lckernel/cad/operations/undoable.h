@@ -52,7 +52,7 @@ namespace lc {
              */
             virtual QString text() {
                 return _text;
-            };
+            }
 
         private:
             QString _text;

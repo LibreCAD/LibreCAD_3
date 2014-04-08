@@ -19,32 +19,35 @@ namespace lc {
 
         public:
             /**
-             * Add a entity to this layer
-             * @param entity
+             * /brief Add a entity to this layer
+             * @param entity to be added.
              */
             virtual void addEntity(shared_ptr<const lc::CADEntity> entity) = 0;
 
             /**
-             * Remove a entity from this layer
-             * @param id
+             * /brief Remove a entity from this layer
+             * @param id ID of the entity to be removed.
              */
             virtual void removeEntity(ID_DATATYPE id) = 0;
 
             /**
+             * /brief Returns Layer.
              * Return a pointer to the layer meta object
-             * @return
+             * @return Layer
              */
             virtual shared_ptr<const lc::Layer> layer() const = 0;
 
             /**
+             * /brief Returns ID, Entity Hash
              * Return a list of all entities
-             * @return
+             * @return QHash ID, Entity.
              */
             virtual QHash<int, shared_ptr<const lc::CADEntity> > allEntities() const = 0;
 
             /**
+             * /brief Finds an entity by its ID.
              * Return pointer to entity by ID
-             * @return
+             * @return CADEntity
              */
             virtual shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const = 0;
     };

@@ -22,24 +22,62 @@ namespace lc {
         public:
             UndoManagerImpl(lc::AbstractDocument* document, int maximumUndoLevels);
 
+            /*!
+             * \brief redo an operation.
+             * \sa lc::Undoable
+             * \sa lc::UndoManager
+             * \sa lc::UndoManagerImpl
+             */
             virtual void redo();
+            /*!
+             * \brief undo an operation.
+             * \sa lc::Undoable
+             * \sa lc::UndoManager
+             * \sa lc::UndoManagerImpl
+             */
             virtual void undo();
 
+            /*!
+             * \brief Check if undo can be done
+             * \sa lc::Undoable
+             * \sa lc::UndoManager
+             * \sa lc::UndoManagerImpl
+             * \return
+             */
             virtual bool canUndo() const;
+            /*!
+             * \brief Check if redo can be done
+             * \sa lc::Undoable
+             * \sa lc::UndoManager
+             * \sa lc::UndoManagerImpl
+             * \return
+             */
             virtual bool canRedo() const;
 
+            /*!
+             * \brief Clears the Undo/Redo stack.
+             * \sa lc::Undoable
+             * \sa lc::UndoManager
+             * \sa lc::UndoManagerImpl
+             * \return
+             */
             virtual void removeUndoables();
 
         private:
+            /*!
+             * \brief returns the document
+             * \return document
+             * \sa lc::AbstractDocument
+             */
             virtual AbstractDocument* document() const {
                 return _document;
             }
             AbstractDocument* _document;
 
         private:
-            QList <shared_ptr<lc::Undoable> > _unDoables;
-            QStack <shared_ptr<lc::Undoable> > _reDoables;
-            const int _maximumUndoLevels;
+            QList <shared_ptr<lc::Undoable> > _unDoables; /*!< Undo list */
+            QStack <shared_ptr<lc::Undoable> > _reDoables; /*!< Redo stack */
+            const int _maximumUndoLevels; /*!< Maximum undo level */
 
         public slots:
             void on_CommitProcessEvent(const lc::CommitProcessEvent& event);
