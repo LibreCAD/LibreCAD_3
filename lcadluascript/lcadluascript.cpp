@@ -6,13 +6,17 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "LuaBridge/LuaBridge.h"
-#include "LuaBridge/RefCountedObject.h"
-#include "LuaBridge/RefCountedPtr.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/pointer_cast.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include "lua-intf/LuaIntf.h"
+
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
 
 #include <cad/dochelpers/documentimpl.h>
+
+using namespace LuaIntf;
 
 // https://github.com/pisto/spaghettimod/commits/master/include/
 // https://bitbucket.org/alexames/luawrapperexample/overview
@@ -26,7 +30,7 @@ LCadLuaScript::LCadLuaScript(lc::AbstractDocument* document)
 }
 
 QString *gOut;
-lc::AbstractDocument* luaDoc;
+lc::DocumentImpl* luaDoc;
 
 
 static int l_my_print(lua_State* L) {
@@ -43,11 +47,9 @@ static const struct luaL_Reg printlib [] = {
     {NULL, NULL}
 };
 
-RefCountedPtr<lc::AbstractDocument> getDocument()
-{
-    return RefCountedPtr<lc::AbstractDocument>(luaDoc);
+static lc::AbstractDocument * lua_getDocument() {
+    return luaDoc;
 }
-
 
 QString LCadLuaScript::run(const QString &script) {
 
@@ -57,11 +59,8 @@ QString LCadLuaScript::run(const QString &script) {
     // add lua cad entities
     lua_openlckernel(L);
 
-    luabridge::getGlobalNamespace(L)
-      .addFunction("Document",&getDocument);
-
-    // push the document to lua
-
+    LuaBinding(L).beginModule("app")
+        .addFunction("currentDocument", &lua_getDocument);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -70,7 +69,7 @@ QString LCadLuaScript::run(const QString &script) {
 
     // Some globals we have to figure out to make sure it works with multiple threads
     QString out; gOut = &out;
-    luaDoc = _document;
+    luaDoc = static_pointer_cast<lc::DocumentImpl>(_document);
 
     // luaL_dofile(L, "/opt/librecad-test.lua");
     int s = luaL_dostring(L, script.toLocal8Bit().data());
@@ -83,12 +82,10 @@ QString LCadLuaScript::run(const QString &script) {
 }
 
 /*
- * c = lc.Coordinate(12.12,23);
-l = lc.Line(lc.Coord(12.12,23), lc.Coord(12.12,23));
-doc= lc.Document();
-if not doc then
-print "empty";
-end
-print (c:x());
-print "foo";
+ l=Line(Coord(0,0), Coord(10,100));
+d=currentDocument()
+ce = CreateEntities(d, "0");
+ce:append(l)
+d:operateOn(ce)
 */
+

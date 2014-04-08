@@ -45,10 +45,7 @@ SOURCES += \
 
 HEADERS += \
         const.h \
-        LuaBridge/LuaBridge.h \
-        LuaBridge/RefCountedObject.h \
-        LuaBridge/RefCountedPtr.h \
+        lua-intf/LuaIntf.h \
         lcadluascript.h\
         lcadluascript_global.h \
-        cad/primitive/lualine.h \
     cad/lualibrecadbridge.h

@@ -17,10 +17,10 @@ namespace lc {
      */
     class CreateEntities : public Operation, public Undoable {
         public:
-            CreateEntities(AbstractDocument* document, const QString& layerName) : Operation(document), Undoable("Create entities") {
-                _layerName = layerName;
-            }
-            virtual ~CreateEntities() {
+        CreateEntities(AbstractDocument* document, const QString& layerName) : Operation(document), Undoable("Create entities") {
+            _layerName = layerName;
+        }
+             virtual ~CreateEntities() {
                 qDebug() << "CreateEntities removed";
             }
 
@@ -29,13 +29,12 @@ namespace lc {
              * @param cadEntity
              */
             void append(shared_ptr<const lc::CADEntity> cadEntity);
-            void add(lc::CADEntity *cadEntity);
 
             virtual void undo() const;
             virtual void redo() const;
 
         private:
-            Q_DISABLE_COPY(CreateEntities)
+            // Q_DISABLE_COPY(CreateEntities)
 
         protected:
             virtual void processInternal() const;

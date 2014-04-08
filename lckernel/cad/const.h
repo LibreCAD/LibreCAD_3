@@ -12,11 +12,13 @@ const double PI2  = 2 * boost::math::constants::pi<double>();
 
 // #define shared_ptr boost::shared_ptr
 
+#include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
 using boost::shared_ptr;
+using boost::make_shared;
 using boost::dynamic_pointer_cast;
 using boost::static_pointer_cast;
 using boost::enable_shared_from_this;

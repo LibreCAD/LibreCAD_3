@@ -24,7 +24,7 @@ unix {
         } else {
 	    LIBS += -L$$PWD/../lckernel -llckernel
             LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
-            LIBS += -L$$PWD/../lcadluascript -llcadluascriptplugin
+            LIBS += -L$$PWD/../lcadluascript -llcadluascript
         }
     } else {
 	TARGET = ../lcdemo/demo

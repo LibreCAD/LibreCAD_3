@@ -11,6 +11,7 @@ DocumentLayerImpl::DocumentLayerImpl(shared_ptr<const lc::Layer> layer) : _layer
 }
 
 DocumentLayerImpl::~DocumentLayerImpl() {
+    qDebug() << "DocumentLayerImpl removed";
 }
 
 shared_ptr<const lc::Layer> DocumentLayerImpl::layer() const {

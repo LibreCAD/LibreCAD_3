@@ -15,6 +15,7 @@ DocumentImpl::DocumentImpl() : AbstractDocument() {
 }
 
 DocumentImpl::~DocumentImpl() {
+    qDebug() << "DocumentImpl removed";
 }
 
 shared_ptr<lc::LayerManager> DocumentImpl::layerManager() const {
