@@ -14,15 +14,16 @@ extern "C"
 
 #include <cad/geometry/geocoordinate.h>
 #include <cad/primitive/line.h>
-#include <cad/primitive/Circle.h>
+#include <cad/primitive/circle.h>
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/operations/createentities.h>
 
-using namespace LuaIntf;
-//using namespace std;
+namespace LuaIntf {
+    LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
+}
 
-LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
+using namespace LuaIntf;
 
 
 boost::shared_ptr<LuaCreateEntities > lua_CreateEntities(lc::AbstractDocument * doc) {
@@ -73,7 +74,6 @@ void lua_openlckernel(lua_State * L)
             .addConstructor(LUA_SP(shared_ptr<LuaCreateEntities>), LUA_ARGS(lc::AbstractDocument * doc,  const char * layerName))
             .addFunction ("append", &LuaCreateEntities::append)
             .endClass()
-
 
             .beginClass <lc::DocumentImpl> ("DocumentImpl")
             .addFunction ("operateOn", &lc::DocumentImpl::operateOn)
