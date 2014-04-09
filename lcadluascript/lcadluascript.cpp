@@ -60,7 +60,7 @@ QString LCadLuaScript::run(const QString &script) {
     lua_openlckernel(L);
 
     LuaBinding(L).beginModule("app")
-        .addFunction("currentDocument", &lua_getDocument);
+            .addFunction("currentDocument", &lua_getDocument);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -81,11 +81,60 @@ QString LCadLuaScript::run(const QString &script) {
     return out;
 }
 
-/*
+/* Line
  l=Line(Coord(0,0), Coord(10,100));
-d=currentDocument()
+d=app.currentDocument()
 ce = CreateEntities(d, "0");
 ce:append(l)
 d:operateOn(ce)
 */
 
+/* Spiral
+local r = 10;
+local d = 0;
+local rx = 100;
+local ry = 100;
+local p =rx;
+local q=ry;
+
+doc=app.currentDocument()
+ce = CreateEntities(doc, "0");
+
+while (d< 8*math.pi) do
+    local x=rx+(math.sin(d)*d)*r;
+    local y=ry+(math.sin(d+(math.pi/2))*(d+(math.pi/2)) * r);
+    if (d>0) then
+        ce:append(Line(Coord(x,y), Coord(p,q)));
+    end
+    p=x;
+    q=y;
+    d=d + 0.01;
+end
+doc:operateOn(ce)
+print "done";
+*/
+
+/* Fractal tree
+ *
+local numLines = 0;
+
+function drawTree( ce, x1,  y1,  angle,  depth)
+        if depth == 0 then  return end;
+
+        local x2 = x1 +  (math.cos(math.rad(angle)) * depth * 10.0);
+        local y2 = y1 + (math.sin(math.rad(angle)) * depth * 10.0);
+
+       ce:append(Line(Coord(x1, y1), Coord(x2, y2)));
+numLines=numLines+1;
+        drawTree(ce, x2, y2, angle - 20, depth - 1);
+        drawTree(ce, x2, y2, angle + 20, depth - 1);
+end
+
+d=app.currentDocument()
+ce = CreateEntities(d, "0");
+drawTree(ce, 400, 500, -90, 12);
+d:operateOn(ce)
+
+print ("Lines " .. numLines);
+
+*/
