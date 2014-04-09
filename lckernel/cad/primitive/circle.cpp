@@ -43,17 +43,10 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 shared_ptr<const lc::CADEntity> Circle::move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Circle *newcircle = new lc::Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-//    newcircle->setID(this->id());
-//    shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
-//    return newCircle;
     return rotate(offset, rotation_center, rotation_angle, 1);
 }
 
 shared_ptr<const lc::CADEntity> Circle::copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Circle *newcircle = new lc::Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-//    shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
-//    return newCircle;
     return rotate(offset, rotation_center, rotation_angle, 0);
 }
 
@@ -62,6 +55,13 @@ shared_ptr<const lc::CADEntity> Circle::rotate(const geo::Coordinate& offset, co
     if ( with_same_id == 1) {
         newcircle->setID(this->id());
     }
+    shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
+    return newCircle;
+}
+
+shared_ptr<const lc::CADEntity> Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+    Circle *newcircle = new lc::Circle(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x());
+    newcircle->setID(this->id());
     shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
     return newCircle;
 }

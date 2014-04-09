@@ -107,6 +107,10 @@ namespace lc {
                 Coordinate rotate(const double& angle) const;
                 Coordinate rotate(const lc::geo::Coordinate& point, const Coordinate& angleVector) const;
                 Coordinate rotate(const lc::geo::Coordinate &point, const double &angle) const;
+                Coordinate scale(const double& scale_factor) const;
+                Coordinate scale(const Coordinate& scale_factor) const;
+                Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const;
+
             private:
                 double _x;
                 double _y;

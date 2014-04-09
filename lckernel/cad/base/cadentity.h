@@ -63,6 +63,7 @@ namespace lc {
              * \return CADEntity shared_ptr
              */
             virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const bool with_same_id) const = 0;
+            virtual shared_ptr<const lc::CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
     };
 }
 

@@ -20,3 +20,7 @@ shared_ptr<const lc::CADEntity> Text::copy(const geo::Coordinate& offset, const 
 shared_ptr<const lc::CADEntity> Text::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
 
 }
+
+shared_ptr<const lc::CADEntity> Text::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+
+}
