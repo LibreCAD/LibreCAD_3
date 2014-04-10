@@ -101,18 +101,8 @@ namespace lc {
              */
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
-            /*!
-             * \brief document lock when an operation is to be performed.
-             */
-            virtual void lock();
-            /*!
-             * \brief Release the lock after the operation is performed.
-             */
-            virtual void releaseLock() ;
-        private:
             shared_ptr<lc::LayerManager> _layerManager;
-            bool _locked; /*!< Lock status */
-
+            QMutex _documentMutex;
     };
 }
 

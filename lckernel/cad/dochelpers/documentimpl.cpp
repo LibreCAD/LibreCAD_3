@@ -11,7 +11,6 @@
 using namespace lc;
 
 DocumentImpl::DocumentImpl() : AbstractDocument() {
-    releaseLock();
 }
 
 DocumentImpl::~DocumentImpl() {
@@ -27,13 +26,13 @@ void DocumentImpl::setLayerManager(shared_ptr<lc::LayerManager> layerManager) {
 }
 
 void DocumentImpl::operateOn(shared_ptr<lc::Operation> operation) {
+    QMutexLocker locker(&_documentMutex);
     begin(operation);
     this->operationProcess(operation);
     commit(operation);
 }
 
 void DocumentImpl::begin(shared_ptr<lc::Operation> operation) {
-    lock();
     this->operationStart(operation);
     BeginProcessEvent event;
     emit beginProcessEvent(event);
@@ -43,7 +42,6 @@ void DocumentImpl::commit(shared_ptr<lc::Operation> operation) {
     CommitProcessEvent event(operation);
     emit commitProcessEvent(event);
     this->operationFinnish(operation);
-    releaseLock();
 }
 
 void DocumentImpl::addEntity(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity) {
@@ -71,7 +69,7 @@ shared_ptr<const lc::CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) con
 
     while (li.hasNext()) {
         li.next();
-        shared_ptr<lc::DocumentLayer> documentLayer = li.value();
+        auto documentLayer = li.value();
 
         try {
             shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);
@@ -104,14 +102,4 @@ QString DocumentImpl::findEntityLayerByID(ID_DATATYPE id) const {
 }
 
 
-
-
-
-
-void DocumentImpl::lock() {
-    _locked = true;
-}
-void DocumentImpl::releaseLock() {
-    _locked = false;
-}
 

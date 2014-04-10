@@ -57,15 +57,6 @@ namespace lc {
 
             virtual void setLayerManager(shared_ptr<lc::LayerManager> layerManager) = 0;
             virtual shared_ptr<lc::LayerManager> layerManager() const = 0;
-        private:
-            /*!
-             * \brief lock Locks document while performing an operation so that no other operation is performed.
-             */
-            virtual void lock() = 0;
-            /*!
-             * \brief releaseLock Releases Lock after operation is performed.
-             */
-            virtual void releaseLock() = 0;
 
         protected:
             /*!

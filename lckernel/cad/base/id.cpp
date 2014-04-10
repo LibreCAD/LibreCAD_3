@@ -2,9 +2,10 @@
 
 using namespace lc;
 
-ID::ID() {
-    static unsigned long idCounter = 1;
-    _id = idCounter++;
+std::atomic<ID_DATATYPE> ID::__idCounter;
+
+ID::ID(){
+    _id = ID::__idCounter++;
 }
 
 ID_DATATYPE ID::id() const {

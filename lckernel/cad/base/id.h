@@ -3,7 +3,6 @@
 
 #include "cad/const.h"
 
-
 #define ID_DATATYPE unsigned long
 
 
@@ -26,12 +25,13 @@ namespace lc {
              * \brief returns the ID of the entity
              * \return ID
              */
-            ID_DATATYPE id() const ;
+            virtual ID_DATATYPE id() const ;
 
             bool operator == (const ID& id) const {
                 return (id._id == _id);
             }
             void setID(ID_DATATYPE _id);
+            static std::atomic<ID_DATATYPE> __idCounter;
         private:
             ID_DATATYPE _id;
     };
