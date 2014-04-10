@@ -42,6 +42,9 @@ namespace lc {
             virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
+            virtual void accept(shared_ptr<const lc::Spline> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }

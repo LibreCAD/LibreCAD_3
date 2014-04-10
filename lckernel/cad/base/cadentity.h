@@ -15,6 +15,7 @@ namespace lc {
     class Arc;
     class Ellipse;
     class Text;
+    class Spline;
     class CADEntity;
 
     class EntityVisitor;
@@ -46,6 +47,7 @@ namespace lc {
             virtual void accept(shared_ptr<const lc::Arc>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::Ellipse>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::Text>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::Spline>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
             /*!

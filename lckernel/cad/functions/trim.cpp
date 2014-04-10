@@ -45,11 +45,16 @@ void Trim::visit(shared_ptr<const lc::Line> line) {
 void Trim::visit(shared_ptr<const lc::Circle> circle) {
 
 }
+
 void Trim::visit(shared_ptr<const lc::Ellipse> ellipse) {
 
 }
 
 void Trim::visit(shared_ptr<const lc::Text> text) {
+
+}
+
+void Trim::visit(shared_ptr<const lc::Spline> Spline) {
 
 }
 
