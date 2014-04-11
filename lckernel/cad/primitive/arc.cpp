@@ -32,7 +32,7 @@ shared_ptr<const lc::CADEntity> Arc::rotate(const geo::Coordinate& offset, const
     Arc *newarc = new lc::Arc((this->center().rotate(rotation_center, rotation_angle)) + offset,
                               this->radius(), this->startAngle() + rotation_angle,
                               this->endAngle() + rotation_angle);
-    if(with_same_id == 1) {
+    if(with_same_id == true) {
         newarc->setID(this->id());
     }
     shared_ptr<const lc::Arc> newArc = shared_ptr<const lc::Arc>(newarc);

@@ -59,7 +59,7 @@ shared_ptr<const lc::CADEntity> Circle::copy(const geo::Coordinate& offset, cons
 
 shared_ptr<const lc::CADEntity> Circle::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
     Circle *newcircle = new lc::Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-    if ( with_same_id == 1) {
+    if ( with_same_id == true) {
         newcircle->setID(this->id());
     }
     shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);

@@ -37,7 +37,7 @@ shared_ptr<const lc::CADEntity> Ellipse::rotate(const geo::Coordinate& offset, c
                                           (this->majorP().rotate(rotation_center, rotation_angle)) + offset,
                                           this->minorRadius() , this->startAngle() + rotation_angle,
                                           this->endAngle() + rotation_angle);
-    if (with_same_id == 1) {
+    if (with_same_id == true) {
         newellipse->setID(this->id());
     }
     shared_ptr<const lc::Ellipse> newEllipse = shared_ptr<const lc::Ellipse>(newellipse);

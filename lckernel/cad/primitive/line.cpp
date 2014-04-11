@@ -59,7 +59,7 @@ shared_ptr<const lc::CADEntity> Line::copy(const geo::Coordinate& offset, const 
 shared_ptr<const lc::CADEntity> Line::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
     Line *newline = new lc::Line((this->start().rotate(rotation_center, rotation_angle)) + offset,
                                  (this->end().rotate(rotation_center, rotation_angle)) + offset);
-    if (with_same_id == 1) {
+    if (with_same_id == true) {
         newline->setID(this->id());
     }
     shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
