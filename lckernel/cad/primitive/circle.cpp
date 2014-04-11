@@ -42,17 +42,22 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
     return pointOnPath;
 }
 
-shared_ptr<const lc::CADEntity> Circle::move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-    return rotate(offset, rotation_center, rotation_angle, 1);
+shared_ptr<const lc::CADEntity> Circle::move(const geo::Coordinate& offset) const {
+    Circle *newcircle = new lc::Circle(this->center() + offset, this->radius());
+    newcircle->setID(this->id());
+    shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
+    return newCircle;
 }
 
-shared_ptr<const lc::CADEntity> Circle::copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-    return rotate(offset, rotation_center, rotation_angle, 0);
+shared_ptr<const lc::CADEntity> Circle::copy(const geo::Coordinate& offset) const {
+    Circle *newcircle = new lc::Circle(this->center() + offset, this->radius());
+    shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);
+    return newCircle;
 }
 
-shared_ptr<const lc::CADEntity> Circle::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
-    Circle *newcircle = new lc::Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-    if ( with_same_id == 1) {
+shared_ptr<const lc::CADEntity> Circle::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+    Circle *newcircle = new lc::Circle(this->center().rotate(rotation_center, rotation_angle), this->radius());
+    if (with_same_id == 1) {
         newcircle->setID(this->id());
     }
     shared_ptr<const lc::Circle> newCircle = shared_ptr<const lc::Circle>(newcircle);

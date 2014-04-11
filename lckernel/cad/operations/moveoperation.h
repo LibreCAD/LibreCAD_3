@@ -16,10 +16,8 @@ namespace lc {
 
 class MoveEntities : public Operation, public Undoable {
     public:
-        MoveEntities(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) : Operation(document), Undoable("Create entities") {
+        MoveEntities(AbstractDocument* document, const geo::Coordinate& offset) : Operation(document), Undoable("Create entities") {
             _offset = offset;
-            _rotation_center = rotation_center;
-            _rotation_angle = rotation_angle;
         }
         virtual ~MoveEntities() {
             qDebug() << "MoveEntities removed";
@@ -41,8 +39,7 @@ class MoveEntities : public Operation, public Undoable {
         virtual void processInternal() const;
 
     private:
-        geo::Coordinate _rotation_center, _offset;
-        double _rotation_angle;
+        geo::Coordinate _offset;
         QList<shared_ptr<const lc::CADEntity> > _toMove;
 };
 }
