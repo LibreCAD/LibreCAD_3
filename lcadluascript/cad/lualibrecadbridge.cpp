@@ -37,7 +37,11 @@ void lua_openlckernel(lua_State * L)
             .beginClass <lc::Operation> ("Operation")
             .endClass ()
 
-            .beginClass <lc::CADEntity> ("CADEntity")
+            .beginClass <lc::ID> ("ID")
+            .addFunction("id", &lc::ID::id)
+            .endClass ()
+
+            .beginExtendClass <lc::CADEntity, lc::ID> ("CADEntity")
             .endClass ()
 
             .beginClass <lc::geo::Vector> ("Vector")
@@ -78,7 +82,6 @@ void lua_openlckernel(lua_State * L)
             .beginClass <lc::DocumentImpl> ("DocumentImpl")
             .addFunction ("operateOn", &lc::DocumentImpl::operateOn)
             .endClass ()
-
 
             .beginClass <QString> ("QString")
             .addConstructor(LUA_ARGS(const char *))
