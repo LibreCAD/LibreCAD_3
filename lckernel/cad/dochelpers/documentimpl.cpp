@@ -26,7 +26,7 @@ void DocumentImpl::setLayerManager(shared_ptr<lc::LayerManager> layerManager) {
 }
 
 void DocumentImpl::execute(shared_ptr<lc::Operation> operation) {
-    QMutexLocker locker(&_documentMutex);
+    std::lock_guard<std::mutex> lck (_documentMutex);
     begin(operation);
     this->operationProcess(operation);
     commit(operation);
