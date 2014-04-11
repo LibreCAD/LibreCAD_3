@@ -94,17 +94,19 @@ void CadMdiChild::newDocument() {
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     ui->lCADViewer->setAbstractDocument(_document);
 
+    // Add operation manager
+    _operationManager = shared_ptr<OperationManager> (new OperationManager(_document));
+
+
     // Create a cross at position 0,0
-    lc::CreateEntities* foo = new  lc::CreateEntities(_document, "0");
+    auto foo = make_shared<lc::CreateEntities>(_document, "0");
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.))));
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.))));
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0))));
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0))));
 
-    _document->operateOn(shared_ptr<lc::Operation>(foo));
+    foo->execute();
 
-    // Add operation manager
-    _operationManager = shared_ptr<OperationManager> (new OperationManager(_document));
 }
 
 
@@ -118,7 +120,7 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto oper = make_shared<lc::CreateEntities>(lc::CreateEntities(_document, "0"));
+    auto oper = make_shared<lc::CreateEntities>(_document, "0");
 
     QTime myTimer;
     myTimer.start();
@@ -134,12 +136,12 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
     qDebug() << "Create : " << myTimer.elapsed();
     myTimer.start();
-    _document->operateOn(oper);
+    oper->execute();
     qDebug() << "Process : " << myTimer.elapsed();
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(lc::CreateEntities(_document, "0"));
+    auto oper = make_shared<lc::CreateEntities>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -149,7 +151,7 @@ void CadMdiChild::on_addCircles_clicked() {
         oper->append(make_shared<const lc::Circle>(lc::geo::Coordinate(x1, y1), r));
     }
 
-    _document->operateOn(oper);
+    oper->execute();
 }
 
 
@@ -158,7 +160,7 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(lc::CreateEntities(_document, "0"));
+    auto oper = make_shared<lc::CreateEntities>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -179,11 +181,11 @@ void CadMdiChild::on_addArcs_clicked() {
         oper->append(make_shared<const lc::Arc>(lc::geo::Coordinate(x1, y1), r, s, e));
     }
 
-    _document->operateOn(oper);
+    oper->execute();
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(lc::CreateEntities(_document, "0"));
+    auto oper = make_shared<lc::CreateEntities>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -207,7 +209,7 @@ void CadMdiChild::on_addEllipse_clicked() {
         oper->append(make_shared<const lc::Ellipse>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e));
     }
 
-    _document->operateOn(oper);
+    oper->execute();
 }
 
 

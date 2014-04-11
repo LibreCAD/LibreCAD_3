@@ -25,7 +25,7 @@ void DocumentImpl::setLayerManager(shared_ptr<lc::LayerManager> layerManager) {
     _layerManager = layerManager;
 }
 
-void DocumentImpl::operateOn(shared_ptr<lc::Operation> operation) {
+void DocumentImpl::execute(shared_ptr<lc::Operation> operation) {
     QMutexLocker locker(&_documentMutex);
     begin(operation);
     this->operationProcess(operation);
@@ -69,7 +69,7 @@ shared_ptr<const lc::CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) con
 
     while (li.hasNext()) {
         li.next();
-        auto documentLayer = li.value();
+        shared_ptr<lc::DocumentLayer> documentLayer = li.value();
 
         try {
             shared_ptr<const lc::CADEntity> cip = documentLayer->findByID(id);

@@ -19,10 +19,11 @@ namespace lc {
 
     class AbstractDocument : public QObject {
             Q_OBJECT
+        friend class Operation;
         public:
-            virtual void operateOn(shared_ptr<lc::Operation> operation) = 0;
-
         protected:
+            virtual void execute(shared_ptr<lc::Operation> operation) = 0;
+
             /*!
              * \brief begins an operation
              * \param operation

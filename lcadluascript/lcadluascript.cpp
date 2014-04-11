@@ -86,7 +86,7 @@ QString LCadLuaScript::run(const QString &script) {
 d=app.currentDocument()
 ce = CreateEntities(d, "0");
 ce:append(l)
-d:operateOn(ce)
+ce:execute()
 */
 
 /* Spiral
@@ -110,7 +110,7 @@ while (d< 8*math.pi) do
     q=y;
     d=d + 0.01;
 end
-doc:operateOn(ce)
+ce:execute()
 print "done";
 */
 
@@ -131,7 +131,7 @@ end
 d=app.currentDocument()
 ce = CreateEntities(d, "0");
 drawTree(ce, 0, 0, -90, 14);
-d:operateOn(ce)
+ce:execute()
 
 print "done";
 
@@ -276,6 +276,6 @@ d=app.currentDocument()
 ce = CreateEntities(d, "0");
 gear:calc(ce, 20,math.rad(10),math.rad(10))
 gear:calc(ce, 10,math.rad(10),math.rad(10))
-d:operateOn(ce)
+ce:execute()
 
 */

@@ -35,6 +35,7 @@ void lua_openlckernel(lua_State * L)
 
     LuaBinding(L)
             .beginClass <lc::Operation> ("Operation")
+            .addFunction("execute", &lc::Operation::execute)
             .endClass ()
 
             .beginClass <lc::ID> ("ID")
@@ -49,7 +50,6 @@ void lua_openlckernel(lua_State * L)
             .endClass ()
 
             .beginClass <lc::AbstractDocument> ("AbstractDocument")
-            .addFunction ("operateOn", &lc::AbstractDocument::operateOn)
             .endClass ()
 
             .beginClass<lc::geo::Coordinate>("Coord")
@@ -80,7 +80,6 @@ void lua_openlckernel(lua_State * L)
             .endClass()
 
             .beginClass <lc::DocumentImpl> ("DocumentImpl")
-            .addFunction ("operateOn", &lc::DocumentImpl::operateOn)
             .endClass ()
 
             .beginClass <QString> ("QString")

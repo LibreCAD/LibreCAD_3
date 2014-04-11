@@ -14,14 +14,16 @@ namespace lc {
      *
      * @param document
      */
-    class Operation {
+    class Operation : public enable_shared_from_this<Operation> {
         public:
-            Operation(AbstractDocument* document) {
-                _document = document;
-            };
-            AbstractDocument* document() const {
-                return _document;
-            };
+            Operation(AbstractDocument* document);
+            AbstractDocument* document() const;
+
+            /*!
+             * \brief execute this operation
+             */
+            virtual void execute();
+
             virtual ~Operation() {}
 
         private:
@@ -30,10 +32,7 @@ namespace lc {
              * This function get's called when a operation starts and when the document is locked for you
              * so you can do your work
              */
-            void process() {
-                processInternal();
-            }
-
+            void process();
             /**
              * This function will get called when the process of this operation starts
              */

@@ -26,7 +26,6 @@ namespace lc {
             DocumentImpl();
             virtual ~DocumentImpl();
 
-            void operateOn(shared_ptr<lc::Operation> operation);
             shared_ptr<lc::LayerManager> layerManager() const;
             void setLayerManager(shared_ptr<lc::LayerManager> layerManager);
 
@@ -58,6 +57,12 @@ namespace lc {
             void absoleteEntityEvent(const lc::AbsoluteEntityEvent&);
 
         protected:
+            /*!
+             * \brief execute's a operation
+             * \param operation
+             */
+            void execute(shared_ptr<lc::Operation> operation);
+
             /*!
              * \brief begins operation
              * \param operation

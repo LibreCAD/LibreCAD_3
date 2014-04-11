@@ -39,7 +39,7 @@ QStack<shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
 void OperationManager::on_guioperationFinished_Event(const GuiOperationFinishedEvent& event) {
 
     shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
-    _document->operateOn(event.guiOperation().operation());
+    event.guiOperation().operation()->execute();
     _activeGuiOperations.clear();
     startOperation(lastOperation->next());
 }

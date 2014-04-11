@@ -62,7 +62,8 @@ SOURCES += lckernel.cpp \
     cad/geometry/geotext.cpp \
     cad/operations/moveoperation.cpp \
     cad/operations/rotateoperation.cpp \
-    cad/operations/copyoperation.cpp
+    cad/operations/copyoperation.cpp \
+    cad/operations/operation.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
