@@ -20,7 +20,7 @@ namespace lc {
     class UndoManagerImpl: public UndoManager {
             Q_OBJECT
         public:
-            UndoManagerImpl(lc::AbstractDocument* document, int maximumUndoLevels);
+            UndoManagerImpl(AbstractDocument* document, int maximumUndoLevels);
 
             /*!
              * \brief redo an operation.
@@ -75,8 +75,8 @@ namespace lc {
             AbstractDocument* _document;
 
         private:
-            QList <shared_ptr<lc::Undoable> > _unDoables; /*!< Undo list */
-            QStack <shared_ptr<lc::Undoable> > _reDoables; /*!< Redo stack */
+            QList <shared_ptr<operation::Undoable> > _unDoables; /*!< Undo list */
+            QStack <shared_ptr<operation::Undoable> > _reDoables; /*!< Redo stack */
             const int _maximumUndoLevels; /*!< Maximum undo level */
 
         public slots:

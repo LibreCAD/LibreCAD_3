@@ -20,13 +20,13 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            MetaInfo(QList<shared_ptr<const lc::MetaType> > metaTypes);
+            MetaInfo(QList<shared_ptr<const MetaType> > metaTypes);
             virtual ~MetaInfo();
 
-            shared_ptr<const lc::MetaType> metaType(MetaType::metaTypeId type) const;
+            shared_ptr<const MetaType> metaType(MetaType::metaTypeId type) const;
 
 
-            QHash<int, shared_ptr<const lc::MetaType> >  getMetaTypes() const {
+            QHash<int, shared_ptr<const MetaType> >  getMetaTypes() const {
                 return _metaTypes;
             }
 
@@ -34,7 +34,7 @@ namespace lc {
             /**
               *Holds list of meta type. Metatypes < 1024 are reserved for LibreCAD internall
               */
-            QHash<int, shared_ptr<const lc::MetaType> > _metaTypes;
+            QHash<int, shared_ptr<const MetaType> > _metaTypes;
     };
 }
 #endif // METAINFO_H

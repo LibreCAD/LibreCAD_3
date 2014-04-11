@@ -41,11 +41,9 @@ SOURCES += lckernel.cpp \
     cad/dochelpers/documentimpl.cpp \
     cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
-    cad/operations/createentities.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
     cad/document/abstractdocument.cpp \
     cad/dochelpers/undomanagerimpl.cpp \
-    cad/operations/deleteentities.cpp \
     cad/primitive/arc.cpp \
     cad/geometry/geocircle.cpp \
     cad/geometry/geoarc.cpp \
@@ -55,15 +53,17 @@ SOURCES += lckernel.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
     cad/primitive/text.cpp \
-    cad/operations/trimentity.cpp \
     cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
-    cad/functions/trim.cpp \
     cad/geometry/geotext.cpp \
-    cad/operations/moveoperation.cpp \
-    cad/operations/rotateoperation.cpp \
-    cad/operations/copyoperation.cpp \
-    cad/operations/operation.cpp
+    cad/operations/operation.cpp \
+    cad/operations/create.cpp \
+    cad/operations/delete.cpp \
+    cad/operations/move.cpp \
+    cad/operations/rotate.cpp \
+    cad/operations/trim.cpp \
+    cad/operations/copy.cpp \
+    cad/functions/ftrim.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -85,7 +85,6 @@ HEADERS += lckernel.h\
     cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
     cad/document/selectionmanager.h \
-    cad/operations/createentities.h \
     cad/operations/operation.h \
     cad/events/beginprocessevent.h \
     cad/events/commitprocessevent.h \
@@ -99,7 +98,6 @@ HEADERS += lckernel.h\
     cad/document/undomanager.h \
     cad/operations/undoable.h \
     cad/dochelpers/undomanagerimpl.h \
-    cad/operations/deleteentities.h \
     cad/events/absoleteentityevent.h \
     cad/primitive/arc.h \
     cad/geometry/geocircle.h \
@@ -113,14 +111,16 @@ HEADERS += lckernel.h\
     cad/interface/snapable.h \
     cad/vo/entitycoordinate.h \
     cad/vo/entitydistance.h \
-    cad/operations/trimentity.h \
     cad/math/geointersect.h \
-    cad/functions/trim.h \
     cad/functions/intersect.h \
     cad/interface/entityvisitor.h \
     cad/interface/entitydispatch.h \
     cad/primitive/text.h \
-    cad/operations/copyoperation.h \
-    cad/operations/moveoperation.h \
-    cad/operations/rotateoperation.h
+    cad/operations/copy.h \
+    cad/operations/create.h \
+    cad/operations/delete.h \
+    cad/operations/move.h \
+    cad/operations/rotate.h \
+    cad/operations/trim.h \
+    cad/functions/ftrim.h
 

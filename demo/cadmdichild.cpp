@@ -17,7 +17,7 @@
 #include "cad/dochelpers/entitymanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
-#include "cad/operations/createentities.h"
+#include "cad/operations/create.h"
 
 #include "drawitems/gradientbackground.h"
 #include "drawitems/metricgrid.h"
@@ -99,7 +99,7 @@ void CadMdiChild::newDocument() {
 
 
     // Create a cross at position 0,0
-    auto foo = make_shared<lc::CreateEntities>(_document, "0");
+    auto foo = make_shared<lc::operation::Create>(_document, "0");
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.))));
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.))));
     foo->append(shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0))));
@@ -120,7 +120,7 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto oper = make_shared<lc::CreateEntities>(_document, "0");
+    auto oper = make_shared<lc::operation::Create>(_document, "0");
 
     QTime myTimer;
     myTimer.start();
@@ -141,7 +141,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(_document, "0");
+    auto oper = make_shared<lc::operation::Create>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -160,7 +160,7 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(_document, "0");
+    auto oper = make_shared<lc::operation::Create>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -185,7 +185,7 @@ void CadMdiChild::on_addArcs_clicked() {
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto oper = make_shared<lc::CreateEntities>(_document, "0");
+    auto oper = make_shared<lc::operation::Create>(_document, "0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);

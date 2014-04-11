@@ -25,7 +25,7 @@ class LineCreateOperation : public GuiOperation {
     public:
         LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
-        virtual shared_ptr<lc::Operation> operation() const;
+        virtual shared_ptr<lc::operation::Operation> operation() const;
 
         virtual void restart();
 

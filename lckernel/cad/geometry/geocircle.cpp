@@ -29,7 +29,7 @@ bool Circle::isCoordinateOnPath(const Coordinate& coord) const {
     return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
 
-QDebug operator << (QDebug dbg, const lc::geo::Circle& c) {
+QDebug operator << (QDebug dbg, const geo::Circle& c) {
     dbg.nospace() << "(" << c.center() << "," << c.radius() << ")";
     return dbg.space();
 }

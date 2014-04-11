@@ -25,14 +25,14 @@ namespace lc {
              * \brief Document layer implementor with a layer.
              * \param layer
              */
-            DocumentLayerImpl(shared_ptr<const lc::Layer> layer);
+            DocumentLayerImpl(shared_ptr<const Layer> layer);
             virtual ~DocumentLayerImpl();
 
             /*!
              * \brief add an entity to the document.
              * \param entity entity to be added to the document.
              */
-            virtual void addEntity(shared_ptr<const lc::CADEntity> entity);
+            virtual void addEntity(shared_ptr<const CADEntity> entity);
             /*!
              * \brief remove an Entity from the document.
              * \param id Entity ID of entity which is to be removed.
@@ -42,9 +42,9 @@ namespace lc {
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QHash<int, shared_ptr<const lc::CADEntity> > allEntities() const;
+            virtual QHash<int, shared_ptr<const CADEntity> > allEntities() const;
 
-            virtual shared_ptr<const lc::Layer> layer() const;
+            virtual shared_ptr<const Layer> layer() const;
 
             operator QVariant() const {
                 return QVariant::fromValue(*this);
@@ -57,13 +57,13 @@ namespace lc {
              * \brief finds entity by entity ID
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> findByID(ID_DATATYPE) const;
+            virtual shared_ptr<const CADEntity> findByID(ID_DATATYPE) const;
 
         private:
 
         private:
-            shared_ptr<const lc::Layer> _layer; /*!< Layer shared pointer */
-            QHash<int, shared_ptr<const lc::CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
+            shared_ptr<const Layer> _layer; /*!< Layer shared pointer */
+            QHash<int, shared_ptr<const CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
     };
 }
 

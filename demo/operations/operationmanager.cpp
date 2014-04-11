@@ -1,6 +1,6 @@
 #include "operationmanager.h"
 
-#include "cad/operations/createentities.h"
+#include "cad/operations/create.h"
 #include "cad/base/metainfo.h"
 #include "guioperationfinishedevent.h"
 

@@ -7,52 +7,56 @@ namespace lc {
 
     class AbstractDocument;
 
-    /**
-     * An operation is a grouped set of 'things' we can do on a document
-     * Only one operation can run at a time because the document needs to get locked
-     * during a operaion.
-     *
-     * @param document
-     */
-    class Operation : public enable_shared_from_this<Operation> {
-        public:
-            Operation(AbstractDocument* document);
-            AbstractDocument* document() const;
+    namespace operation {
 
-            /*!
-             * \brief execute this operation
-             */
-            virtual void execute();
 
-            virtual ~Operation() {}
+        /**
+         * An operation is a grouped set of 'things' we can do on a document
+         * Only one operation can run at a time because the document needs to get locked
+         * during a operaion.
+         *
+         * @param document
+         */
+        class Operation : public enable_shared_from_this<operation::Operation> {
+            friend class lc::AbstractDocument;
 
-        private:
+            public:
+                Operation(AbstractDocument* document);
+                AbstractDocument* document() const;
 
-            /**
-             * This function get's called when a operation starts and when the document is locked for you
-             * so you can do your work
-             */
-            void process();
-            /**
-             * This function will get called when the process of this operation starts
-             */
-            virtual void start() const {};
+                /*!
+                 * \brief execute this operation
+                 */
+                virtual void execute();
 
-            /**
-             * This function will get called when the process of this operation is finnished
-             */
-            virtual void finnish() const {};
+                virtual ~Operation() {}
 
-            friend class AbstractDocument;
+            private:
 
-            AbstractDocument* _document;
-        protected:
-            /**
-             * This function get's called when a operation starts and when the document is locked for you
-             * so you can do your work
-             */
-            virtual void processInternal() const = 0;
+                /**
+                 * This function get's called when a operation starts and when the document is locked for you
+                 * so you can do your work
+                 */
+                void process();
+                /**
+                 * This function will get called when the process of this operation starts
+                 */
+                virtual void start() const {};
 
+                /**
+                 * This function will get called when the process of this operation is finnished
+                 */
+                virtual void finnish() const {};
+
+                AbstractDocument* _document;
+            protected:
+                /**
+                 * This function get's called when a operation starts and when the document is locked for you
+                 * so you can do your work
+                 */
+                virtual void processInternal() const = 0;
+
+        };
     };
 }
 #endif // OPERATIONINTERFACE_H

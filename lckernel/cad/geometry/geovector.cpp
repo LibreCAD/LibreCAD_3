@@ -33,7 +33,7 @@ bool Vector::isCoordinateOnPath(const Coordinate& coord) const {
 }
 
 
-QDebug operator << (QDebug dbg, const lc::geo::Vector& c) {
+QDebug operator << (QDebug dbg, const geo::Vector& c) {
     dbg.nospace() << "(" << c.start() << "," << c.end() << ")";
     return dbg.space();
 }

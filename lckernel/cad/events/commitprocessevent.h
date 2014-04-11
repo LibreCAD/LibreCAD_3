@@ -11,17 +11,17 @@ namespace lc {
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent(shared_ptr<lc::Operation> operation) : _operation(operation) {
+            CommitProcessEvent(shared_ptr<operation::Operation> operation) : _operation(operation) {
             };
             /*!
              * \brief operation
-             * \return lc::Operation Operation.
+             * \return operation::Operation Operation.
              */
-            shared_ptr<lc::Operation> operation() const {
+            shared_ptr<operation::Operation> operation() const {
                 return _operation;
             }
         private:
-            const shared_ptr<lc::Operation> _operation; /*!< lc::operation _operation */
+            const shared_ptr<operation::Operation> _operation; /*!< operation _operation */
     };
 }
 #endif // COMMITPROCESSEVENT_H

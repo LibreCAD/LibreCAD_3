@@ -26,12 +26,12 @@ namespace lc {
         public slots:
             /*!
              * \brief Slot for on_addEntityEvent
-             * \sa lc::AddEntityEvent
+             * \sa AddEntityEvent
              */
             void on_addEntityEvent(const lc::AddEntityEvent&);
             /*!
              * \brief Slot for on_removeEntityEvent
-             * \sa lc::RemoveEntityEvent
+             * \sa RemoveEntityEvent
              */
             void on_removeEntityEvent(const lc::RemoveEntityEvent&);
 

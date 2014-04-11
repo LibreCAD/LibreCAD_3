@@ -105,8 +105,8 @@ namespace lc {
 
                 Coordinate rotate(const Coordinate& angleVector) const;
                 Coordinate rotate(const double& angle) const;
-                Coordinate rotate(const lc::geo::Coordinate& point, const Coordinate& angleVector) const;
-                Coordinate rotate(const lc::geo::Coordinate &point, const double &angle) const;
+                Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const;
+                Coordinate rotate(const geo::Coordinate &point, const double &angle) const;
             private:
                 double _x;
                 double _y;
@@ -119,11 +119,11 @@ namespace lc {
           * \note This routine is not very fast in the sense that it would re-calculate the distance for each comparison. It shouls still be fast enough to sort a collection of let's say 10.000 points
           *
           * \code
-          * QList<lc::geo::Coordinate> myList;
-          * myList.append(lc::geo::Coordinate(50.,50.));
-          * myList.append(lc::geo::Coordinate(20.,20.));
-          * myList.append(lc::geo::Coordinate(120.,120.));
-          * qSort(sp.begin(), sp.end(), lc::geo::CoordinateDistanceSort(lc::geo::Coordinate(60.60.)));
+          * QList<geo::Coordinate> myList;
+          * myList.append(geo::Coordinate(50.,50.));
+          * myList.append(geo::Coordinate(20.,20.));
+          * myList.append(geo::Coordinate(120.,120.));
+          * qSort(sp.begin(), sp.end(), geo::CoordinateDistanceSort(geo::Coordinate(60.60.)));
           * \endcode
           */
         class CoordinateDistanceSort {

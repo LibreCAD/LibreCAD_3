@@ -26,8 +26,8 @@ namespace lc {
             DocumentImpl();
             virtual ~DocumentImpl();
 
-            shared_ptr<lc::LayerManager> layerManager() const;
-            void setLayerManager(shared_ptr<lc::LayerManager> layerManager);
+            shared_ptr<LayerManager> layerManager() const;
+            void setLayerManager(shared_ptr<LayerManager> layerManager);
 
         public:
         signals:
@@ -61,44 +61,44 @@ namespace lc {
              * \brief execute's a operation
              * \param operation
              */
-            void execute(shared_ptr<lc::Operation> operation);
+            void execute(shared_ptr<operation::Operation> operation);
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            virtual void begin(shared_ptr<lc::Operation> operation);
+            virtual void begin(shared_ptr<operation::Operation> operation);
             /*!
              * \brief commits operation
              * \param operation
              */
-            virtual void commit(shared_ptr<lc::Operation> operation);
+            virtual void commit(shared_ptr<operation::Operation> operation);
         public:
             /*!
              * \brief Add a new Entity to the document
              * \param layerName Name of layer at which entity is to be added.
              * \param cadEntity Entity to be added.
              */
-            virtual void addEntity(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity);
+            virtual void addEntity(const QString& layerName, shared_ptr<const CADEntity> cadEntity);
             /*!
              * \brief replace an Entity in the document
              * \param oldEntity Entity which is to be replaced.
              * \param newEntity Entity by which older entity is replaced.
              */
-            virtual void replaceEntity(shared_ptr<const lc::CADEntity> oldEntity, shared_ptr<const lc::CADEntity> newEntity);
+            virtual void replaceEntity(shared_ptr<const CADEntity> oldEntity, shared_ptr<const CADEntity> newEntity);
             /*!
              * \brief remove an Entity from the document
              * \param id Entity ID
              */
             virtual void removeEntity(ID_DATATYPE id);
-            virtual void absoleteEntity(shared_ptr<const lc::CADEntity> entity);
+            virtual void absoleteEntity(shared_ptr<const CADEntity> entity);
 
             /*!
              * \brief finds the Entity by ID
              * \param id Entity ID
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> findEntityByID(ID_DATATYPE id) const;
+            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const;
             /*!
              * \brief Finds the layer on which the entity is present
              * \param id
@@ -106,7 +106,7 @@ namespace lc {
              */
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
-            shared_ptr<lc::LayerManager> _layerManager;
+            shared_ptr<LayerManager> _layerManager;
             QMutex _documentMutex;
     };
 }

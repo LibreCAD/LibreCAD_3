@@ -31,7 +31,7 @@ class GuiOperation : public QObject {
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual shared_ptr<lc::Operation> operation() const = 0;
+        virtual shared_ptr<lc::operation::Operation> operation() const = 0;
 
         /*!
           * \brief restart this operation

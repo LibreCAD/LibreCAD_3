@@ -1,6 +1,7 @@
 #ifndef ID_H
 #define ID_H
 
+#include <atomic>
 #include "cad/const.h"
 
 #define ID_DATATYPE unsigned long

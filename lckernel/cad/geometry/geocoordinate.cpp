@@ -68,7 +68,7 @@ Coordinate Coordinate::operator / (double s) const {
 }
 
 
-QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c) {
+QDebug operator << (QDebug dbg, const geo::Coordinate& c) {
     dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
     return dbg.space();
 }
@@ -83,12 +83,12 @@ Coordinate Coordinate::rotate(const double& angle) const {
     return rotate(Coordinate(angle));
 }
 
-Coordinate Coordinate::rotate(const lc::geo::Coordinate &point, const Coordinate &angleVector) const {
+Coordinate Coordinate::rotate(const geo::Coordinate &point, const Coordinate &angleVector) const {
     Coordinate new_center = point + (*this - point).rotate(angleVector);
     return new_center;
 }
 
-Coordinate Coordinate::rotate(const lc::geo::Coordinate &point, const double &angle) const {
+Coordinate Coordinate::rotate(const geo::Coordinate &point, const double &angle) const {
     return rotate(point, Coordinate(angle));
 }
 

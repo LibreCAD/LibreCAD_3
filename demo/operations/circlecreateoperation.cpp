@@ -2,7 +2,7 @@
 
 #include "cad/primitive/circle.h"
 #include "guioperationfinishedevent.h"
-#include "cad/operations/createentities.h"
+#include "cad/operations/create.h"
 
 CircleCreateOperation::CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
@@ -46,10 +46,10 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-shared_ptr<lc::Operation> CircleCreateOperation::operation() const {
+shared_ptr<lc::operation::Operation> CircleCreateOperation::operation() const {
     QList<shared_ptr<const lc::MetaType> > metaTypes;
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    shared_ptr<lc::CreateEntities> foo = shared_ptr<lc::CreateEntities>( new  lc::CreateEntities(document(), "0") );
+    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0") );
     foo->append(shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes)));
     return foo;
 }

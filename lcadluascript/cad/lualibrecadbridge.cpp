@@ -17,7 +17,7 @@ extern "C"
 #include <cad/primitive/circle.h>
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
-#include <cad/operations/createentities.h>
+#include <cad/operations/create.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
@@ -34,8 +34,8 @@ void lua_openlckernel(lua_State * L)
 {
 
     LuaBinding(L)
-            .beginClass <lc::Operation> ("Operation")
-            .addFunction("execute", &lc::Operation::execute)
+            .beginClass <lc::operation::Operation> ("Operation")
+            .addFunction("execute", &lc::operation::Operation::execute)
             .endClass ()
 
             .beginClass <lc::ID> ("ID")
@@ -74,7 +74,7 @@ void lua_openlckernel(lua_State * L)
             .addConstructor(LUA_SP(shared_ptr< lc::Circle>), LUA_ARGS(const lc::geo::Coordinate& center, double radius))
             .endClass()
 
-            .beginExtendClass <LuaCreateEntities, lc::Operation> ("CreateEntities")
+            .beginExtendClass <LuaCreateEntities, lc::operation::Operation> ("Create")
             .addConstructor(LUA_SP(shared_ptr<LuaCreateEntities>), LUA_ARGS(lc::AbstractDocument * doc,  const char * layerName))
             .addFunction ("append", &LuaCreateEntities::append)
             .endClass()

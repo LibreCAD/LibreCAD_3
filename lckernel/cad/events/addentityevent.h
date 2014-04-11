@@ -16,14 +16,14 @@ namespace lc {
              * \param layerName Name of layer on which entity is to be added.
              * \param cadEntity Entity to be added.
              */
-            AddEntityEvent(const QString& layerName, shared_ptr<const lc::CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
+            AddEntityEvent(const QString& layerName, shared_ptr<const CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
             }
 
             /*!
              * \brief Returns the entity.
              * \return CADEntity Entity.
              */
-            shared_ptr<const lc::CADEntity> entity() const {
+            shared_ptr<const CADEntity> entity() const {
                 return _cadEntity;
             }
             /*!
@@ -36,7 +36,7 @@ namespace lc {
 
         private:
             const QString _layerName; /*!< QString Layername */
-            shared_ptr<const lc::CADEntity> _cadEntity;
+            shared_ptr<const CADEntity> _cadEntity;
     };
 }
 #endif // ADDENTITYEVENT_H
