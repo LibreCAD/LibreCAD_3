@@ -72,6 +72,8 @@ namespace lc {
                   */
                 double magnitude() const;
 
+                double angle() const;
+
                 /**
                   * Quared of this Coordinate : return _x * _x + _y * _y + _z * _z;
                   *

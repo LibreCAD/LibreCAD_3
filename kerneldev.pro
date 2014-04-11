@@ -4,5 +4,5 @@ CONFIG += ordered
 SUBDIRS     = \
     lckernel \
     lcadviewer \
-    lcadluascript \
+   # lcadluascript \
     demo
