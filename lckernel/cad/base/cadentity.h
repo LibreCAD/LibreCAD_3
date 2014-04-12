@@ -15,6 +15,7 @@ namespace lc {
     class Arc;
     class Ellipse;
     class Text;
+    class Spline;
     class CADEntity;
 
     class EntityVisitor;
@@ -46,6 +47,7 @@ namespace lc {
             virtual void accept(shared_ptr<const lc::Arc>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::Ellipse>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::Text>, EntityVisitor&) const = 0;
+            virtual void accept(shared_ptr<const lc::Spline>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const lc::CADEntity>, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
             /*!
@@ -54,15 +56,16 @@ namespace lc {
              * \param offset the offset by which entity is to be moved
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const = 0;
-            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const = 0;
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const = 0;
+            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset) const = 0;
             /*!
              * \brief Function implementation for rotate.
              *
              * \param angle angle by which the entity is to be rotated.
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const bool with_same_id) const = 0;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& rotation_center, const double& rotation_angle, const bool with_same_id) const = 0;
+            virtual shared_ptr<const lc::CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
     };
 }
 

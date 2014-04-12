@@ -1,5 +1,5 @@
-#ifndef MOVEENTITIES_H
-#define MOVEENTITIES_H
+#ifndef SCALEOPERATION_H
+#define SCALEOPERATION_H
 
 #include <QVector>
 #include <QDebug>
@@ -14,13 +14,15 @@
 
 namespace lc {
 
-class MoveEntities : public Operation, public Undoable {
+class ScaleEntities : public Operation, public Undoable {
     public:
-        MoveEntities(AbstractDocument* document, const geo::Coordinate& offset) : Operation(document), Undoable("Create entities") {
-            _offset = offset;
+        ScaleEntities(AbstractDocument* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : Operation(document), Undoable("Scale entities") {
+            _scale_center = scale_center;
+            _scale_factor = scale_factor;
         }
-        virtual ~MoveEntities() {
-            qDebug() << "MoveEntities removed";
+
+        virtual ~ScaleEntities() {
+            qDebug() << "ScaleEntities removed";
         }
 
         /**
@@ -33,15 +35,15 @@ class MoveEntities : public Operation, public Undoable {
         virtual void redo() const;
 
     private:
-        Q_DISABLE_COPY(MoveEntities)
+        Q_DISABLE_COPY(ScaleEntities)
 
     protected:
         virtual void processInternal() const;
 
     private:
-        geo::Coordinate _offset;
-        QList<shared_ptr<const lc::CADEntity> > _toMove;
+        geo::Coordinate _scale_center, _scale_factor;
+        QList<shared_ptr<const lc::CADEntity> > _toScale;
 };
 }
 
-#endif // MOVEENTITIES_H
+#endif // SCALEOPERATION_H

@@ -39,29 +39,33 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
-shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Line *newline = new lc::Line((this->start().rotate(rotation_center, rotation_angle)) + offset,
-//                                 (this->end().rotate(rotation_center, rotation_angle)) + offset);
-//    newline->setID(this->id());
-//    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
-//    return newLine;
-    return rotate(offset, rotation_center, rotation_angle, 1);
+shared_ptr<const lc::CADEntity> Line::move(const geo::Coordinate& offset) const {
+    Line *newline = new lc::Line(this->start() + offset, this->end() + offset);
+    newline->setID(this->id());
+    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
+    return newLine;
 }
 
-shared_ptr<const lc::CADEntity> Line::copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Line *newline = new lc::Line((this->start().rotate(rotation_center, rotation_angle)) + offset,
-//                                 (this->end().rotate(rotation_center, rotation_angle)) + offset);
-//    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
-//    return newLine;
-    return rotate(offset, rotation_center, rotation_angle, 0);
+shared_ptr<const lc::CADEntity> Line::copy(const geo::Coordinate& offset) const {
+    Line *newline = new lc::Line(this->start() + offset, this->end() + offset);
+    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
+    return newLine;
 }
 
-shared_ptr<const lc::CADEntity> Line::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
-    Line *newline = new lc::Line((this->start().rotate(rotation_center, rotation_angle)) + offset,
-                                 (this->end().rotate(rotation_center, rotation_angle)) + offset);
-    if (with_same_id == true) {
+shared_ptr<const lc::CADEntity> Line::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+    Line *newline = new lc::Line(this->start().rotate(rotation_center, rotation_angle),
+                                 this->end().rotate(rotation_center, rotation_angle));
+    if (with_same_id == 1) {
         newline->setID(this->id());
     }
+    shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
+    return newLine;
+}
+
+shared_ptr<const lc::CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+    Line *newline = new lc::Line(this->start().scale(scale_center, scale_factor),
+                                 this->end().scale(scale_center, scale_factor));
+    newline->setID(this->id());
     shared_ptr<const lc::Line> newLine = shared_ptr<const lc::Line>(newline);
     return newLine;
 }
