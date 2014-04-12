@@ -15,10 +15,8 @@ namespace lc {
 
 class CopyEntities : public Operation, public Undoable {
     public:
-        CopyEntities(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations) : Operation(document), Undoable("Create entities") {
+        CopyEntities(AbstractDocument* document, const geo::Coordinate& offset, const long& no_of_operations) : Operation(document), Undoable("Create entities") {
             _offset = offset;
-            _rotation_center = rotation_center;
-            _rotation_angle = rotation_angle;
             _no_of_operations = no_of_operations;
         }
         virtual ~CopyEntities() {
@@ -41,10 +39,9 @@ class CopyEntities : public Operation, public Undoable {
         virtual void processInternal() const;
 
     private:
-        geo::Coordinate _rotation_center, _offset;
-        double _rotation_angle;
+        geo::Coordinate _offset;
         long _no_of_operations;
         QList<shared_ptr<const lc::CADEntity> > _toCopy;
-};
+    };
 }
 #endif // COPYENTITIES_H

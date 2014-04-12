@@ -63,7 +63,10 @@ SOURCES += lckernel.cpp \
     cad/operations/moveoperation.cpp \
     cad/operations/rotateoperation.cpp \
     cad/operations/copyoperation.cpp \
-    cad/operations/operation.cpp
+    cad/operations/operation.cpp \
+    cad/operations/scaleoperation.cpp \
+    cad/geometry/geospline.cpp \
+    cad/primitive/spline.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -122,5 +125,8 @@ HEADERS += lckernel.h\
     cad/primitive/text.h \
     cad/operations/copyoperation.h \
     cad/operations/moveoperation.h \
-    cad/operations/rotateoperation.h
+    cad/operations/rotateoperation.h \
+    cad/operations/scaleoperation.h \
+    cad/geometry/geospline.h \
+    cad/primitive/spline.h
 

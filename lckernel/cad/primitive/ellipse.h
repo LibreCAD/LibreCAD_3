@@ -29,9 +29,10 @@ namespace lc {
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<shared_ptr<const lc::MetaType> >& metaTypes);
 
         public:
-            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const;
-            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const;
-            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const;
+            virtual shared_ptr<const lc::CADEntity> move(const geo::Coordinate& offset) const;
+            virtual shared_ptr<const lc::CADEntity> copy(const geo::Coordinate& offset) const;
+            virtual shared_ptr<const lc::CADEntity> rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const;
+            virtual shared_ptr<const lc::CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
         public:
             virtual void accept(shared_ptr<const lc::Line> o, EntityVisitor& ei) const {
@@ -47,6 +48,9 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(shared_ptr<const lc::Text> o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(shared_ptr<const lc::Spline> o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(shared_ptr<const lc::CADEntity> o, EntityVisitor& ei) const {

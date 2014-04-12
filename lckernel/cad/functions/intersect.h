@@ -24,32 +24,42 @@ namespace lc {
             virtual void visit(shared_ptr<const Line>, shared_ptr<const Arc>);
             virtual void visit(shared_ptr<const Line>, shared_ptr<const Ellipse>);
             virtual void visit(shared_ptr<const Line>, shared_ptr<const Text>);
+            virtual void visit(shared_ptr<const Line>, shared_ptr<const Spline>);
 
             virtual void visit(shared_ptr<const Circle>, shared_ptr<const Line>);
             virtual void visit(shared_ptr<const Circle>, shared_ptr<const Circle>);
             virtual void visit(shared_ptr<const Circle>, shared_ptr<const Arc>);
             virtual void visit(shared_ptr<const Circle>, shared_ptr<const Ellipse>);
             virtual void visit(shared_ptr<const Circle>, shared_ptr<const Text>);
-
+            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Spline>);
 
             virtual void visit(shared_ptr<const Arc>, shared_ptr<const Line>);
             virtual void visit(shared_ptr<const Arc>, shared_ptr<const Circle>);
             virtual void visit(shared_ptr<const Arc>, shared_ptr<const Arc>);
             virtual void visit(shared_ptr<const Arc>, shared_ptr<const Ellipse>);
             virtual void visit(shared_ptr<const Arc>, shared_ptr<const Text>);
-
+            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Spline>);
 
             virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Line>);
             virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Circle>);
             virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Arc>);
             virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Ellipse>);
             virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Text>);
+            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Spline>);
 
             virtual void visit(shared_ptr<const Text>, shared_ptr<const Line>);
             virtual void visit(shared_ptr<const Text>, shared_ptr<const Circle>);
             virtual void visit(shared_ptr<const Text>, shared_ptr<const Arc>);
             virtual void visit(shared_ptr<const Text>, shared_ptr<const Ellipse>);
             virtual void visit(shared_ptr<const Text>, shared_ptr<const Text>);
+            virtual void visit(shared_ptr<const Text>, shared_ptr<const Spline>);
+
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Line>);
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Circle>);
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Arc>);
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Ellipse>);
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Text>);
+            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Spline>);
 
             QList<geo::Coordinate> result() const;
         private:
