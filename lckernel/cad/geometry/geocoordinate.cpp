@@ -54,6 +54,11 @@ Coordinate Coordinate::operator - (const Coordinate& coord) const {
 double Coordinate::magnitude() const {
     return sqrtf(_x * _x + _y * _y + _z * _z);
 }
+
+double Coordinate::angle() const {
+    return atan2(_y, _x);
+}
+
 double Coordinate::squared() const {
     return _x * _x + _y * _y + _z * _z;
 }

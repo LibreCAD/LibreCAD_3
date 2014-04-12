@@ -42,6 +42,12 @@ shared_ptr<const lc::CADEntity> Ellipse::scale(const geo::Coordinate& scale_cent
     geo::Coordinate vp1(this->majorP());
     double a(vp1.magnitude());
     geo::Coordinate vp2(vp1.x() * 1./a, vp1.y() * 1./a);
+    geo::Coordinate startPoint;
+    geo::Coordinate endPoint;
+    if(isArc()){
+        startPoint=this->startPoint();
+        endPoint=this->endPoint();
+    }
     double ct = vp2.x();
     double ct2 = ct*ct; // cos^2 angle
     double st = vp2.y();
@@ -53,12 +59,13 @@ shared_ptr<const lc::CADEntity> Ellipse::scale(const geo::Coordinate& scale_cent
     double cB = 0.5*b*b*(kx2 * st2 + ky2 * ct2);
     double cC = a * b * ct * st * (ky2 - kx2);
     geo::Coordinate vp(cA-cB,cC);
-    geo::Coordinate vp3(a,b);
-    vp3.scale(geo::Coordinate(vp*0.5));
-    vp3.rotate(geo::Coordinate(ct,st));
-    vp3.scale(scale_factor);
+    geo::Coordinate vp3=geo::Coordinate(a,b).scale(geo::Coordinate(vp*0.5)).rotate(geo::Coordinate(ct,st)).scale(scale_factor);
+
     Ellipse* newellipse = new lc::Ellipse(this->center().scale(scale_center, scale_factor), vp3,
-                                          this->minorRadius(), this->startAngle(),this->endAngle());
+                                          this->minorRadius(),
+                                          isArc()?this->getEllipseAngle(startPoint):0.,
+                                          isArc()?this->getEllipseAngle(endPoint):0.
+                                                  );
     newellipse->setID(this->id());
     shared_ptr<const lc::Ellipse> newEllipse = shared_ptr<const lc::Ellipse>(newellipse);
     return newEllipse;
