@@ -16,7 +16,7 @@ namespace lc {
 
         class Rotate : public Operation, public Undoable {
             public:
-                Rotate(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations);
+                Rotate(AbstractDocument* document, const geo::Coordinate& offset, const double& rotation_angle, const long& no_of_operations);
 
                 virtual ~Rotate() {
                     qDebug() << "Rotate removed";

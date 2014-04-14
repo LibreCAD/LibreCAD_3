@@ -3,6 +3,8 @@
 
 #include <atomic>
 #include "cad/const.h"
+#include <atomic>
+
 
 #define ID_DATATYPE unsigned long
 

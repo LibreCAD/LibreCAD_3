@@ -7,7 +7,6 @@
 #include "cad/const.h"
 
 #include "cad/base/cadentity.h"
-#include "cad/dochelpers/documentimpl.h"
 #include "operation.h"
 #include "undoable.h"
 

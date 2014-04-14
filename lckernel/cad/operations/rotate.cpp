@@ -4,8 +4,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Rotate::Rotate(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations) : Operation(document), Undoable("Create entities") {
-    _offset = offset;
+Rotate::Rotate(AbstractDocument* document, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations) : Operation(document), Undoable("Create entities") {
     _rotation_center = rotation_center;
     _rotation_angle = rotation_angle;
     _no_of_operations = no_of_operations;
@@ -24,18 +23,16 @@ void Rotate::processInternal() const {
         }
         double current_angle = _rotation_angle;
         geo::Coordinate current_rotation_center = _rotation_center;
-        geo::Coordinate current_offset = _offset;
         for (int a = 0; a < _no_of_operations; ++a) {
             /* for the first operation the ID of orignal entity is copied. */
             if (a == 1) {
-                document()->addEntity(document()->findEntityLayerByID(_toRotate.at(i)->id()), _toRotate.at(i)->rotate(current_offset, current_rotation_center, current_angle, 1));
+                document()->addEntity(document()->findEntityLayerByID(_toRotate.at(i)->id()), _toRotate.at(i)->rotate(current_rotation_center, current_angle, 1));
             } else {
                 /* A new ID is given to next operations */
-                document()->addEntity(document()->findEntityLayerByID(_toRotate.at(i)->id()), _toRotate.at(i)->rotate(current_offset, current_rotation_center, current_angle, 0));
+                document()->addEntity(document()->findEntityLayerByID(_toRotate.at(i)->id()), _toRotate.at(i)->rotate(current_rotation_center, current_angle, 0));
             }
             current_angle = current_angle + _rotation_angle;
             current_rotation_center = current_rotation_center + _rotation_center;
-            current_offset = current_offset + _offset;
         }
     }
 }

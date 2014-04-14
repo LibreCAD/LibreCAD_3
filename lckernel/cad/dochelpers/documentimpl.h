@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QVector>
+#include <thread>         // std::thread
+#include <mutex>          // std::mutex
 #include "cad/const.h"
 
 #include "cad/document/abstractdocument.h"
@@ -106,8 +108,8 @@ namespace lc {
              */
             virtual QString findEntityLayerByID(ID_DATATYPE id) const;
         private:
-            shared_ptr<LayerManager> _layerManager;
-            QMutex _documentMutex;
+            shared_ptr<lc::LayerManager> _layerManager;
+            std::mutex _documentMutex;
     };
 }
 

@@ -87,100 +87,119 @@ void Intersect::visit(shared_ptr<const Line> line, shared_ptr<const Arc> arc) {
     }
 }
 void Intersect::visit(shared_ptr<const Line>, shared_ptr<const Ellipse>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Line> l1, shared_ptr<const Text>) {
-
     return;
 }
 
+void Intersect::visit(shared_ptr<const lc::Line>, shared_ptr<const lc::Spline>) {
+    return;
+}
+
+// Circle
 
 void Intersect::visit(shared_ptr<const Circle> circle, shared_ptr<const Line> line) {
     visit(line, shared_ptr<const Arc>(new Arc(circle->center(), circle->radius(), 0., PI2)));
 }
 void Intersect::visit(shared_ptr<const Circle>, shared_ptr<const Circle>) {
-
-    return;
 }
+
 void Intersect::visit(shared_ptr<const Circle>, shared_ptr<const Arc>) {
-
-    return;
 }
+
 void Intersect::visit(shared_ptr<const Circle>, shared_ptr<const Ellipse>) {
-
-    return;
 }
+
 void Intersect::visit(shared_ptr<const Circle>, shared_ptr<const Text>) {
-
     return;
 }
 
+void Intersect::visit(shared_ptr<const lc::Circle>, shared_ptr<const lc::Spline>) {
+    return;
+}
+
+// ARC
 
 void Intersect::visit(shared_ptr<const Arc> arc, shared_ptr<const Line> line) {
     visit(line, arc);
 }
 void Intersect::visit(shared_ptr<const Arc>, shared_ptr<const Circle>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Arc>, shared_ptr<const Arc>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Arc>, shared_ptr<const Ellipse>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Arc>, shared_ptr<const Text>) {
-
+    return;
+}
+void Intersect::visit(shared_ptr<const Arc>, shared_ptr<const Spline>) {
     return;
 }
 
+// Ellipse
 
 void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Line>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Circle>) {
-
     return;
 }
-void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Arc>) {
 
+void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Arc>) {
     return;
 }
 void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Ellipse>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Ellipse>, shared_ptr<const Text>) {
-
     return;
 }
 
+void Intersect::visit(shared_ptr<const lc::Ellipse>, shared_ptr<const lc::Spline>) {
+    return;
+}
 
+// Text
 void Intersect::visit(shared_ptr<const Text>, shared_ptr<const Line>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Text>, shared_ptr<const Circle>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Text>, shared_ptr<const Arc>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Text>, shared_ptr<const Ellipse>) {
-
     return;
 }
 void Intersect::visit(shared_ptr<const Text>, shared_ptr<const Text>) {
-
     return;
 }
+void Intersect::visit(shared_ptr<const lc::Text>, shared_ptr<const lc::Spline>) {
+    return;
+}
+// Spline
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Line>) {
+}
 
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Circle>) {
+}
+
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Arc>) {
+}
+
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Ellipse>) {
+}
+
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Text>) {
+}
+
+void Intersect::visit(shared_ptr<const lc::Spline>, shared_ptr<const lc::Spline>) {
+}
 
 IntersectMany::IntersectMany(QList<shared_ptr<const CADEntity> > entities, Intersect::Method method) : _entities(entities), _method(method) {
 }

@@ -42,26 +42,31 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
     return pointOnPath;
 }
 
-shared_ptr<const CADEntity> Circle::move(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Circle *newcircle = new Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-//    newcircle->setID(this->id());
-//    shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
-//    return newCircle;
-    return rotate(offset, rotation_center, rotation_angle, 1);
+shared_ptr<const CADEntity> Circle::move(const geo::Coordinate& offset) const {
+    Circle *newcircle = new Circle(this->center() + offset, this->radius());
+    newcircle->setID(this->id());
+    shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
+    return newCircle;
 }
 
-shared_ptr<const CADEntity> Circle::copy(const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle) const {
-//    Circle *newcircle = new Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-//    shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
-//    return newCircle;
-    return rotate(offset, rotation_center, rotation_angle, 0);
+shared_ptr<const CADEntity> Circle::copy(const geo::Coordinate& offset) const {
+    Circle *newcircle = new Circle(this->center() + offset, this->radius());
+    shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
+    return newCircle;
 }
 
-shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate& offset, const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
-    Circle *newcircle = new Circle((this->center().rotate(rotation_center, rotation_angle)) + offset, this->radius());
-    if ( with_same_id == true) {
+shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+    Circle *newcircle = new Circle(this->center().rotate(rotation_center, rotation_angle), this->radius());
+    if (with_same_id == 1) {
         newcircle->setID(this->id());
     }
+    shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
+    return newCircle;
+}
+
+shared_ptr<const CADEntity> Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+    Circle *newcircle = new Circle(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x());
+    newcircle->setID(this->id());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;
 }

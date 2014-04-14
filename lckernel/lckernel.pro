@@ -60,10 +60,13 @@ SOURCES += lckernel.cpp \
     cad/operations/create.cpp \
     cad/operations/delete.cpp \
     cad/operations/move.cpp \
+    cad/operations/scale.cpp \
     cad/operations/rotate.cpp \
     cad/operations/trim.cpp \
     cad/operations/copy.cpp \
-    cad/functions/ftrim.cpp
+    cad/functions/ftrim.cpp \
+    cad/geometry/geospline.cpp \
+    cad/primitive/spline.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -119,8 +122,12 @@ HEADERS += lckernel.h\
     cad/operations/copy.h \
     cad/operations/create.h \
     cad/operations/delete.h \
+    cad/operations/trim.h \
+    cad/functions/ftrim.h \
     cad/operations/move.h \
     cad/operations/rotate.h \
-    cad/operations/trim.h \
-    cad/functions/ftrim.h
+    cad/operations/scale.h \
+    cad/geometry/geospline.h \
+    cad/primitive/spline.h
+
 
