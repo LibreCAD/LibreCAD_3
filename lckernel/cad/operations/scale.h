@@ -34,7 +34,7 @@ namespace lc {
                 Q_DISABLE_COPY(Scale)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
                 geo::Coordinate _scale_center, _scale_factor;

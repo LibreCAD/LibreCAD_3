@@ -35,7 +35,7 @@ namespace lc {
                 Q_DISABLE_COPY(Rotate)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
                 geo::Coordinate _rotation_center, _offset;

@@ -10,13 +10,15 @@ extern "C"
 #include <boost/enable_shared_from_this.hpp>
 
 #include "lualibrecadbridge.h"
-#include "lua-intf/LuaIntf.h"
+#include "LuaIntf.h"
 
 #include <cad/geometry/geocoordinate.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/circle.h>
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
+#include <cad/operations/builder.h>
+#include <cad/operations/builder.h>
 #include <cad/operations/create.h>
 
 namespace LuaIntf {
@@ -24,11 +26,6 @@ namespace LuaIntf {
 }
 
 using namespace LuaIntf;
-
-
-boost::shared_ptr<LuaCreateEntities > lua_CreateEntities(lc::AbstractDocument * doc) {
-    return boost::make_shared< LuaCreateEntities>(doc, "0");
-}
 
 void lua_openlckernel(lua_State * L)
 {
@@ -84,7 +81,25 @@ void lua_openlckernel(lua_State * L)
 
             .beginClass <QString> ("QString")
             .addConstructor(LUA_ARGS(const char *))
-            .endClass ();
+            .endClass ()
+
+            .beginExtendClass <LuaBuilder,lc::operation::Operation> ("Builder")
+            .addConstructor(LUA_SP(shared_ptr<LuaBuilder>), LUA_ARGS(lc::AbstractDocument * doc))
+            .addFunction ("append", &LuaBuilder::append)
+            .addFunction ("move", &LuaBuilder::move)
+            .addFunction ("copy", &LuaBuilder::copy)
+            .addFunction ("foo", &LuaBuilder::repeat)
+            .endClass ()
+
+            .beginClass <lc::operation::BBase> ("BBase")
+            .endClass ()
+            .beginExtendClass <lc::operation::BMove, lc::operation::BBase> ("BMove")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BMove>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .endClass()
+            .beginExtendClass <lc::operation::BCopy, lc::operation::BBase> ("BCopy")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BCopy>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .endClass();
+
 
 }
 

@@ -8,6 +8,7 @@ Coordinate::Coordinate(double x, double y, double z) {
     this->_y = y;
     this->_z = z;
 }
+
 Coordinate::Coordinate(double x, double y) {
     this->_x = x;
     this->_y = y;
@@ -50,6 +51,9 @@ Coordinate Coordinate::operator + (const Coordinate& coord) const {
 }
 Coordinate Coordinate::operator - (const Coordinate& coord) const {
     return Coordinate(_x - coord._x, _y - coord._y, _z - coord._z);
+}
+Coordinate Coordinate::operator * (const Coordinate& coord) const {
+    return Coordinate(_x * coord._x, _y * coord._y, _z * coord._z);
 }
 double Coordinate::magnitude() const {
     return sqrtf(_x * _x + _y * _y + _z * _z);
@@ -107,19 +111,10 @@ Coordinate Coordinate::scale(const double& scale_factor) const {
 }
 
 /**
- * Scales this vector by the given factors with 0/0 as center.
- */
-Coordinate Coordinate::scale(const Coordinate& scale_factor) const {
-    double x0 = _x * scale_factor.x();
-    double y0 = _y * scale_factor.y();
-    return Coordinate(x0,y0);
-}
-
-/**
  * Scales this vector by the given factors with the given center.
  */
 Coordinate Coordinate::scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
-    Coordinate newscale = scale_center + (*this - scale_center).scale(scale_factor);
+    Coordinate newscale = scale_center + (*this - scale_center) * scale_factor;
     return newscale;
 }
 

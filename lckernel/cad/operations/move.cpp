@@ -15,7 +15,7 @@ void Move::append(shared_ptr<const CADEntity> cadEntity) {
     _toMove.append(cadEntity);
 }
 
-void Move::processInternal() const {
+void Move::processInternal() {
     for (int i = 0; i < _toMove.size(); ++i) {
         document()->removeEntity(_toMove.at(i)->id());
         document()->addEntity(document()->findEntityLayerByID(_toMove.at(i)->id()), _toMove.at(i)->move(_offset));
@@ -31,5 +31,8 @@ void Move::undo() const {
 }
 
 void Move::redo() const {
-    processInternal();
+    for (int i = 0; i < _toMove.size(); ++i) {
+        document()->removeEntity(_toMove.at(i)->id());
+        document()->addEntity(document()->findEntityLayerByID(_toMove.at(i)->id()), _toMove.at(i)->move(_offset));
+    }
 }

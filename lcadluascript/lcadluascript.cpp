@@ -9,7 +9,7 @@ extern "C"
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include "lua-intf/LuaIntf.h"
+#include "LuaIntf.h"
 
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
@@ -84,7 +84,7 @@ QString LCadLuaScript::run(const QString &script) {
 /* Line
  l=Line(Coord(0,0), Coord(10,100));
 d=app.currentDocument()
-ce = CreateEntities(d, "0");
+ce = Create(d, "0");
 ce:append(l)
 ce:execute()
 */
@@ -98,7 +98,7 @@ local p =rx;
 local q=ry;
 
 doc=app.currentDocument()
-ce = CreateEntities(doc, "0");
+ce = Create(doc, "0");
 
 while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
@@ -129,7 +129,7 @@ function drawTree( ce, x1,  y1,  angle,  depth)
 end
 
 d=app.currentDocument()
-ce = CreateEntities(d, "0");
+ce = Create(d, "0");
 drawTree(ce, 0, 0, -90, 14);
 ce:execute()
 
@@ -273,7 +273,7 @@ end
 
 local gear = Gear()
 d=app.currentDocument()
-ce = CreateEntities(d, "0");
+ce = Create(d, "0");
 gear:calc(ce, 20,math.rad(10),math.rad(10))
 gear:calc(ce, 10,math.rad(10),math.rad(10))
 ce:execute()

@@ -66,7 +66,8 @@ SOURCES += lckernel.cpp \
     cad/operations/copy.cpp \
     cad/functions/ftrim.cpp \
     cad/geometry/geospline.cpp \
-    cad/primitive/spline.cpp
+    cad/primitive/spline.cpp \
+    cad/operations/builder.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -128,6 +129,7 @@ HEADERS += lckernel.h\
     cad/operations/rotate.h \
     cad/operations/scale.h \
     cad/geometry/geospline.h \
-    cad/primitive/spline.h
+    cad/primitive/spline.h \
+    cad/operations/builder.h
 
 

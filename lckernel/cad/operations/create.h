@@ -36,7 +36,7 @@ namespace lc {
                 // Q_DISABLE_COPY(CreateEntities)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
                 QString _layerName;
