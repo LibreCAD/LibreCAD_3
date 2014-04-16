@@ -10,7 +10,9 @@ extern "C"
 #include <boost/enable_shared_from_this.hpp>
 
 #include "lualibrecadbridge.h"
+
 #include "lua-intf/LuaIntf.h"
+#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include <cad/geometry/geocoordinate.h>
 #include <cad/primitive/line.h>
@@ -24,62 +26,64 @@ namespace LuaIntf {
 }
 
 using namespace LuaIntf;
+using namespace lc;
 
-
-boost::shared_ptr<LuaCreateEntities > lua_CreateEntities(lc::AbstractDocument * doc) {
-    return boost::make_shared< LuaCreateEntities>(doc, "0");
-}
 
 void lua_openlckernel(lua_State * L)
 {
 
     LuaBinding(L)
-            .beginClass <lc::operation::Operation> ("Operation")
-            .addFunction("execute", &lc::operation::Operation::execute)
+            .beginClass <operation::Operation> ("Operation")
+            .addFunction("execute", &operation::Operation::execute)
             .endClass ()
 
-            .beginClass <lc::ID> ("ID")
-            .addFunction("id", &lc::ID::id)
+            .beginClass <ID> ("ID")
+            .addFunction("id", &ID::id)
             .endClass ()
 
-            .beginExtendClass <lc::CADEntity, lc::ID> ("CADEntity")
+            .beginExtendClass <CADEntity, ID> ("CADEntity")
             .endClass ()
 
-            .beginClass <lc::geo::Vector> ("Vector")
-            .addConstructor(LUA_SP(shared_ptr<const lc::geo::Vector>), LUA_ARGS(const lc::geo::Coordinate& start, const lc::geo::Coordinate& end))
+            .beginClass <geo::Vector> ("Vector")
+            .addConstructor(LUA_SP(shared_ptr<const geo::Vector>), LUA_ARGS(const geo::Coordinate& start, const geo::Coordinate& end))
             .endClass ()
 
-            .beginClass <lc::AbstractDocument> ("AbstractDocument")
+            .beginClass <AbstractDocument> ("AbstractDocument")
             .endClass ()
 
-            .beginClass<lc::geo::Coordinate>("Coord")
+            .beginClass<geo::Coordinate>("Coord")
             .addConstructor(LUA_ARGS(double x, double y))
-            .addFunction("x", &lc::geo::Coordinate::x)
-            .addFunction("y", &lc::geo::Coordinate::y)
-            .addFunction("z", &lc::geo::Coordinate::z)
+            .addFunction("x", &geo::Coordinate::x)
+            .addFunction("y", &geo::Coordinate::y)
+            .addFunction("z", &geo::Coordinate::z)
             .endClass()
 
-            .beginClass<lc::geo::Coordinate>("Coordinate")
+            .beginClass<geo::Coordinate>("Coordinate")
             .addConstructor(LUA_ARGS(double x, double y))
-            .addFunction("x", &lc::geo::Coordinate::x)
-            .addFunction("y", &lc::geo::Coordinate::y)
-            .addFunction("z", &lc::geo::Coordinate::z)
+            .addFunction("x", &geo::Coordinate::x)
+            .addFunction("y", &geo::Coordinate::y)
+            .addFunction("z", &geo::Coordinate::z)
             .endClass()
 
-            .beginExtendClass <lc::Line, lc::CADEntity> ("Line")
-            .addConstructor(LUA_SP(shared_ptr< lc::Line>), LUA_ARGS(const lc::geo::Coordinate& start, const lc::geo::Coordinate& end))
+            .beginExtendClass <Line, CADEntity> ("Line")
+            .addConstructor(LUA_SP(shared_ptr< Line>), LUA_ARGS(const geo::Coordinate& start, const geo::Coordinate& end))
             .endClass()
 
-            .beginExtendClass <lc::Circle, lc::CADEntity> ("Circle")
-            .addConstructor(LUA_SP(shared_ptr< lc::Circle>), LUA_ARGS(const lc::geo::Coordinate& center, double radius))
+            .beginExtendClass <Circle, CADEntity> ("Circle")
+            .addConstructor(LUA_SP(shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate& center, double radius))
             .endClass()
 
-            .beginExtendClass <LuaCreateEntities, lc::operation::Operation> ("Create")
-            .addConstructor(LUA_SP(shared_ptr<LuaCreateEntities>), LUA_ARGS(lc::AbstractDocument * doc,  const char * layerName))
-            .addFunction ("append", &LuaCreateEntities::append)
+            .beginExtendClass <LuaLcOperationCreate, operation::Operation> ("Create")
+            .addConstructor(LUA_SP(shared_ptr<LuaLcOperationCreate>), LUA_ARGS(AbstractDocument* document, const QString& layerName))
+            .addFunction ("append", &LuaLcOperationCreate::append)
             .endClass()
 
-            .beginClass <lc::DocumentImpl> ("DocumentImpl")
+            .beginExtendClass <LuaLcOperationRotate, operation::Operation> ("Rotate")
+            .addConstructor(LUA_SP(shared_ptr<LuaLcOperationRotate>), LUA_ARGS(lc::AbstractDocument* document, const geo::Coordinate& rotation_center, const double rotation_angle, const long no_copies))
+            .addFunction ("append", &LuaLcOperationRotate::append)
+            .endClass()
+
+            .beginClass <DocumentImpl> ("DocumentImpl")
             .endClass ()
 
             .beginClass <QString> ("QString")
@@ -88,6 +92,6 @@ void lua_openlckernel(lua_State * L)
 
 }
 
-// .addConstructor(LUA_SP(shared_ptr<const lc::CreateEntities>), LUA_ARGS(lc::AbstractDocument * doc))
+// .addConstructor(LUA_SP(shared_ptr<const CreateEntities>), LUA_ARGS(AbstractDocument * doc))
 
 

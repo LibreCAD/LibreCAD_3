@@ -1095,7 +1095,7 @@ private:
         pushArg(L, std::forward<P>(p)...);
     }
 
-    static void pushArg(lua_State* L)
+    static void pushArg(lua_State*)
     {
         // template terminate function, do nothing
     }
@@ -1132,6 +1132,27 @@ template<> struct LuaType <LuaRef&> : LuaRefType {};
 template<> struct LuaType <LuaRef const&> : LuaRefType {};
 
 //---------------------------------------------------------------------------
+
+namespace Lua
+{
+    template <typename LIST>
+    inline LIST getList(LuaRef table)
+    {
+        table.pushToStack();
+        LIST list = getList<LIST>(table.state(), -1);
+        lua_pop(table.state(), 1);
+        return list;
+    }
+
+    template <typename MAP>
+    inline MAP getMap(LuaRef table)
+    {
+        table.pushToStack();
+        MAP map = getMap<MAP>(table.state(), -1);
+        lua_pop(table.state(), 1);
+        return map;
+    }
+}
 
 #if LUAINTF_HEADERS_ONLY
 #include "src/LuaRef.cpp"

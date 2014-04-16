@@ -55,11 +55,9 @@ shared_ptr<const CADEntity> Circle::copy(const geo::Coordinate& offset) const {
     return newCircle;
 }
 
-shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     Circle *newcircle = new Circle(this->center().rotate(rotation_center, rotation_angle), this->radius());
-    if (with_same_id == 1) {
-        newcircle->setID(this->id());
-    }
+    newcircle->setID(this->id());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;
 }

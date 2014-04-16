@@ -52,12 +52,10 @@ shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const {
     return newLine;
 }
 
-shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     Line *newline = new Line(this->start().rotate(rotation_center, rotation_angle),
-                                 this->end().rotate(rotation_center, rotation_angle));
-    if (with_same_id == 1) {
-        newline->setID(this->id());
-    }
+                             this->end().rotate(rotation_center, rotation_angle));
+    newline->setID(this->id());
     shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
     return newLine;
 }

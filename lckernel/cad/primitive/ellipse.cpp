@@ -26,14 +26,12 @@ shared_ptr<const CADEntity> Ellipse::copy(const geo::Coordinate& offset) const {
     return newEllipse;
 }
 
-shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     Ellipse* newellipse = new Ellipse(this->center().rotate(rotation_center, rotation_angle),
                                          (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
                                           this->minorRadius() , this->startAngle(),
                                           this->endAngle());
-    if (with_same_id == 1) {
-        newellipse->setID(this->id());
-    }
+    newellipse->setID(this->id());
     shared_ptr<const Ellipse> newEllipse = shared_ptr<const Ellipse>(newellipse);
     return newEllipse;
 }

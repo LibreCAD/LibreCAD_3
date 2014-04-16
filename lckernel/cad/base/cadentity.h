@@ -56,6 +56,13 @@ namespace lc {
              * \return CADEntity shared_ptr
              */
             virtual shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const = 0;
+
+            /*!
+             * \brief Function for Copy
+             *
+             * \param offset the offset by which entity is to be copied
+             * \return CADEntity shared_ptr
+             */
             virtual shared_ptr<const CADEntity> copy(const geo::Coordinate& offset) const = 0;
             /*!
              * \brief Function implementation for rotate.
@@ -63,7 +70,14 @@ namespace lc {
              * \param angle angle by which the entity is to be rotated.
              * \return CADEntity shared_ptr
              */
-            virtual shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double& rotation_angle, const bool with_same_id) const = 0;
+            virtual shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const = 0;
+            /*!
+             * \brief Function implementation for Scale.
+             *
+             * \param scale_center
+             * \param scale_factor
+             * \return CADEntity shared_ptr
+             */
             virtual shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
 
     };

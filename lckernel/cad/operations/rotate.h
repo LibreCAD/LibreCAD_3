@@ -16,7 +16,7 @@ namespace lc {
 
         class Rotate : public Operation, public Undoable {
             public:
-                Rotate(AbstractDocument* document, const geo::Coordinate& offset, const double& rotation_angle, const long& no_of_operations);
+                Rotate(AbstractDocument* document, const geo::Coordinate& offset, const double rotation_angle, const long no_copies);
 
                 virtual ~Rotate() {
                     qDebug() << "Rotate removed";
@@ -35,13 +35,14 @@ namespace lc {
                 Q_DISABLE_COPY(Rotate)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
                 geo::Coordinate _rotation_center, _offset;
-                long _no_of_operations;
+                long _no_copies;
                 double _rotation_angle;
                 QList<shared_ptr<const lc::CADEntity> > _toRotate;
+                QList<shared_ptr<const lc::CADEntity> > _newlyCreated;
         };
     };
 }

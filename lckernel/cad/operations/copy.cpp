@@ -4,7 +4,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Copy::Copy(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations) : Operation(document), Undoable("Create entities") {
+Copy::Copy(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double rotation_angle, const long no_of_operations) : Operation(document), Undoable("Create entities") {
     _offset = offset;
     _rotation_center = rotation_center;
     _rotation_angle = rotation_angle;
@@ -15,7 +15,7 @@ void Copy::append(shared_ptr<const CADEntity> cadEntity) {
     _toCopy.append(cadEntity);
 }
 
-void Copy::processInternal() const {
+void Copy::processInternal() {
     for (int i = 0; i < _toCopy.size(); ++i) {
         geo::Coordinate current_offset = _offset;
         for (int a = 0; a < _no_of_operations; ++a) {
@@ -34,5 +34,5 @@ void Copy::undo() const {
 }
 
 void Copy::redo() const {
-    processInternal();
+ //   processInternal();
 }

@@ -16,7 +16,7 @@ namespace lc {
 
         class Move : public Operation, public Undoable {
             public:
-                Move(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle);
+                Move(AbstractDocument* document, const geo::Coordinate& offset);
 
                 virtual ~Move() {
                     qDebug() << "Move removed";
@@ -35,11 +35,10 @@ namespace lc {
                 Q_DISABLE_COPY(Move)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
-                geo::Coordinate _rotation_center, _offset;
-                double _rotation_angle;
+                geo::Coordinate _offset;
                 QList<shared_ptr<const CADEntity> > _toMove;
         };
     };

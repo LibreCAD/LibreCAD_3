@@ -9,7 +9,7 @@ Trim::Trim(AbstractDocument* document,  shared_ptr<FTrim> trim) : Operation(docu
     //    _entityLayer = document()->findEntityLayerByID(trim->trimmedShape()->id());
 }
 
-void Trim::processInternal() const {
+void Trim::processInternal() {
     QList<shared_ptr<const CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
@@ -34,7 +34,7 @@ void Trim::undo() const {
 }
 
 void Trim::redo() const {
-    processInternal();
+ //   processInternal();
 }
 
 

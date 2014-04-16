@@ -23,13 +23,11 @@ shared_ptr<const CADEntity> Arc::copy(const geo::Coordinate& offset) const {
     return newArc;
 }
 
-shared_ptr<const CADEntity> Arc::rotate(const geo::Coordinate &rotation_center, const double& rotation_angle, const bool with_same_id) const {
+shared_ptr<const CADEntity> Arc::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     Arc *newarc = new Arc(this->center().rotate(rotation_center, rotation_angle),
                               this->radius(), this->startAngle() + rotation_angle,
                               this->endAngle() + rotation_angle);
-    if(with_same_id == true) {
-        newarc->setID(this->id());
-    }
+    newarc->setID(this->id());
     shared_ptr<const Arc> newArc = shared_ptr<const Arc>(newarc);
     return newArc;
 }

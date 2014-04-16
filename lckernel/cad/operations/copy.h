@@ -16,7 +16,7 @@ namespace lc {
 
         class Copy : public Operation, public Undoable {
             public:
-                Copy(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double& rotation_angle, const long& no_of_operations);
+                Copy(AbstractDocument* document, const geo::Coordinate& offset, const geo::Coordinate& rotation_center, const double rotation_angle, const long no_of_operations);
 
                 virtual ~Copy() {
                     qDebug() << "Copy removed";
@@ -35,7 +35,7 @@ namespace lc {
                 Q_DISABLE_COPY(Copy)
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
             private:
                 geo::Coordinate _rotation_center, _offset;

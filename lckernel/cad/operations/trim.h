@@ -30,7 +30,7 @@ namespace lc {
             private:
 
             protected:
-                virtual void processInternal() const;
+                virtual void processInternal();
 
                 Q_DISABLE_COPY(Trim)
             private:
