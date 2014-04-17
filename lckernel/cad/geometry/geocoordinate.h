@@ -66,6 +66,23 @@ namespace lc {
                 Coordinate operator - (const Coordinate& coordinate) const;
 
                 /**
+                  * Multiplication by Coordinate : return Coordinate(_x * s, _y * s, _z * s)
+                  *
+                  * @param Coordinate
+                  * @return Coordinate
+                  */
+                Coordinate operator * (const Coordinate& coord) const;
+
+                Coordinate operator * (double s) const;
+                /**
+                  * Division by double : return Coordinate(_x / s, _y / s, _z / s)
+                  *
+                  * @param double
+                  * @return Coordinate
+                  */
+                Coordinate operator / (double s) const;
+
+                /**
                   * Magnitude or lenth of the point relative to zero : return sqrtf(_x * _x + _y * _y + _z * _z)
                   *
                   * @return double  Length of the vector
@@ -89,28 +106,11 @@ namespace lc {
                   */
                 double dot(const Coordinate& coord) const;
 
-                /**
-                  * Multiplication by double : return Coordinate(_x * s, _y * s, _z * s)
-                  *
-                  * @param double
-                  * @return Coordinate
-                  */
-                Coordinate operator * (double s) const;
-
-                /**
-                  * Division by double : return Coordinate(_x / s, _y / s, _z / s)
-                  *
-                  * @param double
-                  * @return Coordinate
-                  */
-                Coordinate operator / (double s) const;
-
                 Coordinate rotate(const Coordinate& angleVector) const;
                 Coordinate rotate(const double& angle) const;
                 Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const;
                 Coordinate rotate(const geo::Coordinate &point, const double &angle) const;
                 Coordinate scale(const double& scale_factor) const;
-                Coordinate scale(const Coordinate& scale_factor) const;
                 Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const;
 
             private:

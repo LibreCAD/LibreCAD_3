@@ -89,6 +89,19 @@
     <string>SG</string>
    </property>
   </widget>
+  <widget class="QToolButton" name="toolButton_5">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>120</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Builder</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

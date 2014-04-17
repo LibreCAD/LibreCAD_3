@@ -34,7 +34,15 @@ void Trim::undo() const {
 }
 
 void Trim::redo() const {
- //   processInternal();
+    QList<shared_ptr<const CADEntity> > newEntities = _trim->result();
+
+    if (newEntities.size() > 0) {
+        for (int i = 0; i < newEntities.size(); ++i) {
+            document()->addEntity(_entityLayer, newEntities.at(i));
+        }
+
+        document()->removeEntity(_trim->trimmedShape()->id());
+    }
 }
 
 

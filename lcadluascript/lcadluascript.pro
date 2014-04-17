@@ -45,7 +45,7 @@ SOURCES += \
 
 HEADERS += \
         const.h \
-        lua-intf/LuaIntf.h \
+        LuaIntf.h \
         lcadluascript.h\
         lcadluascript_global.h \
     cad/lualibrecadbridge.h

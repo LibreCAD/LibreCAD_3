@@ -21,6 +21,14 @@ void EntityManagerImpl::on_addEntityEvent(const AddEntityEvent& event) {
     documentLayer->addEntity(event.entity());
 }
 
+void EntityManagerImpl::on_replaceEntityEvent(const ReplaceEntityEvent& event) {
+    // Note: This might seem to be slow, but inserting 1000000 entities took 300ms to insert
+    shared_ptr<DocumentLayer> documentLayer = document()->layerManager()->layer(document()->findEntityLayerByID(event.newEntity()->id()));
+
+    documentLayer->replaceEntity(event.oldEntity(), event.newEntity());
+}
+
+
 void EntityManagerImpl::on_removeEntityEvent(const RemoveEntityEvent& event) {
 
     // Removeal of entities currently needs to go over all layers

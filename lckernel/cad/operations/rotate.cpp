@@ -30,5 +30,5 @@ void Rotate::undo() const {
 }
 
 void Rotate::redo() const {
-   // processInternal();
+
 }

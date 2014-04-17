@@ -57,7 +57,7 @@ shared_ptr<const CADEntity> Ellipse::scale(const geo::Coordinate& scale_center, 
     double cB = 0.5*b*b*(kx2 * st2 + ky2 * ct2);
     double cC = a * b * ct * st * (ky2 - kx2);
     geo::Coordinate vp(cA-cB,cC);
-    geo::Coordinate vp3=geo::Coordinate(a,b).scale(geo::Coordinate(vp*0.5)).rotate(geo::Coordinate(ct,st)).scale(scale_factor);
+    geo::Coordinate vp3=geo::Coordinate(a,b) * geo::Coordinate(vp*0.5).rotate(geo::Coordinate(ct,st))*scale_factor;
 
     Ellipse* newellipse = new Ellipse(this->center().scale(scale_center, scale_factor), vp3,
                                           this->minorRadius(),

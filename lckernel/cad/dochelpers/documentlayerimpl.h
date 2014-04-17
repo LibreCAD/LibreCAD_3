@@ -39,6 +39,11 @@ namespace lc {
              */
             virtual void removeEntity(ID_DATATYPE id);
             /*!
+             * \brief replace an Entity from the document.
+             * \param id Entity ID of entity which is to be removed.
+             */
+            virtual void replaceEntity(shared_ptr<const CADEntity> tobeRemoved, shared_ptr<const CADEntity> toReplaceWith);
+            /*!
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */

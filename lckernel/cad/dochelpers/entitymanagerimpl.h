@@ -8,6 +8,8 @@
 #include "cad/events/addentityevent.h"
 #include "cad/events/removeentityevent.h"
 
+#include <cad/events/replaceentityevent.h>
+
 namespace lc {
     /**
      * Entity Manager Implementation implements a Entity Manager and add's, removes entities from a Document
@@ -34,6 +36,12 @@ namespace lc {
              * \sa RemoveEntityEvent
              */
             void on_removeEntityEvent(const lc::RemoveEntityEvent&);
+
+            /*!
+             * \brief Slot for on_replaceEntityEvent
+             * \sa ReplaceEntityEvent
+             */
+            void on_replaceEntityEvent(const ReplaceEntityEvent& event);
 
         private:
 

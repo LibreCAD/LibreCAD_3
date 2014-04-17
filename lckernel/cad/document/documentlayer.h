@@ -29,6 +29,11 @@ namespace lc {
              * @param id ID of the entity to be removed.
              */
             virtual void removeEntity(ID_DATATYPE id) = 0;
+            /**
+             * /brief Replace a given entity with a new one
+             * @param id ID of the entity to be removed.
+             */
+            virtual void replaceEntity(shared_ptr<const CADEntity> tobeRemoved, shared_ptr<const CADEntity> toReplaceWith) = 0;
 
             /**
              * /brief Returns Layer.

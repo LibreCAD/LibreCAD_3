@@ -31,5 +31,7 @@ void Delete::undo() const {
 }
 
 void Delete::redo() const {
- //   processInternal();
+    for (int i = 0; i < _toDelete.size(); ++i) {
+        document()->removeEntity(_toDelete.at(i));
+    }
 }

@@ -34,5 +34,11 @@ void Copy::undo() const {
 }
 
 void Copy::redo() const {
- //   processInternal();
+    for (int i = 0; i < _toCopy.size(); ++i) {
+        geo::Coordinate current_offset = _offset;
+        for (int a = 0; a < _no_of_operations; ++a) {
+            document()->addEntity(document()->findEntityLayerByID(_toCopy.at(i)->id()), _toCopy.at(i)->copy(current_offset));
+            current_offset = current_offset + _offset;
+        }
+    }
 }

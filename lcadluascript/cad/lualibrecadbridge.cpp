@@ -11,7 +11,7 @@ extern "C"
 
 #include "lualibrecadbridge.h"
 
-#include "lua-intf/LuaIntf.h"
+#include "lua-intf/LuaIntf/LuaIntf.h"
 #include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include <cad/geometry/geocoordinate.h>
@@ -19,6 +19,8 @@ extern "C"
 #include <cad/primitive/circle.h>
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
+#include <cad/operations/builder.h>
+#include <cad/operations/builder.h>
 #include <cad/operations/create.h>
 
 namespace LuaIntf {
@@ -27,7 +29,6 @@ namespace LuaIntf {
 
 using namespace LuaIntf;
 using namespace lc;
-
 
 void lua_openlckernel(lua_State * L)
 {
@@ -88,7 +89,32 @@ void lua_openlckernel(lua_State * L)
 
             .beginClass <QString> ("QString")
             .addConstructor(LUA_ARGS(const char *))
-            .endClass ();
+            .endClass ()
+
+            .beginExtendClass <LuaBuilder,lc::operation::Operation> ("Builder")
+            .addConstructor(LUA_SP(shared_ptr<LuaBuilder>), LUA_ARGS(lc::AbstractDocument * doc))
+            .addFunction ("append", &LuaBuilder::append)
+            .addFunction ("move", &LuaBuilder::move)
+            .addFunction ("copy", &LuaBuilder::copy)
+            .addFunction ("rotate", &LuaBuilder::rotate)
+            .addFunction ("loop", &LuaBuilder::repeat)
+            .addFunction ("begin", &LuaBuilder::begin)
+            .endClass ()
+
+            .beginClass <lc::operation::BBase> ("BBase")
+            .endClass ()
+            .beginExtendClass <lc::operation::BMove, lc::operation::BBase> ("BMove")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BMove>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .endClass()
+            .beginExtendClass <lc::operation::BBegin, lc::operation::BBase> ("BBegin")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BBegin>), LUA_ARGS())
+            .endClass()
+            .beginExtendClass <lc::operation::BRepeat, lc::operation::BBase> ("BRepeat")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BRepeat>), LUA_ARGS(const int numTimes))
+            .endClass()
+            .beginExtendClass <lc::operation::BCopy, lc::operation::BBase> ("BCopy")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BCopy>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .endClass();
 
 }
 

@@ -24,4 +24,4 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "LuaIntf/LuaIntf.h"
+#include "lua-intf/LuaIntf/LuaIntf.h"

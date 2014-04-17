@@ -26,5 +26,7 @@ void Create::undo() const {
 }
 
 void Create::redo() const {
-    // processInternal();
+    for (int i = 0; i < _toCreate.size(); ++i) {
+        document()->addEntity(_layerName, _toCreate.at(i));
+    }
 }
