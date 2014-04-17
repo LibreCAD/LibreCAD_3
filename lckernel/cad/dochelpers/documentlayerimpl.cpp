@@ -55,5 +55,5 @@ shared_ptr<const CADEntity> DocumentLayerImpl::findByID(ID_DATATYPE id) const {
         return _cadentities.value(id);
     }
 
-    throw "Entity not found";
+    return shared_ptr<const CADEntity>();
 }

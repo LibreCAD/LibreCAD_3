@@ -41,30 +41,39 @@ void Builder::processInternal() {
     QList<shared_ptr<const CADEntity> > newQueue(_operationQue);
     for (int i = 0; i < _stack.size(); ++i) {
         QList<shared_ptr<BBase> > sup = _stack.mid(0, i);
-        newQueue= _stack.at(i)->process(newQueue, _inserts, _updates, _deletes, sup);
+        newQueue= _stack.at(i)->process(newQueue, _buffer, sup);
     }
-    _operationFinal.append(newQueue);
+    _buffer.append(newQueue);
 
-    qDebug() << "_deletes : " << _deletes.size();
-    qDebug() << "_inserts : " << _inserts.size();
-    qDebug() << "_updates : " << _updates.size();
-
-    for (int i = 0; i < _inserts.size(); ++i) {
-        document()->addEntity("0", _inserts.at(i));
-    }
-    for (int i = 0; i < _updates.size(); ++i) {
-        document()->replaceEntity( _inserts.at(i),  _inserts.at(i));
-    }
-    for (int i = 0; i < _deletes.size(); ++i) {
-        document()->removeEntity(_deletes.at(i)->id());
+    for (int i = 0; i < _buffer.size(); ++i) {
+        auto exists = document()->findEntityByID(_buffer.at(i)->id());
+        if (exists.get()!=NULL) {
+            _entitiesStart.append(exists);
+            document()->replaceEntity(_buffer.at(i), _buffer.at(i));
+        } else {
+            document()->addEntity("0", _buffer.at(i));
+        }
     }
 }
 
 void Builder::undo() const {
-
+    for (int i = 0; i < _buffer.size(); ++i) {
+        document()->removeEntity(_buffer.at(i)->id());
+    }
+    for (int i = 0; i < _entitiesStart.size(); ++i) {
+        document()->addEntity("0", _entitiesStart.at(i));
+    }
 }
-void Builder::redo() const {
 
+void Builder::redo() const {
+    for (int i = 0; i < _buffer.size(); ++i) {
+        auto exists = document()->findEntityByID(_buffer.at(i)->id());
+        if (exists.get()!=NULL) {
+            document()->replaceEntity(_buffer.at(i), _buffer.at(i));
+        } else {
+            document()->addEntity("0", _buffer.at(i));
+        }
+    }
 }
 
 
@@ -74,10 +83,8 @@ BBegin::BBegin( ) :  BBase() {
 
 QList<shared_ptr<const CADEntity> > BBegin::process(
         QList<shared_ptr<const CADEntity> > entities,
-        QList<shared_ptr<const CADEntity> > &inserts,
-        QList<shared_ptr<const CADEntity> > &updates,
-        QList<shared_ptr<const CADEntity> > &deletes,
-        const QList<shared_ptr< BBase> > _stack) {
+        QList<shared_ptr<const CADEntity> > &,
+        const QList<shared_ptr< BBase> > ) {
     _entities.append(entities);
     return entities;
 }
@@ -93,30 +100,29 @@ BRepeat::BRepeat( const int numTimes) :  BBase(), _numTimes(numTimes) {
 
 QList<shared_ptr<const CADEntity> > BRepeat::process(
         QList<shared_ptr<const CADEntity> > entities,
-        QList<shared_ptr<const CADEntity> > &inserts,
-        QList<shared_ptr<const CADEntity> > &updates,
-        QList<shared_ptr<const CADEntity> > &deletes,
+        QList<shared_ptr<const CADEntity> > & buff,
         const QList<shared_ptr< BBase> > _stack) {
-QList<shared_ptr<const CADEntity> > final;
+    QList<shared_ptr<const CADEntity> > final;
 
-/*
     // Find the start
     QList<shared_ptr<const CADEntity> > _start;
-    for (int i = 0; i < _operationQue.size(); ++i) {
-        const lc::operation::BBegin* begin = dynamic_cast<const lc::operation::BBegin*>(_operationQue.at(i).get());
+    for (int i = 0; i < _stack.size(); ++i) {
+        const lc::operation::BBegin* begin = dynamic_cast<const lc::operation::BBegin*>(_stack.at(i).get());
         if (begin!=NULL) {
             _start.append(begin->getEntities());
         }
     }
 
-    // run the operation que
-    for (int n = 0; n<_numTimes-1;n++) {
-        for (int i = 0; i < _operationQue.size(); ++i) {
-            final.append(_operationQue.at(i)->process(_start, toRemove,  _operationQue));
-        }
-    } */
 
-    return final;
+    // run the operation que
+    QList<shared_ptr<const CADEntity> > newQueue(entities);
+    for (int n = 0; n<_numTimes-1;n++) {
+        for (int i = 0; i < _stack.size(); ++i) {
+            newQueue= _stack.at(i)->process(newQueue, buff, _stack);
+        }
+    }
+
+    return newQueue;
 }
 
 
@@ -126,15 +132,12 @@ BMove::BMove( const geo::Coordinate& offset) :  BBase(), _offset(offset) {
 
 QList<shared_ptr<const CADEntity> >  BMove::process(
         QList<shared_ptr<const CADEntity> > entities,
-        QList<shared_ptr<const CADEntity> > &inserts,
-        QList<shared_ptr<const CADEntity> > &updates,
-        QList<shared_ptr<const CADEntity> > &deletes,
-        const QList<shared_ptr< BBase> > _stack) {
-QList<shared_ptr<const CADEntity> > newQueue;
+        QList<shared_ptr<const CADEntity> > &,
+        const QList<shared_ptr< BBase> > ) {
+    QList<shared_ptr<const CADEntity> > newQueue;
     for (int i = 0; i < entities.size(); ++i) {
         auto e = entities.at(i)->move(_offset);
         newQueue.append(e);
-        updates.append(e);
     }
     return newQueue;
 }
@@ -148,17 +151,14 @@ BCopy::BCopy( const geo::Coordinate& offset) : BBase(), _offset(offset) {
 
 QList<shared_ptr<const CADEntity> > BCopy::process(
         QList<shared_ptr<const CADEntity> > entities,
-        QList<shared_ptr<const CADEntity> > &inserts,
-        QList<shared_ptr<const CADEntity> > &updates,
-        QList<shared_ptr<const CADEntity> > &deletes,
-        const QList<shared_ptr< BBase> > _stack) {
+        QList<shared_ptr<const CADEntity> > & buf,
+        const QList<shared_ptr< BBase> > ) {
     QList<shared_ptr<const CADEntity> > newQueue;
     for (int i = 0; i < entities.size(); ++i) {
         auto e = entities.at(i)->copy(_offset);
+        buf.append(entities.at(i));
         newQueue.append(e);
-        inserts.append(e);
     }
-    qDebug() <<  "BCopy" << newQueue.size();
     return newQueue;
 }
 
@@ -170,15 +170,12 @@ BRotate::BRotate( const geo::Coordinate& rotation_center, const double rotation_
 
 QList<shared_ptr<const CADEntity> > BRotate::process(
         QList<shared_ptr<const CADEntity> > entities,
-        QList<shared_ptr<const CADEntity> > &inserts,
-        QList<shared_ptr<const CADEntity> > &updates,
-        QList<shared_ptr<const CADEntity> > &deletes,
-        const QList<shared_ptr< BBase> > _stack) {
-QList<shared_ptr<const CADEntity> > newQueue;
+        QList<shared_ptr<const CADEntity> > &,
+        const QList<shared_ptr< BBase> > ) {
+    QList<shared_ptr<const CADEntity> > newQueue;
     for (int i = 0; i < entities.size(); ++i) {
         auto e = entities.at(i)->rotate(_rotation_center, _rotation_angle);
         newQueue.append(e);
-        updates.append(e);
     }
     return newQueue;
 }

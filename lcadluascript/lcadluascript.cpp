@@ -279,3 +279,22 @@ gear:calc(ce, 10,math.rad(10),math.rad(10))
 ce:execute()
 
 */
+
+
+
+/*
+ * l=Line(Coord(0,0), Coord(10,100));
+d=app.currentDocument()
+
+b=Builder(d)
+b:append(l)
+b:copy(Coord(0,0))
+b:rotate(Coord(0,0), math.rad(45))
+b:copy(Coord(0,0))
+b:rotate(Coord(0,0), math.rad(45))
+b:copy(Coord(0,0))
+b:rotate(Coord(0,0), math.rad(45))
+b:copy(Coord(0,0))
+b:rotate(Coord(0,0), math.rad(90))
+b:execute()
+*/

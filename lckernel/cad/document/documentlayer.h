@@ -55,6 +55,8 @@ namespace lc {
              * @return CADEntity
              */
             virtual shared_ptr<const CADEntity> findByID(ID_DATATYPE) const = 0;
+
+
     };
 }
 

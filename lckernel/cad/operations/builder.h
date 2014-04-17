@@ -17,9 +17,7 @@ namespace lc {
         public:
                 virtual QList<shared_ptr<const CADEntity> > process(
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > &inserts,
-                    QList<shared_ptr<const CADEntity> > &updates,
-                    QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                     const QList<shared_ptr< BBase> > _stack)  = 0;
         };
 
@@ -29,9 +27,7 @@ namespace lc {
 
             virtual QList<shared_ptr<const CADEntity> > process(
                 QList<shared_ptr<const CADEntity> > entities,
-                QList<shared_ptr<const CADEntity> > &inserts,
-                QList<shared_ptr<const CADEntity> > &updates,
-                QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                 const QList<shared_ptr< BBase> > _stack);
             private:
                 int _numTimes;
@@ -43,9 +39,7 @@ namespace lc {
 
             virtual QList<shared_ptr<const CADEntity> > process(
                 QList<shared_ptr<const CADEntity> > entities,
-                QList<shared_ptr<const CADEntity> > &inserts,
-                QList<shared_ptr<const CADEntity> > &updates,
-                QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                 const QList<shared_ptr< BBase> > _stack);
                 QList<shared_ptr<const CADEntity> > getEntities() const;
             private:
@@ -58,9 +52,7 @@ namespace lc {
 
             virtual QList<shared_ptr<const CADEntity> > process(
                 QList<shared_ptr<const CADEntity> > entities,
-                QList<shared_ptr<const CADEntity> > &inserts,
-                QList<shared_ptr<const CADEntity> > &updates,
-                QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                 const QList<shared_ptr< BBase> > _stack);
             private:
                 geo::Coordinate _offset;
@@ -71,9 +63,7 @@ namespace lc {
             BCopy( const geo::Coordinate& offset);
             virtual QList<shared_ptr<const CADEntity> > process(
                 QList<shared_ptr<const CADEntity> > entities,
-                QList<shared_ptr<const CADEntity> > &inserts,
-                QList<shared_ptr<const CADEntity> > &updates,
-                QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                 const QList<shared_ptr< BBase> > _stack);
             private:
                 geo::Coordinate _offset;
@@ -83,9 +73,7 @@ namespace lc {
             BRotate( const geo::Coordinate& rotation_center, const double rotation_angle);
             virtual QList<shared_ptr<const CADEntity> > process(
                 QList<shared_ptr<const CADEntity> > entities,
-                QList<shared_ptr<const CADEntity> > &inserts,
-                QList<shared_ptr<const CADEntity> > &updates,
-                QList<shared_ptr<const CADEntity> > &deletes,
+                    QList<shared_ptr<const CADEntity> > & buf,
                 const QList<shared_ptr< BBase> > _stack);
             private:
             geo::Coordinate _rotation_center;
@@ -114,10 +102,11 @@ namespace lc {
         private:
             QList<shared_ptr<BBase> > _stack;
             QList<shared_ptr<const CADEntity> > _operationQue;
+            QList<shared_ptr<const CADEntity> > _buffer;
+
+            QList<shared_ptr<const CADEntity> > _entitiesStart;
             QList<shared_ptr<const CADEntity> > _operationFinal;
-            QList<shared_ptr<const CADEntity> > _inserts;
-            QList<shared_ptr<const CADEntity> > _updates;
-            QList<shared_ptr<const CADEntity> > _deletes;
+
         };
 
     };

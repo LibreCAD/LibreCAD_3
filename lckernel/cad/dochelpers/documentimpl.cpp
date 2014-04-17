@@ -62,7 +62,6 @@ void DocumentImpl::absoleteEntity(shared_ptr<const CADEntity> entity) {
     emit absoleteEntityEvent(event);
 }
 
-
 shared_ptr<const CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) const {
     QHash <QString, shared_ptr<DocumentLayer> > allLayers = layerManager()->allLayers();
     QHashIterator<QString, shared_ptr<DocumentLayer> > li(allLayers);
@@ -78,7 +77,7 @@ shared_ptr<const CADEntity> DocumentImpl::findEntityByID(ID_DATATYPE id) const {
         }
     }
 
-    throw "Entity not found";
+    return shared_ptr<const CADEntity>();
 }
 
 QString DocumentImpl::findEntityLayerByID(ID_DATATYPE id) const {

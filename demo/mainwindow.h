@@ -31,11 +31,7 @@ class MainWindow : public IMainWindow {
         void updateMenus();
         void setActiveSubWindow(QWidget* window);
 
-    protected:
-    private slots:
-
-
-
+    protected slots:
         void on_actionNew_triggered();
         void on_actionRedo_triggered();
         void on_actionUndo_triggered();
