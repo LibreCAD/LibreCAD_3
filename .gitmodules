@@ -1,0 +1,3 @@
+[submodule "lcadluascript/lua-intf"]
+	path = lcadluascript/lua-intf
+	url = https://github.com/SteveKChiu/lua-intf
