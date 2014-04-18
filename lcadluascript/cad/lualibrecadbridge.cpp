@@ -20,8 +20,6 @@ extern "C"
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/operations/builder.h>
-#include <cad/operations/builder.h>
-#include <cad/operations/create.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
@@ -72,16 +70,6 @@ void lua_openlckernel(lua_State * L)
 
             .beginExtendClass <Circle, CADEntity> ("Circle")
             .addConstructor(LUA_SP(shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate& center, double radius))
-            .endClass()
-
-            .beginExtendClass <LuaLcOperationCreate, operation::Operation> ("Create")
-            .addConstructor(LUA_SP(shared_ptr<LuaLcOperationCreate>), LUA_ARGS(AbstractDocument* document, const QString& layerName))
-            .addFunction ("append", &LuaLcOperationCreate::append)
-            .endClass()
-
-            .beginExtendClass <LuaLcOperationRotate, operation::Operation> ("Rotate")
-            .addConstructor(LUA_SP(shared_ptr<LuaLcOperationRotate>), LUA_ARGS(lc::AbstractDocument* document, const geo::Coordinate& rotation_center, const double rotation_angle, const long no_copies))
-            .addFunction ("append", &LuaLcOperationRotate::append)
             .endClass()
 
             .beginClass <DocumentImpl> ("DocumentImpl")
