@@ -98,7 +98,7 @@ local p =rx;
 local q=ry;
 
 doc=app.currentDocument()
-ce = Create(doc, "0");
+ce=Builder(doc)
 
 while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
@@ -129,7 +129,7 @@ function drawTree( ce, x1,  y1,  angle,  depth)
 end
 
 d=app.currentDocument()
-ce = Create(d, "0");
+b=Builder(d)
 drawTree(ce, 0, 0, -90, 14);
 ce:execute()
 
@@ -297,7 +297,7 @@ b:execute()
 
 
 /*
- * l=Line(Coord(0,0), Coord(10,100));
+ * l=Line(Coord(0,0), Coord(00,100));
 d=app.currentDocument()
 
 b=Builder(d)
@@ -306,6 +306,7 @@ b:copy(Coord(0,0))
 b:rotate(Coord(0,0), math.rad(45))
 b:loop(7)
 b:push()
-b:move(Coord(10,10))
+b:rotate(Coord(0,0),math.rad(22.5))
+b:copy(Coord(150,00))
 b:execute()
 */

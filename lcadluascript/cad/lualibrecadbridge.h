@@ -9,11 +9,14 @@
 struct lua_State;
 void lua_openlckernel(lua_State*L);
 
-
-class LuaBuilder : public lc::operation::Builder
+/**
+ * @brief The LuaBuilderProxy class
+ * this class is a proxy class untill we tell Lua the return Builder refrences
+ */
+class LuaBuilderProxy : public lc::operation::Builder
 {
 public:
-    LuaBuilder(lc::AbstractDocument* document) : lc::operation::Builder(document) {
+    LuaBuilderProxy(lc::AbstractDocument* document) : lc::operation::Builder(document) {
     }
 
      void append(shared_ptr<lc::CADEntity> cadEntity) {

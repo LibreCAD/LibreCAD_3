@@ -20,6 +20,7 @@ extern "C"
 #include <cad/document/abstractdocument.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/operations/builder.h>
+#include <cad/operations/builderops.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
@@ -79,33 +80,33 @@ void lua_openlckernel(lua_State * L)
             .addConstructor(LUA_ARGS(const char *))
             .endClass ()
 
-            .beginExtendClass <LuaBuilder,lc::operation::DocumentOperation> ("Builder")
-            .addConstructor(LUA_SP(shared_ptr<LuaBuilder>), LUA_ARGS(lc::AbstractDocument * doc))
-            .addFunction ("append", &LuaBuilder::append)
-            .addFunction ("move", &LuaBuilder::move)
-            .addFunction ("copy", &LuaBuilder::copy)
-            .addFunction ("rotate", &LuaBuilder::rotate)
-            .addFunction ("push", &LuaBuilder::push)
-            .addFunction ("loop", &LuaBuilder::repeat)
-            .addFunction ("begin", &LuaBuilder::begin)
+            .beginExtendClass <LuaBuilderProxy,lc::operation::DocumentOperation> ("Builder")
+            .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(lc::AbstractDocument * doc))
+            .addFunction ("append", &LuaBuilderProxy::append)
+            .addFunction ("move", &LuaBuilderProxy::move)
+            .addFunction ("copy", &LuaBuilderProxy::copy)
+            .addFunction ("rotate", &LuaBuilderProxy::rotate)
+            .addFunction ("push", &LuaBuilderProxy::push)
+            .addFunction ("loop", &LuaBuilderProxy::repeat)
+            .addFunction ("begin", &LuaBuilderProxy::begin)
             .endClass ()
 
-            .beginClass <lc::operation::BBase> ("BBase")
+            .beginClass <lc::operation::Base> ("Base")
             .endClass ()
-            .beginExtendClass <lc::operation::BMove, lc::operation::BBase> ("BMove")
-            .addConstructor(LUA_SP(shared_ptr< lc::operation::BMove>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .beginExtendClass <lc::operation::Move, lc::operation::Base> ("Move")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::Move>), LUA_ARGS(const lc::geo::Coordinate& offset))
             .endClass()
-            .beginExtendClass <lc::operation::BBegin, lc::operation::BBase> ("BBegin")
-            .addConstructor(LUA_SP(shared_ptr< lc::operation::BBegin>), LUA_ARGS())
+            .beginExtendClass <lc::operation::Begin, lc::operation::Base> ("Begin")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::Begin>), LUA_ARGS())
             .endClass()
-            .beginExtendClass <lc::operation::BRepeat, lc::operation::BBase> ("BRepeat")
-            .addConstructor(LUA_SP(shared_ptr< lc::operation::BRepeat>), LUA_ARGS(const int numTimes))
+            .beginExtendClass <lc::operation::Loop, lc::operation::Base> ("Loop")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::Loop>), LUA_ARGS(const int numTimes))
             .endClass()
-            .beginExtendClass <lc::operation::BCopy, lc::operation::BBase> ("BCopy")
-            .addConstructor(LUA_SP(shared_ptr< lc::operation::BCopy>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .beginExtendClass <lc::operation::Copy, lc::operation::Base> ("Copy")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::Copy>), LUA_ARGS(const lc::geo::Coordinate& offset))
             .endClass()
-            .beginExtendClass <lc::operation::BPush, lc::operation::BBase> ("BPush")
-            .addConstructor(LUA_SP(shared_ptr< lc::operation::BPush>), LUA_ARGS())
+            .beginExtendClass <lc::operation::Push, lc::operation::Base> ("Push")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::Push>), LUA_ARGS())
             .endClass();
 
 }

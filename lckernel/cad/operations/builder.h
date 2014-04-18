@@ -2,6 +2,7 @@
 #define BUILDER_H
 
 
+#include "builderops.h"
 #include "documentoperation.h"
 #include "undoable.h"
 #include <QList>
@@ -12,108 +13,15 @@ namespace lc {
     class AbstractDocument;
     namespace operation {
 
-
-        class BBase {
-        public:
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                    const QList<shared_ptr< BBase> > _stack)  = 0;
-        };
-
-        class BRepeat: public BBase {
-        public:
-            BRepeat( const int numTimes);
-            virtual ~BRepeat() {
-                qDebug() << "BRepeat removed";
-            }
-
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-            private:
-                int _numTimes;
-        };
-
-        class BBegin: public BBase {
-        public:
-            BBegin( );
-            virtual ~BBegin() {
-                qDebug() << "BBegin removed";
-            }
-
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-                QList<shared_ptr<const CADEntity> > getEntities() const;
-            private:
-                QList<shared_ptr<const CADEntity> > _entities;
-        };
-
-        class BMove: public BBase {
-        public:
-            BMove( const geo::Coordinate& offset);
-            virtual ~BMove() {
-                qDebug() << "BMove removed";
-            }
-
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-            private:
-                geo::Coordinate _offset;
-        };
-
-        class BCopy: public BBase {
-        public:
-            BCopy( const geo::Coordinate& offset);
-            virtual ~BCopy() {
-                qDebug() << "BCopy removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-            private:
-                geo::Coordinate _offset;
-        };
-        class BRotate: public BBase {
-        public:
-            BRotate( const geo::Coordinate& rotation_center, const double rotation_angle);
-            virtual ~BRotate() {
-                qDebug() << "BRotate removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-            private:
-            geo::Coordinate _rotation_center;
-            double _rotation_angle;
-        };
-
-        class BPush: public BBase {
-        public:
-            BPush();
-            virtual ~BPush() {
-                qDebug() << "BPush removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< BBase> > _stack);
-        };
+        class Base;
 
         class Builder: public DocumentOperation, public Undoable {
-            friend class lc::operation::BBase;
+            friend class lc::operation::Base;
+
         public:
             Builder(AbstractDocument* document);
-            virtual ~Builder() {
-                qDebug() << "Builder removed";
-            }
+
+            virtual ~Builder();
              Builder& move(const geo::Coordinate& offset);
              Builder& copy(const geo::Coordinate& offset);
              Builder& repeat(const int numTimes);
@@ -130,7 +38,7 @@ namespace lc {
             virtual void processInternal();
 
         private:
-            QList<shared_ptr<BBase> > _stack;
+            QList<shared_ptr<Base> > _stack;
             QList<shared_ptr<const CADEntity> > _operationQue;
             QList<shared_ptr<const CADEntity> > _buffer;
             QList<shared_ptr<const CADEntity> > _entitiesStart;

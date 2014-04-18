@@ -62,7 +62,8 @@ SOURCES += lckernel.cpp \
     cad/geometry/geospline.cpp \
     cad/primitive/spline.cpp \
     cad/operations/builder.cpp \
-    cad/operations/documentoperation.cpp
+    cad/operations/documentoperation.cpp \
+    cad/operations/builderops.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -120,6 +121,7 @@ HEADERS += lckernel.h\
     cad/geometry/geospline.h \
     cad/primitive/spline.h \
     cad/operations/builder.h \
-    cad/operations/documentoperation.h
+    cad/operations/documentoperation.h \
+    cad/operations/builderops.h
 
 
