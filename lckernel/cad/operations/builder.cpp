@@ -44,15 +44,18 @@ Builder& Builder::push() {
 
 void Builder::processInternal() {
     QList<shared_ptr<const CADEntity> > newQueue(_operationQue);
+
     for (int i = 0; i < _stack.size(); ++i) {
         QList<shared_ptr<Base> > sup = _stack.mid(0, i);
-        newQueue= _stack.at(i)->process(newQueue, _buffer, sup);
+        newQueue = _stack.at(i)->process(newQueue, _buffer, sup);
     }
+
     _buffer.append(newQueue);
 
     for (int i = 0; i < _buffer.size(); ++i) {
         auto exists = document()->findEntityByID(_buffer.at(i)->id());
-        if (exists.get()!=NULL) {
+
+        if (exists.get() != NULL) {
             _entitiesStart.append(exists);
             document()->replaceEntity(_buffer.at(i), _buffer.at(i));
         } else {
@@ -65,6 +68,7 @@ void Builder::undo() const {
     for (int i = 0; i < _buffer.size(); ++i) {
         document()->removeEntity(_buffer.at(i)->id());
     }
+
     for (int i = 0; i < _entitiesStart.size(); ++i) {
         document()->addEntity("0", _entitiesStart.at(i));
     }
@@ -73,7 +77,8 @@ void Builder::undo() const {
 void Builder::redo() const {
     for (int i = 0; i < _buffer.size(); ++i) {
         auto exists = document()->findEntityByID(_buffer.at(i)->id());
-        if (exists.get()!=NULL) {
+
+        if (exists.get() != NULL) {
             document()->replaceEntity(_buffer.at(i), _buffer.at(i));
         } else {
             document()->addEntity("0", _buffer.at(i));

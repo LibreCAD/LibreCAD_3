@@ -18,7 +18,7 @@ namespace lc {
          * @param document
          */
         class DocumentOperation : public enable_shared_from_this<operation::DocumentOperation> {
-            friend class lc::AbstractDocument;
+                friend class lc::AbstractDocument;
 
             public:
                 DocumentOperation(AbstractDocument* document);

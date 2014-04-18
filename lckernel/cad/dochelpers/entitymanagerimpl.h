@@ -19,10 +19,10 @@ namespace lc {
     class EntityManagerImpl : public EntityManager {
             Q_OBJECT
         public:
-        /*!
-             * \brief Entity manager implementor.
-             * \param document
-             */
+            /*!
+                 * \brief Entity manager implementor.
+                 * \param document
+                 */
             EntityManagerImpl(AbstractDocument* document);
 
         public slots:

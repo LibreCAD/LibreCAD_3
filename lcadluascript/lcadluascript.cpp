@@ -24,21 +24,22 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::AbstractDocument* document)
-{
+LCadLuaScript::LCadLuaScript(lc::AbstractDocument* document) {
     _document = document;
 }
 
-QString *gOut;
+QString* gOut;
 lc::DocumentImpl* luaDoc;
 
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
-    for (int i=1; i <= nargs; ++i) {
+
+    for (int i = 1; i <= nargs; ++i) {
         gOut->append(lua_tostring(L, i));
         gOut->append("\n");
     }
+
     return 0;
 }
 
@@ -47,11 +48,11 @@ static const struct luaL_Reg printlib [] = {
     {NULL, NULL}
 };
 
-static lc::AbstractDocument * lua_getDocument() {
+static lc::AbstractDocument* lua_getDocument() {
     return luaDoc;
 }
 
-QString LCadLuaScript::run(const QString &script) {
+QString LCadLuaScript::run(const QString& script) {
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -60,7 +61,7 @@ QString LCadLuaScript::run(const QString &script) {
     lua_openlckernel(L);
 
     LuaBinding(L).beginModule("app")
-            .addFunction("currentDocument", &lua_getDocument);
+    .addFunction("currentDocument", &lua_getDocument);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -68,15 +69,18 @@ QString LCadLuaScript::run(const QString &script) {
     lua_pop(L, 1);
 
     // Some globals we have to figure out to make sure it works with multiple threads
-    QString out; gOut = &out;
+    QString out;
+    gOut = &out;
     luaDoc = static_pointer_cast<lc::DocumentImpl>(_document);
 
     // luaL_dofile(L, "/opt/librecad-test.lua");
     int s = luaL_dostring(L, script.toLocal8Bit().data());
-    if (s!=0) {
+
+    if (s != 0) {
         out.append(lua_tostring(L, -1));
         lua_pop(L, 1);
     }
+
     lua_close(L);
     return out;
 }

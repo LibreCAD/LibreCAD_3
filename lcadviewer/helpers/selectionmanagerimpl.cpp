@@ -41,6 +41,7 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
                 lc::geo::Coordinate nearestCoord = eCoordinate - point;
 
                 double cDistance = nearestCoord.magnitude();
+
                 if (cDistance < distance) {
                     entities.append(lc::EntityDistance(item->entity(), cDistance));
                 }
@@ -53,11 +54,11 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
 
 
 QList<shared_ptr<const lc::CADEntity> > SelectionManagerImpl::getEntitiesInArea(const lc::geo::Area& area) const {
-   // QList<LCGraphicsItem*> items = _view->items();
-   // QList<lc::EntityDistance> entities;
+    // QList<LCGraphicsItem*> items = _view->items();
+    // QList<lc::EntityDistance> entities;
 
     //for (int i = 0; i < items.count(); i++) {
-     //   entities.append(items.at(i)->entity());
+    //   entities.append(items.at(i)->entity());
     //}
 
 

@@ -27,13 +27,13 @@ class QCachedGraphicsView : public QGraphicsView {
         virtual void wheelEvent(QWheelEvent* event);
         virtual void resizeEvent(QResizeEvent* event);
 
-        virtual void mousePressEvent(QMouseEvent * event);
+        virtual void mousePressEvent(QMouseEvent* event);
         virtual void mouseMoveEvent(QMouseEvent* event);
         virtual void mouseReleaseEvent(QMouseEvent* event);
 
-        virtual void dragEnterEvent ( QDragEnterEvent * event );
-        virtual void dragLeaveEvent ( QDragLeaveEvent * event );
-        virtual void dragMoveEvent ( QDragMoveEvent * event );
+        virtual void dragEnterEvent(QDragEnterEvent* event);
+        virtual void dragLeaveEvent(QDragLeaveEvent* event);
+        virtual void dragMoveEvent(QDragMoveEvent* event);
 
         virtual QPointF lastMousePosition() const;
 
@@ -52,7 +52,7 @@ class QCachedGraphicsView : public QGraphicsView {
         QPixmap* getPixmapForView(QPixmap* pm);
         QPointF _lastMousePosition;
 
-        QList<LCGraphicsItem *> _selectedItems;
+        QList<LCGraphicsItem*> _selectedItems;
 
     private:
 

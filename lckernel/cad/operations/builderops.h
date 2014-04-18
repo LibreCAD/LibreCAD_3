@@ -18,10 +18,10 @@ namespace lc {
          * all operations should extends from Base
          */
         class Base {
-        public:
+            public:
                 virtual QList<shared_ptr<const CADEntity> > process(
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
+                    QList<shared_ptr<const CADEntity> >& buf,
                     const QList<shared_ptr< Base> > _stack)  = 0;
         };
 
@@ -43,16 +43,16 @@ namespace lc {
          * </pre>
          */
         class Loop: public Base {
-        public:
-            Loop( const int numTimes);
-            virtual ~Loop() {
-                qDebug() << "Loop removed";
-            }
+            public:
+                Loop(const int numTimes);
+                virtual ~Loop() {
+                    qDebug() << "Loop removed";
+                }
 
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
             private:
                 int _numTimes;
         };
@@ -76,16 +76,16 @@ namespace lc {
          * </pre>
          */
         class Begin: public Base {
-        public:
-            Begin( );
-            virtual ~Begin() {
-                qDebug() << "Begin removed";
-            }
+            public:
+                Begin();
+                virtual ~Begin() {
+                    qDebug() << "Begin removed";
+                }
 
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
                 QList<shared_ptr<const CADEntity> > getEntities() const;
             private:
                 QList<shared_ptr<const CADEntity> > _entities;
@@ -110,16 +110,16 @@ namespace lc {
          * </pre>
          */
         class Move: public Base {
-        public:
-            Move( const geo::Coordinate& offset);
-            virtual ~Move() {
-                qDebug() << "Move removed";
-            }
+            public:
+                Move(const geo::Coordinate& offset);
+                virtual ~Move() {
+                    qDebug() << "Move removed";
+                }
 
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
         };
@@ -143,15 +143,15 @@ namespace lc {
          * </pre>
          */
         class Copy: public Base {
-        public:
-            Copy( const geo::Coordinate& offset);
-            virtual ~Copy() {
-                qDebug() << "Copy removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+            public:
+                Copy(const geo::Coordinate& offset);
+                virtual ~Copy() {
+                    qDebug() << "Copy removed";
+                }
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
         };
@@ -176,18 +176,18 @@ namespace lc {
          * </pre>
          */
         class Rotate: public Base {
-        public:
-            Rotate( const geo::Coordinate& rotation_center, const double rotation_angle);
-            virtual ~Rotate() {
-                qDebug() << "Rotate removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+            public:
+                Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
+                virtual ~Rotate() {
+                    qDebug() << "Rotate removed";
+                }
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
             private:
-            geo::Coordinate _rotation_center;
-            double _rotation_angle;
+                geo::Coordinate _rotation_center;
+                double _rotation_angle;
         };
 
         /**
@@ -211,15 +211,15 @@ namespace lc {
          * </pre>
          */
         class Push: public Base {
-        public:
-            Push();
-            virtual ~Push() {
-                qDebug() << "Push removed";
-            }
-            virtual QList<shared_ptr<const CADEntity> > process(
-                QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> > & buf,
-                const QList<shared_ptr< Base> > _stack);
+            public:
+                Push();
+                virtual ~Push() {
+                    qDebug() << "Push removed";
+                }
+                virtual QList<shared_ptr<const CADEntity> > process(
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& buf,
+                    const QList<shared_ptr< Base> > _stack);
         };
     };
 }

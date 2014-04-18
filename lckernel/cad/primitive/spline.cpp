@@ -19,10 +19,12 @@ geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
 
 shared_ptr<const CADEntity> Spline::move(const geo::Coordinate& offset) const {
     QList<geo::Coordinate> control_pts;
+
     for (int i = 0; i < this->control_points().size(); ++i) {
         control_pts.append((this->control_points().at(i)) + offset);
     }
-    Spline *newspline = new Spline(control_pts, this->degree(), this->closed());
+
+    Spline* newspline = new Spline(control_pts, this->degree(), this->closed());
     newspline->setID(this->id());
     shared_ptr<const Spline> newSpline = shared_ptr<const Spline>(newspline);
     return newSpline;
@@ -30,20 +32,24 @@ shared_ptr<const CADEntity> Spline::move(const geo::Coordinate& offset) const {
 
 shared_ptr<const CADEntity> Spline::copy(const geo::Coordinate& offset) const {
     QList<geo::Coordinate> control_pts;
+
     for (int i = 0; i < this->control_points().size(); ++i) {
         control_pts.append((this->control_points().at(i)) + offset);
     }
-    Spline *newspline = new Spline(control_pts, this->degree(), this->closed());
+
+    Spline* newspline = new Spline(control_pts, this->degree(), this->closed());
     shared_ptr<const Spline> newSpline = shared_ptr<const Spline>(newspline);
     return newSpline;
 }
 
-shared_ptr<const CADEntity> Spline::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
+shared_ptr<const CADEntity> Spline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     QList<geo::Coordinate> control_pts;
+
     for (int i = 0; i < this->control_points().size(); ++i) {
         control_pts.append((this->control_points().at(i)).rotate(rotation_center, rotation_angle));
     }
-    Spline *newspline = new Spline(control_pts, this->degree(), this->closed());
+
+    Spline* newspline = new Spline(control_pts, this->degree(), this->closed());
     newspline->setID(this->id());
     shared_ptr<const Spline> newSpline = shared_ptr<const Spline>(newspline);
     return newSpline;
@@ -51,10 +57,12 @@ shared_ptr<const CADEntity> Spline::rotate(const geo::Coordinate &rotation_cente
 
 shared_ptr<const CADEntity> Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     QList<geo::Coordinate> control_pts;
+
     for (int i = 0; i < this->control_points().size(); ++i) {
         control_pts.append((this->control_points().at(i)).scale(scale_center, scale_factor));
     }
-    Spline *newspline = new Spline(control_pts, this->degree(), this->closed());
+
+    Spline* newspline = new Spline(control_pts, this->degree(), this->closed());
     newspline->setID(this->id());
     shared_ptr<const Spline> newSpline = shared_ptr<const Spline>(newspline);
     return newSpline;

@@ -10,10 +10,12 @@
 class GuiOperationFinishedEvent {
     public:
 
-    GuiOperationFinishedEvent(const GuiOperation & guiOperation) : _guiOperation(guiOperation) {       }
-       const GuiOperation & guiOperation() const {return _guiOperation;}
+        GuiOperationFinishedEvent(const GuiOperation& guiOperation) : _guiOperation(guiOperation) {       }
+        const GuiOperation& guiOperation() const {
+            return _guiOperation;
+        }
     private:
-       const GuiOperation & _guiOperation;
+        const GuiOperation& _guiOperation;
 };
 
 #endif // GUIOPERATIONFINISHEDEVENT_H

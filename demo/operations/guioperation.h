@@ -46,7 +46,9 @@ class GuiOperation : public QObject {
           */
         virtual shared_ptr<GuiOperation> next() const = 0 ;
     protected:
-        lc::AbstractDocument* document() const {return _document;}
+        lc::AbstractDocument* document() const {
+            return _document;
+        }
 
     public:
     signals:

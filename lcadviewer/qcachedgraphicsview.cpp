@@ -86,7 +86,7 @@ QPointF QCachedGraphicsView::lastMousePosition() const {
     return _lastMousePosition;
 }
 
-void QCachedGraphicsView::mousePressEvent(QMouseEvent * event) {
+void QCachedGraphicsView::mousePressEvent(QMouseEvent* event) {
     QGraphicsView::mousePressEvent(event);
 
 }
@@ -120,17 +120,17 @@ void QCachedGraphicsView::mouseReleaseEvent(QMouseEvent* event) {
 
 
 
-void QCachedGraphicsView::dragEnterEvent ( QDragEnterEvent * event ) {
+void QCachedGraphicsView::dragEnterEvent(QDragEnterEvent* event) {
     QCachedGraphicsView::dragEnterEvent(event);
-     qDebug() << "dragEnterEvent";
+    qDebug() << "dragEnterEvent";
 }
 
-void QCachedGraphicsView::dragLeaveEvent ( QDragLeaveEvent * event ) {
+void QCachedGraphicsView::dragLeaveEvent(QDragLeaveEvent* event) {
     QCachedGraphicsView::dragLeaveEvent(event);
     qDebug() << "dragLeaveEvent";
 }
 
-void QCachedGraphicsView::dragMoveEvent ( QDragMoveEvent * event ) {
+void QCachedGraphicsView::dragMoveEvent(QDragMoveEvent* event) {
     QCachedGraphicsView::dragMoveEvent(event);
     qDebug() << "dragMoveEvent";
 }

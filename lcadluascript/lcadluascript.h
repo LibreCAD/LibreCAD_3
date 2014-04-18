@@ -6,14 +6,13 @@
 #include <cad/document/abstractdocument.h>
 
 
-class LCADLUASCRIPTSHARED_EXPORT LCadLuaScript
-{
+class LCADLUASCRIPTSHARED_EXPORT LCadLuaScript {
 
-public:
-    LCadLuaScript(lc::AbstractDocument* document);
-    QString run(const QString &script);
-private:
-    lc::AbstractDocument* _document;
+    public:
+        LCadLuaScript(lc::AbstractDocument* document);
+        QString run(const QString& script);
+    private:
+        lc::AbstractDocument* _document;
 };
 
 #endif // LCADLUASCRIPT_H

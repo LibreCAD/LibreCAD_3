@@ -39,12 +39,12 @@ class TrimOperation : public GuiOperation {
         virtual void restart();
         virtual shared_ptr<GuiOperation> next() const;
         virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
-private slots:
-    void trimFinished();
-    void on_LimitPropertiesAssigned();
-    void on_TrimPropertiesAssigned();
+    private slots:
+        void trimFinished();
+        void on_LimitPropertiesAssigned();
+        void on_TrimPropertiesAssigned();
 
-private:
+    private:
         // Needed for state machine
         QStateMachine _machine;
         QSnappedState* _limitSelections;

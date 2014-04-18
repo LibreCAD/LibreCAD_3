@@ -11,11 +11,11 @@ namespace lc {
      */
     class AddEntityEvent {
         public:
-        /*!
-             * \brief Construct an Add Entity Event
-             * \param layerName Name of layer on which entity is to be added.
-             * \param cadEntity Entity to be added.
-             */
+            /*!
+                 * \brief Construct an Add Entity Event
+                 * \param layerName Name of layer on which entity is to be added.
+                 * \param cadEntity Entity to be added.
+                 */
             AddEntityEvent(const QString& layerName, shared_ptr<const CADEntity> cadEntity) : _layerName(layerName), _cadEntity(cadEntity) {
             }
 

@@ -43,27 +43,27 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 shared_ptr<const CADEntity> Circle::move(const geo::Coordinate& offset) const {
-    Circle *newcircle = new Circle(this->center() + offset, this->radius());
+    Circle* newcircle = new Circle(this->center() + offset, this->radius());
     newcircle->setID(this->id());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;
 }
 
 shared_ptr<const CADEntity> Circle::copy(const geo::Coordinate& offset) const {
-    Circle *newcircle = new Circle(this->center() + offset, this->radius());
+    Circle* newcircle = new Circle(this->center() + offset, this->radius());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;
 }
 
-shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
-    Circle *newcircle = new Circle(this->center().rotate(rotation_center, rotation_angle), this->radius());
+shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+    Circle* newcircle = new Circle(this->center().rotate(rotation_center, rotation_angle), this->radius());
     newcircle->setID(this->id());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;
 }
 
 shared_ptr<const CADEntity> Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    Circle *newcircle = new Circle(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x());
+    Circle* newcircle = new Circle(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x());
     newcircle->setID(this->id());
     shared_ptr<const Circle> newCircle = shared_ptr<const Circle>(newcircle);
     return newCircle;

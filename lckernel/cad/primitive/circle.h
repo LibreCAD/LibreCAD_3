@@ -29,7 +29,7 @@ namespace lc {
         public:
             virtual shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;
             virtual shared_ptr<const CADEntity> copy(const geo::Coordinate& offset) const;
-            virtual shared_ptr<const CADEntity> rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const;
+            virtual shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
         public:
             virtual void accept(shared_ptr<const Line> o, EntityVisitor& ei) const {

@@ -8,7 +8,7 @@ namespace lc {
     namespace geo {
         class Ellipse  {
             public:
-                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc=false);
+                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
 
                 const Coordinate& center() const;
                 const Coordinate& majorP() const;

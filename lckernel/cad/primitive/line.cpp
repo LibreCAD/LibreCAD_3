@@ -40,20 +40,20 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 shared_ptr<const CADEntity> Line::move(const geo::Coordinate& offset) const {
-    Line *newline = new Line(this->start() + offset, this->end() + offset);
+    Line* newline = new Line(this->start() + offset, this->end() + offset);
     newline->setID(this->id());
     shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
     return newLine;
 }
 
 shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const {
-    Line *newline = new Line(this->start() + offset, this->end() + offset);
+    Line* newline = new Line(this->start() + offset, this->end() + offset);
     shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
     return newLine;
 }
 
-shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
-    Line *newline = new Line(this->start().rotate(rotation_center, rotation_angle),
+shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+    Line* newline = new Line(this->start().rotate(rotation_center, rotation_angle),
                              this->end().rotate(rotation_center, rotation_angle));
     newline->setID(this->id());
     shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
@@ -61,8 +61,8 @@ shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate &rotation_center,
 }
 
 shared_ptr<const CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    Line *newline = new Line(this->start().scale(scale_center, scale_factor),
-                                 this->end().scale(scale_center, scale_factor));
+    Line* newline = new Line(this->start().scale(scale_center, scale_factor),
+                             this->end().scale(scale_center, scale_factor));
     newline->setID(this->id());
     shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
     return newLine;

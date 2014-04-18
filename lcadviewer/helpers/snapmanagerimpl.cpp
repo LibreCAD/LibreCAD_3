@@ -26,7 +26,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // Find all entities that are close to the current mouse pointer
     _entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
 
-    if (_entities.count()>0) {
+    if (_entities.count() > 0) {
         qDebug() << "Found" << _entities.count() << "entities close to the cursor";
     }
 
@@ -34,6 +34,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // TODO: Need some modification to find the closest intersection point
     if (_entities.count() > 1) {
         qSort(_entities.begin() , _entities.end(), lc::EntityDistance::sortAscending);
+
         for (int a = 0; a < _entities.count(); a++) {
             for (int b = a + 1; b < _entities.count(); b++) {
                 shared_ptr<const lc::CADEntity> i1 = _entities.at(a).entity();
@@ -41,6 +42,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
                 lc::Intersect intersect(lc::Intersect::MustIntersect);
                 i1->accept(i2, intersect);
+
                 if (intersect.result().count() > 0) {
                     QList<lc::geo::Coordinate> coords = intersect.result();
                     qSort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(event.mousePosition()));
@@ -96,6 +98,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
     if (_lastSnapEvent.status() == true) {
         MouseReleaseEvent snappedLocation(event.view(), _lastSnapEvent.snapPoint(), event.mouseEvent(), _entities);
+
         if (event.mouseEvent()->button() & Qt::RightButton) {
             emit mouseRightReleaseEvent(snappedLocation);
         } else {

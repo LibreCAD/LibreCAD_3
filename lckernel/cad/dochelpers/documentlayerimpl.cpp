@@ -33,9 +33,10 @@ void DocumentLayerImpl::removeEntity(ID_DATATYPE id) {
 }
 
 void DocumentLayerImpl::replaceEntity(shared_ptr<const CADEntity> tobeRemoved, shared_ptr<const CADEntity> toReplaceWith) {
-    if (tobeRemoved->id()==toReplaceWith->id()) {
+    if (tobeRemoved->id() == toReplaceWith->id()) {
         throw "tobeRemoved and toReplaceWith must have the same ID";
     }
+
     if (_cadentities.contains(tobeRemoved->id())) {
         _cadentities.remove(tobeRemoved->id());
         _cadentities.insert(toReplaceWith->id(), toReplaceWith);

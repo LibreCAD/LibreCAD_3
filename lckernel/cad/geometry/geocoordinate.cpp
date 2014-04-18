@@ -92,12 +92,12 @@ Coordinate Coordinate::rotate(const double& angle) const {
     return rotate(Coordinate(angle));
 }
 
-Coordinate Coordinate::rotate(const geo::Coordinate &point, const Coordinate &angleVector) const {
+Coordinate Coordinate::rotate(const geo::Coordinate& point, const Coordinate& angleVector) const {
     Coordinate new_center = point + (*this - point).rotate(angleVector);
     return new_center;
 }
 
-Coordinate Coordinate::rotate(const geo::Coordinate &point, const double &angle) const {
+Coordinate Coordinate::rotate(const geo::Coordinate& point, const double& angle) const {
     return rotate(point, Coordinate(angle));
 }
 
@@ -107,7 +107,7 @@ Coordinate Coordinate::rotate(const geo::Coordinate &point, const double &angle)
 Coordinate Coordinate::scale(const double& scale_factor) const {
     double x0 = _x * scale_factor;
     double y0 = _y * scale_factor;
-    return Coordinate(x0,y0);
+    return Coordinate(x0, y0);
 }
 
 /**

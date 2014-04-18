@@ -29,15 +29,13 @@ void LCMainToolbar::on_toolButton_2_clicked() {
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
-void LCMainToolbar::on_toolButton_3_clicked()
-{
+void LCMainToolbar::on_toolButton_3_clicked() {
     shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 
 }
 
-void LCMainToolbar::on_toolButton_4_clicked()
-{
+void LCMainToolbar::on_toolButton_4_clicked() {
     if (_parent->activeMdiChild()->snapManager()->isGridSnappable()) {
         _parent->activeMdiChild()->snapManager()->setGridSnappable(false);
     } else {
@@ -46,8 +44,7 @@ void LCMainToolbar::on_toolButton_4_clicked()
 
 }
 
-void LCMainToolbar::on_toolButton_5_clicked()
-{
+void LCMainToolbar::on_toolButton_5_clicked() {
     auto l = make_shared<const lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100));
 
     auto builder = make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document());

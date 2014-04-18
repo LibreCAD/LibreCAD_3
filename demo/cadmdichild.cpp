@@ -230,9 +230,9 @@ lc::AbstractDocument* CadMdiChild::document() const {
     return _document;
 }
 
- shared_ptr<lc::SelectionManager> CadMdiChild::selectionManager() const {
+shared_ptr<lc::SelectionManager> CadMdiChild::selectionManager() const {
     return _selectionManager;
- }
+}
 
 
 void CadMdiChild::cancelCurrentOperations() {

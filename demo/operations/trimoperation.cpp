@@ -48,8 +48,8 @@ void TrimOperation::trimFinished() {
 }
 
 shared_ptr<lc::operation::DocumentOperation> TrimOperation::operation() const {
-//    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
-//    return foo;
+    //    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
+    //    return foo;
     return shared_ptr<lc::operation::DocumentOperation>();
 }
 
@@ -59,20 +59,20 @@ void TrimOperation::on_drawEvent(const DrawEvent& event) {
 }
 
 void TrimOperation::on_LimitPropertiesAssigned() {
-    QList<lc::EntityDistance> enties=this->_mouseReleaseEvent.entities();
+    QList<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
-    if (enties.count()>0) {
-        shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
+    if (enties.count() > 0) {
+        shared_ptr<const lc::CADEntity> entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
 void TrimOperation::on_TrimPropertiesAssigned() {
-    QList<lc::EntityDistance> enties=this->_mouseReleaseEvent.entities();
+    QList<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
-    if (enties.count()>0) {
-        shared_ptr<const lc::CADEntity> entity=enties.at(0).entity();
+    if (enties.count() > 0) {
+        shared_ptr<const lc::CADEntity> entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }

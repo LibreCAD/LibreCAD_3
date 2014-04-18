@@ -8,8 +8,7 @@ using namespace geo;
 Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc)  :
     _center(center),
     _majorP(majorP),
-    _isArc(isArc)
-{
+    _isArc(isArc) {
     _minorRadius = minorRadius;
     _startAngle = startAngle;
     _endAngle = endAngle;
@@ -44,7 +43,7 @@ double Ellipse::endAngle() const {
 }
 
 Coordinate Ellipse::getPoint(const double& angle) const {
-    return _center+ Coordinate(majorP().magnitude()*cos(angle), minorRadius()*sin(angle)).rotate(Coordinate(0., 0.), majorP().angle());
+    return _center + Coordinate(majorP().magnitude() * cos(angle), minorRadius() * sin(angle)).rotate(Coordinate(0., 0.), majorP().angle());
 }
 
 Coordinate Ellipse::startPoint() const {
@@ -60,6 +59,6 @@ bool Ellipse::isArc() const {
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {
     Coordinate offset = coord - _center;
-    Coordinate point=offset.rotate(-_majorP.angle());
-    return atan2(point.y()*_majorP.magnitude(), point.x()*_minorRadius);
+    Coordinate point = offset.rotate(-_majorP.angle());
+    return atan2(point.y() * _majorP.magnitude(), point.x() * _minorRadius);
 }

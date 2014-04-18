@@ -47,7 +47,7 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {    
+shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {
     QList<shared_ptr<const lc::MetaType> > metaTypes;
     auto builder = make_shared<lc::operation::Builder>(document());
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();

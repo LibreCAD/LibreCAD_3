@@ -4,7 +4,7 @@
 #include <boost/math/constants/constants.hpp>
 
 namespace lc {
-    #define LAYERMANAGERHELPER_NAME "LAYERMANAGER"
+#define LAYERMANAGERHELPER_NAME "LAYERMANAGER"
 }
 
 const double PI   =   boost::math::constants::pi<double>();
