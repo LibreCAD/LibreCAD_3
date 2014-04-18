@@ -9,7 +9,7 @@
 #include "events/mousereleaseevent.h"
 #include "helpers/snapmanager.h"
 #include "drawitems/cursor.h"
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 
 #include "qsnappedstate.h"
 
@@ -25,7 +25,7 @@ class LineCreateOperation : public GuiOperation {
     public:
         LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
-        virtual shared_ptr<lc::operation::Operation> operation() const;
+        virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
 
         virtual void restart();
 

@@ -2,7 +2,7 @@
 #define BUILDER_H
 
 
-#include "operation.h"
+#include "documentoperation.h"
 #include "undoable.h"
 #include <QList>
 
@@ -95,7 +95,19 @@ namespace lc {
             double _rotation_angle;
         };
 
-        class Builder: public Operation, public Undoable {
+        class BPush: public BBase {
+        public:
+            BPush();
+            virtual ~BPush() {
+                qDebug() << "BPush removed";
+            }
+            virtual QList<shared_ptr<const CADEntity> > process(
+                QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> > & buf,
+                const QList<shared_ptr< BBase> > _stack);
+        };
+
+        class Builder: public DocumentOperation, public Undoable {
             friend class lc::operation::BBase;
         public:
             Builder(AbstractDocument* document);
@@ -107,6 +119,7 @@ namespace lc {
              Builder& repeat(const int numTimes);
              Builder& rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
              Builder& begin();
+             Builder& push();
 
              Builder& append(shared_ptr<const CADEntity> cadEntity);
 

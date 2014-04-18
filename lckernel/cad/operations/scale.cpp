@@ -5,7 +5,7 @@ using namespace lc;
 using namespace operation;
 
 
-Scale::Scale(AbstractDocument* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : Operation(document), Undoable("Scale entities"), _scale_center(scale_center), _scale_factor(scale_factor)  {
+Scale::Scale(AbstractDocument* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : DocumentOperation(document), Undoable("Scale entities"), _scale_center(scale_center), _scale_factor(scale_factor)  {
 }
 
 void Scale::append(shared_ptr<const CADEntity> cadEntity) {

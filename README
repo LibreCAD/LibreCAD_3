@@ -3,3 +3,15 @@ This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modulari
 2) The kernel
 3) The CADViewer
 
+
+Compilation Instructions
+========
+
+Install boost
+Install Qt >4.8 or better Qt 5
+Install git
+
+git clone --recursive https://github.com/rvt/kerneldev 
+
+qmake -r
+make -j 4

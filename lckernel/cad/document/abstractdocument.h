@@ -15,40 +15,40 @@
 namespace lc {
 
     namespace operation {
-        class Operation;
+        class DocumentOperation;
     }
 
     class AbstractDocument : public QObject {
             Q_OBJECT
         public:
         protected:
-            virtual void execute(shared_ptr<operation::Operation> operation) = 0;
+            virtual void execute(shared_ptr<operation::DocumentOperation> operation) = 0;
 
             /*!
              * \brief begins an operation
              * \param operation
              */
-            virtual void begin(shared_ptr<operation::Operation> operation) = 0;
+            virtual void begin(shared_ptr<operation::DocumentOperation> operation) = 0;
             /*!
              * \brief commits an operation
              * \param operation
              */
-            virtual void commit(shared_ptr<operation::Operation> operation) = 0;
+            virtual void commit(shared_ptr<operation::DocumentOperation> operation) = 0;
             /*!
              * \brief operationStart Starts the operation.
              * \param operation
              */
-            virtual void operationStart(shared_ptr<operation::Operation> operation);
+            virtual void operationStart(shared_ptr<operation::DocumentOperation> operation);
             /*!
              * \brief operationFinnish Finishes the operation.
              * \param operation
              */
-            virtual void operationFinnish(shared_ptr<operation::Operation> operation);
+            virtual void operationFinnish(shared_ptr<operation::DocumentOperation> operation);
             /*!
              * \brief operationProcess process the operation.
              * \param operation
              */
-            virtual void operationProcess(shared_ptr<operation::Operation> operation);
+            virtual void operationProcess(shared_ptr<operation::DocumentOperation> operation);
 
         public:
             // I am not to happy yet that this all needs to be public, however currently in a phase to get the proof of concept working
@@ -89,7 +89,7 @@ namespace lc {
 
         public:
             friend class BaseManager;
-            friend class lc::operation::Operation;
+            friend class lc::operation::DocumentOperation;
 
     };
 

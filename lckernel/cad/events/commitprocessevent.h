@@ -2,7 +2,7 @@
 #define COMMITPROCESSEVENT_H
 
 #include "cad/const.h"
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 
 namespace lc {
 
@@ -11,17 +11,17 @@ namespace lc {
      */
     class CommitProcessEvent {
         public:
-            CommitProcessEvent(shared_ptr<operation::Operation> operation) : _operation(operation) {
+            CommitProcessEvent(shared_ptr<operation::DocumentOperation> operation) : _operation(operation) {
             };
             /*!
              * \brief operation
-             * \return operation::Operation Operation.
+             * \return operation::DocumentOperation Operation.
              */
-            shared_ptr<operation::Operation> operation() const {
+            shared_ptr<operation::DocumentOperation> operation() const {
                 return _operation;
             }
         private:
-            const shared_ptr<operation::Operation> _operation; /*!< operation _operation */
+            const shared_ptr<operation::DocumentOperation> _operation; /*!< operation _operation */
     };
 }
 #endif // COMMITPROCESSEVENT_H

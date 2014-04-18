@@ -17,11 +17,11 @@ namespace lc {
          *
          * @param document
          */
-        class Operation : public enable_shared_from_this<operation::Operation> {
+        class DocumentOperation : public enable_shared_from_this<operation::DocumentOperation> {
             friend class lc::AbstractDocument;
 
             public:
-                Operation(AbstractDocument* document);
+                DocumentOperation(AbstractDocument* document);
                 AbstractDocument* document() const;
 
                 /*!
@@ -29,7 +29,7 @@ namespace lc {
                  */
                 virtual void execute();
 
-                virtual ~Operation() {}
+                virtual ~DocumentOperation() {}
 
             private:
 

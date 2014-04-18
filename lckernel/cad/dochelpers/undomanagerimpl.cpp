@@ -2,7 +2,7 @@
 
 #include <QDebug>
 
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 #include "cad/operations/undoable.h"
 
 using namespace lc;

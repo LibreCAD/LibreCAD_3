@@ -5,7 +5,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Builder::Builder(AbstractDocument* document) : Operation(document), Undoable("Builder")
+Builder::Builder(AbstractDocument* document) : DocumentOperation(document), Undoable("Builder")
 {
 }
 
@@ -34,6 +34,10 @@ Builder& Builder::rotate(const geo::Coordinate& rotation_center, const double ro
 }
 Builder& Builder::begin() {
     _stack.append(make_shared< BBegin>());
+    return *this;
+}
+Builder& Builder::push() {
+    _stack.append(make_shared< BPush>());
     return *this;
 }
 
@@ -180,4 +184,18 @@ QList<shared_ptr<const CADEntity> > BRotate::process(
     return newQueue;
 }
 
+
+BPush::BPush( ) : BBase() {
+}
+
+
+QList<shared_ptr<const CADEntity> > BPush::process(
+        QList<shared_ptr<const CADEntity> > entities,
+        QList<shared_ptr<const CADEntity> > &buf,
+        const QList<shared_ptr< BBase> > ) {
+    QList<shared_ptr<const CADEntity> > newQueue(buf);
+    newQueue.append(entities);
+    buf.clear();
+    return newQueue;
+}
 

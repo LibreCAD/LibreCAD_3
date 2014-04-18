@@ -4,6 +4,11 @@
 MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor) :  _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
 }
 
+MetricGrid::~MetricGrid() {
+    qDebug() << "MetricGrid destroyed";
+}
+
+
 
 void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
 

@@ -12,6 +12,7 @@
 class GradientBackground : public LCViewerDrawItem {
     public:
         GradientBackground(const QColor& topColor, const QColor& bottomColor);
+        virtual ~GradientBackground();
 
         void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
     private:

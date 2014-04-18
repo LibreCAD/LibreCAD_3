@@ -56,13 +56,13 @@ SOURCES += lckernel.cpp \
     cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
     cad/geometry/geotext.cpp \
-    cad/operations/operation.cpp \
     cad/operations/scale.cpp \
     cad/operations/trim.cpp \
     cad/functions/ftrim.cpp \
     cad/geometry/geospline.cpp \
     cad/primitive/spline.cpp \
-    cad/operations/builder.cpp
+    cad/operations/builder.cpp \
+    cad/operations/documentoperation.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -84,7 +84,6 @@ HEADERS += lckernel.h\
     cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
     cad/document/selectionmanager.h \
-    cad/operations/operation.h \
     cad/events/beginprocessevent.h \
     cad/events/commitprocessevent.h \
     cad/events/addentityevent.h \
@@ -120,6 +119,7 @@ HEADERS += lckernel.h\
     cad/operations/scale.h \
     cad/geometry/geospline.h \
     cad/primitive/spline.h \
-    cad/operations/builder.h
+    cad/operations/builder.h \
+    cad/operations/documentoperation.h
 
 

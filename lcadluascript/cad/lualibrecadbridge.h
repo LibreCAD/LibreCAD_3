@@ -35,6 +35,9 @@ public:
      void begin() {
           lc::operation::Builder::begin();
      }
+     void push() {
+          lc::operation::Builder::push();
+     }
 
 };
 

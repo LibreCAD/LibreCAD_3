@@ -1,6 +1,5 @@
 #include "trimoperation.h"
 
-#include "cad/operations/create.h"
 #include "guioperationfinishedevent.h"
 #include <typeinfo>
 
@@ -48,9 +47,10 @@ void TrimOperation::trimFinished() {
     emit guiOperationFinished(of);
 }
 
-shared_ptr<lc::operation::Operation> TrimOperation::operation() const {
-    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
-    return foo;
+shared_ptr<lc::operation::DocumentOperation> TrimOperation::operation() const {
+//    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
+//    return foo;
+    return shared_ptr<lc::operation::DocumentOperation>();
 }
 
 void TrimOperation::on_drawEvent(const DrawEvent& event) {

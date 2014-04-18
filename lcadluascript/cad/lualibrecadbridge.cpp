@@ -32,8 +32,8 @@ void lua_openlckernel(lua_State * L)
 {
 
     LuaBinding(L)
-            .beginClass <operation::Operation> ("Operation")
-            .addFunction("execute", &operation::Operation::execute)
+            .beginClass <operation::DocumentOperation> ("Operation")
+            .addFunction("execute", &operation::DocumentOperation::execute)
             .endClass ()
 
             .beginClass <ID> ("ID")
@@ -79,12 +79,13 @@ void lua_openlckernel(lua_State * L)
             .addConstructor(LUA_ARGS(const char *))
             .endClass ()
 
-            .beginExtendClass <LuaBuilder,lc::operation::Operation> ("Builder")
+            .beginExtendClass <LuaBuilder,lc::operation::DocumentOperation> ("Builder")
             .addConstructor(LUA_SP(shared_ptr<LuaBuilder>), LUA_ARGS(lc::AbstractDocument * doc))
             .addFunction ("append", &LuaBuilder::append)
             .addFunction ("move", &LuaBuilder::move)
             .addFunction ("copy", &LuaBuilder::copy)
             .addFunction ("rotate", &LuaBuilder::rotate)
+            .addFunction ("push", &LuaBuilder::push)
             .addFunction ("loop", &LuaBuilder::repeat)
             .addFunction ("begin", &LuaBuilder::begin)
             .endClass ()
@@ -102,6 +103,9 @@ void lua_openlckernel(lua_State * L)
             .endClass()
             .beginExtendClass <lc::operation::BCopy, lc::operation::BBase> ("BCopy")
             .addConstructor(LUA_SP(shared_ptr< lc::operation::BCopy>), LUA_ARGS(const lc::geo::Coordinate& offset))
+            .endClass()
+            .beginExtendClass <lc::operation::BPush, lc::operation::BBase> ("BPush")
+            .addConstructor(LUA_SP(shared_ptr< lc::operation::BPush>), LUA_ARGS())
             .endClass();
 
 }

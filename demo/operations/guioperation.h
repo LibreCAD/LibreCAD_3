@@ -8,7 +8,7 @@
 
 #include "cad/base/cadentity.h"
 #include "cad/primitive/line.h"
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 
 
 
@@ -31,7 +31,7 @@ class GuiOperation : public QObject {
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual shared_ptr<lc::operation::Operation> operation() const = 0;
+        virtual shared_ptr<lc::operation::DocumentOperation> operation() const = 0;
 
         /*!
           * \brief restart this operation

@@ -17,7 +17,6 @@
 #include "cad/dochelpers/entitymanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
-#include "cad/operations/create.h"
 
 #include "drawitems/gradientbackground.h"
 #include "drawitems/metricgrid.h"
@@ -28,6 +27,8 @@
 #include "cad/interface/snapable.h"
 
 #include "cadmdichild.h"
+
+#include <cad/operations/builder.h>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
@@ -99,13 +100,13 @@ void CadMdiChild::newDocument() {
 
 
     // Create a cross at position 0,0
-    auto foo = make_shared<lc::operation::Create>(_document, "0");
-    foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.))));
-    foo->append(shared_ptr<const lc::CADEntity>(new lc::Line(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.))));
-    foo->append(shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0))));
-    foo->append(shared_ptr<const lc::CADEntity>(new lc::Circle(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0))));
+    auto builder = make_shared<lc::operation::Builder>(document());
+    builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.)));
+    builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.)));
+    builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0)));
+    builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0)));
 
-    foo->execute();
+    builder->execute();
 
 }
 
@@ -120,7 +121,7 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto oper = make_shared<lc::operation::Create>(_document, "0");
+    auto builder = make_shared<lc::operation::Builder>(document());
 
     QTime myTimer;
     myTimer.start();
@@ -131,27 +132,27 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
-        oper->append(make_shared<const lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2)));
+        builder->append(make_shared<const lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2)));
     }
 
     qDebug() << "Create : " << myTimer.elapsed();
     myTimer.start();
-    oper->execute();
+    builder->execute();
     qDebug() << "Process : " << myTimer.elapsed();
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto oper = make_shared<lc::operation::Create>(_document, "0");
+    auto builder = make_shared<lc::operation::Builder>(document());
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
         double r = randInt(0, 150);
-        oper->append(make_shared<const lc::Circle>(lc::geo::Coordinate(x1, y1), r));
+        builder->append(make_shared<const lc::Circle>(lc::geo::Coordinate(x1, y1), r));
     }
 
-    oper->execute();
+    builder->execute();
 }
 
 
@@ -160,7 +161,7 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto oper = make_shared<lc::operation::Create>(_document, "0");
+    auto builder = make_shared<lc::operation::Builder>(document());
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -178,14 +179,14 @@ void CadMdiChild::on_addArcs_clicked() {
 
         s = (0 + 45) / (360.0 / PI / 2);
         e = (180 + 45) / (360.0 / PI / 2);
-        oper->append(make_shared<const lc::Arc>(lc::geo::Coordinate(x1, y1), r, s, e));
+        builder->append(make_shared<const lc::Arc>(lc::geo::Coordinate(x1, y1), r, s, e));
     }
 
-    oper->execute();
+    builder->execute();
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto oper = make_shared<lc::operation::Create>(_document, "0");
+    auto builder = make_shared<lc::operation::Builder>(document());
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -206,10 +207,10 @@ void CadMdiChild::on_addEllipse_clicked() {
 
         s = (0 + 45) / (360.0 / PI / 2);
         e = (180 + 45) / (360.0 / PI / 2);
-        oper->append(make_shared<const lc::Ellipse>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e));
+        builder->append(make_shared<const lc::Ellipse>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e));
     }
 
-    oper->execute();
+    builder->execute();
 }
 
 

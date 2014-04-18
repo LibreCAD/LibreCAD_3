@@ -25,20 +25,20 @@ void DocumentImpl::setLayerManager(shared_ptr<LayerManager> layerManager) {
     _layerManager = layerManager;
 }
 
-void DocumentImpl::execute(shared_ptr<operation::Operation> operation) {
+void DocumentImpl::execute(shared_ptr<operation::DocumentOperation> operation) {
     std::lock_guard<std::mutex> lck (_documentMutex);
     begin(operation);
     this->operationProcess(operation);
     commit(operation);
 }
 
-void DocumentImpl::begin(shared_ptr<operation::Operation> operation) {
+void DocumentImpl::begin(shared_ptr<operation::DocumentOperation> operation) {
     this->operationStart(operation);
     BeginProcessEvent event;
     emit beginProcessEvent(event);
 }
 
-void DocumentImpl::commit(shared_ptr<operation::Operation> operation) {
+void DocumentImpl::commit(shared_ptr<operation::DocumentOperation> operation) {
     CommitProcessEvent event(operation);
     emit commitProcessEvent(event);
     this->operationFinnish(operation);

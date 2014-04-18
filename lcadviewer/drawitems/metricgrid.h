@@ -14,7 +14,7 @@
 class MetricGrid : public LCViewerDrawItem, public lc::Snapable {
     public:
         MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor);
-
+        virtual ~MetricGrid();
 
         virtual void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
 

@@ -8,7 +8,7 @@
 #include "cad/base/cadentity.h"
 #include "undoable.h"
 #include "cad/functions/ftrim.h"
-#include "operation.h"
+#include "documentoperation.h"
 
 namespace lc {
     class AbstractDocument;
@@ -16,7 +16,7 @@ namespace lc {
         /**
          * This class can be used to add or remove entities from the document
          */
-        class Trim : public Operation, public Undoable {
+        class Trim : public DocumentOperation, public Undoable {
             public:
                 Trim(AbstractDocument* document,  shared_ptr<lc::FTrim> trim) ;
 

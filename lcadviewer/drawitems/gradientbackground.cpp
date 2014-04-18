@@ -1,10 +1,15 @@
 #include "gradientbackground.h"
 
+#include <qdebug>
 #include <QRectF>
 #include <QGraphicsView>
 #include <QPainter>
 
 GradientBackground::GradientBackground(const QColor& topColor, const QColor& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {
+}
+
+GradientBackground::~GradientBackground() {
+    qDebug() << "GradientBackground destroyed";
 }
 
 

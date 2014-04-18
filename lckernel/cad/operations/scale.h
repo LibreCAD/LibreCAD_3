@@ -6,14 +6,14 @@
 
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
-#include "operation.h"
+#include "documentoperation.h"
 #include "undoable.h"
 
 namespace lc {
     class AbstractDocument;
     namespace operation {
 
-        class Scale : public Operation, public Undoable {
+        class Scale : public DocumentOperation, public Undoable {
             public:
                 Scale(AbstractDocument* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
 

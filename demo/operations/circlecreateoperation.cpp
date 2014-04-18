@@ -2,7 +2,8 @@
 
 #include "cad/primitive/circle.h"
 #include "guioperationfinishedevent.h"
-#include "cad/operations/create.h"
+
+#include <cad/operations/builder.h>
 
 CircleCreateOperation::CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
@@ -46,12 +47,12 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-shared_ptr<lc::operation::Operation> CircleCreateOperation::operation() const {
+shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {    
     QList<shared_ptr<const lc::MetaType> > metaTypes;
+    auto builder = make_shared<lc::operation::Builder>(document());
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0") );
-    foo->append(shared_ptr<const lc::Circle>(new lc::Circle(_startPoint, r, metaTypes)));
-    return foo;
+    builder->append(make_shared<lc::Circle>(_startPoint, r, metaTypes));
+    return builder;
 }
 
 void CircleCreateOperation::restart() {

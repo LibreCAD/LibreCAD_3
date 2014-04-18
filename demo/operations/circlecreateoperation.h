@@ -47,7 +47,7 @@ class CircleCreateOperation :  public GuiOperation {
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
 
-        virtual shared_ptr<lc::operation::Operation> operation() const;
+        virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
     private slots:
         void circleCreationFinished();
 

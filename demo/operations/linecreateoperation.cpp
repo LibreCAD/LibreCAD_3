@@ -2,7 +2,8 @@
 
 #include "cad/primitive/line.h"
 #include "guioperationfinishedevent.h"
-#include "cad/operations/create.h"
+
+#include <cad/operations/builder.h>
 
 LineCreateOperation::LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
@@ -45,12 +46,12 @@ void LineCreateOperation::lineCreationFinished() {
     emit guiOperationFinished(of);
 }
 
-shared_ptr<lc::operation::Operation> LineCreateOperation::operation() const {
+shared_ptr<lc::operation::DocumentOperation> LineCreateOperation::operation() const {
 
     QList<shared_ptr<const lc::MetaType> > metaTypes;
-    shared_ptr<lc::operation::Create> foo = shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
-    foo->append(shared_ptr<const lc::Line>(new lc::Line(_startPoint, _endPoint, metaTypes)));
-    return foo;
+    auto builder = make_shared<lc::operation::Builder>(document());
+    builder->append(make_shared<lc::Line>(_startPoint, _endPoint, metaTypes));
+    return builder;
 }
 
 void LineCreateOperation::restart() {

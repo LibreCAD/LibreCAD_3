@@ -1,5 +1,5 @@
 #include "abstractdocument.h"
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 
 #include "cad/events/beginprocessevent.h"
 #include "cad/events/commitprocessevent.h"
@@ -9,12 +9,12 @@
 
 using namespace lc;
 
-void AbstractDocument::operationStart(shared_ptr<operation::Operation> operation) {
+void AbstractDocument::operationStart(shared_ptr<operation::DocumentOperation> operation) {
     operation->start();
 }
-void AbstractDocument::operationFinnish(shared_ptr<operation::Operation> operation) {
+void AbstractDocument::operationFinnish(shared_ptr<operation::DocumentOperation> operation) {
     operation->finnish();
 }
-void AbstractDocument::operationProcess(shared_ptr<operation::Operation> operation) {
+void AbstractDocument::operationProcess(shared_ptr<operation::DocumentOperation> operation) {
     operation->process();
 }

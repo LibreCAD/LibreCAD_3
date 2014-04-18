@@ -38,7 +38,7 @@ class TrimOperation : public GuiOperation {
 
         virtual void restart();
         virtual shared_ptr<GuiOperation> next() const;
-        virtual shared_ptr<lc::operation::Operation> operation() const;
+        virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
 private slots:
     void trimFinished();
     void on_LimitPropertiesAssigned();

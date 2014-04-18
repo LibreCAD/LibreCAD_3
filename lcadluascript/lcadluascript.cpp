@@ -283,6 +283,20 @@ ce:execute()
 
 
 /*
+ *
+l=Line(Coord(0,0), Coord(10,100));
+d=app.currentDocument()
+
+b=Builder(d)
+b:append(l)
+b:copy(Coord(0,0))
+b:rotate(Coord(0,0), math.rad(45))
+b:loop(7)
+b:execute()
+*/
+
+
+/*
  * l=Line(Coord(0,0), Coord(10,100));
 d=app.currentDocument()
 
@@ -290,11 +304,8 @@ b=Builder(d)
 b:append(l)
 b:copy(Coord(0,0))
 b:rotate(Coord(0,0), math.rad(45))
-b:copy(Coord(0,0))
-b:rotate(Coord(0,0), math.rad(45))
-b:copy(Coord(0,0))
-b:rotate(Coord(0,0), math.rad(45))
-b:copy(Coord(0,0))
-b:rotate(Coord(0,0), math.rad(90))
+b:loop(7)
+b:push()
+b:move(Coord(10,10))
 b:execute()
 */

@@ -11,7 +11,7 @@
 #include "cad/document/entitymanager.h"
 #include "cad/document/layermanager.h"
 #include "cad/document/selectionmanager.h"
-#include "cad/operations/operation.h"
+#include "cad/operations/documentoperation.h"
 
 #include "cad/events/beginprocessevent.h"
 #include "cad/events/commitprocessevent.h"
@@ -63,18 +63,18 @@ namespace lc {
              * \brief execute's a operation
              * \param operation
              */
-            void execute(shared_ptr<operation::Operation> operation);
+            void execute(shared_ptr<operation::DocumentOperation> operation);
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            virtual void begin(shared_ptr<operation::Operation> operation);
+            virtual void begin(shared_ptr<operation::DocumentOperation> operation);
             /*!
              * \brief commits operation
              * \param operation
              */
-            virtual void commit(shared_ptr<operation::Operation> operation);
+            virtual void commit(shared_ptr<operation::DocumentOperation> operation);
         public:
             /*!
              * \brief Add a new Entity to the document
