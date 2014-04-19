@@ -1,7 +1,7 @@
 #ifndef SPLINE_H
 #define SPLINE_H
 
-#include "qdebug.h"
+#include <QDebug>
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"

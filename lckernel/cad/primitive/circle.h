@@ -1,7 +1,7 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
 
-#include "qdebug.h"
+#include <QDebug>
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"

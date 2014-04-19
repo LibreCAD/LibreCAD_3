@@ -1,6 +1,6 @@
 #include "gradientbackground.h"
 
-#include <qdebug>
+#include <QDebug>
 #include <QRectF>
 #include <QGraphicsView>
 #include <QPainter>

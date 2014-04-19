@@ -2,7 +2,7 @@
 #define GEOCOORDINATE_H
 
 #include <QPointF>
-#include "qdebug.h"
+#include <QDebug>
 
 #include "cad/const.h"
 
