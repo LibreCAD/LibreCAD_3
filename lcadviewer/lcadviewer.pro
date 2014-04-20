@@ -12,13 +12,8 @@ TEMPLATE    = lib
 
 VERSION=0.0.1
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 6))
-    QT += opengl designer
-    CONFIG += plugin
-#else
-    QT += opengl
-    CONFIG += designer plugin
-#endif
+QT += opengl designer
+CONFIG += plugin
 
 OTHER_FILES = CustomWidget.json
 
