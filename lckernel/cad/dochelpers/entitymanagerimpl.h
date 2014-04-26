@@ -3,10 +3,11 @@
 
 #include "cad/const.h"
 
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 #include "cad/document/entitymanager.h"
 #include "cad/events/addentityevent.h"
 #include "cad/events/removeentityevent.h"
+#include "entitycontainer.h"
 
 #include <cad/events/replaceentityevent.h>
 
@@ -23,7 +24,7 @@ namespace lc {
                  * \brief Entity manager implementor.
                  * \param document
                  */
-            EntityManagerImpl(AbstractDocument* document);
+            EntityManagerImpl(Document* document);
 
         public slots:
             /*!
@@ -43,17 +44,14 @@ namespace lc {
              */
             void on_replaceEntityEvent(const ReplaceEntityEvent& event);
 
-        private:
 
-            /*!
-             * \brief Returns the document.
-             * \return document
-             * \sa lc::AbstractDocument
-             */
-            virtual AbstractDocument* document() const {
-                return _document;
-            }
-            AbstractDocument* _document;
+        public:
+            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const;
+
+        private:
+            Document* _document;
+            EntityContainer _entities;
+
     };
 }
 #endif // ENTITYMANAGERIMPL_H

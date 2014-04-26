@@ -44,7 +44,7 @@ LCADViewer::LCADViewer(QWidget* parent) :
 
 }
 
-void LCADViewer::setAbstractDocument(lc::AbstractDocument* document) {
+void LCADViewer::setAbstractDocument(lc::Document* document) {
     _document = document;
 }
 

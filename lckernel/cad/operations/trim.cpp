@@ -1,10 +1,10 @@
 #include "trim.h"
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 
 using namespace lc;
 using namespace lc::operation;
 
-Trim::Trim(AbstractDocument* document,  shared_ptr<FTrim> trim) : DocumentOperation(document), _trim(trim), Undoable("Trim Entity") {
+Trim::Trim(Document* document,  shared_ptr<FTrim> trim) : DocumentOperation(document), Undoable("Trim Entity"), _trim(trim)  {
     // TODO FIX TRIM
     //    _entityLayer = document()->findEntityLayerByID(trim->trimmedShape()->id());
 }
@@ -17,7 +17,7 @@ void Trim::processInternal() {
             document()->addEntity(_entityLayer, newEntities.at(i));
         }
 
-        document()->removeEntity(_trim->trimmedShape()->id());
+        document()->removeEntity(_trim->trimmedShape());
     }
 }
 
@@ -26,7 +26,7 @@ void Trim::undo() const {
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
-            document()->removeEntity(newEntities.at(i)->id());
+            document()->removeEntity(newEntities.at(i));
         }
 
         document()->addEntity(_entityLayer, _trim->trimmedShape());
@@ -41,7 +41,7 @@ void Trim::redo() const {
             document()->addEntity(_entityLayer, newEntities.at(i));
         }
 
-        document()->removeEntity(_trim->trimmedShape()->id());
+        document()->removeEntity(_trim->trimmedShape());
     }
 }
 

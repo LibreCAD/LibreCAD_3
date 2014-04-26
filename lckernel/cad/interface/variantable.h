@@ -10,6 +10,7 @@
   *
   * The reason behind is that the QVariant system neds to have a default constructor available and this must be public.
   * Using a friend function it didn't work. Feel free to modify and remove the valid and default constructors if there is a better solution.
+  * DEPRECATED
   */
 namespace lc {
     class Variantable {

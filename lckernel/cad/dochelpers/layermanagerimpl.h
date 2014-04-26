@@ -4,13 +4,17 @@
 #include <QHash>
 #include <QObject>
 
+#include <cad/events/addlayerevent.h>
+#include <cad/events/removelayerevent.h>
+#include <cad/events/replacelayerevent.h>
+
+#include <cad/document/document.h>
+
 #include "cad/const.h"
 
 
-#include "documentlayerimpl.h"
 #include "cad/document/layermanager.h"
 #include "cad/base/cadentity.h"
-#include "cad/events/addentityevent.h"
 
 namespace lc {
 
@@ -21,41 +25,45 @@ namespace lc {
              * \brief Layer manager implementor.
              * \param document
              */
-            LayerManagerImpl(AbstractDocument* document);
+            LayerManagerImpl(Document* document);
             virtual ~LayerManagerImpl();
 
-        public:
+        public slots:
             /*!
-             * \brief add a new layer to the document.
-             * \param layerName Name of layer.
+             * \brief Slot for on_addEntityEvent
+             * \sa AddEntityEvent
              */
-            virtual void addLayer(const QString& layerName);
+            void on_addLayerEvent(const lc::AddLayerEvent&);
             /*!
-             * \brief add a new layer to the document.
-             * \param layer Shared pointer of layer type.
+             * \brief Slot for on_removeEntityEvent
+             * \sa RemoveEntityEvent
              */
-            virtual void addLayer(shared_ptr<const Layer> layer);
+            void on_removeLayerEvent(const lc::RemoveLayerEvent&);
             /*!
-             * \brief remove a layer from the document.
+             * \brief Slot for on_removeEntityEvent
+             * \sa RemoveEntityEvent
+             */
+            void on_replaceLayerEvent(const lc::ReplaceLayerEvent&);
+            /*!
+             * \brief layer
+             * Return a single document layer
              * \param layerName
+             * \return
              */
-            virtual void removeLayer(const QString& layerName);
-            /*!
-             * \brief Returns layer.
-             * \param layerName Name of Layer
-             * \return shared pointer of layer type.
-             */
-            virtual shared_ptr<DocumentLayer> layer(const QString& layerName) const;
+
+        public:
+            virtual shared_ptr<const Layer> layer(const QString& layerName) const;
+
             /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
-            virtual QHash <QString, shared_ptr<DocumentLayer> > const& allLayers() const;
+            virtual QHash <QString, shared_ptr<const Layer> > const& allLayers() const;
 
 
         private:
-            QHash <QString, shared_ptr<DocumentLayer> > _documentLayers; /*!< Hash Layername, Layer */
-            AbstractDocument* _document; /*!< Document */
+            Document* _document;
+            QHash <QString, shared_ptr<const Layer> > _layers;
     };
 }
 

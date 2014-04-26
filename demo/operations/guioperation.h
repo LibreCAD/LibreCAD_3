@@ -27,7 +27,7 @@ class GuiOperationFinishedEvent;
 class GuiOperation : public QObject {
         Q_OBJECT
     public:
-        GuiOperation(lc::AbstractDocument* document) : _document(document) {}
+        GuiOperation(lc::Document* document) : _document(document) {}
         /*!
           * \brief create the CAD entity with the additional meta data
           */
@@ -46,7 +46,7 @@ class GuiOperation : public QObject {
           */
         virtual shared_ptr<GuiOperation> next() const = 0 ;
     protected:
-        lc::AbstractDocument* document() const {
+        lc::Document* document() const {
             return _document;
         }
 
@@ -58,7 +58,7 @@ class GuiOperation : public QObject {
           */
         void guiOperationFinished(const GuiOperationFinishedEvent&);
     private:
-        lc::AbstractDocument* _document;
+        lc::Document* _document;
 };
 
 

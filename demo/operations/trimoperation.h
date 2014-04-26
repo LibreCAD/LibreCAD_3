@@ -4,6 +4,9 @@
 #include <QState>
 #include <QStateMachine>
 
+#include <cad/document/entitymanager.h>
+#include <cad/document/layermanager.h>
+
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
@@ -18,7 +21,7 @@ class TrimOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate clickPoint READ clickPoint WRITE setClickPoint)
         Q_PROPERTY(MouseReleaseEvent mouseReleaseEvent READ mouseReleaseEvent WRITE setMouseReleaseEvent)
     public:
-        TrimOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager,  shared_ptr<lc::SelectionManager> selectionManager);
+        TrimOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager,  shared_ptr<lc::SelectionManager> selectionManager);
 
     public slots:
         void on_drawEvent(const DrawEvent& event);
@@ -57,6 +60,8 @@ class TrimOperation : public GuiOperation {
         MouseReleaseEvent _mouseReleaseEvent;
 
         lc::geo::Coordinate _clickPoint;
+        shared_ptr<lc::EntityManager>  _entityManager;
+
 };
 
 #endif // TRIMOPERATION_H

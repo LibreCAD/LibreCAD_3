@@ -3,7 +3,10 @@
 
 #include <QWidget>
 
-#include "cad/document/abstractdocument.h"
+#include <cad/document/entitymanager.h>
+#include <cad/document/selectionmanager.h>
+
+#include "cad/document/document.h"
 #include "cad/document/undomanager.h"
 #include "drawitems/cursor.h"
 #include "helpers/snapmanager.h"
@@ -43,23 +46,26 @@ class CadMdiChild : public QWidget {
             return _cursor;
         }
         QCachedGraphicsView* view() const;
-        lc::AbstractDocument* document() const;
+        lc::Document* document() const;
         shared_ptr<SnapManager>  snapManager() const;
         shared_ptr<OperationManager>  operationManager() const;
         shared_ptr<lc::SelectionManager> selectionManager() const;
+        shared_ptr<lc::LayerManager> layerManager() const;
+        shared_ptr<lc::EntityManager> entityManager() const;
         void cancelCurrentOperations();
 
     private:
         int randInt(int low, int high);
         Ui::CadMdiChild* ui;
 
-        lc::AbstractDocument* _document;
-        lc::UndoManager* _undoManager;
+        lc::Document* _document;
+        shared_ptr<lc::UndoManager> _undoManager;
 
         shared_ptr<const Cursor>  _cursor;
         shared_ptr<SnapManager>  _snapManager;
         shared_ptr<lc::LayerManager> _layerManager;
         shared_ptr<lc::SelectionManager> _selectionManager;
+        shared_ptr<lc::EntityManager> _entityManager;
 
         shared_ptr<OperationManager>  _operationManager;
 };

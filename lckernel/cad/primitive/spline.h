@@ -19,8 +19,8 @@ namespace lc {
 
     class Spline : public enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable {
         public:
-            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed);
-            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const shared_ptr<const Layer> layer);
+            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

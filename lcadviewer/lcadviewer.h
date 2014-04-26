@@ -2,7 +2,7 @@
 #define LCADVIEWER_H
 
 #include <QGraphicsView>
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 #include "drawitems/lcviewerdrawitem.h"
 #include "drawitems/lcviewercursoritem.h"
 #include "qcachedgraphicsview.h"
@@ -13,7 +13,7 @@ class LCADViewer : public QCachedGraphicsView {
         Q_OBJECT
 
     public:
-        virtual void setAbstractDocument(lc::AbstractDocument* document);
+        virtual void setAbstractDocument(lc::Document* document);
 
     public:
         LCADViewer(QWidget* parent = 0);
@@ -30,7 +30,7 @@ class LCADViewer : public QCachedGraphicsView {
         virtual void keyReleaseEvent(QKeyEvent* event);
 
     private:
-        lc::AbstractDocument* _document;
+        lc::Document* _document;
 
 
         bool _altKeyActive; // When true the alt key is current pressed

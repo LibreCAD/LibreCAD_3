@@ -20,17 +20,20 @@ LCMainToolbar::~LCMainToolbar() {
 }
 
 void LCMainToolbar::on_toolButton_clicked() {
-    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new LineCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    auto layer = _parent->activeMdiChild()->layerManager()->layer("0");
+    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new LineCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->entityManager(), layer, _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_2_clicked() {
-    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    auto layer = _parent->activeMdiChild()->layerManager()->layer("0");
+    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->entityManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_3_clicked() {
-    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
+    auto layer = _parent->activeMdiChild()->layerManager()->layer("0");
+    shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->entityManager(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 
 }
@@ -45,9 +48,11 @@ void LCMainToolbar::on_toolButton_4_clicked() {
 }
 
 void LCMainToolbar::on_toolButton_5_clicked() {
-    auto l = make_shared<const lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100));
+    auto layer = _parent->activeMdiChild()->layerManager()->layer("0");
 
-    auto builder = make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document());
+    auto l = make_shared<const lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100), layer);
+
+    auto builder = make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->entityManager());
     builder->append(l);
     builder->execute();
 

@@ -5,7 +5,7 @@
 
 namespace lc {
 
-    class AbstractDocument;
+    class Document;
 
     namespace operation {
 
@@ -18,11 +18,11 @@ namespace lc {
          * @param document
          */
         class DocumentOperation : public enable_shared_from_this<operation::DocumentOperation> {
-                friend class lc::AbstractDocument;
+                friend class lc::Document;
 
             public:
-                DocumentOperation(AbstractDocument* document);
-                AbstractDocument* document() const;
+                DocumentOperation(Document* document);
+                Document* document() const;
 
                 /*!
                  * \brief execute this operation
@@ -48,7 +48,7 @@ namespace lc {
                  */
                 virtual void finnish() const {};
 
-                AbstractDocument* _document;
+                Document* _document;
             protected:
                 /**
                  * This function get's called when a operation starts and when the document is locked for you

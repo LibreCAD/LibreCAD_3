@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QList>
 
-#include "cad/document/abstractdocument.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
 #include "events/snappointevent.h"

@@ -39,10 +39,8 @@ SOURCES += lckernel.cpp \
     cad/base/cadentity.cpp \
     cad/primitive/circle.cpp \
     cad/dochelpers/documentimpl.cpp \
-    cad/dochelpers/documentlayerimpl.cpp \
     cad/dochelpers/layermanagerimpl.cpp \
     cad/dochelpers/entitymanagerimpl.cpp \
-    cad/document/abstractdocument.cpp \
     cad/dochelpers/undomanagerimpl.cpp \
     cad/primitive/arc.cpp \
     cad/geometry/geocircle.cpp \
@@ -63,7 +61,9 @@ SOURCES += lckernel.cpp \
     cad/primitive/spline.cpp \
     cad/operations/builder.cpp \
     cad/operations/documentoperation.cpp \
-    cad/operations/builderops.cpp
+    cad/operations/builderops.cpp \
+    cad/dochelpers/entitycontainer.cpp \
+    cad/document/document.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -77,12 +77,10 @@ HEADERS += lckernel.h\
     cad/base/metainfo.h \
     cad/base/cadentity.h \
     cad/primitive/circle.h \
-    cad/document/documentlayer.h \
     cad/document/layermanager.h \
     cad/interface/metatype.h \
     cad/interface/variantable.h \
     cad/dochelpers/documentimpl.h \
-    cad/dochelpers/documentlayerimpl.h \
     cad/dochelpers/layermanagerimpl.h \
     cad/document/selectionmanager.h \
     cad/events/beginprocessevent.h \
@@ -90,14 +88,11 @@ HEADERS += lckernel.h\
     cad/events/addentityevent.h \
     cad/events/removeentityevent.h \
     cad/events/replaceentityevent.h \
-    cad/document/basemanager.h \
     cad/dochelpers/entitymanagerimpl.h \
     cad/document/entitymanager.h \
-    cad/document/abstractdocument.h \
     cad/document/undomanager.h \
     cad/operations/undoable.h \
     cad/dochelpers/undomanagerimpl.h \
-    cad/events/absoleteentityevent.h \
     cad/primitive/arc.h \
     cad/geometry/geocircle.h \
     cad/geometry/geoarc.h \
@@ -122,6 +117,11 @@ HEADERS += lckernel.h\
     cad/primitive/spline.h \
     cad/operations/builder.h \
     cad/operations/documentoperation.h \
-    cad/operations/builderops.h
+    cad/operations/builderops.h \
+    cad/dochelpers/entitycontainer.h \
+    cad/document/document.h \
+    cad/events/removelayerevent.h \
+    cad/events/addlayerevent.h \
+    cad/events/replacelayerevent.h
 
 

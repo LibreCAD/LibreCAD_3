@@ -5,7 +5,8 @@
 
 #include <cad/operations/builder.h>
 
-LineCreateOperation::LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager) {
+LineCreateOperation::LineCreateOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager)
+    : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _entityManager(entityManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -47,10 +48,8 @@ void LineCreateOperation::lineCreationFinished() {
 }
 
 shared_ptr<lc::operation::DocumentOperation> LineCreateOperation::operation() const {
-
-    QList<shared_ptr<const lc::MetaType> > metaTypes;
-    auto builder = make_shared<lc::operation::Builder>(document());
-    builder->append(make_shared<lc::Line>(_startPoint, _endPoint, metaTypes));
+    auto builder = make_shared<lc::operation::Builder>(document(), _entityManager);
+    builder->append(make_shared<lc::Line>(_startPoint, _endPoint, _layer));
     return builder;
 }
 
@@ -83,7 +82,7 @@ void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
 
 shared_ptr<GuiOperation> LineCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
-    LineCreateOperation* lco = new LineCreateOperation(document(), this->_graphicsView, this->_snapManager);
+    LineCreateOperation* lco = new LineCreateOperation(document(), _entityManager, _layer,  this->_graphicsView, this->_snapManager);
     lco->_machine.setInitialState(lco->_waitForSecondClick);
     lco->_machine.start();
     lco->_startPoint = this->_endPoint;

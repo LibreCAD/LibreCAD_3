@@ -6,20 +6,18 @@
 #include "documentoperation.h"
 #include "undoable.h"
 #include <QList>
-
-#include <cad/base/cadentity.h>
+#include <cad/document/entitymanager.h>
 
 namespace lc {
-    class AbstractDocument;
+    class Document;
     namespace operation {
 
-        class Base;
 
         class Builder: public DocumentOperation, public Undoable {
                 friend class lc::operation::Base;
 
             public:
-                Builder(AbstractDocument* document);
+                Builder(Document* document, shared_ptr<EntityManager> entityManager);
 
                 virtual ~Builder();
                 Builder& move(const geo::Coordinate& offset);
@@ -43,6 +41,9 @@ namespace lc {
                 QList<shared_ptr<const CADEntity> > _buffer;
                 QList<shared_ptr<const CADEntity> > _entitiesStart;
                 QList<shared_ptr<const CADEntity> > _operationFinal;
+
+            private:
+                shared_ptr<EntityManager> _entityManager;
         };
 
     };

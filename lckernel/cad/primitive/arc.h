@@ -11,11 +11,13 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 
+#include <cad/meta/layer.h>
+
 namespace lc {
     class Arc : public enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
-            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle);
-            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const shared_ptr<const Layer> layer);
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;

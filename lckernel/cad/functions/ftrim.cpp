@@ -17,6 +17,7 @@ void FTrim::visit(shared_ptr<const Arc> arc) {
 
 }
 void FTrim::visit(shared_ptr<const Line> line) {
+    /*
     IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
     QList<geo::Coordinate> points = im.result();
     this->_newEntities.clear();
@@ -41,6 +42,7 @@ void FTrim::visit(shared_ptr<const Line> line) {
             }
         }
     }
+    */
 }
 void FTrim::visit(shared_ptr<const Circle> circle) {
 

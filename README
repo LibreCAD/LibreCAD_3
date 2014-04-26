@@ -5,7 +5,6 @@ This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modulari
 
 
 Compilation Instructions
-========
 
 Install boost
 Install Qt >4.8 or better Qt 5
@@ -15,3 +14,10 @@ git clone --recursive https://github.com/rvt/kerneldev
 
 qmake -r
 make -j 4
+
+
+
+Ubuntu/Mint
+========
+
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8

@@ -3,7 +3,7 @@
 #include "cad/base/metainfo.h"
 #include "guioperationfinishedevent.h"
 
-OperationManager::OperationManager(lc::AbstractDocument* document) : _document(document) {
+OperationManager::OperationManager(lc::Document* document) : _document(document) {
 }
 
 void OperationManager::cancel() {

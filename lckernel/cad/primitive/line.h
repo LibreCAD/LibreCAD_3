@@ -11,6 +11,8 @@
 #include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
 
+#include <cad/meta/layer.h>
+
 namespace lc {
 
     /*!
@@ -29,7 +31,7 @@ namespace lc {
              *
              * \param start,end Coordinate the line should start and end from
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const shared_ptr<const Layer> layer);
 
             /*!
              * \brief Construct a new line
@@ -40,7 +42,7 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
             /*!
              * \brief Construct a new line
@@ -51,7 +53,7 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Vector& vector, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Line(const geo::Vector& vector, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

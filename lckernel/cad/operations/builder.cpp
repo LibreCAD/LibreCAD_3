@@ -1,11 +1,11 @@
 #include "builder.h"
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 
 
 using namespace lc;
 using namespace lc::operation;
 
-Builder::Builder(AbstractDocument* document) : DocumentOperation(document), Undoable("Builder") {
+Builder::Builder(Document* document, shared_ptr<EntityManager> entityManager) : DocumentOperation(document), Undoable("Builder"), _entityManager(entityManager) {
 }
 
 Builder::~Builder() {
@@ -53,11 +53,11 @@ void Builder::processInternal() {
     _buffer.append(newQueue);
 
     for (int i = 0; i < _buffer.size(); ++i) {
-        auto exists = document()->findEntityByID(_buffer.at(i)->id());
+        auto exists = _entityManager->findEntityByID(_buffer.at(i)->id());
 
         if (exists.get() != NULL) {
             _entitiesStart.append(exists);
-            document()->replaceEntity(_buffer.at(i), _buffer.at(i));
+            document()->replaceEntity(_buffer.at(i));
         } else {
             document()->addEntity("0", _buffer.at(i));
         }
@@ -66,7 +66,7 @@ void Builder::processInternal() {
 
 void Builder::undo() const {
     for (int i = 0; i < _buffer.size(); ++i) {
-        document()->removeEntity(_buffer.at(i)->id());
+        document()->removeEntity(_buffer.at(i));
     }
 
     for (int i = 0; i < _entitiesStart.size(); ++i) {
@@ -76,10 +76,10 @@ void Builder::undo() const {
 
 void Builder::redo() const {
     for (int i = 0; i < _buffer.size(); ++i) {
-        auto exists = document()->findEntityByID(_buffer.at(i)->id());
+        auto exists = _entityManager->findEntityByID(_buffer.at(i)->id());
 
         if (exists.get() != NULL) {
-            document()->replaceEntity(_buffer.at(i), _buffer.at(i));
+            document()->replaceEntity(_buffer.at(i));
         } else {
             document()->addEntity("0", _buffer.at(i));
         }

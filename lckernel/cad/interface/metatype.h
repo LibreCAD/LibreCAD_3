@@ -16,7 +16,8 @@ namespace lc {
             enum metaTypeId {
                 PEN = 0,
                 COLOR = 1,
-                LINEWIDTH = 2
+                LINEWIDTH = 2,
+                LAYER = 3
             };
 
         public:

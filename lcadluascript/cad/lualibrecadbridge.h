@@ -3,7 +3,10 @@
 #define LUALIBRECADBRIDGE_H
 
 #include <cad/operations/builder.h>
-#include <cad/document/abstractdocument.h>
+#include <cad/document/document.h>
+#include <cad/document/entitymanager.h>
+#include <cad/dochelpers/layermanagerimpl.h>
+#include <cad/meta/layer.h>
 
 
 struct lua_State;
@@ -15,7 +18,8 @@ void lua_openlckernel(lua_State* L);
  */
 class LuaBuilderProxy : public lc::operation::Builder {
     public:
-        LuaBuilderProxy(lc::AbstractDocument* document) : lc::operation::Builder(document) {
+        LuaBuilderProxy(lc::Document* document, shared_ptr<lc::EntityManager> entityManager) : lc::operation::Builder(document, entityManager) {
+            qDebug() << "LuaBuilderProxy instantiated";
         }
 
         void append(shared_ptr<lc::CADEntity> cadEntity) {
@@ -40,6 +44,14 @@ class LuaBuilderProxy : public lc::operation::Builder {
         void push() {
             lc::operation::Builder::push();
         }
+
+};
+
+class LuaLayerManagerImplProxy : public lc::LayerManagerImpl {
+    public:
+        LuaLayerManagerImplProxy(lc::Document* document) : LayerManagerImpl(document) {
+        }
+
 
 };
 

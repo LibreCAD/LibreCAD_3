@@ -4,12 +4,16 @@
 #include <QState>
 #include <QStateMachine>
 
+#include <cad/document/entitymanager.h>
+
+#include <cad/meta/layer.h>
+#include "cad/operations/documentoperation.h"
+
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
 #include "helpers/snapmanager.h"
 #include "drawitems/cursor.h"
-#include "cad/operations/documentoperation.h"
 
 #include "qsnappedstate.h"
 
@@ -23,7 +27,7 @@ class LineCreateOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        LineCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
+        LineCreateOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
         virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
 
@@ -64,6 +68,9 @@ class LineCreateOperation : public GuiOperation {
 
         QGraphicsView* _graphicsView;
         shared_ptr<SnapManager>  _snapManager;
+        shared_ptr<lc::EntityManager>  _entityManager;
+        shared_ptr<const lc::Layer>  _layer;
+
 };
 
 #endif // LINECREATEOPERATION_H

@@ -16,7 +16,7 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    LCadLuaScript lc(_parent->activeMdiChild()->document());
+    LCadLuaScript lc(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->entityManager(), _parent->activeMdiChild()->layerManager());
     QString out = lc.run(ui->luaInput->toPlainText());
     ui->luaOutput->clear();
     ui->luaOutput->textCursor().insertText(out);

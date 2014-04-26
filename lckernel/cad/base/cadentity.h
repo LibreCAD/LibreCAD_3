@@ -16,7 +16,7 @@ namespace lc {
     class Ellipse;
     class Text;
     class Spline;
-    class CADEntity;
+    class Layer;
 
     class EntityVisitor;
     class EntityDispatch;
@@ -32,7 +32,7 @@ namespace lc {
              * \sa lc::ID
              * \sa lc::MetaInfo
              */
-            CADEntity();
+            CADEntity(shared_ptr<const Layer> _layer);
             /*!
              * \brief CADEntity Constructor
              *
@@ -41,7 +41,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(QList<shared_ptr<const MetaType> > metaTypes);
+            CADEntity(shared_ptr<const Layer> _layer, QList<shared_ptr<const MetaType> > metaTypes);
             virtual void accept(shared_ptr<const Line>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const Circle>, EntityVisitor&) const = 0;
             virtual void accept(shared_ptr<const Arc>, EntityVisitor&) const = 0;
@@ -79,6 +79,15 @@ namespace lc {
              * \return CADEntity shared_ptr
              */
             virtual shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
+
+            /*!
+             * \brief layer
+             * return the layer this entity is placed on
+             * \return
+             */
+            virtual shared_ptr<const Layer> layer() const;
+        private:
+            shared_ptr<const Layer> _layer;
 
     };
 }

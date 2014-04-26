@@ -2,16 +2,19 @@
 #define ENTITYMANAGER_H
 
 #include "cad/const.h"
+#include "cad/base/id.h"
 
-#include "basemanager.h"
+#include <QObject>
 
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
      */
-    class EntityManager : public BaseManager {
+    class CADEntity;
+    class EntityManager : public QObject {
             Q_OBJECT
         public:
+            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const = 0;
 
     };
 }

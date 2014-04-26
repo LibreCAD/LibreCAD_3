@@ -1,13 +1,13 @@
 #include "documentoperation.h"
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 
 using namespace lc;
 using namespace lc::operation;
 
-DocumentOperation::DocumentOperation(AbstractDocument* document) : _document(document) {
+DocumentOperation::DocumentOperation(Document* document) : _document(document) {
 };
 
-AbstractDocument* DocumentOperation::document() const {
+Document* DocumentOperation::document() const {
     return _document;
 };
 

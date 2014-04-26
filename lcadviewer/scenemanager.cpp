@@ -7,7 +7,7 @@
 #include "graphicsitems/lclineitem.h"
 #include "graphicsitems/lcellipseitem.h"
 
-SceneManager::SceneManager(LCADViewer* viewer, lc::AbstractDocument* document) : QObject() {
+SceneManager::SceneManager(LCADViewer* viewer, lc::Document* document) : QObject() {
     _viewer = viewer;
     _document = document;
     connect(_document, SIGNAL(addEntityEvent(const lc::AddEntityEvent&)),
@@ -73,8 +73,8 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
   * Function to remove a entity from the graphics scene on request
   */
 void SceneManager::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
-    QGraphicsItem* item = _activeGraphicsItems.value(event.id());
-    _activeGraphicsItems.remove(event.id());
+    QGraphicsItem* item = _activeGraphicsItems.value(event.entity()->id());
+    _activeGraphicsItems.remove(event.entity()->id());
     _viewer->scene()->removeItem(item);
 
 }

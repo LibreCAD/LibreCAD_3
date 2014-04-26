@@ -1,17 +1,15 @@
 #ifndef UNDOMANAGER_H
 #define UNDOMANAGER_H
 
-#include <QString>
-
 #include "cad/const.h"
 
-#include "basemanager.h"
+#include <QObject>
 
 namespace lc {
     /**
      * Undo manager is a Interface for Undo operations
      */
-    class UndoManager: public BaseManager {
+    class UndoManager : public QObject {
             Q_OBJECT
         public:
             /*!
@@ -34,9 +32,6 @@ namespace lc {
              * \brief Clear the undo/redo stack.
              */
             virtual void removeUndoables() = 0;
-
-        private:
-
 
     };
 

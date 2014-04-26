@@ -10,11 +10,20 @@ extern "C"
 #include <boost/pointer_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "LuaIntf.h"
+#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
 
 #include <cad/dochelpers/documentimpl.h>
+#include <cad/dochelpers/entitymanagerimpl.h>
+
+#include <boost/pointer_cast.hpp>
+
+namespace LuaIntf {
+    LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
+}
+
 
 using namespace LuaIntf;
 
@@ -24,13 +33,13 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::AbstractDocument* document) {
-    _document = document;
+LCadLuaScript::LCadLuaScript(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<lc::LayerManager> layerManager) : _document(document), _entityManager(entityManager), _layerManager(layerManager) {
 }
 
 QString* gOut;
-lc::DocumentImpl* luaDoc;
-
+lc::Document* luaDoc;
+shared_ptr<lc::EntityManager> entityManager;
+shared_ptr<lc::LayerManager> layerManager;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -48,9 +57,25 @@ static const struct luaL_Reg printlib [] = {
     {NULL, NULL}
 };
 
-static lc::AbstractDocument* lua_getDocument() {
+static lc::Document* lua_getDocument() {
     return luaDoc;
 }
+static shared_ptr<lc::EntityManager> lua_entityManager() {
+    return entityManager;
+}
+
+static shared_ptr<lc::LayerManager> lua_layerManager() {
+    return layerManager;
+}
+
+static shared_ptr<lc::Layer> lua_layer(const char* layer) {
+    // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
+
+    auto l = layerManager->layer(layer);
+    auto o = boost::const_pointer_cast<lc::Layer>(l);
+    return o;
+}
+
 
 QString LCadLuaScript::run(const QString& script) {
 
@@ -60,8 +85,13 @@ QString LCadLuaScript::run(const QString& script) {
     // add lua cad entities
     lua_openlckernel(L);
 
+//    .addFunction("getLayer", &lua_layer)
+
     LuaBinding(L).beginModule("app")
-    .addFunction("currentDocument", &lua_getDocument);
+    .addFunction("currentDocument", &lua_getDocument)
+    .addFunction("currentEntityManager", &lua_entityManager)
+    .addFunction("getLayer", &lua_layer)
+    .addFunction("currentLayermanager", &lua_layerManager);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -71,7 +101,9 @@ QString LCadLuaScript::run(const QString& script) {
     // Some globals we have to figure out to make sure it works with multiple threads
     QString out;
     gOut = &out;
-    luaDoc = static_pointer_cast<lc::DocumentImpl>(_document);
+    luaDoc = _document;
+    entityManager = _entityManager;
+    layerManager = _layerManager;
 
     // luaL_dofile(L, "/opt/librecad-test.lua");
     int s = luaL_dostring(L, script.toLocal8Bit().data());
@@ -86,9 +118,12 @@ QString LCadLuaScript::run(const QString& script) {
 }
 
 /* Line
- l=Line(Coord(0,0), Coord(10,100));
+ *
+layer = app.getLayer("0")
+l=Line(Coord(0,0), Coord(10,100), layer);
 d=app.currentDocument()
-ce = Create(d, "0");
+em=app.currentEntityManager()
+ce=Builder(d,em)
 ce:append(l)
 ce:execute()
 */
@@ -102,13 +137,15 @@ local p =rx;
 local q=ry;
 
 doc=app.currentDocument()
-ce=Builder(doc)
+em=app.currentEntityManager()
+ce=Builder(doc,em)
+layer = app.getLayer("0")
 
 while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
     local y=ry+(math.sin(d+(math.pi/2))*(d+(math.pi/2)) * r);
     if (d>0) then
-        ce:append(Line(Coord(x,y), Coord(p,q)));
+        ce:append(Line(Coord(x,y), Coord(p,q),layer));
     end
     p=x;
     q=y;
@@ -116,10 +153,13 @@ while (d< 8*math.pi) do
 end
 ce:execute()
 print "done";
+
 */
 
 /* Fractal tree
  *
+
+layer = app.getLayer("0")
 
 function drawTree( ce, x1,  y1,  angle,  depth)
         if depth == 0 then  return end;
@@ -127,13 +167,15 @@ function drawTree( ce, x1,  y1,  angle,  depth)
         local x2 = x1 +  (math.cos(math.rad(angle)) * depth * 10.0);
         local y2 = y1 + (math.sin(math.rad(angle)) * depth * 10.0);
 
-       ce:append(Line(Coord(x1, y1), Coord(x2, y2)));
+
+       ce:append(Line(Coord(x1, y1), Coord(x2, y2),layer));
         drawTree(ce, x2, y2, angle - 20, depth - 1);
         drawTree(ce, x2, y2, angle + 20, depth - 1);
 end
 
-d=app.currentDocument()
-b=Builder(d)
+doc=app.currentDocument()
+em=app.currentEntityManager()
+ce=Builder(doc,em)
 drawTree(ce, 0, 0, -90, 14);
 ce:execute()
 
@@ -276,8 +318,12 @@ function Gear:calc(ce, N, phi, Pc)
 end
 
 local gear = Gear()
-d=app.currentDocument()
-ce = Create(d, "0");
+
+doc=app.currentDocument()
+em=app.currentEntityManager()
+ce=Builder(doc,em)
+layer = app.getLayer("0")
+
 gear:calc(ce, 20,math.rad(10),math.rad(10))
 gear:calc(ce, 10,math.rad(10),math.rad(10))
 ce:execute()

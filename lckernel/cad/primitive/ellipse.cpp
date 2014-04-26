@@ -2,18 +2,18 @@
 
 using namespace lc;
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle)
-    : geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const shared_ptr<const Layer> layer)
+    : CADEntity(layer), geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 
 }
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<shared_ptr<const MetaType> >& metaTypes)
-    : CADEntity(metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes)
+    : CADEntity(layer, metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
 shared_ptr<const CADEntity> Ellipse::move(const geo::Coordinate& offset) const {
     Ellipse* newellipse = new Ellipse(this->center() + offset, this->majorP(), this->minorRadius(),
-                                      this->startAngle(), this->endAngle());
+                                      this->startAngle(), this->endAngle(), layer());
     newellipse->setID(this->id());
     shared_ptr<const Ellipse> newEllipse = shared_ptr<const Ellipse>(newellipse);
     return newEllipse;
@@ -21,7 +21,7 @@ shared_ptr<const CADEntity> Ellipse::move(const geo::Coordinate& offset) const {
 
 shared_ptr<const CADEntity> Ellipse::copy(const geo::Coordinate& offset) const {
     Ellipse* newellipse = new Ellipse(this->center() + offset, this->majorP(), this->minorRadius(),
-                                      this->startAngle(), this->endAngle());
+                                      this->startAngle(), this->endAngle(), layer());
     shared_ptr<const Ellipse> newEllipse = shared_ptr<const Ellipse>(newellipse);
     return newEllipse;
 }
@@ -30,7 +30,7 @@ shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate& rotation_cent
     Ellipse* newellipse = new Ellipse(this->center().rotate(rotation_center, rotation_angle),
                                       (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
                                       this->minorRadius() , this->startAngle(),
-                                      this->endAngle());
+                                      this->endAngle(), layer());
     newellipse->setID(this->id());
     shared_ptr<const Ellipse> newEllipse = shared_ptr<const Ellipse>(newellipse);
     return newEllipse;
@@ -64,8 +64,7 @@ shared_ptr<const CADEntity> Ellipse::scale(const geo::Coordinate& scale_center, 
     Ellipse* newellipse = new Ellipse(this->center().scale(scale_center, scale_factor), vp3,
                                       this->minorRadius(),
                                       isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                      isArc() ? this->getEllipseAngle(endPoint) : 0.
-                                     );
+                                      isArc() ? this->getEllipseAngle(endPoint) : 0., layer());
     newellipse->setID(this->id());
     shared_ptr<const Ellipse> newEllipse = shared_ptr<const Ellipse>(newellipse);
     return newEllipse;

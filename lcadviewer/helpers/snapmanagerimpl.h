@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include "snapmanager.h"
-#include "cad/document/abstractdocument.h"
 #include "lcadviewer.h"
 
 

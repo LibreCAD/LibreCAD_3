@@ -8,7 +8,7 @@
 using namespace lc;
 
 
-UndoManagerImpl::UndoManagerImpl(AbstractDocument* document, int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
+UndoManagerImpl::UndoManagerImpl(Document* document, int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
 
     connect(document, SIGNAL(commitProcessEvent(const lc::CommitProcessEvent&)),
             this, SLOT(on_CommitProcessEvent(const lc::CommitProcessEvent&)));

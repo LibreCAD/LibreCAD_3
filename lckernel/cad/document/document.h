@@ -18,10 +18,14 @@ namespace lc {
         class DocumentOperation;
     }
 
-    class AbstractDocument : public QObject {
+    class Document : public QObject {
             Q_OBJECT
-        public:
         protected:
+            /*!
+                 * \brief execute
+                 * the given operations within the document
+                 * \param operation
+                 */
             virtual void execute(shared_ptr<operation::DocumentOperation> operation) = 0;
 
             /*!
@@ -29,29 +33,33 @@ namespace lc {
              * \param operation
              */
             virtual void begin(shared_ptr<operation::DocumentOperation> operation) = 0;
+
             /*!
-             * \brief commits an operation
-             * \param operation
-             */
+                 * \brief commits an operation
+                 * \param operation
+                 */
             virtual void commit(shared_ptr<operation::DocumentOperation> operation) = 0;
+
+
             /*!
              * \brief operationStart Starts the operation.
              * \param operation
              */
             virtual void operationStart(shared_ptr<operation::DocumentOperation> operation);
+
             /*!
-             * \brief operationFinnish Finishes the operation.
-             * \param operation
-             */
+                 * \brief operationFinnish Finishes the operation.
+                 * \param operation
+                 */
             virtual void operationFinnish(shared_ptr<operation::DocumentOperation> operation);
+
             /*!
-             * \brief operationProcess process the operation.
-             * \param operation
-             */
+                 * \brief operationProcess process the operation.
+                 * \param operation
+                 */
             virtual void operationProcess(shared_ptr<operation::DocumentOperation> operation);
 
         public:
-            // I am not to happy yet that this all needs to be public, however currently in a phase to get the proof of concept working
             /*!
              * \brief add an entity to document.
              * \param layerName Name of layer to which entity is to be added
@@ -63,32 +71,15 @@ namespace lc {
              * \param oldEntity Entity which is to be replaced
              * \param newEntity Entity which replaces the older entity.
              */
-            virtual void replaceEntity(shared_ptr<const CADEntity> oldEntity, shared_ptr<const CADEntity> newEntity) = 0;
+            virtual void replaceEntity(shared_ptr<const CADEntity> entity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
-            virtual void removeEntity(ID_DATATYPE id) = 0;
-            virtual void absoleteEntity(shared_ptr<const CADEntity> absoleteEntity) = 0;
-
-            virtual void setLayerManager(shared_ptr<LayerManager> layerManager) = 0;
-            virtual shared_ptr<LayerManager> layerManager() const = 0;
-
-        protected:
-
+            virtual void removeEntity(shared_ptr<const CADEntity> entity) = 0;
 
 
         public:
-            /*!
-             * \brief Finds an entity by ID.
-             * \param id ID of entity.
-             * \return  CADEntity
-             */
-            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const = 0;
-            virtual QString findEntityLayerByID(ID_DATATYPE id) const = 0;
-
-        public:
-            friend class BaseManager;
             friend class lc::operation::DocumentOperation;
 
     };

@@ -11,6 +11,8 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 
+#include <cad/meta/layer.h>
+
 namespace lc {
     /*!
      * \brief A ellipse that can be put in a drawing
@@ -25,8 +27,8 @@ namespace lc {
      */
     class Ellipse : public enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const shared_ptr<const Layer> layer);
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;

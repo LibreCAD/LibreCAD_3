@@ -10,12 +10,12 @@
 #include "undoable.h"
 
 namespace lc {
-    class AbstractDocument;
+    class Document;
     namespace operation {
 
         class Scale : public DocumentOperation, public Undoable {
             public:
-                Scale(AbstractDocument* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
+                Scale(Document* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
 
                 virtual ~Scale() {
                     qDebug() << "Scale removed";

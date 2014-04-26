@@ -12,15 +12,16 @@ extern "C"
 #include "lualibrecadbridge.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
-//#include "lua-intf/LuaIntf/QtLuaIntf.h"
+#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include <cad/geometry/geocoordinate.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/circle.h>
-#include <cad/document/abstractdocument.h>
-#include <cad/dochelpers/documentimpl.h>
 #include <cad/operations/builder.h>
 #include <cad/operations/builderops.h>
+#include <cad/dochelpers/documentimpl.h>
+#include <cad/dochelpers/entitymanagerimpl.h>
+#include <cad/dochelpers/layermanagerimpl.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
@@ -32,22 +33,19 @@ using namespace lc;
 void lua_openlckernel(lua_State* L) {
 
     LuaBinding(L)
-    .beginClass <operation::DocumentOperation> ("Operation")
-    .addFunction("execute", &operation::DocumentOperation::execute)
+    .beginClass <QString> ("QString")
+    .addConstructor(LUA_ARGS(const char*))
     .endClass()
 
     .beginClass <ID> ("ID")
     .addFunction("id", &ID::id)
     .endClass()
 
-    .beginExtendClass <CADEntity, ID> ("CADEntity")
+    .beginClass <Variantable> ("Variantable")
     .endClass()
-
-    .beginClass <geo::Vector> ("Vector")
-    .addConstructor(LUA_SP(shared_ptr<const geo::Vector>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end))
+    .beginExtendClass <MetaType, Variantable> ("MetaType")
     .endClass()
-
-    .beginClass <AbstractDocument> ("AbstractDocument")
+    .beginExtendClass <Layer, MetaType> ("Layer")
     .endClass()
 
     .beginClass<geo::Coordinate>("Coord")
@@ -64,23 +62,45 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("z", &geo::Coordinate::z)
     .endClass()
 
-    .beginExtendClass <Line, CADEntity> ("Line")
-    .addConstructor(LUA_SP(shared_ptr< Line>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end))
+
+    .beginClass <geo::Vector> ("Vector")
+    .addConstructor(LUA_SP(shared_ptr<const geo::Vector>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end))
     .endClass()
 
-    .beginExtendClass <Circle, CADEntity> ("Circle")
-    .addConstructor(LUA_SP(shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate & center, double radius))
+    .beginClass <Document> ("Document")
     .endClass()
-
     .beginClass <DocumentImpl> ("DocumentImpl")
     .endClass()
 
-    .beginClass <QString> ("QString")
-    .addConstructor(LUA_ARGS(const char*))
+    .beginClass <EntityManager> ("EntityManager")
+    .endClass()
+    .beginExtendClass <EntityManagerImpl, EntityManager > ("EntityManagerImpl")
+    .addConstructor(LUA_SP(shared_ptr<EntityManagerImpl>), LUA_ARGS(Document * doc))
     .endClass()
 
-    .beginExtendClass <LuaBuilderProxy, lc::operation::DocumentOperation> ("Builder")
-    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(lc::AbstractDocument * doc))
+    .beginClass <LayerManager> ("LayerManager")
+    .endClass()
+    .beginExtendClass <LuaLayerManagerImplProxy, LayerManager> ("LayerManagerImpl")
+    .addConstructor(LUA_SP(shared_ptr<LuaLayerManagerImplProxy>), LUA_ARGS(Document * doc))
+    .endClass()
+
+    .beginExtendClass <CADEntity, ID> ("CADEntity")
+    .endClass()
+
+    .beginExtendClass <Line, CADEntity> ("Line")
+    .addConstructor(LUA_SP(shared_ptr< Line>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end, const shared_ptr<Layer> layer))
+    .endClass()
+
+    .beginExtendClass <Circle, CADEntity> ("Circle")
+    .addConstructor(LUA_SP(shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate & center, double radius, const shared_ptr<Layer> layer))
+    .endClass()
+
+    .beginClass <operation::DocumentOperation> ("DocumentOperation")
+    .addFunction("execute", &operation::DocumentOperation::execute)
+    .endClass()
+
+    .beginExtendClass <LuaBuilderProxy, operation::DocumentOperation> ("Builder")
+    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc,   shared_ptr<lc::EntityManager> entityManager))
     .addFunction("append", &LuaBuilderProxy::append)
     .addFunction("move", &LuaBuilderProxy::move)
     .addFunction("copy", &LuaBuilderProxy::copy)
@@ -90,26 +110,26 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("begin", &LuaBuilderProxy::begin)
     .endClass()
 
-    .beginClass <lc::operation::Base> ("Base")
+    .beginClass <operation::Base> ("Base")
     .endClass()
-    .beginExtendClass <lc::operation::Move, lc::operation::Base> ("Move")
-    .addConstructor(LUA_SP(shared_ptr< lc::operation::Move>), LUA_ARGS(const lc::geo::Coordinate & offset))
+    .beginExtendClass <operation::Move, operation::Base> ("Move")
+    .addConstructor(LUA_SP(shared_ptr< operation::Move>), LUA_ARGS(const geo::Coordinate & offset))
     .endClass()
-    .beginExtendClass <lc::operation::Begin, lc::operation::Base> ("Begin")
-    .addConstructor(LUA_SP(shared_ptr< lc::operation::Begin>), LUA_ARGS())
+    .beginExtendClass <operation::Begin, operation::Base> ("Begin")
+    .addConstructor(LUA_SP(shared_ptr< operation::Begin>), LUA_ARGS())
     .endClass()
-    .beginExtendClass <lc::operation::Loop, lc::operation::Base> ("Loop")
-    .addConstructor(LUA_SP(shared_ptr< lc::operation::Loop>), LUA_ARGS(const int numTimes))
+    .beginExtendClass <operation::Loop, operation::Base> ("Loop")
+    .addConstructor(LUA_SP(shared_ptr< operation::Loop>), LUA_ARGS(const int numTimes))
     .endClass()
-    .beginExtendClass <lc::operation::Copy, lc::operation::Base> ("Copy")
-    .addConstructor(LUA_SP(shared_ptr< lc::operation::Copy>), LUA_ARGS(const lc::geo::Coordinate & offset))
+    .beginExtendClass <operation::Copy, operation::Base> ("Copy")
+    .addConstructor(LUA_SP(shared_ptr< operation::Copy>), LUA_ARGS(const geo::Coordinate & offset))
     .endClass()
-    .beginExtendClass <lc::operation::Push, lc::operation::Base> ("Push")
-    .addConstructor(LUA_SP(shared_ptr< lc::operation::Push>), LUA_ARGS())
+    .beginExtendClass <operation::Push, operation::Base> ("Push")
+    .addConstructor(LUA_SP(shared_ptr< operation::Push>), LUA_ARGS())
     .endClass();
 
 }
 
-// .addConstructor(LUA_SP(shared_ptr<const CreateEntities>), LUA_ARGS(AbstractDocument * doc))
+// .addConstructor(LUA_SP(shared_ptr<const CreateEntities>), LUA_ARGS(Document * doc))
 
 

@@ -5,7 +5,7 @@
 
 #include "cad/const.h"
 
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 #include "cad/document/undomanager.h"
 #include "cad/events/commitprocessevent.h"
 #include "cad/operations/undoable.h"
@@ -20,7 +20,7 @@ namespace lc {
     class UndoManagerImpl: public UndoManager {
             Q_OBJECT
         public:
-            UndoManagerImpl(AbstractDocument* document, int maximumUndoLevels);
+            UndoManagerImpl(Document* document, int maximumUndoLevels);
 
             /*!
              * \brief redo an operation.
@@ -69,10 +69,10 @@ namespace lc {
              * \return document
              * \sa lc::AbstractDocument
              */
-            virtual AbstractDocument* document() const {
+            virtual Document* document() const {
                 return _document;
             }
-            AbstractDocument* _document;
+            Document* _document;
 
         private:
             QList <shared_ptr<operation::Undoable> > _unDoables; /*!< Undo list */

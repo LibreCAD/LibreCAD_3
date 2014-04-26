@@ -4,6 +4,10 @@
 #include <QState>
 #include <QStateMachine>
 
+#include <cad/document/entitymanager.h>
+#include <cad/document/layermanager.h>
+#include <cad/meta/layer.h>
+
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
@@ -22,7 +26,7 @@ class CircleCreateOperation :  public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        CircleCreateOperation(lc::AbstractDocument* document, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
+        CircleCreateOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
 
         virtual void restart();
 
@@ -63,6 +67,9 @@ class CircleCreateOperation :  public GuiOperation {
 
         QGraphicsView* _graphicsView;
         shared_ptr<SnapManager>  _snapManager;
+        shared_ptr<lc::EntityManager>  _entityManager;
+        shared_ptr<const lc::Layer> _layer;
+
 };
 
 #endif // CircleCreateOperation_H

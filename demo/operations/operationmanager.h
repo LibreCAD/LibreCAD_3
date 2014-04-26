@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QStack>
 #include "guioperation.h"
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 
 /**
   * \brief OperationManager manages a set of operations that are currently active within the document
@@ -16,7 +16,7 @@
 class OperationManager : QObject {
         Q_OBJECT
     public:
-        OperationManager(lc::AbstractDocument* document);
+        OperationManager(lc::Document* document);
 
         /*!
           * \brief cancel all current operations
@@ -64,7 +64,7 @@ class OperationManager : QObject {
         // Created as a stack of operation because LibreCAD 2.x has that. However, not sure where this is used exactly
         // it might aswell be that later this is going ot be changed to one single Operation that can be active
         QStack<shared_ptr<GuiOperation> > _activeGuiOperations;
-        lc::AbstractDocument* _document;
+        lc::Document* _document;
 };
 
 #endif // OperationManager_H

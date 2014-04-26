@@ -3,6 +3,8 @@
 
 #include <QDebug>
 
+#include <cad/meta/layer.h>
+
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
@@ -19,8 +21,8 @@ namespace lc {
 
     class Circle : public enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
         public:
-            Circle(const geo::Coordinate& center, double radius);
-            Circle(const geo::Coordinate& center, double radius, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Circle(const geo::Coordinate& center, double radius, const shared_ptr<const Layer> _layer);
+            Circle(const geo::Coordinate& center, double radius, const shared_ptr<const Layer> _layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

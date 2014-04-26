@@ -1,5 +1,5 @@
 #include "builderops.h"
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 
 
 using namespace lc;

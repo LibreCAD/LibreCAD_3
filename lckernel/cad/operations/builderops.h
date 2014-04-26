@@ -10,7 +10,7 @@
 #include <cad/base/cadentity.h>
 
 namespace lc {
-    class AbstractDocument;
+    class Document;
     namespace operation {
 
         /**

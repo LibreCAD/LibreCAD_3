@@ -8,7 +8,7 @@
 
 #include "cadmdichild.h"
 
-#include "cad/document/abstractdocument.h"
+#include "cad/document/document.h"
 #include "cad/document/undomanager.h"
 
 #include "imainwindow.h"

@@ -14,8 +14,8 @@
 namespace lc {
     class Text : public enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
-            Text(const geo::Coordinate& insertion_point, double height, QString text_value);
-            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const QList<shared_ptr<const MetaType> >& metaTypes);
+            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const shared_ptr<const Layer> layer);
+            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes);
 
         public:
             virtual shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;
