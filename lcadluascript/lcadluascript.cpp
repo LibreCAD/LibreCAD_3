@@ -85,7 +85,7 @@ QString LCadLuaScript::run(const QString& script) {
     // add lua cad entities
     lua_openlckernel(L);
 
-//    .addFunction("getLayer", &lua_layer)
+    //    .addFunction("getLayer", &lua_layer)
 
     LuaBinding(L).beginModule("app")
     .addFunction("currentDocument", &lua_getDocument)
