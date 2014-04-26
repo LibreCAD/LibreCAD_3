@@ -4,11 +4,11 @@
 #include <QHash>
 #include <QObject>
 
-#include <cad/events/addlayerevent.h>
-#include <cad/events/removelayerevent.h>
-#include <cad/events/replacelayerevent.h>
+#include "cad/events/addlayerevent.h"
+#include "cad/events/removelayerevent.h"
+#include "cad/events/replacelayerevent.h"
 
-#include <cad/document/document.h>
+#include "cad/document/document.h"
 
 #include "cad/const.h"
 
@@ -44,14 +44,14 @@ namespace lc {
              * \sa RemoveEntityEvent
              */
             void on_replaceLayerEvent(const lc::ReplaceLayerEvent&);
+
+        public:
             /*!
              * \brief layer
              * Return a single document layer
              * \param layerName
              * \return
              */
-
-        public:
             virtual shared_ptr<const Layer> layer(const QString& layerName) const;
 
             /*!

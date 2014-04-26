@@ -10,7 +10,7 @@ extern "C"
 #include <boost/pointer_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include "LuaIntf.h"
-#include "lua-intf/LuaIntf/QtLuaIntf.h"
+//#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"

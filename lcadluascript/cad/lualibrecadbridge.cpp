@@ -5,23 +5,23 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <boost/shared_ptr.hpp>
-#include <boost/pointer_cast.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include "boost/shared_ptr.hpp"
+#include "boost/pointer_cast.hpp"
+#include "boost/enable_shared_from_this.hpp"
 
 #include "lualibrecadbridge.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
-#include "lua-intf/LuaIntf/QtLuaIntf.h"
+//#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
-#include <cad/geometry/geocoordinate.h>
-#include <cad/primitive/line.h>
-#include <cad/primitive/circle.h>
-#include <cad/operations/builder.h>
-#include <cad/operations/builderops.h>
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/entitymanagerimpl.h>
-#include <cad/dochelpers/layermanagerimpl.h>
+#include "cad/geometry/geocoordinate.h"
+#include "cad/primitive/line.h"
+#include "cad/primitive/circle.h"
+#include "cad/operations/builder.h"
+#include "cad/operations/builderops.h"
+#include "cad/dochelpers/documentimpl.h"
+#include "cad/dochelpers/entitymanagerimpl.h"
+#include "cad/dochelpers/layermanagerimpl.h"
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
