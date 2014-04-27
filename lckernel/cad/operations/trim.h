@@ -35,7 +35,6 @@ namespace lc {
                 Q_DISABLE_COPY(Trim)
             private:
                 shared_ptr<lc::FTrim> _trim;
-                QString _entityLayer;
 
         };
     };

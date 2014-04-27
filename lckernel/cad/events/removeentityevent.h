@@ -11,7 +11,7 @@ namespace lc {
      */
     class RemoveEntityEvent {
         public:
-            RemoveEntityEvent(shared_ptr<const CADEntity> cadEntity) : _cadEntity(cadEntity) {
+            RemoveEntityEvent(const shared_ptr<const CADEntity> cadEntity) : _cadEntity(cadEntity) {
             }
 
             /*!
@@ -23,7 +23,7 @@ namespace lc {
             }
 
         private:
-            shared_ptr<const CADEntity> _cadEntity;
+            const shared_ptr<const CADEntity> _cadEntity;
     };
 }
 #endif // REMOVEENTITYEVENT_H

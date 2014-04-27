@@ -59,7 +59,7 @@ void Builder::processInternal() {
             _entitiesStart.append(exists);
             document()->replaceEntity(_buffer.at(i));
         } else {
-            document()->addEntity("0", _buffer.at(i));
+            document()->addEntity(_buffer.at(i));
         }
     }
 }
@@ -70,7 +70,7 @@ void Builder::undo() const {
     }
 
     for (int i = 0; i < _entitiesStart.size(); ++i) {
-        document()->addEntity("0", _entitiesStart.at(i));
+        document()->addEntity(_entitiesStart.at(i));
     }
 }
 
@@ -81,7 +81,7 @@ void Builder::redo() const {
         if (exists.get() != NULL) {
             document()->replaceEntity(_buffer.at(i));
         } else {
-            document()->addEntity("0", _buffer.at(i));
+            document()->addEntity(_buffer.at(i));
         }
     }
 }

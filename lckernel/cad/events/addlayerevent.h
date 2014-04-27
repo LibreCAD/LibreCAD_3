@@ -27,8 +27,8 @@ namespace lc {
                 return _layer;
             }
         private:
-            QString _layerName;
-            Layer _layer;
+            const QString _layerName;
+            const Layer _layer;
     };
 }
 

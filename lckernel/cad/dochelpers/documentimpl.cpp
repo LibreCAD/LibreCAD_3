@@ -36,16 +36,16 @@ void DocumentImpl::commit(shared_ptr<operation::DocumentOperation> operation) {
     this->operationFinnish(operation);
 }
 
-void DocumentImpl::addEntity(const QString& layerName, shared_ptr<const CADEntity> cadEntity) {
-    AddEntityEvent event(layerName, cadEntity);
+void DocumentImpl::addEntity(const shared_ptr<const CADEntity> cadEntity) {
+    AddEntityEvent event(cadEntity);
     emit addEntityEvent(event);
 }
 
-void DocumentImpl::replaceEntity(shared_ptr<const CADEntity> entity) {
+void DocumentImpl::replaceEntity(const shared_ptr<const CADEntity> entity) {
     ReplaceEntityEvent event(entity);
     emit replaceEntityEvent(entity);
 }
-void DocumentImpl::removeEntity(shared_ptr<const CADEntity> entity) {
+void DocumentImpl::removeEntity(const shared_ptr<const CADEntity> entity) {
     RemoveEntityEvent event(entity);
     emit removeEntityEvent(event);
 }

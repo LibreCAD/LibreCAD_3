@@ -13,7 +13,7 @@ namespace lc {
      */
     class ReplaceEntityEvent {
         public:
-            ReplaceEntityEvent(shared_ptr<const CADEntity> entity) : _entity(entity) {
+            ReplaceEntityEvent(const shared_ptr<const CADEntity> entity) : _entity(entity) {
             }
 
             /*!
@@ -25,7 +25,7 @@ namespace lc {
             }
 
         private:
-            shared_ptr<const CADEntity> _entity; /*!< shared_ptr<CADEntity _newEntity */
+            const shared_ptr<const CADEntity> _entity; /*!< shared_ptr<CADEntity _newEntity */
     };
 
 }

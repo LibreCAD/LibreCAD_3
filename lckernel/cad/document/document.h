@@ -65,18 +65,18 @@ namespace lc {
              * \param layerName Name of layer to which entity is to be added
              * \param cadEntity Entity to be added
              */
-            virtual void addEntity(const QString& layerName, shared_ptr<const CADEntity> cadEntity) = 0;
+            virtual void addEntity(const shared_ptr<const CADEntity> cadEntity) = 0;
             /*!
              * \brief replace an entity present in the document.
              * \param oldEntity Entity which is to be replaced
              * \param newEntity Entity which replaces the older entity.
              */
-            virtual void replaceEntity(shared_ptr<const CADEntity> entity) = 0;
+            virtual void replaceEntity(const shared_ptr<const CADEntity> entity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
-            virtual void removeEntity(shared_ptr<const CADEntity> entity) = 0;
+            virtual void removeEntity(const shared_ptr<const CADEntity> entity) = 0;
 
 
         public:
