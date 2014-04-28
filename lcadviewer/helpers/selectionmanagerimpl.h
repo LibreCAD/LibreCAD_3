@@ -3,10 +3,11 @@
 
 #include <QGraphicsView>
 
+#include <cad/document/storagemanager.h>
+
 #include "cad/const.h"
 
 #include "cad/document/selectionmanager.h"
-#include "cad/document/layermanager.h"
 #include "cad/base/cadentity.h"
 
 /**
@@ -16,7 +17,7 @@
   */
 class SelectionManagerImpl : public lc::SelectionManager {
     public:
-        SelectionManagerImpl(shared_ptr<lc::LayerManager> layerManager, QGraphicsView* scene);
+        SelectionManagerImpl(shared_ptr<lc::StorageManager> storageManager, QGraphicsView* scene);
 
         /*!
           * \brief return a list of entitires that are near a coordinate
@@ -30,7 +31,7 @@ class SelectionManagerImpl : public lc::SelectionManager {
     public slots:
 
     private:
-        shared_ptr<lc::LayerManager> _layerManager;
+        shared_ptr<lc::StorageManager> _storageManager;
         QGraphicsView* _view;
 };
 #endif // SELECTIONMANAGERIMPL_H

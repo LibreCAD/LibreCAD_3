@@ -3,7 +3,7 @@
 #include "guioperationfinishedevent.h"
 #include <typeinfo>
 
-TrimOperation::TrimOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager, shared_ptr<lc::SelectionManager> selectionManager) :
+TrimOperation::TrimOperation(lc::Document* document, shared_ptr<lc::StorageManager> entityManager, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager, shared_ptr<lc::SelectionManager> selectionManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _entityManager(entityManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));

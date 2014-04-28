@@ -2,17 +2,11 @@
 #define DOCUMENT_H
 
 #include <QObject>
-#include <QString>
 
 #include "cad/const.h"
 
-#include "layermanager.h"
-#include "selectionmanager.h"
-#include "cad/geometry/geocoordinate.h"
-#include "cad/base/cadentity.h"
-
-
 namespace lc {
+    class CADEntity;
 
     namespace operation {
         class DocumentOperation;

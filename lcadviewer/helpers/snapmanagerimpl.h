@@ -2,6 +2,7 @@
 #define SNAPMANAGERIMPL_H
 
 #include <QObject>
+#include <cad/document/selectionmanager.h>
 #include "snapmanager.h"
 #include "lcadviewer.h"
 

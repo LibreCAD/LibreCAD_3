@@ -5,7 +5,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Builder::Builder(Document* document, shared_ptr<EntityManager> entityManager) : DocumentOperation(document), Undoable("Builder"), _entityManager(entityManager) {
+Builder::Builder(Document* document, shared_ptr<StorageManager> entityManager) : DocumentOperation(document), Undoable("Builder"), _entityManager(entityManager) {
 }
 
 Builder::~Builder() {

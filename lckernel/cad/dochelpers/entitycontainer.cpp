@@ -25,10 +25,22 @@ void EntityContainer::replaceEntity(shared_ptr<const CADEntity> toReplaceWith) {
     }
 }
 
-QHash<int, shared_ptr<const CADEntity> > EntityContainer::allEntities() const {
-    return _cadentities;
+QList<shared_ptr<const CADEntity> > EntityContainer::allEntities() const {
+    return _cadentities.values();
 }
 
 shared_ptr<const CADEntity> EntityContainer::findEntityByID(ID_DATATYPE id) const {
     return _cadentities.value(id);
+}
+
+EntityContainer EntityContainer::findEntitiesByLayer(const shared_ptr<const Layer> layer) const {
+    EntityContainer container;
+
+    QHash<ID_DATATYPE, shared_ptr<const CADEntity>>::const_iterator i = _cadentities.constBegin();
+    while (i != _cadentities.constEnd()) {
+        if (i.value()->layer() == layer) {
+            container.addEntity(i.value());
+        }
+    }
+    return container;
 }

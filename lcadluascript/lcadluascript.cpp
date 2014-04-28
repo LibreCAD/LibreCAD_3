@@ -16,7 +16,7 @@ extern "C"
 #include "cad/lualibrecadbridge.h"
 
 #include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/entitymanagerimpl.h>
+#include <cad/dochelpers/storagemanagerimpl.h>
 
 #include <boost/pointer_cast.hpp>
 
@@ -33,13 +33,12 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<lc::LayerManager> layerManager) : _document(document), _entityManager(entityManager), _layerManager(layerManager) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, shared_ptr<lc::StorageManager> storageManager) : _document(document), _storageManager(storageManager) {
 }
 
 QString* gOut;
 lc::Document* luaDoc;
-shared_ptr<lc::EntityManager> entityManager;
-shared_ptr<lc::LayerManager> layerManager;
+shared_ptr<lc::StorageManager> storageManager;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -60,20 +59,13 @@ static const struct luaL_Reg printlib [] = {
 static lc::Document* lua_getDocument() {
     return luaDoc;
 }
-static shared_ptr<lc::EntityManager> lua_entityManager() {
-    return entityManager;
-}
-
-static shared_ptr<lc::LayerManager> lua_layerManager() {
-    return layerManager;
+static shared_ptr<lc::StorageManager> lua_storageManager() {
+    return storageManager;
 }
 
 static shared_ptr<lc::Layer> lua_layer(const char* layer) {
     // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
-
-    auto l = layerManager->layer(layer);
-    auto o = boost::const_pointer_cast<lc::Layer>(l);
-    return o;
+    return boost::const_pointer_cast<lc::Layer>(storageManager->layer(layer));
 }
 
 
@@ -89,9 +81,8 @@ QString LCadLuaScript::run(const QString& script) {
 
     LuaBinding(L).beginModule("app")
     .addFunction("currentDocument", &lua_getDocument)
-    .addFunction("currentEntityManager", &lua_entityManager)
-    .addFunction("getLayer", &lua_layer)
-    .addFunction("currentLayermanager", &lua_layerManager);
+    .addFunction("currentStorageManager", &lua_storageManager)
+    .addFunction("getLayer", &lua_layer);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -102,8 +93,7 @@ QString LCadLuaScript::run(const QString& script) {
     QString out;
     gOut = &out;
     luaDoc = _document;
-    entityManager = _entityManager;
-    layerManager = _layerManager;
+    storageManager = _storageManager;
 
     // luaL_dofile(L, "/opt/librecad-test.lua");
     int s = luaL_dostring(L, script.toLocal8Bit().data());

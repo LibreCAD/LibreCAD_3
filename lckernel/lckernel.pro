@@ -39,8 +39,6 @@ SOURCES += lckernel.cpp \
     cad/base/cadentity.cpp \
     cad/primitive/circle.cpp \
     cad/dochelpers/documentimpl.cpp \
-    cad/dochelpers/layermanagerimpl.cpp \
-    cad/dochelpers/entitymanagerimpl.cpp \
     cad/dochelpers/undomanagerimpl.cpp \
     cad/primitive/arc.cpp \
     cad/geometry/geocircle.cpp \
@@ -63,7 +61,8 @@ SOURCES += lckernel.cpp \
     cad/operations/documentoperation.cpp \
     cad/operations/builderops.cpp \
     cad/dochelpers/entitycontainer.cpp \
-    cad/document/document.cpp
+    cad/document/document.cpp \
+    cad/dochelpers/storagemanagerimpl.cpp
 
 HEADERS += lckernel.h\
     lckernel_global.h \
@@ -77,19 +76,15 @@ HEADERS += lckernel.h\
     cad/base/metainfo.h \
     cad/base/cadentity.h \
     cad/primitive/circle.h \
-    cad/document/layermanager.h \
     cad/interface/metatype.h \
     cad/interface/variantable.h \
     cad/dochelpers/documentimpl.h \
-    cad/dochelpers/layermanagerimpl.h \
     cad/document/selectionmanager.h \
     cad/events/beginprocessevent.h \
     cad/events/commitprocessevent.h \
     cad/events/addentityevent.h \
     cad/events/removeentityevent.h \
     cad/events/replaceentityevent.h \
-    cad/dochelpers/entitymanagerimpl.h \
-    cad/document/entitymanager.h \
     cad/document/undomanager.h \
     cad/operations/undoable.h \
     cad/dochelpers/undomanagerimpl.h \
@@ -122,6 +117,8 @@ HEADERS += lckernel.h\
     cad/document/document.h \
     cad/events/removelayerevent.h \
     cad/events/addlayerevent.h \
-    cad/events/replacelayerevent.h
+    cad/events/replacelayerevent.h \
+    cad/dochelpers/storagemanagerimpl.h \
+    cad/document/storagemanager.h
 
 

@@ -7,7 +7,7 @@
 #include "cad/vo/entitydistance.h"
 #include "cad/functions/intersect.h"
 
-SelectionManagerImpl::SelectionManagerImpl(shared_ptr<lc::LayerManager> layerManager,  QGraphicsView* view) : lc::SelectionManager(),  _layerManager(layerManager), _view(view) {
+SelectionManagerImpl::SelectionManagerImpl(shared_ptr<lc::StorageManager> storageManager,  QGraphicsView* view) : lc::SelectionManager(),  _storageManager(storageManager), _view(view) {
 }
 
 

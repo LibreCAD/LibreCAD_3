@@ -20,8 +20,7 @@ extern "C"
 #include "cad/operations/builder.h"
 #include "cad/operations/builderops.h"
 #include "cad/dochelpers/documentimpl.h"
-#include "cad/dochelpers/entitymanagerimpl.h"
-#include "cad/dochelpers/layermanagerimpl.h"
+#include "cad/dochelpers/storagemanagerimpl.h"
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
@@ -72,16 +71,10 @@ void lua_openlckernel(lua_State* L) {
     .beginClass <DocumentImpl> ("DocumentImpl")
     .endClass()
 
-    .beginClass <EntityManager> ("EntityManager")
+    .beginClass <StorageManager> ("StorageManager")
     .endClass()
-    .beginExtendClass <EntityManagerImpl, EntityManager > ("EntityManagerImpl")
-    .addConstructor(LUA_SP(shared_ptr<EntityManagerImpl>), LUA_ARGS(Document * doc))
-    .endClass()
-
-    .beginClass <LayerManager> ("LayerManager")
-    .endClass()
-    .beginExtendClass <LuaLayerManagerImplProxy, LayerManager> ("LayerManagerImpl")
-    .addConstructor(LUA_SP(shared_ptr<LuaLayerManagerImplProxy>), LUA_ARGS(Document * doc))
+    .beginExtendClass <StorageManagerImpl, StorageManager > ("StorageManagerImpl")
+    .addConstructor(LUA_SP(shared_ptr<StorageManagerImpl>), LUA_ARGS(Document * doc))
     .endClass()
 
     .beginExtendClass <CADEntity, ID> ("CADEntity")
@@ -100,7 +93,7 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginExtendClass <LuaBuilderProxy, operation::DocumentOperation> ("Builder")
-    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc,   shared_ptr<lc::EntityManager> entityManager))
+    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc,   shared_ptr<lc::StorageManager> entityManager))
     .addFunction("append", &LuaBuilderProxy::append)
     .addFunction("move", &LuaBuilderProxy::move)
     .addFunction("copy", &LuaBuilderProxy::copy)

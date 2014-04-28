@@ -3,14 +3,13 @@
 
 #include <QWidget>
 
-#include <cad/document/entitymanager.h>
 #include <cad/document/selectionmanager.h>
+#include <cad/document/storagemanager.h>
 
 #include "cad/document/document.h"
 #include "cad/document/undomanager.h"
 #include "drawitems/cursor.h"
 #include "helpers/snapmanager.h"
-#include "cad/document/layermanager.h"
 
 #include "operations/operationmanager.h"
 
@@ -50,8 +49,7 @@ class CadMdiChild : public QWidget {
         shared_ptr<SnapManager>  snapManager() const;
         shared_ptr<OperationManager>  operationManager() const;
         shared_ptr<lc::SelectionManager> selectionManager() const;
-        shared_ptr<lc::LayerManager> layerManager() const;
-        shared_ptr<lc::EntityManager> entityManager() const;
+        shared_ptr<lc::StorageManager> storageManager() const;
         void cancelCurrentOperations();
 
     private:
@@ -63,9 +61,8 @@ class CadMdiChild : public QWidget {
 
         shared_ptr<const Cursor>  _cursor;
         shared_ptr<SnapManager>  _snapManager;
-        shared_ptr<lc::LayerManager> _layerManager;
         shared_ptr<lc::SelectionManager> _selectionManager;
-        shared_ptr<lc::EntityManager> _entityManager;
+        shared_ptr<lc::StorageManager> _storageManager;
 
         shared_ptr<OperationManager>  _operationManager;
 };

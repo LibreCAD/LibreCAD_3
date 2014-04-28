@@ -19,7 +19,7 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
 
     shared_ptr<operation::Undoable>  undoable = dynamic_pointer_cast<operation::Undoable>(event.operation());
 
-    if (undoable != NULL) {
+    if (undoable.get() != NULL) {
         qDebug() << "Process: " << undoable->text();
 
         // Check if Redo is possible, if so we might need to purge objects from memory

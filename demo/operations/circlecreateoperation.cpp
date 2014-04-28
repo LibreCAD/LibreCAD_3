@@ -5,8 +5,8 @@
 
 #include <cad/operations/builder.h>
 
-CircleCreateOperation::CircleCreateOperation(lc::Document* document, shared_ptr<lc::EntityManager> entityManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) :
-    GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _entityManager(entityManager) {
+CircleCreateOperation::CircleCreateOperation(lc::Document* document, shared_ptr<lc::StorageManager> storageManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) :
+    GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
@@ -50,7 +50,7 @@ void CircleCreateOperation::circleCreationFinished() {
 
 shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {
     QList<shared_ptr<const lc::MetaType> > metaTypes;
-    auto builder = make_shared<lc::operation::Builder>(document(), _entityManager);
+    auto builder = make_shared<lc::operation::Builder>(document(), _storageManager);
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
     builder->append(make_shared<lc::Circle>(_startPoint, r, _layer));
     return builder;
@@ -86,7 +86,7 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
 
 shared_ptr<GuiOperation> CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
-    CircleCreateOperation* lco = new CircleCreateOperation(document(), _entityManager, _layer, this->_graphicsView, this->_snapManager);
+    CircleCreateOperation* lco = new CircleCreateOperation(document(), _storageManager, _layer, this->_graphicsView, this->_snapManager);
     return shared_ptr<GuiOperation>(lco);
 }
 

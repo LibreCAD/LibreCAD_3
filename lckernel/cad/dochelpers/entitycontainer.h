@@ -33,11 +33,19 @@ namespace lc {
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QHash<int, shared_ptr<const CADEntity> > allEntities() const;
+            virtual QList<shared_ptr<const CADEntity> > allEntities() const;
 
             virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const;
+
+            /*!
+             * \brief findEntitiesByLayer
+             * Return a entities container withh all entities from a sepcific layer
+             * \param layer
+             * \return
+             */
+            virtual EntityContainer findEntitiesByLayer(const shared_ptr<const Layer> layer) const;
         private:
-            QHash<int, shared_ptr<const CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
+            QHash<ID_DATATYPE, shared_ptr<const CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
 
     };
 }

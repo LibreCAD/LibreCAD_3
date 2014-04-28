@@ -4,9 +4,8 @@
 
 #include <cad/operations/builder.h>
 #include <cad/document/document.h>
-#include <cad/document/entitymanager.h>
-#include <cad/dochelpers/layermanagerimpl.h>
 #include <cad/meta/layer.h>
+#include <cad/dochelpers/storagemanagerimpl.h>
 
 
 struct lua_State;
@@ -18,7 +17,7 @@ void lua_openlckernel(lua_State* L);
  */
 class LuaBuilderProxy : public lc::operation::Builder {
     public:
-        LuaBuilderProxy(lc::Document* document, shared_ptr<lc::EntityManager> entityManager) : lc::operation::Builder(document, entityManager) {
+        LuaBuilderProxy(lc::Document* document, shared_ptr<lc::StorageManager> entityManager) : lc::operation::Builder(document, entityManager) {
             qDebug() << "LuaBuilderProxy instantiated";
         }
 
@@ -47,9 +46,9 @@ class LuaBuilderProxy : public lc::operation::Builder {
 
 };
 
-class LuaLayerManagerImplProxy : public lc::LayerManagerImpl {
+class LuaStorageManagerImplProxy : public lc::StorageManagerImpl {
     public:
-        LuaLayerManagerImplProxy(lc::Document* document) : LayerManagerImpl(document) {
+        LuaStorageManagerImplProxy(lc::Document* document) : StorageManagerImpl(document) {
         }
 
 

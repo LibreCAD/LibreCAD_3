@@ -10,10 +10,8 @@
 #include "cad/meta/color.h"
 #include "cad/meta/linewidth.h"
 #include "cad/interface/metatype.h"
-#include "cad/document/layermanager.h"
 #include "cad/document/selectionmanager.h"
-#include "cad/dochelpers/layermanagerimpl.h"
-#include "cad/dochelpers/entitymanagerimpl.h"
+#include "cad/dochelpers/storagemanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
 
@@ -65,14 +63,11 @@ void CadMdiChild::newDocument() {
     // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = new lc::DocumentImpl();
 
-    // Layer Manager takes care of creating and removing layers
-    _layerManager = make_shared<lc::LayerManagerImpl>(_document);
-
     // Entity manager add's/removes entities to layers
-    _entityManager = make_shared<lc::EntityManagerImpl>(_document);
+    _storageManager = make_shared<lc::StorageManagerImpl>(_document);
 
     // Selection manager allow for finding entities around a point or within areas
-    _selectionManager = make_shared<SelectionManagerImpl>(_layerManager, ui->lCADViewer);
+    _selectionManager = make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
 
     // Scene manager listens to the document and takes care that the scene is changed according to what
     // is added and removed within a document
@@ -95,8 +90,8 @@ void CadMdiChild::newDocument() {
 
 
     // Create a cross at position 0,0
-    auto layer = _layerManager->layer("0");
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_entityManager);
+    auto layer = _storageManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
     builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
     builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
     builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
@@ -117,8 +112,8 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_entityManager);
-    auto layer = _layerManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
+    auto layer = _storageManager->layer("0");
     QTime myTimer;
     myTimer.start();
 
@@ -138,8 +133,8 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_entityManager);
-    auto layer = _layerManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
+    auto layer = _storageManager->layer("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -158,8 +153,8 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_entityManager);
-    auto layer = _layerManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
+    auto layer = _storageManager->layer("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -184,9 +179,9 @@ void CadMdiChild::on_addArcs_clicked() {
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_entityManager);
+    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
 
-    auto layer = _layerManager->layer("0");
+    auto layer = _storageManager->layer("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -234,12 +229,8 @@ shared_ptr<lc::SelectionManager> CadMdiChild::selectionManager() const {
     return _selectionManager;
 }
 
-shared_ptr<lc::LayerManager> CadMdiChild::layerManager() const {
-    return _layerManager;
-}
-
-shared_ptr<lc::EntityManager> CadMdiChild::entityManager() const {
-    return _entityManager;
+shared_ptr<lc::StorageManager> CadMdiChild::storageManager() const {
+    return _storageManager;
 }
 
 void CadMdiChild::cancelCurrentOperations() {

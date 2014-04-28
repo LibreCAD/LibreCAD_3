@@ -6,7 +6,7 @@
 #include "documentoperation.h"
 #include "undoable.h"
 #include <QList>
-#include <cad/document/entitymanager.h>
+#include "cad/document/storagemanager.h"
 
 namespace lc {
     class Document;
@@ -17,7 +17,7 @@ namespace lc {
                 friend class lc::operation::Base;
 
             public:
-                Builder(Document* document, shared_ptr<EntityManager> entityManager);
+                Builder(Document* document, shared_ptr<StorageManager> entityManager);
 
                 virtual ~Builder();
                 Builder& move(const geo::Coordinate& offset);
@@ -43,7 +43,7 @@ namespace lc {
                 QList<shared_ptr<const CADEntity> > _operationFinal;
 
             private:
-                shared_ptr<EntityManager> _entityManager;
+                shared_ptr<StorageManager> _entityManager;
         };
 
     };
