@@ -5,6 +5,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
+
 #include "boost/shared_ptr.hpp"
 #include "boost/pointer_cast.hpp"
 #include "boost/enable_shared_from_this.hpp"
@@ -68,13 +69,18 @@ void lua_openlckernel(lua_State* L) {
 
     .beginClass <Document> ("Document")
     .endClass()
-    .beginClass <DocumentImpl> ("DocumentImpl")
+    .beginExtendClass <DocumentImpl, Document> ("DocumentImpl")
+    .addFunction("entitiesByLayer", &DocumentImpl::entitiesByLayer)
+    .addFunction("test", &DocumentImpl::test)
+    .endClass()
+
+    .beginClass <EntityContainer> ("EntityContainer")
     .endClass()
 
     .beginClass <StorageManager> ("StorageManager")
     .endClass()
     .beginExtendClass <StorageManagerImpl, StorageManager > ("StorageManagerImpl")
-    .addConstructor(LUA_SP(shared_ptr<StorageManagerImpl>), LUA_ARGS(Document * doc))
+    .addConstructor(LUA_SP(shared_ptr<StorageManagerImpl>), LUA_ARGS())
     .endClass()
 
     .beginExtendClass <CADEntity, ID> ("CADEntity")
@@ -93,7 +99,7 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginExtendClass <LuaBuilderProxy, operation::DocumentOperation> ("Builder")
-    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc,   shared_ptr<lc::StorageManager> entityManager))
+    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc))
     .addFunction("append", &LuaBuilderProxy::append)
     .addFunction("move", &LuaBuilderProxy::move)
     .addFunction("copy", &LuaBuilderProxy::copy)
@@ -101,6 +107,7 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("push", &LuaBuilderProxy::push)
     .addFunction("loop", &LuaBuilderProxy::repeat)
     .addFunction("begin", &LuaBuilderProxy::begin)
+    .addFunction("selectByLayer", &LuaBuilderProxy::selectByLayer)
     .endClass()
 
     .beginClass <operation::Base> ("Base")
@@ -119,6 +126,9 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
     .beginExtendClass <operation::Push, operation::Base> ("Push")
     .addConstructor(LUA_SP(shared_ptr< operation::Push>), LUA_ARGS())
+    .endClass()
+    .beginExtendClass <operation::SelectByLayer, operation::Base> ("SelectByLayer")
+    .addConstructor(LUA_SP(shared_ptr< operation::SelectByLayer>), LUA_ARGS(const shared_ptr<Layer>))
     .endClass();
 
 }

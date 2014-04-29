@@ -6,6 +6,8 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include <QElapsedTimer>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -14,6 +16,7 @@ extern "C"
 
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
+#include "cad/timer.h"
 
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
@@ -65,7 +68,13 @@ static shared_ptr<lc::StorageManager> lua_storageManager() {
 
 static shared_ptr<lc::Layer> lua_layer(const char* layer) {
     // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
-    return boost::const_pointer_cast<lc::Layer>(storageManager->layer(layer));
+    return boost::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
+}
+
+static void entitiesByLayer(const char* layer) {
+    // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
+    auto f = storageManager->layerByName(layer);
+    storageManager->entitiesByLayer(f);
 }
 
 
@@ -82,7 +91,11 @@ QString LCadLuaScript::run(const QString& script) {
     LuaBinding(L).beginModule("app")
     .addFunction("currentDocument", &lua_getDocument)
     .addFunction("currentStorageManager", &lua_storageManager)
-    .addFunction("getLayer", &lua_layer);
+    .addFunction("getLayer", &lua_layer)
+    .addFunction("entitiesByLayer", &entitiesByLayer);
+
+    LuaBinding(L)
+    .addFunction("microtime", &lua_microtime);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -112,8 +125,7 @@ QString LCadLuaScript::run(const QString& script) {
 layer = app.getLayer("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
 d=app.currentDocument()
-em=app.currentEntityManager()
-ce=Builder(d,em)
+ce=Builder(d)
 ce:append(l)
 ce:execute()
 */
@@ -127,7 +139,6 @@ local p =rx;
 local q=ry;
 
 doc=app.currentDocument()
-em=app.currentEntityManager()
 ce=Builder(doc,em)
 layer = app.getLayer("0")
 
@@ -149,6 +160,8 @@ print "done";
 /* Fractal tree
  *
 
+start = microtime()
+
 layer = app.getLayer("0")
 
 function drawTree( ce, x1,  y1,  angle,  depth)
@@ -164,12 +177,13 @@ function drawTree( ce, x1,  y1,  angle,  depth)
 end
 
 doc=app.currentDocument()
-em=app.currentEntityManager()
 ce=Builder(doc,em)
 drawTree(ce, 0, 0, -90, 14);
 ce:execute()
 
-print "done";
+print (microtime()-start);
+
+
 
 
 */
@@ -326,7 +340,6 @@ ce:execute()
  *
 l=Line(Coord(0,0), Coord(10,100));
 d=app.currentDocument()
-
 b=Builder(d)
 b:append(l)
 b:copy(Coord(0,0))
@@ -339,7 +352,6 @@ b:execute()
 /*
  * l=Line(Coord(0,0), Coord(00,100));
 d=app.currentDocument()
-
 b=Builder(d)
 b:append(l)
 b:copy(Coord(0,0))

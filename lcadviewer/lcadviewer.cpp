@@ -18,7 +18,7 @@ LCADViewer::LCADViewer(QWidget* parent) :
     setCacheMode(CacheBackground); // Currently creates artifacts
     // setViewportUpdateMode(BoundingRectViewportUpdate);
     // this->setOptimizationFlag(DontAdjustForAntialiasing, true);
-    this->setRenderHint(QPainter::Antialiasing, true);
+    this->setRenderHint(QPainter::Antialiasing, false);
 
     this->setOptimizationFlag(QGraphicsView::IndirectPainting, true);
     setWindowTitle(tr("LC Viewer"));

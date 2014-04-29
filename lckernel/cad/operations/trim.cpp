@@ -14,7 +14,7 @@ void Trim::processInternal() {
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
-            document()->addEntity(newEntities.at(i));
+            document()->insertEntity(newEntities.at(i));
         }
 
         document()->removeEntity(_trim->trimmedShape());
@@ -29,7 +29,7 @@ void Trim::undo() const {
             document()->removeEntity(newEntities.at(i));
         }
 
-        document()->addEntity(_trim->trimmedShape());
+        document()->insertEntity(_trim->trimmedShape());
     }
 }
 
@@ -38,7 +38,7 @@ void Trim::redo() const {
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
-            document()->addEntity(newEntities.at(i));
+            document()->insertEntity(newEntities.at(i));
         }
 
         document()->removeEntity(_trim->trimmedShape());

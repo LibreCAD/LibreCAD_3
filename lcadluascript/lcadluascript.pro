@@ -48,4 +48,5 @@ HEADERS += \
         LuaIntf.h \
         lcadluascript.h\
         lcadluascript_global.h \
-    cad/lualibrecadbridge.h
+    cad/lualibrecadbridge.h \
+    cad/timer.h

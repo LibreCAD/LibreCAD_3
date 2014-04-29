@@ -20,19 +20,19 @@ LCMainToolbar::~LCMainToolbar() {
 }
 
 void LCMainToolbar::on_toolButton_clicked() {
-    auto layer = _parent->activeMdiChild()->storageManager()->layer("0");
+    auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
     shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new LineCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer, _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_2_clicked() {
-    auto layer = _parent->activeMdiChild()->storageManager()->layer("0");
+    auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
     shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_3_clicked() {
-    auto layer = _parent->activeMdiChild()->storageManager()->layer("0");
+    auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
     shared_ptr<GuiOperation> lo = shared_ptr<GuiOperation>(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
     _parent->activeMdiChild()->operationManager()->startOperation(lo);
 
@@ -48,11 +48,11 @@ void LCMainToolbar::on_toolButton_4_clicked() {
 }
 
 void LCMainToolbar::on_toolButton_5_clicked() {
-    auto layer = _parent->activeMdiChild()->storageManager()->layer("0");
+    auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
 
     auto l = make_shared<const lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100), layer);
 
-    auto builder = make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager());
+    auto builder = make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document());
     builder->append(l);
     builder->execute();
 

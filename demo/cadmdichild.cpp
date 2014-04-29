@@ -60,11 +60,12 @@ void CadMdiChild::newDocument() {
     ui->lCADViewer->setSceneRect(-15000, -15000, 30000, 30000);
     scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
 
-    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
-    _document = new lc::DocumentImpl();
 
     // Entity manager add's/removes entities to layers
-    _storageManager = make_shared<lc::StorageManagerImpl>(_document);
+    _storageManager = make_shared<lc::StorageManagerImpl>();
+
+    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
+    _document = new lc::DocumentImpl(_storageManager);
 
     // Selection manager allow for finding entities around a point or within areas
     _selectionManager = make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
@@ -90,8 +91,8 @@ void CadMdiChild::newDocument() {
 
 
     // Create a cross at position 0,0
-    auto layer = _storageManager->layer("0");
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
+    auto layer = _storageManager->layerByName("0");
+    auto builder = make_shared<lc::operation::Builder>(document());
     builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
     builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
     builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
@@ -112,8 +113,8 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
-    auto layer = _storageManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document());
+    auto layer = _storageManager->layerByName("0");
     QTime myTimer;
     myTimer.start();
 
@@ -133,8 +134,8 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
-    auto layer = _storageManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document());
+    auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -153,8 +154,8 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
-    auto layer = _storageManager->layer("0");
+    auto builder = make_shared<lc::operation::Builder>(document());
+    auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -179,9 +180,9 @@ void CadMdiChild::on_addArcs_clicked() {
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document(), this->_storageManager);
+    auto builder = make_shared<lc::operation::Builder>(document());
 
-    auto layer = _storageManager->layer("0");
+    auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);

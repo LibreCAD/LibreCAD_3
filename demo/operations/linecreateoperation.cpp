@@ -48,7 +48,7 @@ void LineCreateOperation::lineCreationFinished() {
 }
 
 shared_ptr<lc::operation::DocumentOperation> LineCreateOperation::operation() const {
-    auto builder = make_shared<lc::operation::Builder>(document(), _storageManager);
+    auto builder = make_shared<lc::operation::Builder>(document());
     builder->append(make_shared<lc::Line>(_startPoint, _endPoint, _layer));
     return builder;
 }

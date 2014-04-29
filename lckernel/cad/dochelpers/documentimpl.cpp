@@ -10,7 +10,7 @@
 
 using namespace lc;
 
-DocumentImpl::DocumentImpl() : Document() {
+DocumentImpl::DocumentImpl(const shared_ptr<StorageManager> storageManager) : Document() , _storageManager(storageManager) {
 }
 
 DocumentImpl::~DocumentImpl() {
@@ -36,20 +36,33 @@ void DocumentImpl::commit(shared_ptr<operation::DocumentOperation> operation) {
     this->operationFinnish(operation);
 }
 
-void DocumentImpl::addEntity(const shared_ptr<const CADEntity> cadEntity) {
+void DocumentImpl::insertEntity(const shared_ptr<const CADEntity> cadEntity) {
+    if (_storageManager->entityByID(cadEntity->id()).get()!=NULL) {
+        _storageManager->removeEntity(cadEntity);
+        RemoveEntityEvent event(cadEntity);
+        emit removeEntityEvent(cadEntity);
+    }
+    _storageManager->insertEntity(cadEntity);
     AddEntityEvent event(cadEntity);
-    emit addEntityEvent(event);
+   emit addEntityEvent(event);
 }
 
-void DocumentImpl::replaceEntity(const shared_ptr<const CADEntity> entity) {
-    ReplaceEntityEvent event(entity);
-    emit replaceEntityEvent(entity);
-}
 void DocumentImpl::removeEntity(const shared_ptr<const CADEntity> entity) {
+    _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
     emit removeEntityEvent(event);
 }
 
+EntityContainer DocumentImpl::entitiesByLayer(const shared_ptr<const Layer> layer) const {
+    return _storageManager->entitiesByLayer(layer);;
+}
 
+void DocumentImpl::test(const shared_ptr<const Layer> layer) const {
+    entitiesByLayer(layer);
+}
+
+shared_ptr<StorageManager> DocumentImpl::storageManager() const {
+    return _storageManager;
+}
 
 

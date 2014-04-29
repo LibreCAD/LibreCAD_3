@@ -12,7 +12,7 @@ Document* DocumentOperation::document() const {
 };
 
 void DocumentOperation::process() {
-    processInternal();
+    processInternal(_document->storageManager());
 }
 
 void DocumentOperation::execute() {

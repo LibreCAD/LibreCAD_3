@@ -17,7 +17,7 @@ namespace lc {
                 friend class lc::operation::Base;
 
             public:
-                Builder(Document* document, shared_ptr<StorageManager> entityManager);
+                Builder(Document* document);
 
                 virtual ~Builder();
                 Builder& move(const geo::Coordinate& offset);
@@ -26,6 +26,7 @@ namespace lc {
                 Builder& rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
                 Builder& begin();
                 Builder& push();
+                Builder& selectByLayer(const shared_ptr<const Layer>);
 
                 Builder& append(shared_ptr<const CADEntity> cadEntity);
 
@@ -33,17 +34,15 @@ namespace lc {
                 virtual void redo() const;
 
             protected:
-                virtual void processInternal();
+                virtual void processInternal(shared_ptr<StorageManager> storageManager);
 
             private:
                 QList<shared_ptr<Base> > _stack;
-                QList<shared_ptr<const CADEntity> > _operationQue;
-                QList<shared_ptr<const CADEntity> > _buffer;
-                QList<shared_ptr<const CADEntity> > _entitiesStart;
-                QList<shared_ptr<const CADEntity> > _operationFinal;
+                QList<shared_ptr<const CADEntity> > _workingBuffer;
 
-            private:
-                shared_ptr<StorageManager> _entityManager;
+
+                QList<shared_ptr<const CADEntity> > _entitiesToInsert;
+                QList<shared_ptr<const CADEntity> > _entitiesToRemove;
         };
 
     };

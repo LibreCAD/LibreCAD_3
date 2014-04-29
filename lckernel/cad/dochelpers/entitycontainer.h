@@ -9,33 +9,40 @@ namespace lc {
      * @brief The EntityContainer class
      * manages a set of entities. You can 'spatialy' (not yet optmised) entities within the container.
      *
+     * Note: we should consider this class extending QHash
      */
     class EntityContainer {
         public:
             EntityContainer();
 
             /*!
-             * \brief add an entity to the document.
+             * \brief add an entity to the EntityContainer
+             * If the entity already exists, it will be replaced
              * \param entity entity to be added to the document.
              */
-            virtual void addEntity(shared_ptr<const CADEntity> entity);
+            virtual void insert(shared_ptr<const CADEntity> entity);
+
+            /*!
+             * \brief Add all entities to this container
+             * Any entity that already exists will get replaced
+             * \param EntityContainer to be combined to the document.
+             */
+            virtual void combine(const EntityContainer& entities);
+
             /*!
              * \brief remove an Entity from the document.
              * \param id Entity ID of entity which is to be removed.
              */
-            virtual void removeEntity(shared_ptr<const CADEntity> entity);
-            /*!
-             * \brief replace an Entity from the document.
-             * \param id Entity ID of entity which is to be removed.
-             */
-            virtual void replaceEntity(shared_ptr<const CADEntity> toReplaceWith);
+            virtual void remove(shared_ptr<const CADEntity> entity);
+
             /*!
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QList<shared_ptr<const CADEntity> > allEntities() const;
+            virtual QHash<ID_DATATYPE, shared_ptr<const CADEntity> > allEntities() const;
 
-            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const;
+
+            virtual shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const;
 
             /*!
              * \brief findEntitiesByLayer
@@ -43,9 +50,9 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer findEntitiesByLayer(const shared_ptr<const Layer> layer) const;
+            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const;
         private:
-            QHash<ID_DATATYPE, shared_ptr<const CADEntity> > _cadentities; /*!< QHash CADEntity ID -> CADEntity */
+            QHash<ID_DATATYPE, shared_ptr<const CADEntity> > _cadentities;
 
     };
 }

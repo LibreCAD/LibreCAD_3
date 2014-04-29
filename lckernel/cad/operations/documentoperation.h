@@ -6,7 +6,7 @@
 namespace lc {
 
     class Document;
-
+    class StorageManager;
     namespace operation {
 
 
@@ -54,7 +54,7 @@ namespace lc {
                  * This function get's called when a operation starts and when the document is locked for you
                  * so you can do your work
                  */
-                virtual void processInternal() = 0;
+                virtual void processInternal(shared_ptr<StorageManager> storageManager) = 0;
 
         };
     };

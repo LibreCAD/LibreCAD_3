@@ -17,7 +17,7 @@ void lua_openlckernel(lua_State* L);
  */
 class LuaBuilderProxy : public lc::operation::Builder {
     public:
-        LuaBuilderProxy(lc::Document* document, shared_ptr<lc::StorageManager> entityManager) : lc::operation::Builder(document, entityManager) {
+        LuaBuilderProxy(lc::Document* document) : lc::operation::Builder(document) {
             qDebug() << "LuaBuilderProxy instantiated";
         }
 
@@ -43,12 +43,15 @@ class LuaBuilderProxy : public lc::operation::Builder {
         void push() {
             lc::operation::Builder::push();
         }
+        void selectByLayer(const shared_ptr<lc::Layer> layer) {
+            lc::operation::Builder::selectByLayer(layer);
+        }
 
 };
 
 class LuaStorageManagerImplProxy : public lc::StorageManagerImpl {
     public:
-        LuaStorageManagerImplProxy(lc::Document* document) : StorageManagerImpl(document) {
+        LuaStorageManagerImplProxy() : StorageManagerImpl() {
         }
 
 

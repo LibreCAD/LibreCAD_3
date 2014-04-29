@@ -7,66 +7,39 @@
 
 using namespace lc;
 
-StorageManagerImpl::StorageManagerImpl(Document* document) : StorageManager(), _document(document) {
-    connect(document, SIGNAL(addEntityEvent(const lc::AddEntityEvent&)),
-            this, SLOT(on_addEntityEvent(const lc::AddEntityEvent&)));
-    connect(document, SIGNAL(removeEntityEvent(const lc::RemoveEntityEvent&)),
-            this, SLOT(on_removeEntityEvent(const lc::RemoveEntityEvent&)));
-    connect(document, SIGNAL(replaceEntityEvent(const lc::ReplaceEntityEvent&)),
-            this, SLOT(on_replaceEntityEvent(const lc::ReplaceEntityEvent&)));
-
-    connect(document, SIGNAL(addLayerEvent(const lc::AddLayerEvent&)),
-            this, SLOT(on_addLayerEvent(const lc::AddLayerEvent&)));
-    connect(document, SIGNAL(removeLayerEvent(const lc::RemoveLayerEvent&)),
-            this, SLOT(on_removeLayerEvent(const lc::RemoveLayerEvent&)));
-    connect(document, SIGNAL(replaceLayerEvent(const lc::ReplaceLayerEvent&)),
-            this, SLOT(on_replaceLayerEvent(const lc::ReplaceLayerEvent&)));
+StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 
     _layers.insert("0", make_shared<const Layer>("0", LineWidth(1.0), Color(255, 255, 255)));
+    _layers.insert("1", make_shared<const Layer>("1", LineWidth(1.0), Color(255, 255, 255)));
+    _layers.insert("2", make_shared<const Layer>("2", LineWidth(1.0), Color(255, 255, 255)));
+    _layers.insert("3", make_shared<const Layer>("3", LineWidth(1.0), Color(255, 255, 255)));
+    _layers.insert("4", make_shared<const Layer>("4", LineWidth(1.0), Color(255, 255, 255)));
+    _layers.insert("5", make_shared<const Layer>("5", LineWidth(1.0), Color(255, 255, 255)));
 }
 
-
-void StorageManagerImpl::on_addEntityEvent(const AddEntityEvent& event) {
-    _entities.addEntity(event.entity());
+void StorageManagerImpl::insertEntity(const shared_ptr<const CADEntity> entity) {
+    _entities.insert(entity);
 }
 
-void StorageManagerImpl::on_replaceEntityEvent(const ReplaceEntityEvent& event) {
-    _entities.replaceEntity(event.entity());
+void StorageManagerImpl::insertEntityContainer(const EntityContainer& entities) {
+    _entities.combine(entities);
 }
 
-void StorageManagerImpl::on_removeEntityEvent(const RemoveEntityEvent& event) {
-    _entities.removeEntity(event.entity());
+void StorageManagerImpl::removeEntity(const shared_ptr<const CADEntity> entity) {
+    _entities.remove(entity);
 }
 
-shared_ptr<const CADEntity> StorageManagerImpl::findEntityByID(ID_DATATYPE id) const {
-    return _entities.findEntityByID(id);
+shared_ptr<const CADEntity> StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
+    return _entities.entityByID(id);
 }
 
-EntityContainer StorageManagerImpl::findEntitiesByLayer(const shared_ptr<const Layer> layer) const {
-    return _entities.findEntitiesByLayer(layer);
+EntityContainer StorageManagerImpl::entitiesByLayer(const shared_ptr<const Layer> layer) const {
+    auto all = _entities.entitiesByLayer(layer);
+    qDebug() << "Selected " << all.allEntities().size();
+    return all;
 }
 
-
-void StorageManagerImpl::on_addLayerEvent(const lc::AddLayerEvent& event) {
-    //shared_ptr<DocumentLayer> docLayer = _documentLayers.value(event.layerName());
-
-    //if (docLayer != NULL) {
-    //   throw "LayerManagerImpl layer " + layerName + " already exists.";
-    //}
-
-    // TODO ADD LAYER
-}
-
-
-void StorageManagerImpl::on_removeLayerEvent(const lc::RemoveLayerEvent&) {
-    // TODO REMOVE LAYER
-}
-
-void StorageManagerImpl::on_replaceLayerEvent(const lc::ReplaceLayerEvent&) {
-    // TODO REPLACE LAYER
-}
-
-shared_ptr<const Layer> StorageManagerImpl::layer(const QString& layerName) const {
+shared_ptr<const Layer> StorageManagerImpl::layerByName(const QString& layerName) const {
     return _layers.value(layerName);
 }
 

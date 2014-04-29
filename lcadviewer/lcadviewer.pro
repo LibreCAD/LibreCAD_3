@@ -12,8 +12,14 @@ TEMPLATE    = lib
 
 VERSION=0.0.1
 
-QT += opengl designer
-CONFIG += plugin
+
+lessThan(QT_MAJOR_VERSION, 5) {
+    QT += opengl
+    CONFIG += designer plugin
+} else {
+    QT += opengl designer
+    CONFIG += plugin
+}
 
 OTHER_FILES = CustomWidget.json
 

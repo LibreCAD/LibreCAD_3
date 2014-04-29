@@ -3,10 +3,14 @@
 
 #include <QObject>
 
+#include "cad/meta/layer.h"
+
 #include "cad/const.h"
 
 namespace lc {
     class CADEntity;
+    class EntityContainer;
+    class StorageManager;
 
     namespace operation {
         class DocumentOperation;
@@ -59,20 +63,22 @@ namespace lc {
              * \param layerName Name of layer to which entity is to be added
              * \param cadEntity Entity to be added
              */
-            virtual void addEntity(const shared_ptr<const CADEntity> cadEntity) = 0;
-            /*!
-             * \brief replace an entity present in the document.
-             * \param oldEntity Entity which is to be replaced
-             * \param newEntity Entity which replaces the older entity.
-             */
-            virtual void replaceEntity(const shared_ptr<const CADEntity> entity) = 0;
+            virtual void insertEntity(const shared_ptr<const CADEntity> cadEntity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
             virtual void removeEntity(const shared_ptr<const CADEntity> entity) = 0;
 
-
+            /*!
+             * \brief findEntitiesByLayer
+             * rturn a entities container with all entities on the given layer
+             * \param layer
+             * \return
+             */
+            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const = 0;
+            virtual void test(const shared_ptr<const Layer> layer) const = 0;
+            virtual shared_ptr<StorageManager> storageManager() const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

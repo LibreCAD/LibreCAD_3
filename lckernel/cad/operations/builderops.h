@@ -11,6 +11,7 @@
 
 namespace lc {
     class Document;
+    class StorageManager;
     namespace operation {
 
         /**
@@ -20,9 +21,11 @@ namespace lc {
         class Base {
             public:
                 virtual QList<shared_ptr<const CADEntity> > process(
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
-                    const QList<shared_ptr< Base> > _stack)  = 0;
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<shared_ptr< Base> > _stack
+                )  = 0;
         };
 
         /**
@@ -30,7 +33,7 @@ namespace lc {
          * @brief The Loop class
          * Allows for looping over a set of entities
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -50,8 +53,9 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
             private:
                 int _numTimes;
@@ -62,7 +66,7 @@ namespace lc {
          * @brief The begin class
          * Allows for setting up the beginning of a loop (NOT YET IMPLEMENTED)
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -83,8 +87,9 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
                 QList<shared_ptr<const CADEntity> > getEntities() const;
             private:
@@ -96,7 +101,7 @@ namespace lc {
          * @brief The Move class
          * Allows for setting up the beginning of a loop (NOT YET IMPLEMENTED)
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -117,8 +122,9 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
@@ -129,7 +135,7 @@ namespace lc {
          * @brief The Copy class
          * Allows for copy of the current set of entities
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -149,8 +155,9 @@ namespace lc {
                     qDebug() << "Copy removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
@@ -162,7 +169,7 @@ namespace lc {
          * @brief The Rotate class
          * Allows for copy of the current set of entities
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -182,8 +189,9 @@ namespace lc {
                     qDebug() << "Rotate removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _rotation_center;
@@ -195,7 +203,7 @@ namespace lc {
          * @brief The Push class
          * Allows for pushing all entities on the stack for the next operation
          *
-         * Example (lua);
+         * Example (lua):
          * <pre>
          * l=Line(Coord(0,0), Coord(10,100));
          * d=app.currentDocument()
@@ -217,9 +225,32 @@ namespace lc {
                     qDebug() << "Push removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& buf,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
+        };
+
+
+        /**
+         * @brief The Select class
+         * Select entities within a document
+         *
+         * Example (lua):
+         */
+        class SelectByLayer: public Base {
+            public:
+                SelectByLayer(const shared_ptr<const Layer> layer);
+                virtual ~SelectByLayer() {
+                    qDebug() << "SelectByLayer removed";
+                }
+                virtual QList<shared_ptr<const CADEntity> > process(
+                        shared_ptr<StorageManager> storageManager,
+                    QList<shared_ptr<const CADEntity> > entities,
+                    QList<shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<shared_ptr< Base> > _stack);
+            private:
+                shared_ptr<const Layer> _layer;
         };
     };
 }

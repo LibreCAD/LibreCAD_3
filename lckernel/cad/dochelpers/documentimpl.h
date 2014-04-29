@@ -26,7 +26,7 @@ namespace lc {
     class DocumentImpl : public Document {
             Q_OBJECT
         public:
-            DocumentImpl();
+            DocumentImpl(const shared_ptr<StorageManager> storageManager);
             virtual ~DocumentImpl();
 
         public:
@@ -70,27 +70,24 @@ namespace lc {
              */
             void replaceLayerEvent(const lc::ReplaceLayerEvent&);
 
-
-        public:
         public:
             /*!
              * \brief Add a new Entity to the document
              * \param layerName Name of layer at which entity is to be added.
              * \param cadEntity Entity to be added.
              */
-            virtual void addEntity(const shared_ptr<const CADEntity> cadEntity);
-            /*!
-             * \brief replace an Entity in the document
-             * \param oldEntity Entity which is to be replaced.
-             * \param newEntity Entity by which older entity is replaced.
-             */
-            virtual void replaceEntity(shared_ptr<const CADEntity> entity);
+            virtual void insertEntity(const shared_ptr<const CADEntity> cadEntity);
             /*!
              * \brief remove an Entity from the document
              * \param id Entity ID
              */
             virtual void removeEntity(shared_ptr<const CADEntity> entity);
 
+            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const;
+            virtual void test(const shared_ptr<const Layer> layer) const;
+
+
+            virtual shared_ptr<StorageManager> storageManager() const;
         protected:
             /*!
              * \brief execute's a operation
@@ -111,6 +108,7 @@ namespace lc {
 
         private:
             std::mutex _documentMutex;
+            const shared_ptr<StorageManager> _storageManager;
     };
 }
 

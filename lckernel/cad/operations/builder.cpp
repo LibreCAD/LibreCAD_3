@@ -5,7 +5,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Builder::Builder(Document* document, shared_ptr<StorageManager> entityManager) : DocumentOperation(document), Undoable("Builder"), _entityManager(entityManager) {
+Builder::Builder(Document* document) : DocumentOperation(document), Undoable("Builder") {
 }
 
 Builder::~Builder() {
@@ -13,7 +13,7 @@ Builder::~Builder() {
 }
 
 Builder& Builder::append(shared_ptr<const CADEntity> cadEntity) {
-    _operationQue.append(cadEntity);
+    _workingBuffer.append(cadEntity);
     return *this;
 }
 
@@ -41,47 +41,62 @@ Builder& Builder::push() {
     _stack.append(make_shared<Push>());
     return *this;
 }
+Builder& Builder::selectByLayer(const shared_ptr<const Layer> layer) {
+    _stack.append(make_shared<SelectByLayer>(layer));
+    return *this;
+}
 
-void Builder::processInternal() {
-    QList<shared_ptr<const CADEntity> > newQueue(_operationQue);
+
+void Builder::processInternal(shared_ptr<StorageManager> storageManager) {
+    QList<shared_ptr<const CADEntity> > newQueue;
 
     for (int i = 0; i < _stack.size(); ++i) {
-        QList<shared_ptr<Base> > sup = _stack.mid(0, i);
-        newQueue = _stack.at(i)->process(newQueue, _buffer, sup);
+        // Get looping stack, we currently support only one single loop!!
+        QList<shared_ptr<Base> > stack = _stack.mid(0, i);
+        newQueue = _stack.at(i)->process(storageManager, newQueue, _workingBuffer, stack);
     }
 
-    _buffer.append(newQueue);
+    _workingBuffer.append(newQueue);
 
-    for (int i = 0; i < _buffer.size(); ++i) {
-        auto exists = _entityManager->findEntityByID(_buffer.at(i)->id());
-
-        if (exists.get() != NULL) {
-            _entitiesStart.append(exists);
-            document()->replaceEntity(_buffer.at(i));
+    // Build a buffer with all entities we need to remove during a undo cycle
+    for (int i = 0; i < _workingBuffer.size(); ++i) {
+        auto org = storageManager->entityByID(_workingBuffer.at(i)->id());
+        if (org.get()!=NULL) {
+            _entitiesToInsert.append(org);
         } else {
-            document()->addEntity(_buffer.at(i));
+            _entitiesToRemove.append(org);
         }
     }
+
+    // Add/Update all entities in the document
+    for (int i = 0; i < _workingBuffer.size(); ++i) {
+        document()->insertEntity(_workingBuffer.at(i));
+    }
+
+    // TODO
+    // Remove entities from the document
 }
 
 void Builder::undo() const {
-    for (int i = 0; i < _buffer.size(); ++i) {
-        document()->removeEntity(_buffer.at(i));
+
+    for (int i = 0; i < _entitiesToRemove.size(); ++i) {
+        document()->removeEntity(_entitiesToRemove.at(i));
     }
 
-    for (int i = 0; i < _entitiesStart.size(); ++i) {
-        document()->addEntity(_entitiesStart.at(i));
+    for (int i = 0; i < _entitiesToInsert.size(); ++i) {
+        document()->insertEntity(_entitiesToInsert.at(i));
     }
+
 }
 
 void Builder::redo() const {
-    for (int i = 0; i < _buffer.size(); ++i) {
-        auto exists = _entityManager->findEntityByID(_buffer.at(i)->id());
-
-        if (exists.get() != NULL) {
-            document()->replaceEntity(_buffer.at(i));
-        } else {
-            document()->addEntity(_buffer.at(i));
-        }
+    for (int i = 0; i < _entitiesToRemove.size(); ++i) {
+        document()->removeEntity(_entitiesToRemove.at(i));
     }
+
+    for (int i = 0; i < _entitiesToInsert.size(); ++i) {
+        document()->insertEntity(_entitiesToInsert.at(i));
+    }
+
 }
+

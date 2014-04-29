@@ -15,13 +15,19 @@ namespace lc {
     class StorageManager : public QObject {
             Q_OBJECT
         public:
+            virtual void insertEntity(const shared_ptr<const CADEntity>) = 0;
+            virtual void insertEntityContainer(const EntityContainer&) = 0;
+            virtual void removeEntity(const shared_ptr<const CADEntity>) = 0;
+            virtual shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const = 0;
+            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const = 0;
+
             /*!
              * \brief layer
              * Return a single document layer
              * \param layerName
              * \return
              */
-            virtual shared_ptr<const Layer> layer(const QString& layerName) const = 0;
+            virtual shared_ptr<const Layer> layerByName(const QString& layerName) const = 0;
 
             /*!
              * \brief Returns all the layers present in the document.
@@ -29,8 +35,6 @@ namespace lc {
              */
             virtual QHash <QString, shared_ptr<const Layer> > const& allLayers() const = 0;
 
-            virtual shared_ptr<const CADEntity> findEntityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer findEntitiesByLayer(const shared_ptr<const Layer> layer) const = 0;
     };
 }
 #endif // ENTITYMANAGER_H
