@@ -61,7 +61,8 @@ void Builder::processInternal(shared_ptr<StorageManager> storageManager) {
     // Build a buffer with all entities we need to remove during a undo cycle
     for (int i = 0; i < _workingBuffer.size(); ++i) {
         auto org = storageManager->entityByID(_workingBuffer.at(i)->id());
-        if (org.get()!=NULL) {
+
+        if (org.get() != NULL) {
             _entitiesThatWhereUpdated.append(org);
         }
     }

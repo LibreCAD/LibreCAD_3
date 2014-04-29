@@ -32,7 +32,7 @@ Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 }
 
 QList<shared_ptr<const CADEntity> > Loop::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >& _workingBuffer,
     const QList<shared_ptr< Base> > _stack) {
@@ -68,7 +68,7 @@ Move::Move(const geo::Coordinate& offset) :  Base(), _offset(offset) {
 }
 
 QList<shared_ptr<const CADEntity> >  Move::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >&,
     const QList<shared_ptr< Base> >) {
@@ -90,7 +90,7 @@ Copy::Copy(const geo::Coordinate& offset) : Base(), _offset(offset) {
 }
 
 QList<shared_ptr<const CADEntity> > Copy::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >& workingBuffer,
     const QList<shared_ptr< Base> >) {
@@ -111,7 +111,7 @@ Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_ang
 }
 
 QList<shared_ptr<const CADEntity> > Rotate::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >&,
     const QList<shared_ptr< Base> >) {
@@ -130,7 +130,7 @@ Push::Push() : Base() {
 }
 
 QList<shared_ptr<const CADEntity> > Push::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >& workingBuffer,
     const QList<shared_ptr< Base> >) {
@@ -147,7 +147,7 @@ SelectByLayer::SelectByLayer(const shared_ptr<const Layer> layer) : Base(), _lay
 }
 
 QList<shared_ptr<const CADEntity> > SelectByLayer::process(
-        shared_ptr<StorageManager> storageManager,
+    shared_ptr<StorageManager> storageManager,
     QList<shared_ptr<const CADEntity> > entities,
     QList<shared_ptr<const CADEntity> >& ,
     const QList<shared_ptr< Base> >) {

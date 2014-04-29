@@ -53,7 +53,7 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -87,7 +87,7 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -122,7 +122,7 @@ namespace lc {
                 }
 
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -155,7 +155,7 @@ namespace lc {
                     qDebug() << "Copy removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -189,7 +189,7 @@ namespace lc {
                     qDebug() << "Rotate removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -225,7 +225,7 @@ namespace lc {
                     qDebug() << "Push removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);
@@ -256,7 +256,7 @@ namespace lc {
                     qDebug() << "SelectByLayer removed";
                 }
                 virtual QList<shared_ptr<const CADEntity> > process(
-                        shared_ptr<StorageManager> storageManager,
+                    shared_ptr<StorageManager> storageManager,
                     QList<shared_ptr<const CADEntity> > entities,
                     QList<shared_ptr<const CADEntity> >& workingBuffer,
                     const QList<shared_ptr< Base> > _stack);

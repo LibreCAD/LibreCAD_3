@@ -37,14 +37,15 @@ void DocumentImpl::commit(shared_ptr<operation::DocumentOperation> operation) {
 }
 
 void DocumentImpl::insertEntity(const shared_ptr<const CADEntity> cadEntity) {
-    if (_storageManager->entityByID(cadEntity->id()).get()!=NULL) {
+    if (_storageManager->entityByID(cadEntity->id()).get() != NULL) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
         emit removeEntityEvent(cadEntity);
     }
+
     _storageManager->insertEntity(cadEntity);
     AddEntityEvent event(cadEntity);
-   emit addEntityEvent(event);
+    emit addEntityEvent(event);
 }
 
 void DocumentImpl::removeEntity(const shared_ptr<const CADEntity> entity) {
