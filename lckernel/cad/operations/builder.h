@@ -41,8 +41,7 @@ namespace lc {
                 QList<shared_ptr<const CADEntity> > _workingBuffer;
 
 
-                QList<shared_ptr<const CADEntity> > _entitiesToInsert;
-                QList<shared_ptr<const CADEntity> > _entitiesToRemove;
+                QList<shared_ptr<const CADEntity> > _entitiesThatWhereUpdated;
         };
 
     };

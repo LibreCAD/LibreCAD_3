@@ -237,6 +237,17 @@ namespace lc {
          * Select entities within a document
          *
          * Example (lua):
+         * <pre>
+         * start = microtime()
+         * layer = app.getLayer("0")
+         * d=app.currentDocument()
+         * ce=Builder(d)
+         * <strong>ce:selectByLayer(layer)</strong> -- select all entities on layer
+         * ce:move(Coord(100,0))
+         * ce:execute()
+         * print "Move time"
+         * print (microtime()-start);
+         *
          */
         class SelectByLayer: public Base {
             public:

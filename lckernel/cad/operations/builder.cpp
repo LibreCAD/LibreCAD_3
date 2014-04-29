@@ -62,9 +62,7 @@ void Builder::processInternal(shared_ptr<StorageManager> storageManager) {
     for (int i = 0; i < _workingBuffer.size(); ++i) {
         auto org = storageManager->entityByID(_workingBuffer.at(i)->id());
         if (org.get()!=NULL) {
-            _entitiesToInsert.append(org);
-        } else {
-            _entitiesToRemove.append(org);
+            _entitiesThatWhereUpdated.append(org);
         }
     }
 
@@ -79,23 +77,23 @@ void Builder::processInternal(shared_ptr<StorageManager> storageManager) {
 
 void Builder::undo() const {
 
-    for (int i = 0; i < _entitiesToRemove.size(); ++i) {
-        document()->removeEntity(_entitiesToRemove.at(i));
+    for (int i = 0; i < _workingBuffer.size(); ++i) {
+        document()->removeEntity(_workingBuffer.at(i));
     }
 
-    for (int i = 0; i < _entitiesToInsert.size(); ++i) {
-        document()->insertEntity(_entitiesToInsert.at(i));
+    for (int i = 0; i < _entitiesThatWhereUpdated.size(); ++i) {
+        document()->insertEntity(_entitiesThatWhereUpdated.at(i));
     }
 
 }
 
 void Builder::redo() const {
-    for (int i = 0; i < _entitiesToRemove.size(); ++i) {
-        document()->removeEntity(_entitiesToRemove.at(i));
-    }
+    //for (int i = 0; i < _entitiesToInsert.size(); ++i) {
+    //    document()->removeEntity(_entitiesToInsert.at(i));
+    //}
 
-    for (int i = 0; i < _entitiesToInsert.size(); ++i) {
-        document()->insertEntity(_entitiesToInsert.at(i));
+    for (int i = 0; i < _workingBuffer.size(); ++i) {
+        document()->insertEntity(_workingBuffer.at(i));
     }
 
 }
