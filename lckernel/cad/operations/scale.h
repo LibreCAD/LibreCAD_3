@@ -25,7 +25,7 @@ namespace lc {
                  * Move an Entity in the document. Can be called as many times you wish.
                  * @param cadEntity
                  */
-                void append(shared_ptr<const lc::CADEntity> cadEntity);
+                void append(std::shared_ptr<const lc::CADEntity> cadEntity);
 
                 virtual void undo() const;
                 virtual void redo() const;
@@ -38,7 +38,7 @@ namespace lc {
 
             private:
                 geo::Coordinate _scale_center, _scale_factor;
-                QList<shared_ptr<const lc::CADEntity> > _toScale;
+                QList<std::shared_ptr<const lc::CADEntity> > _toScale;
         };
     };
 };

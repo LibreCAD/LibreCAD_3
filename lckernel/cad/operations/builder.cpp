@@ -1,5 +1,6 @@
 #include "builder.h"
 #include "cad/document/document.h"
+#include <memory>
 
 
 using namespace lc;
@@ -12,47 +13,47 @@ Builder::~Builder() {
     qDebug() << "Builder removed";
 }
 
-Builder& Builder::append(shared_ptr<const CADEntity> cadEntity) {
+Builder& Builder::append(std::shared_ptr<const CADEntity> cadEntity) {
     _workingBuffer.append(cadEntity);
     return *this;
 }
 
 Builder& Builder::move(const geo::Coordinate& offset) {
-    _stack.append(make_shared<Move>(offset));
+    _stack.append(std::make_shared<Move>(offset));
     return *this;
 }
 Builder& Builder::copy(const geo::Coordinate& offset) {
-    _stack.append(make_shared<Copy>(offset));
+    _stack.append(std::make_shared<Copy>(offset));
     return *this;
 }
 Builder& Builder::repeat(const int numTimes) {
-    _stack.append(make_shared<Loop>(numTimes));
+    _stack.append(std::make_shared<Loop>(numTimes));
     return *this;
 }
 Builder& Builder::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) {
-    _stack.append(make_shared<Rotate>(rotation_center, rotation_angle));
+    _stack.append(std::make_shared<Rotate>(rotation_center, rotation_angle));
     return *this;
 }
 Builder& Builder::begin() {
-    _stack.append(make_shared<Begin>());
+    _stack.append(std::make_shared<Begin>());
     return *this;
 }
 Builder& Builder::push() {
-    _stack.append(make_shared<Push>());
+    _stack.append(std::make_shared<Push>());
     return *this;
 }
-Builder& Builder::selectByLayer(const shared_ptr<const Layer> layer) {
-    _stack.append(make_shared<SelectByLayer>(layer));
+Builder& Builder::selectByLayer(const std::shared_ptr<const Layer> layer) {
+    _stack.append(std::make_shared<SelectByLayer>(layer));
     return *this;
 }
 
 
-void Builder::processInternal(shared_ptr<StorageManager> storageManager) {
-    QList<shared_ptr<const CADEntity> > newQueue;
+void Builder::processInternal(std::shared_ptr<StorageManager> storageManager) {
+    QList<std::shared_ptr<const CADEntity> > newQueue;
 
     for (int i = 0; i < _stack.size(); ++i) {
         // Get looping stack, we currently support only one single loop!!
-        QList<shared_ptr<Base> > stack = _stack.mid(0, i);
+        QList<std::shared_ptr<Base> > stack = _stack.mid(0, i);
         newQueue = _stack.at(i)->process(storageManager, newQueue, _workingBuffer, stack);
     }
 

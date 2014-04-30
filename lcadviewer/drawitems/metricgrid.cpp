@@ -1,3 +1,4 @@
+#include <math.h>
 #include "metricgrid.h"
 
 #include <QDebug>

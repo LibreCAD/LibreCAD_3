@@ -6,9 +6,7 @@ extern "C"
 }
 
 
-#include "boost/shared_ptr.hpp"
-#include "boost/pointer_cast.hpp"
-#include "boost/enable_shared_from_this.hpp"
+
 
 #include "lualibrecadbridge.h"
 
@@ -24,7 +22,7 @@ extern "C"
 #include "cad/dochelpers/storagemanagerimpl.h"
 
 namespace LuaIntf {
-    LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
+    LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
 }
 
 using namespace LuaIntf;
@@ -64,7 +62,7 @@ void lua_openlckernel(lua_State* L) {
 
 
     .beginClass <geo::Vector> ("Vector")
-    .addConstructor(LUA_SP(shared_ptr<const geo::Vector>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end))
+    .addConstructor(LUA_SP(std::shared_ptr<const geo::Vector>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end))
     .endClass()
 
     .beginClass <Document> ("Document")
@@ -80,18 +78,18 @@ void lua_openlckernel(lua_State* L) {
     .beginClass <StorageManager> ("StorageManager")
     .endClass()
     .beginExtendClass <StorageManagerImpl, StorageManager > ("StorageManagerImpl")
-    .addConstructor(LUA_SP(shared_ptr<StorageManagerImpl>), LUA_ARGS())
+    .addConstructor(LUA_SP(std::shared_ptr<StorageManagerImpl>), LUA_ARGS())
     .endClass()
 
     .beginExtendClass <CADEntity, ID> ("CADEntity")
     .endClass()
 
     .beginExtendClass <Line, CADEntity> ("Line")
-    .addConstructor(LUA_SP(shared_ptr< Line>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end, const shared_ptr<Layer> layer))
+    .addConstructor(LUA_SP(std::shared_ptr< Line>), LUA_ARGS(const geo::Coordinate & start, const geo::Coordinate & end, const std::shared_ptr<Layer> layer))
     .endClass()
 
     .beginExtendClass <Circle, CADEntity> ("Circle")
-    .addConstructor(LUA_SP(shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate & center, double radius, const shared_ptr<Layer> layer))
+    .addConstructor(LUA_SP(std::shared_ptr< Circle>), LUA_ARGS(const geo::Coordinate & center, double radius, const std::shared_ptr<Layer> layer))
     .endClass()
 
     .beginClass <operation::DocumentOperation> ("DocumentOperation")
@@ -99,7 +97,7 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginExtendClass <LuaBuilderProxy, operation::DocumentOperation> ("Builder")
-    .addConstructor(LUA_SP(shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc))
+    .addConstructor(LUA_SP(std::shared_ptr<LuaBuilderProxy>), LUA_ARGS(Document * doc))
     .addFunction("append", &LuaBuilderProxy::append)
     .addFunction("move", &LuaBuilderProxy::move)
     .addFunction("copy", &LuaBuilderProxy::copy)
@@ -113,26 +111,26 @@ void lua_openlckernel(lua_State* L) {
     .beginClass <operation::Base> ("Base")
     .endClass()
     .beginExtendClass <operation::Move, operation::Base> ("Move")
-    .addConstructor(LUA_SP(shared_ptr< operation::Move>), LUA_ARGS(const geo::Coordinate & offset))
+    .addConstructor(LUA_SP(std::shared_ptr< operation::Move>), LUA_ARGS(const geo::Coordinate & offset))
     .endClass()
     .beginExtendClass <operation::Begin, operation::Base> ("Begin")
-    .addConstructor(LUA_SP(shared_ptr< operation::Begin>), LUA_ARGS())
+    .addConstructor(LUA_SP(std::shared_ptr< operation::Begin>), LUA_ARGS())
     .endClass()
     .beginExtendClass <operation::Loop, operation::Base> ("Loop")
-    .addConstructor(LUA_SP(shared_ptr< operation::Loop>), LUA_ARGS(const int numTimes))
+    .addConstructor(LUA_SP(std::shared_ptr< operation::Loop>), LUA_ARGS(const int numTimes))
     .endClass()
     .beginExtendClass <operation::Copy, operation::Base> ("Copy")
-    .addConstructor(LUA_SP(shared_ptr< operation::Copy>), LUA_ARGS(const geo::Coordinate & offset))
+    .addConstructor(LUA_SP(std::shared_ptr< operation::Copy>), LUA_ARGS(const geo::Coordinate & offset))
     .endClass()
     .beginExtendClass <operation::Push, operation::Base> ("Push")
-    .addConstructor(LUA_SP(shared_ptr< operation::Push>), LUA_ARGS())
+    .addConstructor(LUA_SP(std::shared_ptr< operation::Push>), LUA_ARGS())
     .endClass()
     .beginExtendClass <operation::SelectByLayer, operation::Base> ("SelectByLayer")
-    .addConstructor(LUA_SP(shared_ptr< operation::SelectByLayer>), LUA_ARGS(const shared_ptr<Layer>))
+    .addConstructor(LUA_SP(std::shared_ptr< operation::SelectByLayer>), LUA_ARGS(const std::shared_ptr<Layer>))
     .endClass();
 
 }
 
-// .addConstructor(LUA_SP(shared_ptr<const CreateEntities>), LUA_ARGS(Document * doc))
+// .addConstructor(LUA_SP(std::shared_ptr<const CreateEntities>), LUA_ARGS(Document * doc))
 
 

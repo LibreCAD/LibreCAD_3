@@ -19,47 +19,47 @@ namespace lc {
             };
 
             Intersect(Method method);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Line>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Line>, std::shared_ptr<const Spline>);
 
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Circle>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Circle>, std::shared_ptr<const Spline>);
 
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Arc>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Arc>, std::shared_ptr<const Spline>);
 
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Ellipse>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Ellipse>, std::shared_ptr<const Spline>);
 
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Text>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Text>, std::shared_ptr<const Spline>);
 
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Line>);
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Circle>);
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Arc>);
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Ellipse>);
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Text>);
-            virtual void visit(shared_ptr<const Spline>, shared_ptr<const Spline>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Line>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Circle>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Arc>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Ellipse>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Text>);
+            virtual void visit(std::shared_ptr<const Spline>, std::shared_ptr<const Spline>);
 
             QList<geo::Coordinate> result() const;
         private:
@@ -74,10 +74,10 @@ namespace lc {
       */
     class IntersectMany {
         public:
-            IntersectMany(QList<shared_ptr<const CADEntity> >,  Intersect::Method);
+            IntersectMany(QList<std::shared_ptr<const CADEntity> >,  Intersect::Method);
             QList<geo::Coordinate> result() const;
         private:
-            QList<shared_ptr<const CADEntity> > _entities;
+            QList<std::shared_ptr<const CADEntity> > _entities;
             Intersect::Method _method;
     };
 }

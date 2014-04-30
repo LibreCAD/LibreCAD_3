@@ -41,15 +41,15 @@ class CadMdiChild : public QWidget {
         void on_addEllipse_clicked();
 
     public:
-        shared_ptr<const Cursor>  cursor() const {
+        std::shared_ptr<const Cursor>  cursor() const {
             return _cursor;
         }
         QCachedGraphicsView* view() const;
         lc::Document* document() const;
-        shared_ptr<SnapManager>  snapManager() const;
-        shared_ptr<OperationManager>  operationManager() const;
-        shared_ptr<lc::SelectionManager> selectionManager() const;
-        shared_ptr<lc::StorageManager> storageManager() const;
+        std::shared_ptr<SnapManager>  snapManager() const;
+        std::shared_ptr<OperationManager>  operationManager() const;
+        std::shared_ptr<lc::SelectionManager> selectionManager() const;
+        std::shared_ptr<lc::StorageManager> storageManager() const;
         void cancelCurrentOperations();
 
     private:
@@ -57,14 +57,14 @@ class CadMdiChild : public QWidget {
         Ui::CadMdiChild* ui;
 
         lc::Document* _document;
-        shared_ptr<lc::UndoManager> _undoManager;
+        std::shared_ptr<lc::UndoManager> _undoManager;
 
-        shared_ptr<const Cursor>  _cursor;
-        shared_ptr<SnapManager>  _snapManager;
-        shared_ptr<lc::SelectionManager> _selectionManager;
-        shared_ptr<lc::StorageManager> _storageManager;
+        std::shared_ptr<const Cursor>  _cursor;
+        std::shared_ptr<SnapManager>  _snapManager;
+        std::shared_ptr<lc::SelectionManager> _selectionManager;
+        std::shared_ptr<lc::StorageManager> _storageManager;
 
-        shared_ptr<OperationManager>  _operationManager;
+        std::shared_ptr<OperationManager>  _operationManager;
 };
 
 #endif // CADMDICHILD_H

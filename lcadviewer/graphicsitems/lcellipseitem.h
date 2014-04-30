@@ -12,18 +12,18 @@
 
 class LCEllipseItem : public LCGraphicsItem {
     public:
-        LCEllipseItem(const shared_ptr<const lc::Ellipse> ellipse);
+        LCEllipseItem(const std::shared_ptr<const lc::Ellipse> ellipse);
 
         QRectF boundingRect() const;
 
         void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
-        virtual const shared_ptr<const lc::CADEntity> entity() const;
+        virtual const std::shared_ptr<const lc::CADEntity> entity() const;
 
     private:
         QPainterPath shape() const;
 
     private:
-        const shared_ptr<const lc::Ellipse> _ellipse;
+        const std::shared_ptr<const lc::Ellipse> _ellipse;
 };
 
 #endif // LCELLIPSEITEM_H

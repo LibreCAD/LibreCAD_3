@@ -37,7 +37,7 @@ class LCGraphicsItem : public QGraphicsItem {
         /**
           * Return the CADentity that this GrapgicsItem manages
           */
-        virtual const shared_ptr<const lc::CADEntity> entity() const = 0;
+        virtual const std::shared_ptr<const lc::CADEntity> entity() const = 0;
 };
 
 #endif // LCGRAPHICSITEM_H

@@ -49,8 +49,8 @@ void CadMdiChild::newDocument() {
 
 
     // Should this be done using the events system of QT??
-    ui->lCADViewer->addBackgroundItem(shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
-    shared_ptr<LCViewerDrawItem> metricGrid = shared_ptr<LCViewerDrawItem>(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
+    ui->lCADViewer->addBackgroundItem(std::shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
+    std::shared_ptr<LCViewerDrawItem> metricGrid = std::shared_ptr<LCViewerDrawItem>(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
     ui->lCADViewer->addBackgroundItem(metricGrid);
 
 
@@ -62,41 +62,41 @@ void CadMdiChild::newDocument() {
 
 
     // Entity manager add's/removes entities to layers
-    _storageManager = make_shared<lc::StorageManagerImpl>();
+    _storageManager = std::make_shared<lc::StorageManagerImpl>();
 
     // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = new lc::DocumentImpl(_storageManager);
 
     // Selection manager allow for finding entities around a point or within areas
-    _selectionManager = make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
+    _selectionManager = std::make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
 
     // Scene manager listens to the document and takes care that the scene is changed according to what
     // is added and removed within a document
     SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
 
     // Snap manager
-    _snapManager = make_shared<SnapManagerImpl>(ui->lCADViewer, _selectionManager,  dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
+    _snapManager = std::make_shared<SnapManagerImpl>(ui->lCADViewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = make_shared<Cursor>(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+    _cursor = std::make_shared<Cursor>(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
 
     // Undo manager takes care that we can undo/redo entities within a document
-    _undoManager = make_shared<lc::UndoManagerImpl>(_document, 10);
+    _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     ui->lCADViewer->setAbstractDocument(_document);
 
     // Add operation manager
-    _operationManager = shared_ptr<OperationManager> (new OperationManager(_document));
+    _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
 
     // Create a cross at position 0,0
     auto layer = _storageManager->layerByName("0");
-    auto builder = make_shared<lc::operation::Builder>(document());
-    builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
-    builder->append(make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
-    builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
-    builder->append(make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
+    auto builder = std::make_shared<lc::operation::Builder>(document());
+    builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
+    builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
+    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
+    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
 
     builder->execute();
 
@@ -113,7 +113,7 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto builder = make_shared<lc::operation::Builder>(document());
+    auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
     QTime myTimer;
     myTimer.start();
@@ -124,7 +124,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
-        builder->append(make_shared<const lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer));
+        builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer));
     }
 
     qDebug() << "Create : " << myTimer.elapsed();
@@ -134,7 +134,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 }
 
 void CadMdiChild::on_addCircles_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document());
+    auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
@@ -142,7 +142,7 @@ void CadMdiChild::on_addCircles_clicked() {
         double y1 = randInt(-4000, 4000);
 
         double r = randInt(0, 150);
-        builder->append(make_shared<const lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
+        builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
     }
 
     builder->execute();
@@ -154,7 +154,7 @@ void CadMdiChild::on_clearUndoables_clicked() {
 }
 
 void CadMdiChild::on_addArcs_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document());
+    auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
@@ -171,16 +171,16 @@ void CadMdiChild::on_addArcs_clicked() {
             s = t;
         }
 
-        s = (0 + 45) / (360.0 / PI / 2);
-        e = (180 + 45) / (360.0 / PI / 2);
-        builder->append(make_shared<const lc::Arc>(lc::geo::Coordinate(x1, y1), r, s, e, layer));
+        s = (0 + 45) / (360.0 / M_PI / 2);
+        e = (180 + 45) / (360.0 / M_PI / 2);
+        builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(x1, y1), r, s, e, layer));
     }
 
     builder->execute();
 }
 
 void CadMdiChild::on_addEllipse_clicked() {
-    auto builder = make_shared<lc::operation::Builder>(document());
+    auto builder = std::make_shared<lc::operation::Builder>(document());
 
     auto layer = _storageManager->layerByName("0");
 
@@ -201,9 +201,9 @@ void CadMdiChild::on_addEllipse_clicked() {
             s = t;
         }
 
-        s = (0 + 45) / (360.0 / PI / 2);
-        e = (180 + 45) / (360.0 / PI / 2);
-        builder->append(make_shared<const lc::Ellipse>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e, layer));
+        s = (0 + 45) / (360.0 / M_PI / 2);
+        e = (180 + 45) / (360.0 / M_PI / 2);
+        builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), r, s, e, layer));
     }
 
     builder->execute();
@@ -214,11 +214,11 @@ QCachedGraphicsView* CadMdiChild::view() const {
     return ui->lCADViewer;
 }
 
-shared_ptr<SnapManager>  CadMdiChild::snapManager() const {
+std::shared_ptr<SnapManager>  CadMdiChild::snapManager() const {
     return  _snapManager;
 }
 
-shared_ptr<OperationManager>  CadMdiChild::operationManager() const {
+std::shared_ptr<OperationManager>  CadMdiChild::operationManager() const {
     return _operationManager;
 }
 
@@ -226,11 +226,11 @@ lc::Document* CadMdiChild::document() const {
     return _document;
 }
 
-shared_ptr<lc::SelectionManager> CadMdiChild::selectionManager() const {
+std::shared_ptr<lc::SelectionManager> CadMdiChild::selectionManager() const {
     return _selectionManager;
 }
 
-shared_ptr<lc::StorageManager> CadMdiChild::storageManager() const {
+std::shared_ptr<lc::StorageManager> CadMdiChild::storageManager() const {
     return _storageManager;
 }
 

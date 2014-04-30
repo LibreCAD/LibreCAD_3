@@ -20,7 +20,7 @@ namespace lc {
              * If the entity already exists, it will be replaced
              * \param entity entity to be added to the document.
              */
-            virtual void insert(shared_ptr<const CADEntity> entity);
+            virtual void insert(std::shared_ptr<const CADEntity> entity);
 
             /*!
              * \brief Add all entities to this container
@@ -33,16 +33,16 @@ namespace lc {
              * \brief remove an Entity from the document.
              * \param id Entity ID of entity which is to be removed.
              */
-            virtual void remove(shared_ptr<const CADEntity> entity);
+            virtual void remove(std::shared_ptr<const CADEntity> entity);
 
             /*!
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QHash<ID_DATATYPE, shared_ptr<const CADEntity> > allEntities() const;
+            virtual QHash<ID_DATATYPE, std::shared_ptr<const CADEntity> > allEntities() const;
 
 
-            virtual shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const;
+            virtual std::shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const;
 
             /*!
              * \brief findEntitiesByLayer
@@ -50,9 +50,9 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
         private:
-            QHash<ID_DATATYPE, shared_ptr<const CADEntity> > _cadentities;
+            QHash<ID_DATATYPE, std::shared_ptr<const CADEntity> > _cadentities;
 
     };
 }

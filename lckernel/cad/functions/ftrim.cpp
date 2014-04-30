@@ -9,14 +9,14 @@
 
 using namespace lc;
 
-FTrim::FTrim(QList<shared_ptr<const CADEntity> > limitingEntities, shared_ptr<const CADEntity> trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
+FTrim::FTrim(QList<std::shared_ptr<const CADEntity> > limitingEntities, std::shared_ptr<const CADEntity> trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
 
 }
 
-void FTrim::visit(shared_ptr<const Arc> arc) {
+void FTrim::visit(std::shared_ptr<const Arc> arc) {
 
 }
-void FTrim::visit(shared_ptr<const Line> line) {
+void FTrim::visit(std::shared_ptr<const Line> line) {
     /*
     IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
     QList<geo::Coordinate> points = im.result();
@@ -29,14 +29,14 @@ void FTrim::visit(shared_ptr<const Line> line) {
         for (int i = 0; i < points.size(); ++i) {
             if (points.at(i) == this->_trimPoint) {
                 if (i == 0) {
-                    this->_newEntities.append(shared_ptr<const Line>(new Line(points.at(i + 1), line->end())));
+                    this->_newEntities.append(std::shared_ptr<const Line>(new Line(points.at(i + 1), line->end())));
                     return;
                 } else if (i == points.size() - 1) {
-                    this->_newEntities.append(shared_ptr<const Line>(new Line(line->start(), points.at(i - 1))));
+                    this->_newEntities.append(std::shared_ptr<const Line>(new Line(line->start(), points.at(i - 1))));
                     return;
                 } else {
-                    this->_newEntities.append(shared_ptr<const Line>(new Line(line->start(), points.at(i - 1))));
-                    this->_newEntities.append(shared_ptr<const Line>(new Line(points.at(i + 1), line->end())));
+                    this->_newEntities.append(std::shared_ptr<const Line>(new Line(line->start(), points.at(i - 1))));
+                    this->_newEntities.append(std::shared_ptr<const Line>(new Line(points.at(i + 1), line->end())));
                     return;
                 }
             }
@@ -44,23 +44,23 @@ void FTrim::visit(shared_ptr<const Line> line) {
     }
     */
 }
-void FTrim::visit(shared_ptr<const Circle> circle) {
+void FTrim::visit(std::shared_ptr<const Circle> circle) {
 
 }
-void FTrim::visit(shared_ptr<const Ellipse> ellipse) {
-
-}
-
-void FTrim::visit(shared_ptr<const Text> text) {
+void FTrim::visit(std::shared_ptr<const Ellipse> ellipse) {
 
 }
 
-QList<shared_ptr<const CADEntity> > FTrim::result() {
+void FTrim::visit(std::shared_ptr<const Text> text) {
+
+}
+
+QList<std::shared_ptr<const CADEntity> > FTrim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;
 }
 
-shared_ptr<const CADEntity> FTrim::trimmedShape() const {
+std::shared_ptr<const CADEntity> FTrim::trimmedShape() const {
     return this->_trimmedShape;
 }
 

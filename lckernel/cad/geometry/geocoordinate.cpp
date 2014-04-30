@@ -1,5 +1,7 @@
 #include "geocoordinate.h"
 
+#include <math.h>
+
 using namespace lc;
 using namespace geo;
 

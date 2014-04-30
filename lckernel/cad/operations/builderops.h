@@ -20,11 +20,11 @@ namespace lc {
          */
         class Base {
             public:
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack
                 )  = 0;
         };
 
@@ -52,11 +52,11 @@ namespace lc {
                     qDebug() << "Loop removed";
                 }
 
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
             private:
                 int _numTimes;
         };
@@ -86,14 +86,14 @@ namespace lc {
                     qDebug() << "Begin removed";
                 }
 
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
-                QList<shared_ptr<const CADEntity> > getEntities() const;
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
+                QList<std::shared_ptr<const CADEntity> > getEntities() const;
             private:
-                QList<shared_ptr<const CADEntity> > _entities;
+                QList<std::shared_ptr<const CADEntity> > _entities;
         };
 
         /**
@@ -121,11 +121,11 @@ namespace lc {
                     qDebug() << "Move removed";
                 }
 
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
         };
@@ -154,11 +154,11 @@ namespace lc {
                 virtual ~Copy() {
                     qDebug() << "Copy removed";
                 }
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _offset;
         };
@@ -188,11 +188,11 @@ namespace lc {
                 virtual ~Rotate() {
                     qDebug() << "Rotate removed";
                 }
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
             private:
                 geo::Coordinate _rotation_center;
                 double _rotation_angle;
@@ -224,11 +224,11 @@ namespace lc {
                 virtual ~Push() {
                     qDebug() << "Push removed";
                 }
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
         };
 
 
@@ -251,17 +251,17 @@ namespace lc {
          */
         class SelectByLayer: public Base {
             public:
-                SelectByLayer(const shared_ptr<const Layer> layer);
+                SelectByLayer(const std::shared_ptr<const Layer> layer);
                 virtual ~SelectByLayer() {
                     qDebug() << "SelectByLayer removed";
                 }
-                virtual QList<shared_ptr<const CADEntity> > process(
-                    shared_ptr<StorageManager> storageManager,
-                    QList<shared_ptr<const CADEntity> > entities,
-                    QList<shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<shared_ptr< Base> > _stack);
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    const QList<std::shared_ptr< Base> > _stack);
             private:
-                shared_ptr<const Layer> _layer;
+                std::shared_ptr<const Layer> _layer;
         };
     };
 }

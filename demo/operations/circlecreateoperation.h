@@ -26,7 +26,7 @@ class CircleCreateOperation :  public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        CircleCreateOperation(lc::Document* document, shared_ptr<lc::StorageManager> storageManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
+        CircleCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager);
 
         virtual void restart();
 
@@ -47,11 +47,11 @@ class CircleCreateOperation :  public GuiOperation {
             return _endPoint;
         }
 
-        virtual shared_ptr<GuiOperation> next() const;
+        virtual std::shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
 
-        virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
+        virtual std::shared_ptr<lc::operation::DocumentOperation> operation() const;
     private slots:
         void circleCreationFinished();
 
@@ -66,9 +66,9 @@ class CircleCreateOperation :  public GuiOperation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        shared_ptr<SnapManager>  _snapManager;
-        shared_ptr<lc::StorageManager>  _storageManager;
-        shared_ptr<const lc::Layer> _layer;
+        std::shared_ptr<SnapManager>  _snapManager;
+        std::shared_ptr<lc::StorageManager>  _storageManager;
+        std::shared_ptr<const lc::Layer> _layer;
 
 };
 

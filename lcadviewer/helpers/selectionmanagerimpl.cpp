@@ -7,7 +7,7 @@
 #include "cad/vo/entitydistance.h"
 #include "cad/functions/intersect.h"
 
-SelectionManagerImpl::SelectionManagerImpl(shared_ptr<lc::StorageManager> storageManager,  QGraphicsView* view) : lc::SelectionManager(),  _storageManager(storageManager), _view(view) {
+SelectionManagerImpl::SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager,  QGraphicsView* view) : lc::SelectionManager(),  _storageManager(storageManager), _view(view) {
 }
 
 
@@ -34,7 +34,7 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
 
         // If item == NULL then this item was not  a type of LCGraphicsItem, so no bother to test it further
         if (item != NULL) {
-            shared_ptr<const lc::Snapable> entity = dynamic_pointer_cast<const lc::Snapable>(item->entity());
+            std::shared_ptr<const lc::Snapable> entity = std::dynamic_pointer_cast<const lc::Snapable>(item->entity());
 
             if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
                 lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
@@ -53,7 +53,7 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
 }
 
 
-QList<shared_ptr<const lc::CADEntity> > SelectionManagerImpl::getEntitiesInArea(const lc::geo::Area& area) const {
+QList<std::shared_ptr<const lc::CADEntity> > SelectionManagerImpl::getEntitiesInArea(const lc::geo::Area& area) const {
     // QList<LCGraphicsItem*> items = _view->items();
     // QList<lc::EntityDistance> entities;
 

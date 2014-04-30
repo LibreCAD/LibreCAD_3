@@ -5,6 +5,8 @@
 #include "cad/geometry/geoarc.h"
 #include "cad/geometry/geoellipse.h"
 #include "cad/geometry/geovector.h"
+#include <math.h>
+
 
 using namespace lc;
 using namespace geo;
@@ -83,6 +85,6 @@ QList<Coordinate> GeoIntersect::intersectArcLine(const Arc& arc, const Vector& l
 }
 
 QList<Coordinate> GeoIntersect::intersectCircleLine(const Circle& circle, const Vector& line, Intersect intersect) {
-    return intersectArcLine(Arc(circle.center(), circle.radius(), 0., PI2), line, intersect);
+    return intersectArcLine(Arc(circle.center(), circle.radius(), 0., M_PI*2), line, intersect);
 }
 

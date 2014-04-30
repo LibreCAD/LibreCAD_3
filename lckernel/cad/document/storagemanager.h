@@ -15,11 +15,11 @@ namespace lc {
     class StorageManager : public QObject {
             Q_OBJECT
         public:
-            virtual void insertEntity(const shared_ptr<const CADEntity>) = 0;
+            virtual void insertEntity(const std::shared_ptr<const CADEntity>) = 0;
             virtual void insertEntityContainer(const EntityContainer&) = 0;
-            virtual void removeEntity(const shared_ptr<const CADEntity>) = 0;
-            virtual shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const = 0;
+            virtual void removeEntity(const std::shared_ptr<const CADEntity>) = 0;
+            virtual std::shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const = 0;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const = 0;
 
             /*!
              * \brief layer
@@ -27,13 +27,13 @@ namespace lc {
              * \param layerName
              * \return
              */
-            virtual shared_ptr<const Layer> layerByName(const QString& layerName) const = 0;
+            virtual std::shared_ptr<const Layer> layerByName(const QString& layerName) const = 0;
 
             /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
-            virtual QHash <QString, shared_ptr<const Layer> > const& allLayers() const = 0;
+            virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const = 0;
 
     };
 }

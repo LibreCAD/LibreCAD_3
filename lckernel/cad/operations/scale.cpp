@@ -8,7 +8,7 @@ using namespace operation;
 Scale::Scale(Document* document, const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : DocumentOperation(document), Undoable("Scale entities"), _scale_center(scale_center), _scale_factor(scale_factor)  {
 }
 
-void Scale::append(shared_ptr<const CADEntity> cadEntity) {
+void Scale::append(std::shared_ptr<const CADEntity> cadEntity) {
     _toScale.append(cadEntity);
 }
 

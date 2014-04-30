@@ -5,7 +5,7 @@
 
 #include <cad/operations/builder.h>
 
-LineCreateOperation::LineCreateOperation(lc::Document* document, shared_ptr<lc::StorageManager> storageManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager)
+LineCreateOperation::LineCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager)
     : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
@@ -47,9 +47,9 @@ void LineCreateOperation::lineCreationFinished() {
     emit guiOperationFinished(of);
 }
 
-shared_ptr<lc::operation::DocumentOperation> LineCreateOperation::operation() const {
-    auto builder = make_shared<lc::operation::Builder>(document());
-    builder->append(make_shared<lc::Line>(_startPoint, _endPoint, _layer));
+std::shared_ptr<lc::operation::DocumentOperation> LineCreateOperation::operation() const {
+    auto builder = std::make_shared<lc::operation::Builder>(document());
+    builder->append(std::make_shared<lc::Line>(_startPoint, _endPoint, _layer));
     return builder;
 }
 
@@ -80,11 +80,11 @@ void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
 }
 
 
-shared_ptr<GuiOperation> LineCreateOperation::next() const {
+std::shared_ptr<GuiOperation> LineCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     LineCreateOperation* lco = new LineCreateOperation(document(), _storageManager, _layer,  this->_graphicsView, this->_snapManager);
     lco->_machine.setInitialState(lco->_waitForSecondClick);
     lco->_machine.start();
     lco->_startPoint = this->_endPoint;
-    return shared_ptr<GuiOperation>(lco);
+    return std::shared_ptr<GuiOperation>(lco);
 }

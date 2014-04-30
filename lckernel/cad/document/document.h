@@ -24,38 +24,38 @@ namespace lc {
                  * the given operations within the document
                  * \param operation
                  */
-            virtual void execute(shared_ptr<operation::DocumentOperation> operation) = 0;
+            virtual void execute(std::shared_ptr<operation::DocumentOperation> operation) = 0;
 
             /*!
              * \brief begins an operation
              * \param operation
              */
-            virtual void begin(shared_ptr<operation::DocumentOperation> operation) = 0;
+            virtual void begin(std::shared_ptr<operation::DocumentOperation> operation) = 0;
 
             /*!
                  * \brief commits an operation
                  * \param operation
                  */
-            virtual void commit(shared_ptr<operation::DocumentOperation> operation) = 0;
+            virtual void commit(std::shared_ptr<operation::DocumentOperation> operation) = 0;
 
 
             /*!
              * \brief operationStart Starts the operation.
              * \param operation
              */
-            virtual void operationStart(shared_ptr<operation::DocumentOperation> operation);
+            virtual void operationStart(std::shared_ptr<operation::DocumentOperation> operation);
 
             /*!
                  * \brief operationFinnish Finishes the operation.
                  * \param operation
                  */
-            virtual void operationFinnish(shared_ptr<operation::DocumentOperation> operation);
+            virtual void operationFinnish(std::shared_ptr<operation::DocumentOperation> operation);
 
             /*!
                  * \brief operationProcess process the operation.
                  * \param operation
                  */
-            virtual void operationProcess(shared_ptr<operation::DocumentOperation> operation);
+            virtual void operationProcess(std::shared_ptr<operation::DocumentOperation> operation);
 
         public:
             /*!
@@ -63,12 +63,12 @@ namespace lc {
              * \param layerName Name of layer to which entity is to be added
              * \param cadEntity Entity to be added
              */
-            virtual void insertEntity(const shared_ptr<const CADEntity> cadEntity) = 0;
+            virtual void insertEntity(const std::shared_ptr<const CADEntity> cadEntity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
-            virtual void removeEntity(const shared_ptr<const CADEntity> entity) = 0;
+            virtual void removeEntity(const std::shared_ptr<const CADEntity> entity) = 0;
 
             /*!
              * \brief findEntitiesByLayer
@@ -76,9 +76,9 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const = 0;
-            virtual void test(const shared_ptr<const Layer> layer) const = 0;
-            virtual shared_ptr<StorageManager> storageManager() const = 0;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const = 0;
+            virtual void test(const std::shared_ptr<const Layer> layer) const = 0;
+            virtual std::shared_ptr<StorageManager> storageManager() const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

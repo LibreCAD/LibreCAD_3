@@ -8,9 +8,6 @@ extern "C"
 
 #include <QElapsedTimer>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/pointer_cast.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include "LuaIntf.h"
 //#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
@@ -21,12 +18,9 @@ extern "C"
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 
-#include <boost/pointer_cast.hpp>
-
 namespace LuaIntf {
-    LUA_USING_SHARED_PTR_TYPE(boost::shared_ptr)
+    LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
 }
-
 
 using namespace LuaIntf;
 
@@ -36,12 +30,12 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, shared_ptr<lc::StorageManager> storageManager) : _document(document), _storageManager(storageManager) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager) : _document(document), _storageManager(storageManager) {
 }
 
 QString* gOut;
 lc::Document* luaDoc;
-shared_ptr<lc::StorageManager> storageManager;
+std::shared_ptr<lc::StorageManager> storageManager;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -62,17 +56,18 @@ static const struct luaL_Reg printlib [] = {
 static lc::Document* lua_getDocument() {
     return luaDoc;
 }
-static shared_ptr<lc::StorageManager> lua_storageManager() {
+static std::shared_ptr<lc::StorageManager> lua_storageManager() {
     return storageManager;
 }
 
-static shared_ptr<lc::Layer> lua_layer(const char* layer) {
-    // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
-    return boost::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
+static std::shared_ptr<lc::Layer> lua_layer(const char* layer) {
+    // Cast until the lua bridge understands std::shared_ptr<const lc::Layer> as a return value
+    return std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
+
 }
 
 static void entitiesByLayer(const char* layer) {
-    // Cast until the lua bridge understands shared_ptr<const lc::Layer> as a return value
+    // Cast until the lua bridge understands std::shared_ptr<const lc::Layer> as a return value
     auto f = storageManager->layerByName(layer);
     storageManager->entitiesByLayer(f);
 }

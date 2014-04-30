@@ -2,13 +2,13 @@
 
 using namespace lc;
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const shared_ptr<const Layer> layer) : CADEntity(layer), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer) : CADEntity(layer), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
 }
 
-Line::Line(const geo::Vector& vector, const shared_ptr<const Layer> layer, const QList<shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
+Line::Line(const geo::Vector& vector, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
 }
 
 
@@ -17,15 +17,12 @@ QList<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double mi
     QList<EntityCoordinate> points;
 
     points.append(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
-
     points.append(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
-
 
     geo::Coordinate npoe = nearestPointOnPath(coord);
     geo::Coordinate rVector = npoe - coord;
 
     double distance = rVector.magnitude();
-
     if (distance < minDistanceToSnap) {
         points.append(EntityCoordinate(npoe, distance, -1));
     }
@@ -39,31 +36,27 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
-shared_ptr<const CADEntity> Line::move(const geo::Coordinate& offset) const {
-    Line* newline = new Line(this->start() + offset, this->end() + offset, layer());
-    newline->setID(this->id());
-    shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
+std::shared_ptr<const CADEntity> Line::move(const geo::Coordinate& offset) const {
+    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
+    newLine->setID(this->id());
     return newLine;
 }
 
-shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const {
-    Line* newline = new Line(this->start() + offset, this->end() + offset, layer());
-    shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
+std::shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const {
+    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
     return newLine;
 }
 
-shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    Line* newline = new Line(this->start().rotate(rotation_center, rotation_angle),
+std::shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+    auto newLine = std::make_shared<Line>(this->start().rotate(rotation_center, rotation_angle),
                              this->end().rotate(rotation_center, rotation_angle), layer());
-    newline->setID(this->id());
-    shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
+    newLine->setID(this->id());
     return newLine;
 }
 
-shared_ptr<const CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    Line* newline = new Line(this->start().scale(scale_center, scale_factor),
+std::shared_ptr<const CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+    auto newLine = std::make_shared<Line>(this->start().scale(scale_center, scale_factor),
                              this->end().scale(scale_center, scale_factor), layer());
-    newline->setID(this->id());
-    shared_ptr<const Line> newLine = shared_ptr<const Line>(newline);
+    newLine->setID(this->id());
     return newLine;
 }

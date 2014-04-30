@@ -16,19 +16,19 @@ namespace lc {
                  * \param layerName Name of layer on which entity is to be added.
                  * \param cadEntity Entity to be added.
                  */
-            AddEntityEvent(shared_ptr<const CADEntity> cadEntity) : _cadEntity(cadEntity) {
+            AddEntityEvent(std::shared_ptr<const CADEntity> cadEntity) : _cadEntity(cadEntity) {
             }
 
             /*!
              * \brief Returns the entity.
              * \return CADEntity Entity.
              */
-            shared_ptr<const CADEntity> entity() const {
+            std::shared_ptr<const CADEntity> entity() const {
                 return _cadEntity;
             }
 
         private:
-            const shared_ptr<const CADEntity> _cadEntity;
+            const std::shared_ptr<const CADEntity> _cadEntity;
     };
 }
 #endif // ADDENTITYEVENT_H

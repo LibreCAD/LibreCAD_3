@@ -18,7 +18,7 @@ namespace lc {
          */
         class Trim : public DocumentOperation, public Undoable {
             public:
-                Trim(Document* document,  shared_ptr<lc::FTrim> trim) ;
+                Trim(Document* document,  std::shared_ptr<lc::FTrim> trim) ;
 
                 virtual ~Trim() {
                     qDebug() << "Trim removed";
@@ -34,7 +34,7 @@ namespace lc {
 
                 Q_DISABLE_COPY(Trim)
             private:
-                shared_ptr<lc::FTrim> _trim;
+                std::shared_ptr<lc::FTrim> _trim;
 
         };
     };

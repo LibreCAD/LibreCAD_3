@@ -17,7 +17,7 @@ namespace lc {
          *
          * @param document
          */
-        class DocumentOperation : public enable_shared_from_this<operation::DocumentOperation> {
+        class DocumentOperation : public std::enable_shared_from_this<operation::DocumentOperation> {
                 friend class lc::Document;
 
             public:
@@ -54,7 +54,7 @@ namespace lc {
                  * This function get's called when a operation starts and when the document is locked for you
                  * so you can do your work
                  */
-                virtual void processInternal(shared_ptr<StorageManager> storageManager) = 0;
+                virtual void processInternal(std::shared_ptr<StorageManager> storageManager) = 0;
 
         };
     };

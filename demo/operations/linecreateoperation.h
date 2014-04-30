@@ -27,9 +27,9 @@ class LineCreateOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
         Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
-        LineCreateOperation(lc::Document* document, shared_ptr<lc::StorageManager> entityManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager);
+        LineCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> entityManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager);
 
-        virtual shared_ptr<lc::operation::DocumentOperation> operation() const;
+        virtual std::shared_ptr<lc::operation::DocumentOperation> operation() const;
 
         virtual void restart();
 
@@ -50,7 +50,7 @@ class LineCreateOperation : public GuiOperation {
             return _endPoint;
         }
 
-        virtual shared_ptr<GuiOperation> next() const;
+        virtual std::shared_ptr<GuiOperation> next() const;
 
         void on_SnapPoint_Event(const SnapPointEvent& event);
     private slots:
@@ -67,9 +67,9 @@ class LineCreateOperation : public GuiOperation {
         SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        shared_ptr<SnapManager>  _snapManager;
-        shared_ptr<lc::StorageManager>  _storageManager;
-        shared_ptr<const lc::Layer>  _layer;
+        std::shared_ptr<SnapManager>  _snapManager;
+        std::shared_ptr<lc::StorageManager>  _storageManager;
+        std::shared_ptr<const lc::Layer>  _layer;
 
 };
 

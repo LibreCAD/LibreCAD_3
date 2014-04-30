@@ -17,7 +17,7 @@
   */
 class SelectionManagerImpl : public lc::SelectionManager {
     public:
-        SelectionManagerImpl(shared_ptr<lc::StorageManager> storageManager, QGraphicsView* scene);
+        SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager, QGraphicsView* scene);
 
         /*!
           * \brief return a list of entitires that are near a coordinate
@@ -26,12 +26,12 @@ class SelectionManagerImpl : public lc::SelectionManager {
           * \param double   Minimum distance for a entity to get added
           */
         virtual QList<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
-        virtual QList<shared_ptr<const lc::CADEntity> > getEntitiesInArea(const lc::geo::Area& area) const;
+        virtual QList<std::shared_ptr<const lc::CADEntity> > getEntitiesInArea(const lc::geo::Area& area) const;
 
     public slots:
 
     private:
-        shared_ptr<lc::StorageManager> _storageManager;
+        std::shared_ptr<lc::StorageManager> _storageManager;
         QGraphicsView* _view;
 };
 #endif // SELECTIONMANAGERIMPL_H

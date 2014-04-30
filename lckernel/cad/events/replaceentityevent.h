@@ -13,19 +13,19 @@ namespace lc {
      */
     class ReplaceEntityEvent {
         public:
-            ReplaceEntityEvent(const shared_ptr<const CADEntity> entity) : _entity(entity) {
+            ReplaceEntityEvent(const std::shared_ptr<const CADEntity> entity) : _entity(entity) {
             }
 
             /*!
              * \brief pointer to the new entity.
-             * \return shared_ptr<lc::CADEntity> new entity.
+             * \return std::shared_ptr<lc::CADEntity> new entity.
              */
-            shared_ptr<const CADEntity> entity() const {
+            std::shared_ptr<const CADEntity> entity() const {
                 return _entity;
             }
 
         private:
-            const shared_ptr<const CADEntity> _entity; /*!< shared_ptr<CADEntity _newEntity */
+            const std::shared_ptr<const CADEntity> _entity; /*!< std::shared_ptr<CADEntity _newEntity */
     };
 
 }

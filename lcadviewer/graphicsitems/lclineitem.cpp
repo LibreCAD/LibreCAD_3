@@ -1,6 +1,6 @@
 #include "graphicsitems/lclineitem.h"
 
-LCLineItem::LCLineItem(shared_ptr<const lc::Line> l) : LCGraphicsItem(), _line(l) {
+LCLineItem::LCLineItem(std::shared_ptr<const lc::Line> l) : LCGraphicsItem(), _line(l) {
 }
 
 
@@ -28,6 +28,6 @@ QPainterPath LCLineItem::shape() const {
     return path;
 }
 
-const shared_ptr<const lc::CADEntity> LCLineItem::entity() const {
+const std::shared_ptr<const lc::CADEntity> LCLineItem::entity() const {
     return _line;
 }

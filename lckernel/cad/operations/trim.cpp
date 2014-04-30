@@ -4,13 +4,13 @@
 using namespace lc;
 using namespace lc::operation;
 
-Trim::Trim(Document* document,  shared_ptr<FTrim> trim) : DocumentOperation(document), Undoable("Trim Entity"), _trim(trim)  {
+Trim::Trim(Document* document,  std::shared_ptr<FTrim> trim) : DocumentOperation(document), Undoable("Trim Entity"), _trim(trim)  {
     // TODO FIX TRIM
     //    _entityLayer = document()->findEntityLayerByID(trim->trimmedShape()->id());
 }
 
 void Trim::processInternal() {
-    QList<shared_ptr<const CADEntity> > newEntities = _trim->result();
+    QList<std::shared_ptr<const CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
@@ -22,7 +22,7 @@ void Trim::processInternal() {
 }
 
 void Trim::undo() const {
-    QList<shared_ptr<const CADEntity> > newEntities = _trim->result();
+    QList<std::shared_ptr<const CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {
@@ -34,7 +34,7 @@ void Trim::undo() const {
 }
 
 void Trim::redo() const {
-    QList<shared_ptr<const CADEntity> > newEntities = _trim->result();
+    QList<std::shared_ptr<const CADEntity> > newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
         for (int i = 0; i < newEntities.size(); ++i) {

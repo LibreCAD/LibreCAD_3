@@ -2,6 +2,8 @@
 #ifndef LUALIBRECADBRIDGE_H
 #define LUALIBRECADBRIDGE_H
 
+#include <memory>
+
 #include <cad/operations/builder.h>
 #include <cad/document/document.h>
 #include <cad/meta/layer.h>
@@ -21,7 +23,7 @@ class LuaBuilderProxy : public lc::operation::Builder {
             qDebug() << "LuaBuilderProxy instantiated";
         }
 
-        void append(shared_ptr<lc::CADEntity> cadEntity) {
+        void append(std::shared_ptr<lc::CADEntity> cadEntity) {
             lc::operation::Builder::append(cadEntity);
         }
 
@@ -43,7 +45,7 @@ class LuaBuilderProxy : public lc::operation::Builder {
         void push() {
             lc::operation::Builder::push();
         }
-        void selectByLayer(const shared_ptr<lc::Layer> layer) {
+        void selectByLayer(const std::shared_ptr<lc::Layer> layer) {
             lc::operation::Builder::selectByLayer(layer);
         }
 

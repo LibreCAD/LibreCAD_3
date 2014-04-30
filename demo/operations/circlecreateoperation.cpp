@@ -5,7 +5,7 @@
 
 #include <cad/operations/builder.h>
 
-CircleCreateOperation::CircleCreateOperation(lc::Document* document, shared_ptr<lc::StorageManager> storageManager, shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, shared_ptr<SnapManager>  snapManager) :
+CircleCreateOperation::CircleCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
@@ -48,11 +48,11 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {
-    QList<shared_ptr<const lc::MetaType> > metaTypes;
-    auto builder = make_shared<lc::operation::Builder>(document());
+std::shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {
+    QList<std::shared_ptr<const lc::MetaType> > metaTypes;
+    auto builder = std::make_shared<lc::operation::Builder>(document());
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    builder->append(make_shared<lc::Circle>(_startPoint, r, _layer));
+    builder->append(std::make_shared<lc::Circle>(_startPoint, r, _layer));
     return builder;
 }
 
@@ -84,10 +84,10 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-shared_ptr<GuiOperation> CircleCreateOperation::next() const {
+std::shared_ptr<GuiOperation> CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     CircleCreateOperation* lco = new CircleCreateOperation(document(), _storageManager, _layer, this->_graphicsView, this->_snapManager);
-    return shared_ptr<GuiOperation>(lco);
+    return std::shared_ptr<GuiOperation>(lco);
 }
 
 

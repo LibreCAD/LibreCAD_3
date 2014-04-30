@@ -26,7 +26,7 @@ namespace lc {
     class DocumentImpl : public Document {
             Q_OBJECT
         public:
-            DocumentImpl(const shared_ptr<StorageManager> storageManager);
+            DocumentImpl(const std::shared_ptr<StorageManager> storageManager);
             virtual ~DocumentImpl();
 
         public:
@@ -76,39 +76,39 @@ namespace lc {
              * \param layerName Name of layer at which entity is to be added.
              * \param cadEntity Entity to be added.
              */
-            virtual void insertEntity(const shared_ptr<const CADEntity> cadEntity);
+            virtual void insertEntity(const std::shared_ptr<const CADEntity> cadEntity);
             /*!
              * \brief remove an Entity from the document
              * \param id Entity ID
              */
-            virtual void removeEntity(shared_ptr<const CADEntity> entity);
+            virtual void removeEntity(std::shared_ptr<const CADEntity> entity);
 
-            virtual EntityContainer entitiesByLayer(const shared_ptr<const Layer> layer) const;
-            virtual void test(const shared_ptr<const Layer> layer) const;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
+            virtual void test(const std::shared_ptr<const Layer> layer) const;
 
 
-            virtual shared_ptr<StorageManager> storageManager() const;
+            virtual std::shared_ptr<StorageManager> storageManager() const;
         protected:
             /*!
              * \brief execute's a operation
              * \param operation
              */
-            void execute(shared_ptr<operation::DocumentOperation> operation);
+            void execute(std::shared_ptr<operation::DocumentOperation> operation);
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            virtual void begin(shared_ptr<operation::DocumentOperation> operation);
+            virtual void begin(std::shared_ptr<operation::DocumentOperation> operation);
             /*!
              * \brief commits operation
              * \param operation
              */
-            virtual void commit(shared_ptr<operation::DocumentOperation> operation);
+            virtual void commit(std::shared_ptr<operation::DocumentOperation> operation);
 
         private:
             std::mutex _documentMutex;
-            const shared_ptr<StorageManager> _storageManager;
+            const std::shared_ptr<StorageManager> _storageManager;
     };
 }
 

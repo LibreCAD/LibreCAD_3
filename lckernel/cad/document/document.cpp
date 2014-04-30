@@ -9,12 +9,12 @@
 
 using namespace lc;
 
-void Document::operationStart(shared_ptr<operation::DocumentOperation> operation) {
+void Document::operationStart(std::shared_ptr<operation::DocumentOperation> operation) {
     operation->start();
 }
-void Document::operationFinnish(shared_ptr<operation::DocumentOperation> operation) {
+void Document::operationFinnish(std::shared_ptr<operation::DocumentOperation> operation) {
     operation->finnish();
 }
-void Document::operationProcess(shared_ptr<operation::DocumentOperation> operation) {
+void Document::operationProcess(std::shared_ptr<operation::DocumentOperation> operation) {
     operation->process();
 }
