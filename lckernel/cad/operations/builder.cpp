@@ -46,18 +46,22 @@ Builder& Builder::selectByLayer(const std::shared_ptr<const Layer> layer) {
     _stack.append(std::make_shared<SelectByLayer>(layer));
     return *this;
 }
+Builder& Builder::remove() {
+    _stack.append(std::make_shared<Remove>());
+    return *this;
+}
 
 
 void Builder::processInternal(std::shared_ptr<StorageManager> storageManager) {
-    QList<std::shared_ptr<const CADEntity> > newQueue;
+    QList<std::shared_ptr<const CADEntity> > entitySet;
 
     for (int i = 0; i < _stack.size(); ++i) {
         // Get looping stack, we currently support only one single loop!!
         QList<std::shared_ptr<Base> > stack = _stack.mid(0, i);
-        newQueue = _stack.at(i)->process(storageManager, newQueue, _workingBuffer, stack);
+        entitySet = _stack.at(i)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
     }
 
-    _workingBuffer.append(newQueue);
+    _workingBuffer.append(entitySet);
 
     // Build a buffer with all entities we need to remove during a undo cycle
     for (int i = 0; i < _workingBuffer.size(); ++i) {
@@ -68,13 +72,16 @@ void Builder::processInternal(std::shared_ptr<StorageManager> storageManager) {
         }
     }
 
+    // Remove entities
+    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
+        document()->removeEntity(_entitiesThatNeedsRemoval.at(i));
+    }
+
     // Add/Update all entities in the document
     for (int i = 0; i < _workingBuffer.size(); ++i) {
         document()->insertEntity(_workingBuffer.at(i));
     }
 
-    // TODO
-    // Remove entities from the document
 }
 
 void Builder::undo() const {
@@ -87,12 +94,16 @@ void Builder::undo() const {
         document()->insertEntity(_entitiesThatWhereUpdated.at(i));
     }
 
+    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
+        document()->insertEntity(_entitiesThatNeedsRemoval.at(i));
+    }
+
 }
 
 void Builder::redo() const {
-    //for (int i = 0; i < _entitiesToInsert.size(); ++i) {
-    //    document()->removeEntity(_entitiesToInsert.at(i));
-    //}
+    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
+        document()->removeEntity(_entitiesThatNeedsRemoval.at(i));
+    }
 
     for (int i = 0; i < _workingBuffer.size(); ++i) {
         document()->insertEntity(_workingBuffer.at(i));

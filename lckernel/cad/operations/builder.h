@@ -26,6 +26,7 @@ namespace lc {
                 Builder& rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
                 Builder& begin();
                 Builder& push();
+                Builder& remove();
                 Builder& selectByLayer(const std::shared_ptr<const Layer>);
 
                 Builder& append(std::shared_ptr<const CADEntity> cadEntity);
@@ -42,6 +43,8 @@ namespace lc {
 
 
                 QList<std::shared_ptr<const CADEntity> > _entitiesThatWhereUpdated;
+                QList<std::shared_ptr<const CADEntity> > _entitiesThatNeedsRemoval;
+
         };
 
     };

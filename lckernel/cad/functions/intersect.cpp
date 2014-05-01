@@ -43,7 +43,7 @@ void Intersect::visit(std::shared_ptr<const Line> l1, std::shared_ptr<const Line
 }
 
 void Intersect::visit(std::shared_ptr<const Line> line, std::shared_ptr<const Circle> circle) {
-    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI*2., line->layer()));
+    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()));
 }
 
 void Intersect::visit(std::shared_ptr<const Line> line, std::shared_ptr<const Arc> arc) {
@@ -102,7 +102,7 @@ void Intersect::visit(std::shared_ptr<const Line>, std::shared_ptr<const lc::Spl
 // Circle
 
 void Intersect::visit(std::shared_ptr<const Circle> circle, std::shared_ptr<const Line> line) {
-    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI*2., circle->layer()));
+    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()));
 }
 void Intersect::visit(std::shared_ptr<const Circle>, std::shared_ptr<const Circle>) {
 }

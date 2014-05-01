@@ -15,11 +15,12 @@ Begin::Begin() :  Base() {
 
 QList<std::shared_ptr<const CADEntity> > Begin::process(
     std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
-    QList<std::shared_ptr<const CADEntity> >&,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
+    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+    QList<std::shared_ptr<const CADEntity> >& removals,
     const QList<std::shared_ptr< Base> >) {
-    _entities.append(entities);
-    return entities;
+    _entities.append(entitySet);
+    return entitySet;
 }
 
 QList<std::shared_ptr<const CADEntity> > Begin::getEntities() const {
@@ -33,8 +34,9 @@ Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 
 QList<std::shared_ptr<const CADEntity> > Loop::process(
     std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >& _workingBuffer,
+    QList<std::shared_ptr<const CADEntity> >& removals,
     const QList<std::shared_ptr< Base> > _stack) {
     QList<std::shared_ptr<const CADEntity> > final;
 
@@ -51,15 +53,15 @@ QList<std::shared_ptr<const CADEntity> > Loop::process(
 
 
     // run the operation que
-    QList<std::shared_ptr<const CADEntity> > newQueue(entities);
+    QList<std::shared_ptr<const CADEntity> > entitySet2(entitySet);
 
     for (int n = 0; n < _numTimes - 1; n++) {
         for (int i = 0; i < _stack.size(); ++i) {
-            newQueue = _stack.at(i)->process(storageManager, newQueue, _workingBuffer, _stack);
+            entitySet2 = _stack.at(i)->process(storageManager, entitySet2, _workingBuffer, removals, _stack);
         }
     }
 
-    return newQueue;
+    return entitySet2;
 }
 
 
@@ -68,14 +70,15 @@ Move::Move(const geo::Coordinate& offset) :  Base(), _offset(offset) {
 }
 
 QList<std::shared_ptr<const CADEntity> >  Move::process(
-    std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    std::shared_ptr<StorageManager> ,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >&,
+    QList<std::shared_ptr<const CADEntity> >& ,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
-    for (int i = 0; i < entities.size(); ++i) {
-        auto e = entities.at(i)->move(_offset);
+    for (int i = 0; i < entitySet.size(); ++i) {
+        auto e = entitySet.at(i)->move(_offset);
         newQueue.append(e);
     }
 
@@ -90,15 +93,16 @@ Copy::Copy(const geo::Coordinate& offset) : Base(), _offset(offset) {
 }
 
 QList<std::shared_ptr<const CADEntity> > Copy::process(
-    std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    std::shared_ptr<StorageManager> ,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+    QList<std::shared_ptr<const CADEntity> >& ,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
-    for (int i = 0; i < entities.size(); ++i) {
-        auto e = entities.at(i)->copy(_offset);
-        workingBuffer.append(entities.at(i));
+    for (int i = 0; i < entitySet.size(); ++i) {
+        auto e = entitySet.at(i)->copy(_offset);
+        workingBuffer.append(entitySet.at(i));
         newQueue.append(e);
     }
 
@@ -111,14 +115,15 @@ Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_ang
 }
 
 QList<std::shared_ptr<const CADEntity> > Rotate::process(
-    std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    std::shared_ptr<StorageManager> ,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >&,
+    QList<std::shared_ptr<const CADEntity> >& ,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
-    for (int i = 0; i < entities.size(); ++i) {
-        auto e = entities.at(i)->rotate(_rotation_center, _rotation_angle);
+    for (int i = 0; i < entitySet.size(); ++i) {
+        auto e = entitySet.at(i)->rotate(_rotation_center, _rotation_angle);
         newQueue.append(e);
     }
 
@@ -130,12 +135,13 @@ Push::Push() : Base() {
 }
 
 QList<std::shared_ptr<const CADEntity> > Push::process(
-    std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    std::shared_ptr<StorageManager> ,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+    QList<std::shared_ptr<const CADEntity> >& ,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue(workingBuffer);
-    newQueue.append(entities);
+    newQueue.append(entitySet);
     workingBuffer.clear();
     return newQueue;
 }
@@ -148,7 +154,8 @@ SelectByLayer::SelectByLayer(const std::shared_ptr<const Layer> layer) : Base(),
 
 QList<std::shared_ptr<const CADEntity> > SelectByLayer::process(
     std::shared_ptr<StorageManager> storageManager,
-    QList<std::shared_ptr<const CADEntity> > entities,
+    QList<std::shared_ptr<const CADEntity> > ,
+    QList<std::shared_ptr<const CADEntity> >& ,
     QList<std::shared_ptr<const CADEntity> >& ,
     const QList<std::shared_ptr< Base> >) {
     EntityContainer c = storageManager->entitiesByLayer(_layer);
@@ -158,3 +165,18 @@ QList<std::shared_ptr<const CADEntity> > SelectByLayer::process(
 }
 
 
+
+
+Remove::Remove() : Base() {
+}
+
+QList<std::shared_ptr<const CADEntity> > Remove::process(
+    std::shared_ptr<StorageManager> storageManager,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
+    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >& removals,
+    const QList<std::shared_ptr< Base> >) {
+    removals.append(entitySet);
+    QList<std::shared_ptr<const CADEntity> > e;
+    return e;
+}

@@ -48,7 +48,9 @@ class LuaBuilderProxy : public lc::operation::Builder {
         void selectByLayer(const std::shared_ptr<lc::Layer> layer) {
             lc::operation::Builder::selectByLayer(layer);
         }
-
+        void remove() {
+            lc::operation::Builder::remove();
+        }
 };
 
 class LuaStorageManagerImplProxy : public lc::StorageManagerImpl {

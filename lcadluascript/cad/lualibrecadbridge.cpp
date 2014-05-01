@@ -106,6 +106,7 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("loop", &LuaBuilderProxy::repeat)
     .addFunction("begin", &LuaBuilderProxy::begin)
     .addFunction("selectByLayer", &LuaBuilderProxy::selectByLayer)
+    .addFunction("remove", &LuaBuilderProxy::remove)
     .endClass()
 
     .beginClass <operation::Base> ("Base")

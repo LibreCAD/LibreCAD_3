@@ -85,6 +85,6 @@ QList<Coordinate> GeoIntersect::intersectArcLine(const Arc& arc, const Vector& l
 }
 
 QList<Coordinate> GeoIntersect::intersectCircleLine(const Circle& circle, const Vector& line, Intersect intersect) {
-    return intersectArcLine(Arc(circle.center(), circle.radius(), 0., M_PI*2), line, intersect);
+    return intersectArcLine(Arc(circle.center(), circle.radius(), 0., M_PI * 2), line, intersect);
 }
 

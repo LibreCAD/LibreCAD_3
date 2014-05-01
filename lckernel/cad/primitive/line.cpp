@@ -23,6 +23,7 @@ QList<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double mi
     geo::Coordinate rVector = npoe - coord;
 
     double distance = rVector.magnitude();
+
     if (distance < minDistanceToSnap) {
         points.append(EntityCoordinate(npoe, distance, -1));
     }
@@ -49,14 +50,14 @@ std::shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const
 
 std::shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newLine = std::make_shared<Line>(this->start().rotate(rotation_center, rotation_angle),
-                             this->end().rotate(rotation_center, rotation_angle), layer());
+                                          this->end().rotate(rotation_center, rotation_angle), layer());
     newLine->setID(this->id());
     return newLine;
 }
 
 std::shared_ptr<const CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newLine = std::make_shared<Line>(this->start().scale(scale_center, scale_factor),
-                             this->end().scale(scale_center, scale_factor), layer());
+                                          this->end().scale(scale_center, scale_factor), layer());
     newLine->setID(this->id());
     return newLine;
 }

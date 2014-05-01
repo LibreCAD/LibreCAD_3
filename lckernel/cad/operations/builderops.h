@@ -24,7 +24,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack
                 )  = 0;
         };
 
@@ -56,7 +57,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
             private:
                 int _numTimes;
         };
@@ -90,7 +92,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
                 QList<std::shared_ptr<const CADEntity> > getEntities() const;
             private:
                 QList<std::shared_ptr<const CADEntity> > _entities;
@@ -125,7 +128,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
             private:
                 geo::Coordinate _offset;
         };
@@ -158,7 +162,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
             private:
                 geo::Coordinate _offset;
         };
@@ -192,7 +197,8 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
             private:
                 geo::Coordinate _rotation_center;
                 double _rotation_angle;
@@ -228,12 +234,13 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
         };
 
 
         /**
-         * @brief The Select class
+         * @brief The SelectByLayer class
          * Select entities within a document
          *
          * Example (lua):
@@ -259,7 +266,41 @@ namespace lc {
                     std::shared_ptr<StorageManager> storageManager,
                     QList<std::shared_ptr<const CADEntity> > entities,
                     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    const QList<std::shared_ptr< Base> > _stack);
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
+            private:
+                std::shared_ptr<const Layer> _layer;
+        };
+
+        /**
+         * @brief The Delete class
+         * Delete entities from the document
+         *
+         * Example (lua):
+         * <pre>
+         * start = microtime()
+         * layer = app.getLayer("0")
+         * d=app.currentDocument()
+         * ce=Builder(d)
+         * ce:selectByLayer(layer)
+         * <strong>ce:remove()</strong> -- Remove all entitieds from layer
+         * ce:execute()
+         * print "Move time"
+         * print (microtime()-start);
+         *
+         */
+        class Remove: public Base {
+            public:
+                Remove();
+                virtual ~Remove() {
+                    qDebug() << "Delete removed";
+                }
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
             private:
                 std::shared_ptr<const Layer> _layer;
         };

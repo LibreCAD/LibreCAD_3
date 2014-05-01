@@ -154,11 +154,8 @@ print "done";
 
 /* Fractal tree
  *
-
 start = microtime()
-
 layer = app.getLayer("0")
-
 function drawTree( ce, x1,  y1,  angle,  depth)
         if depth == 0 then  return end;
 
@@ -333,7 +330,8 @@ ce:execute()
 
 /*
  *
-l=Line(Coord(0,0), Coord(10,100));
+layer = app.getLayer("0")
+l=Line(Coord(0,0), Coord(10,100), layer);
 d=app.currentDocument()
 b=Builder(d)
 b:append(l)
@@ -345,9 +343,12 @@ b:execute()
 
 
 /*
- * l=Line(Coord(0,0), Coord(00,100));
+ *
+layer = app.getLayer("0")
+l=Line(Coord(0,0), Coord(00,100), layer);
 d=app.currentDocument()
 b=Builder(d)
+b:push()
 b:append(l)
 b:copy(Coord(0,0))
 b:rotate(Coord(0,0), math.rad(45))
@@ -356,4 +357,69 @@ b:push()
 b:rotate(Coord(0,0),math.rad(22.5))
 b:copy(Coord(150,00))
 b:execute()
+*/
+
+/*
+
+
+numEntities=0
+function drawTree( ce, x1,  y1,  angle,  depth)
+        if depth == 0 then  return end;
+
+        local x2 = x1 +  (math.cos(math.rad(angle)) * depth * 10.0);
+        local y2 = y1 + (math.sin(math.rad(angle)) * depth * 10.0);
+
+
+       ce:append(Line(Coord(x1, y1), Coord(x2, y2),layer));
+       numEntities=numEntities+1
+        drawTree(ce, x2, y2, angle - 20, depth - 1);
+        drawTree(ce, x2, y2, angle + 20, depth - 1);
+end
+
+-- Do Create
+start = microtime()
+treeDepth = 14
+doc=app.currentDocument()
+ce=Builder(doc)
+layer = app.getLayer("0")
+drawTree(ce, 0, 0, -0, treeDepth);
+layer = app.getLayer("1")
+drawTree(ce, 0, 0, -72, treeDepth);
+layer = app.getLayer("2")
+drawTree(ce, 0, 0, -144, treeDepth);
+layer = app.getLayer("3")
+drawTree(ce, 0, 0, -216, treeDepth);
+layer = app.getLayer("4")
+drawTree(ce, 0, 0, -288, treeDepth);
+ce:execute()
+
+print "Creation time"
+print (microtime()-start);
+print "Number of entities"
+print (numEntities)
+
+-- Do a move
+start = microtime()
+layer = app.getLayer("0")
+d=app.currentDocument()
+ce=Builder(d)
+ce:selectByLayer(layer)
+ce:move(Coord(100,0))
+ce:execute()
+print "Move time"
+print (microtime()-start);
+
+*/
+/*
+-- Do a remove
+start = microtime()
+layer = app.getLayer("1")
+d=app.currentDocument()
+ce=Builder(d)
+ce:selectByLayer(layer)
+ce:remove()
+ce:execute()
+print "Remove time"
+print (microtime()-start);
+
 */

@@ -13,8 +13,8 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
 }
 
 std::shared_ptr<const CADEntity> Ellipse::move(const geo::Coordinate& offset) const {
-   auto newellipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
-                                               this->startAngle(), this->endAngle(), layer());
+    auto newellipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
+                                                this->startAngle(), this->endAngle(), layer());
     newellipse->setID(this->id());
     return newellipse;
 }
@@ -27,9 +27,9 @@ std::shared_ptr<const CADEntity> Ellipse::copy(const geo::Coordinate& offset) co
 
 std::shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newEllipse = std::make_shared<Ellipse>(this->center().rotate(rotation_center, rotation_angle),
-                                      (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
-                                      this->minorRadius() , this->startAngle(),
-                                      this->endAngle(), layer());
+                                                (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
+                                                this->minorRadius() , this->startAngle(),
+                                                this->endAngle(), layer());
     newEllipse->setID(this->id());
     return newEllipse;
 }
@@ -60,9 +60,9 @@ std::shared_ptr<const CADEntity> Ellipse::scale(const geo::Coordinate& scale_cen
     geo::Coordinate vp3 = geo::Coordinate(a, b) * geo::Coordinate(vp * 0.5).rotate(geo::Coordinate(ct, st)) * scale_factor;
 
     auto newEllipse = std::make_shared<Ellipse>(this->center().scale(scale_center, scale_factor), vp3,
-                                      this->minorRadius(),
-                                      isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                      isArc() ? this->getEllipseAngle(endPoint) : 0., layer());
+                                                this->minorRadius(),
+                                                isArc() ? this->getEllipseAngle(startPoint) : 0.,
+                                                isArc() ? this->getEllipseAngle(endPoint) : 0., layer());
     newEllipse->setID(this->id());
     return newEllipse;
 
