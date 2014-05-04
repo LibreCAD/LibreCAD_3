@@ -18,7 +18,7 @@ QColor LCGraphicsItem::getScreenColor(const QColor& color) const {
 }
 
 
-void LCGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+void LCGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* , QWidget* widget) {
     Q_UNUSED(widget)
 
     std::shared_ptr<const lc::CADEntity> cadEntity = entity();
@@ -26,7 +26,10 @@ void LCGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* op
     // If the current item is selected set a selected pen
     if (this->isSelected()) {
         // FIXME: Needs to be a configurable color
-        painter->setPen(QColor(50, 240, 50));
+        QPen pen(QBrush(QColor(50, 240, 50)), 0.0);
+        pen.setCapStyle(Qt::FlatCap);
+        pen.setJoinStyle(Qt::MiterJoin);
+        painter->setPen(pen);
         return;
     }
 
