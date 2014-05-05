@@ -66,13 +66,6 @@ static std::shared_ptr<lc::Layer> lua_layer(const char* layer) {
 
 }
 
-static void entitiesByLayer(const char* layer) {
-    // Cast until the lua bridge understands std::shared_ptr<const lc::Layer> as a return value
-    auto f = storageManager->layerByName(layer);
-    storageManager->entitiesByLayer(f);
-}
-
-
 QString LCadLuaScript::run(const QString& script) {
 
     lua_State* L = luaL_newstate();
@@ -83,11 +76,14 @@ QString LCadLuaScript::run(const QString& script) {
 
     //    .addFunction("getLayer", &lua_layer)
 
-    LuaBinding(L).beginModule("app")
-    .addFunction("currentDocument", &lua_getDocument)
-    .addFunction("currentStorageManager", &lua_storageManager)
-    .addFunction("getLayer", &lua_layer)
-    .addFunction("entitiesByLayer", &entitiesByLayer);
+    LuaBinding(L)
+        .beginModule("active")
+            .addFunction("document", &lua_getDocument)
+            .addFunction("storageManager", &lua_storageManager)
+            .beginModule("proxy")
+                .addFunction("layerByName", &lua_layer)
+            .endModule()
+        .endModule();
 
     LuaBinding(L)
     .addFunction("microtime", &lua_microtime);
@@ -117,12 +113,10 @@ QString LCadLuaScript::run(const QString& script) {
 
 /* Line
  *
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
-d=app.currentDocument()
-ce=Builder(d)
-ce:append(l)
-ce:execute()
+d=active.document()
+Builder(d):append(l):execute()
 */
 
 /* Spiral
@@ -133,9 +127,9 @@ local ry = 100;
 local p =rx;
 local q=ry;
 
-doc=app.currentDocument()
+doc=active.document()
 ce=Builder(doc,em)
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 
 while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
@@ -155,7 +149,7 @@ print "done";
 /* Fractal tree
  *
 start = microtime()
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 function drawTree( ce, x1,  y1,  angle,  depth)
         if depth == 0 then  return end;
 
@@ -168,7 +162,7 @@ function drawTree( ce, x1,  y1,  angle,  depth)
         drawTree(ce, x2, y2, angle + 20, depth - 1);
 end
 
-doc=app.currentDocument()
+doc=active.document()
 ce=Builder(doc,em)
 drawTree(ce, 0, 0, -90, 14);
 ce:execute()
@@ -315,10 +309,10 @@ end
 
 local gear = Gear()
 
-doc=app.currentDocument()
+doc=active.document()
 em=app.currentEntityManager()
 ce=Builder(doc,em)
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 
 gear:calc(ce, 20,math.rad(10),math.rad(10))
 gear:calc(ce, 10,math.rad(10),math.rad(10))
@@ -330,9 +324,9 @@ ce:execute()
 
 /*
  *
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
-d=app.currentDocument()
+d=active.document()
 b=Builder(d)
 b:append(l)
 b:copy(Coord(0,0))
@@ -344,9 +338,9 @@ b:execute()
 
 /*
  *
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(00,100), layer);
-d=app.currentDocument()
+d=active.document()
 b=Builder(d)
 b:push()
 b:append(l)
@@ -379,17 +373,17 @@ end
 -- Do Create
 start = microtime()
 treeDepth = 14
-doc=app.currentDocument()
+doc=active.document()
 ce=Builder(doc)
-layer = app.getLayer("0")
+layer = active.proxy.layerByName("0")
 drawTree(ce, 0, 0, -0, treeDepth);
-layer = app.getLayer("1")
+layer = active.proxy.layerByName("1")
 drawTree(ce, 0, 0, -72, treeDepth);
-layer = app.getLayer("2")
+layer = active.proxy.layerByName("2")
 drawTree(ce, 0, 0, -144, treeDepth);
-layer = app.getLayer("3")
+layer = active.proxy.layerByName("3")
 drawTree(ce, 0, 0, -216, treeDepth);
-layer = app.getLayer("4")
+layer = active.proxy.layerByName("4")
 drawTree(ce, 0, 0, -288, treeDepth);
 ce:execute()
 
@@ -400,12 +394,9 @@ print (numEntities)
 
 -- Do a move
 start = microtime()
-layer = app.getLayer("0")
-d=app.currentDocument()
-ce=Builder(d)
-ce:selectByLayer(layer)
-ce:move(Coord(100,0))
-ce:execute()
+layer = active.proxy.layerByName("0")
+d=active.document()
+Builder(d):selectByLayer(layer):move(Coord(100,0)):execute()
 print "Move time"
 print (microtime()-start);
 
@@ -413,12 +404,9 @@ print (microtime()-start);
 /*
 -- Do a remove
 start = microtime()
-layer = app.getLayer("1")
-d=app.currentDocument()
-ce=Builder(d)
-ce:selectByLayer(layer)
-ce:remove()
-ce:execute()
+layer = active.proxy.layerByName("1")
+d=active.document()
+Builder(d):selectByLayer(layer):remove():execute()
 print "Remove time"
 print (microtime()-start);
 
