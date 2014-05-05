@@ -42,6 +42,14 @@ LCADViewer::LCADViewer(QWidget* parent) :
     // We might need to change this based on if we move the rubberband 'negative' or positive
     this->setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
 
+    // Create a scene for this document, each document will have only one scene, but can have multiple views
+    QGraphicsScene* scene = new QGraphicsScene(parent);
+    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
+    scene->setBspTreeDepth(4);
+    setScene(scene);
+    setSceneRect(-15000, -15000, 30000, 30000);
+
+
 }
 
 void LCADViewer::setAbstractDocument(lc::Document* document) {

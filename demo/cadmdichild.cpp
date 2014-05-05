@@ -54,14 +54,6 @@ void CadMdiChild::newDocument() {
     ui->lCADViewer->addBackgroundItem(metricGrid);
 
 
-    // Create a scene for this document, each document will have only one scene, but can have multiple views
-    QGraphicsScene* scene = new QGraphicsScene(this);
-    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
-    scene->setBspTreeDepth(4);
-    ui->lCADViewer->setScene(scene);
-    ui->lCADViewer->setSceneRect(-15000, -15000, 30000, 30000);
-
-
     // Entity manager add's/removes entities to layers
     _storageManager = std::make_shared<lc::StorageManagerImpl>();
 
