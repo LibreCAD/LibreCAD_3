@@ -23,31 +23,31 @@ QList<lc::EntityDistance> SelectionManagerImpl::getEntitiesNearCoordinate(const 
                                       Qt::AscendingOrder);
 
     QList<lc::EntityDistance> entities;
-/*
+    /*
 
 
-    // Now calculate for each entity if we are near the entities path
+        // Now calculate for each entity if we are near the entities path
 
-    for (int i = 0; i < items.count(); i++) {
-        LCGraphicsItem* item = dynamic_cast<LCGraphicsItem*>(items.at(i));
+        for (int i = 0; i < items.count(); i++) {
+            LCGraphicsItem* item = dynamic_cast<LCGraphicsItem*>(items.at(i));
 
-        // If item == NULL then this item was not  a type of LCGraphicsItem, so no bother to test it further
-        if (item != NULL) {
-            std::shared_ptr<const lc::Snapable> entity = std::dynamic_pointer_cast<const lc::Snapable>(item->entity());
+            // If item == NULL then this item was not  a type of LCGraphicsItem, so no bother to test it further
+            if (item != NULL) {
+                std::shared_ptr<const lc::Snapable> entity = std::dynamic_pointer_cast<const lc::Snapable>(item->entity());
 
-            if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
-                lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-                lc::geo::Coordinate nearestCoord = eCoordinate - point;
+                if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
+                    lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
+                    lc::geo::Coordinate nearestCoord = eCoordinate - point;
 
-                double cDistance = nearestCoord.magnitude();
+                    double cDistance = nearestCoord.magnitude();
 
-                if (cDistance < distance) {
-                    entities.append(lc::EntityDistance(item->entity(), cDistance));
+                    if (cDistance < distance) {
+                        entities.append(lc::EntityDistance(item->entity(), cDistance));
+                    }
                 }
             }
         }
-    }
-*/
+    */
     return entities;
 }
 

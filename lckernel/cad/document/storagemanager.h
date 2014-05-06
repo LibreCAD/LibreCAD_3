@@ -35,6 +35,7 @@ namespace lc {
              */
             virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const = 0;
 
+            virtual EntityContainer entityContainer() const = 0;
     };
 }
 #endif // ENTITYMANAGER_H

@@ -1,3 +1,5 @@
+#include "math.h"
+
 #include "cadmdichild.h"
 #include "ui_cadmdichild.h"
 
@@ -26,7 +28,11 @@
 
 #include <cad/operations/builder.h>
 
+
+
 #include <helpers/selectionmanagerimpl.h>
+
+#include <QTime>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
@@ -49,9 +55,9 @@ void CadMdiChild::newDocument() {
 
 
     // Should this be done using the events system of QT??
-    ui->lCADViewer->addBackgroundItem(std::shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
+    ui->lCADCairoViewer->addBackgroundItem(std::shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
     std::shared_ptr<LCViewerDrawItem> metricGrid = std::shared_ptr<LCViewerDrawItem>(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
-    ui->lCADViewer->addBackgroundItem(metricGrid);
+    ui->lCADCairoViewer->addBackgroundItem(metricGrid);
 
 
     // Entity manager add's/removes entities to layers
@@ -61,23 +67,23 @@ void CadMdiChild::newDocument() {
     _document = new lc::DocumentImpl(_storageManager);
 
     // Selection manager allow for finding entities around a point or within areas
-    _selectionManager = std::make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
+    // _selectionManager = std::make_shared<SelectionManagerImpl>(_storageManager, ui->lCADCairoViewer);
 
     // Scene manager listens to the document and takes care that the scene is changed according to what
     // is added and removed within a document
-    SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
+    // SceneManager* sceneManager = new SceneManager(ui->lCADCairoViewer, _document);
 
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(ui->lCADViewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
+    // _snapManager = std::make_shared<SnapManagerImpl>(ui->lCADCairoViewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<Cursor>(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+    // _cursor = std::make_shared<Cursor>(40, ui->lCADCairoViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    ui->lCADViewer->setAbstractDocument(_document);
+    ui->lCADCairoViewer->setDocument(_document);
 
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
@@ -203,8 +209,8 @@ void CadMdiChild::on_addEllipse_clicked() {
 }
 
 
-QCachedGraphicsView* CadMdiChild::view() const {
-    return ui->lCADViewer;
+QWidget* CadMdiChild::view() const {
+    return ui->lCADCairoViewer;
 }
 
 std::shared_ptr<SnapManager>  CadMdiChild::snapManager() const {

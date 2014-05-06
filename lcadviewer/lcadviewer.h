@@ -13,7 +13,7 @@ class LCADViewer : public QCachedGraphicsView {
         Q_OBJECT
 
     public:
-        virtual void setAbstractDocument(lc::Document* document);
+        virtual void setDocument(lc::Document* document);
 
     public:
         LCADViewer(QWidget* parent = 0);

@@ -46,3 +46,7 @@ std::shared_ptr<const Layer> StorageManagerImpl::layerByName(const QString& laye
 QHash <QString, std::shared_ptr<const Layer> > const& StorageManagerImpl::allLayers() const {
     return _layers;
 }
+
+EntityContainer StorageManagerImpl::entityContainer() const {
+    return _entities;
+}

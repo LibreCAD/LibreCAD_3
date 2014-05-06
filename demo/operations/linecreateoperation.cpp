@@ -5,6 +5,8 @@
 
 #include <cad/operations/builder.h>
 
+#include <QFinalState>
+
 LineCreateOperation::LineCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager)
     : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),

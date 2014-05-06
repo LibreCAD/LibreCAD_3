@@ -54,12 +54,9 @@ void DocumentImpl::removeEntity(const std::shared_ptr<const CADEntity> entity) {
     emit removeEntityEvent(event);
 }
 
-EntityContainer DocumentImpl::entitiesByLayer(const std::shared_ptr<const Layer> layer) const {
+EntityContainer DocumentImpl::entitiesByLayer(const std::shared_ptr<const Layer> layer) {
+    std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);;
-}
-
-void DocumentImpl::test(const std::shared_ptr<const Layer> layer) const {
-    entitiesByLayer(layer);
 }
 
 std::shared_ptr<StorageManager> DocumentImpl::storageManager() const {
@@ -67,3 +64,7 @@ std::shared_ptr<StorageManager> DocumentImpl::storageManager() const {
 }
 
 
+EntityContainer DocumentImpl::entityContainer()  {
+    std::lock_guard<std::mutex> lck(_documentMutex);
+    return _storageManager->entityContainer();
+}

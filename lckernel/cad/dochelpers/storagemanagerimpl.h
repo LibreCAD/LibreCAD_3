@@ -40,6 +40,7 @@ namespace lc {
             virtual std::shared_ptr<const Layer> layerByName(const QString& layerName) const;
             virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const;
 
+            virtual EntityContainer entityContainer() const;
         private:
             EntityContainer _entities;
             QHash <QString, std::shared_ptr<const Layer> > _layers;

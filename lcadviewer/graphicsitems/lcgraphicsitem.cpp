@@ -18,7 +18,7 @@ QColor LCGraphicsItem::getScreenColor(const QColor& color) const {
 }
 
 
-void LCGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* , QWidget* widget) {
+void LCGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget* widget) {
     Q_UNUSED(widget)
 
     std::shared_ptr<const lc::CADEntity> cadEntity = entity();

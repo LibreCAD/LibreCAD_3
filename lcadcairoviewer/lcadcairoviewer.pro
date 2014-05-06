@@ -38,9 +38,17 @@ unix {
 	} else {
 	    LIBS += -L$$DESTDIR -llckernel
 	}
+#        include(cairo.pri)
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx
+
+
+
     } else {
         DESTDIR = ../lcdemo
 	LIBS += -L$$DESTDIR -llckernel
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx
     }
 }
 
@@ -72,10 +80,16 @@ HEADERS     = lcadcairoviewerplugin.h \
 SOURCES     = lcadcairoviewerplugin.cpp \
     lcadcairoviewer.cpp \
     scenemanager.cpp \
-    drawitems/gradientbackground.cpp \
+    drawitems/gradientbackground.cpp \    
     drawitems/metricgrid.cpp \
     drawitems/cursor.cpp \
     helpers/snapmanagerimpl.cpp \
     helpers/selectionmanagerimpl.cpp
 
 
+macx: LIBS += -L$$PWD/../../../local/lib/ -lcairo
+
+INCLUDEPATH += $$PWD/../../../local/include
+DEPENDPATH += $$PWD/../../../local/include
+
+macx: PRE_TARGETDEPS += $$PWD/../../../local/lib/libcairo.a

@@ -8,13 +8,13 @@
   * Create a garident background
   *
   */
-
+typedef struct _cairo cairo_t;
 class GradientBackground : public LCViewerDrawItem {
     public:
         GradientBackground(const QColor& topColor, const QColor& bottomColor);
         virtual ~GradientBackground();
 
-        void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
+        virtual void draw(cairo_t* cr, const QRectF& rect);
     private:
         const QColor _topColor;
         const QColor _bottomColor;

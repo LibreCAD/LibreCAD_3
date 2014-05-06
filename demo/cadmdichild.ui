@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>266</height>
+    <width>717</width>
+    <height>409</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,15 +27,15 @@
     <number>12</number>
    </property>
    <item>
-    <widget class="LCADViewer" name="lCADViewer"/>
+    <widget class="LCADCairoViewer" name="lCADCairoViewer" native="true"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>LCADViewer</class>
-   <extends>QGraphicsView</extends>
-   <header>lcadviewer.h</header>
+   <class>LCADCairoViewer</class>
+   <extends>QWidget</extends>
+   <header>lcadcairoviewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

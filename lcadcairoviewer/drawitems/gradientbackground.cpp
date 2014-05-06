@@ -5,6 +5,8 @@
 #include <QGraphicsView>
 #include <QPainter>
 
+#include <cairo.h>
+
 GradientBackground::GradientBackground(const QColor& topColor, const QColor& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {
 }
 
@@ -12,18 +14,15 @@ GradientBackground::~GradientBackground() {
     qDebug() << "GradientBackground destroyed";
 }
 
+void GradientBackground::draw(cairo_t* cr, const QRectF& rect) {
 
-void GradientBackground::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
-    QPolygonF psceneRect = view->mapToScene(view->rect());
-
-    QRectF sceneRect = psceneRect.boundingRect();
-
-    QLinearGradient gradient(
-        (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.top(),
-        (sceneRect.right() - sceneRect.left()) / 2.0, sceneRect.bottom());
-    gradient.setColorAt(0, _topColor);
-    gradient.setColorAt(1, _bottomColor);
-    painter->fillRect(rect.intersected(sceneRect), gradient);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(sceneRect);
+    // BAckground
+    cairo_pattern_t* pat;
+    pat = cairo_pattern_create_linear(0.0, 0.0,  0.0, rect.height());
+    cairo_pattern_add_color_stop_rgba(pat, 1, _bottomColor.redF(), _bottomColor.greenF(), _bottomColor.blueF(), _bottomColor.alphaF());
+    cairo_pattern_add_color_stop_rgba(pat, 0, _topColor.redF(), _topColor.greenF(), _topColor.blueF(), _topColor.alphaF());
+    cairo_rectangle(cr, 0, 0, rect.width(),rect.height());
+    cairo_set_source(cr, pat);
+    cairo_fill(cr);
+    cairo_pattern_destroy(pat);
 }

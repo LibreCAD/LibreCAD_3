@@ -44,7 +44,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<const Cursor>  cursor() const {
             return _cursor;
         }
-        QCachedGraphicsView* view() const;
+        QWidget* view() const;
         lc::Document* document() const;
         std::shared_ptr<SnapManager>  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;

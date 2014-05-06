@@ -16,7 +16,7 @@ void LCArcItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 
     LCGraphicsItem::paint(painter, option, widget);
 
-    double factorForQt = (360.0 / M_PI*2.0 * 8);
+    double factorForQt = (360.0 / M_PI * 2.0 * 8);
 
 
     painter->drawArc(QRectF(_arc->center().x() - _arc->radius(),

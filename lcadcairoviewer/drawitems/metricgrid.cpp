@@ -10,9 +10,8 @@ MetricGrid::~MetricGrid() {
 }
 
 
-
-void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
-
+void MetricGrid::draw(cairo_t* cr, const QRectF& rect)  {
+/*
     QPointF zeroCorner = view->mapToScene(0, 0);
     QPointF minGridSpaceCorner = view->mapToScene(_minimumGridSpacing, 0);
 
@@ -81,6 +80,7 @@ void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF
 
     painter->setPen(QPen(QBrush(_minorColor), 0.0, Qt::SolidLine));
     painter->drawLines(lines.data(), lines.size());
+            */
 }
 
 

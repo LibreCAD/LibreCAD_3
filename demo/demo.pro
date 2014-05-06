@@ -19,17 +19,20 @@ unix {
 	TARGET = ../demo
 	CONFIG(debug, debug|release) {
 	    LIBS += -L$$PWD/../lckernel -llckernel_debug
-            LIBS += -llcadviewerplugin_debug
+#            LIBS += -llcadviewerplugin_debug
+            LIBS += -llcadcairoviewerplugin_debug
             LIBS += -llcadluascript_debug
         } else {
 	    LIBS += -L$$PWD/../lckernel -llckernel
-            LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+#            LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+            LIBS += -L$$PWD/../lcadcairoviewer -llcadcairoviewerplugin
             LIBS += -L$$PWD/../lcadluascript -llcadluascript
         }
     } else {
 	TARGET = ../lcdemo/demo
 	LIBS += -L$$PWD/../lckernel -llckernel
-        LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+#        LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
+        LIBS += -L$$PWD/../lcadcairoviewer -llcadcairoviewerplugin
         LIBS += -L$$PWD/../lcadluascript -llcadluascript
     }
 }
@@ -49,8 +52,11 @@ unix {
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel
 
-INCLUDEPATH += $$PWD/../lcadviewer
-DEPENDPATH += $$PWD/../lcadviewer
+#INCLUDEPATH += $$PWD/../lcadviewer
+#DEPENDPATH += $$PWD/../lcadviewer
+
+INCLUDEPATH += $$PWD/../lcadcairoviewer
+DEPENDPATH += $$PWD/../lcadcairoviewer
 
 INCLUDEPATH += $$PWD/../lcadluascript
 DEPENDPATH += $$PWD/../lcadluascript

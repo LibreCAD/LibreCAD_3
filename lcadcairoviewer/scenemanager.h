@@ -27,7 +27,7 @@ class SceneManager: public QObject {
     private:
         lc::Document* _document;
         LCADCairoViewer* _viewer;
-        QHash <int, QGraphicsItem*> _activeGraphicsItems;
+        QList<std::shared_ptr<const lc::CADEntity>> _cadEntities;
 };
 
 #endif // SCENEMANAGER_H
