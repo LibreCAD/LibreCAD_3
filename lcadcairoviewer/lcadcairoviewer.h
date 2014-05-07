@@ -9,7 +9,9 @@
 
 #include "events/mousemoveevent.h"
 
-class LCADCairoViewer : public QWidget {
+#include <QOpenGLPaintDevice>
+
+class LCADCairoViewer : public QGLWidget {
         Q_OBJECT
 
     public:

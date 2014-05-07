@@ -14,9 +14,10 @@
 #include <cad/primitive/circle.h>
 
 LCADCairoViewer::LCADCairoViewer(QWidget* parent) :
-    QWidget(parent), _scale(1.0), _zoom_min(0.1), _zoom_max(10.0), _dontScaleLineWidth(false) {
+    QGLWidget(parent), _scale(1.0), _zoom_min(0.1), _zoom_max(10.0), _scaleLineWidth(false) {
 
     this->_altKeyActive = false;
+
 }
 
 void LCADCairoViewer::setDocument(lc::Document* document) {
@@ -80,26 +81,34 @@ static cairo_status_t write_png_stream_to_byte_array(void* chars, const unsigned
 
 void LCADCairoViewer::paintEvent(QPaintEvent* p) {
     QPainter painter(this);
+    QOpenGLContext m_context = new QOpenGLContext;
 
     cairo_surface_t* surface;
     cairo_t* cr;
 
-    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, this->size().width(), this->size().height());
+//     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, this->size().width(), this->size().height());
+
+
+    Display *display=glXGetCurrentDisplay();
+    qDebug () << "Diplay : " << display;
+    GLXContext context;
+    cairo_device_t * device = cairo_glx_device_create(display, context);
+    cairo_status_t status = cairo_device_status(device);//return success
+    cairo_surface_set_device_offset(surface, 225.0,225.0);
+
+
+
     cr = cairo_create(surface);
 
-
-    drawBackground(cr, QRectF(QPointF(0.,0.), this->size()));
-
-    //Lines
-    cairo_surface_set_device_offset(surface, 225.0,225.0);
     cairo_scale(cr, _scale, _scale);
+
 
 
     QElapsedTimer timer;
     timer.start();
 
+    drawBackground(cr, QRectF(QPointF(0.,0.), this->size()));
     drawDocument(cr, QRectF(QPointF(0.,0.), this->size()));
-
     drawForeground(cr, QRectF(QPointF(0.,0.), this->size()));
 
     qDebug() << "draw time total " << (timer.nsecsElapsed() / 1000000000.0);
@@ -109,6 +118,7 @@ void LCADCairoViewer::paintEvent(QPaintEvent* p) {
     cairo_surface_write_to_png_stream(surface, write_png_stream_to_byte_array, &byteArray);
     cairo_surface_destroy(surface);
 
+    /*
     timer.restart();
     QBuffer buf(&byteArray);
     buf.open(QIODevice::ReadOnly);
@@ -117,6 +127,7 @@ void LCADCairoViewer::paintEvent(QPaintEvent* p) {
     image.load(&buf, "PNG");
     painter.drawImage(QPoint(0, 0), image);
     qDebug() << "btblk time " << (timer.nsecsElapsed() / 1000000000.0);
+    */
 }
 
 void LCADCairoViewer::drawDocument(cairo_t* cr, const QRectF& rect) {
@@ -124,7 +135,7 @@ void LCADCairoViewer::drawDocument(cairo_t* cr, const QRectF& rect) {
 
     QList<std::shared_ptr<const lc::CADEntity>> all = e.allEntities().values();
 
-    if (_dontScaleLineWidth) {
+    if (_scaleLineWidth) {
         cairo_set_line_width(cr, 1.0 / _scale );
     } else {
         cairo_set_line_width(cr, _scale );
