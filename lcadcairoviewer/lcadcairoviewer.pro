@@ -22,9 +22,6 @@ lessThan(QT_MAJOR_VERSION, 5) {
 }
 
 OTHER_FILES = CustomWidget.json
-
-VERSION=0.0.1
-
 RESOURCES   = icons.qrc
 
 win32 {
@@ -40,9 +37,17 @@ unix {
 	}
 #        include(cairo.pri)
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz
+        QT += macextras
 
+        # Macports
+        INCLUDEPATH += /opt/local/include
+        DEPENDPATH += /opt/local/include
 
+        # Experimental stuff
+        INCLUDEPATH += /System/Library/Frameworks
+        DEPENDPATH += /System/Library/Frameworks
+        LIBS += -F/System/Library/Frameworks/ -framework CoreGraphics -framework Cocoa
 
     } else {
         DESTDIR = ../lcdemo
@@ -85,11 +90,3 @@ SOURCES     = lcadcairoviewerplugin.cpp \
     drawitems/cursor.cpp \
     helpers/snapmanagerimpl.cpp \
     helpers/selectionmanagerimpl.cpp
-
-
-macx: LIBS += -L$$PWD/../../../local/lib/ -lcairo
-
-INCLUDEPATH += $$PWD/../../../local/include
-DEPENDPATH += $$PWD/../../../local/include
-
-macx: PRE_TARGETDEPS += $$PWD/../../../local/lib/libcairo.a

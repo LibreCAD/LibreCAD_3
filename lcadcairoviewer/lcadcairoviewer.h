@@ -11,7 +11,7 @@
 
 #include <QOpenGLPaintDevice>
 
-class LCADCairoViewer : public QGLWidget {
+class LCADCairoViewer : public QWidget {
         Q_OBJECT
 
     public:

@@ -17,9 +17,11 @@ SceneManager::SceneManager(LCADCairoViewer* viewer, lc::Document* document) : QO
   */
 void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
     int i = _cadEntities.indexOf(event.entity());
-    if (i>0) {
+
+    if (i > 0) {
         _cadEntities.removeAt(i);
     }
+
     _cadEntities.append(event.entity());
     /*
         QGraphicsScene* scene = _viewer->scene();
@@ -76,7 +78,8 @@ void SceneManager::on_addEntityEvent(const lc::AddEntityEvent& event) {
   */
 void SceneManager::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
     int i = _cadEntities.indexOf(event.entity());
-    if (i>0) {
+
+    if (i > 0) {
         _cadEntities.removeAt(i);
     }
 }
