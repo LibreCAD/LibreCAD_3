@@ -1,8 +1,11 @@
 #ifndef ENTITYMANAGERIMPL_H
 #define ENTITYMANAGERIMPL_H
 
-#include "cad/const.h"
+#include <QDebug>
+#include <QObject>
 
+#include "cad/const.h"
+#include "cad/base/cadentity.h"
 #include "cad/document/document.h"
 #include "cad/document/storagemanager.h"
 #include "cad/events/addentityevent.h"

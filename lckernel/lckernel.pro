@@ -60,9 +60,9 @@ SOURCES += lckernel.cpp \
     cad/operations/builder.cpp \
     cad/operations/documentoperation.cpp \
     cad/operations/builderops.cpp \
-    cad/dochelpers/entitycontainer.cpp \
     cad/document/document.cpp \
-    cad/dochelpers/storagemanagerimpl.cpp
+    cad/dochelpers/storagemanagerimpl.cpp \
+    cad/dochelpers/entitycontainer.cpp \
 
 HEADERS += lckernel.h\
     lckernel_global.h \

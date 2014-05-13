@@ -1,5 +1,7 @@
 #include "entitycontainer.h"
 
+#include "cad/base/cadentity.h"
+
 using namespace lc;
 
 EntityContainer::EntityContainer() {
@@ -10,10 +12,8 @@ void EntityContainer::insert(std::shared_ptr<const CADEntity> entity) {
 }
 
 void EntityContainer::combine(const EntityContainer& entities) {
-    QHash<ID_DATATYPE, std::shared_ptr<const CADEntity>>::const_iterator i = entities.allEntities().constBegin();
-
-    while (i != _cadentities.constEnd()) {
-        _cadentities.insert(i.key(), i.value());
+    foreach(auto i, entities.allEntities().values()) {
+        _cadentities.insert(i->id(), i);
     }
 }
 
@@ -33,19 +33,12 @@ std::shared_ptr<const CADEntity> EntityContainer::entityByID(ID_DATATYPE id) con
 }
 
 EntityContainer EntityContainer::entitiesByLayer(const std::shared_ptr<const Layer> layer) const {
-
     auto l = layer;
-    QHash<ID_DATATYPE, std::shared_ptr<const CADEntity>>::const_iterator i = _cadentities.constBegin();
-
     EntityContainer container;
-
-    while (i != _cadentities.constEnd()) {
-        if (i.value()->layer() == l) {
-            container.insert(i.value());
+    foreach(auto i, _cadentities.values()) {
+        if (i->layer() == l) {
+            container.insert(i);
         }
-
-        ++i;
     }
-
     return container;
 }

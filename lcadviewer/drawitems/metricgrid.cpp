@@ -1,8 +1,8 @@
 #include <math.h>
 #include "metricgrid.h"
-
+#include "lcpainter.h"
 #include <QDebug>
-MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor) :  _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
+MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
 }
 
 MetricGrid::~MetricGrid() {
@@ -10,77 +10,81 @@ MetricGrid::~MetricGrid() {
 }
 
 
+void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& rect) const {
 
-void MetricGrid::draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect) {
+        _painter->save();
+        _painter->disable_antialias();
+        double zeroCornerX=0.;
+        double zeroCornerY=0.;
+        _painter->device_to_user(&zeroCornerX, &zeroCornerY);
 
-    QPointF zeroCorner = view->mapToScene(0, 0);
-    QPointF minGridSpaceCorner = view->mapToScene(_minimumGridSpacing, 0);
+        double gridSPacingX=_minimumGridSpacing;
+        double gridSPacingY=_minimumGridSpacing;
+        _painter->device_to_user(&gridSPacingX, &gridSPacingY);
 
-    // This brings the distance always between 10 and 100, need to have some math behind this
-    double minDistancePoints = minGridSpaceCorner.x() - zeroCorner.x();
-    double factor = 1.0;
+        // This brings the distance always between 10 and 100, need to have some math behind this
+        double minDistancePoints = gridSPacingX - zeroCornerX;
+        double factor = 1.0;
 
-    while (minDistancePoints < 10.0) {
-        minDistancePoints *= 10.0;
-        factor = factor * 10.0;
-    }
+        while (minDistancePoints < 10.0) {
+            minDistancePoints *= 10.0;
+            factor = factor * 10.0;
+        }
 
-    while (minDistancePoints > 100.0) {
-        minDistancePoints = minDistancePoints / 10.0;
-        factor = factor / 10.0;
-    }
+        while (minDistancePoints > 100.0) {
+            minDistancePoints = minDistancePoints / 10.0;
+            factor = factor / 10.0;
+        }
 
-    // determine the grid spacing
-    double gridSize;
+        // determine the grid spacing
+        double gridSize;
 
-    if (minDistancePoints < 10.0) {
-        gridSize = (10.0 / factor);
-    } else if (minDistancePoints < 20.0) {
-        gridSize = (20.0 / factor);
-    } else if (minDistancePoints < 50.0) {
-        gridSize = (50.0 / factor);
-    } else {
-        gridSize = (100.0 / factor);
-    }
+        if (minDistancePoints < 10.0) {
+            gridSize = (10.0 / factor);
+        } else if (minDistancePoints < 20.0) {
+            gridSize = (20.0 / factor);
+        } else if (minDistancePoints < 50.0) {
+            gridSize = (50.0 / factor);
+        } else {
+            gridSize = (100.0 / factor);
+        }
 
-    _lastGridSize = gridSize;
+        _lastGridSize = gridSize;
 
-    // Start Drawing
-    painter->setRenderHint(QPainter::Antialiasing, false);
+        // Major lines
+        qreal left = rect.left() - fmod(rect.left(), gridSize);
+        qreal top = rect.top() - fmod(rect.top(), gridSize);
 
-    // Major lines
-    qreal left = rect.left() - fmod(rect.left(), gridSize);
-    qreal top = rect.top() - fmod(rect.top(), gridSize);
+        for (qreal x = left; x < rect.right(); x += gridSize) {
+            _painter->move_to(x, rect.top());
+            _painter->line_to(x, rect.bottom());
+        }
 
-    QVarLengthArray<QLineF, 100> lines;
+        for (qreal y = top; y < rect.bottom(); y += gridSize) {
+            _painter->move_to(rect.left(), y);
+            _painter->line_to(rect.right(), y);
+        }
+        _painter->source_rgba(_majorColor.redF(), _majorColor.greenF(), _majorColor.blueF(), _majorColor.alphaF());
+        _painter->stroke();
 
-    for (qreal x = left; x < rect.right(); x += gridSize) {
-        lines.append(QLineF(x, rect.top(), x, rect.bottom()));
-    }
+        // Draw minor lines
+        gridSize *= 10;
+        left = rect.left() - fmod(rect.left(), gridSize);
+        top = rect.top() - fmod(rect.top(), gridSize);
 
-    for (qreal y = top; y < rect.bottom(); y += gridSize) {
-        lines.append(QLineF(rect.left(), y, rect.right(), y));
-    }
+        for (qreal x = left; x < rect.right(); x += gridSize) {
+            _painter->move_to(x, rect.top());
+            _painter->line_to(x, rect.bottom());
+        }
 
-    painter->setPen(QPen(QBrush(_majorColor), 0.0, Qt::SolidLine));
-    painter->drawLines(lines.data(), lines.size());
+        for (qreal y = top; y < rect.bottom(); y += gridSize) {
+            _painter->move_to(rect.left(), y);
+            _painter->line_to(rect.right(), y);
+        }
 
-    // Draw minor lines
-    lines.clear();
-    gridSize *= 10;
-    left = rect.left() - fmod(rect.left(), gridSize);
-    top = rect.top() - fmod(rect.top(), gridSize);
-
-    for (qreal x = left; x < rect.right(); x += gridSize) {
-        lines.append(QLineF(x, rect.top(), x, rect.bottom()));
-    }
-
-    for (qreal y = top; y < rect.bottom(); y += gridSize) {
-        lines.append(QLineF(rect.left(), y, rect.right(), y));
-    }
-
-    painter->setPen(QPen(QBrush(_minorColor), 0.0, Qt::SolidLine));
-    painter->drawLines(lines.data(), lines.size());
+        _painter->source_rgba(_minorColor.redF(), _minorColor.greenF(), _minorColor.blueF(), _minorColor.alphaF());
+        _painter->stroke();
+        _painter->restore();
 }
 
 

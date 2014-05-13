@@ -1,21 +1,19 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
-#include <QColor>
 #include <QObject>
-#include "lcviewercursoritem.h"
-#include "helpers/snapmanager.h"
-#include "qcachedgraphicsview.h"
-#include "events/drawevent.h"
+#include <QColor>
 #include "events/snappointevent.h"
-#include "events/mousereleaseevent.h"
-#include "helpers/snapmanager.h"
 
+class LCADViewer;
+class SnapManager;
+class MouseReleaseEvent;
+class DrawEvent;
 
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, QCachedGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, LCADViewer* graphicsView, std::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
 
         public
     slots:

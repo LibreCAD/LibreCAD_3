@@ -23,6 +23,7 @@ namespace lc {
         public:
             Circle(const geo::Coordinate& center, double radius, const std::shared_ptr<const Layer> _layer);
             Circle(const geo::Coordinate& center, double radius, const std::shared_ptr<const Layer> _layer, const QList<std::shared_ptr<const MetaType> >& metaTypes);
+            Circle(const std::shared_ptr<const Circle> other, bool sameID = false);
 
         public:
             virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

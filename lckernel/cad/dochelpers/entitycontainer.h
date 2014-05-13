@@ -1,10 +1,13 @@
-#include <cad/base/cadentity.h>
 
 #ifndef ENTITYCONTAINER_H
 #define ENTITYCONTAINER_H
 
+#include <QHash>
+#include "cad/base/id.h"
 
 namespace lc {
+    class Layer;
+    class CADEntity;
     /**
      * @brief The EntityContainer class
      * manages a set of entities. You can 'spatialy' (not yet optmised) entities within the container.

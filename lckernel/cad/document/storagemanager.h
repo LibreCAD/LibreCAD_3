@@ -3,15 +3,14 @@
 
 #include <QObject>
 
-#include "cad/const.h"
 #include "cad/base/id.h"
-#include "cad/meta/layer.h"
-#include "cad/dochelpers/entitycontainer.h"
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
      */
     class CADEntity;
+    class EntityContainer;
+    class Layer;
     class StorageManager : public QObject {
             Q_OBJECT
         public:
@@ -35,6 +34,11 @@ namespace lc {
              */
             virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const = 0;
 
+            /*!
+             * \brief entityContainer
+             * return a copy of all entities managed within the storage manager
+             * \return
+             */
             virtual EntityContainer entityContainer() const = 0;
     };
 }

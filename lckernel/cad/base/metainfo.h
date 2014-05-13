@@ -20,14 +20,16 @@ namespace lc {
              * \sa lc::Color
              * \sa lc::LineWidth
              * \sa lc::MetaType
+             *
+             * \todo: Change QList to a set
              */
             MetaInfo(QList<std::shared_ptr<const MetaType> > metaTypes);
+            MetaInfo(QHash<int, std::shared_ptr<const MetaType> > metaTypes);
             virtual ~MetaInfo();
 
             std::shared_ptr<const MetaType> metaType(MetaType::metaTypeId type) const;
 
-
-            QHash<int, std::shared_ptr<const MetaType> >  getMetaTypes() const {
+            QHash<int, std::shared_ptr<const MetaType> >  metaTypes() const {
                 return _metaTypes;
             }
 

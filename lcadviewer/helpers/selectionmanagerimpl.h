@@ -9,6 +9,7 @@
 
 #include "cad/document/selectionmanager.h"
 #include "cad/base/cadentity.h"
+#include "lcadviewer.h"
 
 /**
   * Selection manager can be used to request the selected items on the screen
@@ -17,7 +18,7 @@
   */
 class SelectionManagerImpl : public lc::SelectionManager {
     public:
-        SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager, QGraphicsView* scene);
+        SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager, LCADViewer* scene);
 
         /*!
           * \brief return a list of entitires that are near a coordinate
@@ -32,6 +33,6 @@ class SelectionManagerImpl : public lc::SelectionManager {
 
     private:
         std::shared_ptr<lc::StorageManager> _storageManager;
-        QGraphicsView* _view;
+        LCADViewer* _view;
 };
 #endif // SELECTIONMANAGERIMPL_H

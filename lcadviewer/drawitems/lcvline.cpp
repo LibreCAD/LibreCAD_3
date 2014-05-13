@@ -1,0 +1,34 @@
+#include "lcvline.h"
+#include "lcpainter.h"
+#include "lcdrawoptions.h"
+#include <QColor>
+LCVLine::LCVLine(const std::shared_ptr<const lc::Line> line) : LCVDrawItem(true), lc::Line(line, true) {
+}
+
+void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const {
+
+
+
+    bool modified = false;
+
+    if (this->selected()) {
+        modified = true;
+        painter->save();
+        painter->source_rgba(
+            options->selectedColor().redF(),
+            options->selectedColor().greenF(),
+            options->selectedColor().blueF(),
+            options->selectedColor().alphaF()
+        );
+    }
+
+    painter->move_to(start().x(), start().y());
+    painter->line_to(end().x(), end().y());
+    painter->stroke();
+
+    if (modified) {
+        painter->restore();
+    }
+
+}
+

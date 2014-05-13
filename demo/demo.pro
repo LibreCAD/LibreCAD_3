@@ -19,20 +19,17 @@ unix {
 	TARGET = ../demo
 	CONFIG(debug, debug|release) {
 	    LIBS += -L$$PWD/../lckernel -llckernel_debug
-#            LIBS += -llcadviewerplugin_debug
-            LIBS += -llcadcairoviewerplugin_debug
+            LIBS += -llcadviewerplugin_debug
             LIBS += -llcadluascript_debug
         } else {
 	    LIBS += -L$$PWD/../lckernel -llckernel
-#            LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
-            LIBS += -L$$PWD/../lcadcairoviewer -llcadcairoviewerplugin
+            LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
             LIBS += -L$$PWD/../lcadluascript -llcadluascript
         }
     } else {
 	TARGET = ../lcdemo/demo
 	LIBS += -L$$PWD/../lckernel -llckernel
-#        LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
-        LIBS += -L$$PWD/../lcadcairoviewer -llcadcairoviewerplugin
+        LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
         LIBS += -L$$PWD/../lcadluascript -llcadluascript
     }
 }
@@ -52,11 +49,8 @@ unix {
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel
 
-#INCLUDEPATH += $$PWD/../lcadviewer
-#DEPENDPATH += $$PWD/../lcadviewer
-
-INCLUDEPATH += $$PWD/../lcadcairoviewer
-DEPENDPATH += $$PWD/../lcadcairoviewer
+INCLUDEPATH += $$PWD/../lcadviewer
+DEPENDPATH += $$PWD/../lcadviewer
 
 INCLUDEPATH += $$PWD/../lcadluascript
 DEPENDPATH += $$PWD/../lcadluascript
@@ -72,7 +66,8 @@ SOURCES += main.cpp\
     operations/operationmanager.cpp \
     operations/circlecreateoperation.cpp \
     operations/trimoperation.cpp \
-    ui/luascript.cpp
+    ui/luascript.cpp \
+    testform.cpp
 
 HEADERS  += mainwindow.h \
     cadmdichild.h \
@@ -88,14 +83,14 @@ HEADERS  += mainwindow.h \
     operations/trimoperation.h \
     operations/guioperation.h \
     operations/guioperationfinishedevent.h \
-    ui/luascript.h
+    ui/luascript.h \
+    testform.h
 
 FORMS    += mainwindow.ui \
-    cadmdichild.ui \
     ui/lcmaintoolbar.ui \
     ui/clicommand.ui \
-    ui/form.ui \
-    ui/luascript.ui
+    ui/luascript.ui \
+    testform.ui
 
 RESOURCES += \
     ui/resource.qrc

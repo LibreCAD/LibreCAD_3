@@ -1,8 +1,6 @@
 #ifndef DRAWEVENT_H
 #define DRAWEVENT_H
 
-#include <QGraphicsView>
-#include <QPainter>
 #include <QRectF>
 #include <QPointF>
 
@@ -10,17 +8,17 @@
   * Draw event for a object to draw something.
   *
   */
+class QWidget;
+class LcPainter;
+class LCADViewer;
 class DrawEvent {
     public:
-        DrawEvent(QGraphicsView* view, QPainter* painter, const QRectF& rect, const QPointF& mousePosition) :
-            _view(view), _painter(painter), _rect(rect), _mousePosition(mousePosition) {
+        DrawEvent(LcPainter* painter, const QRectF& rect, const QPointF& mousePosition) :
+            _painter(painter), _rect(rect), _mousePosition(mousePosition) {
 
         }
 
-        QGraphicsView* view() const {
-            return _view;
-        }
-        QPainter* painter() const {
+        LcPainter* painter() const {
             return _painter;
         }
         QRectF rect() const {
@@ -31,8 +29,7 @@ class DrawEvent {
         }
 
     private:
-        QGraphicsView* _view;
-        QPainter* _painter;
+        LcPainter* _painter;
         QRectF _rect;
         QPointF _mousePosition;
 };

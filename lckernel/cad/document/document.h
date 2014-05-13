@@ -6,10 +6,10 @@
 #include "cad/meta/layer.h"
 
 #include "cad/const.h"
+#include "cad/dochelpers/entitycontainer.h"
 
 namespace lc {
     class CADEntity;
-    class EntityContainer;
     class StorageManager;
 
     namespace operation {

@@ -10,6 +10,13 @@ Circle::Circle(const geo::Coordinate& center, double radius, const std::shared_p
 }
 
 
+Circle::Circle(const std::shared_ptr<const Circle> other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Circle(other->center(), other->radius()) {
+    if (sameID) {
+        this->setID(other->id());
+    }
+}
+
+
 QList<EntityCoordinate> Circle::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     QList<EntityCoordinate> points;
 
