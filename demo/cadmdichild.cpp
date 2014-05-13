@@ -1,7 +1,6 @@
-#include "cadmdichild.h"
-#include "ui_cadmdichild.h"
+#include "math.h"
 
-#include "scenemanager.h"
+#include "cadmdichild.h"
 
 #include "cad/primitive/circle.h"
 #include "cad/primitive/arc.h"
@@ -18,24 +17,71 @@
 #include "drawitems/gradientbackground.h"
 #include "drawitems/metricgrid.h"
 #include "drawitems/cursor.h"
+#include "drawitems/lcvdrawitem.h"
 #include "helpers/snapmanager.h"
 #include "helpers/snapmanagerimpl.h"
 #include "cad/interface/snapable.h"
 
 #include "cadmdichild.h"
+#include "testform.h"
 
 #include <cad/operations/builder.h>
 
+
+
 #include <helpers/selectionmanagerimpl.h>
 
+#include <QTime>
+
 CadMdiChild::CadMdiChild(QWidget* parent) :
-    QWidget(parent),
-    ui(new Ui::CadMdiChild) {
-    ui->setupUi(this);
+    QWidget(parent) {
+
+
+
+    if (this->objectName().isEmpty()) {
+        this->setObjectName(QStringLiteral("CadMdiChild"));
+    }
+
+    this->resize(1078, 736);
+
+    QGridLayout* gridLayout = new QGridLayout(this);
+    gridLayout->setHorizontalSpacing(0);
+    gridLayout->setVerticalSpacing(0);
+    gridLayout->setObjectName(QStringLiteral("gridLayout"));
+    gridLayout->setContentsMargins(0, 0, 0, 0);
+    horizontalScrollBar = new QScrollBar(this);
+    horizontalScrollBar->setObjectName(QStringLiteral("horizontalScrollBar"));
+    horizontalScrollBar->setOrientation(Qt::Horizontal);
+
+    gridLayout->addWidget(horizontalScrollBar, 1, 0, 1, 1);
+
+    verticalScrollBar = new QScrollBar(this);
+    verticalScrollBar->setObjectName(QStringLiteral("verticalScrollBar"));
+    verticalScrollBar->setOrientation(Qt::Vertical);
+
+    gridLayout->addWidget(verticalScrollBar, 0, 1, 1, 1);
+
+    viewer = new LCADViewer(this);
+    viewer->setObjectName(QStringLiteral("viewer"));
+    viewer->setGeometry(QRect(50, 30, 581, 401));
+    viewer->setAutoFillBackground(true);
+    viewer->resize(10000, 10000);
+
+    gridLayout->addWidget(viewer, 0, 0, 1, 1);
+
+    horizontalScrollBar->setMinimum(-1000);
+    horizontalScrollBar->setMaximum(1000);
+    verticalScrollBar->setMinimum(-1000);
+    verticalScrollBar->setMaximum(1000);
+
+    connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
+            viewer, SLOT(setHorizontalOffset(int)));
+    connect(verticalScrollBar, SIGNAL(valueChanged(int)),
+            viewer, SLOT(setVerticalOffset(int)));
+
 }
 
 CadMdiChild::~CadMdiChild() {
-    delete ui;
     delete _document;
 }
 
@@ -48,18 +94,11 @@ int CadMdiChild::randInt(int low, int high) {
 void CadMdiChild::newDocument() {
 
 
+
     // Should this be done using the events system of QT??
-    ui->lCADViewer->addBackgroundItem(std::shared_ptr<LCViewerDrawItem>(new GradientBackground(QColor(0x06, 0x15, 0x06), QColor(0x07, 0x25, 0x11))));
-    std::shared_ptr<LCViewerDrawItem> metricGrid = std::shared_ptr<LCViewerDrawItem>(new MetricGrid(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80)));
-    ui->lCADViewer->addBackgroundItem(metricGrid);
-
-
-    // Create a scene for this document, each document will have only one scene, but can have multiple views
-    QGraphicsScene* scene = new QGraphicsScene(this);
-    scene->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
-    scene->setBspTreeDepth(4);
-    ui->lCADViewer->setScene(scene);
-    ui->lCADViewer->setSceneRect(-15000, -15000, 30000, 30000);
+    viewer->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(QColor(0x06, 0x35, 0x06), QColor(0x07, 0x15, 0x11))));
+    auto metricGrid = std::make_shared<MetricGrid>(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80));
+    viewer->addBackgroundItem(metricGrid);
 
 
     // Entity manager add's/removes entities to layers
@@ -69,23 +108,19 @@ void CadMdiChild::newDocument() {
     _document = new lc::DocumentImpl(_storageManager);
 
     // Selection manager allow for finding entities around a point or within areas
-    _selectionManager = std::make_shared<SelectionManagerImpl>(_storageManager, ui->lCADViewer);
-
-    // Scene manager listens to the document and takes care that the scene is changed according to what
-    // is added and removed within a document
-    SceneManager* sceneManager = new SceneManager(ui->lCADViewer, _document);
+    _selectionManager = std::make_shared<SelectionManagerImpl>(_storageManager, viewer);
 
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(ui->lCADViewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
+    _snapManager = std::make_shared<SnapManagerImpl>(viewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<Cursor>(40, ui->lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+    // _cursor = std::make_shared<Cursor>(40, lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    ui->lCADViewer->setAbstractDocument(_document);
+    viewer->setDocument(_document);
 
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
@@ -211,8 +246,8 @@ void CadMdiChild::on_addEllipse_clicked() {
 }
 
 
-QCachedGraphicsView* CadMdiChild::view() const {
-    return ui->lCADViewer;
+QWidget* CadMdiChild::view() const {
+    return viewer;
 }
 
 std::shared_ptr<SnapManager>  CadMdiChild::snapManager() const {
@@ -238,4 +273,5 @@ std::shared_ptr<lc::StorageManager> CadMdiChild::storageManager() const {
 void CadMdiChild::cancelCurrentOperations() {
     operationManager()->cancel();
 }
+
 

@@ -1,7 +1,10 @@
 #ifndef CADMDICHILD_H
 #define CADMDICHILD_H
 
+#include <QScrollbar>
+#include <QVBoxLayout>
 #include <QWidget>
+#include <lcadviewer.h>
 
 #include <cad/document/selectionmanager.h>
 #include <cad/document/storagemanager.h>
@@ -12,10 +15,6 @@
 #include "helpers/snapmanager.h"
 
 #include "operations/operationmanager.h"
-
-namespace Ui {
-    class CadMdiChild;
-}
 
 class CadMdiChild : public QWidget {
         Q_OBJECT
@@ -40,11 +39,13 @@ class CadMdiChild : public QWidget {
 
         void on_addEllipse_clicked();
 
+
+
     public:
         std::shared_ptr<const Cursor>  cursor() const {
             return _cursor;
         }
-        QCachedGraphicsView* view() const;
+        QWidget* view() const;
         lc::Document* document() const;
         std::shared_ptr<SnapManager>  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
@@ -54,7 +55,6 @@ class CadMdiChild : public QWidget {
 
     private:
         int randInt(int low, int high);
-        Ui::CadMdiChild* ui;
 
         lc::Document* _document;
         std::shared_ptr<lc::UndoManager> _undoManager;
@@ -65,6 +65,14 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<lc::StorageManager> _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;
+
+
+        QScrollBar* horizontalScrollBar;
+        QScrollBar* verticalScrollBar;
+
+        LCADViewer* viewer;
+
+
 };
 
 #endif // CADMDICHILD_H

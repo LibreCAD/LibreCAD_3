@@ -1,6 +1,7 @@
 #include "trimoperation.h"
 
 #include "guioperationfinishedevent.h"
+#include <QFinalState>
 #include <typeinfo>
 
 TrimOperation::TrimOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> entityManager, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager, std::shared_ptr<lc::SelectionManager> selectionManager) :

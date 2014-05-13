@@ -1,0 +1,60 @@
+#ifndef LCCAIROPAINTER_H
+#define LCCAIROPAINTER_H
+
+#include <cairo.h>
+#include "lcpainter.h"
+#include <map>
+
+class LcCairoPainter : public LcPainter {
+    public:
+        LcCairoPainter(cairo_surface_t* surface, cairo_t* cr);
+        virtual ~LcCairoPainter();
+        static LcCairoPainter* createImagePainter(unsigned char* data , int width, int height);
+
+
+    public:
+        virtual inline void clear(double r, double g, double b) ;
+        virtual inline void move_to(double x, double y) ;
+        virtual inline void line_to(double x, double y) ;
+        virtual inline void line_width(double w) ;
+        virtual inline double scale() ;
+        virtual inline void scale(double s) ;
+        virtual inline void arc(double x, double y, double r, double start, double end) ;
+        virtual inline void circle(double x, double y, double r) ;
+        virtual inline void rectangle(double x1, double y1, double x2, double y2);
+        virtual inline void stroke() ;
+        virtual inline void source_rgb(double r, double g, double b);
+        virtual inline void source_rgba(double r, double g, double b, double a);
+        virtual inline void translate(double x, double y);
+        virtual inline void user_to_device(double* x, double* y);
+        virtual inline void device_to_user(double* x, double* y);
+        virtual inline void save();
+        virtual inline void restore();
+        virtual inline unsigned long pattern_create_linear(double x1, double y1, double x2, double y2);
+        virtual inline void pattern_add_color_stop_rgba(unsigned long pat, double offset, double r, double g, double b, double a);
+        virtual inline void set_source(unsigned long pat);
+        virtual inline void pattern_destroy(unsigned long pat);
+        virtual inline void fill();
+
+        // The functions below might get changed in future
+        virtual inline void disable_antialias();
+        virtual inline void enable_antialias();
+    private:
+        cairo_surface_t* _surface;
+        cairo_t* _cr;
+
+        // When set to true, the linewidth will be constant, eg, it won't scale with the scale factor
+        bool _constantLineWidth;
+
+        // Current Line width
+        double _lineWidth;
+
+        // Scale factor
+        double _scale;
+
+        // List of patterns
+        std::map<unsigned long, cairo_pattern_t*> _patternMap;
+        unsigned long _patternMapNum;
+};
+
+#endif // LCCAIROPAINTER_H

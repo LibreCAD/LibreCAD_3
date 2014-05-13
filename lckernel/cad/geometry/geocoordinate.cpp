@@ -28,8 +28,6 @@ Coordinate::Coordinate(const QPointF& qtPoint) {
     this->_z = 0;
 }
 
-
-
 double Coordinate::x() const {
     return _x;
 }

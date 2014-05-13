@@ -8,6 +8,9 @@ CADEntity::CADEntity(const std::shared_ptr<const Layer> layer) : ID() , MetaInfo
 CADEntity::CADEntity(const std::shared_ptr<const Layer> layer, QList<std::shared_ptr<const lc::MetaType> > metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
 }
 
+CADEntity::CADEntity(const std::shared_ptr<const Layer> layer, QHash<int, std::shared_ptr<const MetaType> > metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
+}
+
 std::shared_ptr<const Layer> CADEntity::layer() const {
     return _layer;
 }

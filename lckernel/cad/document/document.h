@@ -6,10 +6,10 @@
 #include "cad/meta/layer.h"
 
 #include "cad/const.h"
+#include "cad/dochelpers/entitycontainer.h"
 
 namespace lc {
     class CADEntity;
-    class EntityContainer;
     class StorageManager;
 
     namespace operation {
@@ -57,6 +57,8 @@ namespace lc {
                  */
             virtual void operationProcess(std::shared_ptr<operation::DocumentOperation> operation);
 
+            virtual std::shared_ptr<StorageManager> storageManager() const = 0;
+
         public:
             /*!
              * \brief add an entity to document.
@@ -76,9 +78,14 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const = 0;
-            virtual void test(const std::shared_ptr<const Layer> layer) const = 0;
-            virtual std::shared_ptr<StorageManager> storageManager() const = 0;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) = 0;
+
+            /**
+             * @brief entityContainer
+             * Return a copy of all entities within the document
+             * @return
+             */
+            virtual EntityContainer entityContainer() = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

@@ -1,6 +1,9 @@
 #ifndef SELECTEDITEMSEVENT_H
 #define SELECTEDITEMSEVENT_H
 
+#include <QList>
+#include "cad/base/cadentity.h"
+
 /**
   * Event that get's dispatched each time the mouse is moved.
   */

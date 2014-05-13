@@ -5,6 +5,8 @@
 
 #include <cad/operations/builder.h>
 
+#include <QFinalState>
+
 LineCreateOperation::LineCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager)
     : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
@@ -67,11 +69,11 @@ void LineCreateOperation::on_drawEvent(const DrawEvent& event) {
     // For drawing we should create a interface to teh drawitems in the viewer so we always
     // draw something exactly like how the final drawing classes will draw entities
     if (s == true && e == false) {
-        event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
+        //event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
     }
 
     if (s == true && e == true) {
-        event.painter()->drawLine(_startPoint.pointF(), _endPoint.pointF());
+        //event.painter()->drawLine(_startPoint.pointF(), _endPoint.pointF());
     }
 }
 

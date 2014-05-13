@@ -11,6 +11,9 @@ MetaInfo::MetaInfo(QList<std::shared_ptr<const lc::MetaType> > metaTypes) {
     }
 }
 
+MetaInfo::MetaInfo(QHash<int, std::shared_ptr<const MetaType> > metaTypes) : _metaTypes(metaTypes) {
+}
+
 MetaInfo::~MetaInfo() {
 }
 

@@ -12,7 +12,6 @@ TEMPLATE    = lib
 
 VERSION=0.0.1
 
-
 lessThan(QT_MAJOR_VERSION, 5) {
     QT += opengl
     CONFIG += designer plugin
@@ -22,9 +21,6 @@ lessThan(QT_MAJOR_VERSION, 5) {
 }
 
 OTHER_FILES = CustomWidget.json
-
-VERSION=0.0.1
-
 RESOURCES   = icons.qrc
 
 win32 {
@@ -38,34 +34,26 @@ unix {
 	} else {
 	    LIBS += -L$$DESTDIR -llckernel
 	}
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz
     } else {
         DESTDIR = ../lcdemo
 	LIBS += -L$$DESTDIR -llckernel
+
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx
     }
 }
-
-
 
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel
 
-
-
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
-    scenemanager.h \
     drawitems/gradientbackground.h \
-    graphicsitems/lcgraphicsitem.h \
-    graphicsitems/lclineitem.h \
-    graphicsitems/lccircleitem.h \
-    graphicsitems/lcarcitem.h \
-    graphicsitems/lcellipseitem.h \
     const.h \
     drawitems/metricgrid.h \
     drawitems/cursor.h \
-    drawitems/lcviewercursoritem.h \
-    drawitems/lcviewerdrawitem.h \
-    qcachedgraphicsview.h \
     helpers/snapmanager.h \
     helpers/snapmanagerimpl.h \
     events/snappointevent.h \
@@ -73,21 +61,26 @@ HEADERS     = lcadviewerplugin.h \
     events/mousemoveevent.h \
     helpers/selectionmanagerimpl.h \
     events/mousereleaseevent.h \
-    events/selecteditemsevent.h
+    events/selecteditemsevent.h \
+    documentrenderer.h \
+    lccairopainter.h \
+    lcpainter.h \
+    drawitems/lcvdrawitem.h \
+    drawitems/lcvline.h \
+    drawitems/lcvcircle.h \
+    drawitems/lcdrawoptions.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
-    scenemanager.cpp \
-    drawitems/gradientbackground.cpp \
-    graphicsitems/lcgraphicsitem.cpp \
-    graphicsitems/lclineitem.cpp \
-    graphicsitems/lccircleitem.cpp \
-    graphicsitems/lcarcitem.cpp \
-    graphicsitems/lcellipseitem.cpp \
+    drawitems/gradientbackground.cpp \    
     drawitems/metricgrid.cpp \
     drawitems/cursor.cpp \
-    qcachedgraphicsview.cpp \
     helpers/snapmanagerimpl.cpp \
-    helpers/selectionmanagerimpl.cpp
-
+    helpers/selectionmanagerimpl.cpp \
+    documentrenderer.cpp \
+    lccairopainter.cpp \
+    drawitems/lcvdrawitem.cpp \
+    drawitems/lcvline.cpp \
+    drawitems/lcvcircle.cpp \
+    drawitems/lcdrawoptions.cpp
 

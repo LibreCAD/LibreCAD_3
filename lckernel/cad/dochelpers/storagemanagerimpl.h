@@ -1,8 +1,11 @@
 #ifndef ENTITYMANAGERIMPL_H
 #define ENTITYMANAGERIMPL_H
 
-#include "cad/const.h"
+#include <QDebug>
+#include <QObject>
 
+#include "cad/const.h"
+#include "cad/base/cadentity.h"
 #include "cad/document/document.h"
 #include "cad/document/storagemanager.h"
 #include "cad/events/addentityevent.h"
@@ -40,6 +43,7 @@ namespace lc {
             virtual std::shared_ptr<const Layer> layerByName(const QString& layerName) const;
             virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const;
 
+            virtual EntityContainer entityContainer() const;
         private:
             EntityContainer _entities;
             QHash <QString, std::shared_ptr<const Layer> > _layers;

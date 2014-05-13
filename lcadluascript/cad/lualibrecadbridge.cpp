@@ -69,7 +69,6 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
     .beginExtendClass <DocumentImpl, Document> ("DocumentImpl")
     .addFunction("entitiesByLayer", &DocumentImpl::entitiesByLayer)
-    .addFunction("test", &DocumentImpl::test)
     .endClass()
 
     .beginClass <EntityContainer> ("EntityContainer")

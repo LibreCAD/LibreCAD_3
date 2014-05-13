@@ -18,9 +18,13 @@ namespace lc {
                 Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
+            protected:
+                void start(const Coordinate& coord);
+                void end(const Coordinate& coord);
+
             private:
-                const Coordinate _start;
-                const Coordinate _end;
+                Coordinate _start;
+                Coordinate _end;
 
         };
     }

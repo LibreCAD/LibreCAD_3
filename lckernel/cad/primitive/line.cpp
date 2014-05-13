@@ -11,6 +11,12 @@ Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::
 Line::Line(const geo::Vector& vector, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
 }
 
+Line::Line(const std::shared_ptr<const Line> other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), Vector(other->start(), other->end()) {
+    if (sameID) {
+        this->setID(other->id());
+    }
+}
+
 
 
 QList<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {

@@ -66,7 +66,8 @@ SOURCES += main.cpp\
     operations/operationmanager.cpp \
     operations/circlecreateoperation.cpp \
     operations/trimoperation.cpp \
-    ui/luascript.cpp
+    ui/luascript.cpp \
+    testform.cpp
 
 HEADERS  += mainwindow.h \
     cadmdichild.h \
@@ -82,14 +83,14 @@ HEADERS  += mainwindow.h \
     operations/trimoperation.h \
     operations/guioperation.h \
     operations/guioperationfinishedevent.h \
-    ui/luascript.h
+    ui/luascript.h \
+    testform.h
 
 FORMS    += mainwindow.ui \
-    cadmdichild.ui \
     ui/lcmaintoolbar.ui \
     ui/clicommand.ui \
-    ui/form.ui \
-    ui/luascript.ui
+    ui/luascript.ui \
+    testform.ui
 
 RESOURCES += \
     ui/resource.qrc

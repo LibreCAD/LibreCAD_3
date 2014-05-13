@@ -73,7 +73,7 @@ QList<std::shared_ptr<const CADEntity> >  Move::process(
     std::shared_ptr<StorageManager> ,
     QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >&,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
@@ -96,7 +96,7 @@ QList<std::shared_ptr<const CADEntity> > Copy::process(
     std::shared_ptr<StorageManager> ,
     QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
@@ -118,7 +118,7 @@ QList<std::shared_ptr<const CADEntity> > Rotate::process(
     std::shared_ptr<StorageManager> ,
     QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >&,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue;
 
@@ -138,7 +138,7 @@ QList<std::shared_ptr<const CADEntity> > Push::process(
     std::shared_ptr<StorageManager> ,
     QList<std::shared_ptr<const CADEntity> > entitySet,
     QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
     const QList<std::shared_ptr< Base> >) {
     QList<std::shared_ptr<const CADEntity> > newQueue(workingBuffer);
     newQueue.append(entitySet);
@@ -155,8 +155,8 @@ SelectByLayer::SelectByLayer(const std::shared_ptr<const Layer> layer) : Base(),
 QList<std::shared_ptr<const CADEntity> > SelectByLayer::process(
     std::shared_ptr<StorageManager> storageManager,
     QList<std::shared_ptr<const CADEntity> > ,
-    QList<std::shared_ptr<const CADEntity> >& ,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
+    QList<std::shared_ptr<const CADEntity> >&,
     const QList<std::shared_ptr< Base> >) {
     EntityContainer c = storageManager->entitiesByLayer(_layer);
     QList<std::shared_ptr<const CADEntity> > e(c.allEntities().values());
@@ -173,7 +173,7 @@ Remove::Remove() : Base() {
 QList<std::shared_ptr<const CADEntity> > Remove::process(
     std::shared_ptr<StorageManager> storageManager,
     QList<std::shared_ptr<const CADEntity> > entitySet,
-    QList<std::shared_ptr<const CADEntity> >& ,
+    QList<std::shared_ptr<const CADEntity> >&,
     QList<std::shared_ptr<const CADEntity> >& removals,
     const QList<std::shared_ptr< Base> >) {
     removals.append(entitySet);

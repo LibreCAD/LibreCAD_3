@@ -83,11 +83,9 @@ namespace lc {
              */
             virtual void removeEntity(std::shared_ptr<const CADEntity> entity);
 
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
-            virtual void test(const std::shared_ptr<const Layer> layer) const;
+            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer);
 
-
-            virtual std::shared_ptr<StorageManager> storageManager() const;
+            virtual EntityContainer entityContainer();
         protected:
             /*!
              * \brief execute's a operation
@@ -105,6 +103,8 @@ namespace lc {
              * \param operation
              */
             virtual void commit(std::shared_ptr<operation::DocumentOperation> operation);
+
+            virtual std::shared_ptr<StorageManager> storageManager() const;
 
         private:
             std::mutex _documentMutex;

@@ -32,6 +32,13 @@ bool Vector::isCoordinateOnPath(const Coordinate& coord) const {
     return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
 
+void Vector::start(const Coordinate& coord) {
+    _start = coord;
+}
+void Vector::end(const Coordinate& coord) {
+    _end = coord;
+}
+
 
 QDebug operator << (QDebug dbg, const geo::Vector& c) {
     dbg.nospace() << "(" << c.start() << "," << c.end() << ")";

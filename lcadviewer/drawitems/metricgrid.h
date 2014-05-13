@@ -4,19 +4,19 @@
 #include <QPainter>
 #include <QGraphicsView>
 #include <QVarLengthArray>
-#include "lcviewerdrawitem.h"
+#include "lcvdrawitem.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
 /**
   * Draw a metric grid on a LCGraphics View
   *
   */
-class MetricGrid : public LCViewerDrawItem, public lc::Snapable {
+class MetricGrid : public LCVDrawItem, public lc::Snapable {
     public:
         MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor);
         virtual ~MetricGrid();
 
-        virtual void draw(const QGraphicsView* view, QPainter* painter, const QRectF& rect);
+        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& rect) const;
 
         virtual QList<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 
@@ -30,7 +30,7 @@ class MetricGrid : public LCViewerDrawItem, public lc::Snapable {
         const int _minimumGridSpacing;
 
         // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
-        double _lastGridSize;
+        mutable double _lastGridSize;
 };
 
 #endif // METRICGRID_H

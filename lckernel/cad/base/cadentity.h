@@ -42,6 +42,17 @@ namespace lc {
              * \sa lc::MetaType
              */
             CADEntity(std::shared_ptr<const Layer> _layer, QList<std::shared_ptr<const MetaType> > metaTypes);
+
+            /*!
+             * \brief CADEntity Constructor
+             *
+             * \param metaTypes A list of metatypes associated with this line
+             * \sa lc::Color
+             * \sa lc::LineWidth
+             * \sa lc::MetaType
+             */
+            CADEntity(std::shared_ptr<const Layer> _layer, QHash<int, std::shared_ptr<const MetaType> > metaTypes);
+
             virtual void accept(std::shared_ptr<const Line>, EntityVisitor&) const = 0;
             virtual void accept(std::shared_ptr<const Circle>, EntityVisitor&) const = 0;
             virtual void accept(std::shared_ptr<const Arc>, EntityVisitor&) const = 0;
