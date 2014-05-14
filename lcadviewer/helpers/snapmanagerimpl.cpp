@@ -2,12 +2,12 @@
 #include "cad/functions/intersect.h"
 #include "cad/vo/entitydistance.h"
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* graphicsView, std::shared_ptr<lc::SelectionManager> selectionmanager, std::shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(LCADViewer* view, std::shared_ptr<lc::SelectionManager> selectionmanager, std::shared_ptr<const lc::Snapable> grid, double distanceToSnap)  : _selectionmanager(selectionmanager), _grid(grid), _distanceToSnap(distanceToSnap) {
 
-    connect(graphicsView, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
+    connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
 
-    connect(graphicsView, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
+    connect(view, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
             this, SLOT(on_mouseRelease_Event(const MouseReleaseEvent&)));
 
 }
@@ -97,8 +97,9 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
 
 void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
+    /*
     if (_lastSnapEvent.status() == true) {
-        MouseReleaseEvent snappedLocation(_lastSnapEvent.snapPoint(), event.mouseEvent(), _entities);
+        MouseReleaseEvent snappedLocation(_lastSnapEvent.snapPoint(), _entities);
 
         if (event.mouseEvent()->button() & Qt::RightButton) {
             emit mouseRightReleaseEvent(snappedLocation);
@@ -112,6 +113,7 @@ void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
             emit mouseReleaseEvent(event);
         }
     }
+    */
 }
 
 

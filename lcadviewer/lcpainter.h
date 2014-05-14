@@ -3,9 +3,14 @@
 
 class LcPainter {
     public:
+        virtual ~LcPainter() {
+        }
+
         virtual void clear(double r, double g, double b) = 0;
+        virtual void clear(double r, double g, double b, double a) = 0;
         virtual void move_to(double x, double y) = 0;
         virtual void line_to(double x, double y) = 0;
+        virtual void lineWidthCompensation(double lwc) = 0;
         virtual void line_width(double lineWidth) = 0;
         virtual double scale() = 0;
         virtual void scale(double s) = 0;
@@ -25,6 +30,8 @@ class LcPainter {
         virtual void set_source(unsigned long pat) = 0;
         virtual void pattern_destroy(unsigned long pat) = 0;
         virtual void fill() = 0;
+        virtual void reset_transformations() = 0;
+
 
         // The functions below might get changed in future
         virtual void disable_antialias() = 0;

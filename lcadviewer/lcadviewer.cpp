@@ -2,6 +2,8 @@
 #include "documentrenderer.h"
 #include "lccairopainter.h"
 
+#include <map>
+
 #include <QtGui>
 #include <QGLWidget>
 #include <QLabel>
@@ -20,7 +22,10 @@ LCADViewer::LCADViewer(QWidget* parent) :
 
     setMouseTracking(true);
     this->_altKeyActive = false;
+
 }
+
+
 
 void LCADViewer::setDocument(lc::Document* document) {
     _document = document;
@@ -141,22 +146,7 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
 
-    /*
-
-    _lastMousePosition = this->mapToScene(event->pos());
-
-    QPolygonF p = mapToScene(this->rect());
-
-    // Invalidate screen so we can draw the mouse
-    // FIXME: See QCachedGraphicsView performance is quite bad because we need to update all layers
-    invalidateScene(QRectF(_lastMousePosition.x() - 2, _lastMousePosition.y() - 2, 4, 4), QGraphicsScene::AllLayers);
-
-    // Emit a mouse move event
-    MouseMoveEvent e(this, QRectF(p.at(0), p.at(2)), _lastMousePosition);
-    emit mouseMoveEvent(e);
-
     update();
-    */
 }
 
 void LCADViewer::mousePressEvent(QMouseEvent* event) {
@@ -170,59 +160,115 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
     //  emit mouseReleaseEvent(e);
 }
 
-void LCADViewer::paintEvent(QPaintEvent* p) {
+std::shared_ptr<const PainterImage> LCADViewer::cachedPainter(PainterCacheType cacheType, int width, int height) {
 
+    if (_cachedPainters.count(cacheType) == 0 || _cachedPainters[cacheType]->width() != width || _cachedPainters[cacheType]->height() != height) {
+        if (_cachedPainters.count(cacheType) > 0) {
+            _cachedPainters.erase(cacheType);
+        }
+
+        // Here we decide somehow what 'painter' to use, currently hardcoded to Cairo
+        // Note, I didn't want to add QImage to LcPainter because for some systems this might not be available
+        QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
+        LcCairoPainter* lcPainter = LcCairoPainter::createImagePainter(m_image->bits(), width, height);
+        _cachedPainters[cacheType] = std::make_shared<PainterImage>(m_image, lcPainter);
+    }
+
+    _cachedPainters[cacheType]->painter()->reset_transformations();
+    return _cachedPainters[cacheType];
+}
+
+void LCADViewer::paintEvent(QPaintEvent* p) {
     if (p->rect().width() == 0 || p->rect().height() == 0) {
         return;
     }
 
-    // Here we decide somehow what 'painter' to use, currently hardcoded to Cairo
-    QImage m_image(p->rect().width(), p->rect().height(), QImage::Format_ARGB32);
-    LcPainter* lcPainter = LcCairoPainter::createImagePainter(m_image.bits(), p->rect().width(), p->rect().height());
+    std::shared_ptr<const PainterImage> painterImage = cachedPainter(VIEWER_BACKGROUND, this->size().width(), this->size().height());
 
     // Position document
-    double posx = _posX;
-    double posy = _posY;
-    lcPainter->user_to_device(&posx, &posy);
+    double posx = _posX; double posy = _posY;
+    painterImage->painter()->user_to_device(&posx, &posy);
 
-    double swx = this->size().width() / 2;
-    double swy = this->size().height() / 2;
-    lcPainter->user_to_device(&swx, &swy);
-    lcPainter->translate(posx  + swx, posy + swy);
+    double swx = this->size().width() / 2; double swy = this->size().height() / 2;
+    painterImage->painter()->user_to_device(&swx, &swy);
+
+    double transateX = posx  + swx; double transateY = posy  + swy;
+    painterImage->painter()->translate(transateX, transateY);
 
     // Set scaling
-    lcPainter->scale(_scale);
+    painterImage->painter()->scale(_scale);
 
-    double pxSize=1.;
-    lcPainter->device_to_user(&pxSize, &pxSize);
+    // Calculate rectangle that needs a update
+    posx = 0; posy = 0;
+    swx = this->size().width() * 2; swy = this->size().height() * 2;
 
-    // Calculate background size
-    posx = -1; posy = -1;
-    swx = this->size().width() * 2+2;
-    swy = this->size().height() * 2+2;
+    painterImage->painter()->device_to_user(&posx, &posy);
+    painterImage->painter()->device_to_user(&swx, &swy);
+    QRectF updateRect = QRectF(posx, posy, swx, swy);
 
-    lcPainter->device_to_user(&posx, &posy);
-    lcPainter->device_to_user(&swx, &swy);
-    QRectF visible = QRectF(posx, posy, swx, swy);
+    posx = this->pos().x();
+    posy = this->pos().y();
+    painterImage->painter()->device_to_user(&posx, &posy);
+    QPointF mousePos = QPointF(posx, posy);
 
-    if (_backgroundItems.size()==0) {
-        lcPainter->clear(0., 0.1, 0.);
+    // Do all drawing's
+    if (_backgroundItems.size() == 0) {
+        painterImage->painter()->clear(0., 0.1, 0.);
     }
-//    lcPainter->clear(0., 0.1, 0.);
 
-    // Background
-    drawBackground(lcPainter, visible);
+    // TODO we have a update error still, this kinda fixes it...
+    painterImage->painter()->clear(0., 0.1, 0.);
 
-    // Paint Document
-    DocumentRenderer render = DocumentRenderer(&_entityContainer, lcPainter);
-    render.render(QRectF(0., 0., 0., 0.));
+    // Background, TODO cache this of _posX, _posY and_scale doesn't change, we properly want to have a 'cachable' flag somewhere
+    drawBackground(painterImage->painter(), updateRect);
+
+    // Paint Document, TODO cache this, if the document isn't changed, we don't want to keep rendering it
+    painterImage = cachedPainter(VIEWER_DOCUMENT, this->size().width(), this->size().height());
+    painterImage->painter()->translate(transateX, transateY);
+    painterImage->painter()->scale(_scale);
+    painterImage->painter()->clear(1.,1.,1.,0.);
+    painterImage->painter()->lineWidthCompensation(0.5);
+
+    painterImage->painter()->line_width(12.0);
+    DocumentRenderer render = DocumentRenderer(&_entityContainer, painterImage->painter());
+    render.render(QRectF(0., 0., 0., 1.));
+
+    // Foreground
+    painterImage = cachedPainter(VIEWER_DRAWING, this->size().width(), this->size().height());
+    painterImage->painter()->translate(transateX, transateY);
+    painterImage->painter()->scale(_scale);
+    painterImage->painter()->clear(1.,1.,1.,0.0);
+    drawForeground(painterImage->painter(), updateRect);
+
+    // Emit a mouse move event
+    MouseMoveEvent e(painterImage->painter(), this->pos());
+    emit mouseMoveEvent(e);
+
+    // Emit a general draw event
+    DrawEvent event(painterImage->painter(), this->pos());
+    emit drawEvent(event);
 
     // Draw on this widget
     QPainter painter(this);
-    painter.drawImage(QPoint(0, 0), m_image);
+
+    if (_cachedPainters.count(VIEWER_BACKGROUND) > 0) {
+        painterImage = _cachedPainters[VIEWER_BACKGROUND];
+        painter.drawImage(QPoint(0, 0), *painterImage->image());
+    }
+
+    if (_cachedPainters.count(VIEWER_DOCUMENT) > 0) {
+        painterImage = _cachedPainters[VIEWER_DOCUMENT];
+        painter.drawImage(QPoint(0, 0), *painterImage->image());
+    }
+
+    if (_cachedPainters.count(VIEWER_DRAWING) > 0) {
+        painterImage = _cachedPainters[VIEWER_DRAWING];
+        painter.drawImage(QPoint(0, 0), *painterImage->image());
+    }
+
+
     painter.end();
 
-    delete lcPainter;
 }
 
 
@@ -245,25 +291,21 @@ void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
 }
 
 
-void LCADViewer::drawBackground(LcPainter* lcPainter, const QRectF& rect) {
+void LCADViewer::drawBackground(LcPainter* lcPainter, const QRectF& updateRect) {
 
     for (int i = 0; i < _backgroundItems.size(); ++i) {
-        _backgroundItems.at(i)->draw(lcPainter, NULL, rect);
+        _backgroundItems.at(i)->draw(lcPainter, NULL, updateRect);
     }
 
 }
-void LCADViewer::drawForeground(LcPainter* lcPainter, const QRectF& rect) {
+void LCADViewer::drawForeground(LcPainter* lcPainter, const QRectF& updateRect) {
     for (int i = 0; i < _foregroundItems.size(); ++i) {
-        //        _foregroundItems.at(i)->draw(this, painter, rect);
+        _foregroundItems.at(i)->draw(lcPainter, NULL, updateRect);
     }
 
     //    for (int i = 0; i < _cursorItems.size(); ++i) {
-    //        this->_cursorItems.at(i)->draw(this, painter, rect, lastMousePosition());
+    //        this->_cursorItems.at(i)->draw(lcPainter, NULL, rect);
     //    }
-
-    // FIXME: move to cachedgraphicsview class some day
-    //    DrawEvent event(painter, rect, this->lastMousePosition());
-    //    emit drawEvent(event);
 }
 
 void LCADViewer::setVerticalOffset(int v) {

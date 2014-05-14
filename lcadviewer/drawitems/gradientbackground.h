@@ -14,7 +14,7 @@ class GradientBackground : public LCVDrawItem {
         GradientBackground(const QColor& topColor, const QColor& bottomColor);
         virtual ~GradientBackground();
 
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& rect) const;
+        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& updateRect) const;
     private:
         const QColor _topColor;
         const QColor _bottomColor;

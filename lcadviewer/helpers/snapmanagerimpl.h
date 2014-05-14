@@ -23,7 +23,7 @@ class SnapManagerImpl : public SnapManager {
          *
          * \sa lc::SnapManager
          */
-        SnapManagerImpl(LCADViewer* viewer, std::shared_ptr<lc::SelectionManager> _selectionmanager, std::shared_ptr<const lc::Snapable> grid, double distanceToSnap);
+        SnapManagerImpl(LCADViewer* view, std::shared_ptr<lc::SelectionManager> _selectionmanager, std::shared_ptr<const lc::Snapable> grid, double distanceToSnap);
 
 
         virtual void setGridSnappable(bool gridSnappable);

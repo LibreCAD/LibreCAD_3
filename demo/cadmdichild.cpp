@@ -93,8 +93,6 @@ int CadMdiChild::randInt(int low, int high) {
 
 void CadMdiChild::newDocument() {
 
-
-
     // Should this be done using the events system of QT??
     viewer->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(QColor(0x06, 0x35, 0x06), QColor(0x07, 0x15, 0x11))));
     auto metricGrid = std::make_shared<MetricGrid>(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80));
@@ -114,7 +112,7 @@ void CadMdiChild::newDocument() {
     _snapManager = std::make_shared<SnapManagerImpl>(viewer, _selectionManager,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    // _cursor = std::make_shared<Cursor>(40, lCADViewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
+    _cursor = std::make_shared<Cursor>(40, viewer, _snapManager, QColor(0xff, 0x00, 0x00), QColor(0x00, 0xff, 0x00));
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);

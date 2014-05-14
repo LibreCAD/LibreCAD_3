@@ -10,6 +10,7 @@ LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainte
     _lineWidth = 1.;
     _scale = 1.;
     _patternMapNum = 1;
+    _lineWidthCompensation=0.;
 }
 
 LcCairoPainter::~LcCairoPainter() {
@@ -17,11 +18,11 @@ LcCairoPainter::~LcCairoPainter() {
         cairo_pattern_destroy(item.second);
     }
 
-    if (_cr != 0x0) {
+    if (_cr != NULL) {
         cairo_destroy(_cr);
     }
 
-    if (_surface != 0x0) {
+    if (_surface != NULL) {
         cairo_surface_destroy(_surface);
     }
 }
@@ -39,9 +40,23 @@ LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int wid
     return new LcCairoPainter(surface, cr);
 }
 
+void LcCairoPainter::lineWidthCompensation(double lwc) {
+    _lineWidthCompensation = lwc;
+}
+
 void LcCairoPainter::clear(double r, double g, double b)  {
     cairo_save(_cr);
     cairo_set_source_rgb(_cr, r, g, b);
+    cairo_set_operator (_cr, CAIRO_OPERATOR_SOURCE);
+    cairo_paint(_cr);
+    cairo_restore(_cr);
+}
+
+void LcCairoPainter::clear(double r, double g, double b, double a)  {
+    cairo_save(_cr);
+    cairo_set_source_rgba(_cr, r, g, b, a);
+    cairo_set_operator (_cr, CAIRO_OPERATOR_SOURCE);
+    // We can consider using CAIRO_OPERATOR_CLEAR and not set a source at all?
     cairo_paint(_cr);
     cairo_restore(_cr);
 }
@@ -72,9 +87,9 @@ void LcCairoPainter::stroke()  {
 
 void LcCairoPainter::line_width(double  width) {
     if (_constantLineWidth) {
-        cairo_set_line_width(_cr, 1. / _scale);
+        cairo_set_line_width(_cr, (1. +_lineWidthCompensation) / _scale);
     } else {
-        cairo_set_line_width(_cr, _scale);
+        cairo_set_line_width(_cr, width + _lineWidthCompensation);
     }
 
     _lineWidth = width;
@@ -141,11 +156,14 @@ void LcCairoPainter::fill() {
 }
 
 void LcCairoPainter::disable_antialias() {
-   cairo_set_antialias(_cr, CAIRO_ANTIALIAS_NONE);
+    cairo_set_antialias(_cr, CAIRO_ANTIALIAS_NONE);
 }
 
 void LcCairoPainter::enable_antialias() {
     cairo_set_antialias(_cr, CAIRO_ANTIALIAS_GOOD);
 }
 
+void LcCairoPainter::reset_transformations() {
+    cairo_identity_matrix(_cr);
+}
 

@@ -13,16 +13,11 @@ class LcPainter;
 class LCADViewer;
 class DrawEvent {
     public:
-        DrawEvent(LcPainter* painter, const QRectF& rect, const QPointF& mousePosition) :
-            _painter(painter), _rect(rect), _mousePosition(mousePosition) {
+        DrawEvent(LcPainter* painter, const QPointF& mousePosition) : _painter(painter), _mousePosition(mousePosition) {
 
         }
-
         LcPainter* painter() const {
             return _painter;
-        }
-        QRectF rect() const {
-            return _rect;
         }
         QPointF mousePosition() const {
             return _mousePosition;
@@ -30,7 +25,6 @@ class DrawEvent {
 
     private:
         LcPainter* _painter;
-        QRectF _rect;
         QPointF _mousePosition;
 };
 

@@ -6,7 +6,7 @@
 #include "cad/vo/entitydistance.h"
 #include "cad/functions/intersect.h"
 
-SelectionManagerImpl::SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager,  LCADViewer* view) : lc::SelectionManager(),  _storageManager(storageManager), _view(view) {
+SelectionManagerImpl::SelectionManagerImpl(const std::shared_ptr<lc::StorageManager>& storageManager,  LCADViewer* view) : lc::SelectionManager(),  _storageManager(storageManager), _view(view) {
 }
 
 

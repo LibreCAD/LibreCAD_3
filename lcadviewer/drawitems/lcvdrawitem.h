@@ -15,7 +15,7 @@ class QRectF;
 class LCVDrawItem {
     public:
         LCVDrawItem(bool selectable);
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& rect) const = 0;
+        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& updateRect) const = 0;
 
         bool selectable() const;
         bool selected() const;

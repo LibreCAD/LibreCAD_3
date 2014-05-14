@@ -4,29 +4,28 @@
 #include <QPointF>
 #include <QRectF>
 #include "cad/geometry/geocoordinate.h"
+#include "lcpainter.h"
 
-class QWidget;
-class LcPainter;
 
 /**
   * Event that get's dispatched each time the mouse is moved.
   */
 class MouseMoveEvent  {
     public:
-        MouseMoveEvent(const QRectF& rect, const QPointF& mousePosition) : _rect(rect), _mousePosition(mousePosition) {
+        MouseMoveEvent(LcPainter* painter, const QPointF& mousePosition) : _painter(painter), _mousePosition(mousePosition) {
         }
 
         lc::geo::Coordinate  mousePosition() const {
             return _mousePosition;
         }
 
-        QRectF rect() const {
-            return _rect;
+        LcPainter* painter() const {
+            return _painter;
         }
 
     private:
-        QRectF _rect;
-        lc::geo::Coordinate _mousePosition;
+        LcPainter* _painter;
+        const lc::geo::Coordinate _mousePosition;
 };
 
 #endif // MOUSEMOVEEVENT_H

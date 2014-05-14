@@ -11,11 +11,12 @@ class LcCairoPainter : public LcPainter {
         virtual ~LcCairoPainter();
         static LcCairoPainter* createImagePainter(unsigned char* data , int width, int height);
 
-
     public:
         virtual inline void clear(double r, double g, double b) ;
+        virtual inline void clear(double r, double g, double b, double a) ;
         virtual inline void move_to(double x, double y) ;
         virtual inline void line_to(double x, double y) ;
+        virtual inline void lineWidthCompensation(double lwc);
         virtual inline void line_width(double w) ;
         virtual inline double scale() ;
         virtual inline void scale(double s) ;
@@ -35,6 +36,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void set_source(unsigned long pat);
         virtual inline void pattern_destroy(unsigned long pat);
         virtual inline void fill();
+        virtual inline void reset_transformations();
 
         // The functions below might get changed in future
         virtual inline void disable_antialias();
@@ -55,6 +57,8 @@ class LcCairoPainter : public LcPainter {
         // List of patterns
         std::map<unsigned long, cairo_pattern_t*> _patternMap;
         unsigned long _patternMapNum;
+
+        double _lineWidthCompensation;
 };
 
 #endif // LCCAIROPAINTER_H

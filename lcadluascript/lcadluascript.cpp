@@ -77,13 +77,13 @@ QString LCadLuaScript::run(const QString& script) {
     //    .addFunction("getLayer", &lua_layer)
 
     LuaBinding(L)
-        .beginModule("active")
-            .addFunction("document", &lua_getDocument)
-            .addFunction("storageManager", &lua_storageManager)
-            .beginModule("proxy")
-                .addFunction("layerByName", &lua_layer)
-            .endModule()
-        .endModule();
+    .beginModule("active")
+    .addFunction("document", &lua_getDocument)
+    .addFunction("storageManager", &lua_storageManager)
+    .beginModule("proxy")
+    .addFunction("layerByName", &lua_layer)
+    .endModule()
+    .endModule();
 
     LuaBinding(L)
     .addFunction("microtime", &lua_microtime);

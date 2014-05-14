@@ -18,7 +18,7 @@
   */
 class SelectionManagerImpl : public lc::SelectionManager {
     public:
-        SelectionManagerImpl(std::shared_ptr<lc::StorageManager> storageManager, LCADViewer* scene);
+        SelectionManagerImpl(const std::shared_ptr<lc::StorageManager>& storageManager, LCADViewer* scene);
 
         /*!
           * \brief return a list of entitires that are near a coordinate
