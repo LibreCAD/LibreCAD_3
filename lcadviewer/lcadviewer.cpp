@@ -204,7 +204,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
 
     painterImage->painter()->device_to_user(&posx, &posy);
     painterImage->painter()->device_to_user(&swx, &swy);
-    QRectF updateRect = QRectF(posx, posy, swx, swy);
+    QRectF updateRect = QRectF(posx, posy, swx-posx, swy-posy);
 
     posx = this->pos().x();
     posy = this->pos().y();

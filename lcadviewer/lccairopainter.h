@@ -22,7 +22,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void scale(double s) ;
         virtual inline void arc(double x, double y, double r, double start, double end) ;
         virtual inline void circle(double x, double y, double r) ;
-        virtual inline void rectangle(double x1, double y1, double x2, double y2);
+        virtual inline void rectangle(double x1, double y1, double w, double h);
         virtual inline void stroke() ;
         virtual inline void source_rgb(double r, double g, double b);
         virtual inline void source_rgba(double r, double g, double b, double a);

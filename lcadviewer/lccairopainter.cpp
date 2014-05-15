@@ -77,8 +77,8 @@ void LcCairoPainter::circle(double x, double y, double r)  {
     cairo_arc(_cr, x, y, r, 0, 2 * M_PI);
 }
 
-void LcCairoPainter::rectangle(double x1, double y1, double x2, double y2)  {
-    cairo_rectangle(_cr, x1, y1, x2, y2);
+void LcCairoPainter::rectangle(double x1, double y1, double w, double y)  {
+    cairo_rectangle(_cr, x1, y1, w, y);
 }
 
 void LcCairoPainter::stroke()  {
