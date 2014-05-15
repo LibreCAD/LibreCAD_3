@@ -37,7 +37,7 @@ void DocumentImpl::commit(std::shared_ptr<operation::DocumentOperation> operatio
 }
 
 void DocumentImpl::insertEntity(const std::shared_ptr<const CADEntity> cadEntity) {
-    if (_storageManager->entityByID(cadEntity->id()).get() != NULL) {
+    if (_storageManager->entityByID(cadEntity->id()).get() != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
         emit removeEntityEvent(cadEntity);

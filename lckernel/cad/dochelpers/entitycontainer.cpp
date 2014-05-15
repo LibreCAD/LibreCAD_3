@@ -53,7 +53,7 @@ QList<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const lc::g
     for (auto item : _cadentities.values()) {
         std::shared_ptr<const lc::Snapable> entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
 
-        if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
+        if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
             lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
             lc::geo::Coordinate nearestCoord = eCoordinate - point;
 

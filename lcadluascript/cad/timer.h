@@ -30,7 +30,7 @@ static double lua_microtime() {
     time = ((double)t.tv_sec + (double)t.tv_nsec / 1000000000.0);
 #else
     struct timeval t;
-    gettimeofday(&t, NULL);
+    gettimeofday(&t, nullptr);
     time = ((double)t.tv_sec + (double)t.tv_usec / 1000000.0);
 #endif
 

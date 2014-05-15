@@ -19,11 +19,11 @@ LcCairoPainter::~LcCairoPainter() {
         cairo_pattern_destroy(item.second);
     }
 
-    if (_cr != NULL) {
+    if (_cr != nullptr) {
         cairo_destroy(_cr);
     }
 
-    if (_surface != NULL) {
+    if (_surface != nullptr) {
         cairo_surface_destroy(_surface);
     }
 }

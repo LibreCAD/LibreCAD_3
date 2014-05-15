@@ -46,7 +46,7 @@ QList<std::shared_ptr<const CADEntity> > Loop::process(
     for (int i = 0; i < _stack.size(); ++i) {
         const lc::operation::Begin* begin = dynamic_cast<const lc::operation::Begin*>(_stack.at(i).get());
 
-        if (begin != NULL) {
+        if (begin != nullptr) {
             _start.append(begin->getEntities());
         }
     }

@@ -50,7 +50,7 @@ static int l_my_print(lua_State* L) {
 
 static const struct luaL_Reg printlib [] = {
     {"print", l_my_print},
-    {NULL, NULL}
+    {nullptr, nullptr}
 };
 
 static lc::Document* lua_getDocument() {

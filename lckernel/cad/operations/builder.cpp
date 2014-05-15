@@ -67,7 +67,7 @@ void Builder::processInternal(std::shared_ptr<StorageManager> storageManager) {
     for (int i = 0; i < _workingBuffer.size(); ++i) {
         auto org = storageManager->entityByID(_workingBuffer.at(i)->id());
 
-        if (org.get() != NULL) {
+        if (org.get() != nullptr) {
             _entitiesThatWhereUpdated.append(org);
         }
     }

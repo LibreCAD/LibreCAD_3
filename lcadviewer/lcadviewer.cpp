@@ -45,7 +45,7 @@ void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Add a line
     const std::shared_ptr<const lc::Line> line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
 
-    if (line != NULL) {
+    if (line != nullptr) {
         _entityContainer.insert(std::make_shared<LCVLine>(line));
         return;
     }
@@ -53,7 +53,7 @@ void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Add a circle
     const std::shared_ptr<const lc::Circle> circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
 
-    if (circle != NULL) {
+    if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
         newCircle->selected(true);
         _entityContainer.insert(newCircle);
@@ -65,7 +65,7 @@ void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Add a Arc
     const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
 
-    if (arc != NULL) {
+    if (arc != nullptr) {
         LCArcItem* foo = new LCArcItem(arc);
         foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
@@ -76,7 +76,7 @@ void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     // Add Ellipse
     const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
-    if (ellipse != NULL) {
+    if (ellipse != nullptr) {
         LCEllipseItem* foo = new LCEllipseItem(ellipse);
         foo->setFlags(QGraphicsItem::ItemIsSelectable);
         scene->addItem(foo);
@@ -299,17 +299,17 @@ void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
 void LCADViewer::drawBackground(LcPainter* lcPainter, const QRectF& updateRect) {
 
     for (int i = 0; i < _backgroundItems.size(); ++i) {
-        _backgroundItems.at(i)->draw(lcPainter, NULL, updateRect);
+        _backgroundItems.at(i)->draw(lcPainter, nullptr, updateRect);
     }
 
 }
 void LCADViewer::drawForeground(LcPainter* lcPainter, const QRectF& updateRect) {
     for (int i = 0; i < _foregroundItems.size(); ++i) {
-        _foregroundItems.at(i)->draw(lcPainter, NULL, updateRect);
+        _foregroundItems.at(i)->draw(lcPainter, nullptr, updateRect);
     }
 
     //    for (int i = 0; i < _cursorItems.size(); ++i) {
-    //        this->_cursorItems.at(i)->draw(lcPainter, NULL, rect);
+    //        this->_cursorItems.at(i)->draw(lcPainter, nullptr, rect);
     //    }
 }
 

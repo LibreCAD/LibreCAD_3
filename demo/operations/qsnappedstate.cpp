@@ -5,8 +5,8 @@
 #include "events/mousereleaseevent.h"
 
 QSnappedState::QSnappedState() {
-    _spobject = NULL;
-    _mreobject = NULL;
+    _spobject = nullptr;
+    _mreobject = nullptr;
 }
 
 void QSnappedState::onEntry(QEvent* event) {
@@ -16,13 +16,13 @@ void QSnappedState::onEntry(QEvent* event) {
         //FIXME: For some reason the first click is a empty event!?!?!
         MouseReleaseEvent mre = se->arguments().at(0).value<MouseReleaseEvent>();
 
-        if (_spobject != NULL) {
+        if (_spobject != nullptr) {
             QVariant v;
             v.setValue(mre.mousePosition());
             _spobject->setProperty(_spname, v);
         }
 
-        if (_mreobject != NULL) {
+        if (_mreobject != nullptr) {
             QVariant v;
             v.setValue(mre);
             _mreobject->setProperty(_mrename, v);

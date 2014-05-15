@@ -5,8 +5,8 @@
 using namespace lc;
 
 Pen::Pen() {
-    _color = NULL;
-    _lineWidth = NULL;
+    _color = nullptr;
+    _lineWidth = nullptr;
 }
 
 Pen::Pen(Color* color, LineWidth* lineWidth) {
@@ -15,11 +15,11 @@ Pen::Pen(Color* color, LineWidth* lineWidth) {
 }
 
 Pen::~Pen() {
-    if (_color != NULL) {
+    if (_color != nullptr) {
         delete _color;
     }
 
-    if (_lineWidth != NULL) {
+    if (_lineWidth != nullptr) {
         delete _lineWidth;
     }
 }

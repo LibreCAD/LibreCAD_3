@@ -29,11 +29,11 @@ class PainterImage {
 
         }
         virtual ~PainterImage() {
-            if (_image != NULL) {
+            if (_image != nullptr) {
                 delete _image;
             }
 
-            if (_painter != NULL) {
+            if (_painter != nullptr) {
                 delete _painter;
             }
         }

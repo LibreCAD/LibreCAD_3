@@ -32,7 +32,7 @@ namespace lc {
             }
 
             bool variantValid() const {
-                return _color != NULL && _lineWidth != NULL;
+                return _color != nullptr && _lineWidth != nullptr;
             }
 
             int metaName() const {
