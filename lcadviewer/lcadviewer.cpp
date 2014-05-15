@@ -1,4 +1,4 @@
-#include "LCADViewer.h"
+#include "lcadviewer.h"
 #include "documentrenderer.h"
 #include "lccairopainter.h"
 

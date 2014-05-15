@@ -1,7 +1,7 @@
 #ifndef CADMDICHILD_H
 #define CADMDICHILD_H
 
-#include <QScrollbar>
+#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <lcadviewer.h>

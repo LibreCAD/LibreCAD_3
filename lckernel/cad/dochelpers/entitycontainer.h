@@ -4,6 +4,7 @@
 
 #include <QHash>
 #include "cad/base/id.h"
+#include <memory>
 
 namespace lc {
     class Layer;
