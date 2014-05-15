@@ -24,6 +24,7 @@ namespace lc {
                 Builder& copy(const geo::Coordinate& offset);
                 Builder& repeat(const int numTimes);
                 Builder& rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
+                Builder& scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
                 Builder& begin();
                 Builder& push();
                 Builder& remove();

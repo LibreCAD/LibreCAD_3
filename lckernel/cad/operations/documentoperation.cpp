@@ -5,11 +5,11 @@ using namespace lc;
 using namespace lc::operation;
 
 DocumentOperation::DocumentOperation(Document* document) : _document(document) {
-};
+}
 
 Document* DocumentOperation::document() const {
     return _document;
-};
+}
 
 void DocumentOperation::process() {
     processInternal(_document->storageManager());

@@ -1,24 +1,25 @@
-#include "geovector.h"
+#include "geoline.h"
 
 #include "geoarea.h"
+#include "cad/math/geointersect.h"
 
 using namespace lc;
 using namespace geo;
 
-Vector::Vector(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {
+Line::Line(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {
 }
 
-Vector::Vector(const Vector& v) : _start(v._start), _end(v._end)  {
+Line::Line(const Line& v) : _start(v._start), _end(v._end)  {
 }
 
-const Coordinate& Vector::start() const {
+const Coordinate& Line::start() const {
     return _start;
 }
-const Coordinate& Vector::end() const {
+const Coordinate& Line::end() const {
     return _end;
 }
 
-Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
+Coordinate Line::nearestPointOnPath(const Coordinate& coord) const {
     Coordinate direction = this->end() - this->start();
     Coordinate vpc = coord - this->start();
     // At DLI: We don't test if length is 0 because we require that each vector/line  this direction.squared(); is always > 0
@@ -27,19 +28,19 @@ Coordinate Vector::nearestPointOnPath(const Coordinate& coord) const {
     return vpc;
 }
 
-bool Vector::isCoordinateOnPath(const Coordinate& coord) const {
+bool Line::isCoordinateOnPath(const Coordinate& coord) const {
     return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
 
-void Vector::start(const Coordinate& coord) {
+void Line::start(const Coordinate& coord) {
     _start = coord;
 }
-void Vector::end(const Coordinate& coord) {
+void Line::end(const Coordinate& coord) {
     _end = coord;
 }
 
 
-QDebug operator << (QDebug dbg, const geo::Vector& c) {
+QDebug operator << (QDebug dbg, const geo::Line& c) {
     dbg.nospace() << "(" << c.start() << "," << c.end() << ")";
     return dbg.space();
 }

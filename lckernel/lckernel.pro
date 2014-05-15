@@ -49,10 +49,8 @@ SOURCES += lckernel.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
     cad/primitive/text.cpp \
-    cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
     cad/geometry/geotext.cpp \
-    cad/operations/scale.cpp \
     cad/operations/trim.cpp \
     cad/functions/ftrim.cpp \
     cad/geometry/geospline.cpp \
@@ -100,14 +98,12 @@ HEADERS += lckernel.h\
     cad/interface/snapable.h \
     cad/vo/entitycoordinate.h \
     cad/vo/entitydistance.h \
-    cad/math/geointersect.h \
     cad/functions/intersect.h \
     cad/interface/entityvisitor.h \
     cad/interface/entitydispatch.h \
     cad/primitive/text.h \
     cad/operations/trim.h \
     cad/functions/ftrim.h \
-    cad/operations/scale.h \
     cad/geometry/geospline.h \
     cad/primitive/spline.h \
     cad/operations/builder.h \
