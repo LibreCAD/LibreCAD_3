@@ -49,7 +49,6 @@ SOURCES += lckernel.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
     cad/primitive/text.cpp \
-    cad/math/geointersect.cpp \
     cad/functions/intersect.cpp \
     cad/geometry/geotext.cpp \
     cad/operations/scale.cpp \
@@ -100,7 +99,6 @@ HEADERS += lckernel.h\
     cad/interface/snapable.h \
     cad/vo/entitycoordinate.h \
     cad/vo/entitydistance.h \
-    cad/math/geointersect.h \
     cad/functions/intersect.h \
     cad/interface/entityvisitor.h \
     cad/interface/entitydispatch.h \
