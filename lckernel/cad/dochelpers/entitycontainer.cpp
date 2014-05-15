@@ -2,6 +2,8 @@
 
 #include "cad/base/cadentity.h"
 
+#include <cad/interface/snapable.h>
+
 using namespace lc;
 
 EntityContainer::EntityContainer() {
@@ -41,4 +43,27 @@ EntityContainer EntityContainer::entitiesByLayer(const std::shared_ptr<const Lay
         }
     }
     return container;
+}
+
+QList<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
+
+    QList<lc::EntityDistance> entities;
+
+    // Now calculate for each entity if we are near the entities path
+    for (auto item : _cadentities.values()) {
+        std::shared_ptr<const lc::Snapable> entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+
+        if (entity != NULL) { // Not all entities might be snapable, so we only test if this is possible.
+            lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
+            lc::geo::Coordinate nearestCoord = eCoordinate - point;
+
+            double cDistance = nearestCoord.magnitude();
+
+            if (cDistance < distance) {
+                entities.append(lc::EntityDistance(item, cDistance));
+            }
+        }
+    }
+
+    return entities;
 }

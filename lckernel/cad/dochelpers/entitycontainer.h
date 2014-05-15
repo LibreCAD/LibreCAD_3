@@ -5,6 +5,7 @@
 #include <QHash>
 #include "cad/base/id.h"
 #include <memory>
+#include <cad/vo/entitydistance.h>
 
 namespace lc {
     class Layer;
@@ -55,6 +56,14 @@ namespace lc {
              * \return
              */
             virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
+
+            /*!
+             * \brief getEntitiesNearCoordinate
+             * \param point point where to look for entities
+             * \param distance maximum distance from this point where the function would consider adding it to a list
+             * \return List of entities sorted by distance
+             */
+            QList<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
         private:
             QHash<ID_DATATYPE, std::shared_ptr<const CADEntity> > _cadentities;
 

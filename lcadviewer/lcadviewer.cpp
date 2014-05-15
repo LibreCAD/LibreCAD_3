@@ -186,25 +186,30 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
     std::shared_ptr<const PainterImage> painterImage = cachedPainter(VIEWER_BACKGROUND, this->size().width(), this->size().height());
 
     // Position document
-    double posx = _posX; double posy = _posY;
+    double posx = _posX;
+    double posy = _posY;
     painterImage->painter()->user_to_device(&posx, &posy);
 
-    double swx = this->size().width() / 2; double swy = this->size().height() / 2;
+    double swx = this->size().width() / 2;
+    double swy = this->size().height() / 2;
     painterImage->painter()->user_to_device(&swx, &swy);
 
-    double transateX = posx  + swx; double transateY = posy  + swy;
+    double transateX = posx  + swx;
+    double transateY = posy  + swy;
     painterImage->painter()->translate(transateX, transateY);
 
     // Set scaling
     painterImage->painter()->scale(_scale);
 
     // Calculate rectangle that needs a update
-    posx = 0; posy = 0;
-    swx = this->size().width() * 2; swy = this->size().height() * 2;
+    posx = 0;
+    posy = 0;
+    swx = this->size().width() * 2;
+    swy = this->size().height() * 2;
 
     painterImage->painter()->device_to_user(&posx, &posy);
     painterImage->painter()->device_to_user(&swx, &swy);
-    QRectF updateRect = QRectF(posx, posy, swx-posx, swy-posy);
+    QRectF updateRect = QRectF(posx, posy, swx - posx, swy - posy);
 
     posx = this->pos().x();
     posy = this->pos().y();
@@ -226,7 +231,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
     painterImage = cachedPainter(VIEWER_DOCUMENT, this->size().width(), this->size().height());
     painterImage->painter()->translate(transateX, transateY);
     painterImage->painter()->scale(_scale);
-    painterImage->painter()->clear(1.,1.,1.,0.);
+    painterImage->painter()->clear(1., 1., 1., 0.);
     painterImage->painter()->lineWidthCompensation(0.5);
 
     painterImage->painter()->line_width(12.0);
@@ -237,7 +242,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
     painterImage = cachedPainter(VIEWER_DRAWING, this->size().width(), this->size().height());
     painterImage->painter()->translate(transateX, transateY);
     painterImage->painter()->scale(_scale);
-    painterImage->painter()->clear(1.,1.,1.,0.0);
+    painterImage->painter()->clear(1., 1., 1., 0.0);
     drawForeground(painterImage->painter(), updateRect);
 
     // Emit a mouse move event

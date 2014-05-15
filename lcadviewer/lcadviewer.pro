@@ -59,7 +59,6 @@ HEADERS     = lcadviewerplugin.h \
     events/snappointevent.h \
     events/drawevent.h \
     events/mousemoveevent.h \
-    helpers/selectionmanagerimpl.h \
     events/mousereleaseevent.h \
     events/selecteditemsevent.h \
     documentrenderer.h \
@@ -76,7 +75,6 @@ SOURCES     = lcadviewerplugin.cpp \
     drawitems/metricgrid.cpp \
     drawitems/cursor.cpp \
     helpers/snapmanagerimpl.cpp \
-    helpers/selectionmanagerimpl.cpp \
     documentrenderer.cpp \
     lccairopainter.cpp \
     drawitems/lcvdrawitem.cpp \

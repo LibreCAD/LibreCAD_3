@@ -49,7 +49,6 @@ class CadMdiChild : public QWidget {
         lc::Document* document() const;
         std::shared_ptr<SnapManager>  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
-        std::shared_ptr<lc::SelectionManager> selectionManager() const;
         std::shared_ptr<lc::StorageManager> storageManager() const;
         void cancelCurrentOperations();
 

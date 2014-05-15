@@ -16,6 +16,7 @@ class LcPainter {
         virtual void scale(double s) = 0;
         virtual void arc(double x, double y, double r, double start, double end) = 0;
         virtual void circle(double x, double y, double r) = 0;
+        virtual void ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra = 0) = 0;
         virtual void rectangle(double x1, double y1, double w, double h) = 0;
         virtual void stroke() = 0;
         virtual void source_rgb(double r, double g, double b) = 0;
