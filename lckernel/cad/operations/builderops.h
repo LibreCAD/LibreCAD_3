@@ -204,6 +204,23 @@ namespace lc {
                 double _rotation_angle;
         };
 
+        class Scale: public Base {
+            public:
+                Scale(const geo::Coordinate& scale_center,const geo::Coordinate& scale_factor);
+                virtual ~Scale() {
+                    qDebug() << "Scale removed";
+                }
+                virtual QList<std::shared_ptr<const CADEntity> > process(
+                    std::shared_ptr<StorageManager> storageManager,
+                    QList<std::shared_ptr<const CADEntity> > entities,
+                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
+                    QList<std::shared_ptr<const CADEntity> >& removals,
+                    const QList<std::shared_ptr< Base> > operationStack);
+            private:
+                geo::Coordinate _scale_center, _scale_factor;
+        };
+
+
         /**
          *
          * @brief The Push class

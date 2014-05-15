@@ -34,6 +34,11 @@ Builder& Builder::rotate(const geo::Coordinate& rotation_center, const double ro
     _stack.append(std::make_shared<Rotate>(rotation_center, rotation_angle));
     return *this;
 }
+Builder& Builder::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) {
+    _stack.append(std::make_shared<Scale>(scale_center, scale_factor));
+    return *this;
+}
+
 Builder& Builder::begin() {
     _stack.append(std::make_shared<Begin>());
     return *this;

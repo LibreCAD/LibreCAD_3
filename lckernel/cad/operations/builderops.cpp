@@ -109,7 +109,24 @@ QList<std::shared_ptr<const CADEntity> > Copy::process(
     return newQueue;
 }
 
+Scale::Scale(const geo::Coordinate& scale_center,const geo::Coordinate& scale_factor) : Base(), _scale_center(scale_center), _scale_factor(scale_factor) {
+}
 
+QList<std::shared_ptr<const CADEntity> > Scale::process(
+    std::shared_ptr<StorageManager> ,
+    QList<std::shared_ptr<const CADEntity> > entitySet,
+    QList<std::shared_ptr<const CADEntity> >&,
+    QList<std::shared_ptr<const CADEntity> >&,
+    const QList<std::shared_ptr< Base> >) {
+    QList<std::shared_ptr<const CADEntity> > newQueue;
+
+    for (int i = 0; i < entitySet.size(); ++i) {
+        auto e = entitySet.at(i)->scale(_scale_center, _scale_factor);
+        newQueue.append(e);
+    }
+
+    return newQueue;
+}
 
 Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_angle) : Base(), _rotation_center(rotation_center), _rotation_angle(rotation_angle) {
 }
