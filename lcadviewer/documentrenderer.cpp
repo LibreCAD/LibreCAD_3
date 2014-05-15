@@ -16,7 +16,7 @@ void DocumentRenderer::render(const QRectF& rec) {
 
     auto data = _entityContainer->allEntities();
     LcDrawOptions lcDrawOptions;
-    foreach(auto item, data) {
+    for(auto item: data) {
         const std::shared_ptr<const LCVDrawItem> di = std::dynamic_pointer_cast<const LCVDrawItem>(item);
 
         if (di != nullptr) {

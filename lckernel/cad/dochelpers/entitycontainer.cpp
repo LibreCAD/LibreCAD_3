@@ -14,7 +14,7 @@ void EntityContainer::insert(std::shared_ptr<const CADEntity> entity) {
 }
 
 void EntityContainer::combine(const EntityContainer& entities) {
-    foreach(auto i, entities.allEntities().values()) {
+    for(auto i: entities.allEntities().values()) {
         _cadentities.insert(i->id(), i);
     }
 }
@@ -37,7 +37,7 @@ std::shared_ptr<const CADEntity> EntityContainer::entityByID(ID_DATATYPE id) con
 EntityContainer EntityContainer::entitiesByLayer(const std::shared_ptr<const Layer> layer) const {
     auto l = layer;
     EntityContainer container;
-    foreach(auto i, _cadentities.values()) {
+    for(auto i: _cadentities.values()) {
         if (i->layer() == l) {
             container.insert(i);
         }
