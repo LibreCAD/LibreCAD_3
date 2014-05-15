@@ -1,5 +1,6 @@
 #include "cad/primitive/circle.h"
 
+#include <math.h>
 using namespace lc;
 
 Circle::Circle(const geo::Coordinate& center, double radius, const std::shared_ptr<const Layer> layer) : CADEntity(layer), geo::Circle(center, radius) {
@@ -67,7 +68,8 @@ std::shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate& rotation_
 }
 
 std::shared_ptr<const CADEntity> Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x(), layer());
+    // TODO return ellipse if scalefactor.x != scalefactor.y
+    auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
     newCircle->setID(this->id());
     return newCircle;
 }
