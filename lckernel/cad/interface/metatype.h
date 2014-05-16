@@ -2,6 +2,7 @@
 #define METATYPE_H
 
 #include "cad/const.h"
+#include <memory>
 
 #include "cad/interface/variantable.h"
 
