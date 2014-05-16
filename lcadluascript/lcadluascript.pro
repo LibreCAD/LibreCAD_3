@@ -32,7 +32,7 @@ unix {
         DESTDIR = ../lcdemo
         LIBS += -L$$DESTDIR -llckernel
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=lua
+        PKGCONFIG+=lua5.2
     }
 }
 
