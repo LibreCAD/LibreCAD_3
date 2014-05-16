@@ -27,13 +27,12 @@ unix {
         } else {
             LIBS += -L$$DESTDIR -llckernel
         }
-        CONFIG+=link_pkgconfig
-	packagesExist(lua5.2) { PKGCONFIG += lua5.2 } else { PKGCONFIG += lua }
+        include(lua.pri)
     } else {
         DESTDIR = ../lcdemo
         LIBS += -L$$DESTDIR -llckernel
         CONFIG+=link_pkgconfig
-	packagesExist(lua5.2) { PKGCONFIG += lua5.2 } else { PKGCONFIG += lua }
+        PKGCONFIG+=lua5.2
     }
 }
 
