@@ -47,21 +47,21 @@ class CadMdiChild : public QWidget {
         }
         QWidget* view() const;
         lc::Document* document() const;
-        std::shared_ptr<SnapManager>  snapManager() const;
+        SnapManager_SPtr  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
-        std::shared_ptr<lc::StorageManager> storageManager() const;
+        lc::StorageManager_SPtr storageManager() const;
         void cancelCurrentOperations();
 
     private:
         int randInt(int low, int high);
 
         lc::Document* _document;
-        std::shared_ptr<lc::UndoManager> _undoManager;
+        lc::UndoManager_SPtr _undoManager;
 
         std::shared_ptr<const Cursor>  _cursor;
-        std::shared_ptr<SnapManager>  _snapManager;
+        SnapManager_SPtr  _snapManager;
         std::shared_ptr<lc::SelectionManager> _selectionManager;
-        std::shared_ptr<lc::StorageManager> _storageManager;
+        lc::StorageManager_SPtr _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;
 

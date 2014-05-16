@@ -29,9 +29,9 @@ namespace lc {
               * Return a list of entities within a specific area
               *
               * @param Area Area to find entities in
-              * @return QList<std::shared_ptr<const CADEntity> > List of CAD Entities
+              * @return QList<CADEntity_CSPtr> List of CAD Entities
               */
-            virtual QList<std::shared_ptr<const CADEntity> > getEntitiesInArea(const geo::Area& area) const = 0;
+            virtual QList<CADEntity_CSPtr> getEntitiesInArea(const geo::Area& area) const = 0;
 
     };
 }

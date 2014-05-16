@@ -20,7 +20,7 @@ class TrimOperation : public GuiOperation {
         Q_PROPERTY(lc::geo::Coordinate clickPoint READ clickPoint WRITE setClickPoint)
         Q_PROPERTY(MouseReleaseEvent mouseReleaseEvent READ mouseReleaseEvent WRITE setMouseReleaseEvent)
     public:
-        TrimOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> entityManager, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
+        TrimOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
 
     public slots:
         void on_drawEvent(const DrawEvent& event);
@@ -39,8 +39,8 @@ class TrimOperation : public GuiOperation {
         }
 
         virtual void restart();
-        virtual std::shared_ptr<GuiOperation> next() const;
-        virtual std::shared_ptr<lc::operation::DocumentOperation> operation() const;
+        virtual GuiOperation_SPtr next() const;
+        virtual lc::operation::DocumentOperation_SPtr operation() const;
     private slots:
         void trimFinished();
         void on_LimitPropertiesAssigned();
@@ -54,12 +54,12 @@ class TrimOperation : public GuiOperation {
 
         // needed to find the correct information sets
         QGraphicsView* _graphicsView;
-        std::shared_ptr<SnapManager>  _snapManager;
+        SnapManager_SPtr  _snapManager;
         std::shared_ptr<lc::SelectionManager> _selectionManager;
         MouseReleaseEvent _mouseReleaseEvent;
 
         lc::geo::Coordinate _clickPoint;
-        std::shared_ptr<lc::StorageManager>  _entityManager;
+        lc::StorageManager_SPtr  _entityManager;
 
 };
 

@@ -25,7 +25,7 @@ namespace lc {
              * If the entity already exists, it will be replaced
              * \param entity entity to be added to the document.
              */
-            virtual void insert(std::shared_ptr<const CADEntity> entity);
+            virtual void insert(CADEntity_CSPtr entity);
 
             /*!
              * \brief Add all entities to this container
@@ -38,16 +38,16 @@ namespace lc {
              * \brief remove an Entity from the document.
              * \param id Entity ID of entity which is to be removed.
              */
-            virtual void remove(std::shared_ptr<const CADEntity> entity);
+            virtual void remove(CADEntity_CSPtr entity);
 
             /*!
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QHash<ID_DATATYPE, std::shared_ptr<const CADEntity> > allEntities() const;
+            virtual QHash<ID_DATATYPE, CADEntity_CSPtr > allEntities() const;
 
 
-            virtual std::shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const;
+            virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const;
 
             /*!
              * \brief findEntitiesByLayer
@@ -55,7 +55,7 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
+            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const;
 
             /*!
              * \brief getEntitiesNearCoordinate
@@ -65,7 +65,7 @@ namespace lc {
              */
             QList<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
         private:
-            QHash<ID_DATATYPE, std::shared_ptr<const CADEntity> > _cadentities;
+            QHash<ID_DATATYPE, CADEntity_CSPtr > _cadentities;
 
     };
 }

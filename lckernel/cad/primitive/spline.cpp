@@ -2,11 +2,11 @@
 
 using namespace lc;
 
-Spline::Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const std::shared_ptr<const Layer> layer) : CADEntity(layer), geo::Spline(control_points, degree, closed) {
+Spline::Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer) : CADEntity(layer), geo::Spline(control_points, degree, closed) {
 
 }
 
-Spline::Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), geo::Spline(control_points, degree, closed) {
+Spline::Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes) : CADEntity(layer, metaTypes), geo::Spline(control_points, degree, closed) {
 
 }
 
@@ -17,7 +17,7 @@ geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
 
 }
 
-std::shared_ptr<const CADEntity> Spline::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
     QList<geo::Coordinate> control_pts;
 
     for (int i = 0; i < this->control_points().size(); ++i) {
@@ -29,7 +29,7 @@ std::shared_ptr<const CADEntity> Spline::move(const geo::Coordinate& offset) con
     return newSpline;
 }
 
-std::shared_ptr<const CADEntity> Spline::copy(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
     QList<geo::Coordinate> control_pts;
 
     for (int i = 0; i < this->control_points().size(); ++i) {
@@ -40,7 +40,7 @@ std::shared_ptr<const CADEntity> Spline::copy(const geo::Coordinate& offset) con
     return newSpline;
 }
 
-std::shared_ptr<const CADEntity> Spline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     QList<geo::Coordinate> control_pts;
 
     for (int i = 0; i < this->control_points().size(); ++i) {
@@ -52,7 +52,7 @@ std::shared_ptr<const CADEntity> Spline::rotate(const geo::Coordinate& rotation_
     return newSpline;
 }
 
-std::shared_ptr<const CADEntity> Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     QList<geo::Coordinate> control_pts;
 
     for (int i = 0; i < this->control_points().size(); ++i) {

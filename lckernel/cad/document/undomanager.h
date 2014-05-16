@@ -34,6 +34,8 @@ namespace lc {
             virtual void removeUndoables() = 0;
 
     };
+    typedef std::shared_ptr<UndoManager> UndoManager_SPtr;
+    typedef std::shared_ptr<const UndoManager> UndoManager_CSPtr;
 
 }
 

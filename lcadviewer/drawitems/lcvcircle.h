@@ -10,7 +10,7 @@ class QRectF;
 
 class LCVCircle  : public LCVDrawItem, public lc::Circle {
     public:
-        LCVCircle(const std::shared_ptr<const lc::Circle> circle);
+        LCVCircle(const lc::Circle_CSPtr circle);
 
         virtual void draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const;
 };

@@ -35,7 +35,7 @@ namespace lc {
                 return true;
             }
 
-            int metaName() const {
+            metaTypeId metaName() const {
                 return MetaType::LAYER;
             }
 
@@ -44,6 +44,8 @@ namespace lc {
             LineWidth _lineWidth;
             Color _color;
     };
+    typedef std::shared_ptr<Layer> Layer_SPtr;
+    typedef std::shared_ptr<const Layer> Layer_CSPtr;
 }
 
 Q_DECLARE_METATYPE(lc::Layer)

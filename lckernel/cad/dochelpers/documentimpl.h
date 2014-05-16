@@ -26,7 +26,7 @@ namespace lc {
     class DocumentImpl : public Document {
             Q_OBJECT
         public:
-            DocumentImpl(const std::shared_ptr<StorageManager> storageManager);
+            DocumentImpl(const StorageManager_SPtr storageManager);
             virtual ~DocumentImpl();
 
         public:
@@ -76,14 +76,14 @@ namespace lc {
              * \param layerName Name of layer at which entity is to be added.
              * \param cadEntity Entity to be added.
              */
-            virtual void insertEntity(const std::shared_ptr<const CADEntity> cadEntity);
+            virtual void insertEntity(const CADEntity_CSPtr cadEntity);
             /*!
              * \brief remove an Entity from the document
              * \param id Entity ID
              */
-            virtual void removeEntity(std::shared_ptr<const CADEntity> entity);
+            virtual void removeEntity(CADEntity_CSPtr entity);
 
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer);
+            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer);
 
             virtual EntityContainer entityContainer();
         protected:
@@ -91,24 +91,24 @@ namespace lc {
              * \brief execute's a operation
              * \param operation
              */
-            void execute(std::shared_ptr<operation::DocumentOperation> operation);
+            void execute(operation::DocumentOperation_SPtr operation);
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            virtual void begin(std::shared_ptr<operation::DocumentOperation> operation);
+            virtual void begin(operation::DocumentOperation_SPtr operation);
             /*!
              * \brief commits operation
              * \param operation
              */
-            virtual void commit(std::shared_ptr<operation::DocumentOperation> operation);
+            virtual void commit(operation::DocumentOperation_SPtr operation);
 
-            virtual std::shared_ptr<StorageManager> storageManager() const;
+            virtual StorageManager_SPtr storageManager() const;
 
         private:
             std::mutex _documentMutex;
-            const std::shared_ptr<StorageManager> _storageManager;
+            const StorageManager_SPtr _storageManager;
     };
 }
 

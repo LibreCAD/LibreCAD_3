@@ -2,7 +2,7 @@
 #include "cad/functions/intersect.h"
 #include "cad/vo/entitydistance.h"
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* view, std::shared_ptr<const lc::Snapable> grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(LCADViewer* view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
 
     connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
@@ -46,8 +46,8 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
         for (int a = 0; a < _entities.count(); a++) {
             for (int b = a + 1; b < _entities.count(); b++) {
-                std::shared_ptr<const lc::CADEntity> i1 = _entities.at(a).entity();
-                std::shared_ptr<const lc::CADEntity> i2 = _entities.at(b).entity();
+                lc::CADEntity_CSPtr i1 = _entities.at(a).entity();
+                lc::CADEntity_CSPtr i2 = _entities.at(b).entity();
 
                 lc::Intersect intersect(lc::Intersect::MustIntersect);
                 i1->accept(i2, intersect);
@@ -72,7 +72,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     if (_entities.count() > 0) {
         // Get the snap point that is closest to the mouse pointer from all entities
         qSort(_entities.begin(), _entities.end(), lc::EntityDistance::sortAscending);
-        const std::shared_ptr<const lc::Snapable> captr = std::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
+        const lc::Snapable_CSPtr captr = std::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
         // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
         QList<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
         SnapPointEvent snapEvent(sp.at(0).coordinate());

@@ -14,6 +14,11 @@
 #include <cad/meta/layer.h>
 
 namespace lc {
+
+    class Ellipse;
+    typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
+    typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
+
     /*!
      * \brief A ellipse that can be put in a drawing
      *
@@ -27,35 +32,35 @@ namespace lc {
      */
     class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const std::shared_ptr<const Layer> layer);
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes);
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer);
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes);
 
         public:
-            virtual std::shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;
-            virtual std::shared_ptr<const CADEntity> copy(const geo::Coordinate& offset) const;
-            virtual std::shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
-            virtual std::shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+            virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+            virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
         public:
-            virtual void accept(std::shared_ptr<const Line> o, EntityVisitor& ei) const {
+            virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Circle> o, EntityVisitor& ei) const {
+            virtual void accept(Circle_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Arc> o, EntityVisitor& ei) const {
+            virtual void accept(Arc_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Ellipse> o, EntityVisitor& ei) const {
+            virtual void accept(Ellipse_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Text> o, EntityVisitor& ei) const {
+            virtual void accept(Text_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Spline> o, EntityVisitor& ei) const {
+            virtual void accept(Spline_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const CADEntity> o, EntityVisitor& ei) const {
+            virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
             virtual void dispatch(EntityDispatch& ed) const {

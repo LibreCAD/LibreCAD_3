@@ -21,8 +21,10 @@ namespace lc {
             };
 
         public:
-            virtual int metaName() const = 0;
+            virtual metaTypeId metaName() const = 0;
             virtual ~MetaType() {};
     };
+    typedef std::shared_ptr<MetaType> MetaType_SPtr;
+    typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
 }
 #endif // METATYPE_H

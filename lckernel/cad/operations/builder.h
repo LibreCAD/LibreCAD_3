@@ -28,23 +28,23 @@ namespace lc {
                 Builder& begin();
                 Builder& push();
                 Builder& remove();
-                Builder& selectByLayer(const std::shared_ptr<const Layer>);
+                Builder& selectByLayer(const Layer_CSPtr);
 
-                Builder& append(std::shared_ptr<const CADEntity> cadEntity);
+                Builder& append(CADEntity_CSPtr cadEntity);
 
                 virtual void undo() const;
                 virtual void redo() const;
 
             protected:
-                virtual void processInternal(std::shared_ptr<StorageManager> storageManager);
+                virtual void processInternal(StorageManager_SPtr storageManager);
 
             private:
-                QList<std::shared_ptr<Base> > _stack;
-                QList<std::shared_ptr<const CADEntity> > _workingBuffer;
+                QList<Base_SPtr> _stack;
+                QList<CADEntity_CSPtr> _workingBuffer;
 
 
-                QList<std::shared_ptr<const CADEntity> > _entitiesThatWhereUpdated;
-                QList<std::shared_ptr<const CADEntity> > _entitiesThatNeedsRemoval;
+                QList<CADEntity_CSPtr> _entitiesThatWhereUpdated;
+                QList<CADEntity_CSPtr> _entitiesThatNeedsRemoval;
 
         };
 

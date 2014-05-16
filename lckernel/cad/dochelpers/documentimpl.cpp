@@ -10,33 +10,33 @@
 
 using namespace lc;
 
-DocumentImpl::DocumentImpl(const std::shared_ptr<StorageManager> storageManager) : Document() , _storageManager(storageManager) {
+DocumentImpl::DocumentImpl(const StorageManager_SPtr storageManager) : Document() , _storageManager(storageManager) {
 }
 
 DocumentImpl::~DocumentImpl() {
     qDebug() << "DocumentImpl removed";
 }
 
-void DocumentImpl::execute(std::shared_ptr<operation::DocumentOperation> operation) {
+void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
     std::lock_guard<std::mutex> lck(_documentMutex);
     begin(operation);
     this->operationProcess(operation);
     commit(operation);
 }
 
-void DocumentImpl::begin(std::shared_ptr<operation::DocumentOperation> operation) {
+void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
     this->operationStart(operation);
     BeginProcessEvent event;
     emit beginProcessEvent(event);
 }
 
-void DocumentImpl::commit(std::shared_ptr<operation::DocumentOperation> operation) {
+void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
     CommitProcessEvent event(operation);
     emit commitProcessEvent(event);
     this->operationFinnish(operation);
 }
 
-void DocumentImpl::insertEntity(const std::shared_ptr<const CADEntity> cadEntity) {
+void DocumentImpl::insertEntity(const CADEntity_CSPtr cadEntity) {
     if (_storageManager->entityByID(cadEntity->id()).get() != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
@@ -48,18 +48,18 @@ void DocumentImpl::insertEntity(const std::shared_ptr<const CADEntity> cadEntity
     emit addEntityEvent(event);
 }
 
-void DocumentImpl::removeEntity(const std::shared_ptr<const CADEntity> entity) {
+void DocumentImpl::removeEntity(const CADEntity_CSPtr entity) {
     _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
     emit removeEntityEvent(event);
 }
 
-EntityContainer DocumentImpl::entitiesByLayer(const std::shared_ptr<const Layer> layer) {
+EntityContainer DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {
     std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);;
 }
 
-std::shared_ptr<StorageManager> DocumentImpl::storageManager() const {
+StorageManager_SPtr DocumentImpl::storageManager() const {
     return _storageManager;
 }
 

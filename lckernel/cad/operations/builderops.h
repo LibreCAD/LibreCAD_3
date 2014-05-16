@@ -18,16 +18,21 @@ namespace lc {
          * @brief The Base class for operations within the builder
          * all operations should extends from Base
          */
+        class Base;
+        typedef std::shared_ptr<Base> Base_SPtr;
+        typedef std::shared_ptr<const Base> Base_CSPtr;
         class Base {
             public:
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack
                 )  = 0;
         };
+        typedef std::shared_ptr<Base> Base_SPtr;
+        typedef std::shared_ptr<const Base> Base_CSPtr;
 
         /**
          *
@@ -53,12 +58,12 @@ namespace lc {
                     qDebug() << "Loop removed";
                 }
 
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
                 int _numTimes;
         };
@@ -88,15 +93,15 @@ namespace lc {
                     qDebug() << "Begin removed";
                 }
 
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
-                QList<std::shared_ptr<const CADEntity> > getEntities() const;
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
+                QList<CADEntity_CSPtr> getEntities() const;
             private:
-                QList<std::shared_ptr<const CADEntity> > _entities;
+                QList<CADEntity_CSPtr> _entities;
         };
 
         /**
@@ -124,12 +129,12 @@ namespace lc {
                     qDebug() << "Move removed";
                 }
 
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
                 geo::Coordinate _offset;
         };
@@ -158,12 +163,12 @@ namespace lc {
                 virtual ~Copy() {
                     qDebug() << "Copy removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
                 geo::Coordinate _offset;
         };
@@ -193,12 +198,12 @@ namespace lc {
                 virtual ~Rotate() {
                     qDebug() << "Rotate removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
                 geo::Coordinate _rotation_center;
                 double _rotation_angle;
@@ -206,16 +211,16 @@ namespace lc {
 
         class Scale: public Base {
             public:
-                Scale(const geo::Coordinate& scale_center,const geo::Coordinate& scale_factor);
+                Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
                 virtual ~Scale() {
                     qDebug() << "Scale removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
                 geo::Coordinate _scale_center, _scale_factor;
         };
@@ -247,12 +252,12 @@ namespace lc {
                 virtual ~Push() {
                     qDebug() << "Push removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
         };
 
 
@@ -275,18 +280,18 @@ namespace lc {
          */
         class SelectByLayer: public Base {
             public:
-                SelectByLayer(const std::shared_ptr<const Layer> layer);
+                SelectByLayer(const Layer_CSPtr layer);
                 virtual ~SelectByLayer() {
                     qDebug() << "SelectByLayer removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
-                std::shared_ptr<const Layer> _layer;
+                Layer_CSPtr _layer;
         };
 
         /**
@@ -312,14 +317,14 @@ namespace lc {
                 virtual ~Remove() {
                     qDebug() << "Delete removed";
                 }
-                virtual QList<std::shared_ptr<const CADEntity> > process(
-                    std::shared_ptr<StorageManager> storageManager,
-                    QList<std::shared_ptr<const CADEntity> > entities,
-                    QList<std::shared_ptr<const CADEntity> >& workingBuffer,
-                    QList<std::shared_ptr<const CADEntity> >& removals,
-                    const QList<std::shared_ptr< Base> > operationStack);
+                virtual QList<CADEntity_CSPtr> process(
+                    StorageManager_SPtr storageManager,
+                    QList<CADEntity_CSPtr> entities,
+                    QList<CADEntity_CSPtr>& workingBuffer,
+                    QList<CADEntity_CSPtr>& removals,
+                    const QList<Base_SPtr> operationStack);
             private:
-                std::shared_ptr<const Layer> _layer;
+                Layer_CSPtr _layer;
         };
     };
 }

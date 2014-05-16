@@ -64,6 +64,8 @@ namespace lc {
             private:
                 QString _text;
         };
+        typedef std::shared_ptr<Undoable> Undoable_SPtr;
+        typedef std::shared_ptr<const Undoable> Undoable_CSPtr;
     };
 }
 

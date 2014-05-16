@@ -34,19 +34,19 @@ namespace lc {
             StorageManagerImpl();
 
         public:
-            virtual void insertEntity(const std::shared_ptr<const CADEntity>);
+            virtual void insertEntity(const CADEntity_CSPtr);
             virtual void insertEntityContainer(const EntityContainer&);
-            virtual void removeEntity(const std::shared_ptr<const CADEntity>);
-            virtual std::shared_ptr<const CADEntity> entityByID(const ID_DATATYPE id) const;
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const;
+            virtual void removeEntity(const CADEntity_CSPtr);
+            virtual CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
+            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const;
 
-            virtual std::shared_ptr<const Layer> layerByName(const QString& layerName) const;
-            virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const;
+            virtual Layer_CSPtr layerByName(const QString& layerName) const;
+            virtual QHash <QString, Layer_CSPtr > const& allLayers() const;
 
             virtual EntityContainer entityContainer() const;
         private:
             EntityContainer _entities;
-            QHash <QString, std::shared_ptr<const Layer> > _layers;
+            QHash <QString, Layer_CSPtr > _layers;
     };
 }
 #endif // ENTITYMANAGERIMPL_H

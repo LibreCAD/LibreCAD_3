@@ -11,19 +11,19 @@ namespace lc {
      */
     class RemoveEntityEvent {
         public:
-            RemoveEntityEvent(const std::shared_ptr<const CADEntity> cadEntity) : _cadEntity(cadEntity) {
+            RemoveEntityEvent(const CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
             }
 
             /*!
              * \brief Returns the ID
              * \return ID_DATATYPE id of the entity.
              */
-            std::shared_ptr<const CADEntity> entity() const {
+            CADEntity_CSPtr entity() const {
                 return _cadEntity;
             }
 
         private:
-            const std::shared_ptr<const CADEntity> _cadEntity;
+            const CADEntity_CSPtr _cadEntity;
     };
 }
 #endif // REMOVEENTITYEVENT_H

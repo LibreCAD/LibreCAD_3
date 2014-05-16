@@ -4,21 +4,22 @@
 #include <QObject>
 
 #include "cad/base/id.h"
+#include "cad/base/cadentity.h"
+#include "cad/meta/layer.h"
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
      */
-    class CADEntity;
     class EntityContainer;
     class Layer;
     class StorageManager : public QObject {
             Q_OBJECT
         public:
-            virtual void insertEntity(const std::shared_ptr<const CADEntity>) = 0;
+            virtual void insertEntity(const CADEntity_CSPtr) = 0;
             virtual void insertEntityContainer(const EntityContainer&) = 0;
-            virtual void removeEntity(const std::shared_ptr<const CADEntity>) = 0;
-            virtual std::shared_ptr<const CADEntity> entityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer entitiesByLayer(const std::shared_ptr<const Layer> layer) const = 0;
+            virtual void removeEntity(const CADEntity_CSPtr) = 0;
+            virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
+            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const = 0;
 
             /*!
              * \brief layer
@@ -26,13 +27,13 @@ namespace lc {
              * \param layerName
              * \return
              */
-            virtual std::shared_ptr<const Layer> layerByName(const QString& layerName) const = 0;
+            virtual Layer_CSPtr layerByName(const QString& layerName) const = 0;
 
             /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
-            virtual QHash <QString, std::shared_ptr<const Layer> > const& allLayers() const = 0;
+            virtual QHash <QString, Layer_CSPtr > const& allLayers() const = 0;
 
             /*!
              * \brief entityContainer
@@ -41,5 +42,9 @@ namespace lc {
              */
             virtual EntityContainer entityContainer() const = 0;
     };
+
+    class StorageManager;
+    typedef std::shared_ptr<StorageManager> StorageManager_SPtr;
+    typedef std::shared_ptr<const StorageManager> StorageManager_CSPtr;
 }
 #endif // ENTITYMANAGER_H

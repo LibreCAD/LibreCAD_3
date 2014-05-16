@@ -17,7 +17,7 @@ StorageManagerImpl::StorageManagerImpl() : StorageManager() {
     _layers.insert("5", std::make_shared<Layer>("5", LineWidth(1.0), Color(255, 255, 255)));
 }
 
-void StorageManagerImpl::insertEntity(const std::shared_ptr<const CADEntity> entity) {
+void StorageManagerImpl::insertEntity(const CADEntity_CSPtr entity) {
     _entities.insert(entity);
 }
 
@@ -25,23 +25,23 @@ void StorageManagerImpl::insertEntityContainer(const EntityContainer& entities) 
     _entities.combine(entities);
 }
 
-void StorageManagerImpl::removeEntity(const std::shared_ptr<const CADEntity> entity) {
+void StorageManagerImpl::removeEntity(const CADEntity_CSPtr entity) {
     _entities.remove(entity);
 }
 
-std::shared_ptr<const CADEntity> StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
+CADEntity_CSPtr StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
     return _entities.entityByID(id);
 }
 
-EntityContainer StorageManagerImpl::entitiesByLayer(const std::shared_ptr<const Layer> layer) const {
+EntityContainer StorageManagerImpl::entitiesByLayer(const Layer_CSPtr layer) const {
     return _entities.entitiesByLayer(layer);
 }
 
-std::shared_ptr<const Layer> StorageManagerImpl::layerByName(const QString& layerName) const {
+Layer_CSPtr StorageManagerImpl::layerByName(const QString& layerName) const {
     return _layers.value(layerName);
 }
 
-QHash <QString, std::shared_ptr<const Layer> > const& StorageManagerImpl::allLayers() const {
+QHash <QString, Layer_CSPtr > const& StorageManagerImpl::allLayers() const {
     return _layers;
 }
 

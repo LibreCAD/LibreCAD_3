@@ -13,7 +13,7 @@ Builder::~Builder() {
     qDebug() << "Builder removed";
 }
 
-Builder& Builder::append(std::shared_ptr<const CADEntity> cadEntity) {
+Builder& Builder::append(CADEntity_CSPtr cadEntity) {
     _workingBuffer.append(cadEntity);
     return *this;
 }
@@ -47,7 +47,7 @@ Builder& Builder::push() {
     _stack.append(std::make_shared<Push>());
     return *this;
 }
-Builder& Builder::selectByLayer(const std::shared_ptr<const Layer> layer) {
+Builder& Builder::selectByLayer(const Layer_CSPtr layer) {
     _stack.append(std::make_shared<SelectByLayer>(layer));
     return *this;
 }
@@ -57,12 +57,12 @@ Builder& Builder::remove() {
 }
 
 
-void Builder::processInternal(std::shared_ptr<StorageManager> storageManager) {
-    QList<std::shared_ptr<const CADEntity> > entitySet;
+void Builder::processInternal(StorageManager_SPtr storageManager) {
+    QList<CADEntity_CSPtr> entitySet;
 
     for (int i = 0; i < _stack.size(); ++i) {
         // Get looping stack, we currently support only one single loop!!
-        QList<std::shared_ptr<Base> > stack = _stack.mid(0, i);
+        QList<Base_SPtr> stack = _stack.mid(0, i);
         entitySet = _stack.at(i)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
     }
 

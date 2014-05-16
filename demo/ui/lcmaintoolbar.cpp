@@ -21,19 +21,19 @@ LCMainToolbar::~LCMainToolbar() {
 
 void LCMainToolbar::on_toolButton_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
-    //std::shared_ptr<GuiOperation> lo = std::shared_ptr<GuiOperation>(new LineCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer, _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    //GuiOperation_SPtr lo = GuiOperation_SPtr(new LineCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer, _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     //_parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_2_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
-    // std::shared_ptr<GuiOperation> lo = std::shared_ptr<GuiOperation>(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    // GuiOperation_SPtr lo = GuiOperation_SPtr(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
     // _parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_3_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
-    //  std::shared_ptr<GuiOperation> lo = std::shared_ptr<GuiOperation>(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
+    //  GuiOperation_SPtr lo = GuiOperation_SPtr(new TrimOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager(), _parent->activeMdiChild()->selectionManager()));
     //   _parent->activeMdiChild()->operationManager()->startOperation(lo);
 
 }

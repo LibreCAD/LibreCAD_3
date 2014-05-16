@@ -1,38 +1,59 @@
 #ifndef CADENTITY_H
 #define CADENTITY_H
-#include <QList>
 
 #include "cad/const.h"
 #include "id.h"
 #include "metainfo.h"
+#include "cadentity.h"
 #include "cad/interface/metatype.h"
 #include "cad/geometry/geoarea.h"
+#include "cad/meta/layer.h"
 
 namespace lc {
 
-    class Circle;
-    class Line;
-    class Arc;
-    class Ellipse;
-    class Text;
-    class Spline;
-    class Layer;
-
     class EntityVisitor;
     class EntityDispatch;
+
+    class Arc;
+    typedef std::shared_ptr<Arc> Arc_SPtr;
+    typedef std::shared_ptr<const Arc> Arc_CSPtr;
+
+    class Line;
+    typedef std::shared_ptr<Line> Line_SPtr;
+    typedef std::shared_ptr<const Line> Line_CSPtr;
+
+    class Text;
+    typedef std::shared_ptr<Text> Text_SPtr;
+    typedef std::shared_ptr<const Text> Text_CSPtr;
+
+    class Spline;
+    typedef std::shared_ptr<Spline> Spline_SPtr;
+    typedef std::shared_ptr<const Spline> Spline_CSPtr;
+
+    class Ellipse;
+    typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
+    typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
+
+    class Circle;
+    typedef std::shared_ptr<Circle> Circle_SPtr;
+    typedef std::shared_ptr<const Circle> Circle_CSPtr;
+
+    class CADEntity;
+    typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
 
     /**
      *Class that all CAD entities must inherit
      *
      */
-    class CADEntity : public ID, public MetaInfo {
+    class  CADEntity  : public ID, public MetaInfo {
         public:
             /*!
              * \brief Default CADEntity Constructor.
              * \sa lc::ID
              * \sa lc::MetaInfo
              */
-            CADEntity(std::shared_ptr<const Layer> _layer);
+            CADEntity(Layer_CSPtr _layer);
             /*!
              * \brief CADEntity Constructor
              *
@@ -41,7 +62,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(std::shared_ptr<const Layer> _layer, QList<std::shared_ptr<const MetaType> > metaTypes);
+            CADEntity(Layer_CSPtr _layer, std::list<MetaType_CSPtr> metaTypes);
 
             /*!
              * \brief CADEntity Constructor
@@ -51,14 +72,14 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(std::shared_ptr<const Layer> _layer, QHash<int, std::shared_ptr<const MetaType> > metaTypes);
+            CADEntity(Layer_CSPtr _layer, std::map<MetaType::metaTypeId, MetaType_CSPtr > metaTypes);
 
-            virtual void accept(std::shared_ptr<const Line>, EntityVisitor&) const = 0;
-            virtual void accept(std::shared_ptr<const Circle>, EntityVisitor&) const = 0;
-            virtual void accept(std::shared_ptr<const Arc>, EntityVisitor&) const = 0;
-            virtual void accept(std::shared_ptr<const Ellipse>, EntityVisitor&) const = 0;
-            virtual void accept(std::shared_ptr<const Text>, EntityVisitor&) const = 0;
-            virtual void accept(std::shared_ptr<const CADEntity>, EntityVisitor&) const = 0;
+            virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(Arc_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(Ellipse_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(Text_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(CADEntity_CSPtr, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
             /*!
              * \brief Function for Move
@@ -66,7 +87,7 @@ namespace lc {
              * \param offset the offset by which entity is to be moved
              * \return CADEntity std::shared_ptr
              */
-            virtual std::shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const = 0;
+            virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const = 0;
 
             /*!
              * \brief Function for Copy
@@ -74,14 +95,14 @@ namespace lc {
              * \param offset the offset by which entity is to be copied
              * \return CADEntity std::shared_ptr
              */
-            virtual std::shared_ptr<const CADEntity> copy(const geo::Coordinate& offset) const = 0;
+            virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const = 0;
             /*!
              * \brief Function implementation for rotate.
              *
              * \param angle angle by which the entity is to be rotated.
              * \return CADEntity std::shared_ptr
              */
-            virtual std::shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const = 0;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const = 0;
             /*!
              * \brief Function implementation for Scale.
              *
@@ -89,16 +110,16 @@ namespace lc {
              * \param scale_factor
              * \return CADEntity std::shared_ptr
              */
-            virtual std::shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
+            virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const = 0;
 
             /*!
              * \brief layer
              * return the layer this entity is placed on
              * \return
              */
-            virtual std::shared_ptr<const Layer> layer() const;
+            virtual Layer_CSPtr layer() const;
         private:
-            std::shared_ptr<const Layer> _layer;
+            Layer_CSPtr _layer;
 
     };
 }

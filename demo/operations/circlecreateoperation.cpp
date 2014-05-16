@@ -7,7 +7,7 @@
 
 #include <QFinalState>
 
-CircleCreateOperation::CircleCreateOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager, std::shared_ptr<const lc::Layer> layer, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager) :
+CircleCreateOperation::CircleCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
@@ -50,7 +50,7 @@ void CircleCreateOperation::circleCreationFinished() {
 }
 
 
-std::shared_ptr<lc::operation::DocumentOperation> CircleCreateOperation::operation() const {
+lc::operation::DocumentOperation_SPtr CircleCreateOperation::operation() const {
     QList<std::shared_ptr<const lc::MetaType> > metaTypes;
     auto builder = std::make_shared<lc::operation::Builder>(document());
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
@@ -86,10 +86,10 @@ void CircleCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {
     _lastSnapEvent = event;
 }
 
-std::shared_ptr<GuiOperation> CircleCreateOperation::next() const {
+GuiOperation_SPtr CircleCreateOperation::next() const {
     // Create a new line end set the start point to the end point of the last operation
     CircleCreateOperation* lco = new CircleCreateOperation(document(), _storageManager, _layer, this->_graphicsView, this->_snapManager);
-    return std::shared_ptr<GuiOperation>(lco);
+    return GuiOperation_SPtr(lco);
 }
 
 

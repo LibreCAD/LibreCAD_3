@@ -24,6 +24,9 @@ class GuiOperationFinishedEvent;
   *
   * \author R. van Twisk <librecad@rvt.dds.nl>
   */
+class GuiOperation;
+typedef std::shared_ptr<GuiOperation> GuiOperation_SPtr;
+typedef std::shared_ptr<const GuiOperation> GuiOperation_CSPtr;
 class GuiOperation : public QObject {
         Q_OBJECT
     public:
@@ -31,7 +34,7 @@ class GuiOperation : public QObject {
         /*!
           * \brief create the CAD entity with the additional meta data
           */
-        virtual std::shared_ptr<lc::operation::DocumentOperation> operation() const = 0;
+        virtual lc::operation::DocumentOperation_SPtr operation() const = 0;
 
         /*!
           * \brief restart this operation
@@ -44,7 +47,7 @@ class GuiOperation : public QObject {
           * It allows for a line to continue and connect start/end points automatically.
           *
           */
-        virtual std::shared_ptr<GuiOperation> next() const = 0 ;
+        virtual GuiOperation_SPtr next() const = 0 ;
     protected:
         lc::Document* document() const {
             return _document;
@@ -60,6 +63,7 @@ class GuiOperation : public QObject {
     private:
         lc::Document* _document;
 };
+
 
 
 #endif // OPERATION_H

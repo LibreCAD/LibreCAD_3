@@ -11,15 +11,15 @@ class SelectedItemsEvent  {
     public:
         SelectedItemsEvent() {
         }
-        SelectedItemsEvent(QList<std::shared_ptr<const lc::CADEntity> > entities) : _entities(entities) {
+        SelectedItemsEvent(QList<lc::CADEntity_CSPtr > entities) : _entities(entities) {
         }
 
-        QList<std::shared_ptr<const lc::CADEntity> > entities() const {
+        QList<lc::CADEntity_CSPtr > entities() const {
             return _entities;
         }
 
     private:
-        QList<std::shared_ptr<const lc::CADEntity> > _entities;
+        QList<lc::CADEntity_CSPtr > _entities;
 };
 
 #endif // SELECTEDITEMSEVENT_H

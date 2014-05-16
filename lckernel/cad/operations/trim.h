@@ -30,7 +30,7 @@ namespace lc {
             private:
 
             protected:
-                virtual void processInternal();
+                virtual void processInternal(StorageManager_SPtr storageManager);
 
                 Q_DISABLE_COPY(Trim)
             private:

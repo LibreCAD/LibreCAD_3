@@ -35,7 +35,7 @@ namespace lc {
                 return _color != nullptr && _lineWidth != nullptr;
             }
 
-            int metaName() const {
+            metaTypeId metaName() const {
                 return MetaType::PEN;
             }
 

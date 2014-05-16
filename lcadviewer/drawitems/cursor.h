@@ -4,16 +4,16 @@
 #include <QObject>
 #include <QColor>
 #include "events/snappointevent.h"
+#include "helpers/snapmanager.h"
 
 class LCADViewer;
-class SnapManager;
 class MouseReleaseEvent;
 class DrawEvent;
 
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, LCADViewer* graphicsView, std::shared_ptr<SnapManager>  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
 
         public
     slots:

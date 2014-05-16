@@ -2,16 +2,16 @@
 
 using namespace lc;
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer) : CADEntity(layer), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
 }
 
-Line::Line(const geo::Vector& vector, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
 }
 
-Line::Line(const std::shared_ptr<const Line> other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), Vector(other->start(), other->end()) {
+Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), Vector(other->start(), other->end()) {
     if (sameID) {
         this->setID(other->id());
     }
@@ -43,25 +43,25 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
-std::shared_ptr<const CADEntity> Line::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
     auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
     newLine->setID(this->id());
     return newLine;
 }
 
-std::shared_ptr<const CADEntity> Line::copy(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Line::copy(const geo::Coordinate& offset) const {
     auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
     return newLine;
 }
 
-std::shared_ptr<const CADEntity> Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newLine = std::make_shared<Line>(this->start().rotate(rotation_center, rotation_angle),
                                           this->end().rotate(rotation_center, rotation_angle), layer());
     newLine->setID(this->id());
     return newLine;
 }
 
-std::shared_ptr<const CADEntity> Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+CADEntity_CSPtr Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newLine = std::make_shared<Line>(this->start().scale(scale_center, scale_factor),
                                           this->end().scale(scale_center, scale_factor), layer());
     newLine->setID(this->id());

@@ -67,7 +67,7 @@ namespace lc {
                 return !(_method == LineWidth::Invalid);
             }
 
-            int metaName() const {
+            metaTypeId metaName() const {
                 return MetaType::LINEWIDTH;
             }
 

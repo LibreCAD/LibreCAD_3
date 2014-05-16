@@ -1,17 +1,18 @@
 #include "cad/primitive/circle.h"
 
 #include <math.h>
+#include "cad/interface/metatype.h"
 using namespace lc;
 
-Circle::Circle(const geo::Coordinate& center, double radius, const std::shared_ptr<const Layer> layer) : CADEntity(layer), geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer) : CADEntity(layer), geo::Circle(center, radius) {
 
 }
 
-Circle::Circle(const geo::Coordinate& center, double radius, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes) : CADEntity(layer, metaTypes),  geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes) : CADEntity(layer, metaTypes),  geo::Circle(center, radius) {
 }
 
 
-Circle::Circle(const std::shared_ptr<const Circle> other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Circle(other->center(), other->radius()) {
+Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Circle(other->center(), other->radius()) {
     if (sameID) {
         this->setID(other->id());
     }
@@ -50,24 +51,24 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
     return pointOnPath;
 }
 
-std::shared_ptr<const CADEntity> Circle::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Circle::move(const geo::Coordinate& offset) const {
     auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer());
     newCircle->setID(this->id());
     return newCircle;
 }
 
-std::shared_ptr<const CADEntity> Circle::copy(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Circle::copy(const geo::Coordinate& offset) const {
     auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer());
     return newCircle;
 }
 
-std::shared_ptr<const CADEntity> Circle::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Circle::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newCircle = std::make_shared<Circle>(this->center().rotate(rotation_center, rotation_angle), this->radius(), layer());
     newCircle->setID(this->id());
     return newCircle;
 }
 
-std::shared_ptr<const CADEntity> Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     // TODO return ellipse if scalefactor.x != scalefactor.y
     auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
     newCircle->setID(this->id());

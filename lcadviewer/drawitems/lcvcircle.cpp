@@ -2,7 +2,7 @@
 #include "lcpainter.h"
 #include "lcdrawoptions.h"
 #include <QColor>
-LCVCircle::LCVCircle(const std::shared_ptr<const lc::Circle> circle) : LCVDrawItem(true), lc::Circle(circle, true) {
+LCVCircle::LCVCircle(const lc::Circle_CSPtr circle) : LCVDrawItem(true), lc::Circle(circle, true) {
 }
 
 void LCVCircle::draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const {

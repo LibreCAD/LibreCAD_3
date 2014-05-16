@@ -1,7 +1,8 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "cad/const.h"
+#include <list>
+
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
@@ -31,7 +32,7 @@ namespace lc {
              *
              * \param start,end Coordinate the line should start and end from
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer);
 
             /*!
              * \brief Construct a new line
@@ -42,7 +43,7 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes);
+            Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
             /*!
              * \brief Construct a new line
@@ -53,41 +54,41 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Vector& vector, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes);
+            Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
-            Line(const std::shared_ptr<const Line> other, bool sameID = false);
+            Line(const Line_CSPtr other, bool sameID = false);
 
         public:
             virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 
         public:
-            virtual std::shared_ptr<const CADEntity> move(const geo::Coordinate& offset) const;
-            virtual std::shared_ptr<const CADEntity> copy(const geo::Coordinate& offset) const;
-            virtual std::shared_ptr<const CADEntity> rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
-            virtual std::shared_ptr<const CADEntity> scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+            virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+            virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
 
         public:
-            virtual void accept(std::shared_ptr<const Line> o, EntityVisitor& ei) const {
+            virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Circle> o, EntityVisitor& ei) const {
+            virtual void accept(Circle_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Arc> o, EntityVisitor& ei) const {
+            virtual void accept(Arc_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Ellipse> o, EntityVisitor& ei) const {
+            virtual void accept(Ellipse_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Text> o, EntityVisitor& ei) const {
+            virtual void accept(Text_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const Spline> o, EntityVisitor& ei) const {
+            virtual void accept(Spline_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(std::shared_ptr<const CADEntity> o, EntityVisitor& ei) const {
+            virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
             virtual void dispatch(EntityDispatch& ed) const {

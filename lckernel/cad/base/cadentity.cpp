@@ -2,15 +2,15 @@
 
 using namespace lc;
 
-CADEntity::CADEntity(const std::shared_ptr<const Layer> layer) : ID() , MetaInfo(), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer) : ID() , MetaInfo(), _layer(layer) {
 }
 
-CADEntity::CADEntity(const std::shared_ptr<const Layer> layer, QList<std::shared_ptr<const lc::MetaType> > metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer, std::list<MetaType_CSPtr> metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
 }
 
-CADEntity::CADEntity(const std::shared_ptr<const Layer> layer, QHash<int, std::shared_ptr<const MetaType> > metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer, std::map<MetaType::metaTypeId, MetaType_CSPtr> metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
 }
 
-std::shared_ptr<const Layer> CADEntity::layer() const {
+Layer_CSPtr CADEntity::layer() const {
     return _layer;
 }

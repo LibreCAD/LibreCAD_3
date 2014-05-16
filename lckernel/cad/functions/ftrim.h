@@ -10,21 +10,25 @@ namespace lc {
 
     class FTrim : public EntityDispatch {
         public:
-            FTrim(QList<std::shared_ptr<const CADEntity> > limitingEntities, std::shared_ptr<const CADEntity> trimmedShape, geo::Coordinate trimPoint);
+            FTrim(QList<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
 
-            virtual void visit(std::shared_ptr<const Line>);
-            virtual void visit(std::shared_ptr<const Circle>);
-            virtual void visit(std::shared_ptr<const Arc>);
-            virtual void visit(std::shared_ptr<const Ellipse>);
-            virtual void visit(std::shared_ptr<const Text>);
-            QList<std::shared_ptr<const CADEntity> > result();
-            std::shared_ptr<const CADEntity> trimmedShape() const;
+            virtual void visit(Line_CSPtr);
+            virtual void visit(Circle_CSPtr);
+            virtual void visit(Arc_CSPtr);
+            virtual void visit(Ellipse_CSPtr);
+            virtual void visit(Text_CSPtr);
+            QList<CADEntity_CSPtr> result();
+            CADEntity_CSPtr trimmedShape() const;
 
         private:
-            QList<std::shared_ptr<const CADEntity> > _limitingEntities;
-            std::shared_ptr<const CADEntity> _trimmedShape;
-            QList<std::shared_ptr<const CADEntity> > _newEntities;
+            QList<CADEntity_CSPtr> _limitingEntities;
+            CADEntity_CSPtr _trimmedShape;
+            QList<CADEntity_CSPtr> _newEntities;
             geo::Coordinate _trimPoint;
     };
+
+    class FTrim;
+    typedef std::shared_ptr<FTrim> FTrim_SPtr;
+    typedef std::shared_ptr<const FTrim> FTrim_CSPtr;
 }
 #endif // FTRIM_H

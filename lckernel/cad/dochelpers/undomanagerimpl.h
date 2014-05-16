@@ -75,8 +75,8 @@ namespace lc {
             Document* _document;
 
         private:
-            QList <std::shared_ptr<operation::Undoable> > _unDoables; /*!< Undo list */
-            QStack <std::shared_ptr<operation::Undoable> > _reDoables; /*!< Redo stack */
+            QList <operation::Undoable_SPtr > _unDoables; /*!< Undo list */
+            QStack <operation::Undoable_SPtr > _reDoables; /*!< Redo stack */
             const int _maximumUndoLevels; /*!< Maximum undo level */
 
         public slots:

@@ -13,16 +13,16 @@ namespace lc {
         public:
             /**
               * EntityDistance constructor
-              * @param std::shared_ptr<const lc::CADEntity> Entity in question
+              * @param CADEntity_CSPtr Entity in question
               * @param geo::Coordinate Coordinate on the entities path
               * @param unsigned int ID number that identitifes the the coordinate
               *
               */
-            EntityDistance(std::shared_ptr<const lc::CADEntity> cadEntity, double distance) : _cadEntity(cadEntity), _distance(distance) {
+            EntityDistance(CADEntity_CSPtr cadEntity, double distance) : _cadEntity(cadEntity), _distance(distance) {
 
             }
 
-            std::shared_ptr<const lc::CADEntity> entity() const {
+            CADEntity_CSPtr entity() const {
                 return _cadEntity;
             }
 
@@ -35,7 +35,7 @@ namespace lc {
             }
 
         private:
-            std::shared_ptr<const lc::CADEntity> _cadEntity;
+            CADEntity_CSPtr _cadEntity;
             double _distance;
     };
 }

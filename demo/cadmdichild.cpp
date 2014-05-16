@@ -244,7 +244,7 @@ QWidget* CadMdiChild::view() const {
     return viewer;
 }
 
-std::shared_ptr<SnapManager>  CadMdiChild::snapManager() const {
+SnapManager_SPtr  CadMdiChild::snapManager() const {
     return  _snapManager;
 }
 
@@ -256,7 +256,7 @@ lc::Document* CadMdiChild::document() const {
     return _document;
 }
 
-std::shared_ptr<lc::StorageManager> CadMdiChild::storageManager() const {
+lc::StorageManager_SPtr CadMdiChild::storageManager() const {
     return _storageManager;
 }
 

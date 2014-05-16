@@ -10,11 +10,11 @@
 class LCADLUASCRIPTSHARED_EXPORT LCadLuaScript {
 
     public:
-        LCadLuaScript(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager);
+        LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager);
         QString run(const QString& script);
     private:
         lc::Document* _document;
-        std::shared_ptr<lc::StorageManager> _storageManager;
+        lc::StorageManager_SPtr _storageManager;
 };
 
 #endif // LCADLUASCRIPT_H

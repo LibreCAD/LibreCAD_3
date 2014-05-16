@@ -9,7 +9,7 @@ class LcPainter;
 class QRectF;
 class LCVLine : public LCVDrawItem, public lc::Line {
     public:
-        LCVLine(const std::shared_ptr<const lc::Line> line);
+        LCVLine(const lc::Line_CSPtr line);
 
         virtual void draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const;
 

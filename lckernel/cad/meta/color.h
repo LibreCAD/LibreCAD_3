@@ -69,7 +69,7 @@ namespace lc {
                 return !(_method == Color::Invalid);
             }
 
-            int metaName() const {
+            metaTypeId metaName() const {
                 return MetaType::COLOR;
             }
 

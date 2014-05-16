@@ -2,6 +2,7 @@
 #define OPERATIONINTERFACE_H
 
 #include "cad/const.h"
+#include "cad/document/storagemanager.h"
 
 namespace lc {
 
@@ -54,9 +55,11 @@ namespace lc {
                  * This function get's called when a operation starts and when the document is locked for you
                  * so you can do your work
                  */
-                virtual void processInternal(std::shared_ptr<StorageManager> storageManager) = 0;
+                virtual void processInternal(StorageManager_SPtr storageManager) = 0;
 
         };
+        typedef std::shared_ptr<DocumentOperation> DocumentOperation_SPtr;
+        typedef std::shared_ptr<const DocumentOperation> DocumentOperation_CSPtr;
     };
 }
 #endif // OPERATIONINTERFACE_H

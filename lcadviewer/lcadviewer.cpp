@@ -18,7 +18,7 @@
 #include <drawitems/lcvline.h>
 
 LCADViewer::LCADViewer(QWidget* parent) :
-    QWidget(parent), _scale(1.0), _zoom_min(0.1), _zoom_max(10.0), _scaleLineWidth(false), _posX(0.), _posY(0.) {
+    QWidget(parent), _scale(1.0), _zoom_min(0.05), _zoom_max(20.0), _scaleLineWidth(false), _posX(0.), _posY(0.) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -43,7 +43,7 @@ void LCADViewer::setDocument(lc::Document* document) {
 void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
-    const std::shared_ptr<const lc::Line> line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
+    const lc::Line_CSPtr line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
 
     if (line != nullptr) {
         _entityContainer.insert(std::make_shared<LCVLine>(line));
@@ -51,7 +51,7 @@ void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a circle
-    const std::shared_ptr<const lc::Circle> circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
+    const lc::Circle_CSPtr circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
 
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);

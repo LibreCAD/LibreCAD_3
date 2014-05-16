@@ -2,7 +2,7 @@
 #include "lcpainter.h"
 #include "lcdrawoptions.h"
 #include <QColor>
-LCVLine::LCVLine(const std::shared_ptr<const lc::Line> line) : LCVDrawItem(true), lc::Line(line, true) {
+LCVLine::LCVLine(const lc::Line_CSPtr line) : LCVDrawItem(true), lc::Line(line, true) {
 }
 
 void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const {

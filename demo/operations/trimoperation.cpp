@@ -4,7 +4,7 @@
 #include <QFinalState>
 #include <typeinfo>
 
-TrimOperation::TrimOperation(lc::Document* document, std::shared_ptr<lc::StorageManager> entityManager, QGraphicsView* graphicsView, std::shared_ptr<SnapManager>  snapManager, std::shared_ptr<lc::SelectionManager> selectionManager) :
+TrimOperation::TrimOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager, std::shared_ptr<lc::SelectionManager> selectionManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _entityManager(entityManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
@@ -49,10 +49,10 @@ void TrimOperation::trimFinished() {
     emit guiOperationFinished(of);
 }
 
-std::shared_ptr<lc::operation::DocumentOperation> TrimOperation::operation() const {
+lc::operation::DocumentOperation_SPtr TrimOperation::operation() const {
     //    std::shared_ptr<lc::operation::Create> foo = std::shared_ptr<lc::operation::Create>( new  lc::operation::Create(document(), "0"));
     //    return foo;
-    return std::shared_ptr<lc::operation::DocumentOperation>();
+    return lc::operation::DocumentOperation_SPtr();
 }
 
 void TrimOperation::on_drawEvent(const DrawEvent& event) {
@@ -65,7 +65,7 @@ void TrimOperation::on_LimitPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.count() > 0) {
-        std::shared_ptr<const lc::CADEntity> entity = enties.at(0).entity();
+        lc::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
@@ -74,7 +74,7 @@ void TrimOperation::on_TrimPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.count() > 0) {
-        std::shared_ptr<const lc::CADEntity> entity = enties.at(0).entity();
+        lc::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
@@ -84,7 +84,7 @@ void TrimOperation::restart() {
     _machine.start();
 }
 
-std::shared_ptr<GuiOperation> TrimOperation::next() const {
-    std::shared_ptr<GuiOperation> lo = std::shared_ptr<GuiOperation>(new TrimOperation(document(), _entityManager, _graphicsView, _snapManager, _selectionManager));
+GuiOperation_SPtr TrimOperation::next() const {
+    GuiOperation_SPtr lo = GuiOperation_SPtr(new TrimOperation(document(), _entityManager, _graphicsView, _snapManager, _selectionManager));
     return lo;
 }

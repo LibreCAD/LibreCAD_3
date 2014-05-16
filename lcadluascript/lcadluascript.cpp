@@ -30,12 +30,12 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, std::shared_ptr<lc::StorageManager> storageManager) : _document(document), _storageManager(storageManager) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager) : _document(document), _storageManager(storageManager) {
 }
 
 QString* gOut;
 lc::Document* luaDoc;
-std::shared_ptr<lc::StorageManager> storageManager;
+lc::StorageManager_SPtr storageManager;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -56,12 +56,12 @@ static const struct luaL_Reg printlib [] = {
 static lc::Document* lua_getDocument() {
     return luaDoc;
 }
-static std::shared_ptr<lc::StorageManager> lua_storageManager() {
+static lc::StorageManager_SPtr lua_storageManager() {
     return storageManager;
 }
 
-static std::shared_ptr<lc::Layer> lua_layer(const char* layer) {
-    // Cast until the lua bridge understands std::shared_ptr<const lc::Layer> as a return value
+static lc::Layer_SPtr lua_layer(const char* layer) {
+    // Cast until the lua bridge understands Layer_CSPtr as a return value
     return std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
 
 }
@@ -401,13 +401,24 @@ print "Move time"
 print (microtime()-start);
 
 */
-/*
+
+/* Remove
 -- Do a remove
 start = microtime()
 layer = active.proxy.layerByName("1")
 d=active.document()
 Builder(d):selectByLayer(layer):remove():execute()
 print "Remove time"
+print (microtime()-start);
+
+*/
+
+/* Scaling
+start = microtime()
+layer = active.proxy.layerByName("0")
+d=active.document()
+Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(-2,-2)):execute()
+print "Move time"
 print (microtime()-start);
 
 */

@@ -3,29 +3,29 @@
 
 using namespace lc;
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const std::shared_ptr<const Layer> layer)
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer)
     : CADEntity(layer), geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 
 }
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const std::shared_ptr<const Layer> layer, const QList<std::shared_ptr<const MetaType> >& metaTypes)
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes)
     : CADEntity(layer, metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
-std::shared_ptr<const CADEntity> Ellipse::move(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Ellipse::move(const geo::Coordinate& offset) const {
     auto newellipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
                                                 this->startAngle(), this->endAngle(), layer());
     newellipse->setID(this->id());
     return newellipse;
 }
 
-std::shared_ptr<const CADEntity> Ellipse::copy(const geo::Coordinate& offset) const {
+CADEntity_CSPtr Ellipse::copy(const geo::Coordinate& offset) const {
     auto newEllipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
                                                 this->startAngle(), this->endAngle(), layer());
     return newEllipse;
 }
 
-std::shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Ellipse::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newEllipse = std::make_shared<Ellipse>(this->center().rotate(rotation_center, rotation_angle),
                                                 (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
                                                 this->minorRadius() , this->startAngle(),
@@ -34,7 +34,7 @@ std::shared_ptr<const CADEntity> Ellipse::rotate(const geo::Coordinate& rotation
     return newEllipse;
 }
 
-std::shared_ptr<const CADEntity> Ellipse::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
+CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     geo::Coordinate vp1(this->majorP());
     double a(vp1.magnitude());
     geo::Coordinate vp2(vp1.x() * 1. / a, vp1.y() * 1. / a);

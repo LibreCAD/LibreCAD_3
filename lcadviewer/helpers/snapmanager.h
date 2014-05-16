@@ -54,5 +54,8 @@ class SnapManager : public QObject {
         virtual bool isGridSnappable() const = 0;
 };
 
+typedef std::shared_ptr<SnapManager> SnapManager_SPtr;
+typedef std::shared_ptr<const SnapManager> SnapManager_CSPtr;
+
 
 #endif // SNAPMANAGER_H

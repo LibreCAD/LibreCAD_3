@@ -10,7 +10,7 @@ void OperationManager::cancel() {
     _activeGuiOperations.clear();
 }
 
-void OperationManager::startOperation(std::shared_ptr<GuiOperation> operation) {
+void OperationManager::startOperation(GuiOperation_SPtr operation) {
 
     //    if (_activeGuiOperations.count()>0) {
     //        throw "We currently only support one operation";
@@ -25,19 +25,19 @@ void OperationManager::startOperation(std::shared_ptr<GuiOperation> operation) {
 
 void OperationManager::restart() {
     if (!_activeGuiOperations.empty()) {
-        std::shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
+        GuiOperation_SPtr lastOperation = _activeGuiOperations.top();
         lastOperation->restart();
     }
 
 }
 
-QStack<std::shared_ptr<GuiOperation> > OperationManager::activeOperations() const {
+QStack<GuiOperation_SPtr > OperationManager::activeOperations() const {
     return this->_activeGuiOperations;
 }
 
 void OperationManager::on_guioperationFinished_Event(const GuiOperationFinishedEvent& event) {
 
-    std::shared_ptr<GuiOperation> lastOperation = _activeGuiOperations.top();
+    GuiOperation_SPtr lastOperation = _activeGuiOperations.top();
     event.guiOperation().operation()->execute();
     _activeGuiOperations.clear();
     startOperation(lastOperation->next());

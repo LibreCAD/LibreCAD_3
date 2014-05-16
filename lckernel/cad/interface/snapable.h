@@ -32,6 +32,8 @@ namespace lc {
              */
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
     };
+    typedef std::shared_ptr<Snapable> Snapable_SPtr;
+    typedef std::shared_ptr<const Snapable> Snapable_CSPtr;
 }
 
 #endif // SNAPABLE_H
