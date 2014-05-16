@@ -44,10 +44,10 @@ class SnapManagerImpl : public SnapManager {
         bool _gridSnappable;
 
         // List of entities that are potential for snapping
-        QList<lc::Snapable_CSPtr > _snapableEntities;
+        std::vector<lc::Snapable_CSPtr > _snapableEntities;
 
         // List of additional points a user can pick, to be implemented
-        QList<lc::geo::Coordinate> _smartCoordinates;
+        std::vector<lc::geo::Coordinate> _smartCoordinates;
 
         // What the minimal distance is when we send a snap event
         double _distanceToSnap;
@@ -56,7 +56,7 @@ class SnapManagerImpl : public SnapManager {
         SnapPointEvent _lastSnapEvent;
 
         // List of entities 'under' the cursor
-        QList<lc::EntityDistance> _entities;
+        std::vector<lc::EntityDistance> _entities;
 };
 
 #endif // SNAPMANAGERIMPL_H

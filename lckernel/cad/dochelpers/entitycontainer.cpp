@@ -10,37 +10,37 @@ EntityContainer::EntityContainer() {
 }
 
 void EntityContainer::insert(CADEntity_CSPtr entity) {
-    _cadentities.insert(entity->id(), entity);
+    _cadentities.insert(std::make_pair(entity->id(), entity));
 }
 
 void EntityContainer::combine(const EntityContainer& entities) {
-    for (auto i : entities.allEntities().values()) {
-        _cadentities.insert(i->id(), i);
+    for (auto i : entities.allEntities()) {
+        _cadentities.insert(i);
     }
 }
 
 void EntityContainer::remove(CADEntity_CSPtr entity) {
-    if (_cadentities.contains(entity->id())) {
-        _cadentities.remove(entity->id());
-        return;
-    }
+    _cadentities.erase(entity->id());
 }
 
-QHash<ID_DATATYPE, CADEntity_CSPtr> EntityContainer::allEntities() const {
+std::map<ID_DATATYPE, CADEntity_CSPtr> EntityContainer::allEntities() const {
     return _cadentities;
 }
 
 CADEntity_CSPtr EntityContainer::entityByID(ID_DATATYPE id) const {
-    return _cadentities.value(id);
+    if (_cadentities.count(id)>0) {
+        return _cadentities.at(id);
+    }
+    return CADEntity_CSPtr();
 }
 
 EntityContainer EntityContainer::entitiesByLayer(const Layer_CSPtr layer) const {
     auto l = layer;
     EntityContainer container;
 
-    for (auto i : _cadentities.values()) {
-        if (i->layer() == l) {
-            container.insert(i);
+    for (auto i : _cadentities) {
+        if (i.second->layer() == l) {
+            container.insert(i.second);
         }
     }
 
@@ -52,8 +52,8 @@ std::vector<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const
     std::vector<lc::EntityDistance> entities;
 
     // Now calculate for each entity if we are near the entities path
-    for (auto item : _cadentities.values()) {
-        Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+    for (auto item : _cadentities) {
+        Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item.second);
 
         if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
             lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
@@ -62,7 +62,7 @@ std::vector<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const
             double cDistance = nearestCoord.magnitude();
 
             if (cDistance < distance) {
-                entities.push_back(lc::EntityDistance(item, cDistance));
+                entities.push_back(lc::EntityDistance(item.second, cDistance));
             }
         }
     }

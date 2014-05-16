@@ -3,7 +3,6 @@
 
 #include <QPainter>
 #include <QGraphicsView>
-#include <QVarLengthArray>
 #include "lcvdrawitem.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
@@ -18,7 +17,7 @@ class MetricGrid : public LCVDrawItem, public lc::Snapable {
 
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& updateRect) const;
 
-        virtual QList<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
+        virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 
         virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const;
 

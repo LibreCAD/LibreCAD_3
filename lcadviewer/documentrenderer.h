@@ -3,12 +3,8 @@
 
 #include "lcpainter.h"
 
-#include <QList>
-
 #include <cad/dochelpers/entitycontainer.h>
-
 #include <drawitems/lcvdrawitem.h>
-
 #include <cad/base/cadentity.h>
 
 class DocumentRenderer {
@@ -18,8 +14,8 @@ class DocumentRenderer {
         void render(const QRectF& rec);
 
     private:
-        LcPainter* _painter;
         lc::EntityContainer* _entityContainer;
+        LcPainter* _painter;
 };
 
 #endif // DOCUMENTRENDERER_H

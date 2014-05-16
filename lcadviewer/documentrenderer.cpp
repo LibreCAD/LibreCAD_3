@@ -18,7 +18,7 @@ void DocumentRenderer::render(const QRectF& rec) {
     LcDrawOptions lcDrawOptions;
 
     for (auto item : data) {
-        const std::shared_ptr<const LCVDrawItem> di = std::dynamic_pointer_cast<const LCVDrawItem>(item);
+        const std::shared_ptr<const LCVDrawItem> di = std::dynamic_pointer_cast<const LCVDrawItem>(item.second);
 
         if (di != nullptr) {
             di->draw(_painter, &lcDrawOptions, rec);

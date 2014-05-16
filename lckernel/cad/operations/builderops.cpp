@@ -180,7 +180,7 @@ std::vector<CADEntity_CSPtr> SelectByLayer::process(
 
     std::vector<CADEntity_CSPtr> e;
 
-//    std::vector<CADEntity_CSPtr> e(c.allEntities());
+    //    std::vector<CADEntity_CSPtr> e(c.allEntities());
     // transform(my_map.begin(), my_map.end(), back_inserter(my_vals), [](MyMap::value_type& val){return val.second;} );
 
     return e;

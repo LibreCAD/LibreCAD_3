@@ -60,7 +60,7 @@ Builder& Builder::remove() {
 void Builder::processInternal(StorageManager_SPtr storageManager) {
     std::vector<CADEntity_CSPtr> entitySet;
 
-    for(auto it = _stack.begin(); it != _stack.end(); ++it) {
+    for (auto it = _stack.begin(); it != _stack.end(); ++it) {
         // Get looping stack, we currently support only one single loop!!
         std::vector<Base_SPtr> stack(_stack.begin(), it);
         entitySet = (*it)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
@@ -70,7 +70,7 @@ void Builder::processInternal(StorageManager_SPtr storageManager) {
 
 
     // Build a buffer with all entities we need to remove during a undo cycle
-    for (auto entity: _workingBuffer) {
+    for (auto entity : _workingBuffer) {
         auto org = storageManager->entityByID(entity->id());
 
         if (org.get() != nullptr) {
@@ -79,37 +79,37 @@ void Builder::processInternal(StorageManager_SPtr storageManager) {
     }
 
     // Remove entities
-    for (auto entity: _entitiesThatNeedsRemoval) {
+    for (auto entity : _entitiesThatNeedsRemoval) {
         document()->removeEntity(entity);
     }
 
     // Add/Update all entities in the document
-    for (auto entity: _workingBuffer) {
+    for (auto entity : _workingBuffer) {
         document()->insertEntity(entity);
     }
 
 }
 
 void Builder::undo() const {
-    for (auto entity: _workingBuffer) {
+    for (auto entity : _workingBuffer) {
         document()->removeEntity(entity);
     }
 
-    for (auto entity: _entitiesThatWhereUpdated) {
+    for (auto entity : _entitiesThatWhereUpdated) {
         document()->insertEntity(entity);
     }
 
-    for (auto entity: _entitiesThatNeedsRemoval) {
+    for (auto entity : _entitiesThatNeedsRemoval) {
         document()->insertEntity(entity);
     }
 }
 
 void Builder::redo() const {
-    for (auto entity: _entitiesThatNeedsRemoval) {
+    for (auto entity : _entitiesThatNeedsRemoval) {
         document()->removeEntity(entity);
     }
 
-    for (auto entity: _workingBuffer) {
+    for (auto entity : _workingBuffer) {
         document()->insertEntity(entity);
     }
 }

@@ -93,9 +93,8 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const QRectF&
   * Return a number of snap points, grid will always return 1
   *
   */
-QList<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+std::vector<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
 
-    QList<lc::EntityCoordinate> points;
     double mx = coord.x() * 1.0;
     double my = coord.y() * 1.0;
     double gs = this->_lastGridSize * 1.0;
@@ -115,7 +114,8 @@ QList<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& co
         y = (my + gs / 2) - fmod(my + gs / 2, gs);
     }
 
-    points << lc::EntityCoordinate(lc::geo::Coordinate(x, y), (lc::geo::Coordinate(x, y) - coord).magnitude(), 0);
+    std::vector<lc::EntityCoordinate> points;
+    points.push_back(lc::EntityCoordinate(lc::geo::Coordinate(x, y), (lc::geo::Coordinate(x, y) - coord).magnitude(), 0));
     return points;
 }
 

@@ -61,19 +61,19 @@ void TrimOperation::on_drawEvent(const DrawEvent& event) {
 }
 
 void TrimOperation::on_LimitPropertiesAssigned() {
-    QList<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
+    std::vector<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
-    if (enties.count() > 0) {
+    if (enties.size() > 0) {
         lc::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
 void TrimOperation::on_TrimPropertiesAssigned() {
-    QList<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
+    std::vector<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
-    if (enties.count() > 0) {
+    if (enties.size() > 0) {
         lc::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }

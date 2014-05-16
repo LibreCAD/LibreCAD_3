@@ -8,7 +8,7 @@
 /**
   * If a object is a meta object, eg something that can be attached to a entity then this object must extend MetaType
   * and provide a unique meta name.
-  * meta types can also be put into a variant so it can be stored in a QHash
+  * meta types can also be put into a variant so it can be stored in a map
   */
 namespace lc {
     class MetaType : public Variantable {

@@ -13,20 +13,20 @@ class MouseReleaseEvent  {
     public:
         MouseReleaseEvent() {
         }
-        MouseReleaseEvent(const lc::geo::Coordinate& mousePosition, QList<lc::EntityDistance> entities) : _mousePosition(mousePosition), _entities(entities) {
+        MouseReleaseEvent(const lc::geo::Coordinate& mousePosition, std::vector<lc::EntityDistance> entities) : _mousePosition(mousePosition), _entities(entities) {
         }
 
         lc::geo::Coordinate  mousePosition() const {
             return _mousePosition;
         }
 
-        QList<lc::EntityDistance> entities() const {
+        std::vector<lc::EntityDistance> entities() const {
             return _entities;
         }
 
     private:
         lc::geo::Coordinate _mousePosition;
-        QList<lc::EntityDistance> _entities;
+        std::vector<lc::EntityDistance> _entities;
 };
 Q_DECLARE_METATYPE(MouseReleaseEvent)
 

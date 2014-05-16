@@ -12,7 +12,6 @@ namespace lc {
      * @brief The EntityContainer class
      * manages a set of entities. You can 'spatialy' (not yet optmised) entities within the container.
      *
-     * Note: we should consider this class extending QHash
      */
     class EntityContainer {
         public:
@@ -40,9 +39,9 @@ namespace lc {
 
             /*!
              * \brief return all the entities present in the document.
-             * \return QHash Entity ID and Entity.
+             * \return std::map<ID_DATATYPE, CADEntity_CSPtr> Entity ID and Entity.
              */
-            virtual QHash<ID_DATATYPE, CADEntity_CSPtr> allEntities() const;
+            virtual std::map<ID_DATATYPE, CADEntity_CSPtr> allEntities() const;
 
 
             virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const;
@@ -63,7 +62,7 @@ namespace lc {
              */
             std::vector<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
         private:
-            QHash<ID_DATATYPE, CADEntity_CSPtr> _cadentities;
+            std::map<ID_DATATYPE, CADEntity_CSPtr> _cadentities;
 
     };
 }

@@ -23,7 +23,7 @@ MetaInfo::~MetaInfo() {
 MetaType_CSPtr MetaInfo::metaType(MetaType::metaTypeId metaType) const {
 
     for (MetaType_CSPtr i : _metaTypes) {
-        if (i->metaName()==metaType) {
+        if (i->metaName() == metaType) {
             return i;
         }
     }

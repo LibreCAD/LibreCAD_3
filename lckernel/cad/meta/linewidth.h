@@ -32,29 +32,6 @@ namespace lc {
             Method method() const;
             double width() const;
 
-            /*
-                        friend QDataStream& operator<<( QDataStream & stream, const LineWidth & yourObject ) {
-                            stream << (qint8)yourObject._method << (double)yourObject._width;
-                            return stream;
-                        }
-
-                        friend QDataStream& operator>>( QDataStream & stream, LineWidth & yourObject ) {
-                            stream > > (qint8&)yourObject._method;
-                            stream > >  (double&)yourObject._width;
-                            return stream;
-                        }
-
-                        bool  operator==(const LineWidth &other) const
-                        {
-                            // Objects are by entity, the width must be the same
-                            if (other._method==LineWidth::ByEntity && this->_method==LineWidth::ByEntity) {
-                                return this->_width==other._width;
-                            }
-
-                            // If not by entity the methods only must be the same
-                            return other._method==this->_method;
-                        } */
-
             bool variantValid() const {
                 return !(_method == LineWidth::Invalid);
             }
@@ -67,12 +44,6 @@ namespace lc {
             Method _method;
             double _width;
     };
-
-    /*
-    inline uint qHash( const LineWidth &key)
-    {
-        return qHash(QString("%1_%2").arg(key.width()).arg(key.method()));
-    } */
 
 
 }

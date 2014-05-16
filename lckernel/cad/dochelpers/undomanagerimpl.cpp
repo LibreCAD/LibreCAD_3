@@ -25,7 +25,8 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
         // Check if Redo is possible, if so we might need to purge objects from memory
         // as long as we can redo, purge these objects
         while (canRedo()) {
-            operation::Undoable_SPtr undoable = _reDoables.top();_reDoables.pop();
+            operation::Undoable_SPtr undoable = _reDoables.top();
+            _reDoables.pop();
             // Need to get a list of absolete entities, they are all entities that are created in the _reDoables list
             // document()->absolueteEntity(entity);
 
@@ -46,7 +47,8 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
 
 void UndoManagerImpl::redo() {
     if (canRedo()) {
-        operation::Undoable_SPtr undoable = _reDoables.top();_reDoables.pop();
+        operation::Undoable_SPtr undoable = _reDoables.top();
+        _reDoables.pop();
         undoable->redo();
         _unDoables.push_back(undoable);
     }
@@ -69,7 +71,8 @@ bool UndoManagerImpl::canUndo() const {
 
 void UndoManagerImpl::removeUndoables() {
     _unDoables.clear();
-    while(!_reDoables.empty()) {
+
+    while (!_reDoables.empty()) {
         _reDoables.pop();
     }
 }

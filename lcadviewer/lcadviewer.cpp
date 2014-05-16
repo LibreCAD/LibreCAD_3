@@ -6,7 +6,6 @@
 
 #include <QtGui>
 #include <QGLWidget>
-#include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QTime>
@@ -155,7 +154,7 @@ void LCADViewer::mousePressEvent(QMouseEvent* event) {
 }
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
-    QList<lc::EntityDistance> emptyList;
+    std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
 }
@@ -284,7 +283,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
   *
   */
 void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_backgroundItems.append(item);
+    this->_backgroundItems.push_back(item);
 }
 
 /**
@@ -292,20 +291,19 @@ void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
   *
   */
 void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_foregroundItems.append(item);
+    this->_foregroundItems.push_back(item);
 }
 
 
 void LCADViewer::drawBackground(LcPainter* lcPainter, const QRectF& updateRect) {
-
-    for (int i = 0; i < _backgroundItems.size(); ++i) {
-        _backgroundItems.at(i)->draw(lcPainter, nullptr, updateRect);
+    for (auto item : _backgroundItems) {
+        item->draw(lcPainter, nullptr, updateRect);
     }
-
 }
+
 void LCADViewer::drawForeground(LcPainter* lcPainter, const QRectF& updateRect) {
-    for (int i = 0; i < _foregroundItems.size(); ++i) {
-        _foregroundItems.at(i)->draw(lcPainter, nullptr, updateRect);
+    for (auto item : _foregroundItems) {
+        item->draw(lcPainter, nullptr, updateRect);
     }
 
     //    for (int i = 0; i < _cursorItems.size(); ++i) {

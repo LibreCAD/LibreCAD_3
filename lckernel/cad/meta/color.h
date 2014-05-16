@@ -81,12 +81,6 @@ namespace lc {
             int _a;
     };
 
-    /*
-    inline uint qHash( const Color &key)
-    {
-        return qHash(QString("%1_%2_%3_%4").arg(key.red()).arg(key.green()).arg(key.blue()).arg(key.alpha()));
-    }*/
-
 
 }
 

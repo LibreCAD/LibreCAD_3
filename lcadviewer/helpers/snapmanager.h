@@ -2,7 +2,6 @@
 #define SNAPMANAGER_H
 
 #include <QObject>
-#include <QList>
 
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"

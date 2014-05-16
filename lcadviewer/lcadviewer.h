@@ -108,8 +108,8 @@ class LCADViewer : public QWidget {
         // FIXME: Create a method so that we can re-order them when they are exchanged
         // during runtime of librecad. So that for example a grid is always draw on top of a background gradient
         // so it's visible
-        QList<std::shared_ptr<LCVDrawItem> > _backgroundItems;
-        QList<std::shared_ptr<LCVDrawItem> > _foregroundItems;
+        std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;
+        std::vector<std::shared_ptr<LCVDrawItem> > _foregroundItems;
 
         double _scale;
         double _zoom_min;
