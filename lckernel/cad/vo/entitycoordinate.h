@@ -6,7 +6,7 @@
 
 namespace lc {
     /**
-      * \brief Clas sthat represents a Coordinate associated with a distance to a test point and a identifier for the point
+      * \brief Class that represents a Coordinate associated with a distance to a test point and a identifier for the point
       *
       *
       */
@@ -19,6 +19,17 @@ namespace lc {
               * @param unsigned int ID number that identitifes the the coordinate
               */
             EntityCoordinate(const geo::Coordinate& point, double distance, int pointId) : _point(point), _distance(distance), _pointId(pointId) {
+            }
+
+            /**
+             * @brief EntityCoordinate
+             * copy constructor
+             * @param ec
+             */
+            EntityCoordinate(const EntityCoordinate& ec) {
+                _point = ec._point;
+                _distance = ec._distance;
+                _pointId = ec._pointId;
             }
 
             EntityCoordinate& operator = (const EntityCoordinate& ec) {

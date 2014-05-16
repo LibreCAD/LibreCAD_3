@@ -1,7 +1,7 @@
 #ifndef SNAPABLE_H
 #define SNAPABLE_H
 
-#include <QList>
+#include <vector>
 #include "cad/geometry/geocoordinate.h"
 #include "cad/vo/entitycoordinate.h"
 
@@ -22,7 +22,7 @@ namespace lc {
              *
              * \sa lc::EntityCoordinate
              */
-            virtual QList<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const = 0;
+            virtual std::vector<lc::EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const = 0;
 
             /*!
              * \brief Find the nearest point on the path for this entity for the coordinate \em coord

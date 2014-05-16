@@ -33,7 +33,7 @@ namespace lc {
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
-            virtual QHash <QString, Layer_CSPtr > const& allLayers() const = 0;
+            virtual std::map<QString, Layer_CSPtr> allLayers() const = 0;
 
             /*!
              * \brief entityContainer

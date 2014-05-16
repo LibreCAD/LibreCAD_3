@@ -9,7 +9,7 @@
 
 using namespace lc;
 
-FTrim::FTrim(QList<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
+FTrim::FTrim(std::vector<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
 
 }
 
@@ -19,24 +19,24 @@ void FTrim::visit(Arc_CSPtr arc) {
 void FTrim::visit(Line_CSPtr line) {
     /*
     IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
-    QList<geo::Coordinate> points = im.result();
+    std::vector<geo::Coordinate> points = im.result();
     this->_newEntities.clear();
 
-    if (points.count() > 0) {
-        points.append(this->_trimPoint);
+    if (points.size() > 0) {
+        points.push_back(this->_trimPoint);
         qSort(points.begin(), points.end(), geo::CoordinateDistanceSort(line->start()));
 
         for (int i = 0; i < points.size(); ++i) {
             if (points.at(i) == this->_trimPoint) {
                 if (i == 0) {
-                    this->_newEntities.append(Line_CSPtr(new Line(points.at(i + 1), line->end())));
+                    this->_newEntities.push_back(Line_CSPtr(new Line(points.at(i + 1), line->end())));
                     return;
                 } else if (i == points.size() - 1) {
-                    this->_newEntities.append(Line_CSPtr(new Line(line->start(), points.at(i - 1))));
+                    this->_newEntities.push_back(Line_CSPtr(new Line(line->start(), points.at(i - 1))));
                     return;
                 } else {
-                    this->_newEntities.append(Line_CSPtr(new Line(line->start(), points.at(i - 1))));
-                    this->_newEntities.append(Line_CSPtr(new Line(points.at(i + 1), line->end())));
+                    this->_newEntities.push_back(Line_CSPtr(new Line(line->start(), points.at(i - 1))));
+                    this->_newEntities.push_back(Line_CSPtr(new Line(points.at(i + 1), line->end())));
                     return;
                 }
             }
@@ -55,7 +55,7 @@ void FTrim::visit(Text_CSPtr text) {
 
 }
 
-QList<CADEntity_CSPtr> FTrim::result() {
+std::vector<CADEntity_CSPtr> FTrim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;
 }

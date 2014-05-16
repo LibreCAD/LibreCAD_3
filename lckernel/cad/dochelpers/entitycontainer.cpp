@@ -26,7 +26,7 @@ void EntityContainer::remove(CADEntity_CSPtr entity) {
     }
 }
 
-QHash<ID_DATATYPE, CADEntity_CSPtr > EntityContainer::allEntities() const {
+QHash<ID_DATATYPE, CADEntity_CSPtr> EntityContainer::allEntities() const {
     return _cadentities;
 }
 
@@ -47,9 +47,9 @@ EntityContainer EntityContainer::entitiesByLayer(const Layer_CSPtr layer) const 
     return container;
 }
 
-QList<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
+std::vector<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
 
-    QList<lc::EntityDistance> entities;
+    std::vector<lc::EntityDistance> entities;
 
     // Now calculate for each entity if we are near the entities path
     for (auto item : _cadentities.values()) {
@@ -62,7 +62,7 @@ QList<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const lc::g
             double cDistance = nearestCoord.magnitude();
 
             if (cDistance < distance) {
-                entities.append(lc::EntityDistance(item, cDistance));
+                entities.push_back(lc::EntityDistance(item, cDistance));
             }
         }
     }

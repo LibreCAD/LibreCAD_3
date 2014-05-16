@@ -1,10 +1,7 @@
 #ifndef LINEWIDTH_H
 #define LINEWIDTH_H
 
-#include <QMetaType>
-#include <QVariant>
 #include <QString>
-#include <QHash>
 
 #include "cad/const.h"
 
@@ -58,11 +55,6 @@ namespace lc {
                             return other._method==this->_method;
                         } */
 
-            operator QVariant() const {
-                return QVariant::fromValue(*this);
-            }
-
-
             bool variantValid() const {
                 return !(_method == LineWidth::Invalid);
             }
@@ -84,9 +76,5 @@ namespace lc {
 
 
 }
-
-Q_DECLARE_METATYPE(lc::LineWidth)
-
-
 
 #endif // LINEWIDTH_H

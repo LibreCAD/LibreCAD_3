@@ -9,9 +9,9 @@ namespace lc {
         // TODO: Should Spline be a arc with a start angle of 0 and a stop angle of 2PI ?
         class Spline {
             public:
-                Spline(const QList<Coordinate>& control_points, int degree, bool closed);
+                Spline(const std::vector<Coordinate>& control_points, int degree, bool closed);
 
-                const QList<Coordinate>& control_points() const;
+                const std::vector<Coordinate>& control_points() const;
 
                 int degree() const;
 
@@ -32,7 +32,7 @@ namespace lc {
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
             private:
-                const QList<Coordinate> _control_points; /*!< center of cirlce */
+                const std::vector<Coordinate> _control_points; /*!< center of cirlce */
                 int _degree; /*!< Radius of Spline. */
                 bool _closed;
         };

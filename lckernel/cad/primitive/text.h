@@ -19,7 +19,7 @@ namespace lc {
     class Text : public std::enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
             Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer);
-            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes);
+            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;

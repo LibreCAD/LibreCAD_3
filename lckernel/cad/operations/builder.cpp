@@ -14,105 +14,103 @@ Builder::~Builder() {
 }
 
 Builder& Builder::append(CADEntity_CSPtr cadEntity) {
-    _workingBuffer.append(cadEntity);
+    _workingBuffer.push_back(cadEntity);
     return *this;
 }
 
 Builder& Builder::move(const geo::Coordinate& offset) {
-    _stack.append(std::make_shared<Move>(offset));
+    _stack.push_back(std::make_shared<Move>(offset));
     return *this;
 }
 Builder& Builder::copy(const geo::Coordinate& offset) {
-    _stack.append(std::make_shared<Copy>(offset));
+    _stack.push_back(std::make_shared<Copy>(offset));
     return *this;
 }
 Builder& Builder::repeat(const int numTimes) {
-    _stack.append(std::make_shared<Loop>(numTimes));
+    _stack.push_back(std::make_shared<Loop>(numTimes));
     return *this;
 }
 Builder& Builder::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) {
-    _stack.append(std::make_shared<Rotate>(rotation_center, rotation_angle));
+    _stack.push_back(std::make_shared<Rotate>(rotation_center, rotation_angle));
     return *this;
 }
 Builder& Builder::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) {
-    _stack.append(std::make_shared<Scale>(scale_center, scale_factor));
+    _stack.push_back(std::make_shared<Scale>(scale_center, scale_factor));
     return *this;
 }
 
 Builder& Builder::begin() {
-    _stack.append(std::make_shared<Begin>());
+    _stack.push_back(std::make_shared<Begin>());
     return *this;
 }
 Builder& Builder::push() {
-    _stack.append(std::make_shared<Push>());
+    _stack.push_back(std::make_shared<Push>());
     return *this;
 }
 Builder& Builder::selectByLayer(const Layer_CSPtr layer) {
-    _stack.append(std::make_shared<SelectByLayer>(layer));
+    _stack.push_back(std::make_shared<SelectByLayer>(layer));
     return *this;
 }
 Builder& Builder::remove() {
-    _stack.append(std::make_shared<Remove>());
+    _stack.push_back(std::make_shared<Remove>());
     return *this;
 }
 
 
 void Builder::processInternal(StorageManager_SPtr storageManager) {
-    QList<CADEntity_CSPtr> entitySet;
+    std::vector<CADEntity_CSPtr> entitySet;
 
-    for (int i = 0; i < _stack.size(); ++i) {
+    for(auto it = _stack.begin(); it != _stack.end(); ++it) {
         // Get looping stack, we currently support only one single loop!!
-        QList<Base_SPtr> stack = _stack.mid(0, i);
-        entitySet = _stack.at(i)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
+        std::vector<Base_SPtr> stack(_stack.begin(), it);
+        entitySet = (*it)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
     }
 
-    _workingBuffer.append(entitySet);
+    _workingBuffer.insert(_workingBuffer.end(), entitySet.begin(), entitySet.end());
+
 
     // Build a buffer with all entities we need to remove during a undo cycle
-    for (int i = 0; i < _workingBuffer.size(); ++i) {
-        auto org = storageManager->entityByID(_workingBuffer.at(i)->id());
+    for (auto entity: _workingBuffer) {
+        auto org = storageManager->entityByID(entity->id());
 
         if (org.get() != nullptr) {
-            _entitiesThatWhereUpdated.append(org);
+            _entitiesThatWhereUpdated.push_back(org);
         }
     }
 
     // Remove entities
-    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
-        document()->removeEntity(_entitiesThatNeedsRemoval.at(i));
+    for (auto entity: _entitiesThatNeedsRemoval) {
+        document()->removeEntity(entity);
     }
 
     // Add/Update all entities in the document
-    for (int i = 0; i < _workingBuffer.size(); ++i) {
-        document()->insertEntity(_workingBuffer.at(i));
+    for (auto entity: _workingBuffer) {
+        document()->insertEntity(entity);
     }
 
 }
 
 void Builder::undo() const {
-
-    for (int i = 0; i < _workingBuffer.size(); ++i) {
-        document()->removeEntity(_workingBuffer.at(i));
+    for (auto entity: _workingBuffer) {
+        document()->removeEntity(entity);
     }
 
-    for (int i = 0; i < _entitiesThatWhereUpdated.size(); ++i) {
-        document()->insertEntity(_entitiesThatWhereUpdated.at(i));
+    for (auto entity: _entitiesThatWhereUpdated) {
+        document()->insertEntity(entity);
     }
 
-    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
-        document()->insertEntity(_entitiesThatNeedsRemoval.at(i));
+    for (auto entity: _entitiesThatNeedsRemoval) {
+        document()->insertEntity(entity);
     }
-
 }
 
 void Builder::redo() const {
-    for (int i = 0; i < _entitiesThatNeedsRemoval.size(); ++i) {
-        document()->removeEntity(_entitiesThatNeedsRemoval.at(i));
+    for (auto entity: _entitiesThatNeedsRemoval) {
+        document()->removeEntity(entity);
     }
 
-    for (int i = 0; i < _workingBuffer.size(); ++i) {
-        document()->insertEntity(_workingBuffer.at(i));
+    for (auto entity: _workingBuffer) {
+        document()->insertEntity(entity);
     }
-
 }
 

@@ -1,10 +1,6 @@
 #ifndef PEN_H
 #define PEN_H
 
-
-#include <QMetaType>
-#include <QVariant>
-
 #include "cad/const.h"
 
 #include "color.h"

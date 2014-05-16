@@ -19,11 +19,11 @@ Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other->layer(), othe
 
 
 
-QList<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
-    QList<EntityCoordinate> points;
+std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    std::vector<EntityCoordinate> points;
 
-    points.append(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
-    points.append(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
+    points.push_back(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
+    points.push_back(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
 
     geo::Coordinate npoe = nearestPointOnPath(coord);
     geo::Coordinate rVector = npoe - coord;
@@ -31,12 +31,13 @@ QList<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double mi
     double distance = rVector.magnitude();
 
     if (distance < minDistanceToSnap) {
-        points.append(EntityCoordinate(npoe, distance, -1));
+        points.push_back(EntityCoordinate(npoe, distance, -1));
     }
 
-    // Sort by distance
+    // Sort by distance and take first XX elements
     qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
-    return points.mid(0, maxNumberOfSnapPoints);
+    points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+    return points;
 }
 
 geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {

@@ -10,10 +10,10 @@ Trim::Trim(Document* document, FTrim_SPtr trim) : DocumentOperation(document), U
 }
 
 void Trim::processInternal(StorageManager_SPtr storageManager) {
-    QList<CADEntity_CSPtr> newEntities = _trim->result();
+    std::vector<CADEntity_CSPtr> newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
-        for (int i = 0; i < newEntities.size(); ++i) {
+        for (unsigned int i = 0; i < newEntities.size(); ++i) {
             document()->insertEntity(newEntities.at(i));
         }
 
@@ -22,10 +22,10 @@ void Trim::processInternal(StorageManager_SPtr storageManager) {
 }
 
 void Trim::undo() const {
-    QList<CADEntity_CSPtr> newEntities = _trim->result();
+    std::vector<CADEntity_CSPtr> newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
-        for (int i = 0; i < newEntities.size(); ++i) {
+        for (unsigned int i = 0; i < newEntities.size(); ++i) {
             document()->removeEntity(newEntities.at(i));
         }
 
@@ -34,10 +34,10 @@ void Trim::undo() const {
 }
 
 void Trim::redo() const {
-    QList<CADEntity_CSPtr> newEntities = _trim->result();
+    std::vector<CADEntity_CSPtr> newEntities = _trim->result();
 
     if (newEntities.size() > 0) {
-        for (int i = 0; i < newEntities.size(); ++i) {
+        for (unsigned int i = 0; i < newEntities.size(); ++i) {
             document()->insertEntity(newEntities.at(i));
         }
 

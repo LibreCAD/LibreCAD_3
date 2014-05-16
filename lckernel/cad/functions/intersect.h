@@ -61,9 +61,9 @@ namespace lc {
             virtual void visit(Spline_CSPtr, Text_CSPtr);
             virtual void visit(Spline_CSPtr, Spline_CSPtr);
 
-            QList<geo::Coordinate> result() const;
+            std::vector<geo::Coordinate> result() const;
         private:
-            QList<geo::Coordinate> _intersectionPoints;
+            std::vector<geo::Coordinate> _intersectionPoints;
             Method _method;
     };
 
@@ -74,10 +74,10 @@ namespace lc {
       */
     class IntersectMany {
         public:
-            IntersectMany(QList<CADEntity_CSPtr>,  Intersect::Method);
-            QList<geo::Coordinate> result() const;
+            IntersectMany(std::vector<CADEntity_CSPtr>,  Intersect::Method);
+            std::vector<geo::Coordinate> result() const;
         private:
-            QList<CADEntity_CSPtr> _entities;
+            std::vector<CADEntity_CSPtr> _entities;
             Intersect::Method _method;
     };
 }

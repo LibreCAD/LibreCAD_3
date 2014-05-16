@@ -10,20 +10,20 @@ namespace lc {
 
     class FTrim : public EntityDispatch {
         public:
-            FTrim(QList<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
+            FTrim(std::vector<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
 
             virtual void visit(Line_CSPtr);
             virtual void visit(Circle_CSPtr);
             virtual void visit(Arc_CSPtr);
             virtual void visit(Ellipse_CSPtr);
             virtual void visit(Text_CSPtr);
-            QList<CADEntity_CSPtr> result();
+            std::vector<CADEntity_CSPtr> result();
             CADEntity_CSPtr trimmedShape() const;
 
         private:
-            QList<CADEntity_CSPtr> _limitingEntities;
+            std::vector<CADEntity_CSPtr> _limitingEntities;
             CADEntity_CSPtr _trimmedShape;
-            QList<CADEntity_CSPtr> _newEntities;
+            std::vector<CADEntity_CSPtr> _newEntities;
             geo::Coordinate _trimPoint;
     };
 

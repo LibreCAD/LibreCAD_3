@@ -22,11 +22,11 @@ namespace lc {
 
     class Spline : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable {
         public:
-            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer);
-            Spline(const QList<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes);
+            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer);
+            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
-            virtual QList<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
 
         public:

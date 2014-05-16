@@ -8,7 +8,7 @@ Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr l
 
 }
 
-Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes) : CADEntity(layer, metaTypes),  geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Circle(center, radius) {
 }
 
 
@@ -19,10 +19,10 @@ Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other->layer()
 }
 
 
-QList<EntityCoordinate> Circle::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
-    QList<EntityCoordinate> points;
+std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    std::vector<EntityCoordinate> points;
 
-    points.append(EntityCoordinate(center(), (center() - coord).magnitude(), 0));
+    points.push_back(EntityCoordinate(center(), (center() - coord).magnitude(), 0));
 
     geo::Coordinate npoe = nearestPointOnPath(coord);
     geo::Coordinate rVector = npoe - coord;
@@ -30,12 +30,13 @@ QList<EntityCoordinate> Circle::snapPoints(const geo::Coordinate& coord, double 
     double distance = rVector.magnitude();
 
     if (distance < minDistanceToSnap) {
-        points.append(EntityCoordinate(npoe, distance, -1));
+        points.push_back(EntityCoordinate(npoe, distance, -1));
     }
 
-    // Sort by distance
+    // Sort by distance and keep maxNumberOfSnapPoints
     qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
-    return points.mid(0, maxNumberOfSnapPoints);
+    points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+    return points;
 }
 
 // TODO: Decide if a point like center should be returned by a function nearestPointOnPath

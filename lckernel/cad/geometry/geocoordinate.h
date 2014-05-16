@@ -125,10 +125,10 @@ namespace lc {
           * \note This routine is not very fast in the sense that it would re-calculate the distance for each comparison. It shouls still be fast enough to sort a collection of let's say 10.000 points
           *
           * \code
-          * QList<geo::Coordinate> myList;
-          * myList.append(geo::Coordinate(50.,50.));
-          * myList.append(geo::Coordinate(20.,20.));
-          * myList.append(geo::Coordinate(120.,120.));
+          * std::vector<geo::Coordinate> myList;
+          * myList.push_back(geo::Coordinate(50.,50.));
+          * myList.push_back(geo::Coordinate(20.,20.));
+          * myList.push_back(geo::Coordinate(120.,120.));
           * qSort(sp.begin(), sp.end(), geo::CoordinateDistanceSort(geo::Coordinate(60.60.)));
           * \endcode
           */

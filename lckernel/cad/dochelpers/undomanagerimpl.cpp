@@ -8,7 +8,7 @@
 using namespace lc;
 
 
-UndoManagerImpl::UndoManagerImpl(Document* document, int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
+UndoManagerImpl::UndoManagerImpl(Document* document, unsigned int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
 
     connect(document, SIGNAL(commitProcessEvent(const lc::CommitProcessEvent&)),
             this, SLOT(on_CommitProcessEvent(const lc::CommitProcessEvent&)));
@@ -17,7 +17,7 @@ UndoManagerImpl::UndoManagerImpl(Document* document, int maximumUndoLevels) : _d
 
 void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
 
-    operation::Undoable_SPtr  undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
+    operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable.get() != nullptr) {
         qDebug() << "Process: " << undoable->text();
@@ -25,21 +25,20 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
         // Check if Redo is possible, if so we might need to purge objects from memory
         // as long as we can redo, purge these objects
         while (canRedo()) {
-            operation::Undoable_SPtr  undoable = _reDoables.pop();
+            operation::Undoable_SPtr undoable = _reDoables.top();_reDoables.pop();
             // Need to get a list of absolete entities, they are all entities that are created in the _reDoables list
             // document()->absolueteEntity(entity);
 
         }
 
         // Add undoable to stack
-        _unDoables.append(undoable);
+        _unDoables.push_back(undoable);
 
         // Remove old undoables
         if (_unDoables.size() > this->_maximumUndoLevels) {
-            undoable = _unDoables.first();
             // Need to get a list of absolete entities, they are all entities that are delete in the _unDoables list
             // document()->absolueteEntity(entity);
-            _unDoables.pop_front();
+            _unDoables.erase(_unDoables.begin(), _unDoables.begin() + 1);
         }
     }
 }
@@ -47,14 +46,14 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
 
 void UndoManagerImpl::redo() {
     if (canRedo()) {
-        operation::Undoable_SPtr  undoable = _reDoables.pop();
+        operation::Undoable_SPtr undoable = _reDoables.top();_reDoables.pop();
         undoable->redo();
-        _unDoables.append(undoable);
+        _unDoables.push_back(undoable);
     }
 }
 void UndoManagerImpl::undo() {
     if (canUndo()) {
-        operation::Undoable_SPtr  undoable = _unDoables.last();
+        operation::Undoable_SPtr undoable = _unDoables.back();
         _unDoables.pop_back();
         undoable->undo();
         _reDoables.push(undoable);
@@ -62,13 +61,15 @@ void UndoManagerImpl::undo() {
 }
 
 bool UndoManagerImpl::canRedo() const {
-    return !_reDoables.isEmpty();
+    return !_reDoables.empty();
 }
 bool UndoManagerImpl::canUndo() const {
-    return !_unDoables.isEmpty();
+    return !_unDoables.empty();
 }
 
 void UndoManagerImpl::removeUndoables() {
     _unDoables.clear();
-    _reDoables.clear();
+    while(!_reDoables.empty()) {
+        _reDoables.pop();
+    }
 }

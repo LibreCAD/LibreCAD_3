@@ -1,8 +1,6 @@
-
 #ifndef ENTITYCONTAINER_H
 #define ENTITYCONTAINER_H
 
-#include <QHash>
 #include "cad/base/id.h"
 #include <memory>
 #include <cad/vo/entitydistance.h>
@@ -44,7 +42,7 @@ namespace lc {
              * \brief return all the entities present in the document.
              * \return QHash Entity ID and Entity.
              */
-            virtual QHash<ID_DATATYPE, CADEntity_CSPtr > allEntities() const;
+            virtual QHash<ID_DATATYPE, CADEntity_CSPtr> allEntities() const;
 
 
             virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const;
@@ -63,9 +61,9 @@ namespace lc {
              * \param distance maximum distance from this point where the function would consider adding it to a list
              * \return List of entities sorted by distance
              */
-            QList<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
+            std::vector<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
         private:
-            QHash<ID_DATATYPE, CADEntity_CSPtr > _cadentities;
+            QHash<ID_DATATYPE, CADEntity_CSPtr> _cadentities;
 
     };
 }

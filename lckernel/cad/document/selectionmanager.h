@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QPoint>
-#include <QList>
+#include <vector>
 
 #include "cad/const.h"
 
@@ -21,17 +21,17 @@ namespace lc {
               *
               * @param Coordinate   coordinate to test again
               * @param double within what distance the entity must be
-              * @return QList<EntityDistance> list of EntityDistance objects
+              * @return std::vector<EntityDistance> list of EntityDistance objects
               */
-            virtual QList<EntityDistance> getEntitiesNearCoordinate(const geo::Coordinate& coordinate, double withinDistance) const = 0;
+            virtual std::vector<EntityDistance> getEntitiesNearCoordinate(const geo::Coordinate& coordinate, double withinDistance) const = 0;
 
             /**
               * Return a list of entities within a specific area
               *
               * @param Area Area to find entities in
-              * @return QList<CADEntity_CSPtr> List of CAD Entities
+              * @return std::vector<CADEntity_CSPtr> List of CAD Entities
               */
-            virtual QList<CADEntity_CSPtr> getEntitiesInArea(const geo::Area& area) const = 0;
+            virtual std::vector<CADEntity_CSPtr> getEntitiesInArea(const geo::Area& area) const = 0;
 
     };
 }

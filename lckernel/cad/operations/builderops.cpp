@@ -13,17 +13,17 @@ using namespace lc::operation;
 Begin::Begin() :  Base() {
 }
 
-QList<CADEntity_CSPtr> Begin::process(
+std::vector<CADEntity_CSPtr> Begin::process(
     StorageManager_SPtr storageManager,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>& workingBuffer,
-    QList<CADEntity_CSPtr>& removals,
-    const QList<Base_SPtr>) {
-    _entities.append(entitySet);
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>& workingBuffer,
+    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<Base_SPtr>) {
+    _entities.insert(_entities.end(), entitySet.begin(), entitySet.end());
     return entitySet;
 }
 
-QList<CADEntity_CSPtr> Begin::getEntities() const {
+std::vector<CADEntity_CSPtr> Begin::getEntities() const {
     return _entities;
 }
 
@@ -32,32 +32,33 @@ QList<CADEntity_CSPtr> Begin::getEntities() const {
 Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 }
 
-QList<CADEntity_CSPtr> Loop::process(
+std::vector<CADEntity_CSPtr> Loop::process(
     StorageManager_SPtr storageManager,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>& _workingBuffer,
-    QList<CADEntity_CSPtr>& removals,
-    const QList<Base_SPtr> _stack) {
-    QList<CADEntity_CSPtr> final;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>& _workingBuffer,
+    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<Base_SPtr> _stack) {
+    std::vector<CADEntity_CSPtr> final;
 
     // Find the start
-    QList<CADEntity_CSPtr> _start;
+    std::vector<CADEntity_CSPtr> _start;
 
-    for (int i = 0; i < _stack.size(); ++i) {
-        const lc::operation::Begin* begin = dynamic_cast<const lc::operation::Begin*>(_stack.at(i).get());
+    for (auto base : _stack) {
+        const lc::operation::Begin* begin = dynamic_cast<const lc::operation::Begin*>(base.get());
 
         if (begin != nullptr) {
-            _start.append(begin->getEntities());
+            auto entities = begin->getEntities();
+            _start.insert(_start.end(), entities.begin(), entities.end());
         }
     }
 
 
     // run the operation que
-    QList<CADEntity_CSPtr> entitySet2(entitySet);
+    std::vector<CADEntity_CSPtr> entitySet2(entitySet);
 
     for (int n = 0; n < _numTimes - 1; n++) {
-        for (int i = 0; i < _stack.size(); ++i) {
-            entitySet2 = _stack.at(i)->process(storageManager, entitySet2, _workingBuffer, removals, _stack);
+        for (auto base : _stack) {
+            entitySet2 = base->process(storageManager, entitySet2, _workingBuffer, removals, _stack);
         }
     }
 
@@ -69,17 +70,17 @@ QList<CADEntity_CSPtr> Loop::process(
 Move::Move(const geo::Coordinate& offset) :  Base(), _offset(offset) {
 }
 
-QList<CADEntity_CSPtr>  Move::process(
+std::vector<CADEntity_CSPtr>  Move::process(
     StorageManager_SPtr ,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>&,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
-    QList<CADEntity_CSPtr> newQueue;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>&,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> newQueue;
 
-    for (int i = 0; i < entitySet.size(); ++i) {
-        auto e = entitySet.at(i)->move(_offset);
-        newQueue.append(e);
+    for (auto entity : entitySet) {
+        auto e = entity->move(_offset);
+        newQueue.push_back(e);
     }
 
     return newQueue;
@@ -92,18 +93,18 @@ QList<CADEntity_CSPtr>  Move::process(
 Copy::Copy(const geo::Coordinate& offset) : Base(), _offset(offset) {
 }
 
-QList<CADEntity_CSPtr> Copy::process(
+std::vector<CADEntity_CSPtr> Copy::process(
     StorageManager_SPtr ,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>& workingBuffer,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
-    QList<CADEntity_CSPtr> newQueue;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>& workingBuffer,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> newQueue;
 
-    for (int i = 0; i < entitySet.size(); ++i) {
-        auto e = entitySet.at(i)->copy(_offset);
-        workingBuffer.append(entitySet.at(i));
-        newQueue.append(e);
+    for (auto entity : entitySet) {
+        auto e = entity->copy(_offset);
+        workingBuffer.push_back(entity);
+        newQueue.push_back(e);
     }
 
     return newQueue;
@@ -112,17 +113,17 @@ QList<CADEntity_CSPtr> Copy::process(
 Scale::Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : Base(), _scale_center(scale_center), _scale_factor(scale_factor) {
 }
 
-QList<CADEntity_CSPtr> Scale::process(
+std::vector<CADEntity_CSPtr> Scale::process(
     StorageManager_SPtr ,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>&,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
-    QList<CADEntity_CSPtr> newQueue;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>&,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> newQueue;
 
-    for (int i = 0; i < entitySet.size(); ++i) {
-        auto e = entitySet.at(i)->scale(_scale_center, _scale_factor);
-        newQueue.append(e);
+    for (auto entity : entitySet) {
+        auto e = entity->scale(_scale_center, _scale_factor);
+        newQueue.push_back(e);
     }
 
     return newQueue;
@@ -131,17 +132,17 @@ QList<CADEntity_CSPtr> Scale::process(
 Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_angle) : Base(), _rotation_center(rotation_center), _rotation_angle(rotation_angle) {
 }
 
-QList<CADEntity_CSPtr> Rotate::process(
+std::vector<CADEntity_CSPtr> Rotate::process(
     StorageManager_SPtr ,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>&,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
-    QList<CADEntity_CSPtr> newQueue;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>&,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> newQueue;
 
-    for (int i = 0; i < entitySet.size(); ++i) {
-        auto e = entitySet.at(i)->rotate(_rotation_center, _rotation_angle);
-        newQueue.append(e);
+    for (auto entity : entitySet) {
+        auto e = entity->rotate(_rotation_center, _rotation_angle);
+        newQueue.push_back(e);
     }
 
     return newQueue;
@@ -151,14 +152,14 @@ QList<CADEntity_CSPtr> Rotate::process(
 Push::Push() : Base() {
 }
 
-QList<CADEntity_CSPtr> Push::process(
+std::vector<CADEntity_CSPtr> Push::process(
     StorageManager_SPtr ,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>& workingBuffer,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
-    QList<CADEntity_CSPtr> newQueue(workingBuffer);
-    newQueue.append(entitySet);
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>& workingBuffer,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> newQueue(workingBuffer);
+    newQueue.insert(newQueue.end(), entitySet.begin(), entitySet.end());
     workingBuffer.clear();
     return newQueue;
 }
@@ -169,15 +170,19 @@ QList<CADEntity_CSPtr> Push::process(
 SelectByLayer::SelectByLayer(const Layer_CSPtr layer) : Base(), _layer(layer) {
 }
 
-QList<CADEntity_CSPtr> SelectByLayer::process(
+std::vector<CADEntity_CSPtr> SelectByLayer::process(
     StorageManager_SPtr storageManager,
-    QList<CADEntity_CSPtr> ,
-    QList<CADEntity_CSPtr>&,
-    QList<CADEntity_CSPtr>&,
-    const QList<Base_SPtr>) {
+    std::vector<CADEntity_CSPtr> ,
+    std::vector<CADEntity_CSPtr>&,
+    std::vector<CADEntity_CSPtr>&,
+    const std::vector<Base_SPtr>) {
     EntityContainer c = storageManager->entitiesByLayer(_layer);
-    QList<CADEntity_CSPtr> e(c.allEntities().values());
-    qDebug() << "SelectByLayer::process " << e.size();
+
+    std::vector<CADEntity_CSPtr> e;
+
+//    std::vector<CADEntity_CSPtr> e(c.allEntities());
+    // transform(my_map.begin(), my_map.end(), back_inserter(my_vals), [](MyMap::value_type& val){return val.second;} );
+
     return e;
 }
 
@@ -187,13 +192,13 @@ QList<CADEntity_CSPtr> SelectByLayer::process(
 Remove::Remove() : Base() {
 }
 
-QList<CADEntity_CSPtr> Remove::process(
+std::vector<CADEntity_CSPtr> Remove::process(
     StorageManager_SPtr storageManager,
-    QList<CADEntity_CSPtr> entitySet,
-    QList<CADEntity_CSPtr>&,
-    QList<CADEntity_CSPtr>& removals,
-    const QList<Base_SPtr>) {
-    removals.append(entitySet);
-    QList<CADEntity_CSPtr> e;
+    std::vector<CADEntity_CSPtr> entitySet,
+    std::vector<CADEntity_CSPtr>&,
+    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<Base_SPtr>) {
+    removals.insert(removals.end(), entitySet.begin(), entitySet.end());
+    std::vector<CADEntity_CSPtr> e;
     return e;
 }

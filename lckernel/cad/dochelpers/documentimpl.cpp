@@ -1,6 +1,4 @@
 
-#include <QHashIterator>
-#include <QVector>
 #include "qdebug.h"
 
 #include "documentimpl.h"

@@ -72,7 +72,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr _layer, std::map<MetaType::metaTypeId, MetaType_CSPtr > metaTypes);
+            CADEntity(Layer_CSPtr _layer, std::set<MetaType_CSPtr, MetaTypeComp> metaTypes);
 
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;

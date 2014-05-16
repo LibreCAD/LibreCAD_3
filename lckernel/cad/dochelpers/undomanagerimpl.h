@@ -1,7 +1,7 @@
 #ifndef UNDOMANAGERIMPL_H
 #define UNDOMANAGERIMPL_H
 
-#include <QStack>
+#include <stack>
 
 #include "cad/const.h"
 
@@ -20,7 +20,7 @@ namespace lc {
     class UndoManagerImpl: public UndoManager {
             Q_OBJECT
         public:
-            UndoManagerImpl(Document* document, int maximumUndoLevels);
+            UndoManagerImpl(Document* document, unsigned int maximumUndoLevels);
 
             /*!
              * \brief redo an operation.
@@ -75,9 +75,9 @@ namespace lc {
             Document* _document;
 
         private:
-            QList <operation::Undoable_SPtr > _unDoables; /*!< Undo list */
-            QStack <operation::Undoable_SPtr > _reDoables; /*!< Redo stack */
-            const int _maximumUndoLevels; /*!< Maximum undo level */
+            std::vector<operation::Undoable_SPtr> _unDoables; /*!< Undo list */
+            std::stack<operation::Undoable_SPtr> _reDoables; /*!< Redo stack */
+            const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
 
         public slots:
             void on_CommitProcessEvent(const lc::CommitProcessEvent& event);

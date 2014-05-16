@@ -41,12 +41,12 @@ namespace lc {
             virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const;
 
             virtual Layer_CSPtr layerByName(const QString& layerName) const;
-            virtual QHash <QString, Layer_CSPtr > const& allLayers() const;
+            virtual std::map<QString, Layer_CSPtr> allLayers() const;
 
             virtual EntityContainer entityContainer() const;
         private:
             EntityContainer _entities;
-            QHash <QString, Layer_CSPtr > _layers;
+            std::map<QString, Layer_CSPtr> _layers;
     };
 }
 #endif // ENTITYMANAGERIMPL_H

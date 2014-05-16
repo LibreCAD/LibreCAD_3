@@ -2,7 +2,6 @@
 #define DOCUMENTIMPL_H
 
 #include <QObject>
-#include <QVector>
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex
 #include <cad/events/addlayerevent.h>

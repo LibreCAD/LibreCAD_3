@@ -21,7 +21,7 @@ namespace lc {
     class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer);
-            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr >& metaTypes);
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;

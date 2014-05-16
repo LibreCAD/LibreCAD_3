@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <map>
+#include <set>
 #include <list>
 #include "cad/interface/metatype.h"
 
@@ -19,15 +20,15 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              *
-             * \todo: Change QList to a set
+             * \todo: Change std::vector to a set
              */
             MetaInfo(std::list<MetaType_CSPtr> metaTypes);
-            MetaInfo(std::map<MetaType::metaTypeId, MetaType_CSPtr> metaTypes);
+            MetaInfo(std::set<MetaType_CSPtr, MetaTypeComp> metaTypes);
             virtual ~MetaInfo();
 
             MetaType_CSPtr metaType(MetaType::metaTypeId type) const;
 
-            std::map<MetaType::metaTypeId, MetaType_CSPtr> metaTypes() const {
+            std::set<MetaType_CSPtr, MetaTypeComp> metaTypes() const {
                 return _metaTypes;
             }
 
@@ -36,10 +37,14 @@ namespace lc {
             /**
               *Holds list of meta type. Metatypes < 1024 are reserved for LibreCAD internall
               */
-            std::map<MetaType::metaTypeId, MetaType_CSPtr> _metaTypes;
+            //std::set<MetaType_CSPtr, MetaTypeComp> _metaTypes;
+
+            std::set<MetaType_CSPtr, MetaTypeComp> _metaTypes;
+
     };
     typedef std::shared_ptr<MetaInfo> MetaInfo_SPtr;
     typedef std::shared_ptr<const MetaInfo> MetaInfo_CSPtr;
+
 
 }
 

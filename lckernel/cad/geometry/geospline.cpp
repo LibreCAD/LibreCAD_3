@@ -3,12 +3,12 @@
 using namespace lc;
 using namespace geo;
 
-Spline::Spline(const QList<Coordinate>& control_points, int degree, bool closed) : _control_points(control_points) {
+Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _control_points(control_points) {
     _degree = degree;
     _closed = closed;
 }
 
-const QList<Coordinate>& Spline::control_points() const {
+const std::vector<Coordinate>& Spline::control_points() const {
     return _control_points;
 }
 

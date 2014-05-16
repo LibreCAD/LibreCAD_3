@@ -5,7 +5,7 @@
 #include "builderops.h"
 #include "documentoperation.h"
 #include "undoable.h"
-#include <QList>
+#include <vector>
 #include "cad/document/storagemanager.h"
 
 namespace lc {
@@ -39,12 +39,12 @@ namespace lc {
                 virtual void processInternal(StorageManager_SPtr storageManager);
 
             private:
-                QList<Base_SPtr> _stack;
-                QList<CADEntity_CSPtr> _workingBuffer;
+                std::vector<Base_SPtr> _stack;
+                std::vector<CADEntity_CSPtr> _workingBuffer;
 
 
-                QList<CADEntity_CSPtr> _entitiesThatWhereUpdated;
-                QList<CADEntity_CSPtr> _entitiesThatNeedsRemoval;
+                std::vector<CADEntity_CSPtr> _entitiesThatWhereUpdated;
+                std::vector<CADEntity_CSPtr> _entitiesThatNeedsRemoval;
 
         };
 

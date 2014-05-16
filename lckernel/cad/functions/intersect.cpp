@@ -14,7 +14,7 @@ using namespace lc;
 Intersect::Intersect(Method method) : _method(method) {
 }
 
-QList<geo::Coordinate> Intersect::result() const {
+std::vector<geo::Coordinate> Intersect::result() const {
     return this->_intersectionPoints;
 }
 
@@ -37,7 +37,7 @@ void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
         geo::Coordinate coord(xs, ys);
 
         if (_method == Method::Any || (_method == Method::MustIntersect && l1->isCoordinateOnPath(coord) && l2->isCoordinateOnPath(coord))) {
-            _intersectionPoints.append(coord);
+            _intersectionPoints.push_back(coord);
         }
     }
 }
@@ -54,7 +54,7 @@ void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
     // special case: arc touches line (tangent):
     // TODO: We properly should add a tolorance here ??
     if (fabs(dist - arc->radius()) < 1.0e-4) {
-        _intersectionPoints.append(nearest);
+        _intersectionPoints.push_back(nearest);
         return;
     }
 
@@ -80,11 +80,11 @@ void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
         geo::Coordinate c2(line->start() - d * (t + a1) / d2);
 
         if (_method == Method::Any || (_method == Method::MustIntersect && arc->isCoordinateOnPath(c1) && line->isCoordinateOnPath(c1))) {
-            _intersectionPoints.append(c1);
+            _intersectionPoints.push_back(c1);
         }
 
         if (_method == Method::Any || (_method == Method::MustIntersect && arc->isCoordinateOnPath(c2) && line->isCoordinateOnPath(c2))) {
-            _intersectionPoints.append(c2);
+            _intersectionPoints.push_back(c2);
         }
     }
 }
@@ -203,18 +203,18 @@ void Intersect::visit(Spline_CSPtr, Text_CSPtr) {
 void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
 }
 
-IntersectMany::IntersectMany(QList<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
+IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
 }
 
-QList<geo::Coordinate> IntersectMany::result() const {
-    QList<geo::Coordinate> _intersectionPoints;
+std::vector<geo::Coordinate> IntersectMany::result() const {
+    std::vector<geo::Coordinate> _intersectionPoints;
 
-    if (_entities.count() > 1) {
-        for (int outer = 0; outer < (_entities.count() - 1); outer++) {
-            for (int inner = ++outer; inner < _entities.count(); inner++) {
+    if (_entities.size() > 1) {
+        for (unsigned int outer = 0; outer < (_entities.size() - 1); outer++) {
+            for (unsigned int inner = ++outer; inner < _entities.size(); inner++) {
                 Intersect intersect(_method);
                 _entities.at(outer)->accept(_entities.at(inner), intersect);
-                _intersectionPoints.append(intersect.result());
+                _intersectionPoints.insert(_intersectionPoints.end(), intersect.result().begin(), intersect.result().end());
             }
         }
     }

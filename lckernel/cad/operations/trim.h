@@ -1,7 +1,6 @@
 #ifndef TRIMENTITY_H
 #define TRIMENTITY_H
 
-#include <QVector>
 #include <QDebug>
 
 #include "cad/const.h"
