@@ -18,9 +18,24 @@ namespace lc {
 
     class Text : public std::enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
-            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer);
-            Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
-
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const QString text_value,
+                 const double width_rel,
+                 const double angle,
+                 const QString style,
+                 const TextGeneration textgeneration,
+                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer);
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const QString text_value,
+                 const double width_rel,
+                 const double angle,
+                 const QString style,
+                 const TextGeneration textgeneration,
+                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
