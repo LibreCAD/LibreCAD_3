@@ -9,16 +9,17 @@ Text::Text(const Coordinate& insertion_point,
     const double angle, const QString style,
     const TextGeneration textgeneration,
     const HAlign halign, const VAlign valign) :
-    _insertion_point(insertion_point), _second_point(second_point) {
+    _insertion_point(insertion_point), /*! First alignment point code 10, 20, 30 */
+    _second_point(second_point) { /*! Second alignment point in UCS ( optional ) code 11, 21, 31 */
 
-    _height = height;
-    _text_value = text_value;
-    _width_rel = width_rel;
-    _angle = angle;
-    _style = style;
-    _textgeneration = textgeneration;
-    _halign = halign;
-    _valign = valign;
+    _height = height; /*! Text Height */
+    _text_value = text_value; /*! Text Value */
+    _width_rel = width_rel; /*! X scale width code 41 */
+    _angle = angle; /*! Angle ( Optional ) Code 51 */
+    _style = style; /*! Text style name code 7 */
+    _textgeneration = textgeneration; /*! Text Generation flag code 71  */
+    _halign = halign; /*! Horizontal alignment code 72 */
+    _valign = valign; /*! Vertical alignment code 73  */
 
 }
 
