@@ -1,7 +1,6 @@
 #ifndef SELECTIONMANAGER_H
 #define SELECTIONMANAGER_H
 
-#include <QPoint>
 #include <vector>
 
 #include "cad/const.h"

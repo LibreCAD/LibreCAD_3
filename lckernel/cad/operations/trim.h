@@ -29,7 +29,6 @@ namespace lc {
             protected:
                 virtual void processInternal(StorageManager_SPtr storageManager);
 
-                Q_DISABLE_COPY(Trim)
             private:
                 std::shared_ptr<lc::FTrim> _trim;
 

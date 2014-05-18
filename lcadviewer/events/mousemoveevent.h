@@ -12,7 +12,8 @@
   */
 class MouseMoveEvent  {
     public:
-        MouseMoveEvent(LcPainter* painter, const QPointF& mousePosition) : _painter(painter), _mousePosition(mousePosition) {
+        MouseMoveEvent(LcPainter* painter, const QPointF& mousePosition) : _painter(painter) {
+            _mousePosition = lc::geo::Coordinate(mousePosition.x(), mousePosition.y());
         }
 
         lc::geo::Coordinate  mousePosition() const {
@@ -25,7 +26,7 @@ class MouseMoveEvent  {
 
     private:
         LcPainter* _painter;
-        const lc::geo::Coordinate _mousePosition;
+         lc::geo::Coordinate _mousePosition;
 };
 
 #endif // MOUSEMOVEEVENT_H

@@ -1,7 +1,6 @@
 #ifndef GEOCOORDINATE_H
 #define GEOCOORDINATE_H
 
-#include <QPointF>
 #include "cad/const.h"
 
 namespace lc {
@@ -16,7 +15,6 @@ namespace lc {
                 }
                 Coordinate(double x, double y, double z);
                 Coordinate(double x, double y);
-                Coordinate(const QPointF& qtPoint);  // Convenience
                 Coordinate(double angle) ;
                 double x() const;
                 double y() const;
@@ -39,10 +37,6 @@ namespace lc {
                 }
                 bool operator!=(const Coordinate& coord) const {
                     return !(*this == coord);
-                }
-
-                QPointF pointF() const {
-                    return QPointF(_x, _y);
                 }
 
                 /**

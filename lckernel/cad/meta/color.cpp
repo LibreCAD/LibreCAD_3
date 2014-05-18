@@ -1,5 +1,4 @@
 #include "color.h"
-#include <QColor>
 
 using namespace lc;
 

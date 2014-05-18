@@ -11,8 +11,6 @@ CONFIG      += plugin
 TARGET      = $$qtLibraryTarget(lckernel)
 TEMPLATE = lib
 
-QT       += core
-
 DEFINES += lckernel_LIBRARY
 
 VERSION=0.0.1

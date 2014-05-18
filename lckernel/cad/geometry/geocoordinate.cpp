@@ -22,12 +22,6 @@ Coordinate::Coordinate(double angle) {
     this->_y = sin(angle);
 }
 
-Coordinate::Coordinate(const QPointF& qtPoint) {
-    this->_x = qtPoint.x();
-    this->_y = qtPoint.y();
-    this->_z = 0;
-}
-
 double Coordinate::x() const {
     return _x;
 }
