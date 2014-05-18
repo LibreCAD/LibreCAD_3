@@ -76,12 +76,6 @@ Coordinate Coordinate::operator / (double s) const {
     return Coordinate(_x / s, _y / s, _z / s);
 }
 
-
-QDebug operator << (QDebug dbg, const geo::Coordinate& c) {
-    dbg.nospace() << "(" << c.x() << "," << c.y() << "," << c.z() << ")";
-    return dbg.space();
-}
-
 Coordinate Coordinate::rotate(const Coordinate& angleVector) const {
     double x0 = _x * angleVector.x() - _y * angleVector.y();
     double y0 = _x * angleVector.y() + _y * angleVector.x();

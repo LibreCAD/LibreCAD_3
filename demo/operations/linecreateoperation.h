@@ -24,8 +24,6 @@
  */
 class LineCreateOperation : public GuiOperation {
         Q_OBJECT
-        Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
-        Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
         LineCreateOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
 

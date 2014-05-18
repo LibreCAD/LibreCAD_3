@@ -2,7 +2,7 @@
 #define ENTITYINTERACTION_H
 
 #include "cad/const.h"
-
+#include <memory>
 
 namespace lc {
     class Arc;

@@ -1,9 +1,6 @@
 #ifndef ENTITYMANAGERIMPL_H
 #define ENTITYMANAGERIMPL_H
 
-#include <QDebug>
-#include <QObject>
-
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
 #include "cad/document/document.h"
@@ -25,7 +22,6 @@ namespace lc {
      * @param document
      */
     class StorageManagerImpl : public StorageManager {
-            Q_OBJECT
         public:
             /*!
              * \brief Entity manager implementor.
@@ -40,13 +36,13 @@ namespace lc {
             virtual CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
             virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const;
 
-            virtual Layer_CSPtr layerByName(const QString& layerName) const;
-            virtual std::map<QString, Layer_CSPtr> allLayers() const;
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const;
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const;
 
             virtual EntityContainer entityContainer() const;
         private:
             EntityContainer _entities;
-            std::map<QString, Layer_CSPtr> _layers;
+            std::map<std::string, Layer_CSPtr> _layers;
     };
 }
 #endif // ENTITYMANAGERIMPL_H

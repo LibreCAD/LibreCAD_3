@@ -38,9 +38,3 @@ void Vector::end(const Coordinate& coord) {
     _end = coord;
 }
 
-
-QDebug operator << (QDebug dbg, const geo::Vector& c) {
-    dbg.nospace() << "(" << c.start() << "," << c.end() << ")";
-    return dbg.space();
-}
-

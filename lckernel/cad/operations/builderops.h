@@ -55,7 +55,7 @@ namespace lc {
             public:
                 Loop(const int numTimes);
                 virtual ~Loop() {
-                    qDebug() << "Loop removed";
+                    LOG4CXX_DEBUG(logger, "Loop removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -90,7 +90,7 @@ namespace lc {
             public:
                 Begin();
                 virtual ~Begin() {
-                    qDebug() << "Begin removed";
+                    LOG4CXX_DEBUG(logger, "Begin removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -126,7 +126,7 @@ namespace lc {
             public:
                 Move(const geo::Coordinate& offset);
                 virtual ~Move() {
-                    qDebug() << "Move removed";
+                    LOG4CXX_DEBUG(logger, "Move removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -161,7 +161,7 @@ namespace lc {
             public:
                 Copy(const geo::Coordinate& offset);
                 virtual ~Copy() {
-                    qDebug() << "Copy removed";
+                    LOG4CXX_DEBUG(logger, "Copy removed");
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,
@@ -196,7 +196,7 @@ namespace lc {
             public:
                 Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
                 virtual ~Rotate() {
-                    qDebug() << "Rotate removed";
+                    LOG4CXX_DEBUG(logger, "Rotate removed");
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,
@@ -213,7 +213,7 @@ namespace lc {
             public:
                 Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
                 virtual ~Scale() {
-                    qDebug() << "Scale removed";
+                    LOG4CXX_DEBUG(logger, "Scale removed");
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,
@@ -250,7 +250,7 @@ namespace lc {
             public:
                 Push();
                 virtual ~Push() {
-                    qDebug() << "Push removed";
+                    LOG4CXX_DEBUG(logger, "Push removed")
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,
@@ -282,7 +282,7 @@ namespace lc {
             public:
                 SelectByLayer(const Layer_CSPtr layer);
                 virtual ~SelectByLayer() {
-                    qDebug() << "SelectByLayer removed";
+                    LOG4CXX_DEBUG(logger, "SelectByLayer removed");
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,
@@ -315,7 +315,7 @@ namespace lc {
             public:
                 Remove();
                 virtual ~Remove() {
-                    qDebug() << "Delete removed";
+                    LOG4CXX_DEBUG(logger, "Delete removed");
                 }
                 virtual std::vector<CADEntity_CSPtr> process(
                     StorageManager_SPtr storageManager,

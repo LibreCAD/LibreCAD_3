@@ -3,14 +3,11 @@
 
 #include "cad/const.h"
 
-#include <QObject>
-
 namespace lc {
     /**
      * Undo manager is a Interface for Undo operations
      */
-    class UndoManager : public QObject {
-            Q_OBJECT
+    class UndoManager {
         public:
             /*!
              * \brief undo

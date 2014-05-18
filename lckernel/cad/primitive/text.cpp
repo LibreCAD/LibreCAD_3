@@ -2,11 +2,11 @@
 
 using namespace lc;
 
-Text::Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, height, text_value) {
+Text::Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, height, text_value) {
 
 }
 
-Text::Text(const geo::Coordinate& insertion_point, double height, QString text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Text(insertion_point, height, text_value) {
+Text::Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Text(insertion_point, height, text_value) {
 }
 
 CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {

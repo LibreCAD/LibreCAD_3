@@ -4,6 +4,8 @@
 #include <QFinalState>
 #include <typeinfo>
 
+#include <QDebug>
+
 TrimOperation::TrimOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager, std::shared_ptr<lc::SelectionManager> selectionManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _entityManager(entityManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),

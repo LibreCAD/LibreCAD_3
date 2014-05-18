@@ -17,8 +17,6 @@
 
 class TrimOperation : public GuiOperation {
         Q_OBJECT
-        Q_PROPERTY(lc::geo::Coordinate clickPoint READ clickPoint WRITE setClickPoint)
-        Q_PROPERTY(MouseReleaseEvent mouseReleaseEvent READ mouseReleaseEvent WRITE setMouseReleaseEvent)
     public:
         TrimOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
 

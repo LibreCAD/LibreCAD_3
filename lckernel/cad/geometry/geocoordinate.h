@@ -2,8 +2,6 @@
 #define GEOCOORDINATE_H
 
 #include <QPointF>
-#include <QDebug>
-
 #include "cad/const.h"
 
 namespace lc {
@@ -129,7 +127,7 @@ namespace lc {
           * myList.push_back(geo::Coordinate(50.,50.));
           * myList.push_back(geo::Coordinate(20.,20.));
           * myList.push_back(geo::Coordinate(120.,120.));
-          * qSort(sp.begin(), sp.end(), geo::CoordinateDistanceSort(geo::Coordinate(60.60.)));
+          * std::qsort(sp.begin(), sp.end(), geo::CoordinateDistanceSort(geo::Coordinate(60.60.)));
           * \endcode
           */
         class CoordinateDistanceSort {
@@ -143,15 +141,5 @@ namespace lc {
 
     }
 }
-
-Q_DECLARE_METATYPE(lc::geo::Coordinate)
-
-/**
-  * Used for debugging for example qDebug() << "my Coordinate:" << point;
-  * outputs:
-  * My Coordinate:(1,2,3)
-  *
-  */
-QDebug operator << (QDebug dbg, const lc::geo::Coordinate& c);
 
 #endif // GEOCOORDINATE_H

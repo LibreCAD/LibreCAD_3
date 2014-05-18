@@ -23,8 +23,6 @@
   */
 class CircleCreateOperation :  public GuiOperation {
         Q_OBJECT
-        Q_PROPERTY(lc::geo::Coordinate startPoint READ startPoint WRITE setStartPoint)
-        Q_PROPERTY(lc::geo::Coordinate endPoint READ endPoint WRITE setEndPoint)
     public:
         CircleCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
 

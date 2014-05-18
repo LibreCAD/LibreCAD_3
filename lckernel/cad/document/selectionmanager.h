@@ -1,7 +1,6 @@
 #ifndef SELECTIONMANAGER_H
 #define SELECTIONMANAGER_H
 
-#include <QObject>
 #include <QPoint>
 #include <vector>
 
@@ -13,8 +12,7 @@
 
 namespace lc {
 
-    class SelectionManager : public QObject {
-            Q_OBJECT
+    class SelectionManager {
         public:
             /**
               * Return a list of entities within a distance from a coordinate

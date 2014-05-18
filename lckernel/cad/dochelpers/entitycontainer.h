@@ -43,6 +43,12 @@ namespace lc {
              */
             virtual std::map<ID_DATATYPE, CADEntity_CSPtr> allEntities() const;
 
+            /**
+             * @brief allEntities
+             * return all entitis as std::vector
+             * @return
+             */
+            virtual std::vector<CADEntity_CSPtr> allEntitiesAsVector() const;
 
             virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const;
 

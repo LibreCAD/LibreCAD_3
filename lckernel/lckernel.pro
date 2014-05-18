@@ -23,8 +23,14 @@ win32 {
 unix {
     macx {
         DESTDIR = ../demo.app/Contents/MacOS
+
+        CONFIG+=link_pkgconfig
+        PKGCONFIG += liblog4cxx
     } else {
         DESTDIR = ../lcdemo/
+
+        CONFIG+=link_pkgconfig
+        PKGCONFIG += liblog4cxx
     }
 }
 
@@ -62,7 +68,9 @@ SOURCES += lckernel.cpp \
     cad/dochelpers/storagemanagerimpl.cpp \
     cad/dochelpers/entitycontainer.cpp \
 
-HEADERS += lckernel.h\
+HEADERS += \
+    nano-signal-slot/nano_signal_slot.hpp \
+    lckernel.h\
     lckernel_global.h \
     cad/const.h\
     cad/meta/color.h \

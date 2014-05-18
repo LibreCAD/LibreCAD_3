@@ -1,12 +1,8 @@
 #ifndef DOCUMENTIMPL_H
 #define DOCUMENTIMPL_H
 
-#include <QObject>
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex
-#include <cad/events/addlayerevent.h>
-#include <cad/events/removelayerevent.h>
-#include <cad/events/replacelayerevent.h>
 #include "cad/const.h"
 
 #include "cad/document/document.h"
@@ -14,60 +10,16 @@
 #include "cad/document/selectionmanager.h"
 #include "cad/operations/documentoperation.h"
 
-#include "cad/events/beginprocessevent.h"
-#include "cad/events/commitprocessevent.h"
-#include "cad/events/addentityevent.h"
-#include "cad/events/removeentityevent.h"
-#include "cad/events/replaceentityevent.h"
+
+
+
 
 namespace lc {
 
     class DocumentImpl : public Document {
-            Q_OBJECT
         public:
             DocumentImpl(const StorageManager_SPtr storageManager);
             virtual ~DocumentImpl();
-
-        public:
-        signals:
-            /*!
-             * \brief begins a Process Event
-             */
-            void beginProcessEvent(const lc::BeginProcessEvent&);
-            /*!
-             * \brief commits a Process Event
-             */
-            void commitProcessEvent(const lc::CommitProcessEvent&);
-
-            /*!
-             * \brief Event to add an Entity
-             */
-            void addEntityEvent(const lc::AddEntityEvent&);
-
-            /*!
-             * \brief Event to replace an Entity
-             */
-            void replaceEntityEvent(const lc::ReplaceEntityEvent&);
-
-            /*!
-             * \brief Event to remove an Entity
-             */
-            void removeEntityEvent(const lc::RemoveEntityEvent&);
-
-            /*!
-             * \brief Event to remove an layer
-             */
-            void removeLayerEvent(const lc::RemoveLayerEvent&);
-
-            /*!
-             * \brief Event to add a layer
-             */
-            void addLayerEvent(const lc::AddLayerEvent&);
-
-            /*!
-             * \brief Event to replace a layer
-             */
-            void replaceLayerEvent(const lc::ReplaceLayerEvent&);
 
         public:
             /*!
@@ -82,6 +34,11 @@ namespace lc {
              */
             virtual void removeEntity(CADEntity_CSPtr entity);
 
+            /**
+             * @brief entitiesByLayer
+             * @param layer
+             * @return
+             */
             virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer);
 
             virtual EntityContainer entityContainer();
@@ -108,6 +65,7 @@ namespace lc {
         private:
             std::mutex _documentMutex;
             const StorageManager_SPtr _storageManager;
+
     };
 }
 

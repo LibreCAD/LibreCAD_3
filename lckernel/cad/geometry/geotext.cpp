@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-Text::Text(const Coordinate& insertion_point, double height, QString text_value) : _insertion_point(insertion_point) {
+Text::Text(const Coordinate& insertion_point, double height, std::string text_value) : _insertion_point(insertion_point) {
 
     _height          = height;
     _text_value      = text_value;
@@ -17,7 +17,7 @@ double Text::height() const {
     return _height;
 }
 
-QString Text::text_value() const {
+std::string Text::text_value() const {
     return _text_value;
 }
 

@@ -10,7 +10,7 @@ Builder::Builder(Document* document) : DocumentOperation(document), Undoable("Bu
 }
 
 Builder::~Builder() {
-    qDebug() << "Builder removed";
+    LOG4CXX_DEBUG(logger, "Builder removed");
 }
 
 Builder& Builder::append(CADEntity_CSPtr cadEntity) {

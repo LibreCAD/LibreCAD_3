@@ -1,7 +1,7 @@
 #ifndef LINEWIDTH_H
 #define LINEWIDTH_H
 
-#include <QString>
+#include <string>
 
 #include "cad/const.h"
 
@@ -10,11 +10,6 @@
 #include "cad/const.h"
 
 namespace lc {
-
-    class LineWidth;
-
-    QDataStream& operator<<(QDataStream&, const LineWidth&);
-    QDataStream& operator>>(QDataStream&, LineWidth&);
 
     class LineWidth : public MetaType {
         public:

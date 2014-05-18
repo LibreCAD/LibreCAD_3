@@ -4,7 +4,11 @@
 #include <QObject>
 #include <QStack>
 #include "guioperation.h"
-#include "cad/document/document.h"
+
+namespace lc {
+    class Document;
+
+}
 
 /**
   * \brief OperationManager manages a set of operations that are currently active within the document

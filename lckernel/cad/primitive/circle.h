@@ -1,8 +1,6 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
 
-#include <QDebug>
-
 #include <cad/meta/layer.h>
 
 #include "cad/const.h"

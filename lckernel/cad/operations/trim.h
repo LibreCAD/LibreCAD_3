@@ -1,8 +1,6 @@
 #ifndef TRIMENTITY_H
 #define TRIMENTITY_H
 
-#include <QDebug>
-
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
 #include "undoable.h"
@@ -20,7 +18,7 @@ namespace lc {
                 Trim(Document* document,  std::shared_ptr<lc::FTrim> trim) ;
 
                 virtual ~Trim() {
-                    qDebug() << "Trim removed";
+                    LOG4CXX_DEBUG(logger, "Trim removed");
                 }
 
                 virtual void undo() const;

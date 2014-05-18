@@ -1,6 +1,7 @@
 #include "cad/primitive/circle.h"
 
 #include <math.h>
+#include <algorithm>
 #include "cad/interface/metatype.h"
 using namespace lc;
 
@@ -34,7 +35,7 @@ std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate& coord, d
     }
 
     // Sort by distance and keep maxNumberOfSnapPoints
-    qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
+    std::sort(points.begin() , points.end(), EntityCoordinate::sortAscending);
     points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
     return points;
 }

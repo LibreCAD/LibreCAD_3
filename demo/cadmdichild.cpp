@@ -28,7 +28,7 @@
 #include <cad/operations/builder.h>
 
 
-
+#include <QDebug>
 
 #include <QTime>
 
@@ -81,7 +81,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 }
 
 CadMdiChild::~CadMdiChild() {
-    delete _document;
+    // TODO make document a shared ptr or make sure object's are deleted in the right order
+//    delete _document;
 }
 
 int CadMdiChild::randInt(int low, int high) {

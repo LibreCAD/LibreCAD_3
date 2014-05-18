@@ -1,18 +1,20 @@
 
-#include "qdebug.h"
-
+#include <string>
+#include <unordered_map>
 #include "documentimpl.h"
 #include "cad/geometry/geocoordinate.h"
 
+#include "nano-signal-slot/nano_signal_slot.hpp"
 
 
 using namespace lc;
 
 DocumentImpl::DocumentImpl(const StorageManager_SPtr storageManager) : Document() , _storageManager(storageManager) {
+
 }
 
 DocumentImpl::~DocumentImpl() {
-    qDebug() << "DocumentImpl removed";
+    LOG4CXX_DEBUG(logger, "DocumentImpl removed");
 }
 
 void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
@@ -25,31 +27,30 @@ void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
 void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
     this->operationStart(operation);
     BeginProcessEvent event;
-    emit beginProcessEvent(event);
+    beginProcessEvent()(event);
 }
 
 void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
     CommitProcessEvent event(operation);
-    emit commitProcessEvent(event);
-    this->operationFinnish(operation);
+    commitProcessEvent()(event);
 }
 
 void DocumentImpl::insertEntity(const CADEntity_CSPtr cadEntity) {
     if (_storageManager->entityByID(cadEntity->id()).get() != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
-        emit removeEntityEvent(cadEntity);
+        removeEntityEvent()(cadEntity);
     }
 
     _storageManager->insertEntity(cadEntity);
     AddEntityEvent event(cadEntity);
-    emit addEntityEvent(event);
+    addEntityEvent()(event);
 }
 
 void DocumentImpl::removeEntity(const CADEntity_CSPtr entity) {
     _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
-    emit removeEntityEvent(event);
+    removeEntityEvent()(event);
 }
 
 EntityContainer DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {

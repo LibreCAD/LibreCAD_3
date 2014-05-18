@@ -18,7 +18,6 @@ namespace lc {
      * @param maximumUndoLevels
      */
     class UndoManagerImpl: public UndoManager {
-            Q_OBJECT
         public:
             UndoManagerImpl(Document* document, unsigned int maximumUndoLevels);
 
@@ -79,7 +78,7 @@ namespace lc {
             std::stack<operation::Undoable_SPtr> _reDoables; /*!< Redo stack */
             const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
 
-        public slots:
+        public:
             void on_CommitProcessEvent(const lc::CommitProcessEvent& event);
 
 

@@ -1,8 +1,5 @@
-#ifndef Color_H
-#define Color_H
-
-#include <QMetaType>
-#include <QVariant>
+#ifndef COLOR_H
+#define COLOR_H
 
 #include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
@@ -10,12 +7,8 @@
 
 #include "cad/const.h"
 
+
 namespace lc {
-
-    class Color;
-
-    QDataStream& operator<<(QDataStream&, const Color&);
-    QDataStream& operator>>(QDataStream&, Color&);
 
     /**
       * Represents a Color
@@ -44,26 +37,7 @@ namespace lc {
             int blue() const;
             int alpha() const;
 
-            QColor qColor() const;
-
-            /*
-            friend QDataStream& operator<<( QDataStream & stream, const Color & yourObject ) {
-                stream << (qint8)yourObject._method << (qint16)yourObject._r << (qint16)yourObject._g << (qint16)yourObject._b << (qint16)yourObject._a;
-                return stream;
-            }
-
-            friend QDataStream& operator>>( QDataStream & stream, Color & yourObject ) {
-                stream > > (qint8&)yourObject._method;
-                stream > > (qint16&)yourObject._r;
-                stream > > (qint16&)yourObject._g;
-                stream > > (qint16&)yourObject._b;
-                stream > > (qint16&)yourObject._a;
-                return stream;
-            }
-            */
-            operator QVariant() const {
-                return QVariant::fromValue(*this);
-            }
+//            QColor qColor() const;
 
             bool variantValid() const {
                 return !(_method == Color::Invalid);
@@ -83,7 +57,5 @@ namespace lc {
 
 
 }
-
-Q_DECLARE_METATYPE(lc::Color)
 
 #endif // Color_H

@@ -14,6 +14,7 @@ Compilation Instructions
 Install cairo
 Install Qt >4.8 or better Qt 5
 Install git
+Install liblog4cxx
 
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3/tree/master
 
@@ -25,5 +26,6 @@ make -j 4
 Ubuntu/Mint
 ========
 
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx-dev
+
 
