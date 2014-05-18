@@ -26,7 +26,7 @@ class MouseMoveEvent  {
 
     private:
         LcPainter* _painter;
-         lc::geo::Coordinate _mousePosition;
+        lc::geo::Coordinate _mousePosition;
 };
 
 #endif // MOUSEMOVEEVENT_H

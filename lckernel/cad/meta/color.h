@@ -37,7 +37,7 @@ namespace lc {
             int blue() const;
             int alpha() const;
 
-//            QColor qColor() const;
+            //            QColor qColor() const;
 
             bool variantValid() const {
                 return !(_method == Color::Invalid);

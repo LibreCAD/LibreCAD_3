@@ -30,45 +30,45 @@ namespace lc {
 
     class Document {
 
-    public:
-        /*!
-         * \brief begins a Process Event
-         */
-        virtual  Nano::Signal<void(const lc::BeginProcessEvent &)> & beginProcessEvent();
-        /*!
-         * \brief commits a Process Event
-         */
-        virtual  Nano::Signal<void(const lc::CommitProcessEvent &)> & commitProcessEvent();
+        public:
+            /*!
+             * \brief begins a Process Event
+             */
+            virtual  Nano::Signal<void(const lc::BeginProcessEvent&)>& beginProcessEvent();
+            /*!
+             * \brief commits a Process Event
+             */
+            virtual  Nano::Signal<void(const lc::CommitProcessEvent&)>& commitProcessEvent();
 
-        /*!
-         * \brief Event to add an Entity
-         */
-        virtual  Nano::Signal<void(const lc::AddEntityEvent &)> & addEntityEvent();
+            /*!
+             * \brief Event to add an Entity
+             */
+            virtual  Nano::Signal<void(const lc::AddEntityEvent&)>& addEntityEvent();
 
-        /*!
-         * \brief Event to replace an Entity
-         */
-        virtual  Nano::Signal<void(const lc::ReplaceEntityEvent &)> & replaceEntityEvent();
+            /*!
+             * \brief Event to replace an Entity
+             */
+            virtual  Nano::Signal<void(const lc::ReplaceEntityEvent&)>& replaceEntityEvent();
 
-        /*!
-         * \brief Event to remove an Entity
-         */
-        virtual  Nano::Signal<void(const lc::RemoveEntityEvent &)> & removeEntityEvent();
+            /*!
+             * \brief Event to remove an Entity
+             */
+            virtual  Nano::Signal<void(const lc::RemoveEntityEvent&)>& removeEntityEvent();
 
-        /*!
-         * \brief Event to remove an layer
-         */
-        virtual  Nano::Signal<void(const lc::RemoveLayerEvent &)> & removeLayerEvent();
+            /*!
+             * \brief Event to remove an layer
+             */
+            virtual  Nano::Signal<void(const lc::RemoveLayerEvent&)>& removeLayerEvent();
 
-        /*!
-         * \brief Event to add a layer
-         */
-        virtual  Nano::Signal<void(const lc::AddLayerEvent &)> & addLayerEvent();
+            /*!
+             * \brief Event to add a layer
+             */
+            virtual  Nano::Signal<void(const lc::AddLayerEvent&)>& addLayerEvent();
 
-        /*!
-         * \brief Event to replace a layer
-         */
-        virtual  Nano::Signal<void(const lc::ReplaceLayerEvent &)> & replaceLayerEvent();
+            /*!
+             * \brief Event to replace a layer
+             */
+            virtual  Nano::Signal<void(const lc::ReplaceLayerEvent&)>& replaceLayerEvent();
 
         protected:
             /*!
@@ -141,15 +141,15 @@ namespace lc {
         public:
             friend class lc::operation::DocumentOperation;
 
-    private:
-            Nano::Signal<void(const lc::BeginProcessEvent &)>  _beginProcessEvent;
-            Nano::Signal<void(const lc::CommitProcessEvent &)>  _commitProcessEvent;
-            Nano::Signal<void(const lc::AddEntityEvent &)>  _addEntityEvent;
-            Nano::Signal<void(const lc::ReplaceEntityEvent &)>  _replaceEntityEvent;
-            Nano::Signal<void(const lc::RemoveEntityEvent &)>  _removeEntityEvent;
-            Nano::Signal<void(const lc::RemoveLayerEvent &)>  _removeLayerEvent;
-            Nano::Signal<void(const lc::AddLayerEvent &)>  _addLayerEvent;
-            Nano::Signal<void(const lc::ReplaceLayerEvent &)>  _replaceLayerEvent;
+        private:
+            Nano::Signal<void(const lc::BeginProcessEvent&)>  _beginProcessEvent;
+            Nano::Signal<void(const lc::CommitProcessEvent&)>  _commitProcessEvent;
+            Nano::Signal<void(const lc::AddEntityEvent&)>  _addEntityEvent;
+            Nano::Signal<void(const lc::ReplaceEntityEvent&)>  _replaceEntityEvent;
+            Nano::Signal<void(const lc::RemoveEntityEvent&)>  _removeEntityEvent;
+            Nano::Signal<void(const lc::RemoveLayerEvent&)>  _removeLayerEvent;
+            Nano::Signal<void(const lc::AddLayerEvent&)>  _addLayerEvent;
+            Nano::Signal<void(const lc::ReplaceLayerEvent&)>  _replaceLayerEvent;
 
     };
 

@@ -32,13 +32,13 @@ unix {
         copyToDestdir('Log4cxxConfig.xml', ../demo.app/Contents/MacOS)
 
     } else {
-	TARGET = ../lcdemo/demo
-	LIBS += -L$$PWD/../lckernel -llckernel
+        TARGET = ../lcdemo/demo
+        LIBS += -L$$PWD/../lckernel -llckernel
         LIBS += -L$$PWD/../lcadviewer -llcadviewerplugin
         LIBS += -L$$PWD/../lcadluascript -llcadluascript
         CONFIG+=link_pkgconfig
         PKGCONFIG += liblog4cxx
-        copyToDestdir('Log4cxxConfig.xml', ../lcdemo/Contents/MacOS)
+        copyToDestdir('Log4cxxConfig.xml', ../lcdemo)
     }
 
 }
