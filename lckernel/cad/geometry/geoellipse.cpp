@@ -58,10 +58,10 @@ bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) cons
         if (fabs(vp.y())<TOLERANCE && fabs(vp.x()) < a) return true;
         return false;
     }
-    vp.scale(Coordinate(1./a,1./b));
+    auto cord = Coordinate(vp.scale(Coordinate(1./a,1./b)));
 
-    if (fabs(vp.squared()-1.) > t) return false;
-    return Math::isAngleBetween(vp.angle(),startAngle(),endAngle(),isReversed());
+    if (fabs(cord.squared()-1.) > t) return false;
+    return Math::isAngleBetween(cord.angle(),startAngle(),endAngle(),isReversed());
 }
 
 double Ellipse::endAngle() const {

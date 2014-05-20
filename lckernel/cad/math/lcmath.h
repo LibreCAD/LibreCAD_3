@@ -15,7 +15,7 @@ namespace lc {
 
         static bool isAngleBetween(double a,
                             double a1, double a2,
-                            bool reversed) ;
+                            bool reversed);
         static double correctAngle(double a) ;
         static double getAngleDifference(double a1, double a2, bool reversed) ;
     };
