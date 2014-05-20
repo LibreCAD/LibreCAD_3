@@ -10,7 +10,7 @@ namespace lc {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
 
-                const Coordinate& center() const;
+                const Coordinate center() const;
 
                 /*!
                  * \brief Returns the radius of Arc.

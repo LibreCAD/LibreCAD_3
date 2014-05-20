@@ -10,8 +10,8 @@ namespace lc {
             public:
                 Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
 
-                const Coordinate& center() const;
-                const Coordinate& majorP() const;
+                const Coordinate center() const;
+                const Coordinate majorP() const;
                 double minorRadius() const;
                 double startAngle() const;
                 double endAngle() const;

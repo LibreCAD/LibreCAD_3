@@ -24,12 +24,12 @@ namespace lc {
                 /**
                   * Return the smalles corner (closest to (0,0,0) )
                   */
-                const Coordinate& minP() const;
+                const Coordinate minP() const;
 
                 /**
                   * Return the heigest corner
                   */
-                const Coordinate& maxP() const;
+                const Coordinate maxP() const;
 
                 /**
                   * Test of a specific point lies within a area

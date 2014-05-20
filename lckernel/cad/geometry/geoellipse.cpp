@@ -16,11 +16,11 @@ Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double mino
     _endAngle = endAngle;
 }
 
-const Coordinate& Ellipse::center() const {
+const Coordinate Ellipse::center() const {
     return _center;
 }
 
-const Coordinate& Ellipse::majorP() const {
+const Coordinate Ellipse::majorP() const {
     return _majorP;
 }
 
