@@ -5,8 +5,6 @@
 using namespace lc;
 using namespace geo;
 
-
-
 Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc)  :
     _center(center),
     _majorP(majorP),
@@ -32,12 +30,38 @@ double Ellipse::startAngle() const {
     return _startAngle;
 }
 
+double Ellipse::majorRadius() const {
+    return _majorP.magnitude();
+}
+
+double Ellipse::getAngle() const {
+    return _majorP.angle();
+}
+
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& /*coord*/) const {
     return center();
 }
 
-bool Ellipse::isCoordinateOnPath(const Coordinate& /*coord*/) const {
-    return false;
+bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {
+    double t = fabs(tolerance);
+    double a = majorRadius();
+    double b = a*ratio();
+
+    Coordinate vp((coord - center()).rotate(-getAngle()));
+    if ( a<TOLERANCE ) {
+        //radius treated as zero
+        if(fabs(vp.x())<TOLERANCE && fabs(vp.y()) < b) return true;
+        return false;
+    }
+    if ( b<TOLERANCE ) {
+        //radius treated as zero
+        if (fabs(vp.y())<TOLERANCE && fabs(vp.x()) < a) return true;
+        return false;
+    }
+    vp.scale(Coordinate(1./a,1./b));
+
+    if (fabs(vp.squared()-1.) > t) return false;
+    return Math::isAngleBetween(vp.angle(),startAngle(),endAngle(),isReversed());
 }
 
 double Ellipse::endAngle() const {
@@ -53,6 +77,14 @@ Coordinate Ellipse::startPoint() const {
 }
 Coordinate Ellipse::endPoint() const {
     return getPoint(endAngle());
+}
+
+bool Ellipse::isReversed() const {
+    return _isReversed;
+}
+
+double Ellipse::ratio() const {
+    return _majorP.magnitude()/_minorRadius;
 }
 
 bool Ellipse::isArc() const {

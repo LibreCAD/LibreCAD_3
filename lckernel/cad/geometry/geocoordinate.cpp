@@ -99,6 +99,15 @@ Coordinate Coordinate::scale(const double& scale_factor) const {
 }
 
 /**
+ * Scales the vector by given factors with 0/0 as center
+ */
+Coordinate Coordinate::scale(const Coordinate& scale_factor) const {
+    double x0 = _x * scale_factor.x();
+    double y0 = _y * scale_factor.y();
+    return Coordinate(x0, y0);
+}
+
+/**
  * Scales this vector by the given factors with the given center.
  */
 Coordinate Coordinate::scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
