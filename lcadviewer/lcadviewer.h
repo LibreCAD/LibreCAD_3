@@ -68,6 +68,7 @@ class LCADViewer : public QWidget {
 
     public:
         LCADViewer(QWidget* parent = 0);
+        ~LCADViewer();
 
         void drawBackground(LcPainter* lcPainter, const QRectF& rect);
         void drawForeground(LcPainter* lcPainter, const QRectF& rect);

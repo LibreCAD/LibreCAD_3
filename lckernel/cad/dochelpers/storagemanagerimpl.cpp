@@ -38,11 +38,11 @@ EntityContainer StorageManagerImpl::entitiesByLayer(const Layer_CSPtr layer) con
     return _entities.entitiesByLayer(layer);
 }
 
-Layer_CSPtr StorageManagerImpl::layerByName(const QString& layerName) const {
+Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
     return _layers.at(layerName);
 }
 
-std::map<QString, Layer_CSPtr> StorageManagerImpl::allLayers() const {
+std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
     return _layers;
 }
 

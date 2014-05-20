@@ -8,7 +8,7 @@ Layer::Layer() {
 Layer::~Layer() {
 }
 
-Layer::Layer(const QString& name, const LineWidth lineWidth, const Color color) : MetaType() {
+Layer::Layer(const std::string& name, const LineWidth lineWidth, const Color color) : MetaType() {
     _name = name;
     _lineWidth = lineWidth;
     _color = color;
@@ -21,7 +21,7 @@ LineWidth Layer::lineWidth() const {
     return _lineWidth;
 }
 
-QString Layer::name() const {
+std::string Layer::name() const {
     return _name;
 }
 

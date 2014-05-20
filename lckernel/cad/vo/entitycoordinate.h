@@ -65,12 +65,4 @@ namespace lc {
     };
 }
 
-/**
-  * Used for debugging for example qDebug() << "Entity Coordinate:" << entityCoordinate;
-  */
-//QDebug operator << (QDebug dbg, const lc::EntityCoordinate& c) {
-//   dbg.space() << "(" << c.entity()->id() << "," << c.coordinate() << "," << c._point << ")";
-//}
-
-
 #endif // ENTITYCOORDINATE_H

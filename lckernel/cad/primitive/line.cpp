@@ -2,6 +2,8 @@
 
 using namespace lc;
 
+#include <algorithm>
+
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
 }
 
@@ -35,7 +37,7 @@ std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, dou
     }
 
     // Sort by distance and take first XX elements
-    qSort(points.begin() , points.end(), EntityCoordinate::sortAscending);
+    std::sort(points.begin() , points.end(), EntityCoordinate::sortAscending);
     points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
     return points;
 }

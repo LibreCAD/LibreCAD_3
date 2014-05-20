@@ -2,32 +2,11 @@
 
 using namespace lc;
 
-Text::Text(const geo::Coordinate& insertion_point,
-                      const geo::Coordinate& second_point,
-                      const double height,
-                      const QString text_value,
-                      const double width_rel,
-                      const double angle,
-                      const QString style,
-                      const TextGeneration textgeneration,
-                      const HAlign halign, const VAlign valign, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, second_point, height,
-                                                                                                                        text_value, width_rel, angle, style,
-                                                                                                                        textgeneration, halign, valign) {
+Text::Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, height, text_value) {
 
 }
 
-Text::Text(const geo::Coordinate& insertion_point,
-                      const geo::Coordinate& second_point,
-                      const double height,
-                      const QString text_value,
-                      const double width_rel,
-                      const double angle,
-                      const QString style,
-                      const TextGeneration textgeneration,
-                      const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Text(insertion_point, second_point, height,
-                                                                                                                                                                                                    text_value, width_rel, angle, style,
-                                                                                                                                                                                                    textgeneration, halign, valign) {
-
+Text::Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Text(insertion_point, height, text_value) {
 }
 
 CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {

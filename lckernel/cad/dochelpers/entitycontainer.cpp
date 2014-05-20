@@ -27,10 +27,21 @@ std::map<ID_DATATYPE, CADEntity_CSPtr> EntityContainer::allEntities() const {
     return _cadentities;
 }
 
+std::vector<CADEntity_CSPtr> EntityContainer::allEntitiesAsVector() const {
+    std::vector<CADEntity_CSPtr> v;
+
+    for (auto item : _cadentities) {
+        v.push_back(item.second);
+    }
+
+    return v;
+}
+
 CADEntity_CSPtr EntityContainer::entityByID(ID_DATATYPE id) const {
-    if (_cadentities.count(id)>0) {
+    if (_cadentities.count(id) > 0) {
         return _cadentities.at(id);
     }
+
     return CADEntity_CSPtr();
 }
 

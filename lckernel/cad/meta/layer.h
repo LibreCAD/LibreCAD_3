@@ -1,9 +1,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <QMetaType>
-#include <QVariant>
-#include <QString>
+#include <string>
 
 #include "cad/const.h"
 
@@ -16,16 +14,12 @@ namespace lc {
     class Layer : public MetaType  {
         public:
             Layer();
-            Layer(const QString& name, const LineWidth lineWidth, const Color color);
+            Layer(const std::string& name, const LineWidth lineWidth, const Color color);
             virtual ~Layer();
 
             LineWidth lineWidth() const;
             Color color() const;
-            QString name() const;
-
-            operator QVariant() const {
-                return QVariant::fromValue(*this);
-            }
+            std::string name() const;
 
             bool operator == (const Layer& layer) const {
                 return (layer._name == _name);
@@ -40,14 +34,12 @@ namespace lc {
             }
 
         private:
-            QString _name;
+            std::string _name;
             LineWidth _lineWidth;
             Color _color;
     };
     typedef std::shared_ptr<Layer> Layer_SPtr;
     typedef std::shared_ptr<const Layer> Layer_CSPtr;
 }
-
-Q_DECLARE_METATYPE(lc::Layer)
 
 #endif // LAYER_H

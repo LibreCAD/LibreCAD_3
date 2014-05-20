@@ -5,9 +5,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-
-
-
 #include "lualibrecadbridge.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
@@ -31,9 +28,6 @@ using namespace lc;
 void lua_openlckernel(lua_State* L) {
 
     LuaBinding(L)
-    .beginClass <QString> ("QString")
-    .addConstructor(LUA_ARGS(const char*))
-    .endClass()
 
     .beginClass <ID> ("ID")
     .addFunction("id", &ID::id)

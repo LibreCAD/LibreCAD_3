@@ -35,13 +35,13 @@ unix {
 	    LIBS += -L$$DESTDIR -llckernel
 	}
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz liblog4cxx
     } else {
         DESTDIR = ../lcdemo
 	LIBS += -L$$DESTDIR -llckernel
 
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg 
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg liblog4cxx
     }
 }
 

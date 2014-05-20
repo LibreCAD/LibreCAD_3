@@ -1,5 +1,4 @@
 #include "color.h"
-#include <QColor>
 
 using namespace lc;
 
@@ -42,6 +41,7 @@ int Color::blue() const {
 int Color::alpha() const {
     return _a;
 }
-QColor Color::qColor() const {
-    return QColor(_r, _g, _b, _a);
-}
+
+//QColor Color::qColor() const {
+//    return QColor(_r, _g, _b, _a);
+//}

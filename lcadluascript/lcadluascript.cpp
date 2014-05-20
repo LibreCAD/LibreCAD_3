@@ -6,6 +6,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include <QString>
 #include <QElapsedTimer>
 
 #include "LuaIntf.h"
@@ -62,6 +63,7 @@ static lc::StorageManager_SPtr lua_storageManager() {
 
 static lc::Layer_SPtr lua_layer(const char* layer) {
     // Cast until the lua bridge understands Layer_CSPtr as a return value
+    lc::Layer_SPtr foo = std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
     return std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
 
 }

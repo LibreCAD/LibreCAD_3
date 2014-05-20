@@ -1,17 +1,15 @@
 #include "undomanagerimpl.h"
 
-#include <QDebug>
-
 #include "cad/operations/documentoperation.h"
 #include "cad/operations/undoable.h"
+#include "nano-signal-slot/nano_signal_slot.hpp"
 
 using namespace lc;
 
 
 UndoManagerImpl::UndoManagerImpl(Document* document, unsigned int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
 
-    connect(document, SIGNAL(commitProcessEvent(const lc::CommitProcessEvent&)),
-            this, SLOT(on_CommitProcessEvent(const lc::CommitProcessEvent&)));
+    document->commitProcessEvent().connect<UndoManagerImpl, &UndoManagerImpl::on_CommitProcessEvent>(this);
 }
 
 
@@ -20,7 +18,7 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable.get() != nullptr) {
-        qDebug() << "Process: " << undoable->text();
+        // LOG4CXX_DEBUG(logger, "Process: " + undoable->text());
 
         // Check if Redo is possible, if so we might need to purge objects from memory
         // as long as we can redo, purge these objects

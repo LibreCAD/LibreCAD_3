@@ -1,13 +1,23 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
-#include <QObject>
-
 #include "cad/meta/layer.h"
 
 #include "cad/const.h"
 #include "cad/dochelpers/entitycontainer.h"
 #include "cad/document/storagemanager.h"
+
+#include "nano-signal-slot/nano_signal_slot.hpp"
+
+#include <cad/events/addlayerevent.h>
+#include <cad/events/removelayerevent.h>
+#include <cad/events/replacelayerevent.h>
+#include "cad/events/beginprocessevent.h"
+#include "cad/events/commitprocessevent.h"
+#include "cad/events/addentityevent.h"
+#include "cad/events/removeentityevent.h"
+#include "cad/events/replaceentityevent.h"
+
 
 namespace lc {
     class CADEntity;
@@ -18,8 +28,48 @@ namespace lc {
         typedef std::shared_ptr<const DocumentOperation> DocumentOperation_CSPtr;
     }
 
-    class Document : public QObject {
-            Q_OBJECT
+    class Document {
+
+        public:
+            /*!
+             * \brief begins a Process Event
+             */
+            virtual  Nano::Signal<void(const lc::BeginProcessEvent&)>& beginProcessEvent();
+            /*!
+             * \brief commits a Process Event
+             */
+            virtual  Nano::Signal<void(const lc::CommitProcessEvent&)>& commitProcessEvent();
+
+            /*!
+             * \brief Event to add an Entity
+             */
+            virtual  Nano::Signal<void(const lc::AddEntityEvent&)>& addEntityEvent();
+
+            /*!
+             * \brief Event to replace an Entity
+             */
+            virtual  Nano::Signal<void(const lc::ReplaceEntityEvent&)>& replaceEntityEvent();
+
+            /*!
+             * \brief Event to remove an Entity
+             */
+            virtual  Nano::Signal<void(const lc::RemoveEntityEvent&)>& removeEntityEvent();
+
+            /*!
+             * \brief Event to remove an layer
+             */
+            virtual  Nano::Signal<void(const lc::RemoveLayerEvent&)>& removeLayerEvent();
+
+            /*!
+             * \brief Event to add a layer
+             */
+            virtual  Nano::Signal<void(const lc::AddLayerEvent&)>& addLayerEvent();
+
+            /*!
+             * \brief Event to replace a layer
+             */
+            virtual  Nano::Signal<void(const lc::ReplaceLayerEvent&)>& replaceLayerEvent();
+
         protected:
             /*!
                  * \brief execute
@@ -90,6 +140,16 @@ namespace lc {
             virtual EntityContainer entityContainer() = 0;
         public:
             friend class lc::operation::DocumentOperation;
+
+        private:
+            Nano::Signal<void(const lc::BeginProcessEvent&)>  _beginProcessEvent;
+            Nano::Signal<void(const lc::CommitProcessEvent&)>  _commitProcessEvent;
+            Nano::Signal<void(const lc::AddEntityEvent&)>  _addEntityEvent;
+            Nano::Signal<void(const lc::ReplaceEntityEvent&)>  _replaceEntityEvent;
+            Nano::Signal<void(const lc::RemoveEntityEvent&)>  _removeEntityEvent;
+            Nano::Signal<void(const lc::RemoveLayerEvent&)>  _removeLayerEvent;
+            Nano::Signal<void(const lc::AddLayerEvent&)>  _addLayerEvent;
+            Nano::Signal<void(const lc::ReplaceLayerEvent&)>  _replaceLayerEvent;
 
     };
 

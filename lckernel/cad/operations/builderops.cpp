@@ -178,12 +178,7 @@ std::vector<CADEntity_CSPtr> SelectByLayer::process(
     const std::vector<Base_SPtr>) {
     EntityContainer c = storageManager->entitiesByLayer(_layer);
 
-    std::vector<CADEntity_CSPtr> e;
-
-    //    std::vector<CADEntity_CSPtr> e(c.allEntities());
-    // transform(my_map.begin(), my_map.end(), back_inserter(my_vals), [](MyMap::value_type& val){return val.second;} );
-
-    return e;
+    return c.allEntitiesAsVector();
 }
 
 

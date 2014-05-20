@@ -23,10 +23,6 @@ namespace lc {
             LineWidth* lineWidth() const;
             Color* color() const;
 
-            operator QVariant() const {
-                return QVariant::fromValue(*this);
-            }
-
             bool variantValid() const {
                 return _color != nullptr && _lineWidth != nullptr;
             }
@@ -41,9 +37,6 @@ namespace lc {
             LineWidth* _lineWidth;
     };
 }
-
-Q_DECLARE_METATYPE(lc::Pen)
-
 
 
 #endif // PEN_H

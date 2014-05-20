@@ -2,6 +2,8 @@
 #include "cad/functions/intersect.h"
 #include "cad/vo/entitydistance.h"
 
+#include <QDebug>
+
 SnapManagerImpl::SnapManagerImpl(LCADViewer* view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
 
     connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),

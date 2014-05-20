@@ -1,9 +1,7 @@
 #ifndef UNDOABLE_H
 #define UNDOABLE_H
 
-#include <QString>
-#include <QDebug>
-
+#include <string>
 #include "cad/const.h"
 
 namespace lc {
@@ -24,11 +22,11 @@ namespace lc {
                   * \brief Name of this operartion. Keep it as short as possible since it will be used in the UI
                   *
                   */
-                Undoable(const QString& text) {
+                Undoable(const std::string& text) {
                     _text = text;
                 }
                 virtual ~Undoable() {
-                    qDebug() << _text << " removed";
+                    LOG4CXX_DEBUG(logger, "Undoable removed:");
                 }
 
                 /*!
@@ -57,12 +55,12 @@ namespace lc {
                  *
                  * @return
                  */
-                virtual QString text() {
+                virtual std::string text() {
                     return _text;
                 }
 
             private:
-                QString _text;
+                std::string _text;
         };
         typedef std::shared_ptr<Undoable> Undoable_SPtr;
         typedef std::shared_ptr<const Undoable> Undoable_CSPtr;

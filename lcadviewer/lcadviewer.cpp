@@ -16,6 +16,9 @@
 #include <drawitems/lcvcircle.h>
 #include <drawitems/lcvline.h>
 
+#include "nano-signal-slot/nano_signal_slot.hpp"
+
+
 LCADViewer::LCADViewer(QWidget* parent) :
     QWidget(parent), _scale(1.0), _zoom_min(0.05), _zoom_max(20.0), _scaleLineWidth(false), _posX(0.), _posY(0.) {
 
@@ -29,10 +32,14 @@ LCADViewer::LCADViewer(QWidget* parent) :
 void LCADViewer::setDocument(lc::Document* document) {
     _document = document;
 
-    connect(_document, SIGNAL(addEntityEvent(const lc::AddEntityEvent&)),
-            this, SLOT(on_addEntityEvent(const lc::AddEntityEvent&)));
-    connect(_document, SIGNAL(removeEntityEvent(const lc::RemoveEntityEvent&)),
-            this, SLOT(on_removeEntityEvent(const lc::RemoveEntityEvent&)));
+    document->addEntityEvent().connect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
+    document->removeEntityEvent().connect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
+
+}
+
+LCADViewer::~LCADViewer() {
+    _document->addEntityEvent().disconnect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
+    _document->removeEntityEvent().disconnect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
 }
 
 

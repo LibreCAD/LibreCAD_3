@@ -1,21 +1,21 @@
 #ifndef ADDLAYEREVENT_H
 #define ADDLAYEREVENT_H
 
-#include <QString>
+#include <string>
 
 #include <cad/meta/layer.h>
 
 namespace lc {
     class AddLayerEvent {
         public:
-            AddLayerEvent(const QString& layerName, const Layer& layer) : _layerName(layerName), _layer(layer) {
+            AddLayerEvent(const std::string& layerName, const Layer& layer) : _layerName(layerName), _layer(layer) {
             }
 
             /*!
              * \brief Return the layername.
              * \return String Layername.
              */
-            QString layerName() const {
+            std::string layerName() const {
                 return _layerName;
             }
 
@@ -27,7 +27,7 @@ namespace lc {
                 return _layer;
             }
         private:
-            const QString _layerName;
+            const std::string _layerName;
             const Layer _layer;
     };
 }

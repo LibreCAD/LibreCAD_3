@@ -17,15 +17,16 @@ void QSnappedState::onEntry(QEvent* event) {
         MouseReleaseEvent mre = se->arguments().at(0).value<MouseReleaseEvent>();
 
         if (_spobject != nullptr) {
-            QVariant v;
-            v.setValue(mre.mousePosition());
-            _spobject->setProperty(_spname, v);
+            // TODO FIX THIS; QVariant was removed
+            // QVariant v;
+            // v.setValue(mre.mousePosition());
+            // _spobject->setProperty(_spname, v);
         }
 
         if (_mreobject != nullptr) {
-            QVariant v;
-            v.setValue(mre);
-            _mreobject->setProperty(_mrename, v);
+            // QVariant v;
+            // v.setValue(mre);
+            // _mreobject->setProperty(_mrename, v);
         }
     }
 

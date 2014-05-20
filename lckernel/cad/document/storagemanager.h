@@ -1,8 +1,6 @@
 #ifndef ENTITYMANAGER_H
 #define ENTITYMANAGER_H
 
-#include <QObject>
-
 #include "cad/base/id.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
@@ -12,8 +10,7 @@ namespace lc {
      */
     class EntityContainer;
     class Layer;
-    class StorageManager : public QObject {
-            Q_OBJECT
+    class StorageManager {
         public:
             virtual void insertEntity(const CADEntity_CSPtr) = 0;
             virtual void insertEntityContainer(const EntityContainer&) = 0;
@@ -27,13 +24,13 @@ namespace lc {
              * \param layerName
              * \return
              */
-            virtual Layer_CSPtr layerByName(const QString& layerName) const = 0;
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
             /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
-            virtual std::map<QString, Layer_CSPtr> allLayers() const = 0;
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const = 0;
 
             /*!
              * \brief entityContainer

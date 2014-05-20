@@ -1,5 +1,7 @@
 #include "ftrim.h"
 
+#include <algorithm>
+
 #include "cad/base/cadentity.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/arc.h"
@@ -24,7 +26,7 @@ void FTrim::visit(Line_CSPtr line) {
 
     if (points.size() > 0) {
         points.push_back(this->_trimPoint);
-        qSort(points.begin(), points.end(), geo::CoordinateDistanceSort(line->start()));
+        std::sort(points.begin(), points.end(), geo::CoordinateDistanceSort(line->start()));
 
         for (int i = 0; i < points.size(); ++i) {
             if (points.at(i) == this->_trimPoint) {
