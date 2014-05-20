@@ -12,8 +12,8 @@ namespace lc {
                 Vector(const Coordinate& start, const Coordinate& end);
                 Vector(const Vector& v);
 
-                const Coordinate& start() const;
-                const Coordinate& end() const;
+                const Coordinate start() const;
+                const Coordinate end() const;
 
                 Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;

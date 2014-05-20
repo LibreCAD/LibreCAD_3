@@ -15,7 +15,7 @@ namespace lc {
                  * \brief Returns the Center of circle.
                  * \return lc::geo::Coordinate Center.
                  */
-                const Coordinate& center() const;
+                const Coordinate center() const;
 
                 /*!
                  * \brief returns the radius of the circle.

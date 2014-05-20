@@ -11,10 +11,10 @@ Vector::Vector(const Coordinate& start, const Coordinate& end) : _start(start), 
 Vector::Vector(const Vector& v) : _start(v._start), _end(v._end)  {
 }
 
-const Coordinate& Vector::start() const {
+const Coordinate Vector::start() const {
     return _start;
 }
-const Coordinate& Vector::end() const {
+const Coordinate Vector::end() const {
     return _end;
 }
 

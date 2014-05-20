@@ -15,10 +15,10 @@ Area::Area(const Coordinate& coordA, const Coordinate& coordB) :
 
 }
 
-const Coordinate& Area::minP() const {
+const Coordinate Area::minP() const {
     return _minP;
 }
-const Coordinate& Area::maxP() const {
+const Coordinate Area::maxP() const {
     return _maxP;
 }
 

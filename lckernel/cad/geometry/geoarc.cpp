@@ -32,7 +32,7 @@ double Arc::endAngle() const {
     return _endAngle;
 }
 
-const Coordinate& Arc::center() const {
+const Coordinate Arc::center() const {
     return _center;
 }
 

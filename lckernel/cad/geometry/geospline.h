@@ -11,7 +11,7 @@ namespace lc {
             public:
                 Spline(const std::vector<Coordinate>& control_points, int degree, bool closed);
 
-                const std::vector<Coordinate>& control_points() const;
+                const std::vector<Coordinate> control_points() const;
 
                 int degree() const;
 

@@ -8,7 +8,7 @@ Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool c
     _closed = closed;
 }
 
-const std::vector<Coordinate>& Spline::control_points() const {
+const std::vector<Coordinate> Spline::control_points() const {
     return _control_points;
 }
 
