@@ -16,10 +16,57 @@ namespace lc {
     typedef std::shared_ptr<Text> Text_SPtr;
     typedef std::shared_ptr<const Text> Text_CSPtr;
 
+
     class Text : public std::enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
-            Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer);
-            Text(const geo::Coordinate& insertion_point, double height, std::string text_value, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+            /**
+             * @brief Text Entity
+             * @param insertion_point insertion_point of the text
+             * @param second_point second_point of text in UCS
+             * @param height height of the text
+             * @param text_value the text itself
+             * @param width_rel X scale factor-width
+             * @param angle angle of obliqueness
+             * @param style name of text style
+             * @param textgeneration Text drawing direction
+             * @param halign Horizontal alignment
+             * @param valign Vertical alignment
+             * @param layer Layer of the entity
+             */
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const std::string text_value,
+                 const double width_rel,
+                 const double angle,
+                 const std::string style,
+                 const TextGeneration textgeneration,
+                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer);
+
+            /**
+             * @brief Text Entity
+             * @param insertion_point insertion_point of the text
+             * @param second_point second_point of text in UCS
+             * @param height height of the text
+             * @param text_value the text itself
+             * @param width_rel X scale factor-width
+             * @param angle angle of obliqueness
+             * @param style name of text style
+             * @param textgeneration Text drawing direction
+             * @param halign Horizontal alignment
+             * @param valign Vertical alignment
+             * @param layer Layer of the entity
+             * @param metatypes metatypes of the cad entity
+             */
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const std::string text_value,
+                 const double width_rel,
+                 const double angle,
+                 const std::string style,
+                 const TextGeneration textgeneration,
+                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
