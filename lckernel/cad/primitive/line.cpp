@@ -70,3 +70,7 @@ CADEntity_CSPtr Line::scale(const geo::Coordinate& scale_center, const geo::Coor
     newLine->setID(this->id());
     return newLine;
 }
+
+const geo::Area Line::boundingBox() const {
+    return geo::Area(start(), end());
+}

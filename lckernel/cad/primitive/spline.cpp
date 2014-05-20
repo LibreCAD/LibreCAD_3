@@ -64,3 +64,7 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
     return newSpline;
 }
 
+const geo::Area Spline::boundingBox() const {
+    // TODO create bounding box for spline
+    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+}

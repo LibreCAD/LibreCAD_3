@@ -24,3 +24,8 @@ CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, const doubl
 CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
 
 }
+
+const geo::Area Text::boundingBox() const {
+    // TODO create bounding box for spline
+    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+}

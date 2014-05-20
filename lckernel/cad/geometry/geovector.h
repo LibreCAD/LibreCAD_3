@@ -7,6 +7,7 @@
 
 namespace lc {
     namespace geo {
+        class Area;
         class Vector  {
             public:
                 Vector(const Coordinate& start, const Coordinate& end);

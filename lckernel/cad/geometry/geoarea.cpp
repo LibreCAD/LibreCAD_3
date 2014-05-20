@@ -10,7 +10,7 @@ Area::Area(const Coordinate& coordA, const Coordinate& coordB) :
     _minP(Coordinate(std::min(coordA.x(), coordB.x()), std::min(coordA.y(), coordB.y()), std::min(coordA.z(), coordB.z()))),
     _maxP(Coordinate(std::max(coordA.x(), coordB.x()), std::max(coordA.y(), coordB.y()), std::max(coordA.z(), coordB.z()))) {
     if (coordA.x() != coordB.x() && coordA.y() != coordB.y() && coordA.z() != coordB.z()) {
-        throw "Points describe a volume, not a coordinate.";
+        throw "Points describe a volume, not a area.";
     }
 
 }
@@ -26,3 +26,10 @@ bool Area::inArea(const Coordinate& point) const {
     return (point.x() >= _minP.x() && point.x() <= _maxP.x() && point.y() >= _minP.y() && point.y() <= _maxP.y());
 }
 
+double Area::width() const {
+    return _maxP.x() - _minP.x();
+}
+
+double Area::height() const {
+    return _maxP.y() - _minP.y();
+}
