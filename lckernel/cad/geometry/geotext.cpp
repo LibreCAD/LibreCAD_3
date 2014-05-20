@@ -5,12 +5,14 @@ using namespace geo;
 
 Text::Text(const Coordinate& insertion_point, double height, std::string text_value) : _insertion_point(insertion_point) {
 
-    _height          = height;
-    _text_value      = text_value;
 }
 
 const Coordinate& Text::insertion_point() const {
     return _insertion_point;
+}
+
+const Coordinate& Text::second_point() const {
+    return _second_point;
 }
 
 double Text::height() const {

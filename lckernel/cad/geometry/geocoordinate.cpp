@@ -32,8 +32,6 @@ double Coordinate::z() const {
     return _z;
 }
 
-
-
 /**
   * Math functions for a coordinate
   */

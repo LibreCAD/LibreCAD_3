@@ -11,6 +11,7 @@ Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int deg
 }
 
 std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+
 }
 
 geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
