@@ -44,7 +44,6 @@ namespace lc {
                  */
                 double height() const;
 
-
                 /**
                   * Test of a specific point lies within a area
                   * @param point Point to test agains
@@ -52,6 +51,13 @@ namespace lc {
                   */
                 bool inArea(const Coordinate& point) const;
 
+                /**
+                 * @brief merge
+                 * two area's and expend if required to largest area
+                 * @param other
+                 * @return
+                 */
+                Area merge(const Area & other) const;
             private:
                 const Coordinate _minP;
                 const Coordinate _maxP;

@@ -49,3 +49,7 @@ std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
 EntityContainer StorageManagerImpl::entityContainer() const {
     return _entities;
 }
+
+void StorageManagerImpl::optimise() {
+    _entities.optimise();
+}

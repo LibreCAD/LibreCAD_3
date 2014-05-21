@@ -37,4 +37,3 @@ void Vector::start(const Coordinate& coord) {
 void Vector::end(const Coordinate& coord) {
     _end = coord;
 }
-

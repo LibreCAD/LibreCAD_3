@@ -33,3 +33,10 @@ double Area::width() const {
 double Area::height() const {
     return _maxP.y() - _minP.y();
 }
+
+Area Area::merge(const Area & other) const {
+    return Area(
+                Coordinate(std::min(other.minP().x(), this->minP().x()),std::min(other.minP().y(), this->minP().y())),
+                Coordinate(std::max(other.maxP().x(), this->maxP().x()),std::max(other.maxP().y(), this->maxP().y())));
+
+}
