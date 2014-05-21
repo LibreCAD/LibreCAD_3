@@ -144,10 +144,12 @@ void CadMdiChild::redo() {
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
-    auto builder = std::make_shared<lc::operation::Builder>(document());
-    auto layer = _storageManager->layerByName("0");
     QTime myTimer;
     myTimer.start();
+
+
+    auto builder = std::make_shared<lc::operation::Builder>(document());
+    auto layer = _storageManager->layerByName("0");
 
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
@@ -162,6 +164,32 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
     myTimer.start();
     builder->execute();
     qDebug() << "Process : " << myTimer.elapsed();
+
+    /*
+    // This retreival is currently expensive because it makes a copy.
+    // The idea is to not make a copy by returning it 'const'. To decides yet
+
+    lc::EntityContainer container=document()->entityContainer();
+    myTimer.restart();
+    qDebug() << "Entities Total " << container.allEntities().size();
+    qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
+
+    myTimer.restart();
+    lc::EntityContainer itemsInArea = container.entitiesByArea(lc::geo::Area(lc::geo::Coordinate(200,200), lc::geo::Coordinate(350,350)));
+    qDebug() << "Entities in area : " << itemsInArea.allEntities().size();
+    qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
+
+    myTimer.restart();
+    lc::EntityContainer  itemsOnLayerWithinArea = itemsInArea.entitiesByLayer(storageManager()->layerByName("1"));
+    qDebug() << "Entities on layer within above selection : " << itemsOnLayerWithinArea.allEntities().size();
+    qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
+
+    myTimer.restart();
+    lc::EntityContainer  itemsOnDocument = container.entitiesByLayer(storageManager()->layerByName("1"));
+    qDebug() << "Entities on this layer within document : " << itemsOnDocument.allEntities().size();
+    qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
+*/
+
 }
 
 void CadMdiChild::on_addCircles_clicked() {

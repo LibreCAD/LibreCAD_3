@@ -38,6 +38,12 @@ namespace lc {
              * \return
              */
             virtual EntityContainer entityContainer() const = 0;
+
+            /**
+             * @brief optimise
+             * the underlaying data store. Run this at a regular base, for example after each task
+             */
+            virtual void optimise() = 0;
     };
 
     class StorageManager;

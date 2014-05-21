@@ -72,3 +72,8 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
         newText->setID(this->id());
         return newText;
 }
+
+const geo::Area Text::boundingBox() const {
+    // TODO create bounding box for spline
+    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+}

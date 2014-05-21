@@ -73,7 +73,7 @@ namespace lc {
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
-
+            virtual const geo::Area boundingBox() const;
         public:
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

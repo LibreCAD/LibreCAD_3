@@ -31,15 +31,17 @@ void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
 }
 
 void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
+    _storageManager->optimise();
     CommitProcessEvent event(operation);
     commitProcessEvent()(event);
+
 }
 
 void DocumentImpl::insertEntity(const CADEntity_CSPtr cadEntity) {
     if (_storageManager->entityByID(cadEntity->id()).get() != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
-        removeEntityEvent()(cadEntity);
+        removeEntityEvent()(event);
     }
 
     _storageManager->insertEntity(cadEntity);

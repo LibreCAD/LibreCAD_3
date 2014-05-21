@@ -28,7 +28,7 @@ namespace lc {
              * \brief returns the ID of the entity
              * \return ID
              */
-            virtual ID_DATATYPE id() const ;
+            ID_DATATYPE id() const ;
 
             bool operator == (const ID& id) const {
                 return (id._id == _id);

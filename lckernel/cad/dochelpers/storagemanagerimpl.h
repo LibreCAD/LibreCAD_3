@@ -40,6 +40,7 @@ namespace lc {
             virtual std::map<std::string, Layer_CSPtr> allLayers() const;
 
             virtual EntityContainer entityContainer() const;
+            virtual void optimise();
         private:
             EntityContainer _entities;
             std::map<std::string, Layer_CSPtr> _layers;

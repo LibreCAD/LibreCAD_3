@@ -71,6 +71,7 @@ void Builder::processInternal(StorageManager_SPtr storageManager) {
 
     // Build a buffer with all entities we need to remove during a undo cycle
     for (auto entity : _workingBuffer) {
+        // Todo, consider changing this, we only need to know if this entity already exists
         auto org = storageManager->entityByID(entity->id());
 
         if (org.get() != nullptr) {
@@ -87,7 +88,6 @@ void Builder::processInternal(StorageManager_SPtr storageManager) {
     for (auto entity : _workingBuffer) {
         document()->insertEntity(entity);
     }
-
 }
 
 void Builder::undo() const {

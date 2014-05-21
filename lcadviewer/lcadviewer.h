@@ -96,11 +96,12 @@ class LCADViewer : public QWidget {
         void drawEvent(const DrawEvent&);
         void selectedItemsEvent(const SelectedItemsEvent&);
 
-    public slots:
+    public:
         void setVerticalOffset(int v);
         void setHorizontalOffset(int v);
         void on_addEntityEvent(const lc::AddEntityEvent&);
         void on_removeEntityEvent(const lc::RemoveEntityEvent&);
+        void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
     private:
         lc::Document* _document;

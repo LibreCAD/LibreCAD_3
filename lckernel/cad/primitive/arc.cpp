@@ -36,3 +36,9 @@ CADEntity_CSPtr Arc::scale(const geo::Coordinate& scale_center, const geo::Coord
     return newArc;
 
 }
+
+const geo::Area Arc::boundingBox() const {
+    // TODO take start/end angle into consideration
+    return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
+}
+

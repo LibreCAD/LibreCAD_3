@@ -34,14 +34,20 @@ void LCADViewer::setDocument(lc::Document* document) {
 
     document->addEntityEvent().connect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
+    document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 
 }
 
 LCADViewer::~LCADViewer() {
     _document->addEntityEvent().disconnect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
     _document->removeEntityEvent().disconnect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
+    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
+void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
+    _entityContainer.optimise();
+    update();
+}
 
 /**
   * Function to add entities to the graphics scene
@@ -276,6 +282,9 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
         painterImage = _cachedPainters[VIEWER_DRAWING];
         painter.drawImage(QPoint(0, 0), *painterImage->image());
     }
+
+
+
 
 
     painter.end();
