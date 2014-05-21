@@ -65,7 +65,8 @@ SOURCES += lckernel.cpp \
     cad/document/document.cpp \
     cad/dochelpers/storagemanagerimpl.cpp \
     cad/dochelpers/entitycontainer.cpp \
-    cad/dochelpers/quadtree.cpp
+    cad/dochelpers/quadtree.cpp \
+    cad/math/lcmath.cpp
 
 HEADERS += \
     nano-signal-slot/nano_signal_slot.hpp \
@@ -123,7 +124,7 @@ HEADERS += \
     cad/events/replacelayerevent.h \
     cad/dochelpers/storagemanagerimpl.h \
     cad/document/storagemanager.h \
-    cad/dochelpers/quadtree.h
-
+    cad/dochelpers/quadtree.h \
+    cad/math/lcmath.h
 
 
