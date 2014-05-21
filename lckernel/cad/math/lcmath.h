@@ -6,13 +6,6 @@
 namespace lc {
     class Math {
     public:
-        template <class T>
-        static void swap( T &a, T &b) {
-             T ttmp(a);
-            a=b;
-            b=ttmp;
-        }
-
         static bool isAngleBetween(double a,
                             double a1, double a2,
                             bool reversed);

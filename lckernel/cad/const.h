@@ -12,5 +12,6 @@ namespace lc {
 #define TOLERANCE 1.0e-4
 //#define M_PI 3.14
 #define TOLERANCE_ANGLE 1.0e-6
-
+#define RS_MAXDOUBLE 1.0E+6
+#define RS_MINDOUBLE -1.0E+6
 #endif

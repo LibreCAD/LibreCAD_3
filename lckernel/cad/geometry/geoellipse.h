@@ -4,8 +4,12 @@
 #include "cad/const.h"
 #include "geocoordinate.h"
 #include "cad/math/lcmath.h"
-
+#include <memory>
 namespace lc {
+
+class CADEntity;
+typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     namespace geo {
         class Ellipse  {
             public:
@@ -34,7 +38,7 @@ namespace lc {
                  */
                 Coordinate endPoint() const;
 
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
+                Coordinate nearestPointOnPath(const Coordinate &coord, const bool onEntity, const double &dist, const CADEntity_CSPtr entity) const;
                 bool isCoordinateOnPath(const Coordinate& coord, double tolerance) const;
                 /**
                  * @brief isArc

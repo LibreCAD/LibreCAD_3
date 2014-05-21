@@ -38,8 +38,7 @@ double Ellipse::getAngle() const {
     return _majorP.angle();
 }
 
-Coordinate Ellipse::nearestPointOnPath(const Coordinate& /*coord*/) const {
-    return center();
+Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord, const bool onEntity,const double& dist, const CADEntity_CSPtr entity) const {
 }
 
 bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {
