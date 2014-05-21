@@ -38,7 +38,7 @@ typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
                  */
                 Coordinate endPoint() const;
 
-                Coordinate nearestPointOnPath(const Coordinate &coord, const bool onEntity, const double &dist, const CADEntity_CSPtr entity) const;
+                Coordinate nearestPointOnPath(const Coordinate &coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord, double tolerance) const;
                 /**
                  * @brief isArc
