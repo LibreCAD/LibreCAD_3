@@ -65,6 +65,7 @@ SOURCES += lckernel.cpp \
     cad/document/document.cpp \
     cad/dochelpers/storagemanagerimpl.cpp \
     cad/dochelpers/entitycontainer.cpp \
+    cad/math/lcmath.cpp
 
 HEADERS += \
     nano-signal-slot/nano_signal_slot.hpp \
@@ -121,6 +122,7 @@ HEADERS += \
     cad/events/addlayerevent.h \
     cad/events/replacelayerevent.h \
     cad/dochelpers/storagemanagerimpl.h \
-    cad/document/storagemanager.h
+    cad/document/storagemanager.h \
+    cad/math/lcmath.h
 
 

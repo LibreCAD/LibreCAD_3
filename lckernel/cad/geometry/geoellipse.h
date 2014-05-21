@@ -3,8 +3,13 @@
 
 #include "cad/const.h"
 #include "geocoordinate.h"
-
+#include "cad/math/lcmath.h"
+#include <memory>
 namespace lc {
+
+class CADEntity;
+typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     namespace geo {
         class Ellipse  {
             public:
@@ -33,13 +38,38 @@ namespace lc {
                  */
                 Coordinate endPoint() const;
 
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                bool isCoordinateOnPath(const Coordinate& coord) const;
+                Coordinate nearestPointOnPath(const Coordinate &coord) const;
+                bool isCoordinateOnPath(const Coordinate& coord, double tolerance) const;
                 /**
                  * @brief isArc
                  * @return true if entity is an elliptic arc
                  */
                 bool isArc() const;
+
+                /**
+                 * @retval true if the arc is reversed (clockwise),
+                 * @retval false otherwise
+                 */
+                bool isReversed() const;
+
+                /**
+                 * @brief ratio of major radius to minor radius
+                 * @return double ratio
+                 */
+                double ratio() const;
+
+                /**
+                 * @brief Major Radius
+                 * @return double Major radius
+                 */
+                double majorRadius() const;
+
+                /**
+                 * @brief getAngle of MajorP
+                 * @return double majorP angle
+                 */
+                double getAngle() const;
+
                 /**
                  * @brief getEllipseAngle
                  * @param coord, a point on ellipse, not actually required to be on ellipse
@@ -48,12 +78,9 @@ namespace lc {
                 double getEllipseAngle(const Coordinate& coord) const;
 
             private:
-                const Coordinate _center;
-                const Coordinate _majorP;
-                double _minorRadius;
-                double _startAngle;
-                double _endAngle;
-                bool _isArc;
+                const Coordinate _center, _majorP;
+                double _minorRadius, _startAngle, _endAngle;
+                bool _isArc, _isReversed;
         };
     }
 }
