@@ -12,7 +12,6 @@ TEMPLATE = lib
 
 DEFINES += LCADLUASCRIPT_LIBRARY
 
-
 unix {
     target.path = /usr/lib
     INSTALLS += target
@@ -28,13 +27,25 @@ unix {
             LIBS += -L$$DESTDIR -llckernel
         }
         CONFIG+=link_pkgconfig
-        packagesExist(lua5.2) { PKGCONFIG += lua5.2 } else { PKGCONFIG += lua }
+        packagesExist(lua5.2) {
+		PKGCONFIG += lua5.2
+	} else:packagesExist(lua-5.2) {
+		PKGCONFIG += lua-5.2
+	} else {
+		PKGCONFIG += lua
+	}
         PKGCONFIG += liblog4cxx
     } else {
         DESTDIR = ../lcdemo
         LIBS += -L$$DESTDIR -llckernel
         CONFIG+=link_pkgconfig
-        packagesExist(lua5.2) { PKGCONFIG += lua5.2 } else { PKGCONFIG += lua }
+        packagesExist(lua5.2) {
+		PKGCONFIG += lua5.2
+	} else:packagesExist(lua-5.2) {
+		PKGCONFIG += lua-5.2
+	} else {
+		PKGCONFIG += lua
+	}
         PKGCONFIG += liblog4cxx
     }
 }

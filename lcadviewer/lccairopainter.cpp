@@ -28,6 +28,10 @@ LcCairoPainter::~LcCairoPainter() {
     }
 }
 
+#ifndef CAIRO_ANTIALIAS_GOOD
+#define CAIRO_ANTIALIAS_GOOD	CAIRO_ANTIALIAS_SUBPIXEL
+#endif
+
 LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int width, int height) {
     cairo_surface_t* surface;
     cairo_t* cr;

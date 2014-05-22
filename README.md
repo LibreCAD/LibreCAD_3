@@ -12,7 +12,7 @@ Compilation Instructions
 ==========
 
 Install cairo
-Install Qt >4.8 or better Qt 5
+Install Qt 5
 Install git
 Install liblog4cxx
 
