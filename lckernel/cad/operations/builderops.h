@@ -24,8 +24,8 @@ namespace lc {
         class Base {
             public:
                 virtual std::vector<CADEntity_CSPtr> process(
-                    StorageManager_SPtr storageManager,
-                    std::vector<CADEntity_CSPtr> entities,
+                    const StorageManager_SPtr storageManager,
+                    const std::vector<CADEntity_CSPtr> entities,
                     std::vector<CADEntity_CSPtr>& workingBuffer,
                     std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack

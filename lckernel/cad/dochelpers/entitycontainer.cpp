@@ -7,7 +7,7 @@
 using namespace lc;
 
 EntityContainer::EntityContainer() {
-    _tree = new QuadTree(geo::Area(geo::Coordinate(-10000.,-10000.), geo::Coordinate(10000.,10000.)));
+    _tree = new QuadTree(geo::Area(geo::Coordinate(-1000.,-1000.), geo::Coordinate(1000.,1000.)));
 }
 
 EntityContainer::EntityContainer(const EntityContainer &other) {
@@ -47,8 +47,7 @@ std::vector<CADEntity_CSPtr> EntityContainer::allEntities() const {
         v.push_back(item.second);
     } */
 
-    std::vector<CADEntity_CSPtr> v = _tree->retrieve();
-    return v;
+    return _tree->retrieve();
 }
 
 CADEntity_CSPtr EntityContainer::entityByID(ID_DATATYPE id) const {
@@ -81,7 +80,7 @@ EntityContainer EntityContainer::entitiesByLayer(const Layer_CSPtr layer) const 
 
 EntityContainer EntityContainer::entitiesByArea(const geo::Area & area) const {
     EntityContainer container;
-    std::vector<CADEntity_CSPtr> entities = _tree->retrieve(area);
+    auto entities = _tree->retrieve(area);
     for (auto i : entities) {
             container.insert(i);
     }

@@ -14,8 +14,8 @@ Begin::Begin() :  Base() {
 }
 
 std::vector<CADEntity_CSPtr> Begin::process(
-    StorageManager_SPtr storageManager,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>& workingBuffer,
     std::vector<CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr>) {
@@ -33,8 +33,8 @@ Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 }
 
 std::vector<CADEntity_CSPtr> Loop::process(
-    StorageManager_SPtr storageManager,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>& _workingBuffer,
     std::vector<CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr> _stack) {
@@ -71,8 +71,8 @@ Move::Move(const geo::Coordinate& offset) :  Base(), _offset(offset) {
 }
 
 std::vector<CADEntity_CSPtr>  Move::process(
-    StorageManager_SPtr ,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -94,8 +94,8 @@ Copy::Copy(const geo::Coordinate& offset) : Base(), _offset(offset) {
 }
 
 std::vector<CADEntity_CSPtr> Copy::process(
-    StorageManager_SPtr ,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>& workingBuffer,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -114,8 +114,8 @@ Scale::Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_f
 }
 
 std::vector<CADEntity_CSPtr> Scale::process(
-    StorageManager_SPtr ,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -133,8 +133,8 @@ Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_ang
 }
 
 std::vector<CADEntity_CSPtr> Rotate::process(
-    StorageManager_SPtr ,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -153,8 +153,8 @@ Push::Push() : Base() {
 }
 
 std::vector<CADEntity_CSPtr> Push::process(
-    StorageManager_SPtr ,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>& workingBuffer,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -171,8 +171,8 @@ SelectByLayer::SelectByLayer(const Layer_CSPtr layer) : Base(), _layer(layer) {
 }
 
 std::vector<CADEntity_CSPtr> SelectByLayer::process(
-    StorageManager_SPtr storageManager,
-    std::vector<CADEntity_CSPtr> ,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
@@ -188,8 +188,8 @@ Remove::Remove() : Base() {
 }
 
 std::vector<CADEntity_CSPtr> Remove::process(
-    StorageManager_SPtr storageManager,
-    std::vector<CADEntity_CSPtr> entitySet,
+    const StorageManager_SPtr storageManager,
+    const std::vector<CADEntity_CSPtr> entitySet,
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr>) {

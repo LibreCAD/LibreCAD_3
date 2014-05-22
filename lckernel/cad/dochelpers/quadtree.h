@@ -8,28 +8,19 @@
 #include "cad/base/cadentity.h"
 
 namespace lc {
+    class QuadTree;
     /**
-     * @brief The QuadTree class
-     * Quad tree implementation to spatially store CADEntities
-     * Usefull for area selections of large entities
+     * @brief The QuadTreeSub class
+     * each nide below QuadTree will be a QuadTreeSub type
      *
-     * Considerations, speed vs memory consumption
-     * The more level's are created, the more memory it consumes, but the faster the tree will be for smaller objects
-     * The more object's per level the less memory it uses, but the more possiblew object's it will return during retreive
-     *
-     * We could change std::vector<CADEntity_CSPtr> _objects; into a std::map to speed up deletion of items within the tree
-     * At this moment we need to walk over the tree to find the item's location, then delete it However, this will consume more memory
-     *
-     * mutable std::map<ID_DATATYPE, CADEntity_CSPtr> *_cadentities; can be removed all together, but this will
-     * slowdown testing the routine entityByID
      */
-    class QuadTree {
+    class QuadTreeSub {
         public:
-            QuadTree(int pLevel, const geo::Area & pBounds, unsigned short maxLevels, unsigned short maxObjects);
-            QuadTree(const geo::Area & pBounds);
-            QuadTree(const QuadTree & tree);
-            QuadTree();
-            virtual ~QuadTree();
+            QuadTreeSub(int pLevel, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects);
+            QuadTreeSub(const geo::Area& pBounds);
+            QuadTreeSub(const QuadTreeSub& tree);
+            QuadTreeSub();
+            ~QuadTreeSub();
 
             /**
              * @brief clear
@@ -43,7 +34,7 @@ namespace lc {
              * @param pRect
              * @param entity
              */
-            void insert(CADEntity_CSPtr entity);
+            void insert(const CADEntity_CSPtr entity);
 
             /**
              * @brief remove
@@ -51,7 +42,7 @@ namespace lc {
              * @param pRect
              * @param entity
              */
-            bool erase(CADEntity_CSPtr entity);
+            bool erase(const CADEntity_CSPtr entity);
 
             /**
              * @brief retrieve
@@ -77,7 +68,13 @@ namespace lc {
              */
             unsigned int size() const;
 
-            virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const;
+            /**
+             * @brief entityByID
+             * return's a entity by it's ID
+             * @param id
+             * @return
+             */
+            const CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
 
             /**
              * @brief bounds
@@ -111,18 +108,10 @@ namespace lc {
 
             /**
              * @brief walk
-             * Allow's to walk over each node within the tree
+             * Allow's to walk over each node within the tree specifying a function that can be called for each QuadTreeSub
              * @param foo
              */
-            void walk(const std::function<void(QuadTree *)> & foo) {
-                foo(this);
-                if (_nodes[0] != nullptr) {
-                    _nodes[0]->walk(foo);
-                    _nodes[1]->walk(foo);
-                    _nodes[2]->walk(foo);
-                    _nodes[3]->walk(foo);
-                }
-            }
+            void walkQuad(const std::function<void(const QuadTreeSub&)>& func);
 
             /**
              * @brief optimise
@@ -160,7 +149,7 @@ namespace lc {
             bool includes(const geo::Area& pRect) const;
             /**
              * @brief split
-             * Create 4 new quads
+             * Create 4 new quads below the current quad
              */
             void split();
 
@@ -168,13 +157,66 @@ namespace lc {
             const unsigned short _level;
             std::vector<CADEntity_CSPtr> _objects;
             const geo::Area _bounds;
-            QuadTree* _nodes[4];
+            QuadTreeSub* _nodes[4];
             const unsigned short _maxLevels;
             const unsigned short _maxObjects;
+    };
 
+    /**
+     * @brief The QuadTree class
+     * Quad tree implementation to spatially store CADEntities
+     * Usefull for area selections of large entities
+     *
+     * Considerations, speed vs memory consumption
+     * The more level's are created, the more memory it consumes, but the faster the tree will be for smaller objects
+     * The more object's per level the less memory it uses, but the more possiblew object's it will return during retreive
+     *
+     * We could change std::vector<CADEntity_CSPtr> _objects; into a std::map to speed up deletion of items within the tree
+     * At this moment we need to walk over the tree to find the item's location, then delete it However, this will consume more memory
+     *
+     * mutable std::map<ID_DATATYPE, CADEntity_CSPtr> *_cadentities; can be removed all together, but this will
+     * slowdown testing the routine entityByID
+     */
+    class QuadTree : public QuadTreeSub {
+        public:
+            QuadTree(int pLevel, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects);
+            QuadTree(const geo::Area& pBounds);
+            QuadTree(const QuadTree& tree);
+            QuadTree();
+
+            /**
+             * @brief clear
+             * Clear the quad tree by removing all levels and removing all stored entities
+             */
+            void clear();
+
+            /**
+             * @brief insert
+             * Insert entity into the qauad tree
+             * @param pRect
+             * @param entity
+             */
+            void insert(const CADEntity_CSPtr entity);
+
+            /**
+             * @brief test
+             * validy of the tree by comparing all nodes with the std::map
+             */
+            void test() const;
+
+            /**
+             * @brief remove
+             * Remove entity from quad tree
+             * @param pRect
+             * @param entity
+             */
+            bool erase(const CADEntity_CSPtr entity);
+            const CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
+
+        private:
             // used as a cache on root level
             // This will allow is to quickly lookup a CAD entity from the root
-            mutable std::map<ID_DATATYPE, CADEntity_CSPtr> *_cadentities;
+            mutable std::map<ID_DATATYPE, const CADEntity_CSPtr> _cadentities;
     };
 
 }

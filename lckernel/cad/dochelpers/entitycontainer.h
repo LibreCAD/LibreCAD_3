@@ -104,10 +104,11 @@ namespace lc {
              */
             std::vector<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const;
 
-            /* DOn't show underlaying impementation
+            //DOn't show underlaying impementation
+            /*
             QuadTree* tree() {
                 return _tree;
-            }; */
+            };*/
 
             /**
              * @brief optimise

@@ -27,25 +27,25 @@ void DocumentRenderer::render(const QRectF& rec) {
     }
 
     /* Draw QuadTree (for debugging) */
-    /*
+/*
     _painter->save();
     _painter->line_width(1.0);
     _painter->disable_antialias();
     _painter->source_rgba(0.7, 0.7, 1.0, .8);
     lc::QuadTree *t = _entityContainer->tree();
     LcPainter *painter=_painter;
-    t->walk(
+    t->walkQuad(
         [painter]
-            (lc::QuadTree *tree){
-        lc::geo::Area a = tree->bounds();
+            (const lc::QuadTreeSub &tree){
+        lc::geo::Area a = tree.bounds();
        // painter->source_rgba(0.7, 0.7, 1.0, .8);
         painter->rectangle(a.minP().x(), a.minP().y(), a.width(), a.height());
        // painter->stroke();
 
         //painter->source_rgba(0.7, 1.0, .7, .8);
-        //painter->rectangle(a.minP().x()+tree->level(), a.minP().y()+tree->level(), a.width()-+tree->level()*2, a.height()-+tree->level()*2);
+        //painter->rectangle(a.minP().x()+tree.level(), a.minP().y()+tree.level(), a.width()-+tree.level()*2, a.height()-+tree.level()*2);
         //painter->stroke();
     });
     painter->stroke();
-    _painter->restore(); */
+    _painter->restore();*/
 }
