@@ -6,9 +6,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <QString>
-#include <QElapsedTimer>
-
 #include "LuaIntf.h"
 //#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
@@ -34,7 +31,7 @@ using namespace LuaIntf;
 LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager) : _document(document), _storageManager(storageManager) {
 }
 
-QString* gOut;
+std::string* gOut;
 lc::Document* luaDoc;
 lc::StorageManager_SPtr storageManager;
 
@@ -68,7 +65,7 @@ static lc::Layer_SPtr lua_layer(const char* layer) {
 
 }
 
-QString LCadLuaScript::run(const QString& script) {
+std::string LCadLuaScript::run(const std::string& script) {
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -96,13 +93,13 @@ QString LCadLuaScript::run(const QString& script) {
     lua_pop(L, 1);
 
     // Some globals we have to figure out to make sure it works with multiple threads
-    QString out;
+    std::string out;
     gOut = &out;
     luaDoc = _document;
     storageManager = _storageManager;
 
     // luaL_dofile(L, "/opt/librecad-test.lua");
-    int s = luaL_dostring(L, script.toLocal8Bit().data());
+    int s = luaL_dostring(L, script.c_str());
 
     if (s != 0) {
         out.append(lua_tostring(L, -1));

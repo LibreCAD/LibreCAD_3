@@ -1,6 +1,7 @@
 #include "luascript.h"
 #include "ui_luascript.h"
 
+#include <string>
 #include <lcadluascript.h>
 
 LuaScript::LuaScript(IMainWindow* parent) :
@@ -17,9 +18,9 @@ LuaScript::~LuaScript() {
 
 void LuaScript::on_luaRun_clicked() {
     LCadLuaScript lc(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager());
-    QString out = lc.run(ui->luaInput->toPlainText());
-    ui->luaOutput->clear();
-    ui->luaOutput->textCursor().insertText(out);
 
+    std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
+    ui->luaOutput->clear();
+    ui->luaOutput->textCursor().insertText(QString::fromStdString(out));
 }
 
