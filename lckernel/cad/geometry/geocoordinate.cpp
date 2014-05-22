@@ -5,21 +5,17 @@
 using namespace lc;
 using namespace geo;
 
-Coordinate::Coordinate(double x, double y, double z) {
-    this->_x = x;
-    this->_y = y;
-    this->_z = z;
+Coordinate::Coordinate() : _x(0.), _y(0.), _z(0.) {
+
 }
 
-Coordinate::Coordinate(double x, double y) {
-    this->_x = x;
-    this->_y = y;
-    this->_z = 0;
+Coordinate::Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {
 }
 
-Coordinate::Coordinate(double angle) {
-    this->_x = cos(angle);
-    this->_y = sin(angle);
+Coordinate::Coordinate(double x, double y) : _x(x), _y(y), _z(0.) {
+}
+
+Coordinate::Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)) {
 }
 
 double Coordinate::x() const {
