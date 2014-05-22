@@ -12,7 +12,7 @@
 
 #include <QtGui>
 #include <QMdiSubWindow>
-#include <math.h>
+#include <cmath>
 
 #include <ui/luascript.h>
 

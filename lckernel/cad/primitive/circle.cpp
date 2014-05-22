@@ -1,6 +1,6 @@
 #include "cad/primitive/circle.h"
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include "cad/interface/metatype.h"
 using namespace lc;

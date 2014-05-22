@@ -1,6 +1,6 @@
 #include "intersect.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "cad/geometry/geocoordinate.h"
 

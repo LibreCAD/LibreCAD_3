@@ -1,7 +1,7 @@
 #include <memory>
 #include "ellipse.h"
 
-#include <math.h>
+#include <cmath>
 
 using namespace lc;
 
