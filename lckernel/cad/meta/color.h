@@ -7,6 +7,7 @@
 
 #include "cad/const.h"
 
+#include <cmath>
 
 namespace lc {
 
@@ -22,25 +23,69 @@ namespace lc {
                 ByEntity = 1
             };
 
-            Color();
-            /**
-              * Values for RGBA are 8 bits
-              */
-            Color(const int r, const int g, const int b, const int a = 255);
-            Color(Method method);
-            virtual ~Color() {
+            Color() : MetaType() , _method(Invalid), _r(0.), _g(0.), _b(0.), _a(0.) {}
+            Color(double r, double g, double b, double a=1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
+            Color( const Color & other) : MetaType(), _method(other._method), _r(other._r), _g(other._g), _b(other._b), _a(other._a) {}
+            Color(const Method &method) : MetaType(), _method(method), _r(0.), _g(0.), _b(0.), _a(0.) {}
+
+
+            Color(Method method) {
+                if (method == Invalid) {
+                    throw;
+                }
+
+                if (method == ByEntity) {
+                    throw;
+                }
+
+                this->_method = method;
             }
 
-            Method method() const;
-            int red() const;
-            int green() const;
-            int blue() const;
-            int alpha() const;
+            Color& operator = (const Color & other) {
+                if (this != &other) {
+                    _r=other._r;
+                    _g=other._g;
+                    _b=other._b;
+                    _a=other._a;
+                    _method = other._method;
+                }
+                return *this;
+            }
 
-            //            QColor qColor() const;
+            ~Color() {
+            }
+
+            Method method() const {
+                return _method;
+            }
+            double red() const {
+                return _r;
+            }
+            double green() const {
+                return _g;
+            }
+            double blue() const {
+                return _b;
+            }
+            double alpha() const {
+                return _a;
+            }
+
+            short redI() const {
+                return std::round(_r * 255);
+            }
+            short greenI() const {
+                return std::round(_g * 255);
+            }
+            short blueI() const {
+                return std::round(_b * 255);
+            }
+            short alphaI() const {
+                return std::round(_a * 255);
+            }
 
             bool variantValid() const {
-                return !(_method == Color::Invalid);
+                return !(_method == Invalid);
             }
 
             metaTypeId metaName() const {
@@ -48,11 +93,11 @@ namespace lc {
             }
 
         private:
-            Method _method;
-            int _r;
-            int _g;
-            int _b;
-            int _a;
+             Method _method;
+             double _r;
+             double _g;
+             double _b;
+             double _a;
     };
 
 

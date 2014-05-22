@@ -2,6 +2,7 @@
 #define GEOCOORDINATE_H
 
 #include "cad/const.h"
+#include <cmath>
 
 namespace lc {
     namespace geo {
@@ -10,17 +11,21 @@ namespace lc {
           */
         class Coordinate {
             public:
-                Coordinate();
-                Coordinate(double x, double y, double z);
-                Coordinate(double x, double y);
-                Coordinate(double angle) ;
-                double x() const;
-                double y() const;
-                double z() const;
+                explicit Coordinate() : _x(0.), _y(0.), _z(0.) {}
+                explicit Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {}
+                explicit Coordinate(double x, double y) : _x(x), _y(y), _z(0.) {}
+                explicit Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)) {}
+                inline double x() const {
+                    return _x;
+                }
+                inline double y() const {
+                    return _y;
+                }
+                inline double z() const {
+                    return _z;
+                }
 
-            public:
-
-                Coordinate& operator = (const Coordinate& coord) {
+                inline Coordinate& operator = (const Coordinate& coord) {
                     if (this != &coord) {
                         _x = coord._x;
                         _y = coord._y;
@@ -30,10 +35,11 @@ namespace lc {
                     return *this;
                 }
 
-                bool operator==(const Coordinate& coord) const {
+                inline bool operator==(const Coordinate& coord) const {
                     return this->_x == coord._x && this->_y == coord._y && this->_z == coord._z;
                 }
-                bool operator!=(const Coordinate& coord) const {
+
+                inline bool operator!=(const Coordinate& coord) const {
                     return !(*this == coord);
                 }
 
@@ -41,19 +47,24 @@ namespace lc {
                   * Calculate the distance between this coordinate and a other coordinate
                   * @return double
                   */
-                double distanceTo(const Coordinate& coordinate) const;
+                inline double distanceTo(const geo::Coordinate& c) const {
+                    return (*this - c).magnitude();
+                }
 
                 /**
                   * Add two points to each other and return a new coordinate : return Coordinate(_x + coord._x, _y + coord._y, _z + coord._z);
                   * @return Coordinate  Addition of two vectors
                   */
-                Coordinate operator + (const Coordinate& coordinate) const;
-
+                inline Coordinate operator + (const Coordinate& coord) const {
+                    return Coordinate(_x + coord._x, _y + coord._y, _z + coord._z);
+                }
                 /**
                   * Substract two points from each other and return a new coordinate : return _x - coord._x, _y - coord._y, _z - coord._z
                   * returns Coordinate
                   */
-                Coordinate operator - (const Coordinate& coordinate) const;
+                inline Coordinate operator - (const Coordinate& coord) const {
+                    return Coordinate(_x - coord._x, _y - coord._y, _z - coord._z);
+                }
 
                 /**
                   * Multiplication by Coordinate : return Coordinate(_x * s, _y * s, _z * s)
@@ -61,32 +72,45 @@ namespace lc {
                   * @param Coordinate
                   * @return Coordinate
                   */
-                Coordinate operator * (const Coordinate& coord) const;
+                inline Coordinate operator * (const Coordinate& coord) const {
+                    return Coordinate(_x * coord._x, _y * coord._y, _z * coord._z);
+                }
 
-                Coordinate operator * (double s) const;
+                inline Coordinate operator * (double s) const {
+                    return Coordinate(_x * s, _y * s, _z * s);
+                }
                 /**
                   * Division by double : return Coordinate(_x / s, _y / s, _z / s)
                   *
                   * @param double
                   * @return Coordinate
                   */
-                Coordinate operator / (double s) const;
+                inline Coordinate operator / (double s) const {
+                    return Coordinate(_x / s, _y / s, _z / s);
+                }
 
                 /**
                   * Magnitude or lenth of the point relative to zero : return sqrtf(_x * _x + _y * _y + _z * _z)
                   *
                   * @return double  Length of the vector
                   */
-                double magnitude() const;
+                inline double magnitude() const {
+                    return sqrtf(_x * _x + _y * _y + _z * _z);
+                }
 
-                double angle() const;
+                inline double angle() const {
+                    return atan2(_y, _x);
+                }
+
 
                 /**
                   * Quared of this Coordinate : return _x * _x + _y * _y + _z * _z;
                   *
                   * @return double   Quared value
                   */
-                double squared() const;
+                inline double squared() const {
+                    return _x * _x + _y * _y + _z * _z;
+                }
 
                 /**
                   * Dot product with other coordindate : return _x * coord._x + _y * coord._y + _z * coord._z;
@@ -94,15 +118,74 @@ namespace lc {
                   * @param Coordinate
                   * @return double   Dot product value
                   */
-                double dot(const Coordinate& coord) const;
+                inline double dot(const Coordinate& coord) const {
+                    return _x * coord._x + _y * coord._y + _z * coord._z;
+                }
 
-                Coordinate rotate(const Coordinate& angleVector) const;
-                Coordinate rotate(const double& angle) const;
-                Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const;
-                Coordinate rotate(const geo::Coordinate& point, const double& angle) const;
-                Coordinate scale(const double& scale_factor) const;
-                Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const;
-                Coordinate scale(const Coordinate& scale_factor) const;
+                /**
+                 * @brief rotate
+                 * around (0.,0.) with a given angle vector
+                 * @param angleVector
+                 * @return
+                 */
+                inline Coordinate rotate(const Coordinate& angleVector) const {
+                    double x0 = _x * angleVector.x() - _y * angleVector.y();
+                    double y0 = _x * angleVector.y() + _y * angleVector.x();
+                    return Coordinate(x0, y0);
+                }
+
+                /**
+                 * @brief rotate
+                 * around (0.,0.) with a given angle
+                 * @param angle
+                 * @return
+                 */
+                inline Coordinate rotate(const double& angle) const {
+                    return rotate(Coordinate(angle));
+                }
+
+                /**
+                 * @brief rotate
+                 * around a point with a angle vector
+                 * @param point
+                 * @param angleVector
+                 * @return
+                 */
+                inline Coordinate rotate(const geo::Coordinate& point, const Coordinate& angleVector) const {
+                    return point + (*this - point).rotate(angleVector);
+                }
+
+                /**
+                 * @brief rotate
+                 * around a point with a angle
+                 * @param point
+                 * @param angle
+                 * @return
+                 */
+                inline Coordinate rotate(const geo::Coordinate& point, const double& angle) const {
+                    return rotate(point, Coordinate(angle));
+                }
+
+                /**
+                 * Scales the vector by given factors with 0/0 as center
+                 */
+                inline Coordinate scale(const double& scale_factor) const {
+                    return Coordinate(_x * scale_factor, _y * scale_factor);
+                }
+
+                /**
+                 * Scales the vector by given factors with 0/0 as center
+                 */
+                inline  Coordinate scale(const Coordinate& scale_factor) const {
+                    return Coordinate(_x * scale_factor.x(), _y * scale_factor.y());
+                }
+
+                /**
+                 * Scales this vector by the given factors with the given center.
+                 */
+                inline Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
+                    return scale_center + (*this - scale_center) * scale_factor;
+                }
 
             private:
                 double _x;
@@ -125,8 +208,13 @@ namespace lc {
           */
         class CoordinateDistanceSort {
             public:
-                CoordinateDistanceSort(const Coordinate& distanceFrom);
-                bool operator()(const Coordinate& left, const Coordinate& right) const;
+                CoordinateDistanceSort(const Coordinate& distanceFrom) : _distanceFrom(distanceFrom) {
+                }
+
+                bool operator()(const Coordinate& left, const Coordinate& right) const {
+                    return (this->_distanceFrom - left).squared() < (this->_distanceFrom - right).squared();
+                }
+
 
             private:
                 Coordinate _distanceFrom;

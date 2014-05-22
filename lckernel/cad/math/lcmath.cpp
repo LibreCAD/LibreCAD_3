@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "cad/math/lcmath.h"
 #include "cad/const.h"
 

@@ -10,12 +10,12 @@ StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 
     // The below are just for testing, they need to be created when building the document so event's will get processed correctly
 
-    _layers.insert(std::make_pair("0", std::make_shared<Layer>("0", LineWidth(1.0), Color(255, 255, 255))));
-    _layers.insert(std::make_pair("1", std::make_shared<Layer>("1", LineWidth(1.0), Color(255, 255, 255))));
-    _layers.insert(std::make_pair("2", std::make_shared<Layer>("2", LineWidth(1.0), Color(255, 255, 255))));
-    _layers.insert(std::make_pair("3", std::make_shared<Layer>("3", LineWidth(1.0), Color(255, 255, 255))));
-    _layers.insert(std::make_pair("4", std::make_shared<Layer>("4", LineWidth(1.0), Color(255, 255, 255))));
-    _layers.insert(std::make_pair("5", std::make_shared<Layer>("5", LineWidth(1.0), Color(255, 255, 255))));
+    _layers.insert(std::make_pair("0", std::make_shared<Layer>("0", LineWidth(1.0), Color(1., 1., 1.))));
+    _layers.insert(std::make_pair("1", std::make_shared<Layer>("1", LineWidth(1.0), Color(1., 1., 1.))));
+    _layers.insert(std::make_pair("2", std::make_shared<Layer>("2", LineWidth(1.0), Color(1., 1., 1.))));
+    _layers.insert(std::make_pair("3", std::make_shared<Layer>("3", LineWidth(1.0), Color(1., 1., 1.))));
+    _layers.insert(std::make_pair("4", std::make_shared<Layer>("4", LineWidth(1.0), Color(1., 1., 1.))));
+    _layers.insert(std::make_pair("5", std::make_shared<Layer>("5", LineWidth(1.0), Color(1., 1., 1.))));
 }
 
 void StorageManagerImpl::insertEntity(const CADEntity_CSPtr entity) {

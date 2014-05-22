@@ -19,37 +19,55 @@ namespace lc {
                   * @param CoordA First coordinate of a area
                   * @param CoordB Second coordinate of a area
                   */
-                Area(const Coordinate& coordA, const Coordinate& coordB) ;
+                explicit Area(const Coordinate& coordA, const Coordinate& coordB) :
+                    _minP(Coordinate(std::min(coordA.x(), coordB.x()), std::min(coordA.y(), coordB.y()), std::min(coordA.z(), coordB.z()))),
+                    _maxP(Coordinate(std::max(coordA.x(), coordB.x()), std::max(coordA.y(), coordB.y()), std::max(coordA.z(), coordB.z()))) {
+                    if (coordA.x() != coordB.x() && coordA.y() != coordB.y() && coordA.z() != coordB.z()) {
+                        throw "Points describe a volume, not a area.";
+                    }
+
+                }
 
                 /**
                   * Return the smalles corner (closest to (0,0,0) )
                   */
-                const Coordinate minP() const;
+                inline const Coordinate minP() const {
+                    return _minP;
+                }
 
                 /**
                   * Return the heigest corner
                   */
-                const Coordinate maxP() const;
+                inline const Coordinate maxP() const {
+                    return _maxP;
+                }
 
                 /**
                  * @brief width
                  * Returns the wid th of this area
                  * @return
                  */
-                double width() const;
+                inline double width() const {
+                    return _maxP.x() - _minP.x();
+                }
+
                 /**
                  * @brief height
                  * Returns the height f this area
                  * @return
                  */
-                double height() const;
+                inline double height() const {
+                    return _maxP.y() - _minP.y();
+                }
 
                 /**
                   * Test of a specific point lies within a area
                   * @param point Point to test agains
                   * @return boolean true of the point is within the area
                   */
-                bool inArea(const Coordinate& point) const;
+                inline bool inArea(const Coordinate& point) const {
+                    return (point.x() >= _minP.x() && point.x() <= _maxP.x() && point.y() >= _minP.y() && point.y() <= _maxP.y());
+                }
 
                 /**
                  * @brief merge
@@ -57,7 +75,13 @@ namespace lc {
                  * @param other
                  * @return
                  */
-                Area merge(const Area & other) const;
+                inline Area merge(const Area& other) const {
+                    return Area(
+                               Coordinate(std::min(other.minP().x(), this->minP().x()), std::min(other.minP().y(), this->minP().y())),
+                               Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y())));
+
+                }
+
             private:
                 const Coordinate _minP;
                 const Coordinate _maxP;

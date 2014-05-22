@@ -33,7 +33,6 @@ unix {
 }
 
 SOURCES += lckernel.cpp \
-   cad/meta/color.cpp \
    cad/meta/layer.cpp \
    cad/meta/linewidth.cpp \
    cad/meta/pen.cpp \
@@ -47,9 +46,6 @@ SOURCES += lckernel.cpp \
     cad/primitive/arc.cpp \
     cad/geometry/geocircle.cpp \
     cad/geometry/geoarc.cpp \
-    cad/geometry/geoarea.cpp \
-    cad/geometry/geovector.cpp \
-    cad/geometry/geocoordinate.cpp \
     cad/geometry/geoellipse.cpp \
     cad/primitive/ellipse.cpp \
     cad/primitive/text.cpp \

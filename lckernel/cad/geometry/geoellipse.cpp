@@ -5,14 +5,13 @@
 using namespace lc;
 using namespace geo;
 
-Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc)  :
+Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc) :
     _center(center),
     _majorP(majorP),
-    _isArc(isArc) {
-    _minorRadius = minorRadius;
-    _startAngle = startAngle;
-    _endAngle = endAngle;
-}
+    _isArc(isArc),
+    _minorRadius(minorRadius),
+    _startAngle(startAngle),
+    _endAngle(endAngle) {}
 
 const Coordinate Ellipse::center() const {
     return _center;
@@ -44,23 +43,35 @@ Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
 bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {
     double t = fabs(tolerance);
     double a = majorRadius();
-    double b = a*ratio();
+    double b = a * ratio();
 
     Coordinate vp((coord - center()).rotate(-getAngle()));
-    if ( a<TOLERANCE ) {
-        //radius treated as zero
-        if(fabs(vp.x())<TOLERANCE && fabs(vp.y()) < b) return true;
-        return false;
-    }
-    if ( b<TOLERANCE ) {
-        //radius treated as zero
-        if (fabs(vp.y())<TOLERANCE && fabs(vp.x()) < a) return true;
-        return false;
-    }
-    auto cord = Coordinate(vp.scale(Coordinate(1./a,1./b)));
 
-    if (fabs(cord.squared()-1.) > t) return false;
-    return Math::isAngleBetween(cord.angle(),startAngle(),endAngle(),isReversed());
+    if (a < TOLERANCE) {
+        //radius treated as zero
+        if (fabs(vp.x()) < TOLERANCE && fabs(vp.y()) < b) {
+            return true;
+        }
+
+        return false;
+    }
+
+    if (b < TOLERANCE) {
+        //radius treated as zero
+        if (fabs(vp.y()) < TOLERANCE && fabs(vp.x()) < a) {
+            return true;
+        }
+
+        return false;
+    }
+
+    auto cord = Coordinate(vp.scale(Coordinate(1. / a, 1. / b)));
+
+    if (fabs(cord.squared() - 1.) > t) {
+        return false;
+    }
+
+    return Math::isAngleBetween(cord.angle(), startAngle(), endAngle(), isReversed());
 }
 
 double Ellipse::endAngle() const {
@@ -83,7 +94,7 @@ bool Ellipse::isReversed() const {
 }
 
 double Ellipse::ratio() const {
-    return _majorP.magnitude()/_minorRadius;
+    return _majorP.magnitude() / _minorRadius;
 }
 
 bool Ellipse::isArc() const {

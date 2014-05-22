@@ -3,9 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _control_points(control_points) {
-    _degree = degree;
-    _closed = closed;
+Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _control_points(control_points), _degree(degree), _closed(closed) {
 }
 
 const std::vector<Coordinate> Spline::control_points() const {

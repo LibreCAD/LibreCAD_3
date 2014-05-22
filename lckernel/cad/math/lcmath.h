@@ -1,7 +1,6 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include <cmath>
 
 namespace lc {
     class Math {

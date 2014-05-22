@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-Arc::Arc(const Coordinate& center, double radius, double startAngle, double endAngle) : _center(center) {
+Arc::Arc(const Coordinate& center, double radius, double startAngle, double endAngle) : _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle) {
     /*
     if (startAngle<0.0 || startAngle>PI2 || startAngle<endAngle) {
         throw "Invalid start angle";
@@ -15,9 +15,6 @@ Arc::Arc(const Coordinate& center, double radius, double startAngle, double endA
         throw "Invalid radius";
     }*/
 
-    _radius = radius;
-    _startAngle = startAngle;
-    _endAngle = endAngle;
 }
 
 double Arc::radius() const {

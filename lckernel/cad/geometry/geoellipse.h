@@ -7,9 +7,9 @@
 #include <memory>
 namespace lc {
 
-class CADEntity;
-typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
+    class CADEntity;
+    typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     namespace geo {
         class Ellipse  {
             public:
@@ -38,7 +38,7 @@ typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
                  */
                 Coordinate endPoint() const;
 
-                Coordinate nearestPointOnPath(const Coordinate &coord) const;
+                Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord, double tolerance) const;
                 /**
                  * @brief isArc
