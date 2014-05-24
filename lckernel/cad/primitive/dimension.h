@@ -1,7 +1,6 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
+#ifndef DIMENSION_H
+#define DIMENSION_H
 
-#include <cad/meta/layer.h>
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -9,32 +8,45 @@
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geocircle.h"
+#include "cad/geometry/geodimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/interface/snapable.h"
 
 namespace lc {
+    class Dimension;
+    typedef std::shared_ptr<Dimension> Dimension_SPtr;
+    typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
 
-    class Circle;
-    typedef Circle_SPtr Circle_SPtr;
-    typedef std::shared_ptr<const Circle> Circle_CSPtr;
 
-    class Circle : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+    class Dimension : public std::enable_shared_from_this<Dimension>, public CADEntity, public geo::Dimension {
         public:
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer);
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, const std::list<MetaType_CSPtr>& metaTypes);
-            Circle(const Circle_CSPtr other, bool sameID = false);
 
-        public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+        Dimension(const geo::Coordinate& definition_point,
+                  const geo::Coordinate& middle_of_text,
+                  const geo::MText::VAlign valign,
+                  const geo::MText::HAlign halign,
+                  const geo::MText::LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer);
+
+        Dimension(const geo::Coordinate& definition_point,
+                  const geo::Coordinate& middle_of_text,
+                  const geo::MText::VAlign valign,
+                  const geo::MText::HAlign halign,
+                  const geo::MText::LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+
         public:
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -66,7 +78,8 @@ namespace lc {
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }
-
     };
 }
-#endif // CIRCLE_H
+
+#endif // Dimension_H
+

@@ -40,8 +40,8 @@ namespace lc {
               const double width,
               const VAlign valign,
               const HAlign halign,
-              const MTextDrawingDirection drawingDirection,
-              const MTextLineSpacingStyle lineSpacingStyle,
+              const DrawingDirection drawingDirection,
+              const LineSpacingStyle lineSpacingStyle,
               const double lineSpacingFactor,
               const std::string& text_value,
               const std::string& style,
@@ -68,8 +68,8 @@ namespace lc {
               const double width,
               const VAlign valign,
               const HAlign halign,
-              const MTextDrawingDirection drawingDirection,
-              const MTextLineSpacingStyle lineSpacingStyle,
+              const DrawingDirection drawingDirection,
+              const LineSpacingStyle lineSpacingStyle,
               const double lineSpacingFactor,
               const std::string& text_value,
               const std::string& style,
@@ -102,6 +102,9 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {

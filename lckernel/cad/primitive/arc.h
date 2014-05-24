@@ -51,6 +51,9 @@ namespace lc {
             virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
+            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }

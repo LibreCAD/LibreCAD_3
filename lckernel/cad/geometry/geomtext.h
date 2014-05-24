@@ -34,7 +34,7 @@ namespace lc {
             /**
              * MText drawing direction.
              */
-            enum MTextDrawingDirection {
+            enum DrawingDirection {
                 LeftToRight,     /**< Left to right */
                 TopToBottom,     /**< Top to bottom */
                 ByStyle          /**< Inherited from associated text style */
@@ -43,7 +43,7 @@ namespace lc {
             /**
              * Line spacing style for MTexts.
              */
-            enum MTextLineSpacingStyle {
+            enum LineSpacingStyle {
                 AtLeast,        /**< Taller characters will override */
                 Exact           /**< Taller characters will not override */
             };
@@ -68,8 +68,8 @@ namespace lc {
                   const double width,
                   const VAlign valign,
                   const HAlign halign,
-                  const MTextDrawingDirection drawingDirection,
-                  const MTextLineSpacingStyle lineSpacingStyle,
+                  const DrawingDirection drawingDirection,
+                  const LineSpacingStyle lineSpacingStyle,
                   const double lineSpacingFactor,
                   const std::string& text_value,
                   const std::string& style,
@@ -136,13 +136,13 @@ namespace lc {
                  * @brief drawingDirection
                  * @return MTextDrawingDirection
                  */
-                MTextDrawingDirection drawingDirection() const;
+                DrawingDirection drawingDirection() const;
 
                 /**
                  * @brief lineSpacingStyle
                  * @return MTextLineSpacingStyle
                  */
-                MTextLineSpacingStyle lineSpacingStyle() const;
+                LineSpacingStyle lineSpacingStyle() const;
 
                 /**
                  * @brief lineSpacingFactor
@@ -156,8 +156,8 @@ namespace lc {
             private:
                 const Coordinate _insertion_point;
                 double _height, _width, _angle, _linespacingfactor;
-                MTextDrawingDirection _drawingdirection;
-                MTextLineSpacingStyle _linespacingstyle;
+                DrawingDirection _drawingdirection;
+                LineSpacingStyle _linespacingstyle;
                 VAlign _valign;
                 HAlign _halign;
                 std::string _style, _text_value;

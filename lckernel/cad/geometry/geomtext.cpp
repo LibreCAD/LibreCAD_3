@@ -8,8 +8,8 @@ MText::MText(const Coordinate& insertion_point,
       const double width,
       const VAlign valign,
       const HAlign halign,
-      const MTextDrawingDirection drawingDirection,
-      const MTextLineSpacingStyle lineSpacingStyle,
+      const DrawingDirection drawingDirection,
+      const LineSpacingStyle lineSpacingStyle,
       const double lineSpacingFactor,
       const std::string& text_value,
       const std::string& style,
@@ -58,11 +58,11 @@ MText::VAlign MText::valign() const {
     return _valign;
 }
 
-MText::MTextDrawingDirection MText::drawingDirection() const {
+MText::DrawingDirection MText::drawingDirection() const {
     return _drawingdirection;
 }
 
-MText::MTextLineSpacingStyle MText::lineSpacingStyle() const {
+MText::LineSpacingStyle MText::lineSpacingStyle() const {
     return _linespacingstyle;
 }
 
