@@ -12,6 +12,7 @@ class LcCairoPainter : public LcPainter {
         static LcCairoPainter* createImagePainter(unsigned char* data , int width, int height);
 
     public:
+        // TODO move code from implementation to here to actually make inlyning work
         virtual inline void clear(double r, double g, double b) ;
         virtual inline void clear(double r, double g, double b, double a) ;
         virtual inline void move_to(double x, double y) ;
@@ -30,6 +31,8 @@ class LcCairoPainter : public LcPainter {
         virtual inline void translate(double x, double y);
         virtual inline void user_to_device(double* x, double* y);
         virtual inline void device_to_user(double* x, double* y);
+        virtual inline void user_to_device_distance(double* dx, double* dy);
+        virtual inline void device_to_user_distance(double* dx, double* dy);
         virtual inline void save();
         virtual inline void restore();
         virtual inline unsigned long pattern_create_linear(double x1, double y1, double x2, double y2);
@@ -38,6 +41,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void pattern_destroy(unsigned long pat);
         virtual inline void fill();
         virtual inline void reset_transformations();
+        virtual inline unsigned char* data();
 
         // The functions below might get changed in future
         virtual inline void disable_antialias();
@@ -51,9 +55,6 @@ class LcCairoPainter : public LcPainter {
 
         // Current Line width
         double _lineWidth;
-
-        // Scale factor
-        double _scale;
 
         // List of patterns
         std::map<unsigned long, cairo_pattern_t*> _patternMap;

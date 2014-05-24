@@ -7,11 +7,11 @@
 using namespace lc;
 
 EntityContainer::EntityContainer() {
-    _tree = new QuadTree(geo::Area(geo::Coordinate(-1000.,-1000.), geo::Coordinate(1000.,1000.)));
+    _tree = new QuadTree(geo::Area(geo::Coordinate(-1000., -1000.), geo::Coordinate(1000., 1000.)));
 }
 
-EntityContainer::EntityContainer(const EntityContainer &other) {
-     _tree = new QuadTree(*other._tree);
+EntityContainer::EntityContainer(const EntityContainer& other) {
+    _tree = new QuadTree(*other._tree);
 }
 
 EntityContainer::~EntityContainer() {
@@ -21,19 +21,19 @@ EntityContainer::~EntityContainer() {
 
 
 void EntityContainer::insert(CADEntity_CSPtr entity) {
-//    _cadentities.insert(std::make_pair(entity->id(), entity));
+    //    _cadentities.insert(std::make_pair(entity->id(), entity));
     _tree->insert(entity);
 }
 
 void EntityContainer::combine(const EntityContainer& entities) {
-    for (auto i : entities.allEntities()) {
-//        _cadentities.insert(std::make_pair(i->id(), i));
+    for (auto i : entities.allEntities(SHRT_MAX)) {
+        //        _cadentities.insert(std::make_pair(i->id(), i));
         _tree->insert(i);
     }
 }
 
 void EntityContainer::remove(CADEntity_CSPtr entity) {
-//    _cadentities.erase(entity->id());
+    //    _cadentities.erase(entity->id());
     _tree->erase(entity);
 }
 
@@ -41,13 +41,13 @@ void EntityContainer::remove(CADEntity_CSPtr entity) {
     return _cadentities;
 }*/
 
-std::vector<CADEntity_CSPtr> EntityContainer::allEntities() const {
-/*    std::vector<CADEntity_CSPtr> v;
-    for (auto item : _cadentities) {
-        v.push_back(item.second);
-    } */
+std::vector<CADEntity_CSPtr> EntityContainer::allEntities(short level) const {
+    /*    std::vector<CADEntity_CSPtr> v;
+        for (auto item : _cadentities) {
+            v.push_back(item.second);
+        } */
 
-    return _tree->retrieve();
+    return _tree->retrieve(level);
 }
 
 CADEntity_CSPtr EntityContainer::entityByID(ID_DATATYPE id) const {
@@ -61,15 +61,15 @@ CADEntity_CSPtr EntityContainer::entityByID(ID_DATATYPE id) const {
 
 EntityContainer EntityContainer::entitiesByLayer(const Layer_CSPtr layer) const {
     EntityContainer container;
-/*    auto l = layer;
+    /*    auto l = layer;
 
-    for (auto i : _cadentities) {
-        if (i.second->layer() == l) {
-            container.insert(i.second);
-        }
-    }*/
+        for (auto i : _cadentities) {
+            if (i.second->layer() == l) {
+                container.insert(i.second);
+            }
+        }*/
 
-    for (auto i : allEntities()) {
+    for (auto i : allEntities(SHRT_MAX)) {
         if (i->layer() == layer) {
             container.insert(i);
         }
@@ -78,12 +78,14 @@ EntityContainer EntityContainer::entitiesByLayer(const Layer_CSPtr layer) const 
     return container;
 }
 
-EntityContainer EntityContainer::entitiesByArea(const geo::Area & area) const {
+EntityContainer EntityContainer::entitiesByArea(const geo::Area& area, const short maxLevel) const {
     EntityContainer container;
-    auto entities = _tree->retrieve(area);
+    const std::vector<CADEntity_CSPtr>& entities = _tree->retrieve(area, maxLevel);
+
     for (auto i : entities) {
-            container.insert(i);
+        container.insert(i);
     }
+
     return container;
 }
 
@@ -113,4 +115,8 @@ std::vector<lc::EntityDistance> EntityContainer::getEntitiesNearCoordinate(const
 
 void EntityContainer::optimise() {
     _tree->optimise();
+}
+
+lc::geo::Area EntityContainer::bounds() const {
+    _tree->bounds();
 }

@@ -28,6 +28,30 @@ namespace lc {
 
                 }
 
+                explicit Area() : _minP(0., 0.), _maxP(0., 0.) {
+                }
+
+                /**
+                 * @brief Area
+                 * given at a coordinate with a given width and height
+                 * @param coordA
+                 * @param width
+                 * @param height
+                 */
+                explicit Area(const Coordinate& coord, double width, double height) : _minP(coord), _maxP(coord.x() + std::abs(width), coord.y() + std::abs(height)) {
+                }
+
+                //explicit Area(const Area &a) : _minP(a._minP), _maxP(a._maxP) {}
+
+                inline Area& operator = (const Area& other) {
+                    if (this != &other) {
+                        _minP = other._minP;
+                        _maxP = other._maxP;
+                    }
+
+                    return *this;
+                }
+
                 /**
                   * Return the smalles corner (closest to (0,0,0) )
                   */
@@ -83,8 +107,8 @@ namespace lc {
                 }
 
             private:
-                const Coordinate _minP;
-                const Coordinate _maxP;
+                Coordinate _minP;
+                Coordinate _maxP;
         };
     }
 }

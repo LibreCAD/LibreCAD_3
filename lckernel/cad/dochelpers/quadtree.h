@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <vector>
+#include <limits>
 #include <array>
 #include "cad/geometry/geoarea.h"
 #include "cad/base/cadentity.h"
@@ -50,15 +51,15 @@ namespace lc {
              * @param list
              * @param area
              */
-            const std::vector<CADEntity_CSPtr> retrieve(const geo::Area& area) const;
+            std::vector<CADEntity_CSPtr> retrieve(const geo::Area& area, const short maxLevel = SHRT_MAX) const;
 
             /**
              * @brief retrieve
-             * all object's within this QuadTree
+             * all object's within this QuadTree up untill some level
              * @param list
              * @param area
              */
-            const std::vector<CADEntity_CSPtr> retrieve() const;
+            std::vector<CADEntity_CSPtr> retrieve(const short maxLevel = SHRT_MAX) const;
 
             /**
              * @brief size
@@ -127,7 +128,7 @@ namespace lc {
              * @param list
              * @param area
              */
-            void _retrieve(std::vector<CADEntity_CSPtr>& list, const geo::Area& area) const;
+            void _retrieve(std::vector<CADEntity_CSPtr>& list, const geo::Area& area, const short maxLevel) const;
 
             /**
              * @brief retrieve
@@ -135,7 +136,7 @@ namespace lc {
              * @param list
              * @param area
              */
-            void _retrieve(std::vector<CADEntity_CSPtr>& list) const;
+            void _retrieve(std::vector<CADEntity_CSPtr>& list, const short maxLevel) const;
 
             unsigned int _size(unsigned int c) const;
             /**
@@ -169,7 +170,7 @@ namespace lc {
      *
      * Considerations, speed vs memory consumption
      * The more level's are created, the more memory it consumes, but the faster the tree will be for smaller objects
-     * The more object's per level the less memory it uses, but the more possiblew object's it will return during retreive
+     * The more object's per level the less memory it uses, but the more possiblew object's it will return during retrieve
      *
      * We could change std::vector<CADEntity_CSPtr> _objects; into a std::map to speed up deletion of items within the tree
      * At this moment we need to walk over the tree to find the item's location, then delete it However, this will consume more memory

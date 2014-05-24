@@ -1,17 +1,14 @@
 #ifndef LCADViewer_H
 #define LCADViewer_H
 
-#include <QGLWidget>
-#include <QGraphicsView>
+#include <map>
+#include <QWidget>
+
 #include "cad/document/document.h"
 #include "cad/dochelpers/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"
 
-#include <map>
-
 #include "events/mousemoveevent.h"
-
-#include <QOpenGLPaintDevice>
 
 #include <cad/events/addentityevent.h>
 #include <cad/events/removeentityevent.h>
@@ -20,47 +17,42 @@
 #include <events/mousereleaseevent.h>
 #include <events/selecteditemsevent.h>
 
-class PainterImage {
-    public:
-        PainterImage(QImage* image, LcPainter* painter) : _image(image), _painter(painter) {
+#include "documentrenderer.h"
 
-        }
-        PainterImage() : _image(0x0), _painter(0x0) {
 
-        }
-        virtual ~PainterImage() {
-            if (_image != nullptr) {
-                delete _image;
-            }
+struct MouseEvent {
+    enum Modifier {
+        NoModifer = 0,
+        SHIFT = 1,
+        META = 2,
+        CTRL = 4,
+        ALT = 8,
+        UNICODE_ACCEL = 16
+    };
 
-            if (_painter != nullptr) {
-                delete _painter;
-            }
-        }
+    enum Button {
+        NoButton = 0,
+        LeftButton = 1,
+        RightButton = 2,
+        MidButton = 4
+    };
 
-        inline int width() const {
-            return _image->width();
-        }
-        inline int height() const {
-            return _image->height();
-        }
+    enum Type {
+        move = 1,
+        scroll = 2,
+        click = 3,
+        release = 4,
+        drag = 5
+    };
 
-        inline LcPainter* painter() const {
-            return _painter;
-        }
-        inline QImage* image() const {
-            return _image;
-        }
 
-    private:
-        QImage* _image;
-        LcPainter* _painter;
-};
 
-enum PainterCacheType {
-    VIEWER_BACKGROUND,
-    VIEWER_DOCUMENT,
-    VIEWER_DRAWING
+    Type eventType;
+    unsigned int buttons;
+    unsigned int modifiers;
+    int mouseX;
+    int mouseY;
+    int scale;
 };
 
 class LCADViewer : public QWidget {
@@ -70,15 +62,9 @@ class LCADViewer : public QWidget {
         LCADViewer(QWidget* parent = 0);
         ~LCADViewer();
 
-        void drawBackground(LcPainter* lcPainter, const QRectF& rect);
-        void drawForeground(LcPainter* lcPainter, const QRectF& rect);
-
         void addBackgroundItem(std::shared_ptr<LCVDrawItem> item);
         void addForegroundItem(std::shared_ptr<LCVDrawItem> item);
-        lc::EntityContainer* entityContainer();
         virtual void setDocument(lc::Document* document);
-
-        virtual std::shared_ptr<const PainterImage> cachedPainter(PainterCacheType cacheType, int width, int height);
 
     protected:
         void paintEvent(QPaintEvent*);
@@ -99,36 +85,25 @@ class LCADViewer : public QWidget {
     public:
         void setVerticalOffset(int v);
         void setHorizontalOffset(int v);
-        void on_addEntityEvent(const lc::AddEntityEvent&);
-        void on_removeEntityEvent(const lc::RemoveEntityEvent&);
-        void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
     private:
-        lc::Document* _document;
 
         bool _altKeyActive; // When true the alt key is current pressed
-        // FIXME: Create a method so that we can re-order them when they are exchanged
-        // during runtime of librecad. So that for example a grid is always draw on top of a background gradient
-        // so it's visible
-        std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;
-        std::vector<std::shared_ptr<LCVDrawItem> > _foregroundItems;
+
+        DocumentRenderer* _docRenderer;
+
+        std::map<LcPainter*,  QImage*> imagemaps;
 
         double _scale;
-        double _zoom_min;
-        double _zoom_max;
+        double _zoomMin;
+        double _zoomMax;
 
         // When set to true, the line width on screen will scale with teh zoom factor
         bool _scaleLineWidth;
 
-        // Position
-        double _posX;
-        double _posY;
 
-        lc::EntityContainer _entityContainer;
-
-        QPoint _lastMousePosition;
-
-        std::map<PainterCacheType, std::shared_ptr<const PainterImage>> _cachedPainters;
+        // Entity container that track's all entities within the document
+        lc::Document* _document;
 };
 
 #endif

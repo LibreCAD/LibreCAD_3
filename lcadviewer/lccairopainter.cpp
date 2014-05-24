@@ -9,7 +9,6 @@
 LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainter(), _surface(surface), _cr(cr) {
     _constantLineWidth = true;
     _lineWidth = 1.;
-    _scale = 1.;
     _patternMapNum = 1;
     _lineWidthCompensation = 0.;
 }
@@ -29,7 +28,7 @@ LcCairoPainter::~LcCairoPainter() {
 }
 
 #ifndef CAIRO_ANTIALIAS_GOOD
-#define CAIRO_ANTIALIAS_GOOD	CAIRO_ANTIALIAS_SUBPIXEL
+#define CAIRO_ANTIALIAS_GOOD    CAIRO_ANTIALIAS_SUBPIXEL
 #endif
 
 LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int width, int height) {
@@ -103,7 +102,7 @@ void LcCairoPainter::stroke()  {
 
 void LcCairoPainter::line_width(double  width) {
     if (_constantLineWidth) {
-        cairo_set_line_width(_cr, (1. + _lineWidthCompensation) / _scale);
+        cairo_set_line_width(_cr, (1. + _lineWidthCompensation) / scale());
     } else {
         cairo_set_line_width(_cr, width + _lineWidthCompensation);
     }
@@ -112,12 +111,13 @@ void LcCairoPainter::line_width(double  width) {
 }
 
 double LcCairoPainter::scale() {
-    return _scale;
+    cairo_matrix_t matrix;
+    cairo_get_matrix(_cr, &matrix);
+    return matrix.yy;
 }
 
 void LcCairoPainter::scale(double s) {
-    _scale = s;
-    cairo_scale(_cr, _scale, _scale);
+    cairo_scale(_cr, s, s);
     line_width(_lineWidth);
 }
 
@@ -139,6 +139,14 @@ void LcCairoPainter::user_to_device(double* x, double* y) {
 
 void LcCairoPainter::device_to_user(double* x, double* y) {
     cairo_device_to_user(_cr, x, y);
+}
+
+void LcCairoPainter::user_to_device_distance(double* dx, double* dy) {
+    cairo_user_to_device_distance(_cr, dx, dy);
+}
+
+void LcCairoPainter::device_to_user_distance(double* dx, double* dy) {
+    cairo_device_to_user_distance(_cr, dx, dy);
 }
 
 void LcCairoPainter::save() {
@@ -182,4 +190,9 @@ void LcCairoPainter::enable_antialias() {
 void LcCairoPainter::reset_transformations() {
     cairo_identity_matrix(_cr);
 }
+
+unsigned char* LcCairoPainter::data() {
+    return cairo_image_surface_get_data(_surface);
+}
+
 

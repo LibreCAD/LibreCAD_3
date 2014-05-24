@@ -1,7 +1,6 @@
 #ifndef MouseReleaseEvent_H
 #define MouseReleaseEvent_H
 
-#include <QPointF>
 #include "cad/geometry/geocoordinate.h"
 #include "cad/vo/entitydistance.h"
 
@@ -28,6 +27,5 @@ class MouseReleaseEvent  {
         lc::geo::Coordinate _mousePosition;
         std::vector<lc::EntityDistance> _entities;
 };
-Q_DECLARE_METATYPE(MouseReleaseEvent)
 
 #endif // MouseReleaseEvent_H

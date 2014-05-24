@@ -1,9 +1,11 @@
 #ifndef ENTITYCONTAINER_H
 #define ENTITYCONTAINER_H
 
+#include <memory>
+#include <limits>
+
 #include "cad/base/id.h"
 #include "quadtree.h"
-#include <memory>
 #include <cad/vo/entitydistance.h>
 
 namespace lc {
@@ -35,13 +37,14 @@ namespace lc {
              * @brief EntityContainer
              * Copy Constructor
              */
-            EntityContainer(const EntityContainer &);
+            EntityContainer(const EntityContainer&);
             ~EntityContainer();
 
             EntityContainer& operator = (const EntityContainer& ec) {
                 if (this != &ec) {
                     _tree = new QuadTree(*ec._tree);
                 }
+
                 return *this;
             }
 
@@ -67,10 +70,12 @@ namespace lc {
 
             /**
              * @brief allEntities
-             * return all entitis as std::vector
+             * return all entities as std::vector optionally up untill a given level
+             * This is usefull to return entities for screen rendering where you don't
+             * want to render very small entities (< XX pixels)
              * @return
              */
-            virtual std::vector<CADEntity_CSPtr> allEntities() const;
+            virtual std::vector<CADEntity_CSPtr> allEntities(short maxLevel = SHRT_MAX) const;
 
             /**
              * @brief entityByID
@@ -94,7 +99,7 @@ namespace lc {
              * @param area
              * @return
              */
-            virtual EntityContainer entitiesByArea(const geo::Area &area) const;
+            virtual EntityContainer entitiesByArea(const geo::Area& area, short maxLevel = SHRT_MAX) const;
 
             /*!
              * \brief getEntitiesNearCoordinate
@@ -111,13 +116,20 @@ namespace lc {
             };*/
 
             /**
+             * @brief bound
+             * returns the size of the document
+             * @return
+             */
+            lc::geo::Area bounds() const;
+
+            /**
              * @brief optimise
              * this container
              */
             void optimise();
         private:
             //std::map<ID_DATATYPE, CADEntity_CSPtr> _cadentities;
-            QuadTree *_tree;
+            QuadTree* _tree;
     };
 }
 

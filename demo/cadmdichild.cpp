@@ -73,10 +73,11 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     verticalScrollBar->setMinimum(-1000);
     verticalScrollBar->setMaximum(1000);
 
+    /*
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
             viewer, SLOT(setHorizontalOffset(int)));
     connect(verticalScrollBar, SIGNAL(valueChanged(int)),
-            viewer, SLOT(setVerticalOffset(int)));
+            viewer, SLOT(setVerticalOffset(int))); */
 
 }
 
@@ -93,10 +94,6 @@ int CadMdiChild::randInt(int low, int high) {
 
 void CadMdiChild::newDocument() {
 
-    // Should this be done using the events system of QT??
-    viewer->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(QColor(0x06, 0x35, 0x06), QColor(0x07, 0x15, 0x11))));
-    auto metricGrid = std::make_shared<MetricGrid>(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80));
-    viewer->addBackgroundItem(metricGrid);
 
 
     // Entity manager add's/removes entities to layers
@@ -104,6 +101,14 @@ void CadMdiChild::newDocument() {
 
     // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = new lc::DocumentImpl(_storageManager);
+
+    // Add the document to a LibreCAD Viewer system so we can visualize the document
+    viewer->setDocument(_document);
+
+    // Should this be done using the events system of QT??
+    viewer->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(QColor(0x06, 0x35, 0x06), QColor(0x07, 0x15, 0x11))));
+    auto metricGrid = std::make_shared<MetricGrid>(20, QColor(0x40, 0x48, 0x40), QColor(0x80, 0x90, 0x80));
+    viewer->addBackgroundItem(metricGrid);
 
     // Snap manager
     _snapManager = std::make_shared<SnapManagerImpl>(viewer,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
@@ -114,8 +119,6 @@ void CadMdiChild::newDocument() {
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
 
-    // Add the document to a LibreCAD Viewer system so we can visualize the document
-    viewer->setDocument(_document);
 
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
@@ -188,7 +191,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
     lc::EntityContainer  itemsOnDocument = container.entitiesByLayer(storageManager()->layerByName("1"));
     qDebug() << "Entities on this layer within document : " << itemsOnDocument.allEntities().size();
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
-*/
+    */
 
 }
 

@@ -159,45 +159,45 @@ void QuadTreeSub::insert(const CADEntity_CSPtr entity) {
 }
 
 
-const std::vector<CADEntity_CSPtr> QuadTreeSub::retrieve() const {
+std::vector<CADEntity_CSPtr> QuadTreeSub::retrieve(const short maxLevel) const {
     std::vector<CADEntity_CSPtr> list;
-    _retrieve(list);
+    _retrieve(list, maxLevel);
     return list;
 }
 
-void QuadTreeSub::_retrieve(std::vector<CADEntity_CSPtr>& list) const {
-    if (_nodes[0] != nullptr) {
-        _nodes[0]->_retrieve(list);
-        _nodes[1]->_retrieve(list);
-        _nodes[2]->_retrieve(list);
-        _nodes[3]->_retrieve(list);
+void QuadTreeSub::_retrieve(std::vector<CADEntity_CSPtr>& list, const short maxLevel) const {
+    if (_nodes[0] != nullptr && maxLevel > _level) {
+        _nodes[0]->_retrieve(list, maxLevel);
+        _nodes[1]->_retrieve(list, maxLevel);
+        _nodes[2]->_retrieve(list, maxLevel);
+        _nodes[3]->_retrieve(list, maxLevel);
     }
 
     list.insert(list.end(), _objects.begin(), _objects.end());
 }
 
-const std::vector<CADEntity_CSPtr> QuadTreeSub::retrieve(const geo::Area& area) const {
+std::vector<CADEntity_CSPtr> QuadTreeSub::retrieve(const geo::Area& area, const short maxLevel) const {
     std::vector<CADEntity_CSPtr> list;
-    _retrieve(list, area);
+    _retrieve(list, area, maxLevel);
     return list;
 }
 
-void QuadTreeSub::_retrieve(std::vector<CADEntity_CSPtr>& list, const geo::Area& area) const {
-    if (_nodes[0] != nullptr) {
+void QuadTreeSub::_retrieve(std::vector<CADEntity_CSPtr>& list, const geo::Area& area, const short maxLevel) const {
+    if (_nodes[0] != nullptr && maxLevel > _level) {
         if (_nodes[0] -> includes(area)) {
-            _nodes[0]->_retrieve(list, area);
+            _nodes[0]->_retrieve(list, area, maxLevel);
         }
 
         if (_nodes[1] -> includes(area)) {
-            _nodes[1]->_retrieve(list, area);
+            _nodes[1]->_retrieve(list, area, maxLevel);
         }
 
         if (_nodes[2] -> includes(area)) {
-            _nodes[2]->_retrieve(list, area);
+            _nodes[2]->_retrieve(list, area, maxLevel);
         }
 
         if (_nodes[3] -> includes(area)) {
-            _nodes[3]->_retrieve(list, area);
+            _nodes[3]->_retrieve(list, area, maxLevel);
         }
     }
 

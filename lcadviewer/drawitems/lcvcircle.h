@@ -12,7 +12,7 @@ class LCVCircle  : public LCVDrawItem, public lc::Circle {
     public:
         LCVCircle(const lc::Circle_CSPtr circle);
 
-        virtual void draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const;
+        virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
 };
 
 #endif // LCVCIRCLE_H

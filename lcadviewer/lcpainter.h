@@ -24,6 +24,8 @@ class LcPainter {
         virtual void translate(double x, double y) = 0;
         virtual void user_to_device(double* x, double* y) = 0;
         virtual void device_to_user(double* x, double* y) = 0;
+        virtual void user_to_device_distance(double* dx, double* dy) = 0;
+        virtual void device_to_user_distance(double* dx, double* dy) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;
@@ -32,7 +34,7 @@ class LcPainter {
         virtual void pattern_destroy(unsigned long pat) = 0;
         virtual void fill() = 0;
         virtual void reset_transformations() = 0;
-
+        virtual unsigned char* data() = 0;
 
         // The functions below might get changed in future
         virtual void disable_antialias() = 0;

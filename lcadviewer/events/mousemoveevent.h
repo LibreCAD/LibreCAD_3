@@ -1,8 +1,6 @@
 #ifndef MOUSEMOVEEVENT_H
 #define MOUSEMOVEEVENT_H
 
-#include <QPointF>
-#include <QRectF>
 #include "cad/geometry/geocoordinate.h"
 #include "lcpainter.h"
 
@@ -12,8 +10,7 @@
   */
 class MouseMoveEvent  {
     public:
-        MouseMoveEvent(LcPainter* painter, const QPointF& mousePosition) : _painter(painter) {
-            _mousePosition = lc::geo::Coordinate(mousePosition.x(), mousePosition.y());
+        MouseMoveEvent(LcPainter* painter, const lc::geo::Coordinate& mousePosition) : _painter(painter), _mousePosition(mousePosition) {
         }
 
         lc::geo::Coordinate  mousePosition() const {

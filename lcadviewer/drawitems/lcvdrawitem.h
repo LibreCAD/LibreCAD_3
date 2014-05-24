@@ -12,10 +12,16 @@ class LcDrawOptions;
 class LcPainter;
 class QRectF;
 
+namespace lc {
+    namespace geo {
+        class Area;
+    }
+}
+
 class LCVDrawItem {
     public:
         LCVDrawItem(bool selectable);
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& updateRect) const = 0;
+        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const = 0;
 
         bool selectable() const;
         bool selected() const;

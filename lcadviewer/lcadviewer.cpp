@@ -20,7 +20,7 @@
 
 
 LCADViewer::LCADViewer(QWidget* parent) :
-    QWidget(parent), _scale(1.0), _zoom_min(0.05), _zoom_max(20.0), _scaleLineWidth(false), _posX(0.), _posY(0.) {
+    QWidget(parent), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false), _docRenderer(nullptr) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -30,82 +30,32 @@ LCADViewer::LCADViewer(QWidget* parent) :
 
 
 void LCADViewer::setDocument(lc::Document* document) {
+    _docRenderer = new DocumentRenderer(document);
     _document = document;
 
-    document->addEntityEvent().connect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
-    document->removeEntityEvent().connect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
-    document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    _docRenderer->createPainterFunctor(
+    [this](const unsigned int width, const unsigned int height) {
+        QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
+        LcCairoPainter* lcPainter = LcCairoPainter::createImagePainter(m_image->bits(), width, height);
+        imagemaps.insert(std::make_pair(lcPainter, m_image));
+        return lcPainter;
+    });
+
+    _docRenderer->deletePainterFunctor([this]
+    (LcPainter * painter) {
+        QImage* m_image = imagemaps.at(painter);
+        delete painter;
+        delete m_image;
+        imagemaps.erase(painter);
+    });
+
+    _docRenderer->newDeviceSize(size().width(), size().height());
 
 }
 
 LCADViewer::~LCADViewer() {
-    _document->addEntityEvent().disconnect<LCADViewer, &LCADViewer::on_addEntityEvent>(this);
-    _document->removeEntityEvent().disconnect<LCADViewer, &LCADViewer::on_removeEntityEvent>(this);
-    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+    delete _docRenderer;
 }
-
-void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
-    _entityContainer.optimise();
-    update();
-}
-
-/**
-  * Function to add entities to the graphics scene
-  */
-void LCADViewer::on_addEntityEvent(const lc::AddEntityEvent& event) {
-
-    // Add a line
-    const lc::Line_CSPtr line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
-
-    if (line != nullptr) {
-        _entityContainer.insert(std::make_shared<LCVLine>(line));
-        return;
-    }
-
-    // Add a circle
-    const lc::Circle_CSPtr circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
-
-    if (circle != nullptr) {
-        auto newCircle = std::make_shared<LCVCircle>(circle);
-        newCircle->selected(true);
-        _entityContainer.insert(newCircle);
-        return;
-    }
-
-    /*
-
-    // Add a Arc
-    const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
-
-    if (arc != nullptr) {
-        LCArcItem* foo = new LCArcItem(arc);
-        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-        scene->addItem(foo);
-        _activeGraphicsItems.insert(arc->id(), foo);
-        return;
-    }
-
-    // Add Ellipse
-    const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
-
-    if (ellipse != nullptr) {
-        LCEllipseItem* foo = new LCEllipseItem(ellipse);
-        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-        scene->addItem(foo);
-        _activeGraphicsItems.insert(ellipse->id(), foo);
-        return;
-    }
-    */
-}
-
-/**
-  * Function to remove a entity from the graphics scene on request
-  */
-void LCADViewer::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
-    _entityContainer.remove(event.entity());
-}
-
-
 
 /**
   * Handle key pressing and release to add additional states to this view
@@ -147,23 +97,40 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
 void LCADViewer::wheelEvent(QWheelEvent* event) {
 
     if (event->angleDelta().y() > 0) {
-        _scale = std::min(_scale * 1.2, _zoom_max);
+        this->_docRenderer->scrollTo(1.1, event->pos().x(), event->pos().y()); //1.2
     } else if (event->angleDelta().y() < 0) {
-        _scale = std::max(_scale * 0.83, _zoom_min);
+        this->_docRenderer->scrollTo(0.9, event->pos().x(), event->pos().y()); // 0.83
     }
 
     this->update();
 }
 
+void LCADViewer::setVerticalOffset(int v) {
+    // _centerPosY = v;
+}
+
+void LCADViewer::setHorizontalOffset(int v) {
+    //  _centerPosX = v;
+}
+
+
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
-
-    update();
+    /*
+        _newMouseEvent = true;
+        _mouseEvent.mouseX = event->pos().x();
+        _mouseEvent.mouseY = event->pos().x();
+    */
 }
 
 void LCADViewer::mousePressEvent(QMouseEvent* event) {
     QWidget::mousePressEvent(event);
 
+    /*
+    _newMouseEvent = true;
+    _mouseEvent.mouseX = event->pos().x();
+    _mouseEvent.mouseY = event->pos().x();
+    */
 }
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
@@ -172,122 +139,56 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
     //  emit mouseReleaseEvent(e);
 }
 
-std::shared_ptr<const PainterImage> LCADViewer::cachedPainter(PainterCacheType cacheType, int width, int height) {
 
-    if (_cachedPainters.count(cacheType) == 0 || _cachedPainters[cacheType]->width() != width || _cachedPainters[cacheType]->height() != height) {
-        if (_cachedPainters.count(cacheType) > 0) {
-            _cachedPainters.erase(cacheType);
-        }
 
-        // Here we decide somehow what 'painter' to use, currently hardcoded to Cairo
-        // Note, I didn't want to add QImage to LcPainter because for some systems this might not be available
-        QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
-        LcCairoPainter* lcPainter = LcCairoPainter::createImagePainter(m_image->bits(), width, height);
-        _cachedPainters[cacheType] = std::make_shared<PainterImage>(m_image, lcPainter);
-    }
-
-    _cachedPainters[cacheType]->painter()->reset_transformations();
-    return _cachedPainters[cacheType];
-}
 
 void LCADViewer::paintEvent(QPaintEvent* p) {
     if (p->rect().width() == 0 || p->rect().height() == 0) {
         return;
     }
 
-    std::shared_ptr<const PainterImage> painterImage = cachedPainter(VIEWER_BACKGROUND, this->size().width(), this->size().height());
+    _docRenderer->newDeviceSize(size().width(), size().height());
 
-    // Position document
-    double posx = _posX;
-    double posy = _posY;
-    painterImage->painter()->user_to_device(&posx, &posy);
-
-    double swx = this->size().width() / 2;
-    double swy = this->size().height() / 2;
-    painterImage->painter()->user_to_device(&swx, &swy);
-
-    double transateX = posx  + swx;
-    double transateY = posy  + swy;
-    painterImage->painter()->translate(transateX, transateY);
-
-    // Set scaling
-    painterImage->painter()->scale(_scale);
-
-    // Calculate rectangle that needs a update
-    posx = 0;
-    posy = 0;
-    swx = this->size().width() * 2;
-    swy = this->size().height() * 2;
-
-    painterImage->painter()->device_to_user(&posx, &posy);
-    painterImage->painter()->device_to_user(&swx, &swy);
-    QRectF updateRect = QRectF(posx, posy, swx - posx, swy - posy);
-
-    posx = this->pos().x();
-    posy = this->pos().y();
-    painterImage->painter()->device_to_user(&posx, &posy);
-    QPointF mousePos = QPointF(posx, posy);
-
-    // Do all drawing's
-    if (_backgroundItems.size() == 0) {
-        painterImage->painter()->clear(0., 0.1, 0.);
-    }
-
-    // TODO we have a update error still, this kinda fixes it...
-    painterImage->painter()->clear(0., 0.1, 0.);
-
-    // Background, TODO cache this of _posX, _posY and_scale doesn't change, we properly want to have a 'cachable' flag somewhere
-    drawBackground(painterImage->painter(), updateRect);
-
-    // Paint Document, TODO cache this, if the document isn't changed, we don't want to keep rendering it
-    painterImage = cachedPainter(VIEWER_DOCUMENT, this->size().width(), this->size().height());
-    painterImage->painter()->translate(transateX, transateY);
-    painterImage->painter()->scale(_scale);
-    painterImage->painter()->clear(1., 1., 1., 0.);
-    painterImage->painter()->lineWidthCompensation(0.5);
-
-    painterImage->painter()->line_width(12.0);
-    DocumentRenderer render = DocumentRenderer(&_entityContainer, painterImage->painter());
-    render.render(QRectF(0., 0., 0., 1.));
-
-    // Foreground
-    painterImage = cachedPainter(VIEWER_DRAWING, this->size().width(), this->size().height());
-    painterImage->painter()->translate(transateX, transateY);
-    painterImage->painter()->scale(_scale);
-    painterImage->painter()->clear(1., 1., 1., 0.0);
-    drawForeground(painterImage->painter(), updateRect);
-
-    // Emit a mouse move event
-    MouseMoveEvent e(painterImage->painter(), this->pos());
-    emit mouseMoveEvent(e);
-
-    // Emit a general draw event
-    DrawEvent event(painterImage->painter(), this->pos());
-    emit drawEvent(event);
-
-    // Draw on this widget
     QPainter painter(this);
+    _docRenderer->render([&](LcPainter * lcPainter) {
+        QImage* i = imagemaps.at(lcPainter);
+        painter.drawImage(QPoint(0, 0), *i);
 
-    if (_cachedPainters.count(VIEWER_BACKGROUND) > 0) {
-        painterImage = _cachedPainters[VIEWER_BACKGROUND];
-        painter.drawImage(QPoint(0, 0), *painterImage->image());
-    }
-
-    if (_cachedPainters.count(VIEWER_DOCUMENT) > 0) {
-        painterImage = _cachedPainters[VIEWER_DOCUMENT];
-        painter.drawImage(QPoint(0, 0), *painterImage->image());
-    }
-
-    if (_cachedPainters.count(VIEWER_DRAWING) > 0) {
-        painterImage = _cachedPainters[VIEWER_DRAWING];
-        painter.drawImage(QPoint(0, 0), *painterImage->image());
-    }
-
-
-
-
-
+    });
     painter.end();
+
+    /*
+        // Emit a mouse move event
+        MouseMoveEvent e(painterImage->painter(), this->pos());
+        emit mouseMoveEvent(e);
+
+        // Emit a general draw event
+        DrawEvent event(painterImage->painter(), this->pos());
+        emit drawEvent(event);
+
+        // Draw on this widget
+        QPainter painter(this);
+
+        if (_cachedPainters.count(VIEWER_BACKGROUND) > 0) {
+            painterImage = _cachedPainters[VIEWER_BACKGROUND];
+            painter.drawImage(QPoint(0, 0), *painterImage->image());
+        }
+
+        if (_cachedPainters.count(VIEWER_DOCUMENT) > 0) {
+            painterImage = _cachedPainters[VIEWER_DOCUMENT];
+            painter.drawImage(QPoint(0, 0), *painterImage->image());
+        }
+
+        if (_cachedPainters.count(VIEWER_DRAWING) > 0) {
+            painterImage = _cachedPainters[VIEWER_DRAWING];
+            painter.drawImage(QPoint(0, 0), *painterImage->image());
+        }
+
+
+
+    */
+
+
 
 }
 
@@ -299,7 +200,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
   *
   */
 void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_backgroundItems.push_back(item);
+    this->_docRenderer->addBackgroundItem(item);
 }
 
 /**
@@ -307,39 +208,9 @@ void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
   *
   */
 void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_foregroundItems.push_back(item);
+    this->_docRenderer->addForegroundItem(item);
 }
 
-
-void LCADViewer::drawBackground(LcPainter* lcPainter, const QRectF& updateRect) {
-    for (auto item : _backgroundItems) {
-        item->draw(lcPainter, nullptr, updateRect);
-    }
-}
-
-void LCADViewer::drawForeground(LcPainter* lcPainter, const QRectF& updateRect) {
-    for (auto item : _foregroundItems) {
-        item->draw(lcPainter, nullptr, updateRect);
-    }
-
-    //    for (int i = 0; i < _cursorItems.size(); ++i) {
-    //        this->_cursorItems.at(i)->draw(lcPainter, nullptr, rect);
-    //    }
-}
-
-void LCADViewer::setVerticalOffset(int v) {
-    _posY = v;
-    this->repaint();
-}
-
-void LCADViewer::setHorizontalOffset(int v) {
-    _posX = v;
-    this->repaint();
-}
-
-lc::EntityContainer* LCADViewer::entityContainer() {
-    return &_entityContainer;
-}
 
 
 

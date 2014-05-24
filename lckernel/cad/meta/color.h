@@ -24,9 +24,9 @@ namespace lc {
             };
 
             Color() : MetaType() , _method(Invalid), _r(0.), _g(0.), _b(0.), _a(0.) {}
-            Color(double r, double g, double b, double a=1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
-            Color( const Color & other) : MetaType(), _method(other._method), _r(other._r), _g(other._g), _b(other._b), _a(other._a) {}
-            Color(const Method &method) : MetaType(), _method(method), _r(0.), _g(0.), _b(0.), _a(0.) {}
+            Color(double r, double g, double b, double a = 1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
+            Color(const Color& other) : MetaType(), _method(other._method), _r(other._r), _g(other._g), _b(other._b), _a(other._a) {}
+            Color(const Method& method) : MetaType(), _method(method), _r(0.), _g(0.), _b(0.), _a(0.) {}
 
 
             Color(Method method) {
@@ -41,14 +41,15 @@ namespace lc {
                 this->_method = method;
             }
 
-            Color& operator = (const Color & other) {
+            Color& operator = (const Color& other) {
                 if (this != &other) {
-                    _r=other._r;
-                    _g=other._g;
-                    _b=other._b;
-                    _a=other._a;
+                    _r = other._r;
+                    _g = other._g;
+                    _b = other._b;
+                    _a = other._a;
                     _method = other._method;
                 }
+
                 return *this;
             }
 
@@ -93,11 +94,11 @@ namespace lc {
             }
 
         private:
-             Method _method;
-             double _r;
-             double _g;
-             double _b;
-             double _a;
+            Method _method;
+            double _r;
+            double _g;
+            double _b;
+            double _a;
     };
 
 

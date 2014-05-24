@@ -1,16 +1,16 @@
 #include <cmath>
 #include "metricgrid.h"
 #include "lcpainter.h"
-#include <QDebug>
+#include "cad/geometry/geoarea.h"
+
 MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
 }
 
 MetricGrid::~MetricGrid() {
-    qDebug() << "MetricGrid destroyed";
 }
 
 
-void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const QRectF& updateRect) const {
+void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {
 
     _painter->save();
     _painter->disable_antialias();
@@ -52,35 +52,36 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const QRectF&
     _lastGridSize = gridSize;
 
     // Major lines
-    qreal left = updateRect.left() - fmod(updateRect.left(), gridSize);
-    qreal top = updateRect.top() - fmod(updateRect.top(), gridSize);
+    double left = updateRect.minP().x() - fmod(updateRect.minP().x(), gridSize);
+    double top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
-    for (qreal x = left; x < updateRect.right(); x += gridSize) {
-        _painter->move_to(x, updateRect.top());
-        _painter->line_to(x, updateRect.bottom());
+    for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
+        _painter->move_to(x, updateRect.maxP().y());
+        _painter->line_to(x, updateRect.minP().y());
     }
 
-    for (qreal y = top; y < updateRect.bottom(); y += gridSize) {
-        _painter->move_to(updateRect.left(), y);
-        _painter->line_to(updateRect.right(), y);
+    for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
+        _painter->move_to(updateRect.minP().x(), y);
+        _painter->line_to(updateRect.maxP().x(), y);
     }
 
+    _painter->line_width(1);
     _painter->source_rgba(_majorColor.redF(), _majorColor.greenF(), _majorColor.blueF(), _majorColor.alphaF());
     _painter->stroke();
 
     // Draw minor lines
     gridSize *= 10;
-    left = updateRect.left() - fmod(updateRect.left(), gridSize);
-    top = updateRect.top() - fmod(updateRect.top(), gridSize);
+    left = updateRect.minP().x() - fmod(updateRect.minP().x(), gridSize);
+    top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
-    for (qreal x = left; x < updateRect.right(); x += gridSize) {
-        _painter->move_to(x, updateRect.top());
-        _painter->line_to(x, updateRect.bottom());
+    for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
+        _painter->move_to(x, updateRect.maxP().y());
+        _painter->line_to(x, updateRect.minP().y());
     }
 
-    for (qreal y = top; y < updateRect.bottom(); y += gridSize) {
-        _painter->move_to(updateRect.left(), y);
-        _painter->line_to(updateRect.right(), y);
+    for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
+        _painter->move_to(updateRect.minP().x(), y);
+        _painter->line_to(updateRect.maxP().x(), y);
     }
 
     _painter->source_rgba(_minorColor.redF(), _minorColor.greenF(), _minorColor.blueF(), _minorColor.alphaF());

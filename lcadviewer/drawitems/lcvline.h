@@ -11,7 +11,7 @@ class LCVLine : public LCVDrawItem, public lc::Line {
     public:
         LCVLine(const lc::Line_CSPtr line);
 
-        virtual void draw(LcPainter* painter, LcDrawOptions* options, const QRectF& rect) const;
+        virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
 
 
 };
