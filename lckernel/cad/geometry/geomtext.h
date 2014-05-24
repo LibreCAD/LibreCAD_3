@@ -63,7 +63,7 @@ namespace lc {
              * @param style style name of mtext
              * @param angle angle of obliqueness
              */
-            MText(const Coordinate& insertionPoint,
+            MText(const Coordinate& insertion_point,
                   const double height,
                   const double width,
                   const VAlign valign,

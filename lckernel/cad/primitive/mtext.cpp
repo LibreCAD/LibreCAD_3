@@ -2,7 +2,7 @@
 
 using namespace lc;
 
-MText::MText(const geo::Coordinate& insertionPoint,
+MText::MText(const geo::Coordinate& insertion_point,
       const double height,
       const double width,
       const VAlign valign,
@@ -18,7 +18,7 @@ MText::MText(const geo::Coordinate& insertionPoint,
 
 }
 
-MText::MText(const geo::Coordinate& insertionPoint,
+MText::MText(const geo::Coordinate& insertion_point,
       const double height,
       const double width,
       const VAlign valign,
