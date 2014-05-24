@@ -10,6 +10,7 @@ namespace lc {
     class Ellipse;
     class Text;
     class Spline;
+    class MText;
 
     class EntityDispatch {
         public:
@@ -20,6 +21,7 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr) = 0;
             virtual void visit(Text_CSPtr) = 0;
             virtual void visit(Spline_CSPtr) = 0;
+            virtual void visit(MText_CSPtr) = 0;
     };
 }
 #endif // ENTITYDISPATCH_H

@@ -29,9 +29,13 @@ namespace lc {
     typedef std::shared_ptr<Circle> Circle_SPtr;
     typedef std::shared_ptr<const Circle> Circle_CSPtr;
 
+    class MText;
+    typedef std::shared_ptr<MText> MText_SPtr;
+    typedef std::shared_ptr<const MText> MText_CSPtr;
+
     class CADEntity;
     typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
+    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;    
 
     class EntityVisitor {
         public:
@@ -42,6 +46,7 @@ namespace lc {
             virtual void visit(Line_CSPtr, Ellipse_CSPtr) = 0;
             virtual void visit(Line_CSPtr, Text_CSPtr) = 0;
             virtual void visit(Line_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Line_CSPtr, MText_CSPtr) = 0;
 
             virtual void visit(Circle_CSPtr circle, Line_CSPtr line) = 0; //{visit(line, circle);}
             virtual void visit(Circle_CSPtr, Circle_CSPtr) = 0;
@@ -49,6 +54,7 @@ namespace lc {
             virtual void visit(Circle_CSPtr, Ellipse_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Text_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Circle_CSPtr, MText_CSPtr) = 0;
 
             virtual void visit(Arc_CSPtr arc, Line_CSPtr line) = 0; //{visit(line, arc);}
             virtual void visit(Arc_CSPtr arc, Circle_CSPtr circle) = 0; //{visit(circle, arc);}
@@ -56,6 +62,7 @@ namespace lc {
             virtual void visit(Arc_CSPtr, Ellipse_CSPtr) = 0;
             virtual void visit(Arc_CSPtr, Text_CSPtr) = 0;
             virtual void visit(Arc_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Arc_CSPtr, MText_CSPtr) = 0;
 
             virtual void visit(Ellipse_CSPtr ellipse, Line_CSPtr line) = 0; //{visit(line, ellipse);}
             virtual void visit(Ellipse_CSPtr ellipse, Circle_CSPtr circle) = 0; //{visit(circle, ellipse);}
@@ -63,6 +70,7 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr, Ellipse_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr, Text_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Ellipse_CSPtr, MText_CSPtr) = 0;
 
             virtual void visit(Text_CSPtr text, Line_CSPtr line) = 0; //{visit(line, ellipse);}
             virtual void visit(Text_CSPtr text, Circle_CSPtr circle) = 0; //{visit(circle, ellipse);}
@@ -70,6 +78,7 @@ namespace lc {
             virtual void visit(Text_CSPtr text, Ellipse_CSPtr ellipse) = 0;
             virtual void visit(Text_CSPtr, Text_CSPtr) = 0;
             virtual void visit(Text_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Text_CSPtr, MText_CSPtr) = 0;
 
             virtual void visit(Spline_CSPtr Spline, Line_CSPtr line) = 0; //{visit(line, ellipse);}
             virtual void visit(Spline_CSPtr Spline, Circle_CSPtr circle) = 0; //{visit(circle, ellipse);}
@@ -77,6 +86,16 @@ namespace lc {
             virtual void visit(Spline_CSPtr Spline, Ellipse_CSPtr ellipse) = 0;
             virtual void visit(Spline_CSPtr Spline, Text_CSPtr text) = 0;
             virtual void visit(Spline_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(Spline_CSPtr, MText_CSPtr) = 0;
+
+        virtual void visit(MText_CSPtr mtext, Line_CSPtr line) = 0; //{visit(line, ellipse);}
+        virtual void visit(MText_CSPtr mtext, Circle_CSPtr circle) = 0; //{visit(circle, ellipse);}
+        virtual void visit(MText_CSPtr mtext, Arc_CSPtr arc) = 0; //{visit(arc, ellipse);}
+        virtual void visit(MText_CSPtr mtext, Ellipse_CSPtr ellipse) = 0;
+        virtual void visit(MText_CSPtr mtext, Text_CSPtr text) = 0;
+        virtual void visit(MText_CSPtr mtext, Spline_CSPtr spline) = 0;
+        virtual void visit(MText_CSPtr, MText_CSPtr) = 0;
+
     };
 }
 

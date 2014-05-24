@@ -1,5 +1,5 @@
-#ifndef SPLINE_H
-#define SPLINE_H
+#ifndef MTEXT_H
+#define MTEXT_H
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -7,31 +7,50 @@
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geospline.h"
+#include "cad/geometry/geomtext.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/interface/snapable.h"
 
 namespace lc {
+    class MText;
+    typedef std::shared_ptr<MText> MText_SPtr;
+    typedef std::shared_ptr<const MText> MText_CSPtr;
 
-    class Spline;
-    typedef std::shared_ptr<Spline> Spline_SPtr;
-    typedef std::shared_ptr<const Spline> Spline_CSPtr;
 
-    class Spline : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable {
+    class MText : public std::enable_shared_from_this<MText>, public CADEntity, public geo::MText {
         public:
-            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer);
-            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
-        public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+        MText(const geo::Coordinate& insertionPoint,
+              const double height,
+              const double width,
+              const VAlign valign,
+              const HAlign halign,
+              const MTextDrawingDirection drawingDirection,
+              const MTextLineSpacingStyle lineSpacingStyle,
+              const double lineSpacingFactor,
+              const std::string& text_value,
+              const std::string& style,
+              const double angle, const Layer_CSPtr layer);
+
+        MText(const geo::Coordinate& insertionPoint,
+              const double height,
+              const double width,
+              const VAlign valign,
+              const HAlign halign,
+              const MTextDrawingDirection drawingDirection,
+              const MTextLineSpacingStyle lineSpacingStyle,
+              const double lineSpacingFactor,
+              const std::string& text_value,
+              const std::string& style,
+              const double angle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>&metaTypes);
+
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+
         public:
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -60,8 +79,7 @@ namespace lc {
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }
-
     };
 }
 
-#endif // SPLINE_H
+#endif // MTEXT_H

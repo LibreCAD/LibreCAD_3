@@ -99,6 +99,11 @@ void Intersect::visit(Line_CSPtr, Spline_CSPtr) {
     return;
 }
 
+void Intersect::visit(Line_CSPtr l1, MText_CSPtr) {
+    return;
+}
+
+
 // Circle
 
 void Intersect::visit(Circle_CSPtr circle, Line_CSPtr line) {
@@ -120,6 +125,10 @@ void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
 void Intersect::visit(Circle_CSPtr, Spline_CSPtr) {
     return;
 }
+void Intersect::visit(Circle_CSPtr l1, MText_CSPtr) {
+    return;
+}
+
 
 // ARC
 
@@ -142,6 +151,11 @@ void Intersect::visit(Arc_CSPtr, Spline_CSPtr) {
     return;
 }
 
+void Intersect::visit(Arc_CSPtr l1, MText_CSPtr) {
+    return;
+}
+
+
 // Ellipse
 
 void Intersect::visit(Ellipse_CSPtr, Line_CSPtr) {
@@ -160,10 +174,14 @@ void Intersect::visit(Ellipse_CSPtr, Ellipse_CSPtr) {
 void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {
     return;
 }
-
 void Intersect::visit(Ellipse_CSPtr, Spline_CSPtr) {
     return;
 }
+void Intersect::visit(Ellipse_CSPtr l1, MText_CSPtr) {
+    return;
+}
+
+
 
 // Text
 void Intersect::visit(Text_CSPtr, Line_CSPtr) {
@@ -184,24 +202,42 @@ void Intersect::visit(Text_CSPtr, Text_CSPtr) {
 void Intersect::visit(Text_CSPtr, Spline_CSPtr) {
     return;
 }
+void Intersect::visit(Text_CSPtr l1, MText_CSPtr) {
+    return;
+}
+
 // Spline
 void Intersect::visit(Spline_CSPtr, Line_CSPtr) {
 }
-
 void Intersect::visit(Spline_CSPtr, Circle_CSPtr) {
 }
-
 void Intersect::visit(Spline_CSPtr, Arc_CSPtr) {
 }
-
 void Intersect::visit(Spline_CSPtr, Ellipse_CSPtr) {
 }
-
 void Intersect::visit(Spline_CSPtr, Text_CSPtr) {
 }
-
 void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
 }
+void Intersect::visit(Spline_CSPtr l1, MText_CSPtr) {
+}
+
+// MText
+void Intersect::visit(MText_CSPtr, Line_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, Circle_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, Arc_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, Ellipse_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, Text_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, Spline_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr l1, MText_CSPtr) {
+}
+
 
 IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
 }

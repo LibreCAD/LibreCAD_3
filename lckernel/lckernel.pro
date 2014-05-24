@@ -65,7 +65,9 @@ SOURCES += lckernel.cpp \
     cad/document/document.cpp \
     cad/dochelpers/storagemanagerimpl.cpp \
     cad/dochelpers/entitycontainer.cpp \
-    cad/math/lcmath.cpp
+    cad/math/lcmath.cpp \
+    cad/geometry/geomtext.cpp \
+    cad/primitive/mtext.cpp
 
 HEADERS += \
     nano-signal-slot/nano_signal_slot.hpp \
@@ -123,6 +125,8 @@ HEADERS += \
     cad/events/replacelayerevent.h \
     cad/dochelpers/storagemanagerimpl.h \
     cad/document/storagemanager.h \
-    cad/math/lcmath.h
+    cad/math/lcmath.h \
+    cad/geometry/geomtext.h \
+    cad/primitive/mtext.h
 
 
