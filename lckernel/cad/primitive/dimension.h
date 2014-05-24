@@ -21,25 +21,52 @@ namespace lc {
     class Dimension : public std::enable_shared_from_this<Dimension>, public CADEntity, public geo::Dimension {
         public:
 
-        Dimension(const geo::Coordinate& definition_point,
-                  const geo::Coordinate& middle_of_text,
-                  const geo::MText::VAlign valign,
-                  const geo::MText::HAlign halign,
-                  const geo::MText::LineSpacingStyle lineSpacingStyle,
-                  const double lineSpacingFactor,
-                  const std::string& text_value,
-                  const std::string& style,
-                  const double angle, const Layer_CSPtr layer);
+            /**
+             * @brief Dimension
+             * @param definition_point definition_point of the dimension
+             * @param middle_of_text Middle of text
+             * @param valign Vertical Alignment
+             * @param halign Horizontal Alignment
+             * @param lineSpacingStyle Line spacing style
+             * @param lineSpacingFactor Spacing factor
+             * @param text_value Text of dimension
+             * @param style STyle name
+             * @param angle Angle of obliqueness
+             * @param layer Layer of entity
+             */
+            Dimension(const geo::Coordinate& definition_point,
+                      const geo::Coordinate& middle_of_text,
+                      const geo::MText::VAlign valign,
+                      const geo::MText::HAlign halign,
+                      const geo::MText::LineSpacingStyle lineSpacingStyle,
+                      const double lineSpacingFactor,
+                      const std::string& text_value,
+                      const std::string& style,
+                      const double angle, const Layer_CSPtr layer);
 
-        Dimension(const geo::Coordinate& definition_point,
-                  const geo::Coordinate& middle_of_text,
-                  const geo::MText::VAlign valign,
-                  const geo::MText::HAlign halign,
-                  const geo::MText::LineSpacingStyle lineSpacingStyle,
-                  const double lineSpacingFactor,
-                  const std::string& text_value,
-                  const std::string& style,
-                  const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
+            /**
+             * @brief Dimension
+             * @param definition_point definition_point of the dimension
+             * @param middle_of_text Middle of text
+             * @param valign Vertical Alignment
+             * @param halign Horizontal Alignment
+             * @param lineSpacingStyle Line spacing style
+             * @param lineSpacingFactor Spacing factor
+             * @param text_value Text of dimension
+             * @param style STyle name
+             * @param angle Angle of obliqueness
+             * @param layer Layer of entity
+             * @param metatype of entity
+             */
+            Dimension(const geo::Coordinate& definition_point,
+                      const geo::Coordinate& middle_of_text,
+                      const geo::MText::VAlign valign,
+                      const geo::MText::HAlign halign,
+                      const geo::MText::LineSpacingStyle lineSpacingStyle,
+                      const double lineSpacingFactor,
+                      const std::string& text_value,
+                      const std::string& style,
+                      const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;

@@ -39,7 +39,7 @@ namespace lc {
 
     class CADEntity;
     typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;    
+    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
 
     class EntityVisitor {
         public:
@@ -98,23 +98,23 @@ namespace lc {
             virtual void visit(Spline_CSPtr, MText_CSPtr) = 0;
             virtual void visit(Spline_CSPtr, Dimension_CSPtr) = 0;
 
-        virtual void visit(MText_CSPtr mtext, Line_CSPtr line) = 0;
-        virtual void visit(MText_CSPtr mtext, Circle_CSPtr circle) = 0;
-        virtual void visit(MText_CSPtr mtext, Arc_CSPtr arc) = 0;
-        virtual void visit(MText_CSPtr mtext, Ellipse_CSPtr ellipse) = 0;
-        virtual void visit(MText_CSPtr mtext, Text_CSPtr text) = 0;
-        virtual void visit(MText_CSPtr mtext, Spline_CSPtr spline) = 0;
-        virtual void visit(MText_CSPtr, MText_CSPtr) = 0;
-        virtual void visit(MText_CSPtr, Dimension_CSPtr) = 0;
+            virtual void visit(MText_CSPtr mtext, Line_CSPtr line) = 0;
+            virtual void visit(MText_CSPtr mtext, Circle_CSPtr circle) = 0;
+            virtual void visit(MText_CSPtr mtext, Arc_CSPtr arc) = 0;
+            virtual void visit(MText_CSPtr mtext, Ellipse_CSPtr ellipse) = 0;
+            virtual void visit(MText_CSPtr mtext, Text_CSPtr text) = 0;
+            virtual void visit(MText_CSPtr mtext, Spline_CSPtr spline) = 0;
+            virtual void visit(MText_CSPtr, MText_CSPtr) = 0;
+            virtual void visit(MText_CSPtr, Dimension_CSPtr) = 0;
 
-        virtual void visit(Dimension_CSPtr Dimension, Line_CSPtr line) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, Circle_CSPtr circle) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, Arc_CSPtr arc) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, Ellipse_CSPtr ellipse) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, Text_CSPtr text) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, Spline_CSPtr spline) = 0;
-        virtual void visit(Dimension_CSPtr Dimension, MText_CSPtr mtext) = 0;
-        virtual void visit(Dimension_CSPtr, Dimension_CSPtr) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Line_CSPtr line) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Circle_CSPtr circle) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Arc_CSPtr arc) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Ellipse_CSPtr ellipse) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Text_CSPtr text) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, Spline_CSPtr spline) = 0;
+            virtual void visit(Dimension_CSPtr Dimension, MText_CSPtr mtext) = 0;
+            virtual void visit(Dimension_CSPtr, Dimension_CSPtr) = 0;
 
 
     };

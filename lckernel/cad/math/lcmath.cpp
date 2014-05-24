@@ -13,19 +13,28 @@ using namespace lc;
  */
 
 bool Math::isAngleBetween(double a,
-                             double a1, double a2,
-                             bool reversed) {
+                          double a1, double a2,
+                          bool reversed) {
 
     //    bool ret = false;
 
-    if (reversed) std::swap(a1,a2);
+    if (reversed) {
+        std::swap(a1, a2);
+    }
+
     //a1 and a2 almost the same angle
-        // the |a2-a1| % (2 pi)=0 means the whole angular range
-    if(fabs( remainder(correctAngle(a2 - a1 ) , 2.*M_PI)) < TOLERANCE_ANGLE) return true;
-    if (  correctAngle(a2 -a1) >= correctAngle(a - a1) - 0.5*TOLERANCE_ANGLE
-          || correctAngle(a2 -a1) >= correctAngle(a2 - a) -0.5*TOLERANCE_ANGLE
-          ) return true;
-        return false;
+    // the |a2-a1| % (2 pi)=0 means the whole angular range
+    if (fabs(remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
+        return true;
+    }
+
+    if (correctAngle(a2 - a1) >= correctAngle(a - a1) - 0.5 * TOLERANCE_ANGLE
+        || correctAngle(a2 - a1) >= correctAngle(a2 - a) - 0.5 * TOLERANCE_ANGLE
+       ) {
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -33,7 +42,7 @@ bool Math::isAngleBetween(double a,
  * Corrects the given angle to the range of 0-2*Pi.
  */
 double Math::correctAngle(double a) {
-    return M_PI + remainder(a - M_PI, 2*M_PI);
+    return M_PI + remainder(a - M_PI, 2 * M_PI);
 }
 
 /**
@@ -41,8 +50,9 @@ double Math::correctAngle(double a) {
  *         Always positive and less than 2*pi.
  */
 double Math::getAngleDifference(double a1, double a2, bool reversed) {
-    if(reversed)
-        return M_PI + remainder(a1 -a2 -M_PI, 2*M_PI);
-    else
-        return M_PI + remainder(a2 -a1 -M_PI, 2*M_PI);
+    if (reversed) {
+        return M_PI + remainder(a1 - a2 - M_PI, 2 * M_PI);
+    } else {
+        return M_PI + remainder(a2 - a1 - M_PI, 2 * M_PI);
+    }
 }

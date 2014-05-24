@@ -14,15 +14,27 @@ namespace lc {
         class Dimension  {
             public:
 
-            Dimension(const Coordinate& definition_point,
-                      const Coordinate& middle_of_text,
-                      const MText::VAlign valign,
-                      const MText::HAlign halign,
-                      const MText::LineSpacingStyle lineSpacingStyle,
-                      const double lineSpacingFactor,
-                      const std::string& text_value,
-                      const std::string& style,
-                      const double angle);
+                /**
+                 * @brief Dimension
+                 * @param definition_point definition_point of the dimension
+                 * @param middle_of_text Middle of text
+                 * @param valign Vertical Alignment
+                 * @param halign Horizontal Alignment
+                 * @param lineSpacingStyle Line spacing style
+                 * @param lineSpacingFactor Spacing factor
+                 * @param text_value Text of dimension
+                 * @param style STyle name
+                 * @param angle Angle of obliqueness
+                 */
+                Dimension(const Coordinate& definition_point,
+                          const Coordinate& middle_of_text,
+                          const MText::VAlign valign,
+                          const MText::HAlign halign,
+                          const MText::LineSpacingStyle lineSpacingStyle,
+                          const double lineSpacingFactor,
+                          const std::string& text_value,
+                          const std::string& style,
+                          const double angle);
 
                 /**
                  * @brief Insertion point of text

@@ -20,60 +20,60 @@ namespace lc {
     class MText : public std::enable_shared_from_this<MText>, public CADEntity, public geo::MText {
         public:
 
-        /**
-         * @brief MText
-         * @param insertion_point insertion_point of the mtext
-         * @param height height of the text
-         * @param width width of text
-         * @param valign vertical alignment
-         * @param halign horizontal alignment
-         * @param drawingDirection direction of drawing
-         * @param lineSpacingStyle line spacing style
-         * @param lineSpacingFactor spacing factor
-         * @param text_value text value itself
-         * @param style style name of text
-         * @param angle angle of obliqueness
-         * @param layer layer of entity
-         */
-        MText(const geo::Coordinate& insertion_point,
-              const double height,
-              const double width,
-              const VAlign valign,
-              const HAlign halign,
-              const DrawingDirection drawingDirection,
-              const LineSpacingStyle lineSpacingStyle,
-              const double lineSpacingFactor,
-              const std::string& text_value,
-              const std::string& style,
-              const double angle, const Layer_CSPtr layer);
+            /**
+             * @brief MText
+             * @param insertion_point insertion_point of the mtext
+             * @param height height of the text
+             * @param width width of text
+             * @param valign vertical alignment
+             * @param halign horizontal alignment
+             * @param drawingDirection direction of drawing
+             * @param lineSpacingStyle line spacing style
+             * @param lineSpacingFactor spacing factor
+             * @param text_value text value itself
+             * @param style style name of text
+             * @param angle angle of obliqueness
+             * @param layer layer of entity
+             */
+            MText(const geo::Coordinate& insertion_point,
+                  const double height,
+                  const double width,
+                  const VAlign valign,
+                  const HAlign halign,
+                  const DrawingDirection drawingDirection,
+                  const LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer);
 
-        /**
-         * @brief MText
-         * @param insertion_point insertion_point of the mtext
-         * @param height height of the text
-         * @param width width of text
-         * @param valign vertical alignment
-         * @param halign horizontal alignment
-         * @param drawingDirection direction of drawing
-         * @param lineSpacingStyle line spacing style
-         * @param lineSpacingFactor spacing factor
-         * @param text_value text value itself
-         * @param style style name of text
-         * @param angle angle of obliqueness
-         * @param layer layer of entity
-         * @param metaTypes metatype of entity
-         */
-        MText(const geo::Coordinate& insertion_point,
-              const double height,
-              const double width,
-              const VAlign valign,
-              const HAlign halign,
-              const DrawingDirection drawingDirection,
-              const LineSpacingStyle lineSpacingStyle,
-              const double lineSpacingFactor,
-              const std::string& text_value,
-              const std::string& style,
-              const double angle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>&metaTypes);
+            /**
+             * @brief MText
+             * @param insertion_point insertion_point of the mtext
+             * @param height height of the text
+             * @param width width of text
+             * @param valign vertical alignment
+             * @param halign horizontal alignment
+             * @param drawingDirection direction of drawing
+             * @param lineSpacingStyle line spacing style
+             * @param lineSpacingFactor spacing factor
+             * @param text_value text value itself
+             * @param style style name of text
+             * @param angle angle of obliqueness
+             * @param layer layer of entity
+             * @param metaTypes metatype of entity
+             */
+            MText(const geo::Coordinate& insertion_point,
+                  const double height,
+                  const double width,
+                  const VAlign valign,
+                  const HAlign halign,
+                  const DrawingDirection drawingDirection,
+                  const LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
 
         public:

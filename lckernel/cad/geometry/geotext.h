@@ -13,63 +13,63 @@ namespace lc {
          */
         class Text  {
             public:
-            /**
-             * Vertical alignments.
-             */
-            enum VAlign {
-            VABaseline, /**< Bottom */
-            VABottom,   /**< Bottom */
-            VAMiddle,   /**< Middle */
-            VATop       /**< Top. */
-            };
-
-            /**
-             * Horizontal alignments.
-             */
-            enum HAlign {
-            HALeft,     /**< Left */
-            HACenter,   /**< Centered */
-            HARight,    /**< Right */
-            HAAligned,  /**< Aligned */
-            HAMiddle,   /**< Middle */
-            HAFit       /**< Fit */
-            };
-
-            /**
-             * Text drawing direction.
-             */
-            enum TextGeneration {
-            None,      /**< Normal text */
-            Backward,  /**< Mirrored in X */
-            UpsideDown /**< Mirrored in Y */
-            };
-            /**
-             * @brief Text Entity
-             * @param insertion_point insertion_point of the text
-             * @param second_point second_point of text in UCS
-             * @param height height of the text
-             * @param text_value the text itself
-             * @param width_rel X scale factor-width
-             * @param angle angle of obliqueness
-             * @param style name of text style
-             * @param textgeneration Text drawing direction
-             * @param halign Horizontal alignment
-             * @param valign Vertical alignment
-             */
-            Text(const Coordinate& insertion_point,
-                 const Coordinate& second_point, const double height,
-                 const std::string text_value, const double width_rel,
-                 const double angle, const std::string style,
-                 const TextGeneration textgeneration,
-                 const HAlign halign, const VAlign valign);
-
-            /**
-                 * @brief Insertion point of text
-                 * First alignment point (in OCS)
-                 * DXF: X value; APP: 3D point
-                 * DXF: Y and Z values of first alignment point (in OCS)
-                 * @return Coordinate insertion_point
+                /**
+                 * Vertical alignments.
                  */
+                enum VAlign {
+                    VABaseline, /**< Bottom */
+                    VABottom,   /**< Bottom */
+                    VAMiddle,   /**< Middle */
+                    VATop       /**< Top. */
+                };
+
+                /**
+                 * Horizontal alignments.
+                 */
+                enum HAlign {
+                    HALeft,     /**< Left */
+                    HACenter,   /**< Centered */
+                    HARight,    /**< Right */
+                    HAAligned,  /**< Aligned */
+                    HAMiddle,   /**< Middle */
+                    HAFit       /**< Fit */
+                };
+
+                /**
+                 * Text drawing direction.
+                 */
+                enum TextGeneration {
+                    None,      /**< Normal text */
+                    Backward,  /**< Mirrored in X */
+                    UpsideDown /**< Mirrored in Y */
+                };
+                /**
+                 * @brief Text Entity
+                 * @param insertion_point insertion_point of the text
+                 * @param second_point second_point of text in UCS
+                 * @param height height of the text
+                 * @param text_value the text itself
+                 * @param width_rel X scale factor-width
+                 * @param angle angle of obliqueness
+                 * @param style name of text style
+                 * @param textgeneration Text drawing direction
+                 * @param halign Horizontal alignment
+                 * @param valign Vertical alignment
+                 */
+                Text(const Coordinate& insertion_point,
+                     const Coordinate& second_point, const double height,
+                     const std::string text_value, const double width_rel,
+                     const double angle, const std::string style,
+                     const TextGeneration textgeneration,
+                     const HAlign halign, const VAlign valign);
+
+                /**
+                     * @brief Insertion point of text
+                     * First alignment point (in OCS)
+                     * DXF: X value; APP: 3D point
+                     * DXF: Y and Z values of first alignment point (in OCS)
+                     * @return Coordinate insertion_point
+                     */
                 const Coordinate insertion_point() const;
 
                 /**

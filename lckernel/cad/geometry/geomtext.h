@@ -13,67 +13,67 @@ namespace lc {
          */
         class MText  {
             public:
-            /**
-             * Vertical alignments.
-             */
-            enum VAlign {
-                VATop,      /**< Top. */
-                VAMiddle,   /**< Middle */
-                VABottom    /**< Bottom */
-            };
+                /**
+                 * Vertical alignments.
+                 */
+                enum VAlign {
+                    VATop,      /**< Top. */
+                    VAMiddle,   /**< Middle */
+                    VABottom    /**< Bottom */
+                };
 
-            /**
-             * Horizontal alignments.
-             */
-            enum HAlign {
-                HALeft,     /**< Left */
-                HACenter,   /**< Centered */
-                HARight     /**< Right */
-            };
+                /**
+                 * Horizontal alignments.
+                 */
+                enum HAlign {
+                    HALeft,     /**< Left */
+                    HACenter,   /**< Centered */
+                    HARight     /**< Right */
+                };
 
-            /**
-             * MText drawing direction.
-             */
-            enum DrawingDirection {
-                LeftToRight,     /**< Left to right */
-                TopToBottom,     /**< Top to bottom */
-                ByStyle          /**< Inherited from associated text style */
-            };
+                /**
+                 * MText drawing direction.
+                 */
+                enum DrawingDirection {
+                    LeftToRight,     /**< Left to right */
+                    TopToBottom,     /**< Top to bottom */
+                    ByStyle          /**< Inherited from associated text style */
+                };
 
-            /**
-             * Line spacing style for MTexts.
-             */
-            enum LineSpacingStyle {
-                AtLeast,        /**< Taller characters will override */
-                Exact           /**< Taller characters will not override */
-            };
+                /**
+                 * Line spacing style for MTexts.
+                 */
+                enum LineSpacingStyle {
+                    AtLeast,        /**< Taller characters will override */
+                    Exact           /**< Taller characters will not override */
+                };
 
 
-            /**
-             * @brief MText
-             * @param insertionPoint Insertion point text
-             * @param height Height of text
-             * @param width Width of text
-             * @param valign Vertical alignment
-             * @param halign Horizontal alignment
-             * @param drawingDirection Drawing direction TopToBottom/LeftToRight
-             * @param lineSpacingStyle Line spacing style
-             * @param lineSpacingFactor Line spacing factor
-             * @param text Text value itself
-             * @param style style name of mtext
-             * @param angle angle of obliqueness
-             */
-            MText(const Coordinate& insertion_point,
-                  const double height,
-                  const double width,
-                  const VAlign valign,
-                  const HAlign halign,
-                  const DrawingDirection drawingDirection,
-                  const LineSpacingStyle lineSpacingStyle,
-                  const double lineSpacingFactor,
-                  const std::string& text_value,
-                  const std::string& style,
-                  const double angle);
+                /**
+                 * @brief MText
+                 * @param insertionPoint Insertion point text
+                 * @param height Height of text
+                 * @param width Width of text
+                 * @param valign Vertical alignment
+                 * @param halign Horizontal alignment
+                 * @param drawingDirection Drawing direction TopToBottom/LeftToRight
+                 * @param lineSpacingStyle Line spacing style
+                 * @param lineSpacingFactor Line spacing factor
+                 * @param text Text value itself
+                 * @param style style name of mtext
+                 * @param angle angle of obliqueness
+                 */
+                MText(const Coordinate& insertion_point,
+                      const double height,
+                      const double width,
+                      const VAlign valign,
+                      const HAlign halign,
+                      const DrawingDirection drawingDirection,
+                      const LineSpacingStyle lineSpacingStyle,
+                      const double lineSpacingFactor,
+                      const std::string& text_value,
+                      const std::string& style,
+                      const double angle);
 
                 /**
                  * @brief Insertion point of text
