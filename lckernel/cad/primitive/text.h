@@ -10,7 +10,7 @@
 #include "cad/geometry/geotext.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-
+#include "cad/math/lcmath.h"
 namespace lc {
     class Text;
     typedef std::shared_ptr<Text> Text_SPtr;
@@ -90,11 +90,17 @@ namespace lc {
             virtual void accept(Text_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
-                o->accept(shared_from_this(), ei);
-            }
             virtual void accept(Spline_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
+                o->accept(shared_from_this(), ei);
             }
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
