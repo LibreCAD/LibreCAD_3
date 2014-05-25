@@ -19,6 +19,7 @@ DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document)
     document->commitProcessEvent().connect<DocumentRenderer, &DocumentRenderer::on_commitProcessEvent>(this);
 
 
+    // Render code for elected area
     _selectedAreaPainter = [](LcPainter* painter, lc::geo::Area area , bool occupies) {
         double dashes[] = {10.0, 3.0, 3.0, 3.0};
         painter->save();
@@ -60,22 +61,48 @@ DocumentRenderer::~DocumentRenderer() {
 }
 
 void DocumentRenderer::newDeviceSize(unsigned int width, unsigned int height) {
+
     if (_deviceWidth != width || _deviceHeight != height) {
         _deviceWidth = width;
         _deviceHeight = height;
 
-        for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
-            _deletePainterFunctor(i->second);
+        double s=1.;
+        double x=0.;
+        double y=0.;
+
+        if (_cachedPainters.size()!=0) {
+            LcPainter *p =_cachedPainters.begin()->second;
+            s = p->scale();
+            p->getTranslate(&x, &y);
         }
 
-        _cachedPainters.clear();
+        for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+            _deletePainterFunctor(i->second);
+            _cachedPainters[i->first] = _createPainterFunctor(_deviceWidth, _deviceHeight);
+            _cachedPainters[i->first]->scale(s);
+            _cachedPainters[i->first]->translate(x, y);
+        }
     }
 
+    calculateVisibleUserArea();
 }
 
 LcPainter* DocumentRenderer::cachedPainter(PainterCacheType cacheType) {
+
+    double s=1.;
+    double x=0.;
+    double y=0.;
+
+    if (_cachedPainters.size()!=0) {
+        LcPainter *p =_cachedPainters.begin()->second;
+        s = p->scale();
+        p->getTranslate(&x, &y);
+    }
+
     if (_cachedPainters.count(cacheType) == 0) {
         _cachedPainters[cacheType] = _createPainterFunctor(_deviceWidth, _deviceHeight);
+       _cachedPainters[cacheType]->scale(s);
+       _cachedPainters[cacheType]->translate(x, y);
     }
     return _cachedPainters[cacheType];
 }
@@ -111,14 +138,7 @@ void DocumentRenderer::zoom(double factor, unsigned int deviceScrollX, unsigned 
     }
 
     // Calculate visible area
-    painter = cachedPainter(VIEWER_DOCUMENT);
-    double x = 0.;
-    double y = 0.;
-    double w = _deviceWidth;
-    double h = _deviceHeight;
-    painter->device_to_user(&x, &y);
-    painter->device_to_user_distance(&w, &h);
-    _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+    calculateVisibleUserArea();
 }
 
 void DocumentRenderer::autoScale() {
@@ -130,16 +150,23 @@ void DocumentRenderer::autoScale() {
         p->translate(_deviceWidth / 2., _deviceHeight/2.);
     }
 
-    LcPainter *painter = cachedPainter(VIEWER_DOCUMENT);
-    double x = 0.;
-    double y = 0.;
-    double w = _deviceWidth;
-    double h = _deviceHeight;
-    painter->device_to_user(&x, &y);
-    painter->device_to_user_distance(&w, &h);
-    _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+    calculateVisibleUserArea();
 }
 
+void DocumentRenderer::calculateVisibleUserArea() {
+    if (_cachedPainters.size()!=0) {
+        LcPainter *p =_cachedPainters.begin()->second;
+        double x = 0.;
+        double y = 0.;
+        double w = _deviceWidth;
+        double h = _deviceHeight;
+        p->device_to_user(&x, &y);
+        p->device_to_user_distance(&w, &h);
+        _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+    } else {
+        _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(0, 0), 0, 0);
+    }
+}
 
 void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
 
@@ -150,8 +177,6 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
         painter = cachedPainter(VIEWER_BACKGROUND);
         autoScale();
     }
-
-
 
     // Render background
     // Cache these backgrounds

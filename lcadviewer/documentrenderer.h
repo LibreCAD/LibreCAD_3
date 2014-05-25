@@ -125,6 +125,9 @@ class DocumentRenderer {
         void removeSelection();
 
     private:
+
+        void calculateVisibleUserArea();
+
         /**
          * @brief cachedPainter
          * fetch a painter, if no painter was found or the painter's size doesn't match anymore

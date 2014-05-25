@@ -212,3 +212,9 @@ void LcCairoPainter::set_dash(const double *dashes, const int num_dashes, double
     }
 }
 
+void LcCairoPainter::getTranslate(double* x, double* y) {
+    cairo_matrix_t matrix;
+    cairo_get_matrix(_cr, &matrix);
+    *x = matrix.x0;
+    *y = matrix.y0;
+}
