@@ -97,9 +97,9 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
 void LCADViewer::wheelEvent(QWheelEvent* event) {
 
     if (event->angleDelta().y() > 0) {
-        this->_docRenderer->scrollTo(1.1, event->pos().x(), event->pos().y()); //1.2
+        this->_docRenderer->zoom(1.1, event->pos().x(), event->pos().y()); //1.2
     } else if (event->angleDelta().y() < 0) {
-        this->_docRenderer->scrollTo(0.9, event->pos().x(), event->pos().y()); // 0.83
+        this->_docRenderer->zoom(0.9, event->pos().x(), event->pos().y()); // 0.83
     }
 
     this->update();
@@ -116,27 +116,31 @@ void LCADViewer::setHorizontalOffset(int v) {
 
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
-    /*
-        _newMouseEvent = true;
-        _mouseEvent.mouseX = event->pos().x();
-        _mouseEvent.mouseY = event->pos().x();
-    */
+
+    // Selection by area
+    if (!startSelectPos.isNull()) {
+        bool occopies = startSelectPos.x() < event->pos().x();
+        _docRenderer->makeSelectionDevice(
+                    std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
+                    std::abs(startSelectPos.x()-event->pos().x()),
+                    std::abs(startSelectPos.y()-event->pos().y()), occopies);
+    }
+
+    update();
 }
 
 void LCADViewer::mousePressEvent(QMouseEvent* event) {
     QWidget::mousePressEvent(event);
 
-    /*
-    _newMouseEvent = true;
-    _mouseEvent.mouseX = event->pos().x();
-    _mouseEvent.mouseY = event->pos().x();
-    */
+    startSelectPos = event->pos();
 }
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
+    startSelectPos = QPoint();
+    _docRenderer->removeSelection();
 }
 
 

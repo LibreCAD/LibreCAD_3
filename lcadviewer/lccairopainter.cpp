@@ -2,6 +2,7 @@
 
 #include <cairo.h>
 #include <math.h>
+#include <array>
 
 #include <QDebug>
 #include <valarray>
@@ -195,4 +196,19 @@ unsigned char* LcCairoPainter::data() {
     return cairo_image_surface_get_data(_surface);
 }
 
+void LcCairoPainter::set_dash(const double *dashes, const int num_dashes, double offset, bool scaled) {
+    if (scaled) {
+        double scaledDashes[num_dashes];
+        memcpy ( &scaledDashes, dashes, num_dashes * sizeof(double) );
+
+        double _scale = scale();
+        for (unsigned short c = 0; c < num_dashes; c++ ) {
+            scaledDashes[c] = scaledDashes[c] / _scale;
+        }
+
+        cairo_set_dash(_cr, scaledDashes, num_dashes, offset);
+    } else {
+        cairo_set_dash(_cr, dashes, num_dashes, offset);
+    }
+}
 

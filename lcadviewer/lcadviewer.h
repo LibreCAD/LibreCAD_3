@@ -101,6 +101,9 @@ class LCADViewer : public QWidget {
         // When set to true, the line width on screen will scale with teh zoom factor
         bool _scaleLineWidth;
 
+        //
+        QPoint startSelectPos;
+
 
         // Entity container that track's all entities within the document
         lc::Document* _document;

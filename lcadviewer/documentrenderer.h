@@ -33,7 +33,19 @@ class DocumentRenderer {
          */
         void render(std::function<void(LcPainter*)> wPainter);
 
-        void scrollTo(double factor, unsigned int deviceCenterX, unsigned int deviceCenterY);
+        /**
+         * @brief autoScale
+         * Found the bounds of the current document and scale into this and center on screen
+         */
+        void autoScale();
+        /**
+         * @brief zoom
+         * into a specific area
+         * @param factor
+         * @param deviceCenterX
+         * @param deviceCenterY
+         */
+        void zoom(double factor, unsigned int deviceCenterX, unsigned int deviceCenterY);
         /**
          * @brief newSize
          * for the device. When using a pixel based device this is the number of pixels of the painter
@@ -80,21 +92,37 @@ class DocumentRenderer {
 
         /**
          * @brief makeSelection
-         * within the document. It wil color the area red/green depending on the occupies flag
+         * within the document. It wil color the area red/green depending on the occupies flag.
+         * The coordinates must be given in user coordinates
          * @param x
          * @param y
          * @param w
          * @param y
          * @param foo
          */
-        void makeSelection(double x, dobule y, double w, double y, bool occupies);
+        void makeSelection(double x, double y, double w, double h, bool occupies);
 
-        }
+        /**
+         * @brief makeSelectionDevice
+         * based on device coordinate rather then user coordinates
+         * @param x
+         * @param y
+         * @param w
+         * @param h
+         * @param occupies
+         */
+        void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies);
 
          /**
          * @brief removeSelectionArea removed the colord selection area from the screen
          */
         void removeSelectionArea();
+
+        /**
+         * @brief removeSelection
+         * removes the colored selection area and de-selects all selected entities
+         */
+        void removeSelection();
 
     private:
         /**
@@ -139,6 +167,14 @@ class DocumentRenderer {
         // Current's device width and height
         unsigned int _deviceWidth;
         unsigned int _deviceHeight;
+
+        // When !=null it show's a selected area
+        lc::geo::Area *_selectedArea;
+        // When set to true, a entity will be selected if it intersects or occipies,
+        // when false it will only select when the entity is fully contained
+        bool _selectedAreaIntersects;
+        // Functor to draw a selected area
+        std::function<void(LcPainter*, lc::geo::Area, bool)> _selectedAreaPainter;
 };
 
 
