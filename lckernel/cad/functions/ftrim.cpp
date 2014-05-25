@@ -69,6 +69,9 @@ void FTrim::visit(Dimension_CSPtr text) {
 
 }
 
+void FTrim::visit(dimAligned_CSPtr text) {
+
+}
 
 std::vector<CADEntity_CSPtr> FTrim::result() {
     _trimmedShape->dispatch(*this);

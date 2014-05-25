@@ -104,6 +104,9 @@ void Intersect::visit(Line_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(Line_CSPtr l1, Dimension_CSPtr) {
 }
+void Intersect::visit(Line_CSPtr, dimAligned_CSPtr) {
+
+}
 
 
 // Circle
@@ -132,6 +135,9 @@ void Intersect::visit(Circle_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(Circle_CSPtr l1, Dimension_CSPtr) {
 }
+void Intersect::visit(Circle_CSPtr, dimAligned_CSPtr) {
+
+}
 
 
 // ARC
@@ -158,6 +164,9 @@ void Intersect::visit(Arc_CSPtr l1, MText_CSPtr) {
     return;
 }
 void Intersect::visit(Arc_CSPtr l1, Dimension_CSPtr) {
+}
+void Intersect::visit(Arc_CSPtr, dimAligned_CSPtr) {
+
 }
 
 
@@ -187,6 +196,9 @@ void Intersect::visit(Ellipse_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(Ellipse_CSPtr l1, Dimension_CSPtr) {
 }
+void Intersect::visit(Ellipse_CSPtr, dimAligned_CSPtr) {
+
+}
 
 
 
@@ -214,6 +226,10 @@ void Intersect::visit(Text_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(Text_CSPtr l1, Dimension_CSPtr) {
 }
+void Intersect::visit(Text_CSPtr, dimAligned_CSPtr) {
+
+}
+
 
 // Spline
 void Intersect::visit(Spline_CSPtr, Line_CSPtr) {
@@ -231,6 +247,9 @@ void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
 void Intersect::visit(Spline_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(Spline_CSPtr l1, Dimension_CSPtr) {
+}
+void Intersect::visit(Spline_CSPtr, dimAligned_CSPtr) {
+
 }
 
 
@@ -250,6 +269,9 @@ void Intersect::visit(MText_CSPtr, Spline_CSPtr) {
 void Intersect::visit(MText_CSPtr l1, MText_CSPtr) {
 }
 void Intersect::visit(MText_CSPtr l1, Dimension_CSPtr) {
+}
+void Intersect::visit(MText_CSPtr, dimAligned_CSPtr) {
+
 }
 
 
@@ -283,6 +305,31 @@ void Intersect::visit(Dimension_CSPtr, MText_CSPtr) {
 void Intersect::visit(Dimension_CSPtr, Dimension_CSPtr) {
 
 }
+
+void Intersect::visit(Dimension_CSPtr, dimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(dimAligned_CSPtr, Line_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, Circle_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, Arc_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, Ellipse_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, Text_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, Spline_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr l1, MText_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr l1, Dimension_CSPtr) {
+}
+void Intersect::visit(dimAligned_CSPtr, dimAligned_CSPtr) {
+
+}
+
 
 IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
 }

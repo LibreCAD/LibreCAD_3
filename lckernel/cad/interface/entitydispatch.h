@@ -12,6 +12,7 @@ namespace lc {
     class Spline;
     class MText;
     class Dimension;
+    class dimAligned;
     class EntityDispatch {
         public:
 
@@ -23,6 +24,7 @@ namespace lc {
             virtual void visit(Spline_CSPtr) = 0;
             virtual void visit(MText_CSPtr) = 0;
             virtual void visit(Dimension_CSPtr) = 0;
+            virtual void visit(dimAligned_CSPtr) = 0;
     };
 }
 #endif // ENTITYDISPATCH_H

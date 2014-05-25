@@ -35,7 +35,8 @@ namespace lc {
                           const std::string& text_value,
                           const std::string& style,
                           const double angle);
-
+                Dimension();
+                //virtual ~Dimension();
                 /**
                  * @brief Insertion point of text
                  * First alignment point (in OCS)
@@ -99,6 +100,7 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
+                friend class dimAligned;
             private:
                 const Coordinate _definition_point, _middle_of_text;
                 double _angle, _linespacingfactor;

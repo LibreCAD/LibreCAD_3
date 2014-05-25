@@ -1,7 +1,5 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
-
-#include <cad/meta/layer.h>
+#ifndef DIMALIGNED_H
+#define DIMALIGNED_H
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -9,26 +7,43 @@
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geocircle.h"
+#include "cad/geometry/geodimaligned.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/interface/snapable.h"
 
 namespace lc {
+    class dimAligned;
+    typedef std::shared_ptr<dimAligned> dimAligned_SPtr;
+    typedef std::shared_ptr<const dimAligned> dimAligned_CSPtr;
 
-    class Circle;
-    typedef Circle_SPtr Circle_SPtr;
-    typedef std::shared_ptr<const Circle> Circle_CSPtr;
 
-    class Circle : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+    class dimAligned : public std::enable_shared_from_this<dimAligned>, public CADEntity, public geo::dimAligned {
         public:
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer);
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, const std::list<MetaType_CSPtr>& metaTypes);
-            Circle(const Circle_CSPtr other, bool sameID = false);
 
-        public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+        /**
+             * @brief dimAligned
+             * @param dimension
+             * @param extension_point1
+             * @param extension_point2
+             * @param layer
+             */
+            dimAligned(const Dimension dimension,
+                        const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                        const Layer_CSPtr layer);
+
+            /**
+             * @brief dimAligned
+             * @param dimension
+             * @param extension_point1
+             * @param extension_point2
+             * @param layer
+             * @param metaTypes
+             */
+            dimAligned(const Dimension dimension,
+                        const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                        const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
@@ -36,6 +51,7 @@ namespace lc {
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
             virtual const geo::Area boundingBox() const;
+
         public:
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -70,7 +86,7 @@ namespace lc {
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }
-
     };
 }
-#endif // CIRCLE_H
+
+#endif // DIMALIGNED_H

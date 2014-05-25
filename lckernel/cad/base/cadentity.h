@@ -50,6 +50,10 @@ namespace lc {
     typedef std::shared_ptr<Dimension> Dimension_SPtr;
     typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
 
+    class dimAligned;
+    typedef std::shared_ptr<dimAligned> dimAligned_SPtr;
+    typedef std::shared_ptr<const dimAligned> dimAligned_CSPtr;
+
     /**
      *Class that all CAD entities must inherit
      *
@@ -89,6 +93,7 @@ namespace lc {
             virtual void accept(Text_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(MText_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Dimension_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(dimAligned_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Spline_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(CADEntity_CSPtr, EntityVisitor&) const = 0;
             virtual void dispatch(EntityDispatch&) const = 0;
