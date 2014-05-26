@@ -35,7 +35,7 @@ class LcPainter {
         virtual void fill() = 0;
         virtual void reset_transformations() = 0;
         virtual unsigned char* data() = 0;
-        virtual void set_dash(const double *dashes, const int num_dashes, double offset, bool scaled) = 0;
+        virtual void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) = 0;
 
         // The functions below might get changed in future
         virtual void disable_antialias() = 0;

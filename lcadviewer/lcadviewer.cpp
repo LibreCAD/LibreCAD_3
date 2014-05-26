@@ -121,9 +121,9 @@ void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     if (!startSelectPos.isNull()) {
         bool occopies = startSelectPos.x() < event->pos().x();
         _docRenderer->makeSelectionDevice(
-                    std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
-                    std::abs(startSelectPos.x()-event->pos().x()),
-                    std::abs(startSelectPos.y()-event->pos().y()), occopies);
+            std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
+            std::abs(startSelectPos.x() - event->pos().x()),
+            std::abs(startSelectPos.y() - event->pos().y()), occopies);
     }
 
     update();

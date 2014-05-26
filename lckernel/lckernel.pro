@@ -68,7 +68,9 @@ SOURCES += lckernel.cpp \
     cad/geometry/geodimension.cpp \
     cad/primitive/dimension.cpp \
     cad/primitive/dimaligned.cpp \
-    cad/geometry/geodimaligned.cpp
+    cad/geometry/geodimaligned.cpp \
+    cad/geometry/geodimangular.cpp \
+    cad/primitive/dimangular.cpp
 
 
 HEADERS += \
@@ -134,4 +136,6 @@ HEADERS += \
     cad/geometry/geodimension.h \
     cad/primitive/dimension.h \
     cad/primitive/dimaligned.h \
-    cad/geometry/geodimaligned.h
+    cad/geometry/geodimaligned.h \
+    cad/primitive/dimangular.h \
+    cad/geometry/geodimangular.h

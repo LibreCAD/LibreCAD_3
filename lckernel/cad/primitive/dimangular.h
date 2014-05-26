@@ -1,66 +1,55 @@
-#ifndef LINE_H
-#define LINE_H
+#ifndef DIMANGULAR_H
+#define DIMANGULAR_H
 
-#include <list>
-
+#include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
+#include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geovector.h"
+#include "cad/geometry/geodimangular.h"
+#include "cad/geometry/geodimension.h"
 #include "cad/base/cadentity.h"
-#include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
-
-#include <cad/meta/layer.h>
+#include "cad/math/lcmath.h"
 
 namespace lc {
+    class DimAngular;
+    typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
+    typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
 
-    /*!
-     * \brief A line that can be put in a drawing
-     *
-     * A line is a graphics line item that can be put on a drawing using a CreateEntity operation.
-     *
-     * \sa CreateEntities::append
-     * \author R. van Twisk
-     * \date 2012-04-16
-     */
-    class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
+
+    class DimAngular : public std::enable_shared_from_this<DimAngular>, public CADEntity, public geo::DimAngular {
         public:
-            /*!
-             * \brief Construct a new line
-             *
-             * \param start,end Coordinate the line should start and end from
+
+            /**
+                 * @brief DimAngular
+                 * @param dimension
+                 * @param extension_point1
+                 * @param extension_point2
+                 * @param layer
+                 */
+            DimAngular(const Dimension& dimension,
+                       const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                       const geo::Coordinate& extension_point3,
+                       const geo::Coordinate& extension_point4,
+                       const Layer_CSPtr layer);
+
+            /**
+             * @brief DimAngular
+             * @param dimension
+             * @param extension_point1
+             * @param extension_point2
+             * @param layer
+             * @param metaTypes
              */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer);
-
-            /*!
-             * \brief Construct a new line
-             *
-             * \param start,end Coordinate the line should start and end from
-             * \param metaTypes A list of metatypes associated with this line
-             * \sa Color
-             * \sa LineWidth
-             * \sa MetaType
-             */
-            Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
-
-            /*!
-             * \brief Construct a new line
-             *
-             * \param vector Coordinate the line should start and end from
-             * \param metaTypes A list of metatypes associated with this line
-             * \sa Color
-             * \sa LineWidth
-             * \sa MetaType
-             */
-            Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
-
-            Line(const Line_CSPtr other, bool sameID = false);
-
-        public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const;
+            DimAngular(const Dimension& dimension,
+                       const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                       const geo::Coordinate& extension_point3,
+                       const geo::Coordinate& extension_point4,
+                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
@@ -68,8 +57,6 @@ namespace lc {
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
             virtual const geo::Area boundingBox() const;
-
-
 
         public:
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
@@ -108,9 +95,9 @@ namespace lc {
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }
-
-        private:
     };
-
 }
-#endif // LINE_H
+
+
+
+#endif // DIMANGULAR_H

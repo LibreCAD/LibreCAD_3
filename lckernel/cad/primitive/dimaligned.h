@@ -15,24 +15,24 @@
 
 namespace lc {
     class DimAligned;
-    typedef std::shared_ptr<DimAligned> dimAligned_SPtr;
-    typedef std::shared_ptr<const DimAligned> dimAligned_CSPtr;
+    typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
+    typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
 
 
     class DimAligned : public std::enable_shared_from_this<DimAligned>, public CADEntity, public geo::DimAligned {
         public:
 
-        /**
-             * @brief DimAligned
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             */
+            /**
+                 * @brief DimAligned
+                 * @param dimension
+                 * @param extension_point1
+                 * @param extension_point2
+                 * @param layer
+                 */
             DimAligned(const Dimension& dimension,
-                        const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
-                        const Layer_CSPtr layer);
+                       const Layer_CSPtr layer);
 
             /**
              * @brief DimAligned
@@ -42,10 +42,10 @@ namespace lc {
              * @param layer
              * @param metaTypes
              */
-            DimAligned(const Dimension &dimension,
-                        const geo::Coordinate& extension_point1,
+            DimAligned(const Dimension& dimension,
+                       const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
-                        const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
@@ -79,7 +79,10 @@ namespace lc {
             virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(dimAligned_CSPtr o, EntityVisitor& ei) const {
+            virtual void accept(DimAligned_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimAngular_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {

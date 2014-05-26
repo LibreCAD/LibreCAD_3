@@ -27,7 +27,8 @@ namespace lc {
             virtual void visit(Line_CSPtr, Spline_CSPtr);
             virtual void visit(Line_CSPtr, MText_CSPtr);
             virtual void visit(Line_CSPtr, Dimension_CSPtr);
-            virtual void visit(Line_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Line_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Line_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Circle_CSPtr, Line_CSPtr);
             virtual void visit(Circle_CSPtr, Circle_CSPtr);
@@ -37,7 +38,8 @@ namespace lc {
             virtual void visit(Circle_CSPtr, Spline_CSPtr);
             virtual void visit(Circle_CSPtr, MText_CSPtr);
             virtual void visit(Circle_CSPtr, Dimension_CSPtr);
-            virtual void visit(Circle_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Circle_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Circle_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Arc_CSPtr, Line_CSPtr);
             virtual void visit(Arc_CSPtr, Circle_CSPtr);
@@ -47,7 +49,8 @@ namespace lc {
             virtual void visit(Arc_CSPtr, Spline_CSPtr);
             virtual void visit(Arc_CSPtr, MText_CSPtr);
             virtual void visit(Arc_CSPtr, Dimension_CSPtr);
-            virtual void visit(Arc_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Arc_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Arc_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Ellipse_CSPtr, Line_CSPtr);
             virtual void visit(Ellipse_CSPtr, Circle_CSPtr);
@@ -57,7 +60,8 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr, Spline_CSPtr);
             virtual void visit(Ellipse_CSPtr, MText_CSPtr);
             virtual void visit(Ellipse_CSPtr, Dimension_CSPtr);
-            virtual void visit(Ellipse_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Ellipse_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Ellipse_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Text_CSPtr, Line_CSPtr);
             virtual void visit(Text_CSPtr, Circle_CSPtr);
@@ -67,7 +71,8 @@ namespace lc {
             virtual void visit(Text_CSPtr, Spline_CSPtr);
             virtual void visit(Text_CSPtr, MText_CSPtr);
             virtual void visit(Text_CSPtr, Dimension_CSPtr);
-            virtual void visit(Text_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Text_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Text_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Spline_CSPtr, Line_CSPtr);
             virtual void visit(Spline_CSPtr, Circle_CSPtr);
@@ -77,7 +82,8 @@ namespace lc {
             virtual void visit(Spline_CSPtr, Spline_CSPtr);
             virtual void visit(Spline_CSPtr, MText_CSPtr);
             virtual void visit(Spline_CSPtr, Dimension_CSPtr);
-            virtual void visit(Spline_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Spline_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Spline_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(MText_CSPtr, Line_CSPtr);
             virtual void visit(MText_CSPtr, Circle_CSPtr);
@@ -87,7 +93,8 @@ namespace lc {
             virtual void visit(MText_CSPtr, Spline_CSPtr);
             virtual void visit(MText_CSPtr, MText_CSPtr);
             virtual void visit(MText_CSPtr, Dimension_CSPtr);
-            virtual void visit(MText_CSPtr, dimAligned_CSPtr);
+            virtual void visit(MText_CSPtr, DimAligned_CSPtr);
+            virtual void visit(MText_CSPtr, DimAngular_CSPtr);
 
             virtual void visit(Dimension_CSPtr, Line_CSPtr);
             virtual void visit(Dimension_CSPtr, Circle_CSPtr);
@@ -97,17 +104,30 @@ namespace lc {
             virtual void visit(Dimension_CSPtr, Spline_CSPtr);
             virtual void visit(Dimension_CSPtr, MText_CSPtr);
             virtual void visit(Dimension_CSPtr, Dimension_CSPtr);
-            virtual void visit(Dimension_CSPtr, dimAligned_CSPtr);
+            virtual void visit(Dimension_CSPtr, DimAligned_CSPtr);
+            virtual void visit(Dimension_CSPtr, DimAngular_CSPtr);
 
-            virtual void visit(dimAligned_CSPtr, Line_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Circle_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Arc_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Ellipse_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Text_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Spline_CSPtr);
-            virtual void visit(dimAligned_CSPtr, MText_CSPtr);
-            virtual void visit(dimAligned_CSPtr, Dimension_CSPtr);
-            virtual void visit(dimAligned_CSPtr, dimAligned_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Line_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Circle_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Arc_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Ellipse_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Text_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Spline_CSPtr);
+            virtual void visit(DimAligned_CSPtr, MText_CSPtr);
+            virtual void visit(DimAligned_CSPtr, Dimension_CSPtr);
+            virtual void visit(DimAligned_CSPtr, DimAligned_CSPtr);
+            virtual void visit(DimAligned_CSPtr, DimAngular_CSPtr);
+
+            virtual void visit(DimAngular_CSPtr, Line_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Circle_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Arc_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Ellipse_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Text_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Spline_CSPtr);
+            virtual void visit(DimAngular_CSPtr, MText_CSPtr);
+            virtual void visit(DimAngular_CSPtr, Dimension_CSPtr);
+            virtual void visit(DimAngular_CSPtr, DimAligned_CSPtr);
+            virtual void visit(DimAngular_CSPtr, DimAngular_CSPtr);
 
             std::vector<geo::Coordinate> result() const;
         private:

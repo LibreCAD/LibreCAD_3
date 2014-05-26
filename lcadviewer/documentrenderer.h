@@ -113,9 +113,9 @@ class DocumentRenderer {
          */
         void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies);
 
-         /**
-         * @brief removeSelectionArea removed the colord selection area from the screen
-         */
+        /**
+        * @brief removeSelectionArea removed the colord selection area from the screen
+        */
         void removeSelectionArea();
 
         /**
@@ -169,7 +169,7 @@ class DocumentRenderer {
         unsigned int _deviceHeight;
 
         // When !=null it show's a selected area
-        lc::geo::Area *_selectedArea;
+        lc::geo::Area* _selectedArea;
         // When set to true, a entity will be selected if it intersects or occipies,
         // when false it will only select when the entity is fully contained
         bool _selectedAreaIntersects;
