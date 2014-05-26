@@ -57,6 +57,19 @@ void FTrim::visit(Text_CSPtr text) {
 
 }
 
+void FTrim::visit(Spline_CSPtr text) {
+
+}
+
+void FTrim::visit(MText_CSPtr text) {
+
+}
+
+void FTrim::visit(Dimension_CSPtr text) {
+
+}
+
+
 std::vector<CADEntity_CSPtr> FTrim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;

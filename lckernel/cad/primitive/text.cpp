@@ -57,7 +57,7 @@ CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, const doubl
     auto newText = std::make_shared<Text>(this->insertion_point().rotate(rotation_center, rotation_angle),
                                           this->second_point().rotate(rotation_center, rotation_angle),
                                           this->height(), this->text_value(),
-                                          this->width_rel(), this->angle() + rotation_angle, this->style(),
+                                          this->width_rel(), Math::correctAngle(this->angle() + rotation_angle), this->style(),
                                           this->textgeneration(), this->halign(), this->valign(), layer());
     newText->setID(this->id());
     return newText;
@@ -74,6 +74,6 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
 }
 
 const geo::Area Text::boundingBox() const {
-    // TODO create bounding box for spline
+    // TODO create bounding box for text
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
