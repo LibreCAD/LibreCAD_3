@@ -12,32 +12,37 @@
 
 #include <cad/const.h>
 
+#include <typeinfo>
+
 DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document), _zoomMin(0.05), _zoomMax(20.0), _selectedArea(nullptr), _selectedAreaIntersects(false) {
 
     document->addEntityEvent().connect<DocumentRenderer, &DocumentRenderer::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<DocumentRenderer, &DocumentRenderer::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentRenderer, &DocumentRenderer::on_commitProcessEvent>(this);
 
-
     // Render code for elected area
-    _selectedAreaPainter = [](LcPainter* painter, lc::geo::Area area , bool occupies) {
+    _selectedAreaPainter = [](LcPainter * painter, lc::geo::Area area , bool occupies) {
         double dashes[] = {10.0, 3.0, 3.0, 3.0};
         painter->save();
         painter->disable_antialias();
         painter->line_width(1.0);
+
         if (occupies) {
             painter->source_rgba(1.0, 0.2, 0.2, 0.6);
         } else {
             painter->source_rgba(0.2, 1.0, 0.2, 0.5);
         }
+
         painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
         painter->fill();
         painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
+
         if (occupies) {
             painter->source_rgba(1.0, 0.2, 0.2, 0.9);
         } else {
             painter->source_rgba(0.2, 1.0, 0.2, 0.8);
         }
+
         painter->set_dash(dashes, 4, 0, true);
         painter->stroke();
         painter->restore();
@@ -55,7 +60,7 @@ DocumentRenderer::~DocumentRenderer() {
         this->_deletePainterFunctor(i->second);
     }
 
-    if (_selectedArea!=nullptr) {
+    if (_selectedArea != nullptr) {
         delete _selectedArea;
     }
 }
@@ -66,12 +71,12 @@ void DocumentRenderer::newDeviceSize(unsigned int width, unsigned int height) {
         _deviceWidth = width;
         _deviceHeight = height;
 
-        double s=1.;
-        double x=0.;
-        double y=0.;
+        double s = 1.;
+        double x = 0.;
+        double y = 0.;
 
-        if (_cachedPainters.size()!=0) {
-            LcPainter *p =_cachedPainters.begin()->second;
+        if (_cachedPainters.size() != 0) {
+            LcPainter* p = _cachedPainters.begin()->second;
             s = p->scale();
             p->getTranslate(&x, &y);
         }
@@ -89,21 +94,22 @@ void DocumentRenderer::newDeviceSize(unsigned int width, unsigned int height) {
 
 LcPainter* DocumentRenderer::cachedPainter(PainterCacheType cacheType) {
 
-    double s=1.;
-    double x=0.;
-    double y=0.;
+    double s = 1.;
+    double x = 0.;
+    double y = 0.;
 
-    if (_cachedPainters.size()!=0) {
-        LcPainter *p =_cachedPainters.begin()->second;
+    if (_cachedPainters.size() != 0) {
+        LcPainter* p = _cachedPainters.begin()->second;
         s = p->scale();
         p->getTranslate(&x, &y);
     }
 
     if (_cachedPainters.count(cacheType) == 0) {
         _cachedPainters[cacheType] = _createPainterFunctor(_deviceWidth, _deviceHeight);
-       _cachedPainters[cacheType]->scale(s);
-       _cachedPainters[cacheType]->translate(x, y);
+        _cachedPainters[cacheType]->scale(s);
+        _cachedPainters[cacheType]->translate(x, y);
     }
+
     return _cachedPainters[cacheType];
 }
 
@@ -147,15 +153,15 @@ void DocumentRenderer::autoScale() {
         LcPainter* p = i->second;
         p->reset_transformations();
         p->scale(1.);
-        p->translate(_deviceWidth / 2., _deviceHeight/2.);
+        p->translate(_deviceWidth / 2., _deviceHeight / 2.);
     }
 
     calculateVisibleUserArea();
 }
 
 void DocumentRenderer::calculateVisibleUserArea() {
-    if (_cachedPainters.size()!=0) {
-        LcPainter *p =_cachedPainters.begin()->second;
+    if (_cachedPainters.size() != 0) {
+        LcPainter* p = _cachedPainters.begin()->second;
         double x = 0.;
         double y = 0.;
         double w = _deviceWidth;
@@ -172,7 +178,7 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
 
     LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
 
-    if (_visibleUserArea.width()==0) {
+    if (_visibleUserArea.width() == 0) {
         painter = cachedPainter(VIEWER_DRAWING);
         painter = cachedPainter(VIEWER_BACKGROUND);
         autoScale();
@@ -200,19 +206,11 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
     painter->source_rgb(1., 1., 1.);
     painter->lineWidthCompensation(0.5);
 
-    const auto data = _entityContainer.allEntities();
     LcDrawOptions lcDrawOptions;
-
-    for (auto item : data) {
-        const std::shared_ptr<const LCVDrawItem> di = std::dynamic_pointer_cast<const LCVDrawItem>(item);
-
-        if (di != nullptr) {
-            di->draw(painter, &lcDrawOptions, _visibleUserArea);
-        }
-    }
-
+    _entityContainer.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
+        di->draw(painter, &lcDrawOptions, _visibleUserArea);
+    });
     wPainter(painter);
-
 
     // Foreground
     painter = cachedPainter(VIEWER_DRAWING);
@@ -223,7 +221,7 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
     }
 
     // Draw selection rectangle
-    if (_selectedArea!=nullptr) {
+    if (_selectedArea != nullptr) {
         _selectedAreaPainter(painter, *_selectedArea, _selectedAreaIntersects);
     }
 
@@ -321,7 +319,8 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 }
 
 void DocumentRenderer::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
-    _entityContainer.remove(event.entity());
+    auto i = _entityContainer.entityByID(event.entity()->id());
+    _entityContainer.remove(i);
 }
 
 void DocumentRenderer::createPainterFunctor(const std::function<LcPainter *(const unsigned int, const unsigned int)>& createPainterFunctor) {
@@ -336,23 +335,27 @@ lc::geo::Area DocumentRenderer::bounds() const {
     return _entityContainer.bounds();
 }
 
-void DocumentRenderer::makeSelection(double x, double y, double w, double h, bool occupies) {
-    if (_selectedArea!=nullptr) {
+void DocumentRenderer::makeSelection(double x, double y, double w, double h, bool occupies, bool addTo) {
+    if (_selectedArea != nullptr) {
         delete _selectedArea;
     }
-    _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x,y), w, h);
+
+    _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
     _selectedAreaIntersects = occupies;
+
+    // Remove current selection
+    if (!addTo) {
+        _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+            di->selected(false);
+        });
+    }
+    _entityContainer.entitiesByArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        di->selected(true);
+    });
 }
 
-void DocumentRenderer::makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies) {
-
-    if (_selectedArea!=nullptr) {
-        delete _selectedArea;
-    }
-    _selectedAreaIntersects = occupies;
-
+void DocumentRenderer::makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo) {
     LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
-
     // Find mouse position in user space
     double dx = x;
     double dy = y;
@@ -360,17 +363,19 @@ void DocumentRenderer::makeSelectionDevice(unsigned int x, unsigned int y, unsig
     double dh = h;
     painter->device_to_user(&dx, &dy);
     painter->device_to_user_distance(&dw, &dh);
-
-    _selectedArea = new lc::geo::Area(lc::geo::Coordinate(dx,dy), dw, dh);
+    makeSelection(dx, dy, dw, dh, occupies, addTo);
 }
 
 void DocumentRenderer::removeSelectionArea() {
-    if (_selectedArea!=nullptr) {
+    if (_selectedArea != nullptr) {
         delete _selectedArea;
         _selectedArea = nullptr;
     }
 }
 
 void DocumentRenderer::removeSelection() {
+    _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        di->selected(false);
+    });
     removeSelectionArea();
 }

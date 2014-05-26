@@ -42,7 +42,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void fill();
         virtual inline void reset_transformations();
         virtual inline unsigned char* data();
-        virtual inline void set_dash(const double *dashes, const int num_dashes, double offset, bool scaled);
+        virtual inline void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled);
 
         // The functions below might get changed in future
         virtual inline void disable_antialias();

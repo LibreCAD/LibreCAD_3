@@ -1,6 +1,7 @@
 #ifndef LCVIEWERDRAWITEM_H
 #define LCVIEWERDRAWITEM_H
 
+#include <memory>
 /**
   * LCADCairoViewerDrawItem is a abstract class that any class needs to implement if it want's to draw something on backgrounds or foregrounds
   * of a LCADCairoViewer document
@@ -21,7 +22,9 @@ namespace lc {
 class LCVDrawItem {
     public:
         LCVDrawItem(bool selectable);
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const = 0;
+        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {
+            // Implement's nothing
+        }
 
         bool selectable() const;
         bool selected() const;
@@ -30,6 +33,11 @@ class LCVDrawItem {
         bool _selectable;
         bool _selected;
 };
+
+
+class LCVDrawItem;
+typedef std::shared_ptr<LCVDrawItem> LCVDrawItem_SPtr;
+typedef std::shared_ptr<const LCVDrawItem> LCVDrawItem_CSPtr;
 
 
 #endif

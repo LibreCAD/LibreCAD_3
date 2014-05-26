@@ -98,9 +98,10 @@ class DocumentRenderer {
          * @param y
          * @param w
          * @param y
-         * @param foo
+         * @param occupies
+         * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelection(double x, double y, double w, double h, bool occupies);
+        void makeSelection(double x, double y, double w, double h, bool occupies, bool addTo=false);
 
         /**
          * @brief makeSelectionDevice
@@ -110,12 +111,13 @@ class DocumentRenderer {
          * @param w
          * @param h
          * @param occupies
+         * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies);
+        void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo=false);
 
-         /**
-         * @brief removeSelectionArea removed the colord selection area from the screen
-         */
+        /**
+        * @brief removeSelectionArea removed the colord selection area from the screen
+        */
         void removeSelectionArea();
 
         /**
@@ -147,7 +149,7 @@ class DocumentRenderer {
         lc::Document* _document;
 
         // Local entity container
-        lc::EntityContainer _entityContainer;
+        lc::EntityContainer<lc::CADEntity_SPtr> _entityContainer;
 
         // Background and forground items
         std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;
@@ -172,7 +174,7 @@ class DocumentRenderer {
         unsigned int _deviceHeight;
 
         // When !=null it show's a selected area
-        lc::geo::Area *_selectedArea;
+        lc::geo::Area* _selectedArea;
         // When set to true, a entity will be selected if it intersects or occipies,
         // when false it will only select when the entity is fully contained
         bool _selectedAreaIntersects;

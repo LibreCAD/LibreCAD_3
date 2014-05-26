@@ -22,7 +22,7 @@ void StorageManagerImpl::insertEntity(const CADEntity_CSPtr entity) {
     _entities.insert(entity);
 }
 
-void StorageManagerImpl::insertEntityContainer(const EntityContainer& entities) {
+void StorageManagerImpl::insertEntityContainer(const EntityContainer<CADEntity_CSPtr>& entities) {
     _entities.combine(entities);
 }
 
@@ -34,7 +34,7 @@ CADEntity_CSPtr StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
     return _entities.entityByID(id);
 }
 
-EntityContainer StorageManagerImpl::entitiesByLayer(const Layer_CSPtr layer) const {
+EntityContainer<CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(const Layer_CSPtr layer) const {
     return _entities.entitiesByLayer(layer);
 }
 
@@ -46,7 +46,7 @@ std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
     return _layers;
 }
 
-EntityContainer StorageManagerImpl::entityContainer() const {
+EntityContainer<CADEntity_CSPtr> StorageManagerImpl::entityContainer() const {
     return _entities;
 }
 

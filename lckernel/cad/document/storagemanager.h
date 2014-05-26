@@ -4,19 +4,19 @@
 #include "cad/base/id.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
+#include "cad/dochelpers/entitycontainer.h"
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
      */
-    class EntityContainer;
     class Layer;
     class StorageManager {
         public:
             virtual void insertEntity(const CADEntity_CSPtr) = 0;
-            virtual void insertEntityContainer(const EntityContainer&) = 0;
+            virtual void insertEntityContainer(const EntityContainer<CADEntity_CSPtr>&) = 0;
             virtual void removeEntity(const CADEntity_CSPtr) = 0;
             virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const = 0;
+            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const = 0;
 
             /*!
              * \brief layer
@@ -37,7 +37,7 @@ namespace lc {
              * return a copy of all entities managed within the storage manager
              * \return
              */
-            virtual EntityContainer entityContainer() const = 0;
+            virtual EntityContainer<CADEntity_CSPtr> entityContainer() const = 0;
 
             /**
              * @brief optimise

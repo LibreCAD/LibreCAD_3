@@ -130,14 +130,14 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) = 0;
+            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) = 0;
 
             /**
              * @brief entityContainer
              * Return a copy of all entities within the document
              * @return
              */
-            virtual EntityContainer entityContainer() = 0;
+            virtual EntityContainer<CADEntity_CSPtr> entityContainer() = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

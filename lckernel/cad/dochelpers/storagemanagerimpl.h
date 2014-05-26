@@ -31,18 +31,18 @@ namespace lc {
 
         public:
             virtual void insertEntity(const CADEntity_CSPtr);
-            virtual void insertEntityContainer(const EntityContainer&);
+            virtual void insertEntityContainer(const EntityContainer<CADEntity_CSPtr>&);
             virtual void removeEntity(const CADEntity_CSPtr);
             virtual CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
-            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer) const;
+            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
 
             virtual Layer_CSPtr layerByName(const std::string& layerName) const;
             virtual std::map<std::string, Layer_CSPtr> allLayers() const;
 
-            virtual EntityContainer entityContainer() const;
+            virtual EntityContainer<CADEntity_CSPtr> entityContainer() const;
             virtual void optimise();
         private:
-            EntityContainer _entities;
+            EntityContainer<CADEntity_CSPtr> _entities;
             std::map<std::string, Layer_CSPtr> _layers;
     };
 }
