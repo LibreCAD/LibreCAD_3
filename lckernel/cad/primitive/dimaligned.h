@@ -14,35 +14,35 @@
 #include "cad/math/lcmath.h"
 
 namespace lc {
-    class dimAligned;
-    typedef std::shared_ptr<dimAligned> dimAligned_SPtr;
-    typedef std::shared_ptr<const dimAligned> dimAligned_CSPtr;
+    class DimAligned;
+    typedef std::shared_ptr<DimAligned> dimAligned_SPtr;
+    typedef std::shared_ptr<const DimAligned> dimAligned_CSPtr;
 
 
-    class dimAligned : public std::enable_shared_from_this<dimAligned>, public CADEntity, public geo::dimAligned {
+    class DimAligned : public std::enable_shared_from_this<DimAligned>, public CADEntity, public geo::DimAligned {
         public:
 
         /**
-             * @brief dimAligned
+             * @brief DimAligned
              * @param dimension
              * @param extension_point1
              * @param extension_point2
              * @param layer
              */
-            dimAligned(const Dimension& dimension,
+            DimAligned(const Dimension& dimension,
                         const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
                         const Layer_CSPtr layer);
 
             /**
-             * @brief dimAligned
+             * @brief DimAligned
              * @param dimension
              * @param extension_point1
              * @param extension_point2
              * @param layer
              * @param metaTypes
              */
-            dimAligned(const Dimension &dimension,
+            DimAligned(const Dimension &dimension,
                         const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
                         const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);

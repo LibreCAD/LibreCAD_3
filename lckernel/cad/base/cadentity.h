@@ -50,9 +50,9 @@ namespace lc {
     typedef std::shared_ptr<Dimension> Dimension_SPtr;
     typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
 
-    class dimAligned;
-    typedef std::shared_ptr<dimAligned> dimAligned_SPtr;
-    typedef std::shared_ptr<const dimAligned> dimAligned_CSPtr;
+    class DimAligned;
+    typedef std::shared_ptr<DimAligned> dimAligned_SPtr;
+    typedef std::shared_ptr<const DimAligned> dimAligned_CSPtr;
 
     /**
      *Class that all CAD entities must inherit

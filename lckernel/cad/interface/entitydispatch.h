@@ -12,7 +12,7 @@ namespace lc {
     class Spline;
     class MText;
     class Dimension;
-    class dimAligned;
+    class DimAligned;
     class EntityDispatch {
         public:
 

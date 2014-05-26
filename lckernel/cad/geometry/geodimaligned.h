@@ -10,16 +10,16 @@
 namespace lc {
     namespace geo {
 
-        class dimAligned : public Dimension  {
+        class DimAligned : public Dimension  {
             public:
 
                 /**
-                 * @brief dimAligned
+                 * @brief DimAligned
                  * @param dimension object of dimension class.
                  * @param extension_point1
                  * @param extension_point2
                  */
-                dimAligned(const Dimension& dimension, const geo::Coordinate& extension_point1, const geo::Coordinate& extension_point2);
+                DimAligned(const Dimension& dimension, const geo::Coordinate& extension_point1, const geo::Coordinate& extension_point2);
 
                 /**
                  * @brief extension_point1

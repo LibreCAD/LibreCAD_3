@@ -37,9 +37,9 @@ namespace lc {
     typedef std::shared_ptr<Dimension> Dimension_SPtr;
     typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
 
-    class dimAligned;
-    typedef std::shared_ptr<dimAligned> dimAligned_SPtr;
-    typedef std::shared_ptr<const dimAligned> dimAligned_CSPtr;
+    class DimAligned;
+    typedef std::shared_ptr<DimAligned> dimAligned_SPtr;
+    typedef std::shared_ptr<const DimAligned> dimAligned_CSPtr;
 
     class CADEntity;
     typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
@@ -130,14 +130,14 @@ namespace lc {
             virtual void visit(Dimension_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Dimension_CSPtr, dimAligned_CSPtr) = 0;
 
-        virtual void visit(dimAligned_CSPtr dimAligned, Line_CSPtr line) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Circle_CSPtr circle) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Arc_CSPtr arc) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Ellipse_CSPtr ellipse) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Text_CSPtr text) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Spline_CSPtr spline) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, MText_CSPtr mtext) = 0;
-        virtual void visit(dimAligned_CSPtr dimAligned, Dimension_CSPtr) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Line_CSPtr line) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Circle_CSPtr circle) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Arc_CSPtr arc) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Ellipse_CSPtr ellipse) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Text_CSPtr text) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Spline_CSPtr spline) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, MText_CSPtr mtext) = 0;
+        virtual void visit(dimAligned_CSPtr DimAligned, Dimension_CSPtr) = 0;
         virtual void visit(dimAligned_CSPtr, dimAligned_CSPtr) = 0;
 
     };

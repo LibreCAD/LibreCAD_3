@@ -100,7 +100,7 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
-                friend class dimAligned;
+                friend class DimAligned;
             private:
                 const Coordinate _definition_point, _middle_of_text;
                 double _angle, _linespacingfactor;
