@@ -11,6 +11,7 @@
 #include "cad/geometry/geodimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
+#include "cad/math/lcmath.h"
 
 namespace lc {
     class Dimension;

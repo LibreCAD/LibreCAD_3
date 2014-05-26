@@ -8,8 +8,10 @@
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geodimaligned.h"
+#include "cad/primitive/dimaligned.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
+#include "cad/math/lcmath.h"
 
 namespace lc {
     class dimAligned;
@@ -27,7 +29,7 @@ namespace lc {
              * @param extension_point2
              * @param layer
              */
-            dimAligned(const Dimension dimension,
+            dimAligned(const Dimension& dimension,
                         const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
                         const Layer_CSPtr layer);
@@ -40,7 +42,7 @@ namespace lc {
              * @param layer
              * @param metaTypes
              */
-            dimAligned(const Dimension dimension,
+            dimAligned(const Dimension &dimension,
                         const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
                         const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);

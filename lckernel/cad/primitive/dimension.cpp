@@ -49,10 +49,10 @@ CADEntity_CSPtr Dimension::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Dimension::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto newDimension = std::make_shared<Dimension>(this->definition_point().rotate(rotation_center, rotation_angle), this->middle_of_text(),
+    auto newDimension = std::make_shared<Dimension>(this->definition_point().rotate(rotation_center, rotation_angle), this->middle_of_text().rotate(rotation_center, rotation_angle),
                                                     this->valign(), this->halign(),
                                                     this->lineSpacingStyle(), this->lineSpacingFactor(),
-                                                    this->text_value(), this->style(), this->angle(), layer());
+                                                    this->text_value(), this->style(), Math::correctAngle(this->angle() + rotation_angle), layer());
     newDimension->setID(this->id());
     return newDimension;
 }

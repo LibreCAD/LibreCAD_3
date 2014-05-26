@@ -19,19 +19,19 @@ namespace lc {
                  * @param extension_point1
                  * @param extension_point2
                  */
-                dimAligned(const Dimension dimension, const geo::Coordinate& extension_point1, const geo::Coordinate& extension_point2);
+                dimAligned(const Dimension& dimension, const geo::Coordinate& extension_point1, const geo::Coordinate& extension_point2);
 
                 /**
                  * @brief extension_point1
                  * @return Coordinate extension_point1
                  */
-                const Coordinate extension_point1();
+                Coordinate extension_point1() const;
 
                 /**
                  * @brief extension_point2
                  * @return Coordinate extension_point2
                  */
-                const Coordinate extension_point2();
+                Coordinate extension_point2() const;
 
             private:
                 const Coordinate _extension_point1, _extension_point2;
