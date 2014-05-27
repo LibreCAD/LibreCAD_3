@@ -5,6 +5,7 @@
 #include "cad/primitive/circle.h"
 #include <drawitems/lcdrawoptions.h>
 #include <drawitems/lcvcircle.h>
+#include <drawitems/lcvarc.h>
 #include <drawitems/lcvdrawitem.h>
 #include <drawitems/lcvline.h>
 #include <cad/dochelpers/quadtree.h>
@@ -275,36 +276,30 @@ void DocumentRenderer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
 void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
-    const lc::Line_CSPtr line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
-
+    const auto line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
     if (line != nullptr) {
-        _entityContainer.insert(std::make_shared<LCVLine>(line));
+        auto newLine = std::make_shared<LCVLine>(line);
+        _entityContainer.insert(newLine);
         return;
     }
 
     // Add a circle
-    const lc::Circle_CSPtr circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
-
+    const auto circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
-        newCircle->selected(true);
-        _entityContainer.insert(newCircle);
+        _entityContainer.insert(std::make_shared<LCVCircle>(circle));
+        return;
+    }
+
+    // Add a Arc
+    const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
+    if (arc != nullptr) {
+        auto newArc = std::make_shared<LCVArc>(arc);
+        _entityContainer.insert(newArc);
         return;
     }
 
     /*
-
-    // Add a Arc
-    const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
-
-    if (arc != nullptr) {
-        LCArcItem* foo = new LCArcItem(arc);
-        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-        scene->addItem(foo);
-        _activeGraphicsItems.insert(arc->id(), foo);
-        return;
-    }
-
     // Add Ellipse
     const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 

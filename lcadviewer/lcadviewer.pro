@@ -67,7 +67,8 @@ HEADERS     = lcadviewerplugin.h \
     drawitems/lcvdrawitem.h \
     drawitems/lcvline.h \
     drawitems/lcvcircle.h \
-    drawitems/lcdrawoptions.h
+    drawitems/lcdrawoptions.h \
+    drawitems/lcvarc.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
@@ -80,5 +81,6 @@ SOURCES     = lcadviewerplugin.cpp \
     drawitems/lcvdrawitem.cpp \
     drawitems/lcvline.cpp \
     drawitems/lcvcircle.cpp \
-    drawitems/lcdrawoptions.cpp
+    drawitems/lcdrawoptions.cpp \
+    drawitems/lcvarc.cpp
 
