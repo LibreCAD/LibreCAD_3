@@ -1,4 +1,4 @@
-#ifndef DIMANGULAR_H
+ #ifndef DIMANGULAR_H
 #define DIMANGULAR_H
 
 #include "cad/const.h"
@@ -87,6 +87,15 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(DimAngular_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimDiametric_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimLinear_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimRadial_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {

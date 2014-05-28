@@ -114,6 +114,15 @@ namespace lc {
             virtual void accept(DimAngular_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
+            virtual void accept(DimDiametric_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimLinear_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(DimRadial_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }

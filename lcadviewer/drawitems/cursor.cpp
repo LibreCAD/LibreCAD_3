@@ -54,6 +54,7 @@ void Cursor::on_Draw_Event(const DrawEvent& event) {
     event.painter()->source_rgba(_yAxisColor.redF(), _yAxisColor.greenF(), _yAxisColor.blueF(), _yAxisColor.alphaF());
     event.painter()->stroke();
 
+
     event.painter()->restore();
 
 }

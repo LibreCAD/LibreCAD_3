@@ -77,6 +77,18 @@ void FTrim::visit(DimAngular_CSPtr dimangular) {
 
 }
 
+void FTrim::visit(DimDiametric_CSPtr dimdiametric) {
+
+}
+
+void FTrim::visit(DimLinear_CSPtr dimlinear) {
+
+}
+
+void FTrim::visit(DimRadial_CSPtr dimrad) {
+
+}
+
 std::vector<CADEntity_CSPtr> FTrim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;

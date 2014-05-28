@@ -70,7 +70,13 @@ SOURCES += lckernel.cpp \
     cad/primitive/dimaligned.cpp \
     cad/geometry/geodimaligned.cpp \
     cad/geometry/geodimangular.cpp \
-    cad/primitive/dimangular.cpp
+    cad/primitive/dimangular.cpp \
+    cad/primitive/dimlinear.cpp \
+    cad/primitive/dimradial.cpp \
+    cad/primitive/dimdiametric.cpp \
+    cad/geometry/geodimlinear.cpp \
+    cad/geometry/geodimradial.cpp \
+    cad/geometry/geodimdiametric.cpp
 
 
 HEADERS += \
@@ -138,4 +144,10 @@ HEADERS += \
     cad/primitive/dimaligned.h \
     cad/geometry/geodimaligned.h \
     cad/primitive/dimangular.h \
-    cad/geometry/geodimangular.h
+    cad/geometry/geodimangular.h \
+    cad/geometry/geodimdiametric.h \
+    cad/geometry/geodimlinear.h \
+    cad/geometry/geodimradial.h \
+    cad/primitive/dimdiametric.h \
+    cad/primitive/dimradial.h \
+    cad/primitive/dimlinear.h
