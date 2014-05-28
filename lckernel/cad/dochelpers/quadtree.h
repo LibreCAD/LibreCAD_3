@@ -226,7 +226,7 @@ namespace lc {
              * Allow's to walk over each node within the tree specifying a function that can be called for each QuadTreeSub
              * @param foo
              */
-            void walkQuad(const std::function<void(const QuadTreeSub&)>& func) {
+            void walkQuad(const std::function<void(const QuadTreeSub<E>&)>& func) {
                 func(*this);
 
                 if (_nodes[0] != nullptr) {

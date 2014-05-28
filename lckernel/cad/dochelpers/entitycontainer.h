@@ -191,10 +191,10 @@ namespace lc {
             }
 
             //DOn't show underlaying impementation
-            /*
-            QuadTree* tree() {
+
+            QuadTree<CT>* tree() {
                 return _tree;
-            };*/
+            };
 
             /**
              * @brief bound
