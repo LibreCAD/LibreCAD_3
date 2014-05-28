@@ -41,8 +41,8 @@ namespace lc {
             double oblique() const;
 
             private:
-                Coordinate _extension_point1;
-                Coordinate _extension_point2;
+                const Coordinate _extension_point1;
+                const Coordinate _extension_point2;
                 double _oblique;
         };
     }
