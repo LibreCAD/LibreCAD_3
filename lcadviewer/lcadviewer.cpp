@@ -140,7 +140,8 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
     startSelectPos = QPoint();
-    _docRenderer->removeSelection();
+    _docRenderer->removeSelectionArea();
+    update();
 }
 
 

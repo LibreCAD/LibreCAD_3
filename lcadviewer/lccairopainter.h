@@ -47,6 +47,8 @@ class LcCairoPainter : public LcPainter {
         // The functions below might get changed in future
         virtual inline void disable_antialias();
         virtual inline void enable_antialias();
+
+        virtual void getTranslate(double* x, double* y);
     private:
         cairo_surface_t* _surface;
         cairo_t* _cr;

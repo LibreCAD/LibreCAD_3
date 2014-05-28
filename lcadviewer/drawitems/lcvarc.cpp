@@ -1,11 +1,11 @@
-#include "lcvcircle.h"
+#include "lcvarc.h"
 #include "lcpainter.h"
 #include "lcdrawoptions.h"
 
-LCVCircle::LCVCircle(const lc::Circle_CSPtr circle) : LCVDrawItem(true), lc::Circle(circle, true) {
+LCVArc::LCVArc(const lc::Arc_CSPtr arc) : LCVDrawItem(true), lc::Arc(arc, true) {
 }
 
-void LCVCircle::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCVArc::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     if (this->selected()) {
@@ -19,9 +19,8 @@ void LCVCircle::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::
         );
     }
 
-
     if (radius() /** painter->scale() > 5 */) {
-        painter->circle(center().x(), center().y(), radius());
+        painter->arc(center().x(), center().y(), radius(), startAngle(), endAngle());
         painter->stroke();
     }
 

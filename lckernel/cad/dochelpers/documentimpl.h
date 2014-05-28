@@ -39,9 +39,9 @@ namespace lc {
              * @param layer
              * @return
              */
-            virtual EntityContainer entitiesByLayer(const Layer_CSPtr layer);
+            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
 
-            virtual EntityContainer entityContainer();
+            virtual EntityContainer<CADEntity_CSPtr> entityContainer();
         protected:
             /*!
              * \brief execute's a operation

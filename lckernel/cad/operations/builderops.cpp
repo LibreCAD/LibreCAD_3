@@ -176,7 +176,7 @@ std::vector<CADEntity_CSPtr> SelectByLayer::process(
     std::vector<CADEntity_CSPtr>&,
     std::vector<CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    EntityContainer c = storageManager->entitiesByLayer(_layer);
+    auto c = storageManager->entitiesByLayer(_layer);
 
     return c.allEntities(SHRT_MAX);
 }

@@ -22,7 +22,7 @@ namespace lc {
         public:
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer);
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
-
+            Arc(const Arc_CSPtr other, bool sameID = false);
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;

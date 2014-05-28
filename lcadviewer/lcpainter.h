@@ -40,6 +40,9 @@ class LcPainter {
         // The functions below might get changed in future
         virtual void disable_antialias() = 0;
         virtual void enable_antialias() = 0;
+        // We should consider returning a matrix?
+        virtual void getTranslate(double* x, double* y) = 0;
+
 
 };
 
