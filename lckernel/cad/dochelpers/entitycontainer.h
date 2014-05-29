@@ -191,10 +191,10 @@ namespace lc {
             }
 
             //DOn't show underlaying impementation
-
+            /*
             QuadTree<CT>* tree() {
                 return _tree;
-            };
+            }; */
 
             /**
              * @brief bound
@@ -202,7 +202,7 @@ namespace lc {
              * @return
              */
             lc::geo::Area bounds() const {
-                _tree->bounds();
+                return _tree->bounds();
             }
 
             /**
@@ -214,7 +214,17 @@ namespace lc {
             }
 
 
-
+            /**
+             * Each allows to run a function of all set's of object's within this container
+             *
+             * Example:
+             * <pre>
+             *  LcDrawOptions lcDrawOptions;
+             *  _entityContainer.each< LCVDrawItem >([&](LCVDrawItem_SPtr item) {
+             *      item->draw(painter, &lcDrawOptions, _visibleUserArea);
+             *  });
+             * </pre>
+             */
             template<typename U, typename T> void each(T func) {
                 _tree->template each< U>(func);
             }
