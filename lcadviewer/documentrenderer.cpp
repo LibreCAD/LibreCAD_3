@@ -231,6 +231,7 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
 
     /* Draw QuadTree (for debugging) */
 
+    /*
     painter->save();
     painter->line_width(1.0);
     painter->disable_antialias();
@@ -248,7 +249,7 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
         //painter->stroke();
     });
     painter->stroke();
-    painter->restore();
+    painter->restore(); */
 
     wPainter(painter);
 
