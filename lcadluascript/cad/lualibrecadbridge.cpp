@@ -12,6 +12,8 @@ extern "C"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/circle.h"
+#include "cad/primitive/arc.h"
+#include "cad/primitive/ellipse.h"
 #include "cad/operations/builder.h"
 #include "cad/operations/builderops.h"
 #include "cad/dochelpers/documentimpl.h"
@@ -83,6 +85,14 @@ void lua_openlckernel(lua_State* L) {
 
                                                     .beginExtendClass <Circle, CADEntity> ("Circle")
                                                     .addConstructor(LUA_SP(Circle_SPtr), LUA_ARGS(const geo::Coordinate & center, double radius, const std::shared_ptr<Layer> layer))
+                                                    .endClass()
+
+                                                    .beginExtendClass <Arc, CADEntity> ("Arc")
+                                                    .addConstructor(LUA_SP(Arc_SPtr), LUA_ARGS(const geo::Coordinate & center, double radius, const double startAngle, const double endAngle, const std::shared_ptr<Layer> layer))
+                                                    .endClass()
+
+                                                    .beginExtendClass <Ellipse, CADEntity> ("Ellipse")
+                                                    .addConstructor(LUA_SP(Ellipse_SPtr), LUA_ARGS(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer))
                                                     .endClass()
 
                                                     .beginClass <operation::DocumentOperation> ("DocumentOperation")

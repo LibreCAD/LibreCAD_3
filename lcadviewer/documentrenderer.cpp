@@ -3,11 +3,13 @@
 #include "cad/geometry/geoarea.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/circle.h"
+#include "cad/primitive/ellipse.h"
 #include <drawitems/lcdrawoptions.h>
 #include <drawitems/lcvcircle.h>
 #include <drawitems/lcvarc.h>
 #include <drawitems/lcvdrawitem.h>
 #include <drawitems/lcvline.h>
+#include <drawitems/lcvellipse.h>
 #include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 
@@ -294,18 +296,23 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
         return;
     }
 
-    /*
-    // Add Ellipse
-    const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
+    // Add Ellipse
+    //const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
+
+    auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
+//        LCEllipseItem* foo = new LCEllipseItem(ellipse);
+//        foo->setFlags(QGraphicsItem::ItemIsSelectable);
+//        scene->addItem(foo);
+//        _activeGraphicsItems.insert(ellipse->id(), foo);
+//        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
+//       _entityContainer.insert(newEllipse);
     if (ellipse != nullptr) {
-        LCEllipseItem* foo = new LCEllipseItem(ellipse);
-        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-        scene->addItem(foo);
-        _activeGraphicsItems.insert(ellipse->id(), foo);
+        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
+        _entityContainer.insert(newEllipse);
         return;
     }
-    */
+
 }
 
 void DocumentRenderer::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {

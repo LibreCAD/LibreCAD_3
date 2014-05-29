@@ -71,10 +71,11 @@ void LineCreateOperation::on_drawEvent(const DrawEvent& event) {
     if (s == true && e == false) {
         //event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
     }
-
     if (s == true && e == true) {
         //event.painter()->drawLine(_startPoint.pointF(), _endPoint.pointF());
+        //event.painter()->drawLine();
     }
+
 }
 
 void LineCreateOperation::on_SnapPoint_Event(const SnapPointEvent& event) {

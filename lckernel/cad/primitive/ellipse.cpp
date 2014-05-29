@@ -14,6 +14,13 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
     : CADEntity(layer, metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
+Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Ellipse(this->center(), this->majorP(), this->minorRadius(), this->startAngle(), this->endAngle()) {
+    if (sameID) {
+        this->setID(other->id());
+    }
+}
+
+
 CADEntity_CSPtr Ellipse::move(const geo::Coordinate& offset) const {
     auto newellipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
                                                 this->startAngle(), this->endAngle(), layer());
