@@ -1,5 +1,5 @@
 #include "cad/primitive/circle.h"
-
+#include "cad/primitive/ellipse.h"
 #include <cmath>
 #include <algorithm>
 #include "cad/interface/metatype.h"
@@ -74,7 +74,16 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Co
     // TODO return ellipse if scalefactor.x != scalefactor.y
     auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
     newCircle->setID(this->id());
-    return newCircle;
+    //    return newCircle;
+
+    if (fabs(scale_factor.x() - scale_factor.y()) > TOLERANCE) {
+        auto newEllipse = std::make_shared<Ellipse>(this->center(), geo::Coordinate(this->radius(), 1.0), 1.0, 0., 0., layer());
+        newEllipse->setID(this->id());
+        return newEllipse;
+    } else {
+        return newCircle;
+    }
+
 }
 
 const geo::Area Circle::boundingBox() const {

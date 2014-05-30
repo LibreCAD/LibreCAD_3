@@ -164,6 +164,7 @@ namespace lc {
              * \return
              */
             virtual Layer_CSPtr layer() const;
+
         private:
             Layer_CSPtr _layer;
 

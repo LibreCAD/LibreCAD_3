@@ -91,12 +91,3 @@ GuiOperation_SPtr CircleCreateOperation::next() const {
     CircleCreateOperation* lco = new CircleCreateOperation(document(), _storageManager, _layer, this->_graphicsView, this->_snapManager);
     return GuiOperation_SPtr(lco);
 }
-
-
-
-
-
-
-
-
-
