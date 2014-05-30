@@ -74,11 +74,11 @@ namespace lc {
             virtual void visit(Line_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Line_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Line_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Line_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Line_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Line_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Line_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Line_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Line_CSPtr, DimRadial_CSPtr) = 0;
 
-            virtual void visit(Circle_CSPtr , Line_CSPtr ) = 0;
+            virtual void visit(Circle_CSPtr , Line_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Arc_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Ellipse_CSPtr) = 0;
@@ -88,9 +88,9 @@ namespace lc {
             virtual void visit(Circle_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Circle_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Circle_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Circle_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Circle_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Circle_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Circle_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Arc_CSPtr arc, Line_CSPtr line) = 0;
             virtual void visit(Arc_CSPtr arc, Circle_CSPtr circle) = 0;
@@ -102,9 +102,9 @@ namespace lc {
             virtual void visit(Arc_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Arc_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Arc_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Arc_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Arc_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Arc_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Arc_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Arc_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Arc_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Ellipse_CSPtr ellipse, Line_CSPtr line) = 0;
             virtual void visit(Ellipse_CSPtr ellipse, Circle_CSPtr circle) = 0;
@@ -116,9 +116,9 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Ellipse_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Ellipse_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Ellipse_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Ellipse_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Ellipse_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Ellipse_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Text_CSPtr text, Line_CSPtr line) = 0;
             virtual void visit(Text_CSPtr text, Circle_CSPtr circle) = 0;
@@ -130,9 +130,9 @@ namespace lc {
             virtual void visit(Text_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Text_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Text_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Text_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Text_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Text_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Text_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Text_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Text_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Spline_CSPtr Spline, Line_CSPtr line) = 0;
             virtual void visit(Spline_CSPtr Spline, Circle_CSPtr circle) = 0;
@@ -144,9 +144,9 @@ namespace lc {
             virtual void visit(Spline_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Spline_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Spline_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Spline_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Spline_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Spline_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Spline_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Spline_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Spline_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(MText_CSPtr mtext, Line_CSPtr line) = 0;
             virtual void visit(MText_CSPtr mtext, Circle_CSPtr circle) = 0;
@@ -158,9 +158,9 @@ namespace lc {
             virtual void visit(MText_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(MText_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(MText_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(MText_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(MText_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(MText_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(MText_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(MText_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(MText_CSPtr, DimRadial_CSPtr) = 0;
 
 
             virtual void visit(Dimension_CSPtr Dimension, Line_CSPtr line) = 0;
@@ -173,9 +173,9 @@ namespace lc {
             virtual void visit(Dimension_CSPtr, Dimension_CSPtr) = 0;
             virtual void visit(Dimension_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(Dimension_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(Dimension_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(Dimension_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(Dimension_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(Dimension_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(Dimension_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(Dimension_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimAligned_CSPtr DimAligned, Line_CSPtr line) = 0;
             virtual void visit(DimAligned_CSPtr DimAligned, Circle_CSPtr circle) = 0;
@@ -187,9 +187,9 @@ namespace lc {
             virtual void visit(DimAligned_CSPtr DimAligned, Dimension_CSPtr) = 0;
             virtual void visit(DimAligned_CSPtr, DimAligned_CSPtr) = 0;
             virtual void visit(DimAligned_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(DimAligned_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(DimAligned_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(DimAligned_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(DimAligned_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(DimAligned_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(DimAligned_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimAngular_CSPtr DimAngular, Line_CSPtr line) = 0;
             virtual void visit(DimAngular_CSPtr DimAngular, Circle_CSPtr circle) = 0;
@@ -201,51 +201,51 @@ namespace lc {
             virtual void visit(DimAngular_CSPtr DimAngular, Dimension_CSPtr Dimension) = 0;
             virtual void visit(DimAngular_CSPtr DimAngular, DimAligned_CSPtr DimAligned) = 0;
             virtual void visit(DimAngular_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(DimAngular_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(DimAngular_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(DimAngular_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(DimAngular_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(DimAngular_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(DimAngular_CSPtr, DimRadial_CSPtr) = 0;
 
-        virtual void visit(DimDiametric_CSPtr, Line_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Circle_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Arc_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Ellipse_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Text_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Spline_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, MText_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, Dimension_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, DimAligned_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(DimDiametric_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Line_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Circle_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Arc_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Ellipse_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Text_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, MText_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, Dimension_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, DimAligned_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, DimAngular_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(DimDiametric_CSPtr, DimRadial_CSPtr) = 0;
 
-        virtual void visit(DimLinear_CSPtr, Line_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Circle_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Arc_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Ellipse_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Text_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Spline_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, MText_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, Dimension_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, DimAligned_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(DimLinear_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Line_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Circle_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Arc_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Ellipse_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Text_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, MText_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, Dimension_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, DimAligned_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, DimAngular_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(DimLinear_CSPtr, DimRadial_CSPtr) = 0;
 
-        virtual void visit(DimRadial_CSPtr, Line_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Circle_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Arc_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Ellipse_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Text_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Spline_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, MText_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, Dimension_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, DimAligned_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, DimAngular_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, DimDiametric_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, DimLinear_CSPtr) = 0;
-        virtual void visit(DimRadial_CSPtr, DimRadial_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Line_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Circle_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Arc_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Ellipse_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Text_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Spline_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, MText_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, Dimension_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, DimAligned_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, DimAngular_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, DimDiametric_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, DimLinear_CSPtr) = 0;
+            virtual void visit(DimRadial_CSPtr, DimRadial_CSPtr) = 0;
 
 
     };

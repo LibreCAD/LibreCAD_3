@@ -1,4 +1,4 @@
- #ifndef DIMANGULAR_H
+#ifndef DIMANGULAR_H
 #define DIMANGULAR_H
 
 #include "cad/const.h"

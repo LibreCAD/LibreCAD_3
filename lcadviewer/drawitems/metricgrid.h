@@ -1,4 +1,4 @@
-    #ifndef METRICGRID_H
+#ifndef METRICGRID_H
 #define METRICGRID_H
 
 #include <QPainter>

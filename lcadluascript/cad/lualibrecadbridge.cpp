@@ -92,7 +92,7 @@ void lua_openlckernel(lua_State* L) {
                                                     .endClass()
 
                                                     .beginExtendClass <Ellipse, CADEntity> ("Ellipse")
-                                                    .addConstructor(LUA_SP(Ellipse_SPtr), LUA_ARGS(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer))
+                                                    .addConstructor(LUA_SP(Ellipse_SPtr), LUA_ARGS(const geo::Coordinate & center, const geo::Coordinate & majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer))
                                                     .endClass()
 
                                                     .beginClass <operation::DocumentOperation> ("DocumentOperation")

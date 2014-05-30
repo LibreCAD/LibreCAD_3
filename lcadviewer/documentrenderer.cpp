@@ -160,7 +160,7 @@ void DocumentRenderer::autoScale() {
         p->translate(_deviceWidth / 2., _deviceHeight / 2.);
     }
 
-   calculateVisibleUserArea();
+    calculateVisibleUserArea();
 }
 
 void DocumentRenderer::calculateVisibleUserArea() {
@@ -228,6 +228,7 @@ void DocumentRenderer::render(std::function<void(LcPainter*)> wPainter) {
     if (_selectedArea != nullptr) {
         _selectedAreaPainter(painter, *_selectedArea, _selectedAreaIntersects);
     }
+
     //    for (int i = 0; i < _cursorItems.size(); ++i) {
     //        this->_cursorItems.at(i)->draw(lcPainter, nullptr, rect);
     //    }
@@ -275,6 +276,7 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
     const auto line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
+
     if (line != nullptr) {
         auto newLine = std::make_shared<LCVLine>(line);
         _entityContainer.insert(newLine);
@@ -283,6 +285,7 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a circle
     const auto circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
+
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
         _entityContainer.insert(std::make_shared<LCVCircle>(circle));
@@ -291,6 +294,7 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a Arc
     const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
+
     if (arc != nullptr) {
         auto newArc = std::make_shared<LCVArc>(arc);
         _entityContainer.insert(newArc);
@@ -302,12 +306,13 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     //const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
     auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
-//        LCEllipseItem* foo = new LCEllipseItem(ellipse);
-//        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-//        scene->addItem(foo);
-//        _activeGraphicsItems.insert(ellipse->id(), foo);
-//        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
-//       _entityContainer.insert(newEllipse);
+
+    //        LCEllipseItem* foo = new LCEllipseItem(ellipse);
+    //        foo->setFlags(QGraphicsItem::ItemIsSelectable);
+    //        scene->addItem(foo);
+    //        _activeGraphicsItems.insert(ellipse->id(), foo);
+    //        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
+    //       _entityContainer.insert(newEllipse);
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);
@@ -348,6 +353,7 @@ void DocumentRenderer::makeSelection(double x, double y, double w, double h, boo
             di->selected(false);
         });
     }
+
     _entityContainer.entitiesByArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
         di->selected(true);
     });

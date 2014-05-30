@@ -4,7 +4,7 @@
 using namespace lc;
 using namespace geo;
 
-DimRadial::DimRadial(const Dimension& dimension, const double leader) : _leader(leader){
+DimRadial::DimRadial(const Dimension& dimension, const double leader) : _leader(leader) {
 }
 
 double DimRadial::leader() const {
