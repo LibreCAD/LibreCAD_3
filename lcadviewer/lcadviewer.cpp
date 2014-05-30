@@ -27,11 +27,16 @@ LCADViewer::LCADViewer(QWidget* parent) :
 
 }
 
+LCADViewer::~LCADViewer() {
+    delete _docRenderer;
+    _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
+}
 
 
 void LCADViewer::setDocument(lc::Document* document) {
     _docRenderer = new DocumentRenderer(document);
     _document = document;
+    _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 
     _docRenderer->createPainterFunctor(
     [this](const unsigned int width, const unsigned int height) {
@@ -53,9 +58,11 @@ void LCADViewer::setDocument(lc::Document* document) {
 
 }
 
-LCADViewer::~LCADViewer() {
-    delete _docRenderer;
+void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
+    update();
 }
+
+
 
 /**
   * Handle key pressing and release to add additional states to this view

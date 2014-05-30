@@ -5,7 +5,7 @@ using namespace lc;
 std::atomic<ID_DATATYPE> ID::__idCounter;
 
 ID::ID() {
-    _id = ID::__idCounter++;
+    _id = ++ID::__idCounter;
 }
 
 ID_DATATYPE ID::id() const {

@@ -22,11 +22,11 @@ namespace lc {
     class QuadTreeSub {
         public:
             QuadTreeSub(int level, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects) : _level(level) , _bounds(pBounds), _maxLevels(maxLevels), _maxObjects(maxObjects) {
-                _nodes[0] = nullptr;
-                _nodes[1] = nullptr;
-                _nodes[2] = nullptr;
-                _nodes[3] = nullptr;
                 _objects.reserve(maxObjects / 2);
+                _nodes[0]=nullptr;
+                _nodes[1]=nullptr;
+                _nodes[2]=nullptr;
+                _nodes[3]=nullptr;
             }
             QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 8, 25) {}
             QuadTreeSub(const QuadTreeSub& other) : QuadTreeSub(0, other.bounds(), other.maxLevels(), other.maxObjects()) {
@@ -482,9 +482,13 @@ namespace lc {
              * @param entity
              */
             bool erase(const E entity) {
+                if (_cadentities.count(entity->id()) == 0) {
+                    // LOG4CXX_DEBUG(logger, "It's bad that we end up here, nortmally we should call erase on entoties we know that don't exists. ")
+                    return false;
+                }
                 E work = _cadentities.at(entity->id());
                 _cadentities.erase(entity->id());
-                return erase(work);
+                return QuadTreeSub<E>::erase(work);
             }
 
             const E entityByID(const ID_DATATYPE id) const {

@@ -87,6 +87,7 @@ class LCADViewer : public QWidget {
         void setHorizontalOffset(int v);
 
     private:
+        void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
         bool _altKeyActive; // When true the alt key is current pressed
 

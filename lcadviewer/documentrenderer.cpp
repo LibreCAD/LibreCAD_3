@@ -19,6 +19,7 @@
 
 DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document), _zoomMin(0.05), _zoomMax(20.0), _selectedArea(nullptr), _selectedAreaIntersects(false) {
 
+
     document->addEntityEvent().connect<DocumentRenderer, &DocumentRenderer::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<DocumentRenderer, &DocumentRenderer::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentRenderer, &DocumentRenderer::on_commitProcessEvent>(this);
