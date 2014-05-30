@@ -75,7 +75,7 @@ void LcCairoPainter::line_to(double x, double y)  {
 }
 
 void LcCairoPainter::arc(double x, double y, double r, double start, double end)  {
-    cairo_arc(_cr, x, y, r, start * (M_PI / 180.), end * (M_PI / 180.));
+    cairo_arc(_cr, x, y, r, start, end);
 
     /* Test to see if we can get end/start cap's on a path
     cairo_path_t *path;
@@ -101,8 +101,6 @@ void LcCairoPainter::circle(double x, double y, double r)  {
 void LcCairoPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra) {
     double cosrotangle = std::cos(ra);
     double sinrotangle = std::sin(ra);
-    sa = sa * (M_PI / 180.);
-    ea = ea * (M_PI / 180.);
     cairo_matrix_t transformmatrix;
     cairo_matrix_init(&transformmatrix, rx * cosrotangle, rx * sinrotangle, -ry * sinrotangle, ry * cosrotangle, cx, cy);
     cairo_save(_cr);
