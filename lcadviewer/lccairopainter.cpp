@@ -119,7 +119,7 @@ void LcCairoPainter::stroke()  {
 
 void LcCairoPainter::line_width(double  width) {
     if (_constantLineWidth) {
-        cairo_set_line_width(_cr, (1. + _lineWidthCompensation) / scale());
+        cairo_set_line_width(_cr, (width + _lineWidthCompensation) / scale());
     } else {
         cairo_set_line_width(_cr, width + _lineWidthCompensation);
     }
