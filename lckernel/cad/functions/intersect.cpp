@@ -11,7 +11,7 @@
 
 using namespace lc;
 
-Intersect::Intersect(Method method) : _method(method) {
+Intersect::Intersect(Method method, double tolerance) : _method(method), _tolerance(tolerance) {
 }
 
 std::vector<geo::Coordinate> Intersect::result() const {
@@ -21,22 +21,22 @@ std::vector<geo::Coordinate> Intersect::result() const {
 
 void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
 
-    geo::Coordinate p1 = l1->start();
-    geo::Coordinate p2 = l1->end();
-    geo::Coordinate p3 = l2->start();
-    geo::Coordinate p4 = l2->end();
+    const geo::Coordinate p1 = l1->start();
+    const geo::Coordinate p2 = l1->end();
+    const geo::Coordinate p3 = l2->start();
+    const geo::Coordinate p4 = l2->end();
 
-    double num = ((p4.x() - p3.x()) * (p1.y() - p3.y()) - (p4.y() - p3.y()) * (p1.x() - p3.x()));
-    double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
+    const double num = ((p4.x() - p3.x()) * (p1.y() - p3.y()) - (p4.y() - p3.y()) * (p1.x() - p3.x()));
+    const double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
 
     // TODO: We properly should add a tolorance here ??
     if (fabs(div) > 0.0) {
         double u = num / div;
         double xs = p1.x() + u * (p2.x() - p1.x());
         double ys = p1.y() + u * (p2.y() - p1.y());
-        geo::Coordinate coord(xs, ys);
+        const geo::Coordinate coord(xs, ys);
 
-        if (_method == Method::Any || (_method == Method::MustIntersect && l1->isCoordinateOnPath(coord) && l2->isCoordinateOnPath(coord))) {
+        if (_method == Method::Any || (_method == Method::OnPath && l1->isCoordinateOnPath(coord) && l2->isCoordinateOnPath(coord))) {
             _intersectionPoints.push_back(coord);
         }
     }
@@ -48,42 +48,42 @@ void Intersect::visit(Line_CSPtr line, Circle_CSPtr circle) {
 
 void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
 
-    geo::Coordinate nearest = line->nearestPointOnPath(arc->center());
+    const geo::Coordinate nearest = line->nearestPointOnPath(arc->center());
     double dist = arc->center().distanceTo(nearest);
 
     // special case: arc touches line (tangent):
     // TODO: We properly should add a tolorance here ??
-    if (fabs(dist - arc->radius()) < 1.0e-4) {
+    if (fabs(dist - arc->radius()) < _tolerance) {
         _intersectionPoints.push_back(nearest);
         return;
     }
 
-    geo::Coordinate d = line->end() - line->start();
-    double r = arc->radius();
-    geo:: Coordinate delta = line->start() - arc->center();
-    double d2 = d.squared();
+    const geo::Coordinate d = line->end() - line->start();
+    const double r = arc->radius();
+    const geo:: Coordinate delta = line->start() - arc->center();
+    const double d2 = d.squared();
 
     //intersection
     // solution = p + t d;
     //| p -c+ t d|^2 = r^2
     // |d|^2 t^2 + 2 (p-c).d t + |p-c|^2 -r^2 = 0
-    double a1 = delta.dot(d);
-    double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
+    const double a1 = delta.dot(d);
+    const double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
 
     // TODO: We properly should add a tolorance here ??
-    if (discriminant < - 1.0e-4) {
+    if (discriminant < - _tolerance) {
         return;
     } else {
-        double t = sqrtf(fabs(discriminant));
+        const double t = sqrtf(fabs(discriminant));
         //two intersections
-        geo::Coordinate c1(line->start() + d * (t - a1) / d2);
-        geo::Coordinate c2(line->start() - d * (t + a1) / d2);
+        const geo::Coordinate c1(line->start() + d * (t - a1) / d2);
+        const geo::Coordinate c2(line->start() - d * (t + a1) / d2);
 
-        if (_method == Method::Any || (_method == Method::MustIntersect && arc->isCoordinateOnPath(c1) && line->isCoordinateOnPath(c1))) {
+        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c1) && line->isCoordinateOnPath(c1))) {
             _intersectionPoints.push_back(c1);
         }
 
-        if (_method == Method::Any || (_method == Method::MustIntersect && arc->isCoordinateOnPath(c2) && line->isCoordinateOnPath(c2))) {
+        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c2) && line->isCoordinateOnPath(c2))) {
             _intersectionPoints.push_back(c2);
         }
     }
@@ -91,7 +91,7 @@ void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
 void Intersect::visit(Line_CSPtr, Ellipse_CSPtr) {
     return;
 }
-void Intersect::visit(Line_CSPtr l1, Text_CSPtr) {
+void Intersect::visit(Line_CSPtr, Text_CSPtr) {
     return;
 }
 
@@ -99,10 +99,10 @@ void Intersect::visit(Line_CSPtr, Spline_CSPtr) {
     return;
 }
 
-void Intersect::visit(Line_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Line_CSPtr, MText_CSPtr) {
     return;
 }
-void Intersect::visit(Line_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Line_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -127,10 +127,10 @@ void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
 void Intersect::visit(Circle_CSPtr, Spline_CSPtr) {
     return;
 }
-void Intersect::visit(Circle_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Circle_CSPtr, MText_CSPtr) {
     return;
 }
-void Intersect::visit(Circle_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Circle_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -154,10 +154,10 @@ void Intersect::visit(Arc_CSPtr, Text_CSPtr) {
 void Intersect::visit(Arc_CSPtr, Spline_CSPtr) {
     return;
 }
-void Intersect::visit(Arc_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Arc_CSPtr, MText_CSPtr) {
     return;
 }
-void Intersect::visit(Arc_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Arc_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -182,10 +182,10 @@ void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {
 void Intersect::visit(Ellipse_CSPtr, Spline_CSPtr) {
     return;
 }
-void Intersect::visit(Ellipse_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr, MText_CSPtr) {
     return;
 }
-void Intersect::visit(Ellipse_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -209,10 +209,10 @@ void Intersect::visit(Text_CSPtr, Text_CSPtr) {
 void Intersect::visit(Text_CSPtr, Spline_CSPtr) {
     return;
 }
-void Intersect::visit(Text_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Text_CSPtr, MText_CSPtr) {
     return;
 }
-void Intersect::visit(Text_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Text_CSPtr, Dimension_CSPtr) {
 }
 
 // Spline
@@ -228,9 +228,9 @@ void Intersect::visit(Spline_CSPtr, Text_CSPtr) {
 }
 void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
 }
-void Intersect::visit(Spline_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(Spline_CSPtr, MText_CSPtr) {
 }
-void Intersect::visit(Spline_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(Spline_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -247,9 +247,9 @@ void Intersect::visit(MText_CSPtr, Text_CSPtr) {
 }
 void Intersect::visit(MText_CSPtr, Spline_CSPtr) {
 }
-void Intersect::visit(MText_CSPtr l1, MText_CSPtr) {
+void Intersect::visit(MText_CSPtr, MText_CSPtr) {
 }
-void Intersect::visit(MText_CSPtr l1, Dimension_CSPtr) {
+void Intersect::visit(MText_CSPtr, Dimension_CSPtr) {
 }
 
 
@@ -284,7 +284,7 @@ void Intersect::visit(Dimension_CSPtr, Dimension_CSPtr) {
 
 }
 
-IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
+IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method, double tolerance) : _entities(entities), _method(method), _tolerance(tolerance) {
 }
 
 std::vector<geo::Coordinate> IntersectMany::result() const {
@@ -293,8 +293,9 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
     if (_entities.size() > 1) {
         for (unsigned int outer = 0; outer < (_entities.size() - 1); outer++) {
             for (unsigned int inner = ++outer; inner < _entities.size(); inner++) {
-                Intersect intersect(_method);
+                Intersect intersect(_method, _tolerance);
                 _entities.at(outer)->accept(_entities.at(inner), intersect);
+
                 _intersectionPoints.insert(_intersectionPoints.end(), intersect.result().begin(), intersect.result().end());
             }
         }
@@ -302,3 +303,24 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
 
     return _intersectionPoints;
 }
+
+
+IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+    _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
+}
+
+std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
+    std::vector<geo::Coordinate> _intersectionPoints;
+
+    for (auto other : _others) {
+        for (auto entity : _entities) {
+            Intersect intersect(_method, _tolerance);
+            other->accept(entity, intersect);
+            _intersectionPoints.insert(_intersectionPoints.end(), intersect.result().begin(), intersect.result().end());
+        }
+    }
+
+    return _intersectionPoints;
+}
+
+

@@ -14,11 +14,14 @@ namespace lc {
     class Intersect : public EntityVisitor {
         public:
             enum Method {
-                MustIntersect,
-                Any = 1
+                OnPath = 0, // means that the path must intersect
+                Any = 1       // means that the path my intersect outside of the real path.
+                      // For example two lines of 2 in a slight angle might intersect outside of line's coordinate
+                      // When method == Any is selected, the system will return that coordinate
+                      // When Intersect is selected only a point is returned for a actual cross point
             };
 
-            Intersect(Method method);
+            Intersect(Method method, double tolerance);
             virtual void visit(Line_CSPtr, Line_CSPtr);
             virtual void visit(Line_CSPtr, Circle_CSPtr);
             virtual void visit(Line_CSPtr, Arc_CSPtr);
@@ -94,7 +97,8 @@ namespace lc {
             std::vector<geo::Coordinate> result() const;
         private:
             std::vector<geo::Coordinate> _intersectionPoints;
-            Method _method;
+            const Method _method;
+            const double _tolerance;
     };
 
     /**
@@ -104,12 +108,30 @@ namespace lc {
       */
     class IntersectMany {
         public:
-            IntersectMany(std::vector<CADEntity_CSPtr>,  Intersect::Method);
+            IntersectMany(std::vector<CADEntity_CSPtr>,  Intersect::Method, double tolerance);
             std::vector<geo::Coordinate> result() const;
         private:
             std::vector<CADEntity_CSPtr> _entities;
-            Intersect::Method _method;
+            const Intersect::Method _method;
+            const double _tolerance;
     };
+
+    /**
+      * \brief calculate intersection points of many entities
+      * \note Can we make this into a general template ???
+      * \sa Intersect
+      */
+    class IntersectAgainstOthers {
+        public:
+            IntersectAgainstOthers(std::vector<CADEntity_CSPtr>,  std::vector<CADEntity_CSPtr>, Intersect::Method, double tolerance);
+            std::vector<geo::Coordinate> result() const;
+        private:
+            std::vector<CADEntity_CSPtr> _entities;
+            std::vector<CADEntity_CSPtr> _others;
+            const Intersect::Method _method;
+            const double _tolerance;
+    };
+
 }
 
 #endif  //INTERSECT_H
