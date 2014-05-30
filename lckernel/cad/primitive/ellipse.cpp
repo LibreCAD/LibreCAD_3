@@ -14,7 +14,7 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
     : CADEntity(layer, metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
-Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Ellipse(this->center(), this->majorP(), this->minorRadius(), this->startAngle(), this->endAngle()) {
+Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle()) {
     if (sameID) {
         this->setID(other->id());
     }
