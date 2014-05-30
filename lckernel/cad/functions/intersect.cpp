@@ -444,7 +444,7 @@ void Intersect::visit(MText_CSPtr, DimLinear_CSPtr) {
 
 }
 
-void Intersect::visit(MText_CSPtr, DimRadial_CSPtr){
+void Intersect::visit(MText_CSPtr, DimRadial_CSPtr) {
 
 }
 
@@ -602,7 +602,7 @@ void Intersect::visit(DimAngular_CSPtr, DimLinear_CSPtr) {
 
 }
 
-void Intersect::visit(DimAngular_CSPtr, DimRadial_CSPtr){
+void Intersect::visit(DimAngular_CSPtr, DimRadial_CSPtr) {
 
 }
 

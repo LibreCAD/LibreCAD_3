@@ -101,7 +101,7 @@ class DocumentRenderer {
          * @param occupies
          * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelection(double x, double y, double w, double h, bool occupies, bool addTo=false);
+        void makeSelection(double x, double y, double w, double h, bool occupies, bool addTo = false);
 
         /**
          * @brief makeSelectionDevice
@@ -113,7 +113,7 @@ class DocumentRenderer {
          * @param occupies
          * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo=false);
+        void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo = false);
 
         /**
         * @brief removeSelectionArea removed the colord selection area from the screen

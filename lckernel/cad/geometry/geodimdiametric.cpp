@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-DimDiametric::DimDiametric(const Dimension& dimension, const double leader) : _leader(leader){
+DimDiametric::DimDiametric(const Dimension& dimension, const double leader) : _leader(leader) {
 }
 
 double DimDiametric::leader() const {
