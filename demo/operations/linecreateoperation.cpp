@@ -74,7 +74,6 @@ void LineCreateOperation::on_drawEvent(const DrawEvent& event) {
 
     if (s == true && e == true) {
         //event.painter()->drawLine(_startPoint.pointF(), _endPoint.pointF());
-        //event.painter()->drawLine();
     }
 
 }

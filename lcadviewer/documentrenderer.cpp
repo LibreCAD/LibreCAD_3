@@ -293,7 +293,7 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a Arc
-    const std::shared_ptr<const lc::Arc> arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
+    const auto arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
 
     if (arc != nullptr) {
         auto newArc = std::make_shared<LCVArc>(arc);
@@ -303,16 +303,8 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
 
     // Add Ellipse
-    //const std::shared_ptr<const lc::Ellipse> ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
+    const auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
 
-    auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
-
-    //        LCEllipseItem* foo = new LCEllipseItem(ellipse);
-    //        foo->setFlags(QGraphicsItem::ItemIsSelectable);
-    //        scene->addItem(foo);
-    //        _activeGraphicsItems.insert(ellipse->id(), foo);
-    //        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
-    //       _entityContainer.insert(newEllipse);
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);

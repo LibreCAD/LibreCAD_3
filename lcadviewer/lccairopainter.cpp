@@ -101,6 +101,8 @@ void LcCairoPainter::circle(double x, double y, double r)  {
 void LcCairoPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra) {
     double cosrotangle = std::cos(ra);
     double sinrotangle = std::sin(ra);
+    sa = sa * (M_PI / 180.);
+    ea = ea * (M_PI / 180.);
     cairo_matrix_t transformmatrix;
     cairo_matrix_init(&transformmatrix, rx * cosrotangle, rx * sinrotangle, -ry * sinrotangle, ry * cosrotangle, cx, cy);
     cairo_save(_cr);
