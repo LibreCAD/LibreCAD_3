@@ -11,6 +11,7 @@
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/base/cadentity.h"
+#include "cad/geometry/geoellipse.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
 

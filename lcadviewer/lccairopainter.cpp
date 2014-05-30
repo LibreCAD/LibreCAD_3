@@ -75,7 +75,7 @@ void LcCairoPainter::line_to(double x, double y)  {
 }
 
 void LcCairoPainter::arc(double x, double y, double r, double start, double end)  {
-    cairo_arc(_cr, x, y, r, start, end);
+    cairo_arc(_cr, x, y, r, start * (M_PI / 180.), end * (M_PI / 180.));
 
     /* Test to see if we can get end/start cap's on a path
     cairo_path_t *path;

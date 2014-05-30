@@ -3,14 +3,14 @@
 using namespace lc;
 
 DimRadial::DimRadial(const Dimension& dimension,
-                           const double leader,
-                           const Layer_CSPtr layer): CADEntity(layer), geo::DimRadial(dimension, leader) {
+                     const double leader,
+                     const Layer_CSPtr layer): CADEntity(layer), geo::DimRadial(dimension, leader) {
 
 }
 
 DimRadial::DimRadial(const Dimension& dimension,
-                           const double leader,
-                           const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes): CADEntity(layer), geo::DimRadial(dimension, leader) {
+                     const double leader,
+                     const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes): CADEntity(layer), geo::DimRadial(dimension, leader) {
 
 }
 

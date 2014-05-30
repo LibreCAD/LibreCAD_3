@@ -13,32 +13,32 @@ namespace lc {
         class DimLinear : public Dimension  {
             public:
 
-            /**
-             * @brief DimLinear
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param oblique
-             */
-            DimLinear(const Dimension& dimension, const Coordinate &extension_point1, const Coordinate& extension_point2, const double oblique);
+                /**
+                 * @brief DimLinear
+                 * @param dimension
+                 * @param extension_point1
+                 * @param extension_point2
+                 * @param oblique
+                 */
+                DimLinear(const Dimension& dimension, const Coordinate& extension_point1, const Coordinate& extension_point2, const double oblique);
 
-            /**
-             * @brief extension_point1
-             * @return Coordinate extension_point1
-             */
-            Coordinate extension_point1() const;
+                /**
+                 * @brief extension_point1
+                 * @return Coordinate extension_point1
+                 */
+                Coordinate extension_point1() const;
 
-            /**
-             * @brief extension_point2
-             * @return Coordinate extension_point2
-             */
-            Coordinate extension_point2() const;
+                /**
+                 * @brief extension_point2
+                 * @return Coordinate extension_point2
+                 */
+                Coordinate extension_point2() const;
 
-            /**
-             * @brief oblique
-             * @return double oblique
-             */
-            double oblique() const;
+                /**
+                 * @brief oblique
+                 * @return double oblique
+                 */
+                double oblique() const;
 
             private:
                 const Coordinate _extension_point1;
