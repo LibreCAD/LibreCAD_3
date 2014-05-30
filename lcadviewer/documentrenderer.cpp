@@ -158,7 +158,7 @@ void DocumentRenderer::autoScale() {
         p->translate(_deviceWidth / 2., _deviceHeight / 2.);
     }
 
-    calculateVisibleUserArea();
+   calculateVisibleUserArea();
 }
 
 void DocumentRenderer::calculateVisibleUserArea() {
@@ -333,6 +333,7 @@ void DocumentRenderer::makeSelection(double x, double y, double w, double h, boo
 
     _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
     _selectedAreaIntersects = occupies;
+
 
     // Remove current selection
     if (!addTo) {

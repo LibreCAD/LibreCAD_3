@@ -89,20 +89,42 @@ void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
     }
 }
 void Intersect::visit(Line_CSPtr, Ellipse_CSPtr) {
-    return;
+
 }
-void Intersect::visit(Line_CSPtr l1, Text_CSPtr) {
-    return;
+
+void Intersect::visit(Line_CSPtr, Text_CSPtr) {
+
 }
 
 void Intersect::visit(Line_CSPtr, Spline_CSPtr) {
-    return;
+
 }
 
-void Intersect::visit(Line_CSPtr l1, MText_CSPtr) {
-    return;
+void Intersect::visit(Line_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Line_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Line_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(Line_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Line_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Line_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Line_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Line_CSPtr, DimRadial_CSPtr) {
+
 }
 
 
@@ -111,26 +133,51 @@ void Intersect::visit(Line_CSPtr l1, Dimension_CSPtr) {
 void Intersect::visit(Circle_CSPtr circle, Line_CSPtr line) {
     visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()));
 }
+
 void Intersect::visit(Circle_CSPtr, Circle_CSPtr) {
+
 }
 
 void Intersect::visit(Circle_CSPtr, Arc_CSPtr) {
 }
 
 void Intersect::visit(Circle_CSPtr, Ellipse_CSPtr) {
+
 }
 
 void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
-    return;
+
 }
 
 void Intersect::visit(Circle_CSPtr, Spline_CSPtr) {
-    return;
+
 }
-void Intersect::visit(Circle_CSPtr l1, MText_CSPtr) {
-    return;
+
+void Intersect::visit(Circle_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Circle_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Circle_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(Circle_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Circle_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Circle_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Circle_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Circle_CSPtr, DimRadial_CSPtr) {
+
 }
 
 
@@ -139,118 +186,268 @@ void Intersect::visit(Circle_CSPtr l1, Dimension_CSPtr) {
 void Intersect::visit(Arc_CSPtr arc, Line_CSPtr line) {
     visit(line, arc);
 }
+
 void Intersect::visit(Arc_CSPtr, Circle_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Arc_CSPtr, Arc_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Arc_CSPtr, Ellipse_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Arc_CSPtr, Text_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Arc_CSPtr, Spline_CSPtr) {
-    return;
+
 }
-void Intersect::visit(Arc_CSPtr l1, MText_CSPtr) {
-    return;
+
+void Intersect::visit(Arc_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Arc_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Arc_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(Arc_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Arc_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Arc_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Arc_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Arc_CSPtr, DimRadial_CSPtr) {
+
 }
 
 
 // Ellipse
 
 void Intersect::visit(Ellipse_CSPtr, Line_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Ellipse_CSPtr, Circle_CSPtr) {
-    return;
+
 }
 
 void Intersect::visit(Ellipse_CSPtr, Arc_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Ellipse_CSPtr, Ellipse_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Ellipse_CSPtr, Spline_CSPtr) {
-    return;
+
 }
-void Intersect::visit(Ellipse_CSPtr l1, MText_CSPtr) {
-    return;
+
+void Intersect::visit(Ellipse_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Ellipse_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Ellipse_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(Ellipse_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Ellipse_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Ellipse_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Ellipse_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Ellipse_CSPtr, DimRadial_CSPtr) {
+
 }
 
 
 
 // Text
 void Intersect::visit(Text_CSPtr, Line_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Text_CSPtr, Circle_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Text_CSPtr, Arc_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Text_CSPtr, Ellipse_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Text_CSPtr, Text_CSPtr) {
-    return;
+
 }
+
 void Intersect::visit(Text_CSPtr, Spline_CSPtr) {
-    return;
+
 }
-void Intersect::visit(Text_CSPtr l1, MText_CSPtr) {
-    return;
+
+void Intersect::visit(Text_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Text_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Text_CSPtr, Dimension_CSPtr) {
+
 }
+
+void Intersect::visit(Text_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Text_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Text_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Text_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Text_CSPtr, DimRadial_CSPtr) {
+
+}
+
 
 // Spline
 void Intersect::visit(Spline_CSPtr, Line_CSPtr) {
+
 }
+
 void Intersect::visit(Spline_CSPtr, Circle_CSPtr) {
+
 }
+
 void Intersect::visit(Spline_CSPtr, Arc_CSPtr) {
+
 }
+
 void Intersect::visit(Spline_CSPtr, Ellipse_CSPtr) {
+
 }
+
 void Intersect::visit(Spline_CSPtr, Text_CSPtr) {
+
 }
+
 void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
+
 }
-void Intersect::visit(Spline_CSPtr l1, MText_CSPtr) {
+
+void Intersect::visit(Spline_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(Spline_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(Spline_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(Spline_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Spline_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Spline_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Spline_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Spline_CSPtr, DimRadial_CSPtr) {
+
 }
 
 
 // MText
 void Intersect::visit(MText_CSPtr, Line_CSPtr) {
+
 }
+
 void Intersect::visit(MText_CSPtr, Circle_CSPtr) {
+
 }
+
 void Intersect::visit(MText_CSPtr, Arc_CSPtr) {
+
 }
+
 void Intersect::visit(MText_CSPtr, Ellipse_CSPtr) {
+
 }
+
 void Intersect::visit(MText_CSPtr, Text_CSPtr) {
+
 }
+
 void Intersect::visit(MText_CSPtr, Spline_CSPtr) {
+
 }
-void Intersect::visit(MText_CSPtr l1, MText_CSPtr) {
+
+void Intersect::visit(MText_CSPtr, MText_CSPtr) {
+
 }
-void Intersect::visit(MText_CSPtr l1, Dimension_CSPtr) {
+
+void Intersect::visit(MText_CSPtr, Dimension_CSPtr) {
+
 }
+
+void Intersect::visit(MText_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(MText_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(MText_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(MText_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(MText_CSPtr, DimRadial_CSPtr){
+
+}
+
 
 
 void Intersect::visit(Dimension_CSPtr, Line_CSPtr) {
@@ -264,6 +461,7 @@ void Intersect::visit(Dimension_CSPtr, Circle_CSPtr) {
 void Intersect::visit(Dimension_CSPtr, Arc_CSPtr) {
 
 }
+
 void Intersect::visit(Dimension_CSPtr, Ellipse_CSPtr) {
 
 }
@@ -284,7 +482,291 @@ void Intersect::visit(Dimension_CSPtr, Dimension_CSPtr) {
 
 }
 
+void Intersect::visit(Dimension_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(Dimension_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(Dimension_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(Dimension_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(Dimension_CSPtr, DimRadial_CSPtr) {
+
+}
+
+
+void Intersect::visit(DimAligned_CSPtr, Line_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Circle_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Arc_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Ellipse_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Text_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Spline_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, MText_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, DimAngular_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(DimAligned_CSPtr, DimRadial_CSPtr) {
+
+}
+
+
+void Intersect::visit(DimAngular_CSPtr, Line_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Circle_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Arc_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Ellipse_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Text_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Spline_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, MText_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, DimAngular_CSPtr) {
+
+}
+void Intersect::visit(DimAngular_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(DimAngular_CSPtr, DimRadial_CSPtr){
+
+}
+
+
+
+void Intersect::visit(DimDiametric_CSPtr, Line_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Circle_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Arc_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Ellipse_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Text_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Spline_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, MText_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, DimAngular_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(DimDiametric_CSPtr, DimRadial_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Line_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Circle_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Arc_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Ellipse_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Text_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Spline_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, MText_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, DimAngular_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(DimLinear_CSPtr, DimRadial_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Line_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Circle_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Arc_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Ellipse_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Text_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Spline_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, MText_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, Dimension_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, DimAligned_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, DimAngular_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, DimDiametric_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, DimLinear_CSPtr) {
+
+}
+
+void Intersect::visit(DimRadial_CSPtr, DimRadial_CSPtr) {
+
+}
+
+
 IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method) : _entities(entities), _method(method) {
+
 }
 
 std::vector<geo::Coordinate> IntersectMany::result() const {

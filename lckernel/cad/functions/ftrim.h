@@ -20,6 +20,11 @@ namespace lc {
             virtual void visit(Spline_CSPtr);
             virtual void visit(MText_CSPtr);
             virtual void visit(Dimension_CSPtr);
+            virtual void visit(DimAligned_CSPtr);
+            virtual void visit(DimAngular_CSPtr);
+            virtual void visit(DimDiametric_CSPtr);
+            virtual void visit(DimLinear_CSPtr);
+            virtual void visit(DimRadial_CSPtr);
             std::vector<CADEntity_CSPtr> result();
             CADEntity_CSPtr trimmedShape() const;
 

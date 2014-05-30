@@ -1,6 +1,5 @@
-#ifndef DIMENSION_H
-#define DIMENSION_H
-
+ #ifndef DIMANGULAR_H
+#define DIMANGULAR_H
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -8,66 +7,49 @@
 
 #include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
+#include "cad/geometry/geodimangular.h"
 #include "cad/geometry/geodimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 
 namespace lc {
-    class Dimension;
-    typedef std::shared_ptr<Dimension> Dimension_SPtr;
-    typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
+    class DimAngular;
+    typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
+    typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
 
 
-    class Dimension : public std::enable_shared_from_this<Dimension>, public CADEntity, public geo::Dimension {
+    class DimAngular : public std::enable_shared_from_this<DimAngular>, public CADEntity, public geo::DimAngular {
         public:
 
             /**
-             * @brief Dimension
-             * @param definition_point definition_point of the dimension
-             * @param middle_of_text Middle of text
-             * @param valign Vertical Alignment
-             * @param halign Horizontal Alignment
-             * @param lineSpacingStyle Line spacing style
-             * @param lineSpacingFactor Spacing factor
-             * @param text_value Text of dimension
-             * @param style STyle name
-             * @param angle Angle of obliqueness
-             * @param layer Layer of entity
-             */
-            Dimension(const geo::Coordinate& definition_point,
-                      const geo::Coordinate& middle_of_text,
-                      const geo::MText::VAlign valign,
-                      const geo::MText::HAlign halign,
-                      const geo::MText::LineSpacingStyle lineSpacingStyle,
-                      const double lineSpacingFactor,
-                      const std::string& text_value,
-                      const std::string& style,
-                      const double angle, const Layer_CSPtr layer);
+                 * @brief DimAngular
+                 * @param dimension
+                 * @param extension_point1
+                 * @param extension_point2
+                 * @param layer
+                 */
+            DimAngular(const Dimension& dimension,
+                       const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                       const geo::Coordinate& extension_point3,
+                       const geo::Coordinate& extension_point4,
+                       const Layer_CSPtr layer);
 
             /**
-             * @brief Dimension
-             * @param definition_point definition_point of the dimension
-             * @param middle_of_text Middle of text
-             * @param valign Vertical Alignment
-             * @param halign Horizontal Alignment
-             * @param lineSpacingStyle Line spacing style
-             * @param lineSpacingFactor Spacing factor
-             * @param text_value Text of dimension
-             * @param style STyle name
-             * @param angle Angle of obliqueness
-             * @param layer Layer of entity
-             * @param metatype of entity
+             * @brief DimAngular
+             * @param dimension
+             * @param extension_point1
+             * @param extension_point2
+             * @param layer
+             * @param metaTypes
              */
-            Dimension(const geo::Coordinate& definition_point,
-                      const geo::Coordinate& middle_of_text,
-                      const geo::MText::VAlign valign,
-                      const geo::MText::HAlign halign,
-                      const geo::MText::LineSpacingStyle lineSpacingStyle,
-                      const double lineSpacingFactor,
-                      const std::string& text_value,
-                      const std::string& style,
-                      const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
+            DimAngular(const Dimension& dimension,
+                       const geo::Coordinate& extension_point1,
+                       const geo::Coordinate& extension_point2,
+                       const geo::Coordinate& extension_point3,
+                       const geo::Coordinate& extension_point4,
+                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
@@ -125,5 +107,6 @@ namespace lc {
     };
 }
 
-#endif // Dimension_H
 
+
+#endif // DIMANGULAR_H

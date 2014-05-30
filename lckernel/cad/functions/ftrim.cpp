@@ -57,18 +57,37 @@ void FTrim::visit(Text_CSPtr text) {
 
 }
 
-void FTrim::visit(Spline_CSPtr text) {
+void FTrim::visit(Spline_CSPtr spline) {
 
 }
 
-void FTrim::visit(MText_CSPtr text) {
+void FTrim::visit(MText_CSPtr mtext) {
 
 }
 
-void FTrim::visit(Dimension_CSPtr text) {
+void FTrim::visit(Dimension_CSPtr dim) {
 
 }
 
+void FTrim::visit(DimAligned_CSPtr dimaligned) {
+
+}
+
+void FTrim::visit(DimAngular_CSPtr dimangular) {
+
+}
+
+void FTrim::visit(DimDiametric_CSPtr dimdiametric) {
+
+}
+
+void FTrim::visit(DimLinear_CSPtr dimlinear) {
+
+}
+
+void FTrim::visit(DimRadial_CSPtr dimrad) {
+
+}
 
 std::vector<CADEntity_CSPtr> FTrim::result() {
     _trimmedShape->dispatch(*this);
