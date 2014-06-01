@@ -68,6 +68,8 @@ namespace lc {
                  const TextGeneration textgeneration,
                  const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
+            Text(const Text_CSPtr other, bool sameID);
+
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;

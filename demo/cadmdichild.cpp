@@ -132,7 +132,7 @@ void CadMdiChild::newDocument() {
     builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 270.0, layer));
-    builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 100, 300.0 , layer));
+    builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
     builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 50.26, 70.26, layer));
     builder->execute();
 }

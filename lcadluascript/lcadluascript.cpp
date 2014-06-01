@@ -420,7 +420,7 @@ print (microtime()-start);
 start = microtime()
 layer = active.proxy.layerByName("0")
 d=active.document()
-Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(-2,-2)):execute()
+Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(2,2)):execute()
 print "Move time"
 print (microtime()-start);
 

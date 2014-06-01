@@ -4,12 +4,14 @@
 #include "cad/primitive/line.h"
 #include "cad/primitive/circle.h"
 #include "cad/primitive/ellipse.h"
+#include "cad/primitive/text.h"
 #include <drawitems/lcdrawoptions.h>
 #include <drawitems/lcvcircle.h>
 #include <drawitems/lcvarc.h>
 #include <drawitems/lcvdrawitem.h>
 #include <drawitems/lcvline.h>
 #include <drawitems/lcvellipse.h>
+#include <drawitems/lcvtext.h>
 #include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 
@@ -308,6 +310,14 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);
+        return;
+    }
+
+    const auto text = std::dynamic_pointer_cast<const lc::Text>(event.entity());
+
+    if (text != nullptr) {
+        auto newText = std::make_shared<LCVText>(text);
+        _entityContainer.insert(newText);
         return;
     }
 

@@ -32,6 +32,15 @@ Text::Text(const geo::Coordinate& insertion_point,
 
 }
 
+Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), geo::Text(this->insertion_point(), this->second_point(), this->height(),
+                                                                                                           this->text_value(), this->width_rel(), this->angle(), this->style(),
+                                                                                                           this->textgeneration(), this->halign(), this->valign()) {
+    if (sameID) {
+        this->setID(other->id());
+    }
+}
+
+
 CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
     auto newText = std::make_shared<Text>(this->insertion_point() + offset,
                                           this->second_point() + offset,

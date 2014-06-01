@@ -33,6 +33,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void device_to_user(double* x, double* y);
         virtual inline void user_to_device_distance(double* dx, double* dy);
         virtual inline void device_to_user_distance(double* dx, double* dy);
+        virtual inline void text(double x, double y, const char *text_val, double height);
         virtual inline void save();
         virtual inline void restore();
         virtual inline unsigned long pattern_create_linear(double x1, double y1, double x2, double y2);
