@@ -96,11 +96,11 @@ void lua_openlckernel(lua_State* L) {
                                                     .addConstructor(LUA_SP(Ellipse_SPtr), LUA_ARGS(const geo::Coordinate & center, const geo::Coordinate & majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer))
                                                     .endClass()
 
-//                                                    .beginExtendClass <Text, CADEntity> ("Text")
-//                                                    .addConstructor(LUA_SP(Text_SPtr), LUA_ARGS(const geo::Coordinate& insertion_point, const geo::Coordinate& second_point, const double height, const std::string text_value, const double width_rel,
-//                                                        const double angle, const std::string style, const Text::TextGeneration textgeneration,
-//                                                        const Text::HAlign halign, const Text::VAlign valign, const Layer_CSPtr layer))
-//                                                    .endClass()
+                                                    .beginExtendClass <Text, CADEntity> ("Text")
+                                                    .addConstructor(LUA_SP(Text_SPtr), LUA_ARGS(const geo::Coordinate& insertion_point, const geo::Coordinate& second_point, const double height, const std::string text_value, const double width_rel,
+                                                        const double angle, const std::string style, const int textgenvalue,
+                                                        const int halignvalue, const int valignvalue, const Layer_CSPtr layer))
+                                                    .endClass()
 
 
                                                     .beginClass <operation::DocumentOperation> ("DocumentOperation")

@@ -17,31 +17,31 @@ namespace lc {
                  * Vertical alignments.
                  */
                 enum VAlign {
-                    VABaseline, /**< Bottom */
-                    VABottom,   /**< Bottom */
-                    VAMiddle,   /**< Middle */
-                    VATop       /**< Top. */
+                    VABaseline = 0, /**< Bottom */
+                    VABottom = 1,   /**< Bottom */
+                    VAMiddle = 2,   /**< Middle */
+                    VATop = 3       /**< Top. */
                 };
 
                 /**
                  * Horizontal alignments.
                  */
                 enum HAlign {
-                    HALeft,     /**< Left */
-                    HACenter,   /**< Centered */
-                    HARight,    /**< Right */
-                    HAAligned,  /**< Aligned */
-                    HAMiddle,   /**< Middle */
-                    HAFit       /**< Fit */
+                    HALeft = 0,     /**< Left */
+                    HACenter = 1,   /**< Centered */
+                    HARight = 2,    /**< Right */
+                    HAAligned = 3,  /**< Aligned */
+                    HAMiddle = 4,   /**< Middle */
+                    HAFit = 5       /**< Fit */
                 };
 
                 /**
                  * Text drawing direction.
                  */
                 enum TextGeneration {
-                    None,      /**< Normal text */
-                    Backward,  /**< Mirrored in X */
-                    UpsideDown /**< Mirrored in Y */
+                    None = 0,      /**< Normal text */
+                    Backward = 1,  /**< Mirrored in X */
+                    UpsideDown = 2 /**< Mirrored in Y */
                 };
                 /**
                  * @brief Text Entity
@@ -62,6 +62,13 @@ namespace lc {
                      const double angle, const std::string style,
                      const TextGeneration textgeneration,
                      const HAlign halign, const VAlign valign);
+
+                Text(const Coordinate& insertion_point,
+                     const Coordinate& second_point, const double height,
+                     const std::string text_value, const double width_rel,
+                     const double angle, const std::string style,
+                     const int textgenvalue,
+                     const int halignvalue, const int valignvalue);
 
                 /**
                      * @brief Insertion point of text
