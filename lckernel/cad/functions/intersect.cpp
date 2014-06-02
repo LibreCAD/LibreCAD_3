@@ -21,6 +21,7 @@ std::vector<geo::Coordinate> Intersect::result() const {
 
 void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
 
+
     const geo::Coordinate p1 = l1->start();
     const geo::Coordinate p2 = l1->end();
     const geo::Coordinate p3 = l2->start();
@@ -30,7 +31,7 @@ void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
     const double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
 
     // TODO: We properly should add a tolorance here ??
-    if (fabs(div) > 0.0) {
+    if (fabs(div) > _tolerance) {
         double u = num / div;
         double xs = p1.x() + u * (p2.x() - p1.x());
         double ys = p1.y() + u * (p2.y() - p1.y());
@@ -323,4 +324,26 @@ std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
     return _intersectionPoints;
 }
 
+
+
+
+HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+    _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
+}
+
+bool HasIntersectAgainstOthers::result() const {
+    std::vector<geo::Coordinate> _intersectionPoints;
+
+    for (auto other : _others) {
+        for (auto entity : _entities) {
+            Intersect intersect(_method, _tolerance);
+            other->accept(entity, intersect);
+            if (intersect.result().size()>0) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 

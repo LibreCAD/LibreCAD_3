@@ -54,6 +54,7 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
+            Line(const geo::Vector& vector, const Layer_CSPtr layer);
             Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
             Line(const Line_CSPtr other, bool sameID = false);

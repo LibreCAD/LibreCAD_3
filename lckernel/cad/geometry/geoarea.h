@@ -4,6 +4,7 @@
 #include "cad/const.h"
 
 #include "geocoordinate.h"
+#include "geovector.h"
 
 namespace lc {
     namespace geo {
@@ -95,7 +96,7 @@ namespace lc {
 
                 /**
                  * @brief merge
-                 * two area's and expend if required to largest area
+                 * two area's and expand if required to largest containing area
                  * @param other
                  * @return
                  */
@@ -104,6 +105,43 @@ namespace lc {
                                Coordinate(std::min(other.minP().x(), this->minP().x()), std::min(other.minP().y(), this->minP().y())),
                                Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y())));
 
+                }
+
+                /**
+                 * @brief top
+                 * vector of this area
+                 * @return
+                 */
+                inline Vector top() const {
+                    Vector v(_minP, _maxP);
+                    return v;
+                }
+
+                /**
+                 * @brief left
+                 * vector for this area
+                 * @return
+                 */
+                inline Vector left() const {
+                    return Vector(Coordinate(_minP.x(), _minP.y()), Coordinate(_minP.x(), _maxP.y()));
+                }
+
+                /**
+                 * @brief bottom
+                 * vector of this area
+                 * @return
+                 */
+                inline Vector bottom() const {
+                    return Vector(Coordinate(_minP.x(), _minP.y()), Coordinate(_maxP.x(), _minP.y()));
+                }
+
+                /**
+                 * @brief right
+                 * vector of this area
+                 * @return
+                 */
+                inline Vector right() const {
+                    return Vector(Coordinate(_maxP.x(), _minP.y()), Coordinate(_maxP.x(), _maxP.y()));
                 }
 
             private:

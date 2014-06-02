@@ -10,6 +10,9 @@ Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
 }
 
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), Vector(vector) {
+}
+
 Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
 }
 
