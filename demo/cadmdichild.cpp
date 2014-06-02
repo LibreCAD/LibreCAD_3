@@ -6,6 +6,7 @@
 #include "cad/primitive/arc.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/ellipse.h"
+#include "cad/primitive/text.h"
 #include "cad/meta/color.h"
 #include "cad/meta/linewidth.h"
 #include "cad/interface/metatype.h"
@@ -134,6 +135,7 @@ void CadMdiChild::newDocument() {
     builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 270.0, layer));
     builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
     builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 50.26, 70.26, layer));
+    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300,300),lc::geo::Coordinate(500,500), 20.0,"Jai Sai Naath", 0.00,00.0, "Style",lc::Text::TextGeneration::Backward, lc::Text::HAlign::HAAligned, lc::Text::VAlign::VABaseline, layer));
     builder->execute();
 }
 

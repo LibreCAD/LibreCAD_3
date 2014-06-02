@@ -1,7 +1,6 @@
 #ifndef LCPAINTER_H
 #define LCPAINTER_H
 #include <string>
-
 class LcPainter {
     public:
         virtual ~LcPainter() {

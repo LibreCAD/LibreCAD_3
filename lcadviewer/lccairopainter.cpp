@@ -141,12 +141,11 @@ void LcCairoPainter::scale(double s) {
 void LcCairoPainter::text(double x, double y, const char *text_val, double height) {
 
     // NOTE: Just testing code, may need some chamges.
-    cairo_select_font_face (_cr, "serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_select_font_face (_cr, "stick3.ttf", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (_cr, height);
-    cairo_set_source_rgb (_cr, 0.0, 0.0, 1.0);
+    cairo_set_source_rgb (_cr, 1.0, 0.0, 0.0);
     cairo_move_to (_cr, x, y);
     cairo_show_text (_cr, text_val);
-
 }
 
 void LcCairoPainter::source_rgb(double r, double g, double b) {

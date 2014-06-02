@@ -35,10 +35,9 @@ Text::Text(const Coordinate& insertion_point,
     _width_rel = width_rel;
     _angle = angle;
     _style = style;
-    _textgeneration = static_cast <TextGeneration>(textgenvalue);
-    _halign = static_cast <HAlign>(halignvalue);
-    _valign = static_cast <VAlign>(valignvalue);
-
+    _textgeneration = static_cast <Text::TextGeneration>(textgenvalue);
+    _halign = static_cast <Text::HAlign>(halignvalue);
+    _valign = static_cast <Text::VAlign>(valignvalue);
 }
 const Coordinate Text::insertion_point() const {
     return _insertion_point;

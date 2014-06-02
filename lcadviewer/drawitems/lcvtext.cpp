@@ -1,5 +1,4 @@
 #include "lcvtext.h"
-
 #include "lcpainter.h"
 #include "lcdrawoptions.h"
 #include <QColor>

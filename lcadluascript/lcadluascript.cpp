@@ -180,6 +180,8 @@ print (microtime()-start);
 
 /* Gear
  *
+layer = active.proxy.layerByName("0")
+
 local Gear = {}
 Gear.__index = Gear
 
@@ -313,9 +315,8 @@ end
 local gear = Gear()
 
 doc=active.document()
-em=app.currentEntityManager()
-ce=Builder(doc,em)
-layer = active.proxy.layerByName("0")
+ce=Builder(doc)
+
 
 gear:calc(ce, 20,math.rad(10),math.rad(10))
 gear:calc(ce, 10,math.rad(10),math.rad(10))
@@ -423,11 +424,11 @@ d=active.document()
 Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(2,2)):execute()
 print "Move time"
 print (microtime()-start);
-
 */
 
 /*
- * Text
+ *
+Text
 layer = active.proxy.layerByName("0")
 l=Text(Coord(400,400),Coord(500,500), 20.0,"Jai Sai Naath", 10.0,0.0, "name",0,0,0, layer);
 d=active.document()

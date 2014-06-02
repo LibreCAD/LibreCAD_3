@@ -61,9 +61,9 @@ Text::Text(const geo::Coordinate& insertion_point,
 
 }
 
-Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), geo::Text(this->insertion_point(), this->second_point(), this->height(),
-                                                                                                           this->text_value(), this->width_rel(), this->angle(), this->style(),
-                                                                                                           this->textgeneration(), this->halign(), this->valign()) {
+Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), geo::Text(other->insertion_point(), other->second_point(), other->height(),
+                                                                                                           other->text_value(), other->width_rel(), other->angle(), other->style(),
+                                                                                                           other->textgeneration(), other->halign(), other->valign()) {
     if (sameID) {
         this->setID(other->id());
     }

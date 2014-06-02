@@ -4,7 +4,7 @@
 #include <cairo.h>
 #include "lcpainter.h"
 #include <map>
-
+#include <pango/pangocairo.h>
 class LcCairoPainter : public LcPainter {
     public:
         LcCairoPainter(cairo_surface_t* surface, cairo_t* cr);
