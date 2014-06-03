@@ -6,7 +6,11 @@
 
 #include "cad/base/id.h"
 #include "quadtree.h"
+
 #include <cad/vo/entitydistance.h>
+#include <cad/functions/intersect.h>
+#include <cad/geometry/geocoordinate.h>
+#include <cad/primitive/line.h>
 
 namespace lc {
     class Layer;
@@ -151,10 +155,40 @@ namespace lc {
              */
             EntityContainer entitiesByArea(const geo::Area& area, const short maxLevel = SHRT_MAX) const {
                 EntityContainer container;
-                const std::vector<CT>& entities = _tree->retrieve(area, maxLevel);
+                std::vector<CT> entities = _tree->retrieve(area, maxLevel);
+                std::vector<CT> foo;
 
                 for (auto i : entities) {
-                    container.insert(i);
+
+                    lc::Intersect intersect(Intersect::OnPath, 10e-4);
+
+                    auto layer = i->layer();
+                    Line_SPtr l = std::make_shared<Line>(area.top(), layer);
+                    l->accept(i, intersect);
+                    if (intersect.result().size()!=0) {
+                        container.insert(i);
+                        continue;
+                    }
+
+                    l = std::make_shared< Line>(area.left(), layer);
+                    l->accept(i, intersect);
+                    if (intersect.result().size()!=0) {
+                        container.insert(i);
+                        continue;
+                    }
+
+                     l = std::make_shared< Line>(area.bottom(), layer);
+                    l->accept(i, intersect);
+                    if (intersect.result().size()!=0) {
+                        container.insert(i);
+                        continue;
+                    }
+                     l = std::make_shared< Line>(area.right(), layer);
+                    l->accept(i, intersect);
+                    if (intersect.result().size()!=0) {
+                        container.insert(i);
+                        continue;
+                    }
                 }
 
                 return container;

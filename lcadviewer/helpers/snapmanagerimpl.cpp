@@ -51,7 +51,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
                 lc::CADEntity_CSPtr i1 = _entities.at(a).entity();
                 lc::CADEntity_CSPtr i2 = _entities.at(b).entity();
 
-                lc::Intersect intersect(lc::Intersect::MustIntersect);
+                lc::Intersect intersect(lc::Intersect::OnPath, 1.0e-4);
                 i1->accept(i2, intersect);
 
                 if (intersect.result().size() > 0) {
