@@ -209,7 +209,7 @@ end
 --phi = pressure angle
 --PC = Circular Pitch
 --teeth = no of teeth
-function Gear:calc(ce, N, phi, Pc)
+function Gear:calc(builder, N, phi, Pc)
     -- Pitch Circle
     local D = N * Pc / math.pi
     local R = D / 2.0
@@ -303,23 +303,24 @@ function Gear:calc(ce, N, phi, Pc)
         local fKeep = first
         table.remove(points, 1)
         for k,v in pairs(points) do
-            ce:append(Line(Coord(first.x,first.y), Coord(v.x,v.y)))
+            builder:append(Line(Coord(first.x,first.y), Coord(v.x,v.y),layer))
              first=v
         end
-            ce:append(Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y)))
+            builder:append(Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer))
 
 end
 
 local gear = Gear()
 
-doc=active.document()
-em=app.currentEntityManager()
-ce=Builder(doc,em)
+b=Builder(active.document())
 layer = active.proxy.layerByName("0")
 
-gear:calc(ce, 20,math.rad(10),math.rad(10))
-gear:calc(ce, 10,math.rad(10),math.rad(10))
-ce:execute()
+gear:calc(b, 20,math.rad(10),math.rad(10))
+gear:calc(b, 10,math.rad(10),math.rad(10))
+b:push()
+b:scale(Coord(0,0),Coord(10,10))
+b:execute()
+
 
 */
 
