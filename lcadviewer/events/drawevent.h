@@ -2,7 +2,7 @@
 #define DRAWEVENT_H
 
 #include <cad/geometry/geoarea.h>
-
+#include <lcpainter.h>
 /**
   * Draw event for a object to draw something.
   *

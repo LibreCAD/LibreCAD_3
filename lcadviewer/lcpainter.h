@@ -1,5 +1,6 @@
 #ifndef LCPAINTER_H
 #define LCPAINTER_H
+#include <string>
 
 class LcPainter {
     public:
@@ -26,6 +27,7 @@ class LcPainter {
         virtual void device_to_user(double* x, double* y) = 0;
         virtual void user_to_device_distance(double* dx, double* dy) = 0;
         virtual void device_to_user_distance(double* dx, double* dy) = 0;
+        virtual void text(double x, double y, const char* text_val, double height) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;

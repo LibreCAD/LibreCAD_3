@@ -184,7 +184,7 @@ namespace lc {
                  * Scales this vector by the given factors with the given center.
                  */
                 inline Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
-                    return scale_center + (*this - scale_center) * scale_factor;
+                    return scale_center + ((*this - scale_center) * scale_factor);
                 }
 
             private:

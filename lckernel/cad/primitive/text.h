@@ -43,6 +43,17 @@ namespace lc {
                  const TextGeneration textgeneration,
                  const HAlign halign, const VAlign valign, const Layer_CSPtr layer);
 
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const std::string text_value,
+                 const double width_rel,
+                 const double angle,
+                 const std::string style,
+                 const int textgeneration,
+                 const int halign, const int valign, const Layer_CSPtr layer);
+
+
             /**
              * @brief Text Entity
              * @param insertion_point insertion_point of the text
@@ -67,6 +78,19 @@ namespace lc {
                  const std::string style,
                  const TextGeneration textgeneration,
                  const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+
+            Text(const geo::Coordinate& insertion_point,
+                 const geo::Coordinate& second_point,
+                 const double height,
+                 const std::string text_value,
+                 const double width_rel,
+                 const double angle,
+                 const std::string style,
+                 const int textgeneration,
+                 const int halign, const int valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+
+
+            Text(const Text_CSPtr other, bool sameID);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
