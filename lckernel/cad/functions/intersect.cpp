@@ -1,7 +1,6 @@
 #include "intersect.h"
 
 #include <cmath>
-
 #include "cad/geometry/geocoordinate.h"
 
 #include "cad/primitive/arc.h"
@@ -18,86 +17,62 @@ std::vector<geo::Coordinate> Intersect::result() const {
     return this->_intersectionPoints;
 }
 
-void Intersect::visit(Line_CSPtr l1, const geo::Vector &) {
-
-}
-
-void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
-
-
+void Intersect::visit(Line_CSPtr l1, const geo::Vector &v) {
     const geo::Coordinate p1 = l1->start();
     const geo::Coordinate p2 = l1->end();
-    const geo::Coordinate p3 = l2->start();
-    const geo::Coordinate p4 = l2->end();
+    const geo::Coordinate p3 = v.start();
+    const geo::Coordinate p4 = v.end();
 
     const double num = ((p4.x() - p3.x()) * (p1.y() - p3.y()) - (p4.y() - p3.y()) * (p1.x() - p3.x()));
     const double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
 
     // TODO: We properly should add a tolorance here ??
-    if (fabs(div) > _tolerance) {
+    if (std::abs(div) > _tolerance) {
         double u = num / div;
         double xs = p1.x() + u * (p2.x() - p1.x());
         double ys = p1.y() + u * (p2.y() - p1.y());
         const geo::Coordinate coord(xs, ys);
 
-        if (_method == Method::Any || (_method == Method::OnPath && l1->isCoordinateOnPath(coord) && l2->isCoordinateOnPath(coord))) {
+        const geo::Area a1(p1, p2);
+        const geo::Area a2(p3, p4);
+
+        const bool a1b = a1.inArea(coord);
+        const bool a2b = a2.inArea(coord);
+
+        if (_method == Method::Any) {
             _intersectionPoints.push_back(coord);
+        } else if (a1b && a2b) { // Test if it positivly fit's within a area
+            _intersectionPoints.push_back(coord);
+        } else if (
+            (p1.x()==p2.x() && ys>=a1.minP().y() && ys<=a1.maxP().y() && a2b) || // when we deal with orizontal or vertical lines, inArea might not
+            (p3.x()==p4.x() && ys>=a2.minP().y() && ys<=a2.maxP().y() && a1b) || // give a positive result, this conditions will confirm without using tolerance
+            (p1.y()==p2.y() && xs>=a1.minP().x() && xs<=a1.maxP().x() && a2b) ||
+            (p3.y()==p4.y() && xs>=a2.minP().x() && xs<=a2.maxP().x() && a1b)
+            ) {
+               _intersectionPoints.push_back(coord);
         }
     }
+}
+
+
+void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
+    visit(l1, geo::Vector(l2->start(), l2->end()));
 }
 
 void Intersect::visit(Line_CSPtr line, Circle_CSPtr circle) {
-    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()));
+    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()), geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
-
-    const geo::Coordinate nearest = line->nearestPointOnPath(arc->center());
-    double dist = arc->center().distanceTo(nearest);
-
-    // special case: arc touches line (tangent):
-    // TODO: We properly should add a tolorance here ??
-    if (fabs(dist - arc->radius()) < _tolerance) {
-        _intersectionPoints.push_back(nearest);
-        return;
-    }
-
-    const geo::Coordinate d = line->end() - line->start();
-    const double r = arc->radius();
-    const geo:: Coordinate delta = line->start() - arc->center();
-    const double d2 = d.squared();
-
-    //intersection
-    // solution = p + t d;
-    //| p -c+ t d|^2 = r^2
-    // |d|^2 t^2 + 2 (p-c).d t + |p-c|^2 -r^2 = 0
-    const double a1 = delta.dot(d);
-    const double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
-
-    // TODO: We properly should add a tolorance here ??
-    if (discriminant < - _tolerance) {
-        return;
-    } else {
-        const double t = sqrtf(fabs(discriminant));
-        //two intersections
-        const geo::Coordinate c1(line->start() + d * (t - a1) / d2);
-        const geo::Coordinate c2(line->start() - d * (t + a1) / d2);
-
-        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c1) && line->isCoordinateOnPath(c1))) {
-            _intersectionPoints.push_back(c1);
-        }
-
-        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c2) && line->isCoordinateOnPath(c2))) {
-            _intersectionPoints.push_back(c2);
-        }
-    }
+    visit(arc, geo::Vector(line->start(), line->end()));
 }
+
 void Intersect::visit(Line_CSPtr, Ellipse_CSPtr) {
 
 }
 
 void Intersect::visit(Line_CSPtr, Text_CSPtr) {
-    return;
+
 }
 
 void Intersect::visit(Line_CSPtr, Spline_CSPtr) {
@@ -132,13 +107,12 @@ void Intersect::visit(Line_CSPtr, DimRadial_CSPtr) {
 
 
 // Circle
-
-void Intersect::visit(Circle_CSPtr l1, const geo::Vector &) {
-
+void Intersect::visit(Circle_CSPtr circle, const geo::Vector &v) {
+    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), v);
 }
 
 void Intersect::visit(Circle_CSPtr circle, Line_CSPtr line) {
-    visit(line, std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()));
+    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Circle_CSPtr, Circle_CSPtr) {
@@ -190,12 +164,49 @@ void Intersect::visit(Circle_CSPtr, DimRadial_CSPtr) {
 
 
 // ARC
-void Intersect::visit(Arc_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(Arc_CSPtr arc, const geo::Vector & line) {
+    const geo::Coordinate nearest = line.nearestPointOnPath(arc->center());
+    double dist = arc->center().distanceTo(nearest);
 
+    // special case: arc touches line (tangent):
+    // TODO: We properly should add a tolorance here ??
+    if (fabs(dist - arc->radius()) < _tolerance) {
+        _intersectionPoints.push_back(nearest);
+        return;
+    }
+
+    const geo::Coordinate d = line.end() - line.start();
+    const double r = arc->radius();
+    const geo:: Coordinate delta = line.start() - arc->center();
+    const double d2 = d.squared();
+
+    //intersection
+    // solution = p + t d;
+    //| p -c+ t d|^2 = r^2
+    // |d|^2 t^2 + 2 (p-c).d t + |p-c|^2 -r^2 = 0
+    const double a1 = delta.dot(d);
+    const double discriminant = a1 * a1 - d2 * (delta.squared() - r * r);
+
+    if (discriminant < - _tolerance) {
+        return;
+    } else {
+        const double t = sqrtf(fabs(discriminant));
+        //two intersections
+        const geo::Coordinate c1(line.start() + d * (t - a1) / d2);
+        const geo::Coordinate c2(line.start() - d * (t + a1) / d2);
+
+        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c1) && line.isCoordinateOnPath(c1))) {
+            _intersectionPoints.push_back(c1);
+        }
+
+        if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
+            _intersectionPoints.push_back(c2);
+        }
+    }
 }
 
 void Intersect::visit(Arc_CSPtr arc, Line_CSPtr line) {
-    visit(line, arc);
+    visit(arc, geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Arc_CSPtr, Circle_CSPtr) {

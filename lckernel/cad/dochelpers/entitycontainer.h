@@ -3,7 +3,9 @@
 
 #include <memory>
 #include <limits>
+#include <QDebug>
 
+#include "cad/const.h"
 #include "cad/base/id.h"
 #include "quadtree.h"
 
@@ -149,42 +151,71 @@ namespace lc {
 
             /**
              * @brief entitiesByArea
-             * Find all entities within a selected area
+             * Find all entities within a selected area based on boundingbox of the entites
              * @param area
              * @return
              */
-            EntityContainer entitiesByArea(const geo::Area& area, const short maxLevel = SHRT_MAX) const {
+            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = SHRT_MAX) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
-                std::vector<CT> foo;
+
+                for (auto i : entities) {
+                    // If the item fully with's with the selection area sinmply add it
+                    if (i->boundingBox().inArea(area)) {
+                        container.insert(i);
+                        continue;
+                    }
+                }
+                return container;
+            }
+
+            /**
+             * @brief entitiesWithinAndCrossingArea
+             * Find all entities within a selected area or where the path is crossing the area bounderies
+             * @param area
+             * @return
+             */
+            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = SHRT_MAX) const {
+                EntityContainer container;
+                std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
                 for (auto i : entities) {
 
+                    // If the item fully with's with the selection area sinmply add it
+                    if (i->boundingBox().inArea(area)) {
+                        container.insert(i);
+                        continue;
+                    }
+
+                    // if it has 2 corners inside area, we know for 100% sure that the entity, or
+                    // at least part of it is located within area
+                    auto c = i->boundingBox().numCornersInside(area);
+                    if (c==2) {
+                        container.insert(i);
+                        continue;
+                    }
+
+                    // Path to area intersection testing
                     lc::Intersect intersect(Intersect::OnPath, 10e-4);
-
-                    auto layer = i->layer();
-                    Line_SPtr l = std::make_shared<Line>(area.top(), layer);
-                    l->accept(i, intersect);
+                    i->accept(area.top(), intersect);
                     if (intersect.result().size()!=0) {
                         container.insert(i);
                         continue;
                     }
 
-                    l = std::make_shared< Line>(area.left(), layer);
-                    l->accept(i, intersect);
+                    i->accept(area.left(), intersect);
                     if (intersect.result().size()!=0) {
                         container.insert(i);
                         continue;
                     }
 
-                     l = std::make_shared< Line>(area.bottom(), layer);
-                    l->accept(i, intersect);
+                    i->accept(area.bottom(), intersect);
                     if (intersect.result().size()!=0) {
                         container.insert(i);
                         continue;
                     }
-                     l = std::make_shared< Line>(area.right(), layer);
-                    l->accept(i, intersect);
+
+                    i->accept(area.right(), intersect);
                     if (intersect.result().size()!=0) {
                         container.insert(i);
                         continue;

@@ -32,9 +32,9 @@ DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document)
         painter->line_width(1.0);
 
         if (occupies) {
-            painter->source_rgba(1.0, 0.2, 0.2, 0.6);
+            painter->source_rgba(.2, .2, 1.0, .6);
         } else {
-            painter->source_rgba(0.2, 1.0, 0.2, 0.5);
+            painter->source_rgba(.2, 1.0, .2, .5);
         }
 
         painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
@@ -42,9 +42,9 @@ DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document)
         painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
 
         if (occupies) {
-            painter->source_rgba(1.0, 0.2, 0.2, 0.9);
+            painter->source_rgba(.2, .2, 1., 0.9);
         } else {
-            painter->source_rgba(0.2, 1.0, 0.2, 0.8);
+            painter->source_rgba(.2, 1.0, .2, 0.8);
         }
 
         painter->set_dash(dashes, 4, 0, true);
@@ -346,9 +346,16 @@ void DocumentRenderer::makeSelection(double x, double y, double w, double h, boo
         });
     }
 
-    _entityContainer.entitiesByArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-        di->selected(true);
-    });
+    if (occupies) {
+        _entityContainer.entitiesFullWithinArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+            di->selected(true);
+        });
+    } else {
+        _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+            di->selected(true);
+        });
+
+    }
 }
 
 void DocumentRenderer::makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo) {

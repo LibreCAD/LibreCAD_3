@@ -90,8 +90,8 @@ namespace lc {
                   * @param point Point to test agains
                   * @return boolean true of the point is within the area
                   */
-                inline bool inArea(const Coordinate& point) const {
-                    return (point.x() >= _minP.x() && point.x() <= _maxP.x() && point.y() >= _minP.y() && point.y() <= _maxP.y());
+                inline bool inArea(const Coordinate& point, double tolerance=0.) const {
+                    return (point.x() >= _minP.x()-tolerance && point.x() <= _maxP.x()+tolerance && point.y() >= _minP.y()-tolerance && point.y() <= _maxP.y()+tolerance);
                 }
 
                 /**
@@ -110,7 +110,7 @@ namespace lc {
                  * @param other
                  * @return
                  */
-                inline bool overlaps(const Area& otherArea) {
+                inline bool overlaps(const Area& otherArea) const {
                     if (otherArea._maxP.x()<_minP.x() || otherArea._minP.x()>_maxP.x() || otherArea._maxP.y()<_minP.y() || otherArea._minP.y()>_maxP.y()) {
                         return false;
                     } else {
@@ -124,7 +124,7 @@ namespace lc {
                  * @param other
                  * @return
                  */
-                inline unsigned short numCornersInside(const Area& otherArea) {
+                inline unsigned short numCornersInside(const Area& otherArea) const  {
                     unsigned short pointsInside = 0;
                     if (otherArea.inArea(_minP)) pointsInside++;
                     if (otherArea.inArea(_maxP)) pointsInside++;
@@ -152,7 +152,7 @@ namespace lc {
                  * @return
                  */
                 inline Vector top() const {
-                    Vector v(_minP, _maxP);
+                    Vector v(Coordinate(_minP.x(), _maxP.y()), Coordinate(_maxP.x(), _maxP.y()));
                     return v;
                 }
 

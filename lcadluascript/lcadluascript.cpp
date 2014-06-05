@@ -426,3 +426,27 @@ print "Move time"
 print (microtime()-start);
 
 */
+
+/*
+layer = active.proxy.layerByName("0")
+--Stick Figure
+c=Circle(Coord(-50,0), 50, layer); --face
+l1=Line(Coord(0,0), Coord(10,100), layer); --torso
+l2=Line(Coord(10,100), Coord(-20,150), layer); --right thigh
+l3=Line(Coord(10,100), Coord(0,150), layer); --left thigh
+l4=Line(Coord(-20,150), Coord(0,210), layer); --right lowerleg
+l5=Line(Coord(0,150), Coord(25,210), layer); --left lowerleg
+l6=Line(Coord(0,210), Coord(-15,215), layer); --right foot
+l7=Line(Coord(25,210), Coord(10,218), layer); --left foot
+l8=Line(Coord(2.5,25), Coord(25,60), layer); --left upperarm
+l9=Line(Coord(25,60), Coord(10,100), layer); --left lowerarm
+l10=Line(Coord(2.5,25), Coord(-10,60), layer); --right upperarm
+l11=Line(Coord(-10,60), Coord(10,100), layer); --right lowerarm
+c1=Circle(Coord(-80,-75), 10, layer); --first cloud
+c2=Circle(Coord(-125,-115), 20, layer); --second cloud
+e=Ellipse(Coord(-250,-210), Coord(-240,0), 70, math.rad(0), math.rad(360), layer) --big cloud
+t=Text(Coord(-350,-200), Coord(-150,-200),20,"WHY ME?")
+
+d=active.document()
+Builder(d):append(l1):append(c):append(l2):append(l3):append(l4):append(l5):append(l6):append(l7):append(l8):append(l9):append(l10):append(l11):append(c1):append(c2):append(e):execute();
+*/
