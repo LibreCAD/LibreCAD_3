@@ -86,12 +86,51 @@ namespace lc {
                 }
 
                 /**
-                  * Test of a specific point lies within a area
+                  * @brief Test of a specific point lies within a area
                   * @param point Point to test agains
                   * @return boolean true of the point is within the area
                   */
                 inline bool inArea(const Coordinate& point) const {
                     return (point.x() >= _minP.x() && point.x() <= _maxP.x() && point.y() >= _minP.y() && point.y() <= _maxP.y());
+                }
+
+                /**
+                 * @brief inArea
+                 * test if this object's fit's fully in area
+                 * @param area
+                 * @return
+                 */
+                inline bool inArea(const Area& area) const {
+                    return _minP.x()>=area._minP.x() && _minP.y()>=area._minP.y() && _maxP.x()<=area._maxP.x() && _maxP.y()<=area._maxP.y();
+                }
+
+                /**
+                 * @brief overlaps
+                 * returns true if any overlap is happening between the two area's, even if otherArea fit's within this area
+                 * @param other
+                 * @return
+                 */
+                inline bool overlaps(const Area& otherArea) {
+                    if (otherArea._maxP.x()<_minP.x() || otherArea._minP.x()>_maxP.x() || otherArea._maxP.y()<_minP.y() || otherArea._minP.y()>_maxP.y()) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
+                /**
+                 * @brief numCornersInside
+                 * count the number of corners this object has in otherArea
+                 * @param other
+                 * @return
+                 */
+                inline unsigned short numCornersInside(const Area& otherArea) {
+                    unsigned short pointsInside = 0;
+                    if (otherArea.inArea(_minP)) pointsInside++;
+                    if (otherArea.inArea(_maxP)) pointsInside++;
+                    if (otherArea.inArea(Coordinate(_minP.x(), _maxP.y()))) pointsInside++;
+                    if (otherArea.inArea(Coordinate(_maxP.x(), _minP.y()))) pointsInside++;
+                    return pointsInside;
                 }
 
                 /**
@@ -104,8 +143,8 @@ namespace lc {
                     return Area(
                                Coordinate(std::min(other.minP().x(), this->minP().x()), std::min(other.minP().y(), this->minP().y())),
                                Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y())));
-
                 }
+
 
                 /**
                  * @brief top
@@ -143,6 +182,8 @@ namespace lc {
                 inline Vector right() const {
                     return Vector(Coordinate(_maxP.x(), _minP.y()), Coordinate(_maxP.x(), _maxP.y()));
                 }
+
+
 
             private:
                 Coordinate _minP;
