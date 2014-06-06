@@ -18,7 +18,7 @@ Cursor::Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapM
 
 }
 
-void Cursor::on_Draw_Event(const DrawEvent& event) {
+void Cursor::on_Draw_Event(const DrawEvent& event)  {
 
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;

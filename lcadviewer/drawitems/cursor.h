@@ -17,7 +17,7 @@ class Cursor : public QObject  {
 
         public
     slots:
-        void on_Draw_Event(const DrawEvent&);
+        void on_Draw_Event(const DrawEvent&) ;
         void on_SnapPoint_Event(const SnapPointEvent&);
         void on_MouseRelease_Event(const MouseReleaseEvent&);
 

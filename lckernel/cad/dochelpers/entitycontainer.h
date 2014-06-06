@@ -132,8 +132,7 @@ namespace lc {
              */
             EntityContainer entitiesByLayer(const Layer_CSPtr layer) const {
                 EntityContainer container;
-                /*    auto l = layer;
-
+                /*  auto l = layer;
                     for (auto i : _cadentities) {
                         if (i.second->layer() == l) {
                             container.insert(i.second);
