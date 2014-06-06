@@ -73,7 +73,7 @@ namespace lc {
 
 
         public:
-            virtual void accept(const geo::Vector &o, EntityVisitor& ei) const {
+            virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {

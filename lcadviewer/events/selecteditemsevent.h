@@ -18,7 +18,7 @@ class SelectedItemsEvent  {
         }
 
     private:
-        std::vector<lc::CADEntity_CSPtr > _entities;
+        const std::vector<lc::CADEntity_CSPtr > _entities;
 };
 
 #endif // SELECTEDITEMSEVENT_H

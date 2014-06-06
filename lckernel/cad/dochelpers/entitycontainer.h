@@ -163,9 +163,9 @@ namespace lc {
                     // If the item fully with's with the selection area sinmply add it
                     if (i->boundingBox().inArea(area)) {
                         container.insert(i);
-                        continue;
                     }
                 }
+
                 return container;
             }
 
@@ -190,7 +190,8 @@ namespace lc {
                     // if it has 2 corners inside area, we know for 100% sure that the entity, or
                     // at least part of it is located within area
                     auto c = i->boundingBox().numCornersInside(area);
-                    if (c==2) {
+
+                    if (c == 2) {
                         container.insert(i);
                         continue;
                     }
@@ -198,25 +199,29 @@ namespace lc {
                     // Path to area intersection testing
                     lc::Intersect intersect(Intersect::OnPath, 10e-4);
                     i->accept(area.top(), intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
                     i->accept(area.left(), intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
                     i->accept(area.bottom(), intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
                     i->accept(area.right(), intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }

@@ -33,8 +33,8 @@ namespace lc {
 
             private:
                 const std::vector<Coordinate> _control_points; /*!< center of cirlce */
-                int _degree; /*!< Radius of Spline. */
-                bool _closed;
+                const int _degree; /*!< Radius of Spline. */
+                const bool _closed;
         };
     }
 }

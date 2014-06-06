@@ -17,7 +17,7 @@ std::vector<geo::Coordinate> Intersect::result() const {
     return this->_intersectionPoints;
 }
 
-void Intersect::visit(Line_CSPtr l1, const geo::Vector &v) {
+void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
     const geo::Coordinate p1 = l1->start();
     const geo::Coordinate p2 = l1->end();
     const geo::Coordinate p3 = v.start();
@@ -44,12 +44,12 @@ void Intersect::visit(Line_CSPtr l1, const geo::Vector &v) {
         } else if (a1b && a2b) { // Test if it positivly fit's within a area
             _intersectionPoints.push_back(coord);
         } else if (
-            (p1.x()==p2.x() && ys>=a1.minP().y() && ys<=a1.maxP().y() && a2b) || // when we deal with orizontal or vertical lines, inArea might not
-            (p3.x()==p4.x() && ys>=a2.minP().y() && ys<=a2.maxP().y() && a1b) || // give a positive result, this conditions will confirm without using tolerance
-            (p1.y()==p2.y() && xs>=a1.minP().x() && xs<=a1.maxP().x() && a2b) ||
-            (p3.y()==p4.y() && xs>=a2.minP().x() && xs<=a2.maxP().x() && a1b)
-            ) {
-               _intersectionPoints.push_back(coord);
+            (p1.x() == p2.x() && ys >= a1.minP().y() && ys <= a1.maxP().y() && a2b) || // when we deal with orizontal or vertical lines, inArea might not
+            (p3.x() == p4.x() && ys >= a2.minP().y() && ys <= a2.maxP().y() && a1b) || // give a positive result, this conditions will confirm without using tolerance
+            (p1.y() == p2.y() && xs >= a1.minP().x() && xs <= a1.maxP().x() && a2b) ||
+            (p3.y() == p4.y() && xs >= a2.minP().x() && xs <= a2.maxP().x() && a1b)
+        ) {
+            _intersectionPoints.push_back(coord);
         }
     }
 }
@@ -107,7 +107,7 @@ void Intersect::visit(Line_CSPtr, DimRadial_CSPtr) {
 
 
 // Circle
-void Intersect::visit(Circle_CSPtr circle, const geo::Vector &v) {
+void Intersect::visit(Circle_CSPtr circle, const geo::Vector& v) {
     visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), v);
 }
 
@@ -164,7 +164,7 @@ void Intersect::visit(Circle_CSPtr, DimRadial_CSPtr) {
 
 
 // ARC
-void Intersect::visit(Arc_CSPtr arc, const geo::Vector & line) {
+void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
     const geo::Coordinate nearest = line.nearestPointOnPath(arc->center());
     double dist = arc->center().distanceTo(nearest);
 
@@ -256,7 +256,7 @@ void Intersect::visit(Arc_CSPtr, DimRadial_CSPtr) {
 }
 
 // Ellipse
-void Intersect::visit(Ellipse_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(Ellipse_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -314,7 +314,7 @@ void Intersect::visit(Ellipse_CSPtr, DimRadial_CSPtr) {
 
 
 // Text
-void Intersect::visit(Text_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(Text_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -371,7 +371,7 @@ void Intersect::visit(Text_CSPtr, DimRadial_CSPtr) {
 
 
 // Spline
-void Intersect::visit(Spline_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(Spline_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -427,7 +427,7 @@ void Intersect::visit(Spline_CSPtr, DimRadial_CSPtr) {
 
 
 // MText
-void Intersect::visit(MText_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(MText_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -483,7 +483,7 @@ void Intersect::visit(MText_CSPtr, DimRadial_CSPtr) {
 
 
 // Dimension
-void Intersect::visit(Dimension_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(Dimension_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -540,7 +540,7 @@ void Intersect::visit(Dimension_CSPtr, DimRadial_CSPtr) {
 
 
 // DimAligned
-void Intersect::visit(DimAligned_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(DimAligned_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -598,7 +598,7 @@ void Intersect::visit(DimAligned_CSPtr, DimRadial_CSPtr) {
 
 
 // DimAngular
-void Intersect::visit(DimAngular_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(DimAngular_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -655,7 +655,7 @@ void Intersect::visit(DimAngular_CSPtr, DimRadial_CSPtr) {
 
 
 // DimDiametric
-void Intersect::visit(DimDiametric_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(DimDiametric_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -713,7 +713,7 @@ void Intersect::visit(DimDiametric_CSPtr, DimRadial_CSPtr) {
 
 
 // DimLinear
-void Intersect::visit(DimLinear_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(DimLinear_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -774,7 +774,7 @@ void Intersect::visit(DimRadial_CSPtr, Line_CSPtr) {
 }
 
 // DimLinear
-void Intersect::visit(DimRadial_CSPtr l1, const geo::Vector &) {
+void Intersect::visit(DimRadial_CSPtr l1, const geo::Vector&) {
 
 }
 
@@ -849,7 +849,7 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
 }
 
 
-IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
     _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
@@ -870,7 +870,7 @@ std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
 
 
 
-HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
     _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
@@ -881,7 +881,8 @@ bool HasIntersectAgainstOthers::result() const {
         for (auto entity : _entities) {
             Intersect intersect(_method, _tolerance);
             other->accept(entity, intersect);
-            if (intersect.result().size()>0) {
+
+            if (intersect.result().size() > 0) {
                 return true;
             }
         }

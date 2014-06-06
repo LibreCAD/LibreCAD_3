@@ -90,8 +90,8 @@ namespace lc {
                   * @param point Point to test agains
                   * @return boolean true of the point is within the area
                   */
-                inline bool inArea(const Coordinate& point, double tolerance=0.) const {
-                    return (point.x() >= _minP.x()-tolerance && point.x() <= _maxP.x()+tolerance && point.y() >= _minP.y()-tolerance && point.y() <= _maxP.y()+tolerance);
+                inline bool inArea(const Coordinate& point, double tolerance = 0.) const {
+                    return (point.x() >= _minP.x() - tolerance && point.x() <= _maxP.x() + tolerance && point.y() >= _minP.y() - tolerance && point.y() <= _maxP.y() + tolerance);
                 }
 
                 /**
@@ -101,7 +101,7 @@ namespace lc {
                  * @return
                  */
                 inline bool inArea(const Area& area) const {
-                    return _minP.x()>=area._minP.x() && _minP.y()>=area._minP.y() && _maxP.x()<=area._maxP.x() && _maxP.y()<=area._maxP.y();
+                    return _minP.x() >= area._minP.x() && _minP.y() >= area._minP.y() && _maxP.x() <= area._maxP.x() && _maxP.y() <= area._maxP.y();
                 }
 
                 /**
@@ -111,7 +111,7 @@ namespace lc {
                  * @return
                  */
                 inline bool overlaps(const Area& otherArea) const {
-                    if (otherArea._maxP.x()<_minP.x() || otherArea._minP.x()>_maxP.x() || otherArea._maxP.y()<_minP.y() || otherArea._minP.y()>_maxP.y()) {
+                    if (otherArea._maxP.x() < _minP.x() || otherArea._minP.x() > _maxP.x() || otherArea._maxP.y() < _minP.y() || otherArea._minP.y() > _maxP.y()) {
                         return false;
                     } else {
                         return true;
@@ -126,10 +126,23 @@ namespace lc {
                  */
                 inline unsigned short numCornersInside(const Area& otherArea) const  {
                     unsigned short pointsInside = 0;
-                    if (otherArea.inArea(_minP)) pointsInside++;
-                    if (otherArea.inArea(_maxP)) pointsInside++;
-                    if (otherArea.inArea(Coordinate(_minP.x(), _maxP.y()))) pointsInside++;
-                    if (otherArea.inArea(Coordinate(_maxP.x(), _minP.y()))) pointsInside++;
+
+                    if (otherArea.inArea(_minP)) {
+                        pointsInside++;
+                    }
+
+                    if (otherArea.inArea(_maxP)) {
+                        pointsInside++;
+                    }
+
+                    if (otherArea.inArea(Coordinate(_minP.x(), _maxP.y()))) {
+                        pointsInside++;
+                    }
+
+                    if (otherArea.inArea(Coordinate(_maxP.x(), _minP.y()))) {
+                        pointsInside++;
+                    }
+
                     return pointsInside;
                 }
 

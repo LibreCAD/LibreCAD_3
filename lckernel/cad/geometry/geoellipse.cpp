@@ -11,7 +11,9 @@ Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double mino
     _isArc(isArc),
     _minorRadius(minorRadius),
     _startAngle(startAngle),
-    _endAngle(endAngle) {}
+    _endAngle(endAngle),
+    _isReversed(false) {
+}
 
 const Coordinate Ellipse::center() const {
     return _center;
@@ -98,7 +100,7 @@ double Ellipse::ratio() const {
 }
 
 bool Ellipse::isArc() const {
-    return _startAngle!=_endAngle;
+    return _startAngle != _endAngle;
 }
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {

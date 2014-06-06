@@ -79,8 +79,8 @@ namespace lc {
 
             private:
                 const Coordinate _center, _majorP;
-                double _minorRadius, _startAngle, _endAngle;
-                bool _isArc, _isReversed;
+                const double _minorRadius, _startAngle, _endAngle;
+                const bool _isArc, _isReversed;
         };
     }
 }

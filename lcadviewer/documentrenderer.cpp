@@ -267,7 +267,6 @@ void DocumentRenderer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
     this->_foregroundItems.push_back(item);
 }
 
-
 void DocumentRenderer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
     _entityContainer.optimise();
 }

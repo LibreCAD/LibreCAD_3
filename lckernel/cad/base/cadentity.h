@@ -104,7 +104,7 @@ namespace lc {
              */
             CADEntity(Layer_CSPtr _layer, std::set<MetaType_CSPtr, MetaTypeComp> metaTypes);
 
-            virtual void accept(const geo::Vector &, EntityVisitor&) const = 0;
+            virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Arc_CSPtr, EntityVisitor&) const = 0;
