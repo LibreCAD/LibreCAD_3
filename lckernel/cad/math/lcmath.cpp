@@ -52,9 +52,6 @@ double Math::correctAngle(double a) {
  *         Always positive and less than 2*pi.
  */
 double Math::getAngleDifference(double a1, double a2, bool reversed) {
-    if (reversed) {
-        return M_PI + remainder(a1 - a2 - M_PI, 2 * M_PI);
-    } else {
-        return M_PI + remainder(a2 - a1 - M_PI, 2 * M_PI);
-    }
+    if (reversed) std::swap(a1, a2);
+    return correctAngle(a2 - a1);
 }
