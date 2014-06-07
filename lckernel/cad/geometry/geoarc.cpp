@@ -34,9 +34,7 @@ const Coordinate Arc::center() const {
 }
 
 Coordinate Arc::nearestPointOnPath(const Coordinate& coord) const {
-    Coordinate vp = coord - center();
-    double d = vp.magnitude();
-    return center() + vp * (radius() / d);
+    return center()+Coordinate((coord - center()).angle())*radius();
 }
 
 bool Arc::isCoordinateOnPath(const Coordinate& coord) const {
