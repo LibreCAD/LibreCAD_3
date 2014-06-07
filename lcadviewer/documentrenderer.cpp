@@ -58,6 +58,7 @@ DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document)
 }
 
 DocumentRenderer::~DocumentRenderer() {
+
     _document->addEntityEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_addEntityEvent>(this);
     _document->removeEntityEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_removeEntityEvent>(this);
     _document->commitProcessEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_commitProcessEvent>(this);

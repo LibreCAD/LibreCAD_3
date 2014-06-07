@@ -62,21 +62,13 @@ namespace lc {
                      const double angle, const std::string style,
                      const TextGeneration textgeneration,
                      const HAlign halign, const VAlign valign);
-
-                Text(const Coordinate& insertion_point,
-                     const Coordinate& second_point, const double height,
-                     const std::string text_value, const double width_rel,
-                     const double angle, const std::string style,
-                     const int textgenvalue,
-                     const int halignvalue, const int valignvalue);
-
                 /**
-                     * @brief Insertion point of text
-                     * First alignment point (in OCS)
-                     * DXF: X value; APP: 3D point
-                     * DXF: Y and Z values of first alignment point (in OCS)
-                     * @return Coordinate insertion_point
-                     */
+                 * @brief Insertion point of text
+                 * First alignment point (in OCS)
+                 * DXF: X value; APP: 3D point
+                 * DXF: Y and Z values of first alignment point (in OCS)
+                 * @return Coordinate insertion_point
+                 */
                 const Coordinate insertion_point() const;
 
                 /**

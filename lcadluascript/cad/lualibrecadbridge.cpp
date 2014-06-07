@@ -97,9 +97,9 @@ void lua_openlckernel(lua_State* L) {
                                                     .endClass()
 
                                                     .beginExtendClass <Text, CADEntity> ("Text")
-                                                    .addConstructor(LUA_SP(Text_SPtr), LUA_ARGS(const geo::Coordinate& insertion_point, const geo::Coordinate& second_point, const double height, const std::string text_value, const double width_rel,
-                                                        const double angle, const std::string style, const int textgenvalue,
-                                                        const int halignvalue, const int valignvalue, const Layer_CSPtr layer))
+                                                    .addConstructor(LUA_SP(Text_SPtr), LUA_ARGS(const geo::Coordinate & insertion_point, const geo::Coordinate & second_point, const double height, const std::string text_value, const double width_rel,
+                                                            const double angle, const std::string style, const int textgenvalue,
+                                                            const int halignvalue, const int valignvalue, const Layer_CSPtr layer))
                                                     .endClass()
 
 

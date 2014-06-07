@@ -165,27 +165,32 @@ namespace lc {
                     auto layer = i->layer();
                     Line_SPtr l = std::make_shared<Line>(area.top(), layer);
                     l->accept(i, intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
                     l = std::make_shared< Line>(area.left(), layer);
                     l->accept(i, intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
-                     l = std::make_shared< Line>(area.bottom(), layer);
+                    l = std::make_shared< Line>(area.bottom(), layer);
                     l->accept(i, intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
-                     l = std::make_shared< Line>(area.right(), layer);
+
+                    l = std::make_shared< Line>(area.right(), layer);
                     l->accept(i, intersect);
-                    if (intersect.result().size()!=0) {
+
+                    if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }

@@ -1,6 +1,8 @@
 #ifndef LCPAINTER_H
 #define LCPAINTER_H
 #include <string>
+#include "drawitems/endcaps.h"
+
 class LcPainter {
     public:
         virtual ~LcPainter() {
@@ -26,7 +28,7 @@ class LcPainter {
         virtual void device_to_user(double* x, double* y) = 0;
         virtual void user_to_device_distance(double* dx, double* dy) = 0;
         virtual void device_to_user_distance(double* dx, double* dy) = 0;
-        virtual void text(double x, double y, const char* text_val, double height) = 0;
+        virtual void text(double x, double y, const char* text_val, double angle, double height) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;
@@ -36,6 +38,7 @@ class LcPainter {
         virtual void fill() = 0;
         virtual void reset_transformations() = 0;
         virtual unsigned char* data() = 0;
+        virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) = 0;
         virtual void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) = 0;
 
         // The functions below might get changed in future

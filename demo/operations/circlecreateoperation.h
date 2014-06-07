@@ -3,7 +3,7 @@
 
 #include <QState>
 #include <QStateMachine>
-
+#include <cairo/cairo.h>
 #include <cad/meta/layer.h>
 
 #include "cad/document/storagemanager.h"

@@ -9,36 +9,17 @@ Text::Text(const Coordinate& insertion_point,
            const double angle, const std::string style,
            const TextGeneration textgeneration,
            const HAlign halign, const VAlign valign) :
-    _insertion_point(insertion_point), _second_point(second_point) {
-
-    _height = height;
-    _text_value = text_value;
-    _width_rel = width_rel;
-    _angle = angle;
-    _style = style;
-    _textgeneration = textgeneration;
-    _halign = halign;
-    _valign = valign;
-
+    _insertion_point(insertion_point), _second_point(second_point),
+    _height(height),
+    _text_value(text_value),
+    _width_rel(width_rel),
+    _angle(angle),
+    _style(style),
+    _textgeneration(textgeneration),
+    _halign(halign),
+    _valign(valign) {
 }
 
-Text::Text(const Coordinate& insertion_point,
-     const Coordinate& second_point, const double height,
-     const std::string text_value, const double width_rel,
-     const double angle, const std::string style,
-     const int textgenvalue,
-     const int halignvalue, const int valignvalue) :
-    _insertion_point(insertion_point), _second_point(second_point) {
-
-    _height = height;
-    _text_value = text_value;
-    _width_rel = width_rel;
-    _angle = angle;
-    _style = style;
-    _textgeneration = static_cast <Text::TextGeneration>(textgenvalue);
-    _halign = static_cast <Text::HAlign>(halignvalue);
-    _valign = static_cast <Text::VAlign>(valignvalue);
-}
 const Coordinate Text::insertion_point() const {
     return _insertion_point;
 }

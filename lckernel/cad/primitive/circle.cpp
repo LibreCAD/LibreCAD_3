@@ -78,7 +78,7 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Co
         newEllipse->setID(this->id());
         return newEllipse;
     } else {
-            auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
+        auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
         newCircle->setID(this->id());
         return newCircle;
     }

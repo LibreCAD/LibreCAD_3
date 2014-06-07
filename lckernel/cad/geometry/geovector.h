@@ -12,7 +12,7 @@ namespace lc {
                 explicit Vector(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {}
 
                 // TODO: Test for validity?
-                 Vector(const Vector& v) : _start(v._start), _end(v._end)  {}
+                Vector(const Vector& v) : _start(v._start), _end(v._end)  {}
 
                 inline const Coordinate start() const {
                     return _start;
@@ -47,6 +47,7 @@ namespace lc {
                     if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4)) {
                         return true;
                     }
+
                     return false;
                 }
 

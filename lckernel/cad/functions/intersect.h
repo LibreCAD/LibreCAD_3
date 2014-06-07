@@ -16,9 +16,9 @@ namespace lc {
             enum Method {
                 OnPath = 0,   // means that the paths must intersect
                 Any = 1       // means that the paths may intersect outside of the real path.
-                              // For example two lines of 2 in a slight angle might intersect outside of line's coordinate
-                              // When method == Any is selected, the system will return that coordinate
-                              // When Intersect is selected only a point is returned for a actual cross point
+                      // For example two lines of 2 in a slight angle might intersect outside of line's coordinate
+                      // When method == Any is selected, the system will return that coordinate
+                      // When Intersect is selected only a point is returned for a actual cross point
             };
 
             Intersect(Method method, double tolerance);

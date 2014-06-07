@@ -111,7 +111,6 @@ std::string LCadLuaScript::run(const std::string& script) {
 }
 
 /* Line
- *
 layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
 d=active.document()

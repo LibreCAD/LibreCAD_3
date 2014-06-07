@@ -784,7 +784,7 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
 }
 
 
-IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
     _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
@@ -805,7 +805,7 @@ std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
 
 
 
-HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities,std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
+HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
     _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
@@ -816,7 +816,8 @@ bool HasIntersectAgainstOthers::result() const {
         for (auto entity : _entities) {
             Intersect intersect(_method, _tolerance);
             other->accept(entity, intersect);
-            if (intersect.result().size()>0) {
+
+            if (intersect.result().size() > 0) {
                 return true;
             }
         }

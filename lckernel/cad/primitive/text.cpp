@@ -11,10 +11,10 @@ Text::Text(const geo::Coordinate& insertion_point,
            const double width_rel,
            const double angle,
            const std::string style,
-           const TextGeneration textgeneration,
-           const HAlign halign, const VAlign valign, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, second_point, height,
+           const int textgeneration,
+           const int halign, const int valign, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, second_point, height,
                        text_value, width_rel, angle, style,
-                       textgeneration, halign, valign) {
+                       static_cast<TextGeneration>(textgeneration), static_cast<HAlign>(halign), static_cast<VAlign>(valign)) {
 
 }
 
@@ -25,45 +25,16 @@ Text::Text(const geo::Coordinate& insertion_point,
            const double width_rel,
            const double angle,
            const std::string style,
-           const int textgenvalue,
-           const int halignvalue, const int valignvalue, const Layer_CSPtr layer) : CADEntity(layer), geo::Text(insertion_point, second_point, height,
+           const int textgeneration,
+           const int halign, const int valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Text(insertion_point, second_point, height,
                        text_value, width_rel, angle, style,
-                       textgenvalue, halignvalue, valignvalue) {
-
-}
-
-
-Text::Text(const geo::Coordinate& insertion_point,
-           const geo::Coordinate& second_point,
-           const double height,
-           const std::string text_value,
-           const double width_rel,
-           const double angle,
-           const std::string style,
-           const TextGeneration textgeneration,
-           const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Text(insertion_point, second_point, height,
-                       text_value, width_rel, angle, style,
-                       textgeneration, halign, valign) {
-
-}
-
-Text::Text(const geo::Coordinate& insertion_point,
-           const geo::Coordinate& second_point,
-           const double height,
-           const std::string text_value,
-           const double width_rel,
-           const double angle,
-           const std::string style,
-           const int textgenvalue,
-           const int halignvalue, const int valignvalue, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Text(insertion_point, second_point, height,
-                       text_value, width_rel, angle, style,
-                       textgenvalue, halignvalue, valignvalue) {
+                       static_cast<TextGeneration>(textgeneration), static_cast<HAlign>(halign), static_cast<VAlign>(valign)) {
 
 }
 
 Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), geo::Text(other->insertion_point(), other->second_point(), other->height(),
-                                                                                                           other->text_value(), other->width_rel(), other->angle(), other->style(),
-                                                                                                           other->textgeneration(), other->halign(), other->valign()) {
+            other->text_value(), other->width_rel(), other->angle(), other->style(),
+            other->textgeneration(), other->halign(), other->valign()) {
     if (sameID) {
         this->setID(other->id());
     }

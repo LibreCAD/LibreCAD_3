@@ -98,7 +98,7 @@ double Ellipse::ratio() const {
 }
 
 bool Ellipse::isArc() const {
-    return _startAngle!=_endAngle;
+    return _startAngle != _endAngle;
 }
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {
