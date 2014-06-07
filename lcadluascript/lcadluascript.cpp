@@ -210,7 +210,7 @@ end
 --phi = pressure angle
 --PC = Circular Pitch
 --teeth = no of teeth
-function Gear:calc(ce, N, phi, Pc)
+function Gear:calc(builder, N, phi, Pc)
     -- Pitch Circle
     local D = N * Pc / math.pi
     local R = D / 2.0
@@ -304,22 +304,24 @@ function Gear:calc(ce, N, phi, Pc)
         local fKeep = first
         table.remove(points, 1)
         for k,v in pairs(points) do
-            ce:append(Line(Coord(first.x,first.y), Coord(v.x,v.y)))
+            builder:append(Line(Coord(first.x,first.y), Coord(v.x,v.y),layer))
              first=v
         end
-            ce:append(Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y)))
+            builder:append(Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer))
 
 end
 
 local gear = Gear()
 
-doc=active.document()
-ce=Builder(doc)
+b=Builder(active.document())
+layer = active.proxy.layerByName("0")
 
+gear:calc(b, 20,math.rad(10),math.rad(10))
+gear:calc(b, 10,math.rad(10),math.rad(10))
+b:push()
+b:scale(Coord(0,0),Coord(10,10))
+b:execute()
 
-gear:calc(ce, 20,math.rad(10),math.rad(10))
-gear:calc(ce, 10,math.rad(10),math.rad(10))
-ce:execute()
 
 */
 
@@ -432,4 +434,28 @@ layer = active.proxy.layerByName("0")
 l=Text(Coord(400,400),Coord(500,500), 20.0,"Jai Sai Naath", 10.0,0.0, "name",0,0,0, layer);
 d=active.document()
 Builder(d):append(l):execute()
+*/
+
+/*
+layer = active.proxy.layerByName("0")
+--Stick Figure
+c=Circle(Coord(-50,0), 50, layer); --face
+l1=Line(Coord(0,0), Coord(10,100), layer); --torso
+l2=Line(Coord(10,100), Coord(-20,150), layer); --right thigh
+l3=Line(Coord(10,100), Coord(0,150), layer); --left thigh
+l4=Line(Coord(-20,150), Coord(0,210), layer); --right lowerleg
+l5=Line(Coord(0,150), Coord(25,210), layer); --left lowerleg
+l6=Line(Coord(0,210), Coord(-15,215), layer); --right foot
+l7=Line(Coord(25,210), Coord(10,218), layer); --left foot
+l8=Line(Coord(2.5,25), Coord(25,60), layer); --left upperarm
+l9=Line(Coord(25,60), Coord(10,100), layer); --left lowerarm
+l10=Line(Coord(2.5,25), Coord(-10,60), layer); --right upperarm
+l11=Line(Coord(-10,60), Coord(10,100), layer); --right lowerarm
+c1=Circle(Coord(-80,-75), 10, layer); --first cloud
+c2=Circle(Coord(-125,-115), 20, layer); --second cloud
+e=Ellipse(Coord(-250,-210), Coord(-240,0), 70, math.rad(0), math.rad(360), layer) --big cloud
+t=Text(Coord(-350,-200), Coord(-150,-200),20,"WHY ME?")
+
+d=active.document()
+Builder(d):append(l1):append(c):append(l2):append(l3):append(l4):append(l5):append(l6):append(l7):append(l8):append(l9):append(l10):append(l11):append(c1):append(c2):append(e):execute();
 */

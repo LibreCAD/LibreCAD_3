@@ -24,8 +24,8 @@ class SnapPointEvent {
         }
 
     private:
-        lc::geo::Coordinate _snapPoint;
-        bool _snapped;
+         lc::geo::Coordinate _snapPoint;
+         bool _snapped;
 };
 
 #endif // SNAPPEDEVENT_H

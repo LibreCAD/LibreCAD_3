@@ -1,16 +1,18 @@
 #ifndef CADENTITY_H
 #define CADENTITY_H
 
-#include "cad/const.h"
 #include "id.h"
+#include "cad/const.h"
 #include "metainfo.h"
-#include "cadentity.h"
 #include "cad/interface/metatype.h"
-#include "cad/geometry/geoarea.h"
 #include "cad/meta/layer.h"
+#include "cad/geometry/geoarea.h"
 
 namespace lc {
-
+    namespace geo {
+        class Vector;
+        class Coordinate;
+    }
     class EntityVisitor;
     class EntityDispatch;
 
@@ -102,6 +104,7 @@ namespace lc {
              */
             CADEntity(Layer_CSPtr _layer, std::set<MetaType_CSPtr, MetaTypeComp> metaTypes);
 
+            virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Arc_CSPtr, EntityVisitor&) const = 0;

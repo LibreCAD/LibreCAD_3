@@ -33,9 +33,9 @@ namespace lc {
 
             private:
                 const Coordinate _center; /*!< Coordinate center of Arc */
-                double _radius; /*!< Double _Radius of Arc */
-                double _startAngle;/*!< Double startAngle of Arc */
-                double _endAngle;/*!< Double endAngle of Arc */
+                const double _radius; /*!< Double _Radius of Arc */
+                const double _startAngle;/*!< Double startAngle of Arc */
+                const double _endAngle;/*!< Double endAngle of Arc */
         };
     }
 }

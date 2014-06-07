@@ -39,7 +39,7 @@ namespace lc {
 
             private:
                 const Coordinate _center; /*!< center of cirlce */
-                double _radius; /*!< Radius of circle. */
+                const double _radius; /*!< Radius of circle. */
         };
     }
 }
