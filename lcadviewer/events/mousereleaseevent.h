@@ -24,8 +24,8 @@ class MouseReleaseEvent  {
         }
 
     private:
-        const lc::geo::Coordinate _mousePosition;
-        const std::vector<lc::EntityDistance> _entities;
+         lc::geo::Coordinate _mousePosition;
+         std::vector<lc::EntityDistance> _entities;
 };
 
 #endif // MouseReleaseEvent_H
