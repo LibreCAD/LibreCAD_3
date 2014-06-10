@@ -36,6 +36,7 @@ class LcPainter {
         virtual void set_source(unsigned long pat) = 0;
         virtual void pattern_destroy(unsigned long pat) = 0;
         virtual void fill() = 0;
+        virtual void point(double x, double y) = 0;
         virtual void reset_transformations() = 0;
         virtual unsigned char* data() = 0;
         virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) = 0;

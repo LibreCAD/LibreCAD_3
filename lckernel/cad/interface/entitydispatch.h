@@ -5,6 +5,7 @@
 
 namespace lc {
     class Line;
+    class Coordinate;
     class Circle;
     class Arc;
     class Ellipse;
@@ -21,7 +22,8 @@ namespace lc {
         public:
 
             virtual void visit(Line_CSPtr) = 0;
-            virtual void visit(Circle_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr) = 0;
+        virtual void visit(Circle_CSPtr) = 0;
             virtual void visit(Arc_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr) = 0;
             virtual void visit(Text_CSPtr) = 0;

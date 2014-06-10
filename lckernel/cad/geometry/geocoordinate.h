@@ -4,6 +4,7 @@
 #include "cad/const.h"
 #include <cmath>
 #include <cad/math/lcmath.h>
+
 namespace lc {
     namespace geo {
         /**

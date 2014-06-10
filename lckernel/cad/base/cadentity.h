@@ -20,6 +20,10 @@ namespace lc {
     typedef std::shared_ptr<Arc> Arc_SPtr;
     typedef std::shared_ptr<const Arc> Arc_CSPtr;
 
+    class Coordinate;
+    typedef std::shared_ptr<Coordinate> Coordinate_SPtr;
+    typedef std::shared_ptr<const Coordinate> Coordinate_CSPtr;
+
     class Line;
     typedef std::shared_ptr<Line> Line_SPtr;
     typedef std::shared_ptr<const Line> Line_CSPtr;
@@ -106,6 +110,7 @@ namespace lc {
 
             virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(Coordinate_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Arc_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Ellipse_CSPtr, EntityVisitor&) const = 0;

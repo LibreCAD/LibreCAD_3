@@ -12,6 +12,7 @@
 #include <drawitems/lcvline.h>
 #include <drawitems/lcvellipse.h>
 #include <drawitems/lcvtext.h>
+#include <drawitems/lcvcoordinate.h>
 #include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 
@@ -318,6 +319,14 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (text != nullptr) {
         auto newText = std::make_shared<LCVText>(text);
         _entityContainer.insert(newText);
+        return;
+    }
+
+    const auto coord = std::dynamic_pointer_cast<const lc::Coordinate>(event.entity());
+
+    if (coord != nullptr) {
+        auto newCoord = std::make_shared<LCVCoordinate>(coord);
+        _entityContainer.insert(newCoord);
         return;
     }
 

@@ -112,6 +112,11 @@ void LcCairoPainter::circle(double x, double y, double r)  {
     cairo_arc(_cr, x, y, r, 0, 2 * M_PI);
 }
 
+void LcCairoPainter::point(double x, double y) {
+    cairo_arc(_cr, x, y, 3, 0, 2*M_PI);
+    cairo_fill(_cr);
+}
+
 void LcCairoPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra) {
     double cosrotangle = std::cos(ra);
     double sinrotangle = std::sin(ra);

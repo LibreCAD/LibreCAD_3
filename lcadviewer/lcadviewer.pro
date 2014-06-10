@@ -73,7 +73,8 @@ HEADERS     = lcadviewerplugin.h \
     drawitems/lcdrawoptions.h \
     drawitems/lcvarc.h \
     drawitems/lcvellipse.h \
-    drawitems/lcvtext.h
+    drawitems/lcvtext.h \
+    drawitems/lcvcoordinate.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
@@ -90,4 +91,5 @@ SOURCES     = lcadviewerplugin.cpp \
     drawitems/lcvarc.cpp \
     drawitems/lcvellipse.cpp \
     drawitems/lcvtext.cpp \
-    drawitems/endcaps.cpp
+    drawitems/endcaps.cpp \
+    drawitems/lcvcoordinate.cpp

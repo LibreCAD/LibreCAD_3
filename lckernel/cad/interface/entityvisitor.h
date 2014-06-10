@@ -20,6 +20,10 @@ namespace lc {
     typedef std::shared_ptr<Text> Text_SPtr;
     typedef std::shared_ptr<const Text> Text_CSPtr;
 
+    class Coordinate;
+    typedef std::shared_ptr<Coordinate> Coordinate_SPtr;
+    typedef std::shared_ptr<const Coordinate> Coordinate_CSPtr;
+
     class Spline;
     typedef std::shared_ptr<Spline> Spline_SPtr;
     typedef std::shared_ptr<const Spline> Spline_CSPtr;
@@ -67,7 +71,25 @@ namespace lc {
     class EntityVisitor {
         public:
 
+        virtual void visit(Coordinate_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Coordinate_CSPtr, Coordinate_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Line_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Circle_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Arc_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Ellipse_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Text_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Spline_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, MText_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, Dimension_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, DimAligned_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, DimAngular_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, DimDiametric_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, DimLinear_CSPtr) = 0;
+        virtual void visit(Coordinate_CSPtr, DimRadial_CSPtr) = 0;
+
+
             virtual void visit(Line_CSPtr, const geo::Vector&) = 0;
+            virtual void visit(Line_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Line_CSPtr, Line_CSPtr) = 0;
             virtual void visit(Line_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(Line_CSPtr, Arc_CSPtr) = 0;
@@ -83,6 +105,7 @@ namespace lc {
             virtual void visit(Line_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Circle_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Circle_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Circle_CSPtr , Line_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(Circle_CSPtr, Arc_CSPtr) = 0;
@@ -98,6 +121,7 @@ namespace lc {
             virtual void visit(Circle_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Arc_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Arc_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Arc_CSPtr arc, Line_CSPtr line) = 0;
             virtual void visit(Arc_CSPtr arc, Circle_CSPtr circle) = 0;
             virtual void visit(Arc_CSPtr, Arc_CSPtr) = 0;
@@ -114,6 +138,7 @@ namespace lc {
 
 
             virtual void visit(Ellipse_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Ellipse_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Ellipse_CSPtr ellipse, Line_CSPtr line) = 0;
             virtual void visit(Ellipse_CSPtr ellipse, Circle_CSPtr circle) = 0;
             virtual void visit(Ellipse_CSPtr ellipse, Arc_CSPtr arc) = 0;
@@ -129,6 +154,7 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Text_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Text_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Text_CSPtr text, Line_CSPtr line) = 0;
             virtual void visit(Text_CSPtr text, Circle_CSPtr circle) = 0;
             virtual void visit(Text_CSPtr text, Arc_CSPtr arc) = 0;
@@ -144,6 +170,7 @@ namespace lc {
             virtual void visit(Text_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Spline_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Spline_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Spline_CSPtr Spline, Line_CSPtr line) = 0;
             virtual void visit(Spline_CSPtr Spline, Circle_CSPtr circle) = 0;
             virtual void visit(Spline_CSPtr Spline, Arc_CSPtr arc) = 0;
@@ -159,6 +186,7 @@ namespace lc {
             virtual void visit(Spline_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(MText_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(MText_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(MText_CSPtr mtext, Line_CSPtr line) = 0;
             virtual void visit(MText_CSPtr mtext, Circle_CSPtr circle) = 0;
             virtual void visit(MText_CSPtr mtext, Arc_CSPtr arc) = 0;
@@ -174,6 +202,7 @@ namespace lc {
             virtual void visit(MText_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(Dimension_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(Dimension_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(Dimension_CSPtr Dimension, Line_CSPtr line) = 0;
             virtual void visit(Dimension_CSPtr Dimension, Circle_CSPtr circle) = 0;
             virtual void visit(Dimension_CSPtr Dimension, Arc_CSPtr arc) = 0;
@@ -189,6 +218,7 @@ namespace lc {
             virtual void visit(Dimension_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimAligned_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(DimAligned_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(DimAligned_CSPtr DimAligned, Line_CSPtr line) = 0;
             virtual void visit(DimAligned_CSPtr DimAligned, Circle_CSPtr circle) = 0;
             virtual void visit(DimAligned_CSPtr DimAligned, Arc_CSPtr arc) = 0;
@@ -204,6 +234,7 @@ namespace lc {
             virtual void visit(DimAligned_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimAngular_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(DimAngular_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(DimAngular_CSPtr DimAngular, Line_CSPtr line) = 0;
             virtual void visit(DimAngular_CSPtr DimAngular, Circle_CSPtr circle) = 0;
             virtual void visit(DimAngular_CSPtr DimAngular, Arc_CSPtr arc) = 0;
@@ -219,6 +250,7 @@ namespace lc {
             virtual void visit(DimAngular_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimDiametric_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(DimDiametric_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(DimDiametric_CSPtr, Line_CSPtr) = 0;
             virtual void visit(DimDiametric_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(DimDiametric_CSPtr, Arc_CSPtr) = 0;
@@ -234,6 +266,7 @@ namespace lc {
             virtual void visit(DimDiametric_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimLinear_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(DimLinear_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(DimLinear_CSPtr, Line_CSPtr) = 0;
             virtual void visit(DimLinear_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(DimLinear_CSPtr, Arc_CSPtr) = 0;
@@ -249,6 +282,7 @@ namespace lc {
             virtual void visit(DimLinear_CSPtr, DimRadial_CSPtr) = 0;
 
             virtual void visit(DimRadial_CSPtr, const geo::Vector&) = 0;
+        virtual void visit(DimRadial_CSPtr, Coordinate_CSPtr) = 0;
             virtual void visit(DimRadial_CSPtr, Line_CSPtr) = 0;
             virtual void visit(DimRadial_CSPtr, Circle_CSPtr) = 0;
             virtual void visit(DimRadial_CSPtr, Arc_CSPtr) = 0;

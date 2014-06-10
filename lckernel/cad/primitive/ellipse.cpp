@@ -98,5 +98,6 @@ const geo::Area Ellipse::boundingBox() const {
     double rect_width = 2 * (r_max * cos(t_nil) * cos(rot) - r_min * sin(t_nil) * sin(rot));
     double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
 
-    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+ //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+
 }

@@ -76,7 +76,8 @@ SOURCES += lckernel.cpp \
     cad/primitive/dimdiametric.cpp \
     cad/geometry/geodimlinear.cpp \
     cad/geometry/geodimradial.cpp \
-    cad/geometry/geodimdiametric.cpp
+    cad/geometry/geodimdiametric.cpp \
+    cad/primitive/coordinate.cpp
 
 
 HEADERS += \
@@ -150,4 +151,5 @@ HEADERS += \
     cad/geometry/geodimradial.h \
     cad/primitive/dimdiametric.h \
     cad/primitive/dimradial.h \
-    cad/primitive/dimlinear.h
+    cad/primitive/dimlinear.h \
+    cad/primitive/coordinate.h
