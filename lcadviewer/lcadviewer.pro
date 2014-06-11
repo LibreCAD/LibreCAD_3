@@ -48,8 +48,6 @@ unix {
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel
 
-INCLUDEPATH += /usr/include/pango-1.0/
-
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
     drawitems/gradientbackground.h \
