@@ -35,7 +35,7 @@ unix {
 	    LIBS += -L$$DESTDIR -llckernel
 	}
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz liblog4cxx
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg cairo-xcb cairo-xlib cairo-xlib-xcb cairo-xlib-xrender cairo-gl cairo-glx cairo-quartz pangocairo liblog4cxx
     } else {
         DESTDIR = ../lcdemo
 	LIBS += -L$$DESTDIR -llckernel
