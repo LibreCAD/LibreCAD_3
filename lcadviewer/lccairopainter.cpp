@@ -57,6 +57,20 @@ void LcCairoPainter::clear(double r, double g, double b)  {
     cairo_restore(_cr);
 }
 
+
+
+void LcCairoPainter::arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) {
+    // Draw the line
+    move_to(startX, startY);
+    line_to(endX, endY);
+
+    EndCaps caps;
+    // Draw the caps
+    caps.render(this, startCap.type(), endX, endY, startX, startY, startCap.size());
+    caps.render(this, endCap.type(), startX, startY, endX, endY,  endCap.size());
+}
+
+
 void LcCairoPainter::clear(double r, double g, double b, double a)  {
     cairo_save(_cr);
     cairo_set_source_rgba(_cr, r, g, b, a);
@@ -96,6 +110,11 @@ void LcCairoPainter::arc(double x, double y, double r, double start, double end)
 
 void LcCairoPainter::circle(double x, double y, double r)  {
     cairo_arc(_cr, x, y, r, 0, 2 * M_PI);
+}
+
+void LcCairoPainter::point(double x, double y) {
+    cairo_arc(_cr, x, y, 3, 0, 2*M_PI);
+    cairo_fill(_cr);
 }
 
 void LcCairoPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra) {
@@ -138,6 +157,19 @@ void LcCairoPainter::scale(double s) {
     line_width(_lineWidth);
 }
 
+void LcCairoPainter::text(double x, double y, const char* text_val, double angle , double height) {
+
+    // TODO : is Y is positive downwards ?
+    cairo_select_font_face(_cr, "stick3.ttf", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(_cr, height);
+    cairo_set_source_rgb(_cr, 1.0, 0.0, 0.0);
+    cairo_save(_cr);
+    move_to(x, -y);
+    cairo_rotate(_cr, angle);
+    cairo_show_text(_cr, text_val);
+    cairo_restore(_cr);
+}
+
 void LcCairoPainter::source_rgb(double r, double g, double b) {
     cairo_set_source_rgb(_cr, r, g, b);
 }
@@ -172,7 +204,6 @@ void LcCairoPainter::save() {
 void LcCairoPainter::restore() {
     cairo_restore(_cr);
 }
-
 
 unsigned long LcCairoPainter::pattern_create_linear(double x1, double y1, double x2, double y2) {
     _patternMap[++_patternMapNum] = cairo_pattern_create_linear(x1, y1, x2, y2);

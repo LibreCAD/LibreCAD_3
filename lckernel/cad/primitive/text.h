@@ -40,8 +40,8 @@ namespace lc {
                  const double width_rel,
                  const double angle,
                  const std::string style,
-                 const TextGeneration textgeneration,
-                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer);
+                 const int textgeneration,
+                 const int halign, const int valign, const Layer_CSPtr layer);
 
             /**
              * @brief Text Entity
@@ -65,8 +65,10 @@ namespace lc {
                  const double width_rel,
                  const double angle,
                  const std::string style,
-                 const TextGeneration textgeneration,
-                 const HAlign halign, const VAlign valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                 const int textgeneration,
+                 const int halign, const int valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+
+            Text(const Text_CSPtr other, bool sameID);
 
         public:
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
@@ -76,6 +78,9 @@ namespace lc {
             virtual const geo::Area boundingBox() const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
+            virtual void accept(Coordinate_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {

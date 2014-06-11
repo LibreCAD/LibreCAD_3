@@ -1,15 +1,11 @@
-#include "lcvline.h"
+#include "lcvcoordinate.h"
 #include "lcpainter.h"
 #include "lcdrawoptions.h"
-#include <QColor>
-
-LCVLine::LCVLine(const lc::Line_CSPtr line) : LCVDrawItem(true), lc::Line(line, true) {
+#include <QDebug>
+LCVCoordinate::LCVCoordinate(const lc::Coordinate_CSPtr Coordinate) : LCVDrawItem(true), lc::Coordinate(Coordinate, true) {
 }
 
-void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
-
-
-
+void LCVCoordinate::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     if (this->selected()) {
@@ -22,13 +18,12 @@ void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
             options->selectedColor().alphaF()
         );
     }
-    painter->move_to(start().x(), start().y());
-    painter->line_to(end().x(), end().y());
-    painter->stroke();
+
+    painter->point(x(), y());
+        painter->stroke();
 
     if (modified) {
         painter->restore();
     }
-
 }
 

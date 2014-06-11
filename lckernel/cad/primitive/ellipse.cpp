@@ -66,12 +66,20 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
     double cB = 0.5 * b * b * (kx2 * st2 + ky2 * ct2);
     double cC = a * b * ct * st * (ky2 - kx2);
     geo::Coordinate vp(cA - cB, cC);
-    geo::Coordinate vp3 = geo::Coordinate(a, b) * geo::Coordinate(vp * 0.5).rotate(geo::Coordinate(ct, st)) * scale_factor;
+    geo::Coordinate vp3(a, b);
+    geo::Coordinate vp4(vp3.scale(geo::Coordinate(vp.angle() * 0.5)));
+    geo::Coordinate vp5(vp4.rotate(geo::Coordinate(ct, st)));
+    geo::Coordinate vp6(vp5.scale(scale_factor));
+    double z = cA + cB;
+    double x = vp.magnitude();
+    double ratio = sqrt((z - x) / (z + x));
+    double minor_ = vp6.magnitude() * ratio;
 
-    auto newEllipse = std::make_shared<Ellipse>(this->center().scale(scale_center, scale_factor), vp3,
-                                                this->minorRadius(),
+    auto newEllipse = std::make_shared<Ellipse>(this->center().scale(scale_center, scale_factor), vp6,
+                                                minor_,
                                                 isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                                isArc() ? this->getEllipseAngle(endPoint) : 0., layer());
+                                                isArc() ? this->getEllipseAngle(endPoint) : 360., layer());
+
     newEllipse->setID(this->id());
     return newEllipse;
 
@@ -90,5 +98,6 @@ const geo::Area Ellipse::boundingBox() const {
     double rect_width = 2 * (r_max * cos(t_nil) * cos(rot) - r_min * sin(t_nil) * sin(rot));
     double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
 
-    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+ //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+
 }

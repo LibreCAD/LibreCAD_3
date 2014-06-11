@@ -4,7 +4,8 @@
 #include <cairo.h>
 #include "lcpainter.h"
 #include <map>
-
+#include <pango/pangocairo.h>
+#include "drawitems/endcaps.h"
 class LcCairoPainter : public LcPainter {
     public:
         LcCairoPainter(cairo_surface_t* surface, cairo_t* cr);
@@ -33,6 +34,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void device_to_user(double* x, double* y);
         virtual inline void user_to_device_distance(double* dx, double* dy);
         virtual inline void device_to_user_distance(double* dx, double* dy);
+        virtual inline void text(double x, double y, const char* text_val, double angle, double height);
         virtual inline void save();
         virtual inline void restore();
         virtual inline unsigned long pattern_create_linear(double x1, double y1, double x2, double y2);
@@ -40,8 +42,10 @@ class LcCairoPainter : public LcPainter {
         virtual inline void set_source(unsigned long pat);
         virtual inline void pattern_destroy(unsigned long pat);
         virtual inline void fill();
+        virtual inline void point(double x, double y);
         virtual inline void reset_transformations();
         virtual inline unsigned char* data();
+        virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap);
         virtual inline void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled);
 
         // The functions below might get changed in future

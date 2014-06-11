@@ -9,17 +9,15 @@ Text::Text(const Coordinate& insertion_point,
            const double angle, const std::string style,
            const TextGeneration textgeneration,
            const HAlign halign, const VAlign valign) :
-    _insertion_point(insertion_point), _second_point(second_point) {
-
-    _height = height;
-    _text_value = text_value;
-    _width_rel = width_rel;
-    _angle = angle;
-    _style = style;
-    _textgeneration = textgeneration;
-    _halign = halign;
-    _valign = valign;
-
+    _insertion_point(insertion_point), _second_point(second_point),
+    _height(height),
+    _text_value(text_value),
+    _width_rel(width_rel),
+    _angle(angle),
+    _style(style),
+    _textgeneration(textgeneration),
+    _halign(halign),
+    _valign(valign) {
 }
 
 const Coordinate Text::insertion_point() const {

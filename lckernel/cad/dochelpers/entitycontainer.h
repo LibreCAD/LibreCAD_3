@@ -199,7 +199,7 @@ namespace lc {
                     lc::Intersect intersect(Intersect::OnPath, 10e-4);
                     i->accept(area.top(), intersect);
 
-                    if (intersect.result().size() != 0) {
+                   if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }

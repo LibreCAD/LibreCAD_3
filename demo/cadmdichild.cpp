@@ -6,6 +6,8 @@
 #include "cad/primitive/arc.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/ellipse.h"
+#include "cad/primitive/text.h"
+#include "cad/primitive/coordinate.h"
 #include "cad/meta/color.h"
 #include "cad/meta/linewidth.h"
 #include "cad/interface/metatype.h"
@@ -128,13 +130,18 @@ void CadMdiChild::newDocument() {
     auto layer = _storageManager->layerByName("0");
     auto builder = std::make_shared<lc::operation::Builder>(document());
     builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
-    builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
-    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 270.0, layer));
-    builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 100, 300.0 , layer));
-    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 50.26, 70.26, layer));
-    builder->execute();
+//    builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
+//    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
+//    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
+//    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 270.0, layer));
+//    builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
+//    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 50.26, 70.26, layer));
+    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 0, layer));
+        builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
+            builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
+                builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
+                builder->append(std::make_shared<lc::Coordinate>(0.,0., layer));
+                builder->execute();
 }
 
 

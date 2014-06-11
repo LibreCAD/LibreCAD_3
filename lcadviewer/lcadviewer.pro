@@ -41,12 +41,14 @@ unix {
 	LIBS += -L$$DESTDIR -llckernel
 
         CONFIG+=link_pkgconfig
-        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg liblog4cxx
+        PKGCONFIG+=cairo cairo-ft cairo-pdf cairo-png cairo-svg pangocairo liblog4cxx
     }
 }
 
 INCLUDEPATH += $$PWD/../lckernel
 DEPENDPATH += $$PWD/../lckernel
+
+INCLUDEPATH += /usr/include/pango-1.0/
 
 HEADERS     = lcadviewerplugin.h \
     lcadviewer.h \
@@ -67,9 +69,12 @@ HEADERS     = lcadviewerplugin.h \
     drawitems/lcvdrawitem.h \
     drawitems/lcvline.h \
     drawitems/lcvcircle.h \
+    drawitems/endcaps.h \
     drawitems/lcdrawoptions.h \
     drawitems/lcvarc.h \
-    drawitems/lcvellipse.h
+    drawitems/lcvellipse.h \
+    drawitems/lcvtext.h \
+    drawitems/lcvcoordinate.h
 
 SOURCES     = lcadviewerplugin.cpp \
     lcadviewer.cpp \
@@ -84,4 +89,7 @@ SOURCES     = lcadviewerplugin.cpp \
     drawitems/lcvcircle.cpp \
     drawitems/lcdrawoptions.cpp \
     drawitems/lcvarc.cpp \
-    drawitems/lcvellipse.cpp
+    drawitems/lcvellipse.cpp \
+    drawitems/lcvtext.cpp \
+    drawitems/endcaps.cpp \
+    drawitems/lcvcoordinate.cpp

@@ -49,6 +49,11 @@ void FTrim::visit(Line_CSPtr line) {
 void FTrim::visit(Circle_CSPtr circle) {
 
 }
+
+void FTrim::visit(Coordinate_CSPtr coord) {
+
+}
+
 void FTrim::visit(Ellipse_CSPtr ellipse) {
 
 }

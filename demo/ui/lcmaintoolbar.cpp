@@ -27,8 +27,8 @@ void LCMainToolbar::on_toolButton_clicked() {
 
 void LCMainToolbar::on_toolButton_2_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
-    // GuiOperation_SPtr lo = GuiOperation_SPtr(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
-    // _parent->activeMdiChild()->operationManager()->startOperation(lo);
+    //auto lo = GuiOperation_SPtr(new CircleCreateOperation(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager(), layer,  _parent->activeMdiChild()->view(), _parent->activeMdiChild()->snapManager()));
+    //_parent->activeMdiChild()->operationManager()->startOperation(lo);
 }
 
 void LCMainToolbar::on_toolButton_3_clicked() {

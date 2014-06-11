@@ -3,6 +3,7 @@
 
 #include "cad/const.h"
 #include <cmath>
+#include <cad/math/lcmath.h>
 
 namespace lc {
     namespace geo {
@@ -34,6 +35,21 @@ namespace lc {
 
                     return *this;
                 }
+
+                double angleTo(const Coordinate& v) const {
+                    return (v - (*this)).angle();
+                }
+
+                /**
+                 * @return The angle from between two vectors using the current vector as the center
+                 * return 0, if the angle is not well defined
+                 */
+                double angleBetween(const Coordinate& v1, const Coordinate& v2) const {
+                    Coordinate vStart(v1 - (*this));
+                    Coordinate vEnd(v2 - (*this));
+                    return Math::correctAngle(atan2(vStart.x() * vEnd.y() - vStart.y() * vEnd.x(), vStart.x() * vEnd.x() + vStart.y() * vEnd.y()));
+                }
+
 
                 inline bool operator==(const Coordinate& coord) const {
                     return this->_x == coord._x && this->_y == coord._y && this->_z == coord._z;
@@ -189,7 +205,7 @@ namespace lc {
                  * Scales this vector by the given factors with the given center.
                  */
                 inline Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
-                    return scale_center + (*this - scale_center) * scale_factor;
+                    return scale_center + ((*this - scale_center) * scale_factor);
                 }
 
             private:

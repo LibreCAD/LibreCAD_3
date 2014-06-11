@@ -111,7 +111,6 @@ std::string LCadLuaScript::run(const std::string& script) {
 }
 
 /* Line
- *
 layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
 d=active.document()
@@ -180,6 +179,8 @@ print (microtime()-start);
 
 /* Gear
  *
+layer = active.proxy.layerByName("0")
+
 local Gear = {}
 Gear.__index = Gear
 
@@ -421,10 +422,18 @@ print (microtime()-start);
 start = microtime()
 layer = active.proxy.layerByName("0")
 d=active.document()
-Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(-2,-2)):execute()
+Builder(d):selectByLayer(layer):scale(Coord(100,0),Coord(2,2)):execute()
 print "Move time"
 print (microtime()-start);
+*/
 
+/*
+ *
+Text
+layer = active.proxy.layerByName("0")
+l=Text(Coord(400,400),Coord(500,500), 20.0,"Jai Sai Naath", 10.0,0.0, "name",0,0,0, layer);
+d=active.document()
+Builder(d):append(l):execute()
 */
 
 /*

@@ -4,12 +4,15 @@
 #include "cad/primitive/line.h"
 #include "cad/primitive/circle.h"
 #include "cad/primitive/ellipse.h"
+#include "cad/primitive/text.h"
 #include <drawitems/lcdrawoptions.h>
 #include <drawitems/lcvcircle.h>
 #include <drawitems/lcvarc.h>
 #include <drawitems/lcvdrawitem.h>
 #include <drawitems/lcvline.h>
 #include <drawitems/lcvellipse.h>
+#include <drawitems/lcvtext.h>
+#include <drawitems/lcvcoordinate.h>
 #include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 
@@ -56,6 +59,7 @@ DocumentRenderer::DocumentRenderer(lc::Document* document) : _document(document)
 }
 
 DocumentRenderer::~DocumentRenderer() {
+
     _document->addEntityEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_addEntityEvent>(this);
     _document->removeEntityEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_removeEntityEvent>(this);
     _document->commitProcessEvent().disconnect<DocumentRenderer, &DocumentRenderer::on_commitProcessEvent>(this);
@@ -307,6 +311,22 @@ void DocumentRenderer::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);
+        return;
+    }
+
+    const auto text = std::dynamic_pointer_cast<const lc::Text>(event.entity());
+
+    if (text != nullptr) {
+        auto newText = std::make_shared<LCVText>(text);
+        _entityContainer.insert(newText);
+        return;
+    }
+
+    const auto coord = std::dynamic_pointer_cast<const lc::Coordinate>(event.entity());
+
+    if (coord != nullptr) {
+        auto newCoord = std::make_shared<LCVCoordinate>(coord);
+        _entityContainer.insert(newCoord);
         return;
     }
 
