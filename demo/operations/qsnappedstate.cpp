@@ -33,11 +33,11 @@ void QSnappedState::onEntry(QEvent* event) {
     QState::onEntry(event);
 }
 
-void QSnappedState::assignSnapPoint(QObject* object, char* name) {
+void QSnappedState::assignSnapPoint(QObject* object, const char* name) {
     _spobject = object;
     _spname = name;
 }
-void QSnappedState::assignMouseReleaseEvent(QObject* object, char* name) {
+void QSnappedState::assignMouseReleaseEvent(QObject* object, const char* name) {
     _mreobject = object;
     _mrename = name;
 }

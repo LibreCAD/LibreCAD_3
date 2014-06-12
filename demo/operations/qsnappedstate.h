@@ -55,8 +55,8 @@ class QSnappedState : public QState {
           * \deprecated may be we should use assignMouseReleaseEvent always and get rid of this one, although convenient for drawing routines to get the drawing point directly
           *
         */
-        virtual void assignSnapPoint(QObject* object,  char* name);
-        virtual void assignMouseReleaseEvent(QObject* object,  char* name);
+        virtual void assignSnapPoint(QObject* object,  const char* name);
+        virtual void assignMouseReleaseEvent(QObject* object,  const char* name);
 
     protected:
         virtual void onEntry(QEvent* event);

@@ -8,7 +8,10 @@
 #include <QFinalState>
 
 CircleCreateOperation::CircleCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
-    GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _layer(layer), _storageManager(storageManager) {
+    GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager)
+  , _storageManager(storageManager)
+  , _layer(layer)
+{
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
