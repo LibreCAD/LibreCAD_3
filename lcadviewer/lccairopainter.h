@@ -42,7 +42,7 @@ class LcCairoPainter : public LcPainter {
         virtual inline void set_source(unsigned long pat);
         virtual inline void pattern_destroy(unsigned long pat);
         virtual inline void fill();
-        virtual inline void point(double x, double y);
+        virtual inline void point(double x, double y, double size, bool deviceCoords);
         virtual inline void reset_transformations();
         virtual inline unsigned char* data();
         virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap);

@@ -112,8 +112,12 @@ void LcCairoPainter::circle(double x, double y, double r)  {
     cairo_arc(_cr, x, y, r, 0, 2 * M_PI);
 }
 
-void LcCairoPainter::point(double x, double y) {
-    cairo_arc(_cr, x, y, 3, 0, 2*M_PI);
+void LcCairoPainter::point(double x, double y, double size, bool deviceCoords) {
+    if (deviceCoords) {
+        cairo_arc(_cr, x, y, size / scale(), 0, 2*M_PI);
+    } else {
+        cairo_arc(_cr, x, y, size, 0, 2*M_PI);
+    }
     cairo_fill(_cr);
 }
 
