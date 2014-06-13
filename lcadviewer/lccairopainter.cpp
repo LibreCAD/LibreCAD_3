@@ -15,7 +15,7 @@ LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainte
 }
 
 LcCairoPainter::~LcCairoPainter() {
-    for (auto& item : _patternMap) {
+    for (auto & item : _patternMap) {
         cairo_pattern_destroy(item.second);
     }
 
@@ -113,7 +113,7 @@ void LcCairoPainter::circle(double x, double y, double r)  {
 }
 
 void LcCairoPainter::point(double x, double y) {
-    cairo_arc(_cr, x, y, 3, 0, 2*M_PI);
+    cairo_arc(_cr, x, y, 3, 0, 2 * M_PI);
     cairo_fill(_cr);
 }
 

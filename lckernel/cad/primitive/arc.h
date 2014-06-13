@@ -5,7 +5,6 @@
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
-#include "lckernel_global.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/base/cadentity.h"

@@ -22,6 +22,7 @@ void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
             options->selectedColor().alphaF()
         );
     }
+
     painter->move_to(start().x(), start().y());
     painter->line_to(end().x(), end().y());
     painter->stroke();

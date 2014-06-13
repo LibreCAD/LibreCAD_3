@@ -166,12 +166,16 @@ namespace lc {
                  * @param tolerance, tolerance to detect zero size intersection
                  * @return
                  */
-                inline Area intersection(const Area& other, double tolerance=0.) const {
-                     Area ret(
-                               Coordinate(std::max(other.minP().x(), this->minP().x()), std::max(other.minP().y(), this->minP().y())),
-                               Coordinate(std::min(other.maxP().x(), this->maxP().x()), std::min(other.maxP().y(), this->maxP().y())));
-                     if(ret.width()<tolerance || ret.height()<tolerance) return Area();
-                     return ret;
+                inline Area intersection(const Area& other, double tolerance = 0.) const {
+                    Area ret(
+                        Coordinate(std::max(other.minP().x(), this->minP().x()), std::max(other.minP().y(), this->minP().y())),
+                        Coordinate(std::min(other.maxP().x(), this->maxP().x()), std::min(other.maxP().y(), this->maxP().y())));
+
+                    if (ret.width() < tolerance || ret.height() < tolerance) {
+                        return Area();
+                    }
+
+                    return ret;
                 }
 
                 /**

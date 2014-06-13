@@ -10,8 +10,7 @@
 LineCreateOperation::LineCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager)
     : GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager)
     , _storageManager(storageManager)
-    , _layer(layer)
-{
+    , _layer(layer) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),

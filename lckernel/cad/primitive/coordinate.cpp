@@ -31,14 +31,14 @@ CADEntity_CSPtr Coordinate::copy(const geo::Coordinate& offset) const {
 
 CADEntity_CSPtr Coordinate::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto rotcord = geo::Coordinate(this->x(), this->y()).rotate(rotation_center, rotation_angle);
-    auto newCoordinate = std::make_shared<Coordinate>(rotcord.x(), rotcord.y(),layer());
+    auto newCoordinate = std::make_shared<Coordinate>(rotcord.x(), rotcord.y(), layer());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }
 
 CADEntity_CSPtr Coordinate::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto rotcord = geo::Coordinate(this->x(), this->y()).scale(scale_center, scale_factor);
-    auto newCoordinate = std::make_shared<Coordinate>(rotcord.x(), rotcord.y(),layer());
+    auto newCoordinate = std::make_shared<Coordinate>(rotcord.x(), rotcord.y(), layer());
     newCoordinate->setID(this->id());
     return newCoordinate;
 }

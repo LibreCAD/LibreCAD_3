@@ -23,13 +23,13 @@ void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
         );
     }
 
-//    double letterSpacing = 3.0;
-//    double wordSpacing = 6.75;
-//    double lineSpacingFactor = 1.0;
+    //    double letterSpacing = 3.0;
+    //    double wordSpacing = 6.75;
+    //    double lineSpacingFactor = 1.0;
 
-//    lc::geo::Coordinate letterPos = lc::geo::Coordinate(0.0, -9.0);
-//    lc::geo::Coordinate letterSpace = lc::geo::Coordinate(letterSpacing, 0.0);
-//    lc::geo::Coordinate space = lc::geo::Coordinate(wordSpacing, 0.0);
+    //    lc::geo::Coordinate letterPos = lc::geo::Coordinate(0.0, -9.0);
+    //    lc::geo::Coordinate letterSpace = lc::geo::Coordinate(letterSpacing, 0.0);
+    //    lc::geo::Coordinate space = lc::geo::Coordinate(wordSpacing, 0.0);
     lc::geo::Coordinate textSize(Text::boundingBox().maxP() - Text::boundingBox().minP());
 
     // Vertical Align:
