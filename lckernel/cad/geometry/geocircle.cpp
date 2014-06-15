@@ -19,9 +19,7 @@ double Circle::radius() const {
 
 
 Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
-    Coordinate vp = coord - center();
-    double d = vp.magnitude();
-    return center() + vp * (radius() / d);
+    return center()+Coordinate((coord - center()).angle())*radius();
 }
 
 bool Circle::isCoordinateOnPath(const Coordinate& coord) const {
