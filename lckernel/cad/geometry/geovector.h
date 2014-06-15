@@ -3,6 +3,7 @@
 
 #include "cad/const.h"
 #include "geocoordinate.h"
+#include "geoarea.h"
 
 namespace lc {
     namespace geo {
@@ -38,13 +39,8 @@ namespace lc {
                 }
 
                 inline bool isCoordinateOnPath(const Coordinate& coord) const {
-
-                    geo::Coordinate minP(Coordinate(std::min(_start.x(), _end.x()), std::min(_start.y(), _end.y())));
-                    geo::Coordinate maxP(Coordinate(std::max(_start.x(), _end.x()), std::max(_start.y(), _end.y())));
-
-                    bool inArea = (coord.x() >= minP.x() && coord.x() <= maxP.x() && coord.y() >= minP.y() && coord.y() <= maxP.y());
-
-                    if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4)) {
+                    geo::Area area(_start, _end);
+                    if (area.inArea(coord) && ((nearestPointOnPath(coord) - coord).squared() < 1.0e-8)) {
                         return true;
                     }
 
