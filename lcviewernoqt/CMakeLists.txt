@@ -7,6 +7,7 @@ find_package (Qt5Core REQUIRED)
 # SOURCE FILES
 set(viewer_srcs
 lccairopainter.cpp
+endcaps.cpp
 )
 
 # HEADER FILES
@@ -18,6 +19,7 @@ events/mousemoveevent.h
 events/mousereleaseevent.h
 events/selecteditemsevent.h
 events/snappointevent.h
+endcaps.h
 )
 
 # DEPENDENCIES
@@ -51,5 +53,4 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-
-
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${Pango_1_0_LIBRARIES})

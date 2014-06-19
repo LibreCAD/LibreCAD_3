@@ -53,7 +53,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
-target_link_libraries(lcluascript Qt5::Core)
+target_link_libraries(lcluascript Qt5::Core ${LUA_LIBRARIES})
 # INSTALLATION
 install(TARGETS lcluascript DESTINATION lib)
 install(FILES ${lcluascript_hdrs}  DESTINATION include)
