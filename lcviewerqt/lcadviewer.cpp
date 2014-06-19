@@ -5,7 +5,6 @@
 #include <map>
 
 #include <QtGui>
-#include <QGLWidget>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QTime>

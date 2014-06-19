@@ -3,8 +3,7 @@
 #include <cairo.h>
 #include <math.h>
 #include <array>
-
-#include <QDebug>
+#include <string.h>
 #include <valarray>
 
 LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainter(), _surface(surface), _cr(cr) {

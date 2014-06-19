@@ -1,7 +1,7 @@
 #ifndef LCPAINTER_H
 #define LCPAINTER_H
 #include <string>
-#include "drawitems/endcaps.h"
+#include "endcaps.h"
 
 class LcPainter {
     public:

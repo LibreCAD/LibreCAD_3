@@ -5,7 +5,7 @@
 #include "lcpainter.h"
 #include <map>
 #include <pango/pangocairo.h>
-#include "drawitems/endcaps.h"
+#include "endcaps.h"
 class LcCairoPainter : public LcPainter {
     public:
         LcCairoPainter(cairo_surface_t* surface, cairo_t* cr);
