@@ -19,11 +19,15 @@ set(lcluascript_hdrs
 # DEPENDENCIES
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(Lua52Test REQUIRED)
-if (LUA52_FOUND)
-  message("lua 52 found")
-  INCLUDE_DIRECTORIES("${LUA_INCLUDE_DIR}")
-endif (LUA52_FOUND)
+#find_package(Lua52Test REQUIRED)
+#if (LUA52_FOUND)
+#  message("lua 52 found")
+#  INCLUDE_DIRECTORIES("${LUA_INCLUDE_DIR}")
+#endif (LUA52_FOUND)
+find_package(PkgConfig)
+pkg_check_modules(LUA52 REQUIRED lua5.2)
+include_directories(${LUA52_INCLUDE_DIRS})
+link_directories(${LUA52_LIBRARY_DIRS})
 
 find_package(Qt5Widgets)
 find_package(Qt5Core)
@@ -53,7 +57,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
-target_link_libraries(lcluascript Qt5::Core ${LUA_LIBRARIES})
+target_link_libraries(lcluascript Qt5::Core ${LUA52_LIBRARIES})
 # INSTALLATION
 install(TARGETS lcluascript DESTINATION lib)
 install(FILES ${lcluascript_hdrs}  DESTINATION include)

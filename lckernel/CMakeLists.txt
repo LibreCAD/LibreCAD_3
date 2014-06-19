@@ -154,7 +154,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${LOG4CXX_LIBRARY_DIRS})
+target_link_libraries(lckernel ${LOG4CXX_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

@@ -25,15 +25,13 @@ endcaps.h
 # DEPENDENCIES
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(Cairo REQUIRED)
-if (CAIRO_FOUND)
-  INCLUDE_DIRECTORIES("${CAIRO_INCLUDE_DIRS}")
-endif (CAIRO_FOUND)
-
-find_package(Pango REQUIRED)
-if (Pango_1_0_FOUND)
-  INCLUDE_DIRECTORIES("${Pango_1_0_INCLUDE_DIR}")
-endif(Pango_1_0_FOUND)
+find_package(PkgConfig)
+pkg_check_modules(CAIRO REQUIRED cairo)
+include_directories(${CAIRO_INCLUDE_DIRS})
+link_directories(${CAIRO_LIBRARY_DIRS})
+pkg_check_modules(PANGO REQUIRED pango)
+include_directories(${PANGO_INCLUDE_DIRS})
+link_directories(${PANGO_LIBRARY_DIRS})
 
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
@@ -53,4 +51,4 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${Pango_1_0_LIBRARIES})
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES})
