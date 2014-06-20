@@ -126,12 +126,6 @@ cad/vo/entitydistance.h
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-#find_package(LOG4CXX REQUIRED)
-#if (Log4cxx_FOUND)
-#  message("log4cxx found")
-#  INCLUDE_DIRECTORIES("${LOG4CXX_INCLUDE_DIR}")
-#endif (Log4cxx_FOUND)
-
 find_package(PkgConfig)
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})

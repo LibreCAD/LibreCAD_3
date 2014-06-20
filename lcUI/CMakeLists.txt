@@ -12,6 +12,10 @@ find_package(Qt5Designer)
 find_package(Qt5Gui REQUIRED)
 #include(${QT_USE_FILE})
 SET(QT_USE_QTDESIGNER ON)
+#pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+#include_directories(${LOG4CXX_INCLUDE_DIRS})
+#link_directories(${LOG4CXX_LIBRARY_DIRS})
+
 
 # HEADERS
 set(UI_hdrs
@@ -81,4 +85,4 @@ foreach(dir ${dirs})
 endforeach()
 
 add_executable(UI ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
-target_link_libraries(UI Qt5::Core Qt5::Gui Qt5::Widgets lckernel lcluascript lcviewerqt lcviewernoqt)
+target_link_libraries(UI Qt5::Core Qt5::Gui Qt5::Widgets ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt)
