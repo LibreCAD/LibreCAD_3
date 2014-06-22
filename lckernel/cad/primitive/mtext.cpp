@@ -76,3 +76,7 @@ CADEntity_CSPtr MText::scale(const geo::Coordinate& scale_center, const geo::Coo
 const geo::Area MText::boundingBox() const {
 
 }
+
+LC_Quadratic_CSPtr MText::quadratic_equation() const {
+
+}

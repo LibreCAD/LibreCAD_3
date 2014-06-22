@@ -76,6 +76,9 @@ namespace lc {
     typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
     typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
 
+    class LC_Quadratic;
+    typedef std::shared_ptr<LC_Quadratic> LC_Quadratic_SPtr;
+    typedef std::shared_ptr<const LC_Quadratic> LC_Quadratic_CSPtr;
     /**
      *Class that all CAD entities must inherit
      *
@@ -173,6 +176,8 @@ namespace lc {
              */
             virtual Layer_CSPtr layer() const;
 
+
+            virtual LC_Quadratic_CSPtr quadratic_equation() const = 0;
         private:
             Layer_CSPtr _layer;
 

@@ -101,3 +101,7 @@ const geo::Area Ellipse::boundingBox() const {
     //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 
 }
+
+LC_Quadratic_CSPtr Ellipse::quadratic_equation() const {
+
+}

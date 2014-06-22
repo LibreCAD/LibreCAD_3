@@ -78,3 +78,7 @@ CADEntity_CSPtr Line::scale(const geo::Coordinate& scale_center, const geo::Coor
 const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
+
+LC_Quadratic_CSPtr Line::quadratic_equation() const {
+
+}

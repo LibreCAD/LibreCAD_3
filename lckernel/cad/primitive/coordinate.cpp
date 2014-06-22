@@ -46,3 +46,7 @@ CADEntity_CSPtr Coordinate::scale(const geo::Coordinate& scale_center, const geo
 const geo::Area Coordinate::boundingBox() const {
 
 }
+
+LC_Quadratic_CSPtr Coordinate::quadratic_equation() const {
+
+}

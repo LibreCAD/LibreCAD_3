@@ -29,6 +29,7 @@ cad/geometry/geospline.cpp
 cad/geometry/geotext.cpp
 cad/math/lcmath.cpp
 cad/math/coordinatesol.cpp
+cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
 cad/meta/linewidth.cpp
 cad/meta/pen.cpp
@@ -97,6 +98,7 @@ cad/interface/snapable.h
 cad/interface/variantable.h
 cad/math/lcmath.h
 cad/math/coordinatesol.h
+cad/math/quadratic_math.h
 cad/meta/color.h
 cad/meta/layer.h
 cad/meta/linewidth.h
