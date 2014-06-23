@@ -23,12 +23,11 @@ Dimension::Dimension(const Coordinate& definition_point,
 }
 
 Dimension::Dimension() : _definition_point(0., 0.), _middle_of_text(0., 0.)
-  , _angle(0.)
-  ,_linespacingstyle(MText::Exact), _linespacingfactor(1.)
-  , _valign(MText::VATop), _halign(MText::HALeft)
-  , _style("")
-  , _text_value("")
-{
+    , _angle(0.)
+    , _linespacingstyle(MText::Exact), _linespacingfactor(1.)
+    , _valign(MText::VATop), _halign(MText::HALeft)
+    , _style("")
+    , _text_value("") {
 
 }
 

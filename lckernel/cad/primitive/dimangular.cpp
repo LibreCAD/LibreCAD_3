@@ -66,3 +66,7 @@ const geo::Area DimAngular::boundingBox() const {
     // TODO create bounding box for DimAngular
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
+
+LC_Quadratic_CSPtr DimAngular::quadratic_equation() const {
+
+}

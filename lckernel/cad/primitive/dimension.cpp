@@ -69,3 +69,6 @@ const geo::Area Dimension::boundingBox() const {
     // TODO create bounding box for dimension
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
+LC_Quadratic_CSPtr Dimension::quadratic_equation() const {
+
+}

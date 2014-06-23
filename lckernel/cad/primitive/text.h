@@ -5,7 +5,7 @@
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
-#include "lckernel_global.h"
+
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geotext.h"
 #include "cad/base/cadentity.h"
@@ -76,6 +76,7 @@ namespace lc {
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
             virtual const geo::Area boundingBox() const;
+            virtual LC_Quadratic_CSPtr quadratic_equation() const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

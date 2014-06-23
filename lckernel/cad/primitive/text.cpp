@@ -86,3 +86,7 @@ const geo::Area Text::boundingBox() const {
     // TODO create bounding box for text
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
+
+LC_Quadratic_CSPtr Text::quadratic_equation() const {
+
+}

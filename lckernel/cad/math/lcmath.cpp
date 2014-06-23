@@ -52,6 +52,9 @@ double Math::correctAngle(double a) {
  *         Always positive and less than 2*pi.
  */
 double Math::getAngleDifference(double a1, double a2, bool reversed) {
-    if (reversed) std::swap(a1, a2);
+    if (reversed) {
+        std::swap(a1, a2);
+    }
+
     return correctAngle(a2 - a1);
 }

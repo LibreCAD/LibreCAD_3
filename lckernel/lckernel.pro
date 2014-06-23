@@ -32,7 +32,7 @@ unix {
     }
 }
 
-SOURCES += lckernel.cpp \
+SOURCES += \
    cad/meta/layer.cpp \
    cad/meta/linewidth.cpp \
    cad/meta/pen.cpp \
@@ -82,8 +82,6 @@ SOURCES += lckernel.cpp \
 
 HEADERS += \
     nano-signal-slot/nano_signal_slot.hpp \
-    lckernel.h\
-    lckernel_global.h \
     cad/const.h\
     cad/meta/color.h \
     cad/meta/layer.h \

@@ -88,3 +88,7 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Co
 const geo::Area Circle::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
+
+LC_Quadratic_CSPtr Circle::quadratic_equation() const {
+
+}
