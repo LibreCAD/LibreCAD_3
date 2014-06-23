@@ -1,5 +1,5 @@
 #include "coordinatesol.h"
-
+using namespace lc;
 /**
  * Constructor for num solutions.
  */

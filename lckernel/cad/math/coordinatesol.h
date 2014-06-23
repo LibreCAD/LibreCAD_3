@@ -3,8 +3,8 @@
 
 #include "cad/geometry/geocoordinate.h"
 #include <vector>
-using namespace lc;
 
+namespace lc {
 class CoordinateSolutions {
 
     CoordinateSolutions();
@@ -34,5 +34,5 @@ private:
     bool tangent;
 
 };
-
+}
 #endif
