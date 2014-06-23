@@ -79,6 +79,6 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
-LC_Quadratic_CSPtr Line::quadratic_equation() const {
+Quadratic_CSPtr Line::quadratic_equation() const {
 
 }

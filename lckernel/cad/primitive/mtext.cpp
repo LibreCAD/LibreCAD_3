@@ -77,6 +77,6 @@ const geo::Area MText::boundingBox() const {
 
 }
 
-LC_Quadratic_CSPtr MText::quadratic_equation() const {
+Quadratic_CSPtr MText::quadratic_equation() const {
 
 }

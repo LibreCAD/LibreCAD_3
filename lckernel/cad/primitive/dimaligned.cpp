@@ -64,6 +64,6 @@ const geo::Area DimAligned::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-LC_Quadratic_CSPtr DimAligned::quadratic_equation() const {
+Quadratic_CSPtr DimAligned::quadratic_equation() const {
 
 }

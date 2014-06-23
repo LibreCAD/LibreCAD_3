@@ -102,6 +102,6 @@ const geo::Area Ellipse::boundingBox() const {
 
 }
 
-LC_Quadratic_CSPtr Ellipse::quadratic_equation() const {
+Quadratic_CSPtr Ellipse::quadratic_equation() const {
 
 }

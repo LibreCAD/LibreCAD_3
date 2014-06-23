@@ -47,7 +47,7 @@ const geo::Area Arc::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
 
-LC_Quadratic_CSPtr Arc::quadratic_equation() const {
+Quadratic_CSPtr Arc::quadratic_equation() const {
 
 }
 

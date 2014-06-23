@@ -5,12 +5,12 @@
 #include <boost/numeric/ublas/io.hpp>
 
 namespace lc {
-class LC_Quadratic {
+class Quadratic {
 
-    LC_Quadratic();
-    LC_Quadratic move(lc::geo::Coordinate& vector);
-    LC_Quadratic rotate(const double& a);
-    LC_Quadratic rotate(const lc::geo::Coordinate& center, const double& a);
+    Quadratic();
+    Quadratic move(lc::geo::Coordinate& vector);
+    Quadratic rotate(const double& a);
+    Quadratic rotate(const lc::geo::Coordinate& center, const double& a);
 };
 }
 #endif

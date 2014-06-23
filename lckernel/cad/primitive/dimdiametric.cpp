@@ -59,6 +59,6 @@ const geo::Area DimDiametric::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-LC_Quadratic_CSPtr DimDiametric::quadratic_equation() const {
+Quadratic_CSPtr DimDiametric::quadratic_equation() const {
 
 }
