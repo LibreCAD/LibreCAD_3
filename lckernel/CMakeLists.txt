@@ -128,6 +128,14 @@ cad/vo/entitydistance.h
 
 # DEPENDENCIES
 
+    set(Boost_USE_STATIC_LIBS   ON)
+    set(Boost_USE_MULTITHREADED ON)
+    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
+    find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
+
+#    find_package(maths REQUIRED)
+
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PkgConfig)
@@ -152,7 +160,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${LOG4CXX_LIBRARIES})
+target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

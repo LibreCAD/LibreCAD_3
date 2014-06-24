@@ -20,7 +20,8 @@ void LCVCoordinate::draw(LcPainter* painter, LcDrawOptions* options, const lc::g
     }
 
     painter->point(x(), y(), 3., true);
-        painter->stroke();
+    painter->stroke();
+
     if (modified) {
         painter->restore();
     }

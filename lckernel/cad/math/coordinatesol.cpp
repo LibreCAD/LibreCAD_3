@@ -4,7 +4,7 @@ using namespace lc;
  * Constructor for num solutions.
  */
 CoordinateSolutions::CoordinateSolutions(int num) {
-        _vector.reserve(num);
+    _vector.reserve(num);
 }
 
 /**
@@ -21,7 +21,7 @@ CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1) {
  * Constructor for two solutions.
  */
 CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
-                                       const geo::Coordinate& v2) {
+                                         const geo::Coordinate& v2) {
     _vector.push_back(v1);
     _vector.push_back(v2);
     tangent = false;
@@ -33,8 +33,8 @@ CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
  * Constructor for three solutions.
  */
 CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
-                                       const geo::Coordinate& v2,
-                                       const geo::Coordinate& v3) {
+                                         const geo::Coordinate& v2,
+                                         const geo::Coordinate& v3) {
     _vector.push_back(v1);
     _vector.push_back(v2);
     _vector.push_back(v3);
@@ -46,9 +46,9 @@ CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
  * Constructor for four solutions.
  */
 CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
-                                       const geo::Coordinate& v2,
-                                       const geo::Coordinate& v3,
-                                       const geo::Coordinate& v4) {
+                                         const geo::Coordinate& v2,
+                                         const geo::Coordinate& v3,
+                                         const geo::Coordinate& v4) {
     _vector.push_back(v1);
     _vector.push_back(v2);
     _vector.push_back(v3);
@@ -61,10 +61,10 @@ CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
  * Constructor for four solutions.
  */
 CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1,
-                                       const geo::Coordinate& v2,
-                                       const geo::Coordinate& v3,
-                                       const geo::Coordinate& v4,
-                                       const geo::Coordinate& v5) {
+                                         const geo::Coordinate& v2,
+                                         const geo::Coordinate& v3,
+                                         const geo::Coordinate& v4,
+                                         const geo::Coordinate& v5) {
     _vector.push_back(v1);
     _vector.push_back(v2);
     _vector.push_back(v3);

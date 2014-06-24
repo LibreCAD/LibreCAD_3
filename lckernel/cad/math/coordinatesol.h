@@ -5,34 +5,34 @@
 #include <vector>
 
 namespace lc {
-class CoordinateSolutions {
+    class CoordinateSolutions {
 
-    CoordinateSolutions();
+            CoordinateSolutions();
 
-    CoordinateSolutions(const CoordinateSolutions& s);
+            CoordinateSolutions(const CoordinateSolutions& s);
 
-    CoordinateSolutions(int num);
-    CoordinateSolutions(const geo::Coordinate& v1);
+            CoordinateSolutions(int num);
+            CoordinateSolutions(const geo::Coordinate& v1);
 
-    CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2);
+            CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2);
 
-    CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
-                        const geo::Coordinate& v3);
+            CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
+                                const geo::Coordinate& v3);
 
-    CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
-                        const geo::Coordinate& v3, const geo::Coordinate& v4);
+            CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
+                                const geo::Coordinate& v3, const geo::Coordinate& v4);
 
-    CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
-                        const geo::Coordinate& v3, const geo::Coordinate& v4,
-                        const geo::Coordinate& v5);
-    bool isTangent() const;
+            CoordinateSolutions(const geo::Coordinate& v1, const geo::Coordinate& v2,
+                                const geo::Coordinate& v3, const geo::Coordinate& v4,
+                                const geo::Coordinate& v5);
+            bool isTangent() const;
 
-    ~CoordinateSolutions();
+            ~CoordinateSolutions();
 
-private:
-    std::vector<geo::Coordinate> _vector;
-    bool tangent;
+        private:
+            std::vector<geo::Coordinate> _vector;
+            bool tangent;
 
-};
+    };
 }
 #endif

@@ -54,7 +54,7 @@ namespace lc {
                     bool inArea = (coord.x() >= minP.x() && coord.x() <= maxP.x() && coord.y() >= minP.y() && coord.y() <= maxP.y());
 
                     if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4)) {
-                       return true;
+                        return true;
                     }
                 }
 
