@@ -1,1 +1,0 @@
-/home/gagan/Documents/LibreCAD_3/build/CMakeFiles/lckernel.dir
