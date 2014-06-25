@@ -128,7 +128,6 @@ cad/vo/entitydistance.h
 
 # DEPENDENCIES
 
-    set(Boost_USE_STATIC_LIBS   ON)
     set(Boost_USE_MULTITHREADED ON)
     set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
     find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
