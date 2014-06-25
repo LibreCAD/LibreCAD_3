@@ -129,7 +129,7 @@ cad/vo/entitydistance.h
 # DEPENDENCIES
 
     set(Boost_USE_MULTITHREADED ON)
-    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
+#    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
     find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 

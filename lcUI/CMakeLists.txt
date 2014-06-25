@@ -60,6 +60,9 @@ ui/luascript.ui)
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
 
+include_directories(${LOG4CXX_INCLUDE_DIRS})
+link_directories(${LOG4CXX_LIBRARY_DIRS})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
@@ -84,5 +87,5 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_executable(UI ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
-target_link_libraries(UI Qt5::Core Qt5::Gui Qt5::Widgets ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt)
+add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
+target_link_libraries(librecad Qt5::Core Qt5::Gui Qt5::Widgets ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt)
