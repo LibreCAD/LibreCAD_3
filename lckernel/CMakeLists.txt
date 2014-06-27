@@ -17,6 +17,7 @@ cad/functions/ftrim.cpp
 cad/functions/intersect.cpp
 cad/geometry/geoarc.cpp
 cad/geometry/geocircle.cpp
+cad/geometry/geocoordinate.cpp
 cad/geometry/geodimaligned.cpp
 cad/geometry/geodimangular.cpp
 cad/geometry/geodimdiametric.cpp
@@ -54,7 +55,8 @@ cad/primitive/text.cpp
 )
 
 # HEADER FILES
-set(lckernel_hdrs cad/base/cadentity.h
+set(lckernel_hdrs cad/const.h
+cad/base/cadentity.h
 cad/base/id.h
 cad/base/metainfo.h
 cad/dochelpers/documentimpl.h
@@ -145,14 +147,14 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
- 
+
 if (SEPARATE_BUILD STREQUAL "ON")
 include_directories("${CMAKE_SOURCE_DIR}")
-else() 
+else()
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 endif()
- 
-# DEBUGGING PATHS 
+
+# DEBUGGING PATHS
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")

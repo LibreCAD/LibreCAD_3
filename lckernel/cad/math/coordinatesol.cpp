@@ -1,5 +1,20 @@
 #include "coordinatesol.h"
 using namespace lc;
+using namespace geo;
+
+CoordinateSolutions::CoordinateSolutions() {
+    _vector.clear();
+    tangent=false;
+}
+
+/**
+ * Copy constructor
+ */
+CoordinateSolutions::CoordinateSolutions(const CoordinateSolutions& s) {
+    setTangent(s.isTangent());
+    _vector=s._vector;
+
+}
 /**
  * Constructor for num solutions.
  */
@@ -10,7 +25,7 @@ CoordinateSolutions::CoordinateSolutions(int num) {
 /**
  * Constructor for one solution.
  */
-CoordinateSolutions::CoordinateSolutions(const geo::Coordinate& v1) {
+CoordinateSolutions::CoordinateSolutions(const Coordinate& v1) {
     _vector.push_back(v1);
     tangent = false;
 }
@@ -81,10 +96,27 @@ bool CoordinateSolutions::isTangent() const {
     return tangent;
 }
 
+void CoordinateSolutions::setTangent(bool t) {
+    tangent = t;
+}
+
+
+/** switch x,y for all vectors */
+CoordinateSolutions CoordinateSolutions::flipXY(void) const
+{
+        CoordinateSolutions ret;
+        const int counts=_vector.size();
+        for(int i=0;i<counts;i++) ret.push_back(_vector[i].flipXY());
+        return ret;
+}
 
 /**
  * Destructor.
  */
 CoordinateSolutions::~CoordinateSolutions() {
     _vector.clear();
+}
+
+void CoordinateSolutions::push_back(const geo::Coordinate& v) {
+    _vector.push_back(v);
 }

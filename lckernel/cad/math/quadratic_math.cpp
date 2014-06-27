@@ -9,7 +9,7 @@ Quadratic::Quadratic():
 
 Quadratic::Quadratic(const Quadratic& lc0):
     m_bIsQuadratic(lc0.isQuadratic())
-    , m_bValid(lc0.isValid()) {
+  , m_bValid(lc0.isValid()) {
     if (m_bValid == false) {
         return;
     }
@@ -143,3 +143,76 @@ boost::numeric::ublas::matrix<double>  Quadratic::rotationMatrix(const double& a
     ret(1, 1) = ret(0, 0);
     return ret;
 }
+
+CoordinateSolutions Quadratic::getIntersection(const Quadratic& l1, const Quadratic& l2)
+{
+    CoordinateSolutions ret;
+    if( l1.isValid()==false || l2.isValid()==false ) {
+        //        DEBUG_HEADER();
+        //        std::cout<<l1<<std::endl;
+        //        std::cout<<l2<<std::endl;
+        return ret;
+    }
+    auto p1=&l1;
+    auto p2=&l2;
+    if(p1->isQuadratic()==false){
+        std::swap(p1,p2);
+    }
+    //    DEBUG_HEADER();
+    //    std::cout<<*p1<<std::endl;
+    //    std::cout<<*p2<<std::endl;
+    if(p1->isQuadratic()==false){
+        //two lines
+        std::vector<std::vector<double> > ce(2,std::vector<double>(3,0.));
+        ce[0][0]=p1->m_vLinear(0);
+        ce[0][1]=p1->m_vLinear(1);
+        ce[0][2]=-p1->m_dConst;
+        ce[1][0]=p2->m_vLinear(0);
+        ce[1][1]=p2->m_vLinear(1);
+        ce[1][2]=-p2->m_dConst;
+        std::vector<double> sn(2,0.);
+        if(Math::linearSolver(ce,sn)){
+            ret.push_back(geo::Coordinate(sn[0],sn[1]));
+        }
+        return ret;
+    }
+    if(p2->isQuadratic()==false){
+        //one line, one quadratic
+        //avoid division by zero
+        if(fabs(p2->m_vLinear(0))<fabs(p2->m_vLinear(1))){
+            return getIntersection(p1->flipXY(),p2->flipXY()).flipXY();
+        }
+
+    }
+    if( fabs(p1->m_mQuad(0,0))<TOLERANCE && fabs(p1->m_mQuad(0,1))<TOLERANCE
+            &&
+            fabs(p2->m_mQuad(0,0))<TOLERANCE && fabs(p2->m_mQuad(0,1))<TOLERANCE
+            ){
+        if(fabs(p1->m_mQuad(1,1))<TOLERANCE && fabs(p2->m_mQuad(1,1))<TOLERANCE){
+            //linear
+            std::vector<double> ce(0);
+            ce.push_back(p1->m_vLinear(0));
+            ce.push_back(p1->m_vLinear(1));
+            ce.push_back(p1->m_dConst);
+            Quadratic lc10(ce);
+            ce.clear();
+            ce.push_back(p2->m_vLinear(0));
+            ce.push_back(p2->m_vLinear(1));
+            ce.push_back(p2->m_dConst);
+            Quadratic lc11(ce);
+            return getIntersection(lc10,lc11);
+        }
+        return getIntersection(p1->flipXY(),p2->flipXY()).flipXY();
+    }
+    std::vector<std::vector<double> >  ce(0);
+    ce.push_back(p1->getCoefficients());
+    ce.push_back(p2->getCoefficients());
+//    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
+//        DEBUG_HEADER();
+//        std::cout<<*p1<<std::endl;
+//        std::cout<<*p2<<std::endl;
+//    }
+    return Math::simultaneousQuadraticSolverFull(ce);
+
+}
+
