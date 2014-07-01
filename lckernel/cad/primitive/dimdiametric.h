@@ -23,24 +23,24 @@ namespace lc {
         public:
 
             /**
-                 * @brief DimAngular
-                 * @param dimension
-                 * @param extension_point1
-                 * @param extension_point2
-                 * @param layer
-                 */
+                         * @brief DimAngular
+                         * @param dimension
+                         * @param extension_point1
+                         * @param extension_point2
+                         * @param layer
+                         */
             DimDiametric(const Dimension& dimension,
                          const double leader,
                          const Layer_CSPtr layer);
 
             /**
-             * @brief DimAngular
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             * @param metaTypes
-             */
+                     * @brief DimAngular
+                     * @param dimension
+                     * @param extension_point1
+                     * @param extension_point2
+                     * @param layer
+                     * @param metaTypes
+                     */
             DimDiametric(const Dimension& dimension,
                          const double leader,
                          const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
@@ -51,7 +51,7 @@ namespace lc {
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
             virtual const geo::Area boundingBox() const;
-            virtual Quadratic_CSPtr quadratic_equation() const;
+
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

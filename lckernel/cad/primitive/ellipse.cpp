@@ -102,6 +102,20 @@ const geo::Area Ellipse::boundingBox() const {
 
 }
 
-Quadratic_CSPtr Ellipse::quadratic_equation() const {
+Quadratic Ellipse::quadratic() const {
+    std::vector<double> ce(6, 0.);
+    ce[0] = this->majorP().squared();
+    ce[2] = this->ratio() * this->ratio() * ce[0];
 
+    if (ce[0] < TOLERANCE * TOLERANCE || ce[2] < TOLERANCE * TOLERANCE) {
+        return Quadratic();
+    }
+
+    ce[0] = 1. / ce[0];
+    ce[2] = 1. / ce[2];
+    ce[5] = -1.;
+    Quadratic ret(ce);
+    ret.rotate(getAngle());
+    ret.move(this->center());
+    return ret;
 }

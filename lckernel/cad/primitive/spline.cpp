@@ -69,6 +69,3 @@ const geo::Area Spline::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-Quadratic_CSPtr Spline::quadratic_equation() const {
-
-}

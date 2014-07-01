@@ -9,7 +9,7 @@ namespace lc {
 
     class CoordinateSolutions {
 
-    public:
+        public:
             CoordinateSolutions();
 
             CoordinateSolutions(const CoordinateSolutions& s);
@@ -29,6 +29,9 @@ namespace lc {
                                 const geo::Coordinate& v3, const geo::Coordinate& v4,
                                 const geo::Coordinate& v5);
             void push_back(const geo::Coordinate& v);
+
+            const std::vector<geo::Coordinate> getCoordinates() const;
+
             bool isTangent() const;
             void setTangent(bool t);
             CoordinateSolutions flipXY(void) const;

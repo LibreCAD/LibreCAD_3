@@ -59,19 +59,38 @@ void Intersect::visit(Line_CSPtr, Coordinate_CSPtr) {
 }
 
 void Intersect::visit(Line_CSPtr l1, Line_CSPtr l2) {
-    visit(l1, geo::Vector(l2->start(), l2->end()));
+    //    visit(l1, geo::Vector(l2->start(), l2->end()));t
+    const CoordinateSolutions coords = Quadratic::getIntersection(l1->quadratic(), l2->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Line_CSPtr line, Circle_CSPtr circle) {
-    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()), geo::Vector(line->start(), line->end()));
+    //    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()), geo::Vector(line->start(), line->end()));
+    const CoordinateSolutions coords = Quadratic::getIntersection(line->quadratic(), circle->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
-    visit(arc, geo::Vector(line->start(), line->end()));
+    //visit(arc, geo::Vector(line->start(), line->end()));
+    const CoordinateSolutions coords = Quadratic::getIntersection(line->quadratic(), arc->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Line_CSPtr, Ellipse_CSPtr) {
+void Intersect::visit(Line_CSPtr line, Ellipse_CSPtr ellipse) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(line->quadratic(), ellipse->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Line_CSPtr, Text_CSPtr) {
@@ -97,6 +116,7 @@ void Intersect::visit(Line_CSPtr, DimAligned_CSPtr) {
 void Intersect::visit(Line_CSPtr, DimAngular_CSPtr) {
 
 }
+
 void Intersect::visit(Line_CSPtr, DimDiametric_CSPtr) {
 
 }
@@ -182,18 +202,36 @@ void Intersect::visit(Circle_CSPtr, Coordinate_CSPtr) {
 }
 
 void Intersect::visit(Circle_CSPtr circle, Line_CSPtr line) {
-    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), geo::Vector(line->start(), line->end()));
+    //    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), geo::Vector(line->start(), line->end()));
+    const CoordinateSolutions coords = Quadratic::getIntersection(circle->quadratic(), line->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Circle_CSPtr, Circle_CSPtr) {
+void Intersect::visit(Circle_CSPtr c1, Circle_CSPtr c2) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(c1->quadratic(), c2->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Circle_CSPtr, Arc_CSPtr) {
+void Intersect::visit(Circle_CSPtr circle, Arc_CSPtr arc) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(circle->quadratic(), arc->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Circle_CSPtr, Ellipse_CSPtr) {
+void Intersect::visit(Circle_CSPtr circle, Ellipse_CSPtr ellipse) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(circle->quadratic(), ellipse->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
@@ -282,19 +320,37 @@ void Intersect::visit(Arc_CSPtr, Coordinate_CSPtr) {
 }
 
 void Intersect::visit(Arc_CSPtr arc, Line_CSPtr line) {
-    visit(arc, geo::Vector(line->start(), line->end()));
+    //    visit(arc, geo::Vector(line->start(), line->end()));
+    const CoordinateSolutions coords = Quadratic::getIntersection(arc->quadratic(), line->quadratic());
+
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Arc_CSPtr, Circle_CSPtr) {
+void Intersect::visit(Arc_CSPtr arc, Circle_CSPtr circle) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(arc->quadratic(), circle->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Arc_CSPtr, Arc_CSPtr) {
+void Intersect::visit(Arc_CSPtr a1, Arc_CSPtr a2) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(a1->quadratic(), a2->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+
+    }
 }
 
-void Intersect::visit(Arc_CSPtr, Ellipse_CSPtr) {
+void Intersect::visit(Arc_CSPtr arc, Ellipse_CSPtr ellipse) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(arc->quadratic(), ellipse->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Arc_CSPtr, Text_CSPtr) {
@@ -341,20 +397,36 @@ void Intersect::visit(Ellipse_CSPtr, Coordinate_CSPtr) {
 
 }
 
-void Intersect::visit(Ellipse_CSPtr, Line_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr ellipse, Line_CSPtr line) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(ellipse->quadratic(), line->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Ellipse_CSPtr, Circle_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr ellipse, Circle_CSPtr circle) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(ellipse->quadratic(), circle->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Ellipse_CSPtr, Arc_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr ellipse, Arc_CSPtr arc) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(ellipse->quadratic(), arc->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
-void Intersect::visit(Ellipse_CSPtr, Ellipse_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr e1, Ellipse_CSPtr e2) {
+    const CoordinateSolutions coords = Quadratic::getIntersection(e1->quadratic(), e2->quadratic());
 
+    for (auto i : coords.getCoordinates()) {
+        _intersectionPoints.push_back(i);
+    }
 }
 
 void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {

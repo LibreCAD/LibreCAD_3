@@ -35,7 +35,7 @@ namespace lc {
                     return *this;
                 }
                 Coordinate flipXY() const {
-                    return Coordinate(this->y(),this->x());
+                    return Coordinate(this->y(), this->x());
                 }
 
                 double angleTo(const Coordinate& v) const {

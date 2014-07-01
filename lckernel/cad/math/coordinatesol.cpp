@@ -4,7 +4,7 @@ using namespace geo;
 
 CoordinateSolutions::CoordinateSolutions() {
     _vector.clear();
-    tangent=false;
+    tangent = false;
 }
 
 /**
@@ -12,7 +12,7 @@ CoordinateSolutions::CoordinateSolutions() {
  */
 CoordinateSolutions::CoordinateSolutions(const CoordinateSolutions& s) {
     setTangent(s.isTangent());
-    _vector=s._vector;
+    _vector = s._vector;
 
 }
 /**
@@ -102,12 +102,15 @@ void CoordinateSolutions::setTangent(bool t) {
 
 
 /** switch x,y for all vectors */
-CoordinateSolutions CoordinateSolutions::flipXY(void) const
-{
-        CoordinateSolutions ret;
-        const int counts=_vector.size();
-        for(int i=0;i<counts;i++) ret.push_back(_vector[i].flipXY());
-        return ret;
+CoordinateSolutions CoordinateSolutions::flipXY(void) const {
+    CoordinateSolutions ret;
+    const int counts = _vector.size();
+
+    for (int i = 0; i < counts; i++) {
+        ret.push_back(_vector[i].flipXY());
+    }
+
+    return ret;
 }
 
 /**
@@ -119,4 +122,8 @@ CoordinateSolutions::~CoordinateSolutions() {
 
 void CoordinateSolutions::push_back(const geo::Coordinate& v) {
     _vector.push_back(v);
+}
+
+const std::vector<Coordinate> CoordinateSolutions::getCoordinates() const {
+    return _vector;
 }

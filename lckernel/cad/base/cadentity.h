@@ -176,8 +176,6 @@ namespace lc {
              */
             virtual Layer_CSPtr layer() const;
 
-
-            virtual Quadratic_CSPtr quadratic_equation() const = 0;
         private:
             Layer_CSPtr _layer;
 

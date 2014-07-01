@@ -79,6 +79,12 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
-Quadratic_CSPtr Line::quadratic_equation() const {
-
+Quadratic Line::quadratic() const {
+    std::vector<double> ce(3, 0.);
+    auto&& dvp = this->end() - this->start();
+    geo::Coordinate normal(-dvp.y(), dvp.x());
+    ce[0] = normal.x();
+    ce[1] = normal.y();
+    ce[2] = - normal.dot(this->end());
+    return Quadratic(ce);
 }

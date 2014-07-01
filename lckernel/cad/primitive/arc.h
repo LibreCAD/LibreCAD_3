@@ -9,7 +9,7 @@
 #include "cad/geometry/geoarc.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-
+#include "cad/math/quadratic_math.h"
 #include "cad/meta/layer.h"
 
 namespace lc {
@@ -28,7 +28,7 @@ namespace lc {
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
             virtual const geo::Area boundingBox() const;
-            virtual Quadratic_CSPtr quadratic_equation() const;
+            Quadratic quadratic() const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

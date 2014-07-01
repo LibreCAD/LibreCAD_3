@@ -69,6 +69,3 @@ const geo::Area DimLinear::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-Quadratic_CSPtr DimLinear::quadratic_equation() const {
-
-}

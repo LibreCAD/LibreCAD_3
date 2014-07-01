@@ -58,7 +58,3 @@ const geo::Area DimRadial::boundingBox() const {
     // TODO create bounding box for DimRadial
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
-
-Quadratic_CSPtr DimRadial::quadratic_equation() const {
-
-}

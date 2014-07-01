@@ -47,6 +47,3 @@ const geo::Area Coordinate::boundingBox() const {
 
 }
 
-Quadratic_CSPtr Coordinate::quadratic_equation() const {
-
-}
