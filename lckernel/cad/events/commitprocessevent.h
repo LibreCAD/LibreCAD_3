@@ -12,7 +12,7 @@ namespace lc {
     class CommitProcessEvent {
         public:
             CommitProcessEvent(operation::DocumentOperation_SPtr operation) : _operation(operation) {
-            };
+            }
             /*!
              * \brief operation
              * \return operation::DocumentOperation Operation.

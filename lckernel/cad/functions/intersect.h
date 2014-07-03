@@ -249,6 +249,8 @@ namespace lc {
             virtual void visit(DimRadial_CSPtr, DimRadial_CSPtr);
 
             std::vector<geo::Coordinate> result() const;
+            template<typename entitytype1, typename entitytype2>
+            void insert(entitytype1 q1, entitytype2 q2) ;
         private:
             std::vector<geo::Coordinate> _intersectionPoints;
             const Method _method;
