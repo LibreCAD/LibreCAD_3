@@ -57,6 +57,20 @@ namespace lc {
                         return true;
                     }
                 }
+                /**
+                 * @return The angle of the line (from start to endpoint).
+                 */
+                double Angle1() const {
+                    return _start.angleTo(_end);
+                }
+
+                /**
+                 * @return The angle of the line (from end to startpoint).
+                 */
+                double Angle2() const {
+                    return _end.angleTo(_start);
+                }
+
 
             protected:
                 inline void start(const Coordinate& coord) {

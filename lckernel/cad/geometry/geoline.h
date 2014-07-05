@@ -37,5 +37,5 @@ namespace lc {
   * My Coordinate:(1,2,3)
   *
   */
-QDebug operator << (QDebug dbg, const lc::geo::Line& c);
+//QDebug operator << (QDebug dbg, const lc::geo::Line& c);
 #endif // GEOVECTOR_H
