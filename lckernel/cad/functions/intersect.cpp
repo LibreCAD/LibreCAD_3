@@ -13,6 +13,7 @@ using namespace lc;
 template<typename entitytype1, typename entitytype2>
 void Intersect::insert(entitytype1 q1 , entitytype2 q2) {
     CoordinateSolutions coords = Quadratic::getIntersection(q1->quadratic(), q2->quadratic());
+
     for (auto i : coords.getCoordinates()) {
         _intersectionPoints.push_back(i);
     }
