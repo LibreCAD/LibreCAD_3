@@ -72,17 +72,10 @@ CADEntity_CSPtr Circle::rotate(const geo::Coordinate& rotation_center, const dou
 
 CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     // TODO return ellipse if scalefactor.x != scalefactor.y
-    if (fabs(scale_factor.x() - scale_factor.y()) > TOLERANCE) {
-        auto newEllipse = std::make_shared<Ellipse>(this->center(), geo::Coordinate(this->radius(), 0.), this->radius(), 0., 360., layer());
-        newEllipse->scale(scale_center, scale_factor);
-        newEllipse->setID(this->id());
-        return newEllipse;
-    } else {
-        auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
-        newCircle->setID(this->id());
-        return newCircle;
-    }
 
+    auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
+    newCircle->setID(this->id());
+    return newCircle;
 }
 
 const geo::Area Circle::boundingBox() const {

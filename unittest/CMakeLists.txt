@@ -1,3 +1,4 @@
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT (UnitTest)
 ADD_DEFINITIONS(-std=c++11)
@@ -18,9 +19,11 @@ endif()
 
 set(src
 main.cpp
+entitytest.cpp
 code.cpp
 )
 set(hdrs
+entitytest.h
 code.h
 )
 

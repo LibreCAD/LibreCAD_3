@@ -4,11 +4,11 @@
 
 #include "cad/primitive/circle.h"
 #include "cad/primitive/arc.h"
-#include "cad/primitive/line.h"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/text.h"
 #include "cad/primitive/coordinate.h"
 #include "cad/meta/color.h"
+#include "cad/primitive/line.h"
 #include "cad/meta/linewidth.h"
 #include "cad/interface/metatype.h"
 #include "cad/document/selectionmanager.h"
