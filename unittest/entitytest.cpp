@@ -32,7 +32,7 @@ Line_CSPtr entitytest::LineCopy(geo::Coordinate & offset) {
     builder->execute();
     auto _entities = _document->entityContainer().allEntities();
 
-    auto line = std::dynamic_pointer_cast<const lc::Line>(_entities.at(0));
+    auto line = std::dynamic_pointer_cast<const lc::Line>(_entities.at(1));
     return line;
 }
 
@@ -93,7 +93,7 @@ Circle_CSPtr entitytest::CircleCopy(geo::Coordinate & offset) {
     builder->execute();
     auto _entities = _document->entityContainer().allEntities();
 
-    auto circle = std::dynamic_pointer_cast<const lc::Circle>(_entities.at(0));
+    auto circle = std::dynamic_pointer_cast<const lc::Circle>(_entities.at(1));
     return circle;
 }
 
@@ -154,7 +154,7 @@ Arc_CSPtr entitytest::ArcCopy(geo::Coordinate & offset) {
     builder->execute();
     auto _entities = _document->entityContainer().allEntities();
 
-    auto arc = std::dynamic_pointer_cast<const lc::Arc>(_entities.at(0));
+    auto arc = std::dynamic_pointer_cast<const lc::Arc>(_entities.at(1));
     return arc;
 }
 
@@ -216,7 +216,7 @@ Ellipse_CSPtr entitytest::EllipseCopy(geo::Coordinate & offset) {
     builder->execute();
     auto _entities = _document->entityContainer().allEntities();
 
-    auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(_entities.at(0));
+    auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(_entities.at(1));
     return ellipse;
 }
 
