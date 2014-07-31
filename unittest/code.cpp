@@ -32,7 +32,6 @@ std::vector<double> test::quartic(double x3, double x2, double x, double c) {
 CoordinateSolutions test::intr(lc::Line& line, lc::Circle& circle) {
     auto l = line.quadratic();
     auto c = circle.quadratic();
-    //cout <<"a";
     return Quadratic::getIntersection(l, c);
 }
 

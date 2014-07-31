@@ -28,25 +28,25 @@ class entitytest {
     public:
         entitytest();
 
-        Line_CSPtr LineMove(geo::Coordinate &);
-        Line_CSPtr LineCopy(geo::Coordinate &);
-        Line_CSPtr LineRotate(geo::Coordinate &, double);
-        Line_CSPtr LineScale(geo::Coordinate &, geo::Coordinate &);
+        std::vector<Line_CSPtr> LineMove(geo::Coordinate &);
+        std::vector<Line_CSPtr> LineCopy(geo::Coordinate &);
+        std::vector<Line_CSPtr> LineRotate(geo::Coordinate &, double);
+        std::vector<Line_CSPtr> LineScale(geo::Coordinate &, geo::Coordinate &);
 
-        Circle_CSPtr CircleMove(geo::Coordinate &);
-        Circle_CSPtr CircleCopy(geo::Coordinate &);
-        Circle_CSPtr CircleRotate(geo::Coordinate &, double);
-        Circle_CSPtr CircleScale(geo::Coordinate &, geo::Coordinate &);
+        std::vector<Circle_CSPtr> CircleMove(geo::Coordinate &);
+        std::vector<Circle_CSPtr> CircleCopy(geo::Coordinate &);
+        std::vector<Circle_CSPtr> CircleRotate(geo::Coordinate &, double);
+        std::vector<Circle_CSPtr> CircleScale(geo::Coordinate &, geo::Coordinate &);
 
-        Arc_CSPtr ArcMove(geo::Coordinate &);
-        Arc_CSPtr ArcCopy(geo::Coordinate &);
-        Arc_CSPtr ArcRotate(geo::Coordinate &, double);
-        Arc_CSPtr ArcScale(geo::Coordinate &, geo::Coordinate &);
+        std::vector<Arc_CSPtr> ArcMove(geo::Coordinate &);
+        std::vector<Arc_CSPtr> ArcCopy(geo::Coordinate &);
+        std::vector<Arc_CSPtr> ArcRotate(geo::Coordinate &, double);
+        std::vector<Arc_CSPtr> ArcScale(geo::Coordinate &, geo::Coordinate &);
 
-        Ellipse_CSPtr EllipseMove(geo::Coordinate &);
-        Ellipse_CSPtr EllipseCopy(geo::Coordinate &);
-        Ellipse_CSPtr EllipseRotate(geo::Coordinate &, double);
-        Ellipse_CSPtr EllipseScale(geo::Coordinate &, geo::Coordinate &);
+        std::vector<Ellipse_CSPtr> EllipseMove(geo::Coordinate &);
+        std::vector<Ellipse_CSPtr> EllipseCopy(geo::Coordinate &);
+        std::vector<Ellipse_CSPtr> EllipseRotate(geo::Coordinate &, double);
+        std::vector<Ellipse_CSPtr> EllipseScale(geo::Coordinate &, geo::Coordinate &);
 
 };
 
