@@ -35,7 +35,7 @@ CADEntity_CSPtr Arc::rotate(const geo::Coordinate& rotation_center, const double
 }
 
 CADEntity_CSPtr Arc::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    auto newArc = std::make_shared<Arc>(this->center().scale(scale_center, scale_factor), this->radius() * scale_factor.x(),
+    auto newArc = std::make_shared<Arc>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()),
                                         this->startAngle(), this->endAngle(), layer());
     newArc->setID(this->id());
     return newArc;

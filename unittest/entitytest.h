@@ -25,28 +25,28 @@
 using namespace std;
 using namespace lc;
 class entitytest {
-    public:
-        entitytest();
+public:
+    entitytest();
 
-        std::vector<Line_CSPtr> LineMove(geo::Coordinate &);
-        std::vector<Line_CSPtr> LineCopy(geo::Coordinate &);
-        std::vector<Line_CSPtr> LineRotate(geo::Coordinate &, double);
-        std::vector<Line_CSPtr> LineScale(geo::Coordinate &, geo::Coordinate &);
+    std::vector<Line_CSPtr> LineMove();
+    std::vector<Line_CSPtr> LineCopy();
+    std::vector<Line_CSPtr> LineRotate();
+    std::vector<Line_CSPtr> LineScale();
 
-        std::vector<Circle_CSPtr> CircleMove(geo::Coordinate &);
-        std::vector<Circle_CSPtr> CircleCopy(geo::Coordinate &);
-        std::vector<Circle_CSPtr> CircleRotate(geo::Coordinate &, double);
-        std::vector<Circle_CSPtr> CircleScale(geo::Coordinate &, geo::Coordinate &);
+    std::vector<Circle_CSPtr> CircleMove();
+    std::vector<Circle_CSPtr> CircleCopy();
+    std::vector<Circle_CSPtr> CircleRotate();
+    std::vector<Circle_CSPtr> CircleScale();
 
-        std::vector<Arc_CSPtr> ArcMove(geo::Coordinate &);
-        std::vector<Arc_CSPtr> ArcCopy(geo::Coordinate &);
-        std::vector<Arc_CSPtr> ArcRotate(geo::Coordinate &, double);
-        std::vector<Arc_CSPtr> ArcScale(geo::Coordinate &, geo::Coordinate &);
+    std::vector<Arc_CSPtr> ArcMove();
+    std::vector<Arc_CSPtr> ArcCopy();
+    std::vector<Arc_CSPtr> ArcRotate();
+    std::vector<Arc_CSPtr> ArcScale();
 
-        std::vector<Ellipse_CSPtr> EllipseMove(geo::Coordinate &);
-        std::vector<Ellipse_CSPtr> EllipseCopy(geo::Coordinate &);
-        std::vector<Ellipse_CSPtr> EllipseRotate(geo::Coordinate &, double);
-        std::vector<Ellipse_CSPtr> EllipseScale(geo::Coordinate &, geo::Coordinate &);
+    std::vector<Ellipse_CSPtr> EllipseMove();
+    std::vector<Ellipse_CSPtr> EllipseCopy();
+    std::vector<Ellipse_CSPtr> EllipseRotate();
+    std::vector<Ellipse_CSPtr> EllipseScale();
 
 };
 
