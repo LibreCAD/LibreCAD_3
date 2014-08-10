@@ -68,7 +68,7 @@ TEST(entitytest, LineMove) {
 
 TEST(entitytest, LineCopy) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
+
     EXPECT_DOUBLE_EQ(10.0, round(a.LineCopy()[1]->start().x()));
     EXPECT_DOUBLE_EQ(10.0, round(a.LineCopy()[1]->start().y()));
     EXPECT_DOUBLE_EQ(110.0, round(a.LineCopy()[1]->end().x()));
@@ -94,170 +94,164 @@ TEST(entitytest, LineRotate) {
     entitytest a;
     EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[0]->start().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[0]->start().y()));
-    EXPECT_DOUBLE_EQ(-100.0, round(a.LineRotate()[0]->end().x()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.LineRotate()[0]->end().y()));
+    EXPECT_DOUBLE_EQ(114.0, round(a.LineRotate()[0]->end().x()));
+    EXPECT_DOUBLE_EQ(-83.0, round(a.LineRotate()[0]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[1]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[1]->start().y()));
-    EXPECT_DOUBLE_EQ(-100.0, round(a.LineRotate()[1]->end().x()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.LineRotate()[1]->end().y()));
+    EXPECT_DOUBLE_EQ(-33.0, round(a.LineRotate()[1]->start().x()));
+    EXPECT_DOUBLE_EQ(-45.0, round(a.LineRotate()[1]->start().y()));
+    EXPECT_DOUBLE_EQ(-98.0, round(a.LineRotate()[1]->end().x()));
+    EXPECT_DOUBLE_EQ(-171.0, round(a.LineRotate()[1]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[2]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[2]->start().y()));
-    EXPECT_DOUBLE_EQ(-100.0, round(a.LineRotate()[2]->end().x()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.LineRotate()[2]->end().y()));
+    EXPECT_DOUBLE_EQ(53.0, round(a.LineRotate()[2]->start().x()));
+    EXPECT_DOUBLE_EQ(53.0, round(a.LineRotate()[2]->start().y()));
+    EXPECT_DOUBLE_EQ(-81.0, round(a.LineRotate()[2]->end().x()));
+    EXPECT_DOUBLE_EQ(98.0, round(a.LineRotate()[2]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[3]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineRotate()[3]->start().y()));
-    EXPECT_DOUBLE_EQ(-100.0, round(a.LineRotate()[3]->end().x()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.LineRotate()[3]->end().y()));
+    EXPECT_DOUBLE_EQ(72.0, round(a.LineRotate()[3]->start().x()));
+    EXPECT_DOUBLE_EQ(76.0, round(a.LineRotate()[3]->start().y()));
+    EXPECT_DOUBLE_EQ(92.0, round(a.LineRotate()[3]->end().x()));
+    EXPECT_DOUBLE_EQ(-64.0, round(a.LineRotate()[3]->end().y()));
 }
 
 TEST(entitytest, LineScale) {
     entitytest a;
-    lc::geo::Coordinate _a(0.0,0.0);
-    lc::geo::Coordinate factor(2,2);
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[0]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[0]->start().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[0]->end().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[0]->end().y()));
+    EXPECT_DOUBLE_EQ(-40.0, round(a.LineScale()[0]->start().x()));
+    EXPECT_DOUBLE_EQ(-40.0, round(a.LineScale()[0]->start().y()));
+    EXPECT_DOUBLE_EQ(460.0, round(a.LineScale()[0]->end().x()));
+    EXPECT_DOUBLE_EQ(460.0, round(a.LineScale()[0]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[1]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[1]->start().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[1]->end().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[1]->end().y()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.LineScale()[1]->start().x()));
+    EXPECT_DOUBLE_EQ(40.0, round(a.LineScale()[1]->start().y()));
+    EXPECT_DOUBLE_EQ(220.0, round(a.LineScale()[1]->end().x()));
+    EXPECT_DOUBLE_EQ(340.0, round(a.LineScale()[1]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[2]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[2]->start().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[2]->end().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[2]->end().y()));
+    EXPECT_DOUBLE_EQ(-55.0, round(a.LineScale()[2]->start().x()));
+    EXPECT_DOUBLE_EQ(-360.0, round(a.LineScale()[2]->start().y()));
+    EXPECT_DOUBLE_EQ(145.0, round(a.LineScale()[2]->end().x()));
+    EXPECT_DOUBLE_EQ(240.0, round(a.LineScale()[2]->end().y()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[3]->start().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.LineScale()[3]->start().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[3]->end().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.LineScale()[3]->end().y()));
+    EXPECT_DOUBLE_EQ(-190.0, round(a.LineScale()[3]->start().x()));
+    EXPECT_DOUBLE_EQ(-399.0, round(a.LineScale()[3]->start().y()));
+    EXPECT_DOUBLE_EQ(1810.0, round(a.LineScale()[3]->end().x()));
+    EXPECT_DOUBLE_EQ(1601.0, round(a.LineScale()[3]->end().y()));
 }
 
 
 TEST(entitytest, CircleMove) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[0]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[0]->center().y()));
+    EXPECT_DOUBLE_EQ(0.0, round(a.CircleMove()[0]->center().x()));
+    EXPECT_DOUBLE_EQ(0.0, round(a.CircleMove()[0]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleMove()[0]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.CircleMove()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(-20.0, round(a.CircleMove()[1]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleMove()[1]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(-20.0, round(a.CircleMove()[2]->center().x()));
+    EXPECT_DOUBLE_EQ(-30.0, round(a.CircleMove()[2]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleMove()[2]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleMove()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(-20.0, round(a.CircleMove()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.CircleMove()[3]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleMove()[3]->radius()));
 }
 
 TEST(entitytest, CircleCopy) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
+
     EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(0.0, round(a.CircleCopy()[1]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleCopy()[1]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.CircleCopy()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(0.0, round(a.CircleCopy()[3]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleCopy()[3]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[5]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[5]->center().y()));
+    EXPECT_DOUBLE_EQ(2.0, round(a.CircleCopy()[5]->center().x()));
+    EXPECT_DOUBLE_EQ(-80.0, round(a.CircleCopy()[5]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleCopy()[5]->radius()));
 
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[7]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.CircleCopy()[7]->center().y()));
+    EXPECT_DOUBLE_EQ(-575.0, round(a.CircleCopy()[7]->center().x()));
+    EXPECT_DOUBLE_EQ(1020.0, round(a.CircleCopy()[7]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleCopy()[7]->radius()));
 }
 
 
 TEST(entitytest, CircleRotate) {
     entitytest a;
-    lc::geo::Coordinate _a(0.0,0.0);
+
     auto angle = 90 * 0.0174532925;
+
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[0]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[0]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleRotate()[0]->radius()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(-17.0, round(a.CircleRotate()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(-20.0, round(a.CircleRotate()[1]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleRotate()[1]->radius()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(23.0, round(a.CircleRotate()[2]->center().x()));
+    EXPECT_DOUBLE_EQ(-26.0, round(a.CircleRotate()[2]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleRotate()[2]->radius()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(16.0, round(a.CircleRotate()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(48.0, round(a.CircleRotate()[3]->center().y()));
     EXPECT_DOUBLE_EQ(50.0, round(a.CircleRotate()[3]->radius()));
+
 }
 
 
 TEST(entitytest, CircleScale) {
     entitytest a;
-    lc::geo::Coordinate _a(0.0,0.0);
-    lc::geo::Coordinate factor(2.,2.);
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[0]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[0]->center().y()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.CircleScale()[0]->radius()));
+    EXPECT_DOUBLE_EQ(250.0, round(a.CircleScale()[0]->radius()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(-100.0, round(a.CircleScale()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(-100.0, round(a.CircleScale()[1]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.CircleScale()[1]->radius()));
 
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[2]->center().y()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.CircleScale()[2]->radius()));
+    EXPECT_DOUBLE_EQ(600.0, round(a.CircleScale()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(50.0, round(a.CircleScale()[2]->radius()));
 
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.CircleScale()[3]->center().y()));
-    EXPECT_DOUBLE_EQ(100.0, round(a.CircleScale()[3]->radius()));
+    EXPECT_DOUBLE_EQ(-219.0, round(a.CircleScale()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(-180.0, round(a.CircleScale()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(200.0, round(a.CircleScale()[3]->radius()));
 }
 
 
 TEST(entitytest, ArcMove) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
+
     auto sa = 30 * 0.0174532925;
     auto ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[0]->center().x()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.ArcMove()[0]->center().x()));
     EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[0]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcMove()[0]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcMove()[0]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcMove()[0]->endAngle()));
 
-    lc::geo::Coordinate _b(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(33.0, round(a.ArcMove()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(21.0, round(a.ArcMove()[1]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcMove()[1]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcMove()[1]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcMove()[1]->endAngle()));
 
-    lc::geo::Coordinate _c(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(75.0, round(a.ArcMove()[2]->center().x()));
+    EXPECT_DOUBLE_EQ(75.0, round(a.ArcMove()[2]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcMove()[2]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcMove()[2]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcMove()[2]->endAngle()));
 
-    lc::geo::Coordinate _d(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcMove()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(3000.0, round(a.ArcMove()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(1110.0, round(a.ArcMove()[3]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcMove()[3]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcMove()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcMove()[3]->endAngle()));
@@ -265,38 +259,34 @@ TEST(entitytest, ArcMove) {
 
 TEST(entitytest, ArcCopy) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
     auto sa = 30 * 0.0174532925;
     auto ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(20.0, round(a.ArcCopy()[1]->center().x()));
     EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[1]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcCopy()[1]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcCopy()[1]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcCopy()[1]->endAngle()));
 
-    lc::geo::Coordinate _b(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(33.0, round(a.ArcCopy()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(21.0, round(a.ArcCopy()[3]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcCopy()[3]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcCopy()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcCopy()[3]->endAngle()));
 
-    lc::geo::Coordinate _c(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[5]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[5]->center().y()));
+    EXPECT_DOUBLE_EQ(75.0, round(a.ArcCopy()[5]->center().x()));
+    EXPECT_DOUBLE_EQ(75.0, round(a.ArcCopy()[5]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcCopy()[5]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcCopy()[5]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcCopy()[5]->endAngle()));
 
-    lc::geo::Coordinate _d(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[7]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.ArcCopy()[7]->center().y()));
+    EXPECT_DOUBLE_EQ(3000.0, round(a.ArcCopy()[7]->center().x()));
+    EXPECT_DOUBLE_EQ(1110.0, round(a.ArcCopy()[7]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.ArcCopy()[7]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcCopy()[7]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcCopy()[7]->endAngle()));
@@ -304,7 +294,7 @@ TEST(entitytest, ArcCopy) {
 
 //TEST(entitytest, ArcRotate) {
 //    entitytest a;
-//    lc::geo::Coordinate _a(0.0,0.0);
+//
 //    auto angle = 90 * 0.0174532925;
 //    auto sa = 30 * 0.0174532925;
 //    auto ea = 120 * 0.0174532925;
@@ -314,7 +304,7 @@ TEST(entitytest, ArcCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa+angle), round(a.ArcRotate()[0]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea+angle), round(a.ArcRotate()[0]->endAngle()));
 
-//    lc::geo::Coordinate _b(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -324,7 +314,7 @@ TEST(entitytest, ArcCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa+angle), round(a.ArcRotate()[1]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea+angle), round(a.ArcRotate()[1]->endAngle()));
 
-//    lc::geo::Coordinate _c(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -334,7 +324,7 @@ TEST(entitytest, ArcCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa+angle), round(a.ArcRotate()[2]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea+angle), round(a.ArcRotate()[2]->endAngle()));
 
-//    lc::geo::Coordinate _d(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -349,19 +339,15 @@ TEST(entitytest, ArcScale) {
     entitytest a;
     auto sa = 30 * 0.0174532925;
     auto ea = 120 * 0.0174532925;
-    lc::geo::Coordinate _a(0.0,0.0);
-    lc::geo::Coordinate factorA(2,2);
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[0]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[0]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.ArcScale()[0]->radius()));
+    EXPECT_DOUBLE_EQ(-1350.0, round(a.ArcScale()[0]->center().y()));
+    EXPECT_DOUBLE_EQ(100.0, round(a.ArcScale()[0]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcScale()[0]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcScale()[0]->endAngle()));
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    lc::geo::Coordinate _b(0.0,0.0);
-    lc::geo::Coordinate factorB(2,2);
-    EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(-55.0, round(a.ArcScale()[1]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[1]->center().y()));
     EXPECT_DOUBLE_EQ(200.0, round(a.ArcScale()[1]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcScale()[1]->startAngle()));
@@ -369,21 +355,17 @@ TEST(entitytest, ArcScale) {
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    lc::geo::Coordinate _c(0.0,0.0);
-    lc::geo::Coordinate factorC(2,2);
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[2]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[2]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.ArcScale()[2]->radius()));
+    EXPECT_DOUBLE_EQ(300.0, round(a.ArcScale()[2]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcScale()[2]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcScale()[2]->endAngle()));
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    lc::geo::Coordinate _d(0.0,0.0);
-    lc::geo::Coordinate factorD(2,2);
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[3]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.ArcScale()[3]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.ArcScale()[3]->radius()));
+    EXPECT_DOUBLE_EQ(100.0, round(a.ArcScale()[3]->radius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.ArcScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.ArcScale()[3]->endAngle()));
 }
@@ -391,7 +373,6 @@ TEST(entitytest, ArcScale) {
 
 TEST(entitytest, EllipseMove) {
     entitytest a;
-    lc::geo::Coordinate _a(10.0,10.0);
     auto sa = 30 * 0.0174532925;
     auto ea = 120 * 0.0174532925;
     EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[0]->center().x()));
@@ -402,33 +383,30 @@ TEST(entitytest, EllipseMove) {
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseMove()[0]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseMove()[0]->endAngle()));
 
-    lc::geo::Coordinate _b(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[1]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[1]->center().y()));
+    EXPECT_DOUBLE_EQ(10000.0, round(a.EllipseMove()[1]->center().x()));
+    EXPECT_DOUBLE_EQ(15550.0, round(a.EllipseMove()[1]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[1]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[1]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[1]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseMove()[1]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseMove()[1]->endAngle()));
 
-    lc::geo::Coordinate _c(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(3210.0, round(a.EllipseMove()[2]->center().x()));
+    EXPECT_DOUBLE_EQ(-1220.0, round(a.EllipseMove()[2]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[2]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[2]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[2]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseMove()[2]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseMove()[2]->endAngle()));
 
-    lc::geo::Coordinate _d(10.0,10.0);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseMove()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(-10000.0, round(a.EllipseMove()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(-10000.0, round(a.EllipseMove()[3]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[3]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[3]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseMove()[3]->minorRadius()));
@@ -451,8 +429,8 @@ TEST(entitytest, EllipseCopy) {
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(10000.0, round(a.EllipseCopy()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(15550.0, round(a.EllipseCopy()[3]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[3]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[3]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[3]->minorRadius()));
@@ -461,8 +439,8 @@ TEST(entitytest, EllipseCopy) {
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[5]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[5]->center().y()));
+    EXPECT_DOUBLE_EQ(3210.0, round(a.EllipseCopy()[5]->center().x()));
+    EXPECT_DOUBLE_EQ(-1220.0, round(a.EllipseCopy()[5]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[5]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[5]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[5]->minorRadius()));
@@ -471,8 +449,8 @@ TEST(entitytest, EllipseCopy) {
 
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[7]->center().x()));
-    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseCopy()[7]->center().y()));
+    EXPECT_DOUBLE_EQ(-10000.0, round(a.EllipseCopy()[7]->center().x()));
+    EXPECT_DOUBLE_EQ(-10000.0, round(a.EllipseCopy()[7]->center().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[7]->majorP().x()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[7]->majorP().y()));
     EXPECT_DOUBLE_EQ(100.0, round(a.EllipseCopy()[7]->minorRadius()));
@@ -482,7 +460,7 @@ TEST(entitytest, EllipseCopy) {
 
 //TEST(entitytest, EllipseRotate) {
 //    entitytest a;
-//    lc::geo::Coordinate _a(0.0,0.0);
+//
 //    auto angle = 90 * 0.0174532925;
 //    auto sa = 30 * 0.0174532925;
 //    auto ea = 120 * 0.0174532925;
@@ -495,7 +473,7 @@ TEST(entitytest, EllipseCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseRotate()[0]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseRotate()[0]->endAngle()));
 
-//    lc::geo::Coordinate _b(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -508,7 +486,7 @@ TEST(entitytest, EllipseCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseRotate()[1]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseRotate()[1]->endAngle()));
 
-//    lc::geo::Coordinate _c(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -521,7 +499,7 @@ TEST(entitytest, EllipseCopy) {
 //    EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseRotate()[2]->startAngle()));
 //    EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseRotate()[2]->endAngle()));
 
-//    lc::geo::Coordinate _d(0.0,0.0);
+//
 //    angle = 90 * 0.0174532925;
 //    sa = 30 * 0.0174532925;
 //    ea = 120 * 0.0174532925;
@@ -537,51 +515,44 @@ TEST(entitytest, EllipseCopy) {
 
 TEST(entitytest, EllipseScale) {
     entitytest a;
-    lc::geo::Coordinate _a(0.0,0.0);
-    lc::geo::Coordinate factorA(2,2);
+
     auto sa = 30 * 0.0174532925;
     auto ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[0]->center().x()));
+    EXPECT_DOUBLE_EQ(-1000.0, round(a.EllipseScale()[0]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[0]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[0]->majorP().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[0]->majorP().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[0]->minorRadius()));
+    EXPECT_DOUBLE_EQ(1347.0, round(a.EllipseScale()[0]->majorP().x()));
+    EXPECT_DOUBLE_EQ(41.0, round(a.EllipseScale()[0]->majorP().y()));
+    EXPECT_DOUBLE_EQ(115.0, round(a.EllipseScale()[0]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[0]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[0]->endAngle()));
 
-    lc::geo::Coordinate _b(0.0,0.0);
-    lc::geo::Coordinate factorB(2,2);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
     EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[1]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[1]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[1]->majorP().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[1]->majorP().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[1]->minorRadius()));
+    EXPECT_DOUBLE_EQ(731.0, round(a.EllipseScale()[1]->majorP().x()));
+    EXPECT_DOUBLE_EQ(155.0, round(a.EllipseScale()[1]->majorP().y()));
+    EXPECT_DOUBLE_EQ(340.0, round(a.EllipseScale()[1]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[1]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[1]->endAngle()));
 
-    lc::geo::Coordinate _c(0.0,0.0);
-    lc::geo::Coordinate factorC(2,2);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
     EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[2]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[2]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[2]->majorP().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[2]->majorP().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[2]->minorRadius()));
+    EXPECT_DOUBLE_EQ(10.0, round(a.EllipseScale()[2]->center().y()));
+    EXPECT_DOUBLE_EQ(52.0, round(a.EllipseScale()[2]->majorP().x()));
+    EXPECT_DOUBLE_EQ(244.0, round(a.EllipseScale()[2]->majorP().y()));
+    EXPECT_DOUBLE_EQ(113.0, round(a.EllipseScale()[2]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[2]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[2]->endAngle()));
 
-    lc::geo::Coordinate _d(0.0,0.0);
-    lc::geo::Coordinate factorD(2,2);
     sa = 30 * 0.0174532925;
     ea = 120 * 0.0174532925;
-    EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[3]->center().x()));
-    EXPECT_DOUBLE_EQ(0.0, round(a.EllipseScale()[3]->center().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[3]->majorP().x()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[3]->majorP().y()));
-    EXPECT_DOUBLE_EQ(200.0, round(a.EllipseScale()[3]->minorRadius()));
+    EXPECT_DOUBLE_EQ(-24300.0, round(a.EllipseScale()[3]->center().x()));
+    EXPECT_DOUBLE_EQ(-45000.0, round(a.EllipseScale()[3]->center().y()));
+    EXPECT_DOUBLE_EQ(1000.0, round(a.EllipseScale()[3]->majorP().x()));
+    EXPECT_DOUBLE_EQ(1000.0, round(a.EllipseScale()[3]->majorP().y()));
+    EXPECT_DOUBLE_EQ(1000.0, round(a.EllipseScale()[3]->minorRadius()));
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
 }

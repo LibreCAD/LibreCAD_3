@@ -49,10 +49,10 @@ std::vector<geo::Coordinate> test::testin() {
         return false;
     });
 
-    for (auto & p : ret) {
-        cout << p.x() << "\n\n";
-        cout << p.y() << "\n\n";
-    }
+    // for (auto & p : ret) {
+    //     cout << p.x() << "\n\n";
+    //     cout << p.y() << "\n\n";
+    // }
 
     return ret;
 }
