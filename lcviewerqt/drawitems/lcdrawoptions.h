@@ -1,5 +1,4 @@
-#ifndef LCDRAWOPTIONS_H
-#define LCDRAWOPTIONS_H
+#pragma once
 
 #include <QColor>
 
@@ -12,5 +11,3 @@ class LcDrawOptions {
     private:
         QColor  _selectedColor;
 };
-
-#endif // LCDRAWOPTIONS_H

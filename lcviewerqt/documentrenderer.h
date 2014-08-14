@@ -1,5 +1,4 @@
-#ifndef DOCUMENTRENDERER_H
-#define DOCUMENTRENDERER_H
+#pragma once
 
 #include <functional>
 
@@ -181,6 +180,3 @@ class DocumentRenderer {
         // Functor to draw a selected area
         std::function<void(LcPainter*, lc::geo::Area, bool)> _selectedAreaPainter;
 };
-
-
-#endif // DOCUMENTRENDERER_H

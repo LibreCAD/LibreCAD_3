@@ -1,5 +1,4 @@
-#ifndef SNAPPEDEVENT_H
-#define SNAPPEDEVENT_H
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 
@@ -27,5 +26,3 @@ class SnapPointEvent {
         lc::geo::Coordinate _snapPoint;
         bool _snapped;
 };
-
-#endif // SNAPPEDEVENT_H

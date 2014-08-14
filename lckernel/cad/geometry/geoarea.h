@@ -1,5 +1,4 @@
-#ifndef GEOAREA_H
-#define GEOAREA_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -223,4 +222,3 @@ namespace lc {
         };
     }
 }
-#endif // GEOAREA_H

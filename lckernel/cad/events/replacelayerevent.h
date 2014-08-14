@@ -1,11 +1,11 @@
-#ifndef REPLACELAYEREVENT_H
-#define REPLACELAYEREVENT_H
+#pragma once
 
 namespace lc {
     class ReplaceLayerEvent {
         public:
+        /**
+             * @brief Replace Layer Event
+             */
             ReplaceLayerEvent();
     };
-};
-
-#endif // REPLACELAYEREVENT_H
+}

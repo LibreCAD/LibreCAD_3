@@ -1,6 +1,4 @@
-#ifndef GEODIMENSION_H
-#define GEODIMENSION_H
-
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -113,4 +111,4 @@ namespace lc {
     }
 }
 
-#endif // GEODimension_H
+// GEODimension_H

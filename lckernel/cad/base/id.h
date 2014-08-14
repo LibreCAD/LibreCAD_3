@@ -1,5 +1,4 @@
-#ifndef ID_H
-#define ID_H
+#pragma once
 
 #include <atomic>
 #include "cad/const.h"
@@ -39,4 +38,3 @@ namespace lc {
             ID_DATATYPE _id;
     };
 }
-#endif // ID_H

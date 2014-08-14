@@ -1,5 +1,4 @@
-#ifndef GEOARC_H
-#define GEOARC_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -10,6 +9,10 @@ namespace lc {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
 
+                /**
+                 * @brief Returns center of Arc
+                 * @return geo::Coordinate Center
+                 */
                 const Coordinate center() const;
 
                 /*!
@@ -39,4 +42,3 @@ namespace lc {
         };
     }
 }
-#endif // GEOARC_H

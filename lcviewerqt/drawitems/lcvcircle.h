@@ -1,5 +1,4 @@
-#ifndef LCVCIRCLE_H
-#define LCVCIRCLE_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/circle.h"
@@ -14,5 +13,3 @@ class LCVCircle  : public LCVDrawItem, public lc::Circle {
 
         virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
 };
-
-#endif // LCVCIRCLE_H

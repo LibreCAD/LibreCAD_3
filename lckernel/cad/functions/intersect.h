@@ -1,5 +1,4 @@
-#ifndef INTERSECT_H
-#define INTERSECT_H
+#pragma once
 
 #include "cad/base/cadentity.h"
 #include "cad/geometry/geocoordinate.h"
@@ -305,5 +304,3 @@ namespace lc {
     };
 
 }
-
-#endif  //INTERSECT_H

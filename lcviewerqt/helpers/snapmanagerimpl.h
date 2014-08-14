@@ -1,5 +1,4 @@
-#ifndef SNAPMANAGERIMPL_H
-#define SNAPMANAGERIMPL_H
+#pragma once
 
 #include <QObject>
 #include <cad/document/selectionmanager.h>
@@ -59,4 +58,4 @@ class SnapManagerImpl : public SnapManager {
         std::vector<lc::EntityDistance> _entities;
 };
 
-#endif // SNAPMANAGERIMPL_H
+// SNAPMANAGERIMPL_H

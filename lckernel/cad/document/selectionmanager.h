@@ -1,5 +1,4 @@
-#ifndef SELECTIONMANAGER_H
-#define SELECTIONMANAGER_H
+#pragma once
 
 #include <vector>
 
@@ -32,4 +31,3 @@ namespace lc {
 
     };
 }
-#endif // SELECTIONMANAGER_H

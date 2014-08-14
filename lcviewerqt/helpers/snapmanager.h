@@ -1,5 +1,4 @@
-#ifndef SNAPMANAGER_H
-#define SNAPMANAGER_H
+#pragma once
 
 #include <QObject>
 
@@ -57,4 +56,4 @@ typedef std::shared_ptr<SnapManager> SnapManager_SPtr;
 typedef std::shared_ptr<const SnapManager> SnapManager_CSPtr;
 
 
-#endif // SNAPMANAGER_H
+// SNAPMANAGER_H

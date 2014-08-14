@@ -1,5 +1,4 @@
-#ifndef OperationManager_H
-#define OperationManager_H
+#pragma once
 
 #include <QObject>
 #include <QStack>
@@ -71,4 +70,4 @@ class OperationManager : QObject {
         lc::Document* _document;
 };
 
-#endif // OperationManager_H
+// OperationManager_H

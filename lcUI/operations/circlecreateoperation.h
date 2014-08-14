@@ -1,5 +1,4 @@
-#ifndef CIRCLECREATEOPERATION_H
-#define CIRCLECREATEOPERATION_H
+#pragma once
 
 #include <QState>
 #include <QStateMachine>
@@ -33,10 +32,10 @@ class CircleCreateOperation :  public GuiOperation {
 
         void setStartPoint(const lc::geo::Coordinate& startPoint) {
             _startPoint = startPoint;
-        };
+        }
         void setEndPoint(const lc::geo::Coordinate& endPoint) {
             _endPoint = endPoint;
-        };
+        }
 
         lc::geo::Coordinate startPoint() const {
             return _startPoint;
@@ -69,5 +68,3 @@ class CircleCreateOperation :  public GuiOperation {
         lc::Layer_CSPtr _layer;
 
 };
-
-#endif // CircleCreateOperation_H

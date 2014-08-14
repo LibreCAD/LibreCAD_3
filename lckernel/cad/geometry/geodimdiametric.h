@@ -1,5 +1,4 @@
-#ifndef GEODIMDIAMETRIC_H
-#define GEODIMDIAMETRIC_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -21,6 +20,10 @@ namespace lc {
                  */
                 DimDiametric(const Dimension& dimension, const double leader);
 
+                /**
+                 * @brief returns leader of dim diametric
+                 * @return double leader
+                 */
                 double leader() const;
 
             private:
@@ -29,4 +32,4 @@ namespace lc {
     }
 }
 
-#endif // GEODIMDIAMETRIC_H
+// GEODIMDIAMETRIC_H

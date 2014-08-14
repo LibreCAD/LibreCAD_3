@@ -1,5 +1,4 @@
-#ifndef COMMITPROCESSEVENT_H
-#define COMMITPROCESSEVENT_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/operations/documentoperation.h"
@@ -24,4 +23,3 @@ namespace lc {
             const operation::DocumentOperation_SPtr _operation; /*!< operation _operation */
     };
 }
-#endif // COMMITPROCESSEVENT_H

@@ -1,5 +1,4 @@
-#ifndef COLOR_H
-#define COLOR_H
+#pragma once
 
 #include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
@@ -23,9 +22,30 @@ namespace lc {
                 ByEntity = 1
             };
 
+            /**
+             * @brief Color default constructor
+             */
             Color() : MetaType() , _method(Invalid), _r(0.), _g(0.), _b(0.), _a(0.) {}
+
+            /**
+             * @brief Color with specific arguments
+             * @param r
+             * @param g
+             * @param b
+             * @param a
+             */
             Color(double r, double g, double b, double a = 1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
+\
+            /**
+             * @brief Color from other color
+             * @param Color other
+             */
             Color(const Color& other) : MetaType(), _method(other._method), _r(other._r), _g(other._g), _b(other._b), _a(other._a) {}
+
+            /**
+             * @brief Color from other method
+             * @param Method method
+             */
             Color(const Method& method) : MetaType(), _method(method), _r(0.), _g(0.), _b(0.), _a(0.) {}
 
 
@@ -55,10 +75,18 @@ namespace lc {
 
             ~Color() {
             }
-
+            /**
+             * @brief returns method
+             * @return Method method
+             */
             Method method() const {
                 return _method;
             }
+
+            /**
+             * @brief red
+             * @return
+             */
             double red() const {
                 return _r;
             }
@@ -104,4 +132,4 @@ namespace lc {
 
 }
 
-#endif // Color_H
+// Color_H

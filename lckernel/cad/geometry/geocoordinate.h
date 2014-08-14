@@ -1,5 +1,4 @@
-#ifndef GEOCOORDINATE_H
-#define GEOCOORDINATE_H
+#pragma once
 
 #include "cad/const.h"
 #include <cmath>
@@ -15,12 +14,28 @@ namespace lc {
                 explicit Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {}
                 explicit Coordinate(double x, double y) : _x(x), _y(y), _z(0.) {}
                 explicit Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)) {}
+
+
+            /**
+                 * @brief  Returns x of Coordinate
+                 * @return double x
+                 */
                 inline double x() const {
                     return _x;
                 }
+
+                /**
+                 * @brief Returns y of Coordinate
+                 * @return double y
+                 */
                 inline double y() const {
                     return _y;
                 }
+
+                /**
+                 * @brief Returns z of Coordinate
+                 * @return double z
+                 */
                 inline double z() const {
                     return _z;
                 }
@@ -34,10 +49,20 @@ namespace lc {
 
                     return *this;
                 }
+
+                /**
+                 * @brief flips the x and y of Coordinate
+                 * @return geo::Coordinate coordinate
+                 */
                 Coordinate flipXY() const {
                     return Coordinate(this->y(), this->x());
                 }
 
+                /**
+                 * @brief Returns angle To the coordinate
+                 * @param geo::Coordinate v
+                 * @return double angle
+                 */
                 double angleTo(const Coordinate& v) const {
                     return (v - (*this)).angle();
                 }
@@ -48,7 +73,11 @@ namespace lc {
                  */
                 double angleBetween(const Coordinate& v1, const Coordinate& v2) const;
 
-
+                /**
+                 * @brief checks for the equality of Coordinate
+                 * @param geo::coordinate
+                 * @return bool equality
+                 */
                 inline bool operator==(const Coordinate& coord) const {
                     return this->_x == coord._x && this->_y == coord._y && this->_z == coord._z;
                 }
@@ -73,6 +102,11 @@ namespace lc {
                     return Coordinate(_x + coord._x, _y + coord._y, _z + coord._z);
                 }
 
+                /**
+                 * @brief operator + for offset addition
+                 * @param double offset
+                 * @return geo::Coordinate
+                 */
                 inline Coordinate operator + (double d) const {
                     return Coordinate(_x + d, _y + d, _z + d);
                 }
@@ -241,5 +275,3 @@ namespace lc {
 
     }
 }
-
-#endif // GEOCOORDINATE_H

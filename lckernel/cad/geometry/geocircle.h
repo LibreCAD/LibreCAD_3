@@ -1,5 +1,4 @@
-#ifndef GEOCIRCLE_H
-#define GEOCIRCLE_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -43,5 +42,3 @@ namespace lc {
         };
     }
 }
-
-#endif // GEOCIRCLE_H

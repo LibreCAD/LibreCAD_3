@@ -1,5 +1,4 @@
-#ifndef LUALIBRECADBRIDGE_H
-#define LUALIBRECADBRIDGE_H
+#pragma once
 
 #include <memory>
 
@@ -11,5 +10,3 @@
 
 struct lua_State;
 void lua_openlckernel(lua_State* L);
-
-#endif // LUALIBRECADBRIDGE_H

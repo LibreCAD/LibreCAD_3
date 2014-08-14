@@ -1,5 +1,4 @@
-#ifndef LCADLUASCRIPT_H
-#define LCADLUASCRIPT_H
+#pragma once
 
 #include "lcadluascript_global.h"
 
@@ -16,5 +15,3 @@ class LCADLUASCRIPTSHARED_EXPORT LCadLuaScript {
         lc::Document* _document;
         lc::StorageManager_SPtr _storageManager;
 };
-
-#endif // LCADLUASCRIPT_H

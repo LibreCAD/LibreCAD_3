@@ -1,20 +1,31 @@
-#ifndef GEOSPLINE_H
-#define GEOSPLINE_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
 
 namespace lc {
     namespace geo {
-        // TODO: Should Spline be a arc with a start angle of 0 and a stop angle of 2PI ?
         class Spline {
             public:
                 Spline(const std::vector<Coordinate>& control_points, int degree, bool closed);
 
+
+                /**
+                 * @brief control_points, Returns Control points of spline
+                 * @return vector<Coordinate> controlpoints
+                 */
                 const std::vector<Coordinate> control_points() const;
 
+                /**
+                 * @brief degree, Returns degree of spline
+                 * @return int degree
+                 */
                 int degree() const;
 
+                /**
+                 * @brief closed, returns if spline is closed or not
+                 * @return bool closed
+                 */
                 bool closed() const;
 
                 /*!
@@ -38,5 +49,3 @@ namespace lc {
         };
     }
 }
-
-#endif // GEOSPLINE_H

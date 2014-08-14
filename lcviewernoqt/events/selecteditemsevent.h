@@ -1,5 +1,4 @@
-#ifndef SELECTEDITEMSEVENT_H
-#define SELECTEDITEMSEVENT_H
+#pragma once
 
 #include "cad/base/cadentity.h"
 
@@ -20,5 +19,3 @@ class SelectedItemsEvent  {
     private:
         const std::vector<lc::CADEntity_CSPtr > _entities;
 };
-
-#endif // SELECTEDITEMSEVENT_H

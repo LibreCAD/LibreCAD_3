@@ -1,5 +1,5 @@
-#ifndef QUADRATIC_MATH_H_
-#define QUADRATIC_MATH_H_
+#pragma once
+
 #include "cad/geometry/geocoordinate.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -59,4 +59,4 @@ namespace lc {
 
     };
 }
-#endif
+#

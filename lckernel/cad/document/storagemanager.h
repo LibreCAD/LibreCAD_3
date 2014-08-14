@@ -1,5 +1,4 @@
-#ifndef ENTITYMANAGER_H
-#define ENTITYMANAGER_H
+#pragma once
 
 #include "cad/base/id.h"
 #include "cad/base/cadentity.h"
@@ -50,4 +49,3 @@ namespace lc {
     typedef std::shared_ptr<StorageManager> StorageManager_SPtr;
     typedef std::shared_ptr<const StorageManager> StorageManager_CSPtr;
 }
-#endif // ENTITYMANAGER_H

@@ -1,5 +1,4 @@
-#ifndef LAYER_H
-#define LAYER_H
+#pragma once
 
 #include <string>
 
@@ -42,4 +41,4 @@ namespace lc {
     typedef std::shared_ptr<const Layer> Layer_CSPtr;
 }
 
-#endif // LAYER_H
+// LAYER_H

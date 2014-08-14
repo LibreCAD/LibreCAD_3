@@ -1,5 +1,4 @@
-#ifndef TESTFORM_H
-#define TESTFORM_H
+#pragma once
 
 #include <QWidget>
 
@@ -17,5 +16,3 @@ class testForm : public QWidget {
     private:
         Ui::testForm* ui;
 };
-
-#endif // TESTFORM_H

@@ -1,5 +1,4 @@
-#ifndef LCVLINE_H
-#define LCVLINE_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/line.h"
@@ -15,5 +14,3 @@ class LCVLine : public LCVDrawItem, public lc::Line {
 
 
 };
-
-#endif // LCVLINE_H

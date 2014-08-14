@@ -1,7 +1,4 @@
-#ifndef BUILDEROPS_H
-#define BUILDEROPS_H
-
-
+#pragma once
 
 #include "documentoperation.h"
 #include "undoable.h"
@@ -326,7 +323,7 @@ namespace lc {
             private:
                 Layer_CSPtr _layer;
         };
-    };
+    }
 }
 
-#endif // BUILDEROPS_H
+// BUILDEROPS_H

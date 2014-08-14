@@ -1,5 +1,4 @@
-#ifndef GEODIMALIGNED_H
-#define GEODIMALIGNED_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -38,6 +37,3 @@ namespace lc {
         };
     }
 }
-
-
-#endif // GEODIMALIGNED_H

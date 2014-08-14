@@ -1,5 +1,4 @@
-#ifndef LINECREATEOPERATION_H
-#define LINECREATEOPERATION_H
+#pragma once
 
 #include <QState>
 #include <QStateMachine>
@@ -71,4 +70,4 @@ class LineCreateOperation : public GuiOperation {
 
 };
 
-#endif // LINECREATEOPERATION_H
+// LINECREATEOPERATION_H

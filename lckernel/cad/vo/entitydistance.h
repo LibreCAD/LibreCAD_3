@@ -1,5 +1,4 @@
-#ifndef ENTITYDISTANCE_H
-#define ENTITYDISTANCE_H
+#pragma once
 
 #include "cad/base/cadentity.h"
 
@@ -39,5 +38,3 @@ namespace lc {
             double _distance;
     };
 }
-
-#endif // ENTITYDISTANCE_H

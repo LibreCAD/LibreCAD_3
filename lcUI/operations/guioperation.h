@@ -1,5 +1,4 @@
-#ifndef OPERATION_H
-#define OPERATION_H
+#pragma once
 
 #include <QObject>
 #include <QPointF>
@@ -63,7 +62,3 @@ class GuiOperation : public QObject {
     private:
         lc::Document* _document;
 };
-
-
-
-#endif // OPERATION_H

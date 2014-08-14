@@ -1,5 +1,4 @@
-#ifndef ENTITYINTERACTION_H
-#define ENTITYINTERACTION_H
+#pragma once
 
 #include "cad/const.h"
 #include <memory>
@@ -303,4 +302,4 @@ namespace lc {
 
 #define ENTITYINTERACTION(Entity) virtual void accept(Entity o, EntityVisitor& ei) const { ei.visit(o, o);}
 
-#endif // ENTITYINTERACTION_H
+// ENTITYINTERACTION_H

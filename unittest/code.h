@@ -1,5 +1,5 @@
-#ifndef CODE_H_
-#define CODE_H_
+#pragma once
+
 #include <vector>
 #include <cad/math/quadratic_math.h>
 #include <cad/primitive/circle.h>
@@ -21,5 +21,3 @@ class test {
         template <typename e1, typename e2>
         std::vector<geo::Coordinate>intersec(e1, e2);
 };
-
-#endif

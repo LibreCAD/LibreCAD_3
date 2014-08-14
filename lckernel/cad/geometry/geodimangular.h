@@ -1,5 +1,4 @@
-#ifndef GEODIMANGULAR_H
-#define GEODIMANGULAR_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -54,4 +53,4 @@ namespace lc {
 }
 
 
-#endif // GEODIMANGULAR_H
+// GEODIMANGULAR_H

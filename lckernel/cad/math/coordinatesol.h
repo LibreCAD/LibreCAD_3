@@ -1,5 +1,4 @@
-#ifndef COORDINATESOL_H_
-#define COORDINATESOL_H_
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/const.h"
@@ -45,4 +44,4 @@ namespace lc {
     };
 }
 
-#endif
+#

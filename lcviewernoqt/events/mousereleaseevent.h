@@ -1,5 +1,4 @@
-#ifndef MouseReleaseEvent_H
-#define MouseReleaseEvent_H
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/vo/entitydistance.h"
@@ -27,5 +26,3 @@ class MouseReleaseEvent  {
         lc::geo::Coordinate _mousePosition;
         std::vector<lc::EntityDistance> _entities;
 };
-
-#endif // MouseReleaseEvent_H

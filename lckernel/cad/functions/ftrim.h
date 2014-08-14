@@ -1,5 +1,4 @@
-#ifndef FTRIM_H
-#define FTRIM_H
+#pragma once
 
 #include "cad/base/cadentity.h"
 #include "cad/geometry/geocoordinate.h"
@@ -40,4 +39,3 @@ namespace lc {
     typedef std::shared_ptr<FTrim> FTrim_SPtr;
     typedef std::shared_ptr<const FTrim> FTrim_CSPtr;
 }
-#endif // FTRIM_H

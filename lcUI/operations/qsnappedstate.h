@@ -1,5 +1,4 @@
-#ifndef QSNAPPEDSTATE_H
-#define QSNAPPEDSTATE_H
+#pragma once
 
 #include <QState>
 #include <QAbstractState>
@@ -68,4 +67,4 @@ class QSnappedState : public QState {
         const char* _mrename;
 };
 
-#endif // QSNAPPEDSTATE_H
+// QSNAPPEDSTATE_H

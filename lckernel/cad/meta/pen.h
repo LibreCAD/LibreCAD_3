@@ -1,5 +1,4 @@
-#ifndef PEN_H
-#define PEN_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -39,4 +38,4 @@ namespace lc {
 }
 
 
-#endif // PEN_H
+// PEN_H

@@ -1,5 +1,4 @@
-#ifndef LCVELLIPSE_H
-#define LCVELLIPSE_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/ellipse.h"
@@ -15,5 +14,3 @@ class LCVEllipse : public LCVDrawItem, public lc::Ellipse {
 
 
 };
-
-#endif // LCVELLIPSE_H

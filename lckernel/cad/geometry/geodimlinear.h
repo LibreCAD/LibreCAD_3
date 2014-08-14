@@ -1,5 +1,4 @@
-#ifndef GEODIMLINEAR_H
-#define GEODIMLINEAR_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -23,19 +22,19 @@ namespace lc {
                 DimLinear(const Dimension& dimension, const Coordinate& extension_point1, const Coordinate& extension_point2, const double oblique);
 
                 /**
-                 * @brief extension_point1
+                 * @brief Returns extension_point1
                  * @return Coordinate extension_point1
                  */
                 Coordinate extension_point1() const;
 
                 /**
-                 * @brief extension_point2
+                 * @brief Returns extension_point2
                  * @return Coordinate extension_point2
                  */
                 Coordinate extension_point2() const;
 
                 /**
-                 * @brief oblique
+                 * @brief return obliqueness of dim linear
                  * @return double oblique
                  */
                 double oblique() const;
@@ -48,4 +47,4 @@ namespace lc {
     }
 }
 
-#endif // GEODIMLINEAR_H
+// GEODIMLINEAR_H

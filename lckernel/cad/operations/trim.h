@@ -1,5 +1,4 @@
-#ifndef TRIMENTITY_H
-#define TRIMENTITY_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
@@ -33,7 +32,7 @@ namespace lc {
                 std::shared_ptr<lc::FTrim> _trim;
 
         };
-    };
+    }
 }
 
-#endif // TRIMENTITY_H
+// TRIMENTITY_H

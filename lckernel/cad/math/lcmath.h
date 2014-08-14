@@ -1,5 +1,4 @@
-#ifndef MATH_H
-#define MATH_H
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 #include "coordinatesol.h"
@@ -71,4 +70,4 @@ namespace lc {
     };
 }
 
-#endif
+#

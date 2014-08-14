@@ -1,5 +1,4 @@
-#ifndef METATYPE_H
-#define METATYPE_H
+#pragma once
 
 #include "cad/const.h"
 #include <memory>
@@ -24,7 +23,7 @@ namespace lc {
 
         public:
             virtual metaTypeId metaName() const = 0;
-            virtual ~MetaType() {};
+            virtual ~MetaType() {}
     };
     typedef std::shared_ptr<MetaType> MetaType_SPtr;
     typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
@@ -51,4 +50,4 @@ namespace lc {
             }
     };
 }
-#endif // METATYPE_H
+// METATYPE_H

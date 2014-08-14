@@ -1,5 +1,4 @@
-#ifndef OPERATIONINTERFACE_H
-#define OPERATIONINTERFACE_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/document/storagemanager.h"
@@ -60,6 +59,6 @@ namespace lc {
         };
         typedef std::shared_ptr<DocumentOperation> DocumentOperation_SPtr;
         typedef std::shared_ptr<const DocumentOperation> DocumentOperation_CSPtr;
-    };
+    }
 }
-#endif // OPERATIONINTERFACE_H
+// OPERATIONINTERFACE_H

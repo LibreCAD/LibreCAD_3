@@ -1,5 +1,4 @@
-#ifndef ELLIPSE_H
-#define ELLIPSE_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -37,11 +36,46 @@ namespace lc {
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
 
         public:
+            /**
+             * @brief move, moves by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr moved entity
+             */
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+
+            /**
+             * @brief copy, copies by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr copied entity
+             */
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+
+            /**
+             * @brief rotate, rotate operation
+             * @param geo::Coordinate rotation_center
+             * @param double rotation_angle
+             * @return CADEntity_CSPtr rotated entity
+             */
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+
+            /**
+             * @brief scale, scales the entity
+             * @param geo::Coordinate scale_center
+             * @param double scale_factor
+             * @return
+             */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+
+            /**
+             * @brief boundingBox of the entity
+             * @return geo::Area area
+             */
             virtual const geo::Area boundingBox() const;
+
+            /**
+             * @brief quadratic, Returns quadratic for the entity
+             * @return Quadratic quadratic equation
+             */
             Quadratic quadratic() const;
 
         public:
@@ -99,4 +133,4 @@ namespace lc {
     };
 }
 
-#endif // ELLIPSE_H
+// ELLIPSE_H

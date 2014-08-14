@@ -1,5 +1,4 @@
-#ifndef ENTITYCONTAINER_H
-#define ENTITYCONTAINER_H
+#pragma once
 
 #include <memory>
 #include <limits>
@@ -301,5 +300,3 @@ namespace lc {
             QuadTree<CT>* _tree;
     };
 }
-
-#endif // ENTITYCONTAINER_H

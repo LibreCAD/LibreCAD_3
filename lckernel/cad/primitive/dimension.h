@@ -1,6 +1,4 @@
-#ifndef DIMENSION_H
-#define DIMENSION_H
-
+#pragma once
 
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
@@ -70,10 +68,40 @@ namespace lc {
                       const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
+            /**
+             * @brief move, moves by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr moved entity
+             */
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+
+            /**
+             * @brief copy, copies by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr copied entity
+             */
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+
+            /**
+             * @brief rotate, rotate operation
+             * @param geo::Coordinate rotation_center
+             * @param double rotation_angle
+             * @return CADEntity_CSPtr rotated entity
+             */
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+
+            /**
+             * @brief scale, scales the entity
+             * @param geo::Coordinate scale_center
+             * @param double scale_factor
+             * @return
+             */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+
+            /**
+             * @brief boundingBox of the entity
+             * @return geo::Area area
+             */
             virtual const geo::Area boundingBox() const;
 
         public:
@@ -131,5 +159,5 @@ namespace lc {
     };
 }
 
-#endif // Dimension_H
+// Dimension_H
 

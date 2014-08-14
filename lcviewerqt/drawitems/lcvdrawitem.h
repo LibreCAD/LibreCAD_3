@@ -1,5 +1,4 @@
-#ifndef LCVIEWERDRAWITEM_H
-#define LCVIEWERDRAWITEM_H
+#pragma once
 
 #include <memory>
 /**
@@ -38,6 +37,3 @@ class LCVDrawItem {
 class LCVDrawItem;
 typedef std::shared_ptr<LCVDrawItem> LCVDrawItem_SPtr;
 typedef std::shared_ptr<const LCVDrawItem> LCVDrawItem_CSPtr;
-
-
-#endif

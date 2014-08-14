@@ -1,5 +1,4 @@
-#ifndef GEOELLIPSE_H
-#define GEOELLIPSE_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -15,10 +14,34 @@ namespace lc {
             public:
                 Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
 
+                /**
+                 * @brief center, Returns Center point of Ellipse
+                 * @return geo::Coordinate center
+                 */
                 const Coordinate center() const;
+
+                /**
+                 * @brief majorP, Returns major point of the ellipse
+                 * @return geo::Coordinate majorP
+                 */
                 const Coordinate majorP() const;
+
+                /**
+                 * @brief minorRadius, Returns the minor radius of ellipse
+                 * @return double minor radius
+                 */
                 double minorRadius() const;
+
+                /**
+                 * @brief startAngle, Returns Startangle of ellipse
+                 * @return double startangle
+                 */
                 double startAngle() const;
+
+                /**
+                 * @brief endAngle, Return the end angle of ellipse
+                 * @return double endangle
+                 */
                 double endAngle() const;
 
                 /**
@@ -85,4 +108,4 @@ namespace lc {
     }
 }
 
-#endif // GEOELLIPSE_H
+// GEOELLIPSE_H

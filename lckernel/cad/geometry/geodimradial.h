@@ -1,5 +1,4 @@
-#ifndef GEODIMRADIAL_H
-#define GEODIMRADIAL_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -21,6 +20,10 @@ namespace lc {
                  */
                 DimRadial(const Dimension& dimension, const double leader);
 
+                /**
+                 * @brief Returns leader of DimRadial
+                 * @return double leader
+                 */
                 double leader() const;
 
             private:
@@ -29,4 +32,4 @@ namespace lc {
     }
 }
 
-#endif // GEODIMRADIAL_H
+// GEODIMRADIAL_H

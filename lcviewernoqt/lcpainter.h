@@ -1,5 +1,5 @@
-#ifndef LCPAINTER_H
-#define LCPAINTER_H
+#pragma once
+
 #include <string>
 #include "endcaps.h"
 
@@ -50,5 +50,3 @@ class LcPainter {
 
 
 };
-
-#endif // LCPAINTER_H

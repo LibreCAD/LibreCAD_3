@@ -1,13 +1,13 @@
-#ifndef REMOVELAYEREVENT_H
-#define REMOVELAYEREVENT_H
+#pragma once
 
 namespace lc {
     class RemoveLayerEvent {
         public:
+            /**
+             * @brief Remove Layer Event
+             */
             RemoveLayerEvent() {
 
             }
     };
-};
-
-#endif // REMOVELAYEREVENT_H
+}

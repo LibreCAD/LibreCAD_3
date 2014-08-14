@@ -1,5 +1,4 @@
-#ifndef UNDOMANAGERIMPL_H
-#define UNDOMANAGERIMPL_H
+#pragma once
 
 #include <stack>
 
@@ -85,5 +84,3 @@ namespace lc {
     };
 
 }
-
-#endif // UNDOMANAGERIMPL_H

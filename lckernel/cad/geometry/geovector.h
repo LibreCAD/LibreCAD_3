@@ -1,5 +1,4 @@
-#ifndef GEOVECTOR_H
-#define GEOVECTOR_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -88,4 +87,4 @@ namespace lc {
     }
 }
 
-#endif // GEOVECTOR_H
+// GEOVECTOR_H

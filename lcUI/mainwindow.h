@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QtGui>
@@ -50,5 +49,3 @@ class MainWindow : public IMainWindow {
         QSignalMapper* windowMapper;
 
 };
-
-#endif // MAINWINDOW_H

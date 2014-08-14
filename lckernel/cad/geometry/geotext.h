@@ -1,5 +1,4 @@
-#ifndef GEOTEXT_H
-#define GEOTEXT_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -148,9 +147,6 @@ namespace lc {
                  */
                 VAlign valign() const;
 
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                bool isCoordinateOnPath(const Coordinate& coord) const;
-
             private:
                 const Coordinate _insertion_point, _second_point;
                 double _height, _width_rel, _angle;
@@ -163,4 +159,4 @@ namespace lc {
     }
 }
 
-#endif // GEOTEXT_H
+// GEOTEXT_H

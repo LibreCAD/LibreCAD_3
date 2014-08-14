@@ -1,5 +1,4 @@
-#ifndef GRADIENTBACKGROUND_H
-#define GRADIENTBACKGROUND_H
+#pragma once
 
 #include <QColor>
 #include "lcvdrawitem.h"
@@ -19,5 +18,3 @@ class GradientBackground : public LCVDrawItem {
         const QColor _topColor;
         const QColor _bottomColor;
 };
-
-#endif // GRADIENTBACKGROUND_H

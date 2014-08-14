@@ -1,5 +1,4 @@
-#ifndef LCMAINTOOLBAR_H
-#define LCMAINTOOLBAR_H
+#pragma once
 
 #include <QWidget>
 
@@ -32,4 +31,4 @@ class LCMainToolbar : public QWidget {
         IMainWindow* _parent;
 };
 
-#endif // LCMAINTOOLBAR_H
+// LCMAINTOOLBAR_H

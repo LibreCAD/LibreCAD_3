@@ -1,5 +1,4 @@
-#ifndef MOUSEMOVEEVENT_H
-#define MOUSEMOVEEVENT_H
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 #include "lcpainter.h"
@@ -25,5 +24,3 @@ class MouseMoveEvent  {
         LcPainter* _painter;
         lc::geo::Coordinate _mousePosition;
 };
-
-#endif // MOUSEMOVEEVENT_H

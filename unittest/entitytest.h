@@ -1,5 +1,5 @@
-#ifndef ENTITYTEST_H_
-#define ENTITYTEST_H_
+#pragma once
+
 #include <vector>
 #include <cad/primitive/line.h>
 #include <cad/meta/layer.h>
@@ -49,5 +49,3 @@ public:
     std::vector<Ellipse_CSPtr> EllipseScale();
 
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef TRIMOPERATION_H
-#define TRIMOPERATION_H
+#pragma once
 
 #include <QState>
 #include <QStateMachine>
@@ -61,4 +60,4 @@ class TrimOperation : public GuiOperation {
 
 };
 
-#endif // TRIMOPERATION_H
+// TRIMOPERATION_H

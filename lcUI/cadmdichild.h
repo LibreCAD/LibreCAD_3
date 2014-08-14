@@ -1,5 +1,4 @@
-#ifndef CADMDICHILD_H
-#define CADMDICHILD_H
+#pragma once
 
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -73,5 +72,3 @@ class CadMdiChild : public QWidget {
 
 
 };
-
-#endif // CADMDICHILD_H

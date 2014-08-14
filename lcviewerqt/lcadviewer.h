@@ -1,5 +1,4 @@
-#ifndef LCADViewer_H
-#define LCADViewer_H
+#pragma once
 
 #include <map>
 #include <QWidget>
@@ -109,5 +108,3 @@ class LCADViewer : public QWidget {
         // Entity container that track's all entities within the document
         lc::Document* _document;
 };
-
-#endif

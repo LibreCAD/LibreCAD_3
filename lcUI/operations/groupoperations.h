@@ -1,5 +1,4 @@
-#ifndef GROUPOPERATIONS_H
-#define GROUPOPERATIONS_H
+#pragma once
 
 /*!
   * \brief Add this on the stack to goup a set of operations to beable to group a set of operation
@@ -11,5 +10,3 @@ class GroupOperations {
     public:
         GroupOperations();
 };
-
-#endif // GROUPOPERATIONS_H

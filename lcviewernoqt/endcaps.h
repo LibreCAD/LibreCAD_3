@@ -1,5 +1,4 @@
-#ifndef ENDCAPS_H
-#define ENDCAPS_H
+#pragma once
 
 #include <memory>
 #include <functional>
@@ -46,5 +45,3 @@ class CapType {
         const unsigned int _type;
         const double _size;
 };
-
-#endif // ENDCAPS_H

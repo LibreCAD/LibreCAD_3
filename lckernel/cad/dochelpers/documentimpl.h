@@ -1,5 +1,4 @@
-#ifndef DOCUMENTIMPL_H
-#define DOCUMENTIMPL_H
+#pragma once
 
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex
@@ -9,10 +8,6 @@
 #include "cad/document/storagemanager.h"
 #include "cad/document/selectionmanager.h"
 #include "cad/operations/documentoperation.h"
-
-
-
-
 
 namespace lc {
 
@@ -68,7 +63,3 @@ namespace lc {
 
     };
 }
-
-#endif
-
-

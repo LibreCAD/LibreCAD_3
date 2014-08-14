@@ -1,5 +1,4 @@
-#ifndef GUIOPERATIONFINISHEDEVENT_H
-#define GUIOPERATIONFINISHEDEVENT_H
+#pragma once
 
 #include "guioperation.h"
 
@@ -18,4 +17,4 @@ class GuiOperationFinishedEvent {
         const GuiOperation& _guiOperation;
 };
 
-#endif // GUIOPERATIONFINISHEDEVENT_H
+// GUIOPERATIONFINISHEDEVENT_H

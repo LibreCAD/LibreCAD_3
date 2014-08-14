@@ -1,5 +1,4 @@
-#ifndef GEOMTEXT_H
-#define GEOMTEXT_H
+#pragma once
 
 #include "cad/const.h"
 #include "geocoordinate.h"
@@ -150,9 +149,6 @@ namespace lc {
                  */
                 double lineSpacingFactor() const;
 
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                bool isCoordinateOnPath(const Coordinate& coord) const;
-
             private:
                 const Coordinate _insertion_point;
                 double _height, _width, _angle, _linespacingfactor;
@@ -166,4 +162,4 @@ namespace lc {
     }
 }
 
-#endif // GEOMTEXT_H
+// GEOMTEXT_H

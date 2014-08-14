@@ -1,5 +1,4 @@
-#ifndef CURSOR_H
-#define CURSOR_H
+#pragma once
 
 #include <QObject>
 #include <QColor>
@@ -35,5 +34,3 @@ class Cursor : public QObject  {
 
         SnapPointEvent _lastSnapEvent;
 };
-
-#endif // CURSOR_H

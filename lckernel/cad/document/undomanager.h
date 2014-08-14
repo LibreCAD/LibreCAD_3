@@ -1,5 +1,4 @@
-#ifndef UNDOMANAGER_H
-#define UNDOMANAGER_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -35,5 +34,3 @@ namespace lc {
     typedef std::shared_ptr<const UndoManager> UndoManager_CSPtr;
 
 }
-
-#endif // UNDOMANAGER_H

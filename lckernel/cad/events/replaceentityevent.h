@@ -1,5 +1,4 @@
-#ifndef REPLACEENTITYEVENT_H
-#define REPLACEENTITYEVENT_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
@@ -29,4 +28,3 @@ namespace lc {
     };
 
 }
-#endif // REPLACEENTITYEVENT_H

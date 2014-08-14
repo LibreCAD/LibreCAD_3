@@ -1,5 +1,4 @@
-#ifndef QUADTREE_H
-#define QUADTREE_H
+#pragma once
 
 #include <functional>
 #include <algorithm>
@@ -507,5 +506,3 @@ namespace lc {
     };
 
 }
-
-#endif // QUADTREE_H

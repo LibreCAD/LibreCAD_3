@@ -1,5 +1,4 @@
-#ifndef LCVTEXT_H
-#define LCVTEXT_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/text.h"
@@ -15,5 +14,3 @@ class LCVText : public LCVDrawItem, public lc::Text {
 
 
 };
-
-#endif // LCVTEXT_H

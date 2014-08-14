@@ -1,5 +1,4 @@
-#ifndef METRICGRID_H
-#define METRICGRID_H
+#pragma once
 
 #include <QPainter>
 #include <QGraphicsView>
@@ -31,5 +30,3 @@ class MetricGrid : public LCVDrawItem, public lc::Snapable {
         // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
         mutable double _lastGridSize;
 };
-
-#endif // METRICGRID_H

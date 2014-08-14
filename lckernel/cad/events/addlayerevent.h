@@ -1,5 +1,4 @@
-#ifndef ADDLAYEREVENT_H
-#define ADDLAYEREVENT_H
+#pragma once
 
 #include <string>
 
@@ -31,5 +30,3 @@ namespace lc {
             const Layer _layer;
     };
 }
-
-#endif // ADDLAYEREVENT_H

@@ -1,5 +1,4 @@
-#ifndef LCVARC_H
-#define LCVARC_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/arc.h"
@@ -10,4 +9,3 @@ class LCVArc: public LCVDrawItem, public lc::Arc {
 
         virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
 };
-#endif // LCVARC_H

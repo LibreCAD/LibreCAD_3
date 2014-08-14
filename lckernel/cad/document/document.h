@@ -1,5 +1,4 @@
-#ifndef DOCUMENT_H
-#define DOCUMENT_H
+#pragma once
 
 #include "cad/meta/layer.h"
 
@@ -154,5 +153,3 @@ namespace lc {
     };
 
 }
-
-#endif // DOCUMENT_H

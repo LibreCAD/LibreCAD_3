@@ -1,5 +1,4 @@
-#ifndef ADDENTITYEVENT_H
-#define ADDENTITYEVENT_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/base/cadentity.h"
@@ -31,4 +30,3 @@ namespace lc {
             const CADEntity_CSPtr _cadEntity;
     };
 }
-#endif // ADDENTITYEVENT_H

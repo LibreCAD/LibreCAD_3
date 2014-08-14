@@ -1,5 +1,4 @@
-#ifndef LCCAIROPAINTER_H
-#define LCCAIROPAINTER_H
+#pragma once
 
 #include <cairo.h>
 #include "lcpainter.h"
@@ -69,5 +68,3 @@ class LcCairoPainter : public LcPainter {
 
         double _lineWidthCompensation;
 };
-
-#endif // LCCAIROPAINTER_H

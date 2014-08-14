@@ -1,5 +1,4 @@
-#ifndef LINEWIDTH_H
-#define LINEWIDTH_H
+#pragma once
 
 #include <string>
 
@@ -43,4 +42,4 @@ namespace lc {
 
 }
 
-#endif // LINEWIDTH_H
+// LINEWIDTH_H

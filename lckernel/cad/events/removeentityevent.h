@@ -1,5 +1,4 @@
-#ifndef REMOVEENTITYEVENT_H
-#define REMOVEENTITYEVENT_H
+#pragma once
 
 #include "cad/const.h"
 #include "cad/base/id.h"
@@ -26,4 +25,3 @@ namespace lc {
             const CADEntity_CSPtr _cadEntity;
     };
 }
-#endif // REMOVEENTITYEVENT_H

@@ -1,5 +1,4 @@
-#ifndef LCVCOORDINATE_H
-#define LCVCOORDINATE_H
+#pragma once
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/coordinate.h"
@@ -14,6 +13,3 @@ class LCVCoordinate : public LCVDrawItem, public lc::Coordinate {
 
         virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
 };
-
-
-#endif // COORDINATE_H

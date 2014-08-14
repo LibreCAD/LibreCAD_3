@@ -1,5 +1,4 @@
-#ifndef CADENTITY_H
-#define CADENTITY_H
+#pragma once
 
 #include "id.h"
 #include "cad/const.h"
@@ -166,13 +165,13 @@ namespace lc {
              * is also as fast as possible. in essense, favor speed over tightness.
              * This routine will in generally be used during testing if entities cross for example to find snap points
              * and to build relationships of tree for example using quad trees
-             * @return
+             * @return geo::Area
              */
             virtual const geo::Area boundingBox() const = 0;
             /*!
              * \brief layer
              * return the layer this entity is placed on
-             * \return
+             * \return Layer_CSPtr
              */
             virtual Layer_CSPtr layer() const;
 
@@ -181,5 +180,3 @@ namespace lc {
 
     };
 }
-
-#endif // CADENTITY_H

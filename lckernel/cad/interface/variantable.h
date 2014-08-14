@@ -1,5 +1,4 @@
-#ifndef VARIANTABLE_H
-#define VARIANTABLE_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -16,8 +15,8 @@ namespace lc {
     class Variantable {
         public:
             virtual bool variantValid() const = 0;
-            virtual ~Variantable() {};
+            virtual ~Variantable() {}
     };
 }
 
-#endif // VARIANTABLE_H
+// VARIANTABLE_H

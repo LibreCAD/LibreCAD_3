@@ -1,5 +1,4 @@
-#ifndef BEGINPROCESSEVENT_H
-#define BEGINPROCESSEVENT_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -16,4 +15,4 @@ namespace lc {
             }
     };
 }
-#endif // BEGINPROCESSEVENT_H
+// BEGINPROCESSEVENT_H

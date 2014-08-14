@@ -1,5 +1,4 @@
-#ifndef ENTITYCOORDINATE_H
-#define ENTITYCOORDINATE_H
+#pragma once
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/base/cadentity.h"
@@ -65,4 +64,4 @@ namespace lc {
     };
 }
 
-#endif // ENTITYCOORDINATE_H
+// ENTITYCOORDINATE_H

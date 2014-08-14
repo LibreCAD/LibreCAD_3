@@ -1,5 +1,4 @@
-#ifndef LCADLUASCRIPT_GLOBAL_H
-#define LCADLUASCRIPT_GLOBAL_H
+#pragma once
 
 #include <QtCore/qglobal.h>
 
@@ -7,6 +6,4 @@
 #  define LCADLUASCRIPTSHARED_EXPORT Q_DECL_EXPORT
 #else
 #  define LCADLUASCRIPTSHARED_EXPORT Q_DECL_IMPORT
-#endif
-
-#endif // LCADLUASCRIPT_GLOBAL_H
+# endif

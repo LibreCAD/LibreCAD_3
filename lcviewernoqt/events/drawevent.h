@@ -1,5 +1,4 @@
-#ifndef DRAWEVENT_H
-#define DRAWEVENT_H
+#pragma once
 
 #include <cad/geometry/geoarea.h>
 #include <lcpainter.h>
@@ -25,5 +24,3 @@ class DrawEvent {
         LcPainter* _painter;
         lc::geo::Coordinate _mousePosition;
 };
-
-#endif // DRAWEVENT_H

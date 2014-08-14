@@ -1,5 +1,4 @@
-#ifndef TIMER_H
-#define TIMER_H
+#pragma once
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -36,5 +35,3 @@ static double lua_microtime() {
 
     return time;
 }
-
-#endif // TIMER_H

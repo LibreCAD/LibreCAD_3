@@ -1,5 +1,4 @@
-#ifndef ENTITYDISPATCH_H
-#define ENTITYDISPATCH_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -37,4 +36,4 @@ namespace lc {
             virtual void visit(DimRadial_CSPtr) = 0;
     };
 }
-#endif // ENTITYDISPATCH_H
+// ENTITYDISPATCH_H

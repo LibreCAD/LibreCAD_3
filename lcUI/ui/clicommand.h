@@ -1,5 +1,4 @@
-#ifndef CLICOMMAND_H
-#define CLICOMMAND_H
+#pragma once
 
 #include <QDockWidget>
 #include <QResizeEvent>
@@ -21,4 +20,4 @@ class CliCommand : public QDockWidget {
         Ui::CliCommand* ui;
 };
 
-#endif // CLICOMMAND_H
+// CLICOMMAND_H

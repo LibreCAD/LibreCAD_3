@@ -1,5 +1,4 @@
-#ifndef METAINFO_H
-#define METAINFO_H
+#pragma once
 
 #include <memory>
 #include <map>
@@ -47,5 +46,3 @@ namespace lc {
 
 
 }
-
-#endif // METAINFO_H

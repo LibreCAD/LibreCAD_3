@@ -1,5 +1,4 @@
-#ifndef SNAPABLE_H
-#define SNAPABLE_H
+#pragma once
 
 #include <vector>
 #include "cad/geometry/geocoordinate.h"
@@ -36,6 +35,6 @@ namespace lc {
     typedef std::shared_ptr<const Snapable> Snapable_CSPtr;
 }
 
-#endif // SNAPABLE_H
+// SNAPABLE_H
 
 

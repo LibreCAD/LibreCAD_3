@@ -59,12 +59,3 @@ Text::HAlign Text::halign() const {
 Text::VAlign Text::valign() const {
     return _valign;
 }
-
-Coordinate Text::nearestPointOnPath(const Coordinate& coord) const {
-    //return;
-}
-
-
-bool Text::isCoordinateOnPath(const Coordinate& coord) const {
-    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
-}

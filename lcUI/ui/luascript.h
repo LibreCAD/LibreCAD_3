@@ -1,5 +1,4 @@
-#ifndef LUASCRIPT_H
-#define LUASCRIPT_H
+#pragma once
 
 #include <QDockWidget>
 #include <imainwindow.h>
@@ -23,4 +22,4 @@ class LuaScript : public QDockWidget {
         IMainWindow* _parent;
 };
 
-#endif // LUASCRIPT_H
+// LUASCRIPT_H

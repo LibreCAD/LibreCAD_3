@@ -1,5 +1,4 @@
-#ifndef UNDOABLE_H
-#define UNDOABLE_H
+#pragma once
 
 #include <string>
 #include "cad/const.h"
@@ -64,7 +63,7 @@ namespace lc {
         };
         typedef std::shared_ptr<Undoable> Undoable_SPtr;
         typedef std::shared_ptr<const Undoable> Undoable_CSPtr;
-    };
+    }
 }
 
-#endif // UNDOABLE_H
+// UNDOABLE_H
