@@ -22,14 +22,27 @@ class EndCaps {
         };
         EndCaps();
 
-
+        /**
+         * @brief addCap, Adds an arrowhead
+         * @param typ Type of arrowhead
+         */
         void addCap(unsigned int typ, std::function<void(LcPainter*, double startX, double startY, double endX, double endY, double size)>);
+
+        /**
+         * @brief render, Render the arrow head
+         * @param LCPainter painter, the surface to be painted
+         * @param int type, type of arrow head
+         * @param double startX, starting of arrowhead
+         * @param double startY, starting Y of arrowhead
+         * @param double endX, ending X of arrowhead
+         * @param double endY, ending Y of arrowhead
+         * @param double size, Size of arrow head
+         */
         void render(LcPainter* painter, unsigned int type, double startX, double startY, double endX, double endY, double size) const;
     private:
 
         std::map<int, std::function<void(LcPainter*, double startX, double startY, double endX, double endY, double size)>> _arrows;
 };
-
 
 class CapType {
     public:

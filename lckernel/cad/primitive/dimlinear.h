@@ -21,13 +21,15 @@ namespace lc {
     class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public geo::DimLinear {
         public:
 
+
             /**
-                 * @brief DimAngular
-                 * @param dimension
-                 * @param extension_point1
-                 * @param extension_point2
-                 * @param layer
-                 */
+             * @brief DimLinear, DimLinear constructor with metatypes
+             * @param Dimension dimension
+             * @param geo::Coordinate extension_point1
+             * @param geo::Coordinate extension_point2
+             * @param double oblique
+             * @param Layer_CSPtr layer
+             */
             DimLinear(const Dimension& dimension,
                       const geo::Coordinate& extension_point1,
                       const geo::Coordinate& extension_point2,
@@ -35,12 +37,13 @@ namespace lc {
                       const Layer_CSPtr layer);
 
             /**
-             * @brief DimAngular
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             * @param metaTypes
+             * @brief DimLinear, DimLinear constructor with metatypes
+             * @param Dimension dimension
+             * @param geo::Coordinate extension_point1
+             * @param geo::Coordinate extension_point2
+             * @param double oblique
+             * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
              */
             DimLinear(const Dimension& dimension,
                       const geo::Coordinate& extension_point1,

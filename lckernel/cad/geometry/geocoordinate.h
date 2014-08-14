@@ -16,10 +16,10 @@ namespace lc {
                 explicit Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)) {}
 
 
-            /**
-                 * @brief  Returns x of Coordinate
-                 * @return double x
-                 */
+                /**
+                     * @brief  Returns x of Coordinate
+                     * @return double x
+                     */
                 inline double x() const {
                     return _x;
                 }

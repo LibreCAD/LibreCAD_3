@@ -8,12 +8,39 @@
 namespace lc {
     class Math {
         public:
+            /**
+                 * @brief isAngleBetween, checks if angle is between
+                 * @param a, angle
+                 * @param a1, angle1
+                 * @param a2, angle2
+                 * @param reversed, reverse check
+                 * @return bool
+                 */
             static bool isAngleBetween(double a,
                                        double a1, double a2,
                                        bool reversed);
-            static double correctAngle(double a) ;
+
+            /**
+             * @brief correctAngle, Corrects angle to be in 0 - 360
+             * @param double a, angle
+             * @return double corrected angle
+             */
+            static double correctAngle(double a);
+
+            /**
+             * @brief getAngleDifference, Angle difference between 2 angles
+             * @param double a1, angle 1
+             * @param double a2, angle 2
+             * @param bool reversed, reverse check
+             * @return double angle difference
+             */
             static double getAngleDifference(double a1, double a2, bool reversed) ;
 
+            /**
+             * @brief quadraticSolver, Quadratic equations solver
+             * @param vector<double> ce, equation
+             * @return vector<double> roots
+             */
             static std::vector<double> quadraticSolver(const std::vector<double>& ce);
 
             static std::vector<double> cubicSolver(const std::vector<double>& ce);
@@ -64,7 +91,11 @@ namespace lc {
                       *@return a CoordinateSolutions contains real roots (x,y)
                       */
             static bool simultaneousQuadraticVerify(const std::vector<std::vector<double> >& m, const geo::Coordinate& v);
-
+            /**
+             * @brief simultaneousQuadraticSolverFull
+             * @param vector<vector <double> > m
+             * @return CoordinateSolutions Coordinates
+             */
             static lc::CoordinateSolutions simultaneousQuadraticSolverFull(const std::vector<std::vector<double> >& m);
             static lc::CoordinateSolutions simultaneousQuadraticSolverMixed(const std::vector<std::vector<double> >& m);
     };

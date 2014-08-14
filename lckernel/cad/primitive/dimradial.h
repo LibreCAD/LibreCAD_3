@@ -23,10 +23,9 @@ namespace lc {
 
             /**
                  * @brief DimRadial
-                 * @param dimension
-                 * @param extension_point1
-                 * @param extension_point2
-                 * @param layer
+                 * @param Dimension dimension
+                 * @param double leader
+                 * @param Layer_CSPtr layer
                  */
             DimRadial(const Dimension& dimension,
                       const double leader,
@@ -34,11 +33,10 @@ namespace lc {
 
             /**
              * @brief DimRadial
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             * @param metaTypes
+             * @param Dimension dimension
+             * @param double leader
+             * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
              */
             DimRadial(const Dimension& dimension,
                       const double leader,

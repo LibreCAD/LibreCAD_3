@@ -22,63 +22,61 @@ namespace lc {
         public:
 
             /**
-                         * @brief DimAngular
-                         * @param dimension
-                         * @param extension_point1
-                         * @param extension_point2
-                         * @param layer
-                         */
+             * @brief DimAngular, DimDiametric default constructor
+             * @param Dimension dimension
+             * @param double leader
+             * @param Layer_CSPtr layer
+             */
             DimDiametric(const Dimension& dimension,
                          const double leader,
                          const Layer_CSPtr layer);
 
             /**
-                     * @brief DimAngular
-                     * @param dimension
-                     * @param extension_point1
-                     * @param extension_point2
-                     * @param layer
-                     * @param metaTypes
-                     */
+             * @brief DimDiametric, Dimdiametric constructor with metatypes
+             * @param Dimension dimension
+             * @param double leader
+             * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
+             */
             DimDiametric(const Dimension& dimension,
                          const double leader,
                          const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
 
         public:
             /**
-             * @brief move, moves by an offset
-             * @param geo::Coordinate offset
-             * @return CADEntity_CSPtr moved entity
-             */
+                             * @brief move, moves by an offset
+                             * @param geo::Coordinate offset
+                             * @return CADEntity_CSPtr moved entity
+                             */
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
 
             /**
-             * @brief copy, copies line by an offset
-             * @param geo::Coordinate offset
-             * @return CADEntity_CSPtr copied entity
-             */
+                             * @brief copy, copies line by an offset
+                             * @param geo::Coordinate offset
+                             * @return CADEntity_CSPtr copied entity
+                             */
             virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
 
             /**
-             * @brief rotate, rotate operation
-             * @param geo::Coordinate rotation_center
-             * @param double rotation_angle
-             * @return CADEntity_CSPtr rotated entity
-             */
+                             * @brief rotate, rotate operation
+                             * @param geo::Coordinate rotation_center
+                             * @param double rotation_angle
+                             * @return CADEntity_CSPtr rotated entity
+                             */
             virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
 
             /**
-             * @brief scale, scales the entity
-             * @param geo::Coordinate scale_center
-             * @param double scale_factor
-             * @return
-             */
+                             * @brief scale, scales the entity
+                             * @param geo::Coordinate scale_center
+                             * @param double scale_factor
+                             * @return CADEntity_CSPtr Scaled entity
+                             */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
             /**
-             * @brief boundingBox of the entity
-             * @return geo::Area area
-             */
+                             * @brief boundingBox of the entity
+                             * @return geo::Area area
+                             */
             virtual const geo::Area boundingBox() const;
 
         public:

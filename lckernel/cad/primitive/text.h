@@ -19,18 +19,18 @@ namespace lc {
     class Text : public std::enable_shared_from_this<Text>, public CADEntity, public geo::Text {
         public:
             /**
-             * @brief Text Entity
-             * @param insertion_point insertion_point of the text
-             * @param second_point second_point of text in UCS
-             * @param height height of the text
-             * @param text_value the text itself
-             * @param width_rel X scale factor-width
-             * @param angle angle of obliqueness
-             * @param style name of text style
-             * @param textgeneration Text drawing direction
-             * @param halign Horizontal alignment
-             * @param valign Vertical alignment
-             * @param layer Layer of the entity
+             * @brief Text, default constructor
+             * @param geo::Coordinate insertion_point, insertion_point of the text
+             * @param geo::Coordinate second_point, second_point of text in UCS
+             * @param double height, height of the text
+             * @param string text_value, the text itself
+             * @param double width_rel, X scale factor-width
+             * @param double angle, angle of obliqueness
+             * @param string style, name of text style
+             * @param int textgeneration, Text drawing direction
+             * @param int halign, Horizontal alignment
+             * @param int valign, Vertical alignment
+             * @param Layer_CSPtr layer, Layer of the entity
              */
             Text(const geo::Coordinate& insertion_point,
                  const geo::Coordinate& second_point,
@@ -43,18 +43,18 @@ namespace lc {
                  const int halign, const int valign, const Layer_CSPtr layer);
 
             /**
-             * @brief Text Entity
-             * @param insertion_point insertion_point of the text
-             * @param second_point second_point of text in UCS
-             * @param height height of the text
-             * @param text_value the text itself
-             * @param width_rel X scale factor-width
-             * @param angle angle of obliqueness
-             * @param style name of text style
-             * @param textgeneration Text drawing direction
-             * @param halign Horizontal alignment
-             * @param valign Vertical alignment
-             * @param layer Layer of the entity
+             * @brief Text, Text constructor with metatypes
+             * @param geo::Coordinate insertion_point, insertion_point of the text
+             * @param geo::Coordinate second_point, second_point of text in UCS
+             * @param double height, height of the text
+             * @param string text_value, the text itself
+             * @param double width_rel, X scale factor-width
+             * @param double angle, angle of obliqueness
+             * @param string style, name of text style
+             * @param int textgeneration, Text drawing direction
+             * @param int halign, Horizontal alignment
+             * @param int valign, Vertical alignment
+             * @param Layer_CSPtr layer, Layer of the entity
              * @param metatypes metatypes of the cad entity
              */
             Text(const geo::Coordinate& insertion_point,

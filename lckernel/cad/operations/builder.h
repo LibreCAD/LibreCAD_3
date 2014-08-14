@@ -51,7 +51,7 @@ namespace lc {
                  * @return Builder builder
                  */
                 Builder& rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
-\
+                \
                 /**
                  * @brief scale operation
                  * @param geo::Coordinate scale_center

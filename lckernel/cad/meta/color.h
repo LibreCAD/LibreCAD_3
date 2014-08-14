@@ -35,7 +35,7 @@ namespace lc {
              * @param a
              */
             Color(double r, double g, double b, double a = 1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
-\
+            \
             /**
              * @brief Color from other color
              * @param Color other

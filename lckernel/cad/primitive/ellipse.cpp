@@ -30,7 +30,7 @@ CADEntity_CSPtr Ellipse::move(const geo::Coordinate& offset) const {
 
 CADEntity_CSPtr Ellipse::copy(const geo::Coordinate& offset) const {
     auto newEllipse = std::make_shared<Ellipse>(this->center() + offset, this->majorP(), this->minorRadius(),
-						this->startAngle(), this->endAngle(), layer());
+                                                this->startAngle(), this->endAngle(), layer());
     return newEllipse;
 }
 

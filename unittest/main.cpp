@@ -18,11 +18,11 @@ TEST(test, quad) {
     EXPECT_DOUBLE_EQ(-0.50252531694167146, c.quad(100, 50)[0]);
     EXPECT_DOUBLE_EQ(-99.497474683058329, c.quad(100, 50)[1]);
 
-//    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
-//    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
+    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
 
-//    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
-//    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
+    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
 }
 
 TEST(test, cubic) {

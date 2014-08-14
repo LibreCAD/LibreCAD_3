@@ -19,7 +19,22 @@ namespace lc {
 
     class Coordinate : public std::enable_shared_from_this<Coordinate>, public CADEntity, public geo::Coordinate {
         public:
+
+            /**
+                 * @brief Coordinate, Default Coordinate Constructor
+                 * @param double x
+                 * @param double y
+                 * @param Layer_CSPtr layer
+                 */
             Coordinate(const double x, const double y, const Layer_CSPtr layer);
+
+            /**
+             * @brief Coordinate, Coordinate constructor with metatypes
+             * @param double x
+             * @param double y
+             * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
+             */
             Coordinate(const double x, const double y, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
             Coordinate(const Coordinate_CSPtr other, bool sameID = false);
 

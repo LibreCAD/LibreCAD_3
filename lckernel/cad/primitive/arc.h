@@ -18,7 +18,25 @@ namespace lc {
 
     class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
         public:
+            /**
+             * @brief Arc, Default Arc constructor
+             * @param geo::Coordinate center, center of Arc
+             * @param double radius, radius of Arc
+             * @param double startAngle, starting angle of Arc
+             * @param double endAngle, ending angle of Arc
+             * @param Layer_CSPtr layer, layer of entity
+             */
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer);
+
+            /**
+             * @brief Arc, Arc constructor with MetaTypes
+             * @param geo::Coordinate center, center of Arc
+             * @param double radius, radius of Arc
+             * @param double startAngle, starting angle of Arc
+             * @param double endAngle, ending angle of Arc
+             * @param Layer_CSPtr layer, layer of entity
+             * @param MetaTypes metaTypes
+             */
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
             Arc(const Arc_CSPtr other, bool sameID = false);
         public:

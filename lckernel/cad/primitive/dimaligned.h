@@ -22,11 +22,11 @@ namespace lc {
         public:
 
             /**
-                 * @brief DimAligned
-                 * @param dimension
-                 * @param extension_point1
-                 * @param extension_point2
-                 * @param layer
+                 * @brief DimAligned, default DimAligned Constructor
+                 * @param Dimension dimension
+                 * @param geo::Coordinate extension_point1
+                 * @param geo::Coordinate extension_point2
+                 * @param Layer_CSPtr layer
                  */
             DimAligned(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,
@@ -34,12 +34,12 @@ namespace lc {
                        const Layer_CSPtr layer);
 
             /**
-             * @brief DimAligned
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             * @param metaTypes
+                 * @brief DimAligned, DimAligned Constructor with MetaTypes
+                 * @param Dimension dimension
+                 * @param geo::Coordinate extension_point1
+                 * @param geo::Coordinate extension_point2
+                 * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
              */
             DimAligned(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,

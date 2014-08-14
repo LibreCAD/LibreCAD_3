@@ -22,11 +22,13 @@ namespace lc {
         public:
 
             /**
-                 * @brief DimAngular
-                 * @param dimension
-                 * @param extension_point1
-                 * @param extension_point2
-                 * @param layer
+                 * @brief DimAngular, default dimangular constructor
+                 * @param Dimension dimension
+                 * @param geo::Coordinate extension_point1
+                 * @param geo::Coordinate extension_point2
+                 * @param geo::Coordinate extension_point3
+                 * @param geo::Coordinate extension_point4
+                 * @param Layer_CSPtr layer
                  */
             DimAngular(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,
@@ -36,12 +38,14 @@ namespace lc {
                        const Layer_CSPtr layer);
 
             /**
-             * @brief DimAngular
-             * @param dimension
-             * @param extension_point1
-             * @param extension_point2
-             * @param layer
-             * @param metaTypes
+             * @brief DimAngular, Dimangular constructor with metatypes
+                 * @param Dimension dimension
+                 * @param geo::Coordinate extension_point1
+                 * @param geo::Coordinate extension_point2
+                 * @param geo::Coordinate extension_point3
+                 * @param geo::Coordinate extension_point4
+                 * @param Layer_CSPtr layer
+             * @param MetaTypes_CSPtr metaTypes
              */
             DimAngular(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,

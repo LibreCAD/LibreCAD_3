@@ -21,7 +21,21 @@ namespace lc {
 
     class Circle : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
         public:
+            /**
+             * @brief Circle, Default Circle Constructor
+             * @param geo::Coordinate center, center of Circle
+             * @param double radius, radius of circle
+             * @param Layer_CSPtr _layer
+             */
             Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer);
+
+            /**
+             * @brief Circle, Circle Constructor with metatypes
+             * @param geo::Coordinate center, center of Circle
+             * @param double radius, radius of circle
+             * @param Layer_CSPtr _layer
+             * @param MetaTypes metaTypes
+             */
             Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, const std::list<MetaType_CSPtr>& metaTypes);
             Circle(const Circle_CSPtr other, bool sameID = false);
 
