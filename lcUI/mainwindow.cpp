@@ -129,8 +129,8 @@ void MainWindow::addToolbars() {
     addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 
     // Add Cli COmmand interpeter
-    QDockWidget* _cliCommand = new CliCommand(this);
-    addDockWidget(Qt::BottomDockWidgetArea, _cliCommand);
+//    QDockWidget* _cliCommand = new CliCommand(this);
+//    addDockWidget(Qt::BottomDockWidgetArea, _cliCommand);
 
     // Add Lua Script
     QDockWidget* _luaScript = new LuaScript(this);

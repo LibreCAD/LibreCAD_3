@@ -1,12 +1,10 @@
 #include "lcdrawoptions.h"
 
-#include <QColor>
-
 LcDrawOptions::LcDrawOptions() {
-    _selectedColor = QColor(255, 0, 0, 255);
+    _selectedColor = lc::Color(255, 0, 0, 255);
 }
 
 
-const QColor& LcDrawOptions::selectedColor() const {
+const lc::Color& LcDrawOptions::selectedColor() const {
     return _selectedColor;
 }

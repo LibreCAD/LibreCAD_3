@@ -12,7 +12,7 @@ class DrawEvent;
 class Cursor : public QObject  {
         Q_OBJECT
     public:
-        Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapManager, const QColor& xAxisColor, const QColor& yAxisColor);
+        Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapManager, const lc::Color& xAxisColor, const lc::Color& yAxisColor);
 
         public
     slots:
@@ -28,8 +28,8 @@ class Cursor : public QObject  {
         void mouseReleaseEvent(const MouseReleaseEvent&);
 
     private:
-        const QColor _xAxisColor;
-        const QColor _yAxisColor;
+        const lc::Color _xAxisColor;
+        const lc::Color _yAxisColor;
         const double _cursorSize;
 
         SnapPointEvent _lastSnapEvent;

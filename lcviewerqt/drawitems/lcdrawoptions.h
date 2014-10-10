@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QColor>
+#include "cad/meta/color.h"
 
 class LcDrawOptions {
     public:
         LcDrawOptions();
 
-        const QColor& selectedColor() const;
+        const lc::Color& selectedColor() const;
 
     private:
-        QColor  _selectedColor;
+        lc::Color  _selectedColor;
 };

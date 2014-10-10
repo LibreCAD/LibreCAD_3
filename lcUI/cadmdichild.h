@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <lcadviewer.h>
-
+#include "cad/meta/color.h"
 #include <cad/document/selectionmanager.h>
 #include <cad/document/storagemanager.h>
 

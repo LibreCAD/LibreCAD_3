@@ -2,8 +2,8 @@
 #include "metricgrid.h"
 #include "lcpainter.h"
 #include "cad/geometry/geoarea.h"
-
-MetricGrid::MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
+#include "cad/meta/color.h"
+MetricGrid::MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
 }
 
 MetricGrid::~MetricGrid() {
@@ -66,7 +66,7 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo
     }
 
     _painter->line_width(1);
-    _painter->source_rgba(_majorColor.redF(), _majorColor.greenF(), _majorColor.blueF(), _majorColor.alphaF());
+    _painter->source_rgba(_majorColor.red(), _majorColor.green(), _majorColor.blue(), _majorColor.alpha());
     _painter->stroke();
 
     // Draw minor lines
@@ -84,7 +84,7 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo
         _painter->line_to(updateRect.maxP().x(), y);
     }
 
-    _painter->source_rgba(_minorColor.redF(), _minorColor.greenF(), _minorColor.blueF(), _minorColor.alphaF());
+    _painter->source_rgba(_minorColor.red(), _minorColor.green(), _minorColor.blue(), _minorColor.alpha());
     _painter->stroke();
     _painter->restore();
 }

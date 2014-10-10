@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QColor>
+//#include <QColor>
 #include "lcvdrawitem.h"
-
+#include "cad/meta/color.h"
 /**
   * Create a garident background
   *
@@ -10,11 +10,11 @@
 typedef struct _cairo cairo_t;
 class GradientBackground : public LCVDrawItem {
     public:
-        GradientBackground(const QColor& topColor, const QColor& bottomColor);
+        GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
         virtual ~GradientBackground();
 
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const;
     private:
-        const QColor _topColor;
-        const QColor _bottomColor;
+        const lc::Color _topColor;
+        const lc::Color _bottomColor;
 };

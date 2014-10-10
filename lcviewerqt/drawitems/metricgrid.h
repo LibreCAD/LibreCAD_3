@@ -11,7 +11,7 @@
   */
 class MetricGrid : public LCVDrawItem, public lc::Snapable {
     public:
-        MetricGrid(int minimumGridSpacing, const QColor& major, const QColor& minor);
+        MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor);
         virtual ~MetricGrid();
 
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const;
@@ -23,8 +23,8 @@ class MetricGrid : public LCVDrawItem, public lc::Snapable {
     private:
         double gridSize();
     private:
-        const QColor _majorColor;
-        const QColor _minorColor;
+        const lc::Color _majorColor;
+        const lc::Color _minorColor;
         const int _minimumGridSpacing;
 
         // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
