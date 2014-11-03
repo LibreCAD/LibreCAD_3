@@ -6,3 +6,5 @@ demo.*
 *Makefile
 lcdemo*
 *.so
+.idea
+build

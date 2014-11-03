@@ -6,6 +6,7 @@ rm -rf `find . -type d -name generated`
 rm -rf `find . -type f -name *.dylib`
 rm -rf `find . -type f -name *.*~`
 rm -rf `find . -type f -name *.so`
+rm -rf `find . -type f -name CMakeCache.txt`
 rm -rf demo.app
 rm -rf unix
 rm -rf doc
