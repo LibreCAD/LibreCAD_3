@@ -23,7 +23,8 @@ helpers/snapmanagerimpl.h
 const.h
 documentrenderer.h
 lcadviewer.h
-lcadviewerplugin.h)
+)
+#lcadviewerplugin.h)
 
 # SOURCE FILES
 set(lcviewerqt_hdrs
@@ -41,8 +42,9 @@ drawitems/metricgrid.cpp
 helpers/snapmanagerimpl.cpp
 documentrenderer.cpp
 lcadviewer.cpp
-lcadviewerplugin.cpp
-qrc_icons.cpp)
+)
+#lcadviewerplugin.cpp
+#qrc_icons.cpp)
 
 # DEPENDENCIES
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

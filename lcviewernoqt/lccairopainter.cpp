@@ -14,7 +14,7 @@ LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainte
 }
 
 LcCairoPainter::~LcCairoPainter() {
-    for (auto & item : _patternMap) {
+    for (auto& item : _patternMap) {
         cairo_pattern_destroy(item.second);
     }
 
