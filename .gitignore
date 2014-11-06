@@ -8,3 +8,4 @@ lcdemo*
 *.so
 .idea
 build
+CMakeLists.txt.user
