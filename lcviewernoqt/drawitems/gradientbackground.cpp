@@ -1,9 +1,7 @@
 #include "gradientbackground.h"
 
-#include <QDebug>
-
 #include <cairo.h>
-#include <lcpainter.h>
+#include "../lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
 GradientBackground::GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor) : LCVDrawItem(false), _topColor(topColor), _bottomColor(bottomColor) {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cad/geometry/geocoordinate.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 
 
 /**

@@ -57,3 +57,4 @@ Quadratic Arc::quadratic() const {
     return ret;
 }
 
+

@@ -4,8 +4,8 @@
 #include <functional>
 #include <map>
 #include "cad/geometry/geocoordinate.h"
-
 class LcPainter;
+
 class EndCaps {
     public:
         enum {

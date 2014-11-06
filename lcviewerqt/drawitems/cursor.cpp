@@ -1,7 +1,7 @@
 #include "cursor.h"
 
-#include "lcadviewer.h"
-#include "helpers/snapmanager.h"
+#include "../lcadviewer.h"
+#include "../helpers/snapmanager.h"
 #include "lcpainter.h"
 #include "events/drawevent.h"
 

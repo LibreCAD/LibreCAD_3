@@ -1,8 +1,6 @@
 #include "lcvtext.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include <QColor>
-#include <QDebug>
 LCVText::LCVText(const lc::Text_CSPtr Text) : LCVDrawItem(true), lc::Text(Text, true) {
 }
 

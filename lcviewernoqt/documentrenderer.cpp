@@ -5,14 +5,14 @@
 #include "cad/primitive/circle.h"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/text.h"
-#include <drawitems/lcdrawoptions.h>
-#include <drawitems/lcvcircle.h>
-#include <drawitems/lcvarc.h>
-#include <drawitems/lcvdrawitem.h>
-#include <drawitems/lcvline.h>
-#include <drawitems/lcvellipse.h>
-#include <drawitems/lcvtext.h>
-#include <drawitems/lcvcoordinate.h>
+#include "drawitems/lcdrawoptions.h"
+#include "drawitems/lcvcircle.h"
+#include "drawitems/lcvarc.h"
+#include "drawitems/lcvdrawitem.h"
+#include "drawitems/lcvline.h"
+#include "drawitems/lcvellipse.h"
+#include "drawitems/lcvtext.h"
+#include "drawitems/lcvcoordinate.h"
 #include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 

@@ -34,7 +34,7 @@ namespace lc {
                 }
             }
             QuadTreeSub() : QuadTreeSub(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {}
-            ~QuadTreeSub() {
+            virtual ~QuadTreeSub() {
                 if (_nodes[0] != nullptr) {
                     delete _nodes[0];
                     delete _nodes[1];

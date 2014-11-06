@@ -2,24 +2,44 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT (LCVIEWERNOQT)
 ADD_DEFINITIONS(-std=c++11)
 
-find_package (Qt5Core REQUIRED)
-
 # SOURCE FILES
 set(viewer_srcs
+drawitems/lcdrawoptions.cpp
+drawitems/lcvdrawitem.cpp
+drawitems/lcvarc.cpp
+drawitems/lcvcircle.cpp
+drawitems/lcvcoordinate.cpp
+drawitems/lcvdrawitem.cpp
+drawitems/lcvellipse.cpp
+drawitems/lcvline.cpp
+drawitems/lcvtext.cpp
+drawitems/metricgrid.cpp
+drawitems/endcaps.cpp
 lccairopainter.cpp
-endcaps.cpp
+documentrenderer.cpp
 )
 
 # HEADER FILES
 set(viewer_hdrs
-lcpainter.h
-lccairopainter.h
+drawitems/lcdrawoptions.h
+drawitems/lcvdrawitem.h
+drawitems/lcvarc.h
+drawitems/lcvcircle.h
+drawitems/lcvcoordinate.h
+drawitems/lcvdrawitem.h
+drawitems/lcvellipse.h
+drawitems/lcvline.h
+drawitems/lcvtext.h
+drawitems/metricgrid.h
+drawitems/endcaps.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h
 events/selecteditemsevent.h
 events/snappointevent.h
-endcaps.h
+lcpainter.h
+lccairopainter.h
+documentrenderer.h
 )
 
 # DEPENDENCIES
@@ -29,6 +49,7 @@ find_package(PkgConfig)
 pkg_check_modules(CAIRO REQUIRED cairo)
 include_directories(${CAIRO_INCLUDE_DIRS})
 link_directories(${CAIRO_LIBRARY_DIRS})
+
 pkg_check_modules(PANGO REQUIRED pango)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
@@ -38,9 +59,9 @@ link_directories(${PANGO_LIBRARY_DIRS})
 set(SEPARATE_BUILD OFF)
  
 if (SEPARATE_BUILD STREQUAL "ON")
-include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
 else()
-include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 endif()
 
 # DEBUGING PATHS
@@ -51,4 +72,4 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES})
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} lckernel)

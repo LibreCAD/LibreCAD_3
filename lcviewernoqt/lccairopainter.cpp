@@ -58,7 +58,7 @@ void LcCairoPainter::clear(double r, double g, double b)  {
 
 
 
-void LcCairoPainter::arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) {
+/*void LcCairoPainter::arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) {
     // Draw the line
     move_to(startX, startY);
     line_to(endX, endY);
@@ -67,7 +67,7 @@ void LcCairoPainter::arrow(double startX, double startY, double endX, double end
     // Draw the caps
     caps.render(this, startCap.type(), endX, endY, startX, startY, startCap.size());
     caps.render(this, endCap.type(), startX, startY, endX, endY,  endCap.size());
-}
+}*/
 
 
 void LcCairoPainter::clear(double r, double g, double b, double a)  {

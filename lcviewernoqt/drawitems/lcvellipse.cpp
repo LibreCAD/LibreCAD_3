@@ -1,7 +1,6 @@
 #include "lcvellipse.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include <QColor>
 LCVEllipse::LCVEllipse(const lc::Ellipse_CSPtr Ellipse) : LCVDrawItem(true), lc::Ellipse(Ellipse, true) {
 }
 

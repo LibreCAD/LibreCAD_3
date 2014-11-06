@@ -1,5 +1,5 @@
 #include "lcvarc.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 #include "lcdrawoptions.h"
 
 LCVArc::LCVArc(const lc::Arc_CSPtr arc) : LCVDrawItem(true), lc::Arc(arc, true) {

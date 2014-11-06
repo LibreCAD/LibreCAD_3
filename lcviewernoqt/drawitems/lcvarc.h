@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lcvdrawitem.h"
-#include "cad/primitive/arc.h"
+#include <cad/primitive/arc.h>
 
 class LCVArc: public LCVDrawItem, public lc::Arc {
     public:

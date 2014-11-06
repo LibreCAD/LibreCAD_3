@@ -1,7 +1,6 @@
 #include "lcvline.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include <QColor>
 
 LCVLine::LCVLine(const lc::Line_CSPtr line) : LCVDrawItem(true), lc::Line(line, true) {
 }

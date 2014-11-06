@@ -1,7 +1,5 @@
 #pragma once
 
-#include <QPainter>
-#include <QGraphicsView>
 #include "lcvdrawitem.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"

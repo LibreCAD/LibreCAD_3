@@ -55,6 +55,8 @@ namespace lc {
                     if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4)) {
                         return true;
                     }
+
+                    return false;
                 }
                 /**
                  * @return The angle of the line (from start to endpoint).

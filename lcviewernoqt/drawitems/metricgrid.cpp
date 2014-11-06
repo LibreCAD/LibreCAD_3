@@ -1,6 +1,6 @@
 #include <cmath>
 #include "metricgrid.h"
-#include "lcpainter.h"
+#include "../lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
 MetricGrid::MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {

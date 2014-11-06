@@ -10,7 +10,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 namespace lc {
     namespace geo {

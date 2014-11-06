@@ -16,7 +16,7 @@
 namespace lc {
 
     class Circle;
-    typedef Circle_SPtr Circle_SPtr;
+    typedef std::shared_ptr<Circle> Circle_SPtr;
     typedef std::shared_ptr<const Circle> Circle_CSPtr;
 
     class Circle : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {

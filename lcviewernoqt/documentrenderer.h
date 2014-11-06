@@ -4,8 +4,8 @@
 
 #include "lcpainter.h"
 
-#include <cad/dochelpers/entitycontainer.h>
-#include <drawitems/lcvdrawitem.h>
+#include "cad/dochelpers/entitycontainer.h"
+#include "drawitems/lcvdrawitem.h"
 #include <cad/base/cadentity.h>
 
 #include <cad/events/addentityevent.h>

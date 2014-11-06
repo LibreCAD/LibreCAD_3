@@ -102,6 +102,7 @@ cad/math/lcmath.h
 cad/math/coordinatesol.h
 cad/math/quadratic_math.h
 cad/meta/color.h
+cad/meta/metacolor.h
 cad/meta/layer.h
 cad/meta/linewidth.h
 cad/meta/pen.h

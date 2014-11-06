@@ -39,6 +39,7 @@ namespace lc {
              */
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
             Arc(const Arc_CSPtr other, bool sameID = false);
+
         public:
 
             /**

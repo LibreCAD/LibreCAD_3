@@ -48,7 +48,7 @@ namespace lc {
             }
 
 
-            ~EntityContainer() {
+            virtual ~EntityContainer() {
                 delete _tree;
             }
 

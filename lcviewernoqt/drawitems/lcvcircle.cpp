@@ -1,11 +1,11 @@
-#include "lcvcoordinate.h"
-#include "lcpainter.h"
+#include "lcvcircle.h"
+#include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include <QDebug>
-LCVCoordinate::LCVCoordinate(const lc::Coordinate_CSPtr Coordinate) : LCVDrawItem(true), lc::Coordinate(Coordinate, true) {
+
+LCVCircle::LCVCircle(const lc::Circle_CSPtr circle) : LCVDrawItem(true), lc::Circle(circle, true) {
 }
 
-void LCVCoordinate::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCVCircle::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     if (this->selected()) {
@@ -19,8 +19,11 @@ void LCVCoordinate::draw(LcPainter* painter, LcDrawOptions* options, const lc::g
         );
     }
 
-    painter->point(x(), y(), 3., true);
-    painter->stroke();
+
+    if (radius() /** painter->scale() > 5 */) {
+        painter->circle(center().x(), center().y(), radius());
+        painter->stroke();
+    }
 
     if (modified) {
         painter->restore();

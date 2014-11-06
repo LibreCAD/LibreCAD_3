@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cad/meta/color.h"
+#include <cad/meta/color.h>
 
 class LcDrawOptions {
     public:

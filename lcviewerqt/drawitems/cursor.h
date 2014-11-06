@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QColor>
 #include "events/snappointevent.h"
-#include "helpers/snapmanager.h"
+#include "../helpers/snapmanager.h"
 
 class LCADViewer;
 class MouseReleaseEvent;
