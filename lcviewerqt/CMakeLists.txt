@@ -42,6 +42,10 @@ pkg_check_modules(CAIRO REQUIRED cairo)
 include_directories(${CAIRO_INCLUDE_DIRS})
 link_directories(${CAIRO_LIBRARY_DIRS})
 
+pkg_check_modules(PANGO REQUIRED pango)
+include_directories(${PANGO_INCLUDE_DIRS})
+link_directories(${PANGO_LIBRARY_DIRS})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
@@ -61,5 +65,5 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcviewerqt SHARED ${lcviewerqt_srcs} ${lcviewerqt_hdrs})
-target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${CAIRO_LIBRARIES} ${LOG4CXX_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
+target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
 

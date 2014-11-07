@@ -15,6 +15,7 @@ drawitems/lcvline.cpp
 drawitems/lcvtext.cpp
 drawitems/metricgrid.cpp
 drawitems/endcaps.cpp
+drawitems/gradientbackground.cpp
 lccairopainter.cpp
 documentrenderer.cpp
 )
@@ -32,6 +33,7 @@ drawitems/lcvline.h
 drawitems/lcvtext.h
 drawitems/metricgrid.h
 drawitems/endcaps.h
+drawitems/gradientbackground.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h
