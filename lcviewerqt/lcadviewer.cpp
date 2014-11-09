@@ -1,5 +1,5 @@
 #include "lcadviewer.h"
-#include "documentrenderer.h"
+#include "documentcanvas.h"
 #include "lccairopainter.h"
 
 #include <map>
@@ -33,7 +33,7 @@ LCADViewer::~LCADViewer() {
 
 
 void LCADViewer::setDocument(lc::Document* document) {
-    _docRenderer = new DocumentRenderer(document);
+    _docRenderer = new DocumentCanvas(document);
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 
@@ -162,6 +162,9 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
 
     QPainter painter(this);
     _docRenderer->render([&](LcPainter * lcPainter) {
+        lcPainter->clear(1., 1., 1., 0.0);
+
+    },[&](LcPainter * lcPainter) {
         QImage* i = imagemaps.at(lcPainter);
         painter.drawImage(QPoint(0, 0), *i);
 

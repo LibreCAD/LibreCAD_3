@@ -16,7 +16,7 @@
 #include <events/mousereleaseevent.h>
 #include <events/selecteditemsevent.h>
 
-#include "documentrenderer.h"
+#include "documentcanvas.h"
 
 
 struct MouseEvent {
@@ -90,7 +90,7 @@ class LCADViewer : public QWidget {
 
         bool _altKeyActive; // When true the alt key is current pressed
 
-        DocumentRenderer* _docRenderer;
+        DocumentCanvas * _docRenderer;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 

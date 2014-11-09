@@ -44,6 +44,22 @@ LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int wid
     return new LcCairoPainter(surface, cr);
 }
 
+LcCairoPainter* LcCairoPainter::createPainter(int width, int height) {
+    cairo_surface_t* surface;
+    cairo_t* cr;
+    surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+    cr = cairo_create(surface);
+    cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+    cairo_set_tolerance(cr, 0.25);
+    cairo_set_antialias(cr, CAIRO_ANTIALIAS_GOOD);
+    return new LcCairoPainter(surface, cr);
+}
+
+void LcCairoPainter::writePNG(const char *filename) {
+    cairo_surface_write_to_png(_surface, filename);
+}
+
 void LcCairoPainter::lineWidthCompensation(double lwc) {
     _lineWidthCompensation = lwc;
 }

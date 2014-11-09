@@ -9,6 +9,8 @@ class LcCairoPainter : public LcPainter {
         LcCairoPainter(cairo_surface_t* surface, cairo_t* cr);
         virtual ~LcCairoPainter();
         static LcCairoPainter* createImagePainter(unsigned char* data , int width, int height);
+        static LcCairoPainter* createPainter(int width, int height);
+        void writePNG(const char *filename);
 
     public:
         // TODO move code from implementation to here to actually make inlyning work
@@ -51,6 +53,8 @@ class LcCairoPainter : public LcPainter {
         virtual inline void enable_antialias();
 
         virtual void getTranslate(double* x, double* y);
+
+
     private:
         cairo_surface_t* _surface;
         cairo_t* _cr;

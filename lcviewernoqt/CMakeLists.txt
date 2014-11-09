@@ -17,7 +17,7 @@ drawitems/metricgrid.cpp
 drawitems/endcaps.cpp
 drawitems/gradientbackground.cpp
 lccairopainter.cpp
-documentrenderer.cpp
+documentcanvas.cpp
 )
 
 # HEADER FILES
@@ -41,7 +41,7 @@ events/selecteditemsevent.h
 events/snappointevent.h
 lcpainter.h
 lccairopainter.h
-documentrenderer.h
+documentcanvas.h
 )
 
 # DEPENDENCIES

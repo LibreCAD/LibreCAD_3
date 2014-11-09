@@ -1,9 +1,16 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT (LC)
 
+
+option(WITH_UNITTESTS "Build unit tests" ON)
+
 ADD_SUBDIRECTORY("lckernel")
 ADD_SUBDIRECTORY("lcviewernoqt")
 ADD_SUBDIRECTORY("lcviewerqt")
 ADD_SUBDIRECTORY("lcadluascript")
 ADD_SUBDIRECTORY("lcUI")
-ADD_SUBDIRECTORY("unittest")
+ADD_SUBDIRECTORY("luacmdinterface")
+
+if(WITH_UNITTESTS)
+    ADD_SUBDIRECTORY("unittest")
+endif()

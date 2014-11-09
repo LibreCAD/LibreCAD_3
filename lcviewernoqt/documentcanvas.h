@@ -19,10 +19,10 @@ enum PainterCacheType {
 };
 
 
-class DocumentRenderer {
+class DocumentCanvas {
     public:
-        DocumentRenderer(lc::Document* _document);
-        ~DocumentRenderer();
+        DocumentCanvas(lc::Document* _document);
+        virtual ~DocumentCanvas();
 
         /**
          * @brief render
@@ -30,7 +30,7 @@ class DocumentRenderer {
          * The provided wPainter will allow to paint each item on the final device
          * @param wPainter
          */
-        void render(std::function<void(LcPainter*)> wPainter);
+        void render(std::function<void(LcPainter*)> before, std::function<void(LcPainter*)> after);
 
         /**
          * @brief autoScale
