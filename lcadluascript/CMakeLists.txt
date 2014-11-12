@@ -12,7 +12,6 @@ set(lcluascript_hdrs
         const.h
         LuaIntf.h
         lcadluascript.h
-        lcadluascript_global.h
     cad/lualibrecadbridge.h
     cad/timer.h)
 
@@ -35,24 +34,15 @@ endif(LUA52_FOUND)
 include_directories(${LUA52_INCLUDE_DIRS})
 link_directories(${LUA52_LIBRARY_DIRS})
 
-find_package(Qt5Widgets)
-find_package(Qt5Core)
-find_package(Qt5Designer)
-SET(QT_USE_QTDESIGNER ON)
-
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
  
 if (SEPARATE_BUILD STREQUAL "ON")
 include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
-include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
-include_directories("${CMAKE_SOURCE_DIR}/../lcviewerqt")
 include_directories("${CMAKE_SOURCE_DIR}/../lcadluascript")
 else() 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
-include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
-include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 endif()
  
@@ -63,7 +53,8 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
-target_link_libraries(lcluascript Qt5::Core ${LUA52_LIBRARIES} lckernel)
+target_link_libraries(lcluascript ${LUA52_LIBRARIES} lckernel)
+
 # INSTALLATION
 install(TARGETS lcluascript DESTINATION lib)
 install(FILES ${lcluascript_hdrs}  DESTINATION include)

@@ -56,8 +56,8 @@ LcCairoPainter* LcCairoPainter::createPainter(int width, int height) {
     return new LcCairoPainter(surface, cr);
 }
 
-void LcCairoPainter::writePNG(const char *filename) {
-    cairo_surface_write_to_png(_surface, filename);
+void LcCairoPainter::writePNG(std::string filename) {
+    cairo_surface_write_to_png(_surface, filename.c_str());
 }
 
 void LcCairoPainter::lineWidthCompensation(double lwc) {

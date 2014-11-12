@@ -7,7 +7,6 @@ extern "C"
 }
 
 #include "LuaIntf.h"
-//#include "lua-intf/LuaIntf/QtLuaIntf.h"
 
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
@@ -28,7 +27,9 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager) : _document(document), _storageManager(storageManager) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager) : _document(document), _storageManager(storageManager), _usePrintLib(true) {
+}
+LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager, bool usePrintLib) : _document(document), _storageManager(storageManager), _usePrintLib(usePrintLib) {
 }
 
 std::string* gOut;
@@ -89,7 +90,9 @@ std::string LCadLuaScript::run(const std::string& script) {
 
     // Other lua stuff
     lua_getglobal(L, "_G");
-    luaL_setfuncs(L, printlib, 0);
+    if (_usePrintLib) {
+        luaL_setfuncs(L, printlib, 0);
+    }
     lua_pop(L, 1);
 
     // Some globals we have to figure out to make sure it works with multiple threads
