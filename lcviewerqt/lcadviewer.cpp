@@ -164,7 +164,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
     _docRenderer->render([&](LcPainter * lcPainter) {
         lcPainter->clear(1., 1., 1., 0.0);
 
-    },[&](LcPainter * lcPainter) {
+    }, [&](LcPainter * lcPainter) {
         QImage* i = imagemaps.at(lcPainter);
         painter.drawImage(QPoint(0, 0), *i);
 

@@ -11,7 +11,7 @@
 #include <cad/dochelpers/undomanagerimpl.h>
 
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
 
     auto _document = new lc::DocumentImpl(_storageManager);
@@ -19,19 +19,20 @@ int main(int argc, char **argv) {
 
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x06, 0x35, 0x06), lc::Color(0x17, 0x15, 0x11))));
 
-    LcCairoPainter *lcPainter;
+    LcCairoPainter* lcPainter;
     _canvas->createPainterFunctor(
-            [&](const unsigned int width, const unsigned int height) {
-                if (lcPainter == NULL) {
-                    lcPainter = LcCairoPainter::createPainter(width, height);
-                    lcPainter->clear(1., 1., 1., 0.0);
+    [&](const unsigned int width, const unsigned int height) {
+        if (lcPainter == NULL) {
+            lcPainter = LcCairoPainter::createPainter(width, height);
+            lcPainter->clear(1., 1., 1., 0.0);
 
-                }
-                return lcPainter;
-            });
+        }
+
+        return lcPainter;
+    });
 
     _canvas->deletePainterFunctor([&]
-            (LcPainter *painter) {
+    (LcPainter * painter) {
         if (lcPainter != NULL) {
             delete painter;
             lcPainter = NULL;
@@ -49,10 +50,10 @@ int main(int argc, char **argv) {
     builder->execute();
 
     _canvas->render([&](
-            LcPainter *lcPainter
+                        LcPainter * lcPainter
     ) {
-    },[&](
-            LcPainter *lcPainter
+    }, [&](
+        LcPainter * lcPainter
     ) {
     });
 

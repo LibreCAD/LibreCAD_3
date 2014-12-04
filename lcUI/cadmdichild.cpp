@@ -26,10 +26,11 @@
 
 #include "cadmdichild.h"
 #include "testform.h"
-
+#include <QFileDialog>
 #include <cad/operations/builder.h>
-
-
+#include <QMessageBox>
+//#include "lcDWG/dwgimpl.h"
+#include "lcDXF/dxfimpl.h"
 #include <QDebug>
 
 #include <QTime>
@@ -96,8 +97,6 @@ int CadMdiChild::randInt(int low, int high) {
 
 void CadMdiChild::newDocument() {
 
-
-
     // Entity manager add's/removes entities to layers
     _storageManager = std::make_shared<lc::StorageManagerImpl>();
 
@@ -125,7 +124,6 @@ void CadMdiChild::newDocument() {
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
-
     // Create a cross at position 0,0
     auto layer = _storageManager->layerByName("0");
     auto builder = std::make_shared<lc::operation::Builder>(document());
@@ -148,6 +146,51 @@ void CadMdiChild::newDocument() {
 
 void CadMdiChild::undo() {
     _undoManager->undo();
+}
+
+void CadMdiChild::import(std::string str) {
+
+    // Entity manager add's/removes entities to layers
+    _storageManager = std::make_shared<lc::StorageManagerImpl>();
+
+    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
+    _document = new lc::DocumentImpl(_storageManager);
+
+
+    // Add the document to a LibreCAD Viewer system so we can visualize the document
+    viewer->setDocument(_document);
+
+    // Should this be done using the events system of QT??
+    viewer->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x06, 0x35, 0x06), lc::Color(0x07, 0x15, 0x11))));
+    auto metricGrid = std::make_shared<MetricGrid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
+    viewer->addBackgroundItem(metricGrid);
+
+    // Snap manager
+    _snapManager = std::make_shared<SnapManagerImpl>(viewer,  std::dynamic_pointer_cast<lc::Snapable>(metricGrid), 25.);
+
+    // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
+    _cursor = std::make_shared<Cursor>(40, viewer, _snapManager, lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+
+    // Undo manager takes care that we can undo/redo entities within a document
+    _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
+
+    // Add operation manager
+    _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
+
+
+    std::string ext = str.substr(str.length() - 3, 3);
+
+    if (ext == "dxf" || ext == "DXF") {
+        DXFimpl* F = new DXFimpl(_storageManager, _document);
+        dxfRW R(str.c_str());
+        R.read(F, true);
+        _document = F->document();
+        _storageManager = F->storageManager();
+    } else if(ext == "dwg" || ext == "DWG") {
+        //  DWGimpl* F = new DWGimpl(newScene);
+        //  F->readFile((char*)str.c_str());
+        //  _document = F->document();
+    }
 }
 
 void CadMdiChild::redo() {

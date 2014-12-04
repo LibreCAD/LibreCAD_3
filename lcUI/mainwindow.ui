@@ -41,14 +41,15 @@
      <x>0</x>
      <y>0</y>
      <width>981</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDemo_Project">
     <property name="title">
-     <string>Demo Project</string>
+     <string>File</string>
     </property>
     <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -112,6 +113,11 @@
   <action name="actionClear_Undoable_Stack">
    <property name="text">
     <string>Clear Undoable Stack</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
    </property>
   </action>
  </widget>

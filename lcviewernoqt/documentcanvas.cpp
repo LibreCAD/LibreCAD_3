@@ -100,7 +100,7 @@ void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
     calculateVisibleUserArea();
 }
 
-LcPainter*DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
+LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 
     double s = 1.;
     double x = 0.;
@@ -212,7 +212,7 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     // Draw Document
     painter = cachedPainter(VIEWER_DOCUMENT);
     before(painter);
-// caller is responsible for clearing    painter->clear(1., 1., 1., 0.);
+    // caller is responsible for clearing    painter->clear(1., 1., 1., 0.);
     painter->source_rgb(1., 1., 1.);
     painter->lineWidthCompensation(0.5);
 

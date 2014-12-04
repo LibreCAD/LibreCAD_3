@@ -5,6 +5,7 @@ PROJECT (LC)
 option(WITH_UNITTESTS "Build unit tests" ON)
 
 ADD_SUBDIRECTORY("lckernel")
+ADD_SUBDIRECTORY("lcDXFDWG")
 ADD_SUBDIRECTORY("lcviewernoqt")
 ADD_SUBDIRECTORY("lcviewerqt")
 ADD_SUBDIRECTORY("lcadluascript")

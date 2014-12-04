@@ -10,7 +10,7 @@ class LcCairoPainter : public LcPainter {
         virtual ~LcCairoPainter();
         static LcCairoPainter* createImagePainter(unsigned char* data , int width, int height);
         static LcCairoPainter* createPainter(int width, int height);
-        void writePNG(const char *filename);
+        void writePNG(const char* filename);
 
     public:
         // TODO move code from implementation to here to actually make inlyning work
