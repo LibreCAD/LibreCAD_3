@@ -49,18 +49,18 @@ bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) cons
 
     Coordinate vp((coord - center()).rotate(-getAngle()));
 
-    if (a < TOLERANCE) {
+    if (a < LCTOLERANCE) {
         //radius treated as zero
-        if (fabs(vp.x()) < TOLERANCE && fabs(vp.y()) < b) {
+        if (fabs(vp.x()) < LCTOLERANCE && fabs(vp.y()) < b) {
             return true;
         }
 
         return false;
     }
 
-    if (b < TOLERANCE) {
+    if (b < LCTOLERANCE) {
         //radius treated as zero
-        if (fabs(vp.y()) < TOLERANCE && fabs(vp.x()) < a) {
+        if (fabs(vp.y()) < LCTOLERANCE && fabs(vp.x()) < a) {
             return true;
         }
 

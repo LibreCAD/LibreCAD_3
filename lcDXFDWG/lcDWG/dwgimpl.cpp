@@ -3,13 +3,8 @@
 #include <cmath>
 
 DWGimpl::DWGimpl(lc::StorageManager_SPtr s, lc::Document* d) {
-
-    // Entity manager add's/removes entities to layers
     _storageManager = s;
-
-    // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = d;
-
 }
 
 lc::Document* DWGimpl::document() {
@@ -43,6 +38,18 @@ void DWGimpl::addLine(dwg_object* obj) {
     line = obj->tio.entity->tio.LINE;
     dwg_ent_line_get_start_point(line, &start, &error);
     dwg_ent_line_get_end_point(line, &end, &error);
+
+    // Create a cross at position 0,0
+    auto layer = _storageManager->layerByName("0");
+    auto builder = std::make_shared<lc::operation::Builder>(_document);
+    builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(
+                                                   start.x,
+                                                   start.y),
+                                               lc::geo::Coordinate(
+                                                   end.x,
+                                                   end.y),
+                                               layer)).push();
+    builder->execute();
 }
 
 void DWGimpl::addCircle(dwg_object* obj) {
@@ -53,6 +60,13 @@ void DWGimpl::addCircle(dwg_object* obj) {
     index = dwg_obj_object_get_index(obj, &error);
     circle = obj->tio.entity->tio.CIRCLE;
     radius = dwg_ent_circle_get_radius(circle, &error);
+    auto layer = _storageManager->layerByName("0");
+    auto builder = std::make_shared<lc::operation::Builder>(_document);
+    builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(
+                                                     center.x, center.y),
+                                                 radius,
+                                                 layer)).push();
+    builder->execute();
 }
 
 void
@@ -73,6 +87,15 @@ DWGimpl::addArc(dwg_object* obj) {
     double y_end = center.y + radius * sin(end_angle);
     //Assuming clockwise arcs.
     int large_arc = (end_angle - start_angle < 3.1415) ? 0 : 1;
+
+    auto layer = _storageManager->layerByName("0");
+    auto builder = std::make_shared<lc::operation::Builder>(_document);
+    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(
+                                                  center.x, center.y),
+                                              radius, start_angle, end_angle,
+                                              layer)).push();
+    builder->execute();
+
 }
 void
 DWGimpl::addText(dwg_object* obj) {

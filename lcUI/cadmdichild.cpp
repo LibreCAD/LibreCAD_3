@@ -29,7 +29,7 @@
 #include <QFileDialog>
 #include <cad/operations/builder.h>
 #include <QMessageBox>
-//#include "lcDWG/dwgimpl.h"
+#include "lcDWG/dwgimpl.h"
 #include "lcDXF/dxfimpl.h"
 #include <QDebug>
 
@@ -187,9 +187,10 @@ void CadMdiChild::import(std::string str) {
         _document = F->document();
         _storageManager = F->storageManager();
     } else if(ext == "dwg" || ext == "DWG") {
-        //  DWGimpl* F = new DWGimpl(newScene);
-        //  F->readFile((char*)str.c_str());
-        //  _document = F->document();
+        DWGimpl* F = new DWGimpl(_storageManager, _document);
+        F->readFile((char*)str.c_str());
+        _document = F->document();
+        _storageManager = F->storageManager();
     }
 }
 

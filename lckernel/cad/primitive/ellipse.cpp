@@ -107,7 +107,7 @@ Quadratic Ellipse::quadratic() const {
     ce[0] = this->majorP().squared();
     ce[2] = this->ratio() * this->ratio() * ce[0];
 
-    if (ce[0] < TOLERANCE * TOLERANCE || ce[2] < TOLERANCE * TOLERANCE) {
+    if (ce[0] < LCTOLERANCE * LCTOLERANCE || ce[2] < LCTOLERANCE * LCTOLERANCE) {
         return Quadratic();
     }
 
