@@ -281,8 +281,7 @@ void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
-    const auto line = std::dynamic_pointer_cast<const lc::Line>(event.entity());
-
+    const auto line = event.entity<lc::Line>();
     if (line != nullptr) {
         auto newLine = std::make_shared<LCVLine>(line);
         _entityContainer.insert(newLine);
@@ -290,8 +289,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a circle
-    const auto circle = std::dynamic_pointer_cast<const lc::Circle>(event.entity());
-
+    const auto circle = event.entity<lc::Circle>();
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
         _entityContainer.insert(std::make_shared<LCVCircle>(circle));
@@ -299,8 +297,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a Arc
-    const auto arc = std::dynamic_pointer_cast<const lc::Arc>(event.entity());
-
+    const auto arc = event.entity<lc::Arc>();
     if (arc != nullptr) {
         auto newArc = std::make_shared<LCVArc>(arc);
         _entityContainer.insert(newArc);
@@ -309,24 +306,21 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
 
     // Add Ellipse
-    const auto ellipse = std::dynamic_pointer_cast<const lc::Ellipse>(event.entity());
-
+    const auto ellipse = event.entity<lc::Ellipse>();
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);
         return;
     }
 
-    const auto text = std::dynamic_pointer_cast<const lc::Text>(event.entity());
-
+    const auto text = event.entity<lc::Text>();
     if (text != nullptr) {
         auto newText = std::make_shared<LCVText>(text);
         _entityContainer.insert(newText);
         return;
     }
 
-    const auto coord = std::dynamic_pointer_cast<const lc::Coordinate>(event.entity());
-
+    const auto coord = event.entity<lc::Coordinate>();
     if (coord != nullptr) {
         auto newCoord = std::make_shared<LCVCoordinate>(coord);
         _entityContainer.insert(newCoord);
