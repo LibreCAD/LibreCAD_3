@@ -21,7 +21,7 @@ git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 
 mkdir build
 cd build
-cmake ../LibreCAD_3/
+cmake ../
 make -j 4
 ./lcUI/librecad
 

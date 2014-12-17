@@ -44,6 +44,7 @@ std::vector<CADEntity_CSPtr> Loop::process(
     std::vector<CADEntity_CSPtr> _start;
 
     for (auto base : _stack) {
+        //TODO can we get rid of dynamic_cast??
         const lc::operation::Begin* begin = dynamic_cast<const lc::operation::Begin*>(base.get());
 
         if (begin != nullptr) {

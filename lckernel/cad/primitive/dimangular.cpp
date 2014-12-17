@@ -16,7 +16,7 @@ DimAngular::DimAngular(const Dimension& dimension,
                        const geo::Coordinate& definition_point2,
                        const geo::Coordinate& definition_point3,
                        const geo::Coordinate& definition_point4,
-                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes): CADEntity(layer), geo::DimAngular(dimension, definition_point1, definition_point2, definition_point3, definition_point4) {
+                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimAngular(dimension, definition_point1, definition_point2, definition_point3, definition_point4) {
 
 }
 

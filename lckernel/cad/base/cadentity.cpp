@@ -2,13 +2,17 @@
 
 using namespace lc;
 
-CADEntity::CADEntity(const Layer_CSPtr layer) : ID() , MetaInfo(), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer) : ID(), _layer(layer) {
 }
 
-CADEntity::CADEntity(const Layer_CSPtr layer, std::list<MetaType_CSPtr> metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : ID(), _metaInfo(metaInfo), _layer(layer) {
 }
 
-CADEntity::CADEntity(const Layer_CSPtr layer, std::set<MetaType_CSPtr, MetaTypeComp> metaTypes) : ID() , MetaInfo(metaTypes), _layer(layer) {
+CADEntity::CADEntity(CADEntity_CSPtr cadEntity) : ID(), _metaInfo(cadEntity->_metaInfo), _layer(cadEntity->_layer) {
+}
+
+CADEntity::CADEntity(CADEntity_CSPtr cadEntity, bool sameID)
+        : ID(sameID == true ? cadEntity->id() : 0), _metaInfo(cadEntity->_metaInfo), _layer(cadEntity->_layer) {
 }
 
 Layer_CSPtr CADEntity::layer() const {

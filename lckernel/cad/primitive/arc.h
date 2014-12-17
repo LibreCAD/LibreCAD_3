@@ -37,7 +37,7 @@ namespace lc {
              * @param Layer_CSPtr layer, layer of entity
              * @param MetaTypes metaTypes
              */
-            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
             Arc(const Arc_CSPtr other, bool sameID = false);
 
         public:

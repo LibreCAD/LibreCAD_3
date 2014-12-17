@@ -9,14 +9,11 @@ Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr l
 
 }
 
-Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),  geo::Circle(center, radius) {
 }
 
 
-Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Circle(other->center(), other->radius()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
+Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Circle(other->center(), other->radius()) {
 }
 
 

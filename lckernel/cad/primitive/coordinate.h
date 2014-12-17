@@ -35,7 +35,7 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            Coordinate(const double x, const double y, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+            Coordinate(const double x, const double y, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
             Coordinate(const Coordinate_CSPtr other, bool sameID = false);
 
         public:

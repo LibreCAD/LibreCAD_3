@@ -27,5 +27,5 @@ entitytest.h
 code.h
 )
 
-add_executable(test ${src} ${hdrs})
-target_link_libraries(test lckernel gtest ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
+add_executable(lcunittest ${src} ${hdrs})
+target_link_libraries(lcunittest lckernel gtest ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})

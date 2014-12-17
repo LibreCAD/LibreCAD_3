@@ -65,7 +65,7 @@ namespace lc {
                  const double angle,
                  const std::string style,
                  const int textgeneration,
-                 const int halign, const int valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                 const int halign, const int valign, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
 
             Text(const Text_CSPtr other, bool sameID);
 

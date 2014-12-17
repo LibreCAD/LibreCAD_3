@@ -14,7 +14,7 @@ DimLinear::DimLinear(const Dimension& dimension,
                      const geo::Coordinate& extension_point1,
                      const geo::Coordinate& extension_point2,
                      const double oblique,
-                     const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes): CADEntity(layer), geo::DimLinear(dimension, extension_point1, extension_point2, oblique) {
+                     const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimLinear(dimension, extension_point1, extension_point2, oblique) {
 
 }
 

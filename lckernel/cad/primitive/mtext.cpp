@@ -28,7 +28,7 @@ MText::MText(const geo::Coordinate& insertion_point,
              const double lineSpacingFactor,
              const std::string& text_value,
              const std::string& style,
-             const double angle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer), geo::MText(insertion_point, height, width, valign, halign, drawingDirection,
+             const double angle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer), geo::MText(insertion_point, height, width, valign, halign, drawingDirection,
                          lineSpacingStyle, lineSpacingFactor, text_value, style,
                          angle) {
 

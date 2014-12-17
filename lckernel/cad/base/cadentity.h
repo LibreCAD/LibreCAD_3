@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cad/meta/metacolor.h>
 #include "id.h"
 #include "cad/const.h"
 #include "metainfo.h"
@@ -78,11 +79,16 @@ namespace lc {
     class Quadratic;
     typedef std::shared_ptr<Quadratic> Quadratic_SPtr;
     typedef std::shared_ptr<const Quadratic> Quadratic_CSPtr;
+
+    class CADEntity;
+    typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
+
     /**
      *Class that all CAD entities must inherit
      *
      */
-    class  CADEntity  : public ID, public MetaInfo {
+    class  CADEntity  : public ID {
         public:
             /*!
              * \brief Default CADEntity Constructor.
@@ -98,17 +104,10 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr _layer, std::list<MetaType_CSPtr> metaTypes);
+            CADEntity(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+            CADEntity(CADEntity_CSPtr cadEntity, bool sameID);
+            CADEntity(CADEntity_CSPtr cadEntity);
 
-            /*!
-             * \brief CADEntity Constructor
-             *
-             * \param metaTypes A list of metatypes associated with this line
-             * \sa lc::Color
-             * \sa lc::LineWidth
-             * \sa lc::MetaType
-             */
-            CADEntity(Layer_CSPtr _layer, std::set<MetaType_CSPtr, MetaTypeComp> metaTypes);
 
             virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
@@ -173,10 +172,26 @@ namespace lc {
              * return the layer this entity is placed on
              * \return Layer_CSPtr
              */
-            virtual Layer_CSPtr layer() const;
+            Layer_CSPtr layer() const;
+
+            /**
+            * Retreive meta information back from this entity
+            * returns nullptr when the specific meta info wasn't found
+            * example: auto metaData = myEntity.metaInfo<lc::MetaColor>(lc::MetaInfo::_COLOR);
+            */
+            template <typename T>
+            const std::shared_ptr<const T> metaInfo(std::string m) const {
+                if (_metaInfo && (_metaInfo->find(m) != _metaInfo->end())) {
+                    return std::dynamic_pointer_cast<const T>(_metaInfo->at(m));
+                }
+                return nullptr;
+            }
+
+
 
         private:
             Layer_CSPtr _layer;
+            MetaInfo_CSPtr _metaInfo;
 
     };
 }

@@ -10,7 +10,7 @@ DimRadial::DimRadial(const Dimension& dimension,
 
 DimRadial::DimRadial(const Dimension& dimension,
                      const double leader,
-                     const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes): CADEntity(layer), geo::DimRadial(dimension, leader) {
+                     const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimRadial(dimension, leader) {
 
 }
 

@@ -10,14 +10,12 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
 
 }
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes)
-    : CADEntity(layer, metaTypes),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+    : CADEntity(layer, metaInfo),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
-Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
+Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID)
+    : CADEntity(other, sameID),  geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle()) {
 }
 
 

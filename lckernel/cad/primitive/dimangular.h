@@ -52,7 +52,7 @@ namespace lc {
                        const geo::Coordinate& extension_point2,
                        const geo::Coordinate& extension_point3,
                        const geo::Coordinate& extension_point4,
-                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
 
         public:
             /**

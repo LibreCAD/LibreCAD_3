@@ -2,11 +2,13 @@
 
 using namespace lc;
 
-Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer) : CADEntity(layer), geo::Spline(control_points, degree, closed) {
+Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer)
+        : CADEntity(layer), geo::Spline(control_points, degree, closed) {
 
 }
 
-Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Spline(control_points, degree, closed) {
+Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+        : CADEntity(layer, metaInfo), geo::Spline(control_points, degree, closed) {
 
 }
 

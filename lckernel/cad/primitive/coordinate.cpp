@@ -8,11 +8,11 @@ Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer)
     : CADEntity(layer), geo::Coordinate(x, y) {
 }
 
-Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes)
-    : CADEntity(layer, metaTypes),  geo::Coordinate(x, y) {
+Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+    : CADEntity(layer, std::move(metaInfo)),  geo::Coordinate(x, y) {
 }
 
-Coordinate::Coordinate(const Coordinate_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Coordinate(other->x(), other->y()) {
+Coordinate::Coordinate(const Coordinate_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
     if (sameID) {
         this->setID(other->id());
     }

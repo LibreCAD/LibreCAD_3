@@ -55,9 +55,10 @@ cad/primitive/text.cpp
 )
 
 # HEADER FILES
-set(lckernel_hdrs cad/const.h
-cad/base/cadentity.h
+set(lckernel_hdrs
+cad/const.h
 cad/base/id.h
+cad/base/cadentity.h
 cad/base/metainfo.h
 cad/dochelpers/documentimpl.h
 cad/dochelpers/entitycontainer.h
@@ -131,13 +132,12 @@ cad/vo/entitydistance.h
 
 # DEPENDENCIES
 
-    set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_MULTITHREADED ON)
 #    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
-    find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
-    include_directories(${Boost_INCLUDE_DIRS})
+find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 #    find_package(maths REQUIRED)
-
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PkgConfig)
@@ -150,9 +150,9 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 set(SEPARATE_BUILD OFF)
 
 if (SEPARATE_BUILD STREQUAL "ON")
-include_directories("${CMAKE_SOURCE_DIR}")
+    include_directories("${CMAKE_SOURCE_DIR}")
 else()
-include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 endif()
 
 # DEBUGGING PATHS
@@ -161,7 +161,7 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
+add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)

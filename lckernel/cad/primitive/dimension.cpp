@@ -24,7 +24,7 @@ Dimension::Dimension(const geo::Coordinate& definition_point,
                      const double lineSpacingFactor,
                      const std::string& text_value,
                      const std::string& style,
-                     const double angle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer), geo::Dimension(definition_point, middle_of_text, valign, halign,
+                     const double angle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer), geo::Dimension(definition_point, middle_of_text, valign, halign,
                                  lineSpacingStyle, lineSpacingFactor, text_value, style,
                                  angle) {
 

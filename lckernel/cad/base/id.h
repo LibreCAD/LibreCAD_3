@@ -2,11 +2,9 @@
 
 #include <atomic>
 #include "cad/const.h"
-#include <atomic>
 
 
 #define ID_DATATYPE unsigned long
-
 
 /**
   * Class that will provide a unique ID for the lifetime of this object
@@ -22,6 +20,7 @@ namespace lc {
              * \sa lc::CADEntity
              */
             ID();
+            ID(ID_DATATYPE);
 
             /*!
              * \brief returns the ID of the entity

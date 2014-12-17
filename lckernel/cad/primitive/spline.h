@@ -36,7 +36,7 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes metaTypes
              */
-            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

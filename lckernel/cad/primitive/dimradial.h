@@ -40,7 +40,7 @@ namespace lc {
              */
             DimRadial(const Dimension& dimension,
                       const double leader,
-                      const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                      const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
 
         public:
             /**

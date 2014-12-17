@@ -8,19 +8,16 @@ using namespace lc;
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(start, end) {
 }
 
 Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), Vector(vector) {
 }
 
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), Vector(vector) {
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(vector) {
 }
 
-Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), Vector(other->start(), other->end()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
+Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), Vector(other->start(), other->end()) {
 }
 
 

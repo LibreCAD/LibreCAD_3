@@ -92,6 +92,10 @@ namespace lc {
                 return MetaType::COLOR;
             }
 
+            friend std::ostream& operator<< (std::ostream& os, const MetaColor& metaColor) {
+                os << "MetaColor(" << metaColor.method() << "," << metaColor.red() << ","<< metaColor.green() << ","<< metaColor.blue() << ","<< metaColor.alpha() << ")" << std::endl;
+                return os;
+            }
         private:
             Method _method;
             double _r;
@@ -100,6 +104,7 @@ namespace lc {
             double _a;
     };
 
-
+    typedef std::shared_ptr<MetaColor> MetaColor_SPtr;
+    typedef std::shared_ptr<const MetaColor> MetaColor_CSPtr;
 }
 

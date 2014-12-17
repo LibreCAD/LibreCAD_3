@@ -6,13 +6,10 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 
 }
 
-Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes),  geo::Arc(center, radius, startAngle, endAngle) {
+Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),  geo::Arc(center, radius, startAngle, endAngle) {
 }
 
-Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()),  geo::Arc(other->center(), other->radius(), other->startAngle(), other->endAngle()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
+Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Arc(other->center(), other->radius(), other->startAngle(), other->endAngle()) {
 }
 
 CADEntity_CSPtr Arc::move(const geo::Coordinate& offset) const {

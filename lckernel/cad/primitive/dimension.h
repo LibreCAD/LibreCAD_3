@@ -65,7 +65,7 @@ namespace lc {
                       const double lineSpacingFactor,
                       const std::string& text_value,
                       const std::string& style,
-                      const double angle, const Layer_CSPtr layer,  const std::list<MetaType_CSPtr>& metaTypes);
+                      const double angle, const Layer_CSPtr layer,  MetaInfo_CSPtr metaInfo);
 
         public:
             /**

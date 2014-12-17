@@ -26,18 +26,15 @@ Text::Text(const geo::Coordinate& insertion_point,
            const double angle,
            const std::string style,
            const int textgeneration,
-           const int halign, const int valign, const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes) : CADEntity(layer, metaTypes), geo::Text(insertion_point, second_point, height,
+           const int halign, const int valign, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Text(insertion_point, second_point, height,
                        text_value, width_rel, angle, style,
                        static_cast<TextGeneration>(textgeneration), static_cast<HAlign>(halign), static_cast<VAlign>(valign)) {
 
 }
 
-Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other->layer(), other->metaTypes()), geo::Text(other->insertion_point(), other->second_point(), other->height(),
+Text::Text(const Text_CSPtr other, bool sameID) : CADEntity(other, sameID), geo::Text(other->insertion_point(), other->second_point(), other->height(),
             other->text_value(), other->width_rel(), other->angle(), other->style(),
             other->textgeneration(), other->halign(), other->valign()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
 }
 
 

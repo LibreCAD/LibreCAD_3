@@ -44,7 +44,7 @@ namespace lc {
             DimAligned(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
-                       const Layer_CSPtr layer, const std::list<MetaType_CSPtr>& metaTypes);
+                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
 
         public:
             /**

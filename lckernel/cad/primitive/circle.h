@@ -36,7 +36,7 @@ namespace lc {
              * @param Layer_CSPtr _layer
              * @param MetaTypes metaTypes
              */
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, const std::list<MetaType_CSPtr>& metaTypes);
+            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, MetaInfo_CSPtr metaInfo);
             Circle(const Circle_CSPtr other, bool sameID = false);
 
         public:
