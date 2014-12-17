@@ -33,6 +33,7 @@
 #include <QDebug>
 
 #include <QTime>
+#include <random>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
@@ -142,6 +143,9 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
     //    builder->append(std::make_shared<lc::Coordinate>(0., 0., layer));
     builder->execute();
+
+    on_actionAdd_Random_Lines_triggered();
+    on_addCircles_clicked();
 }
 
 
@@ -162,13 +166,25 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
     auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
 
+    std::mt19937 rng;
+    rng.seed(0);
+
     for (int i = 0; i < 1000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
-        builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer));
+
+        if (randInt(0, 2)==0) {
+            auto mymap = std::make_shared<lc::MetaInfo>();
+            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0,255)/255.,randInt(0,255)/255.,randInt(0,255)/255.);
+            mymap->emplace(lc::MetaInfo::_COLOR, color);
+            builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer, mymap));
+        } else {
+            builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer));
+        }
+
     }
 
     qDebug() << "Create : " << myTimer.elapsed();
@@ -212,7 +228,16 @@ void CadMdiChild::on_addCircles_clicked() {
         double y1 = randInt(-4000, 4000);
 
         double r = randInt(0, 150);
-        builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
+
+        if (randInt(0, 2)==0) {
+            auto mymap = std::make_shared<lc::MetaInfo>();
+            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0,255)/255.,randInt(0,255)/255.,randInt(0,255)/255.);
+            mymap->emplace(lc::MetaInfo::_COLOR, color);
+            builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer, mymap));
+        } else {
+            builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
+        }
+
     }
 
     builder->execute();

@@ -27,10 +27,10 @@ class MainWindow : public IMainWindow {
 
         virtual CadMdiChild* createMdiChild();
         virtual CadMdiChild* activeMdiChild() const;
-        void updateMenus();
-        void setActiveSubWindow(QWidget* window);
 
     protected slots:
+        void setActiveSubWindow(QWidget* window);
+        void updateMenus();
         void on_actionNew_triggered();
         void on_actionRedo_triggered();
         void on_actionUndo_triggered();

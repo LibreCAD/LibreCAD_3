@@ -10,16 +10,7 @@ void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
 
     bool modified = false;
 
-    if (this->selected()) {
-        modified = true;
-        painter->save();
-        painter->source_rgba(
-            options->selectedColor().red(),
-            options->selectedColor().green(),
-            options->selectedColor().blue(),
-            options->selectedColor().alpha()
-        );
-    }
+
 
     //    double letterSpacing = 3.0;
     //    double wordSpacing = 6.75;

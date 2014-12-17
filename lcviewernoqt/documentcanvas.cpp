@@ -218,7 +218,35 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
 
     LcDrawOptions lcDrawOptions;
     _entityContainer.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
+        bool modified=false;
+
+        std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
+        lc::MetaColor_CSPtr color = ci->metaInfo<lc::MetaColor>(lc::MetaInfo::_COLOR);
+        if (di->selected()) {
+            modified = true;
+            painter->save();
+            painter->source_rgba(
+                    lcDrawOptions.selectedColor().red(),
+                    lcDrawOptions.selectedColor().green(),
+                    lcDrawOptions.selectedColor().blue(),
+                    lcDrawOptions.selectedColor().alpha()
+            );
+        } else if (color!=nullptr) {
+            modified = true;
+            painter->save();
+            painter->source_rgba(
+                    color->red(),
+                    color->green(),
+                    color->blue(),
+                    color->alpha()
+            );
+        }
+
         di->draw(painter, &lcDrawOptions, _visibleUserArea);
+
+        if (modified) {
+            painter->restore();
+        }
     });
     after(painter);
 

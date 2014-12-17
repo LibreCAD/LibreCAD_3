@@ -8,17 +8,6 @@ void LCVEllipse::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo:
 
     bool modified = false;
 
-    if (this->selected()) {
-        modified = true;
-        painter->save();
-        painter->source_rgba(
-            options->selectedColor().red(),
-            options->selectedColor().green(),
-            options->selectedColor().blue(),
-            options->selectedColor().alpha()
-        );
-    }
-
     if (minorRadius() /** painter->scale() > 5 */) {
         //        painter->circle(center().x(), center().y(), radius());
         painter->ellipse(center().x(), center().y(), majorRadius(), minorRadius() , startAngle(), endAngle(), getAngle());
