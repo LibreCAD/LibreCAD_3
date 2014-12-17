@@ -146,6 +146,23 @@ namespace lc {
                 return container;
             }
 
+            /*!
+             * \brief entitiesByMetaType
+             * Return all entities that contain's a specific metaInfo
+             * \param metaTypeName
+             * \return
+             */
+            EntityContainer entitiesByMetaType(const std::string metaName) const {
+                EntityContainer container;
+                for (auto i : allEntities(SHRT_MAX)) {
+                    if (i->metaInfo(metaName) != nullptr) {
+                        container.insert(i);
+                    }
+                }
+
+                return container;
+            }
+
             /**
              * @brief entitiesByArea
              * Find all entities within a selected area based on boundingbox of the entites
