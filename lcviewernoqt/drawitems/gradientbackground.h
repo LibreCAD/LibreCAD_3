@@ -10,7 +10,7 @@ typedef struct _cairo cairo_t;
 class GradientBackground : public LCVDrawItem {
     public:
         GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
-         ~GradientBackground();
+        ~GradientBackground();
 
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const;
     private:

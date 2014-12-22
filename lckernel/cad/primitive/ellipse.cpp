@@ -85,16 +85,16 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
 
 const geo::Area Ellipse::boundingBox() const {
 
-    geo::Coordinate p = geo::Coordinate(this->center().x(), this->center().y() + this->minorRadius()).rotate(this->majorP() - this->center());
+    //geo::Coordinate p = geo::Coordinate(this->center().x(), this->center().y() + this->minorRadius()).rotate(this->majorP() - this->center());
 
-    double r_min = this->minorRadius();
-    double r_max = p.distanceTo(this->majorP());
-    double rot = (this->majorP() - this->center()).angle();
+//    double r_min = this->minorRadius();
+//    double r_max = p.distanceTo(this->majorP());
+//    double rot = (this->majorP() - this->center()).angle();
 
-    double t_nil = atan(-r_min * tan(rot) / r_max);
-    double t_inf = atan(r_min * (cos(rot) / sin(rot)) / r_max);
-    double rect_width = 2 * (r_max * cos(t_nil) * cos(rot) - r_min * sin(t_nil) * sin(rot));
-    double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
+//    double t_nil = atan(-r_min * tan(rot) / r_max);
+//    double t_inf = atan(r_min * (cos(rot) / sin(rot)) / r_max);
+//    double rect_width = 2 * (r_max * cos(t_nil) * cos(rot) - r_min * sin(t_nil) * sin(rot));
+//    double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
 
     //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 
@@ -105,7 +105,7 @@ Quadratic Ellipse::quadratic() const {
     ce[0] = this->majorP().squared();
     ce[2] = this->ratio() * this->ratio() * ce[0];
 
-    if (ce[0] < TOLERANCE * TOLERANCE || ce[2] < TOLERANCE * TOLERANCE) {
+    if (ce[0] < LCTOLERANCE * LCTOLERANCE || ce[2] < LCTOLERANCE * LCTOLERANCE) {
         return Quadratic();
     }
 

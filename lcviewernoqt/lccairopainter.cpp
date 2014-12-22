@@ -47,7 +47,7 @@ LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int wid
 LcCairoPainter* LcCairoPainter::createPainter(int width, int height) {
     cairo_surface_t* surface;
     cairo_t* cr;
-    surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
     cr = cairo_create(surface);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);

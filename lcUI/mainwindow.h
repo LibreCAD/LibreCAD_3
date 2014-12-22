@@ -32,6 +32,7 @@ class MainWindow : public IMainWindow {
         void setActiveSubWindow(QWidget* window);
         void updateMenus();
         void on_actionNew_triggered();
+        void on_actionOpen_triggered();
         void on_actionRedo_triggered();
         void on_actionUndo_triggered();
         void on_actionAdd_Random_Circles_triggered();

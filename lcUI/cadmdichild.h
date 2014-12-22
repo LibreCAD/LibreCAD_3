@@ -50,6 +50,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
         void cancelCurrentOperations();
+        void import(std::string);
 
     private:
         int randInt(int low, int high);

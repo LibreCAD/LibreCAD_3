@@ -90,7 +90,7 @@ class LCADViewer : public QWidget {
 
         bool _altKeyActive; // When true the alt key is current pressed
 
-        DocumentCanvas * _docRenderer;
+        DocumentCanvas* _docRenderer;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 

@@ -16,10 +16,10 @@ pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
-find_package(Curl REQUIRED)
-#PKG_CHECK_MODULES(LIBCURL, [libcurl >= $CURL_MINIMUM])
-#include_directories(${LIBCURL_INCLUDE_DIRS})
-#link_directories(${LIBCURL_LIBRARY_DIRS})
+#find_package(Curl REQUIRED)
+PKG_CHECK_MODULES(LIBCURL REQUIRED libcurl)
+include_directories(${LIBCURL_INCLUDE_DIRS})
+link_directories(${LIBCURL_LIBRARY_DIRS})
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
@@ -52,4 +52,4 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
-target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${CURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
+target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${LIBCURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)

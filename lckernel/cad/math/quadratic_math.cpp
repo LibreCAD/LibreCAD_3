@@ -191,11 +191,11 @@ CoordinateSolutions Quadratic::getIntersection(const Quadratic& l1, const Quadra
 
     }
 
-    if (fabs(p1->m_mQuad(0, 0)) < TOLERANCE && fabs(p1->m_mQuad(0, 1)) < TOLERANCE
+    if (fabs(p1->m_mQuad(0, 0)) < LCTOLERANCE && fabs(p1->m_mQuad(0, 1)) < LCTOLERANCE
         &&
-        fabs(p2->m_mQuad(0, 0)) < TOLERANCE && fabs(p2->m_mQuad(0, 1)) < TOLERANCE
+        fabs(p2->m_mQuad(0, 0)) < LCTOLERANCE && fabs(p2->m_mQuad(0, 1)) < LCTOLERANCE
        ) {
-        if (fabs(p1->m_mQuad(1, 1)) < TOLERANCE && fabs(p2->m_mQuad(1, 1)) < TOLERANCE) {
+        if (fabs(p1->m_mQuad(1, 1)) < LCTOLERANCE && fabs(p2->m_mQuad(1, 1)) < LCTOLERANCE) {
             //linear
             std::vector<double> ce(0);
             ce.push_back(p1->m_vLinear(0));

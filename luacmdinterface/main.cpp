@@ -16,7 +16,6 @@
 namespace po = boost::program_options;
 
 
-
 static char const *const DEFAULT_OUT_FILENAME = "out.png";
 static const int DEFAULT_IMAGE_WIDTH = 400;
 static const int DEFAULT_IMAGE_HEIGHT = 400;
@@ -102,17 +101,18 @@ int main(int argc, char **argv) {
     // Seup a painter fo the document
     LcCairoPainter *lcPainter;
     _canvas->createPainterFunctor(
-            [&](const unsigned int width, const unsigned int height) {
-                if (lcPainter == NULL) {
-                    lcPainter = LcCairoPainter::createPainter(width, height);
-                    lcPainter->clear(1., 1., 1., 0.0);
+    [&](const unsigned int width, const unsigned int height) {
+        if (lcPainter == NULL) {
+            lcPainter = LcCairoPainter::createPainter(width, height);
+            lcPainter->clear(1., 1., 1., 0.0);
 
-                }
-                return lcPainter;
-            });
+        }
+
+        return lcPainter;
+    });
 
     _canvas->deletePainterFunctor([&]
-            (LcPainter *painter) {
+    (LcPainter * painter) {
         if (lcPainter != NULL) {
             delete painter;
             lcPainter = NULL;
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 
     _canvas->autoScale();
     _canvas->render([&](
-            LcPainter *lcPainter
+                        LcPainter * lcPainter
     ) {
     }, [&](
             LcPainter *lcPainter

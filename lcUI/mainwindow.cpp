@@ -13,7 +13,7 @@
 #include <QtGui>
 #include <QMdiSubWindow>
 #include <cmath>
-
+#include <QFileDialog>
 #include <ui/luascript.h>
 
 
@@ -50,6 +50,22 @@ MainWindow::~MainWindow() {
 void MainWindow::on_actionNew_triggered() {
     CadMdiChild* child = createMdiChild();
     child->newDocument();
+    child->showMaximized();
+}
+
+void MainWindow::on_actionOpen_triggered() {
+    CadMdiChild* child = createMdiChild();
+
+    // open file dialog box
+    QString filename = QFileDialog::getOpenFileName(this,
+                                                    tr("Open File"),
+                                                    QString(),
+                                                    tr("dwg(*.dwg);;dxf(*.dxf)"));
+
+    if (!filename.isEmpty()) {
+        child->import(filename.toStdString());
+    }
+
     child->showMaximized();
 }
 

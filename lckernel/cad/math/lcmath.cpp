@@ -74,11 +74,11 @@ std::vector<double> Math::quadraticSolver(const std::vector<double>& ce)
     double b = 0.25 * ce[0] * ce[0];
     double discriminant = b - ce[1];
 
-    if (discriminant >= - TOLERANCE * std::max(fabs(b), fabs(ce[1]))) {
+    if (discriminant >= - LCTOLERANCE * std::max(fabs(b), fabs(ce[1]))) {
         b =  sqrt(fabs(discriminant));
         double a = -0.5 * ce[0];
 
-        if (b >= TOLERANCE * fabs(a)) {
+        if (b >= LCTOLERANCE * fabs(a)) {
             ans.push_back(a + b);
             ans.push_back(a - b);
         } else {
@@ -207,10 +207,10 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
     //        DEBUG_HEADER();
     //        std::cout<<"x^4+("<<p<<")*x^2+("<<q<<")*x+("<<r<<")==0"<<std::endl;
     //    }
-    if (q * q <= 1.e-4 * TOLERANCE * fabs(p * r)) { // Biquadratic equations
+    if (q * q <= 1.e-4 * LCTOLERANCE * fabs(p * r)) { // Biquadratic equations
         double discriminant = 0.25 * p * p - r;
 
-        if (discriminant < -1.e3 * TOLERANCE) {
+        if (discriminant < -1.e3 * LCTOLERANCE) {
 
             //            DEBUG_HEADER();
             //            std::cout<<"discriminant="<<discriminant<<"\tno root"<<std::endl;
