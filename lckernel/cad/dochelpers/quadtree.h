@@ -254,7 +254,8 @@ namespace lc {
             /**
              * @brief optimise
              * Optmise this tree. Current implementation will remove empty nodes up till the root node
-             * @return
+             * @return true if this node doesn't contain any entities
+             *
              */
             bool optimise() {
                 if (_nodes[0] != nullptr) {

@@ -21,10 +21,24 @@ git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 
 mkdir build
 cd build
-cmake ../
+cmake .. (for a release you would use cmake -DCMAKE_BUILD_TYPE=Release ..)
 make -j 4
 ./lcUI/librecad
 
+
+
+OSX MacPorts
+========
+If you want to fool around with macports use these build instructions
+
+mkdir build
+cd build
+/opt/local/bin/cmake -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
+make -j 4
+./lcUI/librecad
+
+For a release build you would do:
+/opt/local/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
 
 Ubuntu/Mint
 ========

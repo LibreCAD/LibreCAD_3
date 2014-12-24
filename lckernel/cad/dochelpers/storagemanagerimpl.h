@@ -57,6 +57,7 @@ namespace lc {
              * @brief Returns entities By Layer
              * @param layer
              * @return EntityContainer<CADEntity_CSPtr> entities on layer
+             * @Deprecated use entityContainer()->entitiesByLayer()
              */
             virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
 
