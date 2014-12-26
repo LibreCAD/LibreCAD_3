@@ -29,8 +29,11 @@
 #include <QFileDialog>
 #include <cad/operations/builder.h>
 #include <QMessageBox>
-#include "lcDWG/dwgimpl.h"
-#include "lcDXF/dxfimpl.h"
+#include <iostream>
+#ifdef USE_lcDXFDWG
+    #include "lcDWG/dwgimpl.h"
+    #include "lcDXF/dxfimpl.h"
+#endif
 #include <QDebug>
 
 #include <QTime>
@@ -184,6 +187,7 @@ void CadMdiChild::import(std::string str) {
 
     std::string ext = str.substr(str.length() - 3, 3);
 
+#ifdef USE_lcDXFDWG
     if (ext == "dxf" || ext == "DXF") {
         DXFimpl* F = new DXFimpl(_storageManager, _document);
         dxfRW R(str.c_str());
@@ -196,6 +200,9 @@ void CadMdiChild::import(std::string str) {
         _document = F->document();
         _storageManager = F->storageManager();
     }
+#else
+    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
+#endif
 }
 
 void CadMdiChild::redo() {
