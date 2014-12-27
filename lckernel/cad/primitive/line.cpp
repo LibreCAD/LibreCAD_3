@@ -76,6 +76,12 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
+CADEntity_CSPtr Line::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newEntity = std::make_shared<Line>(this->start(), this->end(), layer, metaInfo);
+    newEntity->setID(this->id());
+    return newEntity;
+}
+
 Quadratic Line::quadratic() const {
     std::vector<double> ce(3, 0.);
     auto&& dvp = this->end() - this->start();

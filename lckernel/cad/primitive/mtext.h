@@ -106,6 +106,7 @@ namespace lc {
              */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
             /**
              * @brief boundingBox of the entity
              * @return geo::Area area

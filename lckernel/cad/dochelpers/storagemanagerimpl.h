@@ -81,6 +81,24 @@ namespace lc {
             virtual EntityContainer<CADEntity_CSPtr> entityContainer() const;
 
             /**
+            *  \brief add a new layer to the document
+            *  \param layer layer to be added.
+            */
+            virtual void addLayer(const Layer_CSPtr layer);
+
+            /**
+            *  \brief remove a layer from the document
+            *  \param layer layer to be added.
+            */
+            virtual void removeLayer(const Layer_CSPtr layer);
+
+            /**
+            *  \brief remove a layer from the document
+            */
+            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer);
+
+
+            /**
              * @brief optimise the quadtree
              */
             virtual void optimise();

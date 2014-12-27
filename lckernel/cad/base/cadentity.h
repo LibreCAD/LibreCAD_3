@@ -167,6 +167,14 @@ namespace lc {
              * @return geo::Area
              */
             virtual const geo::Area boundingBox() const = 0;
+
+            /**
+            * @brief modify
+            * Return a new entity with the same ID bit with possible modified metainfo and/pr layer information
+            * #return new entity with same ID
+            */
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const = 0;
+
             /*!
              * \brief layer
              * return the layer this entity is placed on
@@ -187,11 +195,12 @@ namespace lc {
                 return nullptr;
             }
 
-
+            MetaInfo_CSPtr metaInfo() const {
+                return _metaInfo;
+            }
 
         private:
             Layer_CSPtr _layer;
             MetaInfo_CSPtr _metaInfo;
-
     };
 }

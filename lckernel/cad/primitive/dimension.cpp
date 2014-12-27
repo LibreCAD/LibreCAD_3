@@ -66,6 +66,15 @@ CADEntity_CSPtr Dimension::scale(const geo::Coordinate& scale_center, const geo:
 }
 
 const geo::Area Dimension::boundingBox() const {
-    // TODO create bounding box for dimension
-    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+    // TODO create proper bounding box for DimLinear
+    return geo::Area(this->middle_of_text(), 0., 0.);
+}
+
+CADEntity_CSPtr Dimension::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newEntity = std::make_shared<Dimension>(this->definition_point(), this->middle_of_text(),
+            this->valign(), this->halign(),
+            this->lineSpacingStyle(), this->lineSpacingFactor(),
+            this->text_value(), this->style(), this->angle(), layer);
+    newEntity->setID(this->id());
+    return newEntity;
 }

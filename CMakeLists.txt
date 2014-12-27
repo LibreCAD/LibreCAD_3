@@ -21,4 +21,3 @@ ADD_SUBDIRECTORY("playground")
 if(WITH_UNITTESTS)
     ADD_SUBDIRECTORY("unittest")
 endif()
-

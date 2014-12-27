@@ -17,17 +17,12 @@ namespace lc {
             virtual ~DocumentImpl();
 
         public:
-            /*!
-             * \brief Add a new Entity to the document
-             * \param layerName Name of layer at which entity is to be added.
-             * \param cadEntity Entity to be added.
-             */
             virtual void insertEntity(const CADEntity_CSPtr cadEntity);
-            /*!
-             * \brief remove an Entity from the document
-             * \param id Entity ID
-             */
             virtual void removeEntity(CADEntity_CSPtr entity);
+
+            virtual void addLayer(const Layer_CSPtr layer);
+            virtual void removeLayer(const Layer_CSPtr layer);
+            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer);
 
             /**
              * @brief entitiesByLayer

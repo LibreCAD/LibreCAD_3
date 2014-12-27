@@ -44,6 +44,12 @@ const geo::Area Arc::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
 
+CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), this->endAngle(), layer, metaInfo);
+    newArc->setID(this->id());
+    return newArc;
+}
+
 Quadratic Arc::quadratic() const {
     std::vector<double> ce(6, 0.);
     ce[0] = 1.;

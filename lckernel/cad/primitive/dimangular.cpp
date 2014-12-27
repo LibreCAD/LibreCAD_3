@@ -67,3 +67,13 @@ const geo::Area DimAngular::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
+CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
+            this->valign(), this->halign(),
+            this->lineSpacingStyle(), this->lineSpacingFactor(),
+            this->text_value(), this->style(), this->angle());
+    auto newDimAngular = std::make_shared<DimAngular>(newDimension, this->definition_point1(),
+            this->definition_point2(), this->definition_point3(), this->definition_point4(), layer, metaInfo);
+    newDimAngular->setID(this->id());
+    return newDimAngular;
+}

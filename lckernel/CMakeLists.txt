@@ -38,6 +38,7 @@ cad/operations/builder.cpp
 cad/operations/builderops.cpp
 cad/operations/documentoperation.cpp
 cad/operations/trim.cpp
+cad/operations/layerops.cpp
 cad/primitive/arc.cpp
 cad/primitive/circle.cpp
 cad/primitive/coordinate.cpp
@@ -111,6 +112,7 @@ cad/operations/builder.h
 cad/operations/builderops.h
 cad/operations/documentoperation.h
 cad/operations/trim.h
+cad/operations/layerops.h
 cad/operations/undoable.h
 cad/primitive/arc.h
 cad/primitive/circle.h

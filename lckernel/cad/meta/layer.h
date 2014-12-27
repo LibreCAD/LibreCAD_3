@@ -13,7 +13,11 @@ namespace lc {
     class Layer : public MetaType  {
         public:
             Layer();
-            Layer(const std::string& name, const LineWidth lineWidth, const Color color);
+            Layer(const std::string name, const LineWidth lineWidth, const Color color);
+
+            // Change this to meta data?
+            Layer(const std::string name, const Color color);
+            Layer(const std::string name, const LineWidth lineWidth);
             virtual ~Layer();
 
             LineWidth lineWidth() const;

@@ -11,12 +11,13 @@
 #include <cad/events/addlayerevent.h>
 #include <cad/events/removelayerevent.h>
 #include <cad/events/replacelayerevent.h>
+
 #include "cad/events/beginprocessevent.h"
 #include "cad/events/commitprocessevent.h"
+
 #include "cad/events/addentityevent.h"
 #include "cad/events/removeentityevent.h"
 #include "cad/events/replaceentityevent.h"
-
 
 namespace lc {
     class CADEntity;
@@ -108,6 +109,9 @@ namespace lc {
                  */
             virtual void operationProcess(operation::DocumentOperation_SPtr operation);
 
+            /**
+            * Not sure if we should make this public or not or that we need to proxy functions or may be just extend?
+            */
             virtual StorageManager_SPtr storageManager() const = 0;
 
         public:
@@ -122,6 +126,23 @@ namespace lc {
              * \param id ID of the entity to be removed.
              */
             virtual void removeEntity(const CADEntity_CSPtr entity) = 0;
+
+            /**
+            *  \brief add a new layer to the document
+            *  \param layer layer to be added.
+            */
+            virtual void addLayer(const Layer_CSPtr layer) = 0;
+
+            /**
+            *  \brief remove a layer from the document
+            *  \param layer layer to be added.
+            */
+            virtual void removeLayer(const Layer_CSPtr layer) = 0;
+
+            /**
+            *  \brief remove a layer from the document
+            */
+            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) = 0;
 
             /*!
              * \brief findEntitiesByLayer
@@ -143,12 +164,14 @@ namespace lc {
         private:
             Nano::Signal<void(const lc::BeginProcessEvent&)>  _beginProcessEvent;
             Nano::Signal<void(const lc::CommitProcessEvent&)>  _commitProcessEvent;
+
             Nano::Signal<void(const lc::AddEntityEvent&)>  _addEntityEvent;
             Nano::Signal<void(const lc::ReplaceEntityEvent&)>  _replaceEntityEvent;
             Nano::Signal<void(const lc::RemoveEntityEvent&)>  _removeEntityEvent;
-            Nano::Signal<void(const lc::RemoveLayerEvent&)>  _removeLayerEvent;
+
             Nano::Signal<void(const lc::AddLayerEvent&)>  _addLayerEvent;
             Nano::Signal<void(const lc::ReplaceLayerEvent&)>  _replaceLayerEvent;
+            Nano::Signal<void(const lc::RemoveLayerEvent&)>  _removeLayerEvent;
 
     };
 

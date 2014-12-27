@@ -10,9 +10,9 @@
 namespace lc {
 
     class MetaInfo : public std::unordered_map<std::string, MetaType_CSPtr> {
-    public:
-        // Used by LibreCAD internally to store a color meta info
-        static const std::string _COLOR;
+        public:
+            // Used by LibreCAD internally to store a color meta info
+            static const std::string _COLOR;
     };
 
 

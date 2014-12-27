@@ -3,12 +3,12 @@
 using namespace lc;
 
 Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer)
-        : CADEntity(layer), geo::Spline(control_points, degree, closed) {
+    : CADEntity(layer), geo::Spline(control_points, degree, closed) {
 
 }
 
 Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
-        : CADEntity(layer, metaInfo), geo::Spline(control_points, degree, closed) {
+    : CADEntity(layer, metaInfo), geo::Spline(control_points, degree, closed) {
 
 }
 
@@ -71,3 +71,15 @@ const geo::Area Spline::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
+CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    std::vector<geo::Coordinate> control_pts;
+
+    for (auto point : this->control_points()) {
+        control_pts.push_back(point);
+    }
+
+    control_pts.insert(control_pts.begin() ,this->control_points().begin(), this->control_points().end());
+    auto newEntity = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer);
+    newEntity->setID(this->id());
+    return newEntity;
+}

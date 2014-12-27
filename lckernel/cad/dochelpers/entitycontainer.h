@@ -77,7 +77,7 @@ namespace lc {
              * \param EntityContainer to be combined to the document.
              */
             void combine(const EntityContainer& entities) {
-                for (auto i : entities.allEntities(SHRT_MAX)) {
+                for (auto i : entities.asVector(SHRT_MAX)) {
                     //        _cadentities.insert(std::make_pair(i->id(), i));
                     _tree->insert(i);
                 }
@@ -93,13 +93,13 @@ namespace lc {
             }
 
             /**
-             * @brief allEntities
+             * @brief asVector
              * return all entities as std::vector optionally up untill a given level
              * This is usefull to return entities for screen rendering where you don't
              * want to render very small entities (< XX pixels)
              * @return
              */
-            std::vector<CT> allEntities(unsigned short maxLevel = SHRT_MAX) const {
+            std::vector<CT> asVector(unsigned short maxLevel = SHRT_MAX) const {
                 /*    std::vector<CT> v;
                     for (auto item : _cadentities) {
                         v.push_back(item.second);
@@ -124,7 +124,7 @@ namespace lc {
 
             /*!
              * \brief findEntitiesByLayer
-             * Return a entities container withh all entities from a sepcific layer
+             * Return a entities container with all entities from a specific layer
              * \param layer
              * \return
              */
@@ -137,7 +137,7 @@ namespace lc {
                         }
                     }*/
 
-                for (auto i : allEntities(SHRT_MAX)) {
+                for (auto i : asVector(SHRT_MAX)) {
                     if (i->layer() == layer) {
                         container.insert(i);
                     }
@@ -154,7 +154,8 @@ namespace lc {
              */
             EntityContainer entitiesByMetaType(const std::string metaName) const {
                 EntityContainer container;
-                for (auto i : allEntities(SHRT_MAX)) {
+
+                for (auto i : asVector(SHRT_MAX)) {
                     if (i->metaInfo(metaName) != nullptr) {
                         container.insert(i);
                     }

@@ -218,27 +218,28 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
 
     LcDrawOptions lcDrawOptions;
     _entityContainer.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
-        bool modified=false;
+        bool modified = false;
 
         std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
         lc::MetaColor_CSPtr color = ci->metaInfo<lc::MetaColor>(lc::MetaInfo::_COLOR);
+
         if (di->selected()) {
             modified = true;
             painter->save();
             painter->source_rgba(
-                    lcDrawOptions.selectedColor().red(),
-                    lcDrawOptions.selectedColor().green(),
-                    lcDrawOptions.selectedColor().blue(),
-                    lcDrawOptions.selectedColor().alpha()
+                lcDrawOptions.selectedColor().red(),
+                lcDrawOptions.selectedColor().green(),
+                lcDrawOptions.selectedColor().blue(),
+                lcDrawOptions.selectedColor().alpha()
             );
-        } else if (color!=nullptr) {
+        } else if (color != nullptr) {
             modified = true;
             painter->save();
             painter->source_rgba(
-                    color->red(),
-                    color->green(),
-                    color->blue(),
-                    color->alpha()
+                color->red(),
+                color->green(),
+                color->blue(),
+                color->alpha()
             );
         }
 
@@ -310,6 +311,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
     const auto line = event.entity<lc::Line>();
+
     if (line != nullptr) {
         auto newLine = std::make_shared<LCVLine>(line);
         _entityContainer.insert(newLine);
@@ -318,6 +320,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a circle
     const auto circle = event.entity<lc::Circle>();
+
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
         _entityContainer.insert(std::make_shared<LCVCircle>(circle));
@@ -326,6 +329,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a Arc
     const auto arc = event.entity<lc::Arc>();
+
     if (arc != nullptr) {
         auto newArc = std::make_shared<LCVArc>(arc);
         _entityContainer.insert(newArc);
@@ -335,6 +339,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add Ellipse
     const auto ellipse = event.entity<lc::Ellipse>();
+
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
         _entityContainer.insert(newEllipse);
@@ -342,6 +347,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     const auto text = event.entity<lc::Text>();
+
     if (text != nullptr) {
         auto newText = std::make_shared<LCVText>(text);
         _entityContainer.insert(newText);
@@ -349,6 +355,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     const auto coord = event.entity<lc::Coordinate>();
+
     if (coord != nullptr) {
         auto newCoord = std::make_shared<LCVCoordinate>(coord);
         _entityContainer.insert(newCoord);

@@ -83,3 +83,13 @@ const geo::Area Text::boundingBox() const {
     // TODO create bounding box for text
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
+
+CADEntity_CSPtr Text::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newText = std::make_shared<Text>(this->insertion_point(),
+            this->second_point(),
+            this->height(), this->text_value(),
+            this->width_rel(), this->angle(), this->style(),
+            this->textgeneration(), this->halign(), this->valign(), layer, metaInfo);
+    newText->setID(this->id());
+    return newText;
+}

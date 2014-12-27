@@ -16,22 +16,23 @@
 namespace po = boost::program_options;
 
 
-static char const *const DEFAULT_OUT_FILENAME = "out.png";
+static char const* const DEFAULT_OUT_FILENAME = "out.png";
 static const int DEFAULT_IMAGE_WIDTH = 400;
 static const int DEFAULT_IMAGE_HEIGHT = 400;
 
 static std::string readBuffer;
-static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     size_t realsize = size * nmemb;
-    readBuffer.append((char *) contents, realsize);
+    readBuffer.append((char*) contents, realsize);
     return realsize;
 }
 
 std::string loadFile(std::string url) {
-    CURL *curl;
+    CURL* curl;
     CURLcode res;
 
     curl = curl_easy_init();
+
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         /* example.com is redirected, so we tell libcurl to follow redirection */
@@ -40,6 +41,7 @@ std::string loadFile(std::string url) {
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(curl);
+
         /* Check for errors */
         if (res != CURLE_OK) {
             std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
@@ -55,7 +57,7 @@ std::string loadFile(std::string url) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     int width = DEFAULT_IMAGE_WIDTH;
     int height = DEFAULT_IMAGE_HEIGHT;
     std::string fIn = "";
@@ -64,11 +66,11 @@ int main(int argc, char **argv) {
     // Read CMD options
     po::options_description desc("Allowed options");
     desc.add_options()
-            ("help", "produce help message")
-            ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
-            ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
-            ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
-            ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output png filename, example -o out.png");
+    ("help", "produce help message")
+    ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
+    ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
+    ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
+    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output png filename, example -o out.png");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -77,14 +79,17 @@ int main(int argc, char **argv) {
     if (width < 0) {
         std::cerr << "Width must be > 0" << std::endl;
     }
+
     if (height < 0) {
         std::cerr << "Height must be > 0" << std::endl;
     }
+
     if (vm.count("help")) {
         std::cout << desc << "\n";
         return 1;
     }
-    if (fIn.size()==0) {
+
+    if (fIn.size() == 0) {
         std::cerr << "Input filename cannot be empty" << std::endl;
         std::cout << desc << "\n";
         return 1;
@@ -99,7 +104,7 @@ int main(int argc, char **argv) {
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
 
     // Seup a painter fo the document
-    LcCairoPainter *lcPainter;
+    LcCairoPainter* lcPainter;
     _canvas->createPainterFunctor(
     [&](const unsigned int width, const unsigned int height) {
         if (lcPainter == NULL) {
@@ -126,6 +131,7 @@ int main(int argc, char **argv) {
     // Render Lua Code
     LCadLuaScript luaScript(_document, _storageManager, true);
     std::string luaCode = loadFile(fIn);
+
     if (luaCode.size() != 0) {
         luaScript.run(luaCode);
     } else {
@@ -138,7 +144,7 @@ int main(int argc, char **argv) {
                         LcPainter * lcPainter
     ) {
     }, [&](
-            LcPainter *lcPainter
+        LcPainter * lcPainter
     ) {
     });
 

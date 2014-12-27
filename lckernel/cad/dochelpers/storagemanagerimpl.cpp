@@ -53,3 +53,23 @@ EntityContainer<CADEntity_CSPtr> StorageManagerImpl::entityContainer() const {
 void StorageManagerImpl::optimise() {
     _entities.optimise();
 }
+
+
+void StorageManagerImpl::addLayer(const Layer_CSPtr layer) {
+    _layers.insert(std::make_pair(layer->name(), layer));
+}
+
+
+void StorageManagerImpl::removeLayer(const Layer_CSPtr layer) {
+    _layers.erase(layer->name());
+}
+
+
+void StorageManagerImpl::replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) {
+    if (oldLayer->name() == newLayer->name()) {
+        _layers.erase(oldLayer->name());
+        _layers.insert(std::make_pair(newLayer->name(), newLayer));
+    } else {
+        LOG4CXX_DEBUG(logger, "Layer names are not equal, no replacement was performed");
+    }
+}

@@ -57,22 +57,23 @@ Builder& Builder::remove() {
 }
 
 
-void Builder::processInternal(StorageManager_SPtr storageManager) {
+void Builder::processInternal() {
     std::vector<CADEntity_CSPtr> entitySet;
 
     for (auto it = _stack.begin(); it != _stack.end(); ++it) {
         // Get looping stack, we currently support only one single loop!!
         std::vector<Base_SPtr> stack(_stack.begin(), it);
-        entitySet = (*it)->process(storageManager, entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
+        entitySet = (*it)->process(document(), entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
     }
 
     _workingBuffer.insert(_workingBuffer.end(), entitySet.begin(), entitySet.end());
 
+    auto ec = document()->entityContainer();
 
     // Build a buffer with all entities we need to remove during a undo cycle
     for (auto entity : _workingBuffer) {
         // Todo, consider changing this, we only need to know if this entity already exists
-        auto org = storageManager->entityByID(entity->id());
+        auto org = ec.entityByID(entity->id());
 
         if (org.get() != nullptr) {
             _entitiesThatWhereUpdated.push_back(org);

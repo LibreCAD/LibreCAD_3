@@ -44,6 +44,13 @@ CADEntity_CSPtr Coordinate::scale(const geo::Coordinate& scale_center, const geo
 }
 
 const geo::Area Coordinate::boundingBox() const {
-
+    return geo::Area(geo::Coordinate(this->x(), this->y()), 0.,0.);
 }
+
+CADEntity_CSPtr Coordinate::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newEntity = std::make_shared<Coordinate>(this->x(), this->y(), layer, metaInfo);
+    newEntity->setID(this->id());
+    return newEntity;
+}
+
 

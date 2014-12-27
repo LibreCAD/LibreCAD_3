@@ -51,18 +51,18 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 CADEntity_CSPtr Circle::move(const geo::Coordinate& offset) const {
-    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer());
+    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::copy(const geo::Coordinate& offset) const {
-    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer());
+    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), metaInfo());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto newCircle = std::make_shared<Circle>(this->center().rotate(rotation_center, rotation_angle), this->radius(), layer());
+    auto newCircle = std::make_shared<Circle>(this->center().rotate(rotation_center, rotation_angle), this->radius(), layer(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
@@ -70,7 +70,7 @@ CADEntity_CSPtr Circle::rotate(const geo::Coordinate& rotation_center, const dou
 CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     // TODO return ellipse if scalefactor.x != scalefactor.y
 
-    auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer());
+    auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor), this->radius() * fabs(scale_factor.x()), layer(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
@@ -78,6 +78,13 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate& scale_center, const geo::Co
 const geo::Area Circle::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
+
+CADEntity_CSPtr Circle::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, metaInfo);
+    newEntity->setID(this->id());
+    return newEntity;
+}
+
 
 Quadratic Circle::quadratic() const {
     std::vector<double> ce(6, 0.);

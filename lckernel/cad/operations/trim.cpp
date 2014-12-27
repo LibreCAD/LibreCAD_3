@@ -9,7 +9,7 @@ Trim::Trim(Document* document, FTrim_SPtr trim) : DocumentOperation(document), U
     //    _entityLayer = document()->findEntityLayerByID(trim->trimmedShape()->id());
 }
 
-void Trim::processInternal(StorageManager_SPtr storageManager) {
+void Trim::processInternal() {
     std::vector<CADEntity_CSPtr> newEntities = _trim->result();
 
     if (newEntities.size() > 0) {

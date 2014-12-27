@@ -54,7 +54,7 @@ namespace lc {
                  * This function get's called when a operation starts and when the document is locked for you
                  * so you can do your work
                  */
-                virtual void processInternal(StorageManager_SPtr storageManager) = 0;
+                virtual void processInternal() = 0;
 
         };
         typedef std::shared_ptr<DocumentOperation> DocumentOperation_SPtr;

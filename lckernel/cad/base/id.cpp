@@ -8,7 +8,7 @@ ID::ID() {
     _id = ++ID::__idCounter;
 }
 ID::ID(ID_DATATYPE id) {
-    if (id==0) {
+    if (id == 0) {
         _id = ++ID::__idCounter;
     } else {
         _id = id;

@@ -90,9 +90,11 @@ std::string LCadLuaScript::run(const std::string& script) {
 
     // Other lua stuff
     lua_getglobal(L, "_G");
+
     if (_usePrintLib) {
         luaL_setfuncs(L, printlib, 0);
     }
+
     lua_pop(L, 1);
 
     // Some globals we have to figure out to make sure it works with multiple threads
@@ -119,6 +121,15 @@ l=Line(Coord(0,0), Coord(10,100), layer);
 d=active.document()
 Builder(d):append(l):execute()
 */
+
+/*
+layer=Layer("10", Color(1,0,0,0));
+al = AddLayer(active.document(), layer);
+al:execute();
+l=Line(Coord(0,0), Coord(10,100), layer);
+d=active.document()
+Builder(d):append(l):execute()
+ */
 
 /* Spiral
 start = microtime()

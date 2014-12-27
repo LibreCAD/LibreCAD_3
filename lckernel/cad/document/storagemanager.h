@@ -39,6 +39,23 @@ namespace lc {
             virtual EntityContainer<CADEntity_CSPtr> entityContainer() const = 0;
 
             /**
+            *  \brief add a new layer to the document
+            *  \param layer layer to be added.
+            */
+            virtual void addLayer(const Layer_CSPtr layer) = 0;
+
+            /**
+            *  \brief remove a layer from the document
+            *  \param layer layer to be added.
+            */
+            virtual void removeLayer(const Layer_CSPtr layer) = 0;
+
+            /**
+            *  \brief remove a layer from the document
+            */
+            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) = 0;
+
+            /**
              * @brief optimise
              * the underlaying data store. Run this at a regular base, for example after each task
              */

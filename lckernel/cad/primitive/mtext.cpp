@@ -74,6 +74,16 @@ CADEntity_CSPtr MText::scale(const geo::Coordinate& scale_center, const geo::Coo
     return newMText;
 }
 const geo::Area MText::boundingBox() const {
-
+    // TODO create proper bounding box for DimLinear
+    return geo::Area(this->insertion_point(), 0., 0.);
 }
 
+CADEntity_CSPtr MText::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+    auto newEntity = std::make_shared<MText>(this->insertion_point(),
+            this->height(), this->width(),
+            this->valign(), this->halign(),
+            this->drawingDirection(), this->lineSpacingStyle(), this->lineSpacingFactor(),
+            this->text_value(), this->style(), this->angle(), layer);
+    newEntity->setID(this->id());
+    return newEntity;
+}

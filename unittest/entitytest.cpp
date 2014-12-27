@@ -35,7 +35,7 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
     builder->move(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Line_CSPtr> lines;
 
@@ -78,7 +78,7 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
     builder->copy(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Line_CSPtr> lines;
 
@@ -123,7 +123,7 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
     builder->rotate(_center4, angle4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Line_CSPtr> lines;
 
@@ -168,7 +168,7 @@ std::vector<Line_CSPtr> entitytest::LineScale() {
     builder->scale(_center4, _ratio4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Line_CSPtr> lines;
 
@@ -212,7 +212,7 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
     builder->move(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Circle_CSPtr> circles;
 
@@ -257,7 +257,7 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
     builder->execute();
 
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Circle_CSPtr> circles;
 
@@ -305,7 +305,7 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
     builder->rotate(_center4, angle4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Circle_CSPtr> circles;
 
@@ -353,7 +353,7 @@ std::vector<Circle_CSPtr> entitytest::CircleScale() {
     builder->scale(_center4, _ratio4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
 
     std::vector<Circle_CSPtr> circles;
 
@@ -394,7 +394,7 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
     builder->move(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
     for (auto i : _entities) {
@@ -434,7 +434,7 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
     builder->copy(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
     for (auto i : _entities) {
@@ -478,7 +478,7 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
     builder->rotate(_center4, angle4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
     for (auto i : _entities) {
@@ -522,7 +522,7 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
     builder->scale(_center4, _ratio4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
     for (auto i : _entities) {
@@ -564,7 +564,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
     builder->move(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
     for (auto i : _entities) {
@@ -605,7 +605,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
     builder->copy(_offset4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
     for (auto i : _entities) {
@@ -650,7 +650,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     builder->rotate(_center4, angle4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
     for (auto i : _entities) {
@@ -695,7 +695,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     builder->scale(_center4, _ratio4);
     builder->execute();
 
-    auto _entities = _document->entityContainer().allEntities();
+    auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
     for (auto i : _entities) {

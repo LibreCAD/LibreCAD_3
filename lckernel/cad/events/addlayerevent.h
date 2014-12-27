@@ -7,26 +7,17 @@
 namespace lc {
     class AddLayerEvent {
         public:
-            AddLayerEvent(const std::string& layerName, const Layer& layer) : _layerName(layerName), _layer(layer) {
-            }
-
-            /*!
-             * \brief Return the layername.
-             * \return String Layername.
-             */
-            std::string layerName() const {
-                return _layerName;
+            AddLayerEvent(const Layer_CSPtr layer) : _layer(layer) {
             }
 
             /*!
              * \brief Return layer data
              * \return Layer
              */
-            Layer layer() const {
+            Layer_CSPtr layer() const {
                 return _layer;
             }
         private:
-            const std::string _layerName;
-            const Layer _layer;
+            const Layer_CSPtr _layer;
     };
 }

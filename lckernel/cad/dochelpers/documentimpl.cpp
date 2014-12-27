@@ -2,10 +2,6 @@
 #include <string>
 #include <unordered_map>
 #include "documentimpl.h"
-#include "cad/geometry/geocoordinate.h"
-
-#include "nano-signal-slot/nano_signal_slot.hpp"
-
 
 using namespace lc;
 
@@ -56,9 +52,29 @@ void DocumentImpl::removeEntity(const CADEntity_CSPtr entity) {
     removeEntityEvent()(event);
 }
 
+
+
+void DocumentImpl::addLayer(const Layer_CSPtr layer) {
+    _storageManager->addLayer(layer);
+    AddLayerEvent event(layer);
+    addLayerEvent()(event);
+}
+void DocumentImpl::removeLayer(const Layer_CSPtr layer) {
+    _storageManager->removeLayer(layer);
+    RemoveLayerEvent event(layer);
+    removeLayerEvent()(event);
+}
+void DocumentImpl::replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) {
+    _storageManager->replaceLayer(oldLayer, newLayer);
+    ReplaceLayerEvent event(oldLayer, newLayer);
+    replaceLayerEvent()(event);
+}
+
+
+
 EntityContainer<CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {
     std::lock_guard<std::mutex> lck(_documentMutex);
-    return _storageManager->entitiesByLayer(layer);;
+    return _storageManager->entitiesByLayer(layer);
 }
 
 StorageManager_SPtr DocumentImpl::storageManager() const {
@@ -67,6 +83,6 @@ StorageManager_SPtr DocumentImpl::storageManager() const {
 
 
 EntityContainer<CADEntity_CSPtr> DocumentImpl::entityContainer()  {
-    std::lock_guard<std::mutex> lck(_documentMutex);
+ //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
 }

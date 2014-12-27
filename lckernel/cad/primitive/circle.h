@@ -81,6 +81,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
 
             /**
              * @brief quadratic, Returns quadratic for the entity

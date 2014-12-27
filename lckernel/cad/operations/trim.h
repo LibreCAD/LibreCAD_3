@@ -26,7 +26,7 @@ namespace lc {
             private:
 
             protected:
-                virtual void processInternal(StorageManager_SPtr storageManager);
+                virtual void processInternal();
 
             private:
                 std::shared_ptr<lc::FTrim> _trim;

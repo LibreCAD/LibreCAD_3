@@ -31,8 +31,8 @@
 #include <QMessageBox>
 #include <iostream>
 #ifdef USE_lcDXFDWG
-    #include "lcDWG/dwgimpl.h"
-    #include "lcDXF/dxfimpl.h"
+#include "lcDWG/dwgimpl.h"
+#include "lcDXF/dxfimpl.h"
 #endif
 #include <QDebug>
 
@@ -128,6 +128,7 @@ void CadMdiChild::newDocument() {
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
+    return;
     // Create a cross at position 0,0
     auto layer = _storageManager->layerByName("0");
     auto builder = std::make_shared<lc::operation::Builder>(document());
@@ -145,8 +146,8 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Coordinate>(0., 0., layer));
     builder->execute();
 
-    on_actionAdd_Random_Lines_triggered();
-    on_addCircles_clicked();
+    //on_actionAdd_Random_Lines_triggered();
+    //on_addCircles_clicked();
 }
 
 
@@ -188,18 +189,20 @@ void CadMdiChild::import(std::string str) {
     std::string ext = str.substr(str.length() - 3, 3);
 
 #ifdef USE_lcDXFDWG
+
     if (ext == "dxf" || ext == "DXF") {
         DXFimpl* F = new DXFimpl(_storageManager, _document);
         dxfRW R(str.c_str());
         R.read(F, true);
         _document = F->document();
         _storageManager = F->storageManager();
-    } else if(ext == "dwg" || ext == "DWG") {
+    } else if (ext == "dwg" || ext == "DWG") {
         DWGimpl* F = new DWGimpl(_storageManager, _document);
         F->readFile((char*)str.c_str());
         _document = F->document();
         _storageManager = F->storageManager();
     }
+
 #else
     std::cout << "Sorry, not compiled with USE_lcDXFDWG";
 #endif
@@ -227,9 +230,9 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
         double x2 = x1 + randInt(-50, 50);
         double y2 = y1 + randInt(-50, 50);
 
-        if (randInt(0, 2)==0) {
+        if (randInt(0, 2) == 0) {
             auto mymap = std::make_shared<lc::MetaInfo>();
-            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0,255)/255.,randInt(0,255)/255.,randInt(0,255)/255.);
+            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
             mymap->emplace(lc::MetaInfo::_COLOR, color);
             builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer, mymap));
         } else {
@@ -249,22 +252,22 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
     lc::EntityContainer container=document()->entityContainer();
     myTimer.restart();
-    qDebug() << "Entities Total " << container.allEntities().size();
+    qDebug() << "Entities Total " << container.asVector().size();
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
 
     myTimer.restart();
     lc::EntityContainer itemsInArea = container.entitiesByArea(lc::geo::Area(lc::geo::Coordinate(200,200), lc::geo::Coordinate(350,350)));
-    qDebug() << "Entities in area : " << itemsInArea.allEntities().size();
+    qDebug() << "Entities in area : " << itemsInArea.asVector().size();
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
 
     myTimer.restart();
     lc::EntityContainer  itemsOnLayerWithinArea = itemsInArea.entitiesByLayer(storageManager()->layerByName("1"));
-    qDebug() << "Entities on layer within above selection : " << itemsOnLayerWithinArea.allEntities().size();
+    qDebug() << "Entities on layer within above selection : " << itemsOnLayerWithinArea.asVector().size();
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
 
     myTimer.restart();
     lc::EntityContainer  itemsOnDocument = container.entitiesByLayer(storageManager()->layerByName("1"));
-    qDebug() << "Entities on this layer within document : " << itemsOnDocument.allEntities().size();
+    qDebug() << "Entities on this layer within document : " << itemsOnDocument.asVector().size();
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
     */
 
@@ -280,9 +283,9 @@ void CadMdiChild::on_addCircles_clicked() {
 
         double r = randInt(0, 150);
 
-        if (randInt(0, 2)==0) {
+        if (randInt(0, 2) == 0) {
             auto mymap = std::make_shared<lc::MetaInfo>();
-            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0,255)/255.,randInt(0,255)/255.,randInt(0,255)/255.);
+            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
             mymap->emplace(lc::MetaInfo::_COLOR, color);
             builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer, mymap));
         } else {
