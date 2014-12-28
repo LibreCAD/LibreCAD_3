@@ -27,7 +27,7 @@ namespace lc {
                 return *this;
             }
 
-            ~Color() {}
+            virtual ~Color() {}
 
             inline double red() const {
                 return _r;

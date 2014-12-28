@@ -17,7 +17,7 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    LCadLuaScript lc(_parent->activeMdiChild()->document(), _parent->activeMdiChild()->storageManager());
+    LCadLuaScript lc(_parent->activeMdiChild()->document());
 
     std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
     ui->luaOutput->clear();

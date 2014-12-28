@@ -99,7 +99,6 @@ cad/interface/entitydispatch.h
 cad/interface/entityvisitor.h
 cad/interface/metatype.h
 cad/interface/snapable.h
-cad/interface/variantable.h
 cad/math/lcmath.h
 cad/math/coordinatesol.h
 cad/math/quadratic_math.h

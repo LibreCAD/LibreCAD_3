@@ -1,13 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <map>
-#include <set>
-#include <list>
-#include "cad/interface/metatype.h"
 #include <unordered_map>
+#include <string>
 
 namespace lc {
+    class MetaType;
+    typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
 
     class MetaInfo : public std::unordered_map<std::string, MetaType_CSPtr> {
         public:
@@ -18,5 +16,4 @@ namespace lc {
 
     typedef std::shared_ptr<MetaInfo> MetaInfo_SPtr;
     typedef std::shared_ptr<const MetaInfo> MetaInfo_CSPtr;
-    typedef std::unique_ptr<MetaInfo> MetaInfo_UPtr;
 }

@@ -86,3 +86,7 @@ EntityContainer<CADEntity_CSPtr> DocumentImpl::entityContainer()  {
  //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
 }
+
+Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
+    return _storageManager->layerByName(layerName);
+}

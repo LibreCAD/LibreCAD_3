@@ -4,7 +4,6 @@
 
 #include "color.h"
 #include "linewidth.h"
-#include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
 namespace lc {

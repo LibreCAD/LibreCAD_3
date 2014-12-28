@@ -38,13 +38,12 @@ void lua_openlckernel(lua_State *L) {
             .addConstructor(LUA_ARGS(double r, double g, double b, double a))
             .endClass()
 
-            .beginClass<Variantable>("Variantable")
-            .endClass()
-            .beginExtendClass<MetaType, Variantable>("MetaType")
+            .beginClass<MetaType>("MetaType")
             .endClass()
             .beginExtendClass<Layer, MetaType>("Layer")
             .addConstructor(LUA_SP(Layer_SPtr), LUA_ARGS(const std::string, const Color))
             .endClass()
+
             .beginClass<geo::Coordinate>("Coord")
             .addConstructor(LUA_ARGS(double x, double y))
             .addFunction("x", &geo::Coordinate::x)

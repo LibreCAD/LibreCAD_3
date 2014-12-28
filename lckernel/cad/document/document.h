@@ -158,6 +158,8 @@ namespace lc {
              * @return
              */
             virtual EntityContainer<CADEntity_CSPtr> entityContainer() = 0;
+
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

@@ -32,6 +32,8 @@ namespace lc {
             virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
 
             virtual EntityContainer<CADEntity_CSPtr> entityContainer();
+
+            Layer_CSPtr layerByName(const std::string& layerName) const;
         protected:
             /*!
              * \brief execute's a operation
@@ -51,6 +53,7 @@ namespace lc {
             virtual void commit(operation::DocumentOperation_SPtr operation);
 
             virtual StorageManager_SPtr storageManager() const;
+
 
         private:
             std::mutex _documentMutex;

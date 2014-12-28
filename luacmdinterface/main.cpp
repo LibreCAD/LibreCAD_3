@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 
 
     // Render Lua Code
-    LCadLuaScript luaScript(_document, _storageManager, true);
+    LCadLuaScript luaScript(_document, true);
     std::string luaCode = loadFile(fIn);
 
     if (luaCode.size() != 0) {

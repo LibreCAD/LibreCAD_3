@@ -7,11 +7,10 @@
 class LCadLuaScript {
 
     public:
-        LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager);
-        LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager, bool usePrintLib);
+        LCadLuaScript(lc::Document* document);
+        LCadLuaScript(lc::Document* document, bool usePrintLib);
         std::string run(const std::string& script);
     private:
         lc::Document* _document;
-        lc::StorageManager_SPtr _storageManager;
         bool _usePrintLib;
 };

@@ -1,10 +1,8 @@
 #pragma once
 
-#include "cad/interface/variantable.h"
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
-
-#include "cad/const.h"
+#include "cad/meta/color.h"
 
 #include <cmath>
 
@@ -12,96 +10,72 @@ namespace lc {
 
     /**
     * Represents a MetaColor
-    * TODO: Extend from Color
     */
     class MetaColor : public MetaType {
-        public:
-            enum Method {
-                Invalid = -1,
-                ByLayer = 0,
-                ByEntity = 1
-            };
+    public:
 
-            MetaColor() : MetaType() , _method(Invalid), _r(0.), _g(0.), _b(0.), _a(0.) {}
-            MetaColor(double r, double g, double b, double a = 1.) : MetaType(), _method(ByEntity), _r(r), _g(g), _b(b), _a(a)  {}
-            MetaColor(const MetaColor& other) : MetaType(), _method(other._method), _r(other._r), _g(other._g), _b(other._b), _a(other._a) {}
-            MetaColor(const Method& method) : MetaType(), _method(method), _r(0.), _g(0.), _b(0.), _a(0.) {}
+        MetaColor() : _color(1., 1., 1., 1.), MetaType() {
+        }
 
+        MetaColor(const MetaColor &other) : _color(other.color()), MetaType() {
+        }
 
-            MetaColor(Method method) {
-                if (method == Invalid) {
-                    throw;
-                }
+        //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
+        //}
 
-                if (method == ByEntity) {
-                    throw;
-                }
+        MetaColor(double r, double g, double b, double a = 1.) : _color(r, g, b, a), MetaType() {
+        }
 
-                this->_method = method;
-            }
+        virtual ~MetaColor() {
+        }
 
-            MetaColor& operator = (const MetaColor& other) {
-                if (this != &other) {
-                    _r = other._r;
-                    _g = other._g;
-                    _b = other._b;
-                    _a = other._a;
-                    _method = other._method;
-                }
+        virtual metaTypeId metaName() const {
+            return metaTypeId::COLOR;
+        }
 
-                return *this;
-            }
+        Color color() const {
+            return _color;
+        }
 
-            ~MetaColor() {
-            }
+        inline double red() const {
+            return _color.red();
+        }
 
-            Method method() const {
-                return _method;
-            }
-            double red() const {
-                return _r;
-            }
-            double green() const {
-                return _g;
-            }
-            double blue() const {
-                return _b;
-            }
-            double alpha() const {
-                return _a;
-            }
+        inline double green() const {
+            return _color.green();
+        }
 
-            short redI() const {
-                return std::round(_r * 255);
-            }
-            short greenI() const {
-                return std::round(_g * 255);
-            }
-            short blueI() const {
-                return std::round(_b * 255);
-            }
-            short alphaI() const {
-                return std::round(_a * 255);
-            }
+        inline double blue() const {
+            return _color.blue();
+        }
 
-            bool variantValid() const {
-                return !(_method == Invalid);
-            }
+        inline double alpha() const {
+            return _color.alpha();
+        }
 
-            metaTypeId metaName() const {
-                return MetaType::COLOR;
-            }
+        inline unsigned char redI() const {
+            return _color.redI();
+        }
 
-            friend std::ostream& operator<< (std::ostream& os, const MetaColor& metaColor) {
-                os << "MetaColor(" << metaColor.method() << "," << metaColor.red() << "," << metaColor.green() << "," << metaColor.blue() << "," << metaColor.alpha() << ")" << std::endl;
-                return os;
-            }
-        private:
-            Method _method;
-            double _r;
-            double _g;
-            double _b;
-            double _a;
+        inline unsigned char greenI() const {
+            return _color.greenI();
+        }
+
+        inline unsigned char blueI() const {
+            return _color.blueI();
+        }
+
+        inline unsigned char alphaI() const {
+            return _color.alphaI();
+        }
+
+    private:
+        Color _color;
+
+        friend std::ostream &operator<<(std::ostream &os, const MetaColor &metaColor) {
+            os << "MetaColor(" << metaColor.red() << "," << metaColor.green() << "," << metaColor.blue() << "," << metaColor.alpha() << ")" << std::endl;
+            return os;
+        }
     };
 
     typedef std::shared_ptr<MetaColor> MetaColor_SPtr;

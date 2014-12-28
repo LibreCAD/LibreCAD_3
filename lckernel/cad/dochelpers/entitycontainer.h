@@ -152,13 +152,13 @@ namespace lc {
              * \param metaTypeName
              * \return
              */
-            EntityContainer entitiesByMetaType(const std::string metaName) const {
+            EntityContainer entitiesByMetaType(const std::string &metaName) const {
                 EntityContainer container;
 
                 for (auto i : asVector(SHRT_MAX)) {
-                    if (i->metaInfo(metaName) != nullptr) {
-                        container.insert(i);
-                    }
+             //       if (i->metaInfo(metaName) != nullptr) {
+                    //           container.insert(i);
+                   // }
                 }
 
                 return container;

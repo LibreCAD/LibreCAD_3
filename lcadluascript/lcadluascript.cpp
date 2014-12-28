@@ -13,7 +13,6 @@ extern "C"
 #include "cad/timer.h"
 
 #include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
@@ -27,14 +26,13 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager) : _document(document), _storageManager(storageManager), _usePrintLib(true) {
+LCadLuaScript::LCadLuaScript(lc::Document* document) : _document(document), _usePrintLib(true) {
 }
-LCadLuaScript::LCadLuaScript(lc::Document* document, lc::StorageManager_SPtr storageManager, bool usePrintLib) : _document(document), _storageManager(storageManager), _usePrintLib(usePrintLib) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
 }
 
 std::string* gOut;
 lc::Document* luaDoc;
-lc::StorageManager_SPtr storageManager;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -55,14 +53,10 @@ static const struct luaL_Reg printlib [] = {
 static lc::Document* lua_getDocument() {
     return luaDoc;
 }
-static lc::StorageManager_SPtr lua_storageManager() {
-    return storageManager;
-}
 
 static lc::Layer_SPtr lua_layer(const char* layer) {
     // Cast until the lua bridge understands Layer_CSPtr as a return value
-    // lc::Layer_SPtr foo = std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
-    return std::const_pointer_cast<lc::Layer>(storageManager->layerByName(layer));
+    return std::const_pointer_cast<lc::Layer>(luaDoc->layerByName(layer));
 
 }
 
@@ -74,12 +68,9 @@ std::string LCadLuaScript::run(const std::string& script) {
     // add lua cad entities
     lua_openlckernel(L);
 
-    //    .addFunction("getLayer", &lua_layer)
-
     LuaBinding(L)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
-    .addFunction("storageManager", &lua_storageManager)
     .beginModule("proxy")
     .addFunction("layerByName", &lua_layer)
     .endModule()
@@ -101,9 +92,7 @@ std::string LCadLuaScript::run(const std::string& script) {
     std::string out;
     gOut = &out;
     luaDoc = _document;
-    storageManager = _storageManager;
 
-    // luaL_dofile(L, "/opt/librecad-test.lua");
     int s = luaL_dostring(L, script.c_str());
 
     if (s != 0) {

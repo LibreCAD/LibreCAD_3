@@ -285,7 +285,7 @@ void CadMdiChild::on_addCircles_clicked() {
 
         if (randInt(0, 2) == 0) {
             auto mymap = std::make_shared<lc::MetaInfo>();
-            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
+            lc::MetaColor_CSPtr color = std::make_shared<const lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
             mymap->emplace(lc::MetaInfo::_COLOR, color);
             builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer, mymap));
         } else {

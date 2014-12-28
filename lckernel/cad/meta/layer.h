@@ -4,7 +4,6 @@
 
 #include "cad/const.h"
 
-#include "cad/interface/variantable.h"
 #include "cad/meta/linewidth.h"
 #include "cad/meta/color.h"
 
