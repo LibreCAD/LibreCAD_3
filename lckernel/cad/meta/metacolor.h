@@ -20,6 +20,9 @@ namespace lc {
         MetaColor(const MetaColor &other) : _color(other.color()), MetaType() {
         }
 
+        MetaColor(const Color &other) : _color(other), MetaType() {
+        }
+
         //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
         //}
 
@@ -29,9 +32,13 @@ namespace lc {
         virtual ~MetaColor() {
         }
 
-        virtual metaTypeId metaName() const {
-            return metaTypeId::COLOR;
+        virtual std::string lcMetaName() const {
+            return MetaColor::LCMETANAME();
         }
+        static std::string LCMETANAME() {
+            return "_COLOR";
+        }
+
 
         Color color() const {
             return _color;

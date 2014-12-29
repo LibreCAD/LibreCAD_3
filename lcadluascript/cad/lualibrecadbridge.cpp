@@ -17,6 +17,7 @@ extern "C"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/text.h"
 #include "cad/meta/color.h"
+#include "cad/base/metainfo.h"
 #include "cad/operations/builder.h"
 #include "cad/operations/builderops.h"
 #include "cad/dochelpers/documentimpl.h"
@@ -26,6 +27,7 @@ extern "C"
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
 }
+
 
 using namespace LuaIntf;
 using namespace lc;
@@ -39,10 +41,22 @@ void lua_openlckernel(lua_State *L) {
             .endClass()
 
             .beginClass<MetaType>("MetaType")
+            .addConstructor(LUA_SP(MetaType_SPtr), LUA_ARGS())
             .endClass()
+
             .beginExtendClass<Layer, MetaType>("Layer")
             .addConstructor(LUA_SP(Layer_SPtr), LUA_ARGS(const std::string, const Color))
             .endClass()
+
+            .beginExtendClass<MetaColor, MetaType>("MetaColor")
+            .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
+            .endClass()
+
+            .beginClass<MetaInfo>("MetaInfo")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::MetaInfo>), LUA_ARGS())
+            .addFunction("add", &lc::MetaInfo::add)
+            .endClass()
+
 
             .beginClass<geo::Coordinate>("Coord")
             .addConstructor(LUA_ARGS(double x, double y))
@@ -82,10 +96,10 @@ void lua_openlckernel(lua_State *L) {
             .beginExtendClass<CADEntity, ID>("CADEntity")
             .endClass()
             .beginExtendClass<Line, CADEntity>("Line")
-            .addConstructor(LUA_SP(Line_SPtr), LUA_ARGS(const geo::Coordinate &start, const geo::Coordinate &end, const std::shared_ptr<Layer> layer))
+            .addConstructor(LUA_SP(Line_SPtr), LUA_ARGS(const geo::Coordinate &start, const geo::Coordinate &end, const std::shared_ptr<Layer>))
             .endClass()
             .beginExtendClass<Circle, CADEntity>("Circle")
-            .addConstructor(LUA_SP(Circle_SPtr), LUA_ARGS(const geo::Coordinate &center, double radius, const std::shared_ptr<Layer> layer))
+            .addConstructor(LUA_SP(Circle_SPtr), LUA_ARGS(const geo::Coordinate &center, double radius, const std::shared_ptr<Layer>))
             .endClass()
             .beginExtendClass<Arc, CADEntity>("Arc")
             .addConstructor(LUA_SP(Arc_SPtr), LUA_ARGS(const geo::Coordinate &center, double radius, const double startAngle, const double endAngle, const std::shared_ptr<Layer> layer))

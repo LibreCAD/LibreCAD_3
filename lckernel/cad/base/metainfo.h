@@ -2,15 +2,18 @@
 
 #include <unordered_map>
 #include <string>
+#include "cad/interface/metatype.h"
 
 namespace lc {
-    class MetaType;
-    typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
-
-    class MetaInfo : public std::unordered_map<std::string, MetaType_CSPtr> {
+    class MetaInfo : public std::enable_shared_from_this<MetaInfo>, public std::unordered_map<std::string, MetaType_CSPtr> {
         public:
-            // Used by LibreCAD internally to store a color meta info
-            static const std::string _COLOR;
+            // COnvenience function to add a MetaType to the MetaInfo map
+            std::shared_ptr<MetaInfo> add( MetaType_CSPtr mi);
+            // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);
+
+            static std::shared_ptr<MetaInfo> create() {
+                return std::make_shared<lc::MetaInfo>();
+            }
     };
 
 

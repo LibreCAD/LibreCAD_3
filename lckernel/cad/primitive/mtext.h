@@ -72,7 +72,7 @@ namespace lc {
                   const double lineSpacingFactor,
                   const std::string& text_value,
                   const std::string& style,
-                  const double angle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+                  const double angle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
 
         public:
@@ -106,7 +106,7 @@ namespace lc {
              */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
             /**
              * @brief boundingBox of the entity
              * @return geo::Area area

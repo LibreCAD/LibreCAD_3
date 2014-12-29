@@ -1,4 +1,3 @@
-
 extern "C"
 {
 #include "lua.h"
@@ -26,15 +25,16 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document) : _document(document), _usePrintLib(true) {
-}
-LCadLuaScript::LCadLuaScript(lc::Document* document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
+LCadLuaScript::LCadLuaScript(lc::Document *document) : _document(document), _usePrintLib(true) {
 }
 
-std::string* gOut;
-lc::Document* luaDoc;
+LCadLuaScript::LCadLuaScript(lc::Document *document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
+}
 
-static int l_my_print(lua_State* L) {
+std::string *gOut;
+lc::Document *luaDoc;
+
+static int l_my_print(lua_State *L) {
     int nargs = lua_gettop(L);
 
     for (int i = 1; i <= nargs; ++i) {
@@ -45,39 +45,44 @@ static int l_my_print(lua_State* L) {
     return 0;
 }
 
-static const struct luaL_Reg printlib [] = {
-    {"print", l_my_print},
-    {nullptr, nullptr}
+static const struct luaL_Reg printlib[] = {
+        {"print", l_my_print},
+        {nullptr, nullptr}
 };
 
-static lc::Document* lua_getDocument() {
+static lc::Document *lua_getDocument() {
     return luaDoc;
 }
 
-static lc::Layer_SPtr lua_layer(const char* layer) {
+static lc::Layer_SPtr lua_layer(const char *layer) {
     // Cast until the lua bridge understands Layer_CSPtr as a return value
     return std::const_pointer_cast<lc::Layer>(luaDoc->layerByName(layer));
 
 }
 
-std::string LCadLuaScript::run(const std::string& script) {
+static lc::Line_SPtr lua_line1(const lc::geo::Coordinate &start, const lc::geo::Coordinate &end, const lc::Layer_CSPtr layer, const lc::MetaInfo_SPtr metaInfo) {
+    return std::make_shared<lc::Line>(start, end, layer, metaInfo);
+}
 
-    lua_State* L = luaL_newstate();
+std::string LCadLuaScript::run(const std::string &script) {
+
+    lua_State *L = luaL_newstate();
     luaL_openlibs(L);
 
     // add lua cad entities
     lua_openlckernel(L);
 
     LuaBinding(L)
-    .beginModule("active")
-    .addFunction("document", &lua_getDocument)
-    .beginModule("proxy")
-    .addFunction("layerByName", &lua_layer)
-    .endModule()
-    .endModule();
+            .addFunction("Line1", &lua_line1)
+            .beginModule("active")
+            .addFunction("document", &lua_getDocument)
+            .beginModule("proxy")
+            .addFunction("layerByName", &lua_layer)
+            .endModule()
+            .endModule();
 
     LuaBinding(L)
-    .addFunction("microtime", &lua_microtime);
+            .addFunction("microtime", &lua_microtime);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -119,6 +124,18 @@ l=Line(Coord(0,0), Coord(10,100), layer);
 d=active.document()
 Builder(d):append(l):execute()
  */
+
+/*
+layer = active.proxy.layerByName("0");
+metaInfo1= MetaInfo():add(MetaColor(Color(1,0,0,1)));
+metaInfo2 = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+l1=Line1(Coord(-100,-100), Coord(100,100), layer, metaInfo1);
+l2=Line1(Coord(-100,100), Coord(100,-100), layer, metaInfo2);
+d=active.document();
+Builder(d):append(l1):append(l2):execute();
+
+ */
+
 
 /* Spiral
 start = microtime()

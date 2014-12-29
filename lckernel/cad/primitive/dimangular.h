@@ -52,7 +52,7 @@ namespace lc {
                        const geo::Coordinate& extension_point2,
                        const geo::Coordinate& extension_point3,
                        const geo::Coordinate& extension_point4,
-                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
         public:
             /**
@@ -91,7 +91,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

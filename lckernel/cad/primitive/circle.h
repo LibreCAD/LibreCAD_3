@@ -36,7 +36,7 @@ namespace lc {
              * @param Layer_CSPtr _layer
              * @param MetaTypes metaTypes
              */
-            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr _layer, MetaInfo_CSPtr metaInfo);
+            Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
             Circle(const Circle_CSPtr other, bool sameID = false);
 
         public:
@@ -81,7 +81,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
             /**
              * @brief quadratic, Returns quadratic for the entity

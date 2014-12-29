@@ -13,7 +13,7 @@ DimAligned::DimAligned(const Dimension& dimension,
 DimAligned::DimAligned(const Dimension& dimension,
                        const geo::Coordinate& extension_point1,
                        const geo::Coordinate& extension_point2,
-                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimAligned(dimension, extension_point1, extension_point2) {
+                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimAligned(dimension, extension_point1, extension_point2) {
 
 }
 
@@ -65,7 +65,7 @@ const geo::Area DimAligned::boundingBox() const {
 }
 
 
-CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
             this->valign(), this->halign(),
             this->lineSpacingStyle(), this->lineSpacingFactor(),

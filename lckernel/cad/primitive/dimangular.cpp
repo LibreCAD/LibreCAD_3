@@ -16,7 +16,7 @@ DimAngular::DimAngular(const Dimension& dimension,
                        const geo::Coordinate& definition_point2,
                        const geo::Coordinate& definition_point3,
                        const geo::Coordinate& definition_point4,
-                       const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimAngular(dimension, definition_point1, definition_point2, definition_point3, definition_point4) {
+                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimAngular(dimension, definition_point1, definition_point2, definition_point3, definition_point4) {
 
 }
 
@@ -67,7 +67,7 @@ const geo::Area DimAngular::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
             this->valign(), this->halign(),
             this->lineSpacingStyle(), this->lineSpacingFactor(),

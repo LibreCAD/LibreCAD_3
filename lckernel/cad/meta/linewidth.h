@@ -18,11 +18,9 @@ namespace lc {
             virtual ~LineWidth() {}
             double width() const;
 
-            metaTypeId metaName() const {
-                return MetaType::LINEWIDTH;
-            }
-
-        private:
+            virtual std::string lcMetaName() const;
+            static std::string LCMETANAME();
+    private:
             double _width;
     };
 

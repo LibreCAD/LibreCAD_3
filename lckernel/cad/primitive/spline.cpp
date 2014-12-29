@@ -7,7 +7,7 @@ Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int deg
 
 }
 
-Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
     : CADEntity(layer, metaInfo), geo::Spline(control_points, degree, closed) {
 
 }
@@ -71,7 +71,7 @@ const geo::Area Spline::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     std::vector<geo::Coordinate> control_pts;
 
     for (auto point : this->control_points()) {

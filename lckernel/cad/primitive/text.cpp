@@ -26,7 +26,7 @@ Text::Text(const geo::Coordinate& insertion_point,
            const double angle,
            const std::string style,
            const int textgeneration,
-           const int halign, const int valign, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Text(insertion_point, second_point, height,
+           const int halign, const int valign, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Text(insertion_point, second_point, height,
                        text_value, width_rel, angle, style,
                        static_cast<TextGeneration>(textgeneration), static_cast<HAlign>(halign), static_cast<VAlign>(valign)) {
 
@@ -84,7 +84,7 @@ const geo::Area Text::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-CADEntity_CSPtr Text::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newText = std::make_shared<Text>(this->insertion_point(),
             this->second_point(),
             this->height(), this->text_value(),

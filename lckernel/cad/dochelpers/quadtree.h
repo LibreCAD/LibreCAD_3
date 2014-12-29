@@ -503,6 +503,7 @@ namespace lc {
         private:
             // used as a cache on root level
             // This will allow is to quickly lookup a CAD entity from the root
+           // SHould we consider using https://github.com/attractivechaos/klib I didn't do integer testing but this lib seems faster
             std::map<ID_DATATYPE, const E> _cadentities;
     };
 

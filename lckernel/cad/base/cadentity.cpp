@@ -5,7 +5,7 @@ using namespace lc;
 CADEntity::CADEntity(const Layer_CSPtr layer) : ID(), _layer(layer) {
 }
 
-CADEntity::CADEntity(const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : ID(), _metaInfo(metaInfo), _layer(layer) {
+CADEntity::CADEntity(const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : ID(), _metaInfo(metaInfo), _layer(layer) {
 }
 
 CADEntity::CADEntity(CADEntity_CSPtr cadEntity) : ID(), _metaInfo(cadEntity->_metaInfo), _layer(cadEntity->_layer) {

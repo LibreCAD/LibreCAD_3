@@ -6,7 +6,7 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 
 }
 
-Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),  geo::Arc(center, radius, startAngle, endAngle) {
+Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),  geo::Arc(center, radius, startAngle, endAngle) {
 }
 
 Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Arc(other->center(), other->radius(), other->startAngle(), other->endAngle()) {
@@ -44,7 +44,7 @@ const geo::Area Arc::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()), geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
 
-CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), this->endAngle(), layer, metaInfo);
     newArc->setID(this->id());
     return newArc;

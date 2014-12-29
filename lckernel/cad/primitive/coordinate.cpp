@@ -8,7 +8,7 @@ Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer)
     : CADEntity(layer), geo::Coordinate(x, y) {
 }
 
-Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
     : CADEntity(layer, std::move(metaInfo)),  geo::Coordinate(x, y) {
 }
 
@@ -47,7 +47,7 @@ const geo::Area Coordinate::boundingBox() const {
     return geo::Area(geo::Coordinate(this->x(), this->y()), 0.,0.);
 }
 
-CADEntity_CSPtr Coordinate::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Coordinate::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newEntity = std::make_shared<Coordinate>(this->x(), this->y(), layer, metaInfo);
     newEntity->setID(this->id());
     return newEntity;

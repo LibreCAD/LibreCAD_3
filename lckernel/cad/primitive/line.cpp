@@ -8,13 +8,13 @@ using namespace lc;
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(start, end) {
 }
 
 Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), Vector(vector) {
 }
 
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(vector) {
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(vector) {
 }
 
 Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), Vector(other->start(), other->end()) {
@@ -76,7 +76,7 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
-CADEntity_CSPtr Line::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newEntity = std::make_shared<Line>(this->start(), this->end(), layer, metaInfo);
     newEntity->setID(this->id());
     return newEntity;

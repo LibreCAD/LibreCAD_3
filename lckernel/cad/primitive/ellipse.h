@@ -32,7 +32,7 @@ namespace lc {
     class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
             Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer);
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
 
         public:
@@ -72,7 +72,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
             /**
              * @brief quadratic, Returns quadratic for the entity

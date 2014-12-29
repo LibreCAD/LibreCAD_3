@@ -12,44 +12,19 @@ namespace lc {
     class MetaType {
         public:
             MetaType() {
-
             }
-            enum metaTypeId {
-                INVALID = -1,
-                PEN = 0,
-                COLOR = 1,
-                LINEWIDTH = 2,
-                LAYER = 3
-            };
-
 
         public:
-            virtual metaTypeId metaName() const = 0;
-            virtual ~MetaType() {}
+        /**
+        * Each MetaType to be stored in a entity or later must have a name so it can be looked up
+        * This fmethod should return a unique name for each meta name
+        * All meta type names internally used will store with a _
+        */
+        virtual std::string lcMetaName() const {return "";};
+        virtual ~MetaType() {}
     };
     typedef std::shared_ptr<MetaType> MetaType_SPtr;
     typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
 
-    /**
-     * @brief The MetaTypeComp class
-     * to use in set's, for example std::set<MetaType, MetaTypeComp>
-     */
-    class MetaTypeComp {
-        public:
-            bool operator()(const MetaType& s1, const MetaType& s2) {
-                if (s1.metaName() < s2.metaName()) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-            bool operator()(MetaType_CSPtr s1, MetaType_CSPtr s2) {
-                if (s1->metaName() < s2->metaName()) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-    };
 }
 // METATYPE_H

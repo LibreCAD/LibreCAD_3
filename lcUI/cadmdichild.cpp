@@ -231,9 +231,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
         double y2 = y1 + randInt(-50, 50);
 
         if (randInt(0, 2) == 0) {
-            auto mymap = std::make_shared<lc::MetaInfo>();
-            lc::MetaColor_SPtr color = std::make_shared<lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
-            mymap->emplace(lc::MetaInfo::_COLOR, color);
+            auto mymap = lc::MetaInfo::create()->add(std::make_shared<const lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.));
             builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer, mymap));
         } else {
             builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(x1, y1), lc::geo::Coordinate(x2, y2), layer));
@@ -284,10 +282,8 @@ void CadMdiChild::on_addCircles_clicked() {
         double r = randInt(0, 150);
 
         if (randInt(0, 2) == 0) {
-            auto mymap = std::make_shared<lc::MetaInfo>();
-            lc::MetaColor_CSPtr color = std::make_shared<const lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.);
-            mymap->emplace(lc::MetaInfo::_COLOR, color);
-            builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer, mymap));
+            std::shared_ptr<lc::MetaInfo> mymap2 = lc::MetaInfo::create()->add(std::make_shared<const lc::MetaColor>(randInt(0, 255) / 255., randInt(0, 255) / 255., randInt(0, 255) / 255.));
+            builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer, mymap2));
         } else {
             builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
         }

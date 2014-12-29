@@ -104,7 +104,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+            CADEntity(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
             CADEntity(CADEntity_CSPtr cadEntity, bool sameID);
             CADEntity(CADEntity_CSPtr cadEntity);
 
@@ -173,7 +173,7 @@ namespace lc {
             * Return a new entity with the same ID bit with possible modified metainfo and/pr layer information
             * #return new entity with same ID
             */
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const = 0;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const = 0;
 
             /*!
              * \brief layer

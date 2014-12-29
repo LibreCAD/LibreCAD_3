@@ -19,20 +19,20 @@ namespace lc {
             Layer(const std::string name, const LineWidth lineWidth);
             virtual ~Layer();
 
+
+            virtual std::string lcMetaName() const {
+                return Layer::LCMETANAME();
+            }
+            static std::string LCMETANAME() {
+                return "_LAYER";
+            }
+
             LineWidth lineWidth() const;
             Color color() const;
             std::string name() const;
 
             bool operator == (const Layer& layer) const {
                 return (layer._name == _name);
-            }
-
-            bool variantValid() const {
-                return true;
-            }
-
-            metaTypeId metaName() const {
-                return MetaType::LAYER;
             }
 
         private:

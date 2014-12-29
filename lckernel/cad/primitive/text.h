@@ -65,7 +65,7 @@ namespace lc {
                  const double angle,
                  const std::string style,
                  const int textgeneration,
-                 const int halign, const int valign, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+                 const int halign, const int valign, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             Text(const Text_CSPtr other, bool sameID);
 
@@ -106,7 +106,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {

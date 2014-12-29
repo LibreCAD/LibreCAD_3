@@ -24,7 +24,7 @@ Dimension::Dimension(const geo::Coordinate& definition_point,
                      const double lineSpacingFactor,
                      const std::string& text_value,
                      const std::string& style,
-                     const double angle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) : CADEntity(layer), geo::Dimension(definition_point, middle_of_text, valign, halign,
+                     const double angle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer), geo::Dimension(definition_point, middle_of_text, valign, halign,
                                  lineSpacingStyle, lineSpacingFactor, text_value, style,
                                  angle) {
 
@@ -70,7 +70,7 @@ const geo::Area Dimension::boundingBox() const {
     return geo::Area(this->middle_of_text(), 0., 0.);
 }
 
-CADEntity_CSPtr Dimension::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Dimension::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newEntity = std::make_shared<Dimension>(this->definition_point(), this->middle_of_text(),
             this->valign(), this->halign(),
             this->lineSpacingStyle(), this->lineSpacingFactor(),

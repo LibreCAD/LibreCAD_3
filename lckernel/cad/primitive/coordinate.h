@@ -35,7 +35,7 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            Coordinate(const double x, const double y, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo);
+            Coordinate(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
             Coordinate(const Coordinate_CSPtr other, bool sameID = false);
 
         public:
@@ -75,7 +75,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);

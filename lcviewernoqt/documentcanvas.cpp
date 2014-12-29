@@ -221,7 +221,7 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
         bool modified = false;
 
         std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
-        lc::MetaColor_CSPtr color = ci->metaInfo<lc::MetaColor>(lc::MetaInfo::_COLOR);
+        lc::MetaColor_CSPtr color = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
 
         if (di->selected()) {
             modified = true;

@@ -10,7 +10,7 @@ DimRadial::DimRadial(const Dimension& dimension,
 
 DimRadial::DimRadial(const Dimension& dimension,
                      const double leader,
-                     const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimRadial(dimension, leader) {
+                     const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo): CADEntity(layer), geo::DimRadial(dimension, leader) {
 
 }
 
@@ -59,7 +59,7 @@ const geo::Area DimRadial::boundingBox() const {
     return geo::Area(this->middle_of_text(), 0., 0.);
 }
 
-CADEntity_CSPtr DimRadial::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr DimRadial::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
             this->valign(), this->halign(),
             this->lineSpacingStyle(), this->lineSpacingFactor(),

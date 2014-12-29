@@ -10,7 +10,7 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
 
 }
 
-Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, MetaInfo_CSPtr metaInfo)
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
     : CADEntity(layer, metaInfo),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
 }
 
@@ -100,7 +100,7 @@ const geo::Area Ellipse::boundingBox() const {
 
 }
 
-CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newEntity = std::make_shared<Ellipse>(this->center(), this->majorP(), this->minorRadius(), this->startAngle(), this->endAngle(), layer, metaInfo);
     newEntity->setID(this->id());
     return newEntity;
