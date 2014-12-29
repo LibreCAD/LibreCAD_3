@@ -38,6 +38,7 @@
 
 #include <QTime>
 #include <random>
+#include <cad/operations/layerops.h>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
@@ -128,9 +129,12 @@ void CadMdiChild::newDocument() {
     // Add operation manager
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
-    return;
+    // Create a default layer
+    auto layer=std::make_shared<lc::Layer>("0", lc::Color(1.,0.,0.,1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
+
     // Create a cross at position 0,0
-    auto layer = _storageManager->layerByName("0");
     auto builder = std::make_shared<lc::operation::Builder>(document());
     builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
     builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
