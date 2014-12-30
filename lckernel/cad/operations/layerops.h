@@ -12,7 +12,7 @@ namespace lc {
         */
         class AddLayer : public DocumentOperation, public Undoable {
             public:
-                AddLayer(Document* document,  const Layer_SPtr layer) ;
+                AddLayer(Document* document,  const Layer_CSPtr layer) ;
 
                 virtual ~AddLayer() {
                     LOG4CXX_DEBUG(logger, "AddLayer removed");
@@ -27,7 +27,7 @@ namespace lc {
                 virtual void processInternal();
 
             private:
-                Layer_SPtr _layer;
+            Layer_CSPtr _layer;
         };
 
         /**
@@ -35,7 +35,7 @@ namespace lc {
         */
         class RemoveLayer : public DocumentOperation, public Undoable {
             public:
-                RemoveLayer(Document* document,  const Layer_SPtr layer) ;
+                RemoveLayer(Document* document,  const Layer_CSPtr layer) ;
 
                 virtual ~RemoveLayer() {
                     LOG4CXX_DEBUG(logger, "RemoveLayer removed");
@@ -50,7 +50,7 @@ namespace lc {
                 virtual void processInternal();
 
             private:
-                Layer_SPtr _layer;
+            Layer_CSPtr _layer;
                 std::vector<CADEntity_CSPtr> _entities;
         };
 
@@ -59,7 +59,7 @@ namespace lc {
         */
         class ReplaceLayer : public DocumentOperation, public Undoable {
         public:
-            ReplaceLayer(Document* document, const Layer_SPtr oldLayer, const Layer_SPtr newLayer) ;
+            ReplaceLayer(Document* document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
 
             virtual ~ReplaceLayer() {
                 LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
@@ -74,8 +74,8 @@ namespace lc {
             virtual void processInternal();
 
         private:
-            Layer_SPtr _oldLayer;
-            Layer_SPtr _newLayer;
+            Layer_CSPtr _oldLayer;
+            Layer_CSPtr _newLayer;
         };
     }
 }

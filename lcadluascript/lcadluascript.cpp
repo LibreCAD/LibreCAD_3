@@ -10,6 +10,9 @@ extern "C"
 #include "lcadluascript.h"
 #include "cad/lualibrecadbridge.h"
 #include "cad/timer.h"
+#include "cad/base/metainfo.h"
+
+#include <type_traits>
 
 #include <cad/dochelpers/documentimpl.h>
 
@@ -60,9 +63,39 @@ static lc::Layer_SPtr lua_layer(const char *layer) {
 
 }
 
-static lc::Line_SPtr lua_line1(const lc::geo::Coordinate &start, const lc::geo::Coordinate &end, const lc::Layer_CSPtr layer, const lc::MetaInfo_SPtr metaInfo) {
+/**********************************************************************************************/
+/* Functions below are helper function's because luaintf (at least I couldn't get it working **/
+/* didn't understand the default values on constructors, even when using the _opt<> macro's  **/
+/* All helper's ending with 1 have the same constructor except metaInfo added                **/
+/**********************************************************************************************/
+static lc::Line_SPtr lua_line1(const lc::geo::Coordinate &start, const lc::geo::Coordinate &end, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::Line>(start, end, layer, metaInfo);
 }
+static lc::Circle_SPtr lua_circle1(const lc::geo::Coordinate& center, double radius, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Circle>(center, radius, layer, metaInfo);
+}
+static lc::Arc_SPtr lua_arc1(const lc::geo::Coordinate& center, double radius, double startAngle, double endAngle, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Arc>(center, radius, startAngle, endAngle, layer, metaInfo);
+}
+static lc::Coordinate_SPtr lua_coordinate1(const double x, const double y, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Coordinate>(x, y, layer, metaInfo);
+}
+static lc::Text_SPtr lua_text1(const lc::geo::Coordinate &insertion_point, const lc::geo::Coordinate &second_point, const double height, const std::string text_value, const double width_rel,
+        const double angle, const std::string style, const int textgenvalue,
+        const int halignvalue, const int valignvalue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Text>(insertion_point, second_point, height, text_value, width_rel, angle, style, textgenvalue, halignvalue, valignvalue, layer, metaInfo);
+}
+/*
+static lc::DimLinear_SPtr lua_DimLinear1(const lc::Dimension& dimension,
+        const lc::geo::Coordinate& extension_point1,
+        const lc::geo::Coordinate& extension_point2,
+        const double oblique,
+        const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::DimLinear>(extension_point1, extension_point2, oblique, layer, metaInfo);
+}*/
+
+
+
 
 std::string LCadLuaScript::run(const std::string &script) {
 
@@ -74,6 +107,10 @@ std::string LCadLuaScript::run(const std::string &script) {
 
     LuaBinding(L)
             .addFunction("Line1", &lua_line1)
+            .addFunction("Circle1", &lua_circle1)
+            .addFunction("Arc1", &lua_arc1)
+            .addFunction("Coordinate1", &lua_coordinate1)
+            .addFunction("Text1", &lua_text1)
             .beginModule("active")
             .addFunction("document", &lua_getDocument)
             .beginModule("proxy")

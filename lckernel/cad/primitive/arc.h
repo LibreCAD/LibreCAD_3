@@ -10,6 +10,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/quadratic_math.h"
 #include "cad/meta/layer.h"
+#include "cad/interface/snapable.h"
 
 namespace lc {
     class Arc;
