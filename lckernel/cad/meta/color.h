@@ -27,6 +27,12 @@ namespace lc {
                 return *this;
             }
 
+
+            bool operator==(lc::Color b) {
+                return _r == b._r && _b == b._b && _g == b._g && _a == b._a;
+            }
+
+
             virtual ~Color() {}
 
             inline double red() const {
