@@ -21,6 +21,8 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void addLine(const DRW_Line& data);
         virtual void addCircle(const DRW_Circle& data);
         virtual void addLayer(const DRW_Layer& data);
+        virtual void addArc(const DRW_Arc& data);
+        virtual void addEllipse(const DRW_Ellipse& data);
         lc::Document* _document;
         lc::StorageManager_SPtr _storageManager;
         lc::Document* document();

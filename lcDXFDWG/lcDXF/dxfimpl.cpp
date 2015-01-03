@@ -20,7 +20,6 @@ void DXFimpl::addLine(const DRW_Line& data) {
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
-
     auto col = icol.intToColor(data.color);
     auto L = std::make_shared<lc::Layer >(data.layer, data.lWeight, col);
     auto builder = std::make_shared<lc::operation::Builder>(_document);
@@ -29,6 +28,33 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
                                                      data.basePoint.y),
                                                  data.radious,
                                                  L)).push();
+    builder->execute();
+}
+
+void DXFimpl::addArc(const DRW_Arc &data) {
+    auto col = icol.intToColor(data.color);
+    auto L = std::make_shared<lc::Layer >(data.layer, data.lWeight, col);
+    auto builder = std::make_shared<lc::operation::Builder>(_document);
+    builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(
+                                                  data.basePoint.x,
+                                                  data.basePoint.y),
+                                              data.radious,
+                                              data.staangle, data.endangle,
+                                              L)).push();
+    builder->execute();
+}
+
+void DXFimpl::addEllipse(const DRW_Ellipse &data) {
+    auto col = icol.intToColor(data.color);
+    auto L = std::make_shared<lc::Layer >(data.layer, data.lWeight, col);
+    auto builder = std::make_shared<lc::operation::Builder>(_document);
+    builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(
+                                                      data.basePoint.x,
+                                                      data.basePoint.y),
+                                                  lc::geo::Coordinate(data.secPoint.x, data.secPoint.y),
+                                                  lc::geo::Coordinate(data.basePoint.x,data.basePoint.y).distanceTo(lc::geo::Coordinate(data.secPoint.x, data.secPoint.y))/data.ratio,
+                                                  data.staparam, data.endparam,
+                                                  L)).push();
     builder->execute();
 }
 
