@@ -130,7 +130,7 @@ void CadMdiChild::newDocument() {
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
     // Create a default layer
-    auto layer=std::make_shared<lc::Layer>("0", lc::Color(1.,0.,0.,1.));
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 0., 0., 1.));
     auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -279,7 +279,7 @@ void CadMdiChild::on_addCircles_clicked() {
     auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
 
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 10000; i++) {
         double x1 = randInt(-4000, 4000);
         double y1 = randInt(-4000, 4000);
 
@@ -291,9 +291,7 @@ void CadMdiChild::on_addCircles_clicked() {
         } else {
             builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
         }
-
     }
-
     builder->execute();
 }
 

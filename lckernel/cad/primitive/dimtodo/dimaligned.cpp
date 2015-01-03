@@ -67,9 +67,9 @@ const geo::Area DimAligned::boundingBox() const {
 
 CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
-            this->valign(), this->halign(),
-            this->lineSpacingStyle(), this->lineSpacingFactor(),
-            this->text_value(), this->style(), this->angle());
+                                  this->valign(), this->halign(),
+                                  this->lineSpacingStyle(), this->lineSpacingFactor(),
+                                  this->text_value(), this->style(), this->angle());
 
     auto newDimAligned = std::make_shared<DimAligned>(newDimension, this->extension_point1(), this->extension_point2(), layer, metaInfo);
     newDimAligned->setID(this->id());

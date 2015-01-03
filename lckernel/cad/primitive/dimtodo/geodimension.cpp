@@ -9,7 +9,6 @@ Dimension::Dimension(const Coordinate& definition_point,
                      const MText::HAlign halign,
                      const MText::LineSpacingStyle lineSpacingStyle,
                      const double lineSpacingFactor,
-                     const std::string& text_value,
                      const std::string& style,
                      const double angle) : _definition_point(definition_point),
     _middle_of_text(middle_of_text) {
@@ -17,7 +16,6 @@ Dimension::Dimension(const Coordinate& definition_point,
     _halign = halign;
     _linespacingstyle = lineSpacingStyle;
     _linespacingfactor = lineSpacingFactor;
-    _text_value = text_value;
     _style = style;
     _angle = angle;
 }

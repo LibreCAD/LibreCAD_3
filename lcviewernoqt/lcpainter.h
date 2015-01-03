@@ -2,6 +2,15 @@
 
 #include <string>
 
+typedef struct {
+    double x_bearing;
+    double y_bearing;
+    double width;
+    double height;
+    double x_advance;
+    double y_advance;
+} TextExtends;
+
 class LcPainter {
     public:
         virtual ~LcPainter() {
@@ -15,6 +24,7 @@ class LcPainter {
         virtual void line_width(double lineWidth) = 0;
         virtual double scale() = 0;
         virtual void scale(double s) = 0;
+        virtual void rotate(double r) = 0;
         virtual void arc(double x, double y, double r, double start, double end) = 0;
         virtual void circle(double x, double y, double r) = 0;
         virtual void ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra = 0) = 0;
@@ -27,7 +37,10 @@ class LcPainter {
         virtual void device_to_user(double* x, double* y) = 0;
         virtual void user_to_device_distance(double* dx, double* dy) = 0;
         virtual void device_to_user_distance(double* dx, double* dy) = 0;
-        virtual void text(double x, double y, const char* text_val, double angle, double height) = 0;
+        virtual void font_size(double size) = 0;
+        virtual void select_font_face(const char* text_val) = 0;
+        virtual void text(const char* text_val) = 0;
+        virtual TextExtends text_extends(const char* text_val) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;

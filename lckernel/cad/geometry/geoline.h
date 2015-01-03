@@ -1,5 +1,4 @@
-#ifndef GEOLINE_H
-#define GEOLINE_H
+#pragma once
 
 #include "cad/const.h"
 
@@ -31,11 +30,3 @@ namespace lc {
 }
 
 
-/**
-  * Used for debugging for example qDebug() << "my Coordinate:" << point;
-  * outputs:
-  * My Coordinate:(1,2,3)
-  *
-  */
-//QDebug operator << (QDebug dbg, const lc::geo::Line& c);
-#endif // GEOVECTOR_H

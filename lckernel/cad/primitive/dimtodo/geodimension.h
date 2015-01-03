@@ -105,8 +105,6 @@ namespace lc {
                 MText::LineSpacingStyle _linespacingstyle;
                 MText::VAlign _valign;
                 MText::HAlign _halign;
-                std::string _style, _text_value;
-
         };
     }
 }

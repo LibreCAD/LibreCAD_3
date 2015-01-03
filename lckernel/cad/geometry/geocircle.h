@@ -37,6 +37,11 @@ namespace lc {
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
             private:
+                friend std::ostream& operator<<(std::ostream& os, const Circle& c) {
+                    os << "Circle(center=" << c._center << " radius" << c._radius << ")";
+                    return os;
+                }
+            private:
                 const Coordinate _center; /*!< center of cirlce */
                 const double _radius; /*!< Radius of circle. */
         };

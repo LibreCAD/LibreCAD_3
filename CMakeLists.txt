@@ -16,7 +16,7 @@ ADD_SUBDIRECTORY("lcviewerqt")
 ADD_SUBDIRECTORY("lcadluascript")
 ADD_SUBDIRECTORY("lcUI")
 ADD_SUBDIRECTORY("luacmdinterface")
-ADD_SUBDIRECTORY("playground")
+#ADD_SUBDIRECTORY("playground")
 
 if(WITH_UNITTESTS)
     ADD_SUBDIRECTORY("unittest")

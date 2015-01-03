@@ -61,9 +61,9 @@ const geo::Area DimDiametric::boundingBox() const {
 
 CADEntity_CSPtr DimDiametric::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
-            this->valign(), this->halign(),
-            this->lineSpacingStyle(), this->lineSpacingFactor(),
-            this->text_value(), this->style(), this->angle());
+                                  this->valign(), this->halign(),
+                                  this->lineSpacingStyle(), this->lineSpacingFactor(),
+                                  this->text_value(), this->style(), this->angle());
     auto newEntity = std::make_shared<DimDiametric>(newDimension, this->leader(), layer);
     newEntity->setID(this->id());
     return newEntity;

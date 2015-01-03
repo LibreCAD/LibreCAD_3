@@ -61,9 +61,9 @@ const geo::Area DimRadial::boundingBox() const {
 
 CADEntity_CSPtr DimRadial::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
-            this->valign(), this->halign(),
-            this->lineSpacingStyle(), this->lineSpacingFactor(),
-            this->text_value(), this->style(), this->angle());
+                                  this->valign(), this->halign(),
+                                  this->lineSpacingStyle(), this->lineSpacingFactor(),
+                                  this->text_value(), this->style(), this->angle());
     auto newDimRadial = std::make_shared<DimRadial>(newDimension, this->leader(), layer);
     newDimRadial->setID(this->id());
     return newDimRadial;

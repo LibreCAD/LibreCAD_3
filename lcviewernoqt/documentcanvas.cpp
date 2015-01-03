@@ -155,7 +155,11 @@ void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned in
     calculateVisibleUserArea();
 }
 
+/**
+* I admit it, it doesn't auto scale yet and it's on my TODO to fix that
+*/
 void DocumentCanvas::autoScale() {
+
     // Set translation
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
         LcPainter* p = i->second;
@@ -176,6 +180,8 @@ void DocumentCanvas::calculateVisibleUserArea() {
         double h = _deviceHeight;
         p->device_to_user(&x, &y);
         p->device_to_user_distance(&w, &h);
+
+
         _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
     } else {
         _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(0, 0), 0, 0);
@@ -206,8 +212,6 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     }
 
     after(painter);
-
-
 
     // Draw Document
     painter = cachedPainter(VIEWER_DOCUMENT);
@@ -386,7 +390,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
         delete _selectedArea;
     }
 
-    _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+    _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), lc::geo::Coordinate(x + w, y + h));
     _selectedAreaIntersects = occupies;
 
 
@@ -416,8 +420,12 @@ void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigne
     double dy = y;
     double dw = w;
     double dh = h;
+
+    // Calculate to device space
     painter->device_to_user(&dx, &dy);
     painter->device_to_user_distance(&dw, &dh);
+
+    // Set that as the selection of items
     makeSelection(dx, dy, dw, dh, occupies, addTo);
 }
 

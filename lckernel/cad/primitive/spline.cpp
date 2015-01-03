@@ -78,7 +78,7 @@ CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
         control_pts.push_back(point);
     }
 
-    control_pts.insert(control_pts.begin() ,this->control_points().begin(), this->control_points().end());
+    control_pts.insert(control_pts.begin() , this->control_points().begin(), this->control_points().end());
     auto newEntity = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer);
     newEntity->setID(this->id());
     return newEntity;

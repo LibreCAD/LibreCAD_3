@@ -40,8 +40,3 @@ void Line::end(const Coordinate& coord) {
 }
 
 
-QDebug operator << (QDebug dbg, const geo::Line& c) {
-    dbg.nospace() << "(" << c.start() << "," << c.end() << ")";
-    return dbg.space();
-}
-

@@ -21,6 +21,7 @@ class LcCairoPainter : public LcPainter {
         virtual void lineWidthCompensation(double lwc);
         virtual void line_width(double w) ;
         virtual double scale() ;
+        virtual void rotate(double r);
         virtual void scale(double s) ;
         virtual void arc(double x, double y, double r, double start, double end) ;
         virtual void circle(double x, double y, double r) ;
@@ -34,7 +35,10 @@ class LcCairoPainter : public LcPainter {
         virtual void device_to_user(double* x, double* y);
         virtual void user_to_device_distance(double* dx, double* dy);
         virtual void device_to_user_distance(double* dx, double* dy);
-        virtual void text(double x, double y, const char* text_val, double angle, double height);
+        virtual void select_font_face(const char* text_val);
+        virtual void font_size(double size);
+        virtual void text(const char* text_val);
+        virtual TextExtends text_extends(const char* text_val);
         virtual void save();
         virtual void restore();
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2);

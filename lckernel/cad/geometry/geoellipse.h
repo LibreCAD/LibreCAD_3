@@ -101,9 +101,19 @@ namespace lc {
                 double getEllipseAngle(const Coordinate& coord) const;
 
             private:
-                const Coordinate _center, _majorP;
-                const double _minorRadius, _startAngle, _endAngle;
-                const bool _isArc, _isReversed;
+                friend std::ostream& operator<<(std::ostream& os, const Ellipse& e) {
+                    os << "Ellipse(center=" << e._center << " majorP=" << e._majorP << " minorRadius=" << e._minorRadius << " startAngle=" << e._startAngle << " endAngle=" << e._endAngle << " isArc" << e._isArc << " isReversed" << e._isReversed << ")";
+                    return os;
+                }
+            private:
+                const Coordinate _center;
+                const Coordinate _majorP;
+                const double _minorRadius;
+                const double  _startAngle;
+                const double _endAngle;
+                // TODO: i don't think they belong here. This isn't a value container, this are just entities that old Ellipse properties
+                const bool _isArc;
+                const bool _isReversed;
         };
     }
 }

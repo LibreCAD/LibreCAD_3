@@ -129,11 +129,17 @@ int main(int argc, char** argv) {
 
 
     // Render Lua Code
-    LCadLuaScript luaScript(_document, true);
+    LCadLuaScript luaScript(_document, false);
     std::string luaCode = loadFile(fIn);
 
+
     if (luaCode.size() != 0) {
-        luaScript.run(luaCode);
+        std::string out = luaScript.run(luaCode);
+
+        if (out.size() > 0) {
+            std::cerr << out << std::endl;
+            return 2;
+        }
     } else {
         std::cerr << "No lua code was loaded" << std::endl;
         return 1;

@@ -20,7 +20,7 @@ namespace lc {
 
             virtual std::string lcMetaName() const;
             static std::string LCMETANAME();
-    private:
+        private:
             double _width;
     };
 

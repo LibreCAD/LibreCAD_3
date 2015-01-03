@@ -35,6 +35,12 @@ namespace lc {
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
             private:
+                friend std::ostream& operator<<(std::ostream& os, const Arc& a) {
+                    os << "Arc(center=" << a._center << " radius=" << a._radius << " startAngle=" << a._startAngle << " endAngle=" << a._endAngle << ")";
+                    return os;
+                }
+
+            private:
                 const Coordinate _center; /*!< Coordinate center of Arc */
                 const double _radius; /*!< Double _Radius of Arc */
                 const double _startAngle;/*!< Double startAngle of Arc */

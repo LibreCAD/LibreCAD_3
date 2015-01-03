@@ -148,7 +148,7 @@ namespace lc {
                   * @return double  Length of the vector
                   */
                 inline double magnitude() const {
-                    return sqrtf(_x * _x + _y * _y + _z * _z);
+                    return std::sqrt(_x * _x + _y * _y + _z * _z);
                 }
 
                 inline double angle() const {
@@ -238,6 +238,12 @@ namespace lc {
                  */
                 inline Coordinate scale(const Coordinate& scale_center, const Coordinate& scale_factor) const {
                     return scale_center + ((*this - scale_center) * scale_factor);
+                }
+
+            private:
+                friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {
+                    os << "Coordinate(x=" << coordinate._x << " y=" << coordinate._y << " z=" << coordinate._z << ")";
+                    return os;
                 }
 
             private:

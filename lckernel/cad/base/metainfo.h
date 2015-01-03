@@ -8,7 +8,7 @@ namespace lc {
     class MetaInfo : public std::enable_shared_from_this<MetaInfo>, public std::unordered_map<std::string, MetaType_CSPtr> {
         public:
             // COnvenience function to add a MetaType to the MetaInfo map
-            std::shared_ptr<MetaInfo> add( MetaType_CSPtr mi);
+            std::shared_ptr<MetaInfo> add(MetaType_CSPtr mi);
             // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);
 
             static std::shared_ptr<MetaInfo> create() {

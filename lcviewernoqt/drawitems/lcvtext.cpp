@@ -1,47 +1,53 @@
 #include "lcvtext.h"
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
+#include <cad/primitive/textconst.h>
+
 LCVText::LCVText(const lc::Text_CSPtr Text) : LCVDrawItem(true), lc::Text(Text, true) {
 }
 
+/**
+* TODO items for text:
+* 1) Test multi-line text rendering
+* 2) Accept color codes during text rendering in the form of \Cx (x is the index color)
+* 3) Font selection
+* For testing there is a lua script
+*
+* We can increase performance if we pre-calculate some values and cache them so that we
+* don't have to keep calling text_extends and do some of the calculations
+* also we shouldn't draw text smaller then XX pixels when rendered on screen.
+*/
 void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
-
-
-
     bool modified = false;
+    painter->font_size(height());
+    painter->select_font_face("stick3.ttf");
 
-
-
-    //    double letterSpacing = 3.0;
-    //    double wordSpacing = 6.75;
-    //    double lineSpacingFactor = 1.0;
-
-    //    lc::geo::Coordinate letterPos = lc::geo::Coordinate(0.0, -9.0);
-    //    lc::geo::Coordinate letterSpace = lc::geo::Coordinate(letterSpacing, 0.0);
-    //    lc::geo::Coordinate space = lc::geo::Coordinate(wordSpacing, 0.0);
-    lc::geo::Coordinate textSize(Text::boundingBox().maxP() - Text::boundingBox().minP());
-
-    // Vertical Align:
-    double vSize = 9.0;
-
-    double alignX = insertion_point().x();
-    double alignY = insertion_point().y();
+    TextExtends te = painter->text_extends(text_value().c_str());
+    double alignX = 0.0;
+    double alignY = 0.0;
 
     //    double alignX, alignY;
+    // The idea of height() * .2 is just a average basline offset. Don't this value to seriously,
+    // we could get it from font exists but that sounds over exaggerating for the moment.
     switch (valign()) {
-        case Text::VAMiddle:
+        case lc::TextConst::VAMiddle:
             alignX += 0.0;
-            alignY += vSize / 2.0;
+            alignY += -height() / 2. + (height() * .2);
             break;
 
-        case Text::VABottom:
+        case lc::TextConst::VABottom:
             alignX += 0.0;
-            alignY += vSize + 3;
+            alignY += -height() + (height() * .2);
             break;
 
-        case Text::VABaseline:
+        case lc::TextConst::VABaseline:
             alignX += 0.0;
-            alignY += vSize;
+            alignY += 0.0;
+            break;
+
+        case lc::TextConst::VATop:
+            alignX += 0.0;
+            alignY += 0.0 + (height() * .2);
             break;
 
         default:
@@ -50,39 +56,38 @@ void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
 
     // Horizontal Align:
     switch (halign()) {
-        case Text::HAMiddle:
-            alignX += (0. - textSize.x() / 2.0);
-            alignY += (0. - (vSize + textSize.y() / 2.0 + Text::boundingBox().minP().y()));
+        case lc::TextConst::HALeft:
+            alignX += - te.width;
+            alignY += 0.;
             break;
 
-        case Text::HACenter:
-            alignX += (0. - textSize.x() / 2.0);
-            alignY += alignY + (0.0);
+        case lc::TextConst::HACenter:
+            alignX += - te.width / 2.0;
+            alignY += 0.;
             break;
 
-        case Text::HARight:
-            alignX += alignX + (0. - textSize.x());
-            alignY += alignY + (0.0);
+        case lc::TextConst::HAMiddle:
+            alignX += - te.width / 2.0;
+            alignY += 0.;
+            break;
+
+        case lc::TextConst::HARight:
+            alignX += 0.;
+            alignY += 0.;
             break;
 
         default:
             break;
     }
 
-    double angle_;
-
-    // Rotate:
-    if (halign() == Text::HAAligned || halign() == Text::HAFit) {
-        angle_ = insertion_point().angleTo(second_point());
-    } else {
-        angle_ = angle();
-    }
-
-    const char* str = text_value().c_str();
-
-    painter->text(alignX, alignY, str, angle_, height());
-
+    painter->save();
+    painter->translate(insertion_point().x(), -insertion_point().y());
+    painter->rotate(angle());
+    painter->translate(alignX, -alignY);
+    painter->move_to(0., 0.);
+    painter->text(text_value().c_str());
     painter->stroke();
+    painter->restore();
 
     if (modified) {
         painter->restore();

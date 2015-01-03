@@ -28,16 +28,16 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document *document) : _document(document), _usePrintLib(true) {
+LCadLuaScript::LCadLuaScript(lc::Document* document) : _document(document), _usePrintLib(true) {
 }
 
-LCadLuaScript::LCadLuaScript(lc::Document *document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
+LCadLuaScript::LCadLuaScript(lc::Document* document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
 }
 
-std::string *gOut;
-lc::Document *luaDoc;
+std::string* gOut;
+lc::Document* luaDoc;
 
-static int l_my_print(lua_State *L) {
+static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
 
     for (int i = 1; i <= nargs; ++i) {
@@ -49,15 +49,15 @@ static int l_my_print(lua_State *L) {
 }
 
 static const struct luaL_Reg printlib[] = {
-        {"print", l_my_print},
-        {nullptr, nullptr}
+    {"print", l_my_print},
+    {nullptr, nullptr}
 };
 
-static lc::Document *lua_getDocument() {
+static lc::Document* lua_getDocument() {
     return luaDoc;
 }
 
-static lc::Layer_SPtr lua_layer(const char *layer) {
+static lc::Layer_SPtr lua_layer(const char* layer) {
     // Cast until the lua bridge understands Layer_CSPtr as a return value
     return std::const_pointer_cast<lc::Layer>(luaDoc->layerByName(layer));
 
@@ -68,7 +68,7 @@ static lc::Layer_SPtr lua_layer(const char *layer) {
 /* didn't understand the default values on constructors, even when using the _opt<> macro's  **/
 /* All helper's ending with 1 have the same constructor except metaInfo added                **/
 /**********************************************************************************************/
-static lc::Line_SPtr lua_line1(const lc::geo::Coordinate &start, const lc::geo::Coordinate &end, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+static lc::Line_SPtr lua_line1(const lc::geo::Coordinate& start, const lc::geo::Coordinate& end, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::Line>(start, end, layer, metaInfo);
 }
 static lc::Circle_SPtr lua_circle1(const lc::geo::Coordinate& center, double radius, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
@@ -80,11 +80,32 @@ static lc::Arc_SPtr lua_arc1(const lc::geo::Coordinate& center, double radius, d
 static lc::Coordinate_SPtr lua_coordinate1(const double x, const double y, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::Coordinate>(x, y, layer, metaInfo);
 }
-static lc::Text_SPtr lua_text1(const lc::geo::Coordinate &insertion_point, const lc::geo::Coordinate &second_point, const double height, const std::string text_value, const double width_rel,
-        const double angle, const std::string style, const int textgenvalue,
-        const int halignvalue, const int valignvalue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
-    return std::make_shared<lc::Text>(insertion_point, second_point, height, text_value, width_rel, angle, style, textgenvalue, halignvalue, valignvalue, layer, metaInfo);
+
+static lc::Text_SPtr lua_text(const lc::geo::Coordinate& insertion_point,
+                              const std::string text_value,
+                              const double height,
+                              const double angle,
+                              const std::string style,
+                              const int textgeneration,
+                              const int halign,
+                              const int valign,
+                              const lc::Layer_CSPtr layer) {
+    return std::make_shared<lc::Text>(insertion_point, text_value, height, angle, style, static_cast<lc::TextConst::DrawingDirection>(textgeneration), static_cast<lc::TextConst::HAlign>(halign), static_cast<lc::TextConst::VAlign>(valign), layer);
 }
+static lc::Text_SPtr lua_text1(const lc::geo::Coordinate& insertion_point,
+                               const std::string text_value,
+                               const double height,
+                               const double angle,
+                               const std::string style,
+                               const int textgeneration,
+                               const int halign,
+                               const int valign,
+                               const lc::Layer_CSPtr layer,
+                               const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Text>(insertion_point, text_value, height, angle, style, static_cast<lc::TextConst::DrawingDirection>(textgeneration), static_cast<lc::TextConst::HAlign>(halign), static_cast<lc::TextConst::VAlign>(valign), layer, metaInfo);
+}
+
+
 /*
 static lc::DimLinear_SPtr lua_DimLinear1(const lc::Dimension& dimension,
         const lc::geo::Coordinate& extension_point1,
@@ -97,29 +118,30 @@ static lc::DimLinear_SPtr lua_DimLinear1(const lc::Dimension& dimension,
 
 
 
-std::string LCadLuaScript::run(const std::string &script) {
+std::string LCadLuaScript::run(const std::string& script) {
 
-    lua_State *L = luaL_newstate();
+    lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
     // add lua cad entities
     lua_openlckernel(L);
 
     LuaBinding(L)
-            .addFunction("Line1", &lua_line1)
-            .addFunction("Circle1", &lua_circle1)
-            .addFunction("Arc1", &lua_arc1)
-            .addFunction("Coordinate1", &lua_coordinate1)
-            .addFunction("Text1", &lua_text1)
-            .beginModule("active")
-            .addFunction("document", &lua_getDocument)
-            .beginModule("proxy")
-            .addFunction("layerByName", &lua_layer)
-            .endModule()
-            .endModule();
+    .addFunction("Line1", &lua_line1)
+    .addFunction("Circle1", &lua_circle1)
+    .addFunction("Arc1", &lua_arc1)
+    .addFunction("Coordinate1", &lua_coordinate1)
+    .addFunction("Text", &lua_text)
+    .addFunction("Text1", &lua_text1)
+    .beginModule("active")
+    .addFunction("document", &lua_getDocument)
+    .beginModule("proxy")
+    .addFunction("layerByName", &lua_layer)
+    .endModule()
+    .endModule();
 
     LuaBinding(L)
-            .addFunction("microtime", &lua_microtime);
+    .addFunction("microtime", &lua_microtime);
 
     // Other lua stuff
     lua_getglobal(L, "_G");
@@ -486,11 +508,47 @@ print (microtime()-start);
 
 /*
  *
-Text
-layer = active.proxy.layerByName("0")
-l=Text(Coord(400,400),Coord(500,500), 20.0,"Jai Sai Naath", 10.0,0.0, "name",0,0,0, layer);
+-- Demo to drawing Text and roations
+layer=Layer("10", Color(1,0,0,0));
+al = AddLayer(active.document(), layer);
+al:execute();
+
 d=active.document()
-Builder(d):append(l):execute()
+b = Builder(d)
+function render (b_, layer_, text, x, y, a, b)
+    local c = 0.0;
+    for i=0,360,45 do
+    c = math.pi/180 * i;
+    b_:append(Text(Coord(x, y), text, 20, c, "standard",0,a,b, layer_));
+    end
+    b_:append(Circle(Coord(x, y), 5, layer_));
+end
+
+render(b, layer, "Top Left", -150, 150, 0, 3);
+render(b, layer, "Top Center", 0, 150, 1, 3);
+render(b, layer, "Top Right", 150, 150, 2, 3);
+render(b, layer, "Middle Left", -150, 0, 0, 2);
+render(b, layer, "Middle Center", 0, 0, 1, 2);
+render(b, layer, "Middle Right", 150, 0, 2, 2);
+render(b, layer, "Bottom Left", -150, -150, 0, 1);
+render(b, layer, "Bottom Center", 0, -150, 1, 1);
+render(b, layer, "Bottom Right", 150, -150, 2, 1);
+
+-- DRaw suqare (for autoscale)
+b:append(Line(Coord(-400,400), Coord(400,400), layer));
+b:append(Line(Coord(400,400), Coord(400,-400), layer));
+b:append(Line(Coord(400,-400), Coord(-400,-400), layer));
+b:append(Line(Coord(-400,-400), Coord(-400,400), layer));
+
+-- Draw center
+metaInfo1= MetaInfo():add(MetaColor(Color(1,0,0,1)));
+metaInfo2 = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+b:append(Line1(Coord(0,0), Coord(0,180), layer, metaInfo1));
+b:append(Line1(Coord(0,0), Coord(180,00), layer, metaInfo2));
+
+-- DRaw the thing
+b:execute();
+
 */
 
 /*
@@ -511,7 +569,7 @@ l11=Line(Coord(-10,60), Coord(10,100), layer); --right lowerarm
 c1=Circle(Coord(-80,-75), 10, layer); --first cloud
 c2=Circle(Coord(-125,-115), 20, layer); --second cloud
 e=Ellipse(Coord(-250,-210), Coord(-240,0), 70, math.rad(0), math.rad(360), layer) --big cloud
-t=Text(Coord(-350,-200), Coord(-150,-200),20,"WHY ME?")
+t=Text(Coord(-350,-200),"WHY ME?", 20)
 
 d=active.document()
 Builder(d):append(l1):append(c):append(l2):append(l3):append(l4):append(l5):append(l6):append(l7):append(l8):append(l9):append(l10):append(l11):append(c1):append(c2):append(e):execute();

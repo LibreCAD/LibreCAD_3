@@ -36,7 +36,7 @@ namespace lc {
              * Usually you would retreive a EntityContainer from the document
              */
             EntityContainer() {
-                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-1000., -1000.), geo::Coordinate(1000., 1000.)));
+                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-10000., -10000.), geo::Coordinate(10000., 10000.)));
             }
 
             /**
@@ -152,13 +152,13 @@ namespace lc {
              * \param metaTypeName
              * \return
              */
-            EntityContainer entitiesByMetaType(const std::string &metaName) const {
+            EntityContainer entitiesByMetaType(const std::string& metaName) const {
                 EntityContainer container;
 
                 for (auto i : asVector(SHRT_MAX)) {
-             //       if (i->metaInfo(metaName) != nullptr) {
+                    //       if (i->metaInfo(metaName) != nullptr) {
                     //           container.insert(i);
-                   // }
+                    // }
                 }
 
                 return container;

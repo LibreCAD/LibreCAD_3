@@ -27,7 +27,7 @@ namespace lc {
                 virtual void processInternal();
 
             private:
-            Layer_CSPtr _layer;
+                Layer_CSPtr _layer;
         };
 
         /**
@@ -50,7 +50,7 @@ namespace lc {
                 virtual void processInternal();
 
             private:
-            Layer_CSPtr _layer;
+                Layer_CSPtr _layer;
                 std::vector<CADEntity_CSPtr> _entities;
         };
 
@@ -58,24 +58,24 @@ namespace lc {
         * Remove layer from document
         */
         class ReplaceLayer : public DocumentOperation, public Undoable {
-        public:
-            ReplaceLayer(Document* document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
+            public:
+                ReplaceLayer(Document* document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
 
-            virtual ~ReplaceLayer() {
-                LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
-            }
+                virtual ~ReplaceLayer() {
+                    LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
+                }
 
-            virtual void undo() const;
-            virtual void redo() const;
+                virtual void undo() const;
+                virtual void redo() const;
 
-        private:
+            private:
 
-        protected:
-            virtual void processInternal();
+            protected:
+                virtual void processInternal();
 
-        private:
-            Layer_CSPtr _oldLayer;
-            Layer_CSPtr _newLayer;
+            private:
+                Layer_CSPtr _oldLayer;
+                Layer_CSPtr _newLayer;
         };
     }
 }

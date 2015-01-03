@@ -31,14 +31,17 @@ RemoveLayer::RemoveLayer(Document* document,  const Layer_CSPtr layer) : Documen
 void RemoveLayer::processInternal() {
     auto le = document()->entityContainer().entitiesByLayer(_layer).asVector();
     _entities.insert(_entities.end(), le.begin(), le.end());
+
     for (auto i : _entities) {
         document()->removeEntity(i);
     }
+
     document()->removeLayer(_layer);
 }
 
 void RemoveLayer::undo() const {
     document()->addLayer(_layer);
+
     for (auto i : _entities) {
         document()->insertEntity(i);
     }
@@ -48,6 +51,7 @@ void RemoveLayer::redo() const {
     for (auto i : _entities) {
         document()->removeEntity(i);
     }
+
     document()->removeLayer(_layer);
 }
 
@@ -60,13 +64,16 @@ ReplaceLayer::ReplaceLayer(Document* document,  const Layer_CSPtr oldLayer,  con
 
 void ReplaceLayer::processInternal() {
     auto le = document()->entityContainer().entitiesByLayer(_oldLayer).asVector();
+
     for (auto i : le) {
-//        document()->removeEntity(i);
+        //        document()->removeEntity(i);
     }
+
     document()->removeLayer(_oldLayer);
     document()->removeLayer(_newLayer);
+
     for (auto i : le) {
-//        document()->removeEntity(i);
+        //        document()->removeEntity(i);
     }
 }
 

@@ -6,66 +6,73 @@
 
 
 #include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geodimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/math/lcmath.h"
 
 namespace lc {
-    class Dimension;
-    typedef std::shared_ptr<Dimension> Dimension_SPtr;
-    typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
+    class MText;
+    typedef std::shared_ptr<MText> MText_SPtr;
+    typedef std::shared_ptr<const MText> MText_CSPtr;
 
 
-    class Dimension : public std::enable_shared_from_this<Dimension>, public CADEntity, public geo::Dimension {
+    class MText : public std::enable_shared_from_this<MText>, public CADEntity, public Text {
         public:
 
             /**
-             * @brief Dimension
-             * @param definition_point definition_point of the dimension
-             * @param middle_of_text Middle of text
-             * @param valign Vertical Alignment
-             * @param halign Horizontal Alignment
-             * @param lineSpacingStyle Line spacing style
-             * @param lineSpacingFactor Spacing factor
-             * @param text_value Text of dimension
-             * @param style STyle name
-             * @param angle Angle of obliqueness
-             * @param layer Layer of entity
+             * @brief MText
+             * @param insertion_point insertion_point of the mtext
+             * @param height height of the text
+             * @param width width of text
+             * @param valign vertical alignment
+             * @param halign horizontal alignment
+             * @param drawingDirection direction of drawing
+             * @param lineSpacingStyle line spacing style
+             * @param lineSpacingFactor spacing factor
+             * @param text_value text value itself
+             * @param style style name of text
+             * @param angle angle of obliqueness
+             * @param layer layer of entity
              */
-            Dimension(const geo::Coordinate& definition_point,
-                      const geo::Coordinate& middle_of_text,
-                      const geo::MText::VAlign valign,
-                      const geo::MText::HAlign halign,
-                      const geo::MText::LineSpacingStyle lineSpacingStyle,
-                      const double lineSpacingFactor,
-                      const std::string& text_value,
-                      const std::string& style,
-                      const double angle, const Layer_CSPtr layer);
+            MText(const geo::Coordinate& insertion_point,
+                  const double height,
+                  const double width,
+                  const VAlign valign,
+                  const HAlign halign,
+                  const DrawingDirection drawingDirection,
+                  const LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer);
 
             /**
-             * @brief Dimension
-             * @param definition_point definition_point of the dimension
-             * @param middle_of_text Middle of text
-             * @param valign Vertical Alignment
-             * @param halign Horizontal Alignment
-             * @param lineSpacingStyle Line spacing style
-             * @param lineSpacingFactor Spacing factor
-             * @param text_value Text of dimension
-             * @param style STyle name
-             * @param angle Angle of obliqueness
-             * @param layer Layer of entity
-             * @param metatype of entity
+             * @brief MText
+             * @param insertion_point insertion_point of the mtext
+             * @param height height of the text
+             * @param width width of text
+             * @param valign vertical alignment
+             * @param halign horizontal alignment
+             * @param drawingDirection direction of drawing
+             * @param lineSpacingStyle line spacing style
+             * @param lineSpacingFactor spacing factor
+             * @param text_value text value itself
+             * @param style style name of text
+             * @param angle angle of obliqueness
+             * @param layer layer of entity
+             * @param metaTypes metatype of entity
              */
-            Dimension(const geo::Coordinate& definition_point,
-                      const geo::Coordinate& middle_of_text,
-                      const geo::MText::VAlign valign,
-                      const geo::MText::HAlign halign,
-                      const geo::MText::LineSpacingStyle lineSpacingStyle,
-                      const double lineSpacingFactor,
-                      const std::string& text_value,
-                      const std::string& style,
-                      const double angle, const Layer_CSPtr layer,  MetaInfo_CSPtr metaInfo);
+            MText(const geo::Coordinate& insertion_point,
+                  const double height,
+                  const double width,
+                  const VAlign valign,
+                  const HAlign halign,
+                  const DrawingDirection drawingDirection,
+                  const LineSpacingStyle lineSpacingStyle,
+                  const double lineSpacingFactor,
+                  const std::string& text_value,
+                  const std::string& style,
+                  const double angle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
 
         public:
             /**
@@ -76,7 +83,7 @@ namespace lc {
             virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
 
             /**
-             * @brief copy, copies by an offset
+             * @brief copy, copies line by an offset
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr copied entity
              */
@@ -98,13 +105,13 @@ namespace lc {
              */
             virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
             /**
              * @brief boundingBox of the entity
              * @return geo::Area area
              */
             virtual const geo::Area boundingBox() const;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -160,5 +167,4 @@ namespace lc {
     };
 }
 
-// Dimension_H
-
+// MTEXT_H

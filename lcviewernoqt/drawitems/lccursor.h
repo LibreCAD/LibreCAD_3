@@ -13,7 +13,7 @@ namespace lc {
         public:
             Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapManager, const lc::Color& xAxisColor, const lc::Color& yAxisColor);
 
-            public
+        public:
         slots:
             void on_Draw_Event(const DrawEvent&) ;
             void on_SnapPoint_Event(const SnapPointEvent&);

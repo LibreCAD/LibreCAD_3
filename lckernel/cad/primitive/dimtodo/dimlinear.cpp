@@ -71,11 +71,11 @@ const geo::Area DimLinear::boundingBox() const {
 
 CADEntity_CSPtr DimLinear::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newDimension = Dimension(this->definition_point(), this->middle_of_text(),
-            this->valign(), this->halign(),
-            this->lineSpacingStyle(), this->lineSpacingFactor(),
-            this->text_value(), this->style(), this->angle());
+                                  this->valign(), this->halign(),
+                                  this->lineSpacingStyle(), this->lineSpacingFactor(),
+                                  this->text_value(), this->style(), this->angle());
     auto newDimLinear = std::make_shared<DimLinear>(newDimension, this->extension_point1(),
-            this->extension_point2(), this->oblique(), layer);
+                                                    this->extension_point2(), this->oblique(), layer);
     newDimLinear->setID(this->id());
     return newDimLinear;
 }

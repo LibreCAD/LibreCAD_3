@@ -90,11 +90,14 @@ namespace lc {
      */
     class  CADEntity  : public ID {
         public:
+            CADEntity() {
+            }
+
             /*!
-             * \brief Default CADEntity Constructor.
-             * \sa lc::ID
-             * \sa lc::MetaInfo
-             */
+                         * \brief Default CADEntity Constructor.
+                         * \sa lc::ID
+                         * \sa lc::MetaInfo
+                         */
             CADEntity(Layer_CSPtr _layer);
             /*!
              * \brief CADEntity Constructor
@@ -192,6 +195,7 @@ namespace lc {
                 if (_metaInfo && (_metaInfo->find(metaName) != _metaInfo->end())) {
                     return std::dynamic_pointer_cast<const T>(_metaInfo->at(metaName));
                 }
+
                 return nullptr;
             }
 

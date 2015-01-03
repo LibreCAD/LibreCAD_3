@@ -70,7 +70,7 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
     geo::Coordinate vp6(vp5.scale(scale_factor));
     double z = cA + cB;
     double x = vp.magnitude();
-    double ratio = sqrt((z - x) / (z + x));
+    double ratio = std::sqrt((z - x) / (z + x));
     double minor_ = vp6.magnitude() * ratio;
 
     auto newEllipse = std::make_shared<Ellipse>(this->center().scale(scale_center, scale_factor), vp6,

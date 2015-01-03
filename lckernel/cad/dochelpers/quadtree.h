@@ -8,6 +8,7 @@
 #include "cad/geometry/geoarea.h"
 #include "cad/base/cadentity.h"
 #include <typeinfo>
+#include <iostream>
 #include "cad/const.h"
 namespace lc {
     template<typename E>
@@ -20,12 +21,19 @@ namespace lc {
     template<typename E>
     class QuadTreeSub {
         public:
-            QuadTreeSub(int level, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects) : _level(level) , _bounds(pBounds), _maxLevels(maxLevels), _maxObjects(maxObjects) {
+            QuadTreeSub(int level, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects) :
+                    _level(level) ,
+                    _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
+                    _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
+                    _bounds(pBounds), _maxLevels(maxLevels),
+                    _maxObjects(maxObjects) {
                 _objects.reserve(maxObjects / 2);
                 _nodes[0] = nullptr;
                 _nodes[1] = nullptr;
                 _nodes[2] = nullptr;
                 _nodes[3] = nullptr;
+
+
             }
             QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 8, 25) {}
             QuadTreeSub(const QuadTreeSub& other) : QuadTreeSub(0, other.bounds(), other.maxLevels(), other.maxObjects()) {
@@ -65,17 +73,17 @@ namespace lc {
             /**
              * @brief insert
              * Insert entity into the qauad tree
-             * @param pRect
+            * @param pRect
+            * @param pRect
              * @param entity
              */
-            void insert(const E entity) {
-
+            void insert(const E entity, const lc::geo::Area &entityBoundingBox) {
                 // Find a Quad Tree area where this item fits
                 if (_nodes[0] != nullptr) {
-                    short index = quadrantIndex(entity->boundingBox());
+                    short index = quadrantIndex(entityBoundingBox);
 
                     if (index != -1) {
-                        _nodes[index]->insert(entity);
+                        _nodes[index]->insert(entity, entityBoundingBox);
                         return;
                     }
                 }
@@ -86,19 +94,29 @@ namespace lc {
                 if (_objects.size() > _maxObjects && _level < _maxLevels) {
                     if (_nodes[0] == nullptr) {
                         split();
+                        // Split two level's deep to reduce the number of object iterations
+                        // This will help mostly when adding lot's of little objects that would fit in 1/8 of the quad
+                        _nodes[0]->split();
+                        _nodes[1]->split();
+                        _nodes[2]->split();
+                        _nodes[3]->split();
                     }
 
                     for (auto it = _objects.begin() ; it != _objects.end();) {
-                        short index = quadrantIndex((*it)->boundingBox());
-
+                        auto sentityBoundingBox = (*it)->boundingBox();
+                        short index = quadrantIndex(sentityBoundingBox);
                         if (index != -1) {
-                            _nodes[index]->insert(*it);
+                            _nodes[index]->insert(*it, sentityBoundingBox);
                             it = _objects.erase(it);
                         } else {
                             it++;
                         }
                     }
                 }
+            }
+
+            inline void insert(const E entity) {
+                insert(entity, entity->boundingBox());
             }
 
             /**
@@ -343,18 +361,15 @@ namespace lc {
             */
             short quadrantIndex(const geo::Area& pRect) const {
 
-                double verticalMidpoint = _bounds.minP().x() + (_bounds.width() / 2.);
-                double horizontalMidpoint = _bounds.minP().y() + (_bounds.height() / 2.);
-
-                bool topQuadrant = (pRect.minP().y() >= horizontalMidpoint) && (pRect.maxP().y() < _bounds.maxP().y());
-                bool bottomQuadrant = (pRect.minP().y() > _bounds.minP().y()) && (pRect.maxP().y() <= horizontalMidpoint);
+                bool topQuadrant = (pRect.minP().y() >= _horizontalMidpoint) && (pRect.maxP().y() < _bounds.maxP().y());
+                bool bottomQuadrant = (pRect.minP().y() > _bounds.minP().y()) && (pRect.maxP().y() <= _horizontalMidpoint);
 
                 if ((topQuadrant || bottomQuadrant) == false) {
                     return -1;
                 }
 
-                bool leftQuadrant = (pRect.minP().x() > _bounds.minP().x()) && (pRect.maxP().x() <= verticalMidpoint);
-                bool rightQuandrant = (pRect.minP().x() >= verticalMidpoint) && (pRect.maxP().x() < _bounds.maxP().x());
+                bool leftQuadrant = (pRect.minP().x() > _bounds.minP().x()) && (pRect.maxP().x() <= _verticalMidpoint);
+                bool rightQuandrant = (pRect.minP().x() >= _verticalMidpoint) && (pRect.maxP().x() < _bounds.maxP().x());
 
                 if ((leftQuadrant || rightQuandrant) == false) {
                     return -1;
@@ -408,6 +423,9 @@ namespace lc {
         private:
             const unsigned short _level;
             std::vector<E> _objects;
+            const double _verticalMidpoint;
+            const double _horizontalMidpoint;
+
             const geo::Area _bounds;
             QuadTreeSub* _nodes[4];
             const unsigned short _maxLevels;
@@ -503,7 +521,7 @@ namespace lc {
         private:
             // used as a cache on root level
             // This will allow is to quickly lookup a CAD entity from the root
-           // SHould we consider using https://github.com/attractivechaos/klib I didn't do integer testing but this lib seems faster
+            // SHould we consider using https://github.com/attractivechaos/klib I didn't do integer testing but this lib seems faster
             std::map<ID_DATATYPE, const E> _cadentities;
     };
 

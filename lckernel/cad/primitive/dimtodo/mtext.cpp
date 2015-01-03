@@ -80,10 +80,10 @@ const geo::Area MText::boundingBox() const {
 
 CADEntity_CSPtr MText::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newEntity = std::make_shared<MText>(this->insertion_point(),
-            this->height(), this->width(),
-            this->valign(), this->halign(),
-            this->drawingDirection(), this->lineSpacingStyle(), this->lineSpacingFactor(),
-            this->text_value(), this->style(), this->angle(), layer);
+                                             this->height(), this->width(),
+                                             this->valign(), this->halign(),
+                                             this->drawingDirection(), this->lineSpacingStyle(), this->lineSpacingFactor(),
+                                             this->text_value(), this->style(), this->angle(), layer);
     newEntity->setID(this->id());
     return newEntity;
 }

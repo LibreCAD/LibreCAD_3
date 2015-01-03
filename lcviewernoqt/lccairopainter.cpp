@@ -1,10 +1,12 @@
 #include "lccairopainter.h"
+#include "lcpainter.h"
 
 #include <cairo.h>
 #include <math.h>
 #include <array>
 #include <string.h>
 #include <valarray>
+#include <iostream>
 
 LcCairoPainter::LcCairoPainter(cairo_surface_t* surface, cairo_t* cr) : LcPainter(), _surface(surface), _cr(cr) {
     _constantLineWidth = true;
@@ -41,6 +43,7 @@ LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int wid
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     cairo_set_tolerance(cr, 0.25);
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_GOOD);
+    // https://github.com/cbrake/snippets/blob/master/cairo-flip/flip.py
     return new LcCairoPainter(surface, cr);
 }
 
@@ -96,15 +99,15 @@ void LcCairoPainter::clear(double r, double g, double b, double a)  {
 }
 
 void LcCairoPainter::move_to(double x, double y)  {
-    cairo_move_to(_cr, x, y);
+    cairo_move_to(_cr, x, -y);
 }
 
 void LcCairoPainter::line_to(double x, double y)  {
-    cairo_line_to(_cr, x, y);
+    cairo_line_to(_cr, x, -y);
 }
 
 void LcCairoPainter::arc(double x, double y, double r, double start, double end)  {
-    cairo_arc(_cr, x, y, r, start, end);
+    cairo_arc(_cr, x, -y, r, start, end);
 
     /* Test to see if we can get end/start cap's on a path
     cairo_path_t *path;
@@ -124,14 +127,14 @@ void LcCairoPainter::arc(double x, double y, double r, double start, double end)
 }
 
 void LcCairoPainter::circle(double x, double y, double r)  {
-    cairo_arc(_cr, x, y, r, 0, 2 * M_PI);
+    cairo_arc(_cr, x, -y, r, 0, 2 * M_PI);
 }
 
 void LcCairoPainter::point(double x, double y, double size, bool deviceCoords) {
     if (deviceCoords) {
-        cairo_arc(_cr, x, y, size / scale(), 0, 2 * M_PI);
+        cairo_arc(_cr, x, -y, size / scale(), 0, 2 * M_PI);
     } else {
-        cairo_arc(_cr, x, y, size, 0, 2 * M_PI);
+        cairo_arc(_cr, x, -y, size, 0, 2 * M_PI);
     }
 
     cairo_fill(_cr);
@@ -141,15 +144,15 @@ void LcCairoPainter::ellipse(double cx, double cy, double rx, double ry, double 
     double cosrotangle = std::cos(ra);
     double sinrotangle = std::sin(ra);
     cairo_matrix_t transformmatrix;
-    cairo_matrix_init(&transformmatrix, rx * cosrotangle, rx * sinrotangle, -ry * sinrotangle, ry * cosrotangle, cx, cy);
+    cairo_matrix_init(&transformmatrix, rx * cosrotangle, rx * sinrotangle, ry * sinrotangle, -ry * cosrotangle, cx, -cy);
     cairo_save(_cr);
     cairo_transform(_cr, &transformmatrix);
     cairo_arc(_cr, 0, 0, 1, sa, ea);
     cairo_restore(_cr);
 }
 
-void LcCairoPainter::rectangle(double x1, double y1, double w, double y)  {
-    cairo_rectangle(_cr, x1, y1, w, y);
+void LcCairoPainter::rectangle(double x1, double y1, double w, double h)  {
+    cairo_rectangle(_cr, x1, -y1, w, -h);
 }
 
 void LcCairoPainter::stroke()  {
@@ -177,17 +180,36 @@ void LcCairoPainter::scale(double s) {
     line_width(_lineWidth);
 }
 
-void LcCairoPainter::text(double x, double y, const char* text_val, double angle , double height) {
+void LcCairoPainter::rotate(double r) {
+    cairo_rotate(_cr, r);
+}
 
-    // TODO : is Y is positive downwards ?
-    cairo_select_font_face(_cr, "stick3.ttf", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(_cr, height);
-    cairo_set_source_rgb(_cr, 1.0, 0.0, 0.0);
-    cairo_save(_cr);
-    move_to(x, -y);
-    cairo_rotate(_cr, angle);
+void LcCairoPainter::select_font_face(const char* text_val) {
+    cairo_select_font_face(_cr, text_val, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+}
+
+void LcCairoPainter::font_size(double size) {
+    cairo_set_font_size(_cr, size);
+}
+
+void LcCairoPainter::text(const char* text_val) {
     cairo_show_text(_cr, text_val);
-    cairo_restore(_cr);
+}
+
+TextExtends LcCairoPainter::text_extends(const char* text_val) {
+    TextExtends te;
+
+    cairo_text_extents_t extents;
+    cairo_text_extents(_cr, text_val, &extents);
+
+    te.height = extents.height;
+    te.width = extents.width;
+    te.x_advance = extents.x_advance;
+    te.x_bearing = extents.x_bearing;
+    te.y_advance = extents.y_advance;
+    te.y_bearing = extents.y_bearing;
+
+    return te;
 }
 
 void LcCairoPainter::source_rgb(double r, double g, double b) {
@@ -203,19 +225,23 @@ void LcCairoPainter::translate(double x, double y) {
 }
 
 void LcCairoPainter::user_to_device(double* x, double* y) {
+    *y = -*y;
     cairo_user_to_device(_cr, x, y);
 }
 
 void LcCairoPainter::device_to_user(double* x, double* y) {
     cairo_device_to_user(_cr, x, y);
+    *y = -*y;
 }
 
 void LcCairoPainter::user_to_device_distance(double* dx, double* dy) {
+    *dy = -*dy;
     cairo_user_to_device_distance(_cr, dx, dy);
 }
 
 void LcCairoPainter::device_to_user_distance(double* dx, double* dy) {
     cairo_device_to_user_distance(_cr, dx, dy);
+    *dy = -*dy;
 }
 
 void LcCairoPainter::save() {

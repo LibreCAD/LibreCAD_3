@@ -38,7 +38,7 @@ namespace lc {
                  * @param width
                  * @param height
                  */
-                explicit Area(const Coordinate& coord, double width, double height) : _minP(coord), _maxP(coord.x() + std::abs(width), coord.y() + std::abs(height)) {
+                explicit Area(const Coordinate& coord, double width, double height) : Area(coord, Coordinate(coord.x() + width, coord.y() + height)) {
                 }
 
                 //explicit Area(const Area &a) : _minP(a._minP), _maxP(a._maxP) {}
@@ -214,7 +214,11 @@ namespace lc {
                     return Vector(Coordinate(_maxP.x(), _minP.y()), Coordinate(_maxP.x(), _maxP.y()));
                 }
 
-
+            private:
+                friend std::ostream& operator<<(std::ostream& os, const Area& area) {
+                    os << "Area(" << area.minP() << " " << area.maxP() << ")";
+                    return os;
+                }
 
             private:
                 Coordinate _minP;

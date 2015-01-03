@@ -82,6 +82,11 @@ namespace lc {
                 }
 
             private:
+                friend std::ostream& operator<<(std::ostream& os, const Vector& e) {
+                    os << "Vector(start=" << e._start << " end=" << e._end << ")";
+                    return os;
+                }
+            private:
                 Coordinate _start;
                 Coordinate _end;
 

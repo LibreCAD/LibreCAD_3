@@ -20,14 +20,14 @@ namespace lc {
         typedef std::shared_ptr<const Base> Base_CSPtr;
 
         class Base {
-        public:
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+            public:
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     const std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack
-            ) = 0;
+                ) = 0;
         };
 
         typedef std::shared_ptr<Base> Base_SPtr;
@@ -51,25 +51,25 @@ namespace lc {
         * </pre>
         */
         class Loop : public Base {
-        public:
-            Loop(const int numTimes);
+            public:
+                Loop(const int numTimes);
 
-            virtual ~
-            Loop() {
-                LOG4CXX_DEBUG(logger,
+                virtual ~
+                Loop() {
+                    LOG4CXX_DEBUG(logger,
 
-                        "Loop removed");
-            }
+                                  "Loop removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            int _numTimes;
+            private:
+                int _numTimes;
         };
 
         /**
@@ -91,24 +91,24 @@ namespace lc {
         * </pre>
         */
         class Begin : public Base {
-        public:
-            Begin();
+            public:
+                Begin();
 
-            virtual ~Begin() {
-                LOG4CXX_DEBUG(logger, "Begin removed");
-            }
+                virtual ~Begin() {
+                    LOG4CXX_DEBUG(logger, "Begin removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-            std::vector<CADEntity_CSPtr> getEntities() const;
+                std::vector<CADEntity_CSPtr> getEntities() const;
 
-        private:
-            std::vector<CADEntity_CSPtr> _entities;
+            private:
+                std::vector<CADEntity_CSPtr> _entities;
         };
 
         /**
@@ -130,22 +130,22 @@ namespace lc {
         * </pre>
         */
         class Move : public Base {
-        public:
-            Move(const geo::Coordinate &offset);
+            public:
+                Move(const geo::Coordinate& offset);
 
-            virtual ~Move() {
-                LOG4CXX_DEBUG(logger, "Move removed");
-            }
+                virtual ~Move() {
+                    LOG4CXX_DEBUG(logger, "Move removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            geo::Coordinate _offset;
+            private:
+                geo::Coordinate _offset;
         };
 
         /**
@@ -167,23 +167,23 @@ namespace lc {
         * </pre>
         */
         class Copy : public Base {
-        public:
-            Copy(const geo::Coordinate &offset);
+            public:
+                Copy(const geo::Coordinate& offset);
 
-            virtual ~Copy() {
-                LOG4CXX_DEBUG(logger, "Copy removed");
-            }
+                virtual ~Copy() {
+                    LOG4CXX_DEBUG(logger, "Copy removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            geo::Coordinate
-                    _offset;
+            private:
+                geo::Coordinate
+                _offset;
         };
 
         /**
@@ -205,44 +205,44 @@ namespace lc {
         * </pre>
         */
         class Rotate : public Base {
-        public:
-            Rotate(const geo::Coordinate &rotation_center, const double rotation_angle);
+            public:
+                Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
 
-            virtual ~Rotate() {
-                LOG4CXX_DEBUG(logger, "Rotate removed");
-            }
+                virtual ~Rotate() {
+                    LOG4CXX_DEBUG(logger, "Rotate removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
+            private:
 
-            geo::Coordinate _rotation_center;
-            double _rotation_angle;
+                geo::Coordinate _rotation_center;
+                double _rotation_angle;
         };
 
         class Scale : public Base {
-        public:
-            Scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor);
+            public:
+                Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
 
-            virtual ~Scale() {
-                LOG4CXX_DEBUG(logger, "Scale removed");
-            }
+                virtual ~Scale() {
+                    LOG4CXX_DEBUG(logger, "Scale removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            geo::Coordinate
-                    _scale_center, _scale_factor;
+            private:
+                geo::Coordinate
+                _scale_center, _scale_factor;
         };
 
         /**
@@ -266,18 +266,18 @@ namespace lc {
         * </pre>
         */
         class Push : public Base {
-        public:
-            Push();
+            public:
+                Push();
 
-            virtual ~Push() {
-                LOG4CXX_DEBUG(logger, "Push removed")
-            }
+                virtual ~Push() {
+                    LOG4CXX_DEBUG(logger, "Push removed")
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
-                    const Document *document,
+                virtual std::vector<CADEntity_CSPtr> process(
+                    const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr> &workingBuffer,
-                    std::vector<CADEntity_CSPtr> &removals,
+                    std::vector<CADEntity_CSPtr>& workingBuffer,
+                    std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
         };
 
@@ -299,24 +299,24 @@ namespace lc {
         *
         */
         class SelectByLayer : public Base {
-        public:
-            SelectByLayer(const Layer_CSPtr
+            public:
+                SelectByLayer(const Layer_CSPtr
 
-            layer);
+                              layer);
 
-            virtual ~SelectByLayer() {
-                LOG4CXX_DEBUG(logger, "SelectByLayer removed");
-            }
+                virtual ~SelectByLayer() {
+                    LOG4CXX_DEBUG(logger, "SelectByLayer removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<CADEntity_CSPtr> process(
                     const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
                     std::vector <CADEntity_CSPtr>& workingBuffer,
                     std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            Layer_CSPtr _layer;
+            private:
+                Layer_CSPtr _layer;
         };
 
         /**
@@ -337,22 +337,22 @@ namespace lc {
         *
         */
         class Remove : public Base {
-        public:
-            Remove();
+            public:
+                Remove();
 
-            virtual ~Remove() {
-                LOG4CXX_DEBUG(logger, "Remove removed");
-            }
+                virtual ~Remove() {
+                    LOG4CXX_DEBUG(logger, "Remove removed");
+                }
 
-            virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<CADEntity_CSPtr> process(
                     const Document* document,
                     std::vector<CADEntity_CSPtr> entities,
                     std::vector <CADEntity_CSPtr>& workingBuffer,
                     std::vector<CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-        private:
-            Layer_CSPtr _layer;
+            private:
+                Layer_CSPtr _layer;
         };
     }
 }

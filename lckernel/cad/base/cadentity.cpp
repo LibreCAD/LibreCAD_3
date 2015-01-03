@@ -12,7 +12,7 @@ CADEntity::CADEntity(CADEntity_CSPtr cadEntity) : ID(), _metaInfo(cadEntity->_me
 }
 
 CADEntity::CADEntity(CADEntity_CSPtr cadEntity, bool sameID)
-        : ID(sameID == true ? cadEntity->id() : 0), _metaInfo(cadEntity->_metaInfo), _layer(cadEntity->_layer) {
+    : ID(sameID == true ? cadEntity->id() : 0), _metaInfo(cadEntity->_metaInfo), _layer(cadEntity->_layer) {
 }
 
 Layer_CSPtr CADEntity::layer() const {
