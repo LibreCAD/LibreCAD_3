@@ -55,7 +55,7 @@ cd release
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 sudo make install
-``
+```
 
 
 
