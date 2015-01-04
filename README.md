@@ -45,6 +45,20 @@ For a release build you would do:
 /opt/local/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
 ```
 
+MacPorts/brew might not have libdxfrw in it so you need to compile it yourself.
+
+```
+git clone https://github.com/rvt/libdxfrw
+cd libdxfrw
+mkdir release
+cd release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+sudo make install
+``
+
+
+
 Ubuntu/Mint
 ========
 
