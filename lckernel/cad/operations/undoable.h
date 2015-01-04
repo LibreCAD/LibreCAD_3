@@ -2,7 +2,7 @@
 
 #include <string>
 #include "cad/const.h"
-
+#include <memory>
 namespace lc {
     class Document;
     namespace operation {

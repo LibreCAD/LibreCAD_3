@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <map>
 #include <vector>
-#include <limits>
+#include <climits>
 #include <array>
 #include "cad/geometry/geoarea.h"
 #include "cad/base/cadentity.h"
