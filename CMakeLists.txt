@@ -10,9 +10,6 @@ if(WITH_LCDXFDWG)
     ADD_SUBDIRECTORY("lcDXFDWG")
     add_definitions(-DUSE_lcDXFDWG=1)
 endif(WITH_LCDXFDWG)
-    ADD_SUBDIRECTORY("lcDXFDWG")
-    add_definitions(-DUSE_lcDXFDWG=1)
-
 
 ADD_SUBDIRECTORY("lcviewernoqt")
 ADD_SUBDIRECTORY("lcviewerqt")
