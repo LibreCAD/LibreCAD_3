@@ -36,7 +36,7 @@ namespace lc {
              * Usually you would retreive a EntityContainer from the document
              */
             EntityContainer() {
-                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-10000., -10000.), geo::Coordinate(10000., 10000.)));
+                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-500000., -500000.), geo::Coordinate(500000., 500000.)));
             }
 
             /**

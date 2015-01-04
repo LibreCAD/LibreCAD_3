@@ -71,6 +71,6 @@ void StorageManagerImpl::replaceLayer(const Layer_CSPtr oldLayer, const Layer_CS
         _layers.erase(oldLayer->name());
         _layers.insert(std::make_pair(newLayer->name(), newLayer));
     } else {
-        LOG4CXX_DEBUG(logger, "Layer names are not equal, no replacement was performed");
+        // LOG4CXX_DEBUG(logger, "Layer names are not equal, no replacement was performed");
     }
 }

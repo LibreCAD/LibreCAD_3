@@ -5,6 +5,7 @@
 #include <cad/operations/builder.h>
 #include <cad/document/document.h>
 #include <cad/meta/layer.h>
+#include <cad/meta/metacolor.h>
 
 #include <cad/operations/layerops.h>
 #include "lualibrecadbridge.h"

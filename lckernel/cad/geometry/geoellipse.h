@@ -4,6 +4,7 @@
 #include "geocoordinate.h"
 #include "cad/math/lcmath.h"
 #include <memory>
+
 namespace lc {
 
     class CADEntity;

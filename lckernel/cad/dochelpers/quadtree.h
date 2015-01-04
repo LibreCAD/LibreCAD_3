@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <algorithm>
+#include <map>
 #include <vector>
 #include <limits>
 #include <array>
@@ -10,6 +11,7 @@
 #include <typeinfo>
 #include <iostream>
 #include "cad/const.h"
+
 namespace lc {
     template<typename E>
     class QuadTree;
@@ -35,13 +37,13 @@ namespace lc {
 
 
             }
-            QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 8, 25) {}
+            QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 10, 25) {}
             QuadTreeSub(const QuadTreeSub& other) : QuadTreeSub(0, other.bounds(), other.maxLevels(), other.maxObjects()) {
                 for (auto i : other.retrieve()) {
                     insert(i);
                 }
             }
-            QuadTreeSub() : QuadTreeSub(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {}
+            QuadTreeSub() : QuadTreeSub(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 10, 25) {}
             virtual ~QuadTreeSub() {
                 if (_nodes[0] != nullptr) {
                     delete _nodes[0];
@@ -101,7 +103,7 @@ namespace lc {
                         _nodes[2]->split();
                         _nodes[3]->split();
                     }
-
+                    // std::cout << "size:" << _objects.size() << " level:" << _level << "\n";
                     for (auto it = _objects.begin() ; it != _objects.end();) {
                         auto sentityBoundingBox = (*it)->boundingBox();
                         short index = quadrantIndex(sentityBoundingBox);
@@ -189,7 +191,7 @@ namespace lc {
              * @return
              */
             const E entityByID(const ID_DATATYPE id) const {
-                // LOG4CXX_WARN(logger, "Using non optmised entityById method, this is going to be VERY slow. To solve please call the root QuadTreeSub to get a cached version!")
+                // // LOG4CXX_WARN(logger, "Using non optmised entityById method, this is going to be VERY slow. To solve please call the root QuadTreeSub to get a cached version!")
 
                 for (auto i : retrieve()) {
                     if (i->id() == id) {
@@ -409,7 +411,7 @@ namespace lc {
                 double y = _bounds.minP().y();
 
                 if (_nodes[0] != nullptr) {
-                    // LOG4CXX_DEBUG(logger, "Split is called on a already splitted node, please fix!");
+                    // // LOG4CXX_DEBUG(logger, "Split is called on a already splitted node, please fix!");
                 } else {
                     _nodes[0] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x + subWidth, y + subHeight), geo::Coordinate(_bounds.maxP().x(), _bounds.maxP().y())), _maxLevels, _maxObjects);
                     _nodes[1] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x, y + subHeight), geo::Coordinate(x + subWidth, _bounds.maxP().y())), _maxLevels, _maxObjects);
@@ -471,10 +473,10 @@ namespace lc {
              * @param entity
              */
             void insert(const E entity) {
-                //    // LOG4CXX_DEBUG(logger, "level " << _level);
+                //    // // LOG4CXX_DEBUG(logger, "level " << _level);
                 //Update cache
                 if (_cadentities.count(entity->id()) > 0) {
-                    // LOG4CXX_DEBUG(logger, "This id was already added, please fix. It's not allowed to add the same ID twice");
+                    // // LOG4CXX_DEBUG(logger, "This id was already added, please fix. It's not allowed to add the same ID twice");
                 }
 
                 _cadentities.insert(std::make_pair(entity->id(), entity));
@@ -489,7 +491,7 @@ namespace lc {
                 const auto list = QuadTreeSub<E>::retrieve();
 
                 if (list.size() != _cadentities.size()) {
-                    // LOG4CXX_DEBUG(logger, "Cache size doesn't agree with QuadTreeSub size, this must be fixed ASAP difference : " << list.size() - _cadentities.size())
+                    // // LOG4CXX_DEBUG(logger, "Cache size doesn't agree with QuadTreeSub size, this must be fixed ASAP difference : " << list.size() - _cadentities.size())
                 }
             }
 
@@ -501,7 +503,7 @@ namespace lc {
              */
             bool erase(const E entity) {
                 if (_cadentities.count(entity->id()) == 0) {
-                    // LOG4CXX_DEBUG(logger, "It's bad that we end up here, nortmally we should call erase on entoties we know that don't exists. ")
+                    // // LOG4CXX_DEBUG(logger, "It's bad that we end up here, nortmally we should call erase on entoties we know that don't exists. ")
                     return false;
                 }
 

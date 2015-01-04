@@ -1,24 +1,24 @@
 #pragma once
 
 #include "dxfrw_intf.h"
-#include "cad/document/document.h"
+
+#include <cad/document/document.h>
 #include <cad/document/storagemanager.h>
-#include "cad/dochelpers/documentimpl.h"
-#include "cad/primitive/circle.h"
-#include "cad/primitive/arc.h"
-#include "cad/primitive/ellipse.h"
-#include "cad/primitive/text.h"
-#include "cad/primitive/coordinate.h"
+#include <cad/meta/icolor.h>
 #include <cad/operations/builder.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
 
 class DXFimpl : public DRW_InterfaceImpl {
     public:
-        DXFimpl(lc::StorageManager_SPtr s, lc::Document* d);
+        DXFimpl(lc::Document *document, lc::operation::Builder_SPtr builder);
         virtual void addLine(const DRW_Line& data);
         virtual void addCircle(const DRW_Circle& data);
-        lc::Document* _document;
-        lc::StorageManager_SPtr _storageManager;
-        lc::Document* document();
-        lc::StorageManager_SPtr storageManager();
+        virtual void addLayer(const DRW_Layer& data);
+        virtual void addArc(const DRW_Arc& data);
+        virtual void addEllipse(const DRW_Ellipse& data);
+
+        lc::operation::Builder_SPtr _builder;
+        lc::Document *_document;
+    private:
+        lc::iColor icol;
+
 };

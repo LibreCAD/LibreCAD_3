@@ -4,6 +4,7 @@
 #include "cad/geometry/geocoordinate.h"
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
+#include <vector>
 
 namespace lc {
 

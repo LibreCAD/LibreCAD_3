@@ -3,6 +3,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/interface/entityvisitor.h"
+#include <vector>
 
 namespace lc {
 

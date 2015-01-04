@@ -25,7 +25,7 @@ namespace lc {
                     _text = text;
                 }
                 virtual ~Undoable() {
-                    LOG4CXX_DEBUG(logger, "Undoable removed:");
+                    // LOG4CXX_DEBUG(logger, "Undoable removed:");
                 }
 
                 /*!

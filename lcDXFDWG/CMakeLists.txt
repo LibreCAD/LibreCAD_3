@@ -3,15 +3,25 @@ PROJECT (LCDWGDXF)
 ADD_DEFINITIONS(-std=c++11)
 
 # HEADER FILES
+#RVT lcDWG/dwgimpl.cpp
 set(lcdxfdwg_srcs
-lcDWG/dwgimpl.cpp
 lcDXF/dxfimpl.cpp)
 
+#RVT lcDWG/dwgimpl.h
 set(lcdxfdwg_hdrs
-lcDWG/dwgimpl.h
 lcDXF/dxfimpl.h
 lcDXF/dxfrw_intf.h
 )
+
+set(Boost_USE_MULTITHREADED ON)
+#    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
+find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(PkgConfig)
+pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+include_directories(${LOG4CXX_INCLUDE_DIRS})
+link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 # DEPENDENCIES
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -33,11 +43,12 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-FIND_LIBRARY(DWG_LIBRARY NAMES redwg PATHS /usr/local/lib/)
+set(DWG_LIBRARY )
 FIND_LIBRARY(DXF_LIBRARY NAMES dxfrw PATHS /usr/local/lib)
 
 add_library(lcdxfdwg SHARED ${lcdxfdwg_srcs} ${lcdxfdwg_hdrs})
-target_link_libraries(lcdxfdwg lckernel ${DXF_LIBRARY} ${DWG_LIBRARY})
+#rvt target_link_libraries(lcdxfdwg lckernel ${DXF_LIBRARY} ${DWG_LIBRARY})
+target_link_libraries(lcdxfdwg lckernel ${DXF_LIBRARY} ${Boost_LIBRARIES})
 
 # INSTALLATION
 install(TARGETS lcdxfdwg DESTINATION lib)

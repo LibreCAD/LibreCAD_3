@@ -10,7 +10,7 @@ DocumentImpl::DocumentImpl(const StorageManager_SPtr storageManager) : Document(
 }
 
 DocumentImpl::~DocumentImpl() {
-    LOG4CXX_DEBUG(logger, "DocumentImpl removed");
+    // LOG4CXX_DEBUG(logger, "DocumentImpl removed");
 }
 
 void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {

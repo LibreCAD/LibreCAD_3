@@ -56,9 +56,7 @@ namespace lc {
 
                 virtual ~
                 Loop() {
-                    LOG4CXX_DEBUG(logger,
-
-                                  "Loop removed");
+                    // LOG4CXX_DEBUG(logger, "Loop removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -95,7 +93,7 @@ namespace lc {
                 Begin();
 
                 virtual ~Begin() {
-                    LOG4CXX_DEBUG(logger, "Begin removed");
+                    // LOG4CXX_DEBUG(logger, "Begin removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -134,7 +132,7 @@ namespace lc {
                 Move(const geo::Coordinate& offset);
 
                 virtual ~Move() {
-                    LOG4CXX_DEBUG(logger, "Move removed");
+                    // LOG4CXX_DEBUG(logger, "Move removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -171,7 +169,7 @@ namespace lc {
                 Copy(const geo::Coordinate& offset);
 
                 virtual ~Copy() {
-                    LOG4CXX_DEBUG(logger, "Copy removed");
+                    // LOG4CXX_DEBUG(logger, "Copy removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -209,7 +207,7 @@ namespace lc {
                 Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
 
                 virtual ~Rotate() {
-                    LOG4CXX_DEBUG(logger, "Rotate removed");
+                    // LOG4CXX_DEBUG(logger, "Rotate removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -230,7 +228,7 @@ namespace lc {
                 Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
 
                 virtual ~Scale() {
-                    LOG4CXX_DEBUG(logger, "Scale removed");
+                    // LOG4CXX_DEBUG(logger, "Scale removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -270,7 +268,7 @@ namespace lc {
                 Push();
 
                 virtual ~Push() {
-                    LOG4CXX_DEBUG(logger, "Push removed")
+                    // LOG4CXX_DEBUG(logger, "Push removed")
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -305,7 +303,7 @@ namespace lc {
                               layer);
 
                 virtual ~SelectByLayer() {
-                    LOG4CXX_DEBUG(logger, "SelectByLayer removed");
+                    // LOG4CXX_DEBUG(logger, "SelectByLayer removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(
@@ -341,7 +339,7 @@ namespace lc {
                 Remove();
 
                 virtual ~Remove() {
-                    LOG4CXX_DEBUG(logger, "Remove removed");
+                    // LOG4CXX_DEBUG(logger, "Remove removed");
                 }
 
                 virtual std::vector<CADEntity_CSPtr> process(

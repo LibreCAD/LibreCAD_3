@@ -15,7 +15,7 @@ namespace lc {
                 AddLayer(Document* document,  const Layer_CSPtr layer) ;
 
                 virtual ~AddLayer() {
-                    LOG4CXX_DEBUG(logger, "AddLayer removed");
+                    // LOG4CXX_DEBUG(logger, "AddLayer removed");
                 }
 
                 virtual void undo() const;
@@ -38,7 +38,7 @@ namespace lc {
                 RemoveLayer(Document* document,  const Layer_CSPtr layer) ;
 
                 virtual ~RemoveLayer() {
-                    LOG4CXX_DEBUG(logger, "RemoveLayer removed");
+                    // LOG4CXX_DEBUG(logger, "RemoveLayer removed");
                 }
 
                 virtual void undo() const;
@@ -62,7 +62,7 @@ namespace lc {
                 ReplaceLayer(Document* document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
 
                 virtual ~ReplaceLayer() {
-                    LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
+                    // LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
                 }
 
                 virtual void undo() const;

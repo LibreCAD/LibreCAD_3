@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cad/const.h"
+#include <string>
 #include <memory>
 
 /**
@@ -29,4 +29,3 @@ namespace lc {
     typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
 
 }
-// METATYPE_H

@@ -2,6 +2,7 @@
 
 #include "cad/const.h"
 #include <cmath>
+#include <iostream>
 
 namespace lc {
     namespace geo {

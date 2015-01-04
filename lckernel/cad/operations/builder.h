@@ -97,6 +97,8 @@ namespace lc {
 
         };
 
+        class Builder;
+        typedef std::shared_ptr<Builder> Builder_SPtr;
     }
 }
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cad/meta/metacolor.h>
 #include "id.h"
 #include "cad/const.h"
 #include "metainfo.h"

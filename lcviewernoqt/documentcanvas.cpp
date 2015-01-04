@@ -1,10 +1,12 @@
 #include "documentcanvas.h"
+#include <cad/meta/metacolor.h>
 #include <cad/document/document.h>
-#include "cad/geometry/geoarea.h"
-#include "cad/primitive/line.h"
-#include "cad/primitive/circle.h"
-#include "cad/primitive/ellipse.h"
-#include "cad/primitive/text.h"
+#include <cad/dochelpers/quadtree.h>
+#include <cad/geometry/geoarea.h>
+#include <cad/primitive/line.h>
+#include <cad/primitive/circle.h>
+#include <cad/primitive/ellipse.h>
+#include <cad/primitive/text.h>
 #include "drawitems/lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
 #include "drawitems/lcvarc.h"
@@ -13,7 +15,6 @@
 #include "drawitems/lcvellipse.h"
 #include "drawitems/lcvtext.h"
 #include "drawitems/lcvcoordinate.h"
-#include <cad/dochelpers/quadtree.h>
 #include "lcpainter.h"
 
 #include <cad/const.h>

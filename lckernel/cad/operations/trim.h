@@ -17,7 +17,7 @@ namespace lc {
                 Trim(Document* document,  std::shared_ptr<lc::FTrim> trim) ;
 
                 virtual ~Trim() {
-                    LOG4CXX_DEBUG(logger, "Trim removed");
+                    // LOG4CXX_DEBUG(logger, "Trim removed");
                 }
 
                 virtual void undo() const;

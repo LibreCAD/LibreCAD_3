@@ -1,13 +1,5 @@
 #pragma once
 
-#include "log4cxx/logger.h"
-#include "log4cxx/basicconfigurator.h"
-#include "log4cxx/helpers/exception.h"
-
-namespace lc {
-    const log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
-}
-
 #define LCTOLERANCE 1.0e-10
 //squared tolerance
 #define TOLERANCE15 1.5e-15

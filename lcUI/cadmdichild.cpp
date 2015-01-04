@@ -30,15 +30,14 @@
 #include <cad/operations/builder.h>
 #include <QMessageBox>
 #include <iostream>
-#ifdef USE_lcDXFDWG
-#include "lcDWG/dwgimpl.h"
-#include "lcDXF/dxfimpl.h"
-#endif
+// #include "lcDWG/dwgimpl.h"
+#include <lcDXF/dxfimpl.h>
 #include <QDebug>
 
 #include <QTime>
 #include <random>
 #include <cad/operations/layerops.h>
+#include <cad/meta/metacolor.h>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
@@ -192,24 +191,25 @@ void CadMdiChild::import(std::string str) {
 
     std::string ext = str.substr(str.length() - 3, 3);
 
-#ifdef USE_lcDXFDWG
+//#ifdef USE_lcDXFDWG
 
     if (ext == "dxf" || ext == "DXF") {
-        DXFimpl* F = new DXFimpl(_storageManager, _document);
+        auto builder = std::make_shared<lc::operation::Builder>(document());
+        DXFimpl* F = new DXFimpl(_document, builder);
         dxfRW R(str.c_str());
         R.read(F, true);
-        _document = F->document();
-        _storageManager = F->storageManager();
+        builder->execute();
     } else if (ext == "dwg" || ext == "DWG") {
-        DWGimpl* F = new DWGimpl(_storageManager, _document);
-        F->readFile((char*)str.c_str());
-        _document = F->document();
-        _storageManager = F->storageManager();
+       // DWGimpl* F = new DWGimpl(_storageManager, _document);
+       // F->readFile((char*)str.c_str());
+        // _document = F->document();
+        //_storageManager = F->storageManager();
+        std::cout << "Sorry, not compiled with DWG support";
     }
 
-#else
-    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
-#endif
+//#else
+//    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
+//#endif
 }
 
 void CadMdiChild::redo() {

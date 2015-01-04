@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cad/const.h"
 #include "geocoordinate.h"
+#include <vector>
 
 namespace lc {
     namespace geo {
