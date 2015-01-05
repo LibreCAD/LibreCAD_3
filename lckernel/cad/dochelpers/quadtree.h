@@ -2,7 +2,7 @@
 
 #include <functional>
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <climits>
 #include <array>
@@ -28,7 +28,7 @@ namespace lc {
                     _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
                     _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
                     _bounds(pBounds), _maxLevels(maxLevels),
-                    _maxObjects(maxObjects) {
+                    _maxObjects(maxObjects), _triedReIndex(false) {
                 _objects.reserve(maxObjects / 2);
                 _nodes[0] = nullptr;
                 _nodes[1] = nullptr;
@@ -82,10 +82,9 @@ namespace lc {
             void insert(const E entity, const lc::geo::Area &entityBoundingBox) {
                 // Find a Quad Tree area where this item fits
                 if (_nodes[0] != nullptr) {
-                    short index = quadrantIndex(entityBoundingBox);
-
-                    if (index != -1) {
-                        _nodes[index]->insert(entity, entityBoundingBox);
+                    short entityIndex = quadrantIndex(entityBoundingBox);
+                    if (entityIndex!=-1) {
+                        _nodes[entityIndex]->insert(entity, entityBoundingBox);
                         return;
                     }
                 }
@@ -93,7 +92,12 @@ namespace lc {
                 _objects.push_back(entity);
 
                 // If it fit's in this box, see if we can/must split this area into sub area's
-                if (_objects.size() > _maxObjects && _level < _maxLevels) {
+                // _triedReIndex is used so that if the initial bounding box was to small we won't keep trying to
+                // loop over the current container and see if the entities fit at a lower level
+                // So each entity is only tried once
+                if (_triedReIndex == false && _objects.size() >= _maxObjects && _level < _maxLevels) {
+                    _triedReIndex = true;
+
                     if (_nodes[0] == nullptr) {
                         split();
                         // Split two level's deep to reduce the number of object iterations
@@ -104,6 +108,7 @@ namespace lc {
                         _nodes[3]->split();
                     }
                     // std::cout << "size:" << _objects.size() << " level:" << _level << "\n";
+
                     for (auto it = _objects.begin() ; it != _objects.end();) {
                         auto sentityBoundingBox = (*it)->boundingBox();
                         short index = quadrantIndex(sentityBoundingBox);
@@ -427,11 +432,11 @@ namespace lc {
             std::vector<E> _objects;
             const double _verticalMidpoint;
             const double _horizontalMidpoint;
-
             const geo::Area _bounds;
             QuadTreeSub* _nodes[4];
             const unsigned short _maxLevels;
             const unsigned short _maxObjects;
+            bool _triedReIndex;
     };
 
     /**
@@ -524,7 +529,7 @@ namespace lc {
             // used as a cache on root level
             // This will allow is to quickly lookup a CAD entity from the root
             // SHould we consider using https://github.com/attractivechaos/klib I didn't do integer testing but this lib seems faster
-            std::map<ID_DATATYPE, const E> _cadentities;
+            std::unordered_map<ID_DATATYPE, const E> _cadentities;
     };
 
 }
