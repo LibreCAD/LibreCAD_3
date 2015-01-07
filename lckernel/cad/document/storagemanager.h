@@ -4,6 +4,8 @@
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
 #include "cad/dochelpers/entitycontainer.h"
+
+#include <map>
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
