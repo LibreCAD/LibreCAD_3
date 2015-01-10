@@ -126,11 +126,6 @@ EndCaps::EndCaps() {
         painter->fill();
     }));
 
-    _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(TICK, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
-        lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
-    }));
-
 }
 
 void EndCaps::addCap(unsigned int type, std::function<void(LcPainter*, double startX, double startY, double endX, double endY, double size)> functor) {

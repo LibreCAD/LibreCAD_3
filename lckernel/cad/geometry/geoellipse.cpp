@@ -8,11 +8,12 @@ using namespace geo;
 Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc) :
     _center(center),
     _majorP(majorP),
-    _isArc(isArc),
     _minorRadius(minorRadius),
     _startAngle(startAngle),
     _endAngle(endAngle),
+    _isArc(isArc),
     _isReversed(false) {
+
 }
 
 const Coordinate Ellipse::center() const {

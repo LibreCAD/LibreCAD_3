@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT (LCVIEWERNOQT)
 ADD_DEFINITIONS(-std=c++11)
-
+ADD_DEFINITIONS("-Wall")
 # SOURCE FILES
 set(viewer_srcs
 drawitems/lcdrawoptions.cpp

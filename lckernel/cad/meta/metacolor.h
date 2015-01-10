@@ -14,19 +14,19 @@ namespace lc {
     class MetaColor : public MetaType {
         public:
 
-            MetaColor() : _color(1., 1., 1., 1.), MetaType() {
+            MetaColor() : MetaType(), _color(1., 1., 1., 1.) {
             }
 
-            MetaColor(const MetaColor& other) : _color(other.color()), MetaType() {
+            MetaColor(const MetaColor& other) : MetaType(), _color(other.color()) {
             }
 
-            MetaColor(const Color& other) : _color(other), MetaType() {
+            MetaColor(const Color& other) : MetaType(), _color(other) {
             }
 
             //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
             //}
 
-            MetaColor(double r, double g, double b, double a = 1.) : _color(r, g, b, a), MetaType() {
+            MetaColor(double r, double g, double b, double a = 1.) : MetaType(),_color(r, g, b, a) {
             }
 
             virtual ~MetaColor() {

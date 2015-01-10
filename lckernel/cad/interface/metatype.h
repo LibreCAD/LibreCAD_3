@@ -22,7 +22,7 @@ namespace lc {
             */
             virtual std::string lcMetaName() const {
                 return "";
-            };
+            }
             virtual ~MetaType() {}
     };
     typedef std::shared_ptr<MetaType> MetaType_SPtr;

@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 PROJECT (LCKERNEL)
 ADD_DEFINITIONS(-std=c++11)
-
+ADD_DEFINITIONS("-Wall")
 # SOURCE FILES
 set(lckernel_srcs
 cad/base/cadentity.cpp

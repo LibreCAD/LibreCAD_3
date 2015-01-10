@@ -3,7 +3,7 @@
 
 using namespace lc;
 
-LineWidth::LineWidth() : _width(0.), MetaType() {
+LineWidth::LineWidth() : MetaType(), _width(0.) {
 }
 
 std::string LineWidth::lcMetaName() const {
@@ -13,7 +13,7 @@ std::string LineWidth::LCMETANAME() {
     return "_LINEWIDTH";
 }
 
-LineWidth::LineWidth(const double width): _width(width), MetaType() {
+LineWidth::LineWidth(const double width): MetaType(), _width(width) {
     if (width < 0.0) {
         throw;
     }

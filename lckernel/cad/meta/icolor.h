@@ -20,8 +20,9 @@ public:
         for (int i = 0; i < 256; i++) {
             if(_intToCol[i] == col) {
                 return i;
-            }
+            } else return -1;
         }
+        return -1;
     }
 
 public:
