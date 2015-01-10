@@ -21,7 +21,7 @@
 
 #include <typeinfo>
 
-DocumentCanvas::DocumentCanvas(lc::Document* document) : _document(document), _zoomMin(0.05), _zoomMax(20.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
+DocumentCanvas::DocumentCanvas(lc::Document* document) : _document(document), _zoomMin(0.005), _zoomMax(200.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
 
 
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
