@@ -17,11 +17,14 @@
 #include "drawitems/lcvcoordinate.h"
 #include "lcpainter.h"
 
+#include <cad/meta/metacolor.h>
+#include <cad/meta/metalinewidth.h>
+
 #include <cad/const.h>
 
 #include <typeinfo>
 
-DocumentCanvas::DocumentCanvas(lc::Document* document) : _document(document), _zoomMin(0.05), _zoomMax(20.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
+DocumentCanvas::DocumentCanvas(lc::Document* document) : _document(document), _zoomMin(0.005), _zoomMax(200.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
 
 
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
@@ -226,26 +229,46 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
         bool modified = false;
 
         std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
-        lc::MetaColor_CSPtr color = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+        lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+        lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidth::LCMETANAME());
+        lc::Layer_CSPtr layer = ci->layer();
 
+        modified = true;
+        painter->save();
+
+        // Decide on line width
+        if (entityLineWidth!=nullptr) {
+            double width = entityLineWidth->width();
+            // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+            painter->line_width(width<0.1?1.:width);
+        } else {
+            double width = layer->lineWidth().width();
+            // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+            painter->line_width(width<0.1?1.:width);
+        }
+
+        // Decide what color to render the entity into
         if (di->selected()) {
-            modified = true;
-            painter->save();
             painter->source_rgba(
-                lcDrawOptions.selectedColor().red(),
-                lcDrawOptions.selectedColor().green(),
-                lcDrawOptions.selectedColor().blue(),
-                lcDrawOptions.selectedColor().alpha()
+                    lcDrawOptions.selectedColor().red(),
+                    lcDrawOptions.selectedColor().green(),
+                    lcDrawOptions.selectedColor().blue(),
+                    lcDrawOptions.selectedColor().alpha()
             );
-        } else if (color != nullptr) {
-            modified = true;
-            painter->save();
+        } else if (entityColor != nullptr) {
             painter->source_rgba(
-                color->red(),
-                color->green(),
-                color->blue(),
-                color->alpha()
-            );
+                    entityColor->red(),
+                    entityColor->green(),
+                    entityColor->blue(),
+                    entityColor->alpha());
+        } else {
+            lc::Color layerColor = layer->color();
+            painter->source_rgba(
+                    layerColor.red(),
+                    layerColor.green(),
+                    layerColor.blue(),
+                    layerColor.alpha());
+
         }
 
         di->draw(painter, &lcDrawOptions, _visibleUserArea);

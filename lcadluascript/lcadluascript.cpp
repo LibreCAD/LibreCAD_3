@@ -184,10 +184,14 @@ d=active.document()
 Builder(d):append(l):execute()
  */
 
+
+
+
 /*
 layer = active.proxy.layerByName("0");
-metaInfo1= MetaInfo():add(MetaColor(Color(1,0,0,1)));
-metaInfo2 = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+metaInfo1= MetaInfo():add(MetaLineWidth(1));
+metaInfo2 = MetaInfo():add(MetaLineWidth(10));
+metaInfo2:add(MetaColor(Color(0,1,0,1)));
 l1=Line1(Coord(-100,-100), Coord(100,100), layer, metaInfo1);
 l2=Line1(Coord(-100,100), Coord(100,-100), layer, metaInfo2);
 d=active.document();
@@ -195,6 +199,17 @@ Builder(d):append(l1):append(l2):execute();
 
  */
 
+
+/*
+layer = active.proxy.layerByName("0");
+metaInfo1= MetaInfo():add(MetaLineWidth(1));
+metaInfo2 = MetaInfo():add(MetaLineWidth(2));
+l1=Line1(Coord(-100,-100), Coord(100,100), layer, metaInfo1);
+l2=Line1(Coord(-100,100), Coord(100,-100), layer, metaInfo2);
+d=active.document();
+Builder(d):append(l1):append(l2):execute();
+
+ */
 
 /* Spiral
 start = microtime()

@@ -38,9 +38,13 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginExtendClass<MetaColor, MetaType>("MetaColor")
-    .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(
-                        const Color))
+    .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
     .endClass()
+    .beginExtendClass<MetaLineWidth, MetaType>("MetaLineWidth")
+    .addConstructor(LUA_SP(MetaLineWidth_SPtr), LUA_ARGS(const double))
+    .endClass()
+
+
 
     .beginClass<MetaInfo>("MetaInfo")
     .addConstructor(LUA_SP(std::shared_ptr<lc::MetaInfo>), LUA_ARGS())

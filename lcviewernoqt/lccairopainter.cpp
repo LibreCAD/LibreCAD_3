@@ -41,7 +41,7 @@ LcCairoPainter* LcCairoPainter::createImagePainter(unsigned char* data , int wid
     cr = cairo_create(surface);
     cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-    cairo_set_tolerance(cr, 0.25);
+    cairo_set_tolerance(cr, 0.5);
     cairo_set_antialias(cr, CAIRO_ANTIALIAS_GOOD);
     // https://github.com/cbrake/snippets/blob/master/cairo-flip/flip.py
     return new LcCairoPainter(surface, cr);

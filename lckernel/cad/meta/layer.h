@@ -4,7 +4,7 @@
 
 #include "cad/const.h"
 
-#include "cad/meta/linewidth.h"
+#include "metalinewidth.h"
 #include "cad/meta/color.h"
 
 
@@ -12,11 +12,11 @@ namespace lc {
     class Layer : public MetaType  {
         public:
             Layer();
-            Layer(const std::string name, const LineWidth lineWidth, const Color color);
+            Layer(const std::string name, const MetaLineWidth lineWidth, const Color color);
 
             // Change this to meta data?
             Layer(const std::string name, const Color color);
-            Layer(const std::string name, const LineWidth lineWidth);
+            Layer(const std::string name, const MetaLineWidth lineWidth);
             virtual ~Layer();
 
 
@@ -27,7 +27,7 @@ namespace lc {
                 return "_LAYER";
             }
 
-            LineWidth lineWidth() const;
+            MetaLineWidth lineWidth() const;
             Color color() const;
             std::string name() const;
 
@@ -37,8 +37,13 @@ namespace lc {
 
         private:
             std::string _name;
-            LineWidth _lineWidth;
+            MetaLineWidth _lineWidth;
             Color _color;
+
+        friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
+            os << "Layer(name" << layer.name() << " lineWidth=" << layer.lineWidth() << " color=" << layer.color() << ")" << std::endl;
+            return os;
+        }
     };
     typedef std::shared_ptr<Layer> Layer_SPtr;
     typedef std::shared_ptr<const Layer> Layer_CSPtr;
