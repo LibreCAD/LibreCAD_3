@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cad/geometry/geocoordinate.h"
-#include "textconst.h"
+#include "cad/primitive/textconst.h"
 
 namespace lc {
     class Dimension;
@@ -10,6 +10,19 @@ namespace lc {
 
 
     class Dimension {
+
+        enum AttachmentPoint {
+            Top_left,
+            Top_center,
+            Top_right,
+            Middle_left,
+            Middle_center,
+            Middle_right,
+            Bottom_left,
+            Bottom_center,
+            Bottom_right
+        };
+
         public:
 
             /**
@@ -27,8 +40,7 @@ namespace lc {
              */
             Dimension(const geo::Coordinate& definition_point,
                       const geo::Coordinate& middle_of_text,
-                      const geo::TextConst::VAlign valign,
-                      const geo::TextConst::HAlign halign,
+                      const AttachmentPoint attachPt,
                       const geo::TextConst::LineSpacingStyle lineSpacingStyle,
                       const double lineSpacingFactor,
                       const std::string& text_value,
@@ -51,8 +63,7 @@ namespace lc {
              */
             Dimension(const geo::Coordinate& definition_point,
                       const geo::Coordinate& middle_of_text,
-                      const geo::TextConst::VAlign valign,
-                      const geo::TextConst::HAlign halign,
+                      const AttachmentPoint attachPt,
                       const geo::TextConst::LineSpacingStyle lineSpacingStyle,
                       const double lineSpacingFactor,
                       const std::string& text_value,

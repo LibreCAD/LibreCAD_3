@@ -60,7 +60,7 @@ void MainWindow::on_actionOpen_triggered() {
     QString filename = QFileDialog::getOpenFileName(this,
                                                     tr("Open File"),
                                                     QString(),
-                                                    tr("dwg(*.dwg);;dxf(*.dxf)"));
+                                                    tr("dxf(*.dxf);;dwg(*.dwg)"));
 
     if (!filename.isEmpty()) {
         child->import(filename.toStdString());

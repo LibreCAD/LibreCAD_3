@@ -12,7 +12,7 @@
 #include <cad/meta/icolor.h>
 #include "cad/base/metainfo.h"
 #include "cad/meta/metacolor.h"
-#include "cad/meta/linewidth.h"
+#include "cad/meta/metalinewidth.h"
 
 DXFimpl::DXFimpl(lc::Document * d, lc::operation::Builder_SPtr builder) : _document(d), _builder(builder) {
 }
@@ -20,7 +20,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
 
     auto col = icol.intToColor(data.color);
     auto l = _document->layerByName(data.layer);
-    if (data.color == 256) {
+    if (data.color == 256 && data.lWeight == 29) {
         _builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(
                                                         data.basePoint.x,
                                                         data.basePoint.y),
@@ -28,9 +28,16 @@ void DXFimpl::addLine(const DRW_Line& data) {
                                                         data.secPoint.x,
                                                         data.secPoint.y),l));
     } else {
-        auto mc = std::make_shared<lc::MetaColor>(col);
         auto mf = lc::MetaInfo::create();
-        mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        if ( data.color > 256) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight < 24) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
         _builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(
                                                         data.basePoint.x,
                                                         data.basePoint.y),
@@ -43,15 +50,24 @@ void DXFimpl::addLine(const DRW_Line& data) {
 void DXFimpl::addCircle(const DRW_Circle& data) {
     auto col = icol.intToColor(data.color);
     auto l = _document->layerByName(data.layer);
-    if (data.color == 256) {
+
+    if (data.color == 256 && data.lWeight == 29) {
         _builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(
                                                           data.basePoint.x,
                                                           data.basePoint.y),
                                                       data.radious, l));
     } else {
-        auto mc = std::make_shared<lc::MetaColor>(col);
         auto mf = lc::MetaInfo::create();
-        mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        if ( data.color > 256) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight < 24) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
+
         _builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(
                                                           data.basePoint.x,
                                                           data.basePoint.y),
@@ -63,7 +79,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 void DXFimpl::addArc(const DRW_Arc &data) {
     auto col = icol.intToColor(data.color);
     auto l = _document->layerByName(data.layer);
-    if (data.color == 256) {
+    if (data.color == 256 && data.lWeight == 29) {
         _builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(
                                                        data.basePoint.x,
                                                        data.basePoint.y),
@@ -71,9 +87,16 @@ void DXFimpl::addArc(const DRW_Arc &data) {
                                                    data.staangle, data.endangle,
                                                    l));
     } else {
-        auto mc = std::make_shared<lc::MetaColor>(col);
         auto mf = lc::MetaInfo::create();
-        mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        if ( data.color > 256) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight  < 24 ) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
         _builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(
                                                           data.basePoint.x,
                                                           data.basePoint.y),
@@ -81,10 +104,10 @@ void DXFimpl::addArc(const DRW_Arc &data) {
     }
 }
 
-    void DXFimpl::addEllipse(const DRW_Ellipse &data) {
-        auto col = icol.intToColor(data.color);
-        auto l = _document->layerByName(data.layer);
-    if (data.color == 256) {
+void DXFimpl::addEllipse(const DRW_Ellipse &data) {
+    auto col = icol.intToColor(data.color);
+    auto l = _document->layerByName(data.layer);
+    if (data.color == 256 && data.lWeight == 29) {
         _builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(
                                                            data.basePoint.x,
                                                            data.basePoint.y),
@@ -93,9 +116,16 @@ void DXFimpl::addArc(const DRW_Arc &data) {
                                                        data.staparam, data.endparam,
                                                        l));
     } else {
-        auto mc = std::make_shared<lc::MetaColor>(col);
         auto mf = lc::MetaInfo::create();
-        mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        if ( data.color > 256 ) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight < 24) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
         _builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(
                                                            data.basePoint.x,
                                                            data.basePoint.y),
@@ -106,37 +136,242 @@ void DXFimpl::addArc(const DRW_Arc &data) {
     }
 
 }
-    void DXFimpl::addLayer(const DRW_Layer &data) {
-        auto col = icol.intToColor(data.color);
-        auto layer=std::make_shared<lc::Layer>(data.name, data.lWeight, col);
-        auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        al->execute();
+void DXFimpl::addLayer(const DRW_Layer &data) {
+    auto col = icol.intToColor(data.color);
+    auto layer=std::make_shared<lc::Layer>(data.name, data.lWeight, col);
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
+}
+
+void DXFimpl::addSpline(const DRW_Spline& data) {
+
+}
+
+void DXFimpl::addText(const DRW_Text& data) {
+    auto col = icol.intToColor(data.color);
+    auto l = _document->layerByName(data.layer);
+    if (data.color == 256 && data.lWeight == 29) {
+        _builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(
+                                                        data.basePoint.x,
+                                                        data.basePoint.y),
+                                                    data.text, data.height,
+                                                    data.angle, data.style,
+                                                    lc::TextConst::DrawingDirection(data.textgen),
+                                                    lc::TextConst::HAlign(data.alignH),
+                                                    lc::TextConst::VAlign(data.alignV),
+                                                    l));
+    } else {
+        auto mf = lc::MetaInfo::create();
+        if ( data.color > 256 ) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight < 24) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
+        _builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(
+                                                        data.basePoint.x,
+                                                        data.basePoint.y),
+                                                    data.text, data.height,
+                                                    data.angle, data.style,
+                                                    lc::TextConst::DrawingDirection(data.textgen),
+                                                    lc::TextConst::HAlign(data.alignH),
+                                                    lc::TextConst::VAlign(data.alignV),
+                                                    l, mf));
+
     }
 
-    void DXFimpl::addSpline(const DRW_Spline& data) {
+}
+
+void DXFimpl::addPoint(const DRW_Point& data) {
+    auto col = icol.intToColor(data.color);
+    auto l = _document->layerByName(data.layer);
+    if (data.color == 256 && data.lWeight == 29) {
+        _builder->append(std::make_shared<lc::Coordinate>(
+                             data.basePoint.x,
+                             data.basePoint.y,
+                             l));
+    } else {
+        auto mf = lc::MetaInfo::create();
+        if ( data.color > 256 ) {
+            auto mc = std::make_shared<lc::MetaColor>(col);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+        }
+        if ( data.lWeight < 24) {
+            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+        }
+        _builder->append(std::make_shared<lc::Coordinate>(
+                             data.basePoint.x,
+                             data.basePoint.y,
+                             l, mf));
 
     }
+}
 
-    void DXFimpl::addText(const DRW_Text& data) {
+void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
+//    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
+//                      data->getTextLineStyle(), data->getTextLineFactor(),
+//                      data->getText(), data->getStyle(), data->getAngle());
 
-    }
+//    auto col = icol.intToColor(data.color);
+//    auto l = _document->layerByName(data.layer);
+//    if (data.color == 256 && data.lWeight == 29) {
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             dim, data->getDef1Point(),
+//                             data->getDef2Point(),
+//                             l));
+//    } else {
+//        auto mf = lc::MetaInfo::create();
+//        if ( data.color > 256 ) {
+//            auto mc = std::make_shared<lc::MetaColor>(col);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+//        }
+//        if ( data.lWeight < 24) {
+//            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+//            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+//        }
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             dim, data->getDef1Point(),
+//                             data->getDef2Point(),
+//                             l, mf));
 
-    void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
+//    }
+}
 
-    }
+void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
+//    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
+//                      data->getTextLineStyle(), data->getTextLineFactor(),
+//                      data->getText(), data->getStyle(), data->getAngle());
 
-    void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
+//    auto col = icol.intToColor(data.color);
+//    auto l = _document->layerByName(data.layer);
+//    if (data.color == 256 && data.lWeight == 29) {
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l));
+//    } else {
+//        auto mf = lc::MetaInfo::create();
+//        if ( data.color > 256 ) {
+//            auto mc = std::make_shared<lc::MetaColor>(col);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+//        }
+//        if ( data.lWeight < 24) {
+//            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+//            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+//        }
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l, mf));
 
-    }
+//    }
 
-    void DXFimpl::addDimRadial(const DRW_DimRadial* data) {}
-    void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {}
-    void DXFimpl::addDimAngular(const DRW_DimAngular* data) {}
-    void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {}
-    void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {}
-    void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {}
-    void DXFimpl::addPolyline(const DRW_Polyline& data) {}
-    void DXFimpl::addSpline(const DRW_Spline* data) {}
-    void DXFimpl::addPoint(const DRW_Point& data) {}
-    void DXFimpl::addMText(const DRW_MText& data) {}
-    void DXFimpl::addHatch(const DRW_Hatch* data) {}
+}
+
+void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
+//    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
+//                      data->getTextLineStyle(), data->getTextLineFactor(),
+//                      data->getText(), data->getStyle(), data->getAngle());
+
+//    auto col = icol.intToColor(data.color);
+//    auto l = _document->layerByName(data.layer);
+//    if (data.color == 256 && data.lWeight == 29) {
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l));
+//    } else {
+//        auto mf = lc::MetaInfo::create();
+//        if ( data.color > 256 ) {
+//            auto mc = std::make_shared<lc::MetaColor>(col);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+//        }
+//        if ( data.lWeight < 24) {
+//            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+//            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+//        }
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l, mf));
+
+//    }
+}
+void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
+//    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
+//                      data->getTextLineStyle(), data->getTextLineFactor(),
+//                      data->getText(), data->getStyle(), data->getAngle());
+//    auto col = icol.intToColor(data.color);
+//    auto l = _document->layerByName(data.layer);
+//    if (data.color == 256 && data.lWeight == 29) {
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l));
+//    } else {
+//        auto mf = lc::MetaInfo::create();
+//        if ( data.color > 256 ) {
+//            auto mc = std::make_shared<lc::MetaColor>(col);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+//        }
+//        if ( data.lWeight < 24) {
+//            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+//            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+//        }
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l, mf));
+
+//    }
+}
+
+void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
+//    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
+//                      data->getTextLineStyle(), data->getTextLineFactor(),
+//                      data->getText(), data->getStyle(), data->getAngle());
+
+//    auto col = icol.intToColor(data.color);
+//    auto l = _document->layerByName(data.layer);
+//    if (data.color == 256 && data.lWeight == 29) {
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l));
+//    } else {
+//        auto mf = lc::MetaInfo::create();
+//        if ( data.color > 256 ) {
+//            auto mc = std::make_shared<lc::MetaColor>(col);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
+//        }
+//        if ( data.lWeight < 24) {
+//            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
+//            auto lw = std::make_shared<lc::MetaLineWidth>(len);
+//            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
+//        }
+//        _builder->append(std::make_shared<lc::DimAligned>(
+//                             data.basePoint.x,
+//                             data.basePoint.y,
+//                             l, mf));
+
+//    }
+}
+
+void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {}
+void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {}
+void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {}
+void DXFimpl::addPolyline(const DRW_Polyline& data) {}
+void DXFimpl::addSpline(const DRW_Spline* data) {}
+
+
+void DXFimpl::addMText(const DRW_MText& data) {}
+void DXFimpl::addHatch(const DRW_Hatch* data) {}

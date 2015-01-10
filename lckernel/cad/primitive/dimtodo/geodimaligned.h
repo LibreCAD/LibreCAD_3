@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cad/const.h"
-#include "geocoordinate.h"
+#include "cad/geometry/geocoordinate.h"
 #include <string>
 #include "cad/geometry/geomtext.h"
 #include "cad/geometry/geodimension.h"
