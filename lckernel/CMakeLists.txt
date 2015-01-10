@@ -24,7 +24,7 @@ cad/math/lcmath.cpp
 cad/math/coordinatesol.cpp
 cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
-cad/meta/linewidth.cpp
+cad/meta/metalinewidth.cpp
 cad/operations/builder.cpp
 cad/operations/builderops.cpp
 cad/operations/documentoperation.cpp
@@ -82,7 +82,7 @@ cad/meta/color.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h
-cad/meta/linewidth.h
+cad/meta/metalinewidth.h
 cad/operations/builder.h
 cad/operations/builderops.h
 cad/operations/documentoperation.h

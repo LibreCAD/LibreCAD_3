@@ -9,7 +9,7 @@
 #include "cad/primitive/coordinate.h"
 #include "cad/meta/color.h"
 #include "cad/primitive/line.h"
-#include "cad/meta/linewidth.h"
+#include "cad/meta/metalinewidth.h"
 #include "cad/interface/metatype.h"
 #include "cad/document/selectionmanager.h"
 #include "cad/dochelpers/storagemanagerimpl.h"
@@ -131,7 +131,7 @@ void CadMdiChild::newDocument() {
     _operationManager = std::shared_ptr<OperationManager> (new OperationManager(_document));
 
     // Create a default layer
-    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 0., 0., 1.));
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
     auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
     al->execute();
 

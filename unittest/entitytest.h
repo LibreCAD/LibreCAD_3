@@ -9,7 +9,7 @@
 #include "cad/primitive/circle.h"
 #include "cad/primitive/arc.h"
 #include "cad/primitive/ellipse.h"
-#include "cad/meta/linewidth.h"
+#include "metalinewidth.h"
 #include "cad/interface/metatype.h"
 #include "cad/document/selectionmanager.h"
 #include "cad/dochelpers/storagemanagerimpl.h"

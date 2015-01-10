@@ -80,7 +80,7 @@ namespace lc {
             Color _color;
 
             friend std::ostream& operator<<(std::ostream& os, const MetaColor& metaColor) {
-                os << "MetaColor(" << metaColor.red() << "," << metaColor.green() << "," << metaColor.blue() << "," << metaColor.alpha() << ")" << std::endl;
+                os << "MetaColor(red=" << metaColor.red() << " green=" << metaColor.green() << " blue=" << metaColor.blue() << " alpha" << metaColor.alpha() << ")";
                 return os;
             }
     };
