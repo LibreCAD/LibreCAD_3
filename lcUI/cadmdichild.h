@@ -38,7 +38,7 @@ class CadMdiChild : public QWidget {
 
         void on_addEllipse_clicked();
 
-
+        void ctxMenu(const QPoint &pos);
 
     public:
         std::shared_ptr<const Cursor>  cursor() const {

@@ -33,7 +33,7 @@
 // #include "lcDWG/dwgimpl.h"
 #include <lcDXF/dxfimpl.h>
 #include <QDebug>
-
+#include <QMenu>
 #include <QTime>
 #include <random>
 #include <cad/operations/layerops.h>
@@ -72,6 +72,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     viewer->setGeometry(QRect(50, 30, 581, 401));
     viewer->setAutoFillBackground(true);
     viewer->resize(10000, 10000);
+    viewer->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(viewer, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ctxMenu(const QPoint &)));
 
     gridLayout->addWidget(viewer, 0, 0, 1, 1);
 
@@ -273,6 +275,12 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
     qDebug() << "Selection Time : " << myTimer.elapsed() << "ms\n";
     */
 
+}
+
+void CadMdiChild::ctxMenu(const QPoint &pos) {
+    QMenu *menu = new QMenu;
+    menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
+    menu->exec(viewer->mapToGlobal(pos));
 }
 
 void CadMdiChild::on_addCircles_clicked() {

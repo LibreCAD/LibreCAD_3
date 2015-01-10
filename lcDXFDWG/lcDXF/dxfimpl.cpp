@@ -48,6 +48,7 @@ void DXFimpl::addArc(const DRW_Arc &data) {
 void DXFimpl::addEllipse(const DRW_Ellipse &data) {
     auto col = icol.intToColor(data.color);
     auto l = _document->layerByName(data.layer);
+
     _builder->append(std::make_shared<lc::Ellipse>(lc::geo::Coordinate(
                                                       data.basePoint.x,
                                                       data.basePoint.y),
