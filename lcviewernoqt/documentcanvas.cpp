@@ -238,8 +238,9 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
 
         // Decide on line width
         if (entityLineWidth!=nullptr) {
-            modified = true;
-            painter->line_width(entityLineWidth->width());
+            double width = entityLineWidth->width();
+            // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+            painter->line_width(width<0.1?1.:width);
         } else {
             double width = layer->lineWidth().width();
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
