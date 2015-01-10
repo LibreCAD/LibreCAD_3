@@ -151,7 +151,7 @@ void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned in
     // Set translation
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
         LcPainter* p = i->second;
-        p->translate(-userScrollX + userCenterX, -userScrollY + userCenterY);
+        p->translate(-userScrollX + userCenterX, userScrollY - userCenterY);
         p->scale(factor);
     }
 
