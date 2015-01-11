@@ -30,7 +30,7 @@ public:
     * Convert a a color to a DXF integer
     * Use this function if you want to know if a color does exists in DXF and what it's int value is
     */
-    static inline int colorToInt(lc::Color col) {
+    static inline int colorToInt(const lc::Color& col) {
         for (int i = 0; i < 256; i++) {
             if(_intToCol[i]->color() == col) {
                 return i;
