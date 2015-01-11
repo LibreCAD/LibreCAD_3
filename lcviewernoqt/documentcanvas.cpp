@@ -225,7 +225,11 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     painter->lineWidthCompensation(0.5);
 
     LcDrawOptions lcDrawOptions;
-    _entityContainer.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
+
+    calculateVisibleUserArea();
+    auto visibleItems = _entityContainer.entitiesWithinAndCrossingArea(_visibleUserArea);
+
+    visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         bool modified = false;
 
         std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
