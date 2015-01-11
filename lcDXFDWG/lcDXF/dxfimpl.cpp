@@ -45,10 +45,8 @@ DXFimpl::DXFimpl(lc::Document *d, lc::operation::Builder_SPtr builder) : _docume
 void DXFimpl::addLine(const DRW_Line &data) {
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
     auto lw = getLcLineWidth(data.lWeight);
-    std::cerr << "lw:" << lw << data.lWeight;
     if (lw != nullptr) {
         if (mf == nullptr) mf = lc::MetaInfo::create();
-        std::cerr << "lw width:" << lw->width();
         mf->add(lw);
     }
     auto col = icol.intToColor(data.color);
@@ -144,7 +142,7 @@ void DXFimpl::addLayer(const DRW_Layer &data) {
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
         al->execute();
     } else {
-        auto layer = std::make_shared<lc::Layer>(data.name, 0., lc::Color(255,0,0,255));
+        auto layer = std::make_shared<lc::Layer>(data.name, 0., lc::Color(255,255,255,255));
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
         al->execute();
     }
