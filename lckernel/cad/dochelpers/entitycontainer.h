@@ -77,7 +77,7 @@ namespace lc {
              * \param EntityContainer to be combined to the document.
              */
             void combine(const EntityContainer& entities) {
-                for (auto i : entities.asVector(std::numeric_limits<unsigned short>::max())) {
+                for (auto i : entities.asVector(std::numeric_limits< short>::max())) {
                     //        _cadentities.insert(std::make_pair(i->id(), i));
                     _tree->insert(i);
                 }
@@ -99,7 +99,7 @@ namespace lc {
              * want to render very small entities (< XX pixels)
              * @return
              */
-            std::vector<CT> asVector(unsigned short maxLevel = std::numeric_limits<unsigned short>::max()) const {
+            std::vector<CT> asVector(unsigned short maxLevel = std::numeric_limits< short>::max()) const {
                 /*    std::vector<CT> v;
                     for (auto item : _cadentities) {
                         v.push_back(item.second);
@@ -137,7 +137,7 @@ namespace lc {
                         }
                     }*/
 
-                for (auto i : asVector(std::numeric_limits<unsigned short>::max())) {
+                for (auto i : asVector(std::numeric_limits< short>::max())) {
                     if (i->layer() == layer) {
                         container.insert(i);
                     }
@@ -155,7 +155,7 @@ namespace lc {
             EntityContainer entitiesByMetaType(const std::string& metaName) const {
                 EntityContainer container;
 
-                for (auto i : asVector(std::numeric_limits<unsigned short>::max())) {
+                for (auto i : asVector(std::numeric_limits< short>::max())) {
                     //       if (i->metaInfo(metaName) != nullptr) {
                     //           container.insert(i);
                     // }
@@ -170,7 +170,7 @@ namespace lc {
              * @param area
              * @return
              */
-            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = std::numeric_limits<unsigned short>::max()) const {
+            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = std::numeric_limits< short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
@@ -190,7 +190,7 @@ namespace lc {
              * @param area
              * @return
              */
-            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = std::numeric_limits<unsigned short>::max()) const {
+            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = std::numeric_limits< short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
