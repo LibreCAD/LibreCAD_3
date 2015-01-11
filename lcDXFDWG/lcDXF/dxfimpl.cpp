@@ -143,7 +143,7 @@ void DXFimpl::addLayer(const DRW_Layer &data) {
 
     auto lw = getLcLineWidth(data.lWeight);
     if (lw == nullptr) {
-        lw = std::make_shared<lc::MetaLineWidth>(.00);
+        lw = getLcLineWidth(DRW_LW_Conv::lineWidth::width00);
     }
 
     auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
