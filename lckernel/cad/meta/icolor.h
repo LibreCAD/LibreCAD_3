@@ -19,7 +19,7 @@ public:
 
     // Given a specific DXF color ID return a MetaCOlor shared pointer
     // Codes <0 and > 255 will return nullptr
-     std::shared_ptr<lc::MetaColor> intToColor(int code) {
+     std::shared_ptr<lc::MetaColor> intToColor(int code) const {
         if (code < 0 || code > 255) {
             return nullptr;
         }
@@ -30,7 +30,7 @@ public:
     * Convert a a color to a DXF integer
     * Use this function if you want to know if a color does exists in DXF and what it's int value is
     */
-    int colorToInt(const lc::Color& col) {
+    int colorToInt(const lc::Color& col) const {
         for (int i = 0; i < 256; i++) {
             if(_intToCol[i]->color() == col) {
                 return i;
@@ -44,7 +44,7 @@ public:
     * This is usefull when a DXF that was imported needs to be exported
     * with the same DXF color ID's.
     */
-    static inline int colorToInt(std::shared_ptr<lc::MetaColor> col) {
+    inline int colorToInt(std::shared_ptr<lc::MetaColor> col) const {
         for (int i = 0; i < 256; i++) {
             if(_intToCol[i] == col) {
                 return i;
