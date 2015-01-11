@@ -24,6 +24,7 @@ cad/math/lcmath.cpp
 cad/math/coordinatesol.cpp
 cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
+cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/operations/builder.cpp
 cad/operations/builderops.cpp

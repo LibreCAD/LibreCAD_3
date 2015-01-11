@@ -11,3 +11,4 @@ build
 release
 CMakeLists.txt.user
 playground
+xcode

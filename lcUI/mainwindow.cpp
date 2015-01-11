@@ -50,11 +50,11 @@ MainWindow::~MainWindow() {
 void MainWindow::on_actionNew_triggered() {
     CadMdiChild* child = createMdiChild();
     child->newDocument();
+    ui->mdiArea->addSubWindow(child);
     child->showMaximized();
 }
 
 void MainWindow::on_actionOpen_triggered() {
-    CadMdiChild* child = createMdiChild();
 
     // open file dialog box
     QString filename = QFileDialog::getOpenFileName(this,
@@ -63,15 +63,18 @@ void MainWindow::on_actionOpen_triggered() {
                                                     tr("dxf(*.dxf);;dwg(*.dwg)"));
 
     if (!filename.isEmpty()) {
+        CadMdiChild* child = createMdiChild();
         child->import(filename.toStdString());
+        ui->mdiArea->addSubWindow(child);
+        child->showMaximized();
+    } else {
+        // DOn't do a thing
     }
 
-    child->showMaximized();
 }
 
 CadMdiChild* MainWindow::createMdiChild() {
     CadMdiChild* child = new CadMdiChild;
-    ui->mdiArea->addSubWindow(child);
     return child;
 }
 

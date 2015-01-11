@@ -39,9 +39,9 @@ class DXFimpl : public DRW_InterfaceImpl {
     private:
         lc::iColor icol;
 
-public:
-    static const std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
+      std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
 
 
 };
+
 
