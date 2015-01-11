@@ -31,9 +31,17 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void addMText(const DRW_MText& data);
         virtual void addHatch(const DRW_Hatch* data);
 
+
+        std::shared_ptr<lc::MetaLineWidth> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const;
+
         lc::Document *_document;
         lc::operation::Builder_SPtr _builder;
     private:
         lc::iColor icol;
 
+public:
+    static const std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
+
+
 };
+
