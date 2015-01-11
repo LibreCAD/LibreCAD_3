@@ -419,6 +419,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     }
 
     _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), lc::geo::Coordinate(x + w, y + h));
+    std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
 
 

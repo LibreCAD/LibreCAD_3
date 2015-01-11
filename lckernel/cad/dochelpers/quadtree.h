@@ -28,7 +28,7 @@ namespace lc {
                     _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
                     _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
                     _bounds(pBounds), _maxLevels(maxLevels),
-                    _maxObjects(maxObjects), _triedReIndex(false) {
+                    _maxObjects(maxObjects) {
                 _objects.reserve(maxObjects / 2);
                 _nodes[0] = nullptr;
                 _nodes[1] = nullptr;
@@ -92,21 +92,18 @@ namespace lc {
                 _objects.push_back(entity);
 
                 // If it fit's in this box, see if we can/must split this area into sub area's
-                // _triedReIndex is used so that if the initial bounding box was to small we won't keep trying to
                 // loop over the current container and see if the entities fit at a lower level
                 // So each entity is only tried once
-                if (_triedReIndex == false && _objects.size() >= _maxObjects && _level < _maxLevels) {
-                    _triedReIndex = true;
+                if (_nodes[0] == nullptr && _objects.size() >= _maxObjects && _level < _maxLevels) {
 
-                    if (_nodes[0] == nullptr) {
-                        split();
-                        // Split two level's deep to reduce the number of object iterations
-                        // This will help mostly when adding lot's of little objects that would fit in 1/8 of the quad
-                        _nodes[0]->split();
-                        _nodes[1]->split();
-                        _nodes[2]->split();
-                        _nodes[3]->split();
-                    }
+                    split();
+                    // Split two level's deep to reduce the number of object iterations
+                    // This will help mostly when adding lot's of little objects that would fit in 1/8 of the quad
+                    _nodes[0]->split();
+                    _nodes[1]->split();
+                    _nodes[2]->split();
+                    _nodes[3]->split();
+
                     // std::cout << "size:" << _objects.size() << " level:" << _level << "\n";
 
                     for (auto it = _objects.begin() ; it != _objects.end();) {
@@ -358,7 +355,6 @@ namespace lc {
 
                 return c + _objects.size();
             }
-
 
             /**
             * @brief quadrantIndex
