@@ -137,13 +137,13 @@ void DXFimpl::addEllipse(const DRW_Ellipse &data) {
 
 void DXFimpl::addLayer(const DRW_Layer &data) {
     auto col = icol.intToColor(data.color);
-    if(col==nullptr) {
-        col = std::make_shared<lc::MetaColor>(255,255,255,255);
+    if (col == nullptr) {
+        col = icol.intToColor(255);
     }
 
     auto lw = getLcLineWidth(data.lWeight);
     if (lw == nullptr) {
-        lw == std::make_shared<lc::MetaLineWidth>(.00);
+        lw = std::make_shared<lc::MetaLineWidth>(.00);
     }
 
     auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
