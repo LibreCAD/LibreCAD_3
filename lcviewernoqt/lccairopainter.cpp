@@ -107,7 +107,7 @@ void LcCairoPainter::line_to(double x, double y)  {
 }
 
 void LcCairoPainter::arc(double x, double y, double r, double start, double end)  {
-    cairo_arc(_cr, x, -y, r, start, end);
+    cairo_arc(_cr, x, -y, r, 2. * M_PI - end, 2.* M_PI - start);
 
     /* Test to see if we can get end/start cap's on a path
     cairo_path_t *path;
@@ -127,12 +127,12 @@ void LcCairoPainter::arc(double x, double y, double r, double start, double end)
 }
 
 void LcCairoPainter::circle(double x, double y, double r)  {
-    cairo_arc(_cr, x, -y, r, 0, 2 * M_PI);
+    cairo_arc(_cr, x, -y, r, 0, 2. * M_PI);
 }
 
 void LcCairoPainter::point(double x, double y, double size, bool deviceCoords) {
     if (deviceCoords) {
-        cairo_arc(_cr, x, -y, size / scale(), 0, 2 * M_PI);
+        cairo_arc(_cr, x, -y, size / scale(), 0, 2. * M_PI);
     } else {
         cairo_arc(_cr, x, -y, size, 0, 2 * M_PI);
     }

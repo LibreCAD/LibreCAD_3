@@ -45,8 +45,10 @@ DXFimpl::DXFimpl(lc::Document *d, lc::operation::Builder_SPtr builder) : _docume
 void DXFimpl::addLine(const DRW_Line &data) {
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
     auto lw = getLcLineWidth(data.lWeight);
+    std::cerr << "lw:" << lw << data.lWeight;
     if (lw != nullptr) {
         if (mf == nullptr) mf = lc::MetaInfo::create();
+        std::cerr << "lw width:" << lw->width();
         mf->add(lw);
     }
     auto col = icol.intToColor(data.color);
@@ -101,10 +103,14 @@ void DXFimpl::addArc(const DRW_Arc &data) {
     }
 
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(
+
+    _builder->append(std::make_shared<lc::Arc>(lc::geo::Coordinate(
                     data.basePoint.x,
                     data.basePoint.y),
-            data.radious, layer, mf));
+            data.radious,
+            data.staangle, data.endangle,
+            layer, mf));
+
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse &data) {
@@ -351,7 +357,6 @@ void DXFimpl::addDimAngular(const DRW_DimAngular *data) {
 }
 
 std::shared_ptr<lc::MetaLineWidth> DXFimpl::getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
-    return nullptr;
     std::shared_ptr<lc::MetaLineWidth> mlw = nullptr;
     switch (lw) {
         case DRW_LW_Conv::lineWidth::widthDefault:
