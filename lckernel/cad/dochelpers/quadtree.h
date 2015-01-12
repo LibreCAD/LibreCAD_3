@@ -23,7 +23,7 @@ namespace lc {
     template<typename E>
     class QuadTreeSub {
         public:
-            QuadTreeSub(int level, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects) :
+            QuadTreeSub(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) :
                     _level(level) ,
                     _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
                     _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
@@ -118,7 +118,10 @@ namespace lc {
                     }
                 }
             }
-
+            /**
+            * Insert a nide into the quad tree,
+            * @see insert(const E entity, const lc::geo::Area &entityBoundingBox)
+            */
             inline void insert(const E entity) {
                 insert(entity, entity->boundingBox());
             }
@@ -219,7 +222,7 @@ namespace lc {
              * return's the current level of this QuadTree
              * @return
              */
-            unsigned short level() const {
+            short level() const {
                 return _level;
             }
 
@@ -229,7 +232,7 @@ namespace lc {
              * This value should be copied from one level to a other level within a single tree
              * @return
              */
-            unsigned short maxLevels() const {
+            short maxLevels() const {
                 return _maxLevels;
             }
             /**
@@ -238,7 +241,7 @@ namespace lc {
              * This value shoild be copied one level to a other level within a single tree
              * @return
              */
-            unsigned short maxObjects() const {
+            short maxObjects() const {
                 return _maxObjects;
             }
 
@@ -258,6 +261,9 @@ namespace lc {
                 }
             };
 
+            /**
+             * Caal a function for each entity within this node and it's sub nodes
+            */
             template<typename U, typename T> void each(T func) {
                 if (_nodes[0] != nullptr) {
                     _nodes[0]->template each<U>(func);
@@ -347,7 +353,9 @@ namespace lc {
 
                 list.insert(list.end(), _objects.begin(), _objects.end());
             }
-
+            /**
+            * Retur the number of items inthis andlower nodes
+            */
             unsigned int _size(unsigned int c) const {
                 if (_nodes[0] != nullptr) {
                     c += _nodes[0]->_size(_nodes[1]->_size(_nodes[2]->_size(_nodes[3]->_size(c))));
@@ -386,8 +394,9 @@ namespace lc {
 
                 return 3;
             }
-
-            // This if a bounds is fully included
+            /**
+            * This if this node overlaps or includes a given area
+            */
             bool includes(const geo::Area& area) const {
 
                 if (area.maxP().x() <= _bounds.minP().x() ||
@@ -424,15 +433,14 @@ namespace lc {
             }
 
         private:
-            const unsigned short _level;
+            const short _level;
             std::vector<E> _objects;
             const double _verticalMidpoint;
             const double _horizontalMidpoint;
             const geo::Area _bounds;
             QuadTreeSub* _nodes[4];
-            const unsigned short _maxLevels;
-            const unsigned short _maxObjects;
-            bool _triedReIndex;
+            const short _maxLevels;
+            const short _maxObjects;
     };
 
     /**
@@ -453,7 +461,7 @@ namespace lc {
     template<typename E>
     class QuadTree : public QuadTreeSub<E> {
         public:
-            QuadTree(int level, const geo::Area& pBounds, unsigned short maxLevels, unsigned short maxObjects) : QuadTreeSub<E>(level, pBounds, maxLevels, maxObjects) {}
+            QuadTree(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) : QuadTreeSub<E>(level, pBounds, maxLevels, maxObjects) {}
             QuadTree(const geo::Area& bounds) : QuadTreeSub<E>(bounds) {}
             QuadTree(const QuadTree& other) : QuadTreeSub<E>(other) {}
             QuadTree() : QuadTreeSub<E>(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {}

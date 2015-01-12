@@ -99,7 +99,7 @@ namespace lc {
              * want to render very small entities (< XX pixels)
              * @return
              */
-            std::vector<CT> asVector(unsigned short maxLevel = std::numeric_limits< short>::max()) const {
+            std::vector<CT> asVector(short maxLevel = std::numeric_limits<short>::max()) const {
                 /*    std::vector<CT> v;
                     for (auto item : _cadentities) {
                         v.push_back(item.second);
@@ -137,7 +137,7 @@ namespace lc {
                         }
                     }*/
 
-                for (auto i : asVector(std::numeric_limits< short>::max())) {
+                for (auto i : asVector(std::numeric_limits<short>::max())) {
                     if (i->layer() == layer) {
                         container.insert(i);
                     }
@@ -155,7 +155,7 @@ namespace lc {
             EntityContainer entitiesByMetaType(const std::string& metaName) const {
                 EntityContainer container;
 
-                for (auto i : asVector(std::numeric_limits< short>::max())) {
+                for (auto i : asVector(std::numeric_limits<short>::max())) {
                     //       if (i->metaInfo(metaName) != nullptr) {
                     //           container.insert(i);
                     // }
@@ -169,8 +169,10 @@ namespace lc {
              * Find all entities within a selected area based on boundingbox of the entites
              * @param area
              * @return
+             * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
+             * where we don't require  a QuadTree but just a linear array of entities tobe drawn
              */
-            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = std::numeric_limits< short>::max()) const {
+            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
@@ -189,8 +191,13 @@ namespace lc {
              * Find all entities within a selected area or where the path is crossing the area bounderies
              * @param area
              * @return
+             *
+             * TODO: create a version like this to get a rought estimate of what's located within a area
+             * this can be used to accelerate drawing performance.
+             * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
+             * where we don't require  a QuadTree but just a linear array of entities tobe drawn
              */
-            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = std::numeric_limits< short>::max()) const {
+            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
@@ -204,8 +211,9 @@ namespace lc {
 
                     // if it has 2 corners inside area, we know for 100% sure that the entity, or
                     // at least part of it is located within area
+                    // We test for 2 (not 1) because for exampke with a arc we can have one corner inside
+                    // The area, but still not intersecting with area
                     auto c = i->boundingBox().numCornersInside(area);
-
                     if (c == 2) {
                         container.insert(i);
                         continue;

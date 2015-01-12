@@ -123,8 +123,8 @@ namespace lc {
                  * @param other
                  * @return
                  */
-                inline unsigned short numCornersInside(const Area& otherArea) const  {
-                    unsigned short pointsInside = 0;
+                inline short numCornersInside(const Area& otherArea) const  {
+                    short pointsInside = 0;
 
                     if (otherArea.inArea(_minP)) {
                         pointsInside++;

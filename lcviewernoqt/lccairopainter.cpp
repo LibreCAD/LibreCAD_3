@@ -296,7 +296,7 @@ void LcCairoPainter::set_dash(const double* dashes, const int num_dashes, double
 
         double _scale = scale();
 
-        for (unsigned short c = 0; c < num_dashes; c++) {
+        for (short c = 0; c < num_dashes; c++) {
             scaledDashes[c] = scaledDashes[c] / _scale;
         }
 
