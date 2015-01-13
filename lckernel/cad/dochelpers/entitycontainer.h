@@ -253,6 +253,29 @@ namespace lc {
                 return container;
             }
 
+            /**
+             * @brief entitiesWithinAndCrossingAreaFast
+             * Find all entities within a selected area.
+             * Unlike entitiesWithinAndCrossingArea it this will return entities based on it's boundig box.
+             * That means that the resulting EntityContainer may or may not have entities which are visible.
+             *
+             * @return
+             *
+             */
+            EntityContainer entitiesWithinAndCrossingAreaFast(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
+                EntityContainer container;
+                std::vector<CT> entities = _tree->retrieve(area, maxLevel);
+
+                for (auto i : entities) {
+                    // If the item fully with's with the selection area sinmply add it
+                    if (i->boundingBox().overlaps(area)) {
+                        container.insert(i);
+                    }
+                }
+
+                return container;
+            }
+
             /*!
              * \brief getEntitiesNearCoordinate
              * \param point point where to look for entities

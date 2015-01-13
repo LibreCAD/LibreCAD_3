@@ -227,7 +227,7 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     LcDrawOptions lcDrawOptions;
 
     calculateVisibleUserArea();
-    auto visibleItems = _entityContainer.entitiesWithinAndCrossingArea(_visibleUserArea);
+    auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(_visibleUserArea);
 
     visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         bool modified = false;
