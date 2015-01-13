@@ -1,5 +1,7 @@
 #include "entitytest.h"
 #include <iostream>
+#include <cad/operations/layerops.h>
+
 entitytest::entitytest() {
 
 }
@@ -7,10 +9,11 @@ entitytest::entitytest() {
 std::vector<Line_CSPtr> entitytest::LineMove() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-
     auto _document = new lc::DocumentImpl(_storageManager);
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
-    auto layer = _storageManager->layerByName("0");
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(10.0, 10.0);
     builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(100., 100.), layer)).push();
@@ -50,10 +53,11 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
 std::vector<Line_CSPtr> entitytest::LineCopy() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-
     auto _document = new lc::DocumentImpl(_storageManager);
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
-    auto layer = _storageManager->layerByName("0");
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(10.0, 10.0);
     builder->append(std::make_shared<lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(100., 100.), layer)).push();
@@ -91,10 +95,11 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
 
 std::vector<Line_CSPtr> entitytest::LineRotate() {
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-
     auto _document = new lc::DocumentImpl(_storageManager);
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
-    auto layer = _storageManager->layerByName("0");
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(0.0, 0.0);
     double angle1 = 30;
@@ -136,10 +141,11 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
 
 std::vector<Line_CSPtr> entitytest::LineScale() {
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-
     auto _document = new lc::DocumentImpl(_storageManager);
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
-    auto layer = _storageManager->layerByName("0");
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(10.0, 10.0);
     lc::geo::Coordinate _ratio1(5.0, 5.0);
@@ -183,7 +189,9 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(0.0, 0.0);
@@ -227,7 +235,9 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(0.0, 0.0);
@@ -272,7 +282,9 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(0.0, 0.0);
@@ -317,10 +329,11 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 }
 
 std::vector<Circle_CSPtr> entitytest::CircleScale() {
-
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(0.0, 0.0);
@@ -368,7 +381,9 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(20., 10.);
@@ -408,7 +423,9 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _offset1(20., 10.);
@@ -448,7 +465,9 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(9700., 555.);
@@ -492,7 +511,9 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     auto builder = make_shared<lc::operation::Builder>(_document);
     lc::geo::Coordinate _center1(120., 150.);
@@ -537,7 +558,9 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     lc::geo::Coordinate _offset1(10., 10.);
     auto builder = make_shared<lc::operation::Builder>(_document);
@@ -578,7 +601,9 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     lc::geo::Coordinate _offset1(10., 10.);
     auto builder = make_shared<lc::operation::Builder>(_document);
@@ -619,7 +644,9 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     lc::geo::Coordinate _center1(10., 10.);
     double angle1 = 70;
@@ -664,7 +691,9 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
 
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
     auto _document = new lc::DocumentImpl(_storageManager);
-    auto layer = _storageManager->layerByName("0");
+    auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    al->execute();
 
     lc::geo::Coordinate _center1(100., 100.);
     lc::geo::Coordinate _ratio1(11., 1.);
