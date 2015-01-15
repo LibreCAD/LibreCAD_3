@@ -57,6 +57,19 @@ make
 sudo make install
 ```
 
+OSX X-Code
+========
+
+If you like X-Code as your editor you can ask cmake to generate the build file for you.
+mkdir xcode
+cd build
+cmake -G Xcode ..
+
+Then open the project in x-code and buikd.
+Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile libdxfrw yourself.
+
+![X-Code add headers]
+(http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
 
 
 Ubuntu/Mint
