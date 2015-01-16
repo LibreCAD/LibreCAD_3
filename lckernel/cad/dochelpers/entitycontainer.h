@@ -214,6 +214,7 @@ namespace lc {
                     // We test for 2 (not 1) because for exampke with a arc we can have one corner inside
                     // The area, but still not intersecting with area
                     auto c = i->boundingBox().numCornersInside(area);
+
                     if (c == 2) {
                         container.insert(i);
                         continue;

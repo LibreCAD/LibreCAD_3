@@ -13,7 +13,7 @@ std::string MetaLineWidth::LCMETANAME() {
     return "_LINEWIDTH";
 }
 
-MetaLineWidth::MetaLineWidth(const double width): MetaType(), _width(width){
+MetaLineWidth::MetaLineWidth(const double width): MetaType(), _width(width) {
     if (width < 0.0) {
         throw;
     }

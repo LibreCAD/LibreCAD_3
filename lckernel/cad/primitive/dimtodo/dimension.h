@@ -11,17 +11,17 @@ namespace lc {
 
     class Dimension {
 
-        enum AttachmentPoint {
-            Top_left,
-            Top_center,
-            Top_right,
-            Middle_left,
-            Middle_center,
-            Middle_right,
-            Bottom_left,
-            Bottom_center,
-            Bottom_right
-        };
+            enum AttachmentPoint {
+                Top_left,
+                Top_center,
+                Top_right,
+                Middle_left,
+                Middle_center,
+                Middle_right,
+                Bottom_left,
+                Bottom_center,
+                Bottom_right
+            };
 
         public:
 

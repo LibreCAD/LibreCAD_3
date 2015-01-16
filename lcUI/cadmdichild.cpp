@@ -73,7 +73,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     viewer->setAutoFillBackground(true);
     viewer->resize(10000, 10000);
     viewer->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(viewer, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ctxMenu(const QPoint &)));
+    connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
 
     gridLayout->addWidget(viewer, 0, 0, 1, 1);
 
@@ -193,7 +193,7 @@ void CadMdiChild::import(std::string str) {
 
     std::string ext = str.substr(str.length() - 3, 3);
 
-//#ifdef USE_lcDXFDWG
+    //#ifdef USE_lcDXFDWG
 
     if (ext == "dxf" || ext == "DXF") {
         auto builder = std::make_shared<lc::operation::Builder>(document());
@@ -202,16 +202,16 @@ void CadMdiChild::import(std::string str) {
         R.read(F, true);
         builder->execute();
     } else if (ext == "dwg" || ext == "DWG") {
-       // DWGimpl* F = new DWGimpl(_storageManager, _document);
-       // F->readFile((char*)str.c_str());
+        // DWGimpl* F = new DWGimpl(_storageManager, _document);
+        // F->readFile((char*)str.c_str());
         // _document = F->document();
         //_storageManager = F->storageManager();
         std::cout << "Sorry, not compiled with DWG support";
     }
 
-//#else
-//    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
-//#endif
+    //#else
+    //    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
+    //#endif
 }
 
 void CadMdiChild::redo() {
@@ -277,8 +277,8 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 
 }
 
-void CadMdiChild::ctxMenu(const QPoint &pos) {
-    QMenu *menu = new QMenu;
+void CadMdiChild::ctxMenu(const QPoint& pos) {
+    QMenu* menu = new QMenu;
     menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
     menu->exec(viewer->mapToGlobal(pos));
 }
@@ -300,6 +300,7 @@ void CadMdiChild::on_addCircles_clicked() {
             builder->append(std::make_shared<lc::Circle>(lc::geo::Coordinate(x1, y1), r, layer));
         }
     }
+
     builder->execute();
 }
 

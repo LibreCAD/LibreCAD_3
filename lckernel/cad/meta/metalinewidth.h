@@ -27,10 +27,10 @@ namespace lc {
             double _width;
 
         private:
-        friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
-            os << "MetaLineWidth(width=" <<  lineWidth.width() << ")";
-            return os;
-        }
+            friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
+                os << "MetaLineWidth(width=" <<  lineWidth.width() << ")";
+                return os;
+            }
     };
 
     typedef std::shared_ptr<MetaLineWidth> MetaLineWidth_SPtr;
