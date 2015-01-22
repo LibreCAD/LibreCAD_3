@@ -84,7 +84,7 @@ namespace lc {
                 }
 
                 inline bool operator!=(const Coordinate& coord) const {
-                    return !(*this == coord);
+                    return this->_x != coord._x || this->_y != coord._y || this->_z != coord._z;
                 }
 
                 /**
@@ -246,6 +246,20 @@ namespace lc {
                 */
                 inline Coordinate mid(const Coordinate& other) const {
                     return (other - *this) / 2. + *this;
+                }
+                /**
+                 * Normalised version of this coordinate
+                 */
+                inline Coordinate norm() const {
+                    double m = magnitude();
+                    return Coordinate(_x / m, _y / m, _z / m);
+                }
+
+                /**
+                 * move the coordinate by distance d over vector direction
+                */
+                inline Coordinate move(const Coordinate& direction, double d) const {
+                    return (direction - *this).norm() * d + *this;
                 }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {

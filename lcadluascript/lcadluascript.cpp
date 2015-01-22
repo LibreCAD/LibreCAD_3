@@ -198,14 +198,15 @@ std::string LCadLuaScript::run(const std::string& script) {
 
 /* DimRadial
 layer = active.proxy.layerByName("0")
-dr1=DimRadial(Coord(50,50), Coord(75,75), 2, math.rad(45), 1., 1, "<>", Coord(100,100), 10, layer);
-dr2=DimRadial(Coord(50,50), Coord(25,50), 2, 0, 1., 1, "Explicit", Coord(-70.71+50,50), 10, layer);
-dr3=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(0,0), 10, layer);
-dr4=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(50,0), 10, layer);
-dr5=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(100,0), 10, layer);
+dr1=DimRadial(Coord(50,50), Coord(75,75), 2, math.rad(45), 1., 1, "<>", Coord(100,100), 0., layer);
+dr2=DimRadial(Coord(50,50), Coord(25,50), 2, 0, 1., 1, "Explicit", Coord(-70.71+50,50), 0., layer);
+dr3=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(0,0), 0., layer);
+dr4=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(50,0), 0., layer);
+dr5=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(100,0), 0., layer);
+dr6=DimRadial2(Coord(50,50), 2, 1., 10, "<>", Coord(0,100), 25., layer);
 c=Circle(Coord(50, 50), 70.7106781, layer);
 d=active.document()
-Builder(d):append(dr1):append(dr2):append(dr3):append(dr4):append(dr5):append(c):execute()
+Builder(d):append(dr1):append(dr2):append(dr3):append(dr4):append(dr5):append(dr6):append(c):execute()
  */
 
 /* Line

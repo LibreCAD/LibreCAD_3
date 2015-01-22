@@ -7,6 +7,10 @@
 LCDimRadial::LCDimRadial(const lc::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::DimRadial(dimRadial, true) {
 }
 
+/**
+* Draw a DimRadial
+* TODO: draw correct leader
+*/
 void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
     double height = options->dimTextHeight();
@@ -80,7 +84,14 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     // Draw line
     painter->move_to(this->definitionPoint().x(), this->definitionPoint().y());
-    painter->line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
+
+    // If a leader needs to get drawn, do so else just take the end point
+    if (this->leader() > 0) {
+        lc::geo::Coordinate end = this->definitionPoint2().move(this->definitionPoint(), -this->leader());
+        painter->line_to(end.x(), end.y());
+    } else {
+        painter->line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
+    }
 
     // Draw end caps
     EndCaps endCaps;
