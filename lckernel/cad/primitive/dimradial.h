@@ -25,9 +25,9 @@ namespace lc {
                  * @param double leader
                  * @param Layer_CSPtr layer
                  */
-            DimRadial(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double angle, double const lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2,
+            DimRadial(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                      geo::Coordinate const& definitionPoint2,
                       const double leader, const Layer_CSPtr layer);
 
             /**
@@ -37,10 +37,10 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            DimRadial(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double angle, double const lineSpacingFactor,
-                    TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                    geo::Coordinate const &definitionPoint2,
-                    const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            DimRadial(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                      geo::Coordinate const& definitionPoint2,
+                      const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             DimRadial(const DimRadial_CSPtr other, bool sameID = false);
         public:
@@ -87,7 +87,7 @@ namespace lc {
 
             geo::Coordinate definitionPoint2() const;
 
-    protected:
+        protected:
             const double _leader;
             const geo::Coordinate _definitionPoint2;
         public:

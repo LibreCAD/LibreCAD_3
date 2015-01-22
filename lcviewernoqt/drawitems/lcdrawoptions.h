@@ -7,21 +7,21 @@ class LcDrawOptions {
         LcDrawOptions();
 
 
-    lc::Color const &selectedColor() const {
-        return _selectedColor;
-    }
+        lc::Color const& selectedColor() const {
+            return _selectedColor;
+        }
 
-    double dimTextHeight() const {
-        return _dimTextHeight;
-    }
+        double dimTextHeight() const {
+            return _dimTextHeight;
+        }
 
 
-    std::string radialFormat() const {
-        return _radialFormat;
-    }
+        std::string radialFormat() const {
+            return _radialFormat;
+        }
 
-private:
+    private:
         lc::Color  _selectedColor;
-    double _dimTextHeight;
-    std::string _radialFormat;
+        double _dimTextHeight;
+        std::string _radialFormat;
 };

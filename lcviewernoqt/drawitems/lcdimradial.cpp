@@ -13,9 +13,10 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
 
     std::string value = explicitValue();
-    if (value=="<>") {
+
+    if (value == "<>") {
         value = string_format(options->radialFormat(), this->definitionPoint().distanceTo(this->definitionPoint2()));
-    } else if (value==" " ) {
+    } else if (value == " ") {
         value = "";
     }
 
@@ -34,34 +35,42 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
             alignY += 0.0 + (height * .2);
             alignX += - te.width;
             break;
+
         case lc::TextConst::AttachmentPoint::Top_center:
             alignY += 0.0 + (height * .2);
             alignX += - te.width / 2.0;
             break;
+
         case lc::TextConst::AttachmentPoint::Top_right:
             alignY += 0.0 + (height * .2);
             alignX += 0.;
             break;
+
         case lc::TextConst::AttachmentPoint::Middle_left:
             alignY += -height / 2. + (height * .2);
             alignX += - te.width;
             break;
+
         case lc::TextConst::AttachmentPoint::Middle_center:
             alignY += -height / 2. + (height * .2);
             alignX += - te.width / 2.0;
             break;
+
         case lc::TextConst::AttachmentPoint::Middle_right:
             alignY += -height / 2. + (height * .2);
             alignX += 0.;
             break;
+
         case lc::TextConst::AttachmentPoint::Bottom_left:
             alignY += -height + (height * .2);
             alignX += - te.width;
             break;
+
         case lc::TextConst::AttachmentPoint::Bottom_center:
             alignY += -height + (height * .2);
             alignX += - te.width / 2.0;
             break;
+
         case lc::TextConst::AttachmentPoint::Bottom_right:
             alignY += -height + (height * .2);
             alignX += 0.;

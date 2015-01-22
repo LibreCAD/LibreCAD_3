@@ -397,10 +397,10 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         _entityContainer.insert(newCoord);
         return;
     }
-    
+
     // Add 'DimRadial'
     const auto dimRadial = event.entity<lc::DimRadial>();
-    
+
     if (dimRadial != nullptr) {
         auto newDimRadial = std::make_shared<LCDimRadial>(dimRadial);
         _entityContainer.insert(newDimRadial);

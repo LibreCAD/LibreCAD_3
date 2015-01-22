@@ -248,9 +248,9 @@ namespace lc {
                 }
 
             private:
-                 double _x;
-                 double _y;
-                 double _z;
+                double _x;
+                double _y;
+                double _z;
         };
 
         /*!

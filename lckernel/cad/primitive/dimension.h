@@ -29,8 +29,8 @@ namespace lc {
              * @param explicitValue given value
              */
 
-            Dimension(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double const angle,
-                    double  lineSpacingFactor, TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue);
+            Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double const angle,
+                      double  lineSpacingFactor, TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue);
 
             /**
              * @brief Dimension
@@ -39,27 +39,27 @@ namespace lc {
              * @param attachmentPoint Where the text is located in reference to the text location
              * @param angle Angle of obliqueness
              */
-            Dimension(geo::Coordinate const  & _definitionPoint,
-                       geo::Coordinate const & _middleOfText,
-                       TextConst::AttachmentPoint _attachPt,
-                       double _angle);
+            Dimension(geo::Coordinate const&   _definitionPoint,
+                      geo::Coordinate const& _middleOfText,
+                      TextConst::AttachmentPoint _attachPt,
+                      double _angle);
 
 
-            Dimension(Dimension const &other);
+            Dimension(Dimension const& other);
         public:
             /**
              * @brief move, moves by an offset
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr moved entity
              */
-//            CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+            //            CADEntity_CSPtr move(const geo::Coordinate& offset) const;
 
             /**
              * @brief copy, copies by an offset
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr copied entity
              */
-//            CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+            //            CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
 
             /**
              * @brief rotate, rotate operation
@@ -67,7 +67,7 @@ namespace lc {
              * @param double rotation_angle
              * @return CADEntity_CSPtr rotated entity
              */
-//            CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+            //            CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
 
             /**
              * @brief scale, scales the entity
@@ -75,7 +75,7 @@ namespace lc {
              * @param double scale_factor
              * @return
              */
-//            CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+            //            CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
 
 
             /**
@@ -89,7 +89,7 @@ namespace lc {
             geo::Coordinate middleOfText() const;
 
 
-            TextConst::AttachmentPoint const &attachmentPoint() const;
+            TextConst::AttachmentPoint const& attachmentPoint() const;
 
             /**
             * Angle of witch to draw the text on

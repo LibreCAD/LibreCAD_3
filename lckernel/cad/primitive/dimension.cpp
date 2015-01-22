@@ -3,36 +3,36 @@
 
 using namespace lc;
 
-Dimension::Dimension(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double angle, double const lineSpacingFactor,
-        TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue)
+Dimension::Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+                     TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue)
     : _definitionPoint(definitionPoint),
-    _middleOfText(middleOfText),
-    _attachmentPoint(attachmentPoint),
-    _angle(angle),
-    _lineSpacingFactor(lineSpacingFactor),
-    _lineSpacingStyle(lineSpacingStyle),
-    _explicitValue(explicitValue) {
+      _middleOfText(middleOfText),
+      _attachmentPoint(attachmentPoint),
+      _angle(angle),
+      _lineSpacingFactor(lineSpacingFactor),
+      _lineSpacingStyle(lineSpacingStyle),
+      _explicitValue(explicitValue) {
 }
 
 Dimension::Dimension(const geo::Coordinate& definitionPoint,
-        const geo::Coordinate& middleOfText,
-        const TextConst::AttachmentPoint attachmentPoint,
-        const double angle)   : _definitionPoint(definitionPoint),
-                                _middleOfText(middleOfText),
-                                _attachmentPoint(attachmentPoint),
-                                _angle(angle),
-                                _lineSpacingFactor(1.),
-                                _lineSpacingStyle(TextConst::LineSpacingStyle::AtLeast),
-                                _explicitValue("<>")  {
+                     const geo::Coordinate& middleOfText,
+                     const TextConst::AttachmentPoint attachmentPoint,
+                     const double angle)   : _definitionPoint(definitionPoint),
+    _middleOfText(middleOfText),
+    _attachmentPoint(attachmentPoint),
+    _angle(angle),
+    _lineSpacingFactor(1.),
+    _lineSpacingStyle(TextConst::LineSpacingStyle::AtLeast),
+    _explicitValue("<>")  {
 }
 
-Dimension::Dimension(Dimension const &other)  : _definitionPoint(other.definitionPoint()),
-                                                _middleOfText(other.middleOfText()),
-                                                _attachmentPoint(other.attachmentPoint()),
-                                                _angle(other.angle()),
-                                                _lineSpacingFactor(other.lineSpacingFactor()),
-                                                _lineSpacingStyle(other.lineSpacingStyle()),
-                                                _explicitValue(other.explicitValue()) {
+Dimension::Dimension(Dimension const& other)  : _definitionPoint(other.definitionPoint()),
+    _middleOfText(other.middleOfText()),
+    _attachmentPoint(other.attachmentPoint()),
+    _angle(other.angle()),
+    _lineSpacingFactor(other.lineSpacingFactor()),
+    _lineSpacingStyle(other.lineSpacingStyle()),
+    _explicitValue(other.explicitValue()) {
 
 }
 /*
@@ -79,7 +79,7 @@ double Dimension::angle() const {
     return _angle;
 }
 
-TextConst::AttachmentPoint const & Dimension::attachmentPoint() const {
+TextConst::AttachmentPoint const& Dimension::attachmentPoint() const {
     return _attachmentPoint;
 }
 

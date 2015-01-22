@@ -153,10 +153,10 @@ void lua_openlckernel(lua_State* L) {
                                                                double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                    .beginExtendClass<Text, CADEntity>("Text_")
-                                                    .endClass()
-                                                    .beginExtendClass<DimRadial, CADEntity>("DimRadial_")
-                                                    .endClass()
+                                                   .beginExtendClass<Text, CADEntity>("Text_")
+                                                   .endClass()
+                                                   .beginExtendClass<DimRadial, CADEntity>("DimRadial_")
+                                                   .endClass()
 
 
 

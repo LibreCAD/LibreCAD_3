@@ -81,16 +81,16 @@ static lc::Coordinate_SPtr lua_coordinate1(const double x, const double y, const
     return std::make_shared<lc::Coordinate>(x, y, layer, metaInfo);
 }
 
-static lc::DimRadial_SPtr lua_dimRadial(lc::geo::Coordinate const &definitionPoint, lc::geo::Coordinate const &middleOfText, int const attachmentPoint, double angle, double const lineSpacingFactor,
-        const int lineSpacingStyle, std::string const &explicitValue,
-        lc::geo::Coordinate const &definitionPoint2, const double leader, const lc::Layer_CSPtr layer) {
+static lc::DimRadial_SPtr lua_dimRadial(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, int const attachmentPoint, double angle, double const lineSpacingFactor,
+                                        const int lineSpacingStyle, std::string const& explicitValue,
+                                        lc::geo::Coordinate const& definitionPoint2, const double leader, const lc::Layer_CSPtr layer) {
     return std::make_shared<lc::DimRadial>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), angle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle), explicitValue,  definitionPoint2, leader, layer);
 }
 
 
-static lc::DimRadial_SPtr lua_dimRadial1(lc::geo::Coordinate const &definitionPoint, lc::geo::Coordinate const &middleOfText, const int attachmentPoint, double angle, double const lineSpacingFactor,
-        lc::TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-        lc::geo::Coordinate const &definitionPoint2, const double leader, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+static lc::DimRadial_SPtr lua_dimRadial1(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, const int attachmentPoint, double angle, double const lineSpacingFactor,
+                                         lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                                         lc::geo::Coordinate const& definitionPoint2, const double leader, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::DimRadial>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), angle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle), explicitValue,  definitionPoint2, leader, layer, metaInfo);
 }
 
@@ -144,10 +144,10 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("Circle1", &lua_circle1)
     .addFunction("Arc1", &lua_arc1)
     .addFunction("Coordinate1", &lua_coordinate1)
-            .addFunction("Text", &lua_text)
-            .addFunction("Text1", &lua_text1)
-            .addFunction("DimRadial", &lua_dimRadial)
-            .addFunction("DimRadial1", &lua_dimRadial1)
+    .addFunction("Text", &lua_text)
+    .addFunction("Text1", &lua_text1)
+    .addFunction("DimRadial", &lua_dimRadial)
+    .addFunction("DimRadial1", &lua_dimRadial1)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
     .beginModule("proxy")
