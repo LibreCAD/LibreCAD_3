@@ -26,7 +26,7 @@ namespace lc {
             //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
             //}
 
-            MetaColor(double r, double g, double b, double a = 1.) : MetaType(),_color(r, g, b, a) {
+            MetaColor(double r, double g, double b, double a = 1.) : MetaType(), _color(r, g, b, a) {
             }
 
             virtual ~MetaColor() {

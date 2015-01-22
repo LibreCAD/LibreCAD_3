@@ -22,7 +22,7 @@ geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
 CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
     std::vector<geo::Coordinate> control_pts;
 
-    for (auto point : this->control_points()) {
+    for (auto point : this->controlPoints()) {
         control_pts.push_back(point + offset);
     }
 
@@ -34,7 +34,7 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
 CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
     std::vector<geo::Coordinate> control_pts;
 
-    for (auto point : this->control_points()) {
+    for (auto point : this->controlPoints()) {
         control_pts.push_back(point + offset);
     }
 
@@ -45,7 +45,7 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
 CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     std::vector<geo::Coordinate> control_pts;
 
-    for (auto point : this->control_points()) {
+    for (auto point : this->controlPoints()) {
         control_pts.push_back(point.rotate(rotation_center, rotation_angle));
     }
 
@@ -57,7 +57,7 @@ CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, const dou
 CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     std::vector<geo::Coordinate> control_pts;
 
-    for (auto point : this->control_points()) {
+    for (auto point : this->controlPoints()) {
         control_pts.push_back(point.scale(scale_center, scale_factor));
     }
 
@@ -74,11 +74,11 @@ const geo::Area Spline::boundingBox() const {
 CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     std::vector<geo::Coordinate> control_pts;
 
-    for (auto point : this->control_points()) {
+    for (auto point : this->controlPoints()) {
         control_pts.push_back(point);
     }
 
-    control_pts.insert(control_pts.begin() , this->control_points().begin(), this->control_points().end());
+    control_pts.insert(control_pts.begin() , this->controlPoints().begin(), this->controlPoints().end());
     auto newEntity = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer);
     newEntity->setID(this->id());
     return newEntity;

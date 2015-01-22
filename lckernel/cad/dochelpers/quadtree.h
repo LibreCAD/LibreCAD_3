@@ -24,11 +24,11 @@ namespace lc {
     class QuadTreeSub {
         public:
             QuadTreeSub(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) :
-                    _level(level) ,
-                    _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
-                    _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
-                    _bounds(pBounds), _maxLevels(maxLevels),
-                    _maxObjects(maxObjects) {
+                _level(level) ,
+                _verticalMidpoint(pBounds.minP().x() + (pBounds.width() / 2.)),
+                _horizontalMidpoint(pBounds.minP().y() + (pBounds.height() / 2.)),
+                _bounds(pBounds), _maxLevels(maxLevels),
+                _maxObjects(maxObjects) {
                 _objects.reserve(maxObjects / 2);
                 _nodes[0] = nullptr;
                 _nodes[1] = nullptr;
@@ -79,11 +79,12 @@ namespace lc {
             * @param pRect
              * @param entity
              */
-            void insert(const E entity, const lc::geo::Area &entityBoundingBox) {
+            void insert(const E entity, const lc::geo::Area& entityBoundingBox) {
                 // Find a Quad Tree area where this item fits
                 if (_nodes[0] != nullptr) {
                     short entityIndex = quadrantIndex(entityBoundingBox);
-                    if (entityIndex!=-1) {
+
+                    if (entityIndex != -1) {
                         _nodes[entityIndex]->insert(entity, entityBoundingBox);
                         return;
                     }
@@ -109,6 +110,7 @@ namespace lc {
                     for (auto it = _objects.begin() ; it != _objects.end();) {
                         auto sentityBoundingBox = (*it)->boundingBox();
                         short index = quadrantIndex(sentityBoundingBox);
+
                         if (index != -1) {
                             _nodes[index]->insert(*it, sentityBoundingBox);
                             it = _objects.erase(it);

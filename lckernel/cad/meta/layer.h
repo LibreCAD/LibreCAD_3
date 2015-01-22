@@ -40,10 +40,10 @@ namespace lc {
             MetaLineWidth _lineWidth;
             Color _color;
 
-        friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
-            os << "Layer(name" << layer.name() << " lineWidth=" << layer.lineWidth() << " color=" << layer.color() << ")" << std::endl;
-            return os;
-        }
+            friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
+                os << "Layer(name" << layer.name() << " lineWidth=" << layer.lineWidth() << " color=" << layer.color() << ")" << std::endl;
+                return os;
+            }
     };
     typedef std::shared_ptr<Layer> Layer_SPtr;
     typedef std::shared_ptr<const Layer> Layer_CSPtr;

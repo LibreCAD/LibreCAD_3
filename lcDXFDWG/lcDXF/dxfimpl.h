@@ -9,7 +9,7 @@
 
 class DXFimpl : public DRW_InterfaceImpl {
     public:
-        DXFimpl(lc::Document *document, lc::operation::Builder_SPtr builder);
+        DXFimpl(lc::Document* document, lc::operation::Builder_SPtr builder);
         virtual void addLine(const DRW_Line& data);
         virtual void addCircle(const DRW_Circle& data);
         virtual void addLayer(const DRW_Layer& data);
@@ -34,12 +34,12 @@ class DXFimpl : public DRW_InterfaceImpl {
 
         std::shared_ptr<lc::MetaLineWidth> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const;
 
-        lc::Document *_document;
+        lc::Document* _document;
         lc::operation::Builder_SPtr _builder;
     private:
         lc::iColor icol;
 
-      std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
+        std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
 
 
 };

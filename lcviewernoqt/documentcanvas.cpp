@@ -243,37 +243,37 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
         painter->save();
 
         // Decide on line width
-        if (entityLineWidth!=nullptr) {
+        if (entityLineWidth != nullptr) {
             double width = entityLineWidth->width() * 3.;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter->line_width(width<0.1?1.:width);
+            painter->line_width(width < 0.1 ? 1. : width);
         } else {
-            double width = layer->lineWidth().width()* 3.;
+            double width = layer->lineWidth().width() * 3.;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter->line_width(width<0.1?1.:width);
+            painter->line_width(width < 0.1 ? 1. : width);
         }
 
         // Decide what color to render the entity into
         if (di->selected()) {
             painter->source_rgba(
-                    lcDrawOptions.selectedColor().red(),
-                    lcDrawOptions.selectedColor().green(),
-                    lcDrawOptions.selectedColor().blue(),
-                    lcDrawOptions.selectedColor().alpha()
+                lcDrawOptions.selectedColor().red(),
+                lcDrawOptions.selectedColor().green(),
+                lcDrawOptions.selectedColor().blue(),
+                lcDrawOptions.selectedColor().alpha()
             );
         } else if (entityColor != nullptr) {
             painter->source_rgba(
-                    entityColor->red(),
-                    entityColor->green(),
-                    entityColor->blue(),
-                    entityColor->alpha());
+                entityColor->red(),
+                entityColor->green(),
+                entityColor->blue(),
+                entityColor->alpha());
         } else {
             lc::Color layerColor = layer->color();
             painter->source_rgba(
-                    layerColor.red(),
-                    layerColor.green(),
-                    layerColor.blue(),
-                    layerColor.alpha());
+                layerColor.red(),
+                layerColor.green(),
+                layerColor.blue(),
+                layerColor.alpha());
 
         }
 
