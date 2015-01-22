@@ -13,9 +13,6 @@ Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, 
 }
 
 Coordinate::Coordinate(const Coordinate_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
-    if (sameID) {
-        this->setID(other->id());
-    }
 }
 
 CADEntity_CSPtr Coordinate::move(const geo::Coordinate& offset) const {

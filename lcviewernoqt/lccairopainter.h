@@ -14,6 +14,7 @@ class LcCairoPainter : public LcPainter {
 
     public:
         // TODO move code from implementation to here to actually make inlyning work
+        virtual void new_path();
         virtual void clear(double r, double g, double b) ;
         virtual void clear(double r, double g, double b, double a) ;
         virtual void move_to(double x, double y) ;

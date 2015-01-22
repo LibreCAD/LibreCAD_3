@@ -15,6 +15,8 @@
 #include "drawitems/lcvellipse.h"
 #include "drawitems/lcvtext.h"
 #include "drawitems/lcvcoordinate.h"
+#include "drawitems/lcdimradial.h"
+
 #include "lcpainter.h"
 
 #include <cad/meta/metacolor.h>
@@ -378,6 +380,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         return;
     }
 
+    // Add Text
     const auto text = event.entity<lc::Text>();
 
     if (text != nullptr) {
@@ -386,11 +389,21 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         return;
     }
 
+    // Add 'Point' or 'Coordinate'
     const auto coord = event.entity<lc::Coordinate>();
 
     if (coord != nullptr) {
         auto newCoord = std::make_shared<LCVCoordinate>(coord);
         _entityContainer.insert(newCoord);
+        return;
+    }
+    
+    // Add 'DimRadial'
+    const auto dimRadial = event.entity<lc::DimRadial>();
+    
+    if (dimRadial != nullptr) {
+        auto newDimRadial = std::make_shared<LCDimRadial>(dimRadial);
+        _entityContainer.insert(newDimRadial);
         return;
     }
 

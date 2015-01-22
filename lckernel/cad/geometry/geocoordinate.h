@@ -14,7 +14,7 @@ namespace lc {
                 explicit Coordinate() : _x(0.), _y(0.), _z(0.) {}
                 explicit Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {}
                 explicit Coordinate(double x, double y) : _x(x), _y(y), _z(0.) {}
-                explicit Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)) {}
+                explicit Coordinate(double angle) : _x(cos(angle)), _y(sin(angle)), _z(0.) {}
 
 
                 /**
@@ -248,9 +248,9 @@ namespace lc {
                 }
 
             private:
-                double _x;
-                double _y;
-                double _z;
+                 double _x;
+                 double _y;
+                 double _z;
         };
 
         /*!

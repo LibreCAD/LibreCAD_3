@@ -20,6 +20,11 @@ namespace lc {
 class LCVDrawItem {
     public:
         LCVDrawItem(bool selectable);
+
+        /**
+        * Draw function to draw the final object on a ccanvas
+        * Be aware that thus function must be created thread save
+        */
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {
             // Implement's nothing
         }

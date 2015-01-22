@@ -4,13 +4,11 @@
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
-
-#include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geodimradial.h"
-#include "cad/geometry/geodimension.h"
+#include "cad/primitive/dimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
+#include "coordinate.h"
 
 namespace lc {
     class DimRadial;
@@ -18,7 +16,7 @@ namespace lc {
     typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
 
 
-    class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public geo::DimRadial {
+    class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension {
         public:
 
             /**
@@ -27,9 +25,10 @@ namespace lc {
                  * @param double leader
                  * @param Layer_CSPtr layer
                  */
-            DimRadial(const Dimension& dimension,
-                      const double leader,
-                      const Layer_CSPtr layer);
+            DimRadial(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double angle, double const lineSpacingFactor,
+                      TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
+                      geo::Coordinate const &definitionPoint2,
+                      const double leader, const Layer_CSPtr layer);
 
             /**
              * @brief DimRadial
@@ -38,10 +37,12 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            DimRadial(const Dimension& dimension,
-                      const double leader,
-                      const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            DimRadial(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText, TextConst::AttachmentPoint const &attachmentPoint, double angle, double const lineSpacingFactor,
+                    TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
+                    geo::Coordinate const &definitionPoint2,
+                    const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
+            DimRadial(const DimRadial_CSPtr other, bool sameID = false);
         public:
             /**
              * @brief move, moves by an offset
@@ -80,6 +81,15 @@ namespace lc {
             virtual const geo::Area boundingBox() const;
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
+
+
+            double leader() const;
+
+            geo::Coordinate definitionPoint2() const;
+
+    protected:
+            const double _leader;
+            const geo::Coordinate _definitionPoint2;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -106,9 +116,6 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(DimAligned_CSPtr o, EntityVisitor& ei) const {

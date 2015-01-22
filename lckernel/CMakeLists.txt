@@ -38,6 +38,8 @@ cad/primitive/ellipse.cpp
 cad/primitive/line.cpp
 cad/primitive/spline.cpp
 cad/primitive/text.cpp
+cad/primitive/dimension.cpp
+cad/primitive/dimradial.cpp
 )
 
 # HEADER FILES
@@ -99,6 +101,10 @@ cad/primitive/spline.h
 cad/primitive/text.h
 cad/vo/entitycoordinate.h
 cad/vo/entitydistance.h
+cad/primitive/dimension.h
+cad/primitive/dimradial.h
+cad/primitive/textconst.h
+cad/functions/str_format.h
 )
 
 # DEPENDENCIES

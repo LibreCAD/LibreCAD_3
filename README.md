@@ -65,3 +65,11 @@ Ubuntu/Mint
 ```
 apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev
 ```
+
+
+
+Reading materials for feature usage
+=========
+
+If we want to support associative drawings, this is a good introduction to get started
+http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/

@@ -81,6 +81,19 @@ static lc::Coordinate_SPtr lua_coordinate1(const double x, const double y, const
     return std::make_shared<lc::Coordinate>(x, y, layer, metaInfo);
 }
 
+static lc::DimRadial_SPtr lua_dimRadial(lc::geo::Coordinate const &definitionPoint, lc::geo::Coordinate const &middleOfText, int const attachmentPoint, double angle, double const lineSpacingFactor,
+        const int lineSpacingStyle, std::string const &explicitValue,
+        lc::geo::Coordinate const &definitionPoint2, const double leader, const lc::Layer_CSPtr layer) {
+    return std::make_shared<lc::DimRadial>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), angle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle), explicitValue,  definitionPoint2, leader, layer);
+}
+
+
+static lc::DimRadial_SPtr lua_dimRadial1(lc::geo::Coordinate const &definitionPoint, lc::geo::Coordinate const &middleOfText, const int attachmentPoint, double angle, double const lineSpacingFactor,
+        lc::TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
+        lc::geo::Coordinate const &definitionPoint2, const double leader, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::DimRadial>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), angle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle), explicitValue,  definitionPoint2, leader, layer, metaInfo);
+}
+
 static lc::Text_SPtr lua_text(const lc::geo::Coordinate& insertion_point,
                               const std::string text_value,
                               const double height,
@@ -131,8 +144,10 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("Circle1", &lua_circle1)
     .addFunction("Arc1", &lua_arc1)
     .addFunction("Coordinate1", &lua_coordinate1)
-    .addFunction("Text", &lua_text)
-    .addFunction("Text1", &lua_text1)
+            .addFunction("Text", &lua_text)
+            .addFunction("Text1", &lua_text1)
+            .addFunction("DimRadial", &lua_dimRadial)
+            .addFunction("DimRadial1", &lua_dimRadial1)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
     .beginModule("proxy")
@@ -167,6 +182,16 @@ std::string LCadLuaScript::run(const std::string& script) {
     lua_close(L);
     return out;
 }
+
+
+/* DimRadial
+layer = active.proxy.layerByName("0")
+dr1=DimRadial(Coord(50,50), Coord(75,75), 2, -math.rad(45), 1., 1, "<>", Coord(100,100), 10, layer);
+dr2=DimRadial(Coord(50,50), Coord(25,50), 2, 0, 1., 1, "Explicit", Coord(-70.71+50,50), 10, layer);
+c=Circle(Coord(50, 50), 70.7106781, layer);
+d=active.document()
+Builder(d):append(dr1):append(dr2):append(c):execute()
+ */
 
 /* Line
 layer = active.proxy.layerByName("0")
@@ -260,12 +285,10 @@ end
 
 doc=active.document()
 ce=Builder(doc,em)
-drawTree(ce, 0, 0, -90, 14);
+drawTree(ce, 0, 0, 90, 14);
 ce:execute()
 
 print (microtime()-start);
-
-
 
 
 */

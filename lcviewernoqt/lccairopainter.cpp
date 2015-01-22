@@ -67,6 +67,10 @@ void LcCairoPainter::lineWidthCompensation(double lwc) {
     _lineWidthCompensation = lwc;
 }
 
+void LcCairoPainter::new_path()  {
+    cairo_new_path(_cr);
+}
+
 void LcCairoPainter::clear(double r, double g, double b)  {
     cairo_save(_cr);
     cairo_set_source_rgb(_cr, r, g, b);

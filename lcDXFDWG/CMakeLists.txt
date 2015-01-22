@@ -43,6 +43,8 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
+include_directories(${CMAKE_INSTALL_PREFIX} /usr/local/include)
+
 set(DWG_LIBRARY )
 FIND_LIBRARY(DXF_LIBRARY NAMES dxfrw PATHS /usr/local/lib)
 

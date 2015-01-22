@@ -2,8 +2,7 @@
 
 LcDrawOptions::LcDrawOptions() {
     _selectedColor = lc::Color(0, 0, 255, 255);
+    _dimTextHeight = 8.;
+    _radialFormat = "%.2f";
 }
 
-const lc::Color& LcDrawOptions::selectedColor() const {
-    return _selectedColor;
-}

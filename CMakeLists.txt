@@ -4,11 +4,10 @@ PROJECT (LC)
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
 
-ADD_SUBDIRECTORY("lckernel")
-
 if(WITH_LCDXFDWG)
 endif(WITH_LCDXFDWG)
 
+ADD_SUBDIRECTORY("lckernel")
 ADD_SUBDIRECTORY("lcDXFDWG")
 add_definitions(-DUSE_lcDXFDWG=1)
 

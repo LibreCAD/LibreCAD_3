@@ -119,14 +119,16 @@ namespace lc {
             virtual void accept(Ellipse_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Text_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(MText_CSPtr, EntityVisitor&) const = 0;
-            virtual void accept(Dimension_CSPtr, EntityVisitor&) const = 0;
+
             virtual void accept(DimAligned_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimAngular_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimDiametric_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimLinear_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimRadial_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Spline_CSPtr, EntityVisitor&) const = 0;
+
             virtual void accept(CADEntity_CSPtr, EntityVisitor&) const = 0;
+
             virtual void dispatch(EntityDispatch&) const = 0;
             /*!
              * \brief Function for Move

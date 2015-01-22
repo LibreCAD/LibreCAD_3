@@ -27,7 +27,7 @@ bool Math::isAngleBetween(double a,
 
     //a1 and a2 almost the same angle
     // the |a2-a1| % (2 pi)=0 means the whole angular range
-    if (fabs(remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
+    if (fabs(std::remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
         return true;
     }
 
@@ -45,7 +45,7 @@ bool Math::isAngleBetween(double a,
  * Corrects the given angle to the range of 0-2*Pi.
  */
 double Math::correctAngle(double a) {
-    return M_PI + remainder(a - M_PI, 2 * M_PI);
+    return M_PI + std::remainder(a - M_PI, 2 * M_PI);
 }
 
 /**

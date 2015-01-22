@@ -11,13 +11,42 @@ namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
 }
 
-
 using namespace LuaIntf;
 using namespace lc;
+
+/*
+    .addConstant("VAlign_VABaseline", 0)
+    .addConstant("VAlign_VABottom", 1)
+    .addConstant("VAlign_VAMiddle", 2)
+    .addConstant("VAlign_VATop", 3)
+    .addConstant("HAlign_HALeft", 0)
+    .addConstant("HAlign_HACenter", 1)
+    .addConstant("HAlign_HARight", 2)
+    .addConstant("HAlign_HAAligned", 3)
+    .addConstant("HAlign_HAMiddle", 4)
+    .addConstant("HAlign_HAFit", 5)
+
+    .addConstant("AttachmentPoint_Top_left", 1)
+    .addConstant("AttachmentPoint_Top_center", 2)
+    .addConstant("AttachmentPoint_Top_right", 4)
+    .addConstant("AttachmentPoint_Middle_left", 8+1)
+    .addConstant("AttachmentPoint_Middle_center", 8+2)
+    .addConstant("AttachmentPoint_Middle_right", 8+4)
+    .addConstant("AttachmentPoint_Bottom_left", 16+1)
+    .addConstant("AttachmentPoint_Bottom_center", 16+2)
+    .addConstant("AttachmentPoint_Bottom_right", 16+4)
+    .addConstant("DrawingDirection_None", 0)
+    .addConstant("DrawingDirection_Backward", 1)
+    .addConstant("DrawingDirection_Backward", 2)
+    .addConstant("LineSpacingStyle_AtLeast", 0)
+    .addConstant("LineSpacingStyle_Exact", 1)
+ */
 
 void lua_openlckernel(lua_State* L) {
 
     LuaBinding(L)
+
+
 
     .beginClass<Color>("Color")
     .addConstructor(LUA_ARGS(
@@ -124,8 +153,10 @@ void lua_openlckernel(lua_State* L) {
                                                                double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                   .beginExtendClass<Text, CADEntity>("Text_")
-                                                   .endClass()
+                                                    .beginExtendClass<Text, CADEntity>("Text_")
+                                                    .endClass()
+                                                    .beginExtendClass<DimRadial, CADEntity>("DimRadial_")
+                                                    .endClass()
 
 
 

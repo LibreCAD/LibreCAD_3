@@ -15,7 +15,7 @@ SET(QT_USE_QTDESIGNER ON)
 #pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 #include_directories(${LOG4CXX_INCLUDE_DIRS})
 #link_directories(${LOG4CXX_LIBRARY_DIRS})
-
+include_directories(${CMAKE_INSTALL_PREFIX} /usr/local/include)
 
 # HEADERS
 set(UI_hdrs

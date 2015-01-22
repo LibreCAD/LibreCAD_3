@@ -28,7 +28,6 @@ namespace lc {
             virtual void visit(Text_CSPtr) = 0;
             virtual void visit(Spline_CSPtr) = 0;
             virtual void visit(MText_CSPtr) = 0;
-            virtual void visit(Dimension_CSPtr) = 0;
             virtual void visit(DimAligned_CSPtr) = 0;
             virtual void visit(DimAngular_CSPtr) = 0;
             virtual void visit(DimDiametric_CSPtr) = 0;

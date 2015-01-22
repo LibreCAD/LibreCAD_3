@@ -16,6 +16,7 @@ class LcPainter {
         virtual ~LcPainter() {
         }
 
+        virtual void new_path() = 0;
         virtual void clear(double r, double g, double b) = 0;
         virtual void clear(double r, double g, double b, double a) = 0;
         virtual void move_to(double x, double y) = 0;

@@ -188,10 +188,6 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
 
-            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-
             virtual void accept(DimAligned_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
