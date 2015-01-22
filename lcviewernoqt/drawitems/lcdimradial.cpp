@@ -83,20 +83,26 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
 
     // Draw line
-    painter->move_to(this->definitionPoint().x(), this->definitionPoint().y());
+    EndCaps endCaps;
 
     // If a leader needs to get drawn, do so else just take the end point
-    if (this->leader() > 0) {
+    // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
+    if (this->leader() > 0.) {
         lc::geo::Coordinate end = this->definitionPoint2().move(this->definitionPoint(), -this->leader());
+        painter->move_to(this->definitionPoint2().x(), this->definitionPoint2().y());
         painter->line_to(end.x(), end.y());
+        painter->stroke();
+        endCaps.render(painter, EndCaps::OPENARROW, end.x(), end.y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
     } else {
+        // Draw end caps
+        painter->move_to(this->definitionPoint().x(), this->definitionPoint().y());
         painter->line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
+        painter->stroke();
+        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint().x(), this->definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
     }
 
-    // Draw end caps
-    EndCaps endCaps;
-    endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint().x(), this->definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
     endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., this->definitionPoint().x(), this->definitionPoint().y(), 2.) ;
+
 
     // Draw text
     painter->save();
