@@ -241,6 +241,12 @@ namespace lc {
                     return scale_center + ((*this - scale_center) * scale_factor);
                 }
 
+                /**
+                * Midpoint bewteen two coordinates
+                */
+                inline Coordinate mid(const Coordinate& other) const {
+                    return (other - *this) / 2. + *this;
+                }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {
                     os << "Coordinate(x=" << coordinate._x << " y=" << coordinate._y << " z=" << coordinate._z << ")";

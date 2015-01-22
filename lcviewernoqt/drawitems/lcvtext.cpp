@@ -82,7 +82,7 @@ void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
 
     painter->save();
     painter->translate(insertion_point().x(), -insertion_point().y());
-    painter->rotate(angle());
+    painter->rotate(-angle());
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(text_value().c_str());

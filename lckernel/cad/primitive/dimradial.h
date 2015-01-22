@@ -41,6 +41,12 @@ namespace lc {
                       TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
                       geo::Coordinate const& definitionPoint2,
                       const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            /**
+             * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
+            */
+            DimRadial(geo::Coordinate const& definitionPoint, TextConst::AttachmentPoint const& attachmentPoint, double const lineSpacingFactor,
+                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,  geo::Coordinate const& definitionPoint2,
+                      const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             DimRadial(const DimRadial_CSPtr other, bool sameID = false);
         public:
