@@ -157,6 +157,8 @@ void lua_openlckernel(lua_State* L) {
                                                    .endClass()
                                                    .beginExtendClass<DimRadial, CADEntity>("DimRadial_")
                                                    .endClass()
+                                                   .beginExtendClass<DimDiametric, CADEntity>("DimDiametric_")
+                                                   .endClass()
 
 
 

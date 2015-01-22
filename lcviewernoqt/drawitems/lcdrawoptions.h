@@ -20,8 +20,14 @@ class LcDrawOptions {
             return _radialFormat;
         }
 
+
+        std::string diametricFormat() const {
+            return _diametricFormat;
+        }
+
     private:
         lc::Color  _selectedColor;
         double _dimTextHeight;
         std::string _radialFormat;
+        std::string _diametricFormat;
 };

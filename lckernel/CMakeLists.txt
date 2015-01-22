@@ -40,6 +40,8 @@ cad/primitive/spline.cpp
 cad/primitive/text.cpp
 cad/primitive/dimension.cpp
 cad/primitive/dimradial.cpp
+cad/primitive/dimdiametric.cpp
+
 )
 
 # HEADER FILES
@@ -103,6 +105,7 @@ cad/vo/entitycoordinate.h
 cad/vo/entitydistance.h
 cad/primitive/dimension.h
 cad/primitive/dimradial.h
+cad/primitive/dimdiametric.h
 cad/primitive/textconst.h
 cad/functions/str_format.h
 )

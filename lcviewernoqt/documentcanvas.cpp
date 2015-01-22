@@ -16,6 +16,7 @@
 #include "drawitems/lcvtext.h"
 #include "drawitems/lcvcoordinate.h"
 #include "drawitems/lcdimradial.h"
+#include "drawitems/lcdimdiametric.h"
 
 #include "lcpainter.h"
 
@@ -407,6 +408,14 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         return;
     }
 
+    // Add 'DimDiametric'
+    const auto dimDiametric = event.entity<lc::DimDiametric>();
+
+    if (dimDiametric != nullptr) {
+        auto newDimDiametric = std::make_shared<LCDimDiametric>(dimDiametric);
+        _entityContainer.insert(newDimDiametric);
+        return;
+    }
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {

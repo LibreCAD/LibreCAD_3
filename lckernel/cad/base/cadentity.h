@@ -51,10 +51,6 @@ namespace lc {
     typedef std::shared_ptr<MText> MText_SPtr;
     typedef std::shared_ptr<const MText> MText_CSPtr;
 
-    class Dimension;
-    typedef std::shared_ptr<Dimension> Dimension_SPtr;
-    typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
-
     class DimAligned;
     typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
     typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
@@ -112,6 +108,7 @@ namespace lc {
 
 
             virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
+
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Coordinate_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
@@ -125,6 +122,7 @@ namespace lc {
             virtual void accept(DimDiametric_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimLinear_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimRadial_CSPtr, EntityVisitor&) const = 0;
+
             virtual void accept(Spline_CSPtr, EntityVisitor&) const = 0;
 
             virtual void accept(CADEntity_CSPtr, EntityVisitor&) const = 0;

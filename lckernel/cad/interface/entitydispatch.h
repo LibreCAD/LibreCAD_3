@@ -3,20 +3,6 @@
 #include "cad/const.h"
 
 namespace lc {
-    class Line;
-    class Coordinate;
-    class Circle;
-    class Arc;
-    class Ellipse;
-    class Text;
-    class Spline;
-    class MText;
-    class Dimension;
-    class DimAligned;
-    class DimAngular;
-    class DimDiameteric;
-    class DimLinear;
-    class DimRadial;
     class EntityDispatch {
         public:
 

@@ -70,10 +70,6 @@ void FTrim::visit(MText_CSPtr mtext) {
 
 }
 
-void FTrim::visit(Dimension_CSPtr dim) {
-
-}
-
 void FTrim::visit(DimAligned_CSPtr dimaligned) {
 
 }
