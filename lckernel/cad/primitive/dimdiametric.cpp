@@ -20,7 +20,7 @@ DimDiametric::DimDiametric(geo::Coordinate const& definitionPoint, geo::Coordina
 
 DimDiametric::DimDiametric(geo::Coordinate const& definitionPoint, TextConst::AttachmentPoint const& attachmentPoint, double const lineSpacingFactor,
                            TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,  geo::Coordinate const& definitionPoint2,
-                           const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo): CADEntity(layer, metaInfo), Dimension(definitionPoint, definitionPoint.mid(definitionPoint2), attachmentPoint, definitionPoint.angleTo(definitionPoint2), lineSpacingFactor, lineSpacingStyle, explicitValue),
+                           const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo): CADEntity(layer, metaInfo), Dimension(definitionPoint, definitionPoint.mid(definitionPoint2), attachmentPoint, 0., lineSpacingFactor, lineSpacingStyle, explicitValue),
     _leader(leader), _definitionPoint2(definitionPoint2) {
 }
 

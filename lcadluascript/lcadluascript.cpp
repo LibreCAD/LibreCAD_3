@@ -222,7 +222,7 @@ std::string LCadLuaScript::run(const std::string& script) {
 
 /* DimRadial
 layer = active.proxy.layerByName("0")
-dr1=DimRadial(Coord(50,50), Coord(75,75), 2, math.rad(45), 1., 1, "<>", Coord(100,100), 0., layer);
+dr1=DimRadial(Coord(50,50), Coord(120,120), 2, 0, 1., 1, "<>", Coord(100,100), 0., layer);
 dr2=DimRadial(Coord(50,50), Coord(25,50), 2, 0, 1., 1, "Explicit", Coord(-70.71+50,50), 0., layer);
 dr3=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(0,0), 0., layer);
 dr4=DimRadial2(Coord(50,50), 2, 1., 1, "<>", Coord(50,0), 0., layer);
@@ -235,12 +235,11 @@ Builder(d):append(dr1):append(dr2):append(dr3):append(dr4):append(dr5):append(dr
 
 /* DimDiametric
 layer = active.proxy.layerByName("0")
-dr1=DimDiametric(Coord(0,100), Coord(-20,100), 2, 0, 1., 1, "<>", Coord(100,0), 0., layer);
-dr2=DimDiametric(Coord(100,100), Coord(30,30), 2, math.rad(45), 1., 1, "<>", Coord(0,0), 0., layer);
-dr3=DimDiametric2(Coord(50,50), 2, 1., 1, "<>", Coord(50+70.7106781,50), 0., layer);
+dr1=DimDiametric(Coord(0,100), Coord(130,-30), 2, 0, 1., 1, "<>", Coord(100,0), 0., layer);
+dr2=DimDiametric2(Coord(0,0), 2, 1., 1, "<>", Coord(100,100), 0., layer);
 c=Circle(Coord(50, 50), 70.7106781, layer);
 d=active.document()
-Builder(d):append(dr3):append(dr2):append(dr1):append(c):execute()
+Builder(d):append(dr1):append(dr2):append(c):execute()
 */
 
 /* Line

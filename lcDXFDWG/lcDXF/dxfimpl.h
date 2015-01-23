@@ -30,12 +30,25 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void addPoint(const DRW_Point& data);
         virtual void addMText(const DRW_MText& data);
         virtual void addHatch(const DRW_Hatch* data);
-
+        virtual void setBlock(const int handle);
+        virtual void addBlock(const DRW_Block& data);
+        virtual void endBlock();
 
         std::shared_ptr<lc::MetaLineWidth> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const;
 
         lc::Document* _document;
         lc::operation::Builder_SPtr _builder;
+        int _blockHandle;
+
+
+    private:
+        /**
+        * Return the MetaInfo object from a DRW_Entity.
+        * This is usefull because most/all entities will share teh same basic properties
+        * can be be read with just one routine
+        */
+        lc::MetaInfo_SPtr getMetaInfo( DRW_Entity const & ) const;
+        lc::geo::Coordinate coord(DRW_Coord const & coord) const;
     private:
         lc::iColor icol;
 

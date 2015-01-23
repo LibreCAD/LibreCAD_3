@@ -33,13 +33,13 @@ namespace lc {
             enum AttachmentPoint {
                 Top_left = 1,
                 Top_center = 2,
-                Top_right = 4,
-                Middle_left = 8 + 1,
-                Middle_center = 8 + 2,
-                Middle_right = 8 + 4,
-                Bottom_left = 16 + 1,
-                Bottom_center = 16 + 2,
-                Bottom_right = 16 + 4
+                Top_right = 3,
+                Middle_left = 4,
+                Middle_center = 5,
+                Middle_right = 6,
+                Bottom_left = 7,
+                Bottom_center = 8,
+                Bottom_right = 9
             };
             /**
             * MText drawing direction.

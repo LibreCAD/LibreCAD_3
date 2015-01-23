@@ -21,7 +21,7 @@ EndCaps::EndCaps() {
 
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(OPENARROW, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
         double cosv1, sinv1, cosv2, sinv2;
         double arrowSide = size / cos(0.165);
 
@@ -39,7 +39,7 @@ EndCaps::EndCaps() {
 
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(CLOSEDARROW, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
         double cosv1, sinv1, cosv2, sinv2;
         double arrowSide = size / cos(0.165);
 
@@ -57,7 +57,7 @@ EndCaps::EndCaps() {
 
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(OPENSQUARE, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
 
         double cosv1, sinv1, cosv2, sinv2, cosv3, sinv3;
         double arrowSide = size / cos(0.165);
@@ -78,7 +78,7 @@ EndCaps::EndCaps() {
     }));
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(CLOSEDSQUARE, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
         double cosv1, sinv1, cosv2, sinv2, cosv3, sinv3;
         double arrowSide = size / cos(0.165);
 
@@ -99,7 +99,7 @@ EndCaps::EndCaps() {
     }));
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(OPENTRIANGLE, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
         double cosv1, sinv1, cosv2, sinv2;
         double arrowSide = size / cos(0.165);
 
@@ -117,7 +117,7 @@ EndCaps::EndCaps() {
 
     _arrows.insert(std::pair<unsigned int, std::function<void(LcPainter*, double , double , double, double, double)>>(CLOSEDTRIANGLE, [](LcPainter * painter, double startX, double startY, double endX, double endY, double size) {
         lc::geo::Coordinate start(startX, startY);
-        double angle = start.angleTo(lc::geo::Coordinate(endX, endY));
+        double angle = -start.angleTo(lc::geo::Coordinate(endX, endY));
         double cosv1, sinv1, cosv2, sinv2;
         double arrowSide = size / cos(0.165);
 

@@ -29,6 +29,14 @@ namespace lc {
             Coordinate(const double x, const double y, const Layer_CSPtr layer);
 
             /**
+            * @brief Coordinate, Default Coordinate Constructor
+            * @param geo::Coordinate coord
+            * @param Layer_CSPtr layer
+            * @param MetaTypes_CSPtr metaTypes
+            */
+            Coordinate(geo::Coordinate const & coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
+            /**
              * @brief Coordinate, Coordinate constructor with metatypes
              * @param double x
              * @param double y
