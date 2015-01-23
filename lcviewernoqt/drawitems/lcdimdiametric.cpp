@@ -97,8 +97,8 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
         painter->line_to(this->middleOfText().x(), this->middleOfText().y());
         painter->stroke();
 
-        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint().x(), this->definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
-        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint2().x(), this->definitionPoint2().y(), this->definitionPoint().x(), this->definitionPoint().y(), 10.) ;
+        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint().x(), this->definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), -10.) ;
+        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint2().x(), this->definitionPoint2().y(), this->definitionPoint().x(), this->definitionPoint().y(), -10.) ;
     } else { // If the text is inside draw a inside
         painter->move_to(this->middleOfText().x(), this->middleOfText().y());
         painter->line_to(this->definitionPoint().x(), this->definitionPoint().y());

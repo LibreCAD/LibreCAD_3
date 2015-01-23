@@ -23,7 +23,7 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
     std::string value = explicitValue();
     if (value == "<>") {
-        value = string_format(options->radialFormat(), radiusCircle * 2.);
+        value = string_format(options->radialFormat(), radiusCircle);
     } else if (value == " ") {
         value = "";
     }
