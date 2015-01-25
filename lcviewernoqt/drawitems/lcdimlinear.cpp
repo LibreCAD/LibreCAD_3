@@ -1,32 +1,35 @@
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include "lcdimradial.h"
+#include "LCDimLinear.h"
 #include "endcaps.h"
 #include <cad/functions/str_format.h>
 
-LCDimRadial::LCDimRadial(const lc::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::DimRadial(dimRadial, true) {
+LCDimLinear::LCDimLinear(const lc::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::DimLinear(dimLinear, true) {
 }
 
 /**
 * Draw a DimRadial
-* TODO: 1) Draw correct leader
-*       2) Change text position such that it's correctly placed under the text. I am not 100% sure how this is done from DXF
-*       It could be that Attachmentpoint is simply incorrect?!?!?! or that the DXF importer is incorrect?
+* TODO: 1) Draw linear dimension with correct edges/dots
+*       2) When oblique is set, verify if we calculate length correctly. Not sure if that's invluenced
+*       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/
 *
 */
-void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
     double height = options->dimTextHeight();
 
+    const double dx = this->definitionPoint3().x() - this->definitionPoint2().x();
+    const double dy = this->definitionPoint3().y() - this->definitionPoint2().y();
+    const bool isHorizontal = std::abs(definitionPoint().x() - definitionPoint3().x()) < LCTOLERANCE;
+
 
     // Decide to show the explecit value or the measured value
-    double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
     std::string value = explicitValue();
 
     if (value == "<>") {
-        value = string_format(options->radialFormat(), radiusCircle);
+        value = string_format(options->linearFormat(), isHorizontal ? std::abs(dx) : std::abs(dy));
     } else if (value == "") {
-        value = string_format(options->radialFormat(), radiusCircle);
+        value = string_format(options->linearFormat(), isHorizontal ? std::abs(dx) : std::abs(dy));
     } else if (value == " ") {
         value = "";
     }
@@ -100,37 +103,51 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     // If a leader needs to get drawn, do so else just take the end point
     // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
-    if (distanceTextToCenter >= radiusCircle) {
-        painter->move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter->line_to(definitionPoint2().x(), definitionPoint2().y());
+    if (isHorizontal) {
+        painter->move_to(this->definitionPoint3().x(), this->definitionPoint3().y());
         painter->line_to(definitionPoint().x(), definitionPoint().y());
+        painter->line_to(definitionPoint2().x(), definitionPoint().y());
+        painter->line_to(definitionPoint2().x(), definitionPoint2().y());
         painter->stroke();
-        endCaps.render(painter, EndCaps::OPENARROW, middleOfText().x(), middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
+
+        endCaps.render(painter, EndCaps::OPENARROW, definitionPoint().x(), definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint().y(), 10.) ;
+        endCaps.render(painter, EndCaps::OPENARROW, definitionPoint2().x(), definitionPoint().y(), this->definitionPoint().x(), this->definitionPoint().y(), 10.) ;
+
     } else {
-        // Draw end caps
-        painter->move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter->line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
+        painter->move_to(this->definitionPoint3().x(), this->definitionPoint3().y());
+        painter->line_to(definitionPoint().x(), definitionPoint().y());
+        painter->line_to(definitionPoint().x(), definitionPoint2().y());
+        painter->line_to(definitionPoint2().x(), definitionPoint2().y());
         painter->stroke();
-        endCaps.render(painter, EndCaps::OPENARROW, this->middleOfText().x(), this->middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
+
+        endCaps.render(painter, EndCaps::OPENARROW, definitionPoint().x(), definitionPoint().y(), this->definitionPoint().x(), this->definitionPoint2().y(), 10.) ;
+        endCaps.render(painter, EndCaps::OPENARROW, definitionPoint().x(), definitionPoint2().y(), this->definitionPoint().x(), this->definitionPoint().y(), 10.) ;
     }
 
-    endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., this->definitionPoint().x(), this->definitionPoint().y(), 2.) ;
-
+    /** Added to verify the points locations
+    painter->move_to(middleOfText().x(), middleOfText().y());
+    painter->text("MT");
+    painter->move_to(definitionPoint().x(), definitionPoint().y());
+    painter->text("0");
+    painter->move_to(definitionPoint2().x(), definitionPoint2().y());
+    painter->text("2");
+    painter->move_to(definitionPoint3().x(), definitionPoint3().y());
+    painter->text("3");
+    painter->stroke();
+    */
 
     // Draw text
     painter->save();
     painter->translate(this->middleOfText().x(), -middleOfText().y());
-    painter->rotate(-this->definitionPoint().angleTo(this->definitionPoint2()) + angle());
+    painter->rotate((isHorizontal ? 0. : (90. / 180.) * M_PI) + angle());
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(value.c_str());
     painter->stroke();
     painter->restore();
 
-
     if (modified) {
         painter->restore();
     }
 
 }
-

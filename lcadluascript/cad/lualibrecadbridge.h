@@ -21,6 +21,7 @@
 #include "cad/primitive/text.h"
 #include "cad/primitive/dimradial.h"
 #include "cad/primitive/dimdiametric.h"
+#include "cad/primitive/dimlinear.h"
 #include "cad/meta/color.h"
 #include "cad/base/metainfo.h"
 #include "cad/operations/builder.h"

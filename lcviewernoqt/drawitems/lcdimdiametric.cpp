@@ -19,11 +19,15 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
     // Decide to show the explecit value or the measured value
     double diameterCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
     std::string value = explicitValue();
+
     if (value == "<>") {
+        value = string_format(options->diametricFormat(), diameterCircle);
+    } else if (value == "") {
         value = string_format(options->diametricFormat(), diameterCircle);
     } else if (value == " ") {
         value = "";
     }
+
 
     painter->font_size(height);
     painter->select_font_face("stick3.ttf");
@@ -106,6 +110,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
 
         endCaps.render(painter, EndCaps::OPENARROW, this->middleOfText().x(), this->middleOfText().y(), this->definitionPoint().x(), this->definitionPoint().y(), 10.) ;
     }
+
     endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., center.x(), center.y(), 2.) ;
 
 
@@ -113,7 +118,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
     // Draw text
     painter->save();
     painter->translate(this->middleOfText().x(), -middleOfText().y());
-    painter->rotate(this->definitionPoint2().angleTo(this->definitionPoint()) + angle());
+    painter->rotate(-this->definitionPoint2().angleTo(this->definitionPoint()) + angle());
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(value.c_str());

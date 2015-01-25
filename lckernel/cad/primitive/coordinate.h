@@ -34,7 +34,7 @@ namespace lc {
             * @param Layer_CSPtr layer
             * @param MetaTypes_CSPtr metaTypes
             */
-            Coordinate(geo::Coordinate const & coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Coordinate(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             /**
              * @brief Coordinate, Coordinate constructor with metatypes

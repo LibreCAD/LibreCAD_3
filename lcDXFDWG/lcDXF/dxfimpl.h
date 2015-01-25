@@ -47,8 +47,8 @@ class DXFimpl : public DRW_InterfaceImpl {
         * This is usefull because most/all entities will share teh same basic properties
         * can be be read with just one routine
         */
-        lc::MetaInfo_SPtr getMetaInfo( DRW_Entity const & ) const;
-        lc::geo::Coordinate coord(DRW_Coord const & coord) const;
+        lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const&) const;
+        lc::geo::Coordinate coord(DRW_Coord const& coord) const;
     private:
         lc::iColor icol;
 

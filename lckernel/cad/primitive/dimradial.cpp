@@ -24,7 +24,7 @@ DimRadial::DimRadial(geo::Coordinate const& definitionPoint, TextConst::Attachme
     _leader(leader), _definitionPoint2(definitionPoint2) {
 }
 
-DimRadial::DimRadial(const DimRadial_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _leader(other->_leader), _definitionPoint2(other->definitionPoint2()) {
+DimRadial::DimRadial(const DimRadial_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _leader(other->_leader), _definitionPoint2(other->_definitionPoint2) {
 
 }
 

@@ -41,6 +41,7 @@ cad/primitive/text.cpp
 cad/primitive/dimension.cpp
 cad/primitive/dimradial.cpp
 cad/primitive/dimdiametric.cpp
+cad/primitive/dimlinear.cpp
 
 )
 
@@ -106,6 +107,7 @@ cad/vo/entitydistance.h
 cad/primitive/dimension.h
 cad/primitive/dimradial.h
 cad/primitive/dimdiametric.h
+cad/primitive/dimlinear.h
 cad/primitive/textconst.h
 cad/functions/str_format.h
 )

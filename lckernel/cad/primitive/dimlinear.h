@@ -4,13 +4,11 @@
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
-
-#include "cad/geometry/geocoordinate.h"
-#include "cad/geometry/geodimlinear.h"
-#include "cad/geometry/geodimension.h"
+#include "cad/primitive/dimension.h"
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
+#include "coordinate.h"
 
 namespace lc {
     class DimLinear;
@@ -18,7 +16,7 @@ namespace lc {
     typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
 
 
-    class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public geo::DimLinear {
+    class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension {
         public:
 
 
@@ -30,26 +28,15 @@ namespace lc {
              * @param double oblique
              * @param Layer_CSPtr layer
              */
-            DimLinear(const Dimension& dimension,
-                      const geo::Coordinate& extension_point1,
-                      const geo::Coordinate& extension_point2,
-                      const double oblique,
-                      const Layer_CSPtr layer);
+            DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                      geo::Coordinate const& definitionPoint2,  geo::Coordinate const& definitionPoint3, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
-            /**
-             * @brief DimLinear, DimLinear constructor with metatypes
-             * @param Dimension dimension
-             * @param geo::Coordinate extension_point1
-             * @param geo::Coordinate extension_point2
-             * @param double oblique
-             * @param Layer_CSPtr layer
-             * @param MetaTypes_CSPtr metaTypes
-             */
-            DimLinear(const Dimension& dimension,
-                      const geo::Coordinate& extension_point1,
-                      const geo::Coordinate& extension_point2,
-                      const double oblique,
-                      const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
+            DimLinear(const DimLinear_CSPtr other, bool sameID = false);
+
+            static DimLinear_SPtr dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+                                          TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
         public:
             /**
@@ -89,6 +76,18 @@ namespace lc {
             virtual const geo::Area boundingBox() const;
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
+
+            // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
+            double oblique() const;
+
+            // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
+            // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points
+            geo::Coordinate definitionPoint2() const;
+            geo::Coordinate definitionPoint3() const;
+        protected:
+            const double _oblique;
+            const geo::Coordinate _definitionPoint2;
+            const geo::Coordinate _definitionPoint3;
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
@@ -115,9 +114,6 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Dimension_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(DimAligned_CSPtr o, EntityVisitor& ei) const {

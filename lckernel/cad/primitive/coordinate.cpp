@@ -12,7 +12,7 @@ Coordinate::Coordinate(const double x, const double y, const Layer_CSPtr layer, 
     : CADEntity(layer, metaInfo),  geo::Coordinate(x, y) {
 }
 
-Coordinate::Coordinate(geo::Coordinate const & coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Coordinate(coord) {
+Coordinate::Coordinate(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Coordinate(coord) {
 
 }
 

@@ -18,6 +18,7 @@ drawitems/endcaps.cpp
 drawitems/gradientbackground.cpp
 drawitems/lcdimradial.cpp
 drawitems/lcdimdiametric.cpp
+drawitems/lcdimlinear.cpp
 lccairopainter.cpp
 documentcanvas.cpp
 )
@@ -38,6 +39,7 @@ drawitems/endcaps.h
 drawitems/gradientbackground.h
 drawitems/lcdimradial.h
 drawitems/lcdimdiametric.h
+drawitems/lcdimlinear.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h

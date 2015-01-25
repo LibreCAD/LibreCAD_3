@@ -17,6 +17,7 @@
 #include "drawitems/lcvcoordinate.h"
 #include "drawitems/lcdimradial.h"
 #include "drawitems/lcdimdiametric.h"
+#include "drawitems/lcdimlinear.h"
 
 #include "lcpainter.h"
 
@@ -416,6 +417,16 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         _entityContainer.insert(newDimDiametric);
         return;
     }
+
+    // Add 'DimLinear'
+    const auto dimLinear = event.entity<lc::DimLinear>();
+
+    if (dimLinear != nullptr) {
+        auto newDimLinear = std::make_shared<LCDimLinear>(dimLinear);
+        _entityContainer.insert(newDimLinear);
+        return;
+    }
+
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {

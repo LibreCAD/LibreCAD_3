@@ -96,7 +96,7 @@ namespace lc {
 
             double leader() const;
 
-            geo::Coordinate definitionPoint2() const;
+            geo::Coordinate definitionPoint2() const; // Where definitionPoint is the center, definitionPoint2 specifies the 'edge'
 
         protected:
             const double _leader;
