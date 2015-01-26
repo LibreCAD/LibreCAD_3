@@ -29,7 +29,7 @@ namespace lc {
              * @param explicitValue given value
              */
 
-            Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double const angle,
+            Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double const textAngle,
                       double  lineSpacingFactor, TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue);
 
             /**
@@ -94,7 +94,7 @@ namespace lc {
             /**
             * Angle of witch to draw the text on
             */
-            double angle() const;
+            double textAngle() const;
 
             /**
             * Line spacing factor
@@ -117,7 +117,7 @@ namespace lc {
             const geo::Coordinate _definitionPoint;
             const geo::Coordinate _middleOfText;
             const TextConst::AttachmentPoint _attachmentPoint;
-            const double _angle;
+            const double _textAngle;
             const double _lineSpacingFactor;
             const TextConst::LineSpacingStyle _lineSpacingStyle;
             const std::string _explicitValue;

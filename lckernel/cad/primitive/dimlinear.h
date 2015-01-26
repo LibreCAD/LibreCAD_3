@@ -15,7 +15,9 @@ namespace lc {
     typedef std::shared_ptr<DimLinear> DimLinear_SPtr;
     typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
 
-
+    /**
+    * TODO Handle
+    */
     class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension {
         public:
 
@@ -28,15 +30,17 @@ namespace lc {
              * @param double oblique
              * @param Layer_CSPtr layer
              */
-            DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+            DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
                       TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
-                      geo::Coordinate const& definitionPoint2,  geo::Coordinate const& definitionPoint3, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                      geo::Coordinate const& definitionPoint2,  geo::Coordinate const& definitionPoint3, const double angle, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
 
             DimLinear(const DimLinear_CSPtr other, bool sameID = false);
 
-            static DimLinear_SPtr dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
-                                          TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            /**
+             * Convenient function
+            */
+            static DimLinear_SPtr dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, std::string const& explicitValue,const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
         public:
             /**
@@ -80,11 +84,15 @@ namespace lc {
             // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
             double oblique() const;
 
+            // Angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
+            double angle() const;
+
             // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points
             geo::Coordinate definitionPoint2() const;
             geo::Coordinate definitionPoint3() const;
         protected:
+            const double _angle;
             const double _oblique;
             const geo::Coordinate _definitionPoint2;
             const geo::Coordinate _definitionPoint3;

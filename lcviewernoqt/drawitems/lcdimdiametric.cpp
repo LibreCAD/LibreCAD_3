@@ -118,7 +118,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
     // Draw text
     painter->save();
     painter->translate(this->middleOfText().x(), -middleOfText().y());
-    painter->rotate(-this->definitionPoint2().angleTo(this->definitionPoint()) + angle());
+    painter->rotate(-this->definitionPoint2().angleTo(this->definitionPoint()) + textAngle());
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(value.c_str());

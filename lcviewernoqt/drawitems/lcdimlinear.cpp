@@ -11,7 +11,7 @@ LCDimLinear::LCDimLinear(const lc::DimLinear_CSPtr dimLinear) : LCVDrawItem(true
 * Draw a DimRadial
 * TODO: 1) Draw linear dimension with correct edges/dots
 *       2) When oblique is set, verify if we calculate length correctly. Not sure if that's invluenced
-*       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/
+*       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/ can possebly be drawn using painter's skew (see transformations)
 *
 */
 void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
@@ -99,7 +99,6 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     // Draw line
     EndCaps endCaps;
-    double distanceTextToCenter = this->middleOfText().distanceTo(definitionPoint());
 
     // If a leader needs to get drawn, do so else just take the end point
     // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
@@ -139,7 +138,7 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     // Draw text
     painter->save();
     painter->translate(this->middleOfText().x(), -middleOfText().y());
-    painter->rotate((isHorizontal ? 0. : (90. / 180.) * M_PI) + angle());
+    painter->rotate((isHorizontal ? 0. : (90. / 180.) * M_PI) + textAngle());
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(value.c_str());

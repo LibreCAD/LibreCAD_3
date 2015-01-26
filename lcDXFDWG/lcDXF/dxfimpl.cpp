@@ -203,6 +203,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
                          data->getText(),
                          coord(data->getDef1Point()),
                          coord(data->getDef2Point()),
+                         data->getAngle(),
                          data->getOblique(),
                          layer, mf));
 
@@ -215,7 +216,6 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
-
     _builder->append(std::make_shared<lc::DimRadial>(
                          coord(data->getCenterPoint()),
                          coord(data->getTextPoint()),

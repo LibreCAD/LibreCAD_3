@@ -3,12 +3,12 @@
 
 using namespace lc;
 
-Dimension::Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
+Dimension::Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue)
     : _definitionPoint(definitionPoint),
       _middleOfText(middleOfText),
       _attachmentPoint(attachmentPoint),
-      _angle(angle),
+      _textAngle(textAngle),
       _lineSpacingFactor(lineSpacingFactor),
       _lineSpacingStyle(lineSpacingStyle),
       _explicitValue(explicitValue) {
@@ -17,22 +17,22 @@ Dimension::Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate con
 Dimension::Dimension(const geo::Coordinate& definitionPoint,
                      const geo::Coordinate& middleOfText,
                      const TextConst::AttachmentPoint attachmentPoint,
-                     const double angle)   : _definitionPoint(definitionPoint),
+                     const double textAngle)   : _definitionPoint(definitionPoint),
     _middleOfText(middleOfText),
     _attachmentPoint(attachmentPoint),
-    _angle(angle),
+    _textAngle(textAngle),
     _lineSpacingFactor(1.),
     _lineSpacingStyle(TextConst::LineSpacingStyle::AtLeast),
     _explicitValue("<>")  {
 }
 
 Dimension::Dimension(Dimension const& other)  : _definitionPoint(other.definitionPoint()),
-    _middleOfText(other.middleOfText()),
-    _attachmentPoint(other.attachmentPoint()),
-    _angle(other.angle()),
-    _lineSpacingFactor(other.lineSpacingFactor()),
-    _lineSpacingStyle(other.lineSpacingStyle()),
-    _explicitValue(other.explicitValue()) {
+    _middleOfText(other._middleOfText),
+    _attachmentPoint(other._attachmentPoint),
+    _textAngle(other._textAngle),
+    _lineSpacingFactor(other._lineSpacingFactor),
+    _lineSpacingStyle(other._lineSpacingStyle),
+    _explicitValue(other._explicitValue) {
 
 }
 /*
@@ -75,8 +75,8 @@ geo::Coordinate Dimension::middleOfText() const {
     return _middleOfText;
 }
 
-double Dimension::angle() const {
-    return _angle;
+double Dimension::textAngle() const {
+    return _textAngle;
 }
 
 TextConst::AttachmentPoint const& Dimension::attachmentPoint() const {
