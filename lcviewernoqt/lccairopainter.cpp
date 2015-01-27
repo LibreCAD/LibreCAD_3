@@ -185,7 +185,7 @@ void LcCairoPainter::scale(double s) {
 }
 
 void LcCairoPainter::rotate(double r) {
-    cairo_rotate(_cr, -r);
+    cairo_rotate(_cr, r);
 }
 
 void LcCairoPainter::select_font_face(const char* text_val) {

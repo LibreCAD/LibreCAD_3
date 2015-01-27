@@ -16,9 +16,11 @@ drawitems/lcvtext.cpp
 drawitems/metricgrid.cpp
 drawitems/endcaps.cpp
 drawitems/gradientbackground.cpp
+drawitems/lcdimension.cpp
 drawitems/lcdimradial.cpp
 drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
+drawitems/lcdimaligned.cpp
 lccairopainter.cpp
 documentcanvas.cpp
 )
@@ -37,9 +39,11 @@ drawitems/lcvtext.h
 drawitems/metricgrid.h
 drawitems/endcaps.h
 drawitems/gradientbackground.h
+drawitems/lcdimension.h
 drawitems/lcdimradial.h
 drawitems/lcdimdiametric.h
 drawitems/lcdimlinear.h
+drawitems/lcdimaligned.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h

@@ -18,6 +18,7 @@
 #include "drawitems/lcdimradial.h"
 #include "drawitems/lcdimdiametric.h"
 #include "drawitems/lcdimlinear.h"
+#include "drawitems/lcdimaligned.h"
 
 #include "lcpainter.h"
 
@@ -424,6 +425,15 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (dimLinear != nullptr) {
         auto newDimLinear = std::make_shared<LCDimLinear>(dimLinear);
         _entityContainer.insert(newDimLinear);
+        return;
+    }
+
+    // Add 'DimAligned'
+    const auto dimAligned = event.entity<lc::DimAligned>();
+
+    if (dimAligned != nullptr) {
+        auto newDimAligned = std::make_shared<LCDimAligned>(dimAligned);
+        _entityContainer.insert(newDimAligned);
         return;
     }
 

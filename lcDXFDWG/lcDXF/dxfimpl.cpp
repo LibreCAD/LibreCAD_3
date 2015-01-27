@@ -7,6 +7,7 @@
 #include <cad/primitive/dimradial.h>
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimaligned.h>
 #include <cad/primitive/coordinate.h>
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
@@ -155,34 +156,24 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
-    //    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
-    //                      data->getTextLineStyle(), data->getTextLineFactor(),
-    //                      data->getText(), data->getStyle(), data->getAngle());
+        if (_blockHandle != -1) {
+            return;
+        }
 
-    //    auto col = icol.intToColor(data.color);
-    //    auto l = _document->layerByName(data.layer);
-    //    if (data.color == 256 && data.lWeight == 29) {
-    //        _builder->append(std::make_shared<lc::DimAligned>(
-    //                             dim, data->getDef1Point(),
-    //                             data->getDef2Point(),
-    //                             l));
-    //    } else {
-    //        auto mf = lc::MetaInfo::create();
-    //        if ( data.color > 256 ) {
-    //            auto mc = std::make_shared<lc::MetaColor>(col);
-    //            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
-    //        }
-    //        if ( data.lWeight < 24) {
-    //            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
-    //            auto lw = std::make_shared<lc::MetaLineWidth>(len);
-    //            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
-    //        }
-    //        _builder->append(std::make_shared<lc::DimAligned>(
-    //                             dim, data->getDef1Point(),
-    //                             data->getDef2Point(),
-    //                             l, mf));
+        auto mf = getMetaInfo(*data);
+        auto layer = _document->layerByName(data->layer);
 
-    //    }
+        _builder->append(std::make_shared<lc::DimAligned>(
+                coord(data->getDefPoint()),
+                coord(data->getTextPoint()),
+                static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                data->getDir(),
+                data->getTextLineFactor(),
+                static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                data->getText(),
+                coord(data->getDef1Point()),
+                coord(data->getDef2Point()),
+                layer, mf));
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
@@ -190,7 +181,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
     _builder->append(std::make_shared<lc::DimLinear>(
@@ -214,7 +205,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
     _builder->append(std::make_shared<lc::DimRadial>(
                          coord(data->getCenterPoint()),
@@ -236,7 +227,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
     _builder->append(std::make_shared<lc::DimDiametric>(

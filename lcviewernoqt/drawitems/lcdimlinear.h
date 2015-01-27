@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lcvdrawitem.h"
+#include "lcdimension.h"
 #include <cad/primitive/dimlinear.h>
 
 
@@ -8,7 +9,7 @@ class LcDrawOptions;
 class LcPainter;
 class QRectF;
 
-class LCDimLinear : public LCVDrawItem, public lc::DimLinear {
+class LCDimLinear : public LCVDrawItem, public lc::DimLinear, public LCDimension {
     public:
         LCDimLinear(const lc::DimLinear_CSPtr dimLinear);
 

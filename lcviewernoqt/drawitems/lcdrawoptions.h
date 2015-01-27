@@ -29,11 +29,15 @@ class LcDrawOptions {
             return _linearFormat;
         }
 
+        std::string alignedFormat() const {
+            return _alignedFormat;
+        }
 
-    private:
+private:
         lc::Color  _selectedColor;
         double _dimTextHeight;
         std::string _radialFormat;
         std::string _diametricFormat;
         std::string _linearFormat;
+        std::string _alignedFormat;
 };
