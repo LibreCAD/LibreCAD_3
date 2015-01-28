@@ -1,5 +1,6 @@
 #include "cad/primitive/dimaligned.h"
 
+
 using namespace lc;
 
 DimAligned::DimAligned(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
@@ -14,22 +15,12 @@ DimAligned::DimAligned(geo::Coordinate const& definitionPoint, geo::Coordinate c
 DimAligned::DimAligned(const DimAligned_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _definitionPoint2(other->_definitionPoint2), _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, double const textOffset, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
 
-    const double dx = std::abs(p2.x() - p3.x());
-    const double dy = std::abs(p2.y() - p3.y());
-    const bool isHorizontal = dx > dy;
+    geo::Coordinate dir = (p3-p2).rotate(0.5*M_PI);
+    geo::Coordinate p0 = p3.move(dir,textOffset);
+    geo::Coordinate middletext (p2.mid(p3).move(dir,textOffset));
 
-    geo::Coordinate p0;
-
-    if (isHorizontal) {
-        p0 = geo::Coordinate(p3.x(), p2.mid(p3).y());
-    } else {
-        p0 = geo::Coordinate(p3.mid(p2).x(), p3.y());
-
-    }
-
-    geo::Coordinate middletext(p2.mid(p3));
 
     return std::make_shared<DimAligned>(p0, middletext, TextConst::AttachmentPoint::Top_center , 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p2, p3, layer, metaInfo);
 }

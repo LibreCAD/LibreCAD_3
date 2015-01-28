@@ -86,3 +86,10 @@ Reading materials for feature usage
 
 If we want to support associative drawings, this is a good introduction to get started
 http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/
+
+
+
+Some comment's created with
+=========
+
+http://patorjk.com/software/taag/#p=display&c=c&f=Three%20Point&t=DimAligned

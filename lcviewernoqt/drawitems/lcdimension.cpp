@@ -19,6 +19,7 @@ void LCDimension::drawText(std::string const & value, double const angle, lc::Te
     lc::TextConst::AttachmentPoint aPoint = attachmentPoint;
     double newAngle = angle;
 
+    // THis code 'fixes' the Atatchment point if the text is behind some rotation
     if (angle > 0.5*M_PI || angle < -0.5*M_PI) {
         newAngle = angle - M_PI;
         switch (attachmentPoint) {

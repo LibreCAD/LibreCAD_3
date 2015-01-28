@@ -259,7 +259,7 @@ namespace lc {
                  * move the coordinate by distance d over vector direction
                 */
                 inline Coordinate move(const Coordinate& direction, double d) const {
-                    return (direction - *this).norm() * d + *this;
+                    return direction.norm() * d + *this;
                 }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {

@@ -35,7 +35,7 @@ namespace lc {
 
         DimAligned(const DimAligned_CSPtr other, bool sameID = false);
 
-        static DimAligned_SPtr dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+        static DimAligned_SPtr dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
     public:
         /**
