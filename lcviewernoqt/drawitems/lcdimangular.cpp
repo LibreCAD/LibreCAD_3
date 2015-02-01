@@ -134,7 +134,7 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
     }
 
     // Text
-    this->drawText(value, (aEnd - aStart) / 2 + aStart + -0.5 * M_PI + this->textAngle(), this->attachmentPoint(), this->middleOfText(), painter, options, rect);
+    this->drawText(value, (aEnd - aStart) / 2 + aStart + -0.5 * M_PI + this->textAngle(), lc::TextConst::Top_center, this->middleOfText(), painter, options, rect);
 
 
     if (modified) {
