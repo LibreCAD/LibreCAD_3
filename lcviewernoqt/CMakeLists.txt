@@ -21,6 +21,7 @@ drawitems/lcdimradial.cpp
 drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
+drawitems/lcdimangular.cpp
 lccairopainter.cpp
 documentcanvas.cpp
 )
@@ -44,6 +45,7 @@ drawitems/lcdimradial.h
 drawitems/lcdimdiametric.h
 drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
+drawitems/lcdimangular.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h

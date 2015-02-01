@@ -22,6 +22,7 @@ namespace lc {
             };
 
             Intersect(Method method, double tolerance);
+            virtual void visit(const geo::Vector&, const geo::Vector&);
 
             virtual void visit(Line_CSPtr, const geo::Vector&);
             virtual void visit(Line_CSPtr, Coordinate_CSPtr);

@@ -57,7 +57,7 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., this->definitionPoint().x(), this->definitionPoint().y(), 2.) ;
 
-    this->drawText(value,this->definitionPoint().angleTo(this->definitionPoint2()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
+    this->drawText(value, this->definitionPoint().angleTo(this->definitionPoint2()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
 
 
     if (modified) {

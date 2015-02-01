@@ -9,9 +9,7 @@ LCDimAligned::LCDimAligned(const lc::DimAligned_CSPtr dimAligned) : LCVDrawItem(
 
 /**
 * Draw a DimRadial
-* TODO: 1) Draw aligned dimension with correct edges/dots
-*       2) When oblique is set, verify if we calculate length correctly. Not sure if that's invluenced
-*       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/ can possebly be drawn using painter's skew (see transformations)
+* TODO: 1) When dimension is small then text draw a outside version see https://github.com/LibreCAD/LibreCAD_3/issues/19
 *
 */
 void LCDimAligned::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {

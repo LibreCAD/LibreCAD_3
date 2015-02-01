@@ -5,8 +5,8 @@ using namespace lc;
 DimLinear::DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
                      geo::Coordinate const& definitionPoint2, geo::Coordinate const& definitionPoint3, const double angle, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo):
-        CADEntity(layer, metaInfo), Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
-        _angle(angle), _oblique(oblique), _definitionPoint2(definitionPoint2), _definitionPoint3(definitionPoint3) {
+    CADEntity(layer, metaInfo), Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
+    _angle(angle), _oblique(oblique), _definitionPoint2(definitionPoint2), _definitionPoint3(definitionPoint3) {
 
 }
 
@@ -14,7 +14,7 @@ DimLinear::DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate con
 DimLinear::DimLinear(const DimLinear_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _angle(other->_angle), _oblique(other->_oblique), _definitionPoint2(other->_definitionPoint2), _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, const double textOffset, std::string const& explicitValue,const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, const double textOffset, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
 
     const double dx = std::abs(p2.x() - p3.x());
     const double dy = std::abs(p2.y() - p3.y());
@@ -25,12 +25,13 @@ DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p2, geo::Coordinate con
     geo::Coordinate pp3;
 
     geo::Coordinate middletext(p2.mid(p3));
+
     if (isHorizontal) {
-        p0 = geo::Coordinate(p3.x(), p2.mid(p3).y()).move(geo::Coordinate(0.,1.), textOffset);
-        middletext = p2.mid(p3).move(geo::Coordinate(0.,1.), textOffset);
+        p0 = geo::Coordinate(p3.x(), p2.mid(p3).y()).move(geo::Coordinate(0., 1.), textOffset);
+        middletext = p2.mid(p3).move(geo::Coordinate(0., 1.), textOffset);
     } else {
-        p0 = geo::Coordinate(p3.mid(p2).x(), p3.y()).move(geo::Coordinate(1.,0.), textOffset);
-        middletext = p2.mid(p3).move(geo::Coordinate(1.,0.), textOffset);
+        p0 = geo::Coordinate(p3.mid(p2).x(), p3.y()).move(geo::Coordinate(1., 0.), textOffset);
+        middletext = p2.mid(p3).move(geo::Coordinate(1., 0.), textOffset);
     }
 
     return std::make_shared<DimLinear>(p0, middletext, TextConst::AttachmentPoint::Top_center , 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p2, p3, 0., 0., layer, metaInfo);

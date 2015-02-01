@@ -153,7 +153,7 @@ namespace lc {
                 }
 
                 inline double angle() const {
-                    return atan2(-_y, _x);
+                    return atan2(_y, _x);
                 }
 
 
@@ -217,6 +217,18 @@ namespace lc {
                  * @return
                  */
                 inline Coordinate rotate(const geo::Coordinate& point, const double& angle) const {
+                    return rotate(point, Coordinate(angle));
+                }
+
+                /**
+                * @brief rotate
+                * around a point where the rotation described length is known
+                * @param point
+                * @param angle
+                * @return
+                */
+                inline Coordinate rotateByLength(const geo::Coordinate& point, double const length) const {
+                    double const angle = (length / point.distanceTo(*this));
                     return rotate(point, Coordinate(angle));
                 }
 

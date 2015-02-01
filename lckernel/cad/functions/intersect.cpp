@@ -25,12 +25,11 @@ Intersect::Intersect(Method method, double tolerance) : _method(method), _tolera
 std::vector<geo::Coordinate> Intersect::result() const {
     return this->_intersectionPoints;
 }
-
-void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
-    const geo::Coordinate p1 = l1->start();
-    const geo::Coordinate p2 = l1->end();
-    const geo::Coordinate p3 = v.start();
-    const geo::Coordinate p4 = v.end();
+void Intersect::visit(const geo::Vector& v1, const geo::Vector& v2) {
+    const geo::Coordinate p1 = v1.start();
+    const geo::Coordinate p2 = v1.end();
+    const geo::Coordinate p3 = v2.start();
+    const geo::Coordinate p4 = v2.end();
 
     const double num = ((p4.x() - p3.x()) * (p1.y() - p3.y()) - (p4.y() - p3.y()) * (p1.x() - p3.x()));
     const double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
@@ -61,6 +60,10 @@ void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
             _intersectionPoints.push_back(coord);
         }
     }
+}
+
+void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
+    visit(lc::geo::Vector(l1->start(), l1->end()), v);
 }
 
 void Intersect::visit(Line_CSPtr, Coordinate_CSPtr) {

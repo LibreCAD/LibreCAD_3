@@ -65,6 +65,7 @@ namespace lc {
 
     class EntityVisitor {
         public:
+            virtual void visit(const geo::Vector&, const geo::Vector&) = 0;
 
             virtual void visit(Coordinate_CSPtr, const geo::Vector&) = 0;
             virtual void visit(Coordinate_CSPtr, Coordinate_CSPtr) = 0;

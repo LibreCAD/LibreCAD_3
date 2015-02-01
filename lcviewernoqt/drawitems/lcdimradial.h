@@ -14,7 +14,7 @@ class LCDimRadial  : public LCVDrawItem, public lc::DimRadial, public LCDimensio
         LCDimRadial(const lc::DimRadial_CSPtr dimRadial);
 
         /**
-        * @brief draw, Draws the Dim Radial
+        * @brief draw, Draws the DimRadial
         * @param LcPainter painter, surface to be painted
         * @param LcDrawOptions options
         * @param geo::Area rect

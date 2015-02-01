@@ -3,9 +3,7 @@
 #include <memory>
 /**
   * LCADCairoViewerDrawItem is a abstract class that any class needs to implement if it want's to draw something on backgrounds or foregrounds
-  * of a LCADCairoViewer document
   *
-  * FIXME: Find a better name for this, or remove it in favor of using events only
   */
 
 class LcDrawOptions;
@@ -22,7 +20,7 @@ class LCVDrawItem {
         LCVDrawItem(bool selectable);
 
         /**
-        * Draw function to draw the final object on a ccanvas
+        * Draw function to draw the final object on a canvas
         * Be aware that thus function must be created thread save
         */
         virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {

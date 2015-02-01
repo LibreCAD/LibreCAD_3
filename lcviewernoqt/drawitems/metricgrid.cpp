@@ -49,6 +49,9 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo
         gridSize = (100.0 / factor);
     }
 
+    // TODO: THis assignedment doesn't make the grid thread save!!!
+    // We have to fix that somehow or get rid of the snapPoints method
+    // Risck might be very low because the mouse can snap to one display anyways assuming we use one mouse per computer :s
     _lastGridSize = gridSize;
 
     // Major lines

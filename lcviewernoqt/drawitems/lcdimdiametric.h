@@ -14,7 +14,7 @@ class LCDimDiametric  : public LCVDrawItem, public lc::DimDiametric, public LCDi
         LCDimDiametric(const lc::DimDiametric_CSPtr dimDiametric);
 
         /**
-        * @brief draw, Draws the circle
+        * @brief draw, Draws the DimDiametric
         * @param LcPainter painter, surface to be painted
         * @param LcDrawOptions options
         * @param geo::Area rect

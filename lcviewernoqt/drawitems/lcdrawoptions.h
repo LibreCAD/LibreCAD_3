@@ -32,12 +32,16 @@ class LcDrawOptions {
         std::string alignedFormat() const {
             return _alignedFormat;
         }
+        std::string angleFormat() const {
+            return _angleFormat;
+        }
 
-private:
+    private:
         lc::Color  _selectedColor;
         double _dimTextHeight;
         std::string _radialFormat;
         std::string _diametricFormat;
         std::string _linearFormat;
         std::string _alignedFormat;
+        std::string _angleFormat;
 };

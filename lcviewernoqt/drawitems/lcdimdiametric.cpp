@@ -61,7 +61,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
     endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., center.x(), center.y(), 2.) ;
 
 
-    this->drawText(value,this->definitionPoint2().angleTo(this->definitionPoint()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
+    this->drawText(value, this->definitionPoint2().angleTo(this->definitionPoint()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
 
     if (modified) {
         painter->restore();

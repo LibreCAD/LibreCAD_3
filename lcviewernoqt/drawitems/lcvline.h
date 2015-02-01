@@ -9,9 +9,9 @@ class QRectF;
 class LCVLine : public LCVDrawItem, public lc::Line {
     public:
         /**
-             * @brief LCVLine, Line in viewer
-             * @param Line_CSPtr line, line to be drawn
-             */
+         * @brief LCVLine, Line in viewer
+         * @param Line_CSPtr line, line to be drawn
+         */
         LCVLine(const lc::Line_CSPtr line);
         /**
          * @brief draw, Draw the line

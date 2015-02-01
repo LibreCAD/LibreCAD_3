@@ -43,6 +43,7 @@ cad/primitive/dimradial.cpp
 cad/primitive/dimdiametric.cpp
 cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
+cad/primitive/dimangular.cpp
 )
 
 # HEADER FILES
@@ -109,6 +110,7 @@ cad/primitive/dimradial.h
 cad/primitive/dimdiametric.h
 cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
+cad/primitive/dimangular.h
 cad/primitive/textconst.h
 cad/functions/str_format.h
 )

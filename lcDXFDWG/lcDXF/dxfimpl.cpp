@@ -8,6 +8,7 @@
 #include <cad/primitive/dimdiametric.h>
 #include <cad/primitive/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
+#include <cad/primitive/dimangular.h>
 #include <cad/primitive/coordinate.h>
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
@@ -156,24 +157,24 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
-        if (_blockHandle != -1) {
-            return;
-        }
+    if (_blockHandle != -1) {
+        return;
+    }
 
-        auto mf = getMetaInfo(*data);
-        auto layer = _document->layerByName(data->layer);
+    auto mf = getMetaInfo(*data);
+    auto layer = _document->layerByName(data->layer);
 
-        _builder->append(std::make_shared<lc::DimAligned>(
-                coord(data->getDefPoint()),
-                coord(data->getTextPoint()),
-                static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
-                data->getDir(),
-                data->getTextLineFactor(),
-                static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
-                data->getText(),
-                coord(data->getDef1Point()),
-                coord(data->getDef2Point()),
-                layer, mf));
+    _builder->append(std::make_shared<lc::DimAligned>(
+                         coord(data->getDefPoint()),
+                         coord(data->getTextPoint()),
+                         static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                         data->getDir(),
+                         data->getTextLineFactor(),
+                         static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                         data->getText(),
+                         coord(data->getDef1Point()),
+                         coord(data->getDef2Point()),
+                         layer, mf));
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
@@ -245,38 +246,27 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
-    //    lc::Dimension dim(data->getDefPoint(), data->getTextPoint(), data->getAlign(),
-    //                      data->getTextLineStyle(), data->getTextLineFactor(),
-    //                      data->getText(), data->getStyle(), data->getAngle());
+    if (_blockHandle != -1) {
+        return;
+    }
 
-    //    auto col = icol.intToColor(data.color);
-    //    auto l = _document->layerByName(data.layer);
-    //    if (data.color == 256 && data.lWeight == 29) {
-    //        _builder->append(std::make_shared<lc::DimAligned>(
-    //                             data.basePoint.x,
-    //                             data.basePoint.y,
-    //                             l));
-    //    } else {
-    //        auto mf = lc::MetaInfo::create();
-    //        if ( data.color > 256 ) {
-    //            auto mc = std::make_shared<lc::MetaColor>(col);
-    //            mf->add(std::dynamic_pointer_cast<lc::MetaType>(mc));
-    //        }
-    //        if ( data.lWeight < 24) {
-    //            int len = DRW_LW_Conv::lineWidth2dxfInt(data.lWeight);
-    //            auto lw = std::make_shared<lc::MetaLineWidth>(len);
-    //            mf->add(std::dynamic_pointer_cast<lc::MetaType>(lw));
-    //        }
-    //        _builder->append(std::make_shared<lc::DimAligned>(
-    //                             data.basePoint.x,
-    //                             data.basePoint.y,
-    //                             l, mf));
+    auto mf = getMetaInfo(*data);
+    auto layer = _document->layerByName(data->layer);
 
-    //    }
+    _builder->append(std::make_shared<lc::DimAngular>(
+                         coord(data->getDefPoint()),
+                         coord(data->getTextPoint()),
+                         static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
+                         data->getDir(),
+                         data->getTextLineFactor(),
+                         static_cast<lc::TextConst::LineSpacingStyle>(data->getTextLineStyle()),
+                         data->getText(),
+                         coord(data->getFirstLine1()),
+                         coord(data->getFirstLine2()),
+                         coord(data->getSecondLine1()),
+                         coord(data->getSecondLine2()),
+                         layer, mf));
 }
-
-
-
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
 }

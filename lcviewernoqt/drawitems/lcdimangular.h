@@ -2,19 +2,19 @@
 
 #include "lcvdrawitem.h"
 #include "lcdimension.h"
-#include <cad/primitive/dimlinear.h>
+#include <cad/primitive/dimangular.h>
 
 
 class LcDrawOptions;
 class LcPainter;
 class QRectF;
 
-class LCDimLinear : public LCVDrawItem, public lc::DimLinear, public LCDimension {
+class LCDimAngular : public LCVDrawItem, public lc::DimAngular, public LCDimension {
     public:
-        LCDimLinear(const lc::DimLinear_CSPtr dimLinear);
+        LCDimAngular(const lc::DimAngular_CSPtr dimAngular);
 
         /**
-        * @brief draw, Draws the DimLinear
+        * @brief draw, Draws the DimAngular
         * @param LcPainter painter, surface to be painted
         * @param LcDrawOptions options
         * @param geo::Area rect

@@ -7,7 +7,7 @@
 #include <cad/math/lcmath.h>
 
 
-void LCDimension::drawText(std::string const & value, double const angle, lc::TextConst::AttachmentPoint const attachmentPoint,  lc::geo::Coordinate textlocation, LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCDimension::drawText(std::string const& value, double const angle, lc::TextConst::AttachmentPoint const attachmentPoint,  lc::geo::Coordinate textlocation, LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     painter->save();
     double height = options->dimTextHeight();
     painter->font_size(height);
@@ -20,33 +20,42 @@ void LCDimension::drawText(std::string const & value, double const angle, lc::Te
     double newAngle = angle;
 
     // THis code 'fixes' the Atatchment point if the text is behind some rotation
-    if (angle > 0.5*M_PI || angle < -0.5*M_PI) {
+    if (angle > 0.5 * M_PI || angle < -0.5 * M_PI) {
         newAngle = angle - M_PI;
+
         switch (attachmentPoint) {
             case lc::TextConst::AttachmentPoint::Top_left:
-                aPoint= lc::TextConst::AttachmentPoint::Top_right;
+                aPoint = lc::TextConst::AttachmentPoint::Top_right;
                 break;
+
             case lc::TextConst::AttachmentPoint::Top_center:
-                aPoint= lc::TextConst::AttachmentPoint::Bottom_center;
+                aPoint = lc::TextConst::AttachmentPoint::Bottom_center;
                 break;
+
             case lc::TextConst::AttachmentPoint::Top_right:
-                aPoint= lc::TextConst::AttachmentPoint::Bottom_left;
+                aPoint = lc::TextConst::AttachmentPoint::Bottom_left;
                 break;
+
             case lc::TextConst::AttachmentPoint::Middle_left:
-                aPoint= lc::TextConst::AttachmentPoint::Middle_right;
+                aPoint = lc::TextConst::AttachmentPoint::Middle_right;
                 break;
+
             case lc::TextConst::AttachmentPoint::Middle_right:
-                aPoint= lc::TextConst::AttachmentPoint::Middle_left;
+                aPoint = lc::TextConst::AttachmentPoint::Middle_left;
                 break;
+
             case lc::TextConst::AttachmentPoint::Bottom_left:
-                aPoint= lc::TextConst::AttachmentPoint::Top_right;
+                aPoint = lc::TextConst::AttachmentPoint::Top_right;
                 break;
+
             case lc::TextConst::AttachmentPoint::Bottom_center:
-                aPoint= lc::TextConst::AttachmentPoint::Top_center;
+                aPoint = lc::TextConst::AttachmentPoint::Top_center;
                 break;
+
             case lc::TextConst::AttachmentPoint::Bottom_right:
-                aPoint= lc::TextConst::AttachmentPoint::Top_left;
+                aPoint = lc::TextConst::AttachmentPoint::Top_left;
                 break;
+
             default: // Top Center
                 break;
         }
@@ -109,7 +118,7 @@ void LCDimension::drawText(std::string const & value, double const angle, lc::Te
     }
 
     painter->translate(textlocation.x(), -textlocation.y());
-    painter->rotate(newAngle);
+    painter->rotate(-newAngle);
     painter->translate(alignX, -alignY);
     painter->move_to(0., 0.);
     painter->text(value.c_str());

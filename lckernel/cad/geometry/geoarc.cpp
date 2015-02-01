@@ -41,3 +41,11 @@ bool Arc::isCoordinateOnPath(const Coordinate& coord) const {
     return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
 }
 
+double Arc::length() const {
+    if (startAngle() > endAngle()) {
+        return std::abs((2.*M_PI + endAngle() - startAngle()) * radius());
+    } else {
+        return std::abs((endAngle() - startAngle()) * radius());
+    }
+}
+

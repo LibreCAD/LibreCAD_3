@@ -129,6 +129,9 @@ void LcCairoPainter::arc(double x, double y, double r, double start, double end)
 
     cairo_path_destroy (path); */
 }
+void LcCairoPainter::arcNegative(double x, double y, double r, double start, double end)  {
+    cairo_arc_negative(_cr, x, -y, r, 2. * M_PI - end, 2.* M_PI - start);
+}
 
 void LcCairoPainter::circle(double x, double y, double r)  {
     cairo_arc(_cr, x, -y, r, 0, 2. * M_PI);

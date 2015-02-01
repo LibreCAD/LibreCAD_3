@@ -163,16 +163,16 @@ static lc::DimLinear_SPtr lua_DimLinear_dimAuto1(lc::geo::Coordinate const& p1, 
 *                    _|
 */
 static lc::DimAligned_SPtr lua_dimAligned(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, lc::TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
-        lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
-        lc::geo::Coordinate const& definitionPoint2,  lc::geo::Coordinate const& definitionPoint3, const lc::Layer_CSPtr layer) {
+                                          lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                                          lc::geo::Coordinate const& definitionPoint2,  lc::geo::Coordinate const& definitionPoint3, const lc::Layer_CSPtr layer) {
     return std::make_shared<lc::DimAligned>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle),
-        explicitValue, definitionPoint2, definitionPoint3, layer, nullptr);
+                                            explicitValue, definitionPoint2, definitionPoint3, layer, nullptr);
 }
 static lc::DimAligned_SPtr lua_dimAligned1(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, lc::TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
-        lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
-        lc::geo::Coordinate const& definitionPoint2,  lc::geo::Coordinate const& definitionPoint3, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+                                           lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                                           lc::geo::Coordinate const& definitionPoint2,  lc::geo::Coordinate const& definitionPoint3, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::DimAligned>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle),
-            explicitValue, definitionPoint2, definitionPoint3, layer, metaInfo);
+                                            explicitValue, definitionPoint2, definitionPoint3, layer, metaInfo);
 }
 
 static lc::DimAligned_SPtr lua_DimAligned_dimAuto(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer) {
@@ -181,20 +181,34 @@ static lc::DimAligned_SPtr lua_DimAligned_dimAuto(lc::geo::Coordinate const& p1,
 static lc::DimAligned_SPtr lua_DimAligned_dimAuto1(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return lc::DimAligned::dimAuto(p1, p2, textOffset, explicitValue, layer, metaInfo);
 }
+/***
+*    |~\. _ _  /\  _  _    | _  _
+*    |_/|| | |/~~\| |(_||_||(_||
+*                     _|
+*/
+static lc::DimAngular_SPtr lua_dimAngular(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, lc::TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
+                                          lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+                                          lc::geo::Coordinate const& defPoint11, lc::geo::Coordinate const& defPoint12, lc::geo::Coordinate const& defPoint21, lc::geo::Coordinate const& defPoint22, const lc::Layer_CSPtr layer) {
+    return std::make_shared<lc::DimAngular>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle),
+                                            explicitValue, defPoint11, defPoint12, defPoint21, defPoint22, layer, nullptr);
+}
+
+
+
 
 /***
 *    ~|~ _  _|_
 *     | (/_><|
 *
 */static lc::Text_SPtr lua_text(const lc::geo::Coordinate& insertion_point,
-                              const std::string text_value,
-                              const double height,
-                              const double angle,
-                              const std::string style,
-                              const int textgeneration,
-                              const int halign,
-                              const int valign,
-                              const lc::Layer_CSPtr layer) {
+                                const std::string text_value,
+                                const double height,
+                                const double angle,
+                                const std::string style,
+                                const int textgeneration,
+                                const int halign,
+                                const int valign,
+                                const lc::Layer_CSPtr layer) {
     return std::make_shared<lc::Text>(insertion_point, text_value, height, angle, style, static_cast<lc::TextConst::DrawingDirection>(textgeneration), static_cast<lc::TextConst::HAlign>(halign), static_cast<lc::TextConst::VAlign>(valign), layer);
 }
 static lc::Text_SPtr lua_text1(const lc::geo::Coordinate& insertion_point,
@@ -254,6 +268,7 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("DimAligned1", &lua_dimAligned1)
     .addFunction("DimAligned_DimAuto", &lua_DimAligned_dimAuto)
     .addFunction("DimAligned_DimAuto1", &lua_DimAligned_dimAuto1)
+    .addFunction("DimAngular", &lua_dimAngular)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
     .beginModule("proxy")
@@ -290,6 +305,15 @@ std::string LCadLuaScript::run(const std::string& script) {
 }
 
 
+/* Dim Angular
+layer = active.proxy.layerByName("0")
+dr1=DimAngular(Coord(50,50), Coord(100,100), 2, 0, 1., 1, "<>",
+Coord(30,100), Coord(0,10),
+Coord(10,0), Coord(100,30), layer);
+d=active.document()
+Builder(d):append(dr1):execute()
+*/
+
 /* DimRadial
 layer = active.proxy.layerByName("0")
 dr1=DimRadial(Coord(50,50), Coord(120,120), 2, 0, 1., 1, "<>", Coord(100,100), 0., layer);
@@ -322,11 +346,28 @@ d=active.document()
 Builder(d):append(dr1):append(dr2):append(dr3):append(dr4):execute()
 */
 
+/* Dim Aligned
+layer = active.proxy.layerByName("0")
+dr1=DimAligned_DimAuto(Coord(100,100), Coord(0,0), 10, "<>", layer);
+dr2=DimAligned_DimAuto(Coord(0,0), Coord(100,0), 10, "<>", layer);
+dr3=DimAligned_DimAuto(Coord(-25,-25), Coord(-130,0), 15, "<>", layer);
+d=active.document()
+Builder(d):append(dr1):append(dr2):append(dr3):execute()
+*/
+
 /* Line
 layer = active.proxy.layerByName("0")
 l=Line(Coord(0,0), Coord(10,100), layer);
 d=active.document()
 Builder(d):append(l):execute()
+*/
+
+
+/* Line
+layer = active.proxy.layerByName("0")
+a=Arc(Coord(0,0), 10, 0.25*math.pi,1.5*math.pi, layer);
+d=active.document()
+Builder(d):append(a):execute()
 */
 
 /*

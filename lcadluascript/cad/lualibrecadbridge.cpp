@@ -159,10 +159,12 @@ void lua_openlckernel(lua_State* L) {
                                                    .endClass()
                                                    .beginExtendClass<DimDiametric, CADEntity>("DimDiametric_")
                                                    .endClass()
-                                                    .beginExtendClass<DimLinear, CADEntity>("DimLinear_")
-                                                    .endClass()
-                                                    .beginExtendClass<DimAligned, CADEntity>("DimAligned_")
-                                                    .endClass()
+                                                   .beginExtendClass<DimLinear, CADEntity>("DimLinear_")
+                                                   .endClass()
+                                                   .beginExtendClass<DimAligned, CADEntity>("DimAligned_")
+                                                   .endClass()
+                                                   .beginExtendClass<DimAngular, CADEntity>("DimAngular_")
+                                                   .endClass()
 
 
 

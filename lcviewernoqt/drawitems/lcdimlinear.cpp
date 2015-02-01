@@ -69,7 +69,7 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     painter->stroke();
     */
 
-    this->drawText(value,(isHorizontal ? 0. : (90. / 180.) * M_PI) + textAngle(), this->attachmentPoint(), this->middleOfText(), painter, options, rect);
+    this->drawText(value, (isHorizontal ? 0. : (90. / 180.) * M_PI) + textAngle(), this->attachmentPoint(), this->middleOfText(), painter, options, rect);
 
 
     if (modified) {

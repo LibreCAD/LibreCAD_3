@@ -31,6 +31,13 @@ namespace lc {
                  */
                 double endAngle() const;
 
+                /**
+                * Calculates arc length
+                * This assumes that startAngle and endAngle are between -M_PI and M_PI and the difference is not bigger then 2.*M_PI
+                * TODO: Should we make this more reliable, for example to have angle is 4*MPI it's still correctly calculated?
+                */
+                double length() const;
+
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 

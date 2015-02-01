@@ -21,6 +21,7 @@
 #include "drawitems/lcdimaligned.h"
 
 #include "lcpainter.h"
+#include "drawitems/lcdimangular.h"
 
 #include <cad/meta/metacolor.h>
 #include <cad/meta/metalinewidth.h>
@@ -437,6 +438,14 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
         return;
     }
 
+    // Add 'DimAngular'
+    const auto dimAngular = event.entity<lc::DimAngular>();
+
+    if (dimAngular != nullptr) {
+        auto newDimAngular = std::make_shared<LCDimAngular>(dimAngular);
+        _entityContainer.insert(newDimAngular);
+        return;
+    }
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
