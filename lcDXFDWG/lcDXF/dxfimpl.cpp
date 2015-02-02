@@ -9,7 +9,7 @@
 #include <cad/primitive/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
 #include <cad/primitive/dimangular.h>
-#include <cad/primitive/coordinate.h>
+#include <cad/primitive/point.h>
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
@@ -153,7 +153,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Coordinate>(coord(data.basePoint), layer, mf));
+    _builder->append(std::make_shared<lc::Point>(coord(data.basePoint), layer, mf));
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {

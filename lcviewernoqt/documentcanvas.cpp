@@ -14,7 +14,7 @@
 #include "drawitems/lcvline.h"
 #include "drawitems/lcvellipse.h"
 #include "drawitems/lcvtext.h"
-#include "drawitems/lcvcoordinate.h"
+#include "drawitems/lcvpoint.h"
 #include "drawitems/lcdimradial.h"
 #include "drawitems/lcdimdiametric.h"
 #include "drawitems/lcdimlinear.h"
@@ -394,10 +394,10 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'Point' or 'Coordinate'
-    const auto coord = event.entity<lc::Coordinate>();
+    const auto coord = event.entity<lc::Point>();
 
     if (coord != nullptr) {
-        auto newCoord = std::make_shared<LCVCoordinate>(coord);
+        auto newCoord = std::make_shared<LCVPoint>(coord);
         _entityContainer.insert(newCoord);
         return;
     }

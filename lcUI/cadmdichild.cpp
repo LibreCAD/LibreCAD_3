@@ -6,7 +6,7 @@
 #include "cad/primitive/arc.h"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/text.h"
-#include "cad/primitive/coordinate.h"
+#include <cad/primitive/point.h>
 #include "cad/meta/color.h"
 #include "cad/primitive/line.h"
 #include "cad/meta/metalinewidth.h"
@@ -148,7 +148,7 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
-    //    builder->append(std::make_shared<lc::Coordinate>(0., 0., layer));
+    //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
     builder->execute();
 
     //on_actionAdd_Random_Lines_triggered();

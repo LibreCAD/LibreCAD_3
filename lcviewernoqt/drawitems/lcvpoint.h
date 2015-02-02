@@ -1,15 +1,15 @@
 #pragma once
 
 #include "lcvdrawitem.h"
-#include "cad/primitive/coordinate.h"
+#include <cad/primitive/point.h>
 
 class LcDrawOptions;
 class LcPainter;
 class QRectF;
 
-class LCVCoordinate : public LCVDrawItem, public lc::Coordinate {
+class LCVPoint : public LCVDrawItem, public lc::Point  {
     public:
-        LCVCoordinate(const lc::Coordinate_CSPtr Coordinate);
+        LCVPoint(const lc::Point_CSPtr Coordinate);
         /**
          * @brief draw, Draws the point
          * @param LcPainter painter, surface to be painted

@@ -2,7 +2,7 @@
 
 
 #include <cad/primitive/circle.h>
-#include <cad/primitive/coordinate.h>
+#include <cad/primitive/point.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/operations/builder.h>
 #include <documentcanvas.h>

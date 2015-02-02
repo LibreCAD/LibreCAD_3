@@ -3,7 +3,7 @@
 #include <vector>
 #include <cad/primitive/line.h>
 #include <cad/meta/layer.h>
-#include "cad/primitive/coordinate.h"
+#include <cad/primitive/point.h>
 #include "cad/meta/color.h"
 #include "cad/primitive/line.h"
 #include "cad/primitive/circle.h"

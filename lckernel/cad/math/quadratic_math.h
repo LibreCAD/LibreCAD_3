@@ -3,7 +3,7 @@
 #include "cad/geometry/geocoordinate.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
-#include "coordinatesol.h"
+#include "coordinatesolutions.h"
 #include "lcmath.h"
 #include "cad/const.h"
 #include "cad/geometry/geoline.h"

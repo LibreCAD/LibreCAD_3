@@ -66,7 +66,7 @@ void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
     visit(lc::geo::Vector(l1->start(), l1->end()), v);
 }
 
-void Intersect::visit(Line_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Line_CSPtr, Point_CSPtr) {
 
 }
 
@@ -123,59 +123,59 @@ void Intersect::visit(Line_CSPtr, DimRadial_CSPtr) {
 
 
 // Coordinate
-void Intersect::visit(Coordinate_CSPtr, const geo::Vector&) {
+void Intersect::visit(Point_CSPtr, const geo::Vector&) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Point_CSPtr, Point_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Line_CSPtr) {
+void Intersect::visit(Point_CSPtr, Line_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Circle_CSPtr) {
+void Intersect::visit(Point_CSPtr, Circle_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Arc_CSPtr) {
+void Intersect::visit(Point_CSPtr, Arc_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Ellipse_CSPtr) {
+void Intersect::visit(Point_CSPtr, Ellipse_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Text_CSPtr) {
+void Intersect::visit(Point_CSPtr, Text_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, Spline_CSPtr) {
+void Intersect::visit(Point_CSPtr, Spline_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, MText_CSPtr) {
+void Intersect::visit(Point_CSPtr, MText_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, DimAligned_CSPtr) {
+void Intersect::visit(Point_CSPtr, DimAligned_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, DimAngular_CSPtr) {
+void Intersect::visit(Point_CSPtr, DimAngular_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, DimDiametric_CSPtr) {
+void Intersect::visit(Point_CSPtr, DimDiametric_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, DimLinear_CSPtr) {
+void Intersect::visit(Point_CSPtr, DimLinear_CSPtr) {
 
 }
 
-void Intersect::visit(Coordinate_CSPtr, DimRadial_CSPtr) {
+void Intersect::visit(Point_CSPtr, DimRadial_CSPtr) {
 
 }
 
@@ -185,7 +185,7 @@ void Intersect::visit(Circle_CSPtr circle, const geo::Vector& v) {
     visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), v);
 }
 
-void Intersect::visit(Circle_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Circle_CSPtr, Point_CSPtr) {
 
 }
 
@@ -283,7 +283,7 @@ void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
     }
 }
 
-void Intersect::visit(Arc_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Arc_CSPtr, Point_CSPtr) {
 
 }
 
@@ -340,7 +340,7 @@ void Intersect::visit(Ellipse_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(Ellipse_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr, Point_CSPtr) {
 
 }
 
@@ -398,7 +398,7 @@ void Intersect::visit(Text_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(Text_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Text_CSPtr, Point_CSPtr) {
 
 }
 
@@ -455,7 +455,7 @@ void Intersect::visit(Spline_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(Spline_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(Spline_CSPtr, Point_CSPtr) {
 
 }
 
@@ -511,7 +511,7 @@ void Intersect::visit(MText_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(MText_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(MText_CSPtr, Point_CSPtr) {
 
 }
 
@@ -566,7 +566,7 @@ void Intersect::visit(DimAligned_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(DimAligned_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(DimAligned_CSPtr, Point_CSPtr) {
 
 }
 
@@ -624,7 +624,7 @@ void Intersect::visit(DimAngular_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(DimAngular_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(DimAngular_CSPtr, Point_CSPtr) {
 
 }
 
@@ -681,7 +681,7 @@ void Intersect::visit(DimDiametric_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(DimDiametric_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(DimDiametric_CSPtr, Point_CSPtr) {
 
 }
 
@@ -739,7 +739,7 @@ void Intersect::visit(DimLinear_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(DimLinear_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(DimLinear_CSPtr, Point_CSPtr) {
 
 }
 
@@ -800,7 +800,7 @@ void Intersect::visit(DimRadial_CSPtr l1, const geo::Vector&) {
 
 }
 
-void Intersect::visit(DimRadial_CSPtr, Coordinate_CSPtr) {
+void Intersect::visit(DimRadial_CSPtr, Point_CSPtr) {
 
 }
 

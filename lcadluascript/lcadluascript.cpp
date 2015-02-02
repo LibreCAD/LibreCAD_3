@@ -77,8 +77,11 @@ static lc::Circle_SPtr lua_circle1(const lc::geo::Coordinate& center, double rad
 static lc::Arc_SPtr lua_arc1(const lc::geo::Coordinate& center, double radius, double startAngle, double endAngle, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::Arc>(center, radius, startAngle, endAngle, layer, metaInfo);
 }
-static lc::Coordinate_SPtr lua_coordinate1(const double x, const double y, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
-    return std::make_shared<lc::Coordinate>(x, y, layer, metaInfo);
+static lc::Point_SPtr lua_point(const lc::geo::Coordinate& center, const lc::Layer_CSPtr layer) {
+    return std::make_shared<lc::Point>(center, layer, nullptr);
+}
+static lc::Point_SPtr lua_point1(const lc::geo::Coordinate& center, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::Point>(center, layer, metaInfo);
 }
 
 /***
@@ -249,7 +252,8 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("Line1", &lua_line1)
     .addFunction("Circle1", &lua_circle1)
     .addFunction("Arc1", &lua_arc1)
-    .addFunction("Coordinate1", &lua_coordinate1)
+    .addFunction("Point", &lua_point)
+    .addFunction("Point1", &lua_point1)
     .addFunction("Text", &lua_text)
     .addFunction("Text1", &lua_text1)
     .addFunction("DimRadial", &lua_dimRadial)
@@ -304,6 +308,13 @@ std::string LCadLuaScript::run(const std::string& script) {
     return out;
 }
 
+
+/*Point
+layer = active.proxy.layerByName("0")
+p=Point(Coord(50,50), layer);
+d=active.document()
+Builder(d):append(p):execute()
+*/
 
 /* Dim Angular
 layer = active.proxy.layerByName("0")

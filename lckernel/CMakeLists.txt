@@ -21,7 +21,7 @@ cad/geometry/geocoordinate.cpp
 cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/math/lcmath.cpp
-cad/math/coordinatesol.cpp
+cad/math/coordinatesolutions.cpp
 cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
@@ -33,7 +33,7 @@ cad/operations/trim.cpp
 cad/operations/layerops.cpp
 cad/primitive/arc.cpp
 cad/primitive/circle.cpp
-cad/primitive/coordinate.cpp
+cad/primitive/point.cpp
 cad/primitive/ellipse.cpp
 cad/primitive/line.cpp
 cad/primitive/spline.cpp
@@ -83,7 +83,7 @@ cad/interface/entityvisitor.h
 cad/interface/metatype.h
 cad/interface/snapable.h
 cad/math/lcmath.h
-cad/math/coordinatesol.h
+cad/math/coordinatesolutions.h
 cad/math/quadratic_math.h
 cad/meta/color.h
 cad/meta/icolor.h
@@ -98,7 +98,7 @@ cad/operations/layerops.h
 cad/operations/undoable.h
 cad/primitive/arc.h
 cad/primitive/circle.h
-cad/primitive/coordinate.h
+cad/primitive/point.h
 cad/primitive/ellipse.h
 cad/primitive/line.h
 cad/primitive/spline.h

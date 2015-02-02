@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cad/geometry/geocoordinate.h"
-#include "coordinatesol.h"
+#include "coordinatesolutions.h"
 #include <iostream>
 #include <complex>
 #include <float.h>

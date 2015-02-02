@@ -1,4 +1,4 @@
-#include "coordinatesol.h"
+#include "coordinatesolutions.h"
 using namespace lc;
 using namespace geo;
 

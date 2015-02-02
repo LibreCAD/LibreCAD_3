@@ -13,11 +13,11 @@
 
 namespace lc {
 
-    class Coordinate;
-    typedef std::shared_ptr<Coordinate> Coordinate_SPtr;
-    typedef std::shared_ptr<const Coordinate> Coordinate_CSPtr;
+    class Point;
+    typedef std::shared_ptr<Point> Point_SPtr;
+    typedef std::shared_ptr<const Point> Point_CSPtr;
 
-    class Coordinate : public std::enable_shared_from_this<Coordinate>, public CADEntity, public geo::Coordinate {
+    class Point : public std::enable_shared_from_this<Point>, public CADEntity, public geo::Coordinate {
         public:
 
             /**
@@ -26,7 +26,7 @@ namespace lc {
                  * @param double y
                  * @param Layer_CSPtr layer
                  */
-            Coordinate(const double x, const double y, const Layer_CSPtr layer);
+            Point(const double x, const double y, const Layer_CSPtr layer);
 
             /**
             * @brief Coordinate, Default Coordinate Constructor
@@ -34,7 +34,7 @@ namespace lc {
             * @param Layer_CSPtr layer
             * @param MetaTypes_CSPtr metaTypes
             */
-            Coordinate(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Point(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             /**
              * @brief Coordinate, Coordinate constructor with metatypes
@@ -43,8 +43,8 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            Coordinate(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
-            Coordinate(const Coordinate_CSPtr other, bool sameID = false);
+            Point(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Point(const Point_CSPtr other, bool sameID = false);
 
         public:
             /**
@@ -88,7 +88,7 @@ namespace lc {
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
-            virtual void accept(Coordinate_CSPtr o, EntityVisitor& ei) const {
+            virtual void accept(Point_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
             virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {

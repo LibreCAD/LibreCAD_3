@@ -8,7 +8,7 @@ drawitems/lcdrawoptions.cpp
 drawitems/lcvdrawitem.cpp
 drawitems/lcvarc.cpp
 drawitems/lcvcircle.cpp
-drawitems/lcvcoordinate.cpp
+drawitems/lcvpoint.cpp
 drawitems/lcvdrawitem.cpp
 drawitems/lcvellipse.cpp
 drawitems/lcvline.cpp
@@ -32,7 +32,7 @@ drawitems/lcdrawoptions.h
 drawitems/lcvdrawitem.h
 drawitems/lcvarc.h
 drawitems/lcvcircle.h
-drawitems/lcvcoordinate.h
+drawitems/lcvpoint.h
 drawitems/lcvdrawitem.h
 drawitems/lcvellipse.h
 drawitems/lcvline.h

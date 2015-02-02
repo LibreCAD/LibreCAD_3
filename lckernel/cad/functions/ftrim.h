@@ -13,7 +13,7 @@ namespace lc {
             FTrim(std::vector<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
 
             virtual void visit(Line_CSPtr);
-            virtual void visit(Coordinate_CSPtr);
+            virtual void visit(Point_CSPtr);
             virtual void visit(Circle_CSPtr);
             virtual void visit(Arc_CSPtr);
             virtual void visit(Ellipse_CSPtr);

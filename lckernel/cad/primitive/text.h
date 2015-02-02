@@ -10,7 +10,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include "cad/primitive/textconst.h"
-#include "coordinate.h"
+#include <cad/primitive/point.h>
 
 namespace lc {
     class Text;
@@ -156,7 +156,7 @@ namespace lc {
                 ei.visit(shared_from_this(), o);
             }
 
-            virtual void accept(Coordinate_CSPtr o, EntityVisitor& ei) const {
+            virtual void accept(Point_CSPtr o, EntityVisitor& ei) const {
                 ei.visit(shared_from_this(), o);
             }
 

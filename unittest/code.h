@@ -5,7 +5,7 @@
 #include <cad/primitive/circle.h>
 #include <cad/primitive/line.h>
 #include <cad/meta/layer.h>
-#include <cad/primitive/coordinate.h>
+#include <cad/primitive/point.h>
 using namespace std;
 using namespace lc;
 class test {
