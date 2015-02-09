@@ -1,6 +1,6 @@
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
-#include "LCDimLinear.h"
+#include "lcdimlinear.h"
 #include "endcaps.h"
 #include <cad/functions/str_format.h>
 
