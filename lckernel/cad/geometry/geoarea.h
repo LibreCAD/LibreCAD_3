@@ -183,8 +183,7 @@ namespace lc {
                  * @return
                  */
                 inline Vector top() const {
-                    Vector v(Coordinate(_minP.x(), _maxP.y()), Coordinate(_maxP.x(), _maxP.y()));
-                    return v;
+                    return Vector(Coordinate(_minP.x(), _maxP.y()), Coordinate(_maxP.x(), _maxP.y()));
                 }
 
                 /**

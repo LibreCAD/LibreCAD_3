@@ -67,11 +67,11 @@ CADEntity_CSPtr Dimension::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaIn
 }
 */
 
-geo::Coordinate Dimension::definitionPoint() const {
+const geo::Coordinate & Dimension::definitionPoint() const noexcept {
     return _definitionPoint;
 }
 
-geo::Coordinate Dimension::middleOfText() const {
+const geo::Coordinate & Dimension::middleOfText() const noexcept {
     return _middleOfText;
 }
 

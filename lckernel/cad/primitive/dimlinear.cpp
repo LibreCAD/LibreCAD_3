@@ -80,9 +80,9 @@ double DimLinear::oblique() const {
     return _oblique;
 }
 
-geo::Coordinate DimLinear::definitionPoint2() const {
+const geo::Coordinate & DimLinear::definitionPoint2() const noexcept {
     return _definitionPoint2;
 }
-geo::Coordinate DimLinear::definitionPoint3() const {
+const geo::Coordinate & DimLinear::definitionPoint3() const noexcept {
     return _definitionPoint3;
 }

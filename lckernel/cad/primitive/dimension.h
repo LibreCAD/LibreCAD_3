@@ -81,13 +81,12 @@ namespace lc {
             /**
             * Definition point of this dimension
             */
-            geo::Coordinate definitionPoint() const;
+            const geo::Coordinate & definitionPoint() const noexcept;
 
             /**
             * Middle location of the text
             */
-            geo::Coordinate middleOfText() const;
-
+            const geo::Coordinate & middleOfText() const noexcept;
 
             TextConst::AttachmentPoint const& attachmentPoint() const;
 
