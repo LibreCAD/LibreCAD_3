@@ -37,6 +37,10 @@ class DocumentCanvas {
          * Found the bounds of the current document and scale into this and center on screen
          */
         void autoScale();
+
+        void transX(int x);
+
+        void transY(int y);
         /**
          * @brief zoom
          * into a specific area
