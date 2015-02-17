@@ -134,7 +134,7 @@ LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 // TODO
 
 /*
- * Code needs to be updated.
+ * Code needs to be Tested.
  *
  */
 
@@ -143,16 +143,19 @@ void DocumentCanvas::pan(double x, double y) {
 
     double userScrollX = x;
     double userScrollY = y;
+
     painter->device_to_user(&userScrollX, &userScrollY);
 
     // Set translation
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
         LcPainter* p = i->second;
-        p->translate(userScrollX, userScrollY);
+        p->translate(userScrollX - pan_x, userScrollY - pan_y);
     }
 
     // Calculate visible area
     calculateVisibleUserArea();
+    pan_x = userScrollX;
+    pan_y = userScrollY;
 }
 
 void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned int deviceScrollY) {
