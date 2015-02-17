@@ -68,6 +68,7 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
   *
   */
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
+
     QWidget::keyReleaseEvent(event);
 
     switch (event->key()) {
@@ -126,16 +127,21 @@ void LCADViewer::setHorizontalOffset(int v) {
 }
 
 
+
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
 
     // Selection by area
-    if (!startSelectPos.isNull()) {
-        bool occopies = startSelectPos.x() < event->pos().x();
-        _docRenderer->makeSelectionDevice(
-            std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
-            std::abs(startSelectPos.x() - event->pos().x()),
-            std::abs(startSelectPos.y() - event->pos().y()), occopies);
+    if (_altKeyActive) {
+        this->_docRenderer->pan(event->pos().x(), event->pos().y());
+    } else {
+        if (!startSelectPos.isNull()) {
+            bool occopies = startSelectPos.x() < event->pos().x();
+            _docRenderer->makeSelectionDevice(
+                std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
+                std::abs(startSelectPos.x() - event->pos().x()),
+                std::abs(startSelectPos.y() - event->pos().y()), occopies);
+        }
     }
 
     update();

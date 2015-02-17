@@ -38,6 +38,8 @@ class DocumentCanvas {
          */
         void autoScale();
 
+        void pan(double x, double y);
+
         void transX(int x);
 
         void transY(int y);
