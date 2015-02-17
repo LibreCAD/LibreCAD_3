@@ -69,8 +69,7 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
   */
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
 
-    QWidget::keyReleaseEvent(event);
-
+    QWidget::keyPressEvent(event);
     switch (event->key()) {
         case Qt::Key_Shift:
             // When shift key is release we switch back to rubber band
