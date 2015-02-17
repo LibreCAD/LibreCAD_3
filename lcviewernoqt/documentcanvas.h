@@ -178,6 +178,8 @@ class DocumentCanvas {
         unsigned int _deviceWidth;
         unsigned int _deviceHeight;
 
+        double pan_x = 0.0;
+        double pan_y = 0.0;
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
         // When set to true, a entity will be selected if it intersects or occipies,
