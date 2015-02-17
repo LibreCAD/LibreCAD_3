@@ -73,6 +73,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     viewer->setAutoFillBackground(true);
     viewer->resize(10000, 10000);
     viewer->setContextMenuPolicy(Qt::CustomContextMenu);
+    viewer->setFocusPolicy(Qt::StrongFocus);
     connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
 
     gridLayout->addWidget(viewer, 0, 0, 1, 1);
