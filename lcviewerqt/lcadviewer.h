@@ -80,8 +80,7 @@ class LCADViewer : public QWidget {
         void mouseReleaseEvent(const MouseReleaseEvent&);
         void drawEvent(const DrawEvent&);
         void selectedItemsEvent(const SelectedItemsEvent&);
-
-    public:
+    public slots:
         void setVerticalOffset(int v);
         void setHorizontalOffset(int v);
 
@@ -97,6 +96,8 @@ class LCADViewer : public QWidget {
         double _scale;
         double _zoomMin;
         double _zoomMax;
+        int v_ = 0;
+        int h_ = 0;
 
         // When set to true, the line width on screen will scale with teh zoom factor
         bool _scaleLineWidth;

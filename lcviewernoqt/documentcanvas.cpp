@@ -131,6 +131,32 @@ LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
     return _cachedPainters[cacheType];
 }
 
+// TODO
+
+/*
+ * Code needs to be Tested.
+ *
+ */
+
+void DocumentCanvas::pan(double x, double y) {
+    LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
+
+    double userScrollX = x;
+    double userScrollY = y;
+
+    painter->device_to_user(&userScrollX, &userScrollY);
+
+    // Set translation
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        LcPainter* p = i->second;
+        p->translate(userScrollX - pan_x, userScrollY - pan_y);
+    }
+
+    // Calculate visible area
+    calculateVisibleUserArea();
+    pan_x = userScrollX;
+    pan_y = userScrollY;
+}
 
 void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned int deviceScrollY) {
     LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
@@ -164,6 +190,27 @@ void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned in
     // Calculate visible area
     calculateVisibleUserArea();
 }
+
+void DocumentCanvas::transX(int x) {
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        LcPainter* p = i->second;
+        p->translate(x, 0);
+    }
+
+    // Calculate visible area
+    calculateVisibleUserArea();
+}
+
+void DocumentCanvas::transY(int y) {
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        LcPainter* p = i->second;
+        p->translate(0, y);
+    }
+
+    // Calculate visible area
+    calculateVisibleUserArea();
+}
+
 
 /**
 * I admit it, it doesn't auto scale yet and it's on my TODO to fix that

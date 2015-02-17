@@ -83,12 +83,10 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     verticalScrollBar->setMinimum(-1000);
     verticalScrollBar->setMaximum(1000);
 
-    /*
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
             viewer, SLOT(setHorizontalOffset(int)));
     connect(verticalScrollBar, SIGNAL(valueChanged(int)),
-            viewer, SLOT(setVerticalOffset(int))); */
-
+            viewer, SLOT(setVerticalOffset(int)));
 }
 
 CadMdiChild::~CadMdiChild() {

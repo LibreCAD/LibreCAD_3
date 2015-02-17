@@ -68,8 +68,8 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
   *
   */
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
-    QWidget::keyReleaseEvent(event);
 
+    QWidget::keyPressEvent(event);
     switch (event->key()) {
         case Qt::Key_Shift:
             // When shift key is release we switch back to rubber band
@@ -112,24 +112,35 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 }
 
 void LCADViewer::setVerticalOffset(int v) {
-    // _centerPosY = v;
+    int val = v_ - v;
+    this->_docRenderer->transY(val * 10);
+    v_ = v;
+    update();
 }
 
 void LCADViewer::setHorizontalOffset(int v) {
-    //  _centerPosX = v;
+    int val = h_ - v;
+    this->_docRenderer->transX(val * 20);
+    h_ = v;
+    update();
 }
+
 
 
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
 
     // Selection by area
-    if (!startSelectPos.isNull()) {
-        bool occopies = startSelectPos.x() < event->pos().x();
-        _docRenderer->makeSelectionDevice(
-            std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
-            std::abs(startSelectPos.x() - event->pos().x()),
-            std::abs(startSelectPos.y() - event->pos().y()), occopies);
+    if (_altKeyActive) {
+        this->_docRenderer->pan(event->pos().x(), event->pos().y());
+    } else {
+        if (!startSelectPos.isNull()) {
+            bool occopies = startSelectPos.x() < event->pos().x();
+            _docRenderer->makeSelectionDevice(
+                std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
+                std::abs(startSelectPos.x() - event->pos().x()),
+                std::abs(startSelectPos.y() - event->pos().y()), occopies);
+        }
     }
 
     update();
