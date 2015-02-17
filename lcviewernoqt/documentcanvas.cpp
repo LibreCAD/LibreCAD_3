@@ -165,6 +165,27 @@ void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned in
     calculateVisibleUserArea();
 }
 
+void DocumentCanvas::transX(int x) {
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        LcPainter* p = i->second;
+        p->translate(x, 0);
+    }
+
+    // Calculate visible area
+    calculateVisibleUserArea();
+}
+
+void DocumentCanvas::transY(int y) {
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        LcPainter* p = i->second;
+        p->translate(0, y);
+    }
+
+    // Calculate visible area
+    calculateVisibleUserArea();
+}
+
+
 /**
 * I admit it, it doesn't auto scale yet and it's on my TODO to fix that
 */

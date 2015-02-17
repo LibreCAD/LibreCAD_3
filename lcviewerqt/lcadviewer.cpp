@@ -112,11 +112,17 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 }
 
 void LCADViewer::setVerticalOffset(int v) {
-    // _centerPosY = v;
+    int val = v_ - v;
+    this->_docRenderer->transY(val * 10);
+    v_ = v;
+    update();
 }
 
 void LCADViewer::setHorizontalOffset(int v) {
-    //  _centerPosX = v;
+    int val = h_ - v;
+    this->_docRenderer->transX(val * 20);
+    h_ = v;
+    update();
 }
 
 
