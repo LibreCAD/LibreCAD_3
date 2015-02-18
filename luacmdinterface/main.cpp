@@ -104,23 +104,23 @@ int main(int argc, char** argv) {
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
 
     // Seup a painter fo the document
-    LcCairoPainter* lcPainter;
+    // TODO needs redesign
+    LcCairoPainter* lcPainter = nullptr;
     _canvas->createPainterFunctor(
-    [&](const unsigned int width, const unsigned int height) {
-        if (lcPainter == NULL) {
-            lcPainter = LcCairoPainter::createPainter(width, height);
-            lcPainter->clear(1., 1., 1., 0.0);
+        [&](const unsigned int width, const unsigned int height) {
+            if (lcPainter == nullptr) {
+                lcPainter = LcCairoPainter::createPainter(width, height);
+                lcPainter->clear(1., 1., 1., 0.0);
+            }
 
-        }
-
-        return lcPainter;
+            return lcPainter;
     });
 
     _canvas->deletePainterFunctor([&]
     (LcPainter * painter) {
-        if (lcPainter != NULL) {
+        if (lcPainter != nullptr) {
             delete painter;
-            lcPainter = NULL;
+            lcPainter = nullptr;
         }
     });
 
@@ -146,13 +146,8 @@ int main(int argc, char** argv) {
     }
 
     _canvas->autoScale();
-    _canvas->render([&](
-                        LcPainter * lcPainter
-    ) {
-    }, [&](
-        LcPainter * lcPainter
-    ) {
-    });
+    _canvas->render([&](LcPainter * lcPainter) {},
+                    [&](LcPainter * lcPainter) {});
 
 
     lcPainter->writePNG(fOut);
