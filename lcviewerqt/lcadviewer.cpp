@@ -70,6 +70,7 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
 
     QWidget::keyPressEvent(event);
+
     switch (event->key()) {
         case Qt::Key_Shift:
             // When shift key is release we switch back to rubber band
@@ -126,13 +127,14 @@ void LCADViewer::setHorizontalOffset(int v) {
 }
 
 
-
 void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
 
     // Selection by area
     if (_altKeyActive) {
-        this->_docRenderer->pan(event->pos().x(), event->pos().y());
+        if (!startSelectPos.isNull()) {
+            this->_docRenderer->pan(event->pos().x(), event->pos().y());
+        }
     } else {
         if (!startSelectPos.isNull()) {
             bool occopies = startSelectPos.x() < event->pos().x();
@@ -150,17 +152,20 @@ void LCADViewer::mousePressEvent(QMouseEvent* event) {
     QWidget::mousePressEvent(event);
 
     startSelectPos = event->pos();
+
 }
 
+
 void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
+    startSelectPos = QPoint();
+
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
-    startSelectPos = QPoint();
+
     _docRenderer->removeSelectionArea();
     update();
 }
-
 
 
 

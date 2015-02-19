@@ -14,7 +14,7 @@ LCDimLinear::LCDimLinear(const lc::DimLinear_CSPtr dimLinear) : LCVDrawItem(true
 *       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/ can possebly be drawn using painter's skew (see transformations)
 *
 */
-void LCDimLinear::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo::Area &rect) const {
+void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     const double dx = this->definitionPoint3().x() - this->definitionPoint2().x();
@@ -23,16 +23,17 @@ void LCDimLinear::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo
     const double capSize = 10.;
 
     // TODO what if d2 is switched with d3 ?
-    const lc::geo::Coordinate &firstPoint = definitionPoint2();
-    const lc::geo::Coordinate &secondPoint = definitionPoint3();
-    const lc::geo::Coordinate &mousePos = middleOfText();
+    const lc::geo::Coordinate& firstPoint = definitionPoint2();
+    const lc::geo::Coordinate& secondPoint = definitionPoint3();
+    const lc::geo::Coordinate& mousePos = middleOfText();
 
     /* TODO maybe need to check for vertical too ?
      * asume firstPoint is always on left side...
      */
     if (!(mousePos.x() <= firstPoint.x() || mousePos.x() >= secondPoint.x())
-            && !(mousePos.y() >= firstPoint.y() && mousePos.y() <= secondPoint.y()))
+        && !(mousePos.y() >= firstPoint.y() && mousePos.y() <= secondPoint.y())) {
         isHorizontal = true;
+    }
 
     // Decide to show the explecit value or the measured value
     std::string value = explicitValue();
@@ -123,7 +124,7 @@ void LCDimLinear::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo
         painter->move_to(secondPoint.x(), secondPoint.y());
         painter->line_to(mousePos.x() + (mousePos.x() >= secondPoint.x() ? capSize / 2 : -capSize / 2), secondPoint.y());
         painter->move_to(mousePos.x(), secondPoint.y());
-//
+        //
         // middle line
         painter->line_to(mousePos.x(), firstPoint.y());
 
@@ -152,7 +153,7 @@ void LCDimLinear::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo
     */
 
 
-    
+
     if (isHorizontal && shortOnSpace) {
 
         // TODO on short left or right side ?
@@ -172,7 +173,7 @@ void LCDimLinear::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo
 
     } else {
         // vertical, text rotated based on side
-        const double rotationAngle = mousePos.x() >= secondPoint.x() ? -90./180. : 90. / 180.;
+        const double rotationAngle = mousePos.x() >= secondPoint.x() ? -90. / 180. : 90. / 180.;
 
         this->drawText(value, (rotationAngle * M_PI) + textAngle(), attachmentPoint(), middleOfText(), painter, options, rect);
 

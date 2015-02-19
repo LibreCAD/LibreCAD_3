@@ -38,7 +38,7 @@ class DocumentCanvas {
          */
         void autoScale();
 
-        void pan(double x, double y);
+        void pan(double move_x, double move_y);
 
         void transX(int x);
 
@@ -180,6 +180,7 @@ class DocumentCanvas {
 
         double pan_x = 0.0;
         double pan_y = 0.0;
+        bool tmp_x = 0;
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
         // When set to true, a entity will be selected if it intersects or occipies,
