@@ -281,6 +281,8 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
 }
 
 void DXFimpl::addSpline(const DRW_Spline* data) {
+
+//    data->
 }
 
 
@@ -309,7 +311,6 @@ std::shared_ptr<lc::MetaLineWidth> DXFimpl::getLcLineWidth(DRW_LW_Conv::lineWidt
 }
 
 lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
-    return nullptr;
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
 
     auto lw = getLcLineWidth(data.lWeight);
