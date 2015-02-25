@@ -1,5 +1,5 @@
 #include <iostream>
-#include "coordinatesolutions.h"
+#include <cad/math/coordinatesolutions.h>
 #include <cad/math/quadratic_math.h>
 #include "code.h"
 #include <cad/math/lcmath.h>
