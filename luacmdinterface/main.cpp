@@ -1,18 +1,20 @@
 #include <cad/dochelpers/documentimpl.h>
-
+#include <fstream>
+#include <cstdio>
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/point.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/operations/builder.h>
 #include <documentcanvas.h>
-#include <lccairopainter.h>
+#include <lccairopainter.tcc>
 #include <drawitems/gradientbackground.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <lcadluascript.h>
 #include <string>
 #include <curl/curl.h>
 #include "boost/program_options.hpp"
+#include <boost/filesystem.hpp>
 namespace po = boost::program_options;
 
 
@@ -57,6 +59,15 @@ std::string loadFile(std::string url) {
     }
 }
 
+std::ofstream ofile;
+cairo_status_t write_func (void * closure, const unsigned char *data, uint length) {
+    
+    if (ofile.is_open())
+       ofile.write((const char *)data, length);
+    
+    return CAIRO_STATUS_SUCCESS;
+}
+
 int main(int argc, char** argv) {
     int width = DEFAULT_IMAGE_WIDTH;
     int height = DEFAULT_IMAGE_HEIGHT;
@@ -70,7 +81,7 @@ int main(int argc, char** argv) {
     ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
     ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
     ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
-    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output png filename, example -o out.png");
+    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -103,16 +114,28 @@ int main(int argc, char** argv) {
     // Add backround
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
 
+        
     // Seup a painter fo the document
     // TODO needs redesign
-    LcCairoPainter* lcPainter = nullptr;
+    
+    std::string fType = boost::filesystem::extension(fOut);
+    std::transform(fType.begin(), fType.end(), fType.begin(), ::tolower);
+    LcPainter * lcPainter = nullptr;
+    
+    using namespace CairoPainter;
+    ofile.open(fOut);
+    if (fType == ".pdf")
+        lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
+    else if (fType == ".svg")
+        lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
+    // cairo can print any surface to PNG
+    else
+        lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
+        
+
     _canvas->createPainterFunctor(
         [&](const unsigned int width, const unsigned int height) {
-            if (lcPainter == nullptr) {
-                lcPainter = LcCairoPainter::createPainter(width, height);
                 lcPainter->clear(1., 1., 1., 0.0);
-            }
-
             return lcPainter;
     });
 
@@ -150,7 +173,12 @@ int main(int argc, char** argv) {
                     [&](LcPainter * lcPainter) {});
 
 
-    lcPainter->writePNG(fOut);
+    if (fType == ".png" || (fType != ".pdf" && fType != ".svg"))
+        static_cast<LcCairoPainter<CairoPainter::backend::Image> *>(lcPainter)->writePNG(fOut);
+    
+    delete _canvas;
+    ofile.close();
+    
 
     return 0;
 }

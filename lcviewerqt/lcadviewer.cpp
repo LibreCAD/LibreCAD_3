@@ -1,6 +1,6 @@
 #include "lcadviewer.h"
 #include "documentcanvas.h"
-#include "lccairopainter.h"
+#include "lccairopainter.tcc"
 
 #include <map>
 
@@ -40,7 +40,7 @@ void LCADViewer::setDocument(lc::Document* document) {
     _docRenderer->createPainterFunctor(
     [this](const unsigned int width, const unsigned int height) {
         QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
-        LcCairoPainter* lcPainter = LcCairoPainter::createImagePainter(m_image->bits(), width, height);
+        LcCairoPainter<CairoPainter::backend::Image>* lcPainter = new LcCairoPainter<CairoPainter::backend::Image>(m_image->bits(), width, height);
         imagemaps.insert(std::make_pair(lcPainter, m_image));
         return lcPainter;
     });

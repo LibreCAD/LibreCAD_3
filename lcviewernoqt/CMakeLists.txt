@@ -22,7 +22,6 @@ drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
-lccairopainter.cpp
 documentcanvas.cpp
 )
 
@@ -52,7 +51,7 @@ events/mousereleaseevent.h
 events/selecteditemsevent.h
 events/snappointevent.h
 lcpainter.h
-lccairopainter.h
+lccairopainter.tcc
 documentcanvas.h
 )
 
