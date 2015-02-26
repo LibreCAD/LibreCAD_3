@@ -73,6 +73,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     viewer->setAutoFillBackground(true);
     viewer->resize(10000, 10000);
     viewer->setContextMenuPolicy(Qt::CustomContextMenu);
+    viewer->setFocusPolicy(Qt::StrongFocus);
     connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
 
     gridLayout->addWidget(viewer, 0, 0, 1, 1);
@@ -82,12 +83,10 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     verticalScrollBar->setMinimum(-1000);
     verticalScrollBar->setMaximum(1000);
 
-    /*
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
             viewer, SLOT(setHorizontalOffset(int)));
     connect(verticalScrollBar, SIGNAL(valueChanged(int)),
-            viewer, SLOT(setVerticalOffset(int))); */
-
+            viewer, SLOT(setVerticalOffset(int)));
 }
 
 CadMdiChild::~CadMdiChild() {

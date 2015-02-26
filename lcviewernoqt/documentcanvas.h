@@ -37,6 +37,12 @@ class DocumentCanvas {
          * Found the bounds of the current document and scale into this and center on screen
          */
         void autoScale();
+
+        void pan(double move_x, double move_y);
+
+        void transX(int x);
+
+        void transY(int y);
         /**
          * @brief zoom
          * into a specific area
@@ -172,6 +178,9 @@ class DocumentCanvas {
         unsigned int _deviceWidth;
         unsigned int _deviceHeight;
 
+        double pan_x = 0.0;
+        double pan_y = 0.0;
+        bool tmp_x = 0;
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
         // When set to true, a entity will be selected if it intersects or occipies,

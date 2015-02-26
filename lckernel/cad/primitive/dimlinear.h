@@ -89,8 +89,8 @@ namespace lc {
 
             // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points
-            geo::Coordinate definitionPoint2() const;
-            geo::Coordinate definitionPoint3() const;
+            const geo::Coordinate& definitionPoint2() const noexcept;
+            const geo::Coordinate& definitionPoint3() const noexcept;
         protected:
             const double _angle;
             const double _oblique;

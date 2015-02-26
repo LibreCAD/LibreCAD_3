@@ -1,6 +1,6 @@
 #include "lcadviewer.h"
 #include "documentcanvas.h"
-#include "lccairopainter.h"
+#include "lccairopainter.tcc"
 
 #include <map>
 
@@ -40,7 +40,7 @@ void LCADViewer::setDocument(lc::Document* document) {
     _docRenderer->createPainterFunctor(
     [this](const unsigned int width, const unsigned int height) {
         QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
-        LcCairoPainter* lcPainter = LcCairoPainter::createImagePainter(m_image->bits(), width, height);
+        LcCairoPainter<CairoPainter::backend::Image>* lcPainter = new LcCairoPainter<CairoPainter::backend::Image>(m_image->bits(), width, height);
         imagemaps.insert(std::make_pair(lcPainter, m_image));
         return lcPainter;
     });
@@ -68,7 +68,8 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
   *
   */
 void LCADViewer::keyPressEvent(QKeyEvent* event) {
-    QWidget::keyReleaseEvent(event);
+
+    QWidget::keyPressEvent(event);
 
     switch (event->key()) {
         case Qt::Key_Shift:
@@ -112,11 +113,17 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 }
 
 void LCADViewer::setVerticalOffset(int v) {
-    // _centerPosY = v;
+    int val = v_ - v;
+    this->_docRenderer->transY(val * 10);
+    v_ = v;
+    update();
 }
 
 void LCADViewer::setHorizontalOffset(int v) {
-    //  _centerPosX = v;
+    int val = h_ - v;
+    this->_docRenderer->transX(val * 20);
+    h_ = v;
+    update();
 }
 
 
@@ -124,12 +131,18 @@ void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     QWidget::mouseMoveEvent(event);
 
     // Selection by area
-    if (!startSelectPos.isNull()) {
-        bool occopies = startSelectPos.x() < event->pos().x();
-        _docRenderer->makeSelectionDevice(
-            std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
-            std::abs(startSelectPos.x() - event->pos().x()),
-            std::abs(startSelectPos.y() - event->pos().y()), occopies);
+    if (_altKeyActive) {
+        if (!startSelectPos.isNull()) {
+            this->_docRenderer->pan(event->pos().x(), event->pos().y());
+        }
+    } else {
+        if (!startSelectPos.isNull()) {
+            bool occopies = startSelectPos.x() < event->pos().x();
+            _docRenderer->makeSelectionDevice(
+                std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
+                std::abs(startSelectPos.x() - event->pos().x()),
+                std::abs(startSelectPos.y() - event->pos().y()), occopies);
+        }
     }
 
     update();
@@ -139,17 +152,20 @@ void LCADViewer::mousePressEvent(QMouseEvent* event) {
     QWidget::mousePressEvent(event);
 
     startSelectPos = event->pos();
+
 }
 
+
 void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
+    startSelectPos = QPoint();
+
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
-    startSelectPos = QPoint();
+
     _docRenderer->removeSelectionArea();
     update();
 }
-
 
 
 
