@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
     int height = DEFAULT_IMAGE_HEIGHT;
     std::string fIn = "";
     std::string fOut = DEFAULT_OUT_FILENAME;
+    std::string fType;
 
     // Read CMD options
     po::options_description desc("Allowed options");
@@ -81,7 +82,8 @@ int main(int argc, char** argv) {
     ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
     ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
     ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
-    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png");
+    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png")
+    ("otype,t", po::value<std::string>(&fType), "(optional) output file type, example -t svg");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -115,18 +117,20 @@ int main(int argc, char** argv) {
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
 
         
-    // Seup a painter fo the document
-    // TODO needs redesign
-    
-    std::string fType = boost::filesystem::extension(fOut);
+    /* try to guess from file extension the output type */
+    if (fType.empty()) {
+        fType = boost::filesystem::extension(fOut);
+        fType = fType.substr(fType.find_first_of(".")+1);
+    }
+        
     std::transform(fType.begin(), fType.end(), fType.begin(), ::tolower);
-    LcPainter * lcPainter = nullptr;
+    LcPainter * lcPainter = nullptr;    
+    ofile.open(fOut);
     
     using namespace CairoPainter;
-    ofile.open(fOut);
-    if (fType == ".pdf")
+    if (fType == "pdf")
         lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
-    else if (fType == ".svg")
+    else if (fType == "svg")
         lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
     // cairo can print any surface to PNG
     else
