@@ -48,7 +48,11 @@ class DXFimpl : public DRW_InterfaceImpl {
         * can be be read with just one routine
         */
         lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const&) const;
+        /**
+        * Convert from a DRW_Coord to a gey::Coordinate
+        */
         lc::geo::Coordinate coord(DRW_Coord const& coord) const;
+        std::vector<lc::geo::Coordinate>coords(std::vector<DRW_Coord *> coordList) const;
     private:
         lc::iColor icol;
 

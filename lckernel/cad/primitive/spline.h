@@ -19,14 +19,6 @@ namespace lc {
 
     class Spline : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable {
         public:
-            /**
-                 * @brief Spline, default constructor
-                 * @param vector<Coordinate> control_points
-                 * @param int degree
-                 * @param bool closed
-                 * @param Layer_CSPtr layer
-                 */
-            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer);
 
             /**
              * @brief Spline, Constructor with MetaTypes
@@ -36,7 +28,14 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes metaTypes
              */
-            Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Spline( const std::vector<geo::Coordinate>& controlPoints,
+                    const std::vector<double>& knotPoints,
+                    const std::vector<geo::Coordinate>& fitPoints,
+                    int degree, bool closed,
+                    double stanx, double stany, double stanz,
+                    double etanx, double etany, double etanz,
+                    double nx, double ny, double nz,
+                    const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;

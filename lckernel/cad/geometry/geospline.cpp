@@ -3,34 +3,45 @@
 using namespace lc;
 using namespace geo;
 
-Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _controlPoints(control_points), _degree(degree), _closed(closed) {
+/*
+Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _controlPoints(control_points), _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
+                                                                                         _sTanZ(0.), _eTanX(0.), _eTanY(0.),
+                                                                                         _eTanZ(0.) {
 }
 
 
 Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<Coordinate>& knotPoints, int degree,
+               const std::vector<double>& knotPoints, int degree,
                bool closed) :  _controlPoints(control_points), _knotPoints(knotPoints),
-    _degree(degree), _closed(closed) {
+    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
+    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
+    _eTanZ(0.) {
 }
 
 Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<Coordinate>& knotPoints,
+               const std::vector<double>& knotPoints,
                const std::vector<Coordinate>& fitPoints, int degree,
                bool closed) : _controlPoints(control_points), _knotPoints(knotPoints),
     _fitPoints(fitPoints),
-    _degree(degree), _closed(closed) {
+    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
+    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
+    _eTanZ(0.) {
 }
+*/
 
 Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<Coordinate>& knotPoints,
+               const std::vector<double>& knotPoints,
                const std::vector<Coordinate>& fitPoints,
-               int degree, bool closed, double stanx, double stany,
-               double stanz, double etanx, double etany, double etanz)  :
+               int degree, bool closed,
+               double stanx, double stany, double stanz,
+               double etanx, double etany, double etanz,
+               double nx, double ny, double nz) :
     _controlPoints(control_points), _knotPoints(knotPoints),
     _fitPoints(fitPoints),
-    _degree(degree), _closed(closed), _sTanX(stanx), _sTanY(stany),
-    _sTanZ(stanz), _eTanX(etanx), _eTanY(etany),
-    _eTanZ(etanz) {
+    _degree(degree), _closed(closed),
+    _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
+    _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
+    _nX(nx), _nY(ny), _nZ(nz) {
 }
 
 
@@ -42,17 +53,18 @@ bool Spline::closed() const {
     return _closed;
 }
 
-int Spline::degree() const {
+short Spline::degree() const {
     return _degree;
 }
 
-const std::vector<Coordinate> Spline::knotPoints() const {
+const std::vector<double> Spline::knotPoints() const {
     return _knotPoints;
 }
 
 const std::vector<Coordinate> Spline::fitPoints() const {
     return _fitPoints;
 }
+
 
 double Spline::startTanX() const {
     return _sTanX;
@@ -79,30 +91,15 @@ double Spline::endTanZ() const {
     return _eTanZ;
 }
 
-int Spline::numberKnots() const {
-    return _noKnots;
+double Spline::nX() const {
+    return _nX;
 }
-
-int Spline::numberFits() const {
-    return _noFits;
+double Spline::nY() const {
+    return _nY;
 }
-
-int Spline::numberControlPoints() const {
-    return _noControlPoints;
+double Spline::nZ() const {
+    return _nZ;
 }
-
-double Spline::knotTolerance() const {
-    return _knotTolerance;
-}
-
-double Spline::controlPointTolerance() const {
-    return _controlPointTolerance;
-}
-
-double Spline::fitTolerance() const {
-    return _fitTolerance;
-}
-
 
 Coordinate Spline::nearestPointOnPath(const Coordinate& coord) const {
 }

@@ -2,15 +2,17 @@
 
 using namespace lc;
 
-Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer)
-    : CADEntity(layer), geo::Spline(control_points, degree, closed) {
+Spline::Spline(
+        const std::vector<geo::Coordinate>& controlPoints,
+        const std::vector<double>& knotPoints,
+        const std::vector<geo::Coordinate>& fitPoints,
+        int degree, bool closed,
+        double stanx, double stany, double stanz,
+        double etanx, double etany, double etanz,
+        double nx, double ny, double nz, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Spline(controlPoints, knotPoints, fitPoints, degree, closed, stanx, stany, stanz,etanx, etany, etanz, nx, ny, nz) {
 
 }
 
-Spline::Spline(const std::vector<geo::Coordinate>& control_points, const int degree, const bool closed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
-    : CADEntity(layer, metaInfo), geo::Spline(control_points, degree, closed) {
-
-}
 
 std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
 }
@@ -26,7 +28,7 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
         control_pts.push_back(point + offset);
     }
 
-    auto newSpline = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer());
+    auto newSpline = std::make_shared<Spline>(control_pts, knotPoints(), fitPoints(), degree(), closed(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), layer(), metaInfo());
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -38,7 +40,7 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
         control_pts.push_back(point + offset);
     }
 
-    auto newSpline = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer());
+    auto newSpline = std::make_shared<Spline>(control_pts, knotPoints(), fitPoints(), degree(), closed(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), layer(), metaInfo());
     return newSpline;
 }
 
@@ -49,7 +51,9 @@ CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, const dou
         control_pts.push_back(point.rotate(rotation_center, rotation_angle));
     }
 
-    auto newSpline = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer());
+    auto normal = geo::Coordinate(nX(), nY(), nZ()).rotate(rotation_angle);
+
+    auto newSpline = std::make_shared<Spline>(control_pts, knotPoints(), fitPoints(), degree(), closed(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), normal.x(), normal.y(), normal.z(), layer(), metaInfo());
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -61,7 +65,7 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
         control_pts.push_back(point.scale(scale_center, scale_factor));
     }
 
-    auto newSpline = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer());
+    auto newSpline = std::make_shared<Spline>(control_pts, knotPoints(), fitPoints(), degree(), closed(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), layer(), metaInfo());
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -72,14 +76,7 @@ const geo::Area Spline::boundingBox() const {
 }
 
 CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    std::vector<geo::Coordinate> control_pts;
+    auto newSpline = std::make_shared<Spline>(controlPoints(), knotPoints(), fitPoints(), degree(), closed(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), layer, metaInfo);
 
-    for (auto point : this->controlPoints()) {
-        control_pts.push_back(point);
-    }
-
-    control_pts.insert(control_pts.begin() , this->controlPoints().begin(), this->controlPoints().end());
-    auto newEntity = std::make_shared<Spline>(control_pts, this->degree(), this->closed(), layer);
-    newEntity->setID(this->id());
-    return newEntity;
+    return newSpline;
 }

@@ -73,22 +73,14 @@ namespace lc {
                 }
 
 
-            protected:
-                inline void start(const Coordinate& coord) {
-                    _start = coord;
-                }
-                inline void end(const Coordinate& coord) {
-                    _end = coord;
-                }
-
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Vector& e) {
                     os << "Vector(start=" << e._start << " end=" << e._end << ")";
                     return os;
                 }
             private:
-                Coordinate _start;
-                Coordinate _end;
+                 Coordinate _start;
+                 Coordinate _end;
 
         };
     }

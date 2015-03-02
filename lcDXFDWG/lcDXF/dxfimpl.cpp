@@ -10,6 +10,7 @@
 #include <cad/primitive/dimaligned.h>
 #include <cad/primitive/dimangular.h>
 #include <cad/primitive/point.h>
+#include <cad/primitive/spline.h>
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
@@ -127,6 +128,21 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
 }
 
 void DXFimpl::addSpline(const DRW_Spline& data) {
+    if (_blockHandle != -1) {
+        return;
+    }
+
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    auto layer = _document->layerByName(data.layer);
+
+    _builder->append(std::make_shared<lc::Spline>(coords(data.controllist),
+            data.knotslist,
+            coords(data.fitlist),
+            data.degree,
+            false,
+            data.tgsx, data.tgsy, data.tgsz,
+            data.tgex, data.tgey, data.tgez,
+            data.ex, data.ey, data.ez, layer, mf));
 
 }
 
@@ -138,12 +154,12 @@ void DXFimpl::addText(const DRW_Text& data) {
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
     _builder->append(std::make_shared<lc::Text>(coord(data.basePoint),
-                                                data.text, data.height,
-                                                data.angle, data.style,
-                                                lc::TextConst::DrawingDirection(data.textgen),
-                                                lc::TextConst::HAlign(data.alignH),
-                                                lc::TextConst::VAlign(data.alignV),
-                                                layer, mf));
+            data.text, data.height,
+            data.angle, data.style,
+            lc::TextConst::DrawingDirection(data.textgen),
+            lc::TextConst::HAlign(data.alignH),
+            lc::TextConst::VAlign(data.alignV),
+            layer, mf));
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
@@ -336,4 +352,12 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
 lc::geo::Coordinate DXFimpl::coord(DRW_Coord const& coord) const {
     return lc::geo::Coordinate(coord.x, coord.y, coord.z);
+}
+
+std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordList) const {
+    std::vector<lc::geo::Coordinate> coords;
+    for (const DRW_Coord *ptr : coordList) {
+        coords.emplace_back(ptr->x,ptr->y, ptr->z);
+    }
+    return coords;
 }
