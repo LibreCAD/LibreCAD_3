@@ -61,9 +61,9 @@ CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaI
     return newDimAligned;
 }
 
-geo::Coordinate DimAligned::definitionPoint2() const {
+const geo::Coordinate& DimAligned::definitionPoint2() const noexcept {
     return _definitionPoint2;
 }
-geo::Coordinate DimAligned::definitionPoint3() const {
+const geo::Coordinate& DimAligned::definitionPoint3() const noexcept {
     return _definitionPoint3;
 }

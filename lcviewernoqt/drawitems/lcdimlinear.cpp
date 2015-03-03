@@ -22,9 +22,12 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     bool isHorizontal = false;
     const double capSize = 10.;
 
-    // TODO what if d2 is switched with d3 ?
-    const lc::geo::Coordinate& firstPoint = definitionPoint2();
-    const lc::geo::Coordinate& secondPoint = definitionPoint3();
+    const lc::geo::Coordinate &firstPoint = (definitionPoint2().magnitude() <= definitionPoint3().magnitude())
+                                          ? definitionPoint2() : definitionPoint3();
+                                          
+    const lc::geo::Coordinate &secondPoint = (definitionPoint2().magnitude() <= definitionPoint3().magnitude())
+                                           ? definitionPoint3() : definitionPoint2();
+                                           
     const lc::geo::Coordinate& mousePos = middleOfText();
 
     /* TODO maybe need to check for vertical too ?

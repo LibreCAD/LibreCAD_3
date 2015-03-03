@@ -114,6 +114,15 @@ namespace lc {
                 inline Coordinate operator + (double d) const {
                     return Coordinate(_x + d, _y + d, _z + d);
                 }
+                
+                /**
+                 * @brief operator + for offset addition
+                 * @param double offset
+                 * @return geo::Coordinate
+                 */
+                inline Coordinate operator - (double d) const {
+                    return Coordinate(_x - d, _y - d, _z - d);
+                }
 
                 /**
                   * Substract two points from each other and return a new coordinate : return _x - coord._x, _y - coord._y, _z - coord._z
@@ -317,3 +326,4 @@ namespace lc {
 
     }
 }
+
