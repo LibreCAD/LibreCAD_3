@@ -47,12 +47,14 @@ void LCDimAligned::draw(LcPainter *painter, LcDrawOptions *options, const lc::ge
 
         auto d0ext = definitionPoint().move(definitionPoint() - p2, capSize * 2);
         painter->move_to(d0ext.x(), d0ext.y());
+        painter->line_to(definitionPoint().x(), definitionPoint().y());
+        
         auto p2ext = p2.move(definitionPoint() - p2, -(capSize * 2));
-        painter->line_to(p2ext.x(), p2ext.y());
-
-        painter->move_to(p2.x(), p2.y());
+        painter->move_to(p2ext.x(), p2ext.y());
+        painter->line_to(p2.x(), p2.y());
         painter->line_to(definitionPoint2().x(), definitionPoint2().y());
-
+        
+        
         /* draw a nice line for text
          * TODO maybe we will need mousePos for this in future
          */
