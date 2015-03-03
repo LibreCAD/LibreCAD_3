@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
                     [&](LcPainter * lcPainter) {});
 
 
-    if (fType == ".png" || (fType != ".pdf" && fType != ".svg"))
+    if (fType == "png" || (fType != "pdf" && fType != "svg"))
         static_cast<LcCairoPainter<CairoPainter::backend::Image> *>(lcPainter)->writePNG(fOut);
     
     delete _canvas;
