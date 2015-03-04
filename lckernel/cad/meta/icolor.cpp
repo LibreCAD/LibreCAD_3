@@ -1,5 +1,3 @@
-#pragma once
-
 #include "icolor.h"
 
 using namespace lc;

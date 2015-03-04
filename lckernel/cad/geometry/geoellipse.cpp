@@ -11,8 +11,8 @@ Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double mino
     _minorRadius(minorRadius),
     _startAngle(startAngle),
     _endAngle(endAngle),
-    _isArc(isArc),
-    _isReversed(false) {
+    _isReversed(false), 
+    _isArc(isArc) {
 
 }
 
@@ -41,6 +41,10 @@ double Ellipse::getAngle() const {
 }
 
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
+    /* TODO implement
+     * fix compiler warning
+     */
+    return Coordinate();
 }
 
 bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {

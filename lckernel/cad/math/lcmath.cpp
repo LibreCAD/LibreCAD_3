@@ -401,7 +401,7 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
 bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector<double>& sn) {
     //verify the matrix size
     int mSize(mt.size()); //rows
-    int aSize(mSize + 1); //columns of augmented matrix
+    uint aSize(mSize + 1); //columns of augmented matrix
 
     for (int i = 0; i < mSize; i++) {
         if (mt[i].size() != aSize) {

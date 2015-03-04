@@ -97,7 +97,10 @@ const geo::Area Ellipse::boundingBox() const {
     //    double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
 
     //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
-
+    /* TODO implement
+     * fix compiler warning
+     */
+    return geo::Area();
 }
 
 CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {

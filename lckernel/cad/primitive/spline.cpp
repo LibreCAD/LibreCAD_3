@@ -15,10 +15,17 @@ Spline::Spline(
 
 
 std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    /* TODO implement
+     * fix compiler warning
+     */
+    return std::vector<EntityCoordinate>();
 }
 
 geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
-
+    /* TODO implement
+     * fix compiler warning
+     */
+    return geo::Coordinate();
 }
 
 CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {

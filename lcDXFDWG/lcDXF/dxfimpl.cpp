@@ -348,6 +348,7 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
         mf->add(col);
     }
+    return mf;
 }
 
 lc::geo::Coordinate DXFimpl::coord(DRW_Coord const& coord) const {

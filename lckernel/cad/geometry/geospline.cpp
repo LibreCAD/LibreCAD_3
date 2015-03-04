@@ -102,7 +102,15 @@ double Spline::nZ() const {
 }
 
 Coordinate Spline::nearestPointOnPath(const Coordinate& coord) const {
+    /* TODO implement
+     * fix compiler warning
+     */
+    return Coordinate();
 }
 
 bool Spline::isCoordinateOnPath(const Coordinate& coord) const {
+    /* TODO implement
+     * fix compiler warning
+     */
+    return false;
 }

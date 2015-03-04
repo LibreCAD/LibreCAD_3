@@ -441,8 +441,8 @@ namespace lc {
             const double _horizontalMidpoint;
             const geo::Area _bounds;
             QuadTreeSub* _nodes[4];
-            const short _maxLevels;
-            const short _maxObjects;
+            const unsigned short _maxLevels;
+            const unsigned short _maxObjects;
     };
 
     /**
