@@ -15,7 +15,8 @@ namespace lc {
                        double stanx, double stany, double stanz,
                        double etanx, double etany, double etanz,
                        double nx, double ny, double nz) :
-                        _controlPoints(control_points), _knotPoints(knotPoints),
+                        _controlPoints(control_points),
+                        _knotPoints(knotPoints),
                         _fitPoints(fitPoints),
                         _degree(degree), _closed(closed),
                         _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
