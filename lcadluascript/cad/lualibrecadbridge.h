@@ -22,6 +22,7 @@
 #include <cad/primitive/dimlinear.h>
 #include <cad/primitive/dimaligned.h>
 #include <cad/primitive/dimangular.h>
+#include <cad/primitive/spline.h>
 #include <cad/meta/color.h>
 #include <cad/base/metainfo.h>
 #include <cad/operations/builder.h>

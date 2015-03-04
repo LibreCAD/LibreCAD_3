@@ -4,7 +4,7 @@ extern "C"
 #include "lualib.h"
 #include "lauxlib.h"
 }
-
+#include <iostream>
 #include "LuaIntf.h"
 
 #include "lcadluascript.h"
@@ -195,9 +195,44 @@ static lc::DimAngular_SPtr lua_dimAngular(lc::geo::Coordinate const& definitionP
     return std::make_shared<lc::DimAngular>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle),
                                             explicitValue, defPoint11, defPoint12, defPoint21, defPoint22, layer, nullptr);
 }
+static lc::DimAngular_SPtr lua_dimAngular1(lc::geo::Coordinate const& definitionPoint, lc::geo::Coordinate const& middleOfText, lc::TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
+        lc::TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
+        lc::geo::Coordinate const& defPoint11, lc::geo::Coordinate const& defPoint12, lc::geo::Coordinate const& defPoint21, lc::geo::Coordinate const& defPoint22, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::DimAngular>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle),
+            explicitValue, defPoint11, defPoint12, defPoint21, defPoint22, layer, metaInfo);
+}
+/***
+*    (~ _ |. _  _
+*    _)|_)||| |(/_
+*      |
+*/
+static lc::Spline_SPtr lua_spline(LuaRef luaControlPoints,
+        LuaRef luaKnotPoints,
+        LuaRef luaFitPoints,
+        int degree, bool closed,
+        double stanx, double stany, double stanz,
+        double etanx, double etany, double etanz,
+        double nx, double ny, double nz,
+        const lc::Layer_CSPtr layer) {
+    std::vector<lc::geo::Coordinate> controlPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaControlPoints);
+    std::vector<double> knotPoints = Lua::getList<std::vector<double>>(luaKnotPoints);
+    std::vector<lc::geo::Coordinate> fitPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaFitPoints);
+    return std::make_shared<lc::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz, layer, nullptr);
+}
 
-
-
+static lc::Spline_SPtr lua_spline1(LuaRef luaControlPoints,
+        LuaRef luaKnotPoints,
+        LuaRef luaFitPoints,
+        int degree, bool closed,
+        double stanx, double stany, double stanz,
+        double etanx, double etany, double etanz,
+        double nx, double ny, double nz,
+        const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    std::vector<lc::geo::Coordinate> controlPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaControlPoints);
+    std::vector<double> knotPoints = Lua::getList<std::vector<double>>(luaKnotPoints);
+    std::vector<lc::geo::Coordinate> fitPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaFitPoints);
+    return std::make_shared<lc::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz, layer, metaInfo);
+}
 
 /***
 *    ~|~ _  _|_
@@ -256,6 +291,8 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("Point1", &lua_point1)
     .addFunction("Text", &lua_text)
     .addFunction("Text1", &lua_text1)
+    .addFunction("Spline", &lua_spline)
+    .addFunction("Spline1", &lua_spline1)
     .addFunction("DimRadial", &lua_dimRadial)
     .addFunction("DimRadial1", &lua_dimRadial1)
     .addFunction("DimRadial2", &lua_dimRadial2)
@@ -273,6 +310,7 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("DimAligned_DimAuto", &lua_DimAligned_dimAuto)
     .addFunction("DimAligned_DimAuto1", &lua_DimAligned_dimAuto1)
     .addFunction("DimAngular", &lua_dimAngular)
+    .addFunction("DimAngular1", &lua_dimAngular1)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
     .beginModule("proxy")
