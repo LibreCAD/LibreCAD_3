@@ -8,19 +8,25 @@ namespace lc {
         class Spline {
             public:
 
-                Spline(const std::vector<Coordinate>& control_points,
-                       const std::vector<double>& knotPoints,
-                       const std::vector<Coordinate>& fitPoints,
+                Spline(const std::vector<Coordinate> &control_points,
+                       const std::vector<double> &knotPoints,
+                       const std::vector<Coordinate> &fitPoints,
                        int degree, bool closed,
-                        double stanx, double stany, double stanz,
-                        double etanx, double etany, double etanz,
-                        double nx, double ny, double nz);
+                       double stanx, double stany, double stanz,
+                       double etanx, double etany, double etanz,
+                       double nx, double ny, double nz) :
+                        _controlPoints(control_points), _knotPoints(knotPoints),
+                        _fitPoints(fitPoints),
+                        _degree(degree), _closed(closed),
+                        _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
+                        _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
+                        _nX(nx), _nY(ny), _nZ(nz) {}
 
                 /**
                  * @brief control_points, Returns Control points of spline
                  * @return vector<Coordinate> controlpoints
                  */
-                const std::vector<Coordinate> controlPoints() const;
+                const std::vector<Coordinate> &controlPoints() const;
 
                 /**
                  * @brief degree, Returns degree of spline
@@ -31,13 +37,13 @@ namespace lc {
                 * @brief Return a vector of knotpoints
                 * @return vector of double
                 */
-                const std::vector<double> knotPoints() const;
+                const std::vector<double> &knotPoints() const;
 
                 /**
                 * @brief Return a vector of fitpoints
                 * @return vector of Coordinate
                 */
-                const std::vector<Coordinate> fitPoints() const;
+                const std::vector<Coordinate> &fitPoints() const;
 
                 // start tangent x coordinate
                 double startTanX() const;
@@ -70,14 +76,14 @@ namespace lc {
                  * \param lc::geo::Coordinate coord
                  * \return lc::geo::Coordinate
                  */
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
+                Coordinate nearestPointOnPath(const Coordinate &coord) const;
 
                 /*!
                  * \brief checks if Coordinate is on path
                  * \param lc::geo::Coordinate coord
                  * \return bool
                  */
-                bool isCoordinateOnPath(const Coordinate& coord) const;
+                bool isCoordinateOnPath(const Coordinate &coord) const;
 
             private:
                 const std::vector<Coordinate> _controlPoints;

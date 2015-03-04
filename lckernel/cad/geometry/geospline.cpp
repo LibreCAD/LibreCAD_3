@@ -28,24 +28,7 @@ Spline::Spline(const std::vector<Coordinate>& control_points,
     _eTanZ(0.) {
 }
 */
-
-Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<double>& knotPoints,
-               const std::vector<Coordinate>& fitPoints,
-               int degree, bool closed,
-               double stanx, double stany, double stanz,
-               double etanx, double etany, double etanz,
-               double nx, double ny, double nz) :
-    _controlPoints(control_points), _knotPoints(knotPoints),
-    _fitPoints(fitPoints),
-    _degree(degree), _closed(closed),
-    _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
-    _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
-    _nX(nx), _nY(ny), _nZ(nz) {
-}
-
-
-const std::vector<Coordinate> Spline::controlPoints() const {
+const std::vector<Coordinate> &Spline::controlPoints() const {
     return _controlPoints;
 }
 
@@ -57,11 +40,11 @@ short Spline::degree() const {
     return _degree;
 }
 
-const std::vector<double> Spline::knotPoints() const {
+const std::vector<double> &Spline::knotPoints() const {
     return _knotPoints;
 }
 
-const std::vector<Coordinate> Spline::fitPoints() const {
+const std::vector<Coordinate> &Spline::fitPoints() const {
     return _fitPoints;
 }
 
@@ -101,14 +84,14 @@ double Spline::nZ() const {
     return _nZ;
 }
 
-Coordinate Spline::nearestPointOnPath(const Coordinate& coord) const {
+Coordinate Spline::nearestPointOnPath(const Coordinate &coord) const {
     /* TODO implement
      * fix compiler warning
      */
     return Coordinate();
 }
 
-bool Spline::isCoordinateOnPath(const Coordinate& coord) const {
+bool Spline::isCoordinateOnPath(const Coordinate &coord) const {
     /* TODO implement
      * fix compiler warning
      */
