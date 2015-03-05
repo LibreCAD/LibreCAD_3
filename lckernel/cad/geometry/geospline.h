@@ -11,7 +11,7 @@ namespace lc {
                 Spline(const std::vector<Coordinate> &control_points,
                        const std::vector<double> &knotPoints,
                        const std::vector<Coordinate> &fitPoints,
-                       int degree, bool closed,
+                       int degree, bool closed, double fitTolerance,
                        double stanx, double stany, double stanz,
                        double etanx, double etany, double etanz,
                        double nx, double ny, double nz) :
@@ -19,6 +19,7 @@ namespace lc {
                         _knotPoints(knotPoints),
                         _fitPoints(fitPoints),
                         _degree(degree), _closed(closed),
+                        _fitTolerance(fitTolerance),
                         _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
                         _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
                         _nX(nx), _nY(ny), _nZ(nz) {}
@@ -46,7 +47,9 @@ namespace lc {
                 */
                 const std::vector<Coordinate> &fitPoints() const;
 
-                // start tangent x coordinate
+                double fitTolerance() const;
+
+            // start tangent x coordinate
                 double startTanX() const;
                 // start tangent y coordinate
                 double startTanY() const;
@@ -93,6 +96,8 @@ namespace lc {
 
                 const short _degree;
                 const bool _closed;
+
+                const double _fitTolerance;
 
                 const double _sTanX; // start tangent x coordinate
                 const double _sTanY; // start tangent y coordinate

@@ -84,6 +84,10 @@ double Spline::nZ() const {
     return _nZ;
 }
 
+double Spline::fitTolerance() const {
+    return _fitTolerance;
+}
+
 Coordinate Spline::nearestPointOnPath(const Coordinate &coord) const {
     /* TODO implement
      * fix compiler warning

@@ -140,6 +140,7 @@ void DXFimpl::addSpline(const DRW_Spline& data) {
             coords(data.fitlist),
             data.degree,
             false,
+            data.tolfit,
             data.tgsx, data.tgsy, data.tgsz,
             data.tgex, data.tgey, data.tgez,
             data.ex, data.ey, data.ez, layer, mf));

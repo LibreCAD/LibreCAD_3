@@ -32,10 +32,13 @@ namespace lc {
                     const std::vector<double>& knotPoints,
                     const std::vector<geo::Coordinate>& fitPoints,
                     int degree, bool closed,
+                    double fitTolerance,
                     double stanx, double stany, double stanz,
                     double etanx, double etany, double etanz,
                     double nx, double ny, double nz,
                     const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
+            Spline(const Spline_CSPtr other, bool sameID = false);
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
