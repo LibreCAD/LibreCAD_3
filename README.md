@@ -2,20 +2,20 @@ LibreCAD_3
 ==========
 
 LibreCAD 3 development (GSoC 2014)
-This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modularity and the design, the LibreCAD is divided into 3 parts.
-1) The UI
-2) The kernel
-3) The CADViewer 
+This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modularity and the design, the LibreCAD is divided into 3 parts.  
+1) The UI  
+2) The kernel  
+3) The CADViewer  
 
 
 Compilation Instructions
 ==========
 
-Install cairo
-Install Qt 5
-Install git
-Install liblog4cxx
-Install Google test
+Install cairo  
+Install Qt 5  
+Install git  
+Install liblog4cxx  
+Install Google test  
  
 ```
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
@@ -45,7 +45,7 @@ For a release build you would do:
 /opt/local/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
 ```
 
-MacPorts/brew might not have libdxfrw in it so you need to compile it yourself.
+MacPorts/brew might not have **libdxfrw** in it so you need to compile it yourself.
 
 ```
 git clone https://github.com/rvt/libdxfrw
@@ -60,13 +60,13 @@ sudo make install
 OSX X-Code
 ========
 
-If you like X-Code as your editor you can ask cmake to generate the build file for you.
-mkdir xcode
-cd build
-cmake -G Xcode ..
+If you like X-Code as your editor you can ask cmake to generate the build file for you.  
+mkdir xcode  
+cd build  
+cmake -G Xcode ..  
 
 Then open the project in x-code and buikd.
-Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile libdxfrw yourself.
+Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile **libdxfrw** yourself.
 
 ![X-Code add headers]
 (http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
