@@ -5,7 +5,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 class LCVPoint : public LCVDrawItem, public lc::Point  {
     public:

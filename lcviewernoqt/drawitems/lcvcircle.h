@@ -5,7 +5,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 class LCVCircle  : public LCVDrawItem, public lc::Circle {
     public:

@@ -142,6 +142,9 @@ namespace lc {
             virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
                 o->accept(shared_from_this(), ei);
             }
+            virtual void accept(LWPolyline_CSPtr o, EntityVisitor& ei) const {
+                ei.visit(shared_from_this(), o);
+            }
             virtual void dispatch(EntityDispatch& ed) const {
                 ed.visit(shared_from_this());
             }

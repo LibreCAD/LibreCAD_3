@@ -5,7 +5,7 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
+
 class LCVEllipse : public LCVDrawItem, public lc::Ellipse {
     public:
         /**

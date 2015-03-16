@@ -7,7 +7,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 class LCDimDiametric  : public LCVDrawItem, public lc::DimDiametric, public LCDimension {
     public:

@@ -7,7 +7,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 class LCDimAligned : public LCVDrawItem, public lc::DimAligned, public LCDimension {
     public:

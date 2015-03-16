@@ -7,7 +7,6 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
 
 class LCDimRadial  : public LCVDrawItem, public lc::DimRadial, public LCDimension {
     public:

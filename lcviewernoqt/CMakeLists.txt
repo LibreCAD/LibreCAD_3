@@ -22,6 +22,7 @@ drawitems/lcdimdiametric.cpp
 drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
+drawitems/lclwpolyline.cpp
 documentcanvas.cpp
 )
 
@@ -45,6 +46,7 @@ drawitems/lcdimdiametric.h
 drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
 drawitems/lcdimangular.h
+drawitems/lclwpolyline.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h

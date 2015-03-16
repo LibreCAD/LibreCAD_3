@@ -5,7 +5,7 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
+
 class LCVText : public LCVDrawItem, public lc::Text {
     public:
         LCVText(const lc::Text_CSPtr Text);

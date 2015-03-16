@@ -11,6 +11,7 @@
 #include <cad/primitive/dimangular.h>
 #include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
+#include <cad/primitive/lwpolyline.h>
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
@@ -292,6 +293,23 @@ void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
+    if (_blockHandle != -1) {
+        return;
+    }
+
+    auto mf = getMetaInfo(data);
+    auto layer = _document->layerByName(data.layer);
+
+    std::vector<lc::LWVertex2D> points;
+    for (auto i : data.vertlist) {
+        points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+    }
+
+    auto isCLosed = data.flags&0x01;
+
+    _builder->append(std::make_shared<lc::LWPolyline>(
+        data.width, data.elevation, data.thickness,  isCLosed, coord(data.extPoint), points,layer, mf
+    ));
 }
 
 void DXFimpl::addPolyline(const DRW_Polyline& data) {

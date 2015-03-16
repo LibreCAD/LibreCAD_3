@@ -71,6 +71,10 @@ namespace lc {
     typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
     typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
 
+    class LWPolyline;
+    typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
+    typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
+
     class Quadratic;
     typedef std::shared_ptr<Quadratic> Quadratic_SPtr;
     typedef std::shared_ptr<const Quadratic> Quadratic_CSPtr;
@@ -111,12 +115,13 @@ namespace lc {
 
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Point_CSPtr, EntityVisitor&) const = 0;
+            virtual void accept(LWPolyline_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Circle_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Arc_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(Ellipse_CSPtr, EntityVisitor&) const = 0;
+
             virtual void accept(Text_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(MText_CSPtr, EntityVisitor&) const = 0;
-
             virtual void accept(DimAligned_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimAngular_CSPtr, EntityVisitor&) const = 0;
             virtual void accept(DimDiametric_CSPtr, EntityVisitor&) const = 0;
@@ -124,7 +129,6 @@ namespace lc {
             virtual void accept(DimRadial_CSPtr, EntityVisitor&) const = 0;
 
             virtual void accept(Spline_CSPtr, EntityVisitor&) const = 0;
-
             virtual void accept(CADEntity_CSPtr, EntityVisitor&) const = 0;
 
             virtual void dispatch(EntityDispatch&) const = 0;

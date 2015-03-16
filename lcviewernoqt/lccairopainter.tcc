@@ -172,6 +172,7 @@ class LcCairoPainter : public LcPainter {
 
         void arcNegative(double x, double y, double r, double start, double end) {
             cairo_arc_negative(_cr, x, -y, r, 2. * M_PI - end, 2.* M_PI - start);
+//            cairo_arc_negative(_cr, x, -y, r, start, end);
         }
 
         void circle(double x, double y, double r) {

@@ -5,7 +5,7 @@
 
 class LcDrawOptions;
 class LcPainter;
-class QRectF;
+
 class LCVLine : public LCVDrawItem, public lc::Line {
     public:
         /**

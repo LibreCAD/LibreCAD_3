@@ -44,6 +44,7 @@ cad/primitive/dimdiametric.cpp
 cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
+cad/primitive/lwpolyline.cpp
 )
 
 # HEADER FILES
@@ -96,6 +97,8 @@ cad/operations/documentoperation.h
 cad/operations/trim.h
 cad/operations/layerops.h
 cad/operations/undoable.h
+cad/vo/entitycoordinate.h
+cad/vo/entitydistance.h
 cad/primitive/arc.h
 cad/primitive/circle.h
 cad/primitive/point.h
@@ -103,8 +106,7 @@ cad/primitive/ellipse.h
 cad/primitive/line.h
 cad/primitive/spline.h
 cad/primitive/text.h
-cad/vo/entitycoordinate.h
-cad/vo/entitydistance.h
+cad/primitive/lwpolyline.h
 cad/primitive/dimension.h
 cad/primitive/dimradial.h
 cad/primitive/dimdiametric.h

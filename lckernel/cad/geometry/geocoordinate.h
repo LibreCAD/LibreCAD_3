@@ -19,6 +19,7 @@ namespace lc {
                 Coordinate(Coordinate &&c) : _x(c._x), _y(c._y), _z(c._z) {}
                 Coordinate(const Coordinate &c) : _x(c._x), _y(c._y), _z(c._z) {}
 
+
                 /**
                      * @brief  Returns x of Coordinate
                      * @return double x
@@ -275,7 +276,15 @@ namespace lc {
                  * Normalised version of this coordinate
                  */
                 inline Coordinate norm() const {
-                    double m = magnitude();
+                    auto m = magnitude();
+                    return Coordinate(_x / m, _y / m, _z / m);
+                }
+
+                /**
+                 * Normalised version of this coordinate with a factor
+                 */
+                inline Coordinate norm(const double f) const {
+                    auto m = magnitude() * f;
                     return Coordinate(_x / m, _y / m, _z / m);
                 }
 

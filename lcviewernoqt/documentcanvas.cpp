@@ -19,9 +19,10 @@
 #include "drawitems/lcdimdiametric.h"
 #include "drawitems/lcdimlinear.h"
 #include "drawitems/lcdimaligned.h"
+#include "drawitems/lcdimangular.h"
+#include "drawitems/lclwpolyline.h"
 
 #include "lcpainter.h"
-#include "drawitems/lcdimangular.h"
 
 #include <cad/meta/metacolor.h>
 #include <cad/meta/metalinewidth.h>
@@ -489,6 +490,15 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (dimAngular != nullptr) {
         auto newDimAngular = std::make_shared<LCDimAngular>(dimAngular);
         _entityContainer.insert(newDimAngular);
+        return;
+    }
+
+    // Add 'LWPolyline'
+    const auto lwPolyline = event.entity<lc::LWPolyline>();
+
+    if (lwPolyline != nullptr) {
+        auto newLLWPolyline = std::make_shared<LCLWPolyline>(lwPolyline);
+        _entityContainer.insert(newLLWPolyline);
         return;
     }
 }

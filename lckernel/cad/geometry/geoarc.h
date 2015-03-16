@@ -8,6 +8,12 @@ namespace lc {
         class Arc  {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
+                Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool reversed);
+
+
+                static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
+                static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);
+
 
                 /**
                  * @brief Returns center of Arc
@@ -38,6 +44,13 @@ namespace lc {
                 */
                 double length() const;
 
+
+                /*!
+                 * \brief Returns of the arc is in reversed direction
+                 * \return Double reversed.
+                 */
+                double reversed() const;
+
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
@@ -52,6 +65,7 @@ namespace lc {
                 const double _radius; /*!< Double _Radius of Arc */
                 const double _startAngle;/*!< Double startAngle of Arc */
                 const double _endAngle;/*!< Double endAngle of Arc */
+                const bool _reversed;
         };
     }
 }

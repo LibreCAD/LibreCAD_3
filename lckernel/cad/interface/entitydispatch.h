@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cad/const.h"
+#include "cad/base/cadentity.h"
 
 namespace lc {
     class EntityDispatch {
@@ -19,6 +20,7 @@ namespace lc {
             virtual void visit(DimDiametric_CSPtr) = 0;
             virtual void visit(DimLinear_CSPtr) = 0;
             virtual void visit(DimRadial_CSPtr) = 0;
+            virtual void visit(LWPolyline_CSPtr) = 0;
     };
 }
 // ENTITYDISPATCH_H
