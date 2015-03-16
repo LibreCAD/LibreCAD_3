@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace geo;
 
-Circle::Circle(const Coordinate& center, double radius) : _center(center), _radius(radius) {
+Circle::Circle(const Coordinate& center, double radius) : Base(), _center(center), _radius(radius) {
     if (radius < 0.0) {
         throw "Invalid radius";
     }

@@ -4,7 +4,7 @@ using namespace lc;
 using namespace geo;
 
 Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle)
-        : _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(false) {
+        : Base(), _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(false) {
     /*
     if (startAngle<0.0 || startAngle>PI2 || startAngle<endAngle) {
         throw "Invalid start angle";
@@ -19,7 +19,7 @@ Arc::Arc(const Coordinate &center, double radius, double startAngle, double endA
 }
 
 Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle, bool reversed)
-        : _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(reversed) {
+        : Base(), _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(reversed) {
 }
 
 Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinate &p3) {

@@ -2,11 +2,12 @@
 
 #include "cad/const.h"
 #include "geocoordinate.h"
+#include "geobase.h"
 
 namespace lc {
     namespace geo {
         // TODO: Should Circle be a arc with a start angle of 0 and a stop angle of 2PI ?
-        class Circle {
+        class Circle : public Base {
             public:
                 Circle(const Coordinate& center, double radius);
 

@@ -6,8 +6,6 @@
 #include "coordinatesolutions.h"
 #include "lcmath.h"
 #include "cad/const.h"
-#include "cad/geometry/geoline.h"
-#include "cad/primitive/line.h"
 #include "cad/base/cadentity.h"
 namespace lc {
     class Quadratic {

@@ -72,10 +72,11 @@ cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/functions/ftrim.h
 cad/functions/intersect.h
+cad/geometry/geobase.h
+cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h
 cad/geometry/geoarea.h
 cad/geometry/geocircle.h
-cad/geometry/geocoordinate.h
 cad/geometry/geoellipse.h
 cad/geometry/geospline.h
 cad/geometry/geovector.h
@@ -148,7 +149,7 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
+add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)

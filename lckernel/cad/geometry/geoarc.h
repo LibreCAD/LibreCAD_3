@@ -2,10 +2,11 @@
 
 #include "cad/const.h"
 #include "geocoordinate.h"
+#include "geobase.h"
 
 namespace lc {
     namespace geo {
-        class Arc  {
+        class Arc  : public Base {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool reversed);

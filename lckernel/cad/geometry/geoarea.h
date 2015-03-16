@@ -4,13 +4,14 @@
 
 #include "geocoordinate.h"
 #include "geovector.h"
+#include "geobase.h"
 
 namespace lc {
     namespace geo {
         /**
           * Class that describes a area or window.
           */
-        class Area {
+        class Area : public Base {
             public:
                 /**
                   * Create a new Area. The coordinates coordA and coordB will be ordered so that minP wil always be < maxP

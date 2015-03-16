@@ -12,3 +12,4 @@ release
 CMakeLists.txt.user
 playground
 xcode
+debug

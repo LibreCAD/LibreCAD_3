@@ -2,10 +2,11 @@
 
 #include "cad/const.h"
 #include "geocoordinate.h"
+#include "geobase.h"
 
 namespace lc {
     namespace geo {
-        class Vector  {
+        class Vector : public Base {
             public:
                 // TODO: Test for validity?
                 explicit Vector(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {}

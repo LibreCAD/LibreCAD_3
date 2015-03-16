@@ -3,13 +3,14 @@
 #include "cad/const.h"
 #include <cmath>
 #include <iostream>
+#include "geobase.h"
 
 namespace lc {
     namespace geo {
         /**
           * Class that represent a coordinate in space
           */
-        class Coordinate {
+        class Coordinate : public Base {
             public:
                 explicit Coordinate() : _x(0.), _y(0.), _z(0.) {}
                 explicit Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {}

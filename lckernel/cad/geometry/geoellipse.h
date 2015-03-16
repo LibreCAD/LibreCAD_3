@@ -4,6 +4,7 @@
 #include "geocoordinate.h"
 #include "cad/math/lcmath.h"
 #include <memory>
+#include "geobase.h"
 
 namespace lc {
 
@@ -11,7 +12,7 @@ namespace lc {
     typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
     typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     namespace geo {
-        class Ellipse  {
+        class Ellipse : public Base {
             public:
                 Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
 

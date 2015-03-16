@@ -1,11 +1,12 @@
 #pragma once
 
+#include "geobase.h"
 #include "geocoordinate.h"
 #include <vector>
 
 namespace lc {
     namespace geo {
-        class Spline {
+        class Spline : public Base {
             public:
 
                 Spline(const std::vector<Coordinate> &control_points,
@@ -15,6 +16,7 @@ namespace lc {
                        double stanx, double stany, double stanz,
                        double etanx, double etany, double etanz,
                        double nx, double ny, double nz) :
+                        Base(),
                         _controlPoints(control_points),
                         _knotPoints(knotPoints),
                         _fitPoints(fitPoints),
