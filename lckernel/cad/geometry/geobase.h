@@ -9,7 +9,7 @@ namespace lc {
         */
         class Base  {
             public:
-
+                virtual ~Base() = default;
         };
     }
 }
