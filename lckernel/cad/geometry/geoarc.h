@@ -6,6 +6,8 @@
 
 namespace lc {
     namespace geo {
+        class Area;
+
         class Arc  : public Base {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
@@ -45,6 +47,20 @@ namespace lc {
                 */
                 double length() const;
 
+                /**
+                * Coordinate of the start point
+                */
+                Coordinate startP() const;
+
+                /**
+                * Coordinate of the end point
+                */
+                Coordinate endP() const;
+
+                /**
+                * Tight bounding box for the area
+                */
+                Area boundingBox() const;
 
                 /*!
                  * \brief Returns of the arc is in reversed direction

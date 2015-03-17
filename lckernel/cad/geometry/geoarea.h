@@ -158,6 +158,17 @@ namespace lc {
                                Coordinate(std::max(other.maxP().x(), this->maxP().x()), std::max(other.maxP().y(), this->maxP().y())));
                 }
 
+                 /**
+                  * @brief merge
+                  * two area's and expand if required to largest containing area
+                  * @param other
+                  * @return
+                  */
+                inline Area merge(const Coordinate& other) const {
+                    return Area(
+                            Coordinate(std::min(other.x(), this->minP().x()), std::min(other.y(), this->minP().y())),
+                            Coordinate(std::max(other.x(), this->maxP().x()), std::max(other.y(), this->maxP().y())));
+                }
 
                 /**
                  * @brief merge

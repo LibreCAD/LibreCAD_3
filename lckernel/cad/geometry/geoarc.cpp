@@ -1,4 +1,6 @@
+#include <cad/math/lcmath.h>
 #include "geoarc.h"
+#include "geoarea.h"
 
 using namespace lc;
 using namespace geo;
@@ -108,4 +110,37 @@ double Arc::length() const {
 
 double Arc::reversed() const {
     return _reversed;
+}
+
+Coordinate Arc::startP() const {
+    return _center + Coordinate(_startAngle) * _radius;
+}
+
+Coordinate Arc::endP() const {
+    return _center + Coordinate(_endAngle) * _radius;
+}
+
+Area Arc::boundingBox() const {
+    geo::Area area(startP(), endP());
+
+    const double startAngle = Math::correctAngle(_startAngle);
+    const double endAngle = Math::correctAngle(_endAngle);
+    const double p0 = 0.0 * M_PI;
+    const double p1 = 0.5 * M_PI;
+    const double p2 = 1.0 * M_PI;
+    const double p3 = 1.5 * M_PI;
+
+    if ((Math::isAngleBetween(p0, startAngle, endAngle, _reversed))) {
+        area = area.merge(Coordinate(_center.x() + _radius, _center.y()));
+    }
+    if ((Math::isAngleBetween(p1, startAngle, endAngle, _reversed))) {
+        area = area.merge(Coordinate(_center.x(), _center.y() + _radius));
+    }
+    if ((Math::isAngleBetween(p2, startAngle, endAngle, _reversed))) {
+        area = area.merge(Coordinate(_center.x() - _radius, _center.y()));
+    }
+    if ((Math::isAngleBetween(p3, startAngle, endAngle, _reversed))) {
+        area = area.merge(Coordinate(_center.x(), _center.y() - _radius));
+    }
+    return area;
 }
