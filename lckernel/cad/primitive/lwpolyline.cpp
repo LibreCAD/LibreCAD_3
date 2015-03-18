@@ -68,19 +68,22 @@ CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo
 const geo::Area LWPolyline::boundingBox() const {
     auto &&items = asGeometrics();
 
+    // TODO To think about: Currently I use dynamic_pointer_cast because I didn't want virtual function
+    // on the Base class of geometric entities, I like them to be 'stand alone' as much as possible
+    // If we see we start to do dynamic_pointer_cast more frequently w emay he to re-consider
     geo::Area area;
-    if (auto vector = std::dynamic_pointer_cast<geo::Vector>(items.front())) {
+    if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(items.front())) {
         area = geo::Area(vector->start(), vector->end());
-    } else if (auto arc = std::dynamic_pointer_cast<geo::Arc>(items.front())) {
+    } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(items.front())) {
         area = arc->boundingBox();
     } else {
         std::cerr << "Unknown entity found in LWPolyline during boundingBox front generation " << std::endl;
     }
 
     for(auto geoItem : items) {
-        if (auto vector = std::dynamic_pointer_cast<geo::Vector>(geoItem)) {
+        if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
             area = area.merge(geo::Area(vector->start(), vector->end()));
-        } else if (auto arc = std::dynamic_pointer_cast<geo::Arc>(geoItem)) {
+        } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
             area = area.merge(arc->boundingBox());
         } else {
             std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
@@ -96,8 +99,8 @@ CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaI
     return newEntity;
 }
 
-std::vector<std::shared_ptr<geo::Base>> const LWPolyline::asGeometrics() const {
-    std::vector<std::shared_ptr<geo::Base>> items;
+std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() const {
+    std::vector<std::shared_ptr<const geo::Base>> items;
 
     auto itr = _vertex.begin();
     auto lastPoint=itr;

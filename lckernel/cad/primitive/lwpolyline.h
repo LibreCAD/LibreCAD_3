@@ -221,7 +221,7 @@ namespace lc {
         * can consider calculating the bounding box in the constructor
         * and just return the cached result.
         */
-        std::vector<std::shared_ptr<geo::Base>> const asGeometrics() const;
+        std::vector<std::shared_ptr<const geo::Base>> const asGeometrics() const;
 
 
     public:
