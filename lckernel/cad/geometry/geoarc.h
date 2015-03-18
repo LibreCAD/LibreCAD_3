@@ -16,24 +16,21 @@ namespace lc {
                 static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
                 static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);
 
-                Arc(const Arc &c) noexcept : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _reversed(c._reversed) {std::cout << "move failed!\n";}
-                Arc& operator = (Arc&& in) {
-                    _center = in._center;
-                    _radius = in._radius;
-                    _startAngle = in._startAngle;
-                    _endAngle = in._endAngle;
-                    _reversed = in._reversed;
-                    std::cout << "move assigned\n";
-                    return *this;
+                Arc(const Arc &c) : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _reversed(c._reversed) {}
+                Arc(Arc &&c) noexcept {
+                    std::swap(_center, c._center);
+                    std::swap(_radius, c._radius);
+                    std::swap(_startAngle, c._startAngle);
+                    std::swap(_endAngle, c._endAngle);
+                    std::swap(_reversed, c._reversed);
                 }
 
-                Arc& operator = (const Arc& in) {
-                    _center = std::move(in._center);
-                    _radius = in._radius;
-                    _startAngle = in._startAngle;
-                    _endAngle = in._endAngle;
-                    _reversed = in._reversed;
-                    std::cout << "copy assigned\n";
+                Arc& operator = (Arc&& c) noexcept {
+                    std::swap(_center, c._center);
+                    std::swap(_radius, c._radius);
+                    std::swap(_startAngle, c._startAngle);
+                    std::swap(_endAngle, c._endAngle);
+                    std::swap(_reversed, c._reversed);
                     return *this;
                 }
 

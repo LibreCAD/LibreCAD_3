@@ -108,7 +108,7 @@ std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() c
     while(itr != vertex().end()) {
         if (lastPoint->bulge()!=0.) {
             auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<const geo::Arc>(arc));
+            items.push_back(std::make_shared<const geo::Arc>(std::move(arc)));
         } else {
             items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), itr->location()));
         }
@@ -120,7 +120,7 @@ std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() c
         auto firstP = _vertex.begin();
         if (lastPoint->bulge() != 0.) {
             auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<const geo::Arc>(arc));
+            items.push_back(std::make_shared<const geo::Arc>(std::move(arc)));
         } else {
             items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), firstP->location()));
         }
