@@ -13,12 +13,32 @@ namespace lc {
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool reversed);
 
-
                 static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
                 static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);
 
+                Arc(const Arc &c) noexcept : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _reversed(c._reversed) {std::cout << "move failed!\n";}
+                Arc& operator = (Arc&& in) {
+                    _center = in._center;
+                    _radius = in._radius;
+                    _startAngle = in._startAngle;
+                    _endAngle = in._endAngle;
+                    _reversed = in._reversed;
+                    std::cout << "move assigned\n";
+                    return *this;
+                }
 
-                /**
+                Arc& operator = (const Arc& in) {
+                    _center = std::move(in._center);
+                    _radius = in._radius;
+                    _startAngle = in._startAngle;
+                    _endAngle = in._endAngle;
+                    _reversed = in._reversed;
+                    std::cout << "copy assigned\n";
+                    return *this;
+                }
+
+
+            /**
                  * @brief Returns center of Arc
                  * @return geo::Coordinate Center
                  */
@@ -78,11 +98,11 @@ namespace lc {
                 }
 
             private:
-                const Coordinate _center; /*!< Coordinate center of Arc */
-                const double _radius; /*!< Double _Radius of Arc */
-                const double _startAngle;/*!< Double startAngle of Arc */
-                const double _endAngle;/*!< Double endAngle of Arc */
-                const bool _reversed;
+                Coordinate _center; /*!< Coordinate center of Arc */
+                double _radius; /*!< Double _Radius of Arc */
+                double _startAngle;/*!< Double startAngle of Arc */
+                double _endAngle;/*!< Double endAngle of Arc */
+                bool _reversed;
         };
     }
 }

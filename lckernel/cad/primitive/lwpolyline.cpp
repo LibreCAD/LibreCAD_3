@@ -107,10 +107,10 @@ std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() c
     itr++;
     while(itr != vertex().end()) {
         if (lastPoint->bulge()!=0.) {
-            geo::Arc arc = geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<geo::Arc>(arc.center(), arc.radius(), arc.startAngle(), arc.endAngle(), arc.reversed()));
+            auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
+            items.push_back(std::make_shared<const geo::Arc>(arc));
         } else {
-            items.push_back(std::make_shared<geo::Vector>(lastPoint->location(), itr->location()));
+            items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), itr->location()));
         }
         lastPoint=itr;
         itr++;
@@ -119,10 +119,10 @@ std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() c
     if (_closed) {
         auto firstP = _vertex.begin();
         if (lastPoint->bulge() != 0.) {
-            geo::Arc arc = geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<geo::Arc>(arc.center(), arc.radius(), arc.startAngle(), arc.endAngle(), arc.reversed()));
+            auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
+            items.push_back(std::make_shared<const geo::Arc>(arc));
         } else {
-            items.push_back(std::make_shared<geo::Vector>(lastPoint->location(), firstP->location()));
+            items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), firstP->location()));
         }
     }
     return items;
