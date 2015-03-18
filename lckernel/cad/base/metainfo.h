@@ -11,6 +11,8 @@ namespace lc {
             std::shared_ptr<MetaInfo> add(MetaType_CSPtr mi);
             // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);
 
+            virtual ~MetaInfo() = default;
+
             static std::shared_ptr<MetaInfo> create() {
                 return std::make_shared<lc::MetaInfo>();
             }

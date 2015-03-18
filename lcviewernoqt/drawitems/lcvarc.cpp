@@ -14,7 +14,7 @@ void LCVArc::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Are
         painter->stroke();
     }
 
-    /**
+    /*
     lc::geo::Arc const *arc = dynamic_cast<const lc::geo::Arc*>(this);
     lc::geo::Area a = arc->boundingBox();
     painter->save();
@@ -27,6 +27,7 @@ void LCVArc::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Are
     painter->stroke();
     painter->restore();
     */
+
 
     if (modified) {
         painter->restore();

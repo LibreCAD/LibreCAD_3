@@ -21,7 +21,7 @@ namespace lc {
                                        bool reversed);
 
             /**
-             * @brief correctAngle, Corrects angle to be in 0 - 360
+             * @brief correctAngle, Corrects angle to be in 0 - 2 * PI
              * @param double a, angle
              * @return double corrected angle
              */

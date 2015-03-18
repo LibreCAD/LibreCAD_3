@@ -85,6 +85,7 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
 
 const geo::Area Ellipse::boundingBox() const {
 
+    // http://fridrich.blogspot.nl/2011/06/bounding-box-of-svg-elliptical-arc.html
     //geo::Coordinate p = geo::Coordinate(this->center().x(), this->center().y() + this->minorRadius()).rotate(this->majorP() - this->center());
 
     //    double r_min = this->minorRadius();

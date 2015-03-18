@@ -111,6 +111,8 @@ namespace lc {
             CADEntity(CADEntity_CSPtr cadEntity);
 
 
+            virtual ~CADEntity() = default;
+
             virtual void accept(const geo::Vector&, EntityVisitor&) const = 0;
 
             virtual void accept(Line_CSPtr, EntityVisitor&) const = 0;

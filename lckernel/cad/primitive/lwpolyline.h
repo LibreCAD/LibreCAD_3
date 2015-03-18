@@ -3,11 +3,10 @@
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
-
 #include "cad/base/cadentity.h"
+#include "cad/meta/layer.h"
 
-#include <cad/meta/layer.h>
-
+#include "cad/geometry/geobase.h"
 #include <vector>
 
 namespace lc {
@@ -45,6 +44,9 @@ namespace lc {
             return LWVertex2D(_location.rotate(rotation_center, rotation_angle));
         }
 
+        /**
+        * Scale up/Down a polyline. Be aware that non-uniform scaling won't turn a arc into a ellipse.
+        */
         LWVertex2D const scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) {
             if (scale_factor.x() == scale_factor.y()) {
                 return LWVertex2D(_location.scale(scale_center, scale_factor), _bulge * scale_factor.x(), _startWidth * scale_factor.x(), _startHeight * scale_factor.x());
@@ -210,6 +212,17 @@ namespace lc {
         virtual const geo::Area boundingBox() const;
 
         virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
+
+        /**
+        * Return a vector of geometry entities for this polyline
+        * The vector will contain geo::vector and geo::Arc items
+        * In the current implementation no caching of the bounding box is done
+        * If we see that bounding box calcualtion takes up a lot of time we
+        * can consider calculating the bounding box in the constructor
+        * and just return the cached result.
+        */
+        std::vector<std::shared_ptr<geo::Base>> const asGeometrics() const;
+
 
     public:
         virtual void accept(const geo::Vector &o, EntityVisitor &ei) const {

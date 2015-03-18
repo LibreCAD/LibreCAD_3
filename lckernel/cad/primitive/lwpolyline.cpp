@@ -1,6 +1,8 @@
 #include <memory>
-#include <cad/primitive/LWPolyline.h>
 #include <cmath>
+#include "cad/primitive/LWPolyline.h"
+#include "cad/geometry/geoarc.h"
+#include "cad/geometry/geovector.h"
 
 using namespace lc;
 
@@ -24,35 +26,68 @@ LWPolyline::LWPolyline(const LWPolyline_CSPtr other, bool sameID) : CADEntity(ot
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
-
-    for (auto const vertex : _vertex) {
-
+    std::vector<LWVertex2D> newVertex;
+    for (auto vertex : _vertex) {
+        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.startHeight());
     }
-    auto newEntity = std::make_shared<LWPolyline>(shared_from_this(), true);
+    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
     newEntity->setID(this->id());
     return newEntity;
 }
 
 CADEntity_CSPtr LWPolyline::copy(const geo::Coordinate& offset) const {
-    auto newEntity = std::make_shared<LWPolyline>(shared_from_this(), true);
+    std::vector<LWVertex2D> newVertex;
+    for (auto vertex : _vertex) {
+        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.startHeight());
+    }
+    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
     return newEntity;
 }
 
 CADEntity_CSPtr LWPolyline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto newEntity = std::make_shared<LWPolyline>(shared_from_this(), true);
-    newEntity->setID(this->id());
+    std::vector<LWVertex2D> newVertex;
+    for (auto vertex : _vertex) {
+        newVertex.emplace_back(vertex.location().rotate(rotation_center, rotation_angle), vertex.bulge(), vertex.startWidth(), vertex.startHeight());
+    }
+    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
     return newEntity;
 }
 
 CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
-    auto newEntity = std::make_shared<LWPolyline>(shared_from_this(), true);
-    newEntity->setID(this->id());
+    std::vector<LWVertex2D> newVertex;
+    if (scale_factor.x()!=scale_factor.y()) {
+        // TODO decide what to do with non-uniform scale factors
+    }
+    for (auto vertex : _vertex) {
+        newVertex.emplace_back(vertex.location().scale(scale_center, scale_factor), vertex.bulge() * scale_factor.x(), vertex.startWidth(), vertex.startHeight());
+    }
+    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
     return newEntity;
 }
 
 const geo::Area LWPolyline::boundingBox() const {
-    // TODO Calculate bounding box
-    return geo::Area(geo::Coordinate(0,0), 0., 0.);
+    auto &&items = asGeometrics();
+
+    geo::Area area;
+    if (auto vector = std::dynamic_pointer_cast<geo::Vector>(items.front())) {
+        area = geo::Area(vector->start(), vector->end());
+    } else if (auto arc = std::dynamic_pointer_cast<geo::Arc>(items.front())) {
+        area = arc->boundingBox();
+    } else {
+        std::cerr << "Unknown entity found in LWPolyline during boundingBox front generation " << std::endl;
+    }
+
+    for(auto geoItem : items) {
+        if (auto vector = std::dynamic_pointer_cast<geo::Vector>(geoItem)) {
+            area = area.merge(geo::Area(vector->start(), vector->end()));
+        } else if (auto arc = std::dynamic_pointer_cast<geo::Arc>(geoItem)) {
+            area = area.merge(arc->boundingBox());
+        } else {
+            std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
+        }
+    }
+
+    return area;
 }
 
 CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
@@ -60,5 +95,35 @@ CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaI
     newEntity->setID(this->id());
     return newEntity;
 }
+
+std::vector<std::shared_ptr<geo::Base>> const LWPolyline::asGeometrics() const {
+    std::vector<std::shared_ptr<geo::Base>> items;
+
+    auto itr = _vertex.begin();
+    auto lastPoint=itr;
+    itr++;
+    while(itr != vertex().end()) {
+        if (lastPoint->bulge()!=0.) {
+            geo::Arc arc = geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
+            items.push_back(std::make_shared<geo::Arc>(arc.center(), arc.radius(), arc.startAngle(), arc.endAngle(), arc.reversed()));
+        } else {
+            items.push_back(std::make_shared<geo::Vector>(lastPoint->location(), itr->location()));
+        }
+        lastPoint=itr;
+        itr++;
+    }
+
+    if (_closed) {
+        auto firstP = _vertex.begin();
+        if (lastPoint->bulge() != 0.) {
+            geo::Arc arc = geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
+            items.push_back(std::make_shared<geo::Arc>(arc.center(), arc.radius(), arc.startAngle(), arc.endAngle(), arc.reversed()));
+        } else {
+            items.push_back(std::make_shared<geo::Vector>(lastPoint->location(), firstP->location()));
+        }
+    }
+    return items;
+}
+
 
 

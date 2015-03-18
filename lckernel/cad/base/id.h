@@ -22,6 +22,8 @@ namespace lc {
             ID();
             ID(ID_DATATYPE);
 
+            virtual ~ID() = default;
+
             /*!
              * \brief returns the ID of the entity
              * \return ID
