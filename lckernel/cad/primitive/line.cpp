@@ -81,13 +81,3 @@ CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) c
     newEntity->setID(this->id());
     return newEntity;
 }
-
-Quadratic Line::quadratic() const {
-    std::vector<double> ce(3, 0.);
-    auto&& dvp = this->end() - this->start();
-    geo::Coordinate normal(-dvp.y(), dvp.x());
-    ce[0] = normal.x();
-    ce[1] = normal.y();
-    ce[2] = - normal.dot(this->end());
-    return Quadratic(ce);
-}

@@ -5,6 +5,8 @@
 #include "cad/math/lcmath.h"
 #include <memory>
 #include "geobase.h"
+#include <vector>
+#include "cad/math/quadratic_math.h"
 
 namespace lc {
 
@@ -102,6 +104,27 @@ namespace lc {
                  */
                 double getEllipseAngle(const Coordinate& coord) const;
 
+                /**
+                * @brief quadratic, Returns quadratic for the entity
+                * @return Quadratic quadratic equation
+                */
+                Quadratic quadratic() const {
+                    std::vector<double> ce(6, 0.);
+                    ce[0] = this->majorP().squared();
+                    ce[2] = this->ratio() * this->ratio() * ce[0];
+
+                    if (ce[0] < LCTOLERANCE * LCTOLERANCE || ce[2] < LCTOLERANCE * LCTOLERANCE) {
+                        return Quadratic();
+                    }
+
+                    ce[0] = 1. / ce[0];
+                    ce[2] = 1. / ce[2];
+                    ce[5] = -1.;
+                    Quadratic ret(ce);
+                    ret.rotate(getAngle());
+                    ret.move(this->center());
+                    return ret;
+                }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Ellipse& e) {
                     os << "Ellipse(center=" << e._center << " majorP=" << e._majorP << " minorRadius=" << e._minorRadius << " startAngle=" << e._startAngle << " endAngle=" << e._endAngle << " isArc" << e._isArc << " isReversed" << e._isReversed << ")";

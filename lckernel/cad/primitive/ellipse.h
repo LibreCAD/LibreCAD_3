@@ -3,7 +3,6 @@
 #include "cad/const.h"
 #include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
-#include "cad/math/quadratic_math.h"
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoellipse.h"
@@ -73,12 +72,6 @@ namespace lc {
             virtual const geo::Area boundingBox() const;
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
-
-            /**
-             * @brief quadratic, Returns quadratic for the entity
-             * @return Quadratic quadratic equation
-             */
-            Quadratic quadratic() const;
 
         public:
             virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {

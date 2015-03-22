@@ -135,17 +135,22 @@ Quadratic Quadratic::flipXY(void) const {
     return qf;
 }
 
+/***
+ *    (~_|_ _ _|_. _  |~    _  __|_. _  _  _
+ *    _) | (_| | |(_  |~|_|| |(_ | |(_)| |_\
+ *
+ */
 boost::numeric::ublas::matrix<double>  Quadratic::rotationMatrix(const double& angle) {
     boost::numeric::ublas::matrix<double> ret(2, 2);
-    ret(0, 0) = cos(angle);
-    ret(0, 1) = sin(angle);
+    ret(0, 0) = std::cos(angle);
+    ret(0, 1) = std::sin(angle);
     ret(1, 0) = -ret(0, 1);
     ret(1, 1) = ret(0, 0);
     return ret;
 }
 
-CoordinateSolutions Quadratic::getIntersection(const Quadratic& l1, const Quadratic& l2) {
-    CoordinateSolutions ret;
+std::vector<lc::geo::Coordinate> Quadratic::getIntersection(const Quadratic& l1, const Quadratic& l2) {
+    std::vector<lc::geo::Coordinate> ret;
 
     if (l1.isValid() == false || l2.isValid() == false) {
         //        DEBUG_HEADER();
@@ -185,17 +190,19 @@ CoordinateSolutions Quadratic::getIntersection(const Quadratic& l1, const Quadra
     if (p2->isQuadratic() == false) {
         //one line, one quadratic
         //avoid division by zero
-        if (fabs(p2->m_vLinear(0)) < fabs(p2->m_vLinear(1))) {
-            return getIntersection(p1->flipXY(), p2->flipXY()).flipXY();
+        if (std::abs(p2->m_vLinear(0)) < std::abs(p2->m_vLinear(1))) {
+            auto &&tcoords = getIntersection(p1->flipXY(), p2->flipXY());
+            std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
+            return tcoords;
         }
 
     }
 
-    if (fabs(p1->m_mQuad(0, 0)) < LCTOLERANCE && fabs(p1->m_mQuad(0, 1)) < LCTOLERANCE
+    if (std::abs(p1->m_mQuad(0, 0)) < LCTOLERANCE && std::abs(p1->m_mQuad(0, 1)) < LCTOLERANCE
         &&
-        fabs(p2->m_mQuad(0, 0)) < LCTOLERANCE && fabs(p2->m_mQuad(0, 1)) < LCTOLERANCE
+        std::abs(p2->m_mQuad(0, 0)) < LCTOLERANCE && std::abs(p2->m_mQuad(0, 1)) < LCTOLERANCE
        ) {
-        if (fabs(p1->m_mQuad(1, 1)) < LCTOLERANCE && fabs(p2->m_mQuad(1, 1)) < LCTOLERANCE) {
+        if (std::abs(p1->m_mQuad(1, 1)) < LCTOLERANCE && std::abs(p2->m_mQuad(1, 1)) < LCTOLERANCE) {
             //linear
             std::vector<double> ce(0);
             ce.push_back(p1->m_vLinear(0));
@@ -210,7 +217,9 @@ CoordinateSolutions Quadratic::getIntersection(const Quadratic& l1, const Quadra
             return getIntersection(lc10, lc11);
         }
 
-        return getIntersection(p1->flipXY(), p2->flipXY()).flipXY();
+        auto &&tcoords = getIntersection(p1->flipXY(), p2->flipXY());
+        std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
+        return tcoords;
     }
 
     std::vector<std::vector<double> >  ce(0);

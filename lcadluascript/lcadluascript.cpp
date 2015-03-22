@@ -412,7 +412,7 @@ Builder(d):append(l):execute()
 */
 
 
-/* Line
+/* Arc
 layer = active.proxy.layerByName("0")
 a=Arc(Coord(0,0), 10, 0.25*math.pi,1.5*math.pi, layer);
 d=active.document()
@@ -428,7 +428,12 @@ d=active.document()
 Builder(d):append(l):execute()
  */
 
-
+/* Circle
+layer = active.proxy.layerByName("0")
+c=Circle(Coord(50, 50), 70.7106781, layer);
+d=active.document()
+Builder(d):append(c):execute()
+*/
 
 
 /*

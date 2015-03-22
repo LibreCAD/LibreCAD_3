@@ -110,20 +110,4 @@ CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo
     return newEntity;
 }
 
-Quadratic Ellipse::quadratic() const {
-    std::vector<double> ce(6, 0.);
-    ce[0] = this->majorP().squared();
-    ce[2] = this->ratio() * this->ratio() * ce[0];
 
-    if (ce[0] < LCTOLERANCE * LCTOLERANCE || ce[2] < LCTOLERANCE * LCTOLERANCE) {
-        return Quadratic();
-    }
-
-    ce[0] = 1. / ce[0];
-    ce[2] = 1. / ce[2];
-    ce[5] = -1.;
-    Quadratic ret(ce);
-    ret.rotate(getAngle());
-    ret.move(this->center());
-    return ret;
-}

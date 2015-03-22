@@ -49,14 +49,4 @@ CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) co
     return newArc;
 }
 
-Quadratic Arc::quadratic() const {
-    std::vector<double> ce(6, 0.);
-    ce[0] = 1.;
-    ce[2] = 1.;
-    ce[5] = -this->radius() * this->radius();
-    Quadratic ret(ce);
-    ret.move(this->center());
-    return ret;
-}
-
 

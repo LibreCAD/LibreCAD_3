@@ -27,7 +27,7 @@ bool Math::isAngleBetween(double a,
 
     //a1 and a2 almost the same angle
     // the |a2-a1| % (2 pi)=0 means the whole angular range
-    if (fabs(std::remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
+    if (std::abs(std::remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
         return true;
     }
 
@@ -74,11 +74,11 @@ std::vector<double> Math::quadraticSolver(const std::vector<double>& ce)
     double b = 0.25 * ce[0] * ce[0];
     double discriminant = b - ce[1];
 
-    if (discriminant >= - LCTOLERANCE * std::max(fabs(b), fabs(ce[1]))) {
-        b =  sqrt(fabs(discriminant));
+    if (discriminant >= - LCTOLERANCE * std::max(std::abs(b), std::abs(ce[1]))) {
+        b =  sqrt(std::abs(discriminant));
         double a = -0.5 * ce[0];
 
-        if (b >= LCTOLERANCE * fabs(a)) {
+        if (b >= LCTOLERANCE * std::abs(a)) {
             ans.push_back(a + b);
             ans.push_back(a - b);
         } else {
@@ -119,7 +119,7 @@ std::vector<double> Math::cubicSolver(const std::vector<double>& ce)
     //std::cout<<"p="<<p<<"\tq="<<q<<std::endl;
     double discriminant = (1. / 27) * p * p * p + (1. / 4) * q * q;
 
-    if (fabs(p) < 1.0e-75) {
+    if (std::abs(p) < 1.0e-75) {
         ans.push_back((q > 0) ? -pow(q, (1. / 3)) : pow(-q, (1. / 3)));
         ans[0] -= shift;
         //        DEBUG_HEADER();
@@ -207,7 +207,7 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
     //        DEBUG_HEADER();
     //        std::cout<<"x^4+("<<p<<")*x^2+("<<q<<")*x+("<<r<<")==0"<<std::endl;
     //    }
-    if (q * q <= 1.e-4 * LCTOLERANCE * fabs(p * r)) { // Biquadratic equations
+    if (q * q <= 1.e-4 * LCTOLERANCE * std::abs(p * r)) { // Biquadratic equations
         double discriminant = 0.25 * p * p - r;
 
         if (discriminant < -1.e3 * LCTOLERANCE) {
@@ -218,7 +218,7 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
         }
 
         double t2[2];
-        t2[0] = -0.5 * p - sqrt(fabs(discriminant));
+        t2[0] = -0.5 * p - sqrt(std::abs(discriminant));
         t2[1] = -p - t2[0];
 
         //        std::cout<<"t2[0]="<<t2[0]<<std::endl;
@@ -240,7 +240,7 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
         return ans;
     }
 
-    if (fabs(r) < 1.0e-75) {
+    if (std::abs(r) < 1.0e-75) {
         std::vector<double> cubic(3, 0.);
         cubic[1] = p;
         cubic[2] = q;
@@ -342,10 +342,10 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
 
     std::vector<double> ce2(4, 0.);
 
-    if (fabs(ce[4]) < 1.0e-14) {  // this should not happen
-        if (fabs(ce[3]) < 1.0e-14) {  // this should not happen
-            if (fabs(ce[2]) < 1.0e-14) {  // this should not happen
-                if (fabs(ce[1]) > 1.0e-14) {
+    if (std::abs(ce[4]) < 1.0e-14) {  // this should not happen
+        if (std::abs(ce[3]) < 1.0e-14) {  // this should not happen
+            if (std::abs(ce[2]) < 1.0e-14) {  // this should not happen
+                if (std::abs(ce[1]) > 1.0e-14) {
                     roots.push_back(-ce[0] / ce[1]);
                 } else { // can not determine y. this means overlapped, but overlap should have been detected before, therefore return empty set
                     return roots;
@@ -375,7 +375,7 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
         //            DEBUG_HEADER();
         //            std::cout<<"ce2[4]={ "<<ce2[0]<<' '<<ce2[1]<<' '<<ce2[2]<<' '<<ce2[3]<<" }\n";
         //        }
-        if (fabs(ce2[3]) <= TOLERANCE15) {
+        if (std::abs(ce2[3]) <= TOLERANCE15) {
             //constant term is zero, factor 0 out, solve a cubic equation
             ce2.resize(3);
             roots = Math::cubicSolver(ce2);
@@ -447,8 +447,8 @@ bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector
     //    std::cout<<"dn="<<dn<<std::endl;
     //    data.center.set(-0.5*dn(1)/dn(0),-0.5*dn(3)/dn(2)); // center
     //    double d(1.+0.25*(dn(1)*dn(1)/dn(0)+dn(3)*dn(3)/dn(2)));
-    //    if(fabs(dn(0))<TOLERANCE2
-    //            ||fabs(dn(2))<TOLERANCE2
+    //    if(std::abs(dn(0))<TOLERANCE2
+    //            ||std::abs(dn(2))<TOLERANCE2
     //            ||d/dn(0)<TOLERANCE2
     //            ||d/dn(2)<TOLERANCE2
     //            ) {
@@ -464,12 +464,12 @@ bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector
 
     for (int i = 0; i < mSize; i++) {
         int imax(i);
-        double cmax(fabs(mt0[i][i]));
+        double cmax(std::abs(mt0[i][i]));
 
         for (int j = i + 1; j < mSize; j++) {
-            if (fabs(mt0[j][i]) > cmax) {
+            if (std::abs(mt0[j][i]) > cmax) {
                 imax = j;
-                cmax = fabs(mt0[j][i]);
+                cmax = std::abs(mt0[j][i]);
             }
         }
 
@@ -529,8 +529,8 @@ bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector
   * m[0] m[1] must be positive
   *@return a vector contains real roots
   */
-CoordinateSolutions Math::simultaneousQuadraticSolver(const std::vector<double>& m) {
-    CoordinateSolutions ret(0);
+std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolver(const std::vector<double>& m) {
+    std::vector<lc::geo::Coordinate> ret(0);
 
     if (m.size() != 8) {
         return ret;    // valid m should contain exact 8 elements
@@ -567,8 +567,8 @@ CoordinateSolutions Math::simultaneousQuadraticSolver(const std::vector<double>&
   ma100 ma101 ma111 mb10 mb11 mc1
   *@return a CoordinateSolutions contains real roots (x,y)
   */
-CoordinateSolutions Math::simultaneousQuadraticSolverFull(const std::vector<std::vector<double> >& m) {
-    CoordinateSolutions ret;
+std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std::vector<std::vector<double> >& m) {
+    std::vector<lc::geo::Coordinate> ret;
 
     if (m.size() != 2) {
         return ret;
@@ -674,7 +674,7 @@ CoordinateSolutions Math::simultaneousQuadraticSolverFull(const std::vector<std:
 
         //    DEBUG_HEADER();
         //                std::cout<<"("<<ce[0]<<")*x^2 + ("<<ce[1]<<")*x + ("<<ce[2]<<") == 0"<<std::endl;
-        if (fabs(ce[0]) < 1e-75 && fabs(ce[1]) < 1e-75) {
+        if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
             ce[0] = g;
             ce[1] = h * roots[i0] + j;
             ce[2] = i * roots[i0] * roots[i0] + k * roots[i0] + f;
@@ -683,11 +683,11 @@ CoordinateSolutions Math::simultaneousQuadraticSolverFull(const std::vector<std:
 
         }
 
-        if (fabs(ce[0]) < 1e-75 && fabs(ce[1]) < 1e-75) {
+        if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
             continue;
         }
 
-        if (fabs(a) > 1e-75) {
+        if (std::abs(a) > 1e-75) {
             std::vector<double> ce2(2, 0.);
             ce2[0] = ce[1] / ce[0];
             ce2[1] = ce[2] / ce[0];
@@ -722,8 +722,8 @@ CoordinateSolutions Math::simultaneousQuadraticSolverFull(const std::vector<std:
     return ret;
 }
 
-CoordinateSolutions Math::simultaneousQuadraticSolverMixed(const std::vector<std::vector<double> >& m) {
-    CoordinateSolutions ret;
+std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const std::vector<std::vector<double> >& m) {
+    std::vector<lc::geo::Coordinate> ret;
     auto p0 = & (m[0]);
     auto p1 = & (m[1]);
 
@@ -768,8 +768,8 @@ CoordinateSolutions Math::simultaneousQuadraticSolverMixed(const std::vector<std
     ce[2] = a * c * g - c2 * d - a2 * i;
     std::vector<double> roots(0, 0.);
 
-    if (fabs(ce[0]) < 1e-75) {
-        if (fabs(ce[1]) > 1e-75) {
+    if (std::abs(ce[0]) < 1e-75) {
+        if (std::abs(ce[1]) > 1e-75) {
             roots.push_back(- ce[2] / ce[1]);
         }
     } else {
@@ -780,7 +780,7 @@ CoordinateSolutions Math::simultaneousQuadraticSolverMixed(const std::vector<std
     }
 
     if (roots.size() == 0) {
-        return CoordinateSolutions();
+        return ret;
     }
 
     for (size_t i = 0; i < roots.size(); i++) {
@@ -819,20 +819,20 @@ bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& 
       * verifying the equations to floating point tolerance by terms
       */
     double terms0[12] = { a * x2, b* x * y, c * y2, d * x, e * y, f, g * x2, h* x * y, i * y2, j * x, k * y, l};
-    double amax0 = fabs(terms0[0]), amax1 = fabs(terms0[6]);
+    double amax0 = std::abs(terms0[0]), amax1 = std::abs(terms0[6]);
     double sum0 = 0., sum1 = 0.;
 
     for (int i = 0; i < 6; i++) {
-        if (amax0 < fabs(terms0[i])) {
-            amax0 = fabs(terms0[i]);
+        if (amax0 < std::abs(terms0[i])) {
+            amax0 = std::abs(terms0[i]);
         }
 
         sum0 += terms0[i];
     }
 
     for (int i = 6; i < 12; i++) {
-        if (amax1 < fabs(terms0[i])) {
-            amax1 = fabs(terms0[i]);
+        if (amax1 < std::abs(terms0[i])) {
+            amax1 = std::abs(terms0[i]);
         }
 
         sum1 += terms0[i];
@@ -841,11 +841,11 @@ bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& 
     //    DEBUG_HEADER();
     //    std::cout<<"verifying: x="<<x<<"\ty="<<y<<std::endl;
     //    std::cout<<"0: maxterm: "<<amax0<<std::endl;
-    //    std::cout<<"verifying: fabs(a*x2 + b*x*y+c*y2+d*x+e*y+f)/maxterm="<<fabs(sum0)/amax0<<" required to be smaller than "<<sqrt(6.)*sqrt(DBL_EPSILON)<<std::endl;
+    //    std::cout<<"verifying: std::abs(a*x2 + b*x*y+c*y2+d*x+e*y+f)/maxterm="<<std::abs(sum0)/amax0<<" required to be smaller than "<<sqrt(6.)*sqrt(DBL_EPSILON)<<std::endl;
     //    std::cout<<"1: maxterm: "<<amax1<<std::endl;
-    //    std::cout<<"verifying: fabs(g*x2+h*x*y+i*y2+j*x+k*y+l)/maxterm="<< fabs(sum1)/amax1<<std::endl;
+    //    std::cout<<"verifying: std::abs(g*x2+h*x*y+i*y2+j*x+k*y+l)/maxterm="<< std::abs(sum1)/amax1<<std::endl;
     const double tols = 2.*sqrt(6.) * sqrt(DBL_EPSILON); //experimental tolerances to verify simultaneous quadratic
 
-    return (amax0 <= tols || fabs(sum0) / amax0 < tols) && (amax1 <= tols || fabs(sum1) / amax1 < tols);
+    return (amax0 <= tols || std::abs(sum0) / amax0 < tols) && (amax1 <= tols || std::abs(sum1) / amax1 < tols);
 }
 ////EOF

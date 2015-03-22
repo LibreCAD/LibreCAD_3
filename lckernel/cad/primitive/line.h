@@ -10,7 +10,6 @@
 #include "cad/base/cadentity.h"
 #include "cad/interface/snapable.h"
 #include "cad/vo/entitycoordinate.h"
-#include "cad/math/quadratic_math.h"
 #include <cad/meta/layer.h>
 
 namespace lc {
@@ -98,12 +97,6 @@ namespace lc {
              * @return geo::Area area
              */
             virtual const geo::Area boundingBox() const;
-
-            /**
-             * @brief quadratic, Returns quadratic for the entity
-             * @return Quadratic quadratic equation
-             */
-            Quadratic quadratic() const;
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 

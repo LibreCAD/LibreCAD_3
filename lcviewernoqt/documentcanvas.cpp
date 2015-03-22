@@ -539,12 +539,12 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
 
     if (occupies) {
         _entityContainer.entitiesFullWithinArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cout << typeid(*di).name() << "\n";
+            std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : line" << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
     } else {
         _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cout << typeid(*di).name() << "\n";
+            std::cout << __FILE__ << " : " << __FUNCTION__ << " : line" << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
 

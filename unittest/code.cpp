@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cad/math/coordinatesolutions.h>
 #include <cad/math/quadratic_math.h>
 #include "code.h"
 #include <cad/math/lcmath.h>
@@ -29,7 +28,7 @@ std::vector<double> test::quartic(double x3, double x2, double x, double c) {
     return lc::Math::quarticSolver(data);
 }
 
-CoordinateSolutions test::intr(lc::Line& line, lc::Circle& circle) {
+vector<geo::Coordinate> test::intr(lc::Line& line, lc::Circle& circle) {
     auto l = line.quadratic();
     auto c = circle.quadratic();
     return Quadratic::getIntersection(l, c);
@@ -41,8 +40,7 @@ std::vector<geo::Coordinate> test::testin() {
     auto c = Circle(geo::Coordinate(0., 0.), 200, x);
 
     auto in = intr(l, c);
-    std::vector<geo::Coordinate> ret = in.getCoordinates();
-    std::sort(ret.begin(), ret.end(), [](const geo::Coordinate & a, const geo::Coordinate & b)->bool {
+    std::sort(in.begin(), in.end(), [](const geo::Coordinate & a, const geo::Coordinate & b)->bool {
         if (a.x() < b.x()) return true;
         if (a.x() > b.x()) return false;
         if (a.y() < b.y()) return true;
@@ -54,5 +52,5 @@ std::vector<geo::Coordinate> test::testin() {
     //     cout << p.y() << "\n\n";
     // }
 
-    return ret;
+    return in;
 }

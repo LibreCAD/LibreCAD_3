@@ -1,10 +1,10 @@
 #pragma once
 
 #include "cad/geometry/geocoordinate.h"
-#include "coordinatesolutions.h"
 #include <iostream>
 #include <complex>
 #include <float.h>
+#include <vector>
 namespace lc {
     class Math {
         public:
@@ -76,9 +76,9 @@ namespace lc {
                       *
                       *@m, a vector of size 8 contains coefficients in the strict order of:
                       ma000 ma011 ma100 ma101 ma111 mb10 mb11 mc1
-                      *@return a CoordinateSolutions contains real roots (x,y)
+                      *@return a std::vector<lc::geo::Coordinate> contains real roots (x,y)
                       */
-            static lc::CoordinateSolutions simultaneousQuadraticSolver(const std::vector<double>& m);
+            static std::vector<lc::geo::Coordinate> simultaneousQuadraticSolver(const std::vector<double>& m);
 
             /** solver quadratic simultaneous equations of a set of two **/
             /* solve the following quadratic simultaneous equations,
@@ -88,16 +88,16 @@ namespace lc {
                   *@m, a vector of size 2 each contains a vector of size 6 coefficients in the strict order of:
                   ma000 ma001 ma011 mb00 mb01 mc0
                   ma100 ma101 ma111 mb10 mb11 mc1
-                      *@return a CoordinateSolutions contains real roots (x,y)
+                      *@return a std::vector<lc::geo::Coordinate> contains real roots (x,y)
                       */
             static bool simultaneousQuadraticVerify(const std::vector<std::vector<double> >& m, const geo::Coordinate& v);
             /**
              * @brief simultaneousQuadraticSolverFull
              * @param vector<vector <double> > m
-             * @return CoordinateSolutions Coordinates
+             * @return std::vector<lc::geo::Coordinate> Coordinates
              */
-            static lc::CoordinateSolutions simultaneousQuadraticSolverFull(const std::vector<std::vector<double> >& m);
-            static lc::CoordinateSolutions simultaneousQuadraticSolverMixed(const std::vector<std::vector<double> >& m);
+            static std::vector<lc::geo::Coordinate> simultaneousQuadraticSolverFull(const std::vector<std::vector<double> >& m);
+            static std::vector<lc::geo::Coordinate> simultaneousQuadraticSolverMixed(const std::vector<std::vector<double> >& m);
     };
 }
 

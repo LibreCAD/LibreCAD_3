@@ -3,6 +3,9 @@
 #include "cad/const.h"
 #include "geocoordinate.h"
 #include "geobase.h"
+#include <vector>
+#include "cad/math/quadratic_math.h"
+
 
 namespace lc {
     namespace geo {
@@ -88,6 +91,19 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 bool isCoordinateOnPath(const Coordinate& coord) const;
 
+                /**
+                 * @brief quadratic, Returns quadratic for the entity
+                 * @return Quadratic quadratic equation
+                 */
+                Quadratic quadratic() const {
+                    std::vector<double> ce(6, 0.);
+                    ce[0] = 1.;
+                    ce[2] = 1.;
+                    ce[5] = -this->radius() * this->radius();
+                    Quadratic ret(ce);
+                    ret.move(this->center());
+                    return ret;
+                }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Arc& a) {
                     os << "Arc(center=" << a._center << " radius=" << a._radius << " startAngle=" << a._startAngle << " endAngle=" << a._endAngle << ")";

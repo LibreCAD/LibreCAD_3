@@ -81,11 +81,7 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
-            /**
-             * @brief quadratic, Returns quadratic for the entity
-             * @return Quadratic quadratic equation
-             */
-            Quadratic quadratic() const;
+
         public:
         virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {ei.visit(shared_from_this(), o);}
 

@@ -10,11 +10,10 @@
 #include <iostream>
 using namespace lc;
 
-template<typename entitytype1, typename entitytype2>
-void Intersect::insert(entitytype1 q1 , entitytype2 q2) {
-    CoordinateSolutions coords = Quadratic::getIntersection(q1->quadratic(), q2->quadratic());
+void Intersect::insert(Quadratic const &q1 , Quadratic const &q2) {
+    auto &&coords = Quadratic::getIntersection(q1, q2);
 
-    for (auto i : coords.getCoordinates()) {
+    for (auto i : coords) {
         _intersectionPoints.push_back(i);
     }
 }
@@ -23,7 +22,7 @@ Intersect::Intersect(Method method, double tolerance) : _method(method), _tolera
 }
 
 std::vector<geo::Coordinate> Intersect::result() const {
-    return this->_intersectionPoints;
+    return _intersectionPoints;
 }
 void Intersect::visit(const geo::Vector& v1, const geo::Vector& v2) {
     const geo::Coordinate p1 = v1.start();
@@ -71,22 +70,20 @@ void Intersect::visit(Line_CSPtr, Point_CSPtr) {
 }
 
 void Intersect::visit(Line_CSPtr line1, Line_CSPtr line2) {
-    //    visit(l1, geo::Vector(l2->start(), l2->end()));t
-    insert(line1 , line2);
+    visit(line1, geo::Vector(line2->start(), line2->end()));
 }
 
 void Intersect::visit(Line_CSPtr line, Circle_CSPtr circle) {
-    //    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()), geo::Vector(line->start(), line->end()));
-    insert(line, circle);
+    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., line->layer()), geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
-    //visit(arc, geo::Vector(line->start(), line->end()));
-    insert(line, arc);
+    visit(arc, geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Line_CSPtr line, Ellipse_CSPtr ellipse) {
-    insert(line, ellipse);
+    // TODO Check if point's are on path
+    insert(line->quadratic(), ellipse->quadratic());
 }
 
 void Intersect::visit(Line_CSPtr, Text_CSPtr) {
@@ -190,20 +187,31 @@ void Intersect::visit(Circle_CSPtr, Point_CSPtr) {
 }
 
 void Intersect::visit(Circle_CSPtr circle, Line_CSPtr line) {
-    //    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), geo::Vector(line->start(), line->end()));
-    insert(circle, line);
+    visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Circle_CSPtr circle1, Circle_CSPtr circle2) {
-    insert(circle1, circle2);
+    insert(circle1->quadratic(), circle2->quadratic());
 }
 
 void Intersect::visit(Circle_CSPtr circle, Arc_CSPtr arc) {
-    insert(circle, arc);
+    auto && coords = Quadratic::getIntersection(circle->quadratic(), arc->quadratic());
+    if (_method == Method::Any) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a = (point-arc->center()).angle();
+            if (Math::isAngleBetween(a, arc->startAngle(), arc->endAngle(), arc->reversed())) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
 }
 
 void Intersect::visit(Circle_CSPtr circle, Ellipse_CSPtr ellipse) {
-    insert(circle, ellipse);
+    // TODO test of point's are on path
+    insert(circle->quadratic(), ellipse->quadratic());
 }
 
 void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
@@ -243,6 +251,22 @@ void Intersect::visit(Circle_CSPtr, DimRadial_CSPtr) {
 
 // ARC
 void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
+
+    auto && coords = Quadratic::getIntersection(line.quadratic(), arc->quadratic());
+    if (_method == Method::Any) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a = (point-arc->center()).angle();
+            if (Math::isAngleBetween(a, arc->startAngle(), arc->endAngle(), arc->reversed()) && line.isCoordinateOnPath(point)) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+    return;
+
+    /* Please do not delete this for the moment
     const geo::Coordinate nearest = line.nearestPointOnPath(arc->center());
     double dist = arc->center().distanceTo(nearest);
 
@@ -280,7 +304,7 @@ void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
         if (_method == Method::Any || (_method == Method::OnPath && arc->isCoordinateOnPath(c2) && line.isCoordinateOnPath(c2))) {
             _intersectionPoints.push_back(c2);
         }
-    }
+    } */
 }
 
 void Intersect::visit(Arc_CSPtr, Point_CSPtr) {
@@ -288,20 +312,32 @@ void Intersect::visit(Arc_CSPtr, Point_CSPtr) {
 }
 
 void Intersect::visit(Arc_CSPtr arc, Line_CSPtr line) {
-    //    visit(arc, geo::Vector(line->start(), line->end()));
-    insert(arc, line);
+    visit(arc, geo::Vector(line->start(), line->end()));
 }
 
 void Intersect::visit(Arc_CSPtr arc, Circle_CSPtr circle) {
-    insert(arc, circle);
+    visit(circle, arc);
 }
 
 void Intersect::visit(Arc_CSPtr arc1, Arc_CSPtr arc2) {
-    insert(arc1, arc2);
+    auto && coords = Quadratic::getIntersection(arc1->quadratic(), arc2->quadratic());
+    if (_method == Method::Any) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a1 = (point-arc1->center()).angle();
+            double a2 = (point-arc2->center()).angle();
+            if (Math::isAngleBetween(a1, arc1->startAngle(), arc1->endAngle(), arc1->reversed()) &&
+                Math::isAngleBetween(a2, arc2->startAngle(), arc2->endAngle(), arc2->reversed())) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
 }
 
 void Intersect::visit(Arc_CSPtr arc, Ellipse_CSPtr ellipse) {
-    insert(arc, ellipse);
+    visit(ellipse, arc);
 }
 
 void Intersect::visit(Arc_CSPtr, Text_CSPtr) {
@@ -345,19 +381,20 @@ void Intersect::visit(Ellipse_CSPtr, Point_CSPtr) {
 }
 
 void Intersect::visit(Ellipse_CSPtr ellipse, Line_CSPtr line) {
-    insert(ellipse, line);
+    visit(line, ellipse);
 }
 
 void Intersect::visit(Ellipse_CSPtr ellipse, Circle_CSPtr circle) {
-    insert(ellipse, circle);
+    visit(circle, ellipse);
 }
 
 void Intersect::visit(Ellipse_CSPtr ellipse, Arc_CSPtr arc) {
-    insert(ellipse, arc);
+    visit(arc, ellipse);
 }
 
 void Intersect::visit(Ellipse_CSPtr ellipse1, Ellipse_CSPtr ellipse2) {
-    insert(ellipse1, ellipse2);
+    // TODO test if point's are on path for ellipse
+    insert(ellipse1->quadratic(), ellipse2->quadratic());
 }
 
 void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {
@@ -389,66 +426,6 @@ void Intersect::visit(Ellipse_CSPtr, DimLinear_CSPtr) {
 
 void Intersect::visit(Ellipse_CSPtr, DimRadial_CSPtr) {
 }
-
-
-
-
-// Text
-void Intersect::visit(Text_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, DimAngular_CSPtr) {
-}
-
-void Intersect::visit(Text_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Text_CSPtr, DimRadial_CSPtr) {
-
-}
-
 
 // Spline
 void Intersect::visit(Spline_CSPtr l1, const geo::Vector&) {
@@ -503,62 +480,6 @@ void Intersect::visit(Spline_CSPtr, DimLinear_CSPtr) {
 }
 
 void Intersect::visit(Spline_CSPtr, DimRadial_CSPtr) {
-}
-
-
-// MText
-void Intersect::visit(MText_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(MText_CSPtr, DimDiametric_CSPtr) {
-}
-
-void Intersect::visit(MText_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(MText_CSPtr, DimRadial_CSPtr) {
-
 }
 
 // DimAligned
@@ -854,7 +775,7 @@ IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::M
 }
 
 std::vector<geo::Coordinate> IntersectMany::result() const {
-    std::vector<geo::Coordinate> _intersectionPoints;
+    std::vector< geo::Coordinate> _intersectionPoints;
 
     if (_entities.size() > 1) {
         for (unsigned int outer = 0; outer < (_entities.size() - 1); outer++) {
@@ -878,8 +799,8 @@ IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> enti
 std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
     std::vector<geo::Coordinate> _intersectionPoints;
 
-    for (auto other : _others) {
-        for (auto entity : _entities) {
+    for (auto &other : _others) {
+        for (auto &entity : _entities) {
             Intersect intersect(_method, _tolerance);
             other->accept(entity, intersect);
             _intersectionPoints.insert(_intersectionPoints.end(), intersect.result().begin(), intersect.result().end());
@@ -897,10 +818,9 @@ HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr
 }
 
 bool HasIntersectAgainstOthers::result() const {
-    std::vector<geo::Coordinate> _intersectionPoints;
 
-    for (auto other : _others) {
-        for (auto entity : _entities) {
+    for (auto &other : _others) {
+        for (auto &entity : _entities) {
             Intersect intersect(_method, _tolerance);
             other->accept(entity, intersect);
 

@@ -3,6 +3,8 @@
 #include "cad/const.h"
 #include "geocoordinate.h"
 #include "geobase.h"
+#include "cad/math/quadratic_math.h"
+#include <vector>
 
 namespace lc {
     namespace geo {
@@ -48,17 +50,19 @@ namespace lc {
                 }*/
 
                 inline bool isCoordinateOnPath(const Coordinate& coord) const {
-                    geo::Coordinate minP(Coordinate(std::min(_start.x(), _end.x()), std::min(_start.y(), _end.y())));
-                    geo::Coordinate maxP(Coordinate(std::max(_start.x(), _end.x()), std::max(_start.y(), _end.y())));
+
+                    geo::Coordinate minP(Coordinate(std::min(_start.x()-LCTOLERANCE, _end.x()-LCTOLERANCE), std::min(_start.y()-LCTOLERANCE, _end.y()-LCTOLERANCE)));
+                    geo::Coordinate maxP(Coordinate(std::max(_start.x()+LCTOLERANCE, _end.x()+LCTOLERANCE), std::max(_start.y()+LCTOLERANCE, _end.y()+LCTOLERANCE)));
 
                     bool inArea = (coord.x() >= minP.x() && coord.x() <= maxP.x() && coord.y() >= minP.y() && coord.y() <= maxP.y());
 
-                    if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4)) {
+                    if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < LCTOLERANCE)) {
                         return true;
                     }
 
                     return false;
                 }
+
                 /**
                  * @return The angle of the line (from start to endpoint).
                  */
@@ -71,6 +75,20 @@ namespace lc {
                  */
                 double Angle2() const {
                     return _end.angleTo(_start);
+                }
+
+                /**
+                 * @brief quadratic, Returns quadratic for the entity
+                 * @return Quadratic quadratic equation
+                 */
+                Quadratic quadratic() const {
+                    std::vector<double> ce(3, 0.);
+                    auto&& dvp = this->end() - this->start();
+                    geo::Coordinate normal(-dvp.y(), dvp.x());
+                    ce[0] = normal.x();
+                    ce[1] = normal.y();
+                    ce[2] = - normal.dot(this->end());
+                    return Quadratic(ce);
                 }
 
 

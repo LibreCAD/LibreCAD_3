@@ -100,21 +100,6 @@ namespace lc {
             virtual void visit(Ellipse_CSPtr, DimLinear_CSPtr);
             virtual void visit(Ellipse_CSPtr, DimRadial_CSPtr);
 
-            virtual void visit(Text_CSPtr, const geo::Vector&);
-            virtual void visit(Text_CSPtr, Point_CSPtr);
-            virtual void visit(Text_CSPtr, Line_CSPtr);
-            virtual void visit(Text_CSPtr, Circle_CSPtr);
-            virtual void visit(Text_CSPtr, Arc_CSPtr);
-            virtual void visit(Text_CSPtr, Ellipse_CSPtr);
-            virtual void visit(Text_CSPtr, Text_CSPtr);
-            virtual void visit(Text_CSPtr, Spline_CSPtr);
-            virtual void visit(Text_CSPtr, MText_CSPtr);
-            virtual void visit(Text_CSPtr, DimAligned_CSPtr);
-            virtual void visit(Text_CSPtr, DimAngular_CSPtr);
-            virtual void visit(Text_CSPtr, DimDiametric_CSPtr);
-            virtual void visit(Text_CSPtr, DimLinear_CSPtr);
-            virtual void visit(Text_CSPtr, DimRadial_CSPtr);
-
             virtual void visit(Spline_CSPtr, const geo::Vector&);
             virtual void visit(Spline_CSPtr, Point_CSPtr);
             virtual void visit(Spline_CSPtr, Line_CSPtr);
@@ -129,21 +114,6 @@ namespace lc {
             virtual void visit(Spline_CSPtr, DimDiametric_CSPtr);
             virtual void visit(Spline_CSPtr, DimLinear_CSPtr);
             virtual void visit(Spline_CSPtr, DimRadial_CSPtr);
-
-            virtual void visit(MText_CSPtr, const geo::Vector&);
-            virtual void visit(MText_CSPtr, Point_CSPtr);
-            virtual void visit(MText_CSPtr, Line_CSPtr);
-            virtual void visit(MText_CSPtr, Circle_CSPtr);
-            virtual void visit(MText_CSPtr, Arc_CSPtr);
-            virtual void visit(MText_CSPtr, Ellipse_CSPtr);
-            virtual void visit(MText_CSPtr, Text_CSPtr);
-            virtual void visit(MText_CSPtr, Spline_CSPtr);
-            virtual void visit(MText_CSPtr, MText_CSPtr);
-            virtual void visit(MText_CSPtr, DimAligned_CSPtr);
-            virtual void visit(MText_CSPtr, DimAngular_CSPtr);
-            virtual void visit(MText_CSPtr, DimDiametric_CSPtr);
-            virtual void visit(MText_CSPtr, DimLinear_CSPtr);
-            virtual void visit(MText_CSPtr, DimRadial_CSPtr);
 
             virtual void visit(DimAligned_CSPtr, const geo::Vector&);
             virtual void visit(DimAligned_CSPtr, Point_CSPtr);
@@ -221,8 +191,7 @@ namespace lc {
             virtual void visit(DimRadial_CSPtr, DimRadial_CSPtr);
 
             std::vector<geo::Coordinate> result() const;
-            template<typename entitytype1, typename entitytype2>
-            void insert(entitytype1 q1, entitytype2 q2) ;
+            void insert(Quadratic const &q1 , Quadratic const &q2);
         private:
             std::vector<geo::Coordinate> _intersectionPoints;
             const Method _method;

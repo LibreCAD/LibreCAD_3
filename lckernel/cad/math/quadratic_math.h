@@ -3,10 +3,8 @@
 #include "cad/geometry/geocoordinate.h"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
-#include "coordinatesolutions.h"
 #include "lcmath.h"
 #include "cad/const.h"
-#include "cad/base/cadentity.h"
 namespace lc {
     class Quadratic {
         public:
@@ -86,9 +84,9 @@ namespace lc {
              * @brief getIntersection, returns intersection in two entites
              * @param l1, quadratic 1
              * @param l2, quadratic 2
-             * @return CoordinateSolutions coordinates
+             * @return std::vector<lc::geo::Coordinate> coordinates
              */
-            static CoordinateSolutions getIntersection(const Quadratic& l1, const Quadratic& l2);
+            static std::vector<lc::geo::Coordinate> getIntersection(const Quadratic& l1, const Quadratic& l2);
         private:
             boost::numeric::ublas::matrix<double> m_mQuad;
             boost::numeric::ublas::vector<double> m_vLinear;

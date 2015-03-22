@@ -11,6 +11,7 @@ namespace lc {
     namespace geo {
         class Vector;
         class Coordinate;
+        class Area;
     }
     class EntityVisitor;
     class EntityDispatch;

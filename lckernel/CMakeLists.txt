@@ -21,7 +21,6 @@ cad/geometry/geocoordinate.cpp
 cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/math/lcmath.cpp
-cad/math/coordinatesolutions.cpp
 cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
@@ -85,7 +84,6 @@ cad/interface/entityvisitor.h
 cad/interface/metatype.h
 cad/interface/snapable.h
 cad/math/lcmath.h
-cad/math/coordinatesolutions.h
 cad/math/quadratic_math.h
 cad/meta/color.h
 cad/meta/icolor.h

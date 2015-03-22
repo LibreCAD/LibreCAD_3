@@ -56,11 +56,12 @@ namespace lc {
                     return *this;
                 }
 
+            /*
                 void operator = (Coordinate&& coord) {
                     _x = coord._x;
                     _y = coord._y;
                     _z = coord._z;
-                }
+                }*/
 
                 /**
                  * @brief flips the x and y of Coordinate
