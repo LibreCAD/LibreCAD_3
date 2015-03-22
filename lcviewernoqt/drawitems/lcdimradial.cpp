@@ -2,7 +2,7 @@
 #include "lcdrawoptions.h"
 #include "lcdimradial.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 
 LCDimRadial::LCDimRadial(const lc::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::DimRadial(dimRadial, true) {
 }
@@ -19,15 +19,7 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     // Decide to show the explecit value or the measured value
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
-    std::string value = explicitValue();
-
-    if (value == "<>") {
-        value = string_format(options->radialFormat(), radiusCircle);
-    } else if (value == "") {
-        value = string_format(options->radialFormat(), radiusCircle);
-    } else if (value == " ") {
-        value = "";
-    }
+    std::string value = lc::string_helper::dim_value(explicitValue(), options->radialFormat(), radiusCircle);
 
     // Draw line
     EndCaps endCaps;

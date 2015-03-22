@@ -2,7 +2,7 @@
 #include "lcdrawoptions.h"
 #include "lcdimangular.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 #include <cad/functions/intersect.h>
 
 LCDimAngular::LCDimAngular(const lc::DimAngular_CSPtr dimAngular) : LCVDrawItem(true), lc::DimAngular(dimAngular, true) {
@@ -30,9 +30,6 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
     }
 
     lc::geo::Coordinate const center(intersect.result().at(0));
-
-    // Decide to show the explecit value or the measured value
-    std::string value = explicitValue();
 
     // Angle of text position and radious of angular dimension
     double const radius = middleOfText().distanceTo(center);
@@ -90,14 +87,8 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
 
     double const angle = std::abs(aEnd - aStart);
-
-    if (value == "<>") {
-        value = string_format(options->angleFormat(), (angle / (2.*M_PI)) * 360.);
-    } else if (value == "") {
-        value = string_format(options->angleFormat(), (angle / (2.*M_PI)) * 360.);
-    } else if (value == " ") {
-        value = "";
-    }
+    // Decide to show the explecit value or the measured value
+    std::string value = lc::string_helper::dim_value(explicitValue(), options->angleFormat(), (angle / (2.*M_PI)) * 360.);
 
     // Draw the arc
     painter->arc(center.x(), center.y(), radius, aStart, aEnd);

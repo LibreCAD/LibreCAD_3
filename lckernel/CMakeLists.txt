@@ -113,7 +113,7 @@ cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
-cad/functions/str_format.h
+cad/functions/string_helper.h
 )
 
 # DEPENDENCIES

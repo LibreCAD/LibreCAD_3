@@ -3,7 +3,7 @@
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 #include <cad/math/lcmath.h>
 
 

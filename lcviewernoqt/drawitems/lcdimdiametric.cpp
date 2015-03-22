@@ -2,7 +2,7 @@
 #include "lcdrawoptions.h"
 #include "lcdimdiametric.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 
 LCDimDiametric::LCDimDiametric(const lc::DimDiametric_CSPtr dimDiametric) : LCVDrawItem(true), lc::DimDiametric(dimDiametric, true) {
 }
@@ -16,15 +16,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
 
     // Decide to show the explecit value or the measured value
     double diameterCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
-    std::string value = explicitValue();
-
-    if (value == "<>") {
-        value = string_format(options->diametricFormat(), diameterCircle);
-    } else if (value == "") {
-        value = string_format(options->diametricFormat(), diameterCircle);
-    } else if (value == " ") {
-        value = "";
-    }
+    std::string value = lc::string_helper::dim_value(explicitValue(), options->diametricFormat(), diameterCircle);
 
     EndCaps endCaps;
 

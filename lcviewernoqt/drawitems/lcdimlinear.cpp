@@ -2,7 +2,7 @@
 #include "lcdrawoptions.h"
 #include "lcdimlinear.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 
 LCDimLinear::LCDimLinear(const lc::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::DimLinear(dimLinear, true) {
 }
@@ -39,15 +39,8 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     }
 
     // Decide to show the explecit value or the measured value
-    std::string value = explicitValue();
-
-    if (value == "<>") {
-        value = string_format(options->linearFormat(), isHorizontal ? std::abs(dx) : std::abs(dy));
-    } else if (value == "") {
-        value = string_format(options->linearFormat(), isHorizontal ? std::abs(dx) : std::abs(dy));
-    } else if (value == " ") {
-        value = "";
-    }
+    std::string value = lc::string_helper::dim_value(explicitValue(), options->linearFormat()
+                                                    , isHorizontal ? std::abs(dx) : std::abs(dy));
 
     // get text size
     painter->save();

@@ -2,7 +2,7 @@
 #include "lcdrawoptions.h"
 #include "lcdimaligned.h"
 #include "endcaps.h"
-#include <cad/functions/str_format.h>
+#include <cad/functions/string_helper.h>
 
 LCDimAligned::LCDimAligned(const lc::DimAligned_CSPtr dimAligned) : LCVDrawItem(true), lc::DimAligned(dimAligned, true) {
 }
@@ -18,15 +18,7 @@ void LCDimAligned::draw(LcPainter *painter, LcDrawOptions *options, const lc::ge
     //const lc::geo::Coordinate &mousePos = middleOfText();
 
     // Decide to show the explecit value or the measured value
-    std::string value = explicitValue();
-
-    if (value == "<>") {
-        value = string_format(options->alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
-    } else if (value == "") {
-        value = string_format(options->alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
-    } else if (value == " ") {
-        value = "";
-    }
+    std::string value = lc::string_helper::dim_value(explicitValue(), options->alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
 
     // get text size
     painter->save();

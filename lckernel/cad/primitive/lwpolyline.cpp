@@ -1,6 +1,6 @@
 #include <memory>
 #include <cmath>
-#include "cad/primitive/LWPolyline.h"
+#include "cad/primitive/lwpolyline.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/geometry/geovector.h"
 
