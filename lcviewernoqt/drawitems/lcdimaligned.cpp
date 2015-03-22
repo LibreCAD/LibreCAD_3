@@ -18,7 +18,7 @@ void LCDimAligned::draw(LcPainter *painter, LcDrawOptions *options, const lc::ge
     //const lc::geo::Coordinate &mousePos = middleOfText();
 
     // Decide to show the explecit value or the measured value
-    std::string value = lc::string_helper::dim_value(explicitValue(), options->alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options->alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
 
     // get text size
     painter->save();

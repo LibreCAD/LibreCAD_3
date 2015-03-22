@@ -88,7 +88,7 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
     double const angle = std::abs(aEnd - aStart);
     // Decide to show the explecit value or the measured value
-    std::string value = lc::string_helper::dim_value(explicitValue(), options->angleFormat(), (angle / (2.*M_PI)) * 360.);
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options->angleFormat(), (angle / (2.*M_PI)) * 360.);
 
     // Draw the arc
     painter->arc(center.x(), center.y(), radius, aStart, aEnd);

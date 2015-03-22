@@ -5,7 +5,7 @@
 namespace lc {
 
     using namespace std;
-    class string_helper {
+    class StringHelper {
 
         public:
             /**
@@ -21,11 +21,11 @@ namespace lc {
                 /* asume we always have "<>" somewhere */
                 size_t pos = explicitValue.find("<>");
                 if (pos != string::npos)
-                    return explicitValue.replace(pos, 2, string_helper::string_format(format, args...));
+                    return explicitValue.replace(pos, 2, StringHelper::string_format(format, args...));
 
                 /* "" */
                 if (explicitValue.empty())
-                    return string_helper::string_format(format, args...);
+                    return StringHelper::string_format(format, args...);
 
                 if (explicitValue == " ")
                     return "";

@@ -39,7 +39,7 @@ void LCDimLinear::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     }
 
     // Decide to show the explecit value or the measured value
-    std::string value = lc::string_helper::dim_value(explicitValue(), options->linearFormat()
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options->linearFormat()
                                                     , isHorizontal ? std::abs(dx) : std::abs(dy));
 
     // get text size

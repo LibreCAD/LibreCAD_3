@@ -19,7 +19,7 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
     // Decide to show the explecit value or the measured value
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
-    std::string value = lc::string_helper::dim_value(explicitValue(), options->radialFormat(), radiusCircle);
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options->radialFormat(), radiusCircle);
 
     // Draw line
     EndCaps endCaps;

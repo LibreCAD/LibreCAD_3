@@ -16,7 +16,7 @@ void LCDimDiametric::draw(LcPainter* painter, LcDrawOptions* options, const lc::
 
     // Decide to show the explecit value or the measured value
     double diameterCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
-    std::string value = lc::string_helper::dim_value(explicitValue(), options->diametricFormat(), diameterCircle);
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options->diametricFormat(), diameterCircle);
 
     EndCaps endCaps;
 
