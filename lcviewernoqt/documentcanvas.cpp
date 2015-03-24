@@ -349,6 +349,9 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
         _selectedAreaPainter(painter, *_selectedArea, _selectedAreaIntersects);
     }
 
+
+
+
     //    for (int i = 0; i < _cursorItems.size(); ++i) {
     //        this->_cursorItems.at(i)->draw(lcPainter, nullptr, rect);
     //    }
@@ -539,12 +542,12 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
 
     if (occupies) {
         _entityContainer.entitiesFullWithinArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : line" << __LINE__ << " " << typeid(*di).name() << std::endl;
+            std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
     } else {
         _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cout << __FILE__ << " : " << __FUNCTION__ << " : line" << __LINE__ << " " << typeid(*di).name() << std::endl;
+            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
 

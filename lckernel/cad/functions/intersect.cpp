@@ -2,15 +2,16 @@
 
 #include <cmath>
 #include "cad/geometry/geocoordinate.h"
-
 #include "cad/primitive/arc.h"
 #include "cad/primitive/circle.h"
 #include "cad/primitive/ellipse.h"
 #include "cad/primitive/line.h"
+#include "cad/primitive/lwpolyline.h"
 #include <iostream>
+
 using namespace lc;
 
-void Intersect::insert(Quadratic const &q1 , Quadratic const &q2) {
+void Intersect::insert(Quadratic const &q1, Quadratic const &q2) {
     auto &&coords = Quadratic::getIntersection(q1, q2);
 
     for (auto i : coords) {
@@ -24,7 +25,8 @@ Intersect::Intersect(Method method, double tolerance) : _method(method), _tolera
 std::vector<geo::Coordinate> Intersect::result() const {
     return _intersectionPoints;
 }
-void Intersect::visit(const geo::Vector& v1, const geo::Vector& v2) {
+
+void Intersect::geovisit(const geo::Vector &v1, const geo::Vector &v2) {
     const geo::Coordinate p1 = v1.start();
     const geo::Coordinate p2 = v1.end();
     const geo::Coordinate p3 = v2.start();
@@ -51,22 +53,56 @@ void Intersect::visit(const geo::Vector& v1, const geo::Vector& v2) {
         } else if (a1b && a2b) { // Test if it positivly fit's within a area
             _intersectionPoints.push_back(coord);
         } else if (
-            (p1.x() == p2.x() && ys >= a1.minP().y() && ys <= a1.maxP().y() && a2b) || // when we deal with orizontal or vertical lines, inArea might not
-            (p3.x() == p4.x() && ys >= a2.minP().y() && ys <= a2.maxP().y() && a1b) || // give a positive result, this conditions will confirm without using tolerance
-            (p1.y() == p2.y() && xs >= a1.minP().x() && xs <= a1.maxP().x() && a2b) ||
-            (p3.y() == p4.y() && xs >= a2.minP().x() && xs <= a2.maxP().x() && a1b)
-        ) {
+                (p1.x() == p2.x() && ys >= a1.minP().y() && ys <= a1.maxP().y() && a2b) || // when we deal with orizontal or vertical lines, inArea might not
+                        (p3.x() == p4.x() && ys >= a2.minP().y() && ys <= a2.maxP().y() && a1b) || // give a positive result, this conditions will confirm without using tolerance
+                        (p1.y() == p2.y() && xs >= a1.minP().x() && xs <= a1.maxP().x() && a2b) ||
+                        (p3.y() == p4.y() && xs >= a2.minP().x() && xs <= a2.maxP().x() && a1b)
+                ) {
             _intersectionPoints.push_back(coord);
         }
     }
 }
 
-void Intersect::visit(Line_CSPtr l1, const geo::Vector& v) {
-    visit(lc::geo::Vector(l1->start(), l1->end()), v);
+void Intersect::geovisit(const geo::Vector& line, const geo::Arc& arc) {
+
+    auto &&coords = Quadratic::getIntersection(line.quadratic(), arc.quadratic());
+    if (_method == Method::Any) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a = (point - arc.center()).angle();
+            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.reversed()) && line.isCoordinateOnPath(point)) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+    
+}
+
+void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
+    auto &&coords = Quadratic::getIntersection(arc1.quadratic(), arc2.quadratic());
+    if (_method == Method::Any) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a1 = (point - arc1.center()).angle();
+            double a2 = (point - arc2.center()).angle();
+            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.reversed()) &&
+                    Math::isAngleBetween(a2, arc2.startAngle(), arc2.endAngle(), arc2.reversed())) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+}
+
+void Intersect::visit(Line_CSPtr l1, const geo::Vector &v) {
+    geovisit(lc::geo::Vector(l1->start(), l1->end()), v);
 }
 
 void Intersect::visit(Line_CSPtr, Point_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Line_CSPtr line1, Line_CSPtr line2) {
@@ -83,102 +119,54 @@ void Intersect::visit(Line_CSPtr line, Arc_CSPtr arc) {
 
 void Intersect::visit(Line_CSPtr line, Ellipse_CSPtr ellipse) {
     // TODO Check if point's are on path
+    std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     insert(line->quadratic(), ellipse->quadratic());
 }
 
-void Intersect::visit(Line_CSPtr, Text_CSPtr) {
-
-}
-
 void Intersect::visit(Line_CSPtr, Spline_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
-void Intersect::visit(Line_CSPtr, MText_CSPtr) {
-
+void Intersect::visit(Line_CSPtr l1, LWPolyline_CSPtr l2) {
+    visit(l2, l1);
 }
-
-void Intersect::visit(Line_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Line_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(Line_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Line_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Line_CSPtr, DimRadial_CSPtr) {
-}
-
 
 
 // Coordinate
-void Intersect::visit(Point_CSPtr, const geo::Vector&) {
-
+void Intersect::visit(Point_CSPtr, const geo::Vector &) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Point_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Line_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Circle_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Arc_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(Point_CSPtr, Text_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Point_CSPtr, Spline_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
-void Intersect::visit(Point_CSPtr, MText_CSPtr) {
-
+void Intersect::visit(Point_CSPtr, LWPolyline_CSPtr) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
-
-void Intersect::visit(Point_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Point_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(Point_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Point_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Point_CSPtr, DimRadial_CSPtr) {
-
-}
-
 
 // Circle
-void Intersect::visit(Circle_CSPtr circle, const geo::Vector& v) {
+void Intersect::visit(Circle_CSPtr circle, const geo::Vector &v) {
     visit(std::make_shared<Arc>(circle->center(), circle->radius(), 0., M_PI * 2., circle->layer()), v);
 }
 
@@ -195,13 +183,13 @@ void Intersect::visit(Circle_CSPtr circle1, Circle_CSPtr circle2) {
 }
 
 void Intersect::visit(Circle_CSPtr circle, Arc_CSPtr arc) {
-    auto && coords = Quadratic::getIntersection(circle->quadratic(), arc->quadratic());
+    auto &&coords = Quadratic::getIntersection(circle->quadratic(), arc->quadratic());
     if (_method == Method::Any) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     } else {
         for (auto &point : coords) {
-            double a = (point-arc->center()).angle();
+            double a = (point - arc->center()).angle();
             if (Math::isAngleBetween(a, arc->startAngle(), arc->endAngle(), arc->reversed())) {
                 _intersectionPoints.push_back(point);
             }
@@ -214,56 +202,20 @@ void Intersect::visit(Circle_CSPtr circle, Ellipse_CSPtr ellipse) {
     insert(circle->quadratic(), ellipse->quadratic());
 }
 
-void Intersect::visit(Circle_CSPtr, Text_CSPtr) {
-
+void Intersect::visit(Circle_CSPtr c, Spline_CSPtr s) {
+    visit(c, s);
 }
 
-void Intersect::visit(Circle_CSPtr, Spline_CSPtr) {
-
+void Intersect::visit(Circle_CSPtr c, LWPolyline_CSPtr l) {
+    visit(l, c);
 }
-
-void Intersect::visit(Circle_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(Circle_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Circle_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(Circle_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Circle_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Circle_CSPtr, DimRadial_CSPtr) {
-
-}
-
-
-
 
 
 // ARC
-void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
+void Intersect::visit(Arc_CSPtr arc, const geo::Vector &line) {
 
-    auto && coords = Quadratic::getIntersection(line.quadratic(), arc->quadratic());
-    if (_method == Method::Any) {
-        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
-        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
-    } else {
-        for (auto &point : coords) {
-            double a = (point-arc->center()).angle();
-            if (Math::isAngleBetween(a, arc->startAngle(), arc->endAngle(), arc->reversed()) && line.isCoordinateOnPath(point)) {
-                _intersectionPoints.push_back(point);
-            }
-        }
-    }
+    geovisit(line, *arc.get());
+
     return;
 
     /* Please do not delete this for the moment
@@ -308,7 +260,7 @@ void Intersect::visit(Arc_CSPtr arc, const geo::Vector& line) {
 }
 
 void Intersect::visit(Arc_CSPtr, Point_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Arc_CSPtr arc, Line_CSPtr line) {
@@ -320,64 +272,28 @@ void Intersect::visit(Arc_CSPtr arc, Circle_CSPtr circle) {
 }
 
 void Intersect::visit(Arc_CSPtr arc1, Arc_CSPtr arc2) {
-    auto && coords = Quadratic::getIntersection(arc1->quadratic(), arc2->quadratic());
-    if (_method == Method::Any) {
-        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
-        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
-    } else {
-        for (auto &point : coords) {
-            double a1 = (point-arc1->center()).angle();
-            double a2 = (point-arc2->center()).angle();
-            if (Math::isAngleBetween(a1, arc1->startAngle(), arc1->endAngle(), arc1->reversed()) &&
-                Math::isAngleBetween(a2, arc2->startAngle(), arc2->endAngle(), arc2->reversed())) {
-                _intersectionPoints.push_back(point);
-            }
-        }
-    }
+    geovisit(*arc1.get(), *arc2.get());
 }
 
 void Intersect::visit(Arc_CSPtr arc, Ellipse_CSPtr ellipse) {
     visit(ellipse, arc);
 }
 
-void Intersect::visit(Arc_CSPtr, Text_CSPtr) {
-
+void Intersect::visit(Arc_CSPtr a, Spline_CSPtr s) {
+    visit(s, a);
 }
 
-void Intersect::visit(Arc_CSPtr, Spline_CSPtr) {
-
+void Intersect::visit(Arc_CSPtr a1, LWPolyline_CSPtr l1) {
+    visit(l1, a1);
 }
-
-void Intersect::visit(Arc_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(Arc_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Arc_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(Arc_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Arc_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Arc_CSPtr, DimRadial_CSPtr) {
-}
-
 
 // Ellipse
-void Intersect::visit(Ellipse_CSPtr l1, const geo::Vector&) {
-
+void Intersect::visit(Ellipse_CSPtr l1, const geo::Vector &) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Ellipse_CSPtr, Point_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Ellipse_CSPtr ellipse, Line_CSPtr line) {
@@ -397,389 +313,161 @@ void Intersect::visit(Ellipse_CSPtr ellipse1, Ellipse_CSPtr ellipse2) {
     insert(ellipse1->quadratic(), ellipse2->quadratic());
 }
 
-void Intersect::visit(Ellipse_CSPtr, Text_CSPtr) {
-
-}
-
 void Intersect::visit(Ellipse_CSPtr, Spline_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
-void Intersect::visit(Ellipse_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(Ellipse_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Ellipse_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(Ellipse_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Ellipse_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Ellipse_CSPtr, DimRadial_CSPtr) {
+void Intersect::visit(Ellipse_CSPtr, LWPolyline_CSPtr) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 // Spline
-void Intersect::visit(Spline_CSPtr l1, const geo::Vector&) {
-
+void Intersect::visit(Spline_CSPtr l1, const geo::Vector &) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Point_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Line_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Circle_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Arc_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, Text_CSPtr) {
-
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 }
 
 void Intersect::visit(Spline_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(Spline_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(Spline_CSPtr, DimRadial_CSPtr) {
-}
-
-// DimAligned
-void Intersect::visit(DimAligned_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(DimAligned_CSPtr, DimRadial_CSPtr) {
-
-}
-
-
-// DimAngular
-void Intersect::visit(DimAngular_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, DimAngular_CSPtr) {
-
-}
-void Intersect::visit(DimAngular_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(DimAngular_CSPtr, DimRadial_CSPtr) {
-
-}
-
-
-// DimDiametric
-void Intersect::visit(DimDiametric_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(DimDiametric_CSPtr, DimRadial_CSPtr) {
-
-}
-
-
-// DimLinear
-void Intersect::visit(DimLinear_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Line_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(DimLinear_CSPtr, DimRadial_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Line_CSPtr) {
-
-}
-
-// DimLinear
-void Intersect::visit(DimRadial_CSPtr l1, const geo::Vector&) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Point_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Circle_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Arc_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Ellipse_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Text_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, Spline_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, MText_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, DimAligned_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, DimAngular_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, DimDiametric_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, DimLinear_CSPtr) {
-
-}
-
-void Intersect::visit(DimRadial_CSPtr, DimRadial_CSPtr) {
-
-}
-
-
-IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method, double tolerance) : _entities(entities), _method(method), _tolerance(tolerance) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+}
+
+void Intersect::visit(Spline_CSPtr, LWPolyline_CSPtr) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+}
+
+// LWPolyline
+void Intersect::visit(LWPolyline_CSPtr l1, const geo::Vector & v) {
+    auto &list1 = l1->asGeometrics();
+
+    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // call entity1->visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(v, *arc.get());
+        } else {
+            geovisit(v, *std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get());
+        }
+    }
+}
+
+void Intersect::visit(LWPolyline_CSPtr, Point_CSPtr) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+}
+
+void Intersect::visit(LWPolyline_CSPtr l1, Line_CSPtr l2) {
+    auto &list1 = l1->asGeometrics();
+    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // call entity1->visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(*l2.get(), *arc.get());
+        } else {
+            geovisit(*l2.get(), *std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get());
+        }
+    }
+}
+
+void Intersect::visit(LWPolyline_CSPtr l1, Circle_CSPtr c1) {
+    auto &list1 = l1->asGeometrics();
+    auto a = lc::geo::Arc(c1->center(), c1->radius(), 0, 2 * M_PI);
+    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // call entity1->visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(a, *arc.get());
+        } else {
+            geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), a);
+        }
+    }
+}
+
+void Intersect::visit(LWPolyline_CSPtr l1, Arc_CSPtr a1) {
+    auto &list1 = l1->asGeometrics();
+    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // call entity1->visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(*a1.get(), *arc.get());
+        } else {
+            geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), *a1.get());
+        }
+    }
+}
+
+void Intersect::visit(LWPolyline_CSPtr, Spline_CSPtr) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+}
+
+void Intersect::visit(LWPolyline_CSPtr l1, LWPolyline_CSPtr l2) {
+    auto &list1 = l1->asGeometrics();
+    auto &list2 = l2->asGeometrics();
+
+    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // call entity1->visit(entity2);
+    for (auto &entity1 : list1) {
+        for (auto &entity2 : list2) {
+            if (auto vector = std::dynamic_pointer_cast<const lc::geo::Vector>(entity1)) {
+                if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity2)) {
+                    geovisit(*vector.get(), *arc.get());
+                } else {
+                    geovisit(*vector.get(), *std::dynamic_pointer_cast<const lc::geo::Vector>(entity2).get());
+                }
+            } else {
+                if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity2)) {
+                    geovisit(*std::dynamic_pointer_cast<const lc::geo::Arc>(entity1).get(), *arc.get());
+                } else {
+                    geovisit( *std::dynamic_pointer_cast<const lc::geo::Vector>(entity2).get(), *std::dynamic_pointer_cast<const lc::geo::Arc>(entity1).get());
+                }
+            }
+        }
+    }
+}
+
+IntersectMany::IntersectMany(std::vector<CADEntity_CSPtr> entities, Intersect::Method method, double tolerance)
+        : _entities(entities), _method(method), _tolerance(tolerance) {
 
 }
 
 std::vector<geo::Coordinate> IntersectMany::result() const {
-    std::vector< geo::Coordinate> _intersectionPoints;
+    std::vector<geo::Coordinate> _intersectionPoints;
 
     if (_entities.size() > 1) {
-        for (unsigned int outer = 0; outer < (_entities.size() - 1); outer++) {
-            for (unsigned int inner = ++outer; inner < _entities.size(); inner++) {
+        for (size_t outer = 0; outer < (_entities.size() - 1); outer++) {
+            for (size_t inner = ++outer; inner < _entities.size(); inner++) {
                 Intersect intersect(_method, _tolerance);
                 _entities.at(outer)->accept(_entities.at(inner), intersect);
 
@@ -792,8 +480,9 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
 }
 
 
-IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
-    _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
+IntersectAgainstOthers::IntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance)
+        :
+        _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
 std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
@@ -811,10 +500,9 @@ std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
 }
 
 
-
-
-HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance) :
-    _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
+HasIntersectAgainstOthers::HasIntersectAgainstOthers(std::vector<CADEntity_CSPtr> entities, std::vector<CADEntity_CSPtr> others, Intersect::Method method, double tolerance)
+        :
+        _entities(entities), _others(others), _method(method), _tolerance(tolerance) {
 }
 
 bool HasIntersectAgainstOthers::result() const {

@@ -20,7 +20,7 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
     // Calculate intersection point
     lc::Intersect intersect(lc::Intersect::Any, 10e-4);
-    intersect.visit(lc::geo::Vector(defLine11(), defLine12()), lc::geo::Vector(defLine21(), defLine22()));
+    intersect.geovisit(lc::geo::Vector(defLine11(), defLine12()), lc::geo::Vector(defLine21(), defLine22()));
 
     if (intersect.result().size() == 0) {
         // if no intersectionpoint we cannot draw a Angular dimension,

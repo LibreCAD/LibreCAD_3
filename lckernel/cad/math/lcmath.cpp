@@ -135,7 +135,7 @@ std::vector<double> Math::cubicSolver(const std::vector<double>& ce)
         auto&& r = quadraticSolver(ce2);
 
         if (r.size() == 0) { //should not happen
-            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : line" << __LINE__ << " :cubicSolver()::Error cubicSolver(" << ce[0] << ' ' << ce[1] << ' ' << ce[2] << ")\n";
+            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : line " << __LINE__ << " :cubicSolver()::Error cubicSolver(" << ce[0] << ' ' << ce[1] << ' ' << ce[2] << ")\n";
         }
 
         double u, v;
