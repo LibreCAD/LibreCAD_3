@@ -15,7 +15,7 @@ namespace lc {
                  * \param layerName Name of layer on which entity is to be added.
                  * \param cadEntity Entity to be added.
                  */
-            AddEntityEvent(CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
+            AddEntityEvent(entity::CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
             }
 
             /*!
@@ -28,6 +28,6 @@ namespace lc {
             }
 
         private:
-            const CADEntity_CSPtr _cadEntity;
+            const entity::CADEntity_CSPtr _cadEntity;
     };
 }

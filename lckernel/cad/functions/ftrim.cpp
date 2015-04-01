@@ -15,10 +15,10 @@ FTrim::FTrim(std::vector<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trim
 
 }
 
-void FTrim::visit(Arc_CSPtr arc) {
+void FTrim::visit(entity::Arc_CSPtr arc) {
 
 }
-void FTrim::visit(Line_CSPtr line) {
+void FTrim::visit(entity::Line_CSPtr line) {
     /*
     IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
     std::vector<geo::Coordinate> points = im.result();
@@ -46,47 +46,47 @@ void FTrim::visit(Line_CSPtr line) {
     }
     */
 }
-void FTrim::visit(Circle_CSPtr circle) {
+void FTrim::visit(entity::Circle_CSPtr circle) {
 
 }
 
-void FTrim::visit(Point_CSPtr coord) {
+void FTrim::visit(entity::Point_CSPtr coord) {
 
 }
 
-void FTrim::visit(Ellipse_CSPtr ellipse) {
+void FTrim::visit(entity::Ellipse_CSPtr ellipse) {
 
 }
 
-void FTrim::visit(Text_CSPtr text) {
+void FTrim::visit(entity::Text_CSPtr text) {
 
 }
 
-void FTrim::visit(Spline_CSPtr spline) {
+void FTrim::visit(entity::Spline_CSPtr spline) {
 
 }
 
-void FTrim::visit(MText_CSPtr mtext) {
+void FTrim::visit(entity::MText_CSPtr mtext) {
 
 }
 
-void FTrim::visit(DimAligned_CSPtr dimaligned) {
+void FTrim::visit(entity::DimAligned_CSPtr dimaligned) {
 
 }
 
-void FTrim::visit(DimAngular_CSPtr dimangular) {
+void FTrim::visit(entity::DimAngular_CSPtr dimangular) {
 
 }
 
-void FTrim::visit(DimDiametric_CSPtr dimdiametric) {
+void FTrim::visit(entity::DimDiametric_CSPtr dimdiametric) {
 
 }
 
-void FTrim::visit(DimLinear_CSPtr dimlinear) {
+void FTrim::visit(entity::DimLinear_CSPtr dimlinear) {
 
 }
 
-void FTrim::visit(DimRadial_CSPtr dimrad) {
+void FTrim::visit(entity::DimRadial_CSPtr dimrad) {
 
 }
 

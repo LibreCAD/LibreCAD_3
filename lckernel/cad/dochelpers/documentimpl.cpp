@@ -33,7 +33,7 @@ void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
 
 }
 
-void DocumentImpl::insertEntity(const CADEntity_CSPtr cadEntity) {
+void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
@@ -45,7 +45,7 @@ void DocumentImpl::insertEntity(const CADEntity_CSPtr cadEntity) {
     addEntityEvent()(event);
 }
 
-void DocumentImpl::removeEntity(const CADEntity_CSPtr entity) {
+void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
     _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
     removeEntityEvent()(event);
@@ -71,7 +71,7 @@ void DocumentImpl::replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr ne
 
 
 
-EntityContainer<CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {
+EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {
     std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);
 }
@@ -81,7 +81,7 @@ StorageManager_SPtr DocumentImpl::storageManager() const {
 }
 
 
-EntityContainer<CADEntity_CSPtr> DocumentImpl::entityContainer()  {
+EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entityContainer()  {
     //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
 }

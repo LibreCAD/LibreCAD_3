@@ -5,10 +5,11 @@
 #include "geobase.h"
 #include "cad/math/quadratic_math.h"
 #include <vector>
+#include "cad/base/visitor.h"
 
 namespace lc {
     namespace geo {
-        class Vector : public Base {
+        class Vector : public Base, virtual public Visitable {
             public:
                 // TODO: Test for validity?
                 explicit Vector(const Coordinate& start, const Coordinate& end) : _start(start), _end(end) {}
@@ -91,6 +92,7 @@ namespace lc {
                     return Quadratic(ce);
                 }
 
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Vector& e) {

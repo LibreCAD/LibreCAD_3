@@ -120,12 +120,12 @@ namespace lc {
              * \param layerName Name of layer to which entity is to be added
              * \param cadEntity Entity to be added
              */
-            virtual void insertEntity(const CADEntity_CSPtr cadEntity) = 0;
+            virtual void insertEntity(const entity::CADEntity_CSPtr cadEntity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
-            virtual void removeEntity(const CADEntity_CSPtr entity) = 0;
+            virtual void removeEntity(const entity::CADEntity_CSPtr entity) = 0;
 
             /**
             *  \brief add a new layer to the document
@@ -150,14 +150,14 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) = 0;
 
             /**
              * @brief entityContainer
              * Return a copy of all entities within the document
              * @return
              */
-            virtual EntityContainer<CADEntity_CSPtr> entityContainer() = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() = 0;
 
             virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
         public:

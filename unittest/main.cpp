@@ -2,6 +2,9 @@
 #include "gtest/gtest.h"
 #include "entitytest.h"
 using namespace std;
+using namespace lc;
+using namespace entity;
+
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);

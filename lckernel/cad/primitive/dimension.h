@@ -5,16 +5,18 @@
 #include "cad/base/cadentity.h"
 
 namespace lc {
-    class Dimension;
-    typedef std::shared_ptr<Dimension> Dimension_SPtr;
-    typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
+    namespace entity {
+        class Dimension;
 
-    /**
+        typedef std::shared_ptr<Dimension> Dimension_SPtr;
+        typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
+
+        /**
     * Base class for all dimensions
     * It takes in the values pretty much as given by the DXF reference
     * TODO: Should we move some variables to the implementation of a actualy Dimension like DimRadial and have all optional variables as part of the meta map ?
     */
-    class Dimension {
+        class Dimension {
 
         public:
 
@@ -29,8 +31,10 @@ namespace lc {
              * @param explicitValue given value
              */
 
-            Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double const textAngle,
-                      double  lineSpacingFactor, TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue);
+            Dimension(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
+                      TextConst::AttachmentPoint const &attachmentPoint, double const textAngle,
+                      double lineSpacingFactor, TextConst::LineSpacingStyle const &lineSpacingStyle,
+                      std::string const &explicitValue);
 
             /**
              * @brief Dimension
@@ -39,13 +43,14 @@ namespace lc {
              * @param attachmentPoint Where the text is located in reference to the text location
              * @param angle Angle of obliqueness
              */
-            Dimension(geo::Coordinate const&   _definitionPoint,
-                      geo::Coordinate const& _middleOfText,
+            Dimension(geo::Coordinate const &_definitionPoint,
+                      geo::Coordinate const &_middleOfText,
                       TextConst::AttachmentPoint _attachPt,
                       double _angle);
 
 
-            Dimension(Dimension const& other);
+            Dimension(Dimension const &other);
+
         public:
             /**
              * @brief move, moves by an offset
@@ -81,14 +86,14 @@ namespace lc {
             /**
             * Definition point of this dimension
             */
-            const geo::Coordinate& definitionPoint() const noexcept;
+            const geo::Coordinate &definitionPoint() const noexcept;
 
             /**
             * Middle location of the text
             */
-            const geo::Coordinate& middleOfText() const noexcept;
+            const geo::Coordinate &middleOfText() const noexcept;
 
-            TextConst::AttachmentPoint const& attachmentPoint() const;
+            TextConst::AttachmentPoint const &attachmentPoint() const;
 
             /**
             * Angle of witch to draw the text on
@@ -120,7 +125,8 @@ namespace lc {
             const double _lineSpacingFactor;
             const TextConst::LineSpacingStyle _lineSpacingStyle;
             const std::string _explicitValue;
-    };
+        };
+    }
 }
 
 // Dimension_H

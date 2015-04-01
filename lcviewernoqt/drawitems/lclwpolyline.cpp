@@ -3,7 +3,7 @@
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
 
-LCLWPolyline::LCLWPolyline(const lc::LWPolyline_CSPtr lwpolyline) : LCVDrawItem(true), lc::LWPolyline(lwpolyline, true) {
+LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) : LCVDrawItem(true), lc::entity::LWPolyline(lwpolyline, true) {
 }
 
 void LCLWPolyline::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {

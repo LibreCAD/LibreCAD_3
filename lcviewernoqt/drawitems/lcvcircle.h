@@ -6,9 +6,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCVCircle  : public LCVDrawItem, public lc::Circle {
+class LCVCircle  : public LCVDrawItem, public lc::entity::Circle {
     public:
-        LCVCircle(const lc::Circle_CSPtr circle);
+        LCVCircle(const lc::entity::Circle_CSPtr circle);
 
         /**
          * @brief draw, Draws the circle

@@ -154,7 +154,7 @@ class DocumentCanvas {
         lc::Document* _document;
 
         // Local entity container
-        lc::EntityContainer<lc::CADEntity_SPtr> _entityContainer;
+        lc::EntityContainer<lc::entity::CADEntity_SPtr> _entityContainer;
 
         // Background and forground items
         std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;

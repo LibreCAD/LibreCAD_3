@@ -1,9 +1,11 @@
 #include "line.h"
 
-using namespace lc;
-
 #include <algorithm>
 #include "cad/geometry/geoarea.h"
+
+using namespace lc;
+using namespace entity;
+
 
 Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
 }

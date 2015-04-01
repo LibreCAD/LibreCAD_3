@@ -1,6 +1,7 @@
 #include "cad/primitive/dimradial.h"
 
 using namespace lc;
+using namespace entity;
 
 DimRadial::DimRadial(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double angle, double const lineSpacingFactor,
                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,

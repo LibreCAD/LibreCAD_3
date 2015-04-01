@@ -17,11 +17,11 @@ namespace lc {
               * @param unsigned int ID number that identitifes the the coordinate
               *
               */
-            EntityDistance(CADEntity_CSPtr cadEntity, double distance) : _cadEntity(cadEntity), _distance(distance) {
+            EntityDistance(entity::CADEntity_CSPtr cadEntity, double distance) : _cadEntity(cadEntity), _distance(distance) {
 
             }
 
-            CADEntity_CSPtr entity() const {
+            entity::CADEntity_CSPtr entity() const {
                 return _cadEntity;
             }
 
@@ -34,7 +34,7 @@ namespace lc {
             }
 
         private:
-            CADEntity_CSPtr _cadEntity;
+        entity::CADEntity_CSPtr _cadEntity;
             double _distance;
     };
 }

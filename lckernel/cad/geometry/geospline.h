@@ -3,10 +3,11 @@
 #include "geobase.h"
 #include "geocoordinate.h"
 #include <vector>
+#include "cad/base/visitor.h"
 
 namespace lc {
     namespace geo {
-        class Spline : public Base {
+        class Spline : public Base, virtual public Visitable {
             public:
 
                 Spline(const std::vector<Coordinate> &control_points,
@@ -90,6 +91,8 @@ namespace lc {
                  * \return bool
                  */
                 bool isCoordinateOnPath(const Coordinate &coord) const;
+
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
             private:
                 const std::vector<Coordinate> _controlPoints;

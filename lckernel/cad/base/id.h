@@ -17,7 +17,7 @@ namespace lc {
 
             /*!
              * \brief Default constructor, provides a new unique ID to each entity
-             * \sa lc::CADEntity
+             * \sa lc::entity::CADEntity
              */
             ID();
             ID(ID_DATATYPE);

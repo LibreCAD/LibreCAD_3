@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "cad/interface/metatype.h"
 using namespace lc;
+using namespace entity;
 
 Circle::Circle(const geo::Coordinate& center, double radius, const Layer_CSPtr layer) : CADEntity(layer), geo::Circle(center, radius) {
 

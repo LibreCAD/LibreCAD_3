@@ -11,17 +11,17 @@ using namespace lc::operation;
 Begin::Begin() :  Base() {
 }
 
-std::vector<CADEntity_CSPtr> Begin::process(
+std::vector<entity::CADEntity_CSPtr> Begin::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>& workingBuffer,
-    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+    std::vector<entity::CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr>) {
     _entities.insert(_entities.end(), entitySet.begin(), entitySet.end());
     return entitySet;
 }
 
-std::vector<CADEntity_CSPtr> Begin::getEntities() const {
+std::vector<entity::CADEntity_CSPtr> Begin::getEntities() const {
     return _entities;
 }
 
@@ -31,16 +31,16 @@ std::vector<CADEntity_CSPtr> Begin::getEntities() const {
 Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 }
 
-std::vector<CADEntity_CSPtr> Loop::process(
+std::vector<entity::CADEntity_CSPtr> Loop::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>& _workingBuffer,
-    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>& _workingBuffer,
+    std::vector<entity::CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr> _stack) {
-    std::vector<CADEntity_CSPtr> final;
+    std::vector<entity::CADEntity_CSPtr> final;
 
     // Find the start
-    std::vector<CADEntity_CSPtr> _start;
+    std::vector<entity::CADEntity_CSPtr> _start;
 
     for (auto base : _stack) {
         //TODO can we get rid of dynamic_cast??
@@ -54,7 +54,7 @@ std::vector<CADEntity_CSPtr> Loop::process(
 
 
     // run the operation que
-    std::vector<CADEntity_CSPtr> entitySet2(entitySet);
+    std::vector<entity::CADEntity_CSPtr> entitySet2(entitySet);
 
     for (int n = 0; n < _numTimes - 1; n++) {
         for (auto base : _stack) {
@@ -71,13 +71,13 @@ std::vector<CADEntity_CSPtr> Loop::process(
 Move::Move(const geo::Coordinate& offset) :  Base(), _offset(offset) {
 }
 
-std::vector<CADEntity_CSPtr>  Move::process(
+std::vector<entity::CADEntity_CSPtr>  Move::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>&,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>&,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    std::vector<CADEntity_CSPtr> newQueue;
+    std::vector<entity::CADEntity_CSPtr> newQueue;
 
     for (auto entity : entitySet) {
         auto e = entity->move(_offset);
@@ -93,13 +93,13 @@ std::vector<CADEntity_CSPtr>  Move::process(
 Copy::Copy(const geo::Coordinate& offset) : Base(), _offset(offset) {
 }
 
-std::vector<CADEntity_CSPtr> Copy::process(
+std::vector<entity::CADEntity_CSPtr> Copy::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>& workingBuffer,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    std::vector<CADEntity_CSPtr> newQueue;
+    std::vector<entity::CADEntity_CSPtr> newQueue;
 
     for (auto entity : entitySet) {
         auto e = entity->copy(_offset);
@@ -116,13 +116,13 @@ std::vector<CADEntity_CSPtr> Copy::process(
 Scale::Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) : Base(), _scale_center(scale_center), _scale_factor(scale_factor) {
 }
 
-std::vector<CADEntity_CSPtr> Scale::process(
+std::vector<entity::CADEntity_CSPtr> Scale::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>&,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>&,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    std::vector<CADEntity_CSPtr> newQueue;
+    std::vector<entity::CADEntity_CSPtr> newQueue;
 
     for (auto entity : entitySet) {
         auto e = entity->scale(_scale_center, _scale_factor);
@@ -138,13 +138,13 @@ std::vector<CADEntity_CSPtr> Scale::process(
 Rotate::Rotate(const geo::Coordinate& rotation_center, const double rotation_angle) : Base(), _rotation_center(rotation_center), _rotation_angle(rotation_angle) {
 }
 
-std::vector<CADEntity_CSPtr> Rotate::process(
+std::vector<entity::CADEntity_CSPtr> Rotate::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>&,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>&,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    std::vector<CADEntity_CSPtr> newQueue;
+    std::vector<entity::CADEntity_CSPtr> newQueue;
 
     for (auto entity : entitySet) {
         auto e = entity->rotate(_rotation_center, _rotation_angle);
@@ -160,13 +160,13 @@ std::vector<CADEntity_CSPtr> Rotate::process(
 Push::Push() : Base() {
 }
 
-std::vector<CADEntity_CSPtr> Push::process(
+std::vector<entity::CADEntity_CSPtr> Push::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>& workingBuffer,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
-    std::vector<CADEntity_CSPtr> newQueue(workingBuffer);
+    std::vector<entity::CADEntity_CSPtr> newQueue(workingBuffer);
     newQueue.insert(newQueue.end(), entitySet.begin(), entitySet.end());
     workingBuffer.clear();
     return newQueue;
@@ -178,17 +178,17 @@ std::vector<CADEntity_CSPtr> Push::process(
 SelectByLayer::SelectByLayer(const Layer_CSPtr layer) : Base(), _layer(layer) {
 }
 
-std::vector<CADEntity_CSPtr> SelectByLayer::process(
+std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>&,
-    std::vector<CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>&,
+    std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
 
     //auto c = storageManager->entitiesByLayer(_layer);
     //return c.asVector();
 
-    std::vector<CADEntity_CSPtr> e;
+    std::vector<entity::CADEntity_CSPtr> e;
     return e;
 
 }
@@ -199,14 +199,14 @@ std::vector<CADEntity_CSPtr> SelectByLayer::process(
 Remove::Remove() : Base() {
 }
 
-std::vector<CADEntity_CSPtr> Remove::process(
+std::vector<entity::CADEntity_CSPtr> Remove::process(
     const Document* document,
-    const std::vector<CADEntity_CSPtr> entitySet,
-    std::vector<CADEntity_CSPtr>&,
-    std::vector<CADEntity_CSPtr>& removals,
+    const std::vector<entity::CADEntity_CSPtr> entitySet,
+    std::vector<entity::CADEntity_CSPtr>&,
+    std::vector<entity::CADEntity_CSPtr>& removals,
     const std::vector<Base_SPtr>) {
     removals.insert(removals.end(), entitySet.begin(), entitySet.end());
-    std::vector<CADEntity_CSPtr> e;
+    std::vector<entity::CADEntity_CSPtr> e;
     return e;
 }
 

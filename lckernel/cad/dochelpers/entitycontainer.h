@@ -5,12 +5,12 @@
 
 #include "cad/const.h"
 #include "cad/base/id.h"
-#include "quadtree.h"
+#include "cad/dochelpers/quadtree.h"
 
-#include <cad/vo/entitydistance.h>
-#include <cad/functions/intersect.h>
-#include <cad/geometry/geocoordinate.h>
-#include <cad/primitive/line.h>
+#include "cad/vo/entitydistance.h"
+#include "cad/functions/intersect.h"
+#include "cad/geometry/geocoordinate.h"
+#include "cad/primitive/line.h"
 
 namespace lc {
     class Layer;
@@ -222,29 +222,30 @@ namespace lc {
 
                     // Path to area intersection testing
                     lc::Intersect intersect(Intersect::OnPath, 10e-4);
-                    i->accept(area.top(), intersect);
 
+                    auto &&v = area.top();
+                    visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v, *i.get());
                     if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
-                    i->accept(area.left(), intersect);
-
+                    v = area.left();
+                    visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
                     if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
-                    i->accept(area.bottom(), intersect);
-
+                    v = area.bottom();
+                    visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
                     if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;
                     }
 
-                    i->accept(area.right(), intersect);
-
+                    v = area.right();
+                    visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
                     if (intersect.result().size() != 0) {
                         container.insert(i);
                         continue;

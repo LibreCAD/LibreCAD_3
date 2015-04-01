@@ -17,8 +17,8 @@ namespace lc {
             virtual ~DocumentImpl();
 
         public:
-            virtual void insertEntity(const CADEntity_CSPtr cadEntity);
-            virtual void removeEntity(CADEntity_CSPtr entity);
+            virtual void insertEntity(const entity::CADEntity_CSPtr cadEntity);
+            virtual void removeEntity(entity::CADEntity_CSPtr entity);
 
             virtual void addLayer(const Layer_CSPtr layer);
             virtual void removeLayer(const Layer_CSPtr layer);
@@ -29,9 +29,9 @@ namespace lc {
              * @param layer
              * @return
              */
-            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
 
-            virtual EntityContainer<CADEntity_CSPtr> entityContainer();
+            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
 
             Layer_CSPtr layerByName(const std::string& layerName) const;
         protected:

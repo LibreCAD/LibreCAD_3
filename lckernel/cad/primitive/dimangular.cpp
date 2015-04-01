@@ -2,6 +2,7 @@
 
 
 using namespace lc;
+using namespace entity;
 
 DimAngular::DimAngular(
     geo::Coordinate const& definitionPoint,

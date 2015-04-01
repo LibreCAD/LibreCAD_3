@@ -2,8 +2,9 @@
 #include <cad/math/quadratic_math.h>
 #include "code.h"
 #include <cad/math/lcmath.h>
-using namespace std;
 using namespace lc;
+using namespace entity;
+
 std::vector<double> test::quad(double x, double c) {
     std::vector<double>data(2, 0.);
     data[0] = x;
@@ -28,7 +29,7 @@ std::vector<double> test::quartic(double x3, double x2, double x, double c) {
     return lc::Math::quarticSolver(data);
 }
 
-vector<geo::Coordinate> test::intr(lc::Line& line, lc::Circle& circle) {
+std::vector<geo::Coordinate> test::intr(Line& line, Circle& circle) {
     auto l = line.quadratic();
     auto c = circle.quadratic();
     return Quadratic::getIntersection(l, c);

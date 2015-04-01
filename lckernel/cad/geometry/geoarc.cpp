@@ -1,6 +1,5 @@
 #include <cad/math/lcmath.h>
 #include "geoarc.h"
-#include "geoarea.h"
 
 using namespace lc;
 using namespace geo;

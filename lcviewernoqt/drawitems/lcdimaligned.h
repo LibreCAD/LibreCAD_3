@@ -8,9 +8,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCDimAligned : public LCVDrawItem, public lc::DimAligned, public LCDimension {
+class LCDimAligned : public LCVDrawItem, public lc::entity::DimAligned, public LCDimension {
     public:
-        LCDimAligned(const lc::DimAligned_CSPtr dimAligned);
+        LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned);
 
         /**
         * @brief draw, Draws the LCDimAligned

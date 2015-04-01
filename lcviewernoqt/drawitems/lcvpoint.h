@@ -6,9 +6,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCVPoint : public LCVDrawItem, public lc::Point  {
+class LCVPoint : public LCVDrawItem, public lc::entity::Point  {
     public:
-        LCVPoint(const lc::Point_CSPtr Coordinate);
+        LCVPoint(const lc::entity::Point_CSPtr Coordinate);
         /**
          * @brief draw, Draws the point
          * @param LcPainter painter, surface to be painted

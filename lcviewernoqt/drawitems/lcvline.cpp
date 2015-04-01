@@ -2,7 +2,7 @@
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
 
-LCVLine::LCVLine(const lc::Line_CSPtr line) : LCVDrawItem(true), lc::Line(line, true) {
+LCVLine::LCVLine(const lc::entity::Line_CSPtr line) : LCVDrawItem(true), lc::entity::Line(line, true) {
 }
 
 void LCVLine::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {

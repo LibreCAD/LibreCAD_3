@@ -4,7 +4,7 @@
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
 
-LCDimAligned::LCDimAligned(const lc::DimAligned_CSPtr dimAligned) : LCVDrawItem(true), lc::DimAligned(dimAligned, true) {
+LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned) : LCVDrawItem(true), lc::entity::DimAligned(dimAligned, true) {
 }
 
 /**

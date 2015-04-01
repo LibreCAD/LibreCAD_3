@@ -6,13 +6,13 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCVEllipse : public LCVDrawItem, public lc::Ellipse {
+class LCVEllipse : public LCVDrawItem, public lc::entity::Ellipse {
     public:
         /**
              * @brief LCVEllipse
              * @param Ellipse_CSPtr ellipse
              */
-        LCVEllipse(const lc::Ellipse_CSPtr ellipse);
+        LCVEllipse(const lc::entity::Ellipse_CSPtr ellipse);
         /**
          * @brief draw, Drawing the ellipse
          * @param LcPainter painter, surface to be painted

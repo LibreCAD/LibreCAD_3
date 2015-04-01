@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cad/const.h"
+#include "geoarea.h"
 #include "geocoordinate.h"
 #include "geobase.h"
 #include <vector>
@@ -9,9 +10,8 @@
 
 namespace lc {
     namespace geo {
-        class Area;
 
-        class Arc  : public Base {
+        class Arc  : public Base, virtual public Visitable {
             public:
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool reversed);
@@ -104,6 +104,8 @@ namespace lc {
                     ret.move(this->center());
                     return ret;
                 }
+
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Arc& a) {
                     os << "Arc(center=" << a._center << " radius=" << a._radius << " startAngle=" << a._startAngle << " endAngle=" << a._endAngle << ")";

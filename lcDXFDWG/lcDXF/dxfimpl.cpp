@@ -69,7 +69,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Line>(coord(data.basePoint), coord(data.secPoint), layer, mf));
+    _builder->append(std::make_shared<lc::entity::Line>(coord(data.basePoint), coord(data.secPoint), layer, mf));
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
@@ -79,7 +79,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Circle>(coord(data.basePoint), data.radious, layer, mf));
+    _builder->append(std::make_shared<lc::entity::Circle>(coord(data.basePoint), data.radious, layer, mf));
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
@@ -89,7 +89,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Arc>(coord(data.basePoint),
+    _builder->append(std::make_shared<lc::entity::Arc>(coord(data.basePoint),
                                                data.radious,
                                                data.staangle, data.endangle, layer, mf));
 
@@ -102,7 +102,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Ellipse>(coord(data.basePoint),
+    _builder->append(std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
                                                    coord(data.secPoint),
                                                    coord(data.basePoint).distanceTo(coord(data.secPoint)) / data.ratio,
                                                    data.staparam, data.endparam,
@@ -136,7 +136,7 @@ void DXFimpl::addSpline(const DRW_Spline& data) {
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
 
-    _builder->append(std::make_shared<lc::Spline>(coords(data.controllist),
+    _builder->append(std::make_shared<lc::entity::Spline>(coords(data.controllist),
             data.knotslist,
             coords(data.fitlist),
             data.degree,
@@ -155,7 +155,7 @@ void DXFimpl::addText(const DRW_Text& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Text>(coord(data.basePoint),
+    _builder->append(std::make_shared<lc::entity::Text>(coord(data.basePoint),
             data.text, data.height,
             data.angle, data.style,
             lc::TextConst::DrawingDirection(data.textgen),
@@ -171,7 +171,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    _builder->append(std::make_shared<lc::Point>(coord(data.basePoint), layer, mf));
+    _builder->append(std::make_shared<lc::entity::Point>(coord(data.basePoint), layer, mf));
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
@@ -182,7 +182,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
     auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
-    _builder->append(std::make_shared<lc::DimAligned>(
+    _builder->append(std::make_shared<lc::entity::DimAligned>(
                          coord(data->getDefPoint()),
                          coord(data->getTextPoint()),
                          static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
@@ -203,7 +203,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
     auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
-    _builder->append(std::make_shared<lc::DimLinear>(
+    _builder->append(std::make_shared<lc::entity::DimLinear>(
                          coord(data->getDefPoint()),
                          coord(data->getTextPoint()),
                          static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
@@ -226,7 +226,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
 
     auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
-    _builder->append(std::make_shared<lc::DimRadial>(
+    _builder->append(std::make_shared<lc::entity::DimRadial>(
                          coord(data->getCenterPoint()),
                          coord(data->getTextPoint()),
                          static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
@@ -249,7 +249,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
     auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
-    _builder->append(std::make_shared<lc::DimDiametric>(
+    _builder->append(std::make_shared<lc::entity::DimDiametric>(
                          coord(data->getDiameter1Point()),
                          coord(data->getTextPoint()),
                          static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
@@ -271,7 +271,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
     auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
 
-    _builder->append(std::make_shared<lc::DimAngular>(
+    _builder->append(std::make_shared<lc::entity::DimAngular>(
                          coord(data->getDefPoint()),
                          coord(data->getTextPoint()),
                          static_cast<lc::TextConst::AttachmentPoint>(data->getAlign()),
@@ -300,14 +300,14 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
     auto mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
 
-    std::vector<lc::LWVertex2D> points;
+    std::vector<lc::entity::LWVertex2D> points;
     for (auto i : data.vertlist) {
         points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
     }
 
     auto isCLosed = data.flags&0x01;
 
-    _builder->append(std::make_shared<lc::LWPolyline>(
+    _builder->append(std::make_shared<lc::entity::LWPolyline>(
         data.width, data.elevation, data.thickness,  isCLosed, coord(data.extPoint), points,layer, mf
     ));
 }

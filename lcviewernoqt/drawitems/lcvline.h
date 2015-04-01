@@ -6,13 +6,13 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCVLine : public LCVDrawItem, public lc::Line {
+class LCVLine : public LCVDrawItem, public lc::entity::Line {
     public:
         /**
          * @brief LCVLine, Line in viewer
          * @param Line_CSPtr line, line to be drawn
          */
-        LCVLine(const lc::Line_CSPtr line);
+        LCVLine(const lc::entity::Line_CSPtr line);
         /**
          * @brief draw, Draw the line
          * @param LcPainter painter, surface to be painted

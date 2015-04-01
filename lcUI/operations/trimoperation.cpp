@@ -67,7 +67,7 @@ void TrimOperation::on_LimitPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.size() > 0) {
-        lc::CADEntity_CSPtr entity = enties.at(0).entity();
+        lc::entity::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }
@@ -76,7 +76,7 @@ void TrimOperation::on_TrimPropertiesAssigned() {
     qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.size() > 0) {
-        lc::CADEntity_CSPtr entity = enties.at(0).entity();
+        lc::entity::CADEntity_CSPtr entity = enties.at(0).entity();
         qDebug() << "Select entity with id" << entity->id() << " I am  " << typeid(this).name() << " object was a " << typeid(entity).name();
     }
 }

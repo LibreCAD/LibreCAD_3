@@ -8,9 +8,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCDimLinear : public LCVDrawItem, public lc::DimLinear, public LCDimension {
+class LCDimLinear : public LCVDrawItem, public lc::entity::DimLinear, public LCDimension {
     public:
-        LCDimLinear(const lc::DimLinear_CSPtr dimLinear);
+        LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear);
 
         /**
         * @brief draw, Draws the DimLinear

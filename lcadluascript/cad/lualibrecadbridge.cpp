@@ -110,7 +110,7 @@ void lua_openlckernel(lua_State* L) {
     .beginExtendClass<DocumentImpl, Document>("DocumentImpl")
     .addFunction("entitiesByLayer", &DocumentImpl::entitiesByLayer)
     .endClass()
-    .beginClass<EntityContainer<lc::CADEntity_CSPtr>>("EntityContainer")
+    .beginClass<EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
                                                    .endClass()
 
                                                    .beginClass<StorageManager>("StorageManager")
@@ -124,28 +124,28 @@ void lua_openlckernel(lua_State* L) {
                                                    .endClass()
                                                    .beginExtendClass<CADEntity, ID>("CADEntity")
                                                    .endClass()
-                                                   .beginExtendClass<Line, CADEntity>("Line")
-                                                   .addConstructor(LUA_SP(Line_SPtr), LUA_ARGS(
+                                                   .beginExtendClass<entity::Line, CADEntity>("Line")
+                                                   .addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & start,
                                                                const geo::Coordinate & end,
                                                                const Layer_CSPtr))
                                                    .endClass()
-                                                   .beginExtendClass<Circle, CADEntity>("Circle")
-                                                   .addConstructor(LUA_SP(Circle_SPtr), LUA_ARGS(
+                                                   .beginExtendClass<entity::Circle, CADEntity>("Circle")
+                                                   .addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                double radius,
                                                                const Layer_CSPtr))
                                                    .endClass()
-                                                   .beginExtendClass<Arc, CADEntity>("Arc")
-                                                   .addConstructor(LUA_SP(Arc_SPtr), LUA_ARGS(
+                                                   .beginExtendClass<entity::Arc, CADEntity>("Arc")
+                                                   .addConstructor(LUA_SP(entity::Arc_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                double radius,
                                                                const double startAngle,
                                                                const double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                   .beginExtendClass<Ellipse, CADEntity>("Ellipse")
-                                                   .addConstructor(LUA_SP(Ellipse_SPtr), LUA_ARGS(
+                                                   .beginExtendClass<entity::Ellipse, CADEntity>("Ellipse")
+                                                   .addConstructor(LUA_SP(entity::Ellipse_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                const geo::Coordinate & majorP,
                                                                double minorRadius,
@@ -153,21 +153,21 @@ void lua_openlckernel(lua_State* L) {
                                                                double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                .beginExtendClass<Point, CADEntity>("Point_")
+                                                .beginExtendClass<entity::Point, CADEntity>("Point_")
                                                 .endClass()
-                                                .beginExtendClass<Text, CADEntity>("Text_")
+                                                .beginExtendClass<entity::Text, CADEntity>("Text_")
                                                 .endClass()
-                                                   .beginExtendClass<DimRadial, CADEntity>("DimRadial_")
+                                                   .beginExtendClass<entity::DimRadial, CADEntity>("DimRadial_")
                                                    .endClass()
-                                                   .beginExtendClass<DimDiametric, CADEntity>("DimDiametric_")
+                                                   .beginExtendClass<entity::DimDiametric, CADEntity>("DimDiametric_")
                                                    .endClass()
-                                                   .beginExtendClass<DimLinear, CADEntity>("DimLinear_")
+                                                   .beginExtendClass<entity::DimLinear, CADEntity>("DimLinear_")
                                                    .endClass()
-                                                   .beginExtendClass<DimAligned, CADEntity>("DimAligned_")
+                                                   .beginExtendClass<entity::DimAligned, CADEntity>("DimAligned_")
                                                    .endClass()
-                                                    .beginExtendClass<DimAngular, CADEntity>("DimAngular_")
+                                                    .beginExtendClass<entity::DimAngular, CADEntity>("DimAngular_")
                                                     .endClass()
-                                                    .beginExtendClass<Spline, CADEntity>("Spline_")
+                                                    .beginExtendClass<entity::Spline, CADEntity>("Spline_")
                                                     .endClass()
 
 

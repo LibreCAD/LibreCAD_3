@@ -1,7 +1,7 @@
 #include "lcvellipse.h"
 #include "../lcpainter.h"
 #include "lcdrawoptions.h"
-LCVEllipse::LCVEllipse(const lc::Ellipse_CSPtr Ellipse) : LCVDrawItem(true), lc::Ellipse(Ellipse, true) {
+LCVEllipse::LCVEllipse(const lc::entity::Ellipse_CSPtr Ellipse) : LCVDrawItem(true), lc::entity::Ellipse(Ellipse, true) {
 }
 
 void LCVEllipse::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {

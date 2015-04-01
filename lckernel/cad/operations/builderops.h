@@ -21,11 +21,11 @@ namespace lc {
 
         class Base {
             public:
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    const std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    const std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack
                 ) = 0;
         };
@@ -59,11 +59,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Loop removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -96,17 +96,17 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Begin removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
-                std::vector<CADEntity_CSPtr> getEntities() const;
+                std::vector<entity::CADEntity_CSPtr> getEntities() const;
 
             private:
-                std::vector<CADEntity_CSPtr> _entities;
+                std::vector<entity::CADEntity_CSPtr> _entities;
         };
 
         /**
@@ -135,11 +135,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Move removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -172,11 +172,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Copy removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -210,11 +210,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Rotate removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -231,11 +231,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Scale removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -271,11 +271,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Push removed")
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector<CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
         };
 
@@ -306,11 +306,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "SelectByLayer removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector <CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector <entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
@@ -342,11 +342,11 @@ namespace lc {
                     // LOG4CXX_DEBUG(logger, "Remove removed");
                 }
 
-                virtual std::vector<CADEntity_CSPtr> process(
+                virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document* document,
-                    std::vector<CADEntity_CSPtr> entities,
-                    std::vector <CADEntity_CSPtr>& workingBuffer,
-                    std::vector<CADEntity_CSPtr>& removals,
+                    std::vector<entity::CADEntity_CSPtr> entities,
+                    std::vector <entity::CADEntity_CSPtr>& workingBuffer,
+                    std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:

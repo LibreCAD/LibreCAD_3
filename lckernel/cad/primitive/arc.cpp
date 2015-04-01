@@ -1,6 +1,7 @@
 #include "arc.h"
 
 using namespace lc;
+using namespace entity;
 
 Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, const Layer_CSPtr layer) : CADEntity(layer), geo::Arc(center, radius, startAngle, endAngle) {
 

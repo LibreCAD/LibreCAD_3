@@ -8,9 +8,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCDimDiametric  : public LCVDrawItem, public lc::DimDiametric, public LCDimension {
+class LCDimDiametric  : public LCVDrawItem, public lc::entity::DimDiametric, public LCDimension {
     public:
-        LCDimDiametric(const lc::DimDiametric_CSPtr dimDiametric);
+        LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric);
 
         /**
         * @brief draw, Draws the DimDiametric

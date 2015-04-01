@@ -1,7 +1,10 @@
 #include "text.h"
+#include <algorithm>
+#include "cad/geometry/geoarea.h"
 
 
 using namespace lc;
+using namespace entity;
 
 Text::Text(const geo::Coordinate& insertion_point,
            const std::string text_value,

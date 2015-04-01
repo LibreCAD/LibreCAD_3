@@ -13,11 +13,11 @@ namespace lc {
     class Layer;
     class StorageManager {
         public:
-            virtual void insertEntity(const CADEntity_CSPtr) = 0;
-            virtual void insertEntityContainer(const EntityContainer<CADEntity_CSPtr>&) = 0;
-            virtual void removeEntity(const CADEntity_CSPtr) = 0;
-            virtual CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const = 0;
+            virtual void insertEntity(const entity::CADEntity_CSPtr) = 0;
+            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>&) = 0;
+            virtual void removeEntity(const entity::CADEntity_CSPtr) = 0;
+            virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const = 0;
 
             /*!
              * \brief layer
@@ -38,7 +38,7 @@ namespace lc {
              * return a copy of all entities managed within the storage manager
              * \return
              */
-            virtual EntityContainer<CADEntity_CSPtr> entityContainer() const = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const = 0;
 
             /**
             *  \brief add a new layer to the document

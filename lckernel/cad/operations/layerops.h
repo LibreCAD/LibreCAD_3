@@ -51,7 +51,7 @@ namespace lc {
 
             private:
                 Layer_CSPtr _layer;
-                std::vector<CADEntity_CSPtr> _entities;
+                std::vector<entity::CADEntity_CSPtr> _entities;
         };
 
         /**

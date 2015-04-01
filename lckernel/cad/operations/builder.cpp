@@ -13,7 +13,7 @@ Builder::~Builder() {
     // LOG4CXX_DEBUG(logger, "Builder removed");
 }
 
-Builder& Builder::append(CADEntity_CSPtr cadEntity) {
+Builder& Builder::append(entity::CADEntity_CSPtr cadEntity) {
     _workingBuffer.push_back(cadEntity);
     return *this;
 }
@@ -58,7 +58,7 @@ Builder& Builder::remove() {
 
 
 void Builder::processInternal() {
-    std::vector<CADEntity_CSPtr> entitySet;
+    std::vector<entity::CADEntity_CSPtr> entitySet;
 
     for (auto it = _stack.begin(); it != _stack.end(); ++it) {
         // Get looping stack, we currently support only one single loop!!

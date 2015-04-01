@@ -2,7 +2,6 @@
 
 #include "cad/base/cadentity.h"
 #include "cad/geometry/geocoordinate.h"
-#include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 #include <vector>
 
@@ -10,28 +9,28 @@ namespace lc {
 
     class FTrim : public EntityDispatch {
         public:
-            FTrim(std::vector<CADEntity_CSPtr> limitingEntities, CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
+            FTrim(std::vector<entity::CADEntity_CSPtr> limitingEntities, entity::CADEntity_CSPtr trimmedShape, geo::Coordinate trimPoint);
 
-            virtual void visit(Line_CSPtr);
-            virtual void visit(Point_CSPtr);
-            virtual void visit(Circle_CSPtr);
-            virtual void visit(Arc_CSPtr);
-            virtual void visit(Ellipse_CSPtr);
-            virtual void visit(Text_CSPtr);
-            virtual void visit(Spline_CSPtr);
-            virtual void visit(MText_CSPtr);
-            virtual void visit(DimAligned_CSPtr);
-            virtual void visit(DimAngular_CSPtr);
-            virtual void visit(DimDiametric_CSPtr);
-            virtual void visit(DimLinear_CSPtr);
-            virtual void visit(DimRadial_CSPtr);
-            std::vector<CADEntity_CSPtr> result();
-            CADEntity_CSPtr trimmedShape() const;
+            virtual void visit(entity::Line_CSPtr);
+            virtual void visit(entity::Point_CSPtr);
+            virtual void visit(entity::Circle_CSPtr);
+            virtual void visit(entity::Arc_CSPtr);
+            virtual void visit(entity::Ellipse_CSPtr);
+            virtual void visit(entity::Text_CSPtr);
+            virtual void visit(entity::Spline_CSPtr);
+            virtual void visit(entity::MText_CSPtr);
+            virtual void visit(entity::DimAligned_CSPtr);
+            virtual void visit(entity::DimAngular_CSPtr);
+            virtual void visit(entity::DimDiametric_CSPtr);
+            virtual void visit(entity::DimLinear_CSPtr);
+            virtual void visit(entity::DimRadial_CSPtr);
+            std::vector<entity::CADEntity_CSPtr> result();
+        entity::CADEntity_CSPtr trimmedShape() const;
 
         private:
-            std::vector<CADEntity_CSPtr> _limitingEntities;
-            CADEntity_CSPtr _trimmedShape;
-            std::vector<CADEntity_CSPtr> _newEntities;
+            std::vector<entity::CADEntity_CSPtr> _limitingEntities;
+        entity::CADEntity_CSPtr _trimmedShape;
+            std::vector<entity::CADEntity_CSPtr> _newEntities;
             geo::Coordinate _trimPoint;
     };
 

@@ -8,9 +8,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCDimAngular : public LCVDrawItem, public lc::DimAngular, public LCDimension {
+class LCDimAngular : public LCVDrawItem, public lc::entity::DimAngular, public LCDimension {
     public:
-        LCDimAngular(const lc::DimAngular_CSPtr dimAngular);
+        LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular);
 
         /**
         * @brief draw, Draws the DimAngular

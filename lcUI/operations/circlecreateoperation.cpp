@@ -56,7 +56,7 @@ lc::operation::DocumentOperation_SPtr CircleCreateOperation::operation() const {
     QList<std::shared_ptr<const lc::MetaType> > metaTypes;
     auto builder = std::make_shared<lc::operation::Builder>(document());
     double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-    builder->append(std::make_shared<lc::Circle>(_startPoint, r, _layer));
+    builder->append(std::make_shared<lc::entity::Circle>(_startPoint, r, _layer));
     return builder;
 }
 

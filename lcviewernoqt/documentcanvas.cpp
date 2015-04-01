@@ -284,7 +284,7 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         bool modified = false;
 
-        std::shared_ptr<lc::CADEntity> ci = std::dynamic_pointer_cast<lc::CADEntity>(di);
+        std::shared_ptr<lc::entity::CADEntity> ci = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
         lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
         lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidth::LCMETANAME());
         lc::Layer_CSPtr layer = ci->layer();
@@ -365,7 +365,7 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     painter->source_rgba(0.7, 0.7, 1.0, .8);
     auto *t = _entityContainer.tree();
     t->walkQuad(
-        [painter](const lc::QuadTreeSub<lc::CADEntity_SPtr> &tree){
+        [painter](const lc::QuadTreeSub<lc::entity::CADEntity_SPtr> &tree){
         lc::geo::Area a = tree.bounds();
        // painter->source_rgba(0.7, 0.7, 1.0, .8);
         painter->rectangle(a.minP().x(), a.minP().y(), a.width(), a.height());
@@ -397,7 +397,7 @@ void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     // Add a line
-    const auto line = event.entity<lc::Line>();
+    const auto line = event.entity<lc::entity::Line>();
 
     if (line != nullptr) {
         auto newLine = std::make_shared<LCVLine>(line);
@@ -406,7 +406,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a circle
-    const auto circle = event.entity<lc::Circle>();
+    const auto circle = event.entity<lc::entity::Circle>();
 
     if (circle != nullptr) {
         auto newCircle = std::make_shared<LCVCircle>(circle);
@@ -415,7 +415,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add a Arc
-    const auto arc = event.entity<lc::Arc>();
+    const auto arc = event.entity<lc::entity::Arc>();
 
     if (arc != nullptr) {
         auto newArc = std::make_shared<LCVArc>(arc);
@@ -425,7 +425,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
 
     // Add Ellipse
-    const auto ellipse = event.entity<lc::Ellipse>();
+    const auto ellipse = event.entity<lc::entity::Ellipse>();
 
     if (ellipse != nullptr) {
         auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
@@ -434,7 +434,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add Text
-    const auto text = event.entity<lc::Text>();
+    const auto text = event.entity<lc::entity::Text>();
 
     if (text != nullptr) {
         auto newText = std::make_shared<LCVText>(text);
@@ -443,7 +443,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'Point' or 'Coordinate'
-    const auto coord = event.entity<lc::Point>();
+    const auto coord = event.entity<lc::entity::Point>();
 
     if (coord != nullptr) {
         auto newCoord = std::make_shared<LCVPoint>(coord);
@@ -452,7 +452,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'DimRadial'
-    const auto dimRadial = event.entity<lc::DimRadial>();
+    const auto dimRadial = event.entity<lc::entity::DimRadial>();
 
     if (dimRadial != nullptr) {
         auto newDimRadial = std::make_shared<LCDimRadial>(dimRadial);
@@ -461,7 +461,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'DimDiametric'
-    const auto dimDiametric = event.entity<lc::DimDiametric>();
+    const auto dimDiametric = event.entity<lc::entity::DimDiametric>();
 
     if (dimDiametric != nullptr) {
         auto newDimDiametric = std::make_shared<LCDimDiametric>(dimDiametric);
@@ -470,7 +470,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'DimLinear'
-    const auto dimLinear = event.entity<lc::DimLinear>();
+    const auto dimLinear = event.entity<lc::entity::DimLinear>();
 
     if (dimLinear != nullptr) {
         auto newDimLinear = std::make_shared<LCDimLinear>(dimLinear);
@@ -479,7 +479,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'DimAligned'
-    const auto dimAligned = event.entity<lc::DimAligned>();
+    const auto dimAligned = event.entity<lc::entity::DimAligned>();
 
     if (dimAligned != nullptr) {
         auto newDimAligned = std::make_shared<LCDimAligned>(dimAligned);
@@ -488,7 +488,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'DimAngular'
-    const auto dimAngular = event.entity<lc::DimAngular>();
+    const auto dimAngular = event.entity<lc::entity::DimAngular>();
 
     if (dimAngular != nullptr) {
         auto newDimAngular = std::make_shared<LCDimAngular>(dimAngular);
@@ -497,7 +497,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 
     // Add 'LWPolyline'
-    const auto lwPolyline = event.entity<lc::LWPolyline>();
+    const auto lwPolyline = event.entity<lc::entity::LWPolyline>();
 
     if (lwPolyline != nullptr) {
         auto newLLWPolyline = std::make_shared<LCLWPolyline>(lwPolyline);
@@ -542,12 +542,12 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
 
     if (occupies) {
         _entityContainer.entitiesFullWithinArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
+            // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
     } else {
         _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
+            // std::cerr << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
             di->selected(true);
         });
 

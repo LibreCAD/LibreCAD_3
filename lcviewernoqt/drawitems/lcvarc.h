@@ -3,9 +3,9 @@
 #include "lcvdrawitem.h"
 #include <cad/primitive/arc.h>
 
-class LCVArc: public LCVDrawItem, public lc::Arc {
+class LCVArc: public LCVDrawItem, public lc::entity::Arc {
     public:
-        LCVArc(const lc::Arc_CSPtr circle);
+        LCVArc(const lc::entity::Arc_CSPtr circle);
         /**
          * @brief draw, Draw the Arc
          * @param LcPainter painter, surface to be painted

@@ -5,13 +5,14 @@
 #include "geocoordinate.h"
 #include "geovector.h"
 #include "geobase.h"
+#include "cad/base/visitor.h"
 
 namespace lc {
     namespace geo {
         /**
           * Class that describes a area or window.
           */
-        class Area : public Base {
+        class Area : public Base, virtual public Visitable {
             public:
                 /**
                   * Create a new Area. The coordinates coordA and coordB will be ordered so that minP wil always be < maxP
@@ -224,6 +225,8 @@ namespace lc {
                 inline Vector right() const {
                     return Vector(Coordinate(_maxP.x(), _minP.y()), Coordinate(_maxP.x(), _maxP.y()));
                 }
+
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Area& area) {

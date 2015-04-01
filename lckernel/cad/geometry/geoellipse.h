@@ -10,11 +10,8 @@
 
 namespace lc {
 
-    class CADEntity;
-    typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-    typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     namespace geo {
-        class Ellipse : public Base {
+        class Ellipse : public Base, virtual public Visitable {
             public:
                 Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
 
@@ -125,6 +122,9 @@ namespace lc {
                     ret.move(this->center());
                     return ret;
                 }
+
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Ellipse& e) {
                     os << "Ellipse(center=" << e._center << " majorP=" << e._majorP << " minorRadius=" << e._minorRadius << " startAngle=" << e._startAngle << " endAngle=" << e._endAngle << " isArc" << e._isArc << " isReversed" << e._isReversed << ")";

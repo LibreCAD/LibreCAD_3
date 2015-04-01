@@ -6,9 +6,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCVText : public LCVDrawItem, public lc::Text {
+class LCVText : public LCVDrawItem, public lc::entity::Text {
     public:
-        LCVText(const lc::Text_CSPtr Text);
+        LCVText(const lc::entity::Text_CSPtr Text);
         /**
          * @brief draw, Drawing the text
          * @param LcPainter painter, surface to be painted

@@ -10,7 +10,7 @@ double Coordinate::angleBetween(const Coordinate& v1, const Coordinate& v2) cons
     return Math::correctAngle(atan2(vStart.x() * vEnd.y() - vStart.y() * vEnd.x(), vStart.x() * vEnd.x() + vStart.y() * vEnd.y()));
 }
 
-Coordinate::Coordinate(const std::initializer_list<double> p) : Base() {
+Coordinate::Coordinate(const std::initializer_list<double> p)  {
 
     _x = _y = _z = 0;
 

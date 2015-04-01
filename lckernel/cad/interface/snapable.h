@@ -27,7 +27,7 @@ namespace lc {
              * \brief Find the nearest point on the path for this entity for the coordinate \em coord
              *
              * \param coord Coordinate to lookup the nearest coordinate from
-             * \sa lc::CADEntity
+             * \sa lc::entity::CADEntity
              */
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
     };

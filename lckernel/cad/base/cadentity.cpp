@@ -1,6 +1,7 @@
 #include "cadentity.h"
 
 using namespace lc;
+using namespace  entity;
 
 CADEntity::CADEntity(const Layer_CSPtr layer) : ID(), _layer(layer) {
 }

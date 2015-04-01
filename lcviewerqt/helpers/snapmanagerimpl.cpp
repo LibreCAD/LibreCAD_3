@@ -48,11 +48,11 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
         for (size_t a = 0; a < _entities.size(); a++) {
             for (size_t b = a + 1; b < _entities.size(); b++) {
-                lc::CADEntity_CSPtr i1 = _entities.at(a).entity();
-                lc::CADEntity_CSPtr i2 = _entities.at(b).entity();
+                lc::entity::CADEntity_CSPtr i1 = _entities.at(a).entity();
+                lc::entity::CADEntity_CSPtr i2 = _entities.at(b).entity();
 
                 lc::Intersect intersect(lc::Intersect::OnPath, 1.0e-4);
-                i1->accept(i2, intersect);
+// VISITOR                   i1->accept(i2, intersect);
 
                 if (intersect.result().size() > 0) {
                     std::vector<lc::geo::Coordinate> coords = intersect.result();

@@ -4,6 +4,7 @@
 #include <cmath>
 
 using namespace lc;
+using namespace entity;
 
 Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer)
     : CADEntity(layer), geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {

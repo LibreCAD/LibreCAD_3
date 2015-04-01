@@ -3,8 +3,12 @@
 #include "cad/primitive/lwpolyline.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/geometry/geovector.h"
+#include <algorithm>
+#include "cad/geometry/geoarea.h"
 
 using namespace lc;
+using namespace entity;
+
 
 LWPolyline::LWPolyline(double width, double elevation, double tickness, bool closed, geo::Coordinate const &extrusionDirection, const std::vector<LWVertex2D> &vertex, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
         : CADEntity(layer, metaInfo),

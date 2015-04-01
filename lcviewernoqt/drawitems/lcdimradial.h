@@ -8,9 +8,9 @@
 class LcDrawOptions;
 class LcPainter;
 
-class LCDimRadial  : public LCVDrawItem, public lc::DimRadial, public LCDimension {
+class LCDimRadial  : public LCVDrawItem, public lc::entity::DimRadial, public LCDimension {
     public:
-        LCDimRadial(const lc::DimRadial_CSPtr dimRadial);
+        LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial);
 
         /**
         * @brief draw, Draws the DimRadial

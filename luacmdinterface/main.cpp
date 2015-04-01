@@ -2,8 +2,19 @@
 #include <fstream>
 #include <cstdio>
 
+#include <cad/functions/intersect.h>
+
+/*
+#include <cad/geometry/geovector.h>
 #include <cad/primitive/circle.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/ellipse.h>
+#include <cad/primitive/line.h>
+#include <cad/primitive/lwpolyline.h>
+#include <cad/primitive/spline.h>
 #include <cad/primitive/point.h>
+ */
+
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/operations/builder.h>
 #include <documentcanvas.h>
@@ -13,7 +24,7 @@
 #include <lcadluascript.h>
 #include <string>
 #include <curl/curl.h>
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 namespace po = boost::program_options;
 
@@ -28,6 +39,8 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     readBuffer.append((char*) contents, realsize);
     return realsize;
 }
+
+
 
 std::string loadFile(std::string url) {
     CURL* curl;
@@ -116,7 +129,6 @@ int main(int argc, char** argv) {
     // Add backround
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
 
-        
     /* try to guess from file extension the output type */
     if (fType.empty()) {
         fType = boost::filesystem::extension(fOut);

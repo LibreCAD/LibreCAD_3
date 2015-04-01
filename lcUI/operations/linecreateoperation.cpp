@@ -53,7 +53,7 @@ void LineCreateOperation::lineCreationFinished() {
 
 lc::operation::DocumentOperation_SPtr LineCreateOperation::operation() const {
     auto builder = std::make_shared<lc::operation::Builder>(document());
-    builder->append(std::make_shared<lc::Line>(_startPoint, _endPoint, _layer));
+    builder->append(std::make_shared<lc::entity::Line>(_startPoint, _endPoint, _layer));
     return builder;
 }
 

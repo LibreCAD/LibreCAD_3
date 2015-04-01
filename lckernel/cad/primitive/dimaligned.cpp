@@ -2,6 +2,7 @@
 
 
 using namespace lc;
+using namespace entity;
 
 DimAligned::DimAligned(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
                        TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,

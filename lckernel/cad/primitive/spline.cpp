@@ -1,6 +1,9 @@
 #include "cad/primitive/spline.h"
+#include <algorithm>
+#include "cad/geometry/geoarea.h"
 
 using namespace lc;
+using namespace entity;
 
 Spline::Spline(
         const std::vector<geo::Coordinate>& controlPoints,

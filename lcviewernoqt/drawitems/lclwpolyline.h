@@ -3,9 +3,9 @@
 #include "lcvdrawitem.h"
 #include <cad/primitive/lwpolyline.h>
 
-class LCLWPolyline : public LCVDrawItem, public lc::LWPolyline {
+class LCLWPolyline : public LCVDrawItem, public lc::entity::LWPolyline {
     public:
-    LCLWPolyline(const lc::LWPolyline_CSPtr lwpolyline);
+    LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline);
 
     /**
      * @brief draw, Draws the polyline

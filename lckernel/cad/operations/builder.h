@@ -79,7 +79,7 @@ namespace lc {
                  * @param cadEntity
                  * @return Builder builder
                  */
-                Builder& append(CADEntity_CSPtr cadEntity);
+                Builder& append(entity::CADEntity_CSPtr cadEntity);
 
                 virtual void undo() const;
                 virtual void redo() const;
@@ -89,11 +89,11 @@ namespace lc {
 
             private:
                 std::vector<Base_SPtr> _stack;
-                std::vector<CADEntity_CSPtr> _workingBuffer;
+                std::vector<entity::CADEntity_CSPtr> _workingBuffer;
 
 
-                std::vector<CADEntity_CSPtr> _entitiesThatWhereUpdated;
-                std::vector<CADEntity_CSPtr> _entitiesThatNeedsRemoval;
+                std::vector<entity::CADEntity_CSPtr> _entitiesThatWhereUpdated;
+                std::vector<entity::CADEntity_CSPtr> _entitiesThatNeedsRemoval;
 
         };
 

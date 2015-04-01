@@ -4,7 +4,7 @@
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
 
-LCDimLinear::LCDimLinear(const lc::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::DimLinear(dimLinear, true) {
+LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::entity::DimLinear(dimLinear, true) {
 }
 
 /**

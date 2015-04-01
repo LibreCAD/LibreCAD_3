@@ -10,18 +10,18 @@ namespace lc {
      */
     class RemoveEntityEvent {
         public:
-            RemoveEntityEvent(const CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
+            RemoveEntityEvent(const entity::CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
             }
 
             /*!
              * \brief Returns the ID
              * \return ID_DATATYPE id of the entity.
              */
-            CADEntity_CSPtr entity() const {
+            entity::CADEntity_CSPtr entity() const {
                 return _cadEntity;
             }
 
         private:
-            const CADEntity_CSPtr _cadEntity;
+            const entity::CADEntity_CSPtr _cadEntity;
     };
 }

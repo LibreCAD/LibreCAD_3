@@ -2,6 +2,7 @@
 #include "cad/primitive/dimension.h"
 
 using namespace lc;
+using namespace entity;
 
 Dimension::Dimension(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
                      TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue)

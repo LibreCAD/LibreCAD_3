@@ -9,7 +9,7 @@
 
 using namespace lc;
 
-Trim::Trim(QList<shared_ptr<const lc::CADEntity> > limitingEntities, shared_ptr<const lc::CADEntity> trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
+Trim::Trim(QList<shared_ptr<const lc::entity::CADEntity> > limitingEntities, shared_ptr<const lc::entity::CADEntity> trimmedShape, geo::Coordinate trimPoint) : _limitingEntities(limitingEntities), _trimmedShape(trimmedShape), _trimPoint(trimPoint) {
 
 }
 
@@ -58,12 +58,12 @@ void Trim::visit(shared_ptr<const lc::Spline> Spline) {
 
 }
 
-QList<shared_ptr<const lc::CADEntity> > Trim::result() {
+QList<shared_ptr<const lc::entity::CADEntity> > Trim::result() {
     _trimmedShape->dispatch(*this);
     return _newEntities;
 }
 
-shared_ptr<const lc::CADEntity> Trim::trimmedShape() const {
+shared_ptr<const lc::entity::CADEntity> Trim::trimmedShape() const {
     return this->_trimmedShape;
 }
 

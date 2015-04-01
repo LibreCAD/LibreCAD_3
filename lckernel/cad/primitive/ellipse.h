@@ -1,7 +1,6 @@
 #pragma once
 
 #include "cad/const.h"
-#include "cad/interface/entityvisitor.h"
 #include "cad/interface/entitydispatch.h"
 
 #include "cad/geometry/geocoordinate.h"
@@ -12,12 +11,13 @@
 #include <cad/meta/layer.h>
 
 namespace lc {
+    namespace entity {
+        class Ellipse;
 
-    class Ellipse;
-    typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
-    typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
+        typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
+        typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
 
-    /*!
+        /*!
      * \brief A ellipse that can be put in a drawing
      *
      * A Ellipse is a graphics elipse item that can be put on a drawing using a CreateEntity operation.
@@ -28,10 +28,14 @@ namespace lc {
      *
      * \date 2012-04-16
      */
-    class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
+        class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer);
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
+                    double endAngle, const Layer_CSPtr layer);
+
+            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
+                    double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
 
         public:
@@ -40,14 +44,14 @@ namespace lc {
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr moved entity
              */
-            virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const;
 
             /**
              * @brief copy, copies by an offset
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr copied entity
              */
-            virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const;
+            virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const;
 
             /**
              * @brief rotate, rotate operation
@@ -55,7 +59,7 @@ namespace lc {
              * @param double rotation_angle
              * @return CADEntity_CSPtr rotated entity
              */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const;
 
             /**
              * @brief scale, scales the entity
@@ -63,7 +67,8 @@ namespace lc {
              * @param double scale_factor
              * @return
              */
-            virtual CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const;
+            virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
+                                          const geo::Coordinate &scale_factor) const;
 
             /**
              * @brief boundingBox of the entity
@@ -74,58 +79,13 @@ namespace lc {
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
         public:
-            virtual void accept(const geo::Vector& o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Point_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Line_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Circle_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Arc_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Ellipse_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Text_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(Spline_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(MText_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(DimAligned_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(DimAngular_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(DimDiametric_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(DimLinear_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(DimRadial_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void accept(CADEntity_CSPtr o, EntityVisitor& ei) const {
-                o->accept(shared_from_this(), ei);
-            }
-            virtual void accept(LWPolyline_CSPtr o, EntityVisitor& ei) const {
-                ei.visit(shared_from_this(), o);
-            }
-            virtual void dispatch(EntityDispatch& ed) const {
+            virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+
+            virtual void dispatch(EntityDispatch &ed) const {
                 ed.visit(shared_from_this());
             }
-    };
+        };
+    }
 }
 
 // ELLIPSE_H

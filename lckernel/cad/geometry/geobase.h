@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cad/base/visitor.h"
+
 namespace lc {
     namespace geo {
         /**
@@ -10,6 +12,7 @@ namespace lc {
         class Base  {
             public:
                 virtual ~Base() = default;
+
         };
     }
 }

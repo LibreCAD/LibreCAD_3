@@ -27,7 +27,7 @@ namespace lc {
               * @param Area Area to find entities in
               * @return std::vector<CADEntity_CSPtr> List of CAD Entities
               */
-            virtual std::vector<CADEntity_CSPtr> getEntitiesInArea(const geo::Area& area) const = 0;
+            virtual std::vector<entity::CADEntity_CSPtr> getEntitiesInArea(const geo::Area& area) const = 0;
 
     };
 }

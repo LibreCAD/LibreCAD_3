@@ -50,7 +50,7 @@ void LCMainToolbar::on_toolButton_4_clicked() {
 void LCMainToolbar::on_toolButton_5_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
 
-    auto l = std::make_shared<lc::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100), layer);
+    auto l = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100), layer);
 
     auto builder = std::make_shared<lc::operation::Builder>(_parent->activeMdiChild()->document());
     builder->append(l);

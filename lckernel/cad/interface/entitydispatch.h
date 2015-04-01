@@ -7,20 +7,19 @@ namespace lc {
     class EntityDispatch {
         public:
 
-            virtual void visit(Line_CSPtr) = 0;
-            virtual void visit(Point_CSPtr) = 0;
-            virtual void visit(Circle_CSPtr) = 0;
-            virtual void visit(Arc_CSPtr) = 0;
-            virtual void visit(Ellipse_CSPtr) = 0;
-            virtual void visit(Text_CSPtr) = 0;
-            virtual void visit(Spline_CSPtr) = 0;
-            virtual void visit(MText_CSPtr) = 0;
-            virtual void visit(DimAligned_CSPtr) = 0;
-            virtual void visit(DimAngular_CSPtr) = 0;
-            virtual void visit(DimDiametric_CSPtr) = 0;
-            virtual void visit(DimLinear_CSPtr) = 0;
-            virtual void visit(DimRadial_CSPtr) = 0;
-            virtual void visit(LWPolyline_CSPtr) = 0;
+            virtual void visit(entity::Line_CSPtr) = 0;
+            virtual void visit(entity::Point_CSPtr) = 0;
+            virtual void visit(entity::Circle_CSPtr) = 0;
+            virtual void visit(entity::Arc_CSPtr) = 0;
+            virtual void visit(entity::Ellipse_CSPtr) = 0;
+            virtual void visit(entity::Text_CSPtr) = 0;
+            virtual void visit(entity::Spline_CSPtr) = 0;
+            virtual void visit(entity::DimAligned_CSPtr) = 0;
+            virtual void visit(entity::DimAngular_CSPtr) = 0;
+            virtual void visit(entity::DimDiametric_CSPtr) = 0;
+            virtual void visit(entity::DimLinear_CSPtr) = 0;
+            virtual void visit(entity::DimRadial_CSPtr) = 0;
+            virtual void visit(entity::LWPolyline_CSPtr) = 0;
     };
 }
 // ENTITYDISPATCH_H

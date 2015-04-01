@@ -4,7 +4,7 @@
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
 
-LCDimRadial::LCDimRadial(const lc::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::DimRadial(dimRadial, true) {
+LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::entity::DimRadial(dimRadial, true) {
 }
 
 /**

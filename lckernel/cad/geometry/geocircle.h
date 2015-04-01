@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cad/math/quadratic_math.h>
 #include "cad/const.h"
 #include "geocoordinate.h"
 #include "geobase.h"
@@ -10,7 +9,7 @@
 namespace lc {
     namespace geo {
         // TODO: Should Circle be a arc with a start angle of 0 and a stop angle of 2PI ?
-        class Circle : public Base {
+        class Circle : public Base, virtual public Visitable {
             public:
                 Circle(const Coordinate& center, double radius);
 
@@ -53,6 +52,8 @@ namespace lc {
                     ret.move(this->center());
                     return ret;
                 }
+
+                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
         private:
                 friend std::ostream& operator<<(std::ostream& os, const Circle& c) {

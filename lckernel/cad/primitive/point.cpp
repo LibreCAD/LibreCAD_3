@@ -2,7 +2,12 @@
 #include <cad/primitive/point.h>
 #include <cmath>
 
+#include <algorithm>
+#include "cad/geometry/geoarea.h"
+
 using namespace lc;
+using namespace entity;
+
 
 Point::Point(const double x, const double y, const Layer_CSPtr layer)
     : CADEntity(layer), geo::Coordinate(x, y) {

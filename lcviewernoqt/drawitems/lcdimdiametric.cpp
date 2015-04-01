@@ -4,7 +4,7 @@
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
 
-LCDimDiametric::LCDimDiametric(const lc::DimDiametric_CSPtr dimDiametric) : LCVDrawItem(true), lc::DimDiametric(dimDiametric, true) {
+LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric) : LCVDrawItem(true), lc::entity::DimDiametric(dimDiametric, true) {
 }
 
 /**

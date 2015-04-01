@@ -2,10 +2,11 @@
 #include "lcdrawoptions.h"
 #include "lcdimangular.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
-#include <cad/functions/intersect.h>
+#include "cad/functions/string_helper.h"
+#include "cad/functions/intersect.h"
+#include "cad/base/visitor.h"
 
-LCDimAngular::LCDimAngular(const lc::DimAngular_CSPtr dimAngular) : LCVDrawItem(true), lc::DimAngular(dimAngular, true) {
+LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) : LCVDrawItem(true), lc::entity::DimAngular(dimAngular, true) {
 }
 
 /**
@@ -20,7 +21,12 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
     // Calculate intersection point
     lc::Intersect intersect(lc::Intersect::Any, 10e-4);
-    intersect.geovisit(lc::geo::Vector(defLine11(), defLine12()), lc::geo::Vector(defLine21(), defLine22()));
+
+    auto v1 = lc::geo::Vector(defLine11(), defLine12());
+    auto v2 = lc::geo::Vector(defLine21(), defLine22());
+
+
+    //visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v1, v2);
 
     if (intersect.result().size() == 0) {
         // if no intersectionpoint we cannot draw a Angular dimension,

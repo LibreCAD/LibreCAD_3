@@ -31,35 +31,35 @@ namespace lc {
         public:
             /**
              * @brief insertEntity
-             * \param CADEntity_CSPtr
+             * \param entity::CADEntity_CSPtr
              */
-            virtual void insertEntity(const CADEntity_CSPtr);
+            virtual void insertEntity(const entity::CADEntity_CSPtr);
 
             /**
              * @brief insertEntityContainer
-             * \param EntityContainer<CADEntity_CSPtr>
+             * \param EntityContainer<entity::CADEntity_CSPtr>
              */
-            virtual void insertEntityContainer(const EntityContainer<CADEntity_CSPtr>&);
+            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>&);
             /**
              * @brief remove Entity from the container
-             * \param CADEntity_CSPtr
+             * \param entity::CADEntity_CSPtr
              */
-            virtual void removeEntity(const CADEntity_CSPtr);
+            virtual void removeEntity(const entity::CADEntity_CSPtr);
 
             /**
              * @brief return entity By ID
              * @param id
-             * @return CADEntity_CSPtr entity
+             * @return entity::CADEntity_CSPtr entity
              */
-            virtual CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
+            virtual entity::CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
 
             /**
              * @brief Returns entities By Layer
              * @param layer
-             * @return EntityContainer<CADEntity_CSPtr> entities on layer
+             * @return EntityContainer<entity::CADEntity_CSPtr> entities on layer
              * @Deprecated use entityContainer()->entitiesByLayer()
              */
-            virtual EntityContainer<CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
 
             /**
              * @brief returns layer By Name
@@ -76,9 +76,9 @@ namespace lc {
 
             /**
              * @brief returns entity Container
-             * @return entityContainer<CADEntity_CSPtr>
+             * @return entityContainer<entity::CADEntity_CSPtr>
              */
-            virtual EntityContainer<CADEntity_CSPtr> entityContainer() const;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const;
 
             /**
             *  \brief add a new layer to the document
@@ -103,7 +103,7 @@ namespace lc {
              */
             virtual void optimise();
         private:
-            EntityContainer<CADEntity_CSPtr> _entities;
+            EntityContainer<entity::CADEntity_CSPtr> _entities;
             std::map<std::string, Layer_CSPtr> _layers;
     };
 }
