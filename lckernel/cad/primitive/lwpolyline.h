@@ -21,14 +21,14 @@ namespace lc {
         class LWVertex2D {
         public:
             LWVertex2D(geo::Coordinate const location, double const bulge = 0., double const startWidth = 0.,
-                       double const startHeight = 0.)
-                    : _location(location), _startWidth(startWidth), _startHeight(startHeight), _bulge(bulge) {
+                       double const endWidth = 0.)
+                    : _location(location), _startWidth(startWidth), _endWidth(endWidth), _bulge(bulge) {
             }
 
             LWVertex2D(LWVertex2D const &other)
                     : _location(other._location),
                       _startWidth(other._startWidth),
-                      _startHeight(other._startHeight),
+                      _endWidth(other._endWidth),
                       _bulge(other._bulge) {
             }
 
@@ -50,7 +50,7 @@ namespace lc {
             LWVertex2D const scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) {
                 if (scale_factor.x() == scale_factor.y()) {
                     return LWVertex2D(_location.scale(scale_center, scale_factor), _bulge * scale_factor.x(),
-                                      _startWidth * scale_factor.x(), _startHeight * scale_factor.x());
+                                      _startWidth * scale_factor.x(), _endWidth * scale_factor.x());
                 } else {
                     throw;
                 }
@@ -60,8 +60,8 @@ namespace lc {
                 return _startWidth;
             }
 
-            double startHeight() const {
-                return _startHeight;
+            double endWidth() const {
+                return _endWidth;
             }
 
             double bulge() const {
@@ -71,17 +71,20 @@ namespace lc {
         private:
             friend std::ostream &operator<<(std::ostream &os, const LWVertex2D &a) {
                 os << "LWVertex2D(location=" << a._location << " startWidth=" << a._startWidth << " startHeight=" <<
-                a._startHeight << " bulge=" << a._bulge << ")";
+                a._endWidth << " bulge=" << a._bulge << ")";
                 return os;
             }
 
         public:
             const geo::Coordinate _location;
             const double _startWidth;
-            const double _startHeight;
+            const double _endWidth;
             const double _bulge;
         };
 
+        /**
+         * Lightweight polyline
+         */
         class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, virtual public Visitable {
         public:
 
@@ -95,8 +98,8 @@ namespace lc {
         * @param layer
         * @param metaInfo
         */
-            LWPolyline(double width, double elevation, double tickness, bool closed,
-                       geo::Coordinate const &extrusionDirection, const std::vector<LWVertex2D> &vertex,
+            LWPolyline(const std::vector<LWVertex2D> &vertex,double width, double elevation, double tickness, bool closed,
+                       geo::Coordinate const &extrusionDirection,
                        const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr);
 
             LWPolyline(const LWPolyline_CSPtr other, bool sameID = false);
@@ -127,12 +130,12 @@ namespace lc {
             }
 
         private:
+            const std::vector<LWVertex2D> _vertex;
             const double _width;
             const double _elevation;
             const double _tickness;
             const bool _closed; // If we had more 'flag' options we shoudl consuder using a enum instead of seperate variables to make constructors easer
             const geo::Coordinate _extrusionDirection;
-            const std::vector<LWVertex2D> _vertex;
 
 
             // LW LWPolyline this seems to be the facto standard

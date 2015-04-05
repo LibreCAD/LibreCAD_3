@@ -41,7 +41,12 @@ static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
 
     for (int i = 1; i <= nargs; ++i) {
-        gOut->append(lua_tostring(L, i));
+        const char * str = lua_tostring(L, i);
+        if (str!=nullptr) {
+            gOut->append(str);
+        } else {
+            gOut->append("lc: lua_tostring was null");
+        }
         gOut->append("\n");
     }
 
@@ -235,6 +240,24 @@ static lc::entity::Spline_SPtr lua_spline1(LuaRef luaControlPoints,
 }
 
 /***
+ *    |\    /|~) _ |  |. _  _
+ *    |_\/\/ |~ (_)|\/||| |(/_
+ *                  /
+ */
+static lc::entity::LWPolyline_SPtr lua_lwpolyline(LuaRef lrefvertex, double width, double elevation, double thickness, bool closed, const lc::geo::Coordinate& extrucsion_direction, const lc::Layer_CSPtr layer) {
+    std::vector<lc::entity::LWVertex2D> vertex = Lua::getList<std::vector<lc::entity::LWVertex2D>>(lrefvertex);
+
+    return std::make_shared<lc::entity::LWPolyline>(vertex, width, elevation, thickness, closed, extrucsion_direction, layer);
+}
+
+static lc::entity::LWPolyline_SPtr lua_lwpolyline1(LuaRef lrefvertex, double width, double elevation, double thickness, bool closed, const lc::geo::Coordinate& extrucsion_direction, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    std::vector<lc::entity::LWVertex2D> vertex = Lua::getList<std::vector<lc::entity::LWVertex2D>>(lrefvertex);
+
+    return std::make_shared<lc::entity::LWPolyline>(vertex, width, elevation, thickness, closed, extrucsion_direction, layer, metaInfo);
+}
+
+
+/***
 *    ~|~ _  _|_
 *     | (/_><|
 *
@@ -311,6 +334,8 @@ std::string LCadLuaScript::run(const std::string& script) {
     .addFunction("DimAligned_DimAuto1", &lua_DimAligned_dimAuto1)
     .addFunction("DimAngular", &lua_dimAngular)
     .addFunction("DimAngular1", &lua_dimAngular1)
+    .addFunction("LWPolyline", &lua_lwpolyline)
+    .addFunction("LWPolyline1", &lua_lwpolyline1)
     .beginModule("active")
     .addFunction("document", &lua_getDocument)
     .beginModule("proxy")
@@ -836,3 +861,35 @@ t=Text(Coord(-350,-200),"WHY ME?", 20)
 d=active.document()
 Builder(d):append(l1):append(c):append(l2):append(l3):append(l4):append(l5):append(l6):append(l7):append(l8):append(l9):append(l10):append(l11):append(c1):append(c2):append(e):execute();
 */
+
+/* LWPolyline
+
+layer = active.proxy.layerByName("0")
+vertex2d = { LWVertex2D(Coord(10,10)), LWVertex2D(Coord(10,20)), LWVertex2D(Coord(20,30),-0.5), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
+p=LWPolyline(vertex2d,0,false,layer);
+d=active.document()
+Builder(d):append(p):execute()
+
+ */
+
+
+
+/* LWPolyline Closed with start/end width for each entity
+
+layer = active.proxy.layerByName("0")
+vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), LWVertex2D(Coord(20,30),-0.5), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
+p=LWPolyline(vertex2d,0,0,0,true,Coord(0,0),layer);
+d=active.document()
+Builder(d):append(p):execute()
+
+*/
+
+
+/*
+layer = active.proxy.layerByName("0")
+metaInfo = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), LWVertex2D(Coord(20,30),-2), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
+p=LWPolyline1(vertex2d,0,0,0,true,Coord(0,0),layer, metaInfo);
+d=active.document()
+Builder(d):append(p):execute()
+ */

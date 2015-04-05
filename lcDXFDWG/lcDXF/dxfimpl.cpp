@@ -308,7 +308,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
     auto isCLosed = data.flags&0x01;
 
     _builder->append(std::make_shared<lc::entity::LWPolyline>(
-        data.width, data.elevation, data.thickness,  isCLosed, coord(data.extPoint), points,layer, mf
+            points, data.width, data.elevation, data.thickness,  isCLosed, coord(data.extPoint),layer, mf
     ));
 }
 

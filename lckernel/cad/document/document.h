@@ -20,7 +20,10 @@
 #include "cad/events/replaceentityevent.h"
 
 namespace lc {
-    class CADEntity;
+
+    namespace entity {
+        class CADEntity;
+    }
 
     namespace operation {
         class DocumentOperation;

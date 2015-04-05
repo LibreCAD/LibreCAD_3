@@ -10,31 +10,31 @@ using namespace lc;
 using namespace entity;
 
 
-LWPolyline::LWPolyline(double width, double elevation, double tickness, bool closed, geo::Coordinate const &extrusionDirection, const std::vector<LWVertex2D> &vertex, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
+LWPolyline::LWPolyline(const std::vector<LWVertex2D> &vertex, double width, double elevation, double tickness, bool closed, geo::Coordinate const &extrusionDirection, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
         : CADEntity(layer, metaInfo),
+          _vertex(vertex),
           _width(width),
           _elevation(elevation),
           _tickness(tickness),
           _closed(closed),
-          _extrusionDirection(extrusionDirection),
-          _vertex(vertex)  {
+          _extrusionDirection(extrusionDirection)  {
 }
 
 LWPolyline::LWPolyline(const LWPolyline_CSPtr other, bool sameID) : CADEntity(other, sameID),
+                                                                    _vertex(other->_vertex),
                                                                     _width(other->_width),
                                                                     _elevation(other->_elevation),
                                                                     _tickness(other->_tickness),
                                                                     _closed(other->_closed),
-                                                                    _extrusionDirection(other->_extrusionDirection),
-                                                                    _vertex(other->_vertex) {
+                                                                    _extrusionDirection(other->_extrusionDirection) {
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
     std::vector<LWVertex2D> newVertex;
     for (auto vertex : _vertex) {
-        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.startHeight());
+        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.endWidth());
     }
-    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
+    auto newEntity = std::make_shared<LWPolyline>(newVertex, width(), elevation(), tickness(), closed(), extrusionDirection(), layer(), metaInfo());
     newEntity->setID(this->id());
     return newEntity;
 }
@@ -42,18 +42,18 @@ CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
 CADEntity_CSPtr LWPolyline::copy(const geo::Coordinate& offset) const {
     std::vector<LWVertex2D> newVertex;
     for (auto vertex : _vertex) {
-        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.startHeight());
+        newVertex.emplace_back(vertex.location() + offset, vertex.bulge(), vertex.startWidth(), vertex.endWidth());
     }
-    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
+    auto newEntity = std::make_shared<LWPolyline>(newVertex, width(), elevation(), tickness(), closed(), extrusionDirection(), layer(), metaInfo());
     return newEntity;
 }
 
 CADEntity_CSPtr LWPolyline::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     std::vector<LWVertex2D> newVertex;
     for (auto vertex : _vertex) {
-        newVertex.emplace_back(vertex.location().rotate(rotation_center, rotation_angle), vertex.bulge(), vertex.startWidth(), vertex.startHeight());
+        newVertex.emplace_back(vertex.location().rotate(rotation_center, rotation_angle), vertex.bulge(), vertex.startWidth(), vertex.endWidth());
     }
-    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
+    auto newEntity = std::make_shared<LWPolyline>(newVertex, width(), elevation(), tickness(), closed(), extrusionDirection(), layer(), metaInfo());
     return newEntity;
 }
 
@@ -63,9 +63,9 @@ CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo
         // TODO decide what to do with non-uniform scale factors
     }
     for (auto vertex : _vertex) {
-        newVertex.emplace_back(vertex.location().scale(scale_center, scale_factor), vertex.bulge() * scale_factor.x(), vertex.startWidth(), vertex.startHeight());
+        newVertex.emplace_back(vertex.location().scale(scale_center, scale_factor), vertex.bulge() * scale_factor.x(), vertex.startWidth(), vertex.endWidth());
     }
-    auto newEntity = std::make_shared<LWPolyline>(width(), elevation(), tickness(), closed(), extrusionDirection(), newVertex, layer(), metaInfo());
+    auto newEntity = std::make_shared<LWPolyline>(newVertex, width(), elevation(), tickness(), closed(), extrusionDirection(), layer(), metaInfo());
     return newEntity;
 }
 

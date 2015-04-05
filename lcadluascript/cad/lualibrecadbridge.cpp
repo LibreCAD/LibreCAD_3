@@ -119,24 +119,28 @@ void lua_openlckernel(lua_State* L) {
                                                    .addConstructor(LUA_SP(std::shared_ptr<StorageManagerImpl>), LUA_ARGS())
                                                    .endClass()
 
+    .beginClass<Visitable>("Visitable")
+    .endClass()
+    .beginClass<Snapable>("Snapable")
+    .endClass()
                                                    .beginClass<ID>("ID")
                                                    .addFunction("id", &ID::id)
                                                    .endClass()
-                                                   .beginExtendClass<CADEntity, ID>("CADEntity")
+    .beginExtendClass<entity::CADEntity, ID>("CADEntity")
                                                    .endClass()
-                                                   .beginExtendClass<entity::Line, CADEntity>("Line")
+                                                   .beginExtendClass<entity::Line, entity::CADEntity>("Line")
                                                    .addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & start,
                                                                const geo::Coordinate & end,
                                                                const Layer_CSPtr))
                                                    .endClass()
-                                                   .beginExtendClass<entity::Circle, CADEntity>("Circle")
+                                                   .beginExtendClass<entity::Circle, entity::CADEntity>("Circle")
                                                    .addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                double radius,
                                                                const Layer_CSPtr))
                                                    .endClass()
-                                                   .beginExtendClass<entity::Arc, CADEntity>("Arc")
+                                                   .beginExtendClass<entity::Arc, entity::CADEntity>("Arc")
                                                    .addConstructor(LUA_SP(entity::Arc_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                double radius,
@@ -144,7 +148,7 @@ void lua_openlckernel(lua_State* L) {
                                                                const double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                   .beginExtendClass<entity::Ellipse, CADEntity>("Ellipse")
+                                                   .beginExtendClass<entity::Ellipse, entity::CADEntity>("Ellipse")
                                                    .addConstructor(LUA_SP(entity::Ellipse_SPtr), LUA_ARGS(
                                                                const geo::Coordinate & center,
                                                                const geo::Coordinate & majorP,
@@ -153,25 +157,36 @@ void lua_openlckernel(lua_State* L) {
                                                                double endAngle,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
-                                                .beginExtendClass<entity::Point, CADEntity>("Point_")
+                                                .beginExtendClass<entity::Point, entity::CADEntity>("Point_")
                                                 .endClass()
-                                                .beginExtendClass<entity::Text, CADEntity>("Text_")
+                                                .beginExtendClass<entity::Text, entity::CADEntity>("Text_")
                                                 .endClass()
-                                                   .beginExtendClass<entity::DimRadial, CADEntity>("DimRadial_")
+                                                   .beginExtendClass<entity::DimRadial, entity::CADEntity>("DimRadial_")
                                                    .endClass()
-                                                   .beginExtendClass<entity::DimDiametric, CADEntity>("DimDiametric_")
+                                                   .beginExtendClass<entity::DimDiametric, entity::CADEntity>("DimDiametric_")
                                                    .endClass()
-                                                   .beginExtendClass<entity::DimLinear, CADEntity>("DimLinear_")
+                                                   .beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear_")
                                                    .endClass()
-                                                   .beginExtendClass<entity::DimAligned, CADEntity>("DimAligned_")
+                                                   .beginExtendClass<entity::DimAligned, entity::CADEntity>("DimAligned_")
                                                    .endClass()
-                                                    .beginExtendClass<entity::DimAngular, CADEntity>("DimAngular_")
+                                                    .beginExtendClass<entity::DimAngular, entity::CADEntity>("DimAngular_")
                                                     .endClass()
-                                                    .beginExtendClass<entity::Spline, CADEntity>("Spline_")
+                                                    .beginExtendClass<entity::Spline, entity::CADEntity>("Spline_")
                                                     .endClass()
-
-
-
+                                                    .beginClass<entity::LWVertex2D>("LWVertex2D")
+                                                    .addConstructor(LUA_ARGS(
+                                                                            const geo::Coordinate & pos, _opt<double>, _opt<double>, _opt<double>))
+                                                                            .addFunction("bulge", &lc::entity::LWVertex2D::bulge)
+                                                                            .addFunction("startWidth", &lc::entity::LWVertex2D::startWidth)
+                                                                            .addFunction("endWidth", &lc::entity::LWVertex2D::endWidth)
+                                                    .endClass()
+                                                    .beginExtendClass<entity::LWPolyline, entity::CADEntity>("LWPolyline_")
+                                                                            .addFunction("width", &lc::entity::LWPolyline::width)
+                                                                            .addFunction("elevation", &lc::entity::LWPolyline::elevation)
+                                                                            .addFunction("tickness", &lc::entity::LWPolyline::tickness)
+                                                                            .addFunction("extrusionDirection", &lc::entity::LWPolyline::extrusionDirection)
+                                                                            .addFunction("closed", &lc::entity::LWPolyline::closed)
+                                                    .endClass()
                                                    .beginClass<operation::DocumentOperation>("DocumentOperation")
                                                    .addFunction("execute", &operation::DocumentOperation::execute)
                                                    .endClass()
@@ -229,7 +244,7 @@ void lua_openlckernel(lua_State* L) {
 
 /*
 
-            .beginExtendClass<Dimension, CADEntity>("Dimension")
+            .beginExtendClass<Dimension, entity::CADEntity>("Dimension")
             .addConstructor(LUA_SP(Text_SPtr), LUA_ARGS(
                     const geo::Coordinate &definition_point,
                     const geo::Coordinate &middle_of_text,
@@ -242,7 +257,7 @@ void lua_openlckernel(lua_State* L) {
                     const double angle,
                     const Layer_CSPtr layer))
             .endClass()
-            .beginExtendClass<DimLinear, CADEntity>("DimLinear")
+            .beginExtendClass<DimLinear, entity::CADEntity>("DimLinear")
             .addConstructor(LUA_SP(DimLinear_SPtr), LUA_ARGS(
                     const Dimension& dimension,
                     const geo::Coordinate& extension_point1,
