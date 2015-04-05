@@ -881,15 +881,14 @@ vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), 
 p=LWPolyline(vertex2d,0,0,0,true,Coord(0,0),layer);
 d=active.document()
 Builder(d):append(p):execute()
-
 */
 
 
-/*
+/* LWPolyline rotate +  scale
 layer = active.proxy.layerByName("0")
 metaInfo = MetaInfo():add(MetaColor(Color(0,1,0,1)));
 vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), LWVertex2D(Coord(20,30),-2), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
 p=LWPolyline1(vertex2d,0,0,0,true,Coord(0,0),layer, metaInfo);
 d=active.document()
-Builder(d):append(p):execute()
+Builder(d):append(p):push():scale(Coord(0,0),Coord(0.5, 0.5)):rotate(Coord(0,0),0.5*math.pi):execute()
  */
