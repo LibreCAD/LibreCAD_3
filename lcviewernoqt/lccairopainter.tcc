@@ -34,7 +34,9 @@ class LcCairoPainter : public LcPainter {
             int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
             _surface = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32,  width,  height, stride);
             _cr = cairo_create(_surface);
-            cairo_set_fill_rule(_cr, CAIRO_FILL_RULE_EVEN_ODD);
+            // Should we make a setting for this? Question, do other 2D painter support this sort of thing?
+            cairo_set_fill_rule(_cr, CAIRO_FILL_RULE_WINDING);
+//            cairo_set_fill_rule(_cr, CAIRO_FILL_RULE_EVEN_ODD);
             cairo_set_operator(_cr, CAIRO_OPERATOR_OVER);
             cairo_set_tolerance(_cr, 0.5);
             cairo_set_antialias(_cr, CAIRO_ANTIALIAS_GOOD);
@@ -95,8 +97,16 @@ class LcCairoPainter : public LcPainter {
 
     public:
         // TODO move code from implementation to here to actually make inlyning work
+        void new_sub_path() {
+            cairo_new_sub_path(_cr);
+        }
+        
         void new_path() {
             cairo_new_path(_cr);
+        }
+
+        void close_path() {
+            cairo_close_path(_cr);
         }
 
         void clear(double r, double g, double b) {
@@ -151,7 +161,11 @@ class LcCairoPainter : public LcPainter {
             line_width(_lineWidth);
         }
 
+        /**
+         * @brief it is important from which point we start to draw
+         */
         void arc(double x, double y, double r, double start, double end) {
+            // new_sub_path();
             cairo_arc(_cr, x, -y, r, 2. * M_PI - end, 2.* M_PI - start);
             /* Test to see if we can get end/start cap's on a path
             cairo_path_t *path;
@@ -171,6 +185,7 @@ class LcCairoPainter : public LcPainter {
         }
 
         void arcNegative(double x, double y, double r, double start, double end) {
+            // new_sub_path();
             cairo_arc_negative(_cr, x, -y, r, 2. * M_PI - end, 2.* M_PI - start);
 //            cairo_arc_negative(_cr, x, -y, r, start, end);
         }

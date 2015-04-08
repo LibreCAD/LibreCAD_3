@@ -6,7 +6,7 @@
 LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) : LCVDrawItem(true), lc::entity::LWPolyline(lwpolyline, true) {
 }
 
-void LCLWPolyline::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCLWPolyline::draw(LcPainter *painter, LcDrawOptions *options, const lc::geo::Area &rect) const {
 
 
     /* THis might be a bit slower because it will do memory allocations
@@ -24,48 +24,105 @@ void LCLWPolyline::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
     } */
 
     bool modified = false;
+    auto draw_arc = [&painter](lc::geo::Coordinate const & p1, lc::geo::Coordinate const & p2, double const bulge) {
+       auto &&a = lc::geo::Arc::createArcBulge(p1, p2, bulge);
+        painter->new_sub_path();
+        if (a.reversed()) {
+            painter->arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
+        } else {
+            painter->arc(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
+        }
+    };
 
+    auto drawTo = [&painter, &draw_arc](const decltype(vertex().begin()) &currentPoint, const decltype(vertex().begin()) &beforePoint) {
+
+        lc::geo::Coordinate sWp1 = beforePoint->location()
+                                   , sWp2 = beforePoint->location()
+                                            , eWp1 = currentPoint->location()
+                                                    , eWp2 = currentPoint->location();
+
+        if (beforePoint->startWidth() > 0.) {
+            sWp1 = ((beforePoint->location() - currentPoint->location())
+                    .rotate(0.5 * M_PI)
+                    .norm() * 0.5 * beforePoint->startWidth())
+                   + beforePoint->location();
+
+            sWp2 = ((beforePoint->location() - currentPoint->location())
+                    .rotate(0.5 * M_PI)
+                    .norm() * 0.5 * -beforePoint->startWidth())
+                   + beforePoint->location();
+        }
+
+        if (beforePoint->endWidth() > 0.) {
+            eWp2 = ((currentPoint->location() - beforePoint->location())
+                    .rotate(0.5 * M_PI)
+                    .norm() * 0.5 * beforePoint->endWidth())
+                   + currentPoint->location();
+
+            eWp1 = ((currentPoint->location() - beforePoint->location())
+                    .rotate(0.5 * M_PI)
+                    .norm() * 0.5 * -beforePoint->endWidth())
+                   + currentPoint->location();
+        }
+
+        if (std::abs(beforePoint->bulge()) > 0.) {
+
+            /* for arc */
+            painter->new_path();
+            if (beforePoint->startWidth())
+                painter->line_to(sWp1.x(), sWp1.y());
+
+            draw_arc(eWp1, sWp1, -beforePoint->bulge());
+            painter->line_to(eWp1.x(), eWp1.y());
+
+            if (beforePoint->endWidth())
+                painter->line_to(eWp2.x(), eWp2.y());
+
+            if (beforePoint->startWidth() || beforePoint->endWidth()) {
+                // kinda we have to slice it out
+                painter->line_to(sWp2.x(), sWp2.y());
+                draw_arc(sWp2, eWp2, beforePoint->bulge());
+                painter->close_path();
+            }
+
+        } else {
+            /* for line */
+            painter->move_to(sWp2.x(), sWp2.y());
+
+            if (beforePoint->startWidth())
+                painter->line_to(sWp1.x(), sWp1.y());
+
+            painter->line_to(eWp1.x(), eWp1.y());
+
+            if (beforePoint->endWidth())
+                painter->line_to(eWp2.x(), eWp2.y());
+
+            if (beforePoint->startWidth() || beforePoint->endWidth())
+                painter->line_to(sWp2.x(), sWp2.y());
+        }
+
+        if (beforePoint->startWidth() || beforePoint->endWidth()) {
+            painter->fill();
+        } else {
+            painter->stroke();
+        }
+
+    };// end drawTo
+
+    // main part
     auto itr = vertex().begin();
     painter->move_to(itr->location().x(), itr->location().y());
-    auto lastPoint=itr;
+    auto lastPoint = itr;
     itr++;
-    while(itr != vertex().end()) {
-        if (lastPoint->bulge()!=0.) {
-            lc::geo::Arc a = lc::geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
-            // TODO find out why need a 'move_to' here
-            painter->move_to(itr->location().x(), itr->location().y());
-            if (a.reversed()) {
-                painter->arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
-            } else {
-                painter->arc(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
-            }
-            painter->move_to(itr->location().x(), itr->location().y());
-        } else {
-            painter->line_to(itr->location().x(), itr->location().y());
-        }
-        lastPoint=itr;
+    while (itr != vertex().end()) {
+        drawTo(itr, lastPoint);
+        lastPoint = itr;
         itr++;
     }
 
     if (closed()) {
-        auto firstP=vertex().begin();
-        if (lastPoint->bulge()!=0.) {
-            lc::geo::Arc a = lc::geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
-            // TODO find out why need a 'move_to' here
-            painter->move_to(firstP->location().x(), firstP->location().y());
-            if (a.reversed()) {
-                painter->arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
-            } else {
-                painter->arc(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
-            }
-            painter->move_to(firstP->location().x(), firstP->location().y());
-        } else {
-            painter->line_to(firstP->location().x(), firstP->location().y());
-        }
+        drawTo(vertex().begin(), lastPoint);
     }
-
-    painter->stroke();
-
     /** Draw bounding box
     auto &&plb = this->boundingBox();
     painter->save();
@@ -83,4 +140,6 @@ void LCLWPolyline::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
         painter->restore();
     }
 }
+
+
 
