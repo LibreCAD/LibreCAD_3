@@ -1,24 +1,25 @@
 #include "snapmanagerimpl.h"
 #include "cad/functions/intersect.h"
 #include "cad/vo/entitydistance.h"
+#include "../events/mousemoveevent.h"
 
-#include <QDebug>
 
-SnapManagerImpl::SnapManagerImpl(LCADViewer* view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
 
+/*
     connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
             this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
 
     connect(view, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
             this, SLOT(on_mouseRelease_Event(const MouseReleaseEvent&)));
-
+*/
 }
 
 
 void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
 
     return;
-
+/*
     // Calculate from the number of pixels the distance  for snapping
     // For best results use a un-even number of pixels
     double zeroCornerX = 0.;
@@ -38,7 +39,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     _entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
 
     if (_entities.size() > 0) {
-        qDebug() << "Found" << _entities.size() << "entities close to the cursor";
+        std::cerr << "Found" << _entities.size() << "entities close to the cursor";
     }
 
     // Emit Snappoint event if a entity intersects with a other entity
@@ -103,6 +104,7 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     _lastSnapEvent = snapEvent;
     qDebug() << "Snap to Free";
     emit snapPointEvent(snapEvent);
+    */
 
 }
 

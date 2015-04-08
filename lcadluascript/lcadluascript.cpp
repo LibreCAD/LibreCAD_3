@@ -28,14 +28,14 @@ using namespace LuaIntf;
 // https://github.com/vinniefalco/LuaBridge -> fixes https://github.com/pisto/spaghettimod/commits/master/include/
 // http://www.rasterbar.com/products/luabind.html
 
-LCadLuaScript::LCadLuaScript(lc::Document* document) : _document(document), _usePrintLib(true) {
+LCadLuaScript::LCadLuaScript(std::shared_ptr<lc::Document> document) : _document(document), _usePrintLib(true) {
 }
 
-LCadLuaScript::LCadLuaScript(lc::Document* document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
+LCadLuaScript::LCadLuaScript(std::shared_ptr<lc::Document> document, bool usePrintLib) : _document(document), _usePrintLib(usePrintLib) {
 }
 
 std::string* gOut;
-lc::Document* luaDoc;
+std::shared_ptr<lc::Document> luaDoc;
 
 static int l_my_print(lua_State* L) {
     int nargs = lua_gettop(L);
@@ -58,7 +58,7 @@ static const struct luaL_Reg printlib[] = {
     {nullptr, nullptr}
 };
 
-static lc::Document* lua_getDocument() {
+static std::shared_ptr<lc::Document> lua_getDocument() {
     return luaDoc;
 }
 
@@ -890,5 +890,5 @@ metaInfo = MetaInfo():add(MetaColor(Color(0,1,0,1)));
 vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), LWVertex2D(Coord(20,30),-2), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
 p=LWPolyline1(vertex2d,0,0,0,true,Coord(0,0),layer, metaInfo);
 d=active.document()
-Builder(d):append(p):push():scale(Coord(0,0),Coord(0.5, 0.5)):rotate(Coord(0,0),0.5*math.pi):execute()
+Builder(d):append(p):execute()
  */

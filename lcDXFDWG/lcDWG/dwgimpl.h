@@ -33,7 +33,7 @@ class DWGimpl {
         void ReadDWG(dwg_data* dwg) ;
         void OutputObject(dwg_object* obj);
         int readFile(char* filename);
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
         lc::StorageManager_SPtr _storageManager;
         lc::Document* document();
         lc::StorageManager_SPtr storageManager();

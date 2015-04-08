@@ -21,8 +21,8 @@ namespace lc {
                 friend class lc::Document;
 
             public:
-                DocumentOperation(Document* document);
-                Document* document() const;
+                DocumentOperation(std::shared_ptr<Document> document);
+                std::shared_ptr<Document> document() const;
 
                 /*!
                  * \brief execute this operation
@@ -48,7 +48,7 @@ namespace lc {
                  */
                 virtual void finnish() const {};
 
-                Document* _document;
+                std::shared_ptr<Document> _document;
             protected:
                 /**
                  * This function get's called when a operation starts and when the document is locked for you

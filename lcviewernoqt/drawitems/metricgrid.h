@@ -12,7 +12,7 @@ class MetricGrid : public LCVDrawItem, public lc::Snapable {
         MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor);
         virtual ~MetricGrid();
 
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const;
+        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const;
 
         virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 

@@ -1,11 +1,9 @@
 #pragma once
 
-#include <QObject>
-
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
-#include "events/snappointevent.h"
-#include "events/mousereleaseevent.h"
+#include "../events/snappointevent.h"
+#include "../events/mousereleaseevent.h"
 
 /*!
  * \brief Snapmanger is a interface to help snapping to grids and entities
@@ -14,10 +12,8 @@
  *
  * \sa lc::SnapManagerImpl
  */
-class SnapManager : public QObject {
-        Q_OBJECT
+class SnapManager  {
     public:
-    signals:
         /*!
          * \brief Snap point event get emited when the snap point changed
          *
@@ -53,7 +49,7 @@ class SnapManager : public QObject {
 };
 
 typedef std::shared_ptr<SnapManager> SnapManager_SPtr;
-typedef std::shared_ptr<const SnapManager> SnapManager_CSPtr;
+
 
 
 // SNAPMANAGER_H

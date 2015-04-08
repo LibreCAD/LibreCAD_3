@@ -7,9 +7,6 @@ set(CMAKE_AUTOMOC ON)
 
 # HEADER FILES
 set(lcviewerqt_srcs
-drawitems/cursor.h
-helpers/snapmanager.h
-helpers/snapmanagerimpl.h
 const.h
 lcadviewer.h
 )
@@ -17,8 +14,6 @@ lcadviewer.h
 
 # SOURCE FILES
 set(lcviewerqt_hdrs
-drawitems/cursor.cpp
-helpers/snapmanagerimpl.cpp
 lcadviewer.cpp
 )
 #lcadviewerplugin.cpp

@@ -14,12 +14,12 @@ LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial) : LCVDrawI
 *       It could be that Attachmentpoint is simply incorrect?!?!?! or that the DXF importer is incorrect?
 *
 */
-void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     // Decide to show the explecit value or the measured value
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
-    std::string value = lc::StringHelper::dim_value(explicitValue(), options->radialFormat(), radiusCircle);
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options.radialFormat(), radiusCircle);
 
     // Draw line
     EndCaps endCaps;
@@ -31,18 +31,18 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
     // If a leader needs to get drawn, do so else just take the end point
     // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
     if (distanceTextToCenter >= radiusCircle) {
-        painter->move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter->line_to(definitionPoint2().x(), definitionPoint2().y());
-        painter->line_to(definitionPoint().x(), definitionPoint().y());
-        painter->stroke();
+        painter.move_to(this->middleOfText().x(), this->middleOfText().y());
+        painter.line_to(definitionPoint2().x(), definitionPoint2().y());
+        painter.line_to(definitionPoint().x(), definitionPoint().y());
+        painter.stroke();
         endCaps.render(painter, EndCaps::OPENARROW, middleOfText().x(), middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
 
         aPoint = lc::TextConst::AttachmentPoint::Top_left;
     } else {
         // Draw end caps
-        painter->move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter->line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
-        painter->stroke();
+        painter.move_to(this->middleOfText().x(), this->middleOfText().y());
+        painter.line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
+        painter.stroke();
         endCaps.render(painter, EndCaps::OPENARROW, this->middleOfText().x(), this->middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
         aPoint = lc::TextConst::AttachmentPoint::Top_right;
     }
@@ -53,7 +53,7 @@ void LCDimRadial::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo
 
 
     if (modified) {
-        painter->restore();
+        painter.restore();
     }
 
 }

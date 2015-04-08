@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cad/geometry/geocoordinate.h"
+#include <cad/geometry/geocoordinate.h>
 
 /**
   * Event that get's dispatched each time we want to have the cursor snapping to this point

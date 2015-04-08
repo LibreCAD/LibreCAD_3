@@ -21,7 +21,7 @@ enum PainterCacheType {
 
 class DocumentCanvas {
     public:
-        DocumentCanvas(lc::Document* _document);
+        DocumentCanvas(std::shared_ptr<lc::Document> document);
         virtual ~DocumentCanvas();
 
         /**
@@ -30,7 +30,7 @@ class DocumentCanvas {
          * The provided wPainter will allow to paint each item on the final device
          * @param wPainter
          */
-        void render(std::function<void(LcPainter*)> before, std::function<void(LcPainter*)> after);
+        void render(std::function<void(LcPainter&)> before, std::function<void(LcPainter&)> after);
 
         /**
          * @brief autoScale
@@ -143,7 +143,7 @@ class DocumentCanvas {
          * @param cacheType
          * @return
          */
-        LcPainter* cachedPainter(PainterCacheType cacheType);
+        LcPainter& cachedPainter(PainterCacheType cacheType);
 
         void on_addEntityEvent(const lc::AddEntityEvent&);
         void on_removeEntityEvent(const lc::RemoveEntityEvent&);
@@ -151,7 +151,7 @@ class DocumentCanvas {
 
     private:
         // Original document
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
 
         // Local entity container
         lc::EntityContainer<lc::entity::CADEntity_SPtr> _entityContainer;
@@ -160,7 +160,7 @@ class DocumentCanvas {
         std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;
         std::vector<std::shared_ptr<LCVDrawItem> > _foregroundItems;
 
-        // Two functor's that allow
+        // Two functor's that allow creation and destruction of painters
         std::function<LcPainter *(const unsigned int, const unsigned int)> _createPainterFunctor;
         std::function<void(LcPainter*)> _deletePainterFunctor;
 
@@ -180,12 +180,18 @@ class DocumentCanvas {
 
         double pan_x = 0.0;
         double pan_y = 0.0;
-        bool tmp_x = 0;
+        bool tmp_x = false;
+
+
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
-        // When set to true, a entity will be selected if it intersects or occipies,
+
+        // When set to true, a entity will be selected if it intersects or occupies,
         // when false it will only select when the entity is fully contained
         bool _selectedAreaIntersects;
-        // Functor to draw a selected area
-        std::function<void(LcPainter*, lc::geo::Area, bool)> _selectedAreaPainter;
+
+        // Functor to draw a selected area, that's the green or read area...
+        std::function<void(LcPainter&, lc::geo::Area, bool)> _selectedAreaPainter;
 };
+
+typedef std::shared_ptr<DocumentCanvas> DocumentCanvas_SPtr;

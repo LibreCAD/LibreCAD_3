@@ -23,7 +23,9 @@ drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
 drawitems/lclwpolyline.cpp
+drawitems/lccursor.cpp
 documentcanvas.cpp
+managers/snapmanagerimpl.cpp
 )
 
 # HEADER FILES
@@ -47,6 +49,7 @@ drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
 drawitems/lcdimangular.h
 drawitems/lclwpolyline.h
+drawitems/lccursor.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h
@@ -55,6 +58,8 @@ events/snappointevent.h
 lcpainter.h
 lccairopainter.tcc
 documentcanvas.h
+managers/snapmanager.h
+managers/snapmanagerimpl.h
 )
 
 # DEPENDENCIES

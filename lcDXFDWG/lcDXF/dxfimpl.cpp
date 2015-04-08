@@ -21,7 +21,7 @@
 #include "cad/meta/metacolor.h"
 #include "cad/meta/metalinewidth.h"
 
-DXFimpl::DXFimpl(lc::Document* d, lc::operation::Builder_SPtr builder) : _document(d), _builder(builder), _blockHandle(-1) {
+DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : _document(document), _builder(builder), _blockHandle(-1) {
     _intToLineWidth[0] = std::make_shared<lc::MetaLineWidth>(0.00);
     _intToLineWidth[1] = std::make_shared<lc::MetaLineWidth>(0.05);
     _intToLineWidth[2] = std::make_shared<lc::MetaLineWidth>(0.09);

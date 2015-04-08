@@ -243,11 +243,12 @@ namespace lc {
                 /**
                 * @brief rotate
                 * around a point where the rotation described length is known
+                * Example
                 * @param point
-                * @param angle
+                * @param length
                 * @return
                 */
-                inline Coordinate rotateByLength(const geo::Coordinate& point, double const length) const {
+                inline Coordinate rotateByArcLength(const geo::Coordinate& point, double const length) const {
                     double const angle = (length / point.distanceTo(*this));
                     return rotate(point, Coordinate(angle));
                 }
@@ -289,9 +290,10 @@ namespace lc {
 
                 /**
                  * Normalised version of this coordinate with a factor
+                 * The final Coordinate has a length of f
                  */
                 inline Coordinate norm(const double f) const {
-                    auto m = magnitude() * f;
+                    auto m = magnitude() / f;
                     return Coordinate(_x / m, _y / m, _z / m);
                 }
 

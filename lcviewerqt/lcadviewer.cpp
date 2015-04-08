@@ -19,7 +19,7 @@
 
 
 LCADViewer::LCADViewer(QWidget* parent) :
-    QWidget(parent), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false), _docRenderer(nullptr) {
+    QWidget(parent), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false), _docCanvas(nullptr) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -27,17 +27,16 @@ LCADViewer::LCADViewer(QWidget* parent) :
 }
 
 LCADViewer::~LCADViewer() {
-    delete _docRenderer;
     _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
 
-void LCADViewer::setDocument(lc::Document* document) {
-    _docRenderer = new DocumentCanvas(document);
+void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
+    _docCanvas = std::make_shared<DocumentCanvas>(document);
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 
-    _docRenderer->createPainterFunctor(
+    _docCanvas->createPainterFunctor(
     [this](const unsigned int width, const unsigned int height) {
         QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
         LcCairoPainter<CairoPainter::backend::Image>* lcPainter = new LcCairoPainter<CairoPainter::backend::Image>(m_image->bits(), width, height);
@@ -45,7 +44,7 @@ void LCADViewer::setDocument(lc::Document* document) {
         return lcPainter;
     });
 
-    _docRenderer->deletePainterFunctor([this]
+    _docCanvas->deletePainterFunctor([this]
     (LcPainter * painter) {
         QImage* m_image = imagemaps.at(painter);
         delete painter;
@@ -53,7 +52,7 @@ void LCADViewer::setDocument(lc::Document* document) {
         imagemaps.erase(painter);
     });
 
-    _docRenderer->newDeviceSize(size().width(), size().height());
+    _docCanvas->newDeviceSize(size().width(), size().height());
 
 }
 
@@ -104,9 +103,9 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
 void LCADViewer::wheelEvent(QWheelEvent* event) {
 
     if (event->angleDelta().y() > 0) {
-        this->_docRenderer->zoom(1.1, event->pos().x(), event->pos().y()); //1.2
+        this->_docCanvas->zoom(1.1, event->pos().x(), event->pos().y()); //1.2
     } else if (event->angleDelta().y() < 0) {
-        this->_docRenderer->zoom(0.9, event->pos().x(), event->pos().y()); // 0.83
+        this->_docCanvas->zoom(0.9, event->pos().x(), event->pos().y()); // 0.83
     }
 
     this->update();
@@ -114,14 +113,14 @@ void LCADViewer::wheelEvent(QWheelEvent* event) {
 
 void LCADViewer::setVerticalOffset(int v) {
     int val = v_ - v;
-    this->_docRenderer->transY(val * 10);
+    this->_docCanvas->transY(val * 10);
     v_ = v;
     update();
 }
 
 void LCADViewer::setHorizontalOffset(int v) {
     int val = h_ - v;
-    this->_docRenderer->transX(val * 20);
+    this->_docCanvas->transX(val * 20);
     h_ = v;
     update();
 }
@@ -133,12 +132,12 @@ void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     // Selection by area
     if (_altKeyActive) {
         if (!startSelectPos.isNull()) {
-            this->_docRenderer->pan(event->pos().x(), event->pos().y());
+            this->_docCanvas->pan(event->pos().x(), event->pos().y());
         }
     } else {
         if (!startSelectPos.isNull()) {
             bool occopies = startSelectPos.x() < event->pos().x();
-            _docRenderer->makeSelectionDevice(
+            _docCanvas->makeSelectionDevice(
                 std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
                 std::abs(startSelectPos.x() - event->pos().x()),
                 std::abs(startSelectPos.y() - event->pos().y()), occopies);
@@ -163,10 +162,13 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
 
-    _docRenderer->removeSelectionArea();
+    _docCanvas->removeSelectionArea();
     update();
 }
 
+std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
+    return _docCanvas;
+}
 
 
 void LCADViewer::paintEvent(QPaintEvent* p) {
@@ -174,14 +176,14 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
         return;
     }
 
-    _docRenderer->newDeviceSize(size().width(), size().height());
+    _docCanvas->newDeviceSize(size().width(), size().height());
 
     QPainter painter(this);
-    _docRenderer->render([&](LcPainter * lcPainter) {
-        lcPainter->clear(1., 1., 1., 0.0);
+    _docCanvas->render([&](LcPainter & lcPainter) {
+        lcPainter.clear(1., 1., 1., 0.0);
 
-    }, [&](LcPainter * lcPainter) {
-        QImage* i = imagemaps.at(lcPainter);
+    }, [&](LcPainter & lcPainter) {
+        QImage* i = imagemaps.at(&lcPainter);
         painter.drawImage(QPoint(0, 0), *i);
 
     });
@@ -230,7 +232,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
   *
   */
 void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_docRenderer->addBackgroundItem(item);
+    this->_docCanvas->addBackgroundItem(item);
 }
 
 /**
@@ -238,7 +240,7 @@ void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
   *
   */
 void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_docRenderer->addForegroundItem(item);
+    this->_docCanvas->addForegroundItem(item);
 }
 
 

@@ -10,8 +10,8 @@
 
 #include "cad/document/document.h"
 #include "cad/document/undomanager.h"
-#include "drawitems/cursor.h"
-#include "helpers/snapmanager.h"
+#include <drawitems/lccursor.h>
+#include <managers/snapmanager.h>
 
 #include "operations/operationmanager.h"
 
@@ -41,11 +41,8 @@ class CadMdiChild : public QWidget {
         void ctxMenu(const QPoint& pos);
 
     public:
-        std::shared_ptr<const Cursor>  cursor() const {
-            return _cursor;
-        }
         QWidget* view() const;
-        lc::Document* document() const;
+        std::shared_ptr<lc::Document> document() const;
         SnapManager_SPtr  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
@@ -55,10 +52,10 @@ class CadMdiChild : public QWidget {
     private:
         int randInt(int low, int high);
 
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
         lc::UndoManager_SPtr _undoManager;
 
-        std::shared_ptr<const Cursor>  _cursor;
+        std::shared_ptr<const lc::Cursor>  _cursor;
         SnapManager_SPtr  _snapManager;
         std::shared_ptr<lc::SelectionManager> _selectionManager;
         lc::StorageManager_SPtr _storageManager;

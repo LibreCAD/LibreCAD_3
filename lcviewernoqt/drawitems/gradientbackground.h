@@ -12,7 +12,7 @@ class GradientBackground : public LCVDrawItem {
         GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
         ~GradientBackground();
 
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const;
+        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const;
     private:
         const lc::Color _topColor;
         const lc::Color _bottomColor;

@@ -31,39 +31,39 @@
 
 #include <typeinfo>
 
-DocumentCanvas::DocumentCanvas(lc::Document* document) : _document(document), _zoomMin(0.005), _zoomMax(200.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
+DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document) : _document(document), _zoomMin(0.005), _zoomMax(200.0), _deviceWidth(-1), _deviceHeight(-1), _selectedArea(nullptr), _selectedAreaIntersects(false) {
 
 
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentCanvas, &DocumentCanvas::on_commitProcessEvent>(this);
 
-    // Render code for elected area
-    _selectedAreaPainter = [](LcPainter * painter, lc::geo::Area area , bool occupies) {
+    // Render code for selected area
+    _selectedAreaPainter = [](LcPainter & painter, lc::geo::Area area , bool occupies) {
         double dashes[] = {10.0, 3.0, 3.0, 3.0};
-        painter->save();
-        painter->disable_antialias();
-        painter->line_width(1.0);
+        painter.save();
+        painter.disable_antialias();
+        painter.line_width(1.0);
 
         if (occupies) {
-            painter->source_rgba(.2, .2, 1.0, .6);
+            painter.source_rgba(.2, .2, 1.0, .6);
         } else {
-            painter->source_rgba(.2, 1.0, .2, .5);
+            painter.source_rgba(.2, 1.0, .2, .5);
         }
 
-        painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
-        painter->fill();
-        painter->rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
+        painter.rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
+        painter.fill();
+        painter.rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
 
         if (occupies) {
-            painter->source_rgba(.2, .2, 1., 0.9);
+            painter.source_rgba(.2, .2, 1., 0.9);
         } else {
-            painter->source_rgba(.2, 1.0, .2, 0.8);
+            painter.source_rgba(.2, 1.0, .2, 0.8);
         }
 
-        painter->set_dash(dashes, 4, 0, true);
-        painter->stroke();
-        painter->restore();
+        painter.set_dash(dashes, 4, 0, true);
+        painter.stroke();
+        painter.restore();
 
     };
 
@@ -111,7 +111,7 @@ void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
     calculateVisibleUserArea();
 }
 
-LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
+LcPainter& DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 
     double s = 1.;
     double x = 0.;
@@ -129,7 +129,7 @@ LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
         _cachedPainters[cacheType]->translate(x, y);
     }
 
-    return _cachedPainters[cacheType];
+    return *_cachedPainters[cacheType];
 }
 
 // TODO
@@ -141,7 +141,7 @@ LcPainter* DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 
 void DocumentCanvas::pan(double move_x, double move_y) {
 
-    if (tmp_x == 0) {
+    if (tmp_x == false) {
         pan_x = move_x;
         pan_y = move_y;
     }
@@ -151,33 +151,33 @@ void DocumentCanvas::pan(double move_x, double move_y) {
         p->translate(move_x - pan_x, move_y - pan_y);
     }
 
-    tmp_x = 1;
+    tmp_x = true;
     pan_x = move_x;
     pan_y = move_y;
     calculateVisibleUserArea();
 }
 
 void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned int deviceScrollY) {
-    LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
+    LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
 
     // Test for minimum and maximum zoom levels
-    if ((_zoomMax <= painter->scale() && factor > 1.) || (_zoomMin >= painter->scale() && factor < 1.)) {
+    if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
     }
 
-    painter->save();
+    painter.save();
     // Find mouse position in user space
     double userScrollX = deviceScrollX;
     double userScrollY = deviceScrollY;
-    painter->device_to_user(&userScrollX, &userScrollY);
+    painter.device_to_user(&userScrollX, &userScrollY);
 
-    painter->scale(factor);
+    painter.scale(factor);
 
     // Find out how much the offset was after scale
     double userCenterX = deviceScrollX;
     double userCenterY = deviceScrollY;
-    painter->device_to_user(&userCenterX, &userCenterY);
-    painter->restore();
+    painter.device_to_user(&userCenterX, &userCenterY);
+    painter.restore();
 
     // Set translation
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
@@ -244,9 +244,9 @@ void DocumentCanvas::calculateVisibleUserArea() {
     }
 }
 
-void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::function<void(LcPainter*)> after) {
+void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::function<void(LcPainter&)> after) {
 
-    LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
+    LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
 
     if (_visibleUserArea.width() == 0) {
         painter = cachedPainter(VIEWER_DRAWING);
@@ -260,11 +260,12 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     before(painter);
 
     if (_backgroundItems.size() == 0) {
-        // caller is responsible for clearing       painter->clear(0., 0.1, 0.);
+        // caller is responsible for clearing       painter.clear(0., 0.1, 0.);
     }
 
+    LcDrawOptions lcDrawOptions;
     for (auto item : _backgroundItems) {
-        item->draw(painter, nullptr, _visibleUserArea);
+        item->draw(painter, lcDrawOptions, _visibleUserArea);
     }
 
     after(painter);
@@ -272,11 +273,11 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     // Draw Document
     painter = cachedPainter(VIEWER_DOCUMENT);
     before(painter);
-    // caller is responsible for clearing    painter->clear(1., 1., 1., 0.);
-    painter->source_rgb(1., 1., 1.);
-    painter->lineWidthCompensation(0.5);
+    // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
+    painter.source_rgb(1., 1., 1.);
+    painter.lineWidthCompensation(0.5);
 
-    LcDrawOptions lcDrawOptions;
+
 
     calculateVisibleUserArea();
     auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(_visibleUserArea);
@@ -290,36 +291,36 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
         lc::Layer_CSPtr layer = ci->layer();
 
         modified = true;
-        painter->save();
+        painter.save();
 
         // Decide on line width
         if (entityLineWidth != nullptr) {
             double width = entityLineWidth->width() * 3.;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter->line_width(width < 0.1 ? 1. : width);
+            painter.line_width(width < 0.1 ? 1. : width);
         } else {
             double width = layer->lineWidth().width() * 3.;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter->line_width(width < 0.1 ? 1. : width);
+            painter.line_width(width < 0.1 ? 1. : width);
         }
 
         // Decide what color to render the entity into
         if (di->selected()) {
-            painter->source_rgba(
+            painter.source_rgba(
                 lcDrawOptions.selectedColor().red(),
                 lcDrawOptions.selectedColor().green(),
                 lcDrawOptions.selectedColor().blue(),
                 lcDrawOptions.selectedColor().alpha()
             );
         } else if (entityColor != nullptr) {
-            painter->source_rgba(
+            painter.source_rgba(
                 entityColor->red(),
                 entityColor->green(),
                 entityColor->blue(),
                 entityColor->alpha());
         } else {
             lc::Color layerColor = layer->color();
-            painter->source_rgba(
+            painter.source_rgba(
                 layerColor.red(),
                 layerColor.green(),
                 layerColor.blue(),
@@ -327,10 +328,10 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
 
         }
 
-        di->draw(painter, &lcDrawOptions, _visibleUserArea);
+        di->draw(painter, lcDrawOptions, _visibleUserArea);
 
         if (modified) {
-            painter->restore();
+            painter.restore();
         }
     });
     after(painter);
@@ -338,10 +339,10 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     // Foreground
     painter = cachedPainter(VIEWER_DRAWING);
     before(painter);
-    // caller is responsible for clearing  painter->clear(1., 1., 1., 0.0);
+    // caller is responsible for clearing  painter.clear(1., 1., 1., 0.0);
 
     for (auto item : _foregroundItems) {
-        item->draw(painter, nullptr, _visibleUserArea);
+        item->draw(painter, lcDrawOptions, _visibleUserArea);
     }
 
     // Draw selection rectangle
@@ -359,24 +360,24 @@ void DocumentCanvas::render(std::function<void(LcPainter*)> before, std::functio
     /* Draw QuadTree (for debugging) */
 
     /*
-    painter->save();
-    painter->line_width(1.0);
-    painter->disable_antialias();
-    painter->source_rgba(0.7, 0.7, 1.0, .8);
+    painter.save();
+    painter.line_width(1.0);
+    painter.disable_antialias();
+    painter.source_rgba(0.7, 0.7, 1.0, .8);
     auto *t = _entityContainer.tree();
     t->walkQuad(
         [painter](const lc::QuadTreeSub<lc::entity::CADEntity_SPtr> &tree){
         lc::geo::Area a = tree.bounds();
-       // painter->source_rgba(0.7, 0.7, 1.0, .8);
-        painter->rectangle(a.minP().x(), a.minP().y(), a.width(), a.height());
-       // painter->stroke();
+       // painter.source_rgba(0.7, 0.7, 1.0, .8);
+        painter.rectangle(a.minP().x(), a.minP().y(), a.width(), a.height());
+       // painter.stroke();
 
-        //painter->source_rgba(0.7, 1.0, .7, .8);
-        //painter->rectangle(a.minP().x()+tree.level(), a.minP().y()+tree.level(), a.width()-+tree.level()*2, a.height()-+tree.level()*2);
-        //painter->stroke();
+        //painter.source_rgba(0.7, 1.0, .7, .8);
+        //painter.rectangle(a.minP().x()+tree.level(), a.minP().y()+tree.level(), a.width()-+tree.level()*2, a.height()-+tree.level()*2);
+        //painter.stroke();
     });
-    painter->stroke();
-    painter->restore(); */
+    painter.stroke();
+    painter.restore(); */
 
     after(painter);
 
@@ -555,7 +556,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
 }
 
 void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo) {
-    LcPainter* painter = cachedPainter(VIEWER_DOCUMENT);
+    LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
     // Find mouse position in user space
     double dx = x;
     double dy = y;
@@ -563,8 +564,8 @@ void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigne
     double dh = h;
 
     // Calculate to device space
-    painter->device_to_user(&dx, &dy);
-    painter->device_to_user_distance(&dw, &dh);
+    painter.device_to_user(&dx, &dy);
+    painter.device_to_user_distance(&dw, &dh);
 
     // Set that as the selection of items
     makeSelection(dx, dy, dw, dh, occupies, addTo);

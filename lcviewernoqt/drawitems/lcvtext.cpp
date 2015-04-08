@@ -17,12 +17,12 @@ LCVText::LCVText(const lc::entity::Text_CSPtr Text) : LCVDrawItem(true), lc::ent
 * don't have to keep calling text_extends and do some of the calculations
 * also we shouldn't draw text smaller then XX pixels when rendered on screen.
 */
-void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     bool modified = false;
-    painter->font_size(height());
-    painter->select_font_face("stick3.ttf");
+    painter.font_size(height());
+    painter.select_font_face("stick3.ttf");
 
-    TextExtends te = painter->text_extends(text_value().c_str());
+    TextExtends te = painter.text_extends(text_value().c_str());
     double alignX = 0.0;
     double alignY = 0.0;
 
@@ -80,17 +80,17 @@ void LCVText::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Ar
             break;
     }
 
-    painter->save();
-    painter->translate(insertion_point().x(), -insertion_point().y());
-    painter->rotate(-angle());
-    painter->translate(alignX, -alignY);
-    painter->move_to(0., 0.);
-    painter->text(text_value().c_str());
-    painter->stroke();
-    painter->restore();
+    painter.save();
+    painter.translate(insertion_point().x(), -insertion_point().y());
+    painter.rotate(-angle());
+    painter.translate(alignX, -alignY);
+    painter.move_to(0., 0.);
+    painter.text(text_value().c_str());
+    painter.stroke();
+    painter.restore();
 
     if (modified) {
-        painter->restore();
+        painter.restore();
     }
 
 }

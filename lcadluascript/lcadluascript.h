@@ -8,10 +8,10 @@
 class LCadLuaScript {
 
     public:
-        LCadLuaScript(lc::Document* document);
-        LCadLuaScript(lc::Document* document, bool usePrintLib);
+        LCadLuaScript(std::shared_ptr<lc::Document> document);
+        LCadLuaScript(std::shared_ptr<lc::Document>, bool usePrintLib);
         std::string run(const std::string& script);
     private:
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
         bool _usePrintLib;
 };

@@ -16,7 +16,7 @@ LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) : LCVD
 *       3) Draw oblique correctly see http://www.cad-notes.com/autocad-isometric-text-and-dimension/ can possebly be drawn using painter's skew (see transformations)
 *
 */
-void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
+void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     bool modified = false;
 
     // Calculate intersection point
@@ -94,11 +94,11 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
     double const angle = std::abs(aEnd - aStart);
     // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(explicitValue(), options->angleFormat(), (angle / (2.*M_PI)) * 360.);
+    std::string value = lc::StringHelper::dim_value(explicitValue(), options.angleFormat(), (angle / (2.*M_PI)) * 360.);
 
     // Draw the arc
-    painter->arc(center.x(), center.y(), radius, aStart, aEnd);
-    painter->stroke();
+    painter.arc(center.x(), center.y(), radius, aStart, aEnd);
+    painter.stroke();
 
     // DRaw the arrows
     lc::geo::Coordinate acStart = lc::geo::Coordinate(aStart);
@@ -106,8 +106,8 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
     lc::geo::Coordinate p1 = center.move(acStart, radius);
     lc::geo::Coordinate p2 = center.move(acEnd, radius);
-    lc::geo::Coordinate pd1 = p1.rotateByLength(center, 10.);
-    lc::geo::Coordinate pd2 = p2.rotateByLength(center, -10.);
+    lc::geo::Coordinate pd1 = p1.rotateByArcLength(center, 10.);
+    lc::geo::Coordinate pd2 = p2.rotateByArcLength(center, -10.);
     EndCaps endCaps;
     endCaps.render(painter, EndCaps::CLOSEDARROW, pd1.x(), pd1.y(), p1.x(), p1.y(), 10.) ;
     endCaps.render(painter, EndCaps::CLOSEDARROW, pd2.x(), pd2.y(), p2.x(), p2.y(), 10.) ;
@@ -117,17 +117,17 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
         lc::geo::Coordinate po1 = p1.move(center - p1, radius / 2.);
         lc::geo::Coordinate po2 = p2.move(center - p2, radius / 2.);
 
-        painter->move_to(p1.x(), p1.y());
-        painter->line_to(po1.x(), po1.y());
-        painter->move_to(po2.x(), po2.y());
-        painter->line_to(p2.x(), p2.y());
-        painter->stroke();
+        painter.move_to(p1.x(), p1.y());
+        painter.line_to(po1.x(), po1.y());
+        painter.move_to(po2.x(), po2.y());
+        painter.line_to(p2.x(), p2.y());
+        painter.stroke();
 
     } else {
-        painter->move_to(p1.x(), p1.y());
-        painter->line_to(center.x(), center.y());
-        painter->line_to(p2.x(), p2.y());
-        painter->stroke();
+        painter.move_to(p1.x(), p1.y());
+        painter.line_to(center.x(), center.y());
+        painter.line_to(p2.x(), p2.y());
+        painter.stroke();
     }
 
     // Text
@@ -135,23 +135,23 @@ void LCDimAngular::draw(LcPainter* painter, LcDrawOptions* options, const lc::ge
 
 
     if (modified) {
-        painter->restore();
+        painter.restore();
     }
 
 
     /*
-    painter->move_to(middleOfText().x(), middleOfText().y());
-    painter->text("MT");
-    painter->move_to(defLine11().x(), defLine11().y());
-    painter->text("11");
-    painter->move_to(defLine12().x(), defLine12().y());
-    painter->text("12");
-    painter->move_to(defLine21().x(), defLine21().y());
-    painter->text("21");
-    painter->move_to(defLine22().x(), defLine22().y());
-    painter->text("22");
-    painter->move_to(definitionPoint().x(), definitionPoint().y());
-    painter->text("D");
-    painter->stroke(); */
+    painter.move_to(middleOfText().x(), middleOfText().y());
+    painter.text("MT");
+    painter.move_to(defLine11().x(), defLine11().y());
+    painter.text("11");
+    painter.move_to(defLine12().x(), defLine12().y());
+    painter.text("12");
+    painter.move_to(defLine21().x(), defLine21().y());
+    painter.text("21");
+    painter.move_to(defLine22().x(), defLine22().y());
+    painter.text("22");
+    painter.move_to(definitionPoint().x(), definitionPoint().y());
+    painter.text("D");
+    painter.stroke(); */
 
 }

@@ -15,5 +15,5 @@ class LCVPoint : public LCVDrawItem, public lc::entity::Point  {
          * @param LcDrawOptions options
          * @param geo::Area rect
          */
-        virtual void draw(LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
+        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };

@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
 
     // Create Librecad document
     auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-    auto _document = new lc::DocumentImpl(_storageManager);
-    auto _canvas = new DocumentCanvas(_document);
+    auto _document = std::make_shared<lc::DocumentImpl>(_storageManager);
+    auto _canvas = std::make_shared<DocumentCanvas>(_document);
 
     // Add backround
     _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
@@ -185,14 +185,13 @@ int main(int argc, char** argv) {
     }
 
     _canvas->autoScale();
-    _canvas->render([&](LcPainter * lcPainter) {},
-                    [&](LcPainter * lcPainter) {});
+    _canvas->render([&](LcPainter & lcPainter) {},
+                    [&](LcPainter & lcPainter) {});
 
 
     if (fType == "png" || (fType != "pdf" && fType != "svg"))
         static_cast<LcCairoPainter<CairoPainter::backend::Image> *>(lcPainter)->writePNG(fOut);
     
-    delete _canvas;
     ofile.close();
     
 

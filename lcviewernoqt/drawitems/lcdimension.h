@@ -21,5 +21,5 @@ class LCDimension  {
         * @param rect are that needs to be drawn
         */
 
-        void drawText(const std::string& value, const double angle, const lc::TextConst::AttachmentPoint attachmentPoint, lc::geo::Coordinate textlocation, LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const;
+        void drawText(const std::string& value, const double angle, const lc::TextConst::AttachmentPoint attachmentPoint, lc::geo::Coordinate textlocation, LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };

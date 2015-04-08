@@ -29,7 +29,7 @@ typedef std::shared_ptr<const GuiOperation> GuiOperation_CSPtr;
 class GuiOperation : public QObject {
         Q_OBJECT
     public:
-        GuiOperation(lc::Document* document) : _document(document) {}
+        GuiOperation(std::shared_ptr<lc::Document> document) : _document(document) {}
         /*!
           * \brief create the CAD entity with the additional meta data
           */
@@ -48,7 +48,7 @@ class GuiOperation : public QObject {
           */
         virtual GuiOperation_SPtr next() const = 0 ;
     protected:
-        lc::Document* document() const {
+        std::shared_ptr<lc::Document> document() const {
             return _document;
         }
 
@@ -60,5 +60,5 @@ class GuiOperation : public QObject {
           */
         void guiOperationFinished(const GuiOperationFinishedEvent&);
     private:
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
 };

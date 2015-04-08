@@ -1,26 +1,25 @@
 #pragma once
 
-#include "events/snappointevent.h"
-#include "helpers/snapmanager.h"
+#include <memory>
+#include "../managers/snapmanager.h"
 
 class LCADViewer;
 class MouseReleaseEvent;
 class DrawEvent;
+class DocumentCanvas;
 
 namespace lc {
 
     class Cursor {
         public:
-            Cursor(int cursorSize, LCADViewer* graphicsView, SnapManager_SPtr  snapManager, const lc::Color& xAxisColor, const lc::Color& yAxisColor);
+            Cursor(int cursorSize, std::shared_ptr<DocumentCanvas>, SnapManager_SPtr  snapManager, const lc::Color& xAxisColor, const lc::Color& yAxisColor);
 
         public:
-        slots:
             void on_Draw_Event(const DrawEvent&) ;
             void on_SnapPoint_Event(const SnapPointEvent&);
             void on_MouseRelease_Event(const MouseReleaseEvent&);
 
         public:
-        signals:
             /**
               * \deprecated well, just may be...
               */

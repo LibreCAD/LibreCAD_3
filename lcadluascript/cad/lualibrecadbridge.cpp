@@ -191,7 +191,7 @@ void lua_openlckernel(lua_State* L) {
                                                    .addFunction("execute", &operation::DocumentOperation::execute)
                                                    .endClass()
                                                    .beginExtendClass<lc::operation::Builder, operation::DocumentOperation>("Builder")
-                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::Builder>), LUA_ARGS(Document * doc))
+                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::Builder>), LUA_ARGS(std::shared_ptr<lc::Document> doc))
                                                    .addFunction("append", &lc::operation::Builder::append)
                                                    .addFunction("move", &lc::operation::Builder::move)
                                                    .addFunction("copy", &lc::operation::Builder::copy)
@@ -229,13 +229,13 @@ void lua_openlckernel(lua_State* L) {
                                                    .endClass()
 
                                                    .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
-                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(Document * doc, const Layer_CSPtr))
+                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(std::shared_ptr<lc::Document> doc, const Layer_CSPtr))
                                                    .endClass()
                                                    .beginExtendClass<operation::RemoveLayer, operation::DocumentOperation>("RemoveLayer")
-                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveLayer>), LUA_ARGS(Document * doc, const Layer_CSPtr))
+                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveLayer>), LUA_ARGS(std::shared_ptr<lc::Document> doc, const Layer_CSPtr))
                                                    .endClass()
                                                    .beginExtendClass<operation::ReplaceLayer, operation::DocumentOperation>("ReplaceLayer")
-                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceLayer>), LUA_ARGS(Document * doc, const Layer_CSPtr, const Layer_CSPtr))
+                                                   .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceLayer>), LUA_ARGS(std::shared_ptr<lc::Document> doc, const Layer_CSPtr, const Layer_CSPtr))
                                                    .endClass();
 
 

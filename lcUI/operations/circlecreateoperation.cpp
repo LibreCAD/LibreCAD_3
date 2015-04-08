@@ -7,14 +7,16 @@
 
 #include <QFinalState>
 
-CircleCreateOperation::CircleCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
+CircleCreateOperation::CircleCreateOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager)
     , _storageManager(storageManager)
     , _layer(layer) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_drawEvent(const DrawEvent&)));
+    /*
     connect(snapManager.get(), SIGNAL(snapPointEvent(const SnapPointEvent&)),
             this, SLOT(on_SnapPoint_Event(const SnapPointEvent&)));
+            */
 
 
     QSnappedState* _waitForFirstClick = new QSnappedState();
@@ -22,10 +24,10 @@ CircleCreateOperation::CircleCreateOperation(lc::Document* document, lc::Storage
     QSnappedState* _finishLine = new QSnappedState();
     QFinalState* finishState = new QFinalState();
 
-    _waitForFirstClick->addTransition(qobject_cast<SnapManager*>(snapManager.get()),  "mouseReleaseEvent(MouseReleaseEvent)", _waitForSecondClick);
+//    _waitForFirstClick->addTransition(qobject_cast<SnapManager*>(snapManager.get()),  "mouseReleaseEvent(MouseReleaseEvent)", _waitForSecondClick);
     _waitForFirstClick->assignProperty(this, "currentState", 1);
 
-    _waitForSecondClick->addTransition(qobject_cast<SnapManager*>(snapManager.get()),  "mouseReleaseEvent(MouseReleaseEvent)", _finishLine);
+//    _waitForSecondClick->addTransition(qobject_cast<SnapManager*>(snapManager.get()),  "mouseReleaseEvent(MouseReleaseEvent)", _finishLine);
     _waitForSecondClick->assignProperty(this, "hasStartPoint", true);
     _waitForSecondClick->assignProperty(this, "currentState", 2);
     _waitForSecondClick->assignSnapPoint(this, "startPoint");

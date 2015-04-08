@@ -14,7 +14,7 @@ namespace lc {
          */
         class Trim : public DocumentOperation, public Undoable {
             public:
-                Trim(Document* document,  std::shared_ptr<lc::FTrim> trim) ;
+                Trim(std::shared_ptr<Document> document,  std::shared_ptr<lc::FTrim> trim) ;
 
                 virtual ~Trim() {
                     // LOG4CXX_DEBUG(logger, "Trim removed");

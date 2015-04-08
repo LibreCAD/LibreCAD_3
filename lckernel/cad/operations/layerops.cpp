@@ -7,7 +7,7 @@ using namespace lc::operation;
 /********************************************************************************************************/
 /** AddLayer                                                                                          ***/
 /********************************************************************************************************/
-AddLayer::AddLayer(Document* document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("AddLayer"), _layer(layer)  {
+AddLayer::AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("AddLayer"), _layer(layer)  {
 }
 
 void AddLayer::processInternal() {
@@ -25,7 +25,7 @@ void AddLayer::redo() const {
 /********************************************************************************************************/
 /** RemoveLayer                                                                                       ***/
 /********************************************************************************************************/
-RemoveLayer::RemoveLayer(Document* document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("RemoveLayer"), _layer(layer)  {
+RemoveLayer::RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("RemoveLayer"), _layer(layer)  {
 }
 
 void RemoveLayer::processInternal() {
@@ -59,7 +59,7 @@ void RemoveLayer::redo() const {
 /********************************************************************************************************/
 /** ReplaceLayer                                                                                       ***/
 /********************************************************************************************************/
-ReplaceLayer::ReplaceLayer(Document* document,  const Layer_CSPtr oldLayer,  const Layer_CSPtr newLayer) : DocumentOperation(document), Undoable("ReplaceLayer"), _oldLayer(oldLayer), _newLayer(newLayer)  {
+ReplaceLayer::ReplaceLayer(std::shared_ptr<Document> document,  const Layer_CSPtr oldLayer,  const Layer_CSPtr newLayer) : DocumentOperation(document), Undoable("ReplaceLayer"), _oldLayer(oldLayer), _newLayer(newLayer)  {
 }
 
 void ReplaceLayer::processInternal() {

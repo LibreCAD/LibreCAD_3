@@ -6,7 +6,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Builder::Builder(Document* document) : DocumentOperation(document), Undoable("Builder") {
+Builder::Builder(std::shared_ptr<Document> document) : DocumentOperation(document), Undoable("Builder") {
 }
 
 Builder::~Builder() {

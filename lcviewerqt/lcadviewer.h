@@ -63,8 +63,8 @@ class LCADViewer : public QWidget {
 
         void addBackgroundItem(std::shared_ptr<LCVDrawItem> item);
         void addForegroundItem(std::shared_ptr<LCVDrawItem> item);
-        virtual void setDocument(lc::Document* document);
-
+        virtual void setDocument(std::shared_ptr<lc::Document> document);
+        std::shared_ptr<DocumentCanvas> documentCanvas() const;
     protected:
         void paintEvent(QPaintEvent*);
         virtual void mousePressEvent(QMouseEvent* event);
@@ -89,7 +89,7 @@ class LCADViewer : public QWidget {
 
         bool _altKeyActive; // When true the alt key is current pressed
 
-        DocumentCanvas* _docRenderer;
+        std::shared_ptr<DocumentCanvas> _docCanvas;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 
@@ -107,5 +107,5 @@ class LCADViewer : public QWidget {
 
 
         // Entity container that track's all entities within the document
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
 };

@@ -4,10 +4,10 @@
 using namespace lc;
 using namespace lc::operation;
 
-DocumentOperation::DocumentOperation(Document* document) : _document(document) {
+DocumentOperation::DocumentOperation(std::shared_ptr<Document> document) : _document(document) {
 }
 
-Document* DocumentOperation::document() const {
+std::shared_ptr<Document> DocumentOperation::document() const {
     return _document;
 }
 

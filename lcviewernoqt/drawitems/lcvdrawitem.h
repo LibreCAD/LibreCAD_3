@@ -23,7 +23,7 @@ class LCVDrawItem {
         * Draw function to draw the final object on a canvas
         * Be aware that thus function must be created thread save
         */
-        virtual void draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {
+        virtual void draw(LcPainter& _painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const {
             // Implement's nothing
         }
 

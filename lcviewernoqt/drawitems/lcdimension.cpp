@@ -7,10 +7,10 @@
 #include <cad/math/lcmath.h>
 
 
-void LCDimension::drawText(std::string const& value, double const angle, lc::TextConst::AttachmentPoint const attachmentPoint,  lc::geo::Coordinate textlocation, LcPainter* painter, LcDrawOptions* options, const lc::geo::Area& rect) const {
-    painter->save();
-    double height = options->dimTextHeight();
-    painter->font_size(height);
+void LCDimension::drawText(std::string const& value, double const angle, lc::TextConst::AttachmentPoint const attachmentPoint,  lc::geo::Coordinate textlocation, LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+    painter.save();
+    double height = options.dimTextHeight();
+    painter.font_size(height);
 
     //    double alignX, alignY;
     // The idea of height * .2 is just a average basline offset. Don't this value to seriously,
@@ -62,7 +62,7 @@ void LCDimension::drawText(std::string const& value, double const angle, lc::Tex
     }
 
 
-    TextExtends te = painter->text_extends(value.c_str());
+    TextExtends te = painter.text_extends(value.c_str());
     double alignY, alignX;
 
     switch (aPoint) {
@@ -117,11 +117,11 @@ void LCDimension::drawText(std::string const& value, double const angle, lc::Tex
             break;
     }
 
-    painter->translate(textlocation.x(), -textlocation.y());
-    painter->rotate(-newAngle);
-    painter->translate(alignX, -alignY);
-    painter->move_to(0., 0.);
-    painter->text(value.c_str());
-    painter->stroke();
-    painter->restore();
+    painter.translate(textlocation.x(), -textlocation.y());
+    painter.rotate(-newAngle);
+    painter.translate(alignX, -alignY);
+    painter.move_to(0., 0.);
+    painter.text(value.c_str());
+    painter.stroke();
+    painter.restore();
 }

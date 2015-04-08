@@ -19,7 +19,7 @@ namespace lc {
                  * @brief Builder constructor
                  * @param document to apply operations
                  */
-                Builder(Document* document);
+                Builder(std::shared_ptr<Document> document);
 
                 virtual ~Builder();
 

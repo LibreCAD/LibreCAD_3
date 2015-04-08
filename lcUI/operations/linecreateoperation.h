@@ -11,8 +11,8 @@
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
-#include "helpers/snapmanager.h"
-#include "drawitems/cursor.h"
+#include <managers/snapmanager.h>
+#include "drawitems/lccursor.h"
 
 #include "qsnappedstate.h"
 
@@ -24,7 +24,7 @@
 class LineCreateOperation : public GuiOperation {
         Q_OBJECT
     public:
-        LineCreateOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
+        LineCreateOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
 
         virtual lc::operation::DocumentOperation_SPtr operation() const;
 

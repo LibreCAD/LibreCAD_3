@@ -7,7 +7,7 @@
 using namespace lc;
 
 
-UndoManagerImpl::UndoManagerImpl(Document* document, unsigned int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
+UndoManagerImpl::UndoManagerImpl(std::shared_ptr<Document> document, unsigned int maximumUndoLevels) : _document(document), _maximumUndoLevels(maximumUndoLevels) {
 
     document->commitProcessEvent().connect<UndoManagerImpl, &UndoManagerImpl::on_CommitProcessEvent>(this);
 }

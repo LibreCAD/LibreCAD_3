@@ -8,16 +8,16 @@
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
-#include "helpers/snapmanager.h"
+#include <managers/snapmanager.h>
 #include "cad/document/selectionmanager.h"
-#include "drawitems/cursor.h"
+#include <drawitems/lccursor.h>
 
 #include "qsnappedstate.h"
 
 class TrimOperation : public GuiOperation {
         Q_OBJECT
     public:
-        TrimOperation(lc::Document* document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
+        TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
 
     public slots:
         void on_drawEvent(const DrawEvent& event);

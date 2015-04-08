@@ -12,7 +12,7 @@ namespace lc {
         */
         class AddLayer : public DocumentOperation, public Undoable {
             public:
-                AddLayer(Document* document,  const Layer_CSPtr layer) ;
+                AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
 
                 virtual ~AddLayer() {
                     // LOG4CXX_DEBUG(logger, "AddLayer removed");
@@ -35,7 +35,7 @@ namespace lc {
         */
         class RemoveLayer : public DocumentOperation, public Undoable {
             public:
-                RemoveLayer(Document* document,  const Layer_CSPtr layer) ;
+                RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
 
                 virtual ~RemoveLayer() {
                     // LOG4CXX_DEBUG(logger, "RemoveLayer removed");
@@ -59,7 +59,7 @@ namespace lc {
         */
         class ReplaceLayer : public DocumentOperation, public Undoable {
             public:
-                ReplaceLayer(Document* document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
+                ReplaceLayer(std::shared_ptr<Document> document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
 
                 virtual ~ReplaceLayer() {
                     // LOG4CXX_DEBUG(logger, "ReplaceLayer removed");

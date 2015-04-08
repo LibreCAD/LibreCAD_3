@@ -4,7 +4,7 @@
 using namespace lc;
 using namespace lc::operation;
 
-Trim::Trim(Document* document, FTrim_SPtr trim) : DocumentOperation(document), Undoable("Trim Entity"), _trim(trim)  {
+Trim::Trim(std::shared_ptr<Document> document, FTrim_SPtr trim) : DocumentOperation(document), Undoable("Trim Entity"), _trim(trim)  {
     // TODO FIX TRIM
     //    _entityLayer = document()->findEntityLayerByID(trim->trimmedShape()->id());
 }

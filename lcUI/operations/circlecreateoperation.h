@@ -10,8 +10,8 @@
 #include "guioperation.h"
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
-#include "helpers/snapmanager.h"
-#include "drawitems/cursor.h"
+#include "managers/snapmanager.h"
+#include "drawitems/lccursor.h"
 
 #include "qsnappedstate.h"
 
@@ -23,7 +23,7 @@
 class CircleCreateOperation :  public GuiOperation {
         Q_OBJECT
     public:
-        CircleCreateOperation(lc::Document* document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
+        CircleCreateOperation(std::shared_ptr<lc::Document>, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
 
         virtual void restart();
 

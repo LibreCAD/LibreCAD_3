@@ -19,7 +19,7 @@ namespace lc {
 class OperationManager : QObject {
         Q_OBJECT
     public:
-        OperationManager(lc::Document* document);
+        OperationManager(std::shared_ptr<lc::Document> document);
 
         /*!
           * \brief cancel all current operations
@@ -67,7 +67,7 @@ class OperationManager : QObject {
         // Created as a stack of operation because LibreCAD 2.x has that. However, not sure where this is used exactly
         // it might aswell be that later this is going ot be changed to one single Operation that can be active
         QStack<GuiOperation_SPtr > _activeGuiOperations;
-        lc::Document* _document;
+        std::shared_ptr<lc::Document> _document;
 };
 
 // OperationManager_H

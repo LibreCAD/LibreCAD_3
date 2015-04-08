@@ -1,16 +1,16 @@
 #pragma once
 
-#include <QObject>
 #include <cad/document/selectionmanager.h>
 #include "snapmanager.h"
-#include "../lcadviewer.h"
+#include "../documentcanvas.h"
 
+class MouseMoveEvent;
+class SnapPointEvent;
 
 /*!
  * \brief Implements the SnapManager interface
  */
 class SnapManagerImpl : public SnapManager {
-        Q_OBJECT
     public:
         /*!
          * \brief Implementation of the SnapManager
@@ -22,15 +22,15 @@ class SnapManagerImpl : public SnapManager {
          *
          * \sa lc::SnapManager
          */
-        SnapManagerImpl(LCADViewer* view, lc::Snapable_CSPtr grid, double distanceToSnap);
+        SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
 
 
         virtual void setGridSnappable(bool gridSnappable);
         virtual bool isGridSnappable() const;
 
-    public slots:
-        void on_mouseMoveEvent(const MouseMoveEvent& event);
-        void on_mouseRelease_Event(const MouseReleaseEvent& event);
+    public:
+         void on_mouseMoveEvent(const MouseMoveEvent& event);
+         void on_mouseRelease_Event(const MouseReleaseEvent& event);
 
     private:
 
@@ -45,7 +45,7 @@ class SnapManagerImpl : public SnapManager {
         // List of entities that are potential for snapping
         std::vector<lc::Snapable_CSPtr > _snapableEntities;
 
-        // List of additional points a user can pick, to be implemented
+        // List of additional points a user can pick, to be implementedx
         std::vector<lc::geo::Coordinate> _smartCoordinates;
 
         // What the minimal distance is when we send a snap event

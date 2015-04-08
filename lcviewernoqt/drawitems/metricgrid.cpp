@@ -10,17 +10,17 @@ MetricGrid::~MetricGrid() {
 }
 
 
-void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo::Area& updateRect) const {
+void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const {
 
-    _painter->save();
-    _painter->disable_antialias();
+    painter.save();
+    painter.disable_antialias();
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;
-    _painter->device_to_user(&zeroCornerX, &zeroCornerY);
+    painter.device_to_user(&zeroCornerX, &zeroCornerY);
 
     double gridSPacingX = _minimumGridSpacing;
     double gridSPacingY = _minimumGridSpacing;
-    _painter->device_to_user(&gridSPacingX, &gridSPacingY);
+    painter.device_to_user(&gridSPacingX, &gridSPacingY);
 
     // This brings the distance always between 10 and 100, need to have some math behind this
     double minDistancePoints = gridSPacingX - zeroCornerX;
@@ -59,18 +59,18 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo
     double top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
     for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
-        _painter->move_to(x, updateRect.maxP().y());
-        _painter->line_to(x, updateRect.minP().y());
+        painter.move_to(x, updateRect.maxP().y());
+        painter.line_to(x, updateRect.minP().y());
     }
 
     for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
-        _painter->move_to(updateRect.minP().x(), y);
-        _painter->line_to(updateRect.maxP().x(), y);
+        painter.move_to(updateRect.minP().x(), y);
+        painter.line_to(updateRect.maxP().x(), y);
     }
 
-    _painter->line_width(1);
-    _painter->source_rgba(_majorColor.red(), _majorColor.green(), _majorColor.blue(), _majorColor.alpha());
-    _painter->stroke();
+    painter.line_width(1);
+    painter.source_rgba(_majorColor.red(), _majorColor.green(), _majorColor.blue(), _majorColor.alpha());
+    painter.stroke();
 
     // Draw minor lines
     gridSize *= 10;
@@ -78,18 +78,18 @@ void MetricGrid::draw(LcPainter* _painter, LcDrawOptions* options, const lc::geo
     top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
     for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
-        _painter->move_to(x, updateRect.maxP().y());
-        _painter->line_to(x, updateRect.minP().y());
+        painter.move_to(x, updateRect.maxP().y());
+        painter.line_to(x, updateRect.minP().y());
     }
 
     for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
-        _painter->move_to(updateRect.minP().x(), y);
-        _painter->line_to(updateRect.maxP().x(), y);
+        painter.move_to(updateRect.minP().x(), y);
+        painter.line_to(updateRect.maxP().x(), y);
     }
 
-    _painter->source_rgba(_minorColor.red(), _minorColor.green(), _minorColor.blue(), _minorColor.alpha());
-    _painter->stroke();
-    _painter->restore();
+    painter.source_rgba(_minorColor.red(), _minorColor.green(), _minorColor.blue(), _minorColor.alpha());
+    painter.stroke();
+    painter.restore();
 }
 
 
