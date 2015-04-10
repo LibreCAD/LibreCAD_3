@@ -60,6 +60,14 @@ class DocumentCanvas {
         void newDeviceSize(unsigned int width, unsigned int hight);
 
         /**
+         * Remove all painter's
+         * This can be usefull if your viewer that uses the document canvas get's deleted before
+         * it will delete the canvas itself. This can happen if your UI layer claim's ownership
+         * and you don't have the chance to control order of destruction of objects.
+         */
+        void removePainters();
+
+        /**
          * @brief createPainterFunctor
          * is called each time a new LcPainter is required. The underlaying implementation allow's you to decide
          * into what the document get's painted.

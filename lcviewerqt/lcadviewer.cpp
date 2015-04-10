@@ -27,6 +27,8 @@ LCADViewer::LCADViewer(QWidget* parent) :
 }
 
 LCADViewer::~LCADViewer() {
+    // Remove the painters here because this object get's deleted before the document
+    _docCanvas->removePainters();
     _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
@@ -46,6 +48,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
 
     _docCanvas->deletePainterFunctor([this]
     (LcPainter * painter) {
+        // If you get a exception here and you are destroying this object, you migth need to call _docCanvas->removePainters();
+        // in your destructor
         QImage* m_image = imagemaps.at(painter);
         delete painter;
         delete m_image;

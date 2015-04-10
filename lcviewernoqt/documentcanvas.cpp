@@ -78,6 +78,18 @@ DocumentCanvas::~DocumentCanvas() {
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
         this->_deletePainterFunctor(i->second);
     }
+    _cachedPainters.clear();
+
+    if (_selectedArea != nullptr) {
+        delete _selectedArea;
+    }
+}
+
+void DocumentCanvas::removePainters()  {
+    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
+        this->_deletePainterFunctor(i->second);
+    }
+    _cachedPainters.clear();
 
     if (_selectedArea != nullptr) {
         delete _selectedArea;
