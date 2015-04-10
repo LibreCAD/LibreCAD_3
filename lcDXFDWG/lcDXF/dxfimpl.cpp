@@ -122,9 +122,13 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         lw = getLcLineWidth(DRW_LW_Conv::lineWidth::width00);
     }
 
-    auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
-    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-    al->execute();
+    // If a layer starts with a * it's a special layer we don't process yet
+    if (data.name.length()>0 && data.name.compare(0,1,"*")) {
+        auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
+        auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+        al->execute();
+    }
+
 
 }
 
@@ -133,8 +137,11 @@ void DXFimpl::addSpline(const DRW_Spline& data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
 
     _builder->append(std::make_shared<lc::entity::Spline>(coords(data.controllist),
             data.knotslist,
@@ -153,8 +160,12 @@ void DXFimpl::addText(const DRW_Text& data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+
     _builder->append(std::make_shared<lc::entity::Text>(coord(data.basePoint),
             data.text, data.height,
             data.angle, data.style,
@@ -169,8 +180,12 @@ void DXFimpl::addPoint(const DRW_Point& data) {
         return;
     }
 
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+
     _builder->append(std::make_shared<lc::entity::Point>(coord(data.basePoint), layer, mf));
 }
 
@@ -179,8 +194,11 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
         return;
     }
 
-    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
     _builder->append(std::make_shared<lc::entity::DimAligned>(
                          coord(data->getDefPoint()),
@@ -200,8 +218,11 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
         return;
     }
 
-    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
     _builder->append(std::make_shared<lc::entity::DimLinear>(
                          coord(data->getDefPoint()),
@@ -224,8 +245,12 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
         return;
     }
 
-    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+
     _builder->append(std::make_shared<lc::entity::DimRadial>(
                          coord(data->getCenterPoint()),
                          coord(data->getTextPoint()),
@@ -246,8 +271,11 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
         return;
     }
 
-    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
     _builder->append(std::make_shared<lc::entity::DimDiametric>(
                          coord(data->getDiameter1Point()),
@@ -268,8 +296,11 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
         return;
     }
 
-    auto mf = getMetaInfo(*data);
     auto layer = _document->layerByName(data->layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
     _builder->append(std::make_shared<lc::entity::DimAngular>(
                          coord(data->getDefPoint()),
@@ -297,8 +328,11 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
         return;
     }
 
-    auto mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+    if (layer==nullptr) {
+        return;
+    }
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
 
     std::vector<lc::entity::LWVertex2D> points;
     for (auto i : data.vertlist) {

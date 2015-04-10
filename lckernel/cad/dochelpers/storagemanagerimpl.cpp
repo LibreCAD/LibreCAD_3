@@ -40,7 +40,12 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(con
 }
 
 Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
-    return _layers.at(layerName);
+    auto item = _layers.find(layerName);
+    if (item !=_layers.end()) {
+        return item->second;
+    } else {
+        return nullptr;
+    }
 }
 
 std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
