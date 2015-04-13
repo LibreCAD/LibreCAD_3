@@ -87,7 +87,9 @@ class LCADViewer : public QWidget {
     private:
         void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
-        bool _altKeyActive; // When true the alt key is current pressed
+        /* for panning */
+        bool _altKeyActive;
+        bool _mouseScrollKeyActive;
 
         std::shared_ptr<DocumentCanvas> _docCanvas;
 

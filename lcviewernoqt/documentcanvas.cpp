@@ -28,6 +28,7 @@
 #include <cad/meta/metalinewidth.h>
 
 #include <cad/const.h>
+#include <math.h>
 
 #include <typeinfo>
 
@@ -153,7 +154,8 @@ LcPainter& DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 
 void DocumentCanvas::pan(double move_x, double move_y) {
 
-    if (tmp_x == false) {
+    /* FIXME 100.0 should be dynamically calculated, depends on the drawing speed */
+    if (std::abs(pan_x-move_x) > 100.0 || std::abs(pan_y - move_y) > 100.0 || pan_x == 0.0 || pan_y == 0.0) {
         pan_x = move_x;
         pan_y = move_y;
     }
@@ -163,10 +165,10 @@ void DocumentCanvas::pan(double move_x, double move_y) {
         p->translate(move_x - pan_x, move_y - pan_y);
     }
 
-    tmp_x = true;
     pan_x = move_x;
     pan_y = move_y;
     calculateVisibleUserArea();
+    
 }
 
 void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned int deviceScrollY) {

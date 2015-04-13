@@ -18,8 +18,8 @@
 #include "nano-signal-slot/nano_signal_slot.hpp"
 
 
-LCADViewer::LCADViewer(QWidget* parent) :
-    QWidget(parent), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false), _docCanvas(nullptr) {
+LCADViewer::LCADViewer(QWidget *parent) :
+    QWidget(parent), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false), _docCanvas(nullptr), _mouseScrollKeyActive(false) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -40,8 +40,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
 
     _docCanvas->createPainterFunctor(
     [this](const unsigned int width, const unsigned int height) {
-        QImage* m_image = new QImage(width, height, QImage::Format_ARGB32);
-        LcCairoPainter<CairoPainter::backend::Image>* lcPainter = new LcCairoPainter<CairoPainter::backend::Image>(m_image->bits(), width, height);
+        QImage *m_image = new QImage(width, height, QImage::Format_ARGB32);
+        LcCairoPainter<CairoPainter::backend::Image> *lcPainter = new LcCairoPainter<CairoPainter::backend::Image>(m_image->bits(), width, height);
         imagemaps.insert(std::make_pair(lcPainter, m_image));
         return lcPainter;
     });
@@ -50,7 +50,7 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
     (LcPainter * painter) {
         // If you get a exception here and you are destroying this object, you migth need to call _docCanvas->removePainters();
         // in your destructor
-        QImage* m_image = imagemaps.at(painter);
+        QImage *m_image = imagemaps.at(painter);
         delete painter;
         delete m_image;
         imagemaps.erase(painter);
@@ -60,7 +60,7 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
 
 }
 
-void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
+void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent &) {
     update();
 }
 
@@ -70,7 +70,7 @@ void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent&) {
   * Handle key pressing and release to add additional states to this view
   *
   */
-void LCADViewer::keyPressEvent(QKeyEvent* event) {
+void LCADViewer::keyPressEvent(QKeyEvent *event) {
 
     QWidget::keyPressEvent(event);
 
@@ -88,7 +88,7 @@ void LCADViewer::keyPressEvent(QKeyEvent* event) {
 
 }
 
-void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
+void LCADViewer::keyReleaseEvent(QKeyEvent *event) {
     QWidget::keyReleaseEvent(event);
 
     switch (event->key()) {
@@ -104,7 +104,7 @@ void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
     }
 }
 
-void LCADViewer::wheelEvent(QWheelEvent* event) {
+void LCADViewer::wheelEvent(QWheelEvent *event) {
 
     if (event->angleDelta().y() > 0) {
         this->_docCanvas->zoom(1.1, event->pos().x(), event->pos().y()); //1.2
@@ -130,11 +130,11 @@ void LCADViewer::setHorizontalOffset(int v) {
 }
 
 
-void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
+void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
     // Selection by area
-    if (_altKeyActive) {
+    if (_altKeyActive || _mouseScrollKeyActive) {
         if (!startSelectPos.isNull()) {
             this->_docCanvas->pan(event->pos().x(), event->pos().y());
         }
@@ -151,20 +151,30 @@ void LCADViewer::mouseMoveEvent(QMouseEvent* event) {
     update();
 }
 
-void LCADViewer::mousePressEvent(QMouseEvent* event) {
+void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
-
     startSelectPos = event->pos();
+
+    switch (event->buttons()) {
+        case Qt::MiddleButton: {
+            _mouseScrollKeyActive = true;
+        } break;
+    }
 
 }
 
 
-void LCADViewer::mouseReleaseEvent(QMouseEvent* event) {
+void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
     startSelectPos = QPoint();
 
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);
+    switch (event->button()) {
+        case Qt::MiddleButton: {
+            _mouseScrollKeyActive = false;
+        } break;
+    }
 
     _docCanvas->removeSelectionArea();
     update();
@@ -175,7 +185,7 @@ std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
 }
 
 
-void LCADViewer::paintEvent(QPaintEvent* p) {
+void LCADViewer::paintEvent(QPaintEvent *p) {
     if (p->rect().width() == 0 || p->rect().height() == 0) {
         return;
     }
@@ -187,7 +197,7 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
         lcPainter.clear(1., 1., 1., 0.0);
 
     }, [&](LcPainter & lcPainter) {
-        QImage* i = imagemaps.at(&lcPainter);
+        QImage *i = imagemaps.at(&lcPainter);
         painter.drawImage(QPoint(0, 0), *i);
 
     });
@@ -350,3 +360,4 @@ void LCADViewer::paintEvent(QPaintEvent* p) {
     cairo_surface_destroy(imageSurface);
 }
 */
+

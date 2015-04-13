@@ -188,8 +188,6 @@ class DocumentCanvas {
 
         double pan_x = 0.0;
         double pan_y = 0.0;
-        bool tmp_x = false;
-
 
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
