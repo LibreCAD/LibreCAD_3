@@ -13,7 +13,7 @@ drawitems/lcvdrawitem.cpp
 drawitems/lcvellipse.cpp
 drawitems/lcvline.cpp
 drawitems/lcvtext.cpp
-drawitems/metricgrid.cpp
+drawitems/grid.cpp
 drawitems/endcaps.cpp
 drawitems/gradientbackground.cpp
 drawitems/lcdimension.cpp
@@ -39,7 +39,7 @@ drawitems/lcvdrawitem.h
 drawitems/lcvellipse.h
 drawitems/lcvline.h
 drawitems/lcvtext.h
-drawitems/metricgrid.h
+drawitems/grid.h
 drawitems/endcaps.h
 drawitems/gradientbackground.h
 drawitems/lcdimension.h

@@ -17,7 +17,7 @@
 #include "cad/dochelpers/documentimpl.h"
 
 #include "drawitems/gradientbackground.h"
-#include "drawitems/metricgrid.h"
+#include "drawitems/grid.h"
 #include <drawitems/lccursor.h>
 #include "drawitems/lcvdrawitem.h"
 #include <managers/snapmanager.h>
@@ -111,7 +111,7 @@ void CadMdiChild::newDocument() {
 
     // Should this be done using the events system of QT??
     viewer->addBackgroundItem(std::make_shared<GradientBackground>(lc::Color(0x06, 0x35, 0x06), lc::Color(0x07, 0x15, 0x11)));
-    auto metricGrid = std::make_shared<MetricGrid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
+    auto metricGrid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     viewer->addBackgroundItem(metricGrid);
 
     // Snap manager
@@ -172,7 +172,7 @@ void CadMdiChild::import(std::string str) {
 
     // Should this be done using the events system of QT??
     viewer->addBackgroundItem(std::make_shared<GradientBackground>(lc::Color(0x06, 0x35, 0x06), lc::Color(0x07, 0x15, 0x11)));
-    auto metricGrid = std::make_shared<MetricGrid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
+    auto metricGrid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     viewer->addBackgroundItem(metricGrid);
 
 

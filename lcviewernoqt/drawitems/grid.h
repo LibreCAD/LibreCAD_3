@@ -7,10 +7,17 @@
   * Draw a metric grid on a LCGraphics View
   *
   */
-class MetricGrid : public LCVDrawItem, public lc::Snapable {
+class Grid : public LCVDrawItem, public lc::Snapable {
     public:
-        MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor);
-        virtual ~MetricGrid();
+        /*
+         * minimumGridSpacing set's the minimum number of pixels for a grid
+         * major color for major lines
+         * minor color for minor lines
+         * numMinorLiners Use the number of minor lines between major, 12 can be used for 12 incihes in foot
+         * convUnit unit to allow additional unit systems
+         */
+        Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines=12, double convUnit=1.);
+        virtual ~Grid();
 
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const;
 
@@ -20,11 +27,14 @@ class MetricGrid : public LCVDrawItem, public lc::Snapable {
 
     private:
         double gridSize();
-    private:
+
         const lc::Color _majorColor;
         const lc::Color _minorColor;
         const int _minimumGridSpacing;
 
-        // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
+        int _numMinorLines;
+        double _convUnit;
+
+    // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
         mutable double _lastGridSize;
 };

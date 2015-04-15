@@ -1,16 +1,16 @@
 #include <cmath>
-#include "metricgrid.h"
+#include "grid.h"
 #include "../lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
-MetricGrid::MetricGrid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor) :  LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing) {
+Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :
+        LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing), _numMinorLines(numMinorLines), _convUnit(convUnit) {
 }
 
-MetricGrid::~MetricGrid() {
+Grid::~Grid() {
 }
 
-
-void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const {
+void Grid::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const {
 
     painter.save();
     painter.disable_antialias();
@@ -26,27 +26,27 @@ void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc
     double minDistancePoints = gridSPacingX - zeroCornerX;
     double factor = 1.0;
 
-    while (minDistancePoints < 10.0) {
-        minDistancePoints *= 10.0;
-        factor = factor * 10.0;
+    while (minDistancePoints < 10.0 * (1/_convUnit)) {
+        minDistancePoints *= 10.0 * (1/_convUnit);
+        factor = factor * 10.0 * (1/_convUnit);
     }
 
-    while (minDistancePoints > 100.0) {
-        minDistancePoints = minDistancePoints / 10.0;
-        factor = factor / 10.0;
+    while (minDistancePoints > 100.0 * (1/_convUnit)) {
+        minDistancePoints = minDistancePoints / 10.0 * (1/_convUnit);
+        factor = factor / 10.0 * (1/_convUnit);
     }
 
     // determine the grid spacing
     double gridSize;
 
-    if (minDistancePoints < 10.0) {
-        gridSize = (10.0 / factor);
-    } else if (minDistancePoints < 20.0) {
-        gridSize = (20.0 / factor);
-    } else if (minDistancePoints < 50.0) {
-        gridSize = (50.0 / factor);
+    if (minDistancePoints < 10.0 * (1/_convUnit)) {
+        gridSize = (10.0 * (1/_convUnit) / factor);
+    } else if (minDistancePoints < 20.0 * (1/_convUnit)) {
+        gridSize = (20.0 * (1/_convUnit) / factor);
+    } else if (minDistancePoints < 50.0 * (1/_convUnit)) {
+        gridSize = (50.0  * (1/_convUnit) / factor);
     } else {
-        gridSize = (100.0 / factor);
+        gridSize = (100.0  * (1/_convUnit) / factor);
     }
 
     // TODO: THis assignedment doesn't make the grid thread save!!!
@@ -58,6 +58,7 @@ void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc
     double left = updateRect.minP().x() - fmod(updateRect.minP().x(), gridSize);
     double top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
+    painter.line_width(1);
     for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
         painter.move_to(x, updateRect.maxP().y());
         painter.line_to(x, updateRect.minP().y());
@@ -68,12 +69,11 @@ void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc
         painter.line_to(updateRect.maxP().x(), y);
     }
 
-    painter.line_width(1);
     painter.source_rgba(_majorColor.red(), _majorColor.green(), _majorColor.blue(), _majorColor.alpha());
     painter.stroke();
 
     // Draw minor lines
-    gridSize *= 10;
+    gridSize *= _numMinorLines;
     left = updateRect.minP().x() - fmod(updateRect.minP().x(), gridSize);
     top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
@@ -97,25 +97,25 @@ void MetricGrid::draw(LcPainter& painter, const LcDrawOptions &options, const lc
   * Return a number of snap points, grid will always return 1
   *
   */
-std::vector<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
 
-    double mx = coord.x() * 1.0;
-    double my = coord.y() * 1.0;
-    double gs = this->_lastGridSize * 1.0;
+    double mx = coord.x() * 1.0 * (1/_convUnit);
+    double my = coord.y() * 1.0 * (1/_convUnit);
+    double gs = this->_lastGridSize * 1.0 * (1/_convUnit);
 
 
     double x, y;
 
     if (mx < 0.0) {
-        x = (mx - gs / 2) - fmod(mx - gs / 2, -gs);
+        x = (mx - gs / 2 * (1/_convUnit)) - fmod(mx - gs / 2 * (1/_convUnit), -gs);
     } else {
-        x = (mx + gs / 2) - fmod(mx + gs / 2, gs);
+        x = (mx + gs / 2 * (1/_convUnit)) - fmod(mx + gs / 2 * (1/_convUnit), gs);
     }
 
     if (my < 0.0) {
-        y = (my - gs / 2) - fmod(my - gs / 2, -gs);
+        y = (my - gs / 2 * (1/_convUnit)) - fmod(my - gs / 2 * (1/_convUnit), -gs);
     } else {
-        y = (my + gs / 2) - fmod(my + gs / 2, gs);
+        y = (my + gs / 2 * (1/_convUnit)) - fmod(my + gs / 2 * (1/_convUnit), gs);
     }
 
     std::vector<lc::EntityCoordinate> points;
@@ -124,6 +124,6 @@ std::vector<lc::EntityCoordinate> MetricGrid::snapPoints(const lc::geo::Coordina
 }
 
 
-lc::geo::Coordinate MetricGrid::nearestPointOnPath(const lc::geo::Coordinate& coord) const {
+lc::geo::Coordinate Grid::nearestPointOnPath(const lc::geo::Coordinate& coord) const {
     throw "nearestPointOnPath not available for grid";
 }
