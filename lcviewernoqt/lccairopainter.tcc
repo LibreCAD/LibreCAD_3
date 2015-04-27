@@ -269,7 +269,7 @@ class LcCairoPainter : public LcPainter {
             cairo_restore(_cr);
         }
         unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) {
-            _patternMap[++_patternMapNum] = cairo_pattern_create_linear(x1, y1, x2, y2);
+            _patternMap[++_patternMapNum] = cairo_pattern_create_linear(x1, -y1, x2, -y2);
             return _patternMapNum;
         }
         void pattern_add_color_stop_rgba(unsigned long pat, double offset, double r, double g, double b, double a) {
