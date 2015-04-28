@@ -1,3 +1,6 @@
 [submodule "lcadluascript/lua-intf"]
 	path = lcadluascript/lua-intf
 	url = https://github.com/SteveKChiu/lua-intf
+[submodule "lckernel/nano-signal-slot"]
+	path = lckernel/nano-signal-slot
+	url = https://github.com/NoAvailableAlias/nano-signal-slot
