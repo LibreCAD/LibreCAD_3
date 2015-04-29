@@ -4,6 +4,7 @@
 #include "cad/geometry/geocoordinate.h"
 #include "../events/snappointevent.h"
 #include "../events/mousereleaseevent.h"
+#include <nano-signal-slot/nano_signal_slot.hpp>
 
 /*!
  * \brief Snapmanger is a interface to help snapping to grids and entities
@@ -12,40 +13,18 @@
  *
  * \sa lc::SnapManagerImpl
  */
+class LocationEvent;
+
 class SnapManager  {
     public:
-        /*!
-         * \brief Snap point event get emited when the snap point changed
-         *
-         * Snap point events gets emitted when the snap positionw as changed or when no snap point was found
-         *
-         * \sa lc::SnapPointEvent
-         */
-        void snapPointEvent(const SnapPointEvent&) ;
 
-        /*!
-         * \brief mouseRelease event get's emitted when the user release the left mouse button
-         *
-         * When the user release the left mouse butten this events get's emitted with the coordination
-         * of the last snap position. If no snap position was found the current mouse coordinate will be used
-         *
-         * \sa lc::MouseReleaseEvent
-         */
-        void mouseReleaseEvent(const MouseReleaseEvent&);
+    virtual void setDeviceLocation(int x, int y) = 0;
 
-        /*!
-         * \brief mouseRelease event get's emitted when the user release the left mouse button
-         *
-         * When the user release the left mouse butten this events get's emitted with the coordination
-         * of the last snap position. If no snap position was found the current mouse coordinate will be used
-         *
-         * \sa lc::MouseReleaseEvent
-         */
-        void mouseRightReleaseEvent(const MouseReleaseEvent&);
 
-    public:
-        virtual void setGridSnappable(bool gridSnappable) = 0;
-        virtual bool isGridSnappable() const = 0;
+public:
+    virtual void setGridSnappable(bool gridSnappable) = 0;
+    virtual bool isGridSnappable() const = 0;
+    virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents() = 0;
 };
 
 typedef std::shared_ptr<SnapManager> SnapManager_SPtr;

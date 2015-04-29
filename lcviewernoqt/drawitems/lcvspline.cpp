@@ -1,6 +1,6 @@
 #include "lcvspline.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 
 LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr spline) : LCVDrawItem(true), lc::entity::Spline(spline, true) {
 }

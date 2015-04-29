@@ -1,7 +1,7 @@
 #include <cad/geometry/geoarc.h>
 #include "lclwpolyline.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 
 LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) : LCVDrawItem(true), lc::entity::LWPolyline(lwpolyline, true) {
 }

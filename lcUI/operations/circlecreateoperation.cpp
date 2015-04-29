@@ -76,7 +76,7 @@ void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
     if (s == true && e == false) {
         //event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
         double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-        event.painter()->circle(_startPoint.x(), _startPoint.y(), r);
+//        event.painter()->circle(_startPoint.x(), _startPoint.y(), r);
     }
 
     if (s == true && e == true) {

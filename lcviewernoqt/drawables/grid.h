@@ -1,13 +1,14 @@
 #pragma once
 
-#include "lcvdrawitem.h"
 #include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
+#include "../events/drawevent.h"
+
 /**
   * Draw a metric grid on a LCGraphics View
   *
   */
-class Grid : public LCVDrawItem, public lc::Snapable {
+class Grid : public lc::Snapable {
     public:
         /*
          * minimumGridSpacing set's the minimum number of pixels for a grid
@@ -19,7 +20,7 @@ class Grid : public LCVDrawItem, public lc::Snapable {
         Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines=12, double convUnit=1.);
         virtual ~Grid();
 
-        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const;
+        virtual void draw(DrawEvent const & event) const;
 
         virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
 

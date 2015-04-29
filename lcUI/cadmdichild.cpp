@@ -11,14 +11,11 @@
 #include "cad/primitive/line.h"
 #include "cad/meta/metalinewidth.h"
 #include "cad/interface/metatype.h"
-#include "cad/document/selectionmanager.h"
 #include "cad/dochelpers/storagemanagerimpl.h"
 #include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
 
-#include "drawitems/gradientbackground.h"
-#include "drawitems/grid.h"
-#include <drawitems/lccursor.h>
+#include <drawables/lccursor.h>
 #include "drawitems/lcvdrawitem.h"
 #include <managers/snapmanager.h>
 #include <managers/snapmanagerimpl.h>
@@ -38,6 +35,8 @@
 #include <random>
 #include <cad/operations/layerops.h>
 #include <cad/meta/metacolor.h>
+#include <drawables/gradientbackground.h>
+#include <drawables/grid.h>
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
@@ -109,16 +108,19 @@ void CadMdiChild::newDocument() {
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     viewer->setDocument(_document);
 
-    // Should this be done using the events system of QT??
-    viewer->addBackgroundItem(std::make_shared<GradientBackground>(lc::Color(0x06, 0x35, 0x06), lc::Color(0x07, 0x15, 0x11)));
-    auto metricGrid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
-    viewer->addBackgroundItem(metricGrid);
+    _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
+    viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _grid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
+    viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
 
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(),  metricGrid, 25.);
+    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(),  _grid, 25.);
+    viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), _snapManager, lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    viewer->documentCanvas()->background().connect<lc::Cursor, &lc::Cursor::onDraw>(_cursor.get());
+    _snapManager->snapPointEvents().connect<lc::Cursor, &lc::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
@@ -170,18 +172,19 @@ void CadMdiChild::import(std::string str) {
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     viewer->setDocument(_document);
 
-    // Should this be done using the events system of QT??
-    viewer->addBackgroundItem(std::make_shared<GradientBackground>(lc::Color(0x06, 0x35, 0x06), lc::Color(0x07, 0x15, 0x11)));
-    auto metricGrid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
-    viewer->addBackgroundItem(metricGrid);
-
+    _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
+    viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _grid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
+    viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
 
 //    SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(), metricGrid, 25.);
+    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(), _grid, 25.);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), _snapManager, lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    viewer->documentCanvas()->background().connect<lc::Cursor, &lc::Cursor::onDraw>(_cursor.get());
+
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);

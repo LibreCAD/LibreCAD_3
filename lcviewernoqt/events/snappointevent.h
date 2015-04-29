@@ -11,7 +11,9 @@ class SnapPointEvent {
         SnapPointEvent(const lc::geo::Coordinate& snapPoint) : _snapPoint(snapPoint), _snapped(true) {
         }
 
-        SnapPointEvent() : _snapped(false) {
+
+
+    SnapPointEvent() : _snapped(false) {
         }
 
         lc::geo::Coordinate snapPoint() const {

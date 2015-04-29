@@ -5,13 +5,14 @@
 #include <QWidget>
 #include <lcadviewer.h>
 #include "cad/meta/color.h"
-#include <cad/document/selectionmanager.h>
 #include <cad/document/storagemanager.h>
 
 #include "cad/document/document.h"
 #include "cad/document/undomanager.h"
-#include <drawitems/lccursor.h>
+#include <drawables/lccursor.h>
 #include <managers/snapmanager.h>
+#include <drawables/gradientbackground.h>
+#include <drawables/grid.h>
 
 #include "operations/operationmanager.h"
 
@@ -55,9 +56,10 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<lc::Document> _document;
         lc::UndoManager_SPtr _undoManager;
 
-        std::shared_ptr<const lc::Cursor>  _cursor;
+        std::shared_ptr<Grid> _grid;
+        std::shared_ptr<GradientBackground> _gradientBackground;
+        std::shared_ptr<lc::Cursor>  _cursor;
         SnapManager_SPtr  _snapManager;
-        std::shared_ptr<lc::SelectionManager> _selectionManager;
         lc::StorageManager_SPtr _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;

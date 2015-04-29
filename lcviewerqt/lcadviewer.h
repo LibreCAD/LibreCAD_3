@@ -18,7 +18,7 @@
 
 #include "documentcanvas.h"
 
-
+class SnapManager;
 struct MouseEvent {
     enum Modifier {
         NoModifer = 0,
@@ -61,9 +61,8 @@ class LCADViewer : public QWidget {
         LCADViewer(QWidget* parent = 0);
         ~LCADViewer();
 
-        void addBackgroundItem(std::shared_ptr<LCVDrawItem> item);
-        void addForegroundItem(std::shared_ptr<LCVDrawItem> item);
-        virtual void setDocument(std::shared_ptr<lc::Document> document);
+        void setDocument(std::shared_ptr<lc::Document> document);
+        void setSnapManager(std::shared_ptr<SnapManager> snapmanager);
         std::shared_ptr<DocumentCanvas> documentCanvas() const;
     protected:
         void paintEvent(QPaintEvent*);
@@ -110,4 +109,5 @@ class LCADViewer : public QWidget {
 
         // Entity container that track's all entities within the document
         std::shared_ptr<lc::Document> _document;
+        std::shared_ptr<SnapManager> _snapManager;
 };

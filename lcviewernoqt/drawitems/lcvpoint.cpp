@@ -1,6 +1,6 @@
 #include "lcvpoint.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 LCVPoint::LCVPoint(const lc::entity::Point_CSPtr Coordinate) : LCVDrawItem(true), lc::entity::Point (Coordinate, true) {
 }
 

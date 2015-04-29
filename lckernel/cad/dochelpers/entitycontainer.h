@@ -266,6 +266,7 @@ namespace lc {
              */
             EntityContainer entitiesWithinAndCrossingAreaFast(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
+
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
                 for (auto i : entities) {
@@ -286,24 +287,39 @@ namespace lc {
              */
             std::vector<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
 
-                std::vector<lc::EntityDistance> entities;
+                auto area = lc::geo::Area(lc::geo::Coordinate(point.x()-distance,point.y()-distance), distance*2.,distance*2.);
 
                 // Now calculate for each entity if we are near the entities path
-                /*
-                for (auto item : _cadentities) {
-                    Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item.second);
+                std::vector<lc::EntityDistance> entities;
+
+                std::vector<CT> ent = _tree->retrieve(area);
+                for (auto item : ent) {
+                    Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
 
                     if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                         lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-                        lc::geo::Coordinate nearestCoord = eCoordinate - point;
-
-                        double cDistance = nearestCoord.magnitude();
-
+                        double cDistance = eCoordinate.distanceTo(point);
                         if (cDistance < distance) {
-                            entities.push_back(lc::EntityDistance(item.second, cDistance));
+                            entities.push_back(lc::EntityDistance(item, eCoordinate, cDistance));
                         }
                     }
-                } */
+                }
+
+                /*
+                entitiesWithinAndCrossingArea(area).template each< CT >([&](CT item) {
+                    std::cerr << "-";
+                    Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+
+                    if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
+                        lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
+
+                        double cDistance = eCoordinate.distanceTo(point);
+                        if (cDistance < distance) {
+                            entities.push_back(lc::EntityDistance(item, eCoordinate, cDistance));
+                        }
+                    }
+                });*/
+                std::cerr << "\n";
 
                 return entities;
             }

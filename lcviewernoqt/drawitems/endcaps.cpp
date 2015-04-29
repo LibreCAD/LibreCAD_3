@@ -1,7 +1,7 @@
 #include "endcaps.h"
 #include <cmath>
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 
 EndCaps::EndCaps() {
 

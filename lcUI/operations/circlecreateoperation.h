@@ -11,7 +11,7 @@
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
 #include "managers/snapmanager.h"
-#include "drawitems/lccursor.h"
+#include "drawables/lccursor.h"
 
 #include "qsnappedstate.h"
 

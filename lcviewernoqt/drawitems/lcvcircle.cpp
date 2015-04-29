@@ -1,6 +1,6 @@
 #include "lcvcircle.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 
 LCVCircle::LCVCircle(const lc::entity::Circle_CSPtr circle) : LCVDrawItem(true), lc::entity::Circle(circle, true) {
 }

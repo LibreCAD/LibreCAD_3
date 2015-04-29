@@ -1,6 +1,6 @@
 #include "lcvellipse.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 LCVEllipse::LCVEllipse(const lc::entity::Ellipse_CSPtr Ellipse) : LCVDrawItem(true), lc::entity::Ellipse(Ellipse, true) {
 }
 

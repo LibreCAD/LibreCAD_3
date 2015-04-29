@@ -333,7 +333,6 @@ class LcCairoPainter : public LcPainter {
             *y = matrix.y0;
         }
 
-
     private:
         cairo_surface_t *_surface;
         cairo_t *_cr;

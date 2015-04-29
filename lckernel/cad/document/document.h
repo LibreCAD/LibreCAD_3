@@ -112,11 +112,6 @@ namespace lc {
                  */
             virtual void operationProcess(operation::DocumentOperation_SPtr operation);
 
-            /**
-            * Not sure if we should make this public or not or that we need to proxy functions or may be just extend?
-            */
-            virtual StorageManager_SPtr storageManager() const = 0;
-
         public:
             /*!
              * \brief add an entity to document.
@@ -162,6 +157,9 @@ namespace lc {
              */
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() = 0;
 
+            /**
+             * @brief return a layer by it's name
+             */
             virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
         public:
             friend class lc::operation::DocumentOperation;

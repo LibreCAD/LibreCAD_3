@@ -7,7 +7,7 @@
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
-#include "drawitems/lcdrawoptions.h"
+#include "lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
 #include "drawitems/lcvarc.h"
 #include "drawitems/lcvdrawitem.h"
@@ -273,14 +273,10 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
     painter = cachedPainter(VIEWER_BACKGROUND);
     before(painter);
 
-    if (_backgroundItems.size() == 0) {
-        // caller is responsible for clearing       painter.clear(0., 0.1, 0.);
-    }
 
     LcDrawOptions lcDrawOptions;
-    for (auto item : _backgroundItems) {
-        item->draw(painter, lcDrawOptions, _visibleUserArea);
-    }
+    DrawEvent drawEvent(painter, lcDrawOptions, _visibleUserArea);
+    _background(drawEvent);
 
     after(painter);
 
@@ -355,9 +351,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
     before(painter);
     // caller is responsible for clearing  painter.clear(1., 1., 1., 0.0);
 
-    for (auto item : _foregroundItems) {
-        item->draw(painter, lcDrawOptions, _visibleUserArea);
-    }
+    _foreground(drawEvent);
 
     // Draw selection rectangle
     if (_selectedArea != nullptr) {
@@ -395,14 +389,6 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
     after(painter);
 
-}
-
-void DocumentCanvas::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_backgroundItems.push_back(item);
-}
-
-void DocumentCanvas::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_foregroundItems.push_back(item);
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
@@ -526,6 +512,14 @@ void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
     _entityContainer.remove(i);
 }
 
+std::shared_ptr<lc::Document> DocumentCanvas::document() const {
+    return _document;
+}
+
+lc::EntityContainer<lc::entity::CADEntity_SPtr> & DocumentCanvas::entityContainer() {
+    return _entityContainer;
+}
+
 void DocumentCanvas::createPainterFunctor(const std::function<LcPainter *(const unsigned int, const unsigned int)>& createPainterFunctor) {
     _createPainterFunctor = createPainterFunctor;
 }
@@ -585,16 +579,21 @@ void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigne
     makeSelection(dx, dy, dw, dh, occupies, addTo);
 }
 
+
 void DocumentCanvas::removeSelectionArea() {
+    _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        di->selected(false);
+    });
     if (_selectedArea != nullptr) {
         delete _selectedArea;
         _selectedArea = nullptr;
     }
 }
 
-void DocumentCanvas::removeSelection() {
-    _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-        di->selected(false);
-    });
-    removeSelectionArea();
+Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::background ()  {
+    return _background;
 }
+Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::foreground ()  {
+    return _foreground;
+}
+

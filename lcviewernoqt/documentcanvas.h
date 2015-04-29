@@ -6,11 +6,13 @@
 
 #include "cad/dochelpers/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"
+#include "events/drawevent.h"
 #include <cad/base/cadentity.h>
 
 #include <cad/events/addentityevent.h>
 #include <cad/events/commitprocessevent.h>
 #include <cad/events/removeentityevent.h>
+#include <nano-signal-slot/nano_signal_slot.hpp>
 
 enum PainterCacheType {
     VIEWER_BACKGROUND,
@@ -83,20 +85,6 @@ class DocumentCanvas {
         void deletePainterFunctor(const std::function<void(LcPainter*)>& deletePainterFunctor);
 
         /**
-         * @brief addBackgroundItem
-         * to this document. The background will be painted first. If no background items are added the document get cleared out
-         * @param item
-         */
-        void addBackgroundItem(std::shared_ptr<LCVDrawItem> item);
-        /**
-         * @brief addForegroundItem
-         * to this document. Forground items must be transparent (alpha == 0) and will needs to be 'light'
-         * this painter takes care of drawing grids and cursors
-         * @param item
-         */
-        void addForegroundItem(std::shared_ptr<LCVDrawItem> item);
-
-        /**
          * @brief bounds
          * return the opproximate size of the current document
          * @return
@@ -133,13 +121,40 @@ class DocumentCanvas {
         */
         void removeSelectionArea();
 
-        /**
-         * @brief removeSelection
-         * removes the colored selection area and de-selects all selected entities
-         */
-        void removeSelection();
 
-    private:
+        /**
+         *
+         */
+        void setPositionDevice(int x, int y);
+
+
+
+        Nano::Signal<void(DrawEvent const & drawEvent)> & background () ;
+        Nano::Signal<void(DrawEvent const & drawEvent)> & foreground () ;
+
+        /**
+         * I don't like this because it requires a painting context
+         * However, for now I will do it because there wasn't a easy and quick way to have
+         * some matrix calculations done.
+         */
+        void device_to_user(double *x, double *y) const {
+            if (_cachedPainters.size()>0) {
+                std::map<::PainterCacheType, ::LcPainter *>::const_iterator painter = _cachedPainters.begin();
+                painter->second->device_to_user(x, y);
+            }
+        }
+
+        /**
+         * Return the underlaying document
+         */
+        std::shared_ptr<lc::Document> document() const;
+
+        /**
+         * Get the current entity container,
+         * don not store this as a reference, always call it
+         */
+        lc::EntityContainer<lc::entity::CADEntity_SPtr> & entityContainer();
+private:
 
         void calculateVisibleUserArea();
 
@@ -164,9 +179,10 @@ class DocumentCanvas {
         // Local entity container
         lc::EntityContainer<lc::entity::CADEntity_SPtr> _entityContainer;
 
-        // Background and forground items
-        std::vector<std::shared_ptr<LCVDrawItem> > _backgroundItems;
-        std::vector<std::shared_ptr<LCVDrawItem> > _foregroundItems;
+        Nano::Signal<void(DrawEvent const & event)> _background;
+        Nano::Signal<void(DrawEvent const & event)> _foreground;
+
+
 
         // Two functor's that allow creation and destruction of painters
         std::function<LcPainter *(const unsigned int, const unsigned int)> _createPainterFunctor;
@@ -198,6 +214,7 @@ class DocumentCanvas {
 
         // Functor to draw a selected area, that's the green or read area...
         std::function<void(LcPainter&, lc::geo::Area, bool)> _selectedAreaPainter;
+
 };
 
 typedef std::shared_ptr<DocumentCanvas> DocumentCanvas_SPtr;

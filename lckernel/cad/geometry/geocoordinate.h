@@ -173,7 +173,7 @@ namespace lc {
                 }
 
                 inline double angle() const {
-                    return atan2(_y, _x);
+                    return std::atan2(_y, _x);
                 }
 
 

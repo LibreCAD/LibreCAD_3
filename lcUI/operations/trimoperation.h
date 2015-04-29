@@ -9,15 +9,14 @@
 #include "events/drawevent.h"
 #include "events/mousereleaseevent.h"
 #include <managers/snapmanager.h>
-#include "cad/document/selectionmanager.h"
-#include <drawitems/lccursor.h>
+#include <drawables/lccursor.h>
 
 #include "qsnappedstate.h"
 
 class TrimOperation : public GuiOperation {
         Q_OBJECT
     public:
-        TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager,  std::shared_ptr<lc::SelectionManager> selectionManager);
+        TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
 
     public slots:
         void on_drawEvent(const DrawEvent& event);
@@ -52,7 +51,6 @@ class TrimOperation : public GuiOperation {
         // needed to find the correct information sets
         QGraphicsView* _graphicsView;
         SnapManager_SPtr  _snapManager;
-        std::shared_ptr<lc::SelectionManager> _selectionManager;
         MouseReleaseEvent _mouseReleaseEvent;
 
         lc::geo::Coordinate _clickPoint;

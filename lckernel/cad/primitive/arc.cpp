@@ -13,6 +13,40 @@ Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double
 Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Arc(other->center(), other->radius(), other->startAngle(), other->endAngle()) {
 }
 
+std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+    std::vector<EntityCoordinate> points;
+
+    points.push_back(EntityCoordinate(center(), (center() - coord).magnitude(), 0));
+
+    geo::Coordinate npoe = nearestPointOnPath(coord);
+    geo::Coordinate rVector = npoe - coord;
+
+    double distance = rVector.magnitude();
+
+    if (distance < minDistanceToSnap) {
+        points.push_back(EntityCoordinate(npoe, distance, -1));
+    }
+
+    // Sort by distance and keep maxNumberOfSnapPoints
+    std::sort(points.begin() , points.end(), EntityCoordinate::sortAscending);
+    points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+    return points;
+}
+
+// TODO: Decide if a point like center should be returned by a function nearestPointOnPath
+geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate& coord) const {
+    double vl1 = (center() - coord).magnitude();
+    const geo::Coordinate pointOnPath = geo::Arc::nearestPointOnPath(coord);
+    double vl2 = (pointOnPath - coord).magnitude();
+
+    /*
+    if (vl1 < vl2) {
+        return center();
+    } */
+
+    return pointOnPath;
+}
+
 CADEntity_CSPtr Arc::move(const geo::Coordinate& offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(), layer());
     newArc->setID(this->id());

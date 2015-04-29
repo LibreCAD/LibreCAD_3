@@ -6,7 +6,6 @@
 
 #include "cad/document/document.h"
 #include "cad/document/storagemanager.h"
-#include "cad/document/selectionmanager.h"
 #include "cad/operations/documentoperation.h"
 
 namespace lc {

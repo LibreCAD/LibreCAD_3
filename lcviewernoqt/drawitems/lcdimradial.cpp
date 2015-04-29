@@ -1,5 +1,5 @@
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 #include "lcdimradial.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>

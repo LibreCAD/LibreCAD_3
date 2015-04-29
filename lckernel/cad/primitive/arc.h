@@ -18,7 +18,7 @@ namespace lc {
         typedef std::shared_ptr<Arc> Arc_SPtr;
         typedef std::shared_ptr<const Arc> Arc_CSPtr;
 
-        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc {
+        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable {
         public:
             /**
          * @brief Arc, Default Arc constructor
@@ -87,7 +87,11 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
+        public:
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, double minDistanceToSnap,
+                                                             int maxNumberOfSnapPoints) const;
 
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const;
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 

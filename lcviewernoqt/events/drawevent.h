@@ -1,26 +1,39 @@
 #pragma once
 
 #include <cad/geometry/geoarea.h>
-#include <lcpainter.h>
+#include "../lcpainter.h"
+#include "../lcdrawoptions.h"
+
+
 /**
   * Draw event for a object to draw something.
   *
   */
-class LcPainter;
-class LCADViewer;
+
+
 class DrawEvent {
-    public:
-        DrawEvent(LcPainter* painter, const lc::geo::Coordinate& mousePosition) : _painter(painter), _mousePosition(mousePosition) {
+public:
+    DrawEvent(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &updateRect)
+            : _painter(painter),
+              _options(options),
+              _updateRect(updateRect) {
 
-        }
-        LcPainter* painter() const {
-            return _painter;
-        }
-        lc::geo::Coordinate mousePosition() const {
-            return _mousePosition;
-        }
+    }
 
-    private:
-        LcPainter* _painter;
-        lc::geo::Coordinate _mousePosition;
+    LcPainter &painter() const {
+        return _painter;
+    }
+
+    const LcDrawOptions &options() const {
+        return _options;
+    }
+
+    const lc::geo::Area &updateRect() const {
+        return _updateRect;
+    }
+
+private:
+    LcPainter &_painter;
+    const LcDrawOptions &_options;
+    const lc::geo::Area &_updateRect;
 };

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cad/document/selectionmanager.h>
 #include "snapmanager.h"
 #include "../documentcanvas.h"
+#include "../events/LocationEvent.h"
 
 class MouseMoveEvent;
 class SnapPointEvent;
@@ -29,12 +29,10 @@ class SnapManagerImpl : public SnapManager {
         virtual bool isGridSnappable() const;
 
     public:
-         void on_mouseMoveEvent(const MouseMoveEvent& event);
-         void on_mouseRelease_Event(const MouseReleaseEvent& event);
+        virtual void setDeviceLocation(int x, int y);
 
+         virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents();
     private:
-
-        std::shared_ptr<lc::SelectionManager> _selectionmanager;
 
         // Grid is snapable
         lc::Snapable_CSPtr _grid;
@@ -56,6 +54,11 @@ class SnapManagerImpl : public SnapManager {
 
         // List of entities 'under' the cursor
         std::vector<lc::EntityDistance> _entities;
+
+        // Snap Point Event
+        Nano::Signal<void(const SnapPointEvent&)> _snapPointEvent;
+
+        DocumentCanvas_SPtr _view;
 };
 
 // SNAPMANAGERIMPL_H

@@ -4,7 +4,7 @@ ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
 # SOURCE FILES
 set(viewer_srcs
-drawitems/lcdrawoptions.cpp
+lcdrawoptions.cpp
 drawitems/lcvdrawitem.cpp
 drawitems/lcvarc.cpp
 drawitems/lcvcircle.cpp
@@ -13,9 +13,9 @@ drawitems/lcvdrawitem.cpp
 drawitems/lcvellipse.cpp
 drawitems/lcvline.cpp
 drawitems/lcvtext.cpp
-drawitems/grid.cpp
+drawables/grid.cpp
 drawitems/endcaps.cpp
-drawitems/gradientbackground.cpp
+drawables/gradientbackground.cpp
 drawitems/lcdimension.cpp
 drawitems/lcdimradial.cpp
 drawitems/lcdimdiametric.cpp
@@ -23,14 +23,15 @@ drawitems/lcdimlinear.cpp
 drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
 drawitems/lclwpolyline.cpp
-drawitems/lccursor.cpp
+drawables/lccursor.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
+managers/EventManager.cpp
 )
 
 # HEADER FILES
 set(viewer_hdrs
-drawitems/lcdrawoptions.h
+lcdrawoptions.h
 drawitems/lcvdrawitem.h
 drawitems/lcvarc.h
 drawitems/lcvcircle.h
@@ -39,9 +40,9 @@ drawitems/lcvdrawitem.h
 drawitems/lcvellipse.h
 drawitems/lcvline.h
 drawitems/lcvtext.h
-drawitems/grid.h
+drawables/grid.h
 drawitems/endcaps.h
-drawitems/gradientbackground.h
+drawables/gradientbackground.h
 drawitems/lcdimension.h
 drawitems/lcdimradial.h
 drawitems/lcdimdiametric.h
@@ -49,7 +50,7 @@ drawitems/lcdimlinear.h
 drawitems/lcdimaligned.h
 drawitems/lcdimangular.h
 drawitems/lclwpolyline.h
-drawitems/lccursor.h
+drawables/lccursor.h
 events/drawevent.h
 events/mousemoveevent.h
 events/mousereleaseevent.h
@@ -60,6 +61,8 @@ lccairopainter.tcc
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h
+managers/EventManager.h
+events/LocationEvent.h
 )
 
 # DEPENDENCIES
@@ -91,5 +94,5 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
+add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs}   drawables/CursorLocation.cpp drawables/CursorLocation.h)
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} lckernel)

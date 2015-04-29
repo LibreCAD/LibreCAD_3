@@ -1,6 +1,6 @@
 #include "lcvtext.h"
 #include "../lcpainter.h"
-#include "lcdrawoptions.h"
+#include "../lcdrawoptions.h"
 #include <cad/primitive/textconst.h>
 
 LCVText::LCVText(const lc::entity::Text_CSPtr Text) : LCVDrawItem(true), lc::entity::Text(Text, true) {

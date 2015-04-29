@@ -44,9 +44,10 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate& coord) const {
     const geo::Coordinate pointOnPath = geo::Circle::nearestPointOnPath(coord);
     double vl2 = (pointOnPath - coord).magnitude();
 
+    /*
     if (vl1 < vl2) {
         return center();
-    }
+    } */
 
     return pointOnPath;
 }

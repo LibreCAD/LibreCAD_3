@@ -10,10 +10,8 @@
 #include <QTime>
 
 #include <cad/dochelpers/entitycontainer.h>
-#include <cad/primitive/line.h>
-#include <cad/primitive/circle.h>
-#include <drawitems/lcvcircle.h>
-#include <drawitems/lcvline.h>
+
+#include <managers/snapmanager.h>
 
 #include "nano-signal-slot/nano_signal_slot.hpp"
 
@@ -58,6 +56,10 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
 
     _docCanvas->newDeviceSize(size().width(), size().height());
 
+}
+
+void LCADViewer::setSnapManager(std::shared_ptr<SnapManager> snapmanager) {
+    _snapManager = snapmanager;
 }
 
 void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent &) {
@@ -133,6 +135,7 @@ void LCADViewer::setHorizontalOffset(int v) {
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
+    _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
     // Selection by area
     if (_altKeyActive || _mouseScrollKeyActive) {
         if (!startSelectPos.isNull()) {
@@ -237,28 +240,6 @@ void LCADViewer::paintEvent(QPaintEvent *p) {
 
 
 }
-
-
-
-
-/**
-  * Add a background render item to the viewer.
-  *
-  */
-void LCADViewer::addBackgroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_docCanvas->addBackgroundItem(item);
-}
-
-/**
-  * Add a foreground render item to the viewer.
-  *
-  */
-void LCADViewer::addForegroundItem(std::shared_ptr<LCVDrawItem> item) {
-    this->_docCanvas->addForegroundItem(item);
-}
-
-
-
 
 /*
 void LCADViewer::paintEvent(QPaintEvent* p) {

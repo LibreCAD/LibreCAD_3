@@ -64,5 +64,4 @@ class LcPainter {
         // We should consider returning a matrix?
         virtual void getTranslate(double* x, double* y) = 0;
 
-
 };

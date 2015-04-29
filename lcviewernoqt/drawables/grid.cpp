@@ -4,13 +4,15 @@
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
 Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :
-        LCVDrawItem(false), _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing), _numMinorLines(numMinorLines), _convUnit(convUnit) {
+       _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing), _numMinorLines(numMinorLines), _convUnit(convUnit) {
 }
 
 Grid::~Grid() {
 }
 
-void Grid::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& updateRect) const {
+void Grid::draw(DrawEvent const & event) const {
+    LcPainter &painter = event.painter();
+    const lc::geo::Area &updateRect = event.updateRect();
 
     painter.save();
     painter.disable_antialias();

@@ -4,7 +4,7 @@
 #include "../events/mousemoveevent.h"
 
 
-SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap) {
+SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap), _view(view) {
 
 /*
     connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
@@ -15,20 +15,23 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr gr
 */
 }
 
+void SnapManagerImpl::setDeviceLocation(int x, int y) {
+    double x_ = x;
+    double y_ = y;
 
-void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
+    _view->device_to_user(&x_, &y_);
+    auto location = lc::geo::Coordinate(x_, y_);
 
-    return;
-/*
+
     // Calculate from the number of pixels the distance  for snapping
     // For best results use a un-even number of pixels
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;
-    event.painter()->device_to_user(&zeroCornerX, &zeroCornerY);
+    _view->device_to_user(&zeroCornerX, &zeroCornerY);
 
     double gridSPacingX = _distanceToSnap;
     double gridSPacingY = _distanceToSnap;
-    event.painter()->device_to_user(&gridSPacingX, &gridSPacingY);
+    _view->device_to_user(&gridSPacingX, &gridSPacingY);
 
     double realDistanceForPixels = (gridSPacingX - zeroCornerX) / 2.0;
 
@@ -36,12 +39,21 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     // We should call this function only if the mouse haven't moved for XX milli seconds
 
     // Find all entities that are close to the current mouse pointer
-    _entities = _selectionmanager->getEntitiesNearCoordinate(event.mousePosition(), realDistanceForPixels);
 
-    if (_entities.size() > 0) {
-        std::cerr << "Found" << _entities.size() << "entities close to the cursor";
+    auto entities = _view->entityContainer().getEntitiesNearCoordinate(location, realDistanceForPixels);
+
+    if (entities.size() > 0) {
+        auto item = entities.begin();
+//        auto event = SnapPointEvent(location);
+        auto event = SnapPointEvent(item->coordinate());
+        _snapPointEvent(event);
+
+
+        std::cerr << "Found " << entities.size() << " entities close to the cursor" << location.x() << ":" << location.y() << "\n";
+    } else {
+        std::cerr << ".";
     }
-
+/*
     // Emit Snappoint event if a entity intersects with a other entity
     // TODO: Need some modification to find the closest intersection point
     if (_entities.size() > 1) {
@@ -105,28 +117,6 @@ void SnapManagerImpl::on_mouseMoveEvent(const MouseMoveEvent& event) {
     qDebug() << "Snap to Free";
     emit snapPointEvent(snapEvent);
     */
-
-}
-
-
-void SnapManagerImpl::on_mouseRelease_Event(const MouseReleaseEvent& event) {
-    /*
-    if (_lastSnapEvent.status() == true) {
-        MouseReleaseEvent snappedLocation(_lastSnapEvent.snapPoint(), _entities);
-
-        if (event.mouseEvent()->button() & Qt::RightButton) {
-            emit mouseRightReleaseEvent(snappedLocation);
-        } else {
-            emit mouseReleaseEvent(snappedLocation);
-        }
-    } else {
-        if (event.mouseEvent()->button() & Qt::RightButton) {
-            emit mouseRightReleaseEvent(event);
-        } else {
-            emit mouseReleaseEvent(event);
-        }
-    }
-    */
 }
 
 
@@ -136,4 +126,8 @@ void SnapManagerImpl::setGridSnappable(bool gridSnappable) {
 
 bool SnapManagerImpl::isGridSnappable() const {
     return _gridSnappable;
+}
+
+Nano::Signal<void(const SnapPointEvent&)> &SnapManagerImpl::snapPointEvents() {
+    return _snapPointEvent;
 }
