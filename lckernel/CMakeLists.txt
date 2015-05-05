@@ -2,13 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LCKERNEL)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
-ADD_DEFINITIONS("-Wmissing-braces")
+ADD_DEFINITIONS("-Wno-missing-braces")
 
 # SOURCE FILES
 set(lckernel_srcs
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
+cad/base/visitor.h
 cad/dochelpers/documentimpl.cpp
 cad/dochelpers/entitycontainer.cpp
 cad/dochelpers/quadtree.cpp
@@ -58,7 +59,6 @@ cad/dochelpers/quadtree.h
 cad/dochelpers/storagemanagerimpl.h
 cad/dochelpers/undomanagerimpl.h
 cad/document/document.h
-cad/document/selectionmanager.h
 cad/document/storagemanager.h
 cad/document/undomanager.h
 cad/events/addentityevent.h
@@ -82,6 +82,7 @@ cad/geometry/geovector.h
 cad/interface/entitydispatch.h
 cad/interface/metatype.h
 cad/interface/snapable.h
+cad/interface/snapconstrain.h
 cad/math/lcmath.h
 cad/math/quadratic_math.h
 cad/meta/color.h
@@ -146,7 +147,7 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} cad/base/visitor.h)
+add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)

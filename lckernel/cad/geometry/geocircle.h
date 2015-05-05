@@ -31,13 +31,8 @@ namespace lc {
                  * \return lc::geo::Coordinate
                  */
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
-                /*!
-                 * \brief checks if Coordinate is on path
-                 * \param lc::geo::Coordinate coord
-                 * \return bool
-                 */
-                bool isCoordinateOnPath(const Coordinate& coord) const;
 
                  /**
                  * @brief quadratic, Returns quadratic for the entity

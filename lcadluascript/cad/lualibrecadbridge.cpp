@@ -146,6 +146,7 @@ void lua_openlckernel(lua_State* L) {
                                                                double radius,
                                                                const double startAngle,
                                                                const double endAngle,
+                                                               bool CCW,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
                                                    .beginExtendClass<entity::Ellipse, entity::CADEntity>("Ellipse")

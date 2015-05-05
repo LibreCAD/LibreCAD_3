@@ -5,7 +5,7 @@ using namespace lc;
 using namespace geo;
 
 Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle)
-        : Base(), _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(false) {
+        : Base(), _center(center), _radius(radius), _startAngle(Math::correctAngle(startAngle)), _endAngle(Math::correctAngle(endAngle)), _CCW(true) {
     /*
     if (startAngle<0.0 || startAngle>PI2 || startAngle<endAngle) {
         throw "Invalid start angle";
@@ -19,8 +19,8 @@ Arc::Arc(const Coordinate &center, double radius, double startAngle, double endA
 
 }
 
-Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle, bool reversed)
-        : Base(), _center(center), _radius(radius), _startAngle(startAngle), _endAngle(endAngle), _reversed(reversed) {
+Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW)
+        : Base(), _center(center), _radius(radius), _startAngle(Math::correctAngle(startAngle)), _endAngle(Math::correctAngle(endAngle)), _CCW(isCCW) {
 }
 
 Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinate &p3) {
@@ -48,7 +48,7 @@ Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinat
 }
 
 Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double bulge) {
-    auto reversed = bulge<0.;
+    auto isCCW = bulge>0.;
     auto alpha = atan(bulge)*4.;
 
     auto middle = p1.mid(p2);
@@ -60,7 +60,7 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
     auto h = std::sqrt(wu);
     auto angle = p1.angleTo(p2);
 
-    if (reversed) {
+    if (isCCW) {
         angle-=M_PI/2.0;
     } else {
         angle+=M_PI/2.0;
@@ -72,7 +72,7 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
 
     auto center = geo::Coordinate(angle) * h + middle;
 
-    return Arc(center, radius, center.angleTo(p1), center.angleTo(p2), reversed);
+    return Arc(center, radius, center.angleTo(p1), center.angleTo(p2), isCCW);
 }
 
 double Arc::radius() const {
@@ -94,21 +94,36 @@ const Coordinate Arc::center() const {
 Coordinate Arc::nearestPointOnPath(const Coordinate &coord) const {
     return center() + Coordinate((coord - center()).angle()) * radius();
 }
+Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
+    const auto angle = (coord - center()).angle();
 
-bool Arc::isCoordinateOnPath(const Coordinate &coord) const {
-    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
+    // if the angle is between start and stop then calculate the nearest point
+    // on it's entity
+    if (isAngleBetween(angle)) {
+        return center() + angle * radius();
+    }
+
+    // Find out if angle is closer to start or end and return teh appropriate coordinate
+    const auto ad1 = std::abs(angle - _startAngle);
+    const auto ad2 = std::abs(angle - _endAngle);
+
+    if (ad1<=ad2) {
+        return startP();
+    } else {
+        return endP();
+    }
 }
 
 double Arc::length() const {
-    if (startAngle() > endAngle()) {
+    if (_startAngle > _endAngle) {
         return std::abs((2. * M_PI + endAngle() - startAngle()) * radius());
     } else {
         return std::abs((endAngle() - startAngle()) * radius());
     }
 }
 
-double Arc::reversed() const {
-    return _reversed;
+bool Arc::CCW() const {
+    return _CCW;
 }
 
 Coordinate Arc::startP() const {
@@ -122,24 +137,36 @@ Coordinate Arc::endP() const {
 Area Arc::boundingBox() const {
     geo::Area area(startP(), endP());
 
-    const double startAngle = Math::correctAngle(_startAngle);
-    const double endAngle = Math::correctAngle(_endAngle);
+    const double startAngle = _startAngle;
+    const double endAngle = _endAngle;
     const double p0 = 0.0 * M_PI;
     const double p1 = 0.5 * M_PI;
     const double p2 = 1.0 * M_PI;
     const double p3 = 1.5 * M_PI;
 
-    if ((Math::isAngleBetween(p0, startAngle, endAngle, _reversed))) {
+    if ((Math::isAngleBetween(p0, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x() + _radius, _center.y()));
     }
-    if ((Math::isAngleBetween(p1, startAngle, endAngle, _reversed))) {
+    if ((Math::isAngleBetween(p1, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x(), _center.y() + _radius));
     }
-    if ((Math::isAngleBetween(p2, startAngle, endAngle, _reversed))) {
+    if ((Math::isAngleBetween(p2, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x() - _radius, _center.y()));
     }
-    if ((Math::isAngleBetween(p3, startAngle, endAngle, _reversed))) {
+    if ((Math::isAngleBetween(p3, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x(), _center.y() - _radius));
     }
     return area;
+}
+
+bool Arc::isAngleBetween(double angle) const {
+    return Math::isAngleBetween(angle, _startAngle, _endAngle, _CCW);
+
+    /*
+    auto cAngle = Math::correctAngle(angle);
+    if (_startAngle < _endAngle) {
+        return _startAngle > cAngle && cAngle > _endAngle;
+    } else {
+        return _startAngle < cAngle && cAngle < _endAngle;
+    }*/
 }

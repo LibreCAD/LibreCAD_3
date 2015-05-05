@@ -293,14 +293,16 @@ namespace lc {
                 std::vector<lc::EntityDistance> entities;
 
                 std::vector<CT> ent = _tree->retrieve(area);
+
                 for (auto item : ent) {
                     Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
 
                     if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                         lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
                         double cDistance = eCoordinate.distanceTo(point);
+
                         if (cDistance < distance) {
-                            entities.push_back(lc::EntityDistance(item, eCoordinate, cDistance));
+                            entities.emplace_back(item, eCoordinate);
                         }
                     }
                 }
@@ -319,7 +321,6 @@ namespace lc {
                         }
                     }
                 });*/
-                std::cerr << "\n";
 
                 return entities;
             }

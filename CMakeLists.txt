@@ -1,6 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
-ADD_DEFINITIONS("-Wmissing-braces")
 
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)

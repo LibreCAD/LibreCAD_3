@@ -19,7 +19,7 @@
 #include <cad/operations/builder.h>
 #include <documentcanvas.h>
 #include <lccairopainter.tcc>
-#include <drawitems/gradientbackground.h>
+#include <drawables/gradientbackground.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <lcadluascript.h>
 #include <string>
@@ -127,7 +127,8 @@ int main(int argc, char** argv) {
     auto _canvas = std::make_shared<DocumentCanvas>(_document);
 
     // Add backround
-    _canvas->addBackgroundItem(std::shared_ptr<LCVDrawItem>(new GradientBackground(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00))));
+    auto _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x90, 0x90, 0x90), lc::Color(0x00, 0x00, 0x00));
+    _canvas->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
 
     /* try to guess from file extension the output type */
     if (fType.empty()) {

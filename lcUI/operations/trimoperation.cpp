@@ -64,7 +64,7 @@ void TrimOperation::on_drawEvent(const DrawEvent& event) {
 
 void TrimOperation::on_LimitPropertiesAssigned() {
     std::vector<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
-    qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
+//    std::sort(enties.begin(), enties.end(), lc::EntityCoordinateSorter);
 
     if (enties.size() > 0) {
         lc::entity::CADEntity_CSPtr entity = enties.at(0).entity();
@@ -73,7 +73,7 @@ void TrimOperation::on_LimitPropertiesAssigned() {
 }
 void TrimOperation::on_TrimPropertiesAssigned() {
     std::vector<lc::EntityDistance> enties = this->_mouseReleaseEvent.entities();
-    qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
+   // qSort(enties.begin(), enties.end(), lc::EntityDistance::sortAscending);
 
     if (enties.size() > 0) {
         lc::entity::CADEntity_CSPtr entity = enties.at(0).entity();

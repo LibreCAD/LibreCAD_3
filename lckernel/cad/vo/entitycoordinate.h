@@ -10,58 +10,62 @@ namespace lc {
       *
       */
     class EntityCoordinate {
-        public:
-            /**
-              * EntityCoordinate constructor
-              * @param geo::Coordinate Coordinate on the entities path
-              * @param Distance to a calculated point. This was added to allow sorting of a list of EntityCoordinate.
-              * @param unsigned int ID number that identitifes the the coordinate
-              */
-            EntityCoordinate(const geo::Coordinate& point, double distance, int pointId) : _point(point), _distance(distance), _pointId(pointId) {
-            }
+    public:
+        /**
+          * EntityCoordinate constructor
+          * @param geo::Coordinate Coordinate on the entities path
+          * @param Distance to a calculated point. This was added to allow sorting of a list of EntityCoordinate.
+          * @param unsigned int ID number that identitifes the the coordinate
+          */
+        EntityCoordinate(const geo::Coordinate &point, int pointId) : _point(point), _pointId(pointId) {
+        }
 
-            /**
-             * @brief EntityCoordinate
-             * copy constructor
-             * @param ec
-             */
-            EntityCoordinate(const EntityCoordinate& ec) {
+        /**
+         * @brief EntityCoordinate
+         * copy constructor
+         * @param ec
+         */
+        EntityCoordinate(const EntityCoordinate &ec) {
+            _point = ec._point;
+            _pointId = ec._pointId;
+        }
+
+        EntityCoordinate &operator=(const EntityCoordinate &ec) {
+            if (this != &ec) {
                 _point = ec._point;
-                _distance = ec._distance;
                 _pointId = ec._pointId;
             }
 
-            EntityCoordinate& operator = (const EntityCoordinate& ec) {
-                if (this != &ec) {
-                    _point = ec._point;
-                    _distance = ec._distance;
-                    _pointId = ec._pointId;
-                }
+            return *this;
+        }
 
-                return *this;
-            }
+        geo::Coordinate coordinate() const {
+            return _point;
+        }
 
-            geo::Coordinate coordinate() const {
-                return _point;
-            }
+        int pointId() const {
+            return _pointId;
+        }
 
-            int distance() const {
-                return _distance;
-            }
 
-            int pointId() const {
-                return _pointId;
-            }
-
-            static bool sortAscending(const EntityCoordinate& s1 , const EntityCoordinate& s2) {
-                return s1.distance() < s2.distance();
-            }
-
-        private:
-            geo::Coordinate _point;
-            double _distance;
-            int _pointId;
+    private:
+        geo::Coordinate _point;
+        int _pointId;
     };
+
+    struct EntityCoordinateSorter {
+        EntityCoordinateSorter(const geo::Coordinate &reference) : _reference(reference) { }
+
+        bool operator()(const EntityCoordinate &i1, const EntityCoordinate &i2) {
+            const auto d1 = i1.coordinate().distanceTo(_reference);
+            const auto d2 = i2.coordinate().distanceTo(_reference);
+            return d1 < d2;
+        }
+
+        geo::Coordinate _reference;
+    };
+
+
 }
 
 // ENTITYCOORDINATE_H

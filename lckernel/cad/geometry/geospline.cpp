@@ -94,10 +94,9 @@ Coordinate Spline::nearestPointOnPath(const Coordinate &coord) const {
      */
     return Coordinate();
 }
-
-bool Spline::isCoordinateOnPath(const Coordinate &coord) const {
+Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
     /* TODO implement
      * fix compiler warning
      */
-    return false;
+    return Coordinate();
 }

@@ -17,7 +17,7 @@ namespace lc {
               * @param unsigned int ID number that identitifes the the coordinate
               *
               */
-            EntityDistance(entity::CADEntity_CSPtr cadEntity, const geo::Coordinate &coordinate, double distance) : _cadEntity(cadEntity), _coordinate(coordinate), _distance(distance) {
+            EntityDistance(entity::CADEntity_CSPtr cadEntity, const geo::Coordinate &coordinate) : _cadEntity(cadEntity), _coordinate(coordinate) {
 
             }
 
@@ -25,21 +25,24 @@ namespace lc {
                 return _cadEntity;
             }
 
-            int distance() const {
-                return _distance;
-            }
-
             geo::Coordinate coordinate() const {
                 return _coordinate;
-            }
-
-            static bool sortAscending(const EntityDistance& s1 , const EntityDistance& s2) {
-                return s1.distance() < s2.distance();
             }
 
         private:
             entity::CADEntity_CSPtr _cadEntity;
              geo::Coordinate _coordinate;
-             double _distance;
+    };
+
+    struct EntityDistanceSorter {
+        EntityDistanceSorter(const geo::Coordinate &reference) : _reference(reference) { }
+
+        bool operator()(const EntityDistance &i1, const EntityDistance &i2) {
+            const auto d1 = i1.coordinate().distanceTo(_reference);
+            const auto d2 = i2.coordinate().distanceTo(_reference);
+            return d1 < d2;
+        }
+
+        geo::Coordinate _reference;
     };
 }

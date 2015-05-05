@@ -79,8 +79,8 @@ static lc::entity::Line_SPtr lua_line1(const lc::geo::Coordinate& start, const l
 static lc::entity::Circle_SPtr lua_circle1(const lc::geo::Coordinate& center, double radius, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::entity::Circle>(center, radius, layer, metaInfo);
 }
-static lc::entity::Arc_SPtr lua_arc1(const lc::geo::Coordinate& center, double radius, double startAngle, double endAngle, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
-    return std::make_shared<lc::entity::Arc>(center, radius, startAngle, endAngle, layer, metaInfo);
+static lc::entity::Arc_SPtr lua_arc1(const lc::geo::Coordinate& center, double radius, double startAngle, double endAngle, bool CCW, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return std::make_shared<lc::entity::Arc>(center, radius, startAngle, endAngle, CCW, layer, metaInfo);
 }
 static lc::entity::Point_SPtr lua_point(const lc::geo::Coordinate& center, const lc::Layer_CSPtr layer) {
     return std::make_shared<lc::entity::Point>(center, layer, nullptr);

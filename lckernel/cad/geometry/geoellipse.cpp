@@ -48,6 +48,15 @@ Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
     return Coordinate();
 }
 
+Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
+    /* TODO implement
+     * fix compiler warning
+     */
+    return Coordinate();
+}
+
+/*
+ * DEPRECATED, but keeping source for reference
 bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {
     double t = fabs(tolerance);
     double a = majorRadius();
@@ -81,6 +90,7 @@ bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) cons
 
     return Math::isAngleBetween(cord.angle(), startAngle(), endAngle(), isReversed());
 }
+ */
 
 double Ellipse::endAngle() const {
     return _endAngle;

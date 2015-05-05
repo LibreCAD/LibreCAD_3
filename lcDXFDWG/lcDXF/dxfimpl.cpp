@@ -89,9 +89,10 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+    std::cerr << data.staangle << ":" << data.endangle << ":" << data.isccw << "\n";
     _builder->append(std::make_shared<lc::entity::Arc>(coord(data.basePoint),
                                                data.radious,
-                                               data.staangle, data.endangle, layer, mf));
+                                               data.staangle, data.endangle, data.isccw, layer, mf));
 
 }
 

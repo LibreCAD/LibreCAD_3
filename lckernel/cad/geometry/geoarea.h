@@ -218,6 +218,13 @@ namespace lc {
                 }
 
                 /**
+                 * Increase the area on each side by increaseBy
+                 */
+                inline Area increaseBy (double increaseBy) const {
+                    return Area(_minP - increaseBy, _maxP + increaseBy);
+                }
+
+                /**
                  * @brief right
                  * vector of this area
                  * @return

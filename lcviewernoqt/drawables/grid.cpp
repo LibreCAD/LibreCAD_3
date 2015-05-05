@@ -99,29 +99,33 @@ void Grid::draw(DrawEvent const & event) const {
   * Return a number of snap points, grid will always return 1
   *
   */
-std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
-
-    double mx = coord.x() * 1.0 * (1/_convUnit);
-    double my = coord.y() * 1.0 * (1/_convUnit);
-    double gs = this->_lastGridSize * 1.0 * (1/_convUnit);
-
-
-    double x, y;
-
-    if (mx < 0.0) {
-        x = (mx - gs / 2 * (1/_convUnit)) - fmod(mx - gs / 2 * (1/_convUnit), -gs);
-    } else {
-        x = (mx + gs / 2 * (1/_convUnit)) - fmod(mx + gs / 2 * (1/_convUnit), gs);
-    }
-
-    if (my < 0.0) {
-        y = (my - gs / 2 * (1/_convUnit)) - fmod(my - gs / 2 * (1/_convUnit), -gs);
-    } else {
-        y = (my + gs / 2 * (1/_convUnit)) - fmod(my + gs / 2 * (1/_convUnit), gs);
-    }
-
+std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& coord,  const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<lc::EntityCoordinate> points;
-    points.push_back(lc::EntityCoordinate(lc::geo::Coordinate(x, y), (lc::geo::Coordinate(x, y) - coord).magnitude(), 0));
+
+    if (constrain.constrain() & lc::SimpleSnapConstrain::Constrain::LOGICAL) {
+
+        double mx = coord.x() * 1.0 * (1/_convUnit);
+        double my = coord.y() * 1.0 * (1/_convUnit);
+        double gs = this->_lastGridSize * 1.0 * (1/_convUnit);
+
+
+        double x, y;
+
+        if (mx < 0.0) {
+            x = (mx - gs / 2 * (1/_convUnit)) - fmod(mx - gs / 2 * (1/_convUnit), -gs);
+        } else {
+            x = (mx + gs / 2 * (1/_convUnit)) - fmod(mx + gs / 2 * (1/_convUnit), gs);
+        }
+
+        if (my < 0.0) {
+            y = (my - gs / 2 * (1/_convUnit)) - fmod(my - gs / 2 * (1/_convUnit), -gs);
+        } else {
+            y = (my + gs / 2 * (1/_convUnit)) - fmod(my + gs / 2 * (1/_convUnit), gs);
+        }
+
+        points.push_back(lc::EntityCoordinate(lc::geo::Coordinate(x, y), 0));
+    }
+
     return points;
 }
 

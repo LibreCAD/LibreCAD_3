@@ -7,7 +7,6 @@
 #include <memory>
 
 
-
 namespace lc {
     namespace geo {
         class Base;
@@ -209,6 +208,7 @@ namespace detail {
                 // static cast is suffisant if arg is the abstract type
                 // when given arg is concrete type, reinterpret_cast is required.
                 // TODO: build a smaller table with only possible value to avoid that
+//                return f(static_cast<typename std::tuple_element<Is, RetTuple>::type>(std::get<Is>(arg))...);
                 return f(reinterpret_cast<typename std::tuple_element<Is, RetTuple>::type>(std::get<Is>(arg))...);
             }
         };
@@ -308,7 +308,7 @@ namespace lc {
     using GeoEntityVisitor = IVisitorTs<
             lc::Visitable,
             geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse,
-            entity::Point, entity::Line,  entity::Arc, entity::Circle, entity::Ellipse,
+            entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse,
             entity::LWPolyline>;
 
     class Visitable {

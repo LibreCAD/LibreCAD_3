@@ -24,24 +24,41 @@ Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), Vect
 
 
 
-std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
-    points.push_back(EntityCoordinate(start(), (start() - coord).magnitude(), 0));
-    points.push_back(EntityCoordinate(end(), (end() - coord).magnitude(), 1));
+    if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+        points.emplace_back(start(), 0);
+        points.emplace_back(end(), 1);
+    }
+
 
     geo::Coordinate npoe = nearestPointOnPath(coord);
+
+    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
+        points.emplace_back(npoe, 2);
+    }
+
+    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) {
+        if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
+            points.emplace_back(npoe, 3);
+        }
+    }
+
+
+    points.push_back(EntityCoordinate(start(), 0));
+    points.push_back(EntityCoordinate(end(), 1));
+
     geo::Coordinate rVector = npoe - coord;
 
     double distance = rVector.magnitude();
 
     if (distance < minDistanceToSnap) {
-        points.push_back(EntityCoordinate(npoe, distance, -1));
+        points.push_back(EntityCoordinate(npoe, -1));
     }
 
-    // Sort by distance and take first XX elements
-    std::sort(points.begin() , points.end(), EntityCoordinate::sortAscending);
-    points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+    // Cleanup array of snappoints
+    Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
     return points;
 }
 

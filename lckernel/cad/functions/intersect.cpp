@@ -37,7 +37,7 @@ bool Intersect::operator()(lc::geo::Vector &v, lc::entity::Line &l) {
 }
 
 bool Intersect::operator()(lc::geo::Vector &v, lc::entity::Circle &circle) {
-    geovisit(v, lc::geo::Arc(circle.center(), circle.radius(), 0., 2 * M_PI));
+    geovisit(v, lc::geo::Arc(circle.center(), circle.radius(), -M_PI, M_PI));
     return false;
 }
 
@@ -101,7 +101,7 @@ bool Intersect::operator()(lc::entity::Line &l1, lc::entity::Line &l2) {
 }
 
 bool Intersect::operator()(lc::entity::Line &l, lc::entity::Circle &circle) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(circle.center(), circle.radius(), 0., 2 * M_PI));
+    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(circle.center(), circle.radius(), -M_PI, M_PI));
     return false;
 }
 
@@ -188,7 +188,7 @@ bool Intersect::operator()(lc::entity::Point &, lc::entity::LWPolyline &) {
 
 // Circle
 bool Intersect::operator()(lc::entity::Circle &circle, lc::geo::Vector &v) {
-    geovisit(v, lc::geo::Arc(circle.center(), circle.radius(), 0., 2 * M_PI));
+    geovisit(v, lc::geo::Arc(circle.center(), circle.radius(), -M_PI, M_PI));
     return false;
 }
 
@@ -198,7 +198,7 @@ bool Intersect::operator()(lc::entity::Circle &c, lc::entity::Point &p) {
 }
 
 bool Intersect::operator()(lc::entity::Circle &circle, lc::entity::Line &l) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(circle.center(), circle.radius(), 0., 2 * M_PI));
+    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(circle.center(), circle.radius(), -M_PI, M_PI));
     return false;
 }
 
@@ -218,7 +218,7 @@ bool Intersect::operator()(lc::entity::Circle &circle, lc::entity::Arc &arc) {
     } else {
         for (auto &point : coords) {
             double a = (point - arc.center()).angle();
-            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.reversed())) {
+            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.CCW())) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -245,7 +245,7 @@ bool Intersect::operator()(lc::entity::Circle &c, lc::entity::Spline &s) {
 
 bool Intersect::operator()(lc::entity::Circle &c, lc::entity::LWPolyline &l) {
     auto &list1 = l.asGeometrics();
-    auto a = lc::geo::Arc(c.center(), c.radius(), 0, 2 * M_PI);
+    auto a = lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI);
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
     // to use double dispatch can decide to use a specific implementation.
@@ -567,8 +567,8 @@ void Intersect::geovisit(const geo::Vector &line, const geo::Arc &arc) {
     } else {
         for (auto &point : coords) {
             double a = (point - arc.center()).angle();
-            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.reversed()) &&
-                line.isCoordinateOnPath(point)) {
+            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.CCW()) &&
+                line.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -584,8 +584,8 @@ void Intersect::geovisit(const geo::Arc &arc1, const geo::Arc &arc2) {
         for (auto &point : coords) {
             double a1 = (point - arc1.center()).angle();
             double a2 = (point - arc2.center()).angle();
-            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.reversed()) &&
-                Math::isAngleBetween(a2, arc2.startAngle(), arc2.endAngle(), arc2.reversed())) {
+            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW()) &&
+                Math::isAngleBetween(a2, arc2.startAngle(), arc2.endAngle(), arc2.CCW())) {
                 _intersectionPoints.push_back(point);
             }
         }

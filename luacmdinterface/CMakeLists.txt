@@ -1,7 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LudaCmdInterface)
 ADD_DEFINITIONS(-std=c++11)
-
+ADD_DEFINITIONS("-Wall")
+ADD_DEFINITIONS("-Wno-missing-braces")
 
 find_package(PkgConfig)
 pkg_check_modules(CAIRO REQUIRED cairo)

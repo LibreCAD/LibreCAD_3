@@ -1,12 +1,21 @@
 #include "code.h"
 #include "gtest/gtest.h"
 #include "entitytest.h"
+#include "testmath.h"
+#include "testgeocircle.h"
+
 using namespace std;
 using namespace lc;
 using namespace entity;
 
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
+    /*
+    lc::entity::Circle c(lc::geo::Coordinate(0,0), 3, nullptr);
+    lc::entity::Line l(lc::geo::Coordinate(0,0), lc::geo::Coordinate(0,0), nullptr);
+    lc::Intersect intersect(lc::Intersect::OnPath, LCTOLERANCE);
+    visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, l, l);*/
+
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
@@ -46,8 +55,8 @@ TEST(test, quartic) {
 
 TEST(test, testin) {
     test a;
-    const double rootY = 200. / sqrt(100.*100. + 1.);
-    const double rootX = 100.*rootY;
+    const double rootY = 200. / sqrt(100. * 100. + 1.);
+    const double rootX = 100. * rootY;
     EXPECT_DOUBLE_EQ(-rootX, a.testin()[0].x());
     EXPECT_DOUBLE_EQ(-rootY, a.testin()[0].y());
     EXPECT_DOUBLE_EQ(rootX, a.testin()[1].x());
@@ -56,7 +65,7 @@ TEST(test, testin) {
 
 TEST(entitytest, LineMove) {
     entitytest a;
-    std::vector <Line_CSPtr>_a = a.LineMove();
+    std::vector<Line_CSPtr> _a = a.LineMove();
 
     EXPECT_DOUBLE_EQ(10.0, round(_a[0]->start().x()));
     EXPECT_DOUBLE_EQ(10.0, round(_a[0]->start().y()));
@@ -569,3 +578,4 @@ TEST(entitytest, EllipseScale) {
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
 }
+

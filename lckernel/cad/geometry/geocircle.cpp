@@ -21,7 +21,7 @@ double Circle::radius() const {
 Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
     return center() + Coordinate((coord - center()).angle()) * radius();
 }
-
-bool Circle::isCoordinateOnPath(const Coordinate& coord) const {
-    return (nearestPointOnPath(coord) - coord).magnitude() < 1.0e-4;
+Coordinate Circle::nearestPointOnEntity(const Coordinate& coord) const {
+    return center() + Coordinate((coord - center()).angle()) * radius();
 }
+

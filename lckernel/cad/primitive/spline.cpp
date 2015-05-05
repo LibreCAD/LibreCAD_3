@@ -24,7 +24,7 @@ Spline::Spline(const Spline_CSPtr other, bool sameID) : CADEntity(other, sameID)
         other->nX(), other->nY(), other->nZ()) {
 }
 
-std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     /* TODO implement
      * fix compiler warning
      */

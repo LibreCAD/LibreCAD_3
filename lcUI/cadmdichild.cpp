@@ -37,7 +37,7 @@
 #include <cad/meta/metacolor.h>
 #include <drawables/gradientbackground.h>
 #include <drawables/grid.h>
-
+#include <cad/math/lcmath.h>
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
 
@@ -140,15 +140,16 @@ void CadMdiChild::newDocument() {
     builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 2.*M_PI, layer));
+    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 2.*M_PI, false, layer));
     builder->append(std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
-    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 0, 1.*M_PI, layer));
+    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 0, 1.*M_PI, false, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 0, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
     //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
     builder->execute();
+    bool foo=false;
 
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();
@@ -179,12 +180,13 @@ void CadMdiChild::import(std::string str) {
 
 //    SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(), _grid, 25.);
+    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(),  _grid, 25.);
+    viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
     _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
     viewer->documentCanvas()->background().connect<lc::Cursor, &lc::Cursor::onDraw>(_cursor.get());
-
+    _snapManager->snapPointEvents().connect<lc::Cursor, &lc::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
@@ -330,7 +332,7 @@ void CadMdiChild::on_addArcs_clicked() {
 
         s = randInt(0, 180) / (360.0 / M_PI / 2);
         e = randInt(180, 360) / (360.0 / M_PI / 2);
-        builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(x1, y1), r, s, e, layer));
+        builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(x1, y1), r, s, e, false, layer));
     }
 
     builder->execute();

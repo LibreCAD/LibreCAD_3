@@ -3,6 +3,7 @@
 #include "snapmanager.h"
 #include "../documentcanvas.h"
 #include "../events/LocationEvent.h"
+#include <cad/interface/snapconstrain.h>
 
 class MouseMoveEvent;
 class SnapPointEvent;
@@ -31,7 +32,12 @@ class SnapManagerImpl : public SnapManager {
     public:
         virtual void setDeviceLocation(int x, int y);
 
-         virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents();
+
+        lc::SimpleSnapConstrain snapConstrain() const;
+
+        void snapConstrain(const lc::SimpleSnapConstrain & _snapConstrain);
+
+    virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents();
     private:
 
         // Grid is snapable
@@ -59,6 +65,8 @@ class SnapManagerImpl : public SnapManager {
         Nano::Signal<void(const SnapPointEvent&)> _snapPointEvent;
 
         DocumentCanvas_SPtr _view;
+
+        lc::SimpleSnapConstrain _snapConstrain;
 };
 
 // SNAPMANAGERIMPL_H

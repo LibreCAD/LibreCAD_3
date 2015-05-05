@@ -42,7 +42,7 @@ namespace lc {
             Circle(const Circle_CSPtr other, bool sameID = false);
 
         public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, double minDistanceToSnap,
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const;

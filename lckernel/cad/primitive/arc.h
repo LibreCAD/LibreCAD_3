@@ -29,6 +29,7 @@ namespace lc {
          * @param Layer_CSPtr layer, layer of entity
          */
             Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
+                bool isCCW,
                 const Layer_CSPtr layer);
 
             /**
@@ -41,6 +42,7 @@ namespace lc {
          * @param MetaTypes metaTypes
          */
             Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
+                bool CCW,
                 const Layer_CSPtr layer,
                 const MetaInfo_CSPtr metaInfo);
 
@@ -88,7 +90,7 @@ namespace lc {
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
 
         public:
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, double minDistanceToSnap,
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const;

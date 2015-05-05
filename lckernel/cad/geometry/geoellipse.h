@@ -63,7 +63,7 @@ namespace lc {
                 Coordinate endPoint() const;
 
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                bool isCoordinateOnPath(const Coordinate& coord, double tolerance) const;
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
                 /**
                  * @brief isArc
                  * @return true if entity is an elliptic arc

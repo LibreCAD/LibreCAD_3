@@ -1,8 +1,6 @@
 #include "snapmanagerimpl.h"
-#include "cad/functions/intersect.h"
-#include "cad/vo/entitydistance.h"
-#include "../events/mousemoveevent.h"
-
+#include <cad/vo/entitycoordinate.h>
+#include <cad/primitive/circle.h>
 
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap), _view(view) {
 
@@ -15,6 +13,10 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr gr
 */
 }
 
+/**
+ * I am considering to make this function such that the order of testing ofr snap point's
+ * are done based on some functor where we can change the order.
+ */
 void SnapManagerImpl::setDeviceLocation(int x, int y) {
     double x_ = x;
     double y_ = y;
@@ -40,48 +42,44 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
     // Find all entities that are close to the current mouse pointer
 
-    auto entities = _view->entityContainer().getEntitiesNearCoordinate(location, realDistanceForPixels);
+    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntitiesNearCoordinate(location, realDistanceForPixels);
 
     if (entities.size() > 0) {
-        auto item = entities.begin();
-//        auto event = SnapPointEvent(location);
-        auto event = SnapPointEvent(item->coordinate());
-        _snapPointEvent(event);
-
-
-        std::cerr << "Found " << entities.size() << " entities close to the cursor" << location.x() << ":" << location.y() << "\n";
-    } else {
-        std::cerr << ".";
+        // auto item = entities.begin();
+        // auto event = SnapPointEvent(item->coordinate());
+        // _snapPointEvent(event);
+        // std::cerr << "Found " << entities.size() << " entities close to the cursor" << location.x() << ":" << location.y() << "\n";
     }
-/*
+
     // Emit Snappoint event if a entity intersects with a other entity
     // TODO: Need some modification to find the closest intersection point
-    if (_entities.size() > 1) {
-        qSort(_entities.begin() , _entities.end(), lc::EntityDistance::sortAscending);
+    if (entities.size() > 1) {
+        std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
 
-        for (size_t a = 0; a < _entities.size(); a++) {
-            for (size_t b = a + 1; b < _entities.size(); b++) {
-                lc::entity::CADEntity_CSPtr i1 = _entities.at(a).entity();
-                lc::entity::CADEntity_CSPtr i2 = _entities.at(b).entity();
+        for (size_t a = 0; a < entities.size(); a++) {
+            for (size_t b = a + 1; b < entities.size(); b++) {
+                lc::entity::CADEntity_CSPtr i1 = entities.at(a).entity();
+                lc::entity::CADEntity_CSPtr i2 = entities.at(b).entity();
+                lc::Intersect intersect(lc::Intersect::OnPath, LCTOLERANCE);
 
-                lc::Intersect intersect(lc::Intersect::OnPath, 1.0e-4);
-// VISITOR                   i1->accept(i2, intersect);
+
 
                 if (intersect.result().size() > 0) {
                     std::vector<lc::geo::Coordinate> coords = intersect.result();
-                    qSort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(event.mousePosition()));
+                    std::sort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(location));
                     lc::geo::Coordinate sp = coords.at(0);
 
-                    if ((event.mousePosition() - sp).magnitude() < realDistanceForPixels) {
-                        SnapPointEvent snapEvent(sp);
-                        _lastSnapEvent = snapEvent;
-                        emit snapPointEvent(snapEvent);
+                    if ((location - sp).magnitude() < realDistanceForPixels) {
+                        auto item = entities.begin();
+                        auto event = SnapPointEvent(sp);
+                        _snapPointEvent(event);
                         return;
                     }
                 }
             }
         }
     }
+    /*
 
     // Emit snappoint based on closest entity
     if (_entities.size() > 0) {
@@ -96,27 +94,26 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         emit snapPointEvent(snapEvent);
         return;
     }
+    */
 
     // If no entity was found to snap against, then snap to grid
     if (_gridSnappable == true) {
-        std::vector<lc::EntityCoordinate> points = _grid->snapPoints(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()), realDistanceForPixels, 1);
-
+        std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels, 1);
+        std::cerr << "_gridSnappable" << _gridSnappable << "\n";
         if (points.size() > 0) {
-            SnapPointEvent snapEvent(points.at(0).coordinate());
-            _lastSnapEvent = snapEvent;
-            qDebug() << "Snap to Grid";
-            emit snapPointEvent(snapEvent);
+            auto item = entities.begin();
+            auto event = SnapPointEvent(points.at(0).coordinate());
+            _snapPointEvent(event);
             return;
         }
     }
 
     // FIXME: Currently sending a snapEvent so the cursor get's updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
-    SnapPointEvent snapEvent(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()));
-    _lastSnapEvent = snapEvent;
-    qDebug() << "Snap to Free";
-    emit snapPointEvent(snapEvent);
-    */
+    //SnapPointEvent snapEvent(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()));
+    //_lastSnapEvent = snapEvent;
+    //qDebug() << "Snap to Free";
+    //emit snapPointEvent(snapEvent);
 }
 
 
@@ -125,9 +122,16 @@ void SnapManagerImpl::setGridSnappable(bool gridSnappable) {
 }
 
 bool SnapManagerImpl::isGridSnappable() const {
-    return _gridSnappable;
+    //return _gridSnappable;
 }
 
 Nano::Signal<void(const SnapPointEvent&)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;
+}
+lc::SimpleSnapConstrain SnapManagerImpl::snapConstrain() const {
+    return _snapConstrain;
+}
+
+void SnapManagerImpl::snapConstrain(const lc::SimpleSnapConstrain & snapConstrain) {
+    _snapConstrain = snapConstrain;
 }

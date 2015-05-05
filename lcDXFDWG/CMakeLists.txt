@@ -2,6 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LCDWGDXF)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
+ADD_DEFINITIONS("-Wno-missing-braces")
+
 # HEADER FILES
 #RVT lcDWG/dwgimpl.cpp
 set(lcdxfdwg_srcs

@@ -13,12 +13,12 @@ namespace lc {
                  * @param a, angle
                  * @param a1, angle1
                  * @param a2, angle2
-                 * @param reversed, reverse check
+                 * @param bool, CCW Counter Clickwise Check
                  * @return bool
                  */
             static bool isAngleBetween(double a,
-                                       double a1, double a2,
-                                       bool reversed);
+                                       double start, double end,
+                                       bool CCW);
 
             /**
              * @brief correctAngle, Corrects angle to be in 0 - 2 * PI
@@ -31,10 +31,10 @@ namespace lc {
              * @brief getAngleDifference, Angle difference between 2 angles
              * @param double a1, angle 1
              * @param double a2, angle 2
-             * @param bool reversed, reverse check
+             * @param bool, CCW Counter Clickwise Check
              * @return double angle difference
              */
-            static double getAngleDifference(double a1, double a2, bool reversed) ;
+            static double getAngleDifference(double a1, double a2, bool CCW) ;
 
             /**
              * @brief quadraticSolver, Quadratic equations solver

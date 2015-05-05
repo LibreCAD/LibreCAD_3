@@ -44,8 +44,6 @@ namespace lc {
 
             virtual ~CADEntity() = default;
 
-            virtual void dispatch(EntityDispatch &) const = 0;
-
             /*!
              * \brief Function for Move
              *
@@ -125,6 +123,9 @@ namespace lc {
             }
 
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+
+            virtual void dispatch(EntityDispatch &) const = 0;
+
         private:
             Layer_CSPtr _layer;
             MetaInfo_CSPtr _metaInfo;

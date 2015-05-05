@@ -67,7 +67,7 @@ namespace lc {
                  * @return geo::Coordinate coordinate
                  */
                 Coordinate flipXY() const {
-                    return Coordinate(this->y(), this->x());
+                    return Coordinate(this->y(), this->x(), this->z());
                 }
 
                 /**

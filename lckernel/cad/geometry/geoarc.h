@@ -13,19 +13,38 @@ namespace lc {
 
         class Arc  : public Base, virtual public Visitable {
             public:
+
+                /**
+                 * Create a new Arc
+                 * center center location
+                 * radius radius of the arc
+                 * startAngle, will be corrected to 0..2*PI
+                 * endAngle, will be corrected to 0..2*PI
+                 *
+                 * Arc will always be setup such that startAngle will increase or decrease to endAngle
+                 * So it's perfectly possible to have a startAngle > endAngle
+                 */
                 Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
-                Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool reversed);
+                /**
+                 * Create a new Arc
+                 * center center location
+                 * radius radius of the arc
+                 * startAngle, will be corrected to 0..2*PI
+                 * endAngle, will be corrected to 0..2*PI
+                 * CCW, setup arc to be drawn ClockWise or counter clockwise
+                 */
+                Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool CCW);
 
                 static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
                 static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);
 
-                Arc(const Arc &c) : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _reversed(c._reversed) {}
+                Arc(const Arc &c) : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _CCW(c._CCW) {}
                 Arc(Arc &&c) noexcept {
                     std::swap(_center, c._center);
                     std::swap(_radius, c._radius);
                     std::swap(_startAngle, c._startAngle);
                     std::swap(_endAngle, c._endAngle);
-                    std::swap(_reversed, c._reversed);
+                    std::swap(_CCW, c._CCW);
                 }
 
                 Arc& operator = (Arc&& c) noexcept {
@@ -33,7 +52,7 @@ namespace lc {
                     std::swap(_radius, c._radius);
                     std::swap(_startAngle, c._startAngle);
                     std::swap(_endAngle, c._endAngle);
-                    std::swap(_reversed, c._reversed);
+                    std::swap(_CCW, c._CCW);
                     return *this;
                 }
 
@@ -86,10 +105,10 @@ namespace lc {
                  * \brief Returns of the arc is in reversed direction
                  * \return Double reversed.
                  */
-                double reversed() const;
+                bool CCW() const;
 
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                bool isCoordinateOnPath(const Coordinate& coord) const;
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
                 /**
                  * @brief quadratic, Returns quadratic for the entity
@@ -105,6 +124,9 @@ namespace lc {
                     return ret;
                 }
 
+                // test of the given angle is between the start and end angle of this arc.
+                bool isAngleBetween(double angle) const;
+
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Arc& a) {
@@ -117,7 +139,7 @@ namespace lc {
                 double _radius; /*!< Double _Radius of Arc */
                 double _startAngle;/*!< Double startAngle of Arc */
                 double _endAngle;/*!< Double endAngle of Arc */
-                bool _reversed;
+                bool _CCW;
         };
     }
 }

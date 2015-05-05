@@ -27,7 +27,7 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
     auto draw_arc = [&painter](lc::geo::Coordinate const & p1, lc::geo::Coordinate const & p2, double const bulge) {
        auto &&a = lc::geo::Arc::createArcBulge(p1, p2, bulge);
         painter.new_sub_path();
-        if (a.reversed()) {
+        if (a.CCW()) {
             painter.arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
         } else {
             painter.arc(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());

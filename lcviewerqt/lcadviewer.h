@@ -88,9 +88,8 @@ class LCADViewer : public QWidget {
 
         /* for panning */
         bool _altKeyActive;
-        bool _mouseScrollKeyActive;
-
         std::shared_ptr<DocumentCanvas> _docCanvas;
+        bool _mouseScrollKeyActive;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 

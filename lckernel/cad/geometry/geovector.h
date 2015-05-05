@@ -33,6 +33,9 @@ namespace lc {
                     return *this;
                 }
 
+                /**
+                 * Return the neatrest point on the entities path
+                 */
                 inline Coordinate nearestPointOnPath(const Coordinate& coord) const {
                     Coordinate direction = this->end() - this->start();
                     Coordinate vpc = coord - this->start();
@@ -40,6 +43,24 @@ namespace lc {
                     return vpc;
                 }
 
+                /**
+                 * Return the nearest point on the entity
+                 */
+                inline Coordinate nearestPointOnEntity(const Coordinate& coord) const {
+                    const auto vpc = nearestPointOnPath(coord);
+                    // Note, I could use Area for this but didn't want that dependency here
+                    const geo::Coordinate minP(Coordinate(std::min(_start.x()-LCTOLERANCE, _end.x()-LCTOLERANCE), std::min(_start.y()-LCTOLERANCE, _end.y()-LCTOLERANCE)));
+                    const geo::Coordinate maxP(Coordinate(std::max(_start.x()+LCTOLERANCE, _end.x()+LCTOLERANCE), std::max(_start.y()+LCTOLERANCE, _end.y()+LCTOLERANCE)));
+
+                    bool inArea = (vpc.x() >= minP.x() && vpc.x() <= maxP.x() && vpc.y() >= minP.y() && vpc.y() <= maxP.y());
+                    if (inArea) {
+                        return vpc;
+                    } else {
+                        const double dStart = coord.distanceTo(start());
+                        const double dEnd = coord.distanceTo(end());
+                        return dStart < dEnd?start():end();
+                    }
+                }
                 /*
                 inline bool isCoordinateOnPath(const Coordinate& coord) const {
                     geo::Area area(_start, _end);
@@ -50,21 +71,30 @@ namespace lc {
                     return false;
                 }*/
 
+                /**
+                 * Use nearestPointOnEntity or nearestPointOnPath and test for the distance
                 inline bool isCoordinateOnPath(const Coordinate& coord) const {
 
                     geo::Coordinate minP(Coordinate(std::min(_start.x()-LCTOLERANCE, _end.x()-LCTOLERANCE), std::min(_start.y()-LCTOLERANCE, _end.y()-LCTOLERANCE)));
                     geo::Coordinate maxP(Coordinate(std::max(_start.x()+LCTOLERANCE, _end.x()+LCTOLERANCE), std::max(_start.y()+LCTOLERANCE, _end.y()+LCTOLERANCE)));
 
-                    bool inArea = (coord.x() >= minP.x() && coord.x() <= maxP.x() && coord.y() >= minP.y() && coord.y() <= maxP.y());
+                    // bool inArea = (coord.x() >= minP.x() && coord.x() <= maxP.x() && coord.y() >= minP.y() && coord.y() <= maxP.y());
 
-                    if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < LCTOLERANCE)) {
+                    // We might need a other cunction called 'isCoordinateOnEntity' and we use the below condition
+                    //if (inArea && ((nearestPointOnPath(coord) - coord).magnitude() < LCTOLERANCE)) {
+                    //    return true;
+                    //}
+
+
+                    if ((nearestPointOnPath(coord) - coord).magnitude() < LCTOLERANCE) {
                         return true;
                     }
 
                     return false;
-                }
+                }                 */
 
-                /**
+
+            /**
                  * @return The angle of the line (from start to endpoint).
                  */
                 double Angle1() const {

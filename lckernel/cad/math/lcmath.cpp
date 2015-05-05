@@ -8,7 +8,7 @@ using namespace geo;
 
 /**
  * Tests if angle a is between a1 and a2. a, a1 and a2 must be in the
- * range between 0 and 2*PI.
+ * range between -PI and PI.
  * All angles in rad.
  *
  * @param reversed true for clockwise testing. false for ccw testing.
@@ -16,44 +16,45 @@ using namespace geo;
  */
 
 bool Math::isAngleBetween(double a,
-                          double a1, double a2,
-                          bool reversed) {
+                          double start, double end,
+                          bool CCW) {
 
-    //    bool ret = false;
+    bool startOk, endOK;
+    double aa;
 
-    if (reversed) {
-        std::swap(a1, a2);
+    if (a<0. && start > 0.) {
+        start = correctAngle(start-2.*M_PI);
     }
 
-    //a1 and a2 almost the same angle
-    // the |a2-a1| % (2 pi)=0 means the whole angular range
-    if (std::abs(std::remainder(correctAngle(a2 - a1) , 2.*M_PI)) < TOLERANCE_ANGLE) {
-        return true;
+//    end = correctAngle(end+2.*M_PI);
+    if (a < 0.) aa = correctAngle(a + 2. * M_PI); else aa = a;
+    if ((aa - start) > 0.) startOk = true; else startOk = false;
+
+    if (a > 0.) aa = correctAngle(a - 2. * M_PI); else aa = a;
+    if ((aa - end) < 0.) endOK = true; else endOK = false;
+
+    if (CCW) {
+        return startOk && endOK;
+    } else {
+        return (!startOk) && (!endOK);
     }
 
-    if (correctAngle(a2 - a1) >= correctAngle(a - a1) - 0.5 * TOLERANCE_ANGLE
-        || correctAngle(a2 - a1) >= correctAngle(a2 - a) - 0.5 * TOLERANCE_ANGLE
-       ) {
-        return true;
-    }
-
-    return false;
 }
 
 
 /**
- * Corrects the given angle to the range of 0-2*Pi.
+ * Corrects the given angle to the range of -PI to PI
  */
 double Math::correctAngle(double a) {
-    return M_PI + std::remainder(a - M_PI, 2 * M_PI);
+    return std::remainder(a, 2. * M_PI);
 }
 
 /**
  * @return The angle that needs to be added to a1 to reach a2.
  *         Always positive and less than 2*pi.
  */
-double Math::getAngleDifference(double a1, double a2, bool reversed) {
-    if (reversed) {
+double Math::getAngleDifference(double a1, double a2, bool CCW) {
+    if (!CCW) {
         std::swap(a1, a2);
     }
 
