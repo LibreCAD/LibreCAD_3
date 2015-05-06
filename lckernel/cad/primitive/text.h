@@ -13,12 +13,6 @@
 
 namespace lc {
     namespace entity {
-        class Text;
-
-        typedef std::shared_ptr<Text> Text_SPtr;
-        typedef std::shared_ptr<const Text> Text_CSPtr;
-
-
         class Text : public std::enable_shared_from_this<Text>, public CADEntity, virtual public Visitable {
         public:
             /**
@@ -159,8 +153,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<Text> Text_SPtr;
+        typedef std::shared_ptr<const Text> Text_CSPtr;
     }
 }
 
-
-// TEXT_H

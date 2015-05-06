@@ -11,12 +11,6 @@
 
 namespace lc {
     namespace entity {
-        class DimAngular;
-
-        typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
-        typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
-
-
         class DimAngular : public std::enable_shared_from_this<DimAngular>, public CADEntity, public Dimension, virtual public Visitable  {
         public:
 
@@ -104,6 +98,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
+        typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
     }
 }
 

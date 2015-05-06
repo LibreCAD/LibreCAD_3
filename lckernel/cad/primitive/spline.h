@@ -12,11 +12,6 @@
 
 namespace lc {
     namespace entity {
-        class Spline;
-
-        typedef std::shared_ptr<Spline> Spline_SPtr;
-        typedef std::shared_ptr<const Spline> Spline_CSPtr;
-
         class Spline
                 : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable, virtual public Visitable {
         public:
@@ -94,7 +89,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<Spline> Spline_SPtr;
+        typedef std::shared_ptr<const Spline> Spline_CSPtr;
     }
 }
 
-// SPLINE_H

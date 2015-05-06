@@ -20,7 +20,7 @@ void FTrim::visit(entity::Arc_CSPtr arc) {
 }
 void FTrim::visit(entity::Line_CSPtr line) {
     /*
-    IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
+    IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::OnPath);
     std::vector<geo::Coordinate> points = im.result();
     this->_newEntities.clear();
 

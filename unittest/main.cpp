@@ -3,6 +3,7 @@
 #include "entitytest.h"
 #include "testmath.h"
 #include "testgeocircle.h"
+#include "testintersect.h"
 
 using namespace std;
 using namespace lc;
@@ -10,11 +11,6 @@ using namespace entity;
 
 
 int main(int argc, char **argv) {
-    /*
-    lc::entity::Circle c(lc::geo::Coordinate(0,0), 3, nullptr);
-    lc::entity::Line l(lc::geo::Coordinate(0,0), lc::geo::Coordinate(0,0), nullptr);
-    lc::Intersect intersect(lc::Intersect::OnPath, LCTOLERANCE);
-    visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, l, l);*/
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

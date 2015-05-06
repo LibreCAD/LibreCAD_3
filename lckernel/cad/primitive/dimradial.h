@@ -11,17 +11,12 @@
 
 namespace lc {
     namespace entity {
-        class DimRadial;
-
-        typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
-        typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
-
         /**
-    * DimRadial dimension
-    * DefinitionPoint hold's the center of the radius
-    * DefinitionPoint2 holds the circle/arc edge
-    * CenterText holds' teh location of the text
-    */
+        * DimRadial dimension
+        * DefinitionPoint hold's the center of the radius
+        * DefinitionPoint2 holds the circle/arc edge
+        * CenterText holds' teh location of the text
+        */
         class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension, virtual public Visitable {
         public:
 
@@ -116,5 +111,7 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
+        typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
     }
 }

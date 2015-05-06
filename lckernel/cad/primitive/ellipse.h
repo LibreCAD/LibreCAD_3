@@ -12,22 +12,17 @@
 
 namespace lc {
     namespace entity {
-        class Ellipse;
-
-        typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
-        typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
-
         /*!
-     * \brief A ellipse that can be put in a drawing
-     *
-     * A Ellipse is a graphics elipse item that can be put on a drawing using a CreateEntity operation.
-     *
-     * \sa CreateEntities::append
-     *
-     * \author R. van Twisk
-     *
-     * \date 2012-04-16
-     */
+         * \brief A ellipse that can be put in a drawing
+         *
+         * A Ellipse is a graphics elipse item that can be put on a drawing using a CreateEntity operation.
+         *
+         * \sa CreateEntities::append
+         *
+         * \author R. van Twisk
+         *
+         * \date 2012-04-16
+         */
         class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
             Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
@@ -85,6 +80,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
+        typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
     }
 }
 

@@ -12,11 +12,6 @@
 
 namespace lc {
     namespace entity {
-        class Point;
-
-        typedef std::shared_ptr<Point> Point_SPtr;
-        typedef std::shared_ptr<const Point> Point_CSPtr;
-
         class Point : public std::enable_shared_from_this<Point>, public CADEntity, public geo::Coordinate, virtual public Visitable {
         public:
 
@@ -94,7 +89,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<Point> Point_SPtr;
+        typedef std::shared_ptr<const Point> Point_CSPtr;
     }
 }
 
-// COORDINATE_H

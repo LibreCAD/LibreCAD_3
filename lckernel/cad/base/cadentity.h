@@ -10,11 +10,10 @@
 
 namespace lc {
     namespace entity {
-
         /**
-     *Class that all CAD entities must inherit
-     *
-     */
+         *Class that all CAD entities must inherit
+         *
+         */
         class CADEntity : public ID, virtual public Visitable {
         public:
             CADEntity() {
@@ -130,5 +129,7 @@ namespace lc {
             Layer_CSPtr _layer;
             MetaInfo_CSPtr _metaInfo;
         };
+        typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
+        typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
     }
 }

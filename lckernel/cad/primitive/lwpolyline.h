@@ -10,14 +10,9 @@
 
 namespace lc {
     namespace entity {
-        class LWPolyline;
-
-        typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
-        typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
-
         /**
-    * Vertex for a Light Weight polyline
-    */
+        * Vertex for a Light Weight polyline
+        */
         class LWVertex2D {
         public:
             LWVertex2D(geo::Coordinate const location, double const bulge = 0., double const startWidth = 0.,
@@ -85,7 +80,7 @@ namespace lc {
         /**
          * Lightweight polyline
          */
-        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, virtual public Visitable {
+        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity {
         public:
 
             /**
@@ -240,6 +235,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
+        typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
     }
 }
 

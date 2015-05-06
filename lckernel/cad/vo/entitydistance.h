@@ -9,29 +9,30 @@ namespace lc {
       *
       */
     class EntityDistance {
-        public:
-            /**
-              * EntityDistance constructor
-              * @param CADEntity_CSPtr Entity in question
-              * @param geo::Coordinate Coordinate on the entities path
-              * @param unsigned int ID number that identitifes the the coordinate
-              *
-              */
-            EntityDistance(entity::CADEntity_CSPtr cadEntity, const geo::Coordinate &coordinate) : _cadEntity(cadEntity), _coordinate(coordinate) {
+    public:
+        /**
+          * EntityDistance constructor
+          * @param CADEntity_CSPtr Entity in question
+          * @param geo::Coordinate Coordinate on the entities path
+          * @param unsigned int ID number that identitifes the the coordinate
+          *
+          */
+        EntityDistance(entity::CADEntity_CSPtr cadEntity, const geo::Coordinate &coordinate) : _cadEntity(cadEntity),
+                                                                                               _coordinate(coordinate) {
 
-            }
+        }
 
-            entity::CADEntity_CSPtr entity() const {
-                return _cadEntity;
-            }
+        entity::CADEntity_CSPtr entity() const {
+            return _cadEntity;
+        }
 
-            geo::Coordinate coordinate() const {
-                return _coordinate;
-            }
+        geo::Coordinate coordinate() const {
+            return _coordinate;
+        }
 
-        private:
-            entity::CADEntity_CSPtr _cadEntity;
-             geo::Coordinate _coordinate;
+    private:
+        entity::CADEntity_CSPtr _cadEntity;
+        geo::Coordinate _coordinate;
     };
 
     struct EntityDistanceSorter {

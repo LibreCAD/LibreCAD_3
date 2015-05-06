@@ -13,11 +13,6 @@
 
 namespace lc {
     namespace entity {
-        class Arc;
-
-        typedef std::shared_ptr<Arc> Arc_SPtr;
-        typedef std::shared_ptr<const Arc> Arc_CSPtr;
-
         class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable {
         public:
             /**
@@ -101,6 +96,9 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<Arc> Arc_SPtr;
+        typedef std::shared_ptr<const Arc> Arc_CSPtr;
+
     }
 }
 

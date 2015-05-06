@@ -14,14 +14,14 @@
 namespace lc {
     namespace entity {
         /*!
-     * \brief A line that can be put in a drawing
-     *
-     * A line is a graphics line item that can be put on a drawing using a CreateEntity operation.
-     *
-     * \sa CreateEntities::append
-     * \author R. van Twisk
-     * \date 2012-04-16
-     */
+         * \brief A line that can be put in a drawing
+         *
+         * A line is a graphics line item that can be put on a drawing using a CreateEntity operation.
+         *
+         * \sa CreateEntities::append
+         * \author R. van Twisk
+         * \date 2012-04-16
+         */
         class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
         public:
             /*!
@@ -114,6 +114,9 @@ namespace lc {
 
         private:
         };
+        typedef std::shared_ptr<Line> Line_SPtr;
+        typedef std::shared_ptr<const Line> Line_CSPtr;
+
     }
 
 }

@@ -11,14 +11,6 @@
 
 namespace lc {
     namespace entity {
-        class DimLinear;
-
-        typedef std::shared_ptr<DimLinear> DimLinear_SPtr;
-        typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
-
-        /**
-    * TODO Handle
-    */
         class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension, virtual public Visitable {
         public:
 
@@ -112,6 +104,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<DimLinear> DimLinear_SPtr;
+        typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
     }
 }
 

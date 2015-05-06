@@ -1,16 +1,13 @@
 #include "snapmanagerimpl.h"
 #include <cad/vo/entitycoordinate.h>
 #include <cad/primitive/circle.h>
+#include <cad/base/visitor.h>
+#include <cad/base/cadentity.h>
+#include <cad/functions/intersect.h>
 
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap), _view(view) {
 
-/*
-    connect(view, SIGNAL(mouseMoveEvent(const MouseMoveEvent&)),
-            this, SLOT(on_mouseMoveEvent(const MouseMoveEvent&)));
 
-    connect(view, SIGNAL(mouseReleaseEvent(const MouseReleaseEvent&)),
-            this, SLOT(on_mouseRelease_Event(const MouseReleaseEvent&)));
-*/
 }
 
 /**
@@ -60,9 +57,9 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
             for (size_t b = a + 1; b < entities.size(); b++) {
                 lc::entity::CADEntity_CSPtr i1 = entities.at(a).entity();
                 lc::entity::CADEntity_CSPtr i2 = entities.at(b).entity();
-                lc::Intersect intersect(lc::Intersect::OnPath, LCTOLERANCE);
 
-
+                lc::Intersect intersect(lc::Intersect::OnEntity, LCTOLERANCE);
+                visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
 
                 if (intersect.result().size() > 0) {
                     std::vector<lc::geo::Coordinate> coords = intersect.result();
@@ -99,7 +96,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // If no entity was found to snap against, then snap to grid
     if (_gridSnappable == true) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels, 1);
-        std::cerr << "_gridSnappable" << _gridSnappable << "\n";
         if (points.size() > 0) {
             auto item = entities.begin();
             auto event = SnapPointEvent(points.at(0).coordinate());
@@ -122,7 +118,7 @@ void SnapManagerImpl::setGridSnappable(bool gridSnappable) {
 }
 
 bool SnapManagerImpl::isGridSnappable() const {
-    //return _gridSnappable;
+    return _gridSnappable;
 }
 
 Nano::Signal<void(const SnapPointEvent&)> &SnapManagerImpl::snapPointEvents() {

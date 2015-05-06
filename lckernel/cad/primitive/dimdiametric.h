@@ -11,12 +11,6 @@
 
 namespace lc {
     namespace entity {
-        class DimDiametric;
-
-        typedef std::shared_ptr<DimDiametric> DimDiametric_SPtr;
-        typedef std::shared_ptr<const DimDiametric> DimDiametric_CSPtr;
-
-
         class DimDiametric : public std::enable_shared_from_this<DimDiametric>, public CADEntity, public Dimension, virtual public Visitable {
         public:
 
@@ -113,5 +107,7 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<DimDiametric> DimDiametric_SPtr;
+        typedef std::shared_ptr<const DimDiametric> DimDiametric_CSPtr;
     }
 }

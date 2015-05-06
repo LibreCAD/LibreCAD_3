@@ -6,16 +6,13 @@
 
 namespace lc {
     namespace entity {
-        class Dimension;
 
-        typedef std::shared_ptr<Dimension> Dimension_SPtr;
-        typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
 
         /**
-    * Base class for all dimensions
-    * It takes in the values pretty much as given by the DXF reference
-    * TODO: Should we move some variables to the implementation of a actualy Dimension like DimRadial and have all optional variables as part of the meta map ?
-    */
+        * Base class for all dimensions
+        * It takes in the values pretty much as given by the DXF reference
+        * TODO: Should we move some variables to the implementation of a actualy Dimension like DimRadial and have all optional variables as part of the meta map ?
+        */
         class Dimension {
 
         public:
@@ -126,6 +123,8 @@ namespace lc {
             const TextConst::LineSpacingStyle _lineSpacingStyle;
             const std::string _explicitValue;
         };
+        typedef std::shared_ptr<Dimension> Dimension_SPtr;
+        typedef std::shared_ptr<const Dimension> Dimension_CSPtr;
     }
 }
 

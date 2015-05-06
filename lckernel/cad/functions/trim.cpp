@@ -17,7 +17,7 @@ void Trim::visit(shared_ptr<const lc::Arc> arc) {
 
 }
 void Trim::visit(shared_ptr<const lc::Line> line) {
-    IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::Any);
+    IntersectMany im = IntersectMany(this->_limitingEntities, Intersect::OnPath);
     QList<geo::Coordinate> points = im.result();
     this->_newEntities.clear();
 

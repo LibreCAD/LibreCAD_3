@@ -221,7 +221,7 @@ namespace lc {
                     }
 
                     // Path to area intersection testing
-                    lc::Intersect intersect(Intersect::OnPath, 10e-4);
+                    lc::Intersect intersect(Intersect::OnEntity, 10e-4);
 
                     auto &&v = area.top();
                     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v, *i.get());

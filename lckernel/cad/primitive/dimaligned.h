@@ -11,11 +11,6 @@
 
 namespace lc {
     namespace entity {
-        class DimAligned;
-
-        typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
-        typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
-
 
         class DimAligned : public std::enable_shared_from_this<DimAligned>, public CADEntity, public Dimension, virtual public Visitable {
         public:
@@ -99,6 +94,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+        typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
+        typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
     }
 }
 

@@ -204,7 +204,7 @@ namespace detail {
             template <std::size_t ... Is>
             static Ret call_helper(F&f, const Arg& arg, index_sequence<Is...>)
             {
-                using RetTuple = std::tuple<Ts&...>;
+                using RetTuple = std::tuple<const Ts&...>;
                 // static cast is suffisant if arg is the abstract type
                 // when given arg is concrete type, reinterpret_cast is required.
                 // TODO: build a smaller table with only possible value to avoid that
@@ -308,8 +308,10 @@ namespace lc {
     using GeoEntityVisitor = IVisitorTs<
             lc::Visitable,
             geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse,
-            entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse,
-            entity::LWPolyline>;
+            entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse
+    >;
+
+    // ,  entity::LWPolyline
 
     class Visitable {
     public:

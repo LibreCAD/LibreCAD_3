@@ -20,7 +20,7 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
     bool modified = false;
 
     // Calculate intersection point
-    lc::Intersect intersect(lc::Intersect::Any, 10e-4);
+    lc::Intersect intersect(lc::Intersect::OnPath, 10e-4);
 
     auto v1 = lc::geo::Vector(defLine11(), defLine12());
     auto v2 = lc::geo::Vector(defLine21(), defLine22());
