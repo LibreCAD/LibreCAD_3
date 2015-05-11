@@ -5,7 +5,8 @@
 #include <cad/base/cadentity.h>
 #include <cad/functions/intersect.h>
 
-SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap)  :  _grid(grid), _distanceToSnap(distanceToSnap), _view(view) {
+SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) : _grid(
+        grid), _distanceToSnap(distanceToSnap), _view(view), _gridSnappable(false), _snapIntersections(false) {
 
 
 }
@@ -39,8 +40,9 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
     // Find all entities that are close to the current mouse pointer
 
-    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntitiesNearCoordinate(location, realDistanceForPixels);
-
+    std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
+                                                                                                  realDistanceForPixels);
+    std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
     if (entities.size() > 0) {
         // auto item = entities.begin();
         // auto event = SnapPointEvent(item->coordinate());
@@ -50,8 +52,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
     // Emit Snappoint event if a entity intersects with a other entity
     // TODO: Need some modification to find the closest intersection point
-    if (entities.size() > 1) {
-        std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
+    if (entities.size() > 1 && _snapIntersections) {
 
         for (size_t a = 0; a < entities.size(); a++) {
             for (size_t b = a + 1; b < entities.size(); b++) {
@@ -76,26 +77,34 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
             }
         }
     }
-    /*
 
     // Emit snappoint based on closest entity
-    if (_entities.size() > 0) {
-        // Get the snap point that is closest to the mouse pointer from all entities
-        qSort(_entities.begin(), _entities.end(), lc::EntityDistance::sortAscending);
-        const lc::Snapable_CSPtr captr = std::dynamic_pointer_cast<const lc::Snapable>(_entities.at(0).entity());
-        // TODO: Decide how to handle maximum number of snap points, and how we are going to return specific snappoints like centers + near
-        std::vector<lc::EntityCoordinate> sp = captr->snapPoints(event.mousePosition(), realDistanceForPixels, 10);
-        SnapPointEvent snapEvent(sp.at(0).coordinate());
-        _lastSnapEvent = snapEvent;
-        qDebug() << "Snap to entity";
-        emit snapPointEvent(snapEvent);
-        return;
+    if (entities.size() > 0) {
+        // GO over all entities, first closest to teh cursor gradually moving away
+        for (auto &entity : entities) {
+            const lc::Snapable_CSPtr captr = std::dynamic_pointer_cast<const lc::Snapable>(entity.entity());
+            if (captr) {
+                // Locale snap points
+                std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
+                                                                         realDistanceForPixels, 10);
+                // When a snappoint was found, emit it
+                if (sp.size() > 0) {
+                    std::cerr << "Num #" << sp.at(0).pointId() << "\n";
+                    SnapPointEvent snapEvent(sp.at(0).coordinate());
+                    _lastSnapEvent = snapEvent;
+                    auto item = entities.begin();
+                    auto event = SnapPointEvent(sp.at(0).coordinate());
+                    _snapPointEvent(event);
+                    return;
+                }
+            }
+        }
     }
-    */
 
     // If no entity was found to snap against, then snap to grid
     if (_gridSnappable == true) {
-        std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels, 1);
+        std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
+                                                                     1);
         if (points.size() > 0) {
             auto item = entities.begin();
             auto event = SnapPointEvent(points.at(0).coordinate());
@@ -113,21 +122,31 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 }
 
 
-void SnapManagerImpl::setGridSnappable(bool gridSnappable) {
-    _gridSnappable = gridSnappable;
+void SnapManagerImpl::setGridSnappable(bool enabled) {
+    _gridSnappable = enabled;
 }
 
 bool SnapManagerImpl::isGridSnappable() const {
     return _gridSnappable;
 }
 
-Nano::Signal<void(const SnapPointEvent&)> &SnapManagerImpl::snapPointEvents() {
+void SnapManagerImpl::snapIntersections(bool enabled) {
+    _snapIntersections = enabled;
+}
+
+bool SnapManagerImpl::snapIntersections() const {
+    return _snapIntersections;
+}
+
+
+Nano::Signal<void(const SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;
 }
+
 lc::SimpleSnapConstrain SnapManagerImpl::snapConstrain() const {
     return _snapConstrain;
 }
 
-void SnapManagerImpl::snapConstrain(const lc::SimpleSnapConstrain & snapConstrain) {
+void SnapManagerImpl::snapConstrain(const lc::SimpleSnapConstrain &snapConstrain) {
     _snapConstrain = snapConstrain;
 }

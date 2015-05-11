@@ -15,6 +15,7 @@
 #include <drawables/grid.h>
 
 #include "operations/operationmanager.h"
+#include <managers/snapmanagerimpl.h>
 
 class CadMdiChild : public QWidget {
         Q_OBJECT
@@ -59,7 +60,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<Grid> _grid;
         std::shared_ptr<GradientBackground> _gradientBackground;
         std::shared_ptr<lc::Cursor>  _cursor;
-        SnapManager_SPtr  _snapManager;
+        SnapManagerImpl_SPtr  _snapManager;
         lc::StorageManager_SPtr _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;

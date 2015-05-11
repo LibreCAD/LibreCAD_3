@@ -56,7 +56,9 @@ namespace lc {
                 // Sort in order of distance
                 std::sort(points.begin(), points.end(), EntityCoordinateSorter(reference));
                 // Only get maxNumberOfSnapPoints
-                points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+                if (points.size() > maxNumberOfSnapPoints) {
+                    points.erase(points.begin() + maxNumberOfSnapPoints, points.end());
+                }
             }
     };
     typedef std::shared_ptr<Snapable> Snapable_SPtr;

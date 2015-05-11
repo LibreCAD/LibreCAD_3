@@ -1,5 +1,4 @@
 #include "cad/primitive/circle.h"
-#include "cad/primitive/ellipse.h"
 #include <cmath>
 #include <algorithm>
 #include "cad/interface/metatype.h"
@@ -57,8 +56,7 @@ std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, c
 }
 
 geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate &coord) const {
-    const geo::Coordinate pointOnPath = geo::Circle::nearestPointOnPath(coord);
-    return pointOnPath;
+    return geo::Circle::nearestPointOnPath(coord);
 }
 
 CADEntity_CSPtr Circle::move(const geo::Coordinate &offset) const {

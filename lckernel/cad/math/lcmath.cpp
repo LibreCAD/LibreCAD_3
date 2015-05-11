@@ -28,10 +28,10 @@ bool Math::isAngleBetween(double a,
 
 //    end = correctAngle(end+2.*M_PI);
     if (a < 0.) aa = correctAngle(a + 2. * M_PI); else aa = a;
-    if ((aa - start) > 0.) startOk = true; else startOk = false;
+    if ((aa - start) >= 0.) startOk = true; else startOk = false;
 
     if (a > 0.) aa = correctAngle(a - 2. * M_PI); else aa = a;
-    if ((aa - end) < 0.) endOK = true; else endOK = false;
+    if ((aa - end) <= 0.) endOK = true; else endOK = false;
 
     if (CCW) {
         return startOk && endOK;

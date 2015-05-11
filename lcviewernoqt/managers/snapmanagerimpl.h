@@ -26,8 +26,10 @@ class SnapManagerImpl : public SnapManager {
         SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
 
 
-        virtual void setGridSnappable(bool gridSnappable);
-        virtual bool isGridSnappable() const;
+    virtual void setGridSnappable(bool enabled);
+    virtual bool isGridSnappable() const;
+    virtual void snapIntersections(bool enabled);
+    virtual bool snapIntersections() const;
 
     public:
         virtual void setDeviceLocation(int x, int y);
@@ -43,8 +45,10 @@ class SnapManagerImpl : public SnapManager {
         // Grid is snapable
         lc::Snapable_CSPtr _grid;
 
-        // TRE when snapping to grid is evaluated
+        // TRUE when snapping to grid is evaluated
         bool _gridSnappable;
+        // TRUE when snapping to intersections are enabled
+        bool _snapIntersections;
 
         // List of entities that are potential for snapping
         std::vector<lc::Snapable_CSPtr > _snapableEntities;
@@ -58,9 +62,6 @@ class SnapManagerImpl : public SnapManager {
         // Last Snap Point Event
         SnapPointEvent _lastSnapEvent;
 
-        // List of entities 'under' the cursor
-        std::vector<lc::EntityDistance> _entities;
-
         // Snap Point Event
         Nano::Signal<void(const SnapPointEvent&)> _snapPointEvent;
 
@@ -68,5 +69,8 @@ class SnapManagerImpl : public SnapManager {
 
         lc::SimpleSnapConstrain _snapConstrain;
 };
+
+
+typedef std::shared_ptr<SnapManagerImpl> SnapManagerImpl_SPtr;
 
 // SNAPMANAGERIMPL_H

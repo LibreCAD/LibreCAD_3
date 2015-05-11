@@ -38,16 +38,9 @@ void LCMainToolbar::on_toolButton_3_clicked() {
 
 }
 
-void LCMainToolbar::on_toolButton_4_clicked() {
-    if (_parent->activeMdiChild()->snapManager()->isGridSnappable()) {
-        _parent->activeMdiChild()->snapManager()->setGridSnappable(false);
-    } else {
-        _parent->activeMdiChild()->snapManager()->setGridSnappable(true);
-    }
 
-}
 
-void LCMainToolbar::on_toolButton_5_clicked() {
+void LCMainToolbar::on_tb_builderTest_clicked() {
     auto layer = _parent->activeMdiChild()->storageManager()->layerByName("0");
 
     auto l = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0., 0.), lc::geo::Coordinate(0., 100), layer);
@@ -56,4 +49,55 @@ void LCMainToolbar::on_toolButton_5_clicked() {
     builder->append(l);
     builder->execute();
 
+}
+
+void LCMainToolbar::on_tb_snapGrid_clicked() {
+    SnapManagerImpl_SPtr sm = std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    if (sm->isGridSnappable()) {
+        sm->setGridSnappable(false);
+    } else {
+        sm->setGridSnappable(true);
+    }
+}
+
+void LCMainToolbar::on_tb_snapIntersections_clicked() {
+    SnapManagerImpl_SPtr sm = std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    if (sm->snapIntersections()) {
+        sm->snapIntersections(false);
+    } else {
+        sm->snapIntersections(true);
+    }
+}
+
+void LCMainToolbar::on_tb_snapEntity_clicked() {
+    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    lc::SimpleSnapConstrain ssc = smi->snapConstrain();
+
+    if (lc::SimpleSnapConstrain::ON_ENTITY & ssc.constrain()) {
+          smi->snapConstrain(ssc.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITY));
+    } else {
+        smi->snapConstrain(ssc.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITY));
+    }
+}
+
+void LCMainToolbar::on_tb_snapEntityPath_clicked() {
+    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    lc::SimpleSnapConstrain ssc = smi->snapConstrain();
+
+    if (lc::SimpleSnapConstrain::ON_ENTITYPATH & ssc.constrain()) {
+        smi->snapConstrain(ssc.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH));
+    } else {
+        smi->snapConstrain(ssc.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITYPATH));
+    }
+}
+
+void LCMainToolbar::on_tb_snapLogical_clicked() {
+    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    lc::SimpleSnapConstrain ssc = smi->snapConstrain();
+
+    if (lc::SimpleSnapConstrain::LOGICAL & ssc.constrain()) {
+        smi->snapConstrain(ssc.disableConstrain(lc::SimpleSnapConstrain::LOGICAL));
+    } else {
+        smi->snapConstrain(ssc.enableConstrain(lc::SimpleSnapConstrain::LOGICAL));
+    }
 }

@@ -5,7 +5,9 @@
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
 
+#include "cad/vo/entitycoordinate.h"
 #include "cad/geometry/geobase.h"
+#include "cad/interface/snapable.h"
 #include <vector>
 
 namespace lc {
@@ -80,7 +82,7 @@ namespace lc {
         /**
          * Lightweight polyline
          */
-        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity {
+        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, public Snapable {
         public:
 
             /**
@@ -93,7 +95,8 @@ namespace lc {
         * @param layer
         * @param metaInfo
         */
-            LWPolyline(const std::vector<LWVertex2D> &vertex,double width, double elevation, double tickness, bool closed,
+            LWPolyline(const std::vector<LWVertex2D> &vertex, double width, double elevation, double tickness,
+                       bool closed,
                        geo::Coordinate const &extrusionDirection,
                        const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr);
 
@@ -123,6 +126,15 @@ namespace lc {
             bool closed() const {
                 return _closed;
             }
+
+        public:
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
+                                                             const SimpleSnapConstrain &constrain,
+                                                             double minDistanceToSnap,
+                                                             int maxNumberOfSnapPoints) const;
+
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const;
+            virtual std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>> nearestPointOnPath2(const geo::Coordinate &coord) const;
 
         private:
             const std::vector<LWVertex2D> _vertex;
@@ -223,7 +235,8 @@ namespace lc {
         * In the current implementation no caching of the bounding box is done
         * If we see that bounding box calcualtion takes up a lot of time we
         * can consider calculating the bounding box in the constructor
-        * and just return the cached result.
+        * and just return the cached result. We also use this for snapPoint's
+       * and if performance is a issue, we can cache it.
         */
             std::vector<std::shared_ptr<const geo::Base>> const asGeometrics() const;
 
@@ -235,6 +248,7 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
+
         typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
         typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
     }

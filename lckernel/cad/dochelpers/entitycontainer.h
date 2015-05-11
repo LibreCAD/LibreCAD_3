@@ -1,4 +1,4 @@
-#pragma once
+    #pragma once
 
 #include <memory>
 #include <limits>
@@ -280,28 +280,24 @@ namespace lc {
             }
 
             /*!
-             * \brief getEntitiesNearCoordinate
+             * \brief getEntityPathsNearCoordinate
              * \param point point where to look for entities
              * \param distance maximum distance from this point where the function would consider adding it to a list
-             * \return List of entities sorted by distance
+             * \return List of entities near this coordinate. THis includes entities where it's path is close to point
              */
-            std::vector<lc::EntityDistance> getEntitiesNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
+            std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
 
-                auto area = lc::geo::Area(lc::geo::Coordinate(point.x()-distance,point.y()-distance), distance*2.,distance*2.);
+                const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(),point.y())+distance/2., lc::geo::Coordinate(point.x(),point.y())+distance/2.);
+                std::vector<CT> ent = _tree->retrieve(area);
 
                 // Now calculate for each entity if we are near the entities path
                 std::vector<lc::EntityDistance> entities;
-
-                std::vector<CT> ent = _tree->retrieve(area);
-
                 for (auto item : ent) {
                     Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
 
                     if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                         lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-                        double cDistance = eCoordinate.distanceTo(point);
-
-                        if (cDistance < distance) {
+                        if (eCoordinate.distanceTo(point) < distance) {
                             entities.emplace_back(item, eCoordinate);
                         }
                     }

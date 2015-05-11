@@ -30,11 +30,11 @@ std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, con
     if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
         points.emplace_back(start(), 0);
         points.emplace_back(end(), 1);
+        points.emplace_back(end().mid(start()), 1);
     }
 
 
-    geo::Coordinate npoe = nearestPointOnPath(coord);
-
+    const geo::Coordinate npoe = nearestPointOnPath(coord);
     if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
         points.emplace_back(npoe, 2);
     }
@@ -43,18 +43,6 @@ std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, con
         if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
             points.emplace_back(npoe, 3);
         }
-    }
-
-
-    points.push_back(EntityCoordinate(start(), 0));
-    points.push_back(EntityCoordinate(end(), 1));
-
-    geo::Coordinate rVector = npoe - coord;
-
-    double distance = rVector.magnitude();
-
-    if (distance < minDistanceToSnap) {
-        points.push_back(EntityCoordinate(npoe, -1));
     }
 
     // Cleanup array of snappoints

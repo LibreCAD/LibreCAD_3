@@ -22,9 +22,8 @@ class SnapManager  {
 
 
 public:
-    virtual void setGridSnappable(bool gridSnappable) = 0;
-    virtual bool isGridSnappable() const = 0;
     virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents() = 0;
+
 };
 
 typedef std::shared_ptr<SnapManager> SnapManager_SPtr;

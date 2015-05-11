@@ -76,7 +76,7 @@
     </size>
    </property>
   </widget>
-  <widget class="QToolButton" name="toolButton_4">
+  <widget class="QToolButton" name="tb_snapGrid">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -85,11 +85,30 @@
      <height>33</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Snap Grid</string>
+   </property>
    <property name="text">
     <string>SG</string>
    </property>
   </widget>
-  <widget class="QToolButton" name="toolButton_5">
+  <widget class="QToolButton" name="tb_snapEntity">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>220</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Snap Entity</string>
+   </property>
+   <property name="text">
+    <string>SE</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="tb_builderTest">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -100,6 +119,54 @@
    </property>
    <property name="text">
     <string>Builder</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="tb_snapLogical">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>280</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Snap Logical</string>
+   </property>
+   <property name="text">
+    <string>SL</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="tb_snapEntityPath">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>250</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Snap Entity path</string>
+   </property>
+   <property name="text">
+    <string>SEP</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="tb_snapIntersections">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>310</y>
+     <width>33</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Snap Intersection</string>
+   </property>
+   <property name="text">
+    <string>SI</string>
    </property>
   </widget>
  </widget>

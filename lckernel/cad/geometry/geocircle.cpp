@@ -19,9 +19,9 @@ double Circle::radius() const {
 
 
 Coordinate Circle::nearestPointOnPath(const Coordinate& coord) const {
-    return center() + Coordinate((coord - center()).angle()) * radius();
+    return _center + Coordinate((coord - _center).angle()) * _radius;
 }
 Coordinate Circle::nearestPointOnEntity(const Coordinate& coord) const {
-    return center() + Coordinate((coord - center()).angle()) * radius();
+    return _center + Coordinate((coord - _center).angle()) * _radius;
 }
 

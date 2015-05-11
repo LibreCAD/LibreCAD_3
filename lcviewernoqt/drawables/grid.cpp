@@ -102,7 +102,7 @@ void Grid::draw(DrawEvent const & event) const {
 std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& coord,  const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<lc::EntityCoordinate> points;
 
-    if (constrain.constrain() & lc::SimpleSnapConstrain::Constrain::LOGICAL) {
+    if (constrain.constrain() & lc::SimpleSnapConstrain::LOGICAL) {
 
         double mx = coord.x() * 1.0 * (1/_convUnit);
         double my = coord.y() * 1.0 * (1/_convUnit);

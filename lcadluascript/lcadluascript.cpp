@@ -866,7 +866,7 @@ Builder(d):append(l1):append(c):append(l2):append(l3):append(l4):append(l5):appe
 
 layer = active.proxy.layerByName("0")
 vertex2d = { LWVertex2D(Coord(10,10)), LWVertex2D(Coord(10,20)), LWVertex2D(Coord(20,30),-0.5), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
-p=LWPolyline(vertex2d,0,false,layer);
+p=LWPolyline(vertex2d,0,0,0,true,Coord(0,0),layer);
 d=active.document()
 Builder(d):append(p):execute()
 
