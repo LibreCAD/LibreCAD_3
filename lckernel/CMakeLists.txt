@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LCKERNEL)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
-ADD_DEFINITIONS("-Wno-missing-braces")
+#ADD_DEFINITIONS("-Wno-missing-braces")
 
 # SOURCE FILES
 set(lckernel_srcs

@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (UnitTest)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
-ADD_DEFINITIONS("-Wno-missing-braces")
+#ADD_DEFINITIONS("-Wno-missing-braces")
 
 
 find_package(PkgConfig)

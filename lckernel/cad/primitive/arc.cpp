@@ -74,11 +74,10 @@ std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate &coord, cons
 
 // TODO: Decide if a point like center should be returned by a function nearestPointOnPath
 geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
-    double vl1 = (center() - coord).magnitude();
     const geo::Coordinate pointOnPath = geo::Arc::nearestPointOnPath(coord);
-    double vl2 = (pointOnPath - coord).magnitude();
-
     /*
+    double vl1 = (center() - coord).magnitude();
+    double vl2 = (pointOnPath - coord).magnitude();
     if (vl1 < vl2) {
         return center();
     } */

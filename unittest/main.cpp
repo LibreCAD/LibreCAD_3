@@ -198,7 +198,7 @@ TEST(entitytest, CircleCopy) {
 TEST(entitytest, CircleRotate) {
     entitytest a;
 
-    auto angle = 90 * 0.0174532925;
+    //auto angle = 90 * 0.0174532925;
 
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[0]->center().x()));
     EXPECT_DOUBLE_EQ(0.0, round(a.CircleRotate()[0]->center().y()));

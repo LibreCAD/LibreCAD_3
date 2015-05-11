@@ -150,7 +150,6 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
     //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
     builder->execute();
-    bool foo=false;
 
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();

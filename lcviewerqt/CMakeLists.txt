@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LCVIEWERQT)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
-ADD_DEFINITIONS("-Wno-missing-braces")
+#ADD_DEFINITIONS("-Wno-missing-braces")
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
