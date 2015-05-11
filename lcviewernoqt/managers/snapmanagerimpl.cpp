@@ -68,7 +68,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                     lc::geo::Coordinate sp = coords.at(0);
 
                     if ((location - sp).magnitude() < realDistanceForPixels) {
-                        auto item = entities.begin();
                         auto event = SnapPointEvent(sp);
                         _snapPointEvent(event);
                         return;
@@ -105,7 +104,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
                                                                      1);
         if (points.size() > 0) {
-            auto item = entities.begin();
             auto event = SnapPointEvent(points.at(0).coordinate());
             _snapPointEvent(event);
             return;

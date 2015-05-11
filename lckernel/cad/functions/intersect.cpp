@@ -627,12 +627,16 @@ IntersectAgainstOthers::IntersectAgainstOthers(std::vector<entity::CADEntity_CSP
 }
 
 std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
+    
     Intersect intersect(_method, _tolerance);
+    /*FIXME unused
     for (auto &other : _others) {
         for (auto &entity : _entities) {
-               // visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *other.get(), *entity.get());
+               visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *other.get(), *entity.get());
         }
     }
+    */
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
 
     return intersect.result();
 }

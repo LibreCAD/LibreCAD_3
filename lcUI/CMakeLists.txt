@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
 ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
-ADD_DEFINITIONS("-Wno-missing-braces")
+#ADD_DEFINITIONS("-Wno-missing-braces")
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

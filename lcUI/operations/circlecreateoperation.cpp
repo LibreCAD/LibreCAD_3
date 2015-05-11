@@ -68,6 +68,8 @@ void CircleCreateOperation::restart() {
 }
 
 void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
+    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    /*
     bool s = property("hasStartPoint").toBool();
     bool e = property("hasEndPoint").toBool();
 
@@ -76,13 +78,14 @@ void CircleCreateOperation::on_drawEvent(const DrawEvent& event) {
     if (s == true && e == false) {
         //event.painter()->drawLine(_startPoint.pointF(), _lastSnapEvent.snapPoint().pointF());
         double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_lastSnapEvent.snapPoint())).magnitude();
-//        event.painter()->circle(_startPoint.x(), _startPoint.y(), r);
+        //event.painter()->circle(_startPoint.x(), _startPoint.y(), r);
     }
 
     if (s == true && e == true) {
         double r = (lc::geo::Coordinate(_startPoint) - lc::geo::Coordinate(_endPoint)).magnitude();
         //event.painter()->circle(_startPoint.x(), _startPoint.y(), r);
     }
+    */
 
 }
 

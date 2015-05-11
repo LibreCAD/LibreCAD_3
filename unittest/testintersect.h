@@ -20,7 +20,7 @@ TEST(IntersectTest, LineLine1) {
     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
     lc::geo::Coordinate c = intersect.result().at(0);
     if (intersect.result().size()==1) {
-        lc::geo::Coordinate c = intersect.result().at(0);
+        c = intersect.result().at(0);
         EXPECT_DOUBLE_EQ(5., c.x());
         EXPECT_DOUBLE_EQ(5., c.y());
         EXPECT_DOUBLE_EQ(0., c.z());

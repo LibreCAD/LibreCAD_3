@@ -5,6 +5,7 @@
 
 #include <cad/meta/color.h>
 #include "../managers/EventManager.h"
+#include <memory>
 
 class CursorLocation {
 public:
