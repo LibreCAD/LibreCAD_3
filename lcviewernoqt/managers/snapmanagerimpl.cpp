@@ -6,7 +6,7 @@
 #include <cad/functions/intersect.h>
 
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) : _grid(
-        grid), _distanceToSnap(distanceToSnap), _view(view), _gridSnappable(false), _snapIntersections(false) {
+        grid), _gridSnappable(false), _snapIntersections(false), _distanceToSnap(distanceToSnap), _view(view) {
 
 
 }
@@ -91,7 +91,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                     std::cerr << "Num #" << sp.at(0).pointId() << "\n";
                     SnapPointEvent snapEvent(sp.at(0).coordinate());
                     _lastSnapEvent = snapEvent;
-                    auto item = entities.begin();
                     auto event = SnapPointEvent(sp.at(0).coordinate());
                     _snapPointEvent(event);
                     return;
