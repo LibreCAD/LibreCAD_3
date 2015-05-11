@@ -89,7 +89,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                                                                          realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
                 if (sp.size() > 0) {
-                    std::cerr << "Num #" << sp.at(0).pointId() << "\n";
                     SnapPointEvent snapEvent(sp.at(0).coordinate());
                     _lastSnapEvent = snapEvent;
                     auto item = entities.begin();
