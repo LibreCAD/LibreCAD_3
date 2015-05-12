@@ -65,8 +65,8 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 if (intersect.result().size() > 0) {
                     std::vector<lc::geo::Coordinate> coords = intersect.result();
                     std::sort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(location));
-                    lc::geo::Coordinate sp = coords.at(0);
 
+                    lc::geo::Coordinate sp = coords.at(0);
                     if ((location - sp).magnitude() < realDistanceForPixels) {
                         auto event = SnapPointEvent(sp);
                         _snapPointEvent(event);

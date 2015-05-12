@@ -15,30 +15,12 @@ using namespace geo;
  * @return true if the angle a is between a1 and a2.
  */
 
-bool Math::isAngleBetween(double a,
+bool Math::isAngleBetween(double angle,
                           double start, double end,
                           bool CCW) {
-
-    bool startOk, endOK;
-    double aa;
-
-    if (a<0. && start > 0.) {
-        start = correctAngle(start-2.*M_PI);
-    }
-
-//    end = correctAngle(end+2.*M_PI);
-    if (a < 0.) aa = correctAngle(a + 2. * M_PI); else aa = a;
-    if ((aa - start) >= 0.) startOk = true; else startOk = false;
-
-    if (a > 0.) aa = correctAngle(a - 2. * M_PI); else aa = a;
-    if ((aa - end) <= 0.) endOK = true; else endOK = false;
-
-    if (CCW) {
-        return startOk && endOK;
-    } else {
-        return (!startOk) && (!endOK);
-    }
-
+    double diffA = getAngleDifference(start, end, CCW);
+    double diffB = getAngleDifference(start, angle, CCW);
+    return diffB <= diffA;
 }
 
 
@@ -53,12 +35,31 @@ double Math::correctAngle(double a) {
  * @return The angle that needs to be added to a1 to reach a2.
  *         Always positive and less than 2*pi.
  */
-double Math::getAngleDifference(double a1, double a2, bool CCW) {
+double Math::getAngleDifferenceShort(double a1, double a2, bool CCW) {
     if (!CCW) {
         std::swap(a1, a2);
     }
 
     return correctAngle(a2 - a1);
+}
+
+/*
+std::cout <<getAngleDifference(0., 0.1, false) << "\n"; // 1 -6.18319
+std::cout <<getAngleDifference(0., 0.1, true) << "\n";  // 2 0.1
+std::cout <<getAngleDifference(0.1, 0, true) << "\n"; // 3 6.18319
+std::cout <<getAngleDifference(0.1, 0, false) << "\n"; // 4 -0.1
+*/
+double Math::getAngleDifference(double start, double end, bool CCW) {
+    double d = end - start;
+    if (d < 0.) {
+        d = 2. * M_PI - std::abs(d);
+    }
+
+    if (!CCW) {
+        d = 2.* M_PI - d;
+    }
+
+    return d;
 }
 
 

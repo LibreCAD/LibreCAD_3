@@ -10,7 +10,11 @@ void LCVArc::draw(LcPainter& painter, const LcDrawOptions &options, const lc::ge
 
 
     if (radius() /** painter.scale() > 5 */) {
-        painter.arc(center().x(), center().y(), radius(), startAngle(), endAngle());
+        if (CCW()) {
+            painter.arc(center().x(), center().y(), radius(), startAngle(), endAngle());
+        } else {
+            painter.arcNegative(center().x(), center().y(), radius(), startAngle(), endAngle());
+        }
         painter.stroke();
     }
 

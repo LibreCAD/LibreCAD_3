@@ -48,7 +48,7 @@ Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinat
 }
 
 Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double bulge) {
-    auto isCCW = bulge>0.;
+    auto isCCW = bulge<0.;
     auto alpha = atan(bulge)*4.;
 
     auto middle = p1.mid(p2);
@@ -66,7 +66,7 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
         angle+=M_PI/2.0;
     }
 
-    if (std::abs(alpha)>M_PI) {
+    if (std::abs(alpha)<M_PI) {
         h*=-1.0;
     }
 

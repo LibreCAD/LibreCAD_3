@@ -334,12 +334,11 @@ namespace lc {
                 }
 
                 bool operator()(const Coordinate& left, const Coordinate& right) const {
-                    return (this->_distanceFrom - left).squared() < (this->_distanceFrom - right).squared();
+                    return left.distanceTo(_distanceFrom) < right.distanceTo(_distanceFrom);
                 }
 
-
             private:
-                Coordinate _distanceFrom;
+                const Coordinate _distanceFrom;
         };
 
     }

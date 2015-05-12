@@ -28,9 +28,9 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
        auto &&a = lc::geo::Arc::createArcBulge(p1, p2, bulge);
         painter.new_sub_path();
         if (a.CCW()) {
-            painter.arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
-        } else {
             painter.arc(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
+        } else {
+            painter.arcNegative(a.center().x(), a.center().y(), a.radius(), a.startAngle(), a.endAngle());
         }
     };
 
@@ -65,18 +65,20 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
                    + currentPoint->location();
         }
 
-        if (std::abs(beforePoint->bulge()) > 0.) {
+        if (beforePoint->bulge() != 0.) {
 
             /* for arc */
             painter.new_path();
-            if (beforePoint->startWidth())
+            if (beforePoint->startWidth()) {
                 painter.line_to(sWp1.x(), sWp1.y());
+            }
 
             draw_arc(eWp1, sWp1, -beforePoint->bulge());
             painter.line_to(eWp1.x(), eWp1.y());
 
-            if (beforePoint->endWidth())
+            if (beforePoint->endWidth()) {
                 painter.line_to(eWp2.x(), eWp2.y());
+            }
 
             if (beforePoint->startWidth() || beforePoint->endWidth()) {
                 // kinda we have to slice it out

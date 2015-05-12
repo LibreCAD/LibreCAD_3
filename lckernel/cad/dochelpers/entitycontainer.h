@@ -267,10 +267,10 @@ namespace lc {
             EntityContainer entitiesWithinAndCrossingAreaFast(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
 
-                std::vector<CT> entities = _tree->retrieve(area, maxLevel);
+                std::vector<CT> &&entities = _tree->retrieve(area, maxLevel);
 
-                for (auto i : entities) {
-                    // If the item fully with's with the selection area sinmply add it
+                for (auto &i : entities) {
+                    // If the item fully with's with the selection area simply add it
                     if (i->boundingBox().overlaps(area)) {
                         container.insert(i);
                     }

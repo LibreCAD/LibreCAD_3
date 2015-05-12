@@ -34,6 +34,15 @@ namespace lc {
              * @param bool, CCW Counter Clickwise Check
              * @return double angle difference
              */
+            static double getAngleDifferenceShort(double a1, double a2, bool CCW) ;
+
+            /**
+             * @brief getAngleDifference, Angle difference between 2 angles
+             * @param double a1, angle 1
+             * @param double a2, angle 2
+             * @param bool, CCW Counter Clickwise Check
+             * @return double angle difference
+             */
             static double getAngleDifference(double a1, double a2, bool CCW) ;
 
             /**

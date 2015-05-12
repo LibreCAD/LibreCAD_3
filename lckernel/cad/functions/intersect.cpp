@@ -128,7 +128,7 @@ bool Intersect::operator()(const lc::entity::Line &, const lc::entity::Spline &)
 }
 
 bool Intersect::operator()(const lc::entity::Line &l, const lc::entity::LWPolyline &p) {
-    auto &list1 = p.asGeometrics();
+    auto &&list1 = p.asGeometrics();
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
     // to use double dispatch can decide to use a specific implementation.
@@ -567,7 +567,7 @@ void Intersect::geovisit(const geo::Vector &line, const geo::Arc &arc) {
     } else {
         for (auto &point : coords) {
             double a = (point - arc.center()).angle();
-            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.CCW()) &&
+            if (arc.isAngleBetween(a) &&
                 line.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
                 _intersectionPoints.push_back(point);
             }

@@ -3,6 +3,7 @@
 #include "entitytest.h"
 #include "testmath.h"
 #include "testgeocircle.h"
+#include "testgeoarc.h"
 #include "testintersect.h"
 
 using namespace std;
