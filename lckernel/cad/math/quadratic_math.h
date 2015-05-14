@@ -5,6 +5,7 @@
 #include <boost/numeric/ublas/io.hpp>
 #include "lcmath.h"
 #include "cad/const.h"
+#include <array>
 namespace lc {
     class Quadratic {
         public:
@@ -17,6 +18,8 @@ namespace lc {
             Quadratic(const Quadratic& lc0);
             Quadratic& operator = (const Quadratic& lc0);
             Quadratic(std::vector<double> ce);
+            Quadratic(double c0, double c1, double c2);
+            Quadratic(double c0, double c1, double c2, double c3, double c4, double c5);
             std::vector<double> getCoefficients() const;
 
             /**

@@ -39,12 +39,14 @@ namespace lc {
                  * @return Quadratic quadratic equation
                  */
                 Quadratic quadratic() const {
+                     /*
                     std::vector<double> ce(6, 0.);
                     ce[0] = 1.;
                     ce[2] = 1.;
-                    ce[5] = -this->radius() * this->radius();
-                    Quadratic ret(ce);
-                    ret.move(this->center());
+                    ce[5] = -_radius * _radius; */
+//                     Quadratic ret(ce);
+                     Quadratic ret(1.,0.,1.,0,.0,-_radius * _radius);
+                    ret.move(_center);
                     return ret;
                 }
 

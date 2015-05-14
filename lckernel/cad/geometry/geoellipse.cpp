@@ -5,15 +5,14 @@
 using namespace lc;
 using namespace geo;
 
-Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc) :
+Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle) :
     Base(),
     _center(center),
     _majorP(majorP),
     _minorRadius(minorRadius),
     _startAngle(startAngle),
     _endAngle(endAngle),
-    _isReversed(false), 
-    _isArc(isArc) {
+    _isReversed(false){
 
 }
 
@@ -116,7 +115,7 @@ double Ellipse::ratio() const {
 }
 
 bool Ellipse::isArc() const {
-    return _startAngle != _endAngle;
+    return Math::getAngleDifferenceShort(_startAngle, _endAngle, _isReversed) < LCARCTOLERANCE;
 }
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {

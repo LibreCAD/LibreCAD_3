@@ -113,13 +113,14 @@ namespace lc {
                  * @return Quadratic quadratic equation
                  */
                 Quadratic quadratic() const {
-                    std::vector<double> ce(3, 0.);
-                    auto&& dvp = this->end() - this->start();
+                    auto&& dvp = this->_end - this->_start;
                     geo::Coordinate normal(-dvp.y(), dvp.x());
+                    /*
+                    std::vector<double> ce(3, 0.);
                     ce[0] = normal.x();
                     ce[1] = normal.y();
-                    ce[2] = - normal.dot(this->end());
-                    return Quadratic(ce);
+                    ce[2] = - normal.dot(this->end()); */
+                    return Quadratic(normal.x(),normal.y(),- normal.dot(this->end()));
                 }
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

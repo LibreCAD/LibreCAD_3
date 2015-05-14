@@ -13,7 +13,7 @@ namespace lc {
     namespace geo {
         class Ellipse : public Base, virtual public Visitable {
             public:
-                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool isArc = false);
+                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
 
                 /**
                  * @brief center, Returns Center point of Ellipse
@@ -106,20 +106,20 @@ namespace lc {
                 * @return Quadratic quadratic equation
                 */
                 Quadratic quadratic() const {
-                    std::vector<double> ce(6, 0.);
-                    ce[0] = this->majorP().squared();
-                    ce[2] = this->ratio() * this->ratio() * ce[0];
+                    //std::vector<double> ce(6, 0.);
+                    auto ce0 = _majorP.squared();
+                    auto ce2 = this->ratio() * this->ratio() * ce0;
 
-                    if (ce[0] < LCTOLERANCE * LCTOLERANCE || ce[2] < LCTOLERANCE * LCTOLERANCE) {
+                    if (ce0 < LCTOLERANCE * LCTOLERANCE || ce2 < LCTOLERANCE * LCTOLERANCE) {
                         return Quadratic();
                     }
-
+                    /*
                     ce[0] = 1. / ce[0];
                     ce[2] = 1. / ce[2];
-                    ce[5] = -1.;
-                    Quadratic ret(ce);
+                    ce[5] = -1.; */
+                    Quadratic ret(1. / ce0, 0., 1. / ce2, 0., 0., -1.);
                     ret.rotate(getAngle());
-                    ret.move(this->center());
+                    ret.move(_center);
                     return ret;
                 }
 
@@ -127,7 +127,7 @@ namespace lc {
 
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Ellipse& e) {
-                    os << "Ellipse(center=" << e._center << " majorP=" << e._majorP << " minorRadius=" << e._minorRadius << " startAngle=" << e._startAngle << " endAngle=" << e._endAngle << " isArc" << e._isArc << " isReversed" << e._isReversed << ")";
+                    os << "Ellipse(center=" << e._center << " majorP=" << e._majorP << " minorRadius=" << e._minorRadius << " startAngle=" << e._startAngle << " endAngle=" << e._endAngle << " isReversed=" << e._isReversed << ")";
                     return os;
                 }
             private:
@@ -137,8 +137,6 @@ namespace lc {
                 const double  _startAngle;
                 const double _endAngle;
                 const bool _isReversed;
-                // TODO: i don't think they belong here. This isn't a value container, this are just entities that old Ellipse properties
-                const bool _isArc;
         };
     }
 }

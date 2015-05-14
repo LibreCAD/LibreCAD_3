@@ -1,5 +1,5 @@
 #include "code.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "entitytest.h"
 #include "testmath.h"
 #include "testgeocircle.h"

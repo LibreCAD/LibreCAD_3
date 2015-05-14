@@ -36,6 +36,7 @@ Quadratic& Quadratic::operator = (const Quadratic& lc0) {
     return *this;
 }
 
+
 Quadratic::Quadratic(std::vector<double> ce):
     m_mQuad(2, 2),
     m_vLinear(2) {
@@ -65,6 +66,30 @@ Quadratic::Quadratic(std::vector<double> ce):
     m_bValid = false;
 }
 
+Quadratic::Quadratic(double c0, double c1, double c2,double c3, double c4, double c5):
+        m_mQuad(2, 2),
+        m_vLinear(2) {
+        m_mQuad(0, 0) = c0;
+        m_mQuad(0, 1) = 0.5 * c1;
+        m_mQuad(1, 0) = m_mQuad(0, 1);
+        m_mQuad(1, 1) = c2;
+        m_vLinear(0) = c3;
+        m_vLinear(1) = c4;
+        m_dConst = c5;
+        m_bIsQuadratic = true;
+        m_bValid = true;
+}
+
+Quadratic::Quadratic(double c0, double c1, double c2):
+        m_mQuad(2, 2),
+        m_vLinear(2) {
+        m_vLinear(0) =c0;
+        m_vLinear(1) =c1;
+        m_dConst = c2;
+        m_bIsQuadratic = false;
+        m_bValid = true;
+}
+
 std::vector<double>  Quadratic::getCoefficients() const {
     std::vector<double> ret(0, 0.);
 
@@ -73,14 +98,14 @@ std::vector<double>  Quadratic::getCoefficients() const {
     }
 
     if (m_bIsQuadratic) {
-        ret.push_back(m_mQuad(0, 0));
-        ret.push_back(m_mQuad(0, 1) + m_mQuad(1, 0));
-        ret.push_back(m_mQuad(1, 1));
+        ret.emplace_back(m_mQuad(0, 0));
+        ret.emplace_back(m_mQuad(0, 1) + m_mQuad(1, 0));
+        ret.emplace_back(m_mQuad(1, 1));
     }
 
-    ret.push_back(m_vLinear(0));
-    ret.push_back(m_vLinear(1));
-    ret.push_back(m_dConst);
+    ret.emplace_back(m_vLinear(0));
+    ret.emplace_back(m_vLinear(1));
+    ret.emplace_back(m_dConst);
     return ret;
 }
 
@@ -181,7 +206,7 @@ std::vector<lc::geo::Coordinate> Quadratic::getIntersection(const Quadratic& l1,
         std::vector<double> sn(2, 0.);
 
         if (Math::linearSolver(ce, sn)) {
-            ret.push_back(geo::Coordinate(sn[0], sn[1]));
+            ret.emplace_back(sn[0], sn[1]);
         }
 
         return ret;
@@ -204,16 +229,8 @@ std::vector<lc::geo::Coordinate> Quadratic::getIntersection(const Quadratic& l1,
        ) {
         if (std::abs(p1->m_mQuad(1, 1)) < LCTOLERANCE && std::abs(p2->m_mQuad(1, 1)) < LCTOLERANCE) {
             //linear
-            std::vector<double> ce(0);
-            ce.push_back(p1->m_vLinear(0));
-            ce.push_back(p1->m_vLinear(1));
-            ce.push_back(p1->m_dConst);
-            Quadratic lc10(ce);
-            ce.clear();
-            ce.push_back(p2->m_vLinear(0));
-            ce.push_back(p2->m_vLinear(1));
-            ce.push_back(p2->m_dConst);
-            Quadratic lc11(ce);
+            Quadratic lc10(p1->m_vLinear(0), p1->m_vLinear(1), p1->m_dConst);
+            Quadratic lc11(p2->m_vLinear(0), p2->m_vLinear(1), p2->m_dConst);
             return getIntersection(lc10, lc11);
         }
 

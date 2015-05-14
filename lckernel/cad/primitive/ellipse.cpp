@@ -77,7 +77,7 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
     auto newEllipse = std::make_shared<Ellipse>(this->center().scale(scale_center, scale_factor), vp6,
                                                 minor_,
                                                 isArc() ? this->getEllipseAngle(startPoint) : 0.,
-                                                isArc() ? this->getEllipseAngle(endPoint) : 360., layer());
+                                                isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI, layer());
 
     newEllipse->setID(this->id());
     return newEllipse;
