@@ -19,38 +19,36 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
 
     // Decide to show the explecit value or the measured value
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
+    const lc::geo::Coordinate& mousePos = middleOfText();
+    const bool mouseIsInside = mousePos.distanceTo(definitionPoint()) < radiusCircle;
+    // FIXME this should not be fixed
+    const double capSize = 2.;
+    
     std::string value = lc::StringHelper::dim_value(explicitValue(), options.radialFormat(), radiusCircle);
-
+    
+    /* get text size  */
+    painter.save();
+    painter.font_size(options.dimTextHeight());
+    TextExtends te = painter.text_extends(value.c_str());
+    painter.restore();
+    
     // Draw line
     EndCaps endCaps;
-    double distanceTextToCenter = this->middleOfText().distanceTo(definitionPoint());
+    auto tLinePos = !mouseIsInside
+      ? mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), te.width + capSize)
+      : mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), -te.width - capSize);
 
-    // Seems like that with radial and diametric there is no choice in attachmentPoint and is 'fixed'
-    lc::TextConst::AttachmentPoint aPoint;
+    auto tMText = !mouseIsInside
+      ? mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), te.width / 2 + capSize / 2)
+      : mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), -te.width / 2 - capSize / 2);
+      
+    painter.move_to(definitionPoint2().x(), definitionPoint2().y());
+    painter.line_to(mousePos.x(), mousePos.y());
+    painter.line_to(tLinePos.x(), mousePos.y());
+    painter.stroke();
+    endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), mousePos.y(), definitionPoint2().x(), definitionPoint2().y(), capSize) ;
 
-    // If a leader needs to get drawn, do so else just take the end point
-    // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
-    if (distanceTextToCenter >= radiusCircle) {
-        painter.move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter.line_to(definitionPoint2().x(), definitionPoint2().y());
-        painter.line_to(definitionPoint().x(), definitionPoint().y());
-        painter.stroke();
-        endCaps.render(painter, EndCaps::OPENARROW, middleOfText().x(), middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
-
-        aPoint = lc::TextConst::AttachmentPoint::Top_left;
-    } else {
-        // Draw end caps
-        painter.move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter.line_to(this->definitionPoint2().x(), this->definitionPoint2().y());
-        painter.stroke();
-        endCaps.render(painter, EndCaps::OPENARROW, this->middleOfText().x(), this->middleOfText().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), 10.) ;
-        aPoint = lc::TextConst::AttachmentPoint::Top_right;
-    }
-
-    endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., this->definitionPoint().x(), this->definitionPoint().y(), 2.) ;
-
-    this->drawText(value, this->definitionPoint().angleTo(this->definitionPoint2()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
-
+    this->drawText(value, textAngle(), lc::TextConst::AttachmentPoint::Top_center, tMText, painter, options, rect);
 
     if (modified) {
         painter.restore();
