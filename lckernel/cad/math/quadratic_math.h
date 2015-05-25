@@ -91,6 +91,9 @@ namespace lc {
              */
             static std::vector<lc::geo::Coordinate> getIntersection(const Quadratic& l1, const Quadratic& l2);
         private:
+            // Not 100% sure we might want to consider http://sourceforge.net/projects/tvmet/ because ublas from boost
+            // is relative slow on small matrixes/vector. see faq on
+            // http://www.crystalclearsoftware.com/cgi-bin/boost_wiki/wiki.pl?Frequently_Asked_Questions_Using_UBLAS
             boost::numeric::ublas::matrix<double> m_mQuad;
             boost::numeric::ublas::vector<double> m_vLinear;
             double m_dConst;
