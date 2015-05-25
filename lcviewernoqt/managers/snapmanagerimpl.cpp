@@ -39,19 +39,15 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // We should call this function only if the mouse haven't moved for XX milli seconds
 
     // Find all entities that are close to the current mouse pointer
-
+    // TODO: We properly need to remember entities which we had snap point in the past, some sort og queue
+    // this way we can get more efficiently snap to entities outside the cursor's 'range' so the
+    // person can 'pick' a entity onceand then it would stay in the list of entities to
+    // consider for snapping. THis will mostly lickly be lines only
     std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
                                                                                                   realDistanceForPixels);
     std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
-    if (entities.size() > 0) {
-        // auto item = entities.begin();
-        // auto event = SnapPointEvent(item->coordinate());
-        // _snapPointEvent(event);
-        // std::cerr << "Found " << entities.size() << " entities close to the cursor" << location.x() << ":" << location.y() << "\n";
-    }
 
     // Emit Snappoint event if a entity intersects with a other entity
-    // TODO: Need some modification to find the closest intersection point
     if (entities.size() > 1 && _snapIntersections) {
 
         for (size_t a = 0; a < entities.size(); a++) {
