@@ -11,53 +11,49 @@ LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric
 * Draw a DimDiametric
 * TODO: draw correct leader and verification if we draw this correctly compared ot other CAD drawings
 */
-void LCDimDiametric::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
     bool modified = false;
 
     // Decide to show the explecit value or the measured value
     double diameterCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
+    const auto circle_middle_p0 = definitionPoint2() / 2;
+    const auto &circle_p2 = definitionPoint();
+    const lc::geo::Coordinate &mousePos = middleOfText();
+    const bool mouseIsInside = mousePos.distanceTo(circle_middle_p0) < circle_middle_p0.distanceTo(circle_p2);
+    // FIXME this should not be fixed
+    const double capSize = 2.;
+
     std::string value = lc::StringHelper::dim_value(explicitValue(), options.diametricFormat(), diameterCircle);
 
+
+    /* get text size  */
+    painter.save();
+    painter.font_size(options.dimTextHeight());
+    TextExtends te = painter.text_extends(value.c_str());
+    painter.restore();
+
+    // Draw line
     EndCaps endCaps;
+    auto tLinePos = !mouseIsInside
+                    ? mousePos.move(mousePos - lc::geo::Coordinate(circle_middle_p0.x(), mousePos.y()), te.width + capSize)
+                    : mousePos.move(mousePos - lc::geo::Coordinate(circle_middle_p0.x(), mousePos.y()), -te.width - capSize);
 
-    // If a leader needs to get drawn, do so else just take the end point
-    // Additionally, if the leader is drawn also make sure the arrow is drawn on the other side
-    lc::geo::Coordinate center = this->definitionPoint().mid(this->definitionPoint2());
-    double distanceTextToCenter = this->middleOfText().distanceTo(center);
+    auto tMText = !mouseIsInside
+                  ? mousePos.move(mousePos - lc::geo::Coordinate(circle_middle_p0.x(), mousePos.y()), te.width / 2 + capSize / 2)
+                  : mousePos.move(mousePos - lc::geo::Coordinate(circle_middle_p0.x(), mousePos.y()), -te.width / 2 - capSize / 2);
 
-    // Seems like that with radial and diametric there is no choice in attachmentPoint and is 'fixed'
-    lc::TextConst::AttachmentPoint aPoint;
+    painter.move_to(circle_p2.x(), circle_p2.y());
+    painter.line_to(mousePos.x(), mousePos.y());
+    painter.line_to(tLinePos.x(), mousePos.y());
+    painter.stroke();
+    endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), mousePos.y(), circle_p2.x(), circle_p2.y(), capSize) ;
 
-    // If the text location is outside of the circle do a full width diameter
-    if (distanceTextToCenter >= diameterCircle / 2.) {
-        painter.move_to(this->definitionPoint2().x(), this->definitionPoint2().y());
-        painter.line_to(this->definitionPoint().x(), this->definitionPoint().y());
-        painter.line_to(this->middleOfText().x(), this->middleOfText().y());
-        painter.stroke();
-
-        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint().x(), this->definitionPoint().y(), this->definitionPoint2().x(), this->definitionPoint2().y(), -10.) ;
-        endCaps.render(painter, EndCaps::OPENARROW, this->definitionPoint2().x(), this->definitionPoint2().y(), this->definitionPoint().x(), this->definitionPoint().y(), -10.) ;
-
-        aPoint = lc::TextConst::AttachmentPoint::Top_left;
-
-    } else { // If the text is inside draw a inside
-        painter.move_to(this->middleOfText().x(), this->middleOfText().y());
-        painter.line_to(this->definitionPoint().x(), this->definitionPoint().y());
-        painter.stroke();
-
-        endCaps.render(painter, EndCaps::OPENARROW, this->middleOfText().x(), this->middleOfText().y(), this->definitionPoint().x(), this->definitionPoint().y(), 10.) ;
-
-        aPoint = lc::TextConst::AttachmentPoint::Top_right;
-    }
-
-    endCaps.render(painter, EndCaps::CLOSEDROUND, 0., 0., center.x(), center.y(), 2.) ;
-
-
-    this->drawText(value, this->definitionPoint2().angleTo(this->definitionPoint()) + textAngle(), aPoint, this->middleOfText(), painter, options, rect);
+    this->drawText(value, textAngle(), lc::TextConst::AttachmentPoint::Top_center, tMText, painter, options, rect);
 
     if (modified) {
         painter.restore();
     }
 
 }
+
 
