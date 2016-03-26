@@ -16,8 +16,8 @@ namespace lc {
         */
         class Base;
 
-        typedef std::shared_ptr<Base> Base_SPtr;
-        typedef std::shared_ptr<const Base> Base_CSPtr;
+        using Base_SPtr = std::shared_ptr<Base>;
+        using Base_CSPtr = std::shared_ptr<const Base>;
 
         class Base {
             public:
@@ -30,8 +30,8 @@ namespace lc {
                 ) = 0;
         };
 
-        typedef std::shared_ptr<Base> Base_SPtr;
-        typedef std::shared_ptr<const Base> Base_CSPtr;
+        using Base_SPtr = std::shared_ptr<Base>;
+        using Base_CSPtr = std::shared_ptr<const Base>;
 
         /**
         *

@@ -24,8 +24,8 @@ class GuiOperationFinishedEvent;
   * \author R. van Twisk <librecad@rvt.dds.nl>
   */
 class GuiOperation;
-typedef std::shared_ptr<GuiOperation> GuiOperation_SPtr;
-typedef std::shared_ptr<const GuiOperation> GuiOperation_CSPtr;
+using GuiOperation_SPtr = std::shared_ptr<GuiOperation>;
+using GuiOperation_CSPtr = std::shared_ptr<const GuiOperation>;
 class GuiOperation : public QObject {
         Q_OBJECT
     public:

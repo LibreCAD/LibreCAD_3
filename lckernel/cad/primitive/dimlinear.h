@@ -104,8 +104,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<DimLinear> DimLinear_SPtr;
-        typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
+        using DimLinear_SPtr = std::shared_ptr<DimLinear>;
+        using DimLinear_CSPtr = std::shared_ptr<const DimLinear>;
     }
 }
 

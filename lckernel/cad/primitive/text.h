@@ -153,8 +153,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<Text> Text_SPtr;
-        typedef std::shared_ptr<const Text> Text_CSPtr;
+        using Text_SPtr = std::shared_ptr<Text>;
+        using Text_CSPtr = std::shared_ptr<const Text>;
     }
 }
 

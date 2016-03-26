@@ -217,4 +217,4 @@ private:
 
 };
 
-typedef std::shared_ptr<DocumentCanvas> DocumentCanvas_SPtr;
+using DocumentCanvas_SPtr = std::shared_ptr<DocumentCanvas>;

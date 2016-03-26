@@ -249,8 +249,8 @@ namespace lc {
             }
         };
 
-        typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
-        typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
+        using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;
+        using LWPolyline_CSPtr = std::shared_ptr<const LWPolyline>;
     }
 }
 

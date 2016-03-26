@@ -37,5 +37,5 @@ class LCVDrawItem {
 
 
 class LCVDrawItem;
-typedef std::shared_ptr<LCVDrawItem> LCVDrawItem_SPtr;
-typedef std::shared_ptr<const LCVDrawItem> LCVDrawItem_CSPtr;
+using LCVDrawItem_SPtr = std::shared_ptr<LCVDrawItem>;
+using LCVDrawItem_CSPtr = std::shared_ptr<const LCVDrawItem>;

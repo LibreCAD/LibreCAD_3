@@ -45,8 +45,8 @@ namespace lc {
                 return os;
             }
     };
-    typedef std::shared_ptr<Layer> Layer_SPtr;
-    typedef std::shared_ptr<const Layer> Layer_CSPtr;
+    using Layer_SPtr = std::shared_ptr<Layer>;
+    using Layer_CSPtr = std::shared_ptr<const Layer>;
 }
 
 // LAYER_H

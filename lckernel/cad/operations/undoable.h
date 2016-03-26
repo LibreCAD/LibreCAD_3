@@ -61,8 +61,8 @@ namespace lc {
             private:
                 std::string _text;
         };
-        typedef std::shared_ptr<Undoable> Undoable_SPtr;
-        typedef std::shared_ptr<const Undoable> Undoable_CSPtr;
+        using Undoable_SPtr = std::shared_ptr<Undoable>;
+        using Undoable_CSPtr = std::shared_ptr<const Undoable>;
     }
 }
 

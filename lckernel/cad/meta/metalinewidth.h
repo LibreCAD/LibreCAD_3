@@ -33,8 +33,8 @@ namespace lc {
             }
     };
 
-    typedef std::shared_ptr<MetaLineWidth> MetaLineWidth_SPtr;
-    typedef std::shared_ptr<const MetaLineWidth> MetaLineWidth_CSPtr;
+    using MetaLineWidth_SPtr = std::shared_ptr<MetaLineWidth>;
+    using MetaLineWidth_CSPtr = std::shared_ptr<const MetaLineWidth>;
 }
 
 // LINEWIDTH_H

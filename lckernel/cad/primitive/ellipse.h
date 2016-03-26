@@ -80,8 +80,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
-        typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
+        using Ellipse_SPtr = std::shared_ptr<Ellipse>;
+        using Ellipse_CSPtr = std::shared_ptr<const Ellipse>;
     }
 }
 

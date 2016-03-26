@@ -129,7 +129,7 @@ namespace lc {
             Layer_CSPtr _layer;
             MetaInfo_CSPtr _metaInfo;
         };
-        typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-        typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
+        using CADEntity_SPtr = std::shared_ptr<CADEntity>;
+        using CADEntity_CSPtr = std::shared_ptr<const CADEntity>;
     }
 }

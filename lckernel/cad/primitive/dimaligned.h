@@ -94,8 +94,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
-        typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
+        using DimAligned_SPtr = std::shared_ptr<DimAligned>;
+        using DimAligned_CSPtr = std::shared_ptr<const DimAligned>;
     }
 }
 

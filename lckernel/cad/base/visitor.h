@@ -25,60 +25,60 @@ namespace lc {
 
     namespace entity {
         class Arc;
-        typedef std::shared_ptr<Arc> Arc_SPtr;
-        typedef std::shared_ptr<const Arc> Arc_CSPtr;
+        using Arc_SPtr = std::shared_ptr<Arc>;
+        using Arc_CSPtr = std::shared_ptr<const Arc>;
 
         class Point;
-        typedef std::shared_ptr<Point> Point_SPtr;
-        typedef std::shared_ptr<const Point> Point_CSPtr;
+        using Point_SPtr = std::shared_ptr<Point>;
+        using Point_CSPtr = std::shared_ptr<const Point>;
 
         class Line;
-        typedef std::shared_ptr<Line> Line_SPtr;
-        typedef std::shared_ptr<const Line> Line_CSPtr;
+        using Line_SPtr = std::shared_ptr<Line>;
+        using Line_CSPtr = std::shared_ptr<const Line>;
 
         class Text;
-        typedef std::shared_ptr<Text> Text_SPtr;
-        typedef std::shared_ptr<const Text> Text_CSPtr;
+        using Text_SPtr = std::shared_ptr<Text>;
+        using Text_CSPtr = std::shared_ptr<const Text>;
 
         class Spline;
-        typedef std::shared_ptr<Spline> Spline_SPtr;
-        typedef std::shared_ptr<const Spline> Spline_CSPtr;
+        using Spline_SPtr = std::shared_ptr<Spline>;
+        using Spline_CSPtr = std::shared_ptr<const Spline>;
 
         class Ellipse;
-        typedef std::shared_ptr<Ellipse> Ellipse_SPtr;
-        typedef std::shared_ptr<const Ellipse> Ellipse_CSPtr;
+        using Ellipse_SPtr = std::shared_ptr<Ellipse>;
+        using Ellipse_CSPtr = std::shared_ptr<const Ellipse>;
 
         class Circle;
-        typedef std::shared_ptr<Circle> Circle_SPtr;
-        typedef std::shared_ptr<const Circle> Circle_CSPtr;
+        using Circle_SPtr = std::shared_ptr<Circle>;
+        using Circle_CSPtr = std::shared_ptr<const Circle>;
 
         class CADEntity;
-        typedef std::shared_ptr<CADEntity> CADEntity_SPtr;
-        typedef std::shared_ptr<const CADEntity> CADEntity_CSPtr;
+        using CADEntity_SPtr = std::shared_ptr<CADEntity>;
+        using CADEntity_CSPtr = std::shared_ptr<const CADEntity>;
 
         class DimAligned;
-        typedef std::shared_ptr<DimAligned> DimAligned_SPtr;
-        typedef std::shared_ptr<const DimAligned> DimAligned_CSPtr;
+        using DimAligned_SPtr = std::shared_ptr<DimAligned>;
+        using DimAligned_CSPtr = std::shared_ptr<const DimAligned>;
 
         class DimAngular;
-        typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
-        typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
+        using DimAngular_SPtr = std::shared_ptr<DimAngular>;
+        using DimAngular_CSPtr = std::shared_ptr<const DimAngular>;
 
         class DimDiametric;
-        typedef std::shared_ptr<DimDiametric> DimDiametric_SPtr;
-        typedef std::shared_ptr<const DimDiametric> DimDiametric_CSPtr;
+        using DimDiametric_SPtr = std::shared_ptr<DimDiametric>;
+        using DimDiametric_CSPtr = std::shared_ptr<const DimDiametric>;
 
         class DimLinear;
-        typedef std::shared_ptr<DimLinear> DimLinear_SPtr;
-        typedef std::shared_ptr<const DimLinear> DimLinear_CSPtr;
+        using DimLinear_SPtr = std::shared_ptr<DimLinear>;
+        using DimLinear_CSPtr = std::shared_ptr<const DimLinear>;
 
         class DimRadial;
-        typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
-        typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
+        using DimRadial_SPtr = std::shared_ptr<DimRadial>;
+        using DimRadial_CSPtr = std::shared_ptr<const DimRadial>;
 
         class LWPolyline;
-        typedef std::shared_ptr<LWPolyline> LWPolyline_SPtr;
-        typedef std::shared_ptr<const LWPolyline> LWPolyline_CSPtr;
+        using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;
+        using LWPolyline_CSPtr = std::shared_ptr<const LWPolyline>;
 
     }
 }
