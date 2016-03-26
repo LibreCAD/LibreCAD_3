@@ -114,8 +114,8 @@ namespace lc {
 
         private:
         };
-        typedef std::shared_ptr<Line> Line_SPtr;
-        typedef std::shared_ptr<const Line> Line_CSPtr;
+        using Line_SPtr = std::shared_ptr<Line>;
+        using Line_CSPtr = std::shared_ptr<const Line>;
 
     }
 

@@ -98,8 +98,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<DimAngular> DimAngular_SPtr;
-        typedef std::shared_ptr<const DimAngular> DimAngular_CSPtr;
+        using DimAngular_SPtr = std::shared_ptr<DimAngular>;
+        using DimAngular_CSPtr = std::shared_ptr<const DimAngular>;
     }
 }
 

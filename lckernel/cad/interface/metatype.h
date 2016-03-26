@@ -25,7 +25,7 @@ namespace lc {
             }
             virtual ~MetaType() {}
     };
-    typedef std::shared_ptr<MetaType> MetaType_SPtr;
-    typedef std::shared_ptr<const MetaType> MetaType_CSPtr;
+    using MetaType_SPtr = std::shared_ptr<MetaType>;
+    using MetaType_CSPtr = std::shared_ptr<const MetaType>;
 
 }

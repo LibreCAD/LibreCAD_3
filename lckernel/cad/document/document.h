@@ -27,8 +27,8 @@ namespace lc {
 
     namespace operation {
         class DocumentOperation;
-        typedef std::shared_ptr<DocumentOperation> DocumentOperation_SPtr;
-        typedef std::shared_ptr<const DocumentOperation> DocumentOperation_CSPtr;
+        using DocumentOperation_SPtr = std::shared_ptr<DocumentOperation>;
+        using DocumentOperation_CSPtr = std::shared_ptr<const DocumentOperation>;
     }
 
     class Document {

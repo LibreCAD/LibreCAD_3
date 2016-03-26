@@ -19,6 +19,6 @@ namespace lc {
     };
 
 
-    typedef std::shared_ptr<MetaInfo> MetaInfo_SPtr;
-    typedef std::shared_ptr<const MetaInfo> MetaInfo_CSPtr;
+    using MetaInfo_SPtr = std::shared_ptr<MetaInfo>;
+    using MetaInfo_CSPtr = std::shared_ptr<const MetaInfo>;
 }

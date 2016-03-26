@@ -61,8 +61,8 @@ namespace lc {
                 }
             }
     };
-    typedef std::shared_ptr<Snapable> Snapable_SPtr;
-    typedef std::shared_ptr<const Snapable> Snapable_CSPtr;
+    using Snapable_SPtr = std::shared_ptr<Snapable>;
+    using Snapable_CSPtr = std::shared_ptr<const Snapable>;
 }
 
 // SNAPABLE_H

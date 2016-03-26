@@ -85,7 +85,7 @@ namespace lc {
             }
     };
 
-    typedef std::shared_ptr<MetaColor> MetaColor_SPtr;
-    typedef std::shared_ptr<const MetaColor> MetaColor_CSPtr;
+    using MetaColor_SPtr = std::shared_ptr<MetaColor>;
+    using MetaColor_CSPtr = std::shared_ptr<const MetaColor>;
 }
 

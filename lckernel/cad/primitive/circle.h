@@ -93,8 +93,8 @@ namespace lc {
             }
 
         };
-        typedef std::shared_ptr<Circle> Circle_SPtr;
-        typedef std::shared_ptr<const Circle> Circle_CSPtr;
+        using Circle_SPtr = std::shared_ptr<Circle>;
+        using Circle_CSPtr = std::shared_ptr<const Circle>;
 
     }
 }

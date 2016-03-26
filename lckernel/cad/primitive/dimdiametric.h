@@ -107,7 +107,7 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<DimDiametric> DimDiametric_SPtr;
-        typedef std::shared_ptr<const DimDiametric> DimDiametric_CSPtr;
+        using DimDiametric_SPtr = std::shared_ptr<DimDiametric>;
+        using DimDiametric_CSPtr = std::shared_ptr<const DimDiametric>;
     }
 }

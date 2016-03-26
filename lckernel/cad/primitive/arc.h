@@ -96,8 +96,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<Arc> Arc_SPtr;
-        typedef std::shared_ptr<const Arc> Arc_CSPtr;
+        using Arc_SPtr = std::shared_ptr<Arc>;
+        using Arc_CSPtr = std::shared_ptr<const Arc>;
 
     }
 }

@@ -35,6 +35,6 @@ namespace lc {
     };
 
     class FTrim;
-    typedef std::shared_ptr<FTrim> FTrim_SPtr;
-    typedef std::shared_ptr<const FTrim> FTrim_CSPtr;
+    using FTrim_SPtr = std::shared_ptr<FTrim>;
+    using FTrim_CSPtr = std::shared_ptr<const FTrim>;
 }

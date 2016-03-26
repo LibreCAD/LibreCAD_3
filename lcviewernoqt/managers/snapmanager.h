@@ -26,7 +26,7 @@ public:
 
 };
 
-typedef std::shared_ptr<SnapManager> SnapManager_SPtr;
+using SnapManager_SPtr = std::shared_ptr<SnapManager>;
 
 
 

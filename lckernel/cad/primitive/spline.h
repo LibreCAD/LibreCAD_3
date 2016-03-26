@@ -89,8 +89,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<Spline> Spline_SPtr;
-        typedef std::shared_ptr<const Spline> Spline_CSPtr;
+        using Spline_SPtr = std::shared_ptr<Spline>;
+        using Spline_CSPtr = std::shared_ptr<const Spline>;
     }
 }
 

@@ -111,7 +111,7 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<DimRadial> DimRadial_SPtr;
-        typedef std::shared_ptr<const DimRadial> DimRadial_CSPtr;
+        using DimRadial_SPtr = std::shared_ptr<DimRadial>;
+        using DimRadial_CSPtr = std::shared_ptr<const DimRadial>;
     }
 }

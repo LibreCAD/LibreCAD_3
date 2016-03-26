@@ -89,8 +89,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        typedef std::shared_ptr<Point> Point_SPtr;
-        typedef std::shared_ptr<const Point> Point_CSPtr;
+        using Point_SPtr = std::shared_ptr<Point>;
+        using Point_CSPtr = std::shared_ptr<const Point>;
     }
 }
 

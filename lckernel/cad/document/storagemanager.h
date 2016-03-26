@@ -65,6 +65,6 @@ namespace lc {
     };
 
     class StorageManager;
-    typedef std::shared_ptr<StorageManager> StorageManager_SPtr;
-    typedef std::shared_ptr<const StorageManager> StorageManager_CSPtr;
+    using StorageManager_SPtr = std::shared_ptr<StorageManager>;
+    using StorageManager_CSPtr = std::shared_ptr<const StorageManager>;
 }

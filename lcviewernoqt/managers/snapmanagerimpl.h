@@ -71,6 +71,6 @@ class SnapManagerImpl : public SnapManager {
 };
 
 
-typedef std::shared_ptr<SnapManagerImpl> SnapManagerImpl_SPtr;
+using SnapManagerImpl_SPtr = std::shared_ptr<SnapManagerImpl>;
 
 // SNAPMANAGERIMPL_H

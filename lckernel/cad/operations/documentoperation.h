@@ -57,8 +57,8 @@ namespace lc {
                 virtual void processInternal() = 0;
 
         };
-        typedef std::shared_ptr<DocumentOperation> DocumentOperation_SPtr;
-        typedef std::shared_ptr<const DocumentOperation> DocumentOperation_CSPtr;
+        using DocumentOperation_SPtr = std::shared_ptr<DocumentOperation>;
+        using DocumentOperation_CSPtr = std::shared_ptr<const DocumentOperation>;
     }
 }
 // OPERATIONINTERFACE_H
