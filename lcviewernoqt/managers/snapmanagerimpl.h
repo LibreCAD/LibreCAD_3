@@ -5,12 +5,15 @@
 #include "../events/LocationEvent.h"
 #include <cad/interface/snapconstrain.h>
 
-class MouseMoveEvent;
-class SnapPointEvent;
 
 /*!
  * \brief Implements the SnapManager interface
  */
+
+namespace LCViewer {
+class MouseMoveEvent;
+class SnapPointEvent;
+
 class SnapManagerImpl : public SnapManager {
     public:
         /*!
@@ -72,5 +75,5 @@ class SnapManagerImpl : public SnapManager {
 
 
 using SnapManagerImpl_SPtr = std::shared_ptr<SnapManagerImpl>;
-
+}
 // SNAPMANAGERIMPL_H

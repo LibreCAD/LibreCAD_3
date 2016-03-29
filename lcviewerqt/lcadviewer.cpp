@@ -15,6 +15,7 @@
 
 #include "nano-signal-slot/nano_signal_slot.hpp"
 
+using namespace LCViewer;
 
 LCADViewer::LCADViewer(QWidget *parent) :
     QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false){

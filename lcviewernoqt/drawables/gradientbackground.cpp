@@ -4,6 +4,8 @@
 #include "../lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
+using namespace LCViewer;
+
 GradientBackground::GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {
 }
 

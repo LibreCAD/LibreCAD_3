@@ -3,6 +3,7 @@
 #include "lcvdrawitem.h"
 #include <cad/primitive/textconst.h>
 #include <cad/geometry/geocoordinate.h>
+namespace LCViewer {
 
 class LCDimension  {
     public:
@@ -23,3 +24,4 @@ class LCDimension  {
 
         void drawText(const std::string& value, const double angle, const lc::TextConst::AttachmentPoint attachmentPoint, lc::geo::Coordinate textlocation, LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

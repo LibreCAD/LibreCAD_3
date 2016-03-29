@@ -1,7 +1,7 @@
 #include "lcvarc.h"
 #include "../lcpainter.h"
 #include "../lcdrawoptions.h"
-
+using namespace LCViewer;
 LCVArc::LCVArc(const lc::entity::Arc_CSPtr arc) : LCVDrawItem(true), lc::entity::Arc(arc, true) {
 }
 

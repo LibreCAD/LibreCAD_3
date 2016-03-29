@@ -4,7 +4,7 @@
 #include "../events/snappointevent.h"
 #include "../managers/snapmanager.h"
 
-using namespace lc;
+using namespace LCViewer;
 
 Cursor::Cursor(int cursorSize, std::shared_ptr<DocumentCanvas> view, const lc::Color& xAxisColor, const lc::Color& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
 /*

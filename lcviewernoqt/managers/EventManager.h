@@ -14,7 +14,7 @@ namespace lc {
     }
 }
 
-
+namespace LCViewer {
 class EventManager {
 public:
     void location(const lc::geo::Coordinate &);
@@ -29,3 +29,4 @@ private:
 
 };
 
+}

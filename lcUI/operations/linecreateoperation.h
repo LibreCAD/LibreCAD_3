@@ -24,14 +24,14 @@
 class LineCreateOperation : public GuiOperation {
         Q_OBJECT
     public:
-        LineCreateOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
+        LineCreateOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, LCViewer::SnapManager_SPtr  snapManager);
 
         virtual lc::operation::DocumentOperation_SPtr operation() const;
 
         virtual void restart();
 
     public slots:
-        void on_drawEvent(const DrawEvent& event);
+        void on_drawEvent(const LCViewer::DrawEvent& event);
 
         void setStartPoint(const lc::geo::Coordinate& startPoint) {
             _startPoint = startPoint;
@@ -49,7 +49,7 @@ class LineCreateOperation : public GuiOperation {
 
         virtual GuiOperation_SPtr next() const;
 
-        void on_SnapPoint_Event(const SnapPointEvent& event);
+        void on_SnapPoint_Event(const LCViewer::SnapPointEvent& event);
     private slots:
         void lineCreationFinished();
 
@@ -61,10 +61,10 @@ class LineCreateOperation : public GuiOperation {
         QSnappedState* _waitForSecondClick;
         QSnappedState* _waitForFirstClick;
 
-        SnapPointEvent _lastSnapEvent;
+        LCViewer::SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        SnapManager_SPtr  _snapManager;
+        LCViewer::SnapManager_SPtr  _snapManager;
         lc::StorageManager_SPtr  _storageManager;
         lc::Layer_CSPtr  _layer;
 

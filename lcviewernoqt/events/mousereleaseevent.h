@@ -6,6 +6,8 @@
 /**
   * Event that get's dispatched each time the mouse is moved.
   */
+
+namespace LCViewer {
 class LcPainter;
 class MouseReleaseEvent  {
     public:
@@ -26,3 +28,4 @@ class MouseReleaseEvent  {
         lc::geo::Coordinate _mousePosition;
         std::vector<lc::EntityDistance> _entities;
 };
+}

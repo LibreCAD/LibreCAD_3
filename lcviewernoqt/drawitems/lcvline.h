@@ -2,6 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/line.h"
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -23,3 +24,4 @@ class LCVLine : public LCVDrawItem, public lc::entity::Line {
 
 
 };
+}

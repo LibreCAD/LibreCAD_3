@@ -2,7 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include <cad/primitive/arc.h>
-
+namespace LCViewer {
 class LCVArc: public LCVDrawItem, public lc::entity::Arc {
     public:
         LCVArc(const lc::entity::Arc_CSPtr circle);
@@ -14,3 +14,4 @@ class LCVArc: public LCVDrawItem, public lc::entity::Arc {
          */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

@@ -3,7 +3,7 @@
 #include "lcdimdiametric.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
-
+using namespace LCViewer;
 LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric) : LCVDrawItem(true), lc::entity::DimDiametric(dimDiametric, true) {
 }
 

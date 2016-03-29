@@ -8,6 +8,8 @@
   * Draw a metric grid on a LCGraphics View
   *
   */
+
+namespace LCViewer {
 class Grid : public lc::Snapable {
     public:
         /*
@@ -39,3 +41,4 @@ class Grid : public lc::Snapable {
     // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
         mutable double _lastGridSize;
 };
+}

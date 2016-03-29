@@ -5,6 +5,8 @@
 /**
   * Event that get's dispatched each time the mouse is moved.
   */
+
+namespace LCViewer {
 class SelectedItemsEvent  {
     public:
         SelectedItemsEvent() {
@@ -19,3 +21,4 @@ class SelectedItemsEvent  {
     private:
         const std::vector<lc::entity::CADEntity_CSPtr > _entities;
 };
+}

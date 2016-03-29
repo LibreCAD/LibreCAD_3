@@ -3,7 +3,7 @@
 #include "lcdimradial.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
-
+using namespace LCViewer;
 LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial) : LCVDrawItem(true), lc::entity::DimRadial(dimRadial, true) {
 }
 

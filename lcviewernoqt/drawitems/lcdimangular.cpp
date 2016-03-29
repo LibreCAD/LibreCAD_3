@@ -5,7 +5,7 @@
 #include "cad/functions/string_helper.h"
 #include "cad/functions/intersect.h"
 #include "cad/base/visitor.h"
-
+using namespace LCViewer;
 LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) : LCVDrawItem(true), lc::entity::DimAngular(dimAngular, true) {
 }
 

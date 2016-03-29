@@ -5,6 +5,8 @@
 #include <cad/base/cadentity.h>
 #include <cad/functions/intersect.h>
 
+using namespace LCViewer;
+
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) : _grid(
         grid), _gridSnappable(false), _snapIntersections(false), _distanceToSnap(distanceToSnap), _view(view) {
 

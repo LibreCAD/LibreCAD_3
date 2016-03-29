@@ -7,6 +7,7 @@
 #include "../managers/EventManager.h"
 #include <memory>
 
+namespace LCViewer {
 class CursorLocation {
 public:
     CursorLocation(int textSize, std::shared_ptr<EventManager> const &, lc::Color& color);
@@ -19,3 +20,4 @@ private:
 
 };
 
+}

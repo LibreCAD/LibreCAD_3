@@ -20,8 +20,9 @@ namespace CairoPainter {
     enum class backend : short {
         Image, PDF, SVG
     };
-};
+}
 
+using namespace LCViewer;
 
 template<CairoPainter::backend T>
 class LcCairoPainter : public LcPainter {

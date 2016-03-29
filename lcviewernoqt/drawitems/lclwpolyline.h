@@ -2,6 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include <cad/primitive/lwpolyline.h>
+namespace LCViewer {
 
 class LCLWPolyline : public LCVDrawItem, public lc::entity::LWPolyline {
     public:
@@ -15,3 +16,4 @@ class LCLWPolyline : public LCVDrawItem, public lc::entity::LWPolyline {
      */
     virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}
