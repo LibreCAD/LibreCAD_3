@@ -13,6 +13,7 @@
 #include <cad/events/commitprocessevent.h>
 #include <cad/events/removeentityevent.h>
 #include <nano-signal-slot/nano_signal_slot.hpp>
+namespace LCViewer {
 
 enum PainterCacheType {
     VIEWER_BACKGROUND,
@@ -139,7 +140,7 @@ class DocumentCanvas {
          */
         void device_to_user(double *x, double *y) const {
             if (_cachedPainters.size()>0) {
-                std::map<::PainterCacheType, ::LcPainter *>::const_iterator painter = _cachedPainters.begin();
+                std::map<PainterCacheType, LcPainter *>::const_iterator painter = _cachedPainters.begin();
                 painter->second->device_to_user(x, y);
             }
         }
@@ -218,3 +219,4 @@ private:
 };
 
 using DocumentCanvas_SPtr = std::shared_ptr<DocumentCanvas>;
+}

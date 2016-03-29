@@ -45,7 +45,7 @@ class CadMdiChild : public QWidget {
     public:
         QWidget* view() const;
         std::shared_ptr<lc::Document> document() const;
-        SnapManager_SPtr  snapManager() const;
+        LCViewer::SnapManager_SPtr  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
         void cancelCurrentOperations();
@@ -57,10 +57,10 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<lc::Document> _document;
         lc::UndoManager_SPtr _undoManager;
 
-        std::shared_ptr<Grid> _grid;
-        std::shared_ptr<GradientBackground> _gradientBackground;
-        std::shared_ptr<lc::Cursor>  _cursor;
-        SnapManagerImpl_SPtr  _snapManager;
+        std::shared_ptr<LCViewer::Grid> _grid;
+        std::shared_ptr<LCViewer::GradientBackground> _gradientBackground;
+        std::shared_ptr<LCViewer::Cursor>  _cursor;
+        LCViewer::SnapManagerImpl_SPtr  _snapManager;
         lc::StorageManager_SPtr _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;
@@ -69,7 +69,7 @@ class CadMdiChild : public QWidget {
         QScrollBar* horizontalScrollBar;
         QScrollBar* verticalScrollBar;
 
-        LCADViewer* viewer;
+        LCViewer::LCADViewer* viewer;
 
 
 };

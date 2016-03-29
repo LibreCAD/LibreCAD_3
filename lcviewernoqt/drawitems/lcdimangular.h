@@ -3,6 +3,7 @@
 #include "lcvdrawitem.h"
 #include "lcdimension.h"
 #include <cad/primitive/dimangular.h>
+namespace LCViewer {
 
 
 class LcDrawOptions;
@@ -20,3 +21,4 @@ class LCDimAngular : public LCVDrawItem, public lc::entity::DimAngular, public L
         */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

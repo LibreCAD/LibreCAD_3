@@ -7,6 +7,8 @@
 
 #include <QFinalState>
 
+using namespace LCViewer;
+
 CircleCreateOperation::CircleCreateOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager)
     , _storageManager(storageManager)

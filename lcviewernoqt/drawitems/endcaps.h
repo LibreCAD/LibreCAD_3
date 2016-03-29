@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 #include "cad/geometry/geocoordinate.h"
+namespace LCViewer {
+
 class LcPainter;
 
 class EndCaps {
@@ -58,3 +60,4 @@ class CapType {
         const unsigned int _type;
         const double _size;
 };
+}

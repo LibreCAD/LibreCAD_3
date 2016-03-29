@@ -150,10 +150,9 @@ void DXFimpl::addSpline(const DRW_Spline& data) {
             data.degree,
             false,
             data.tolfit,
-            data.tgsx, data.tgsy, data.tgsz,
-            data.tgex, data.tgey, data.tgez,
-            data.ex, data.ey, data.ez, layer, mf));
-
+            data.tgStart.x, data.tgStart.y, data.tgStart.z,
+            data.tgEnd.x, data.tgEnd.y, data.tgEnd.z,
+            data.normalVec.x, data.normalVec.y, data.normalVec.z, layer, mf));
 }
 
 void DXFimpl::addText(const DRW_Text& data) {

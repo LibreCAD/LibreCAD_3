@@ -53,4 +53,6 @@ class DRW_InterfaceImpl : public DRW_Interface {
         virtual void writeTextstyles() {}
         virtual void writeVports() {}
         virtual void writeDimstyles() {}
+        virtual void writeAppId() {}
+        virtual void addAppId(const DRW_AppId& data){}
 };

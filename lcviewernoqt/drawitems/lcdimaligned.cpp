@@ -3,7 +3,7 @@
 #include "lcdimaligned.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
-
+using namespace LCViewer;
 LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned) : LCVDrawItem(true), lc::entity::DimAligned(dimAligned, true) {
 }
 

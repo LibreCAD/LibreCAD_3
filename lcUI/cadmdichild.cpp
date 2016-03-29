@@ -38,6 +38,9 @@
 #include <drawables/gradientbackground.h>
 #include <drawables/grid.h>
 #include <cad/math/lcmath.h>
+
+using namespace LCViewer;
+
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent) {
 
@@ -118,9 +121,9 @@ void CadMdiChild::newDocument() {
     viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    viewer->documentCanvas()->background().connect<lc::Cursor, &lc::Cursor::onDraw>(_cursor.get());
-    _snapManager->snapPointEvents().connect<lc::Cursor, &lc::Cursor::onSnapPointEvent>(_cursor.get());
+    _cursor = std::make_shared<LCViewer::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
+    _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
@@ -184,9 +187,9 @@ void CadMdiChild::import(std::string str) {
     viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<lc::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    viewer->documentCanvas()->background().connect<lc::Cursor, &lc::Cursor::onDraw>(_cursor.get());
-    _snapManager->snapPointEvents().connect<lc::Cursor, &lc::Cursor::onSnapPointEvent>(_cursor.get());
+    _cursor = std::make_shared<LCViewer::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
+    _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);

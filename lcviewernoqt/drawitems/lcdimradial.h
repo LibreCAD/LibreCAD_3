@@ -4,6 +4,7 @@
 #include "lcdimension.h"
 #include <cad/primitive/dimradial.h>
 
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -20,3 +21,4 @@ class LCDimRadial  : public LCVDrawItem, public lc::entity::DimRadial, public LC
         */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

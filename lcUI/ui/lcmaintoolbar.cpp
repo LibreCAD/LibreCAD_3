@@ -52,7 +52,7 @@ void LCMainToolbar::on_tb_builderTest_clicked() {
 }
 
 void LCMainToolbar::on_tb_snapGrid_clicked() {
-    SnapManagerImpl_SPtr sm = std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    auto sm = std::dynamic_pointer_cast<LCViewer::SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
     if (sm->isGridSnappable()) {
         sm->setGridSnappable(false);
     } else {
@@ -61,7 +61,7 @@ void LCMainToolbar::on_tb_snapGrid_clicked() {
 }
 
 void LCMainToolbar::on_tb_snapIntersections_clicked() {
-    SnapManagerImpl_SPtr sm = std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    auto sm = std::dynamic_pointer_cast<LCViewer::SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
     if (sm->snapIntersections()) {
         sm->snapIntersections(false);
     } else {
@@ -70,7 +70,7 @@ void LCMainToolbar::on_tb_snapIntersections_clicked() {
 }
 
 void LCMainToolbar::on_tb_snapEntity_clicked() {
-    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    auto smi =  std::dynamic_pointer_cast<LCViewer::SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
     lc::SimpleSnapConstrain ssc = smi->snapConstrain();
 
     if (lc::SimpleSnapConstrain::ON_ENTITY & ssc.constrain()) {
@@ -81,7 +81,7 @@ void LCMainToolbar::on_tb_snapEntity_clicked() {
 }
 
 void LCMainToolbar::on_tb_snapEntityPath_clicked() {
-    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    auto smi =  std::dynamic_pointer_cast<LCViewer::SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
     lc::SimpleSnapConstrain ssc = smi->snapConstrain();
 
     if (lc::SimpleSnapConstrain::ON_ENTITYPATH & ssc.constrain()) {
@@ -92,7 +92,7 @@ void LCMainToolbar::on_tb_snapEntityPath_clicked() {
 }
 
 void LCMainToolbar::on_tb_snapLogical_clicked() {
-    auto smi =  std::dynamic_pointer_cast<SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
+    auto smi =  std::dynamic_pointer_cast<LCViewer::SnapManagerImpl>(_parent->activeMdiChild()->snapManager());
     lc::SimpleSnapConstrain ssc = smi->snapConstrain();
 
     if (lc::SimpleSnapConstrain::LOGICAL & ssc.constrain()) {

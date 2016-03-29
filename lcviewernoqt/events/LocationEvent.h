@@ -7,18 +7,18 @@
 
 
 #include <cad/geometry/geocoordinate.h>
+namespace LCViewer {
+    class LocationEvent {
+    public:
+        LocationEvent(const lc::geo::Coordinate& location) : _location(location) {
+        }
 
-class LocationEvent {
-public:
-    LocationEvent(const lc::geo::Coordinate& location) : _location(location) {
-    }
-
-    lc::geo::Coordinate  location() const {
-        return _location;
-    }
+        lc::geo::Coordinate  location() const {
+            return _location;
+        }
 
 
-private:
-    lc::geo::Coordinate _location;
-};
-
+    private:
+        lc::geo::Coordinate _location;
+    };
+}

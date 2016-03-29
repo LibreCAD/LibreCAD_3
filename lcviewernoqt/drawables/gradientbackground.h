@@ -7,6 +7,8 @@
   * Create a garident background
   *
   */
+
+namespace LCViewer {
 typedef struct _cairo cairo_t;
 class GradientBackground {
     public:
@@ -18,3 +20,4 @@ class GradientBackground {
         const lc::Color _topColor;
         const lc::Color _bottomColor;
 };
+}

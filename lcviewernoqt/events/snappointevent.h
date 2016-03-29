@@ -6,6 +6,8 @@
   * Event that get's dispatched each time we want to have the cursor snapping to this point
   *
   */
+
+namespace LCViewer {
 class SnapPointEvent {
     public:
         SnapPointEvent(const lc::geo::Coordinate& snapPoint) : _snapPoint(snapPoint), _snapped(true) {
@@ -28,3 +30,4 @@ class SnapPointEvent {
         lc::geo::Coordinate _snapPoint;
         bool _snapped;
 };
+}

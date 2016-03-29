@@ -5,7 +5,7 @@
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
 #include <cad/math/lcmath.h>
-
+using namespace LCViewer;
 
 void LCDimension::drawText(std::string const& value, double const angle, lc::TextConst::AttachmentPoint const attachmentPoint,  lc::geo::Coordinate textlocation, LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.save();

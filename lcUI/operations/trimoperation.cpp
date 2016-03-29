@@ -6,6 +6,8 @@
 
 #include <QDebug>
 
+using namespace LCViewer;
+
 TrimOperation::TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager) :
     GuiOperation(document), _graphicsView(graphicsView), _snapManager(snapManager), _entityManager(entityManager) {
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),

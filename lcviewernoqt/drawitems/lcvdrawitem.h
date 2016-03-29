@@ -5,16 +5,17 @@
   * LCADCairoViewerDrawItem is a abstract class that any class needs to implement if it want's to draw something on backgrounds or foregrounds
   *
   */
-
+namespace LCViewer {
 class LcDrawOptions;
 class LcPainter;
+}
 
 namespace lc {
     namespace geo {
         class Area;
     }
 }
-
+namespace LCViewer {
 class LCVDrawItem {
     public:
         LCVDrawItem(bool selectable);
@@ -39,3 +40,4 @@ class LCVDrawItem {
 class LCVDrawItem;
 using LCVDrawItem_SPtr = std::shared_ptr<LCVDrawItem>;
 using LCVDrawItem_CSPtr = std::shared_ptr<const LCVDrawItem>;
+}

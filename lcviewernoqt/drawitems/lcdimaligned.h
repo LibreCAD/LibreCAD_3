@@ -4,6 +4,7 @@
 #include "lcdimension.h"
 #include <cad/primitive/dimaligned.h>
 
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -20,3 +21,4 @@ class LCDimAligned : public LCVDrawItem, public lc::entity::DimAligned, public L
         */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

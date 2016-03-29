@@ -3,9 +3,10 @@
 #include "lcvdrawitem.h"
 #include "cad/primitive/ellipse.h"
 
+namespace LCViewer {
+
 class LcDrawOptions;
 class LcPainter;
-
 class LCVEllipse : public LCVDrawItem, public lc::entity::Ellipse {
     public:
         /**
@@ -23,3 +24,4 @@ class LCVEllipse : public LCVDrawItem, public lc::entity::Ellipse {
 
 
 };
+}

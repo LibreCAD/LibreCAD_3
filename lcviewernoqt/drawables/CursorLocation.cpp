@@ -5,6 +5,7 @@
 #include <cad/meta/color.h>
 #include "CursorLocation.h"
 
+using namespace LCViewer;
 
 CursorLocation::CursorLocation(int textSize, std::shared_ptr<EventManager> const &manager, lc::Color &color)
         : _textSize(textSize), _color(color) {

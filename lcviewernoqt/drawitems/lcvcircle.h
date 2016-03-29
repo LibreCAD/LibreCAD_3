@@ -2,6 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/circle.h"
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -18,3 +19,4 @@ class LCVCircle  : public LCVDrawItem, public lc::entity::Circle {
          */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

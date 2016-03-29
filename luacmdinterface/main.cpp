@@ -28,6 +28,7 @@
 #include <boost/filesystem.hpp>
 namespace po = boost::program_options;
 
+using LcPainter = LCViewer::LcPainter;
 
 static char const* const DEFAULT_OUT_FILENAME = "out.png";
 static const int DEFAULT_IMAGE_WIDTH = 400;
