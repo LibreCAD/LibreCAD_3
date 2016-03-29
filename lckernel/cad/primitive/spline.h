@@ -12,6 +12,17 @@
 
 namespace lc {
     namespace entity {
+    /**
+         * @brief The Spline class
+         *
+         *
+         * TODO SPLINE IMPLEMENTATION.
+         * THIS CLASS NEEDS TO BE VERIFIED.
+         * SPLINE IS DEPENDENT ON BEZIER CURVE.
+         *
+         *
+         */
+
         class Spline
                 : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable, virtual public Visitable {
         public:

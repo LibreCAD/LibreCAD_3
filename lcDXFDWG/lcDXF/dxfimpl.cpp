@@ -144,16 +144,15 @@ void DXFimpl::addSpline(const DRW_Spline& data) {
     }
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
 
-//    _builder->append(std::make_shared<lc::entity::Spline>(coords(data.controllist),
-//            data.knotslist,
-//            coords(data.fitlist),
-//            data.degree,
-//            false,
-//            data.tolfit,
-//            data.tgsx, data.tgsy, data.tgsz,
-//            data.tgex, data.tgey, data.tgez,
-//            data.ex, data.ey, data.ez, layer, mf));
-
+    _builder->append(std::make_shared<lc::entity::Spline>(coords(data.controllist),
+            data.knotslist,
+            coords(data.fitlist),
+            data.degree,
+            false,
+            data.tolfit,
+            data.tgStart.x, data.tgStart.y, data.tgStart.z,
+            data.tgEnd.x, data.tgEnd.y, data.tgEnd.z,
+            data.normalVec.x, data.normalVec.y, data.normalVec.z, layer, mf));
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
