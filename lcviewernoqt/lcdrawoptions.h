@@ -2,6 +2,8 @@
 
 #include <cad/meta/color.h>
 
+
+namespace LCViewer {
 class LcDrawOptions {
     public:
         LcDrawOptions();
@@ -45,3 +47,4 @@ class LcDrawOptions {
         std::string _alignedFormat;
         std::string _angleFormat;
 };
+}

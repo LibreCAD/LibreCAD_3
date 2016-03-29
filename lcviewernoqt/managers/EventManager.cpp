@@ -5,6 +5,7 @@
 #include "EventManager.h"
 #include <cad/geometry/geocoordinate.h>
 
+using namespace LCViewer;
 
 void EventManager::location(const lc::geo::Coordinate &coordinate) {
    LocationEvent event(coordinate);

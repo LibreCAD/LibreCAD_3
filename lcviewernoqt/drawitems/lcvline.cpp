@@ -1,7 +1,7 @@
 #include "lcvline.h"
 #include "../lcpainter.h"
 #include "../lcdrawoptions.h"
-
+using namespace LCViewer;
 LCVLine::LCVLine(const lc::entity::Line_CSPtr line) : LCVDrawItem(true), lc::entity::Line(line, true) {
 }
 

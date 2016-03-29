@@ -23,12 +23,12 @@
 class CircleCreateOperation :  public GuiOperation {
         Q_OBJECT
     public:
-        CircleCreateOperation(std::shared_ptr<lc::Document>, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
+        CircleCreateOperation(std::shared_ptr<lc::Document>, lc::StorageManager_SPtr storageManager, lc::Layer_CSPtr layer, QGraphicsView* graphicsView, LCViewer::SnapManager_SPtr  snapManager);
 
         virtual void restart();
 
     public slots:
-        void on_drawEvent(const DrawEvent& event);
+        void on_drawEvent(const LCViewer::DrawEvent& event);
 
         void setStartPoint(const lc::geo::Coordinate& startPoint) {
             _startPoint = startPoint;
@@ -46,7 +46,7 @@ class CircleCreateOperation :  public GuiOperation {
 
         virtual GuiOperation_SPtr next() const;
 
-        void on_SnapPoint_Event(const SnapPointEvent& event);
+        void on_SnapPoint_Event(const LCViewer::SnapPointEvent& event);
 
         virtual lc::operation::DocumentOperation_SPtr operation() const;
     private slots:
@@ -60,10 +60,10 @@ class CircleCreateOperation :  public GuiOperation {
         QSnappedState* _waitForSecondClick;
         QSnappedState* _waitForFirstClick;
 
-        SnapPointEvent _lastSnapEvent;
+        LCViewer::SnapPointEvent _lastSnapEvent;
 
         QGraphicsView* _graphicsView;
-        SnapManager_SPtr  _snapManager;
+        LCViewer::SnapManager_SPtr  _snapManager;
         lc::StorageManager_SPtr  _storageManager;
         lc::Layer_CSPtr _layer;
 

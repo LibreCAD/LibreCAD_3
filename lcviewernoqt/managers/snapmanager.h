@@ -13,6 +13,7 @@
  *
  * \sa lc::SnapManagerImpl
  */
+namespace LCViewer {
 class LocationEvent;
 
 class SnapManager  {
@@ -25,9 +26,9 @@ public:
     virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents() = 0;
 
 };
-
 using SnapManager_SPtr = std::shared_ptr<SnapManager>;
 
+}
 
 
 // SNAPMANAGER_H

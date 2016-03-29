@@ -17,7 +17,7 @@
 #include <events/selecteditemsevent.h>
 
 #include "documentcanvas.h"
-
+namespace LCViewer {
 class SnapManager;
 struct MouseEvent {
     enum Modifier {
@@ -110,3 +110,4 @@ class LCADViewer : public QWidget {
         std::shared_ptr<lc::Document> _document;
         std::shared_ptr<SnapManager> _snapManager;
 };
+}

@@ -3,7 +3,7 @@
 #include "lcdimlinear.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
-
+using namespace LCViewer;
 LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::entity::DimLinear(dimLinear, true) {
 }
 

@@ -6,7 +6,7 @@
 #include "../documentcanvas.h"
 
 
-namespace lc {
+namespace LCViewer {
 
     class Cursor {
     public:

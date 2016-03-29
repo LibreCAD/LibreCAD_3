@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+namespace LCViewer {
 
 typedef struct {
     double x_bearing;
@@ -65,3 +66,4 @@ class LcPainter {
         virtual void getTranslate(double* x, double* y) = 0;
 
 };
+}

@@ -2,6 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include "cad/primitive/text.h"
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -20,3 +21,4 @@ class LCVText : public LCVDrawItem, public lc::entity::Text {
 
 
 };
+}

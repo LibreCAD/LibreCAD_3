@@ -1,4 +1,5 @@
 #include "lcdrawoptions.h"
+using namespace LCViewer;
 
 LcDrawOptions::LcDrawOptions() :
     _selectedColor(lc::Color(0, 0, 255, 255)),

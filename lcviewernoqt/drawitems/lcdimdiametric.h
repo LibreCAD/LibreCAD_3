@@ -4,6 +4,7 @@
 #include "lcdimension.h"
 #include <cad/primitive/dimdiametric.h>
 
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -20,3 +21,4 @@ class LCDimDiametric  : public LCVDrawItem, public lc::entity::DimDiametric, pub
         */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

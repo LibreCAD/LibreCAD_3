@@ -2,6 +2,7 @@
 
 #include "lcvdrawitem.h"
 #include <cad/primitive/point.h>
+namespace LCViewer {
 
 class LcDrawOptions;
 class LcPainter;
@@ -17,3 +18,4 @@ class LCVPoint : public LCVDrawItem, public lc::entity::Point  {
          */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

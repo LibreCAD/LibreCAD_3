@@ -3,6 +3,7 @@
 #include "lcvdrawitem.h"
 #include "lcdimension.h"
 #include <cad/primitive/dimlinear.h>
+namespace LCViewer {
 
 
 class LcDrawOptions;
@@ -20,3 +21,4 @@ class LCDimLinear : public LCVDrawItem, public lc::entity::DimLinear, public LCD
         */
         virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 };
+}

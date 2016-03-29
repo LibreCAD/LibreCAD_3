@@ -1,7 +1,5 @@
 #include "lcvdrawitem.h"
-
-
-
+using namespace LCViewer;
 
 LCVDrawItem::LCVDrawItem(bool selectable) : _selectable(selectable), _selected(false) {
 

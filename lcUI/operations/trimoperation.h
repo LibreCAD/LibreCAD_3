@@ -16,10 +16,10 @@
 class TrimOperation : public GuiOperation {
         Q_OBJECT
     public:
-        TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, SnapManager_SPtr  snapManager);
+        TrimOperation(std::shared_ptr<lc::Document> document, lc::StorageManager_SPtr entityManager, QGraphicsView* graphicsView, LCViewer::SnapManager_SPtr  snapManager);
 
     public slots:
-        void on_drawEvent(const DrawEvent& event);
+        void on_drawEvent(const LCViewer::DrawEvent& event);
 
         void setClickPoint(const lc::geo::Coordinate& clickPoint) {
             _clickPoint = clickPoint;
@@ -27,10 +27,10 @@ class TrimOperation : public GuiOperation {
         lc::geo::Coordinate clickPoint() const {
             return _clickPoint;
         }
-        void setMouseReleaseEvent(const  MouseReleaseEvent& mre) {
+        void setMouseReleaseEvent(const  LCViewer::MouseReleaseEvent& mre) {
             _mouseReleaseEvent = mre;
         };
-        MouseReleaseEvent mouseReleaseEvent() const {
+        LCViewer::MouseReleaseEvent mouseReleaseEvent() const {
             return _mouseReleaseEvent;
         }
 
@@ -50,8 +50,8 @@ class TrimOperation : public GuiOperation {
 
         // needed to find the correct information sets
         QGraphicsView* _graphicsView;
-        SnapManager_SPtr  _snapManager;
-        MouseReleaseEvent _mouseReleaseEvent;
+        LCViewer::SnapManager_SPtr  _snapManager;
+        LCViewer::MouseReleaseEvent _mouseReleaseEvent;
 
         lc::geo::Coordinate _clickPoint;
         lc::StorageManager_SPtr  _entityManager;
