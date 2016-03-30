@@ -37,14 +37,12 @@ Coordinate Bezier::nearestPointOnEntity(const Coordinate& coord) const {
 }
 
 Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, float t) const {
-    if(points.size() == 1) return points[0];
+    if(points.size() == 1) return points.front();
     else {
-        int size_ = points.size() - 1   ;
+        int size_ = points.size();
         std::vector<Coordinate> new_vec;
-        for(int i = 0; i < size_; i++) {
-            double _x = (1-t) * points[i].x() + t * points[i+1].x();
-            double _y = (1-t) * points[i].y() + t * points[i+1].y();
-            new_vec.push_back(Coordinate(_x, _y));
+        for(int i = 1; i < size_; i++) {
+            new_vec.push_back(points[i-1] * (1.0-t) + points[i] * t);
         }
         return CasteljauAt(new_vec, t);
     }
@@ -55,19 +53,22 @@ Coordinate Bezier::DirectValueAt(float t) const {
     double t_square = t*t;
     double one_minus_t_square = one_minus_t * one_minus_t;
     double two_a_b  = 2 * one_minus_t * t;
-    double x_ = (one_minus_t_square * _pointA.x()) + (two_a_b * _pointB.x()) + (t_square * _pointC.x());
-    double y_ = (one_minus_t_square * _pointA.y()) + (two_a_b * _pointB.y()) + (t_square * _pointC.y());
-    return Coordinate(x_, y_);
+    return (_pointA * one_minus_t_square) + (_pointB * two_a_b) + (_pointC * t_square);
 }
 
-const std::vector<Coordinate> Bezier::Curve() {
+const std::vector<Coordinate> Bezier::Curve(float precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC };
     std::vector<Coordinate> ret;
-    for(int i = 0.; i < 1.; i+=.001) {
+    for(int i = 0.; i < 1.; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
+
+       /* TODO
+        * Should we use Casteljau or direct method?
+        */
+
+        // ret.push_back(DirectValueAt(i));
     }
-    const std::vector<Coordinate> const_ret = std::move(ret);
-    return const_ret;
+    return ret;
 }
 
 const Coordinate Bezier::pointA() const {

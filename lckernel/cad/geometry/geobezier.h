@@ -34,7 +34,7 @@ namespace lc {
 
                 Coordinate DirectValueAt(float t) const;
 
-                const std::vector<Coordinate> Curve();
+                const std::vector<Coordinate> Curve(float precession);
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
