@@ -26,7 +26,7 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
     auto v2 = lc::geo::Vector(defLine21(), defLine22());
 
 
-    //visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v1, v2);
+    visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v1, v2);
 
     if (intersect.result().size() == 0) {
         // if no intersectionpoint we cannot draw a Angular dimension,
