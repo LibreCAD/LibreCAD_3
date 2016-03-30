@@ -295,14 +295,11 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
     auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(_visibleUserArea);
 
     visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
-        bool modified = false;
-
         std::shared_ptr<lc::entity::CADEntity> ci = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
         lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
         lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidth::LCMETANAME());
         lc::Layer_CSPtr layer = ci->layer();
 
-        modified = true;
         painter.save();
 
         // Decide on line width
@@ -342,9 +339,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
         di->draw(painter, lcDrawOptions, _visibleUserArea);
 
-        if (modified) {
-            painter.restore();
-        }
+        painter.restore();
     });
     after(painter);
 
