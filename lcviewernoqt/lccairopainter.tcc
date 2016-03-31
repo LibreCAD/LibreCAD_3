@@ -263,6 +263,18 @@ class LcCairoPainter : public LcPainter {
 
             return te;
         }
+
+        void quadratic_curve_to(double x1, double y1, double x2, double y2) {
+            double x0, y0;
+            cairo_get_current_point (_cr, &x0, &y0);
+            cairo_curve_to (_cr,
+                            2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
+                            2.0 / 3.0 * y1 + 1.0 / 3.0 * y0,
+                            2.0 / 3.0 * x1 + 1.0 / 3.0 * x2,
+                            2.0 / 3.0 * y1 + 1.0 / 3.0 * y2,
+                            y1, y2);
+        }
+
         void save() {
             cairo_save(_cr);
         }
