@@ -302,6 +302,13 @@ namespace lc {
                 inline Coordinate move(const Coordinate& direction, double d) const {
                     return direction.norm() * d + *this;
                 }
+
+                /**
+                 * Move the coordinate in the direction of point 'to' with distance d
+                 */
+                inline Coordinate moveTo(const Coordinate& to, double d) const {
+                    return (to - *this).norm() * d + *this;
+                }
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {
                     os << "Coordinate(x=" << coordinate._x << " y=" << coordinate._y << " z=" << coordinate._z << ")";

@@ -405,10 +405,13 @@ Builder(d):append(dr1):append(dr2):append(dr3):append(dr4):append(dr5):append(dr
 layer = active.proxy.layerByName("0")
 dr1=DimDiametric(Coord(0,100), Coord(130,-30), 2, 0, 1., 1, "<>", Coord(100,0), 0., layer);
 dr2=DimDiametric2(Coord(0,0), 2, 1., 1, "<>", Coord(100,100), 0., layer);
+dr3=DimDiametric2(Coord(0,0), 2, 1., 1, "<>", Coord(5,5), 0., layer);
+c3=Circle(Coord(2.5,2.5), 1.8*2, layer);
 c=Circle(Coord(50, 50), 70.7106781, layer);
 d=active.document()
-Builder(d):append(dr1):append(dr2):append(c):execute()
+Builder(d):append(dr1):append(dr2):append(dr3):append(c):append(c3):execute()
 */
+
 
 /* DimLinear
 layer = active.proxy.layerByName("0")

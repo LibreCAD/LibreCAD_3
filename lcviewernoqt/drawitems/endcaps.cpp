@@ -50,6 +50,7 @@ EndCaps::EndCaps() {
         painter.move_to(endX - cosv1, endY - sinv1);
         painter.line_to(endX, endY);
         painter.line_to(endX - cosv2, endY - sinv2);
+        painter.close_path();
         painter.fill();
         painter.stroke();
 
@@ -95,6 +96,7 @@ EndCaps::EndCaps() {
         painter.line_to(endX - cosv3, endY - sinv3);
         painter.line_to(endX - cosv1, endY - sinv1);
         painter.line_to(endX, endY);
+        painter.close_path();
         painter.fill();
         painter.stroke();
 
@@ -133,6 +135,7 @@ EndCaps::EndCaps() {
         painter.line_to(endX - cosv1, endY - sinv1);
         painter.line_to(endX - cosv2, endY - sinv2);
         painter.line_to(endX, endY);
+        painter.close_path();
         painter.fill();
         painter.stroke();
 
