@@ -46,6 +46,7 @@ class LcPainter {
         virtual void select_font_face(const char* text_val) = 0;
         virtual void text(const char* text_val) = 0;
         virtual TextExtends text_extends(const char* text_val) = 0;
+        virtual void quadratic_curve_to(double x1, double y1, double x2, double y2) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;

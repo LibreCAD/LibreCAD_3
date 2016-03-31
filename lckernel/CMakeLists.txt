@@ -22,6 +22,7 @@ cad/geometry/geocircle.cpp
 cad/geometry/geocoordinate.cpp
 cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
+cad/geometry/geobezier.cpp
 cad/math/lcmath.cpp
 cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
@@ -45,6 +46,7 @@ cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
 cad/primitive/lwpolyline.cpp
+cad/primitive/beziercurve.cpp
 )
 
 # HEADER FILES
@@ -79,6 +81,7 @@ cad/geometry/geocircle.h
 cad/geometry/geoellipse.h
 cad/geometry/geospline.h
 cad/geometry/geovector.h
+cad/geometry/geobezier.h
 cad/interface/entitydispatch.h
 cad/interface/metatype.h
 cad/interface/snapable.h
@@ -114,6 +117,7 @@ cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
 cad/functions/string_helper.h
+cad/primitive/beziercurve.h
 )
 
 # DEPENDENCIES
