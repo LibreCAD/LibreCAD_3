@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
-ADD_DEFINITIONS(-std=c++14)
+ADD_DEFINITIONS(-std=c++11)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
@@ -26,6 +26,7 @@ const.h
 imainwindow.h
 mainwindow.h
 testform.h
+luainterface.h
 operations/circlecreateoperation.h
 operations/groupoperations.h
 operations/guioperationfinishedevent.h
@@ -36,13 +37,16 @@ operations/qsnappedstate.h
 operations/trimoperation.h
 ui/clicommand.h
 ui/lcmaintoolbar.h
-ui/luascript.h)
+ui/luascript.h
+lua/qtbridge.h
+lua/luaqobject.h)
 
 set(UI_srcs
 cadmdichild.cpp
 main.cpp
 mainwindow.cpp
 testform.cpp
+luainterface.cpp
 operations/circlecreateoperation.cpp
 operations/linecreateoperation.cpp
 operations/operationmanager.cpp
@@ -50,7 +54,9 @@ operations/qsnappedstate.cpp
 operations/trimoperation.cpp
 ui/clicommand.cpp
 ui/lcmaintoolbar.cpp
-ui/luascript.cpp)
+ui/luascript.cpp
+lua/qtbridge.cpp
+lua/luaqobject.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
@@ -92,4 +98,4 @@ foreach(dir ${dirs})
 endforeach()
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
-target_link_libraries(librecad Qt5::Core Qt5::Gui Qt5::Widgets ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt lcdxfdwg)
+target_link_libraries(librecad Qt5::Core Qt5::Gui Qt5::Widgets Qt5UiTools ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt lcdxfdwg)

@@ -108,6 +108,7 @@ void lua_openlckernel(lua_State* L) {
     .beginClass<Document>("Document")
     .endClass()
     .beginExtendClass<DocumentImpl, Document>("DocumentImpl")
+    .addFunction("layerByName", &DocumentImpl::layerByName)
     .addFunction("entitiesByLayer", &DocumentImpl::entitiesByLayer)
     .endClass()
     .beginClass<EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
