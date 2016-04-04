@@ -8,7 +8,7 @@ function new_file()
 	mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
 
-	luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", "click")
+	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
 end
 
 function open_file()
@@ -46,7 +46,7 @@ function load_file(fileName)
 	mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
 
-	luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", "click")
+	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
 end
 
 function click()
