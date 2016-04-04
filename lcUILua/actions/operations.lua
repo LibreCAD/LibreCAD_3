@@ -22,6 +22,7 @@ function operations.get_line_point2(point1, point2)
 	l=Line(Coord(point1[1],point1[2]), Coord(point2[1],point2[2]), layer);
     b:append(l)
     b:execute()
+    event.delete('point')
 end
 
 function operations.click(x,y)
