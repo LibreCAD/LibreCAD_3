@@ -11,6 +11,8 @@ LuaInterface::LuaInterface() {
 }
 
 LuaInterface::~LuaInterface() {
+	_luaQObjects.clear();
+	
 	lua_close(_L);
 }
 
@@ -38,7 +40,7 @@ int LuaInterface::qtConnect(
 		std::cout << "No such signal " << signalName << std::endl;
 	}
 	else {
-		LuaQObject *lqo = new LuaQObject(sender, L);
+		LuaQObject_SPtr lqo(new LuaQObject(sender, L));
 		_luaQObjects.push_back(lqo);
 		return lqo->connect(signalId, luaFunction);
 	}
@@ -46,12 +48,12 @@ int LuaInterface::qtConnect(
 	return 0;
 }
 
-QWidget* LuaInterface::loadUiFile(const char* fileName) {
+std::shared_ptr<QWidget> LuaInterface::loadUiFile(const char* fileName) {
 	QUiLoader uiLoader;
 	QFile file(fileName);
     file.open(QFile::ReadOnly);
 
-    QWidget* widget = uiLoader.load(&file);
+    std::shared_ptr<QWidget> widget(uiLoader.load(&file));
 
     file.close();
 

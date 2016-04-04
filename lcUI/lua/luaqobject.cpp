@@ -5,6 +5,14 @@ LuaQObject::LuaQObject(QObject* object, lua_State* L):
 	_object(object),
 	_L(L)
 {
+	//Connect QObject destroyed() signal
+	const int destroySignalId = _object->metaObject()->indexOfSignal("destroyed()");
+	QMetaObject::connect(_object, destroySignalId, this, metaObject()->methodCount());
+}
+
+LuaQObject::~LuaQObject() {
+	_object = 0;
+	
 }
 
 int LuaQObject::connect(int signalId, std::string luaFunction) {
@@ -25,7 +33,6 @@ int LuaQObject::connect(int signalId, std::string luaFunction) {
 int LuaQObject::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
 	id = QObject::qt_metacall(c, id, a);
-	
 	if(id == _slotId) {
 		_slotFunction();
 	}

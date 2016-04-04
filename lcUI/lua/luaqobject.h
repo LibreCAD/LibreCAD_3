@@ -15,6 +15,8 @@ extern "C"
 class LuaQObject : public QObject {
 	public:
 		LuaQObject(QObject *object, lua_State* L);
+		~LuaQObject();
+		
 		int connect(int signalId, std::string luaFunction);
 		
 		std::string objectName();
@@ -34,3 +36,6 @@ class LuaQObject : public QObject {
 		int _slotId;
 		LuaIntf::LuaRef _slotFunction;
 };
+
+using LuaQObject_SPtr = std::shared_ptr<LuaQObject>;
+using LuaQObject_CSPtr = std::shared_ptr<const LuaQObject>;

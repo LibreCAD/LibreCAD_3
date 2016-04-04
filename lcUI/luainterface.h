@@ -36,9 +36,9 @@ class LuaInterface {
 			std::string luaFunction
 		);
 
-		static QWidget* loadUiFile(const char* fileName);
+		static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
 
 	private:		
 		lua_State* _L;
-		std::vector<LuaQObject*> _luaQObjects;
+		std::vector<LuaQObject_SPtr> _luaQObjects;
 };
