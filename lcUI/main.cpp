@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <QLibrary>
 #include <QtDebug>
-#include "mainwindow.h"
+#include "luainterface.h"
 
 
 #include <log4cxx/xml/domconfigurator.h>
@@ -12,7 +12,8 @@ int main(int argc, char* argv[]) {
 
     log4cxx::xml::DOMConfigurator::configure("Log4cxxConfig.xml");
 
-    MainWindow w;
-    w.show();
+    LuaInterface li;
+    li.initLua();
+    
     return a.exec();
 }

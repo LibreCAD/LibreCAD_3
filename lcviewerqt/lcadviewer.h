@@ -64,6 +64,10 @@ class LCADViewer : public QWidget {
         void setDocument(std::shared_ptr<lc::Document> document);
         void setSnapManager(std::shared_ptr<SnapManager> snapmanager);
         std::shared_ptr<DocumentCanvas> documentCanvas() const;
+
+        double x();
+        double y();
+
     protected:
         void paintEvent(QPaintEvent*);
         virtual void mousePressEvent(QMouseEvent* event);
@@ -76,6 +80,7 @@ class LCADViewer : public QWidget {
     public:
     signals:
         void mouseMoveEvent(const MouseMoveEvent&);
+        void mousePressEvent();
         void mouseReleaseEvent(const MouseReleaseEvent&);
         void drawEvent(const DrawEvent&);
         void selectedItemsEvent(const SelectedItemsEvent&);
@@ -98,6 +103,9 @@ class LCADViewer : public QWidget {
         double _zoomMax;
         int v_ = 0;
         int h_ = 0;
+
+        double posX;
+        double posY;
 
         // When set to true, the line width on screen will scale with teh zoom factor
         bool _scaleLineWidth;

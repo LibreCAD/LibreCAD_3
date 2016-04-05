@@ -159,6 +159,12 @@ void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
     startSelectPos = event->pos();
 
+    posX = event->x();
+    posY = event->y();
+
+    _docCanvas->device_to_user(&posX, &posY);
+    emit mousePressEvent();
+
     switch (event->buttons()) {
         case Qt::MiddleButton: {
             _mouseScrollKeyActive = true;
@@ -192,6 +198,12 @@ std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
     return _docCanvas;
 }
 
+double LCADViewer::x() {
+	return posX;
+}
+double LCADViewer::y() {
+	return posY;
+}
 
 void LCADViewer::paintEvent(QPaintEvent *p) {
     if (p->rect().width() == 0 || p->rect().height() == 0) {
