@@ -152,8 +152,8 @@ void MainWindow::addToolbars() {
     //    addDockWidget(Qt::BottomDockWidgetArea, _cliCommand);
 
     // Add Lua Script
-    QDockWidget* _luaScript = new LuaScript(this);
-    addDockWidget(Qt::RightDockWidgetArea, _luaScript);
+    //QDockWidget* _luaScript = new LuaScript(this);
+    //addDockWidget(Qt::RightDockWidgetArea, _luaScript);
 
 }
 
