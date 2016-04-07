@@ -4,10 +4,9 @@
 #include <string>
 #include <lcadluascript.h>
 
-LuaScript::LuaScript(IMainWindow* parent) :
-    QDockWidget(parent),
+LuaScript::LuaScript(QMdiArea* mdiArea) :
     ui(new Ui::LuaScript),
-    _parent(parent) {
+    _mdiArea(mdiArea) {
     ui->setupUi(this);
 }
 
@@ -17,10 +16,14 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    LCadLuaScript lc(_parent->activeMdiChild()->document());
+	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
+        CadMdiChild* mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
 
-    std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
-    ui->luaOutput->clear();
-    ui->luaOutput->textCursor().insertText(QString::fromStdString(out));
+		LCadLuaScript lc(mdiChild->document());
+
+		std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
+		ui->luaOutput->clear();
+		ui->luaOutput->textCursor().insertText(QString::fromStdString(out));
+	}
 }
 

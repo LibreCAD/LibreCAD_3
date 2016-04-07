@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QDockWidget>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 #include <imainwindow.h>
 
 namespace Ui {
@@ -11,7 +13,7 @@ class LuaScript : public QDockWidget {
         Q_OBJECT
 
     public:
-        explicit LuaScript(IMainWindow* parent = 0);
+        explicit LuaScript(QMdiArea* mdiArea = 0);
         virtual ~LuaScript();
 
     private slots:
@@ -19,7 +21,7 @@ class LuaScript : public QDockWidget {
 
     private:
         Ui::LuaScript* ui;
-        IMainWindow* _parent;
+        QMdiArea* _mdiArea;
 };
 
 // LUASCRIPT_H

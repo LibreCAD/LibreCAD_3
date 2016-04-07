@@ -53,6 +53,7 @@ void addQtWindowBindings(lua_State *L) {
 	.beginModule("qt")
 		.beginExtendClass<QMainWindow, QWidget>("QMainWindow")
 			.addConstructor(LUA_ARGS())
+			.addFunction("addDockWidget", static_cast<void (QMainWindow::*)(Qt::DockWidgetArea, QDockWidget *)>(&QMainWindow::addDockWidget))
 			.addFunction("menuBar", &QMainWindow::menuBar)
 			.addFunction("setCentralWidget", &QMainWindow::setCentralWidget)
 			.addFunction("setUnifiedTitleAndToolBarOnMac", &QMainWindow::setUnifiedTitleAndToolBarOnMac)
@@ -96,6 +97,9 @@ void addQtWindowBindings(lua_State *L) {
 			.addStaticFunction("getOpenFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
 				return QFileDialog::getOpenFileName(parent, caption, dir, filter);
 			})
+		.endClass()
+
+		.beginExtendClass<QDockWidget, QWidget>("QDockWidget")
 		.endClass()
 	.endModule();
 }
@@ -159,6 +163,10 @@ void addLCBindings(lua_State *L) {
 		
 		.beginClass<LuaInterface>("LuaInterface")
 			.addFunction("luaConnect", &LuaInterface::qtConnect)
+		.endClass()
+		
+		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
+			.addConstructor(LUA_ARGS(QMdiArea*))
 		.endClass()
 
 	.endModule();

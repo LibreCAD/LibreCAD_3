@@ -24,6 +24,7 @@ extern "C"
 
 #include "cadmdichild.h"
 #include "lcadviewer.h"
+#include "ui/luascript.h"
 
 #include "luainterface.h"
 #include "luaqobject.h"

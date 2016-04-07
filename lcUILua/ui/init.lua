@@ -81,4 +81,7 @@ luaInterface:luaConnect(mainWindow:findChild("actionUndo"), "triggered(bool)", "
 luaInterface:luaConnect(mainWindow:findChild("actionRedo"), "triggered(bool)", "redo")
 luaInterface:luaConnect(lineAction, "triggered(bool)", "operations.create_line")
 
+luaScript = lc.LuaScript(mdiArea)
+mainWindow:addDockWidget(2, luaScript)
+
 mainWindow:show();
