@@ -36,7 +36,7 @@ Coordinate Bezier::nearestPointOnEntity(const Coordinate& coord) const {
     return Coordinate();
 }
 
-Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, float t) const {
+Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
     if(points.size() == 1) return points.front();
     else {
         int size_ = points.size();
@@ -48,7 +48,7 @@ Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, float t) const {
     }
 }
 
-Coordinate Bezier::DirectValueAt(float t) const {
+Coordinate Bezier::DirectValueAt(double t) const {
     double one_minus_t = 1 - t;
     double t_square = t*t;
     double one_minus_t_square = one_minus_t * one_minus_t;
@@ -56,10 +56,10 @@ Coordinate Bezier::DirectValueAt(float t) const {
     return (_pointA * one_minus_t_square) + (_pointB * two_a_b) + (_pointC * t_square);
 }
 
-const std::vector<Coordinate> Bezier::Curve(float precession) {
+const std::vector<Coordinate> Bezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC };
     std::vector<Coordinate> ret;
-    for(int i = 0.; i < 1.; i+=precession) {
+    for(double i = 0.; i < 1.; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
 
        /* TODO
