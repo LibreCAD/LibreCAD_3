@@ -20,7 +20,7 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
     // Decide to show the explecit value or the measured value
     double radiusCircle = this->definitionPoint().distanceTo(this->definitionPoint2());
     const lc::geo::Coordinate& mousePos = middleOfText();
-    const bool mouseIsInside = mousePos.distanceTo(definitionPoint()) < radiusCircle;
+    //const bool mouseIsInside = mousePos.distanceTo(definitionPoint()) < radiusCircle;
     // FIXME this should not be fixed
     const double capSize = 2.;
     
@@ -34,19 +34,77 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
     
     // Draw line
     EndCaps endCaps;
-    auto tLinePos = !mouseIsInside
-      ? mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), te.width + capSize)
-      : mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), -te.width - capSize);
+    auto tLinePos = lc::geo::Coordinate(0.0,0.0,0.0);
+    auto tMText = lc::geo::Coordinate(0.0,0.0,0.0);
+    auto p1 = lc::geo::Coordinate(0.0,0.0,0.0);
+    auto p2 = lc::geo::Coordinate(0.0,0.0,0.0);
 
-    auto tMText = !mouseIsInside
-      ? mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), te.width / 2 + capSize / 2)
-      : mousePos.move(mousePos - lc::geo::Coordinate(definitionPoint().x(), mousePos.y()), -te.width / 2 - capSize / 2);
-      
-    painter.move_to(definitionPoint2().x(), definitionPoint2().y());
-    painter.line_to(mousePos.x(), mousePos.y());
-    painter.line_to(tLinePos.x(), mousePos.y());
-    painter.stroke();
-    endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), mousePos.y(), definitionPoint2().x(), definitionPoint2().y(), capSize) ;
+    const bool textisInside = middleOfText().distanceTo(mousePos) < radiusCircle;
+    const bool textFitsInside = radiusCircle * 2. > te.width;
+
+    if (textisInside && textFitsInside) {
+        tLinePos = (definitionPoint2().x() > mousePos.x())
+                ? lc::geo::Coordinate(mousePos.x() - (te.width + capSize), mousePos.y())
+                : lc::geo::Coordinate(mousePos.x() + (te.width + capSize), mousePos.y());
+
+        if (definitionPoint2().y() > mousePos.y()) {
+            tMText = (definitionPoint2().x() > mousePos.x())
+                    ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2))
+                    : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2));
+        } else {
+            tMText = (definitionPoint2().x() > mousePos.x())
+                    ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y())
+                    : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y());
+        }
+
+        painter.move_to(definitionPoint2().x(), definitionPoint2().y());
+        painter.line_to(mousePos.x(), mousePos.y());
+        painter.line_to(tLinePos.x(), mousePos.y());
+        painter.stroke();
+        endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), mousePos.y(), definitionPoint2().x(), definitionPoint2().y(), capSize) ;
+
+        this->drawText(value, textAngle(), lc::TextConst::AttachmentPoint::Top_center, tMText, painter, options, rect);
+    } else {
+        auto center = definitionPoint().mid(definitionPoint2());
+        p1 = definitionPoint2().moveTo(center, -capSize * 1.5);
+        p2 = definitionPoint2().moveTo(center, -(te.width + capSize));
+
+        tLinePos = (definitionPoint2().x() < mousePos.x())
+                ? lc::geo::Coordinate(p2.x() - (te.width + capSize), p2.y())
+                : lc::geo::Coordinate(p2.x() + (te.width + capSize), p2.y());
+
+
+        if (definitionPoint2().y() > mousePos.y()) {
+            tMText = (definitionPoint2().x() > mousePos.x())
+                    ? lc::geo::Coordinate(p2.x() + (te.width/2 + capSize/2), p2.y() + (te.height/4))
+                    : lc::geo::Coordinate(p2.x() - (te.width/2 + capSize/2), p2.y() + (te.height/4));
+        } else if (definitionPoint2().y() == mousePos.y()){
+            tLinePos = p2; // No need for extended line
+            tMText = (definitionPoint2().x() > mousePos.x())
+                    ? lc::geo::Coordinate(p2.x() - (te.width/4 + capSize/4), p2.y() + (te.height/2))
+                    : lc::geo::Coordinate(p2.x() + (te.width/4 + capSize/4), p2.y() + (te.height/2));
+        } else {
+            tMText = (definitionPoint2().x() > mousePos.x())
+                    ? lc::geo::Coordinate(p2.x() + (te.width/2 + capSize/2), p2.y() - (te.height + capSize))
+                    : lc::geo::Coordinate(p2.x() - (te.width/2 + capSize/2), p2.y() - (te.height + capSize));
+        }
+
+        if (definitionPoint2().x() == mousePos.x())
+        {
+            tMText = (definitionPoint2().y() > mousePos.y())
+                    ? lc::geo::Coordinate(p2.x() + (te.width/2 + capSize/2), p2.y() + (te.height/2))
+                    : lc::geo::Coordinate(p2.x() + (te.width/2 + capSize/2), p2.y() - (te.height + capSize));
+        }
+
+
+        painter.move_to(definitionPoint().x(), definitionPoint().y());
+        painter.line_to(definitionPoint2().x(), definitionPoint2().y());
+        painter.line_to(p2.x(), p2.y());
+        painter.line_to(tLinePos.x(), tLinePos.y());
+        painter.stroke();
+        painter.point(p2.x(), p2.y(), 2, false);
+        endCaps.render(painter, EndCaps::CLOSEDARROW, p1.x(), p1.y(), definitionPoint2().x(), definitionPoint2().y(), capSize);
+    }
 
     this->drawText(value, textAngle(), lc::TextConst::AttachmentPoint::Top_center, tMText, painter, options, rect);
 
