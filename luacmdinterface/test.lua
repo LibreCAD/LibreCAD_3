@@ -6,6 +6,10 @@ local ry = 100;
 local p =rx;
 local q=ry;
 
+layer=Layer("0", Color(1,1,1,1));
+al = AddLayer(active.document(), layer);
+al:execute();
+
 doc=active.document()
 ce=Builder(doc,em)
 layer = active.proxy.layerByName("0")
@@ -19,7 +23,7 @@ while (d< 8*math.pi) do
     p=x;
     q=y;
     d=d + 0.005;
-   count=count + 1
+    count=count + 1
 end
 ce:execute()
 print "done";
