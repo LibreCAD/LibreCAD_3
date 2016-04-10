@@ -30,11 +30,11 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
-                Coordinate CasteljauAt(std::vector<Coordinate> points, float t) const;
+                Coordinate CasteljauAt(std::vector<Coordinate> points, double t) const;
 
-                Coordinate DirectValueAt(float t) const;
+                Coordinate DirectValueAt(double t) const;
 
-                const std::vector<Coordinate> Curve(float precession);
+                const std::vector<Coordinate> Curve(double precession);
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
