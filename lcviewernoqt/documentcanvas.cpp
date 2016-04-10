@@ -100,8 +100,7 @@ void DocumentCanvas::removePainters()  {
 }
 
 void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
-
-    if (_deviceWidth != width || _deviceHeight != height) {
+    if (_deviceWidth!=width && _deviceHeight!=height) {
         _deviceWidth = width;
         _deviceHeight = height;
 
@@ -122,8 +121,6 @@ void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
             _cachedPainters[i->first]->translate(x, y);
         }
     }
-
-    calculateVisibleUserArea();
 }
 
 LcPainter& DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
@@ -156,6 +153,14 @@ LcPainter& DocumentCanvas::cachedPainter(PainterCacheType cacheType) {
 
 void DocumentCanvas::pan(double move_x, double move_y) {
 
+    double pan_x=0.;
+    double pan_y=0.;
+
+    if (_cachedPainters.size() != 0) {
+        LcPainter* p = _cachedPainters.begin()->second;
+        p->getTranslate(&pan_x, &pan_y);
+    }
+
     /* FIXME 100.0 should be dynamically calculated, depends on the drawing speed */
     if (std::abs(pan_x-move_x) > 100.0 || std::abs(pan_y - move_y) > 100.0 || pan_x == 0.0 || pan_y == 0.0) {
         pan_x = move_x;
@@ -169,11 +174,9 @@ void DocumentCanvas::pan(double move_x, double move_y) {
 
     pan_x = move_x;
     pan_y = move_y;
-    calculateVisibleUserArea();
-    
 }
 
-void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned int deviceScrollY) {
+void DocumentCanvas::zoom(double factor, bool relativezoom, unsigned int deviceX, unsigned int deviceY) {
     LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
 
     // Test for minimum and maximum zoom levels
@@ -181,29 +184,42 @@ void DocumentCanvas::zoom(double factor, unsigned int deviceScrollX, unsigned in
         return;
     }
 
+    // Find user location at the device location
     painter.save();
-    // Find mouse position in user space
-    double userScrollX = deviceScrollX;
-    double userScrollY = deviceScrollY;
-    painter.device_to_user(&userScrollX, &userScrollY);
+    double userX = deviceX;
+    double userY = deviceY;
+    painter.device_to_user(&userX, &userY);
+    painter.restore();
 
+    zoom(factor, relativezoom, userX, userY, deviceX, deviceY);
+}
+
+void DocumentCanvas::zoom(double factor, bool relativezoom, double userCenterX, double userCenterY, unsigned int deviceX, unsigned int deviceY) {
+    LcPainter &painter = cachedPainter(VIEWER_DOCUMENT);
+    if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
+        return;
+    }
+
+    if (relativezoom) {
+        factor = factor * painter.scale();
+    }
+
+    // Calculate reference device offset at device location
+    painter.save();
+    double refX = deviceX;
+    double refY = deviceY;
+    painter.reset_transformations();
     painter.scale(factor);
-
-    // Find out how much the offset was after scale
-    double userCenterX = deviceScrollX;
-    double userCenterY = deviceScrollY;
-    painter.device_to_user(&userCenterX, &userCenterY);
+    painter.device_to_user(&refX, &refY);
     painter.restore();
 
     // Set translation
     for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
-        LcPainter* p = i->second;
-        p->translate(-userScrollX + userCenterX, userScrollY - userCenterY);
+        LcPainter *p = i->second;
+        p->reset_transformations();
         p->scale(factor);
+        p->translate(refX - userCenterX,-refY + userCenterY);
     }
-
-    // Calculate visible area
-    calculateVisibleUserArea();
 }
 
 void DocumentCanvas::transX(int x) {
@@ -211,9 +227,6 @@ void DocumentCanvas::transX(int x) {
         LcPainter* p = i->second;
         p->translate(x, 0);
     }
-
-    // Calculate visible area
-    calculateVisibleUserArea();
 }
 
 void DocumentCanvas::transY(int y) {
@@ -221,63 +234,37 @@ void DocumentCanvas::transY(int y) {
         LcPainter* p = i->second;
         p->translate(0, y);
     }
-
-    // Calculate visible area
-    calculateVisibleUserArea();
 }
 
-
-/**
-* I admit it, it doesn't auto scale yet and it's on my TODO to fix that
-*/
 void DocumentCanvas::autoScale() {
-
-    // Set translation
-    for (auto i = _cachedPainters.begin(); i != _cachedPainters.end(); i++) {
-        LcPainter* p = i->second;
-        p->reset_transformations();
-        p->scale(1.);
-        p->translate(_deviceWidth / 2., _deviceHeight / 2.);
-    }
-
-    calculateVisibleUserArea();
-}
-
-void DocumentCanvas::calculateVisibleUserArea() {
-    if (_cachedPainters.size() != 0) {
-        LcPainter* p = _cachedPainters.begin()->second;
-        double x = 0.;
-        double y = 0.;
-        double w = _deviceWidth;
-        double h = _deviceHeight;
-        p->device_to_user(&x, &y);
-        p->device_to_user_distance(&w, &h);
-
-
-        _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
-    } else {
-        _visibleUserArea = lc::geo::Area(lc::geo::Coordinate(0, 0), 0, 0);
-    }
+    auto extends = _entityContainer.boundingBox();
+    double zoom = std::min(_deviceWidth / extends.width(), _deviceHeight / extends.height());
+    this->zoom(zoom, false, 0., 0., _deviceWidth / 2., _deviceHeight / 2.);
 }
 
 void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::function<void(LcPainter&)> after) {
 
     LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
+    painter = cachedPainter(VIEWER_DRAWING);
+    painter = cachedPainter(VIEWER_BACKGROUND);
+    lc::geo::Area visibleUserArea;
 
-    if (_visibleUserArea.width() == 0) {
-        painter = cachedPainter(VIEWER_DRAWING);
-        painter = cachedPainter(VIEWER_BACKGROUND);
-        autoScale();
+    {
+        double x = 0.;
+        double y = 0.;
+        double w = _deviceWidth;
+        double h = _deviceHeight;
+        painter.device_to_user(&x, &y);
+        painter.device_to_user_distance(&w, &h);
+        visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
     }
 
     // Render background
     // Cache these backgrounds
-    painter = cachedPainter(VIEWER_BACKGROUND);
     before(painter);
 
-
     LcDrawOptions lcDrawOptions;
-    DrawEvent drawEvent(painter, lcDrawOptions, _visibleUserArea);
+    DrawEvent drawEvent(painter, lcDrawOptions, visibleUserArea);
     _background(drawEvent);
 
     after(painter);
@@ -289,10 +276,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
     painter.source_rgb(1., 1., 1.);
     painter.lineWidthCompensation(0.5);
 
-
-
-    calculateVisibleUserArea();
-    auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(_visibleUserArea);
+    auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(visibleUserArea);
 
     visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         std::shared_ptr<lc::entity::CADEntity> ci = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
@@ -337,7 +321,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
         }
 
-        di->draw(painter, lcDrawOptions, _visibleUserArea);
+        di->draw(painter, lcDrawOptions, visibleUserArea);
 
         painter.restore();
     });

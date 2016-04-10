@@ -110,9 +110,9 @@ void LCADViewer::keyReleaseEvent(QKeyEvent *event) {
 void LCADViewer::wheelEvent(QWheelEvent *event) {
 
     if (event->angleDelta().y() > 0) {
-        this->_docCanvas->zoom(1.1, event->pos().x(), event->pos().y()); //1.2
+        this->_docCanvas->zoom(1.1, true, event->pos().x(), event->pos().y()); //1.2
     } else if (event->angleDelta().y() < 0) {
-        this->_docCanvas->zoom(0.9, event->pos().x(), event->pos().y()); // 0.83
+        this->_docCanvas->zoom(0.9, true, event->pos().x(), event->pos().y()); // 0.83
     }
 
     this->update();

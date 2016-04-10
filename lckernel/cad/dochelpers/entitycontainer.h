@@ -187,6 +187,17 @@ namespace lc {
             }
 
             /**
+             * Calculate boundingBox of all entities in this container
+             */
+            geo::Area boundingBox() const {
+                geo::Area extends;
+                for (auto i : _tree->retrieve()) {
+                    extends = extends.merge(i->boundingBox());
+                }
+                return extends;
+            }
+
+            /**
              * @brief entitiesWithinAndCrossingArea
              * Find all entities within a selected area or where the path is crossing the area bounderies
              * @param area

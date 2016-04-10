@@ -75,10 +75,10 @@ std::string loadFile(std::string url) {
 
 std::ofstream ofile;
 cairo_status_t write_func (void * closure, const unsigned char *data, uint length) {
-    
+
     if (ofile.is_open())
-       ofile.write((const char *)data, length);
-    
+        ofile.write((const char *)data, length);
+
     return CAIRO_STATUS_SUCCESS;
 }
 
@@ -92,12 +92,12 @@ int main(int argc, char** argv) {
     // Read CMD options
     po::options_description desc("Allowed options");
     desc.add_options()
-    ("help", "produce help message")
-    ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
-    ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
-    ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
-    ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png")
-    ("otype,t", po::value<std::string>(&fType), "(optional) output file type, example -t svg");
+            ("help", "produce help message")
+            ("width,w", po::value<int>(&width), "(optional) Set output image width, example -w 350")
+            ("height,h", po::value<int>(&height), "(optional) Set output image height, example -h 200")
+            ("ifile,i", po::value<std::string>(&fIn), "(required) Set LUA input file name, example: -i file:myFile.lua")
+            ("ofile,o", po::value<std::string>(&fOut), "(optional) Set output filename, example -o out.png")
+            ("otype,t", po::value<std::string>(&fType), "(optional) output file type, example -t svg");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -136,43 +136,47 @@ int main(int argc, char** argv) {
         fType = boost::filesystem::extension(fOut);
         fType = fType.substr(fType.find_first_of(".")+1);
     }
-        
+
     std::transform(fType.begin(), fType.end(), fType.begin(), ::tolower);
-    LcPainter * lcPainter = nullptr;    
     ofile.open(fOut);
-    
+
     using namespace CairoPainter;
-    if (fType == "pdf")
-        lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
-    else if (fType == "svg")
-        lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
-    // cairo can print any surface to PNG
-    else
-        lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
-        
+
+    LcPainter * lcPainter;
 
     _canvas->createPainterFunctor(
-        [&](const unsigned int width, const unsigned int height) {
-                lcPainter->clear(1., 1., 1., 0.0);
-            return lcPainter;
-    });
+            [&](const unsigned int width, const unsigned int height) {
+                if (lcPainter==nullptr) {
+                    if (fType == "pdf")
+                        LcPainter * lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
+                    else if (fType == "svg")
+                        lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
+                        // cairo can print any surface to PNG
+                    else
+                        lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
+                }
+
+                return lcPainter;
+            });
 
     _canvas->deletePainterFunctor([&]
-    (LcPainter * painter) {
-        if (lcPainter != nullptr) {
+                                          (LcPainter * painter) {
+        if (painter != nullptr && lcPainter!=nullptr) {
             delete painter;
-            lcPainter = nullptr;
+            lcPainter=nullptr;
         }
     });
 
     // Set device width/height
     _canvas->newDeviceSize(width, height);
 
+    // This creates a painter, a bit ugly but will do for now
+    _canvas->render([&](LcPainter & lcPainter) {},
+                    [&](LcPainter & lcPainter) {});
 
     // Render Lua Code
     LCadLuaScript luaScript(_document, false);
     std::string luaCode = loadFile(fIn);
-
 
     if (luaCode.size() != 0) {
         std::string out = luaScript.run(luaCode);
@@ -190,13 +194,10 @@ int main(int argc, char** argv) {
     _canvas->render([&](LcPainter & lcPainter) {},
                     [&](LcPainter & lcPainter) {});
 
-
     if (fType == "png" || (fType != "pdf" && fType != "svg"))
         static_cast<LcCairoPainter<CairoPainter::backend::Image> *>(lcPainter)->writePNG(fOut);
-    
-    ofile.close();
-    
 
+    ofile.close();
     return 0;
 }
 

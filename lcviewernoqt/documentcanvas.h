@@ -53,7 +53,21 @@ class DocumentCanvas {
          * @param deviceCenterX
          * @param deviceCenterY
          */
-        void zoom(double factor, unsigned int deviceCenterX, unsigned int deviceCenterY);
+        void zoom(double factor, bool relativezoom, unsigned int deviceCenterX, unsigned int deviceCenterY);
+
+        /**
+         * @brief zoom
+         * into a specific area with a zoom factor
+         * Ensures that the specified user location is located at the device location
+         * on a specific zoom factor
+         * @param factor
+         * @param userCenterX
+         * @param userCenterY
+         * @param deviceCenterX
+         * @param deviceCenterY
+         */
+        void zoom(double factor, bool relativezoom, double userCenterX, double userCenterY, unsigned int deviceCenterX, unsigned int deviceCenterY);
+
         /**
          * @brief newSize
          * for the device. When using a pixel based device this is the number of pixels of the painter
@@ -156,9 +170,6 @@ class DocumentCanvas {
          */
         lc::EntityContainer<lc::entity::CADEntity_SPtr> & entityContainer();
 private:
-
-        void calculateVisibleUserArea();
-
         /**
          * @brief cachedPainter
          * fetch a painter, if no painter was found or the painter's size doesn't match anymore
@@ -196,15 +207,9 @@ private:
         double _zoomMin;
         double _zoomMax;
 
-        // Area visible for the user
-        lc::geo::Area _visibleUserArea;
-
         // Current's device width and height
         unsigned int _deviceWidth;
         unsigned int _deviceHeight;
-
-        double pan_x = 0.0;
-        double pan_y = 0.0;
 
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
