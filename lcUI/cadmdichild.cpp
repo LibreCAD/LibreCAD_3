@@ -154,6 +154,8 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
     builder->execute();
 
+    viewer->documentCanvas()->autoScale();
+
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();
 }
@@ -214,7 +216,7 @@ void CadMdiChild::import(std::string str) {
         //_storageManager = F->storageManager();
         std::cerr << "Sorry, not compiled with DWG support";
     }
-
+    viewer->documentCanvas()->autoScale();
     //#else
     //    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
     //#endif
