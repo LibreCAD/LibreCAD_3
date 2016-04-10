@@ -7,7 +7,7 @@ function new_file()
 	cadMdiChild:newDocument()
 	mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
-
+	cadMdiChild:viewer():autoScale()
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
 end
 

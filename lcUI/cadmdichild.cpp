@@ -69,16 +69,15 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 
     gridLayout->addWidget(verticalScrollBar, 0, 1, 1, 1);
 
-    viewer = new LCADViewer(this);
-    viewer->setObjectName(QStringLiteral("viewer"));
-    viewer->setGeometry(QRect(50, 30, 581, 401));
-    viewer->setAutoFillBackground(true);
-    viewer->resize(10000, 10000);
-    viewer->setContextMenuPolicy(Qt::CustomContextMenu);
-    viewer->setFocusPolicy(Qt::StrongFocus);
-    connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
+    _viewer = new LCADViewer(this);
+    _viewer->setObjectName(QStringLiteral("viewer"));
+    _viewer->setGeometry(QRect(50, 30, 581, 401));
+    _viewer->setAutoFillBackground(true);
+    _viewer->setContextMenuPolicy(Qt::CustomContextMenu);
+    _viewer->setFocusPolicy(Qt::StrongFocus);
+    connect(_viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
 
-    gridLayout->addWidget(viewer, 0, 0, 1, 1);
+    gridLayout->addWidget(_viewer, 0, 0, 1, 1);
 
     horizontalScrollBar->setMinimum(-1000);
     horizontalScrollBar->setMaximum(1000);
@@ -86,9 +85,9 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     verticalScrollBar->setMaximum(1000);
 
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
-            viewer, SLOT(setHorizontalOffset(int)));
+            _viewer, SLOT(setHorizontalOffset(int)));
     connect(verticalScrollBar, SIGNAL(valueChanged(int)),
-            viewer, SLOT(setVerticalOffset(int)));
+            _viewer, SLOT(setVerticalOffset(int)));
 }
 
 CadMdiChild::~CadMdiChild() {
@@ -109,20 +108,20 @@ void CadMdiChild::newDocument() {
     _document = std::make_shared<lc::DocumentImpl>(_storageManager);
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    viewer->setDocument(_document);
+    _viewer->setDocument(_document);
 
     _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
-    viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
     _grid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
-    viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
+    _viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
 
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(),  _grid, 25.);
-    viewer->setSnapManager(_snapManager);
+    _snapManager = std::make_shared<SnapManagerImpl>(_viewer->documentCanvas(),  _grid, 25.);
+    _viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<LCViewer::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
+    _cursor = std::make_shared<LCViewer::Cursor>(40, _viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
@@ -141,20 +140,20 @@ void CadMdiChild::newDocument() {
     auto builder = std::make_shared<lc::operation::Builder>(document());
     builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
     builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
+    /*
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 1000. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 2.*M_PI-0.1, true, layer));
     builder->append(std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
     builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 0, 1.*M_PI, true, layer));
+     */
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 0, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
     //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
     builder->execute();
-
-    viewer->documentCanvas()->autoScale();
 
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();
@@ -176,21 +175,21 @@ void CadMdiChild::import(std::string str) {
 
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    viewer->setDocument(_document);
+    _viewer->setDocument(_document);
 
     _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
-    viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _viewer->documentCanvas()->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
     _grid = std::make_shared<Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
-    viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
+    _viewer->documentCanvas()->background().connect<Grid, &Grid::draw>(_grid.get());
 
 //    SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
     // Snap manager
-    _snapManager = std::make_shared<SnapManagerImpl>(viewer->documentCanvas(),  _grid, 25.);
-    viewer->setSnapManager(_snapManager);
+    _snapManager = std::make_shared<SnapManagerImpl>(_viewer->documentCanvas(),  _grid, 25.);
+    _viewer->setSnapManager(_snapManager);
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<LCViewer::Cursor>(40, viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
+    _cursor = std::make_shared<LCViewer::Cursor>(40, _viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
+    _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
@@ -216,7 +215,6 @@ void CadMdiChild::import(std::string str) {
         //_storageManager = F->storageManager();
         std::cerr << "Sorry, not compiled with DWG support";
     }
-    viewer->documentCanvas()->autoScale();
     //#else
     //    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
     //#endif
@@ -288,7 +286,7 @@ void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
 void CadMdiChild::ctxMenu(const QPoint& pos) {
     QMenu* menu = new QMenu;
     menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
-    menu->exec(viewer->mapToGlobal(pos));
+    menu->exec(_viewer->mapToGlobal(pos));
 }
 
 void CadMdiChild::on_addCircles_clicked() {
@@ -375,7 +373,7 @@ void CadMdiChild::on_addEllipse_clicked() {
 
 
 QWidget* CadMdiChild::view() const {
-    return viewer;
+    return _viewer;
 }
 
 SnapManager_SPtr  CadMdiChild::snapManager() const {

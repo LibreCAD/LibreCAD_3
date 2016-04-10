@@ -107,6 +107,10 @@ void LCADViewer::keyReleaseEvent(QKeyEvent *event) {
     }
 }
 
+void LCADViewer::resizeEvent(QResizeEvent * event) {
+    _docCanvas->newDeviceSize(event->size().width(), event->size().height());
+}
+
 void LCADViewer::wheelEvent(QWheelEvent *event) {
 
     if (event->angleDelta().y() > 0) {
@@ -209,8 +213,6 @@ void LCADViewer::paintEvent(QPaintEvent *p) {
     if (p->rect().width() == 0 || p->rect().height() == 0) {
         return;
     }
-
-    _docCanvas->newDeviceSize(size().width(), size().height());
 
     QPainter painter(this);
     _docCanvas->render([&](LcPainter & lcPainter) {

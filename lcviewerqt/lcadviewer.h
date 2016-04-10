@@ -64,7 +64,7 @@ class LCADViewer : public QWidget {
         void setDocument(std::shared_ptr<lc::Document> document);
         void setSnapManager(std::shared_ptr<SnapManager> snapmanager);
         std::shared_ptr<DocumentCanvas> documentCanvas() const;
-
+        void autoScale() const {documentCanvas()->autoScale();}
         double x();
         double y();
 
@@ -76,6 +76,7 @@ class LCADViewer : public QWidget {
         virtual void wheelEvent(QWheelEvent* event);
         virtual void keyPressEvent(QKeyEvent* event);
         virtual void keyReleaseEvent(QKeyEvent* event);
+        virtual void resizeEvent(QResizeEvent * event);
 
     public:
     signals:

@@ -23,6 +23,7 @@ extern "C"
 #include <QFileDialog>
 
 #include "cadmdichild.h"
+#include "documentcanvas.h"
 #include "lcadviewer.h"
 #include "ui/luascript.h"
 

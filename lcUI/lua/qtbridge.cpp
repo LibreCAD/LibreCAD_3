@@ -154,11 +154,13 @@ void addLCBindings(lua_State *L) {
 			.addFunction("redo", &CadMdiChild::redo)
 			.addFunction("undo", &CadMdiChild::undo)
 			.addFunction("view", &CadMdiChild::view)
+			.addFunction("viewer", &CadMdiChild::viewer)
 		.endClass()
 
 		.beginExtendClass<LCViewer::LCADViewer, QWidget>("LCADViewer")
 			.addFunction("x", &LCViewer::LCADViewer::x)
 			.addFunction("y", &LCViewer::LCADViewer::y)
+			.addFunction("autoScale", &LCViewer::LCADViewer::autoScale)
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")
@@ -168,6 +170,11 @@ void addLCBindings(lua_State *L) {
 		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
 			.addConstructor(LUA_ARGS(QMdiArea*))
 		.endClass()
+
+		.beginClass<LCViewer::DocumentCanvas>("DocumentCanvas")
+			.addFunction("autoScale", &LCViewer::DocumentCanvas::autoScale)
+		.endClass()
+
 
 	.endModule();
 }
