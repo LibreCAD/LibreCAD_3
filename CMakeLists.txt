@@ -15,6 +15,7 @@ ADD_SUBDIRECTORY("lcviewernoqt")
 ADD_SUBDIRECTORY("lcviewerqt")
 ADD_SUBDIRECTORY("lcadluascript")
 ADD_SUBDIRECTORY("lcUI")
+ADD_SUBDIRECTORY("lcUILua")
 ADD_SUBDIRECTORY("luacmdinterface")
 
 if(WITH_UNITTESTS)

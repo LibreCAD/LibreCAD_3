@@ -25,7 +25,6 @@ set(UI_hdrs
 cadmdichild.h
 const.h
 imainwindow.h
-mainwindow.h
 testform.h
 luainterface.h
 operations/circlecreateoperation.h
@@ -45,7 +44,6 @@ lua/luaqobject.h)
 set(UI_srcs
 cadmdichild.cpp
 main.cpp
-mainwindow.cpp
 testform.cpp
 luainterface.cpp
 operations/circlecreateoperation.cpp
@@ -60,7 +58,6 @@ lua/qtbridge.cpp
 lua/luaqobject.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
-mainwindow.ui
 testform.ui
 ui/clicommand.ui
 ui/lcmaintoolbar.ui

@@ -16,6 +16,7 @@ extern "C"
 #include <QFile>
 #include <QTextStream>
 #include <QtUiTools/QUiLoader>
+#include <QCoreApplication>
 #include "lua/luaqobject.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
