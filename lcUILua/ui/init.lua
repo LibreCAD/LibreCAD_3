@@ -1,5 +1,3 @@
-package.path = package.path .. ";../../lcUILua/?.lua;"
-
 operations = require 'actions.operations'
 
 function new_file()
@@ -58,7 +56,7 @@ function click()
 end
 
 --UI
-mainWindow = qt.loadUi("../../lcUI/mainwindow.ui")
+mainWindow = qt.loadUi(ui_path .. "/mainwindow.ui")
 mainWindow:setWindowTitle(qt.QObject.tr("LibreCAD", "", -1)) -- Todo: optional arguments
 mainWindow:setUnifiedTitleAndToolBarOnMac(true)
 
