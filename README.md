@@ -100,3 +100,8 @@ List of apparently awesome frameworks
 https://github.com/fffaraz/awesome-cpp
 https://github.com/retuxx/tinyspline
 
+
+If we are short of sample DXF files to test
+=========
+http://cadkit.blogspot.nl/p/sample-dxf-files.html
+
