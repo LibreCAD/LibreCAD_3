@@ -15,7 +15,6 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void addLayer(const DRW_Layer& data);
         virtual void addArc(const DRW_Arc& data);
         virtual void addEllipse(const DRW_Ellipse& data);
-        virtual void addSpline(const DRW_Spline& data);
         virtual void addText(const DRW_Text& data);
         virtual void addDimAlign(const DRW_DimAligned* data);
         virtual void addDimLinear(const DRW_DimLinear* data);

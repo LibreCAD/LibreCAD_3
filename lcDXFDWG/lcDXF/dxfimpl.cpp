@@ -133,26 +133,26 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
 
 }
 
-void DXFimpl::addSpline(const DRW_Spline& data) {
+void DXFimpl::addSpline(const DRW_Spline* data) {
     if (_blockHandle != -1) {
         return;
     }
 
-    auto layer = _document->layerByName(data.layer);
+    auto layer = _document->layerByName(data->layer);
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
-    _builder->append(std::make_shared<lc::entity::Spline>(coords(data.controllist),
-            data.knotslist,
-            coords(data.fitlist),
-            data.degree,
+    _builder->append(std::make_shared<lc::entity::Spline>(coords(data->controllist),
+            data->knotslist,
+            coords(data->fitlist),
+            data->degree,
             false,
-            data.tolfit,
-            data.tgStart.x, data.tgStart.y, data.tgStart.z,
-            data.tgEnd.x, data.tgEnd.y, data.tgEnd.z,
-            data.normalVec.x, data.normalVec.y, data.normalVec.z, layer, mf));
+            data->tolfit,
+            data->tgStart.x, data->tgStart.y, data->tgStart.z,
+            data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
+            data->normalVec.x, data->normalVec.y, data->normalVec.z, layer, mf));
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
@@ -348,12 +348,6 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
 
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
 }
-
-void DXFimpl::addSpline(const DRW_Spline* data) {
-
-//    data->
-}
-
 
 void DXFimpl::addMText(const DRW_MText& data) {
 }
