@@ -18,7 +18,8 @@ LuaInterface::~LuaInterface() {
 
 void LuaInterface::initLua() {
 	std::string out;
-	int s = luaL_dofile(_L, "../../lcUILua/ui/init.lua");
+	QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
+	int s = luaL_dofile(_L, luaFile.toStdString().c_str());
 
 	if (s != 0) {
         out.append(lua_tostring(_L, -1));
