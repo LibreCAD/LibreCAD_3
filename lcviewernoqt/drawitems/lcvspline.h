@@ -1,20 +1,25 @@
 #pragma once
 
 #include "lcvdrawitem.h"
-#include <cad/primitive/spline.h>
+#include "cad/primitive/spline.h"
 
-class LcDrawOptions;
-class LcPainter;
-class QRectF;
+namespace LCViewer {
+    class LcDrawOptions;
 
-class LCVSpline : public LCVDrawItem, public lc::Spline  {
+    class LcPainter;
+
+    class QRectF;
+
+    class LCVSpline : public LCVDrawItem, public lc::entity::Spline {
     public:
-        LCVSpline(const lc::Spline_CSPtr Coordinate);
+        LCVSpline(const lc::entity::Spline_CSPtr Coordinate);
+
         /**
          * @brief draw, Draws the point
          * @param LcPainter painter, surface to be painted
          * @param LcDrawOptions options
          * @param geo::Area rect
          */
-        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
-};
+        virtual void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const;
+    };
+}

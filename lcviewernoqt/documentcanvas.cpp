@@ -21,6 +21,7 @@
 #include "drawitems/lcdimaligned.h"
 #include "drawitems/lcdimangular.h"
 #include "drawitems/lclwpolyline.h"
+#include "drawitems/lcvspline.h"
 
 #include "lcpainter.h"
 
@@ -484,6 +485,15 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (lwPolyline != nullptr) {
         auto newLLWPolyline = std::make_shared<LCLWPolyline>(lwPolyline);
         _entityContainer.insert(newLLWPolyline);
+        return;
+    }
+
+    // Add 'Spline'
+    const auto spline = event.entity<lc::entity::Spline>();
+
+    if (spline != nullptr) {
+        auto newSpline = std::make_shared<LCVSpline>(spline);
+        _entityContainer.insert(newSpline);
         return;
     }
 }

@@ -15,6 +15,7 @@ drawitems/lcvdrawitem.cpp
 drawitems/lcvellipse.cpp
 drawitems/lcvline.cpp
 drawitems/lcvtext.cpp
+drawitems/lcvspline.cpp
 drawables/grid.cpp
 drawitems/endcaps.cpp
 drawables/gradientbackground.cpp
@@ -42,6 +43,7 @@ drawitems/lcvdrawitem.h
 drawitems/lcvellipse.h
 drawitems/lcvline.h
 drawitems/lcvtext.h
+drawitems/lcvspline.h
 drawables/grid.h
 drawitems/endcaps.h
 drawables/gradientbackground.h
