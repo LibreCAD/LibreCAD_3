@@ -266,6 +266,8 @@ class LcCairoPainter : public LcPainter {
 
         void quadratic_curve_to(double x1, double y1, double x2, double y2) {
             double x0, y0;
+            // From : https://lists.cairographics.org/archives/cairo/2009-October/018351.html
+            // http://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-elev.html
             cairo_get_current_point (_cr, &x0, &y0);
             cairo_curve_to (_cr,
                             2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
