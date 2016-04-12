@@ -269,10 +269,10 @@ class LcCairoPainter : public LcPainter {
             cairo_get_current_point (_cr, &x0, &y0);
             cairo_curve_to (_cr,
                             2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
-                            2.0 / 3.0 * y1 + 1.0 / 3.0 * y0,
+                            2.0 / 3.0 * -y1 + 1.0 / 3.0 * y0,
                             2.0 / 3.0 * x1 + 1.0 / 3.0 * x2,
-                            2.0 / 3.0 * y1 + 1.0 / 3.0 * y2,
-                            y1, y2);
+                            2.0 / 3.0 * -y1 + 1.0 / 3.0 * -y2,
+                            x2, -y2);
         }
 
         void save() {
