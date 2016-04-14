@@ -191,8 +191,12 @@ namespace lc {
              */
             geo::Area boundingBox() const {
                 geo::Area extends;
-                for (auto i : _tree->retrieve()) {
-                    extends = extends.merge(i->boundingBox());
+                const std::vector<CT> entities = _tree->retrieve();
+                if (entities.size()>0) {
+                    extends = entities[0]->boundingBox();
+                    for (const auto &i : entities) {
+                        extends = extends.merge(i->boundingBox());
+                    }
                 }
                 return extends;
             }
