@@ -13,7 +13,7 @@ Spline::Spline(
         double stanx, double stany, double stanz,
         double etanx, double etany, double etanz,
         double nx, double ny, double nz, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Spline(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance, stanx, stany, stanz,etanx, etany, etanz, nx, ny, nz) {
-
+	calculateBoundingBox();
 }
 
 Spline::Spline(const Spline_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Spline(
@@ -21,7 +21,8 @@ Spline::Spline(const Spline_CSPtr other, bool sameID) : CADEntity(other, sameID)
         other->degree(), other->closed(), other->fitTolerance(),
         other->startTanX(), other->startTanY(), other->startTanZ(),
         other->endTanX(), other->endTanY(), other->endTanZ(),
-        other->nX(), other->nY(), other->nZ()) {
+        other->nX(), other->nY(), other->nZ()),
+        _boundingBox(other->boundingBox()) {
 }
 
 std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
@@ -88,12 +89,20 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
 }
 
 const geo::Area Spline::boundingBox() const {
-    // TODO create bounding box for spline
-    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+    return this->_boundingBox;
 }
 
 CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     auto newSpline = std::make_shared<Spline>(controlPoints(), knotPoints(), fitPoints(), degree(), closed(), fitTolerance(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), layer, metaInfo);
 
     return newSpline;
+}
+
+void Spline::calculateBoundingBox() {
+	//TODO: better bounding box generation
+	_boundingBox = geo::Area(this->controlPoints()[0], this->controlPoints()[0]);
+	
+	for(auto cp : this->controlPoints()) {
+		_boundingBox = _boundingBox.merge(cp);
+	}
 }
