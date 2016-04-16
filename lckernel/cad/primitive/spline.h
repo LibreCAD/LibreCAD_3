@@ -100,9 +100,9 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
-            void calculateBoundingBox();
 
         private:
+            void calculateBoundingBox();
 			geo::Area _boundingBox;
         };
         using Spline_SPtr = std::shared_ptr<Spline>;
