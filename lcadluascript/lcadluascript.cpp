@@ -448,7 +448,7 @@ Builder(d):append(a):execute()
 */
 
 /*
-layer=Layer("10", Color(1,0,0,0));
+layer=Layer("10", Color(1,0,0,1));
 al = AddLayer(active.document(), layer);
 al:execute();
 l=Line(Coord(0,0), Coord(10,100), layer);
@@ -799,7 +799,7 @@ print (microtime()-start);
 /*
  *
 -- Demo to drawing Text and roations
-layer=Layer("10", Color(1,0,0,0));
+layer=Layer("10", Color(1,0,0,1));
 al = AddLayer(active.document(), layer);
 al:execute();
 
