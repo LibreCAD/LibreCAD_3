@@ -131,10 +131,10 @@ namespace lc {
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
                                                              const SimpleSnapConstrain &constrain,
                                                              double minDistanceToSnap,
-                                                             int maxNumberOfSnapPoints) const;
+                                                             int maxNumberOfSnapPoints) const override;
 
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const;
-            virtual std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>> nearestPointOnPath2(const geo::Coordinate &coord) const;
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>> nearestPointOnPath2(const geo::Coordinate &coord) const;
 
         private:
             const std::vector<LWVertex2D> _vertex;
@@ -195,14 +195,14 @@ namespace lc {
         * @param geo::Coordinate offset
         * @return CADEntity_CSPtr moved entity
         */
-            virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const;
+            virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
 
             /**
         * @brief copy, copies by an offset
         * @param geo::Coordinate offset
         * @return CADEntity_CSPtr copied entity
         */
-            virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const;
+            virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
 
             /**
         * @brief rotate, rotate operation
@@ -210,7 +210,7 @@ namespace lc {
         * @param double rotation_angle
         * @return CADEntity_CSPtr rotated entity
         */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
 
             /**
         * @brief scale, scales the entity
@@ -219,15 +219,15 @@ namespace lc {
         * @return
         */
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
-                                          const geo::Coordinate &scale_factor) const;
+                                          const geo::Coordinate &scale_factor) const override;
 
             /**
         * @brief boundingBox of the entity
         * @return geo::Area area
         */
-            virtual const geo::Area boundingBox() const;
+            virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
             /**
         * Return a vector of geometry entities for this polyline
@@ -244,7 +244,7 @@ namespace lc {
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
-            virtual void dispatch(EntityDispatch &ed) const {
+            virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
         };

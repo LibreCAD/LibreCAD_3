@@ -24,9 +24,9 @@ class Grid : public lc::Snapable {
 
         virtual void draw(DrawEvent const & event) const;
 
-        virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const;
+        virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
 
-        virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const;
+        virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
 
     private:
         double gridSize();

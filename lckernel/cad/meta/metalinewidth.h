@@ -16,9 +16,9 @@ namespace lc {
             MetaLineWidthByBlock();
             virtual ~MetaLineWidthByBlock() = default;
 
-            virtual const std::string metaTypeID() const;
+            virtual const std::string metaTypeID() const override;
 
-            virtual const std::string id () const {
+            virtual const std::string id () const override {
                 return MetaLineWidthByBlock::LCMETANAME();
             }
 
@@ -40,9 +40,9 @@ namespace lc {
             virtual ~MetaLineWidthByValue() = default;
             double width() const;
 
-            virtual const std::string metaTypeID() const;
+            virtual const std::string metaTypeID() const override;
 
-            virtual const std::string id () const {
+            virtual const std::string id () const override {
                 return MetaLineWidthByValue::LCMETANAME() + "_" + std::to_string(_width);
             }
 

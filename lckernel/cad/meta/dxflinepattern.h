@@ -30,7 +30,7 @@ namespace lc {
             return _description;
         }
 
-        virtual const std::string name() const {
+        virtual const std::string name() const override {
             return _name;
         }
 
@@ -42,7 +42,7 @@ namespace lc {
             return _length;
         }
 
-        virtual const std::string id() const {
+        virtual const std::string id() const override {
             // TODO create proper ID
             return DxfLinePattern::LCMETANAME() + "_" + _name;
         }
