@@ -28,10 +28,12 @@ cad/math/quadratic_math.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
+cad/meta/dxflinepattern.cpp
 cad/operations/builder.cpp
 cad/operations/builderops.cpp
 cad/operations/documentoperation.cpp
 cad/operations/layerops.cpp
+cad/operations/linepatternops.cpp
 cad/primitive/arc.cpp
 cad/primitive/circle.cpp
 cad/primitive/point.cpp
@@ -93,12 +95,14 @@ cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h
 cad/meta/metalinewidth.h
+cad/meta/dxflinepattern.h
 cad/operations/builder.h
 cad/operations/builderops.h
 cad/operations/documentoperation.h
 cad/operations/trim.h
 cad/operations/layerops.h
 cad/operations/undoable.h
+cad/operations/linepatternops.h
 cad/vo/entitycoordinate.h
 cad/vo/entitydistance.h
 cad/primitive/arc.h

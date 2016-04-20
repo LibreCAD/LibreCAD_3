@@ -7,6 +7,10 @@
 #include <cad/meta/icolor.h>
 #include <cad/operations/builder.h>
 
+
+static const char *const SKIP_BYLAYER = "BYLAYER";
+static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
+
 class DXFimpl : public DRW_InterfaceImpl {
     public:
         DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
@@ -32,8 +36,30 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void setBlock(const int handle);
         virtual void addBlock(const DRW_Block& data);
         virtual void endBlock();
+        virtual void addLType(const DRW_LType& data);
 
-        std::shared_ptr<lc::MetaLineWidth> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const;
+        template <typename T>
+        std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
+            std::shared_ptr<const T> mlw = nullptr;
+            lc::MetaType_CSPtr tmp = nullptr;
+            switch (lw) {
+                case DRW_LW_Conv::lineWidth::widthDefault:
+                    // By layer is always the default
+                    break;
+                case DRW_LW_Conv::lineWidth::widthByLayer:
+                    // By layer is always the default
+                    break;
+                case DRW_LW_Conv::lineWidth::widthByBlock:
+                    tmp = std::make_shared<lc::MetaLineWidthByBlock>();
+                    mlw=std::dynamic_pointer_cast<const T>(tmp);
+                default:
+                    if (lw >= DRW_LW_Conv::lineWidth::width00 && lw <= DRW_LW_Conv::lineWidth::width23) {
+                        mlw=DXFimpl::_intToLineWidth[lw];
+                    }
+            }
+
+            return mlw;
+        }
 
         std::shared_ptr<lc::Document> _document;
         lc::operation::Builder_SPtr _builder;
@@ -48,14 +74,14 @@ class DXFimpl : public DRW_InterfaceImpl {
         */
         lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const&) const;
         /**
-        * Convert from a DRW_Coord to a gey::Coordinate
+        * Convert from a DRW_Coord to a geo::Coordinate
         */
         lc::geo::Coordinate coord(DRW_Coord const& coord) const;
         std::vector<lc::geo::Coordinate>coords(std::vector<DRW_Coord *> coordList) const;
     private:
         lc::iColor icol;
 
-        std::shared_ptr<lc::MetaLineWidth> _intToLineWidth[24];
+        std::shared_ptr<lc::MetaLineWidthByValue> _intToLineWidth[24];
 
 
 };

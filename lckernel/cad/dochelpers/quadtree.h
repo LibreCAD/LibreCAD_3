@@ -15,6 +15,7 @@
 namespace lc {
     template<typename E>
     class QuadTree;
+    //class CADEntity;
     /**
      * @brief The QuadTreeSub class
      * each nide below QuadTree will be a QuadTreeSub type
@@ -22,6 +23,10 @@ namespace lc {
      */
     template<typename E>
     class QuadTreeSub {
+        //static_assert(
+        //        std::is_base_of<CADEntity, E>::value,
+        //        "E must be a descendant of CADEntity"
+        //);
         public:
             QuadTreeSub(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) :
                 _level(level) ,
@@ -264,7 +269,7 @@ namespace lc {
             };
 
             /**
-             * Caal a function for each entity within this node and it's sub nodes
+             * Call a function for each entity within this node and it's sub nodes
             */
             template<typename U, typename T> void each(T func) {
                 if (_nodes[0] != nullptr) {

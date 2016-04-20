@@ -137,9 +137,9 @@ void CadMdiChild::newDocument() {
     al->execute();
 
     // Create a cross at position 0,0
-    auto builder = std::make_shared<lc::operation::Builder>(document());
-    builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
-    builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
+    //auto builder = std::make_shared<lc::operation::Builder>(document());
+    //builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
+    //builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
     /*
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
     builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 1000. * sqrtf(2.0), layer));
@@ -153,7 +153,7 @@ void CadMdiChild::newDocument() {
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
     //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
     //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
-    builder->execute();
+   // builder->execute();
 
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();

@@ -81,6 +81,18 @@ namespace lc {
                  */
                 Builder& append(entity::CADEntity_CSPtr cadEntity);
 
+                /**
+                 * Meta data object that needs to be added
+                 * Convenient function taht can be usefull during large loading processes
+                 */
+                Builder& appendMetaData(DocumentMetaType_CSPtr metaData);
+
+                /**
+                 * Meta data that needs to be removed
+                 * Convenient function that can be usefull during large loading processes
+                 */
+                Builder& removeMetaData(DocumentMetaType_CSPtr metaData);
+
                 virtual void undo() const;
                 virtual void redo() const;
 
@@ -95,6 +107,7 @@ namespace lc {
                 std::vector<entity::CADEntity_CSPtr> _entitiesThatWhereUpdated;
                 std::vector<entity::CADEntity_CSPtr> _entitiesThatNeedsRemoval;
 
+                std::vector<DocumentMetaType_CSPtr > _metaDataThatNeedsUpdate;
         };
 
         class Builder;

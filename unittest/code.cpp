@@ -36,7 +36,7 @@ std::vector<geo::Coordinate> test::intr(Line& line, Circle& circle) {
 }
 
 std::vector<geo::Coordinate> test::testin() {
-    auto x  = std::make_shared<Layer>("0", MetaLineWidth(1.0), Color(1., 1., 1.));
+    auto x  = std::make_shared<Layer>("0", MetaLineWidthByValue(1.0), Color(1., 1., 1.));
     auto l = Line(geo::Coordinate(0., 0.), geo::Coordinate(500., 5.), x);
     auto c = Circle(geo::Coordinate(0., 0.), 200, x);
 

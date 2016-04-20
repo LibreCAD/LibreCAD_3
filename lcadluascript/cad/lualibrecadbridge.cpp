@@ -57,7 +57,12 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginClass<MetaType>("MetaType")
-    .addConstructor(LUA_SP(MetaType_SPtr), LUA_ARGS())
+    .endClass()
+
+    .beginExtendClass<EntityMetaType, MetaType>("EntityMetaType")
+    .endClass()
+
+    .beginExtendClass<DocumentMetaType, MetaType>("DocumentMetaType")
     .endClass()
 
     .beginExtendClass<Layer, MetaType>("Layer")
@@ -66,14 +71,22 @@ void lua_openlckernel(lua_State* L) {
                         const Color))
     .endClass()
 
-    .beginExtendClass<MetaColor, MetaType>("MetaColor")
+    .beginExtendClass<MetaColor, DocumentMetaType>("DocumentMetaColor")
     .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
     .endClass()
-    .beginExtendClass<MetaLineWidth, MetaType>("MetaLineWidth")
-    .addConstructor(LUA_SP(MetaLineWidth_SPtr), LUA_ARGS(const double))
+    .beginExtendClass<MetaColor, EntityMetaType>("EntityMetaColor")
+    .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
     .endClass()
 
-
+    .beginExtendClass<MetaLineWidthByBlock, MetaType>("MetaLineWidthByBlock")
+    .addConstructor(LUA_SP(MetaLineWidthByBlock_SPtr), LUA_ARGS())
+    .endClass()
+    .beginExtendClass<MetaLineWidthByValue, DocumentMetaType>("DocumentLineWidthByValue")
+    .addConstructor(LUA_SP(MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
+    .endClass()
+    .beginExtendClass<MetaLineWidthByValue, EntityMetaType>("EntityLineWidthByValue")
+    .addConstructor(LUA_SP(MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
+    .endClass()
 
     .beginClass<MetaInfo>("MetaInfo")
     .addConstructor(LUA_SP(std::shared_ptr<lc::MetaInfo>), LUA_ARGS())

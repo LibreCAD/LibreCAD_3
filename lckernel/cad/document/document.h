@@ -11,6 +11,7 @@
 #include <cad/events/addlayerevent.h>
 #include <cad/events/removelayerevent.h>
 #include <cad/events/replacelayerevent.h>
+#include "cad/meta/dxflinepattern.h"
 
 #include "cad/events/beginprocessevent.h"
 #include "cad/events/commitprocessevent.h"
@@ -129,18 +130,18 @@ namespace lc {
             *  \brief add a new layer to the document
             *  \param layer layer to be added.
             */
-            virtual void addLayer(const Layer_CSPtr layer) = 0;
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
 
             /**
             *  \brief remove a layer from the document
             *  \param layer layer to be added.
             */
-            virtual void removeLayer(const Layer_CSPtr layer) = 0;
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
 
             /**
             *  \brief remove a layer from the document
             */
-            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) = 0;
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr olDdmt, const DocumentMetaType_CSPtr newDmt) = 0;
 
             /*!
              * \brief findEntitiesByLayer
@@ -161,6 +162,11 @@ namespace lc {
              * @brief return a layer by it's name
              */
             virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
+
+            /**
+             * @brief return a line pattern by it's name
+             */
+            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

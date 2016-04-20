@@ -23,12 +23,13 @@ void StorageManagerImpl::insertEntity(const entity::CADEntity_CSPtr entity) {
     _entities.insert(entity);
 }
 
-void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>& entities) {
-    _entities.combine(entities);
-}
-
 void StorageManagerImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
     _entities.remove(entity);
+}
+
+void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>& entities) {
+    _entities.combine(entities);
+    // TODO add metadata types where they do not exists
 }
 
 entity::CADEntity_CSPtr StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
@@ -40,16 +41,23 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(con
 }
 
 Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
-    auto item = _layers.find(layerName);
-    if (item !=_layers.end()) {
-        return item->second;
-    } else {
-        return nullptr;
-    }
+    return metaDataTypeByName<Layer>(layerName);
+}
+
+DxfLinePattern_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
+    return metaDataTypeByName<DxfLinePattern>(linePatternName);
 }
 
 std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
-    return _layers;
+    std::map<std::string, Layer_CSPtr> data;
+    for (auto& iter : _documentMetaData) {
+        Layer_CSPtr layer = std::dynamic_pointer_cast<const Layer>(iter.second);
+        if (layer!=nullptr) {
+            data.emplace(std::make_pair(layer->name(), layer));
+        }
+    }
+
+    return data;
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entityContainer() const {
@@ -61,21 +69,29 @@ void StorageManagerImpl::optimise() {
 }
 
 
-void StorageManagerImpl::addLayer(const Layer_CSPtr layer) {
-    _layers.insert(std::make_pair(layer->name(), layer));
+void StorageManagerImpl::addDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
+    _documentMetaData.emplace(std::make_pair(dmt->id(), dmt));
 }
 
 
-void StorageManagerImpl::removeLayer(const Layer_CSPtr layer) {
-    _layers.erase(layer->name());
+void StorageManagerImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
+    _documentMetaData.erase(dmt->id());
 }
 
 
-void StorageManagerImpl::replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) {
-    if (oldLayer->name() == newLayer->name()) {
-        _layers.erase(oldLayer->name());
-        _layers.insert(std::make_pair(newLayer->name(), newLayer));
+void StorageManagerImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) {
+    if (oldDmt->id() == newDmt->id()) {
+        _documentMetaData.erase(oldDmt->id());
+        _documentMetaData.emplace(std::make_pair(newDmt->id(), newDmt));
     } else {
         // LOG4CXX_DEBUG(logger, "Layer names are not equal, no replacement was performed");
     }
+}
+
+DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string id) const {
+    auto search = _documentMetaData.find(id);
+    if (search != _documentMetaData.end()) {
+        return search->second;
+    }
+    return nullptr;
 }

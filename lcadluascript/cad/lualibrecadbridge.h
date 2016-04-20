@@ -32,6 +32,7 @@
 #include <cad/operations/documentoperation.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/interface/snapable.h>
+#include <cad/interface/metatype.h>
 
 
 struct lua_State;

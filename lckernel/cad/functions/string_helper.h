@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
+#include <regex>
 
 namespace lc {
 
@@ -42,6 +43,35 @@ namespace lc {
                 snprintf(buf.get(), size, format.c_str(), args ...);
                 return std::string(buf.get(), buf.get() + size);
             }
+
+         /**
+             * Test if a string is blank, c
+             */
+            static bool isBlank(const string str) {
+                std::regex r("[\\s]");
+                string result =  regex_replace(str, r, "");
+                return result.length()==0;
+            }
+
+            /**
+             * Comparator for map to setup case Insensetive comparison of strings, usefull in std::map
+             */
+            struct cmpCaseInsensetive : std::binary_function<std::string, std::string, bool>
+            {
+                // case-independent (ci) compare_less binary function
+                struct nocase_compare : public std::binary_function<unsigned char,unsigned char,bool>
+                {
+                    bool operator() (const unsigned char& c1, const unsigned char& c2) const {
+                        return std::tolower (c1) < std::tolower (c2);
+                    }
+                };
+                bool operator() (const std::string & s1, const std::string & s2) const {
+                    return std::lexicographical_compare
+                            (s1.begin (), s1.end (),   // source range
+                             s2.begin (), s2.end (),   // dest range
+                             nocase_compare ());  // comparison
+                }
+            };
 
     };
 

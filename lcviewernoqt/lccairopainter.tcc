@@ -140,7 +140,8 @@ class LcCairoPainter : public LcPainter {
         };
         void line_width(double width) {
             if (_constantLineWidth) {
-                cairo_set_line_width(_cr, (width + _lineWidthCompensation) / scale());
+                // TODO: Not sure if we really require _lineWidthCompensation here
+                cairo_set_line_width(_cr, ((width + _lineWidthCompensation) / scale()));
             } else {
                 cairo_set_line_width(_cr, width + _lineWidthCompensation);
             }
@@ -316,6 +317,10 @@ class LcCairoPainter : public LcPainter {
             return cairo_image_surface_get_data(_surface);
         }
 
+        /**
+         * Warning, if scaled is set to true then this takes additional processing
+         * TODO: can we optmise the calculation when scale is set to true?
+         */
         void set_dash(const double *dashes, const int num_dashes, double offset, bool scaled) {
             if (scaled) {
                 double scaledDashes[num_dashes];

@@ -111,7 +111,9 @@ namespace lc {
             template<typename T>
             const std::shared_ptr<const T> metaInfo(std::string metaName) const {
                 if (_metaInfo && (_metaInfo->find(metaName) != _metaInfo->end())) {
-                    return std::dynamic_pointer_cast<const T>(_metaInfo->at(metaName));
+                    auto a=_metaInfo->at(metaName);
+                    auto b=std::dynamic_pointer_cast<const T>(a);
+                    return b;
                 }
 
                 return nullptr;

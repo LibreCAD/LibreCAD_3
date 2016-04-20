@@ -11,7 +11,9 @@
 #include "cad/events/removeentityevent.h"
 #include "entitycontainer.h"
 
-#include <cad/events/replaceentityevent.h>
+#include "cad/events/replaceentityevent.h"
+#include "cad/meta/dxflinepattern.h"
+#include "cad/functions/string_helper.h"
 
 namespace lc {
     /**
@@ -36,17 +38,18 @@ namespace lc {
             virtual void insertEntity(const entity::CADEntity_CSPtr);
 
             /**
-             * @brief insertEntityContainer
-             * \param EntityContainer<entity::CADEntity_CSPtr>
-             */
-            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>&);
-            /**
              * @brief remove Entity from the container
              * \param entity::CADEntity_CSPtr
              */
             virtual void removeEntity(const entity::CADEntity_CSPtr);
 
             /**
+             * @brief insertEntityContainer
+             * \param EntityContainer<entity::CADEntity_CSPtr>
+             */
+            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr> &);
+
+           /**
              * @brief return entity By ID
              * @param id
              * @return entity::CADEntity_CSPtr entity
@@ -69,6 +72,13 @@ namespace lc {
             virtual Layer_CSPtr layerByName(const std::string& layerName) const;
 
             /**
+             * @brief returns line pattern By Name
+             * @param string& linePatternName
+             * @return DxfLinePattern_CSPtr layer
+             */
+            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;
+
+            /**
              * @brief return all Layers
              * @return map<string, Layer_CSPtr>
              */
@@ -81,29 +91,35 @@ namespace lc {
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const;
 
             /**
-            *  \brief add a new layer to the document
+            *  \brief add a document meta type
             *  \param layer layer to be added.
             */
-            virtual void addLayer(const Layer_CSPtr layer);
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
 
             /**
-            *  \brief remove a layer from the document
+            *  \brief remove a document meta type from the document
             *  \param layer layer to be added.
             */
-            virtual void removeLayer(const Layer_CSPtr layer);
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
 
             /**
-            *  \brief remove a layer from the document
+            *  \brief remove document meta type
             */
-            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer);
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
 
 
             /**
              * @brief optimise the quadtree
              */
             virtual void optimise();
-        private:
+
+
+    private:
+            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string id) const;
+
+    private:
+
             EntityContainer<entity::CADEntity_CSPtr> _entities;
-            std::map<std::string, Layer_CSPtr> _layers;
+            std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive> _documentMetaData;
     };
 }

@@ -5,8 +5,8 @@
 using namespace lc;
 
 
-std::shared_ptr<MetaInfo> MetaInfo::add(MetaType_CSPtr mt) {
-    this->emplace(mt->lcMetaName(), mt);
+std::shared_ptr<MetaInfo> MetaInfo::add(EntityMetaType_CSPtr mt) {
+    this->emplace(mt->metaTypeID(), mt);
     return shared_from_this();
 }
 

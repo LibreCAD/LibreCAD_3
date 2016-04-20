@@ -11,15 +11,15 @@ AddLayer::AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer)
 }
 
 void AddLayer::processInternal() {
-    document()->addLayer(_layer);
+    document()->addDocumentMetaType(_layer);
 }
 
 void AddLayer::undo() const {
-    document()->removeLayer(_layer);
+    document()->removeDocumentMetaType(_layer);
 }
 
 void AddLayer::redo() const {
-    document()->addLayer(_layer);
+    document()->addDocumentMetaType(_layer);
 }
 
 /********************************************************************************************************/
@@ -36,11 +36,11 @@ void RemoveLayer::processInternal() {
         document()->removeEntity(i);
     }
 
-    document()->removeLayer(_layer);
+    document()->removeDocumentMetaType(_layer);
 }
 
 void RemoveLayer::undo() const {
-    document()->addLayer(_layer);
+    document()->addDocumentMetaType(_layer);
 
     for (auto i : _entities) {
         document()->insertEntity(i);
@@ -52,7 +52,7 @@ void RemoveLayer::redo() const {
         document()->removeEntity(i);
     }
 
-    document()->removeLayer(_layer);
+    document()->removeDocumentMetaType(_layer);
 }
 
 
@@ -69,8 +69,8 @@ void ReplaceLayer::processInternal() {
         //        document()->removeEntity(i);
     }
 
-    document()->removeLayer(_oldLayer);
-    document()->removeLayer(_newLayer);
+    document()->removeDocumentMetaType(_oldLayer);
+    document()->removeDocumentMetaType(_newLayer);
 
     for (auto i : le) {
         //        document()->removeEntity(i);

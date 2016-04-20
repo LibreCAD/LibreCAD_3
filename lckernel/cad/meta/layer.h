@@ -9,27 +9,30 @@
 
 
 namespace lc {
-    class Layer : public MetaType  {
+    class Layer : public DocumentMetaType, public EntityMetaType  {
         public:
             Layer();
-            Layer(const std::string name, const MetaLineWidth lineWidth, const Color color);
+            Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);
 
             // Change this to meta data?
             Layer(const std::string name, const Color color);
-            Layer(const std::string name, const MetaLineWidth lineWidth);
-            virtual ~Layer();
+            Layer(const std::string name, const MetaLineWidthByValue lineWidth);
+            virtual ~Layer() = default;
 
+            virtual const std::string id() const {
+                return Layer::LCMETANAME() + "_" + _name;
+            }
 
-            virtual std::string lcMetaName() const {
+            virtual const std::string metaTypeID() const {
                 return Layer::LCMETANAME();
             }
-            static std::string LCMETANAME() {
+            static const std::string LCMETANAME() {
                 return "_LAYER";
             }
 
-            MetaLineWidth lineWidth() const;
+            MetaLineWidthByValue lineWidth() const;
             Color color() const;
-            std::string name() const;
+            virtual const std::string name() const;
 
             bool operator == (const Layer& layer) const {
                 return (layer._name == _name);
@@ -37,7 +40,7 @@ namespace lc {
 
         private:
             std::string _name;
-            MetaLineWidth _lineWidth;
+            MetaLineWidthByValue _lineWidth;
             Color _color;
 
             friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
@@ -49,4 +52,3 @@ namespace lc {
     using Layer_CSPtr = std::shared_ptr<const Layer>;
 }
 
-// LAYER_H

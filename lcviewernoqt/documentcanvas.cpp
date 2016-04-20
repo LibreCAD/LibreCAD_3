@@ -266,6 +266,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
     LcDrawOptions lcDrawOptions;
     DrawEvent drawEvent(painter, lcDrawOptions, visibleUserArea);
+    painter.lineWidthCompensation(0.);
     _background(drawEvent);
 
     after(painter);
@@ -276,26 +277,40 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
     // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
     painter.source_rgb(1., 1., 1.);
     painter.lineWidthCompensation(0.5);
+    painter.enable_antialias();
 
     auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(visibleUserArea);
 
     visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         std::shared_ptr<lc::entity::CADEntity> ci = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
         lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-        lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidth::LCMETANAME());
+        lc::MetaLineWidthByValue_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
+        lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
         lc::Layer_CSPtr layer = ci->layer();
 
         painter.save();
 
+        // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
+        double alpha_compensation = 0.9;
+
         // Decide on line width
         if (entityLineWidth != nullptr) {
-            double width = entityLineWidth->width() * 3.;
+            // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+            // TODO: Find a better algo
+            double width = entityLineWidth->width() * 1.5;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter.line_width(width < 0.1 ? 1. : width);
+            painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
         } else {
-            double width = layer->lineWidth().width() * 3.;
+            // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+            // TODO: Find a better algo
+            double width = layer->lineWidth().width() * 1.5;
             // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter.line_width(width < 0.1 ? 1. : width);
+            painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+        }
+
+        if (entityLinePattern != nullptr && entityLinePattern->lcPattern().size()>0) {
+            const double* path = &entityLinePattern->lcPattern()[0];
+            painter.set_dash(path, entityLinePattern->lcPattern().size(), 0., true);
         }
 
         // Decide what color to render the entity into
@@ -304,28 +319,32 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
                 lcDrawOptions.selectedColor().red(),
                 lcDrawOptions.selectedColor().green(),
                 lcDrawOptions.selectedColor().blue(),
-                lcDrawOptions.selectedColor().alpha()
+                lcDrawOptions.selectedColor().alpha() * alpha_compensation
             );
         } else if (entityColor != nullptr) {
             painter.source_rgba(
                 entityColor->red(),
                 entityColor->green(),
                 entityColor->blue(),
-                entityColor->alpha());
+                entityColor->alpha() * alpha_compensation);
         } else {
             lc::Color layerColor = layer->color();
             painter.source_rgba(
                 layerColor.red(),
                 layerColor.green(),
                 layerColor.blue(),
-                layerColor.alpha());
-
+                layerColor.alpha() * alpha_compensation);
         }
+
+
 
         di->draw(painter, lcDrawOptions, visibleUserArea);
 
         painter.restore();
     });
+    painter.line_width(1.);
+    painter.source_rgb(1., 1., 1.);
+    painter.lineWidthCompensation(0.);
     after(painter);
 
     // Foreground

@@ -19,9 +19,9 @@ namespace lc {
             virtual void insertEntity(const entity::CADEntity_CSPtr cadEntity);
             virtual void removeEntity(entity::CADEntity_CSPtr entity);
 
-            virtual void addLayer(const Layer_CSPtr layer);
-            virtual void removeLayer(const Layer_CSPtr layer);
-            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer);
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
 
             /**
              * @brief entitiesByLayer
@@ -32,7 +32,8 @@ namespace lc {
 
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
 
-            Layer_CSPtr layerByName(const std::string& layerName) const;
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const;
+            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;
         protected:
             /*!
              * \brief execute's a operation
@@ -56,7 +57,8 @@ namespace lc {
 
         private:
             std::mutex _documentMutex;
-            const StorageManager_SPtr _storageManager;
+            // AI am considering remove the shared_ptr from this one so we can never get a shared object from it
+            StorageManager_SPtr _storageManager;
 
     };
 }

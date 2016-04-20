@@ -58,6 +58,10 @@ Builder& Builder::remove() {
 
 
 void Builder::processInternal() {
+    for (auto metaData : _metaDataThatNeedsUpdate) {
+        document()->addDocumentMetaType(metaData);
+    }
+
     std::vector<entity::CADEntity_CSPtr> entitySet;
 
     for (auto it = _stack.begin(); it != _stack.end(); ++it) {
@@ -89,6 +93,8 @@ void Builder::processInternal() {
     for (auto entity : _workingBuffer) {
         document()->insertEntity(entity);
     }
+
+
 }
 
 void Builder::undo() const {
@@ -103,9 +109,17 @@ void Builder::undo() const {
     for (auto entity : _entitiesThatNeedsRemoval) {
         document()->insertEntity(entity);
     }
+
+    for (auto metaData : _metaDataThatNeedsUpdate) {
+        document()->removeDocumentMetaType(metaData);
+    }
 }
 
 void Builder::redo() const {
+    for (auto metaData : _metaDataThatNeedsUpdate) {
+        document()->addDocumentMetaType(metaData);
+    }
+
     for (auto entity : _entitiesThatNeedsRemoval) {
         document()->removeEntity(entity);
     }
@@ -115,3 +129,8 @@ void Builder::redo() const {
     }
 }
 
+
+Builder& Builder::appendMetaData(DocumentMetaType_CSPtr metaData) {
+    _metaDataThatNeedsUpdate.push_back(metaData);
+    return *this;
+}

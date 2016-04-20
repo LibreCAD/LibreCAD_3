@@ -15,37 +15,40 @@
 #include <cad/operations/builder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
+#include <cad/operations/linepatternops.h>
 #include <cad/meta/color.h>
 #include <cad/meta/icolor.h>
-#include "cad/base/metainfo.h"
-#include "cad/meta/metacolor.h"
-#include "cad/meta/metalinewidth.h"
+#include <cad/base/metainfo.h>
+#include <cad/meta/metacolor.h>
+#include <cad/meta/metalinewidth.h>
+#include <cad/meta/dxflinepattern.h>
+#include <cad/functions/string_helper.h>
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : _document(document), _builder(builder), _blockHandle(-1) {
-    _intToLineWidth[0] = std::make_shared<lc::MetaLineWidth>(0.00);
-    _intToLineWidth[1] = std::make_shared<lc::MetaLineWidth>(0.05);
-    _intToLineWidth[2] = std::make_shared<lc::MetaLineWidth>(0.09);
-    _intToLineWidth[3] = std::make_shared<lc::MetaLineWidth>(0.13);
-    _intToLineWidth[4] = std::make_shared<lc::MetaLineWidth>(0.15);
-    _intToLineWidth[5] = std::make_shared<lc::MetaLineWidth>(0.18);
-    _intToLineWidth[6] = std::make_shared<lc::MetaLineWidth>(0.20);
-    _intToLineWidth[7] = std::make_shared<lc::MetaLineWidth>(0.25);
-    _intToLineWidth[8] = std::make_shared<lc::MetaLineWidth>(0.30);
-    _intToLineWidth[9] = std::make_shared<lc::MetaLineWidth>(0.35);
-    _intToLineWidth[10] = std::make_shared<lc::MetaLineWidth>(0.40);
-    _intToLineWidth[11] = std::make_shared<lc::MetaLineWidth>(0.50);
-    _intToLineWidth[12] = std::make_shared<lc::MetaLineWidth>(0.53);
-    _intToLineWidth[13] = std::make_shared<lc::MetaLineWidth>(0.60);
-    _intToLineWidth[14] = std::make_shared<lc::MetaLineWidth>(0.70);
-    _intToLineWidth[15] = std::make_shared<lc::MetaLineWidth>(0.80);
-    _intToLineWidth[16] = std::make_shared<lc::MetaLineWidth>(0.90);
-    _intToLineWidth[17] = std::make_shared<lc::MetaLineWidth>(1.00);
-    _intToLineWidth[18] = std::make_shared<lc::MetaLineWidth>(1.06);
-    _intToLineWidth[19] = std::make_shared<lc::MetaLineWidth>(1.20);
-    _intToLineWidth[20] = std::make_shared<lc::MetaLineWidth>(1.40);
-    _intToLineWidth[21] = std::make_shared<lc::MetaLineWidth>(1.58);
-    _intToLineWidth[22] = std::make_shared<lc::MetaLineWidth>(2.0);
-    _intToLineWidth[23] = std::make_shared<lc::MetaLineWidth>(2.11);
+    _intToLineWidth[0] = std::make_shared<lc::MetaLineWidthByValue>(0.00);
+    _intToLineWidth[1] = std::make_shared<lc::MetaLineWidthByValue>(0.05);
+    _intToLineWidth[2] = std::make_shared<lc::MetaLineWidthByValue>(0.09);
+    _intToLineWidth[3] = std::make_shared<lc::MetaLineWidthByValue>(0.13);
+    _intToLineWidth[4] = std::make_shared<lc::MetaLineWidthByValue>(0.15);
+    _intToLineWidth[5] = std::make_shared<lc::MetaLineWidthByValue>(0.18);
+    _intToLineWidth[6] = std::make_shared<lc::MetaLineWidthByValue>(0.20);
+    _intToLineWidth[7] = std::make_shared<lc::MetaLineWidthByValue>(0.25);
+    _intToLineWidth[8] = std::make_shared<lc::MetaLineWidthByValue>(0.30);
+    _intToLineWidth[9] = std::make_shared<lc::MetaLineWidthByValue>(0.35);
+    _intToLineWidth[10] = std::make_shared<lc::MetaLineWidthByValue>(0.40);
+    _intToLineWidth[11] = std::make_shared<lc::MetaLineWidthByValue>(0.50);
+    _intToLineWidth[12] = std::make_shared<lc::MetaLineWidthByValue>(0.53);
+    _intToLineWidth[13] = std::make_shared<lc::MetaLineWidthByValue>(0.60);
+    _intToLineWidth[14] = std::make_shared<lc::MetaLineWidthByValue>(0.70);
+    _intToLineWidth[15] = std::make_shared<lc::MetaLineWidthByValue>(0.80);
+    _intToLineWidth[16] = std::make_shared<lc::MetaLineWidthByValue>(0.90);
+    _intToLineWidth[17] = std::make_shared<lc::MetaLineWidthByValue>(1.00);
+    _intToLineWidth[18] = std::make_shared<lc::MetaLineWidthByValue>(1.06);
+    _intToLineWidth[19] = std::make_shared<lc::MetaLineWidthByValue>(1.20);
+    _intToLineWidth[20] = std::make_shared<lc::MetaLineWidthByValue>(1.40);
+    _intToLineWidth[21] = std::make_shared<lc::MetaLineWidthByValue>(1.58);
+    _intToLineWidth[22] = std::make_shared<lc::MetaLineWidthByValue>(2.0);
+    _intToLineWidth[23] = std::make_shared<lc::MetaLineWidthByValue>(2.11);
 
 }
 
@@ -89,7 +92,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
-    std::cerr << data.staangle << ":" << data.endangle << ":" << data.isccw << "\n";
+    // std::cerr << data.staangle << ":" << data.endangle << ":" << data.isccw << "\n";
     _builder->append(std::make_shared<lc::entity::Arc>(coord(data.basePoint),
                                                data.radious,
                                                data.staangle, data.endangle, data.isccw, layer, mf));
@@ -117,20 +120,19 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         col = icol.intToColor(255);
     }
 
-    auto lw = getLcLineWidth(data.lWeight);
+    auto lw = getLcLineWidth<lc::MetaLineWidthByValue>(data.lWeight);
 
     if (lw == nullptr) {
-        lw = getLcLineWidth(DRW_LW_Conv::lineWidth::width00);
+        lw = getLcLineWidth<lc::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
     }
 
     // If a layer starts with a * it's a special layer we don't process yet
     if (data.name.length()>0 && data.name.compare(0,1,"*")) {
         auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+        //_builder->appendMetaData(layer);
         al->execute();
     }
-
-
 }
 
 void DXFimpl::addSpline(const DRW_Spline* data) {
@@ -355,29 +357,12 @@ void DXFimpl::addMText(const DRW_MText& data) {
 void DXFimpl::addHatch(const DRW_Hatch* data) {
 }
 
-std::shared_ptr<lc::MetaLineWidth> DXFimpl::getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
-    std::shared_ptr<lc::MetaLineWidth> mlw = nullptr;
-
-    switch (lw) {
-        case DRW_LW_Conv::lineWidth::widthDefault:
-        case DRW_LW_Conv::lineWidth::widthByLayer:
-        case DRW_LW_Conv::lineWidth::widthByBlock: // TODO understand how 'by block' works
-            return nullptr;
-
-        default:
-            if (lw >= 0 && lw < 24) {
-                mlw = DXFimpl::_intToLineWidth[lw];
-            }
-    }
-
-    return mlw;
-}
 
 lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
 
-    auto lw = getLcLineWidth(data.lWeight);
-
+    // Try to find a entities meta line weight
+    auto lw = getLcLineWidth<lc::EntityMetaType>(data.lWeight);
     if (lw != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
@@ -386,14 +371,26 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
         mf->add(lw);
     }
 
+    // Try to find a entities meta color
     auto col = icol.intToColor(data.color);
-
     if (col != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
         }
 
         mf->add(col);
+    }
+
+    // Most likely a lot of entities within a drawing will be 'BYLAYER' and with the CONTINUOUS linetype.
+    // These are the default's for LibreCAD
+    // One thing we need to solve is when entities within a block are loaded and use the BY_LAYER line type and styles
+    // I will solve that during block importing.
+    if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+        if (mf == nullptr) {
+            mf = lc::MetaInfo::create();
+        }
+
+        mf->add(_document->linePatternByName(data.lineType));
     }
     return mf;
 }
@@ -409,3 +406,8 @@ std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordL
     }
     return coords;
 }
+
+void DXFimpl::addLType(const DRW_LType& data) {
+    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePattern>(data.name, data.desc, data.path, data.length))->execute();
+}
+

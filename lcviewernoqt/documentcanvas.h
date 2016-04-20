@@ -13,6 +13,10 @@
 #include <cad/events/commitprocessevent.h>
 #include <cad/events/removeentityevent.h>
 #include <nano-signal-slot/nano_signal_slot.hpp>
+
+// Minimum linewidth we reander, below this the lines might start to loog 'jagged'
+// We migth one to consider at lower linewidth to simply reduce alpha to get a similat effect of smaller line?
+static const double MINIMUM_READER_LINEWIDTH = 1.0;
 namespace LCViewer {
 
 enum PainterCacheType {

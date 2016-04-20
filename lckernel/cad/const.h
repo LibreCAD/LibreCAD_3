@@ -12,3 +12,5 @@ T * ptr(T & obj) { return &obj; } //turn reference into pointer!
 
 template<typename T>
 T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
+
+

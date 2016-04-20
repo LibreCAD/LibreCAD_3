@@ -1,24 +1,28 @@
 #include "metalinewidth.h"
-
+#include <cassert>
 
 using namespace lc;
 
-MetaLineWidth::MetaLineWidth() : MetaType(), _width(0.) {
+MetaLineWidthByBlock::MetaLineWidthByBlock() : EntityMetaType() {
 }
 
-std::string MetaLineWidth::lcMetaName() const {
-    return MetaLineWidth::LCMETANAME();
-}
-std::string MetaLineWidth::LCMETANAME() {
-    return "_LINEWIDTH";
+const std::string MetaLineWidthByBlock::metaTypeID() const {
+    return MetaLineWidthByBlock::LCMETANAME();
 }
 
-MetaLineWidth::MetaLineWidth(const double width): MetaType(), _width(width) {
-    if (width < 0.0) {
-        throw;
-    }
+
+MetaLineWidthByValue::MetaLineWidthByValue() : EntityMetaType(), DocumentMetaType(), _width(0.) {
+    assert(_width >= 0. && "Line width must be >= 0.");
 }
 
-double MetaLineWidth::width() const {
+MetaLineWidthByValue::MetaLineWidthByValue(const double width): EntityMetaType(), _width(width) {
+    assert(_width>=0. && "Line width must be >= 0.");
+}
+
+const std::string MetaLineWidthByValue::metaTypeID() const {
+    return MetaLineWidthByValue::LCMETANAME();
+}
+
+double MetaLineWidthByValue::width() const {
     return _width;
 }

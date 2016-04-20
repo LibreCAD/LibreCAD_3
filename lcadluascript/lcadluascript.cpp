@@ -466,9 +466,9 @@ Builder(d):append(c):execute()
 
 /*
 layer = active.proxy.layerByName("0");
-metaInfo1= MetaInfo():add(MetaLineWidth(1));
-metaInfo2 = MetaInfo():add(MetaLineWidth(10));
-metaInfo2:add(MetaColor(Color(0,1,0,1)));
+metaInfo1= MetaInfo():add(EntityLineWidthByValue(1));
+metaInfo2 = MetaInfo():add(EntityLineWidthByValue(10));
+metaInfo2:add(EntityMetaColor(Color(0,1,0,1)));
 l1=Line1(Coord(-100,-100), Coord(100,100), layer, metaInfo1);
 l2=Line1(Coord(-100,100), Coord(100,-100), layer, metaInfo2);
 d=active.document();
@@ -479,8 +479,8 @@ Builder(d):append(l1):append(l2):execute();
 
 /*
 layer = active.proxy.layerByName("0");
-metaInfo1= MetaInfo():add(MetaLineWidth(1));
-metaInfo2 = MetaInfo():add(MetaLineWidth(2));
+metaInfo1= MetaInfo():add(EntityLineWidthByValue(1));
+metaInfo2 = MetaInfo():add(EntityLineWidthByValue(2));
 l1=Line1(Coord(-100,-100), Coord(100,100), layer, metaInfo1);
 l2=Line1(Coord(-100,100), Coord(100,-100), layer, metaInfo2);
 d=active.document();
@@ -831,8 +831,8 @@ b:append(Line(Coord(400,-400), Coord(-400,-400), layer));
 b:append(Line(Coord(-400,-400), Coord(-400,400), layer));
 
 -- Draw center
-metaInfo1= MetaInfo():add(MetaColor(Color(1,0,0,1)));
-metaInfo2 = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+metaInfo1= MetaInfo():add(EntityEntityMetaColor(Color(1,0,0,1)));
+metaInfo2 = MetaInfo():add(EntityEntityMetaColor(Color(0,1,0,1)));
 b:append(Line1(Coord(0,0), Coord(0,180), layer, metaInfo1));
 b:append(Line1(Coord(0,0), Coord(180,00), layer, metaInfo2));
 
@@ -889,7 +889,7 @@ Builder(d):append(p):execute()
 
 /* LWPolyline rotate +  scale
 layer = active.proxy.layerByName("0")
-metaInfo = MetaInfo():add(MetaColor(Color(0,1,0,1)));
+metaInfo = MetaInfo():add(EntityMetaColor(Color(0,1,0,1)));
 vertex2d = { LWVertex2D(Coord(10,10),0.25,0,5), LWVertex2D(Coord(10,20),0,5,0), LWVertex2D(Coord(20,30),-2), LWVertex2D(Coord(30,20)), LWVertex2D(Coord(30,10))};
 p=LWPolyline1(vertex2d,0,0,0,true,Coord(0,0),layer, metaInfo);
 d=active.document()

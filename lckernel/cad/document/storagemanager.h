@@ -6,6 +6,8 @@
 #include "cad/dochelpers/entitycontainer.h"
 
 #include <map>
+#include <cad/meta/dxflinepattern.h>
+
 namespace lc {
     /**
      * Entity manager is responsible for adding/removing entities from a document
@@ -28,6 +30,13 @@ namespace lc {
             virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
             /*!
+             * \brief DxfLinePattern
+             * Return a line pattern by name from the document
+             * \param linePatternName
+             * \return
+             */
+            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
+            /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer
              */
@@ -41,27 +50,46 @@ namespace lc {
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const = 0;
 
             /**
-            *  \brief add a new layer to the document
+            *  \brief add a document meta type
             *  \param layer layer to be added.
             */
-            virtual void addLayer(const Layer_CSPtr layer) = 0;
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
 
             /**
-            *  \brief remove a layer from the document
+            *  \brief remove a document meta type from the document
             *  \param layer layer to be added.
             */
-            virtual void removeLayer(const Layer_CSPtr layer) = 0;
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
 
             /**
-            *  \brief remove a layer from the document
+            *  \brief remove document meta type
             */
-            virtual void replaceLayer(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) = 0;
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) = 0;
 
             /**
              * @brief optimise
              * the underlaying data store. Run this at a regular base, for example after each task
              */
             virtual void optimise() = 0;
+
+
+            template <typename T>
+            const std::shared_ptr<const T> metaDataTypeByName(const std::string & name) const {
+                std::string n = T::LCMETANAME();
+                auto r = _metaDataTypeByName(T::LCMETANAME() + "_" + name);
+                // What do we do when we don't have a meta data set??
+                if (r!=nullptr) {
+                    std::string myid = r->id();
+                    auto dp = std::dynamic_pointer_cast<const T>(r);
+                    return dp;
+                }
+                return nullptr;
+            };
+
+        private:
+            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string id) const {
+                return nullptr;
+            }
     };
 
     class StorageManager;

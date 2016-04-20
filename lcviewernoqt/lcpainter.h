@@ -24,7 +24,7 @@ class LcPainter {
         virtual void clear(double r, double g, double b, double a) = 0;
         virtual void move_to(double x, double y) = 0;
         virtual void line_to(double x, double y) = 0;
-        virtual void lineWidthCompensation(double lwc) = 0;
+        virtual void lineWidthCompensation(double lwc) = 0; // When set, we add this to the current linewidth, perhaps we should find a better method
         virtual void line_width(double lineWidth) = 0;
         virtual double scale() = 0;
         virtual void scale(double s) = 0;
