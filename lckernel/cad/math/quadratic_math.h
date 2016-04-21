@@ -1,8 +1,8 @@
 #pragma once
 
 #include "cad/geometry/geocoordinate.h"
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "lcmath.h"
 #include "cad/const.h"
 #include <array>
@@ -58,30 +58,32 @@ namespace lc {
 
             /**
              * @brief getLinear, Returns linear equation
-             * @return boost::numeric::ublas::vector<double> linear
+             * @return Eigen::VectorXd
              */
-            boost::numeric::ublas::vector<double>& getLinear() {
+            const Eigen::VectorXd& getLinear() const {
                 return m_vLinear;
             }
-            const boost::numeric::ublas::vector<double>& getLinear() const {
+
+            Eigen::VectorXd& getLinear() {
                 return m_vLinear;
             }
 
             /**
              * @brief getQuad, Returns Quadratic equation
-             * @return boost::numeric::ublas::matrix<double>
+             * @return Eigen::MatrixXd
              */
-            boost::numeric::ublas::matrix<double>& getQuad() {
-                return m_mQuad;
-            }
-            const boost::numeric::ublas::matrix<double>& getQuad() const {
+
+            Eigen::MatrixXd& getQuad() {
                 return m_mQuad;
             }
 
-            /** switch x,y coordinates */
+            const Eigen::MatrixXd& getQuad() const {
+                return m_mQuad;
+            }
+
             Quadratic flipXY(void) const;
             /** the matrix of rotation by angle **/
-            static boost::numeric::ublas::matrix<double> rotationMatrix(const double& angle);
+            static Eigen::MatrixXd rotationMatrix(const double& angle);            /** switch x,y coordinates */
 
             /**
              * @brief getIntersection, returns intersection in two entites
@@ -91,11 +93,8 @@ namespace lc {
              */
             static std::vector<lc::geo::Coordinate> getIntersection(const Quadratic& l1, const Quadratic& l2);
         private:
-            // Not 100% sure we might want to consider http://sourceforge.net/projects/tvmet/ because ublas from boost
-            // is relative slow on small matrixes/vector. see faq on
-            // http://www.crystalclearsoftware.com/cgi-bin/boost_wiki/wiki.pl?Frequently_Asked_Questions_Using_UBLAS
-            boost::numeric::ublas::matrix<double> m_mQuad;
-            boost::numeric::ublas::vector<double> m_vLinear;
+            Eigen::MatrixXd m_mQuad;
+            Eigen::VectorXd m_vLinear;
             double m_dConst;
             bool m_bIsQuadratic;
             /** whether this quadratic form is valid */

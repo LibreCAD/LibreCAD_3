@@ -132,7 +132,11 @@ find_package(Boost COMPONENTS thread date_time program_options filesystem system
 include_directories(${Boost_INCLUDE_DIRS})
 
 #    find_package(maths REQUIRED)
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+#set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+find_package(Eigen3 REQUIRED)
+include_directories(EIGEN3_INCLUDE_DIR)
 
 find_package(PkgConfig)
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
