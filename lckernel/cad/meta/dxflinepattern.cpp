@@ -5,14 +5,14 @@
 #include "dxflinepattern.h"
 #include <cmath>
 #include <numeric>
-#include <cassert>
+#include "cad/functions/string_helper.h"
 
 using namespace lc;
 
 DxfLinePattern::DxfLinePattern(const std::string &name, const std::string &description, const std::vector<double> &path, const double length) :
-        _name(name), _description(description), _path(path), _length(_length), _lcPattern(generatePattern(path, length)) {
-    assert(_name.size() > 0 && "Name of DxfLinePattern must be given"); // Description must be given
-    assert(_path.size() > 0 && "Path length must be > 0"); // Path must have a minimum of one entry
+        _name(name), _description(description), _path(path), _lcPattern(generatePattern(path, length)), _length(length) {
+    assert(!StringHelper::isBlank(name) > 0 && "Name of DxfLinePattern must be given");
+    // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }
 
 double DxfLinePattern::calculatePathLength(const std::vector<double> &_path) {

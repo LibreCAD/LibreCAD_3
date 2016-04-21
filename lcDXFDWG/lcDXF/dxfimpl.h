@@ -14,29 +14,29 @@ static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 class DXFimpl : public DRW_InterfaceImpl {
     public:
         DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
-        virtual void addLine(const DRW_Line& data);
-        virtual void addCircle(const DRW_Circle& data);
-        virtual void addLayer(const DRW_Layer& data);
-        virtual void addArc(const DRW_Arc& data);
-        virtual void addEllipse(const DRW_Ellipse& data);
-        virtual void addText(const DRW_Text& data);
-        virtual void addDimAlign(const DRW_DimAligned* data);
-        virtual void addDimLinear(const DRW_DimLinear* data);
-        virtual void addDimRadial(const DRW_DimRadial* data);
-        virtual void addDimDiametric(const DRW_DimDiametric* data);
-        virtual void addDimAngular(const DRW_DimAngular* data);
-        virtual void addDimAngular3P(const DRW_DimAngular3p* data);
-        virtual void addDimOrdinate(const DRW_DimOrdinate* data);
-        virtual void addLWPolyline(const DRW_LWPolyline& data);
-        virtual void addPolyline(const DRW_Polyline& data);
-        virtual void addSpline(const DRW_Spline* data);
-        virtual void addPoint(const DRW_Point& data);
-        virtual void addMText(const DRW_MText& data);
-        virtual void addHatch(const DRW_Hatch* data);
-        virtual void setBlock(const int handle);
-        virtual void addBlock(const DRW_Block& data);
-        virtual void endBlock();
-        virtual void addLType(const DRW_LType& data);
+        virtual void addLine(const DRW_Line& data) override;
+        virtual void addCircle(const DRW_Circle& data) override;
+        virtual void addLayer(const DRW_Layer& data) override;
+        virtual void addArc(const DRW_Arc& data) override;
+        virtual void addEllipse(const DRW_Ellipse& data) override;
+        virtual void addText(const DRW_Text& data) override;
+        virtual void addDimAlign(const DRW_DimAligned* data) override;
+        virtual void addDimLinear(const DRW_DimLinear* data) override;
+        virtual void addDimRadial(const DRW_DimRadial* data) override;
+        virtual void addDimDiametric(const DRW_DimDiametric* data) override;
+        virtual void addDimAngular(const DRW_DimAngular* data) override;
+        virtual void addDimAngular3P(const DRW_DimAngular3p* data) override;
+        virtual void addDimOrdinate(const DRW_DimOrdinate* data) override;
+        virtual void addLWPolyline(const DRW_LWPolyline& data) override;
+        virtual void addPolyline(const DRW_Polyline& data) override;
+        virtual void addSpline(const DRW_Spline* data) override;
+        virtual void addPoint(const DRW_Point& data) override;
+        virtual void addMText(const DRW_MText& data) override;
+        virtual void addHatch(const DRW_Hatch* data) override;
+        virtual void setBlock(const int handle) override;
+        virtual void addBlock(const DRW_Block& data) override;
+        virtual void endBlock() override;
+        virtual void addLType(const DRW_LType& data) override;
 
         template <typename T>
         std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {

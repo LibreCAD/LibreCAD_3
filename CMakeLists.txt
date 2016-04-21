@@ -1,12 +1,12 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
 
-option(ENABLE_MY_ASSERT "Turn on NDEBUG checks" OFF)
-if(NDEBUG)
-  add_definitions(-DNDEBUG=1)
-else()
-  add_definitions(-DNDEBUG=0)
-endif()
+#option(ENABLE_MY_ASSERT "Turn on NDEBUG checks" OFF)
+#if(NDEBUG)
+#  add_definitions(-DNDEBUG=1)
+#else()
+#  add_definitions(-DNDEBUG=0)
+#endif()
 
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)

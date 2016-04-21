@@ -6,7 +6,7 @@
 
 #include "cad/interface/metatype.h"
 #include "cad/const.h"
-
+#include <cassert>
 #include <vector>
 
 namespace lc {
@@ -62,11 +62,11 @@ namespace lc {
         }
 
     private:
-        const std::string _name;
-        const std::string _description;
-        const std::vector<double> _path;
-        const std::vector<double> _lcPattern;
-        const double _length;
+        std::string _name;
+        std::string _description;
+        std::vector<double> _path;
+        std::vector<double> _lcPattern;
+        double _length;
     };
     using DxfLinePattern_SPtr = std::shared_ptr<DxfLinePattern>;
     using DxfLinePattern_CSPtr = std::shared_ptr<const DxfLinePattern>;
