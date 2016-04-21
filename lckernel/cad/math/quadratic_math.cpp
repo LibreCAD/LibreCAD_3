@@ -24,7 +24,7 @@ Quadratic::Quadratic(const Quadratic& lc0):
 
 Quadratic& Quadratic::operator = (const Quadratic& lc0) {
     if (lc0.isQuadratic()) {
-        m_mQuad.resize(2, 2, false);
+        m_mQuad.resize(2,2);
         m_mQuad = lc0.getQuad();
     }
 
@@ -127,14 +127,13 @@ Quadratic Quadratic::move(const geo::Coordinate& v) {
 
 
 Quadratic Quadratic::rotate(const double& angle) {
-    using namespace boost::numeric::ublas;
     auto&& m = rotationMatrix(angle);
-    auto&& t = trans(m);
-    m_vLinear = prod(t, m_vLinear);
+    auto &&t = m.transpose();
+    m_vLinear = t * m_vLinear;
 
     if (m_bIsQuadratic) {
-        m_mQuad = prod(m_mQuad, m);
-        m_mQuad = prod(t, m_mQuad);
+        m_mQuad = m_mQuad* m;
+        m_mQuad = t* m_mQuad;
     }
 
     return *this;
@@ -165,8 +164,8 @@ Quadratic Quadratic::flipXY(void) const {
  *    _) | (_| | |(_  |~|_|| |(_ | |(_)| |_\
  *
  */
-boost::numeric::ublas::matrix<double>  Quadratic::rotationMatrix(const double& angle) {
-    boost::numeric::ublas::matrix<double> ret(2, 2);
+Eigen::MatrixXd  Quadratic::rotationMatrix(const double& angle) {
+    Eigen::MatrixXd ret(2,2);
     ret(0, 0) = std::cos(angle);
     ret(0, 1) = std::sin(angle);
     ret(1, 0) = -ret(0, 1);
