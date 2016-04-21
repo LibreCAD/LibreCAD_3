@@ -9,7 +9,7 @@
 
 
 namespace lc {
-    class Layer : public DocumentMetaType, public EntityMetaType  {
+    class Layer : public EntityMetaType, public DocumentMetaType {
         public:
             Layer();
             Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);

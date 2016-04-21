@@ -23,18 +23,18 @@ namespace lc {
             MetaColor(const Color& other) : EntityMetaType(), _color(other) {
             }
 
-            //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
-            //}
-
-            virtual const std::string id() const {
-                // TODO create proper ID
-                return MetaColor::LCMETANAME() + "_" + std::to_string(red()) + "_" +  std::to_string(green()) + "_" +  std::to_string(blue());
-            }
-
             MetaColor(double r, double g, double b, double a = 1.) : EntityMetaType(), _color(r, g, b, a) {
             }
 
             virtual ~MetaColor() = default;
+
+        //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
+            //}
+
+            virtual const std::string id() const override {
+                // TODO create proper ID
+                return MetaColor::LCMETANAME() + "_" + std::to_string(red()) + "_" +  std::to_string(green()) + "_" +  std::to_string(blue());
+            }
 
             virtual const std::string metaTypeID() const override {
                 return MetaColor::LCMETANAME();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #define LCTOLERANCE 1.0e-10
 #define LCARCTOLERANCE 1.0e-10
 //squared tolerance
