@@ -16,6 +16,7 @@
 
 #include "operations/operationmanager.h"
 #include <managers/snapmanagerimpl.h>
+#include "cad/dochelpers/undomanagerimpl.h"
 
 class CadMdiChild : public QWidget {
         Q_OBJECT
@@ -31,11 +32,6 @@ class CadMdiChild : public QWidget {
 
         void on_addCircles_clicked();
 
-        void undo();
-        void redo();
-
-        void on_clearUndoables_clicked();
-
         void on_addArcs_clicked();
 
         void on_addEllipse_clicked();
@@ -45,6 +41,7 @@ class CadMdiChild : public QWidget {
     public:
         QWidget* view() const;
         std::shared_ptr<lc::Document> document() const;
+        lc::UndoManager_SPtr undoManager() const;
         LCViewer::SnapManager_SPtr  snapManager() const;
         std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
@@ -56,7 +53,7 @@ class CadMdiChild : public QWidget {
         int randInt(int low, int high);
 
         std::shared_ptr<lc::Document> _document;
-        lc::UndoManager_SPtr _undoManager;
+        lc::UndoManagerImpl_SPtr _undoManager;
 
         std::shared_ptr<LCViewer::Grid> _grid;
         std::shared_ptr<LCViewer::GradientBackground> _gradientBackground;

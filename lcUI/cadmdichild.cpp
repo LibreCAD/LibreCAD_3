@@ -12,7 +12,6 @@
 #include "cad/meta/metalinewidth.h"
 #include "cad/interface/metatype.h"
 #include "cad/dochelpers/storagemanagerimpl.h"
-#include "cad/dochelpers/undomanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
 
 #include <drawables/lccursor.h>
@@ -125,7 +124,8 @@ void CadMdiChild::newDocument() {
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
-    _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
+    _undoManager = std::make_shared<lc::UndoManagerImpl>(10);
+    _document->commitProcessEvent().connect<lc::UndoManagerImpl, &lc::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
 
 
     // Add operation manager
@@ -160,11 +160,6 @@ void CadMdiChild::newDocument() {
 }
 
 
-
-void CadMdiChild::undo() {
-    _undoManager->undo();
-}
-
 void CadMdiChild::import(std::string str) {
 
     // Entity manager add's/removes entities to layers
@@ -193,7 +188,8 @@ void CadMdiChild::import(std::string str) {
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
-    _undoManager = std::make_shared<lc::UndoManagerImpl>(_document, 10);
+    _undoManager = std::make_shared<lc::UndoManagerImpl>(10);
+	_document->commitProcessEvent().connect<lc::UndoManagerImpl, &lc::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
 
     // Add operation manager
     _operationManager = std::make_shared<OperationManager>(_document);
@@ -218,10 +214,6 @@ void CadMdiChild::import(std::string str) {
     //#else
     //    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
     //#endif
-}
-
-void CadMdiChild::redo() {
-    _undoManager->redo();
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {
@@ -311,10 +303,6 @@ void CadMdiChild::on_addCircles_clicked() {
 }
 
 
-void CadMdiChild::on_clearUndoables_clicked() {
-    _undoManager->removeUndoables();
-}
-
 void CadMdiChild::on_addArcs_clicked() {
     auto builder = std::make_shared<lc::operation::Builder>(document());
     auto layer = _storageManager->layerByName("0");
@@ -396,4 +384,6 @@ void CadMdiChild::cancelCurrentOperations() {
     operationManager()->cancel();
 }
 
-
+lc::UndoManager_SPtr CadMdiChild::undoManager() const {
+    return _undoManager;
+}

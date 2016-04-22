@@ -26,7 +26,7 @@ function undo()
 	local activeSubWindow = mdiArea:activeSubWindow()
 
 	if(activeSubWindow ~= nil) then
-		activeSubWindow:widget():undo()
+		activeSubWindow:widget():undoManager():undo()
 	end
 end
 
@@ -34,7 +34,7 @@ function redo()
 	local activeSubWindow = mdiArea:activeSubWindow()
 
 	if(activeSubWindow ~= nil) then
-		activeSubWindow:widget():redo()
+		activeSubWindow:widget():undoManager():redo()
 	end
 end
 

@@ -8,6 +8,7 @@
 #include <cad/operations/layerops.h>
 #include <cad/operations/builder.h>
 #include <cad/document/document.h>
+#include <cad/document/undomanager.h>
 #include <cad/meta/layer.h>
 #include <cad/meta/metacolor.h>
 #include <cad/geometry/geocoordinate.h>
@@ -29,6 +30,7 @@
 #include <cad/operations/builder.h>
 #include <cad/operations/builderops.h>
 #include <cad/dochelpers/documentimpl.h>
+#include <cad/dochelpers/undomanagerimpl.h>
 #include <cad/operations/documentoperation.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/interface/snapable.h>
