@@ -4,8 +4,11 @@ ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 find_package(Qt5Widgets)
@@ -15,10 +18,6 @@ find_package(Qt5Gui REQUIRED)
 find_package(Qt5UiTools REQUIRED)
 #include(${QT_USE_FILE})
 SET(QT_USE_QTDESIGNER ON)
-#pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
-#include_directories(${LOG4CXX_INCLUDE_DIRS})
-#link_directories(${LOG4CXX_LIBRARY_DIRS})
-include_directories(${CMAKE_INSTALL_PREFIX} /usr/local/include)
 
 # HEADERS
 set(UI_hdrs
@@ -66,6 +65,9 @@ ui/luascript.ui)
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
 
+# LOG4CXX
+find_package(PkgConfig)
+pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -91,9 +93,9 @@ endif()
 
 # DEBUGGING PATHS 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+#foreach(dir ${dirs})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
 target_link_libraries(librecad Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiTools ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt lcdxfdwg)

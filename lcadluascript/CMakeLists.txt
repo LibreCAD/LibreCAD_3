@@ -4,6 +4,8 @@ ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # SOURCE FILES
 set(lcluascript_srcs 
         lcadluascript.cpp
@@ -17,27 +19,12 @@ set(lcluascript_hdrs
     cad/lualibrecadbridge.h
     cad/timer.h)
 
-# DEPENDENCIES
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-#find_package(Lua52Test REQUIRED)
-#if (LUA52_FOUND)
-#  message("lua 52 found")
-#  INCLUDE_DIRECTORIES("${LUA_INCLUDE_DIR}")
-#endif (LUA52_FOUND)
 find_package(PkgConfig)
-pkg_check_modules(LUA52 lua)
-if(LUA52_FOUND)
-	message("lua found as lua")
-else()
-pkg_check_modules(LUA52 REQUIRED lua5.3)
-	message("lua found as lua5.3")
-endif(LUA52_FOUND)
-include_directories(${LUA52_INCLUDE_DIRS})
-link_directories(${LUA52_LIBRARY_DIRS})
+pkg_check_modules(LUA REQUIRED lua>=5.3)
+include_directories(${LUA_INCLUDE_DIRS})
+link_directories(${LUA_LIBRARY_DIRS})
 
-# BUILDING CONFIG
-# SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
  
 if (SEPARATE_BUILD STREQUAL "ON")
@@ -50,12 +37,12 @@ endif()
  
 # DEBUGGING PATHS 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+#foreach(dir ${dirs})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
-target_link_libraries(lcluascript ${LUA52_LIBRARIES} lckernel)
+target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
 
 # INSTALLATION
 install(TARGETS lcluascript DESTINATION lib)

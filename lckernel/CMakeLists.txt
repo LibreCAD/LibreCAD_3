@@ -4,6 +4,8 @@ ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # SOURCE FILES
 set(lckernel_srcs
 cad/base/cadentity.cpp
@@ -126,14 +128,15 @@ cad/primitive/beziercurve.h
 
 # DEPENDENCIES
 
+# Boost
 set(Boost_USE_MULTITHREADED ON)
 #    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
 find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 #    find_package(maths REQUIRED)
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# LOG4CXX
 find_package(PkgConfig)
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
@@ -151,9 +154,9 @@ endif()
 
 # DEBUGGING PATHS
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+#foreach(dir ${dirs})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})

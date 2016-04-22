@@ -4,6 +4,8 @@ ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # SOURCE FILES
 set(viewer_srcs
 lcdrawoptions.cpp
@@ -69,15 +71,14 @@ managers/EventManager.h
 events/LocationEvent.h
 )
 
-# DEPENDENCIES
-set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
+# Cairo
 find_package(PkgConfig)
-pkg_check_modules(CAIRO REQUIRED cairo)
+pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
 include_directories(${CAIRO_INCLUDE_DIRS})
 link_directories(${CAIRO_LIBRARY_DIRS})
 
-pkg_check_modules(PANGO REQUIRED pango)
+# Pango
+pkg_check_modules(PANGO REQUIRED pango>=1.38)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
 
@@ -94,9 +95,9 @@ endif()
 # DEBUGING PATHS
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+#foreach(dir ${dirs})
+#  message(STATUS "dir='${dir}'")
+#endforeach()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs}   drawables/CursorLocation.cpp drawables/CursorLocation.h)
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} lckernel)
