@@ -124,6 +124,17 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("layerByName", &DocumentImpl::layerByName)
     .addFunction("entitiesByLayer", &DocumentImpl::entitiesByLayer)
     .endClass()
+
+    .beginClass<UndoManager>("UndoManager")
+		.addFunction("canRedo", &UndoManager::canRedo)
+		.addFunction("canUndo", &UndoManager::canUndo)
+		.addFunction("redo", &UndoManager::redo)
+		.addFunction("removeUndoables", &UndoManager::removeUndoables)
+		.addFunction("undo", &UndoManager::undo)
+    .endClass()
+    .beginExtendClass<UndoManagerImpl, UndoManager>("UndoManagerImpl")
+    .endClass()
+    
     .beginClass<EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
                                                    .endClass()
 

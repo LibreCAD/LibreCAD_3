@@ -18,7 +18,7 @@ namespace lc {
      */
     class UndoManagerImpl: public UndoManager {
         public:
-            UndoManagerImpl(std::shared_ptr<Document> document, unsigned int maximumUndoLevels);
+            UndoManagerImpl(unsigned int maximumUndoLevels);
 
             /*!
              * \brief redo an operation.
@@ -62,9 +62,6 @@ namespace lc {
             virtual void removeUndoables();
 
         private:
-            std::shared_ptr<Document> _document;
-
-        private:
             std::vector<operation::Undoable_SPtr> _unDoables; /*!< Undo list */
             std::stack<operation::Undoable_SPtr> _reDoables; /*!< Redo stack */
             const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
@@ -74,5 +71,7 @@ namespace lc {
 
 
     };
+    using UndoManagerImpl_SPtr = std::shared_ptr<UndoManagerImpl>;
+    using UndoManagerImpl_CSPtr = std::shared_ptr<const UndoManagerImpl>;
 
 }
