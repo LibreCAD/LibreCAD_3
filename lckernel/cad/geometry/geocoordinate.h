@@ -132,6 +132,15 @@ namespace lc {
                 }
 
                 /**
+                 * @brief operator -
+                 * @param
+                 * @return geo::Coordinate
+                 */
+                inline Coordinate operator - () const {
+                    return Coordinate(-_x, -_y, -_z);
+                }
+
+                /**
                   * Substract two points from each other and return a new coordinate : return _x - coord._x, _y - coord._y, _z - coord._z
                   * returns Coordinate
                   */
