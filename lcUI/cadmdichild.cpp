@@ -21,7 +21,6 @@
 #include "cad/interface/snapable.h"
 
 #include "cadmdichild.h"
-#include "testform.h"
 #include <QFileDialog>
 #include <cad/operations/builder.h>
 #include <QMessageBox>

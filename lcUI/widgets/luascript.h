@@ -3,7 +3,7 @@
 #include <QDockWidget>
 #include <QMdiArea>
 #include <QMdiSubWindow>
-#include <imainwindow.h>
+#include "cadmdichild.h"
 
 namespace Ui {
     class LuaScript;
