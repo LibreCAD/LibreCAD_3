@@ -23,8 +23,6 @@ SET(QT_USE_QTDESIGNER ON)
 set(UI_hdrs
 cadmdichild.h
 const.h
-imainwindow.h
-testform.h
 luainterface.h
 operations/circlecreateoperation.h
 operations/groupoperations.h
@@ -34,33 +32,28 @@ operations/linecreateoperation.h
 operations/operationmanager.h
 operations/qsnappedstate.h
 operations/trimoperation.h
-ui/clicommand.h
-ui/lcmaintoolbar.h
-ui/luascript.h
+widgets/clicommand.h
+widgets/luascript.h
 lua/qtbridge.h
 lua/luaqobject.h)
 
 set(UI_srcs
 cadmdichild.cpp
 main.cpp
-testform.cpp
 luainterface.cpp
 operations/circlecreateoperation.cpp
 operations/linecreateoperation.cpp
 operations/operationmanager.cpp
 operations/qsnappedstate.cpp
 operations/trimoperation.cpp
-ui/clicommand.cpp
-ui/lcmaintoolbar.cpp
-ui/luascript.cpp
+widgets/clicommand.cpp
+widgets/luascript.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
-testform.ui
-ui/clicommand.ui
-ui/lcmaintoolbar.ui
-ui/luascript.ui)
+widgets/clicommand.ui
+widgets/luascript.ui)
 
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
