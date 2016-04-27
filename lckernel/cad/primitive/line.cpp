@@ -7,19 +7,19 @@ using namespace lc;
 using namespace entity;
 
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), geo::Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(start, end) {
+Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Vector(start, end) {
 }
 
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), Vector(vector) {
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), geo::Vector(vector) {
 }
 
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), Vector(vector) {
+Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Vector(vector) {
 }
 
-Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), Vector(other->start(), other->end()) {
+Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), geo::Vector(other->start(), other->end()) {
 }
 
 

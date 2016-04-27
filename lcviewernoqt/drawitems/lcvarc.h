@@ -5,7 +5,7 @@
 namespace LCViewer {
 class LCVArc: public LCVDrawItem, public lc::entity::Arc {
     public:
-        LCVArc(const lc::entity::Arc_CSPtr circle);
+        LCVArc(const lc::entity::Arc_CSPtr arc);
         /**
          * @brief draw, Draw the Arc
          * @param LcPainter painter, surface to be painted

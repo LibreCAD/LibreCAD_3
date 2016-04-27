@@ -73,6 +73,13 @@ namespace lc {
                 }
             };
 
+            /**
+             * To lowercase std::string
+             */
+            static std::string tolower(std::string data) {
+                std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+                return data;
+            };
     };
 
 

@@ -62,7 +62,7 @@ namespace lc {
             return d1 < d2;
         }
 
-        geo::Coordinate _reference;
+        const geo::Coordinate _reference;
     };
 
 

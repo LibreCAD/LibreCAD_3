@@ -36,7 +36,7 @@ namespace lc {
                 /**
                  * Return the neatrest point on the entities path
                  */
-                inline Coordinate nearestPointOnPath(const Coordinate& coord) const {
+                inline const Coordinate nearestPointOnPath(const Coordinate& coord) const {
                     Coordinate direction = this->end() - this->start();
                     Coordinate vpc = coord - this->start();
                     vpc = start() + direction * Coordinate(vpc).dot(direction) / direction.squared();
@@ -46,7 +46,7 @@ namespace lc {
                 /**
                  * Return the nearest point on the entity
                  */
-                inline Coordinate nearestPointOnEntity(const Coordinate& coord) const {
+                inline const Coordinate nearestPointOnEntity(const Coordinate& coord) const {
                     const auto vpc = nearestPointOnPath(coord);
                     // Note, I could use Area for this but didn't want that dependency here
                     const geo::Coordinate minP(Coordinate(std::min(_start.x()-LCTOLERANCE, _end.x()-LCTOLERANCE), std::min(_start.y()-LCTOLERANCE, _end.y()-LCTOLERANCE)));
@@ -112,7 +112,7 @@ namespace lc {
                  * @brief quadratic, Returns quadratic for the entity
                  * @return Quadratic quadratic equation
                  */
-                Quadratic quadratic() const {
+                const Quadratic quadratic() const {
                     auto&& dvp = this->_end - this->_start;
                     geo::Coordinate normal(-dvp.y(), dvp.x());
                     /*

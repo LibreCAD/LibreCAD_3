@@ -8,5 +8,8 @@ LcDrawOptions::LcDrawOptions() :
     _diametricFormat("ø%.2f"),
     _linearFormat("%.2f"),
     _alignedFormat("%.2f"),
-    _angleFormat("%.2f°") {
+    _angleFormat("%.2f°"),
+    _imageOutline(true),
+    _imageOutlineColor(lc::Color(1., 1., 1., 0.5))
+{
 }

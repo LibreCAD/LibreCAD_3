@@ -318,6 +318,17 @@ namespace lc {
                 inline Coordinate moveTo(const Coordinate& to, double d) const {
                     return (to - *this).norm() * d + *this;
                 }
+
+                /**
+                 * Apply transformation matrix to coordinates in X/Y only
+                 * Note: this is a very naieve approche to transform if we see
+                 * ourselve using this function on large vectors of coordinates we should consider
+                 * using Eigen
+                 */
+                inline Coordinate transform2d(double xx, double yx, double xy, double yy, double x0, double y0) {
+                    return Coordinate(xx * _x + xy * _y + x0, yx * _x + yy * _y + y0, _z);
+                }
+
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Coordinate& coordinate) {
                     os << "Coordinate(x=" << coordinate._x << " y=" << coordinate._y << " z=" << coordinate._z << ")";
@@ -343,8 +354,7 @@ namespace lc {
           * std::qsort(sp.begin(), sp.end(), geo::CoordinateDistanceSort(geo::Coordinate(60.60.)));
           * \endcode
           */
-        class CoordinateDistanceSort {
-            public:
+        struct CoordinateDistanceSort {
                 CoordinateDistanceSort(const Coordinate& distanceFrom) : _distanceFrom(distanceFrom) {
                 }
 
@@ -352,7 +362,6 @@ namespace lc {
                     return left.distanceTo(_distanceFrom) < right.distanceTo(_distanceFrom);
                 }
 
-            private:
                 const Coordinate _distanceFrom;
         };
 

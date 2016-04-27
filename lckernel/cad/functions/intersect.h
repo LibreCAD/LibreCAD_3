@@ -13,6 +13,7 @@
 #include "cad/primitive/point.h"
 #include "cad/primitive/spline.h"
 #include "cad/primitive/text.h"
+#include "cad/primitive/image.h"
 
 #include "cad/base/cadentity.h"
 #include "cad/geometry/geoarc.h"
@@ -58,6 +59,7 @@ namespace lc {
         bool operator()(const lc::geo::Vector &, const lc::entity::Ellipse &);
         bool operator()(const lc::geo::Vector &, const lc::entity::Spline &);
         bool operator()(const lc::geo::Vector &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::geo::Vector &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Line &, const lc::geo::Vector &);
@@ -68,6 +70,7 @@ namespace lc {
         bool operator()(const lc::entity::Line &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Line &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Line &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Line &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Point &, const lc::geo::Vector &);
@@ -78,6 +81,7 @@ namespace lc {
         bool operator()(const lc::entity::Point &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Point &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Point &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Point &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Circle &, const lc::geo::Vector &);
@@ -88,6 +92,7 @@ namespace lc {
         bool operator()(const lc::entity::Circle &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Circle &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Circle &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Circle &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Arc &, const lc::geo::Vector &);
@@ -98,6 +103,7 @@ namespace lc {
         bool operator()(const lc::entity::Arc &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Arc &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Arc &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Arc &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Ellipse &, const lc::geo::Vector &);
@@ -108,6 +114,7 @@ namespace lc {
         bool operator()(const lc::entity::Ellipse &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Ellipse &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Ellipse &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Ellipse &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::Spline &, const lc::geo::Vector &);
@@ -118,6 +125,7 @@ namespace lc {
         bool operator()(const lc::entity::Spline &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::Spline &, const lc::entity::Spline &);
         bool operator()(const lc::entity::Spline &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::Spline &, const lc::entity::Image &){return false;};
 
 
         bool operator()(const lc::entity::LWPolyline &, const lc::geo::Vector &);
@@ -128,7 +136,18 @@ namespace lc {
         bool operator()(const lc::entity::LWPolyline &, const lc::entity::Ellipse &);
         bool operator()(const lc::entity::LWPolyline &, const lc::entity::Spline &);
         bool operator()(const lc::entity::LWPolyline &, const lc::entity::LWPolyline &);
+        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Image &){return false;};
 
+
+        bool operator()(const lc::entity::Image &, const lc::geo::Vector &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Point &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Line &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Circle &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Arc &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Ellipse &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Spline &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::LWPolyline &){return false;};
+        bool operator()(const lc::entity::Image &, const lc::entity::Image &){return false;};
 
         bool operator()(const lc::Visitable &s1, const lc::Visitable &s2) {
             // If we end up here we found a un-supported intersection

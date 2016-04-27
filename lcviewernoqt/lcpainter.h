@@ -49,18 +49,21 @@ class LcPainter {
         virtual void quadratic_curve_to(double x1, double y1, double x2, double y2) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
-        virtual unsigned long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;
-        virtual void pattern_add_color_stop_rgba(unsigned long pat, double offset, double r, double g, double b, double a) = 0;
-        virtual void set_source(unsigned long pat) = 0;
-        virtual void pattern_destroy(unsigned long pat) = 0;
+        virtual long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;
+        virtual void pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a) = 0;
+        virtual void set_pattern_source(long pat) = 0;
+        virtual void pattern_destroy(long pat) = 0;
         virtual void fill() = 0;
         virtual void point(double x, double y, double size, bool deviceCoords) = 0;
         virtual void reset_transformations() = 0;
         virtual unsigned char* data() = 0;
         //        virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) = 0;
         virtual void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) = 0;
+        virtual long image_create(const std::string &file) = 0;
+        virtual void image_destroy(long image) = 0;
+        virtual void image(long image, double uvx, double vy, double vvx, double vvy, double x, double y) = 0;
 
-        // The functions below might get changed in future
+    // The functions below might get changed in future
         virtual void disable_antialias() = 0;
         virtual void enable_antialias() = 0;
         // We should consider returning a matrix?

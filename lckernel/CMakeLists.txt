@@ -51,6 +51,8 @@ cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
 cad/primitive/lwpolyline.cpp
 cad/primitive/beziercurve.cpp
+cad/primitive/image.cpp
+cad/math/vectorhelper.cpp
 )
 
 # HEADER FILES
@@ -124,9 +126,11 @@ cad/primitive/dimangular.h
 cad/primitive/textconst.h
 cad/functions/string_helper.h
 cad/primitive/beziercurve.h
-)
+cad/primitive/image.h
+cad/math/vectorhelper.h)
 
 # DEPENDENCIES
+find_package(PkgConfig)
 
 # Boost
 set(Boost_USE_MULTITHREADED ON)
@@ -137,7 +141,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 #    find_package(maths REQUIRED)
 
 # LOG4CXX
-find_package(PkgConfig)
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})

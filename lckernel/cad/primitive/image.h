@@ -14,34 +14,26 @@
 namespace lc {
     namespace entity {
         /*!
-         * \brief A line that can be put in a drawing
-         *
-         * A line is a graphics line item that can be put on a drawing using a CreateEntity operation.
+         * \brief A Image that can be put in a drawing
          *
          * \sa CreateEntities::append
          * \author R. van Twisk
-         * \date 2012-04-16
+         * \date 2016-04-16
          */
-        class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
+        class Image : public std::enable_shared_from_this<Image>, public CADEntity, public Snapable, virtual public Visitable  {
         public:
-            /*!
-             * \brief Construct a new line
-             *
-             * \param start,end Coordinate the line should start and end from
-             */
-            Line(const geo::Coordinate &start, const geo::Coordinate &end, const Layer_CSPtr layer);
 
-            /*!
-             * \brief Construct a new line
-             *
-             * \param start,end Coordinate the line should start and end from
-             * \param metaTypes A list of metatypes associated with this line
-             * \sa Color
-             * \sa LineWidth
-             * \sa MetaType
-             */
-            Line(const geo::Coordinate &start, const geo::Coordinate &end, const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo);
+            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
+                        double brightness, double contrast, double fade, const Layer_CSPtr layer);
+
+            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
+                        const Layer_CSPtr layer);
+
+            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
+                        double brightness, double contrast, double fade, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
+            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
+                        const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             /*!
              * \brief Construct a new line
@@ -52,11 +44,7 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Vector &vector, const Layer_CSPtr layer);
-
-            Line(const geo::Vector &vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
-
-            Line(const Line_CSPtr other, bool sameID = false);
+            Image(const Image_CSPtr other, bool sameID = false);
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain,  double minDistanceToSnap,
@@ -73,7 +61,7 @@ namespace lc {
             virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
 
             /**
-             * @brief copy, copies line by an offset
+             * @brief copy, copies Image by an offset
              * @param geo::Coordinate offset
              * @return CADEntity_CSPtr copied entity
              */
@@ -105,6 +93,43 @@ namespace lc {
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
 
+            const std::string &name() const {
+                return _name;
+            }
+
+            const geo::Coordinate &base() const {
+                return _base;
+            }
+
+            const geo::Coordinate &uv() const {
+                return _uv;
+            }
+
+            const geo::Coordinate &vv() const {
+                return _vv;
+            }
+
+
+            double width() const {
+                return _width;
+            }
+
+            double height() const {
+                return _height;
+            }
+
+            double brightness() const {
+                return _brightness;
+            }
+
+            double contrast() const {
+                return _contrast;
+            }
+
+            double fade() const {
+                return _fade;
+            }
+
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
@@ -112,11 +137,23 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
+        private:
+            std::string _name;
+            geo::Coordinate _base;
+            geo::Coordinate _uv;
+            geo::Coordinate _vv;
+            double _width; // I really want tthese tome come from the image and not given by the DXF, for now I will
+            double _height; // leave them in place for development and testing without loading the image here.
+
+            double _brightness;            /*!< Brightness value, code 281, (0-100) default 50 */
+            double _contrast;              /*!< Brightness value, code 282, (0-100) default 50 */
+            double _fade;                  /*!< Brightness value, code 283, (0-100) default 0 */
+
         };
-        using Line_SPtr = std::shared_ptr<Line>;
-        using Line_CSPtr = std::shared_ptr<const Line>;
+        using Image_SPtr = std::shared_ptr<Image>;
+        using Image_CSPtr = std::shared_ptr<const Image>;
 
     }
 
 }
-// LINE_H
+

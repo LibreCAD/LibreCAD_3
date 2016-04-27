@@ -7,6 +7,7 @@
 #include <cad/primitive/circle.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
+#include <cad/primitive/image.h>
 #include "lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
 #include "drawitems/lcvarc.h"
@@ -22,6 +23,7 @@
 #include "drawitems/lcdimangular.h"
 #include "drawitems/lclwpolyline.h"
 #include "drawitems/lcvspline.h"
+#include "drawitems/lcimage.h"
 
 #include "lcpainter.h"
 
@@ -513,6 +515,15 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     if (spline != nullptr) {
         auto newSpline = std::make_shared<LCVSpline>(spline);
         _entityContainer.insert(newSpline);
+        return;
+    }
+
+    // Add 'Image'
+    const auto image = event.entity<lc::entity::Image>();
+
+    if (image != nullptr) {
+        auto newImage = std::make_shared<LCImage>(image);
+        _entityContainer.insert(newImage);
         return;
     }
 }

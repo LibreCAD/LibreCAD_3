@@ -80,6 +80,10 @@ namespace lc {
         using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;
         using LWPolyline_CSPtr = std::shared_ptr<const LWPolyline>;
 
+        class Image;
+        using Image_SPtr = std::shared_ptr<Image>;
+        using Image_CSPtr = std::shared_ptr<const Image>;
+
     }
 }
 
@@ -309,7 +313,7 @@ namespace lc {
             lc::Visitable,
             geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse,
             entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse,
-            entity::LWPolyline
+            entity::LWPolyline, entity::Image
     >;
 
     class Visitable {

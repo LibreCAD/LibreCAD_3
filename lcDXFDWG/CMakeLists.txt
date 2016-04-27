@@ -12,7 +12,6 @@ set(lcdxfdwg_srcs
 
 set(lcdxfdwg_hdrs
         lcDXF/dxfimpl.h
-        lcDXF/dxfrw_intf.h
         )
 
 # LibbDXFRW

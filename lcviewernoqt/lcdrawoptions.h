@@ -38,7 +38,14 @@ class LcDrawOptions {
             return _angleFormat;
         }
 
-    private:
+        bool imageOutline() const {
+            return _imageOutline;
+        }
+        lc::Color imageOutlineColor() const {
+            return _imageOutlineColor;
+        }
+
+private:
         lc::Color  _selectedColor;
         double _dimTextHeight;
         std::string _radialFormat;
@@ -46,5 +53,7 @@ class LcDrawOptions {
         std::string _linearFormat;
         std::string _alignedFormat;
         std::string _angleFormat;
+        bool _imageOutline;
+        lc::Color _imageOutlineColor;
 };
 }

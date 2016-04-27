@@ -411,3 +411,39 @@ void DXFimpl::addLType(const DRW_LType& data) {
     std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePattern>(data.name, data.desc, data.path, data.length))->execute();
 }
 
+/**
+ * I am not sure the order of addImage and linkImage, if they can be swapped around or not
+ * so if we see missing images, it could be that we first get calls to linImage and then to addImage
+ * if linkImage isn't called as last, we miss a image during import
+ */
+void DXFimpl::addImage(const DRW_Image *data) {
+    imageMapCache.emplace_back(*data);
+}
+
+void DXFimpl::linkImage(const DRW_ImageDef *data) {
+    if (_blockHandle != -1) {
+        return;
+    }
+
+
+    for( auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
+        if (image->ref == data->handle) {
+            auto layer = _document->layerByName(image->layer);
+            if (layer == nullptr) {
+                return;
+            }
+
+            std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*image);
+            const lc::geo::Coordinate base(coord(image->basePoint));
+            const lc::geo::Coordinate uv(coord(image->secPoint));
+            const lc::geo::Coordinate vv(coord(image->vVector));
+
+            _builder->append(
+                    std::make_shared<lc::entity::Image>(data->name, base, uv, vv, image->sizeu, image->sizev,
+                                                        image->brightness, image->contrast, image->fade, layer, mf));
+            image = imageMapCache.erase( image ) ; // advances iter
+        } else {
+            image++;
+        }
+    }
+}

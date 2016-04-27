@@ -1,6 +1,8 @@
 #pragma once
 
-#include "dxfrw_intf.h"
+#include <libdxfrw0/libdxfrw.h>
+#include <libdxfrw0/drw_interface.h>
+#include <iostream>
 
 #include <cad/document/document.h>
 #include <cad/document/storagemanager.h>
@@ -11,9 +13,40 @@
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 
-class DXFimpl : public DRW_InterfaceImpl {
+class DXFimpl : public DRW_Interface {
     public:
-        DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
+
+    DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
+        virtual void addHeader(const DRW_Header *data) override { }
+        virtual void addDimStyle(const DRW_Dimstyle &data) override { }
+        virtual void addVport(const DRW_Vport &data) override { }
+        virtual void addTextStyle(const DRW_Textstyle &data) override { }
+        virtual void addAppId(const DRW_AppId &data) override { }
+        virtual void setBlock(const int handle) override;
+        virtual void endBlock() override;
+        virtual void addRay(const DRW_Ray &data) override { }
+        virtual void addXline(const DRW_Xline &data) override { }
+        virtual void addKnot(const DRW_Entity &data) override { }
+        virtual void addInsert(const DRW_Insert &data) override { }
+        virtual void addTrace(const DRW_Trace &data) override { }
+        virtual void add3dFace(const DRW_3Dface &data) override { }
+        virtual void addSolid(const DRW_Solid &data) override { }
+        virtual void addLeader(const DRW_Leader *data) override { }
+        virtual void addViewport(const DRW_Viewport &data) override { }
+        virtual void addImage(const DRW_Image *data) override;
+        virtual void linkImage(const DRW_ImageDef *data) override;
+        virtual void addComment(const char *comment) override { }
+        virtual void writeHeader(DRW_Header &data) override { }
+        virtual void writeBlocks() override { }
+        virtual void writeBlockRecords() override { }
+        virtual void writeEntities() override { }
+        virtual void writeLTypes() override { }
+        virtual void writeLayers() override { }
+        virtual void writeTextstyles() override { }
+        virtual void writeVports() override { }
+        virtual void writeDimstyles() override { }
+        virtual void writeAppId() override { }
+
         virtual void addLine(const DRW_Line& data) override;
         virtual void addCircle(const DRW_Circle& data) override;
         virtual void addLayer(const DRW_Layer& data) override;
@@ -33,9 +66,7 @@ class DXFimpl : public DRW_InterfaceImpl {
         virtual void addPoint(const DRW_Point& data) override;
         virtual void addMText(const DRW_MText& data) override;
         virtual void addHatch(const DRW_Hatch* data) override;
-        virtual void setBlock(const int handle) override;
         virtual void addBlock(const DRW_Block& data) override;
-        virtual void endBlock() override;
         virtual void addLType(const DRW_LType& data) override;
 
         template <typename T>
@@ -82,7 +113,7 @@ class DXFimpl : public DRW_InterfaceImpl {
         lc::iColor icol;
 
         std::shared_ptr<lc::MetaLineWidthByValue> _intToLineWidth[24];
-
+        std::vector<DRW_Image> imageMapCache;
 
 };
 
