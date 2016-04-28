@@ -217,12 +217,14 @@ static lc::entity::Spline_SPtr lua_spline(LuaRef luaControlPoints,
         int degree, bool closed, double fitTolerance,
         double stanx, double stany, double stanz,
         double etanx, double etany, double etanz,
-        double nx, double ny, double nz,
+        double nx, double ny, double nz, int flags,
         const lc::Layer_CSPtr layer) {
     std::vector<lc::geo::Coordinate> controlPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaControlPoints);
     std::vector<double> knotPoints = Lua::getList<std::vector<double>>(luaKnotPoints);
     std::vector<lc::geo::Coordinate> fitPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaFitPoints);
-    return std::make_shared<lc::entity::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance, stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz, layer, nullptr);
+    return std::make_shared<lc::entity::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance,
+                                                stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz,
+                                                static_cast<lc::geo::Spline::splineflag>(flags), layer, nullptr);
 }
 
 static lc::entity::Spline_SPtr lua_spline1(LuaRef luaControlPoints,
@@ -231,12 +233,14 @@ static lc::entity::Spline_SPtr lua_spline1(LuaRef luaControlPoints,
         int degree, bool closed, double fitTolerance,
         double stanx, double stany, double stanz,
         double etanx, double etany, double etanz,
-        double nx, double ny, double nz,
+        double nx, double ny, double nz, int flags,
         const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     std::vector<lc::geo::Coordinate> controlPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaControlPoints);
     std::vector<double> knotPoints = Lua::getList<std::vector<double>>(luaKnotPoints);
     std::vector<lc::geo::Coordinate> fitPoints = Lua::getList<std::vector<lc::geo::Coordinate>>(luaFitPoints);
-    return std::make_shared<lc::entity::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance, stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz, layer, metaInfo);
+    return std::make_shared<lc::entity::Spline>(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance,
+                                                stanx, stany, stanz, etanx, etany, etanz, nx, ny, nz,
+                                                static_cast<lc::geo::Spline::splineflag>(flags), layer, metaInfo);
 }
 
 /***

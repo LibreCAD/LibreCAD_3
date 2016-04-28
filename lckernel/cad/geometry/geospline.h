@@ -7,16 +7,23 @@
 
 namespace lc {
     namespace geo {
+
         class Spline : public Base, virtual public Visitable {
             public:
-
+                enum splineflag {
+                    CLOSED=1,
+                    PERIODIC=2,
+                    RATIONAL=4,
+                    PLANAR=8,
+                    LINEAR=16
+                };
                 Spline(const std::vector<Coordinate> &control_points,
                        const std::vector<double> &knotPoints,
                        const std::vector<Coordinate> &fitPoints,
                        int degree, bool closed, double fitTolerance,
                        double stanx, double stany, double stanz,
                        double etanx, double etany, double etanz,
-                       double nx, double ny, double nz) :
+                       double nx, double ny, double nz, splineflag flags) :
                         Base(),
                         _controlPoints(control_points),
                         _knotPoints(knotPoints),
@@ -25,7 +32,7 @@ namespace lc {
                         _fitTolerance(fitTolerance),
                         _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
                         _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
-                        _nX(nx), _nY(ny), _nZ(nz) {}
+                        _nX(nx), _nY(ny), _nZ(nz), _flags(flags) {}
 
                 /**
                  * @brief control_points, Returns Control points of spline
@@ -72,6 +79,8 @@ namespace lc {
                 double nY() const;
                 // normal vector z coordinate
                 double nZ() const;
+                // Spline FLags
+                splineflag flags() const;
                 /**
                  * @brief closed, returns if spline is closed or not
                  * @return bool closed
@@ -110,6 +119,7 @@ namespace lc {
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
 
+                const splineflag _flags;
         };
     }
 }

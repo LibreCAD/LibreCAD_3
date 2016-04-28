@@ -154,7 +154,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
             data->tolfit,
             data->tgStart.x, data->tgStart.y, data->tgStart.z,
             data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
-            data->normalVec.x, data->normalVec.y, data->normalVec.z, layer, mf));
+            data->normalVec.x, data->normalVec.y, data->normalVec.z, static_cast<lc::geo::Spline::splineflag>(data->flags), layer, mf));
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
@@ -355,6 +355,8 @@ void DXFimpl::addMText(const DRW_MText& data) {
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
+    // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
+    // loopList seems to contain the same entities, why??
 }
 
 
@@ -424,7 +426,6 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
     if (_blockHandle != -1) {
         return;
     }
-
 
     for( auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
         if (image->ref == data->handle) {

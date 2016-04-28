@@ -42,7 +42,7 @@ namespace lc {
                    double fitTolerance,
                    double stanx, double stany, double stanz,
                    double etanx, double etany, double etanz,
-                   double nx, double ny, double nz,
+                   double nx, double ny, double nz, splineflag flags,
                    const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             Spline(const Spline_CSPtr other, bool sameID = false);

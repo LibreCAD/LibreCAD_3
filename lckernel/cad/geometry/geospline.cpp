@@ -83,7 +83,9 @@ double Spline::nY() const {
 double Spline::nZ() const {
     return _nZ;
 }
-
+Spline::splineflag Spline::flags() const {
+    return _flags;
+}
 double Spline::fitTolerance() const {
     return _fitTolerance;
 }

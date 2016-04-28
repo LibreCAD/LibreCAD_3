@@ -14,7 +14,7 @@ void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc:
 
     auto end = controlPoints.end();
     std::vector<lc::geo::Coordinate>::iterator it = controlPoints.begin();
-    lc::geo::Coordinate &lastPoint = *it, &thisCoord = *it;
+    lc::geo::Coordinate lastPoint = *it, thisCoord = *it;
     painter.move_to(lastPoint.x(), lastPoint.y());
     it++;
     while (it != end) {
@@ -24,6 +24,7 @@ void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc:
         lastPoint = thisCoord;
         it++;
     }
+    // TODO handle flags
     painter.quadratic_curve_to(lastPoint.x(), lastPoint.y(), thisCoord.x(), thisCoord.y());
     painter.stroke();
 
