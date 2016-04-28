@@ -19,7 +19,7 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
 
 
     if (options.imageOutline()) {
-        std::vector<const lc::geo::Coordinate> c;
+        std::vector<lc::geo::Coordinate> c;
         // Create 4 corners
         c.emplace_back(0., 0.);
         c.emplace_back(0., height());
@@ -27,8 +27,8 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
         c.emplace_back(width(), 0.);
 
         // Apply Transform
-        std::vector<const lc::geo::Coordinate> c2 =
-                lc::VectorHelper::transform2d<const lc::geo::Coordinate>(c, uv().x(), uv().y(), vv().x(), vv().y(),
+        std::vector<lc::geo::Coordinate> c2 =
+                lc::VectorHelper::transform2d<lc::geo::Coordinate>(c, uv().x(), uv().y(), vv().x(), vv().y(),
                                                                          base().x(), base().y());
 
         painter.save();
