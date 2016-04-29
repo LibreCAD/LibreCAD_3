@@ -148,12 +148,17 @@ void addLCBindings(lua_State *L) {
 				CadMdiChild* child = new CadMdiChild;
 				return child;
 			})
+			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)
+		.endClass()
+
+		.beginClass<LCViewer::Cursor>("Cursor")
+			.addFunction("position", &LCViewer::Cursor::position)
 		.endClass()
 
 		.beginExtendClass<LCViewer::LCADViewer, QWidget>("LCADViewer")

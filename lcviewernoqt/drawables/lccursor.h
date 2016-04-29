@@ -23,6 +23,8 @@ namespace LCViewer {
 
         void onSnapPointEvent(SnapPointEvent const & event);
 
+        lc::geo::Coordinate position() const;
+
         Nano::Signal<void(const LocationEvent &)> locationEvents() const;
 
     private:

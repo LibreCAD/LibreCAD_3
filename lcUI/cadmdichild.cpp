@@ -386,3 +386,7 @@ void CadMdiChild::cancelCurrentOperations() {
 lc::UndoManager_SPtr CadMdiChild::undoManager() const {
     return _undoManager;
 }
+
+std::shared_ptr<LCViewer::Cursor> CadMdiChild::cursor() const {
+	return _cursor;
+}

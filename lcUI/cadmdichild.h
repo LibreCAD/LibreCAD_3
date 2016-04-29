@@ -46,6 +46,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
         LCViewer::LCADViewer* viewer() const {return _viewer;} ;
+        std::shared_ptr<LCViewer::Cursor> cursor() const;
         void cancelCurrentOperations();
         void import(std::string);
 

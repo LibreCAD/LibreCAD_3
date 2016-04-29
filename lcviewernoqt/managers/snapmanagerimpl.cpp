@@ -107,6 +107,9 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         }
     }
 
+	//If no snap points found show cursor at mouse pos
+	_snapPointEvent(SnapPointEvent(location));
+
     // FIXME: Currently sending a snapEvent so the cursor get's updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
     //SnapPointEvent snapEvent(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()));

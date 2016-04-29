@@ -48,9 +48,9 @@ function load_file(fileName)
 end
 
 function click()
-	local view = mdiArea:activeSubWindow():widget():view()
-	local x = view:x()
-	local y = view:y()
+	local position = mdiArea:activeSubWindow():widget():cursor():position()
+	local x = position:x()
+	local y = position:y()
 
 	operations.click(x, y)
 end
