@@ -52,7 +52,7 @@ function click()
 	local x = position:x()
 	local y = position:y()
 
-	operations.click(x, y)
+	operations.click({x, y})
 end
 
 --UI
