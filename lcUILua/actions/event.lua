@@ -1,4 +1,4 @@
-local event = {}
+event = {}
 
 function event.register(eventName, callback)
 	if(event[eventName] == nil) then
@@ -12,7 +12,11 @@ end
 function event.trigger(eventName, ...)
 	if(event[eventName]) then
 		for i, cb in pairs(event[eventName].callbacks) do
-			cb(...)
+			if type(cb) == "function" then
+				cb(...)
+			elseif cb.onEvent then
+				cb:onEvent(eventName, ...)
+			end
 		end
 	end
 end
@@ -26,5 +30,3 @@ function event.delete(eventName, callback)
 		end
 	end
 end
-
-return event

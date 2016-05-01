@@ -50,8 +50,12 @@ class CadMdiChild : public QWidget {
         void cancelCurrentOperations();
         void import(std::string);
 
+        unsigned int id();
+        void setId(unsigned int id);
+
     private:
         int randInt(int low, int high);
+        unsigned int _id;
 
         std::shared_ptr<lc::Document> _document;
         lc::UndoManagerImpl_SPtr _undoManager;

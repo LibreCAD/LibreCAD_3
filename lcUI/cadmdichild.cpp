@@ -390,3 +390,10 @@ lc::UndoManager_SPtr CadMdiChild::undoManager() const {
 std::shared_ptr<LCViewer::Cursor> CadMdiChild::cursor() const {
 	return _cursor;
 }
+
+unsigned int CadMdiChild::id() {
+	return _id;
+}
+void CadMdiChild::setId(unsigned int id) {
+	_id = id;
+}
