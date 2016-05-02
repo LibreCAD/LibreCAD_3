@@ -84,6 +84,7 @@ void addQtWindowBindings(lua_State *L) {
 			.addFunction("addSubWindow", [](QMdiArea* mdiArea, QWidget* subWindow) {
 				return mdiArea->addSubWindow(subWindow);
 			})
+			.addFunction("subWindowList", &QMdiArea::subWindowList)
 		.endClass()
 
 		.beginExtendClass<QMdiSubWindow, QWidget>("QMdiSubWindow")
@@ -148,12 +149,18 @@ void addLCBindings(lua_State *L) {
 				CadMdiChild* child = new CadMdiChild;
 				return child;
 			})
+			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
+			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)
+		.endClass()
+
+		.beginClass<LCViewer::Cursor>("Cursor")
+			.addFunction("position", &LCViewer::Cursor::position)
 		.endClass()
 
 		.beginExtendClass<LCViewer::LCADViewer, QWidget>("LCADViewer")

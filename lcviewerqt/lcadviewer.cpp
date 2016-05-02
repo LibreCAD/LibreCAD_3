@@ -22,7 +22,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
 
     setMouseTracking(true);
     this->_altKeyActive = false;
-
+	setCursor(Qt::BlankCursor);
 }
 
 LCADViewer::~LCADViewer() {

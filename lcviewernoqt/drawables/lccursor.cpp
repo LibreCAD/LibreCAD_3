@@ -77,3 +77,7 @@ void Cursor::onSnapPointEvent(SnapPointEvent const & event) {
 Nano::Signal<void(const LocationEvent&)> Cursor::locationEvents() const {
     return _locationEvent;
 }
+
+lc::geo::Coordinate Cursor::position() const {
+	return lc::geo::Coordinate(_lastSnapEvent.snapPoint().x(), _lastSnapEvent.snapPoint().y());
+}

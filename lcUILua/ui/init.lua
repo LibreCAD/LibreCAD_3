@@ -1,12 +1,21 @@
-operations = require 'actions.operations'
+require 'actions.operations'
+
+op = {}
 
 function new_file()
 	cadMdiChild = lc.CadMdiChild()
 	cadMdiChild:newDocument()
-	mdiArea:addSubWindow(cadMdiChild)
+	window = mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
 	cadMdiChild:viewer():autoScale()
+	
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
+	luaInterface:luaConnect(cadMdiChild:view(), "destroyed()", "onMdiChildDestroyed")
+
+	id = #op + 1
+	op[id] = Operations:new()
+	op[id].id = id
+	window:widget().id = id
 end
 
 function open_file()
@@ -41,18 +50,29 @@ end
 function load_file(fileName)
 	cadMdiChild = lc.CadMdiChild()
 	cadMdiChild:import(fileName:toStdString())
-	mdiArea:addSubWindow(cadMdiChild)
+	window = mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
-
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
+	luaInterface:luaConnect(cadMdiChild:view(), "destroyed()", "onMdiChildDestroyed")
+
+	id = #op + 1
+	op[id] = Operations:new()
+	op[id].id = id
+	window:widget().id = id
 end
 
 function click()
-	local view = mdiArea:activeSubWindow():widget():view()
-	local x = view:x()
-	local y = view:y()
+	local widget = mdiArea:activeSubWindow():widget()
+	local position = widget:cursor():position()
+	local x = position:x()
+	local y = position:y()
 
-	operations.click(x, y)
+	event.trigger('point', {x, y})
+end
+
+function create_line()
+	local widget = mdiArea:activeSubWindow():widget()
+	op[widget.id]:create_line()
 end
 
 --UI
@@ -77,7 +97,7 @@ luaInterface:luaConnect(mainWindow:findChild("actionNew"), "triggered(bool)", "n
 luaInterface:luaConnect(mainWindow:findChild("actionOpen"), "triggered(bool)", "open_file")
 luaInterface:luaConnect(mainWindow:findChild("actionUndo"), "triggered(bool)", "undo")
 luaInterface:luaConnect(mainWindow:findChild("actionRedo"), "triggered(bool)", "redo")
-luaInterface:luaConnect(lineAction, "triggered(bool)", "operations.create_line")
+luaInterface:luaConnect(lineAction, "triggered(bool)", "create_line")
 
 luaScript = lc.LuaScript(mdiArea)
 mainWindow:addDockWidget(2, luaScript)
