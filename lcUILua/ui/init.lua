@@ -8,11 +8,11 @@ function new_file()
 	window = mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
 	cadMdiChild:viewer():autoScale()
+	cadMdiChild:setDestroyCallback(onMdiChildDestroyed)
 	
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
-	luaInterface:luaConnect(cadMdiChild:view(), "destroyed()", "onMdiChildDestroyed")
 
-	id = #op + 1
+	id = nextTableId(op)
 	op[id] = Operations:new()
 	op[id].id = id
 	window:widget().id = id
@@ -53,9 +53,8 @@ function load_file(fileName)
 	window = mdiArea:addSubWindow(cadMdiChild)
 	cadMdiChild:showMaximized()
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", "click")
-	luaInterface:luaConnect(cadMdiChild:view(), "destroyed()", "onMdiChildDestroyed")
 
-	id = #op + 1
+	id = nextTableId(op)
 	op[id] = Operations:new()
 	op[id].id = id
 	window:widget().id = id
@@ -73,6 +72,22 @@ end
 function create_line()
 	local widget = mdiArea:activeSubWindow():widget()
 	op[widget.id]:create_line()
+end
+
+function onMdiChildDestroyed(id)
+	op[id] = nil
+end
+
+function nextTableId(table)
+	count = 0
+	for id, v in pairs(table) do
+		count = count + 1
+		if(v == nil) then
+			return count
+		end
+	end
+
+	return count
 end
 
 --UI

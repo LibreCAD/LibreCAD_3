@@ -89,6 +89,9 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 }
 
 CadMdiChild::~CadMdiChild() {
+	if(_destroyCallback) {
+		_destroyCallback(_id);
+	}
 }
 
 int CadMdiChild::randInt(int low, int high) {
@@ -396,4 +399,8 @@ unsigned int CadMdiChild::id() {
 }
 void CadMdiChild::setId(unsigned int id) {
 	_id = id;
+}
+
+void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
+	_destroyCallback = destroyCallback;
 }
