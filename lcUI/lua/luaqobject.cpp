@@ -1,9 +1,8 @@
 #include "luaqobject.h"
 #include <iostream>
 
-LuaQObject::LuaQObject(QObject* object, lua_State* L):
-	_object(object),
-	_L(L)
+LuaQObject::LuaQObject(QObject* object):
+	_object(object)
 {
 	//Connect QObject destroyed() signal
 	const int destroySignalId = _object->metaObject()->indexOfSignal("destroyed()");
@@ -15,17 +14,19 @@ LuaQObject::~LuaQObject() {
 	
 }
 
-int LuaQObject::connect(int signalId, std::string luaFunction) {
-	_slotId = 1;
-	
-	if(QMetaObject::connect(_object, signalId, this, this->metaObject()->methodCount() + _slotId)) {
-		_slotFunction = LuaIntf::LuaRef(_L, luaFunction.c_str()); 
+bool LuaQObject::connect(int signalId, LuaIntf::LuaRef slot) {
+	if(slot.isFunction()) {
+		_slotId = 1;
 		
-		lua_pushboolean(_L, true);
-		return true;
+		if(QMetaObject::connect(_object, signalId, this, this->metaObject()->methodCount() + _slotId)) {
+			_slotFunction = slot; 
+			
+			return true;
+		}
 	}
-
-	lua_pushboolean(_L, false);
+	else {
+		std::cerr << "Given slot is not a function" << std::endl;
+	}
 
 	return false;
 }
@@ -33,7 +34,7 @@ int LuaQObject::connect(int signalId, std::string luaFunction) {
 int LuaQObject::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
 	id = QObject::qt_metacall(c, id, a);
-	if(id == _slotId) {
+	if(id == _slotId && _slotFunction) {
 		_slotFunction();
 	}
 	

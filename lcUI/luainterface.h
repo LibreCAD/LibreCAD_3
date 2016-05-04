@@ -30,11 +30,10 @@ class LuaInterface {
 
 		void initLua();
 			
-		int qtConnect(
-			lua_State *L,
+		bool qtConnect(
 			QObject *sender,
 			std::string signalName,
-			std::string luaFunction
+			LuaIntf::LuaRef slot
 		);
 
 		static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
