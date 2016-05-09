@@ -18,6 +18,15 @@
 #include <managers/snapmanagerimpl.h>
 #include "cad/dochelpers/undomanagerimpl.h"
 
+extern "C"
+{
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
+
+#include "lua-intf/LuaIntf/LuaIntf.h"
+
 class CadMdiChild : public QWidget {
         Q_OBJECT
 
@@ -26,6 +35,8 @@ class CadMdiChild : public QWidget {
         ~CadMdiChild();
 
         void newDocument();
+
+        void setDestroyCallback(LuaIntf::LuaRef callback);
 
     public slots:
         void on_actionAdd_Random_Lines_triggered();
@@ -56,6 +67,8 @@ class CadMdiChild : public QWidget {
     private:
         int randInt(int low, int high);
         unsigned int _id;
+
+        LuaIntf::LuaRef _destroyCallback;
 
         std::shared_ptr<lc::Document> _document;
         lc::UndoManagerImpl_SPtr _undoManager;
