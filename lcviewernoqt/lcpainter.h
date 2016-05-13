@@ -42,11 +42,12 @@ class LcPainter {
         virtual void device_to_user(double* x, double* y) = 0;
         virtual void user_to_device_distance(double* dx, double* dy) = 0;
         virtual void device_to_user_distance(double* dx, double* dy) = 0;
-        virtual void font_size(double size) = 0;
+        virtual void font_size(double size, bool deviceCoords) = 0;
         virtual void select_font_face(const char* text_val) = 0;
         virtual void text(const char* text_val) = 0;
         virtual TextExtends text_extends(const char* text_val) = 0;
         virtual void quadratic_curve_to(double x1, double y1, double x2, double y2) = 0;
+        virtual void curve_to(double x1, double y1, double x2, double y2, double x3, double y3) = 0;
         virtual void save() = 0;
         virtual void restore() = 0;
         virtual long pattern_create_linear(double x1, double y1, double x2, double y2) = 0;

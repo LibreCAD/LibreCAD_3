@@ -44,7 +44,7 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
 
     // get text size
     painter.save();
-    painter.font_size(options.dimTextHeight());
+    painter.font_size(options.dimTextHeight(), false);
     TextExtends te = painter.text_extends(value.c_str());
     painter.restore();
 

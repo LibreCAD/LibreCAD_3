@@ -21,7 +21,7 @@ LCVText::LCVText(const lc::entity::Text_CSPtr Text) : LCVDrawItem(true), lc::ent
 */
 void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     bool modified = false;
-    painter.font_size(height());
+    painter.font_size(height(), false);
     painter.select_font_face("stick3.ttf");
 
     TextExtends te = painter.text_extends(text_value().c_str());
