@@ -3,7 +3,7 @@ event = {}
 function event.register(eventName, callback)
 	if(event[eventName] == nil) then
 		event[eventName] = {}
-		event[eventName].callbacks = {callback}
+		event[eventName].callbacks = {}
 	end
 
 	table.insert(event[eventName].callbacks, callback)
