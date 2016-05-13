@@ -22,8 +22,6 @@ class DXFimpl : public DRW_Interface {
         virtual void addVport(const DRW_Vport &data) override { }
         virtual void addTextStyle(const DRW_Textstyle &data) override { }
         virtual void addAppId(const DRW_AppId &data) override { }
-        virtual void setBlock(const int handle) override;
-        virtual void endBlock() override;
         virtual void addRay(const DRW_Ray &data) override { }
         virtual void addXline(const DRW_Xline &data) override { }
         virtual void addKnot(const DRW_Entity &data) override { }
@@ -33,9 +31,9 @@ class DXFimpl : public DRW_Interface {
         virtual void addSolid(const DRW_Solid &data) override { }
         virtual void addLeader(const DRW_Leader *data) override { }
         virtual void addViewport(const DRW_Viewport &data) override { }
-        virtual void addImage(const DRW_Image *data) override;
         virtual void linkImage(const DRW_ImageDef *data) override;
         virtual void addComment(const char *comment) override { }
+
         virtual void writeHeader(DRW_Header &data) override { }
         virtual void writeBlocks() override { }
         virtual void writeBlockRecords() override { }
@@ -68,6 +66,9 @@ class DXFimpl : public DRW_Interface {
         virtual void addHatch(const DRW_Hatch* data) override;
         virtual void addBlock(const DRW_Block& data) override;
         virtual void addLType(const DRW_LType& data) override;
+        virtual void addImage(const DRW_Image *data) override;
+        virtual void setBlock(const int handle) override;
+        virtual void endBlock() override;
 
         template <typename T>
         std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {

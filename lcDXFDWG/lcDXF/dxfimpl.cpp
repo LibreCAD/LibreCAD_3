@@ -146,8 +146,15 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
     }
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
 
+    // http://discourse.mcneel.com/t/creating-on-nurbscurve-from-control-points-and-knot-vector/12928/3
+    auto knotList = data->knotslist;
+    if (knotList.size()>=2) {
+        knotList.erase(knotList.begin());
+        knotList.pop_back();
+    }
+
     _builder->append(std::make_shared<lc::entity::Spline>(coords(data->controllist),
-            data->knotslist,
+            knotList,
             coords(data->fitlist),
             data->degree,
             false,
