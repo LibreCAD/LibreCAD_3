@@ -29,11 +29,10 @@ void LuaInterface::initLua() {
     std::cout << out << std::endl;
 }
 
-int LuaInterface::qtConnect(
-	lua_State* L,
+bool LuaInterface::qtConnect(
 	QObject *sender,
 	std::string signalName,
-	std::string luaFunction)
+	LuaIntf::LuaRef slot)
 {
 	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
 	
@@ -41,12 +40,12 @@ int LuaInterface::qtConnect(
 		std::cout << "No such signal " << signalName << std::endl;
 	}
 	else {
-		LuaQObject_SPtr lqo(new LuaQObject(sender, L));
+		LuaQObject_SPtr lqo(new LuaQObject(sender));
 		_luaQObjects.push_back(lqo);
-		return lqo->connect(signalId, luaFunction);
+		return lqo->connect(signalId, slot);
 	}
 
-	return 0;
+	return false;
 }
 
 std::shared_ptr<QWidget> LuaInterface::loadUiFile(const char* fileName) {

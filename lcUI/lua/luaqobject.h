@@ -14,10 +14,10 @@ extern "C"
 
 class LuaQObject : public QObject {
 	public:
-		LuaQObject(QObject *object, lua_State* L);
+		LuaQObject(QObject *object);
 		~LuaQObject();
 		
-		int connect(int signalId, std::string luaFunction);
+		bool connect(int signalId, LuaIntf::LuaRef slot);
 		
 		std::string objectName();
 		static std::string objectName(QObject* object);
@@ -31,7 +31,8 @@ class LuaQObject : public QObject {
 	private:
 	
 		QObject* _object;
-		lua_State* _L;
+
+		
 		
 		int _slotId;
 		LuaIntf::LuaRef _slotFunction;
