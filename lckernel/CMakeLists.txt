@@ -27,6 +27,7 @@ cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/math/lcmath.cpp
 cad/math/quadratic_math.cpp
+cad/math/lcquadraticmaths.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
@@ -94,6 +95,7 @@ cad/interface/snapable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
 cad/math/quadratic_math.h
+cad/math/lcquadraticmaths.h
 cad/meta/color.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
