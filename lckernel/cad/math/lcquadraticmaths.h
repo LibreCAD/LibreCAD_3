@@ -11,6 +11,7 @@
 namespace lc {
     namespace maths {
         class QuadraticMaths {
+        public:
             QuadraticMaths();
 
             QuadraticMaths &operator=(const QuadraticMaths qm);

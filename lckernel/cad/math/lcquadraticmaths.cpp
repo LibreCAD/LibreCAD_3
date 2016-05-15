@@ -47,7 +47,7 @@ const std::vector<double> QuadraticMaths::Coefficients() const {
 const QuadraticMaths QuadraticMaths::moved (
         const geo::Coordinate &v) const {
     Eigen::Matrix3d mat;
-    mat = matrix_ * translateMatrix(v);
+    mat = matrix_ *  translateMatrix(v);
     return QuadraticMaths(mat);
 }
 
@@ -80,8 +80,8 @@ const Eigen::Matrix3d QuadraticMaths::Matrix() const {
 
 Eigen::Matrix3d QuadraticMaths::translateMatrix(const geo::Coordinate &v) {
     Eigen::Matrix3d mat;
-    mat <<  1 , 0 , -v.x(),
-            0 , 1 , -v.y(),
+    mat <<  1 , 0 , v.x(),
+            0 , 1 , v.y(),
             0 , 0 ,  1;
     return mat;
 }

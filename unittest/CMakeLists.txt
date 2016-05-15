@@ -23,6 +23,7 @@ set(hdrs
 entitytest.h
 code.h
 testmath.h
+testmatrices.h
 )
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
