@@ -37,36 +37,33 @@ QuadraticMaths::QuadraticMaths(const std::vector<double>& vec) :
 }
 
 const std::vector<double> QuadraticMaths::Coefficients() const {
-    std::vector<double> vec;
-    vec.emplace_back(matrix_(0,0));
-    vec.emplace_back(matrix_(0,1) + matrix_(1,0));
-    vec.emplace_back(matrix_(1,1));
-    vec.emplace_back(matrix_(0,2) + matrix_(2,0));
-    vec.emplace_back(matrix_(2,1) + matrix_(1,2));
-    vec.emplace_back(matrix_(2,2));
+    std::vector<double> vec {{
+            matrix_(0,0), matrix_(0,1) + matrix_(1,0),
+            matrix_(1,1), matrix_(0,2) + matrix_(2,0),
+            matrix_(2,1) + matrix_(1,2), matrix_(2,2) }};
     return vec;
 }
 
-const QuadraticMaths QuadraticMaths::move(
+const QuadraticMaths QuadraticMaths::moved (
         const geo::Coordinate &v) const {
     Eigen::Matrix3d mat;
-    mat = matrix_ * translateMatrix(v.x(), v.y());
+    mat = matrix_ * translateMatrix(v);
     return QuadraticMaths(mat);
 }
 
-const QuadraticMaths QuadraticMaths::rotate(double angle) const {
-    auto&& m = rotationMatrix(angle);
-    auto&& t = m.transpose();
+const QuadraticMaths QuadraticMaths::rotated(double angle) const {
+    const auto & m = rotationMatrix(angle);
+    const auto & t = m.transpose();
     Eigen::Matrix3d ret;
     ret = t * matrix_ * m;
     return QuadraticMaths(ret);
 }
 
-const QuadraticMaths QuadraticMaths::rotate(
+const QuadraticMaths QuadraticMaths::rotated(
         const geo::Coordinate &center, double angle) const {
-    return move(geo::Coordinate(-center.x(), -center.y()))
-            .rotate(angle)
-            .move(center);
+    return moved(geo::Coordinate(-center.x(), -center.y()))
+            .rotated(angle)
+            .moved(center);
 }
 
 Eigen::Matrix3d QuadraticMaths::rotationMatrix(double angle) {
@@ -81,10 +78,10 @@ const Eigen::Matrix3d QuadraticMaths::Matrix() const {
     return matrix_;
 }
 
-Eigen::Matrix3d QuadraticMaths::translateMatrix(double x, double y) {
+Eigen::Matrix3d QuadraticMaths::translateMatrix(const geo::Coordinate &v) {
     Eigen::Matrix3d mat;
-    mat <<  1 , 0 , -x,
-            0 , 1 , -y,
+    mat <<  1 , 0 , -v.x(),
+            0 , 1 , -v.y(),
             0 , 0 ,  1;
     return mat;
 }

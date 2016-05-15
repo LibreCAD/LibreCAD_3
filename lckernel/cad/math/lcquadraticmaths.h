@@ -24,18 +24,18 @@ namespace lc {
 
             const std::vector<double> Coefficients() const;
 
-            const QuadraticMaths move(const geo::Coordinate &v) const ;
+            const QuadraticMaths moved(const geo::Coordinate &v) const ;
 
-            const QuadraticMaths rotate(double angle) const;
+            const QuadraticMaths rotated(double angle) const;
 
-            const QuadraticMaths rotate(const geo::Coordinate &center,
+            const QuadraticMaths rotated(const geo::Coordinate &center,
                                         double angle) const;
 
             const Eigen::Matrix3d Matrix() const;
 
             static Eigen::Matrix3d rotationMatrix(double angle);
 
-            static Eigen::Matrix3d translateMatrix(double x, double y);
+            static Eigen::Matrix3d translateMatrix(const geo::Coordinate &v);
 
         private:
             Eigen::Matrix3d matrix_;
