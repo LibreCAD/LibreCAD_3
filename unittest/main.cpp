@@ -1,10 +1,10 @@
 #include "code.h"
 #include <gtest/gtest.h>
 #include "entitytest.h"
-//#include "testmath.h"
-//#include "testgeocircle.h"
-//#include "testgeoarc.h"
-//#include "testintersect.h"
+#include "testmath.h"
+#include "testgeocircle.h"
+#include "testgeoarc.h"
+#include "testintersect.h"
 #include "testmatrices.h"
 
 using namespace std;
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-/*
+
 TEST(test, quad) {
     test c;
 
@@ -576,5 +576,3 @@ TEST(entitytest, EllipseScale) {
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
 }
-
-*/

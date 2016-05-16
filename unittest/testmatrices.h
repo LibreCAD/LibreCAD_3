@@ -6,22 +6,32 @@ using namespace lc;
 using namespace maths;
 using namespace std;
 
-TEST(MatrixConst, Const) {
-    cout << endl;
+TEST(Matrix, Move) {
     lc::Quadratic qs(1,2,3,4,5,6);
     lc::maths::QuadraticMaths qm(1,2,3,4,5,6);
-//    qs.rotate(20);
-//    auto ret = qm.rotated(20);
+
     qs.move(lc::geo::Coordinate(5,5));
     auto ret = qm.moved(lc::geo::Coordinate(5,5));
-    auto cord = qs.getCoefficients();
-    auto newcord = ret.Coefficients();
-    for(auto &a : cord) {
-        cout << a << "\t";
+    auto x = qs.getCoefficients();
+    auto y = ret.Coefficients();
+    ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
+
+    for (int i = 0; i < x.size(); ++i) {
+      EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
     }
-    cout << endl;
-    for(auto &a : newcord) {
-        cout << a << "\t";
+}
+
+TEST(Matrix, Rotate) {
+    lc::Quadratic qs(1,2,3,4,5,6);
+    lc::maths::QuadraticMaths qm(1,2,3,4,5,6);
+
+    qs.rotate(20);
+    auto ret = qm.rotated(20);
+    auto x = qs.getCoefficients();
+    auto y = ret.Coefficients();
+    ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
+
+    for (int i = 0; i < x.size(); ++i) {
+      EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
     }
-    cout << endl;
 }
