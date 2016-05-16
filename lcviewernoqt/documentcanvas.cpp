@@ -283,66 +283,8 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
     auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(visibleUserArea);
 
-    visibleItems.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
-        std::shared_ptr<lc::entity::CADEntity> ci = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
-        lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-        lc::MetaLineWidthByValue_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-        lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-        lc::Layer_CSPtr layer = ci->layer();
-
-        painter.save();
-
-        // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
-        double alpha_compensation = 0.9;
-
-        // Decide on line width
-        if (entityLineWidth != nullptr) {
-            // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
-            // TODO: Find a better algo
-            double width = entityLineWidth->width() * 1.5;
-            // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
-        } else {
-            // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
-            // TODO: Find a better algo
-            double width = layer->lineWidth().width() * 1.5;
-            // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-            painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
-        }
-
-        if (entityLinePattern != nullptr && entityLinePattern->lcPattern().size()>0) {
-            const double* path = &entityLinePattern->lcPattern()[0];
-            painter.set_dash(path, entityLinePattern->lcPattern().size(), 0., true);
-        }
-
-        // Decide what color to render the entity into
-        if (di->selected()) {
-            painter.source_rgba(
-                lcDrawOptions.selectedColor().red(),
-                lcDrawOptions.selectedColor().green(),
-                lcDrawOptions.selectedColor().blue(),
-                lcDrawOptions.selectedColor().alpha() * alpha_compensation
-            );
-        } else if (entityColor != nullptr) {
-            painter.source_rgba(
-                entityColor->red(),
-                entityColor->green(),
-                entityColor->blue(),
-                entityColor->alpha() * alpha_compensation);
-        } else {
-            lc::Color layerColor = layer->color();
-            painter.source_rgba(
-                layerColor.red(),
-                layerColor.green(),
-                layerColor.blue(),
-                layerColor.alpha() * alpha_compensation);
-        }
-
-
-
-        di->draw(painter, lcDrawOptions, visibleUserArea);
-
-        painter.restore();
+    visibleItems.each< LCVDrawItem >([&](LCVDrawItem_CSPtr di) {
+		drawEntity(di);
     });
     painter.line_width(1.);
     painter.source_rgb(1., 1., 1.);
@@ -394,137 +336,87 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
 }
 
+void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
+	lc::entity::CADEntity_CSPtr ci = std::dynamic_pointer_cast<const lc::entity::CADEntity>(entity);
+	lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+	lc::MetaLineWidthByValue_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
+	lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
+	lc::Layer_CSPtr layer = ci->layer();
+	
+	LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
+	LcDrawOptions lcDrawOptions;
+
+	double x = 0.;
+	double y = 0.;
+	double w = _deviceWidth;
+	double h = _deviceHeight;
+	painter.device_to_user(&x, &y);
+	painter.device_to_user_distance(&w, &h);
+	lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+
+	painter.save();
+
+	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
+	double alpha_compensation = 0.9;
+
+	// Decide on line width
+	if (entityLineWidth != nullptr) {
+		// We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+		// TODO: Find a better algo
+		double width = entityLineWidth->width() * 1.5;
+		// Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+		painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+	} else {
+		// We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+		// TODO: Find a better algo
+		double width = layer->lineWidth().width() * 1.5;
+		// Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+		painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+	}
+
+	if (entityLinePattern != nullptr && entityLinePattern->lcPattern().size()>0) {
+		const double* path = &entityLinePattern->lcPattern()[0];
+		painter.set_dash(path, entityLinePattern->lcPattern().size(), 0., true);
+	}
+
+	// Decide what color to render the entity into
+	if (entity->selected()) {
+		painter.source_rgba(
+			lcDrawOptions.selectedColor().red(),
+			lcDrawOptions.selectedColor().green(),
+			lcDrawOptions.selectedColor().blue(),
+			lcDrawOptions.selectedColor().alpha() * alpha_compensation
+		);
+	} else if (entityColor != nullptr) {
+		painter.source_rgba(
+			entityColor->red(),
+			entityColor->green(),
+			entityColor->blue(),
+			entityColor->alpha() * alpha_compensation);
+	} else {
+		lc::Color layerColor = layer->color();
+		painter.source_rgba(
+			layerColor.red(),
+			layerColor.green(),
+			layerColor.blue(),
+			layerColor.alpha() * alpha_compensation);
+	}
+
+	entity->draw(painter, lcDrawOptions, visibleUserArea);
+
+	painter.restore();	
+}
+
 void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
     _entityContainer.optimise();
 }
 
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
+    auto drawable = asDrawable(event.entity());
 
-    // Add a line
-    const auto line = event.entity<lc::entity::Line>();
-
-    if (line != nullptr) {
-        auto newLine = std::make_shared<LCVLine>(line);
-        _entityContainer.insert(newLine);
-        return;
-    }
-
-    // Add a circle
-    const auto circle = event.entity<lc::entity::Circle>();
-
-    if (circle != nullptr) {
-        auto newCircle = std::make_shared<LCVCircle>(circle);
-        _entityContainer.insert(std::make_shared<LCVCircle>(circle));
-        return;
-    }
-
-    // Add a Arc
-    const auto arc = event.entity<lc::entity::Arc>();
-
-    if (arc != nullptr) {
-        auto newArc = std::make_shared<LCVArc>(arc);
-        _entityContainer.insert(newArc);
-        return;
-    }
-
-
-    // Add Ellipse
-    const auto ellipse = event.entity<lc::entity::Ellipse>();
-
-    if (ellipse != nullptr) {
-        auto newEllipse = std::make_shared<LCVEllipse>(ellipse);
-        _entityContainer.insert(newEllipse);
-        return;
-    }
-
-    // Add Text
-    const auto text = event.entity<lc::entity::Text>();
-
-    if (text != nullptr) {
-        auto newText = std::make_shared<LCVText>(text);
-        _entityContainer.insert(newText);
-        return;
-    }
-
-    // Add 'Point' or 'Coordinate'
-    const auto coord = event.entity<lc::entity::Point>();
-
-    if (coord != nullptr) {
-        auto newCoord = std::make_shared<LCVPoint>(coord);
-        _entityContainer.insert(newCoord);
-        return;
-    }
-
-    // Add 'DimRadial'
-    const auto dimRadial = event.entity<lc::entity::DimRadial>();
-
-    if (dimRadial != nullptr) {
-        auto newDimRadial = std::make_shared<LCDimRadial>(dimRadial);
-        _entityContainer.insert(newDimRadial);
-        return;
-    }
-
-    // Add 'DimDiametric'
-    const auto dimDiametric = event.entity<lc::entity::DimDiametric>();
-
-    if (dimDiametric != nullptr) {
-        auto newDimDiametric = std::make_shared<LCDimDiametric>(dimDiametric);
-        _entityContainer.insert(newDimDiametric);
-        return;
-    }
-
-    // Add 'DimLinear'
-    const auto dimLinear = event.entity<lc::entity::DimLinear>();
-
-    if (dimLinear != nullptr) {
-        auto newDimLinear = std::make_shared<LCDimLinear>(dimLinear);
-        _entityContainer.insert(newDimLinear);
-        return;
-    }
-
-    // Add 'DimAligned'
-    const auto dimAligned = event.entity<lc::entity::DimAligned>();
-
-    if (dimAligned != nullptr) {
-        auto newDimAligned = std::make_shared<LCDimAligned>(dimAligned);
-        _entityContainer.insert(newDimAligned);
-        return;
-    }
-
-    // Add 'DimAngular'
-    const auto dimAngular = event.entity<lc::entity::DimAngular>();
-
-    if (dimAngular != nullptr) {
-        auto newDimAngular = std::make_shared<LCDimAngular>(dimAngular);
-        _entityContainer.insert(newDimAngular);
-        return;
-    }
-
-    // Add 'LWPolyline'
-    const auto lwPolyline = event.entity<lc::entity::LWPolyline>();
-
-    if (lwPolyline != nullptr) {
-        auto newLLWPolyline = std::make_shared<LCLWPolyline>(lwPolyline);
-        _entityContainer.insert(newLLWPolyline);
-        return;
-    }
-
-    // Add 'Spline'
-    const auto spline = event.entity<lc::entity::Spline>();
-
-    if (spline != nullptr) {
-        auto newSpline = std::make_shared<LCVSpline>(spline);
-        _entityContainer.insert(newSpline);
-        return;
-    }
-
-    // Add 'Image'
-    const auto image = event.entity<lc::entity::Image>();
-
-    if (image != nullptr) {
-        auto newImage = std::make_shared<LCImage>(image);
-        _entityContainer.insert(newImage);
-        return;
+    if (drawable != nullptr) {
+		auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(drawable);
+        _entityContainer.insert(entity);
     }
 }
 
@@ -565,23 +457,19 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
 
     // Remove current selection
     if (!addTo) {
-        _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            di->selected(false);
-        });
+        removeSelection();
     }
 
     if (occupies) {
-        _entityContainer.entitiesFullWithinArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
-            di->selected(true);
-        });
+        _selectedEntities.combine(_entityContainer.entitiesFullWithinArea(*_selectedArea));
     } else {
-        _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea).each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-            // std::cerr << __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
-            di->selected(true);
-        });
-
+        _selectedEntities.combine(_entityContainer.entitiesWithinAndCrossingArea(*_selectedArea));
     }
+
+    _selectedEntities.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
+        di->selected(true);
+    });
 }
 
 void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo) {
@@ -602,13 +490,18 @@ void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigne
 
 
 void DocumentCanvas::removeSelectionArea() {
-    _entityContainer.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-        di->selected(false);
-    });
     if (_selectedArea != nullptr) {
         delete _selectedArea;
         _selectedArea = nullptr;
     }
+}
+
+void DocumentCanvas::removeSelection() {
+    _selectedEntities.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        di->selected(false);
+    });
+
+    _selectedEntities = lc::EntityContainer<lc::entity::CADEntity_SPtr>();
 }
 
 Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::background ()  {
@@ -618,3 +511,109 @@ Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::foreground ()  {
     return _foreground;
 }
 
+LCVDrawItem_SPtr DocumentCanvas::asDrawable(lc::entity::CADEntity_CSPtr entity) {
+	    // Add a line
+    const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+
+    if (line != nullptr) {
+        return std::make_shared<LCVLine>(line);
+    }
+
+    // Add a circle
+    const auto circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
+
+    if (circle != nullptr) {
+        return std::make_shared<LCVCircle>(circle);
+    }
+
+    // Add a Arc
+    const auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+
+    if (arc != nullptr) {
+        return std::make_shared<LCVArc>(arc);
+    }
+
+
+    // Add Ellipse
+    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+
+    if (ellipse != nullptr) {
+        return std::make_shared<LCVEllipse>(ellipse);
+    }
+
+    // Add Text
+    const auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
+
+    if (text != nullptr) {
+        return std::make_shared<LCVText>(text);
+    }
+
+    // Add 'Point' or 'Coordinate'
+    const auto coord = std::dynamic_pointer_cast<const lc::entity::Point>(entity);
+
+    if (coord != nullptr) {
+        return std::make_shared<LCVPoint>(coord);
+    }
+
+    // Add 'DimRadial'
+    const auto dimRadial = std::dynamic_pointer_cast<const lc::entity::DimRadial>(entity);
+
+    if (dimRadial != nullptr) {
+        return std::make_shared<LCDimRadial>(dimRadial);
+    }
+
+    // Add 'DimDiametric'
+    const auto dimDiametric = std::dynamic_pointer_cast<const lc::entity::DimDiametric>(entity);
+
+    if (dimDiametric != nullptr) {
+        return std::make_shared<LCDimDiametric>(dimDiametric);
+    }
+
+    // Add 'DimLinear'
+    const auto dimLinear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity);
+
+    if (dimLinear != nullptr) {
+        return std::make_shared<LCDimLinear>(dimLinear);
+    }
+
+    // Add 'DimAligned'
+    const auto dimAligned = std::dynamic_pointer_cast<const lc::entity::DimAligned>(entity);
+
+    if (dimAligned != nullptr) {
+        return std::make_shared<LCDimAligned>(dimAligned);
+    }
+
+    // Add 'DimAngular'
+    const auto dimAngular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity);
+
+    if (dimAngular != nullptr) {
+        return std::make_shared<LCDimAngular>(dimAngular);
+    }
+
+    // Add 'LWPolyline'
+    const auto lwPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+
+    if (lwPolyline != nullptr) {
+        return std::make_shared<LCLWPolyline>(lwPolyline);
+    }
+
+    // Add 'Spline'
+    const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+
+    if (spline != nullptr) {
+        return std::make_shared<LCVSpline>(spline);
+    }
+
+    // Add 'Image'
+    const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+
+    if (image != nullptr) {
+        return std::make_shared<LCImage>(image);
+    }
+
+    return nullptr;
+}
+
+lc::EntityContainer<lc::entity::CADEntity_SPtr> DocumentCanvas::selection() {
+    return _selectedEntities;
+}

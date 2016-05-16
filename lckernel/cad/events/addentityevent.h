@@ -17,6 +17,13 @@ namespace lc {
                  */
             AddEntityEvent(entity::CADEntity_CSPtr cadEntity) : _cadEntity(cadEntity) {
             }
+            /*!
+             * \brief Returns the entity without cast.
+             * \return CADEntity_CSPtr Entity.
+             */
+			const entity::CADEntity_CSPtr entity() const {
+                return _cadEntity;
+            }
 
             /*!
              * \brief Returns the entity.

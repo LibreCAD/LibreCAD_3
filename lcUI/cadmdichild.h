@@ -13,6 +13,7 @@
 #include <managers/snapmanager.h>
 #include <drawables/gradientbackground.h>
 #include <drawables/grid.h>
+#include <drawables/dragpoints.h>
 
 #include "operations/operationmanager.h"
 #include <managers/snapmanagerimpl.h>
@@ -64,6 +65,8 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<LCViewer::GradientBackground> _gradientBackground;
         std::shared_ptr<LCViewer::Cursor>  _cursor;
         LCViewer::SnapManagerImpl_SPtr  _snapManager;
+        LCViewer::DragManager_SPtr _dragManager;
+        LCViewer::DragPoints_SPtr _dragPoints;
         lc::StorageManager_SPtr _storageManager;
 
         std::shared_ptr<OperationManager>  _operationManager;

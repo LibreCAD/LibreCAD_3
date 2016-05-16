@@ -16,4 +16,3 @@ bool LCVDrawItem::selected() const {
 void LCVDrawItem::selected(bool selected) {
     _selected = selected;
 }
-

@@ -40,6 +40,13 @@ class DocumentCanvas {
         void render(std::function<void(LcPainter&)> before, std::function<void(LcPainter&)> after);
 
         /**
+         * @brief drawEntity
+         * Draw entity without adding it to the current document
+         * @param LCVDrawItem_CSPtr
+         */
+        void drawEntity(LCVDrawItem_CSPtr entity);
+
+        /**
          * @brief autoScale
          * Found the bounds of the current document and scale into this and center on screen
          */
@@ -140,6 +147,9 @@ class DocumentCanvas {
         */
         void removeSelectionArea();
 
+        void removeSelection();
+
+        lc::EntityContainer<lc::entity::CADEntity_SPtr> selection();
 
         /**
          *
@@ -173,6 +183,11 @@ class DocumentCanvas {
          * don not store this as a reference, always call it
          */
         lc::EntityContainer<lc::entity::CADEntity_SPtr> & entityContainer();
+
+        /*
+         * Return CADEntity as LCVDrawItem
+         */
+        LCVDrawItem_SPtr asDrawable(lc::entity::CADEntity_CSPtr entity);
 private:
         /**
          * @brief cachedPainter
@@ -225,6 +240,7 @@ private:
         // Functor to draw a selected area, that's the green or read area...
         std::function<void(LcPainter&, lc::geo::Area, bool)> _selectedAreaPainter;
 
+        lc::EntityContainer<lc::entity::CADEntity_SPtr> _selectedEntities;
 };
 
 using DocumentCanvas_SPtr = std::shared_ptr<DocumentCanvas>;

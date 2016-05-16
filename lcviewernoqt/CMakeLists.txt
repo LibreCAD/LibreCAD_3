@@ -32,7 +32,9 @@ drawables/lccursor.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
 managers/EventManager.cpp
+managers/dragmanager.cpp
 drawitems/lcimage.cpp
+drawables/dragpoints.cpp
 )
 
 # HEADER FILES
@@ -69,8 +71,12 @@ documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h
 managers/EventManager.h
+managers/dragmanager.h
 events/LocationEvent.h
-drawitems/lcimage.h)
+drawitems/lcimage.h
+drawables/dragpoints.h
+events/dragpointsevent.h
+)
 
 # Cairo
 find_package(PkgConfig)
