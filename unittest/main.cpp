@@ -5,6 +5,7 @@
 #include "testgeocircle.h"
 #include "testgeoarc.h"
 #include "testintersect.h"
+#include "testmatrices.h"
 
 using namespace std;
 using namespace lc;
@@ -575,4 +576,3 @@ TEST(entitytest, EllipseScale) {
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
 }
-
