@@ -7,7 +7,7 @@
 #include <eigen3/Eigen/Dense>
 #include <vector>
 #include <cad/geometry/geocoordinate.h>
-
+#include "lcmath.h"
 namespace lc {
     namespace maths {
         class QuadraticMaths {
@@ -34,10 +34,18 @@ namespace lc {
 
             const Eigen::Matrix3d Matrix() const;
 
+            const QuadraticMaths flipXY() const;
+
             static Eigen::Matrix3d rotationMatrix(double angle);
 
             static Eigen::Matrix3d translateMatrix(const geo::Coordinate &v);
 
+            static std::vector<lc::geo::Coordinate> IntersectionLineLine(
+                    const QuadraticMaths& l1, const QuadraticMaths& l2);
+            static std::vector<lc::geo::Coordinate> IntersectionLineQuad(
+                    const QuadraticMaths& l1, const QuadraticMaths& q1);
+            static std::vector<geo::Coordinate> IntersectionQuadQuad(
+                    const QuadraticMaths& l1, const QuadraticMaths& l2);
         private:
             Eigen::Matrix3d matrix_;
         };

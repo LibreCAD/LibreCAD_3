@@ -35,3 +35,20 @@ TEST(Matrix, Rotate) {
       EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
     }
 }
+
+TEST(QM, QUADQUAD) {
+    lc::maths::QuadraticMaths qm(1,2,3,4,5,6);
+    lc::maths::QuadraticMaths qm2(6,5,4,3,2,1);
+
+    lc::Quadratic qs(1,2,3,4,5,6);
+    lc::Quadratic qs2(6,5,4,3,2,1);
+
+    std::vector<lc::geo::Coordinate> x = lc::Quadratic::getIntersection(qs, qs2);
+    std::vector<lc::geo::Coordinate> y = lc::maths::QuadraticMaths::IntersectionQuadQuad(qm, qm2);
+
+    ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
+
+    for (int i = 0; i < x.size(); ++i) {
+      EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
+    }
+}
