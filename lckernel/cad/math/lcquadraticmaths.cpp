@@ -89,9 +89,9 @@ const QuadraticMaths QuadraticMaths::flipXY() const {
     auto lin1 = (matrix_(2,0) + matrix_(0,2)) / 2;
     auto lin2 = (matrix_(2,1) + matrix_(1,2)) / 2;
 
-    ret <<  matrix_(1,1), matrix_(1,0),         lin1,
-            matrix_(0,1), matrix_(0,0),         lin2,
-            lin1        , lin2        , matrix_(2,2);
+    ret <<  matrix_(1,1), matrix_(1,0),         lin2,
+            matrix_(0,1), matrix_(0,0),         lin1,
+            lin2        , lin1        , matrix_(2,2);
 
     return ret;
 }
@@ -104,8 +104,8 @@ std::vector<geo::Coordinate> QuadraticMaths::IntersectionLineLine(const Quadrati
     const auto &m2 = l2.Matrix();
     std::vector<std::vector<double>> ce = {
         // D, E, F
-        {m1(2,0) + m1(0,2), m1(2,1) + m1(1,2), m1(2,2)},
-        {m2(2,0) + m2(0,2), m2(2,1) + m2(1,2), m2(2,2)}
+        {m1(2,0) + m1(0,2), m1(2,1) + m1(1,2), -m1(2,2)},
+        {m2(2,0) + m2(0,2), m2(2,1) + m2(1,2), -m2(2,2)}
     };
 
     std::vector<double> sn(2, 0.);
@@ -118,7 +118,7 @@ std::vector<geo::Coordinate> QuadraticMaths::IntersectionLineLine(const Quadrati
 std::vector<lc::geo::Coordinate> QuadraticMaths::IntersectionLineQuad(const QuadraticMaths& l1,
                                           const QuadraticMaths& q1) {
 
-    auto &&tcoords = IntersectionLineLine(l1.flipXY(), q1.flipXY());
+    auto &&tcoords = IntersectionQuadQuad(l1.flipXY(), q1.flipXY());
     std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
     return tcoords;
 }
