@@ -9,6 +9,7 @@
 #include "cad/primitive/line.h"
 #include "cad/primitive/lwpolyline.h"
 #include "cad/primitive/spline.h"
+#include "cad/math/intersectionhandler.h"
 
 using namespace lc;
 
@@ -51,7 +52,7 @@ bool Intersect::operator()(const lc::geo::Vector &v, const lc::entity::Ellipse &
 
     // TODO Check if the coords we get back are good
     return false;
-    auto &&coords = Quadratic::getIntersection(v.quadratic(), e.quadratic());
+    auto &&coords = maths::Intersection::LineQuad(v.equation(), e.equation());
     if (coords.size()>0) {
         std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     }
@@ -112,7 +113,7 @@ bool Intersect::operator()(const lc::entity::Line &l, const lc::entity::Arc &arc
 
 bool Intersect::operator()(const lc::entity::Line &l, const lc::entity::Ellipse &e) {
     // TODO Check if point's are on path
-    auto &&coords = Quadratic::getIntersection(l.quadratic(), e.quadratic());
+    auto &&coords = maths::Intersection::LineQuad(l.equation(), e.equation());
     if (coords.size()>0) {
         std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     }
@@ -203,7 +204,7 @@ bool Intersect::operator()(const lc::entity::Circle &circle, const lc::entity::L
 }
 
 bool Intersect::operator()(const lc::entity::Circle & c1, const lc::entity::Circle & c2) {
-    auto &&coords = Quadratic::getIntersection(c1.quadratic(), c2.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(c1.equation(), c2.equation());
     for (auto &i : coords) {
         _intersectionPoints.push_back(i);
     }
@@ -211,7 +212,7 @@ bool Intersect::operator()(const lc::entity::Circle & c1, const lc::entity::Circ
 }
 
 bool Intersect::operator()(const lc::entity::Circle &circle, const lc::entity::Arc &arc) {
-    auto &&coords = Quadratic::getIntersection(circle.quadratic(), arc.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(circle.equation(), arc.equation());
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
@@ -228,7 +229,7 @@ bool Intersect::operator()(const lc::entity::Circle &circle, const lc::entity::A
 
 bool Intersect::operator()(const lc::entity::Circle &c, const lc::entity::Ellipse &e) {
     // TODO: test if point is on path
-    auto &&coords = Quadratic::getIntersection(c.quadratic(), e.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(c.equation(), e.equation());
     if (coords.size()>0) {
         std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     }
@@ -331,7 +332,7 @@ bool Intersect::operator()(const lc::entity::Arc &a1, const lc::entity::Arc &a2)
 
 bool Intersect::operator()(const lc::entity::Arc &a, const lc::entity::Ellipse &e) {
     // TODO Check if point's are on path
-    auto &&coords = Quadratic::getIntersection(a.quadratic(), e.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(a.equation(), e.equation());
     if (coords.size()>0) {
         std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     }
@@ -391,7 +392,7 @@ bool Intersect::operator()(const lc::entity::Ellipse &e, const lc::entity::Arc &
 
 bool Intersect::operator()(const lc::entity::Ellipse &e1, const lc::entity::Ellipse &e2) {
     // TODO test if point's are on path for ellipse
-    auto &&coords = Quadratic::getIntersection(e1.quadratic(), e2.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(e1.equation(), e2.equation());
     if (coords.size()>0) {
         std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
     }
@@ -560,7 +561,7 @@ void Intersect::geovisit(const geo::Vector &v1, const geo::Vector &v2) {
 
 void Intersect::geovisit(const geo::Vector &line, const geo::Arc &arc) {
 
-    auto &&coords = Quadratic::getIntersection(line.quadratic(), arc.quadratic());
+    auto &&coords = maths::Intersection::LineQuad(line.equation(), arc.equation());
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
@@ -576,7 +577,7 @@ void Intersect::geovisit(const geo::Vector &line, const geo::Arc &arc) {
 }
 
 void Intersect::geovisit(const geo::Arc &arc1, const geo::Arc &arc2) {
-    auto &&coords = Quadratic::getIntersection(arc1.quadratic(), arc2.quadratic());
+    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());

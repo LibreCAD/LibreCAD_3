@@ -2,7 +2,7 @@
 
 
 #include <algorithm>
-#include <cad/math/vectorhelper.h>
+#include <cad/math/helpermethods.h>
 #include "cad/geometry/geoarea.h"
 
 using namespace lc;
@@ -116,7 +116,7 @@ const geo::Area Image::boundingBox() const {
     c.emplace_back(_width, 0.);
 
     // Apply Transform
-    std::vector<geo::Coordinate> c2 = VectorHelper::transform2d<geo::Coordinate>(c, _uv.x(), _uv.y(), _vv.x(), _vv.y(), _base.x(), _base.y());
+    std::vector<geo::Coordinate> c2 = HelperMethods::transform2d<geo::Coordinate>(c, _uv.x(), _uv.y(), _vv.x(), _vv.y(), _base.x(), _base.y());
 
     // get bounding box
     geo::Area area = geo::Area(c2.at(0), 0.,0.);
