@@ -27,7 +27,8 @@ cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/math/lcmath.cpp
 cad/math/quadratic_math.cpp
-cad/math/lcquadraticmaths.cpp
+cad/math/equation.cpp
+cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
@@ -53,7 +54,7 @@ cad/primitive/dimangular.cpp
 cad/primitive/lwpolyline.cpp
 cad/primitive/beziercurve.cpp
 cad/primitive/image.cpp
-cad/math/vectorhelper.cpp
+cad/math/helpermethods.cpp
 )
 
 # HEADER FILES
@@ -95,7 +96,8 @@ cad/interface/snapable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
 cad/math/quadratic_math.h
-cad/math/lcquadraticmaths.h
+cad/math/equation.h
+cad/math/intersectionhandler.h
 cad/meta/color.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
@@ -129,7 +131,7 @@ cad/primitive/textconst.h
 cad/functions/string_helper.h
 cad/primitive/beziercurve.h
 cad/primitive/image.h
-cad/math/vectorhelper.h)
+cad/math/helpermethods.h)
 
 # DEPENDENCIES
 find_package(PkgConfig)

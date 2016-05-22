@@ -6,7 +6,7 @@
 #include <memory>
 #include "geobase.h"
 #include <vector>
-#include "cad/math/quadratic_math.h"
+#include "cad/math/equation.h"
 
 namespace lc {
 
@@ -101,26 +101,15 @@ namespace lc {
                  */
                 double getEllipseAngle(const Coordinate& coord) const;
 
-                /**
-                * @brief quadratic, Returns quadratic for the entity
-                * @return Quadratic quadratic equation
-                */
-                Quadratic quadratic() const {
-                    //std::vector<double> ce(6, 0.);
+                const maths::Equation equation() const {
                     auto ce0 = _majorP.squared();
                     auto ce2 = this->ratio() * this->ratio() * ce0;
 
                     if (ce0 < LCTOLERANCE * LCTOLERANCE || ce2 < LCTOLERANCE * LCTOLERANCE) {
-                        return Quadratic();
+                        return maths::Equation();
                     }
-                    /*
-                    ce[0] = 1. / ce[0];
-                    ce[2] = 1. / ce[2];
-                    ce[5] = -1.; */
-                    Quadratic ret(1. / ce0, 0., 1. / ce2, 0., 0., -1.);
-                    ret.rotate(getAngle());
-                    ret.move(_center);
-                    return ret;
+
+                    return maths::Equation(1. / ce0, 0., 1. / ce2, 0., 0., -1.).rotated(getAngle()).moved(_center);
                 }
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

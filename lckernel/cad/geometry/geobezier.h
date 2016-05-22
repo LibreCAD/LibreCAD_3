@@ -5,7 +5,6 @@
 #include "geocoordinate.h"
 #include "geobase.h"
 #include <vector>
-#include "cad/math/quadratic_math.h"
 
 
 namespace lc {

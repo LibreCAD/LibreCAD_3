@@ -1,7 +1,7 @@
 #include "lcimage.h"
 #include "../lcpainter.h"
 #include "../lcdrawoptions.h"
-#include <cad/math/vectorhelper.h>
+#include <cad/math/helpermethods.h>
 
 using namespace LCViewer;
 
@@ -28,7 +28,7 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
 
         // Apply Transform
         std::vector<lc::geo::Coordinate> c2 =
-                lc::VectorHelper::transform2d<lc::geo::Coordinate>(c, uv().x(), uv().y(), vv().x(), vv().y(),
+                lc::HelperMethods::transform2d<lc::geo::Coordinate>(c, uv().x(), uv().y(), vv().x(), vv().y(),
                                                                          base().x(), base().y());
 
         painter.save();

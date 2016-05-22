@@ -3,9 +3,9 @@
 #include "cad/const.h"
 #include "geocoordinate.h"
 #include "geobase.h"
-#include "cad/math/quadratic_math.h"
 #include <vector>
 #include "cad/base/visitor.h"
+#include "cad/math/equation.h"
 
 namespace lc {
     namespace geo {
@@ -108,19 +108,10 @@ namespace lc {
                     return _end.angleTo(_start);
                 }
 
-                /**
-                 * @brief quadratic, Returns quadratic for the entity
-                 * @return Quadratic quadratic equation
-                 */
-                const Quadratic quadratic() const {
+                const maths::Equation equation() const {
                     auto&& dvp = this->_end - this->_start;
                     geo::Coordinate normal(-dvp.y(), dvp.x());
-                    /*
-                    std::vector<double> ce(3, 0.);
-                    ce[0] = normal.x();
-                    ce[1] = normal.y();
-                    ce[2] = - normal.dot(this->end()); */
-                    return Quadratic(normal.x(),normal.y(),- normal.dot(this->end()));
+                    return maths::Equation(0,0,0,normal.x(),normal.y(),- normal.dot(this->end()));
                 }
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
