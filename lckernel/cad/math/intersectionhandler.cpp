@@ -22,7 +22,6 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
 
 std::vector<lc::geo::Coordinate> Intersection::LineQuad(const Equation& l1,
                                           const Equation& q1) {
-    const auto &m1 = l1.Matrix();
     auto &&tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
     std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
     return tcoords;

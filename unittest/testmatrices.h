@@ -94,15 +94,15 @@ TEST(QM, LineQuad) {
 
     auto&& dvp1 = _l1.end() - _l1.start();
     lc::geo::Coordinate normal1(-dvp1.y(), dvp1.x());
-    lc::maths::Equation lqm(0,0,0,normal1.x(),normal1.y(),- normal1.dot(_l1.end()));
 
+    auto lqm = _l1.equation();
     auto lq = lc::Quadratic(normal1.x(), normal1.y(), -normal1.dot(_l1.end()));
 
-    auto _r1 = 5;
+    auto _r1 = 200;
     auto _c1 = lc::geo::Coordinate(0.,0.);
 
-    lc::maths::Equation circle1(1.,0.,1.,0,.0,-_r1* _r1);
-    auto cqm = circle1.moved(_c1);
+    auto circle = lc::geo::Circle(lc::geo::Coordinate(0,0), 200);
+    auto cqm = circle.equation();
     lc::Quadratic cq(1.,0.,1.,0,.0,-_r1* _r1);
     cq.move(_c1);
 
