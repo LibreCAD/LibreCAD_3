@@ -110,7 +110,7 @@ namespace lc {
                 Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
                 const maths::Equation equation() const {
-                    return maths::Equation(1., 0.,1., 0., 0., -_radius* -_radius).moved(_center);
+                    return maths::Equation(1., 0.,1., 0., 0., -_radius* _radius).moved(_center);
                 }
 
 
