@@ -2,24 +2,25 @@
 // Created by gagan on 5/14/16.
 //
 
-#include "lcquadraticmaths.h"
+#include "equation.h"
+
 using namespace lc;
 using namespace maths;
 
-QuadraticMaths::QuadraticMaths() : matrix_(Eigen::Matrix3d::Zero()) {
+Equation::Equation() : matrix_(Eigen::Matrix3d::Zero()) {
 
 }
 
-QuadraticMaths::QuadraticMaths(Eigen::Matrix3d &mat) : matrix_(mat) {
+Equation::Equation(Eigen::Matrix3d &mat) : matrix_(mat) {
 
 }
 
-QuadraticMaths& QuadraticMaths::operator = (const QuadraticMaths qm) {
+Equation& Equation::operator = (const Equation qm) {
     matrix_ = qm.Matrix();
     return *this;
 }
 
-QuadraticMaths::QuadraticMaths(double a, double b, double c, double d,
+Equation::Equation(double a, double b, double c, double d,
                                double e, double f) :
             matrix_((Eigen::Matrix3d() <<
             a, b*.5, d*.5,
@@ -28,7 +29,7 @@ QuadraticMaths::QuadraticMaths(double a, double b, double c, double d,
             ).finished()) {
 }
 
-QuadraticMaths::QuadraticMaths(const std::vector<double>& vec) :
+Equation::Equation(const std::vector<double>& vec) :
         matrix_((Eigen::Matrix3d() <<
                 vec[0], vec[1]*.5, vec[3]*.5,
                 vec[1]*.5, vec[2], vec[4]*.5,
@@ -36,7 +37,7 @@ QuadraticMaths::QuadraticMaths(const std::vector<double>& vec) :
         ).finished()) {
 }
 
-const std::vector<double> QuadraticMaths::Coefficients() const {
+const std::vector<double> Equation::Coefficients() const {
     std::vector<double> vec {{
             matrix_(0,0), matrix_(0,1) + matrix_(1,0),
             matrix_(1,1), matrix_(0,2) + matrix_(2,0),
@@ -44,29 +45,27 @@ const std::vector<double> QuadraticMaths::Coefficients() const {
     return vec;
 }
 
-const QuadraticMaths QuadraticMaths::moved (
+const Equation Equation::moved (
         const geo::Coordinate &v) const {
-    //Eigen::Matrix3d mat;
     Eigen::Matrix3d mat = translateMatrix(v).transpose() * matrix_ *  translateMatrix(v);
-    return QuadraticMaths(mat);
+    return Equation(mat);
 }
 
-const QuadraticMaths QuadraticMaths::rotated(double angle) const {
+const Equation Equation::rotated(double angle) const {
     const auto & m = rotationMatrix(angle);
     const auto & t = m.transpose();
-    Eigen::Matrix3d ret;
-    ret = t * matrix_ * m;
-    return QuadraticMaths(ret);
+    Eigen::Matrix3d ret = t * matrix_ * m;
+    return Equation(ret);
 }
 
-const QuadraticMaths QuadraticMaths::rotated(
+const Equation Equation::rotated(
         const geo::Coordinate &center, double angle) const {
     return moved(geo::Coordinate(-center.x(), -center.y()))
             .rotated(angle)
             .moved(center);
 }
 
-Eigen::Matrix3d QuadraticMaths::rotationMatrix(double angle) {
+Eigen::Matrix3d Equation::rotationMatrix(double angle) {
     Eigen::Matrix3d mat;
     mat <<  std::cos(angle)  , std::sin(angle) , 0,
             -std::sin(angle) , std::cos(angle) , 0,
@@ -74,14 +73,34 @@ Eigen::Matrix3d QuadraticMaths::rotationMatrix(double angle) {
     return mat;
 }
 
-const Eigen::Matrix3d QuadraticMaths::Matrix() const {
+const Eigen::Matrix3d Equation::Matrix() const {
     return matrix_;
 }
 
-Eigen::Matrix3d QuadraticMaths::translateMatrix(const geo::Coordinate &v) {
+Eigen::Matrix3d Equation::translateMatrix(const geo::Coordinate &v) {
     Eigen::Matrix3d mat;
     mat <<  1 , 0 , -v.x(),
             0 , 1 , -v.y(),
             0 , 0 ,  1;
     return mat;
 }
+
+const Equation Equation::flipXY() const {
+    Eigen::Matrix3d ret;
+
+    /*
+     * swap a with c
+     * swap d with e
+     * no swaps for consant i.e f
+     */
+
+    auto lin1 = (matrix_(2,0) + matrix_(0,2)) / 2;
+    auto lin2 = (matrix_(2,1) + matrix_(1,2)) / 2;
+
+    ret <<  matrix_(1,1), matrix_(1,0),         lin2,
+            matrix_(0,1), matrix_(0,0),         lin1,
+            lin2        , lin1        , matrix_(2,2);
+
+    return ret;
+}
+

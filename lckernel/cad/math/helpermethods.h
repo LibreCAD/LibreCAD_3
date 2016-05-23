@@ -15,7 +15,7 @@ namespace lc {
      * Temporary class to do work on std::vector of Coordinates
      * I expect this to be replaced at some stage to something better
      */
-    class VectorHelper {
+    class HelperMethods {
     public:
         template<typename T>
         static std::vector<T> transform2d(const std::vector<T> &in,

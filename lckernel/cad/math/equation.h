@@ -7,32 +7,35 @@
 #include <eigen3/Eigen/Dense>
 #include <vector>
 #include <cad/geometry/geocoordinate.h>
+#include "lcmath.h"
 
 namespace lc {
     namespace maths {
-        class QuadraticMaths {
+        class Equation {
         public:
-            QuadraticMaths();
+            Equation();
 
-            QuadraticMaths &operator=(const QuadraticMaths qm);
+            Equation &operator=(const Equation qm);
 
-            QuadraticMaths(Eigen::Matrix3d &mat);
+            Equation(Eigen::Matrix3d &mat);
 
-            QuadraticMaths(double a, double b, double c, double d,
+            Equation(double a, double b, double c, double d,
                            double e, double f);
 
-            QuadraticMaths(const std::vector<double> &vec);
+            Equation(const std::vector<double> &vec);
 
             const std::vector<double> Coefficients() const;
 
-            const QuadraticMaths moved(const geo::Coordinate &v) const ;
+            const Equation moved(const geo::Coordinate &v) const ;
 
-            const QuadraticMaths rotated(double angle) const;
+            const Equation rotated(double angle) const;
 
-            const QuadraticMaths rotated(const geo::Coordinate &center,
+            const Equation rotated(const geo::Coordinate &center,
                                         double angle) const;
 
             const Eigen::Matrix3d Matrix() const;
+
+            const Equation flipXY() const;
 
             static Eigen::Matrix3d rotationMatrix(double angle);
 
@@ -43,5 +46,3 @@ namespace lc {
         };
     }
 }
-
-//LC_LCQUADRATICMATHS_H
