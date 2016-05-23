@@ -2,7 +2,7 @@
 
 #include "lcmath.h"
 #include "cad/const.h"
-
+#include <eigen3/Eigen/Dense>
 using namespace lc;
 using namespace geo;
 
@@ -390,137 +390,6 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
     return roots;
 }
 
-//linear Equation solver by Gauss-Jordan
-/**
-  * Solve linear equation set
-  *@ mt holds the augmented matrix
-  *@ sn holds the solution
-  *@ return true, if the equation set has a unique solution, return false otherwise
-  *
-  *@Author: Dongxu Li
-  */
-
-bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector<double>& sn) {
-    //verify the matrix size
-    int mSize(mt.size()); //rows
-    uint aSize(mSize + 1); //columns of augmented matrix
-
-    for (int i = 0; i < mSize; i++) {
-        if (mt[i].size() != aSize) {
-            return false;
-        }
-    }
-
-    sn.resize(mSize);//to hold the solution
-    //#ifdef    HAS_BOOST
-#if false
-    boost::numeric::ublas::matrix<double> bm(mSize, mSize);
-    boost::numeric::ublas::vector<double> bs(mSize);
-
-    for (int i = 0; i < mSize; i++) {
-        for (int j = 0; j < mSize; j++) {
-            bm(i, j) = mt[i][j];
-        }
-
-        bs(i) = mt[i][mSize];
-    }
-
-    //solve the linear equation set by LU decomposition in boost ublas
-
-    if (boost::numeric::ublas::lu_factorize<boost::numeric::ublas::matrix<double> >(bm)) {
-        std::cout << __FILE__ << " : " << __FUNCTION__ << " : line " << __LINE__ << std::endl;
-        std::cout << " linear solver failed" << std::endl;
-        //        RS_DEBUG->print(RS_Debug::D_WARNING, "linear solver failed");
-        return false;
-    }
-
-    boost::numeric::ublas:: triangular_matrix<double, boost::numeric::ublas::unit_lower>
-    lm = boost::numeric::ublas::triangular_adaptor< boost::numeric::ublas::matrix<double>,  boost::numeric::ublas::unit_lower>(bm);
-    boost::numeric::ublas:: triangular_matrix<double,  boost::numeric::ublas::upper>
-    um =  boost::numeric::ublas::triangular_adaptor< boost::numeric::ublas::matrix<double>,  boost::numeric::ublas::upper>(bm);
-    ;
-    boost::numeric::ublas::inplace_solve(lm, bs, boost::numeric::ublas::lower_tag());
-    boost::numeric::ublas::inplace_solve(um, bs, boost::numeric::ublas::upper_tag());
-
-    for (int i = 0; i < mSize; i++) {
-        sn[i] = bs(i);
-    }
-
-    //    std::cout<<"dn="<<dn<<std::endl;
-    //    data.center.set(-0.5*dn(1)/dn(0),-0.5*dn(3)/dn(2)); // center
-    //    double d(1.+0.25*(dn(1)*dn(1)/dn(0)+dn(3)*dn(3)/dn(2)));
-    //    if(std::abs(dn(0))<TOLERANCE2
-    //            ||std::abs(dn(2))<TOLERANCE2
-    //            ||d/dn(0)<TOLERANCE2
-    //            ||d/dn(2)<TOLERANCE2
-    //            ) {
-    //        //ellipse not defined
-    //        return false;
-    //    }
-    //    d=sqrt(d/dn(0));
-    //    data.majorP.set(d,0.);
-    //    data.ratio=sqrt(dn(0)/dn(2));
-#else
-    // solve the linear equation by Gauss-Jordan elimination
-    std::vector<std::vector<double> > mt0(mt); //copy the matrix;
-
-    for (int i = 0; i < mSize; i++) {
-        int imax(i);
-        double cmax(std::abs(mt0[i][i]));
-
-        for (int j = i + 1; j < mSize; j++) {
-            if (std::abs(mt0[j][i]) > cmax) {
-                imax = j;
-                cmax = std::abs(mt0[j][i]);
-            }
-        }
-
-        if (cmax < TOLERANCE2) {
-            return false;    //singular matrix
-        }
-
-        if (imax != i) { //move the line with largest absolute value at column i to row i, to avoid division by zero
-            std::swap(mt0[i], mt0[imax]);
-            //            for(int j=i;j<=mSize;j++) {
-            //                std::swap(m[i][j],m[imax][j]);
-            //            }
-        }
-
-        //        for(int k=i+1;k<5;k++) { //normalize the i-th row
-        for (int k = mSize; k >= i; k--) { //normalize the i-th row
-            mt0[i][k] /= mt0[i][i];
-        }
-
-        for (int j = 0; j < mSize; j++) { //Gauss-Jordan
-            if (j != i) {
-                //                for(int k=i+1;k<5;k++) {
-                for (int k = mSize; k >= i; k--) {
-                    mt0[j][k] -= mt0[i][k] * mt0[j][i];
-                }
-            }
-        }
-
-        //output gauss-jordan results for debugging
-        //        std::cout<<"========"<<i<<"==========\n";
-        //        for(int j=0;j<mSize;j++) {//Gauss-Jordan
-        //            for(int k=0;k<=mSize;k++) {
-        //                std::cout<<m[j][k]<<'\t';
-        //            }
-        //            std::cout<<std::endl;
-        //        }
-    }
-
-    for (int i = 0; i < mSize; i++) {
-        sn[i] = mt0[i][mSize];
-    }
-
-#endif
-
-    return true;
-}
-
-
-
 /** solver quadratic simultaneous equations of set two **/
 /* solve the following quadratic simultaneous equations,
   *  ma000 x^2 + ma011 y^2 - 1 =0
@@ -735,17 +604,13 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
 
     if (p1->size() == 3) {
         //linear
-        std::vector<double> sn(2, 0.);
-        std::vector<std::vector<double> > ce;
-        ce.push_back(std::vector<double>(m[0]));
-        ce.push_back(std::vector<double>(m[1]));
-        ce[0][2] = -ce[0][2];
-        ce[1][2] = -ce[1][2];
-
-        if (Math::linearSolver(ce, sn)) {
-            ret.push_back(geo::Coordinate(sn[0], sn[1]));
-        }
-
+        Eigen::Matrix2d M;
+        Eigen::Vector2d V;
+        M << m[0][0], m[0][1],
+             m[1][0], m[1][1];
+        V << -m[0][2], -m[1][2];
+        Eigen::Vector2d sn = M.colPivHouseholderQr().solve(V);
+        ret.push_back(geo::Coordinate(sn[0], sn[1]));
         return ret;
     }
 
