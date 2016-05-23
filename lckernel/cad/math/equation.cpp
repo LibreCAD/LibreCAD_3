@@ -45,24 +45,24 @@ const std::vector<double> Equation::Coefficients() const {
     return vec;
 }
 
-const Equation Equation::moved (
+const Equation Equation::move (
         const geo::Coordinate &v) const {
     Eigen::Matrix3d mat = translateMatrix(v).transpose() * matrix_ *  translateMatrix(v);
     return Equation(mat);
 }
 
-const Equation Equation::rotated(double angle) const {
+const Equation Equation::rotate(double angle) const {
     const auto & m = rotationMatrix(angle);
     const auto & t = m.transpose();
     Eigen::Matrix3d ret = t * matrix_ * m;
     return Equation(ret);
 }
 
-const Equation Equation::rotated(
+const Equation Equation::rotate(
         const geo::Coordinate &center, double angle) const {
-    return moved(geo::Coordinate(-center.x(), -center.y()))
-            .rotated(angle)
-            .moved(center);
+    return move(geo::Coordinate(-center.x(), -center.y()))
+            .rotate(angle)
+            .move(center);
 }
 
 Eigen::Matrix3d Equation::rotationMatrix(double angle) {
