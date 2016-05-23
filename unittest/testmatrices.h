@@ -2,6 +2,7 @@
 #include "cad/math/quadratic_math.h"
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geovector.h"
+#include "cad/math/lcmath.h"
 #include <iostream>
 
 using namespace std;
@@ -115,4 +116,19 @@ TEST(QM, LineQuad) {
         EXPECT_DOUBLE_EQ(x[i].x(), y[i].x()) << "X differs at index " << i;
         EXPECT_DOUBLE_EQ(x[i].y(), y[i].y()) << "Y differs at index " << i;
     }
+}
+
+TEST(Maths, LinearSolver) {
+    std::vector<std::vector<double>> a {{1,-1, -1}, {3,1, 9}};
+    std::vector<double> res1;
+    Eigen::Matrix2d M;
+    Eigen::Vector2d V;
+
+    M << 1, -1, 3, 1;
+    V << -1, 9;
+    lc::Math::linearSolver(a, res1);
+    Eigen::Vector2d res2 = M.colPivHouseholderQr().solve(V);
+
+    EXPECT_DOUBLE_EQ(res1[0], res2[0]) << "X differs";
+    EXPECT_DOUBLE_EQ(res1[1], res2[1]) << "Y differs";
 }

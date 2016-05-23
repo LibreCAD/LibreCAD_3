@@ -7,16 +7,26 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
     std::vector<lc::geo::Coordinate> ret;
     const auto &m1 = l1.Matrix();
     const auto &m2 = l2.Matrix();
-    std::vector<std::vector<double>> ce = {
-        // D, E, F
-        {m1(2,0) + m1(0,2), m1(2,1) + m1(1,2), -m1(2,2)},
-        {m2(2,0) + m2(0,2), m2(2,1) + m2(1,2), -m2(2,2)}
-    };
+//    std::vector<std::vector<double>> ce = {
+//        // D, E, F
+//        {m1(2,0) + m1(0,2), m1(2,1) + m1(1,2), -m1(2,2)},
+//        {m2(2,0) + m2(0,2), m2(2,1) + m2(1,2), -m2(2,2)}
+//    };
 
-    std::vector<double> sn(2, 0.);
-    if (Math::linearSolver(ce, sn)) {
-        ret.emplace_back(sn[0], sn[1]);
-    }
+//    std::vector<double> sn(2, 0.);
+//    if (Math::linearSolver(ce, sn)) {
+//        ret.emplace_back(sn[0], sn[1]);
+//    }
+//    return ret;
+    Eigen::Matrix2d M;
+    Eigen::Vector2d V;
+
+    M << m1(2,0) + m1(0,2), m1(2,1) + m1(1,2),
+         m2(2,0) + m2(0,2), m2(2,1) + m2(1,2);
+    V << -m1(2,2), -m2(2,2);
+
+    Eigen::Vector2d R = M.colPivHouseholderQr().solve(V);
+    ret.emplace_back(R[0], R[1]);
     return ret;
 }
 

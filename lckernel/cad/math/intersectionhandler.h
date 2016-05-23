@@ -2,6 +2,7 @@
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/math/equation.h"
+#include "eigen3/Eigen/Dense"
 
 namespace lc {
     namespace maths {
