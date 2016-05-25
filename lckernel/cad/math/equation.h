@@ -26,11 +26,11 @@ namespace lc {
 
             const std::vector<double> Coefficients() const;
 
-            const Equation moved(const geo::Coordinate &v) const ;
+            const Equation move(const geo::Coordinate &v) const ;
 
-            const Equation rotated(double angle) const;
+            const Equation rotate(double angle) const;
 
-            const Equation rotated(const geo::Coordinate &center,
+            const Equation rotate(const geo::Coordinate &center,
                                         double angle) const;
 
             const Eigen::Matrix3d Matrix() const;

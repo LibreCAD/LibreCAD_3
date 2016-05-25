@@ -67,16 +67,6 @@ namespace lc {
                     **/
 
             static std::vector<double> quarticSolverFull(const std::vector<double>& ce);
-            //solver for linear equation set
-            /**
-                      * Solve linear equation set
-                      *@ mt holds the augmented matrix
-                      *@ sn holds the solution
-                      *@ return true, if the equation set has a unique solution, return false otherwise
-                      *
-                      *@Author: Dongxu Li
-                      */
-            static bool linearSolver(const std::vector<std::vector<double>>& m, std::vector<double>& sn);
 
             /** solver quadratic simultaneous equations of a set of two **/
             /* solve the following quadratic simultaneous equations,

@@ -26,7 +26,6 @@ cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/math/lcmath.cpp
-cad/math/quadratic_math.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
@@ -95,7 +94,6 @@ cad/interface/metatype.h
 cad/interface/snapable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
-cad/math/quadratic_math.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h

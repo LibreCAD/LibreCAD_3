@@ -109,7 +109,7 @@ namespace lc {
                         return maths::Equation();
                     }
 
-                    return maths::Equation(1. / ce0, 0., 1. / ce2, 0., 0., -1.).rotated(getAngle()).moved(_center);
+                    return maths::Equation(1. / ce0, 0., 1. / ce2, 0., 0., -1.).rotate(getAngle()).move(_center);
                 }
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
