@@ -1,5 +1,4 @@
 #include "cad/math/equation.h"
-#include "cad/math/quadratic_math.h"
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geovector.h"
 #include "cad/math/lcmath.h"
