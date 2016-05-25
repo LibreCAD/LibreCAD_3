@@ -147,6 +147,9 @@ pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
+pkg_check_modules(EIGEN REQUIRED eigen3)
+include_directories(${EIGEN_INCLUDE_DIRS})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)

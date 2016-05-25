@@ -2,6 +2,8 @@
 #include "cad/math/intersectionhandler.h"
 #include "code.h"
 #include <cad/math/lcmath.h>
+#include <unsupported/Eigen/Polynomials>
+
 using namespace lc;
 using namespace entity;
 

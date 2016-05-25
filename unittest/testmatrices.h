@@ -3,8 +3,24 @@
 #include "cad/geometry/geovector.h"
 #include "cad/math/lcmath.h"
 #include <iostream>
+#include <unsupported/Eigen/Polynomials>
 
 using namespace std;
+
+TEST(EIGEN, QUARTICFULL) {
+    std::vector<double> z = {1080, -126, -123, 6, 3 };
+    std::vector<double>res = {-4,3,-6,5};
+    auto v = lc::Math::quarticSolverFull(z);
+    for(int i = 0; i < v.size(); i++) {
+        ASSERT_NEAR(res[i], v[i], 1e-6);
+    }
+
+    std::vector<double> z2 = {2,-41,-42, 360};
+    auto v2 = lc::Math::quarticSolver(z2);
+    for(int i = 0; i < v2.size(); i++) {
+        ASSERT_NEAR(res[i], v2[i], 1e-6);
+    }
+}
 
 TEST(Matrix, Move) {
     auto x = lc::maths::Equation(1,2,3,4,5,6).move(lc::geo::Coordinate(5,5)).Coefficients();
@@ -40,7 +56,7 @@ TEST(QM, QUADQUAD) {
     auto qm2 = ret2.move(_c2);
 
     std::vector<lc::geo::Coordinate> x = lc::maths::Intersection::QuadQuad(qm1, qm2);
-
+    ASSERT_EQ(x.size(), 2);
     EXPECT_DOUBLE_EQ(x[0].x(), 3) << "X differs";
     EXPECT_DOUBLE_EQ(x[0].y(), 4) << "Y differs";
     EXPECT_DOUBLE_EQ(x[1].x(), 3) << "X differs";
