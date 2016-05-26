@@ -27,6 +27,7 @@ entitytest.h
 code.h
 testmath.h
 testmatrices.h
+beziertest.h
 )
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")

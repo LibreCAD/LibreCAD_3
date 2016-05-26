@@ -14,12 +14,31 @@ Bezier::Bezier(const Bezier &bez) :
 }
 
 const Area Bezier::boundingBox() const {
-    /*
-     * TODO BOUNDING BOX
-     * GSOC project
-     */
 
-    return Area();
+    /*
+     * T = A-B/(A - 2B + C)
+     */
+    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+    std::vector<double> x_{_pointA.x(), _pointC.x() };
+    std::vector<double> y_{_pointA.y(), _pointC.y() };
+
+    if(tx_ > 0. && tx_ < 1.0) {
+        auto bez1 = DirectValueAt(tx_);
+        x_.push_back(bez1.x());
+        y_.push_back(bez1.y());
+    }
+
+    if(ty_ > 0. && ty_ < 1.0) {
+        auto bez2 = DirectValueAt(ty_);
+        x_.push_back(bez2.x());
+        y_.push_back(bez2.y());
+    }
+
+    std::sort(x_.begin(), x_.end());
+    std::sort(y_.begin(), y_.end());
+
+    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {

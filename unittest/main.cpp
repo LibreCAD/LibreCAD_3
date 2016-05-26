@@ -6,7 +6,7 @@
 #include "testgeoarc.h"
 #include "testintersect.h"
 #include "testmatrices.h"
-
+#include "beziertest.h"
 using namespace std;
 using namespace lc;
 using namespace entity;
