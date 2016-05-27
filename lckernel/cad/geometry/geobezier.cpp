@@ -42,17 +42,99 @@ const Area Bezier::boundingBox() const {
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
+
     /*
-     * TODO
+     * Diffrence between nearest point on path and
+     * nearest point on entity for a bezier curve is that
+     * for calcualting the nearest point on entity you check
+     * that if the value of "t" is between 0 and 1
+     * whereas for nearest point on path, you don't check that
      */
-    return Coordinate();
+
+    auto min_distance = std::numeric_limits<double>::max();
+    Coordinate ret;
+
+    auto tValues = nearestPointTValue(coord);
+
+    for (auto val : tValues) {
+        geo::Coordinate point_on_path = DirectValueAt(val);
+        double raw_distance = coord.distanceTo(point_on_path);
+        if(raw_distance < min_distance) {
+            ret = point_on_path;
+            min_distance = raw_distance;
+        }
+    }
+
+    return returnCasesForNearestPoint(min_distance, coord, ret);
 }
 
 Coordinate Bezier::nearestPointOnEntity(const Coordinate& coord) const {
-    /*
-     * TODO
-     */
-    return Coordinate();
+    auto min_distance = std::numeric_limits<double>::max();
+
+    Coordinate ret;
+
+    auto tValues = nearestPointTValue(coord);
+
+    for (auto val : tValues) {
+        if(val > 0 && val < 1) {
+            geo::Coordinate point_on_path = DirectValueAt(val);
+            double raw_distance = coord.distanceTo(point_on_path);
+            if(raw_distance < min_distance) {
+                ret = point_on_path;
+                min_distance = raw_distance;
+            }
+        }
+    }
+
+    return returnCasesForNearestPoint(min_distance, coord, ret);
+}
+
+/**
+ * @brief Bezier::nearestPointTValue
+ * @param coord The pointt from where nearest point is to be found
+ * @return vector of t values for bezier
+ */
+std::vector<double> Bezier::nearestPointTValue(const lc::geo::Coordinate &coord) const {
+    auto pos = _pointA - coord;
+
+    auto Ax = _pointB.x() - _pointA.x();
+    auto Ay = _pointB.y() - _pointA.y();
+    auto Bx = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto By = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+    auto a = Bx * Bx + By * By;
+    auto b = (3 * (Ax * Bx + Ay * By)) / a;
+    auto c = (2 * (Ax * Ax + Ay * Ay) + pos.x() * Bx + pos.y() * By) / a;
+    auto d = (pos.x() * Ax + pos.y() * Ay) / a;
+
+    return lc::Math::cubicSolver({b, c, d});
+}
+
+
+/**
+ * @brief Bezier::returnCasesForNearestPoint
+ * @param distance at minimum T
+ * @param coord coordinate from where the minimum
+ *        distance is to be found
+ * @param ret coordinate value at minimum T
+ * @return nearest point
+ */
+const lc::geo::Coordinate Bezier::returnCasesForNearestPoint(
+        double min_distance, const lc::geo::Coordinate &coord,
+        const lc::geo::Coordinate &ret) const {
+    auto distance_to_A = coord.distanceTo(_pointA);
+    auto distance_to_C = coord.distanceTo(_pointC);
+
+    // Point is on curve
+    if(min_distance < distance_to_A && min_distance < distance_to_C) {
+        return ret;
+    }
+    // Point is on starting of Curve
+    if (distance_to_A < distance_to_C) {
+        return _pointA;
+    }
+    // Point is end of curve
+    return _pointC;
 }
 
 Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
