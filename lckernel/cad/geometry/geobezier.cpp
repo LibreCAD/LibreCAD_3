@@ -58,7 +58,7 @@ Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
 
     for (auto val : tValues) {
         geo::Coordinate point_on_path = DirectValueAt(val);
-        double raw_distance = coord.distanceTo(point_on_path);
+        auto raw_distance = coord.distanceTo(point_on_path);
         if(raw_distance < min_distance) {
             ret = point_on_path;
             min_distance = raw_distance;
@@ -78,7 +78,7 @@ Coordinate Bezier::nearestPointOnEntity(const Coordinate& coord) const {
     for (auto val : tValues) {
         if(val > 0 && val < 1) {
             geo::Coordinate point_on_path = DirectValueAt(val);
-            double raw_distance = coord.distanceTo(point_on_path);
+            auto raw_distance = coord.distanceTo(point_on_path);
             if(raw_distance < min_distance) {
                 ret = point_on_path;
                 min_distance = raw_distance;
@@ -150,17 +150,17 @@ Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
 }
 
 Coordinate Bezier::DirectValueAt(double t) const {
-    double one_minus_t = 1 - t;
-    double t_square = t*t;
-    double one_minus_t_square = one_minus_t * one_minus_t;
-    double two_a_b  = 2 * one_minus_t * t;
+    auto one_minus_t = 1 - t;
+    auto t_square = t*t;
+    auto one_minus_t_square = one_minus_t * one_minus_t;
+    auto two_a_b  = 2 * one_minus_t * t;
     return (_pointA * one_minus_t_square) + (_pointB * two_a_b) + (_pointC * t_square);
 }
 
 const std::vector<Coordinate> Bezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC };
     std::vector<Coordinate> ret;
-    for(double i = 0.; i < 1.; i+=precession) {
+    for(auto i = 0.; i < 1.; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
 
        /* TODO
@@ -182,4 +182,24 @@ const Coordinate Bezier::pointB() const {
 
 const Coordinate Bezier::pointC() const {
     return _pointC;
+}
+
+const double Bezier::length() const {
+
+     auto  Bx = 2*(_pointB.x() - _pointA.x());
+     auto  By = 2*(_pointB.y() - _pointA.y());
+     auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+     auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+     auto A = 4*(Ax*Ax + Ay*Ay);
+     auto B = 4*(Ax*Bx + Ay*By);
+     auto C = Bx*Bx + By*By;
+
+     auto Sabc = 2*std::sqrt(A+B+C);
+     auto A_2 = std::sqrt(A);
+     auto A_32 = 2*A*A_2;
+     auto C_2 = 2*std::sqrt(C);
+     auto BA = B/A_2;
+
+     return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }

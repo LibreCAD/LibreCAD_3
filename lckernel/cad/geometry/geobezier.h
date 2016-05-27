@@ -5,6 +5,7 @@
 #include "geocoordinate.h"
 #include "geobase.h"
 #include <cad/math/lcmath.h>
+#include <cmath>
 #include <vector>
 
 namespace lc {
@@ -34,6 +35,8 @@ namespace lc {
                 Coordinate DirectValueAt(double t) const;
 
                 const std::vector<Coordinate> Curve(double precession);
+
+                const double length() const;
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
