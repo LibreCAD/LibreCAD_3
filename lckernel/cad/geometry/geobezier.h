@@ -6,6 +6,7 @@
 #include "geobase.h"
 #include <cad/math/lcmath.h>
 #include <cmath>
+#include <cstdlib>
 #include <vector>
 
 namespace lc {
@@ -42,6 +43,8 @@ namespace lc {
 
                 const Coordinate normal(double t) const;
 
+                Bezier rotate(const geo::Coordinate& center, double angle);
+
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
@@ -51,7 +54,7 @@ namespace lc {
                         const Coordinate &ret) const;
 
                 friend std::ostream& operator<<(std::ostream& os, const Bezier& bez) {
-                    os << "Bezier(A=" << bez._pointA << " radius=" << bez._pointA << " startAngle=" << bez._pointA << ")";
+                    os << "Bezier(A=" << bez._pointA << " radius=" << bez._pointB << " startAngle=" << bez._pointC << ")";
                     return os;
                 }
 

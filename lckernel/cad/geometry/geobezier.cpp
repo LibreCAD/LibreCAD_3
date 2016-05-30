@@ -204,6 +204,11 @@ const double Bezier::length() const {
      return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }
 
+Bezier Bezier::rotate(const geo::Coordinate& center, double angle) {
+    return Bezier(_pointA.rotate(center, angle), _pointB.rotate(center, angle),
+                _pointC.rotate(center, angle));
+}
+
 const Coordinate Bezier::tangent(double t) const {
     auto  Bx = _pointB.x() - _pointA.x();
     auto  By = _pointB.y() - _pointA.y();
