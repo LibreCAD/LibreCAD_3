@@ -21,6 +21,11 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     auto p2 = lc::geo::Coordinate(2,2);
     auto p3 = lc::geo::Coordinate(2200, 1800);
 
+    auto p1 = lc::geo::Coordinate(0,0);
+    auto p2 = lc::geo::Coordinate(0,250);
+    auto p3 = lc::geo::Coordinate(250,250);
+
+
     auto bb = lc::geo::Bezier(p1,p2,p3);
     auto pt = lc::geo::Coordinate{1900, 3000};
 
@@ -28,6 +33,14 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     painter.move_to(p1.x(), p1.y());
     painter.quadratic_curve_to(p2.x(), p2.y(), p3.x(), p3.y());
+
+    for(double i = 0.; i < 1.; i = i + 0.1) {
+        auto start = bb.DirectValueAt(i);
+        auto end = bb.normal(i);
+        painter.move_to(start.x(), start.y());
+        painter.line_to(end.x(), end.y());
+        painter.stroke();
+    }
 
     painter.move_to(pt.x(), pt.y());
     painter.line_to(nearest.x(), nearest.y());

@@ -203,3 +203,32 @@ const double Bezier::length() const {
 
      return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }
+
+const Coordinate Bezier::tangent(double t) const {
+    auto  Bx = _pointB.x() - _pointA.x();
+    auto  By = _pointB.y() - _pointA.y();
+    auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+    auto tanx = Ax * t + Bx;
+    auto tany = Ay * t + By;
+    return Coordinate(tanx, tany);
+}
+
+const Coordinate Bezier::normal(double t) const {
+    auto  Bx = _pointB.x() - _pointA.x();
+    auto  By = _pointB.y() - _pointA.y();
+    auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+    auto tanx = Ay * t + By;
+    auto tany = -(Ax * t + Bx);
+
+    auto lNorm = std::sqrt(tanx * tanx + tany * tany);
+
+    if (lNorm > 0)  {
+        tanx /= lNorm;
+        tany /= lNorm;
+    }
+
+    return Coordinate(tanx, tany);
+}
