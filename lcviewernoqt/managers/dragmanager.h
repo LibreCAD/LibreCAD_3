@@ -16,7 +16,7 @@ namespace LCViewer {
 	class DragManager {
 		friend class lc::Document;
 		public:
-			DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor);
+			DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, unsigned int size);
 
 			void onMouseMove();
 			void onMousePress();
@@ -27,6 +27,9 @@ namespace LCViewer {
 
 			Nano::Signal<void(const DragPointsEvent&)>& dragPointsEvent();
 		private:
+			unsigned int _size;
+			lc::geo::Area _toleranceArea;
+
 			std::vector<lc::geo::Coordinate> closeEntitiesDragPoints();
 			std::vector<lc::geo::Coordinate> selectedEntitiesDragPoints();
 			void moveEntities();

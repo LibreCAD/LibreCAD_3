@@ -10,10 +10,11 @@
 #include "cad/math/quadratic_math.h"
 #include "cad/meta/layer.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
-        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable {
+        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable, public Draggable {
         public:
             /**
          * @brief Arc, Default Arc constructor
@@ -40,6 +41,8 @@ namespace lc {
                 bool CCW,
                 const Layer_CSPtr layer,
                 const MetaInfo_CSPtr metaInfo);
+
+            Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             Arc(const Arc_CSPtr other, bool sameID = false);
 
@@ -95,6 +98,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
         using Arc_SPtr = std::shared_ptr<Arc>;
         using Arc_CSPtr = std::shared_ptr<const Arc>;

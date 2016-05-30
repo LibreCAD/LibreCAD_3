@@ -70,3 +70,35 @@ double DimRadial::leader() const {
 geo::Coordinate DimRadial::definitionPoint2() const {
     return _definitionPoint2;
 }
+
+std::map<unsigned int, geo::Coordinate> DimRadial::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+
+    dragPoints[0] = definitionPoint();
+    dragPoints[1] = middleOfText();
+    dragPoints[2] = _definitionPoint2;
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr DimRadial::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<DimRadial>(dragPoints.at(0),
+                                                      dragPoints.at(1),
+                                                      attachmentPoint(),
+                                                      textAngle(),
+                                                      lineSpacingFactor(),
+                                                      lineSpacingStyle(),
+                                                      explicitValue(),
+                                                      dragPoints.at(2),
+                                                      leader(),
+                                                      layer(),
+                                                      metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

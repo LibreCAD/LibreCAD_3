@@ -97,3 +97,40 @@ geo::Coordinate DimAngular::defLine21() const {
 geo::Coordinate DimAngular::defLine22() const {
     return _defLine22;
 }
+
+std::map<unsigned int, geo::Coordinate> DimAngular::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+
+    dragPoints[0] = definitionPoint();
+    dragPoints[1] = middleOfText();
+    dragPoints[2] = _defLine11;
+    dragPoints[3] = _defLine12;
+    dragPoints[4] = _defLine21;
+    dragPoints[5] = _defLine22;
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr DimAngular::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<DimAngular>(dragPoints.at(0),
+                                                      dragPoints.at(1),
+                                                      attachmentPoint(),
+                                                      textAngle(),
+                                                      lineSpacingFactor(),
+                                                      lineSpacingStyle(),
+                                                      explicitValue(),
+                                                      dragPoints.at(2),
+                                                      dragPoints.at(3),
+                                                      dragPoints.at(4),
+                                                      dragPoints.at(5),
+                                                      layer(),
+                                                      metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

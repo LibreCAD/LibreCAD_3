@@ -9,6 +9,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
@@ -24,7 +25,7 @@ namespace lc {
          */
 
         class Spline
-                : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable, virtual public Visitable {
+                : public std::enable_shared_from_this<Spline>, public CADEntity, public geo::Spline, public Snapable, virtual public Visitable, public Draggable {
         public:
 
             /**
@@ -100,6 +101,9 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 
         private:
             void calculateBoundingBox();

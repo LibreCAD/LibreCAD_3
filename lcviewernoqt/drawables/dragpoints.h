@@ -8,7 +8,7 @@
 namespace LCViewer {
     class DragPoints {
         public:
-            DragPoints(int size);
+            DragPoints();
             void setPoints(DragPointsEvent const & points);
 
             void onDraw(DrawEvent const & event) const;

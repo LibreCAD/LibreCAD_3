@@ -244,3 +244,35 @@ std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<
     return std::make_tuple(nearestCoordinate, nearestVector, nearestArc);
 }
 
+
+std::map<unsigned int, lc::geo::Coordinate> LWPolyline::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+    unsigned int i = 0;
+
+    for(auto vertex : _vertex) {
+        dragPoints[i] = vertex.location();
+        i++;
+    }
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        std::vector<LWVertex2D> newVertex;
+        unsigned int i = 0;
+
+        for(auto vertex : _vertex) {
+            newVertex.push_back(LWVertex2D(dragPoints[i], vertex.bulge(), vertex.startWidth(), vertex.endWidth()));
+            i++;
+        }
+
+        auto newEntity = std::make_shared<LWPolyline>(newVertex, width(), elevation(), tickness(), closed(), extrusionDirection(), layer(), metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

@@ -8,6 +8,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/geometry/geobase.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/draggable.h"
 #include <vector>
 
 namespace lc {
@@ -82,7 +83,7 @@ namespace lc {
         /**
          * Lightweight polyline
          */
-        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, public Snapable {
+        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, public Snapable, public Draggable {
         public:
 
             /**
@@ -247,6 +248,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
 
         using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;

@@ -2,25 +2,23 @@
 
 using namespace LCViewer;
 
-DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor) :
+DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, unsigned int size) :
+	_size(size),
 	_docCanvas(docCanvas),
 	_cursor(cursor),
-	_entityDragged(false) {
-}
+	_entityDragged(false)
+{}
 
 
 std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 	std::vector<lc::geo::Coordinate> dragPoints;
 
-	lc::geo::Coordinate loc(_cursor->position().x() - 5, _cursor->position().y() - 5);
-	lc::geo::Area area(loc, 10, 10);
-
 	auto entities = _docCanvas->selection();
 	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer();
+		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea, 5);
 	}
 
-	entities.entitiesWithinAndCrossingArea(area, 5).each<const lc::Draggable>([&](lc::Draggable_CSPtr entity) {
+	entities.each<const lc::Draggable>([&](lc::Draggable_CSPtr entity) {
 		if(entity) {
 			auto entityDragPoints = entity->dragPoints();
 
@@ -53,15 +51,15 @@ std::vector<lc::geo::Coordinate> DragManager::selectedEntitiesDragPoints() {
 void DragManager::moveEntities() {
 	auto entities = _selectedEntities.asVector();
 
-	for(auto entity : entities) {
+	for (auto entity : entities) {
 		_selectedEntities.remove(entity);
 
 		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(entity);
 
 		auto entityDragPoints = draggable->dragPoints();
 
-		for(auto point : entityDragPoints) {
-			if(point.second == _selectedPoint) {
+		for (auto point : entityDragPoints) {
+			if (point.second.distanceTo(_selectedPoint) < LCTOLERANCE) {
 				entityDragPoints[point.first] = _cursor->position();
 			}
 		}
@@ -75,6 +73,20 @@ void DragManager::moveEntities() {
 }
 
 void DragManager::onMouseMove() {
+	double x = _size;
+	double y = _size;
+
+	double zeroCornerX = 0.;
+	double zeroCornerY = 0.;
+
+	_docCanvas->device_to_user(&zeroCornerX, &zeroCornerY);
+	_docCanvas->device_to_user(&x, &y);
+
+	double pointSize = (x - zeroCornerX);
+
+	auto loc = lc::geo::Coordinate(_cursor->position().x() - pointSize / 2, _cursor->position().y() - pointSize / 2);
+	_toleranceArea = lc::geo::Area(loc, pointSize, pointSize);
+
 	std::vector<lc::geo::Coordinate> dragPoints;
 
 	if(!_entityDragged) {
@@ -85,22 +97,18 @@ void DragManager::onMouseMove() {
 		dragPoints = selectedEntitiesDragPoints();
 	}
 
-	_dragPointsEvent(DragPointsEvent(dragPoints));
+	_dragPointsEvent(DragPointsEvent(dragPoints, _size));
 }
 
 void DragManager::onMousePress() {
-    auto loc = lc::geo::Coordinate(_cursor->position().x() - 1, _cursor->position().y() - 1);
-	lc::geo::Area area(loc, 2, 2);
-
 	_builder = std::make_shared<lc::operation::Builder>(_docCanvas->document());
 
 	auto entities = _docCanvas->selection();
-
 	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer();
+		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea, 5);
 	}
 
-	auto entitiesNearCursor = entities.entitiesWithinAndCrossingArea(area, 5).asVector();
+	auto entitiesNearCursor = entities.asVector();
 
 	for(auto entity : entitiesNearCursor) {
 		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(entity);
@@ -108,10 +116,13 @@ void DragManager::onMousePress() {
 			auto entityDragPoints = draggable->dragPoints();
 
 			for(auto point : entityDragPoints) {
-				if(point.second == _cursor->position()) {
+				if(_toleranceArea.inArea(point.second)) {
 					_selectedEntities.insert(entity);
 					_selectedPoint = point.second;
 					_builder->append(entity);
+					_docCanvas->document()->removeEntity(entity);
+
+					break;
 				}
 			}
 		}
@@ -121,22 +132,19 @@ void DragManager::onMousePress() {
 
 	_builder->push();
 	_builder->remove();
-	_builder->execute();
+	_builder->processStack();
 }
 
 void DragManager::onMouseRelease() {
 	if(_entityDragged) {
-		_builder = std::make_shared<lc::operation::Builder>(_docCanvas->document());
+		_builder->undo(); //Re-insert original entities which are already deleted
 
 		auto entities = _selectedEntities.asVector();
 		for(auto entity : entities) {
-
-			//Todo: Remove the first undo operation
 			_builder->append(entity);
-			_builder->execute();
-
 			_selectedEntities.remove(entity);
 		}
+		_builder->execute();
 
 		_entityDragged = false;
 	}

@@ -10,10 +10,11 @@
 #include "cad/math/lcmath.h"
 #include "cad/primitive/textconst.h"
 #include <cad/primitive/point.h>
+#include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
-        class Text : public std::enable_shared_from_this<Text>, public CADEntity, virtual public Visitable {
+        class Text : public std::enable_shared_from_this<Text>, public CADEntity, virtual public Visitable, public Draggable {
         public:
             /**
             * @brief Text, default constructor
@@ -152,6 +153,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
         using Text_SPtr = std::shared_ptr<Text>;
         using Text_CSPtr = std::shared_ptr<const Text>;

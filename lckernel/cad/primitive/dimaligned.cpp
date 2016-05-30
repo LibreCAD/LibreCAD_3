@@ -1,3 +1,4 @@
+#include <map>
 #include "cad/primitive/dimaligned.h"
 
 
@@ -68,3 +69,37 @@ const geo::Coordinate& DimAligned::definitionPoint2() const noexcept {
 const geo::Coordinate& DimAligned::definitionPoint3() const noexcept {
     return _definitionPoint3;
 }
+
+std::map<unsigned int, geo::Coordinate> DimAligned::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+
+    dragPoints[0] = definitionPoint();
+    dragPoints[1] = middleOfText();
+    dragPoints[2] = _definitionPoint2;
+    dragPoints[3] = _definitionPoint3;
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr DimAligned::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<DimAligned>(dragPoints.at(0),
+                                                      dragPoints.at(1),
+                                                      attachmentPoint(),
+                                                      textAngle(),
+                                                      lineSpacingFactor(),
+                                                      lineSpacingStyle(),
+                                                      explicitValue(),
+                                                      dragPoints.at(2),
+                                                      dragPoints.at(3),
+                                                      layer(),
+                                                      metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}
+

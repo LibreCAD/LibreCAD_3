@@ -14,6 +14,11 @@ Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double
                                                                             isCCW) {
 }
 
+Arc::Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) :
+    CADEntity(layer, metaInfo),
+    geo::Arc(a) {
+}
+
 Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),
                                                geo::Arc(other->center(), other->radius(), other->startAngle(),
                                                         other->endAngle(), other->CCW()) {
@@ -126,4 +131,25 @@ CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) co
     return newArc;
 }
 
+
+std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
+    std::map<unsigned int, lc::geo::Coordinate> dragPoints;
+
+    dragPoints[0] = startP();
+    dragPoints[1] = endP();
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}
 

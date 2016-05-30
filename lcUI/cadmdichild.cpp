@@ -123,11 +123,11 @@ void CadMdiChild::newDocument() {
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     //Drag manager
-    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor);
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
     _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
     _viewer->setDragManager(_dragManager);
 
-    _dragPoints = std::make_shared<LCViewer::DragPoints>(10);
+    _dragPoints = std::make_shared<LCViewer::DragPoints>();
     _dragManager->dragPointsEvent().connect<LCViewer::DragPoints, &LCViewer::DragPoints::setPoints>(_dragPoints.get());
     _viewer->documentCanvas()->background().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
 
@@ -197,11 +197,11 @@ void CadMdiChild::import(std::string str) {
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     //Drag manager
-    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor);
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
     _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
     _viewer->setDragManager(_dragManager);
 
-    _dragPoints = std::make_shared<LCViewer::DragPoints>(10);
+    _dragPoints = std::make_shared<LCViewer::DragPoints>();
     _dragManager->dragPointsEvent().connect<LCViewer::DragPoints, &LCViewer::DragPoints::setPoints>(_dragPoints.get());
     _viewer->documentCanvas()->background().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
 

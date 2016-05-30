@@ -62,15 +62,7 @@ void Builder::processInternal() {
         document()->addDocumentMetaType(metaData);
     }
 
-    std::vector<entity::CADEntity_CSPtr> entitySet;
-
-    for (auto it = _stack.begin(); it != _stack.end(); ++it) {
-        // Get looping stack, we currently support only one single loop!!
-        std::vector<Base_SPtr> stack(_stack.begin(), it);
-        entitySet = (*it)->process(document(), entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
-    }
-
-    _workingBuffer.insert(_workingBuffer.end(), entitySet.begin(), entitySet.end());
+    processStack();
 
     auto ec = document()->entityContainer();
 
@@ -134,3 +126,19 @@ Builder& Builder::appendMetaData(DocumentMetaType_CSPtr metaData) {
     _metaDataThatNeedsUpdate.push_back(metaData);
     return *this;
 }
+
+
+void Builder::processStack() {
+    std::vector<entity::CADEntity_CSPtr> entitySet;
+
+    for (auto it = _stack.begin(); it != _stack.end(); ++it) {
+        // Get looping stack, we currently support only one single loop!!
+        std::vector<Base_SPtr> stack(_stack.begin(), it);
+        entitySet = (*it)->process(document(), entitySet, _workingBuffer, _entitiesThatNeedsRemoval, stack);
+    }
+
+    _stack.clear();
+
+    _workingBuffer.insert(_workingBuffer.end(), entitySet.begin(), entitySet.end());
+}
+

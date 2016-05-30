@@ -2,11 +2,12 @@
 
 using namespace LCViewer;
 
-DragPoints::DragPoints(int size) : _size(size) {
+DragPoints::DragPoints() {
 }
 
 void DragPoints::setPoints(DragPointsEvent const &points) {
 	_points = points.dragPoints();
+	_size = points.size();
 }
 
 void DragPoints::onDraw(DrawEvent const &event) const {
@@ -20,8 +21,6 @@ void DragPoints::onDraw(DrawEvent const &event) const {
 	event.painter().device_to_user(&x, &y);
 
 	double size = (x - zeroCornerX);
-
-	event.painter().user_to_device(&x, &y);
 
 	event.painter().source_rgb(255, 255, 255);
 
