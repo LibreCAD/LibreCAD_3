@@ -38,6 +38,10 @@ namespace lc {
 
                 const double length() const;
 
+                const Coordinate tangent(double t) const;
+
+                const Coordinate normal(double t) const;
+
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
