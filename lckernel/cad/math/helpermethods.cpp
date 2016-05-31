@@ -2,7 +2,7 @@
 // Created by R. van Twisk on 4/27/16.
 //
 
-#include "vectorhelper.h"
+#include "helpermethods.h"
 
 using namespace lc;
 

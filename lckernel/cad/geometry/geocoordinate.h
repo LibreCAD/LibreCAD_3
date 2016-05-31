@@ -15,7 +15,7 @@ namespace lc {
                 Coordinate(double x, double y, double z) : _x(x), _y(y), _z(z) {}
                 Coordinate(double x, double y) : _x(x), _y(y), _z(0.) {}
                 explicit Coordinate(double angle) : _x(std::cos(angle)), _y(std::sin(angle)), _z(0.) {}
-                Coordinate(Coordinate &&c) : _x(c._x), _y(c._y), _z(c._z) {}
+                Coordinate(Coordinate &&c) noexcept : _x(c._x), _y(c._y), _z(c._z) {}
                 Coordinate(const Coordinate &c) : _x(c._x), _y(c._y), _z(c._z) {}
 
 

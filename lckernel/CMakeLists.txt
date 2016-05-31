@@ -26,7 +26,8 @@ cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/math/lcmath.cpp
-cad/math/quadratic_math.cpp
+cad/math/equation.cpp
+cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
@@ -52,7 +53,7 @@ cad/primitive/dimangular.cpp
 cad/primitive/lwpolyline.cpp
 cad/primitive/beziercurve.cpp
 cad/primitive/image.cpp
-cad/math/vectorhelper.cpp
+cad/math/helpermethods.cpp
 )
 
 # HEADER FILES
@@ -93,7 +94,8 @@ cad/interface/metatype.h
 cad/interface/snapable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
-cad/math/quadratic_math.h
+cad/math/equation.h
+cad/math/intersectionhandler.h
 cad/meta/color.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
@@ -127,7 +129,7 @@ cad/primitive/textconst.h
 cad/functions/string_helper.h
 cad/primitive/beziercurve.h
 cad/primitive/image.h
-cad/math/vectorhelper.h)
+cad/math/helpermethods.h)
 
 # DEPENDENCIES
 find_package(PkgConfig)
@@ -144,6 +146,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
+
+pkg_check_modules(EIGEN REQUIRED eigen3)
+include_directories(${EIGEN_INCLUDE_DIRS})
 
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG

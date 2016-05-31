@@ -4,9 +4,9 @@
 #include "geoarea.h"
 #include "geocoordinate.h"
 #include "geobase.h"
+#include <cad/math/lcmath.h>
+#include <cmath>
 #include <vector>
-#include "cad/math/quadratic_math.h"
-
 
 namespace lc {
     namespace geo {
@@ -36,8 +36,19 @@ namespace lc {
 
                 const std::vector<Coordinate> Curve(double precession);
 
+                const double length() const;
+
+                const Coordinate tangent(double t) const;
+
+                const Coordinate normal(double t) const;
+
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
+
+                std::vector<double> nearestPointTValue(const Coordinate &coord) const;
+                const lc::geo::Coordinate returnCasesForNearestPoint(
+                        double min_distance, const lc::geo::Coordinate &coord,
+                        const Coordinate &ret) const;
 
                 friend std::ostream& operator<<(std::ostream& os, const Bezier& bez) {
                     os << "Bezier(A=" << bez._pointA << " radius=" << bez._pointA << " startAngle=" << bez._pointA << ")";

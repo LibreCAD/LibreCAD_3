@@ -4,8 +4,7 @@
 #include "geocoordinate.h"
 #include "geobase.h"
 #include <vector>
-#include "cad/math/quadratic_math.h"
-
+#include "cad/math/equation.h"
 namespace lc {
     namespace geo {
         // TODO: Should Circle be a arc with a start angle of 0 and a stop angle of 2PI ?
@@ -33,21 +32,8 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
-
-                 /**
-                 * @brief quadratic, Returns quadratic for the entity
-                 * @return Quadratic quadratic equation
-                 */
-                Quadratic quadratic() const {
-                     /*
-                    std::vector<double> ce(6, 0.);
-                    ce[0] = 1.;
-                    ce[2] = 1.;
-                    ce[5] = -_radius * _radius; */
-//                     Quadratic ret(ce);
-                     Quadratic ret(1.,0.,1.,0,.0,-_radius * _radius);
-                    ret.move(_center);
-                    return ret;
+                const maths::Equation equation() const {
+                    return maths::Equation(1., 0.,1., 0., 0., -_radius* _radius).move(_center);
                 }
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

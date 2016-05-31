@@ -388,8 +388,12 @@ public:
         cairo_select_font_face(_cr, text_val, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     }
 
-    void font_size(double size) {
-        cairo_set_font_size(_cr, size);
+    void font_size(double size, bool deviceCoords) {
+        if (deviceCoords) {
+            cairo_set_font_size(_cr, size / scale() );
+        } else {
+            cairo_set_font_size(_cr, size);
+        }
     }
 
     void text(const char *text_val) {
@@ -413,16 +417,25 @@ public:
     }
 
     void quadratic_curve_to(double x1, double y1, double x2, double y2) {
-        double x0, y0;
         // From : https://lists.cairographics.org/archives/cairo/2009-October/018351.html
         // http://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/spline/Bezier/bezier-elev.html
+
+        // From https://github.com/mono/moon/blob/master/src/moon-path.cpp#L285
+        y2 = -y2;
+        y1 = -y1;
+        double x0, y0;
+        double x3 = x2;
+        double y3 = y2;
         cairo_get_current_point(_cr, &x0, &y0);
-        cairo_curve_to(_cr,
-                       2.0 / 3.0 * x1 + 1.0 / 3.0 * x0,
-                       2.0 / 3.0 * -y1 + 1.0 / 3.0 * y0,
-                       2.0 / 3.0 * x1 + 1.0 / 3.0 * x2,
-                       2.0 / 3.0 * -y1 + 1.0 / 3.0 * -y2,
-                       x2, -y2);
+        x2 = x1 + (x2 - x1) / 3.;
+        y2 = y1 + (y2 - y1) / 3.;
+        x1 = x0 + 2. * (x1 - x0) / 3.;
+        y1 = y0 + 2. * (y1 - y0) / 3.;
+        cairo_curve_to(_cr, x1, y1, x2, y2, x3, y3);
+    }
+
+    void curve_to(double x1, double y1, double x2, double y2, double x3, double y3) {
+        cairo_curve_to(_cr, x1, -y1, x2, -y2, x3, -y3);
     }
 
     void save() {

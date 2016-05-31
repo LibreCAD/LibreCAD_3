@@ -154,6 +154,7 @@ void addLCBindings(lua_State *L) {
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
+			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)

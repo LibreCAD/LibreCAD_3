@@ -1,7 +1,9 @@
 #include <iostream>
-#include <cad/math/quadratic_math.h>
+#include "cad/math/intersectionhandler.h"
 #include "code.h"
 #include <cad/math/lcmath.h>
+#include <unsupported/Eigen/Polynomials>
+
 using namespace lc;
 using namespace entity;
 
@@ -30,9 +32,9 @@ std::vector<double> test::quartic(double x3, double x2, double x, double c) {
 }
 
 std::vector<geo::Coordinate> test::intr(Line& line, Circle& circle) {
-    auto l = line.quadratic();
-    auto c = circle.quadratic();
-    return Quadratic::getIntersection(l, c);
+    auto l = line.equation();
+    auto c = circle.equation();
+    return maths::Intersection::LineQuad(l, c);
 }
 
 std::vector<geo::Coordinate> test::testin() {

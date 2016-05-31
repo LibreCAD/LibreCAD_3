@@ -2,6 +2,8 @@
 
 #include "lcmath.h"
 #include "cad/const.h"
+#include <eigen3/Eigen/Dense>
+#include <unsupported/Eigen/Polynomials>
 
 using namespace lc;
 using namespace geo;
@@ -63,111 +65,53 @@ double Math::getAngleDifference(double start, double end, bool CCW) {
 }
 
 
-std::vector<double> Math::quadraticSolver(const std::vector<double>& ce)
-//quadratic solver for
-// x^2 + ce[0] x + ce[1] =0
-{
+/** quadratic solver
+* x^2 + ce[0] x + ce[1] = 0
+@ce, a vector of size 2 contains the coefficient in order
+@return, a vector contains real roots
+**/
+std::vector<double> Math::quadraticSolver(const std::vector<double>& ce) {
     std::vector<double> ans(0, 0.);
 
     if (ce.size() != 2) {
         return ans;
     }
 
-    double b = 0.25 * ce[0] * ce[0];
-    double discriminant = b - ce[1];
+    Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
+    Eigen::VectorXd coeff(3);
 
-    if (discriminant >= - LCTOLERANCE * std::max(std::abs(b), std::abs(ce[1]))) {
-        b =  sqrt(std::abs(discriminant));
-        double a = -0.5 * ce[0];
+    coeff[0] = ce[1];
+    coeff[1] = ce[0];
+    coeff[2] = 1;
 
-        if (b >= LCTOLERANCE * std::abs(a)) {
-            ans.push_back(a + b);
-            ans.push_back(a - b);
-        } else {
-            ans.push_back(a);
-        }
-    }
+    solver.compute(coeff);
 
+    solver.realRoots(ans);
     return ans;
 }
 
-std::vector<double> Math::cubicSolver(const std::vector<double>& ce)
-//cubic equation solver
-// x^3 + ce[0] x^2 + ce[1] x + ce[2] = 0
-{
-    //    std::cout<<"x^3 + ("<<ce[0]<<")*x^2+("<<ce[1]<<")*x+("<<ce[2]<<")==0"<<std::endl;
+/** cubic solver
+* x^3 + ce[0] x^2 + ce[1] x + ce[2] = 0
+@ce, a vector of size 3 contains the coefficient in order
+@return, a vector contains real roots
+**/
+std::vector<double> Math::cubicSolver(const std::vector<double>& ce) {
     std::vector<double> ans(0, 0.);
-
     if (ce.size() != 3) {
         return ans;
     }
 
-    // depressed cubic, Tschirnhaus transformation, x= t - b/(3a)
-    // t^3 + p t +q =0
-    double shift = (1. / 3) * ce[0];
-    double p = ce[1] - shift * ce[0];
-    double q = ce[0] * ((2. / 27) * ce[0] * ce[0] - (1. / 3) * ce[1]) + ce[2];
-    //Cardano's method,
-    //  t=u+v
-    //  u^3 + v^3 + ( 3 uv + p ) (u+v) + q =0
-    //  select 3uv + p =0, then,
-    //  u^3 + v^3 = -q
-    //  u^3 v^3 = - p^3/27
-    //  so, u^3 and v^3 are roots of equation,
-    //  z^2 + q z - p^3/27 = 0
-    //  and u^3,v^3 are,
-    //      -q/2 \pm sqrt(q^2/4 + p^3/27)
-    //  discriminant= q^2/4 + p^3/27
-    //std::cout<<"p="<<p<<"\tq="<<q<<std::endl;
-    double discriminant = (1. / 27) * p * p * p + (1. / 4) * q * q;
+    Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
+    Eigen::VectorXd coeff(4);
 
-    if (std::abs(p) < 1.0e-75) {
-        ans.push_back((q > 0) ? -pow(q, (1. / 3)) : pow(-q, (1. / 3)));
-        ans[0] -= shift;
-        //        DEBUG_HEADER();
-        //        std::cout<<"cubic: one root: "<<ans[0]<<std::endl;
-        return ans;
-    }
+    coeff[0] = ce[2];
+    coeff[1] = ce[1];
+    coeff[2] = ce[0];
+    coeff[3] = 1;
 
-    //std::cout<<"discriminant="<<discriminant<<std::endl;
-    if (discriminant > 0) {
-        std::vector<double> ce2(2, 0.);
-        ce2[0] = q;
-        ce2[1] = -1. / 27 * p * p * p;
-        auto&& r = quadraticSolver(ce2);
+    solver.compute(coeff);
 
-        if (r.size() == 0) { //should not happen
-            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : line " << __LINE__ << " :cubicSolver()::Error cubicSolver(" << ce[0] << ' ' << ce[1] << ' ' << ce[2] << ")\n";
-        }
-
-        double u, v;
-        u = (q <= 0) ? pow(r[0], 1. / 3) : -pow(-r[1], 1. / 3);
-        //u=(q<=0)?pow(-0.5*q+sqrt(discriminant),1./3):-pow(0.5*q+sqrt(discriminant),1./3);
-        v = (-1. / 3) * p / u;
-        //std::cout<<"u="<<u<<"\tv="<<v<<std::endl;
-        //std::cout<<"u^3="<<u*u*u<<"\tv^3="<<v*v*v<<std::endl;
-        ans.push_back(u + v - shift);
-
-        //        DEBUG_HEADER();
-        //        std::cout<<"cubic: one root: "<<ans[0]<<std::endl;
-        return ans;
-    }
-
-    std::complex<double> u(q, 0), rt[3];
-    u = std::pow(-0.5 * u - sqrt(0.25 * u * u + p * p * p / 27), 1. / 3);
-    rt[0] = u - p / (3.*u) - shift;
-    std::complex<double> w(-0.5, sqrt(3.) / 2);
-    rt[1] = u * w - p / (3.*u * w) - shift;
-    rt[2] = u / w - p * w / (3.*u) - shift;
-    //        DEBUG_HEADER();
-    //        std::cout<<"Roots:\n";
-    //        std::cout<<rt[0]<<std::endl;
-    //        std::cout<<rt[1]<<std::endl;
-    //        std::cout<<rt[2]<<std::endl;
-    ans.push_back(rt[0].real());
-    ans.push_back(rt[1].real());
-    ans.push_back(rt[2].real());
-
+    solver.realRoots(ans);
     return ans;
 }
 
@@ -177,151 +121,27 @@ std::vector<double> Math::cubicSolver(const std::vector<double>& ce)
 @return, a vector contains real roots
 **/
 std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
-    std::vector<double> ans(0, 0.);
+    //    std::cout<<"x^4+("<<ce[0]<<")*x^3+("<<ce[1]<<")*x^2+("<<ce[2]<<")*x+("<<ce[3]<<")==0"<<std::endl;
 
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        DEBUG_HEADER();
-    //        std::cout<<"expected array size=4, got "<<ce.size()<<std::endl;
-    //    }
+    std::vector<double> ans(0, 0.);
+    Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
+    Eigen::VectorXd coeff(5);
+
     if (ce.size() != 4) {
         return ans;
     }
 
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        std::cout<<"x^4+("<<ce[0]<<")*x^3+("<<ce[1]<<")*x^2+("<<ce[2]<<")*x+("<<ce[3]<<")==0"<<std::endl;
-    //    }
+    coeff[0] = ce[3];
+    coeff[1] = ce[2];
+    coeff[2] = ce[1];
+    coeff[3] = ce[0];
+    coeff[4] = 1;
 
-    // x^4 + a x^3 + b x^2 +c x + d = 0
-    // depressed quartic, x= t - a/4
-    // t^4 + ( b - 3/8 a^2 ) t^2 + (c - a b/2 + a^3/8) t + d - a c /4 + a^2 b/16 - 3 a^4/256 =0
-    // t^4 + p t^2 + q t + r =0
-    // p= b - (3./8)*a*a;
-    // q= c - 0.5*a*b+(1./8)*a*a*a;
-    // r= d - 0.25*a*c+(1./16)*a*a*b-(3./256)*a^4
-    double shift = 0.25 * ce[0];
-    double shift2 = shift * shift;
-    double a2 = ce[0] * ce[0];
-    double p = ce[1] - (3. / 8) * a2;
-    double q = ce[2] + ce[0] * ((1. / 8) * a2 - 0.5 * ce[1]);
-    double r = ce[3] - shift * ce[2] + (ce[1] - 3.*shift2) * shift2;
+    solver.compute(coeff);
 
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        DEBUG_HEADER();
-    //        std::cout<<"x^4+("<<p<<")*x^2+("<<q<<")*x+("<<r<<")==0"<<std::endl;
-    //    }
-    if (q * q <= 1.e-4 * LCTOLERANCE * std::abs(p * r)) { // Biquadratic equations
-        double discriminant = 0.25 * p * p - r;
-
-        if (discriminant < -1.e3 * LCTOLERANCE) {
-
-            //            DEBUG_HEADER();
-            //            std::cout<<"discriminant="<<discriminant<<"\tno root"<<std::endl;
-            return ans;
-        }
-
-        double t2[2];
-        t2[0] = -0.5 * p - sqrt(std::abs(discriminant));
-        t2[1] = -p - t2[0];
-
-        //        std::cout<<"t2[0]="<<t2[0]<<std::endl;
-        //        std::cout<<"t2[1]="<<t2[1]<<std::endl;
-        if (t2[1] >= 0.) {  // two real roots
-            ans.push_back(sqrt(t2[1]) - shift);
-            ans.push_back(-sqrt(t2[1]) - shift);
-        }
-
-        if (t2[0] >= 0.) {  // four real roots
-            ans.push_back(sqrt(t2[0]) - shift);
-            ans.push_back(-sqrt(t2[0]) - shift);
-        }
-
-        //        DEBUG_HEADER();
-        //        for(int i=0;i<ans.size();i++){
-        //            std::cout<<"root x: "<<ans[i]<<std::endl;
-        //        }
-        return ans;
-    }
-
-    if (std::abs(r) < 1.0e-75) {
-        std::vector<double> cubic(3, 0.);
-        cubic[1] = p;
-        cubic[2] = q;
-        ans.push_back(0.);
-        auto&& r = cubicSolver(cubic);
-        std::copy(r.begin(), r.end(), back_inserter(ans));
-
-        for (size_t i = 0; i < ans.size(); i++) {
-            ans[i] -= shift;
-        }
-
-        return ans;
-    }
-
-    // depressed quartic to two quadratic equations
-    // t^4 + p t^2 + q t + r = ( t^2 + u t + v) ( t^2 - u t + w)
-    // so,
-    //  p + u^2= w+v
-    //  q/u= w-v
-    //  r= wv
-    // so,
-    //  (p+u^2)^2 - (q/u)^2 = 4 r
-    //  y=u^2,
-    //  y^3 + 2 p y^2 + ( p^2 - 4 r) y - q^2 =0
-    //
-    std::vector<double> cubic(3, 0.);
-    cubic[0] = 2.*p;
-    cubic[1] = p * p - 4.*r;
-    cubic[2] = -q * q;
-    auto&& r3 = cubicSolver(cubic);
-
-    //std::cout<<"quartic_solver:: real roots from cubic: "<<ret<<std::endl;
-    //for(unsigned int i=0; i<ret; i++)
-    //   std::cout<<"cubic["<<i<<"]="<<cubic[i]<<" x= "<<croots[i]<<std::endl;
-    if (r3.size() == 1) { //one real root from cubic
-        if (r3[0] < 0.) { //this should not happen
-            std::cerr << __FILE__ << " : " << __FUNCTION__ << " : line " << __LINE__ << std::endl;
-            std::cerr << "Quartic Error:: Found one real root for cubic, but negative\n";
-            return ans;
-        }
-
-        double sqrtz0 = sqrt(r3[0]);
-        std::vector<double> ce2(2, 0.);
-        ce2[0] = -sqrtz0;
-        ce2[1] = 0.5 * (p + r3[0]) + 0.5 * q / sqrtz0;
-        auto r1 = quadraticSolver(ce2);
-
-        if (r1.size() == 0) {
-            ce2[0] = sqrtz0;
-            ce2[1] = 0.5 * (p + r3[0]) - 0.5 * q / sqrtz0;
-            r1 = quadraticSolver(ce2);
-        }
-
-        for (size_t i = 0; i < r1.size(); i++) {
-            r1[i] -= shift;
-        }
-
-        return r1;
-    }
-
-    if (r3[0] > 0. && r3[1] > 0.) {
-        double sqrtz0 = sqrt(r3[0]);
-        std::vector<double> ce2(2, 0.);
-        ce2[0] = -sqrtz0;
-        ce2[1] = 0.5 * (p + r3[0]) + 0.5 * q / sqrtz0;
-        ans = quadraticSolver(ce2);
-        ce2[0] = sqrtz0;
-        ce2[1] = 0.5 * (p + r3[0]) - 0.5 * q / sqrtz0;
-        auto&& r1 = quadraticSolver(ce2);
-        std::copy(r1.begin(), r1.end(), back_inserter(ans));
-
-        for (size_t i = 0; i < ans.size(); i++) {
-            ans[i] -= shift;
-        }
-
-        return ans;
-    }
-
+    solver.realRoots(ans);
     return ans;
+
 }
 
 /** quartic solver
@@ -331,10 +151,7 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
 *ToDo, need a robust algorithm to locate zero terms, better handling of tolerances
 **/
 std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        DEBUG_HEADER();
-    //        std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
-    //    }
+   //  std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
 
     std::vector<double> roots(0, 0.);
 
@@ -389,137 +206,6 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
 
     return roots;
 }
-
-//linear Equation solver by Gauss-Jordan
-/**
-  * Solve linear equation set
-  *@ mt holds the augmented matrix
-  *@ sn holds the solution
-  *@ return true, if the equation set has a unique solution, return false otherwise
-  *
-  *@Author: Dongxu Li
-  */
-
-bool Math::linearSolver(const std::vector<std::vector<double> >& mt, std::vector<double>& sn) {
-    //verify the matrix size
-    int mSize(mt.size()); //rows
-    uint aSize(mSize + 1); //columns of augmented matrix
-
-    for (int i = 0; i < mSize; i++) {
-        if (mt[i].size() != aSize) {
-            return false;
-        }
-    }
-
-    sn.resize(mSize);//to hold the solution
-    //#ifdef    HAS_BOOST
-#if false
-    boost::numeric::ublas::matrix<double> bm(mSize, mSize);
-    boost::numeric::ublas::vector<double> bs(mSize);
-
-    for (int i = 0; i < mSize; i++) {
-        for (int j = 0; j < mSize; j++) {
-            bm(i, j) = mt[i][j];
-        }
-
-        bs(i) = mt[i][mSize];
-    }
-
-    //solve the linear equation set by LU decomposition in boost ublas
-
-    if (boost::numeric::ublas::lu_factorize<boost::numeric::ublas::matrix<double> >(bm)) {
-        std::cout << __FILE__ << " : " << __FUNCTION__ << " : line " << __LINE__ << std::endl;
-        std::cout << " linear solver failed" << std::endl;
-        //        RS_DEBUG->print(RS_Debug::D_WARNING, "linear solver failed");
-        return false;
-    }
-
-    boost::numeric::ublas:: triangular_matrix<double, boost::numeric::ublas::unit_lower>
-    lm = boost::numeric::ublas::triangular_adaptor< boost::numeric::ublas::matrix<double>,  boost::numeric::ublas::unit_lower>(bm);
-    boost::numeric::ublas:: triangular_matrix<double,  boost::numeric::ublas::upper>
-    um =  boost::numeric::ublas::triangular_adaptor< boost::numeric::ublas::matrix<double>,  boost::numeric::ublas::upper>(bm);
-    ;
-    boost::numeric::ublas::inplace_solve(lm, bs, boost::numeric::ublas::lower_tag());
-    boost::numeric::ublas::inplace_solve(um, bs, boost::numeric::ublas::upper_tag());
-
-    for (int i = 0; i < mSize; i++) {
-        sn[i] = bs(i);
-    }
-
-    //    std::cout<<"dn="<<dn<<std::endl;
-    //    data.center.set(-0.5*dn(1)/dn(0),-0.5*dn(3)/dn(2)); // center
-    //    double d(1.+0.25*(dn(1)*dn(1)/dn(0)+dn(3)*dn(3)/dn(2)));
-    //    if(std::abs(dn(0))<TOLERANCE2
-    //            ||std::abs(dn(2))<TOLERANCE2
-    //            ||d/dn(0)<TOLERANCE2
-    //            ||d/dn(2)<TOLERANCE2
-    //            ) {
-    //        //ellipse not defined
-    //        return false;
-    //    }
-    //    d=sqrt(d/dn(0));
-    //    data.majorP.set(d,0.);
-    //    data.ratio=sqrt(dn(0)/dn(2));
-#else
-    // solve the linear equation by Gauss-Jordan elimination
-    std::vector<std::vector<double> > mt0(mt); //copy the matrix;
-
-    for (int i = 0; i < mSize; i++) {
-        int imax(i);
-        double cmax(std::abs(mt0[i][i]));
-
-        for (int j = i + 1; j < mSize; j++) {
-            if (std::abs(mt0[j][i]) > cmax) {
-                imax = j;
-                cmax = std::abs(mt0[j][i]);
-            }
-        }
-
-        if (cmax < TOLERANCE2) {
-            return false;    //singular matrix
-        }
-
-        if (imax != i) { //move the line with largest absolute value at column i to row i, to avoid division by zero
-            std::swap(mt0[i], mt0[imax]);
-            //            for(int j=i;j<=mSize;j++) {
-            //                std::swap(m[i][j],m[imax][j]);
-            //            }
-        }
-
-        //        for(int k=i+1;k<5;k++) { //normalize the i-th row
-        for (int k = mSize; k >= i; k--) { //normalize the i-th row
-            mt0[i][k] /= mt0[i][i];
-        }
-
-        for (int j = 0; j < mSize; j++) { //Gauss-Jordan
-            if (j != i) {
-                //                for(int k=i+1;k<5;k++) {
-                for (int k = mSize; k >= i; k--) {
-                    mt0[j][k] -= mt0[i][k] * mt0[j][i];
-                }
-            }
-        }
-
-        //output gauss-jordan results for debugging
-        //        std::cout<<"========"<<i<<"==========\n";
-        //        for(int j=0;j<mSize;j++) {//Gauss-Jordan
-        //            for(int k=0;k<=mSize;k++) {
-        //                std::cout<<m[j][k]<<'\t';
-        //            }
-        //            std::cout<<std::endl;
-        //        }
-    }
-
-    for (int i = 0; i < mSize; i++) {
-        sn[i] = mt0[i][mSize];
-    }
-
-#endif
-
-    return true;
-}
-
-
 
 /** solver quadratic simultaneous equations of set two **/
 /* solve the following quadratic simultaneous equations,
@@ -651,6 +337,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
     //    }
     //quarticSolver
     auto&& roots = quarticSolverFull(qy);
+
     //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
     //        std::cout<<"roots.size()= "<<roots.size()<<std::endl;
     //    }
@@ -735,17 +422,13 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
 
     if (p1->size() == 3) {
         //linear
-        std::vector<double> sn(2, 0.);
-        std::vector<std::vector<double> > ce;
-        ce.push_back(std::vector<double>(m[0]));
-        ce.push_back(std::vector<double>(m[1]));
-        ce[0][2] = -ce[0][2];
-        ce[1][2] = -ce[1][2];
-
-        if (Math::linearSolver(ce, sn)) {
-            ret.push_back(geo::Coordinate(sn[0], sn[1]));
-        }
-
+        Eigen::Matrix2d M;
+        Eigen::Vector2d V;
+        M << m[0][0], m[0][1],
+             m[1][0], m[1][1];
+        V << -m[0][2], -m[1][2];
+        Eigen::Vector2d sn = M.colPivHouseholderQr().solve(V);
+        ret.push_back(geo::Coordinate(sn[0], sn[1]));
         return ret;
     }
 

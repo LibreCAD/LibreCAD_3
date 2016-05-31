@@ -14,26 +14,127 @@ Bezier::Bezier(const Bezier &bez) :
 }
 
 const Area Bezier::boundingBox() const {
-    /*
-     * TODO BOUNDING BOX
-     * GSOC project
-     */
 
-    return Area();
+    /*
+     * T = A-B/(A - 2B + C)
+     */
+    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+    std::vector<double> x_{_pointA.x(), _pointC.x() };
+    std::vector<double> y_{_pointA.y(), _pointC.y() };
+
+    if(tx_ > 0. && tx_ < 1.0) {
+        auto bez1 = DirectValueAt(tx_);
+        x_.push_back(bez1.x());
+        y_.push_back(bez1.y());
+    }
+
+    if(ty_ > 0. && ty_ < 1.0) {
+        auto bez2 = DirectValueAt(ty_);
+        x_.push_back(bez2.x());
+        y_.push_back(bez2.y());
+    }
+
+    std::sort(x_.begin(), x_.end());
+    std::sort(y_.begin(), y_.end());
+
+    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
+
     /*
-     * TODO
+     * Diffrence between nearest point on path and
+     * nearest point on entity for a bezier curve is that
+     * for calcualting the nearest point on entity you check
+     * that if the value of "t" is between 0 and 1
+     * whereas for nearest point on path, you don't check that
      */
-    return Coordinate();
+
+    auto min_distance = std::numeric_limits<double>::max();
+    Coordinate ret;
+
+    auto tValues = nearestPointTValue(coord);
+
+    for (auto val : tValues) {
+        geo::Coordinate point_on_path = DirectValueAt(val);
+        auto raw_distance = coord.distanceTo(point_on_path);
+        if(raw_distance < min_distance) {
+            ret = point_on_path;
+            min_distance = raw_distance;
+        }
+    }
+
+    return returnCasesForNearestPoint(min_distance, coord, ret);
 }
 
 Coordinate Bezier::nearestPointOnEntity(const Coordinate& coord) const {
-    /*
-     * TODO
-     */
-    return Coordinate();
+    auto min_distance = std::numeric_limits<double>::max();
+
+    Coordinate ret;
+
+    auto tValues = nearestPointTValue(coord);
+
+    for (auto val : tValues) {
+        if(val > 0 && val < 1) {
+            geo::Coordinate point_on_path = DirectValueAt(val);
+            auto raw_distance = coord.distanceTo(point_on_path);
+            if(raw_distance < min_distance) {
+                ret = point_on_path;
+                min_distance = raw_distance;
+            }
+        }
+    }
+
+    return returnCasesForNearestPoint(min_distance, coord, ret);
+}
+
+/**
+ * @brief Bezier::nearestPointTValue
+ * @param coord The pointt from where nearest point is to be found
+ * @return vector of t values for bezier
+ */
+std::vector<double> Bezier::nearestPointTValue(const lc::geo::Coordinate &coord) const {
+    auto pos = _pointA - coord;
+
+    auto Ax = _pointB.x() - _pointA.x();
+    auto Ay = _pointB.y() - _pointA.y();
+    auto Bx = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto By = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+    auto a = Bx * Bx + By * By;
+    auto b = (3 * (Ax * Bx + Ay * By)) / a;
+    auto c = (2 * (Ax * Ax + Ay * Ay) + pos.x() * Bx + pos.y() * By) / a;
+    auto d = (pos.x() * Ax + pos.y() * Ay) / a;
+
+    return lc::Math::cubicSolver({b, c, d});
+}
+
+
+/**
+ * @brief Bezier::returnCasesForNearestPoint
+ * @param distance at minimum T
+ * @param coord coordinate from where the minimum
+ *        distance is to be found
+ * @param ret coordinate value at minimum T
+ * @return nearest point
+ */
+const lc::geo::Coordinate Bezier::returnCasesForNearestPoint(
+        double min_distance, const lc::geo::Coordinate &coord,
+        const lc::geo::Coordinate &ret) const {
+    auto distance_to_A = coord.distanceTo(_pointA);
+    auto distance_to_C = coord.distanceTo(_pointC);
+
+    // Point is on curve
+    if(min_distance < distance_to_A && min_distance < distance_to_C) {
+        return ret;
+    }
+    // Point is on starting of Curve
+    if (distance_to_A < distance_to_C) {
+        return _pointA;
+    }
+    // Point is end of curve
+    return _pointC;
 }
 
 Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
@@ -49,17 +150,17 @@ Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
 }
 
 Coordinate Bezier::DirectValueAt(double t) const {
-    double one_minus_t = 1 - t;
-    double t_square = t*t;
-    double one_minus_t_square = one_minus_t * one_minus_t;
-    double two_a_b  = 2 * one_minus_t * t;
+    auto one_minus_t = 1 - t;
+    auto t_square = t*t;
+    auto one_minus_t_square = one_minus_t * one_minus_t;
+    auto two_a_b  = 2 * one_minus_t * t;
     return (_pointA * one_minus_t_square) + (_pointB * two_a_b) + (_pointC * t_square);
 }
 
 const std::vector<Coordinate> Bezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC };
     std::vector<Coordinate> ret;
-    for(double i = 0.; i < 1.; i+=precession) {
+    for(auto i = 0.; i < 1.; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
 
        /* TODO
@@ -81,4 +182,53 @@ const Coordinate Bezier::pointB() const {
 
 const Coordinate Bezier::pointC() const {
     return _pointC;
+}
+
+const double Bezier::length() const {
+
+     auto  Bx = 2*(_pointB.x() - _pointA.x());
+     auto  By = 2*(_pointB.y() - _pointA.y());
+     auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+     auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+     auto A = 4*(Ax*Ax + Ay*Ay);
+     auto B = 4*(Ax*Bx + Ay*By);
+     auto C = Bx*Bx + By*By;
+
+     auto Sabc = 2*std::sqrt(A+B+C);
+     auto A_2 = std::sqrt(A);
+     auto A_32 = 2*A*A_2;
+     auto C_2 = 2*std::sqrt(C);
+     auto BA = B/A_2;
+
+     return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
+}
+
+const Coordinate Bezier::tangent(double t) const {
+    auto  Bx = _pointB.x() - _pointA.x();
+    auto  By = _pointB.y() - _pointA.y();
+    auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+    auto tanx = Ax * t + Bx;
+    auto tany = Ay * t + By;
+    return Coordinate(tanx, tany);
+}
+
+const Coordinate Bezier::normal(double t) const {
+    auto  Bx = _pointB.x() - _pointA.x();
+    auto  By = _pointB.y() - _pointA.y();
+    auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    auto  Ay = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+
+    auto tanx = Ay * t + By;
+    auto tany = -(Ax * t + Bx);
+
+    auto lNorm = std::sqrt(tanx * tanx + tany * tany);
+
+    if (lNorm > 0)  {
+        tanx /= lNorm;
+        tany /= lNorm;
+    }
+
+    return Coordinate(tanx, tany);
 }

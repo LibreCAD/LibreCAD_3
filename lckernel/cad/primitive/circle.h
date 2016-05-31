@@ -4,7 +4,6 @@
 
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
-#include "cad/math/quadratic_math.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/base/cadentity.h"

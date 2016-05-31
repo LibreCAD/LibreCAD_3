@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <cad/math/quadratic_math.h>
 #include <cad/primitive/circle.h>
 #include <cad/primitive/line.h>
 #include <cad/meta/layer.h>
