@@ -72,10 +72,40 @@ std::vector<geo::Coordinate> Intersection::BezierLine(
 std::vector<geo::Coordinate> Intersection::BezierCircle(
     const geo::Bezier& B, const geo::Circle& C) {
 
+    std::vector<geo::Coordinate> ret;
+
     // ((x0 (1-t)^2+ x1 (2 t - 2 t^2) + x2 t^2) - xC)^2 + ((y0 (1-t)^2+ y1 (2 t - 2 t^2) + y2 t^2) - yC)^2 = r2
+
+    // (((a - 2b + c)t^2 + 2t(b-a) + a) - d)^2 + (((e - 2f + g)t^2 + 2t(f-e) + e) - h)^2 - r^2
 
     // Solving this for T will get the required intersection
 
+    auto r = C.radius();
+    auto d = C.center().x();
+    auto h = C.center().y();
+
+    auto a = B.pointA().x();
+    auto b = B.pointB().x();
+    auto c = B.pointC().x();
+
+    auto e = B.pointA().y();
+    auto f = B.pointB().y();
+    auto g = B.pointC().y();
+
+    auto t4 = (g*g + (2*e - 4*f)*g + 4* f*f - 4* e * f + e*e + c*c + (2*a-4*b)*c + 4*b*b - 4*a*b + a*a);
+    auto t3 = ((4*f - 4*e)*g - 8*f*f + 12*e*f - 4*e*e + (4*b - 4*a)*c - 8*b*b + 12*a*b -4*a*a)/t4;
+    auto t2 = ((-2*g + 4*f -2*e)*h + 2*e*g + 4*f*f - 12*e*f + 6*e*e + (-2*c + 4*b - 2*a)*d + 2*a*c + 4*b*b -12*a*b + 6*a*a)/t4;
+    auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
+    auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
+
+    auto roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
+
+    for(const auto &root : roots) {
+        if(root > 0 && root < 1) {
+            ret.push_back(B.DirectValueAt(root));
+        }
+    }
+    return ret;
 }
 
 
@@ -85,6 +115,16 @@ std::vector<geo::Coordinate> Intersection::BezierArc(
     // BezierCircle Intersection
 
     // Check intersection points are on Arc.
+
+    std::vector<geo::Coordinate> ret;
+    const auto &points = BezierCircle(B, geo::Circle(A.center(), A.radius()));
+
+    for(const auto & pt : points) {
+        if(A.isAngleBetween(pt.angle())) {
+            ret.push_back(pt);
+        }
+    }
+    return ret;
 }
 
 
