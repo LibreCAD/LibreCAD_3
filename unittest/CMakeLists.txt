@@ -23,8 +23,9 @@ set(hdrs
 entitytest.h
 code.h
 testmath.h
-)
+testselection.h)
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 add_executable(lcunittest ${src} ${hdrs} testintersect.h)
-target_link_libraries(lcunittest lckernel gtest ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})

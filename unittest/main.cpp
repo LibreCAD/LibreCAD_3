@@ -5,6 +5,7 @@
 #include "testgeocircle.h"
 #include "testgeoarc.h"
 #include "testintersect.h"
+#include "testselection.h"
 
 using namespace std;
 using namespace lc;
