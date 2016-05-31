@@ -206,6 +206,8 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
 
     _dragManager->onMouseRelease();
 
+    _docCanvas->closeSelection();
+
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
     //  emit mouseReleaseEvent(e);

@@ -454,21 +454,36 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     // std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
 
-
     // Remove current selection
     if (!addTo) {
         removeSelection();
     }
 
-    if (occupies) {
-        _selectedEntities.combine(_entityContainer.entitiesFullWithinArea(*_selectedArea));
-    } else {
-        _selectedEntities.combine(_entityContainer.entitiesWithinAndCrossingArea(*_selectedArea));
-    }
+    _newSelection.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+        di->selected(false);
+    });
 
     _selectedEntities.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-        // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
         di->selected(true);
+    });
+
+    if (occupies) {
+        _newSelection = _entityContainer.entitiesFullWithinArea(*_selectedArea);
+    } else {
+        _newSelection = _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea);
+    }
+
+
+
+    _newSelection.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
+        // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
+        auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
+        if(entity && _selectedEntities.entityByID(entity->id()) != nullptr) {
+            di->selected(false);
+        }
+        else {
+            di->selected(true);
+        }
     });
 }
 
@@ -488,6 +503,22 @@ void DocumentCanvas::makeSelectionDevice(unsigned int x, unsigned int y, unsigne
     makeSelection(dx, dy, dw, dh, occupies, addTo);
 }
 
+void DocumentCanvas::closeSelection() {
+    _newSelection.each<lc::entity::CADEntity>([&](lc::entity::CADEntity_SPtr entity) {
+        auto drawable = std::dynamic_pointer_cast<LCVDrawItem>(entity);
+
+        if(_selectedEntities.entityByID(entity->id()) != nullptr) {
+            _selectedEntities.remove(entity);
+            drawable->selected(false);
+        }
+        else {
+            _selectedEntities.insert(entity);
+            drawable->selected(true);
+        }
+    });
+
+    _newSelection = lc::EntityContainer<lc::entity::CADEntity_SPtr>();
+}
 
 void DocumentCanvas::removeSelectionArea() {
     if (_selectedArea != nullptr) {

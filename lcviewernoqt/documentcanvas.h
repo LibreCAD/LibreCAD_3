@@ -143,6 +143,12 @@ class DocumentCanvas {
         void makeSelectionDevice(unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo = false);
 
         /**
+        * @brief closeSelection
+        * appends current selection to document
+        */
+        void closeSelection();
+
+        /**
         * @brief removeSelectionArea removed the colord selection area from the screen
         */
         void removeSelectionArea();
@@ -241,6 +247,7 @@ private:
         std::function<void(LcPainter&, lc::geo::Area, bool)> _selectedAreaPainter;
 
         lc::EntityContainer<lc::entity::CADEntity_SPtr> _selectedEntities;
+        lc::EntityContainer<lc::entity::CADEntity_SPtr> _newSelection;
 };
 
 using DocumentCanvas_SPtr = std::shared_ptr<DocumentCanvas>;
