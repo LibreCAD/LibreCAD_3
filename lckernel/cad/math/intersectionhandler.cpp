@@ -51,20 +51,26 @@ std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
 std::vector<geo::Coordinate> Intersection::BezierLine(
     const geo::Bezier& B, const geo::Vector& V) {
 
-    auto rotate_angle = V.end().angle();
-
-    auto absA = geo::Coordinate(V.start().x() * -1, V.start().y() * -1);
-    auto moved_bezier = geo::Bezier(B.pointA() + absA, B.pointB() + absA, B.pointC() + absA);
-
-    std::cout << "MOVED BEZIER:" << moved_bezier << std::endl;
-
-    auto rotated_bezier = moved_bezier.rotate(moved_bezier.pointA(), rotate_angle);
-
-    std::cout << "ROTATED BEZIER:" << rotated_bezier << std::endl;
-
-//    auto tx_ = (rotated_bezier.pointA().x() - rotated_bezier.pointB().x())/(rotated_bezier.pointA().x() - (rotated_bezier.pointB().x()*2.0) + rotated_bezier.pointC().x());
-//    std::cout << tx_;
     std::vector<geo::Coordinate> ret;
+
+    auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
+    auto rotate_angle = -ml.Angle1();
+
+    auto rl = geo::Vector(ml.start().rotate(ml.start(), rotate_angle), ml.end().rotate(ml.start(), rotate_angle));
+    auto moved_bezier = geo::Bezier(B.pointA() -V.start(), B.pointB() -V.start(), B.pointC() -V.start());
+    auto rb = moved_bezier.rotate(ml.start(), rotate_angle);
+
+    auto t2 = rb.pointA().y() - 2*rb.pointB().y() + rb.pointC().y();
+    auto t1 = 2*(rb.pointB().y() - rb.pointA().y())/t2;
+    auto coeff = rb.pointA().y()/t2;
+
+
+    auto roots = lc::Math::quadraticSolver({t1, coeff});
+    for(const auto &root : roots) {
+        if(root > 0 && root < 1) {
+            ret.push_back(B.DirectValueAt(root));
+        }
+    }
     return ret;
 }
 

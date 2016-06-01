@@ -149,7 +149,7 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 pkg_check_modules(EIGEN REQUIRED eigen3)
 include_directories(${EIGEN_INCLUDE_DIRS})
-
+message("Eigen directory ${EIGEN_INCLUDE_DIRS}")
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
