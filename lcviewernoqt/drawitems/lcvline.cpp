@@ -2,7 +2,8 @@
 #include "../lcpainter.h"
 #include "../lcdrawoptions.h"
 
- #include "cad/geometry/geobezier.h"
+#include "cad/geometry/geovector.h"
+#include "cad/geometry/geobezier.h"
  #include "cad/geometry/geocircle.h"
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geoarc.h"
@@ -16,9 +17,13 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.line_to(end().x(), end().y());
     painter.stroke();
 
+
     /*
-    auto c1 = lc::geo::Coordinate(0,0);
-    auto circle_ = lc::geo::Arc(c1, 200., 90*3.14/180, 270*3.14/180);
+    auto c1 = lc::geo::Coordinate(1000, -1000);
+    auto c2 = lc::geo::Coordinate(-1000, 1000);
+    //    auto circle_ = lc::geo::Arc(c1, 200., 90*3.14/180, 270*3.14/180);
+
+    auto circle_ = lc::geo::Vector(c1,c2);
 
     auto p1 = lc::geo::Coordinate(200,300);
     auto p2 = lc::geo::Coordinate(0,-900);
@@ -26,23 +31,28 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
     auto bezier_ = lc::geo::Bezier(p1,p2,p3);
 
-    auto ret = lc::maths::Intersection::BezierArc(bezier_, circle_);
+    auto ret = lc::maths::Intersection::BezierLine(bezier_, circle_);
 
     painter.move_to(0,0);
 //    painter.circle(c1.x(), c1.y(), 200.);
 
-    painter.arc(c1.x(), c1.y(), 200.,  90*3.14/180, 270*3.14/180);
+    painter.move_to(c1.x(), c1.y());
+    painter.line_to(c2.x(), c2.y());
+    painter.stroke();
+
+//    painter.arc(c1.x(), c1.y(), 200.,  90*3.14/180, 270*3.14/180);
 
     painter.move_to(p1.x(), p1.y());
     painter.quadratic_curve_to(p2.x(), p2.y(), p3.x(), p3.y());
     painter.stroke();
 
     for(auto r : ret) {
-        painter.point(r.x(), r.y(), 3, 1);
+        painter.point(r.x(), r.y(), 10, 1);
     }
 
     painter.stroke();
 */
+
     /* Nearest point on entitty for bezier
 
     auto p1 = lc::geo::Coordinate(1800,2400);

@@ -40,6 +40,44 @@ double Ellipse::getAngle() const {
     return _majorP.angle();
 }
 
+Ellipse Ellipse::geoscale(const Coordinate& center, const Coordinate &factor) const {
+    geo::Coordinate vp1(this->majorP());
+    double a(vp1.magnitude());
+    geo::Coordinate vp2(vp1.x() * 1. / a, vp1.y() * 1. / a);
+    geo::Coordinate startPoint;
+    geo::Coordinate endPoint;
+
+    if (isArc()) {
+        startPoint = this->startPoint();
+        endPoint = this->endPoint();
+    }
+
+    double ct = vp2.x();
+    double ct2 = ct * ct; // cos^2 angle
+    double st = vp2.y();
+    double st2 = 1.0 - ct2; // sin^2 angle
+    double kx2 = factor.x() * factor.x();
+    double ky2 = factor.y() * factor.y();
+    double b = (this->minorRadius() / this->majorP().magnitude()) * a;
+    double cA = 0.5 * a * a * (kx2 * ct2 + ky2 * st2);
+    double cB = 0.5 * b * b * (kx2 * st2 + ky2 * ct2);
+    double cC = a * b * ct * st * (ky2 - kx2);
+    geo::Coordinate vp(cA - cB, cC);
+    geo::Coordinate vp3(a, b);
+    geo::Coordinate vp4(vp3.scale(geo::Coordinate(vp.angle() * 0.5)));
+    geo::Coordinate vp5(vp4.rotate(geo::Coordinate(ct, st)));
+    geo::Coordinate vp6(vp5.scale(factor));
+    double z = cA + cB;
+    double x = vp.magnitude();
+    double ratio = std::sqrt((z - x) / (z + x));
+    double minor_ = vp6.magnitude() * ratio;
+
+    return Ellipse(this->center().scale(center, factor), vp6,
+                                                    minor_,
+                                                    isArc() ? this->getEllipseAngle(startPoint) : 0.,
+                                                    isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
+}
+
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
     /* TODO implement
      * fix compiler warning

@@ -101,6 +101,8 @@ namespace lc {
                  */
                 double getEllipseAngle(const Coordinate& coord) const;
 
+                Ellipse geoscale(const Coordinate& center, const Coordinate &factor) const;
+
                 const maths::Equation equation() const {
                     auto ce0 = _majorP.squared();
                     auto ce2 = this->ratio() * this->ratio() * ce0;
