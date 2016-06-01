@@ -72,6 +72,16 @@ Under some conditions you might want to set a additional search path if librarie
 (http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
 
 
+When using ports I had to use:
+
+```
+cd /opt/local/include
+sudo ln -sf eigen3/Eigen Eigen
+sudo ln -sf eigen3/unsupported unsupported
+```
+
+any cmake guru care to comment on this oddity? Is there a way to prevent making that symlink?
+
 Ubuntu/Mint
 ========
 

@@ -2,7 +2,7 @@
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/math/equation.h"
-#include "eigen3/Eigen/Dense"
+#include <Eigen/Dense>
 #include "cad/geometry/geobezier.h"
 #include "cad/geometry/geovector.h"
 #include "cad/geometry/geocircle.h"

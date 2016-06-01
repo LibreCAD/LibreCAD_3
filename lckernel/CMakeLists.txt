@@ -147,9 +147,14 @@ pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
+# Find eigen using pkg config
 pkg_check_modules(EIGEN REQUIRED eigen3)
 include_directories(${EIGEN_INCLUDE_DIRS})
-message("Eigen directory ${EIGEN_INCLUDE_DIRS}")
+
+# Find eigen using find_package
+#find_package( Eigen3 REQUIRED eigen>3.2.0)
+#include_directories( ${EIGEN3_INCLUDE_DIR})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
@@ -171,3 +176,4 @@ target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
+

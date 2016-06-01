@@ -5,7 +5,7 @@
 #pragma once
 
 #include <memory>
-
+#include <array>
 
 namespace lc {
     namespace geo {

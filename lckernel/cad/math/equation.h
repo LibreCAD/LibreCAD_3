@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <vector>
 #include <cad/geometry/geocoordinate.h>
 #include "lcmath.h"

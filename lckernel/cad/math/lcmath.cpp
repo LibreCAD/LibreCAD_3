@@ -2,7 +2,7 @@
 
 #include "lcmath.h"
 #include "cad/const.h"
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <unsupported/Eigen/Polynomials>
 
 using namespace lc;
