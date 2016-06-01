@@ -16,6 +16,8 @@
 #include <events/mousereleaseevent.h>
 #include <events/selecteditemsevent.h>
 
+#include <managers/dragmanager.h>
+
 #include "documentcanvas.h"
 namespace LCViewer {
 class SnapManager;
@@ -63,6 +65,7 @@ class LCADViewer : public QWidget {
 
         void setDocument(std::shared_ptr<lc::Document> document);
         void setSnapManager(std::shared_ptr<SnapManager> snapmanager);
+        void setDragManager(DragManager_SPtr dragManager);
         std::shared_ptr<DocumentCanvas> documentCanvas() const;
         void autoScale() const {documentCanvas()->autoScale();}
         double x();
@@ -94,8 +97,11 @@ class LCADViewer : public QWidget {
 
         /* for panning */
         bool _altKeyActive;
+        // For selection
+        bool _ctrlKeyActive;
         std::shared_ptr<DocumentCanvas> _docCanvas;
         bool _mouseScrollKeyActive;
+        bool _disableSelection;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 
@@ -118,5 +124,6 @@ class LCADViewer : public QWidget {
         // Entity container that track's all entities within the document
         std::shared_ptr<lc::Document> _document;
         std::shared_ptr<SnapManager> _snapManager;
+		DragManager_SPtr _dragManager;
 };
 }

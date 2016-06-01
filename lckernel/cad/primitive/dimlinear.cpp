@@ -87,3 +87,38 @@ const geo::Coordinate& DimLinear::definitionPoint2() const noexcept {
 const geo::Coordinate& DimLinear::definitionPoint3() const noexcept {
     return _definitionPoint3;
 }
+
+std::map<unsigned int, geo::Coordinate> DimLinear::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+
+    dragPoints[0] = definitionPoint();
+    dragPoints[1] = middleOfText();
+    dragPoints[2] = definitionPoint2();
+    dragPoints[3] = definitionPoint3();
+
+    return dragPoints;
+}
+
+
+CADEntity_CSPtr DimLinear::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<DimLinear>(dragPoints.at(0),
+                                                      dragPoints.at(1),
+                                                      attachmentPoint(),
+                                                      textAngle(),
+                                                      lineSpacingFactor(),
+                                                      lineSpacingStyle(),
+                                                      explicitValue(),
+                                                      dragPoints.at(2),
+                                                      dragPoints.at(3),
+                                                      angle(),
+                                                      oblique(),
+                                                      layer(),
+                                                      metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

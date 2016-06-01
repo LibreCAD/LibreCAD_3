@@ -8,6 +8,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
+#include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
@@ -17,7 +18,7 @@ namespace lc {
         * DefinitionPoint2 holds the circle/arc edge
         * CenterText holds' teh location of the text
         */
-        class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension, virtual public Visitable {
+        class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
         public:
 
             /**
@@ -110,6 +111,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
         using DimRadial_SPtr = std::shared_ptr<DimRadial>;
         using DimRadial_CSPtr = std::shared_ptr<const DimRadial>;

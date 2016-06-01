@@ -88,3 +88,24 @@ CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) c
     newEntity->setID(this->id());
     return newEntity;
 }
+
+std::map<unsigned int, lc::geo::Coordinate> Line::dragPoints() const {
+    std::map<unsigned int, lc::geo::Coordinate> points;
+
+	points[0] = start();
+	points[1] = end();
+
+	return points;
+}
+
+CADEntity_CSPtr Line::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+	    auto newEntity = std::make_shared<Line>(dragPoints.at(0), dragPoints.at(1), layer(), metaInfo());
+	    newEntity->setID(this->id());
+	    return newEntity;
+    }
+    catch(const std::out_of_range& e) {
+        //A point was not in the map, don't change the entity
+        return shared_from_this();
+    }
+}

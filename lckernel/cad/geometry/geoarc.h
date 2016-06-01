@@ -118,6 +118,9 @@ namespace lc {
                 bool isAngleBetween(double angle) const;
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+
+                double angle() const;
+                double bulge() const;
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Arc& a) {
                     os << "Arc(center=" << a._center << " radius=" << a._radius << " startAngle=" << a._startAngle << " endAngle=" << a._endAngle << " ccw=" << a._CCW << ")";

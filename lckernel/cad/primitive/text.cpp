@@ -138,3 +138,22 @@ CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) c
     newText->setID(this->id());
     return newText;
 }
+
+std::map<unsigned int, lc::geo::Coordinate> Text::dragPoints() const {
+    std::map<unsigned int, geo::Coordinate> dragPoints;
+
+    dragPoints[0] = _insertion_point;
+
+    return dragPoints;
+}
+
+CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        auto newEntity = std::make_shared<Text>(dragPoints.at(0), text_value(), height(), angle(), style(), textgeneration(), halign(), valign(), layer(), metaInfo());
+        newEntity->setID(id());
+        return newEntity;
+    }
+    catch(std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

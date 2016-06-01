@@ -8,10 +8,11 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
+#include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
-        class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension, virtual public Visitable {
+        class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
         public:
 
 
@@ -103,6 +104,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
         using DimLinear_SPtr = std::shared_ptr<DimLinear>;
         using DimLinear_CSPtr = std::shared_ptr<const DimLinear>;

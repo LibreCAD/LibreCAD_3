@@ -18,10 +18,11 @@
 using namespace LCViewer;
 
 LCADViewer::LCADViewer(QWidget *parent) :
-    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false){
+    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _disableSelection(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
+    this->_ctrlKeyActive = false;
 	setCursor(Qt::BlankCursor);
 }
 
@@ -63,6 +64,11 @@ void LCADViewer::setSnapManager(std::shared_ptr<SnapManager> snapmanager) {
     _snapManager = snapmanager;
 }
 
+void LCADViewer::setDragManager(DragManager_SPtr dragManager) {
+    _dragManager = dragManager;
+}
+
+
 void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent &) {
     update();
 }
@@ -87,6 +93,10 @@ void LCADViewer::keyPressEvent(QKeyEvent *event) {
             //
             _altKeyActive = true;
             break;
+
+        case Qt::Key_Control:
+            _ctrlKeyActive = true;
+            break;
     }
 
 }
@@ -103,6 +113,10 @@ void LCADViewer::keyReleaseEvent(QKeyEvent *event) {
         case Qt::Key_Alt:
             //
             _altKeyActive = false;
+            break;
+
+        case Qt::Key_Control:
+            _ctrlKeyActive = false;
             break;
     }
 }
@@ -141,18 +155,20 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
     _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
+    _dragManager->onMouseMove();
+
     // Selection by area
     if (_altKeyActive || _mouseScrollKeyActive) {
         if (!startSelectPos.isNull()) {
             this->_docCanvas->pan(event->pos().x(), event->pos().y());
         }
     } else {
-        if (!startSelectPos.isNull()) {
+        if (!startSelectPos.isNull() && !_disableSelection) {
             bool occopies = startSelectPos.x() < event->pos().x();
             _docCanvas->makeSelectionDevice(
                 std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
                 std::abs(startSelectPos.x() - event->pos().x()),
-                std::abs(startSelectPos.y() - event->pos().y()), occopies);
+                std::abs(startSelectPos.y() - event->pos().y()), occopies, _ctrlKeyActive);
         }
     }
 
@@ -161,6 +177,10 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 
 void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
+
+	_dragManager->onMousePress();
+    _disableSelection = _dragManager->entityDragged();
+
     startSelectPos = event->pos();
 
     posX = event->x();
@@ -175,11 +195,18 @@ void LCADViewer::mousePressEvent(QMouseEvent *event) {
         } break;
     }
 
+    if(!_ctrlKeyActive) {
+        _docCanvas->removeSelection();
+    }
 }
 
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
     startSelectPos = QPoint();
+
+    _dragManager->onMouseRelease();
+
+    _docCanvas->closeSelection();
 
     std::vector<lc::EntityDistance> emptyList;
     //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);

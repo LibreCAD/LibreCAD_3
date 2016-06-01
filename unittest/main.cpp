@@ -7,6 +7,7 @@
 #include "testintersect.h"
 #include "testmatrices.h"
 #include "beziertest.h"
+#include "testselection.h"
 using namespace std;
 using namespace lc;
 using namespace entity;
@@ -16,6 +17,39 @@ int main(int argc, char **argv) {
 
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
+}
+
+
+TEST(test, quad) {
+    test c;
+
+
+    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
+    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+
+    EXPECT_TRUE(fabs(c.quad(100, 50)[0]) - 0.50252531694167146 < 0.000000001);
+    EXPECT_DOUBLE_EQ(-99.497474683058329, c.quad(100, 50)[1]);
+
+    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
+    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+
+    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
+    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+}
+
+TEST(test, cubic) {
+    test c;
+
+    EXPECT_TRUE(fabs(c.cubic(5, 6, 1)[0]) - 0.19806226419516171 < .00000001);
+    EXPECT_DOUBLE_EQ(-1.5549581320873713, c.cubic(5, 6, 1)[1]);
+    EXPECT_DOUBLE_EQ(-3.2469796037174667, c.cubic(5, 6, 1)[2]);
+}
+
+TEST(test, quartic) {
+    test c;
+
+    EXPECT_DOUBLE_EQ(-2.0, c.quartic(5, 6, 1, 2)[0]);
+    EXPECT_DOUBLE_EQ(-3.1038034027355366, c.quartic(5, 6, 1, 2)[1]);
 }
 
 TEST(test, testin) {
@@ -543,3 +577,4 @@ TEST(entitytest, EllipseScale) {
     EXPECT_DOUBLE_EQ(round(sa), round(a.EllipseScale()[3]->startAngle()));
     EXPECT_DOUBLE_EQ(round(ea), round(a.EllipseScale()[3]->endAngle()));
 }
+

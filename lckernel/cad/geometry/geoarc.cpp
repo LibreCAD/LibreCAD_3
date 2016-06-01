@@ -1,4 +1,5 @@
 #include <cad/math/lcmath.h>
+#include <stdlib.h>
 #include "geoarc.h"
 
 using namespace lc;
@@ -169,4 +170,16 @@ bool Arc::isAngleBetween(double angle) const {
     } else {
         return _startAngle < cAngle && cAngle < _endAngle;
     }*/
+}
+
+double Arc::angle() const {
+    return Math::correctAngle(std::abs(_endAngle - _startAngle));
+}
+
+double Arc::bulge() const {
+    double bulge = std::tan(angle()/4.0);
+
+    if(CCW()) bulge *= -1;
+
+    return bulge;
 }

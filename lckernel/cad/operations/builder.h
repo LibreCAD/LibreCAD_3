@@ -96,6 +96,8 @@ namespace lc {
                 virtual void undo() const;
                 virtual void redo() const;
 
+                void processStack();
+
             protected:
                 virtual void processInternal();
 

@@ -8,6 +8,7 @@
 #include "cad/geometry/geovector.h"
 #include "cad/base/cadentity.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/draggable.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/meta/layer.h"
 
@@ -22,7 +23,7 @@ namespace lc {
          * \author R. van Twisk
          * \date 2012-04-16
          */
-        class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable {
+        class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable, public Draggable {
         public:
             /*!
              * \brief Construct a new line
@@ -63,6 +64,10 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+
+		public:
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 
         public:
             /**

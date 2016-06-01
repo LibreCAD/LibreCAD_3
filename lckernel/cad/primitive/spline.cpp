@@ -106,3 +106,62 @@ void Spline::calculateBoundingBox() {
 		_boundingBox = _boundingBox.merge(cp);
 	}
 }
+
+
+std::map<unsigned int, lc::geo::Coordinate> Spline::dragPoints() const {
+    std::map<unsigned int, lc::geo::Coordinate> dragpoints;
+
+    unsigned int i = 0;
+
+    for(auto point : fitPoints()) {
+        dragpoints[i] = point;
+        i++;
+    }
+
+    for(auto point : controlPoints()) {
+        dragpoints[i] = point;
+        i++;
+    }
+    
+    return dragpoints;
+}
+
+
+CADEntity_CSPtr Spline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+        std::vector<lc::geo::Coordinate> fitPoints;
+        std::vector<lc::geo::Coordinate> controlPoints;
+
+        unsigned int i = 0;
+
+        for(unsigned int j = 0; j < this->fitPoints().size(); j++) {
+            fitPoints.push_back(dragPoints.at(i));
+            i++;
+        }
+
+        for(unsigned int j = 0; j < this->controlPoints().size(); j++) {
+            controlPoints.push_back(dragPoints.at(i));
+            i++;
+        }
+
+        auto newEntity = std::make_shared<Spline>(controlPoints,
+                                                    knotPoints(),
+                                                    fitPoints,
+                                                    degree(),
+                                                    closed(),
+                                                    fitTolerance(),
+                                                    startTanX(), startTanY(), startTanZ(),
+                                                    endTanX(), endTanY(), endTanZ(),
+                                                    nX(), nY(), nZ(),
+                                                    flags(),
+                                                    layer(),
+                                                    metaInfo());
+
+        newEntity->setID(id());
+
+        return newEntity;
+    }
+    catch(const std::out_of_range& e) {
+        return shared_from_this();
+    }
+}

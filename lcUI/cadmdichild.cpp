@@ -125,6 +125,15 @@ void CadMdiChild::newDocument() {
     _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
+    //Drag manager
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
+    _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
+    _viewer->setDragManager(_dragManager);
+
+    _dragPoints = std::make_shared<LCViewer::DragPoints>();
+    _dragManager->dragPointsEvent().connect<LCViewer::DragPoints, &LCViewer::DragPoints::setPoints>(_dragPoints.get());
+    _viewer->documentCanvas()->background().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
+
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(10);
     _document->commitProcessEvent().connect<lc::UndoManagerImpl, &lc::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
@@ -137,6 +146,7 @@ void CadMdiChild::newDocument() {
     auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
     auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
     al->execute();
+    _undoManager->removeUndoables(); //Prevent undo of default layer creation
 
     // Create a cross at position 0,0
     //auto builder = std::make_shared<lc::operation::Builder>(document());
@@ -188,6 +198,15 @@ void CadMdiChild::import(std::string str) {
     _cursor = std::make_shared<LCViewer::Cursor>(40, _viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
     _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
+
+    //Drag manager
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
+    _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
+    _viewer->setDragManager(_dragManager);
+
+    _dragPoints = std::make_shared<LCViewer::DragPoints>();
+    _dragManager->dragPointsEvent().connect<LCViewer::DragPoints, &LCViewer::DragPoints::setPoints>(_dragPoints.get());
+    _viewer->documentCanvas()->background().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(10);
