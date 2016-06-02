@@ -78,6 +78,12 @@ Ellipse Ellipse::geoscale(const Coordinate& center, const Coordinate &factor) co
                                                     isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
 }
 
+Ellipse Ellipse::georotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+    return Ellipse(center().rotate(rotation_center, rotation_angle),
+                    majorP().rotate(rotation_center, rotation_angle),
+                    minorRadius(), startAngle(), endAngle());
+}
+
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
     /* TODO implement
      * fix compiler warning

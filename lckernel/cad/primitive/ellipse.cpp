@@ -34,10 +34,10 @@ CADEntity_CSPtr Ellipse::copy(const geo::Coordinate& offset) const {
 }
 
 CADEntity_CSPtr Ellipse::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto newEllipse = std::make_shared<Ellipse>(this->center().rotate(rotation_center, rotation_angle),
-                                                (this->majorP().rotate(geo::Coordinate(0., 0.), rotation_angle)),
-                                                this->minorRadius() , this->startAngle(),
-                                                this->endAngle(), layer());
+    auto rotated = this->georotate(rotation_center, rotation_angle);
+    auto newEllipse = std::make_shared<Ellipse>(rotated.center(), rotated.majorP(),
+                                                rotated.minorRadius(), rotated.startAngle(),
+                                                rotated.endAngle(), layer());
     newEllipse->setID(this->id());
     return newEllipse;
 }

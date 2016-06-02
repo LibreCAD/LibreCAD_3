@@ -209,6 +209,14 @@ Bezier Bezier::rotate(const geo::Coordinate& center, double angle) {
                 _pointC.rotate(center, angle));
 }
 
+Bezier Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
+    return Bezier(_pointA.scale(center, factor), _pointB.scale(center, factor), _pointC.scale(center, factor));
+}
+
+Bezier Bezier::move(const geo::Coordinate& offset) const {
+    return Bezier(_pointA + offset, _pointB + offset, _pointC + offset);
+}
+
 const Coordinate Bezier::tangent(double t) const {
     auto  Bx = _pointB.x() - _pointA.x();
     auto  By = _pointB.y() - _pointA.y();
