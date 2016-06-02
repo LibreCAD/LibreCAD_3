@@ -64,7 +64,6 @@ std::vector<geo::Coordinate> Intersection::BezierLine(
     auto t1 = 2*(rb.pointB().y() - rb.pointA().y())/t2;
     auto coeff = rb.pointA().y()/t2;
 
-
     auto roots = lc::Math::quadraticSolver({t1, coeff});
     for(const auto &root : roots) {
         if(root > 0 && root < 1) {
@@ -137,8 +136,50 @@ std::vector<geo::Coordinate> Intersection::BezierArc(
 std::vector<geo::Coordinate> Intersection::BezierEllipse(
     const geo::Bezier& B, const geo::Ellipse& E) {
 
-    // TODO
+    std::vector<geo::Coordinate> arc_ret, ret;
 
+    auto C = geo::Ellipse(E.center() - E.center(), E.majorP(), E.minorRadius(), E.startAngle(), E.endAngle())
+            .georotate(geo::Coordinate(0,0), -E.getAngle())
+            .geoscale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
+
+    auto bez = B
+            .move(-E.center()).rotate(geo::Coordinate(0,0), E.getAngle())
+            .scale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
+
+    auto r = C.minorRadius();
+    auto d = C.center().x();
+    auto h = C.center().y();
+
+    auto a = bez.pointA().x();
+    auto b = bez.pointB().x();
+    auto c = bez.pointC().x();
+
+    auto e = bez.pointA().y();
+    auto f = bez.pointB().y();
+    auto g = bez.pointC().y();
+
+    auto t4 = (g*g + (2*e - 4*f)*g + 4* f*f - 4* e * f + e*e + c*c + (2*a-4*b)*c + 4*b*b - 4*a*b + a*a);
+    auto t3 = ((4*f - 4*e)*g - 8*f*f + 12*e*f - 4*e*e + (4*b - 4*a)*c - 8*b*b + 12*a*b -4*a*a)/t4;
+    auto t2 = ((-2*g + 4*f -2*e)*h + 2*e*g + 4*f*f - 12*e*f + 6*e*e + (-2*c + 4*b - 2*a)*d + 2*a*c + 4*b*b -12*a*b + 6*a*a)/t4;
+    auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
+    auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
+
+    auto roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
+
+    for(const auto &root : roots) {
+        if(root > 0 && root < 1) {
+            ret.push_back(B.DirectValueAt(root));
+        }
+    }
+    if(E.isArc()) {
+        for(const auto &r: ret) {
+            if(E.isAngleBetween(r.angle())) {
+                arc_ret.push_back(r);
+            }
+        }
+        return arc_ret;
+    }
+    return ret;
 }
 
 std::vector<geo::Coordinate> Intersection::BezierBezier(

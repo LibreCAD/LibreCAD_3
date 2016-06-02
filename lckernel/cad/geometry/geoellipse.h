@@ -101,6 +101,12 @@ namespace lc {
                  */
                 double getEllipseAngle(const Coordinate& coord) const;
 
+                bool isAngleBetween(double angle) const {
+                    return Math::isAngleBetween(angle, _startAngle, _endAngle, !_isReversed);
+                }
+
+
+                Ellipse georotate(const Coordinate& center, const double rotation_angle) const;
                 Ellipse geoscale(const Coordinate& center, const Coordinate &factor) const;
 
                 const maths::Equation equation() const {
