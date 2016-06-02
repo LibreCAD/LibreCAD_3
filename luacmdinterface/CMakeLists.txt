@@ -28,6 +28,10 @@ PKG_CHECK_MODULES(LIBCURL REQUIRED libcurl)
 include_directories(${LIBCURL_INCLUDE_DIRS})
 link_directories(${LIBCURL_LIBRARY_DIRS})
 
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
+
 # Boost
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)

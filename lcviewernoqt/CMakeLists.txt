@@ -89,6 +89,10 @@ pkg_check_modules(PANGO REQUIRED pango>=1.38)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
 
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)

@@ -147,13 +147,9 @@ pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
-# Find eigen using pkg config
-pkg_check_modules(EIGEN REQUIRED eigen3)
-include_directories(${EIGEN_INCLUDE_DIRS})
-
-# Find eigen using find_package
-#find_package( Eigen3 REQUIRED eigen>3.2.0)
-#include_directories( ${EIGEN3_INCLUDE_DIR})
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
 
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
@@ -167,9 +163,9 @@ endif()
 
 # DEBUGGING PATHS
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-#foreach(dir ${dirs})
-#  message(STATUS "dir='${dir}'")
-#endforeach()
+foreach(dir ${dirs})
+  message(STATUS "dir='${dir}'")
+endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})

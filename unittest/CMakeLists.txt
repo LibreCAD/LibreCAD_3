@@ -7,13 +7,15 @@ ADD_DEFINITIONS("-Wall")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PkgConfig)
+
 #LOG4CXX
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
-pkg_check_modules(EIGEN REQUIRED eigen3)
-include_directories(${EIGEN_INCLUDE_DIRS})
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
 
 FIND_PACKAGE ( Threads REQUIRED )
 

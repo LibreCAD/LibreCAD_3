@@ -25,6 +25,10 @@ pkg_check_modules(LUA REQUIRED lua>=5.3)
 include_directories(${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
 
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
+
 set(SEPARATE_BUILD OFF)
  
 if (SEPARATE_BUILD STREQUAL "ON")

@@ -52,6 +52,10 @@ set(Boost_USE_MULTITHREADED ON)
 find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+include_directories( ${EIGEN3_INCLUDE_DIR})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
