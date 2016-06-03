@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1120</width>
-    <height>102</height>
+    <width>108</width>
+    <height>118</height>
    </rect>
   </property>
   <property name="layoutDirection">
@@ -26,12 +26,12 @@
    <string>Command</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="margin">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QTextEdit" name="textEdit"/>
+     <widget class="QListWidget" name="history"/>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="command"/>
     </item>
    </layout>
   </widget>

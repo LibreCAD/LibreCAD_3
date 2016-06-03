@@ -13,8 +13,7 @@ function new_file()
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
 
 	id = nextTableId(op)
-	op[id] = Operations:new()
-	op[id].id = id
+	op[id] = Operations:new(id)
 	window:widget().id = id
 end
 
@@ -55,8 +54,7 @@ function load_file(fileName)
 	luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
 
 	id = nextTableId(op)
-	op[id] = Operations:new()
-	op[id].id = id
+	op[id] = Operations:new(id)
 	window:widget().id = id
 end
 
@@ -67,6 +65,7 @@ function click()
 	local y = position:y()
 
 	event.trigger('point', {x, y})
+	cliCommand:focus()
 end
 
 function create_line()
@@ -90,10 +89,19 @@ function nextTableId(table)
 	return count
 end
 
+function message(message)
+	cliCommand:write(tostring(message))
+end
+
+function command(command)
+	commandName = command:toStdString()
+	event.trigger('command', commandName)
+end
+
 --UI
 mainWindow = qt.loadUi(ui_path .. "/mainwindow.ui")
-mainWindow:setWindowTitle(qt.QObject.tr("LibreCAD", "", -1)) -- Todo: optional arguments
-mainWindow:setUnifiedTitleAndToolBarOnMac(true)
+mainWindow:setWindowTitle(qt.QObject.tr("LibreCAD"));
+mainWindow:setUnifiedTitleAndToolBarOnMac(true);
 
 menuBar = mainWindow:menuBar()
 drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
@@ -117,4 +125,10 @@ luaInterface:luaConnect(lineAction, "triggered(bool)", create_line)
 luaScript = lc.LuaScript(mdiArea)
 mainWindow:addDockWidget(2, luaScript)
 
+cliCommand = lc.CliCommand(mainWindow)
+mainWindow:addDockWidget(8, cliCommand)
+
 mainWindow:show();
+
+cliCommand:addCommand("LINE");
+luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)

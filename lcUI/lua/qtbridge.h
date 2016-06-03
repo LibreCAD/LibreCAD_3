@@ -26,6 +26,7 @@ extern "C"
 #include "documentcanvas.h"
 #include "lcadviewer.h"
 #include "widgets/luascript.h"
+#include "widgets/clicommand.h"
 
 #include "luainterface.h"
 #include "luaqobject.h"

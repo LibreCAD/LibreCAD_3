@@ -23,7 +23,7 @@ void addQtBaseBindings(lua_State *L) {
 			.addFunction("findChild", [](QObject* object, std::string name) {
 				return LuaQObject::findChild(object, name);
 			})
-			.addStaticFunction("tr", &QObject::tr)
+			.addStaticFunction("tr", &QObject::tr, LUA_ARGS(const char*, LuaIntf::_opt<const char*>, LuaIntf::_opt<int>))
 		.endClass()
 
 		.beginExtendClass<QWidget, QObject>("QWidget")
@@ -145,10 +145,7 @@ void addLCBindings(lua_State *L) {
 
 	.beginModule("lc")
 		.beginExtendClass<CadMdiChild, QWidget>("CadMdiChild")
-			.addFactory([]() {
-				CadMdiChild* child = new CadMdiChild;
-				return child;
-			})
+			.addConstructor(LUA_SP(std::shared_ptr<CadMdiChild>), LUA_ARGS())
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
@@ -171,7 +168,8 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")
-			.addFunction("luaConnect", &LuaInterface::qtConnect)
+			.addFunction("luaConnect", &LuaInterface::luaConnect)
+			.addFunction("connect", &LuaInterface::qtConnect)
 		.endClass()
 		
 		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
@@ -182,6 +180,12 @@ void addLCBindings(lua_State *L) {
 			.addFunction("autoScale", &LCViewer::DocumentCanvas::autoScale)
 		.endClass()
 
+		.beginExtendClass<CliCommand, QDockWidget>("CliCommand")
+			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(QWidget*))
+			.addFunction("addCommand", &CliCommand::addCommand)
+			.addFunction("focus", &CliCommand::focus)
+			.addFunction("write", &CliCommand::write, LUA_ARGS(const char*))
+		.endClass()
 
 	.endModule();
 }
