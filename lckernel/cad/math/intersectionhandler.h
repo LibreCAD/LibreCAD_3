@@ -29,6 +29,9 @@ namespace lc {
             const geo::Bezier& B, const geo::Ellipse& E);
         static std::vector<geo::Coordinate> BezierBezier(
             const geo::Bezier& B1, const geo::Bezier& B2);
+
+        private:
+        static void BezBez(const geo::Bezier& B1,const geo::Bezier& B2, std::vector<geo::Coordinate>&ret);
         };
     }
 }

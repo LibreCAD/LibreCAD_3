@@ -43,6 +43,8 @@ namespace lc {
 
                 const Coordinate normal(double t) const;
 
+                std::vector<Bezier> splitHalf() const;
+
                 Bezier rotate(const geo::Coordinate& center, double angle);
                 Bezier scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
                 Bezier move(const geo::Coordinate& offset) const;

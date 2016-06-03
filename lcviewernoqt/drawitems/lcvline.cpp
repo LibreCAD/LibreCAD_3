@@ -30,7 +30,32 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 //    auto p2 = lc::geo::Coordinate(0,-900);
 //    auto p3 = lc::geo::Coordinate(-200,300);
 
-//    auto bezier_ = lc::geo::Bezier(p1,p2,p3);
+//    auto bp1 = lc::geo::Coordinate(200,300);
+//    auto bp2 = lc::geo::Coordinate(-900,0);
+//    auto bp3 = lc::geo::Coordinate(200,-300);
+
+
+//    painter.move_to(p1.x(), p1.y());
+//    painter.quadratic_curve_to(p2.x(), p2.y(), p3.x(), p3.y());
+//    painter.stroke();
+
+//    painter.move_to(bp1.x(), bp1.y());
+//    painter.quadratic_curve_to(bp2.x(), bp2.y(), bp3.x(), bp3.y());
+//    painter.stroke();
+
+//    auto B = lc::geo::Bezier(p1,p2,p3);
+//    auto B2 = lc::geo::Bezier(bp1,bp2,bp3);
+
+//    auto ret = lc::maths::Intersection::BezierBezier(B,B2);
+
+//    for(auto r : ret) {
+//        painter.point(r.x(), r.y(), 5, 1);
+//    }
+//    painter.stroke();
+
+
+
+    //    auto bezier_ = lc::geo::Bezier(p1,p2,p3);
 //    auto B = lc::geo::Bezier(p1,p2,p3);
 
 //    auto ret = lc::maths::Intersection::BezierEllipse(bezier_, ellipse);

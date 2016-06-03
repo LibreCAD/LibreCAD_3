@@ -184,7 +184,28 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
 
 std::vector<geo::Coordinate> Intersection::BezierBezier(
     const geo::Bezier& B1, const geo::Bezier& B2) {
+    std::vector<geo::Coordinate> ret;
+    BezBez(B1,B2, ret);
+    return ret;
+}
 
-    // Bounding Box method.
+void Intersection::BezBez(const geo::Bezier& B1,const geo::Bezier& B2, std::vector<geo::Coordinate>&ret) {
+    auto bb1 = B1.boundingBox();
+    auto bb2 = B2.boundingBox();
 
+    if(!bb1.overlaps(bb2)) {
+        return;
+    }
+
+    if(bb1.height() + bb2.height() <= BBHEURISTIC && bb1.width() + bb2.width() <= BBHEURISTIC) {
+        ret.push_back(B1.pointB());
+        return;
+    }
+
+    auto b1split = B1.splitHalf();
+    auto b2split = B2.splitHalf();
+    BezBez(b1split[0], b2split[0], ret);
+    BezBez(b1split[1], b2split[0], ret);
+    BezBez(b1split[0], b2split[1], ret);
+    BezBez(b1split[1], b2split[1], ret);
 }

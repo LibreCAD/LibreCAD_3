@@ -245,3 +245,10 @@ const Coordinate Bezier::normal(double t) const {
 
     return Coordinate(tanx, tany);
 }
+
+std::vector<Bezier> Bezier::splitHalf() const {
+    auto AB = (_pointA + _pointB) / 2;
+    auto BC = (_pointB + _pointC) / 2;
+    auto D = (AB + BC)/2;
+    return {Bezier(_pointA, AB, D), Bezier(D, BC, _pointC)};
+}
