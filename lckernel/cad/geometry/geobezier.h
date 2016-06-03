@@ -43,8 +43,11 @@ namespace lc {
 
                 const Coordinate normal(double t) const;
 
-                Bezier rotate(const geo::Coordinate& center, double angle);
+                std::vector<Bezier> splitHalf() const;
 
+                Bezier rotate(const geo::Coordinate& center, double angle);
+                Bezier scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
+                Bezier move(const geo::Coordinate& offset) const;
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
