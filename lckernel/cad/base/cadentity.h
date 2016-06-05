@@ -78,6 +78,9 @@ namespace lc {
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const = 0;
 
+            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
+                                           const geo::Coordinate& axis2) const = 0;
+
             /**
              * @brief boundingBox
              * Return the bounding box of this entity.

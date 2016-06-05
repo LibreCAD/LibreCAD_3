@@ -86,6 +86,13 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate &scale_center, const geo::Co
     return newCircle;
 }
 
+CADEntity_CSPtr Circle::mirror(const geo::Coordinate &axis1, const geo::Coordinate &axis2) const {
+    auto newCircle = std::make_shared<Circle>(this->center().mirror(axis1, axis2),
+                                              this->radius(), layer(), metaInfo());
+    newCircle->setID(this->id());
+    return newCircle;
+}
+
 const geo::Area Circle::boundingBox() const {
     return geo::Area(geo::Coordinate(center().x() - radius(), center().y() - radius()),
                      geo::Coordinate(center().x() + radius(), center().y() + radius()));

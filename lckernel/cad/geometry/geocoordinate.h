@@ -204,6 +204,10 @@ namespace lc {
                     return _x * coord._x + _y * coord._y + _z * coord._z;
                 }
 
+                inline double dot(const Coordinate& v1, const Coordinate& v2) const {
+                    return v1.x() * v2.x() + v1.y() * v2.y() + v1.z() * v2.z();
+                }
+
                 /**
                  * @brief rotate
                  * around (0.,0.) with a given angle vector
@@ -327,6 +331,13 @@ namespace lc {
                  */
                 inline Coordinate transform2d(double xx, double yx, double xy, double yy, double x0, double y0) {
                     return Coordinate(xx * _x + xy * _y + x0, yx * _x + yy * _y + y0, _z);
+                }
+
+                inline Coordinate mirror(const Coordinate& axis1, const Coordinate& axis2) const {
+                    Coordinate dir(axis2 - axis1);
+                    auto a= dir.squared();
+                    auto ret= axis1 + dir* dot(*this- axis1, dir)/a; //projection point
+                    return ret + ret - *this;
                 }
 
             private:

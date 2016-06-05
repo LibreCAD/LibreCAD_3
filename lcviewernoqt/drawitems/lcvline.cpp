@@ -18,7 +18,15 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.line_to(end().x(), end().y());
     painter.stroke();
 
-//    auto c1 = lc::geo::Coordinate(0, 0);
+//    auto r = lc::geo::Coordinate(100, 100);
+//    painter.point(r.x(), r.y(), 5, 1);
+
+//    auto z = r.mirror(start(), end());
+
+//    painter.point(z.x(), z.y(), 5, 1);
+//    painter.stroke();
+
+    //    auto c1 = lc::geo::Coordinate(0, 0);
 //    auto mp = lc::geo::Coordinate(1000, 0);
 //    auto rad = 100;
 //    auto sa = 0;

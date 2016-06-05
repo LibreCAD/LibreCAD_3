@@ -49,6 +49,13 @@ CADEntity_CSPtr Point::scale(const geo::Coordinate& scale_center, const geo::Coo
     return newCoordinate;
 }
 
+CADEntity_CSPtr Point::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    auto rotcord = geo::Coordinate(this->x(), this->y()).rotate(axis1, axis2);
+    auto newCoordinate = std::make_shared<Point>(rotcord.x(), rotcord.y(), layer());
+    newCoordinate->setID(this->id());
+    return newCoordinate;
+}
+
 const geo::Area Point::boundingBox() const {
     return geo::Area(geo::Coordinate(this->x(), this->y()), 0., 0.);
 }
