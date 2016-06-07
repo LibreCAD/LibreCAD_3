@@ -46,7 +46,7 @@ namespace lc {
             * This is usefull when a DXF that was imported needs to be exported
             * with the same DXF color ID's.
             */
-            inline int colorToInt(std::shared_ptr<lc::MetaColor> col) const {
+            inline int colorToInt(std::shared_ptr<const lc::MetaColor>& col) const {
                 for (int i = 0; i < 256; i++) {
                     if (_intToCol[i] == col) {
                         return i;

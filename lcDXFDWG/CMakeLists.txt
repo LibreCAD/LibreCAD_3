@@ -8,7 +8,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # HEADER FILES
 set(lcdxfdwg_srcs
-        lcDXF/dxfimpl.cpp)
+        lcDXF/dxfimpl.cpp
+)
 
 set(lcdxfdwg_hdrs
         lcDXF/dxfimpl.h

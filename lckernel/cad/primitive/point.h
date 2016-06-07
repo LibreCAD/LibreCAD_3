@@ -85,6 +85,10 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
+            virtual EntityType entityType() const {
+                return EntityType::Point;
+            }
+
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 

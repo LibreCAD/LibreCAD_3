@@ -83,6 +83,10 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
+            virtual EntityType entityType() const {
+                return EntityType::DimLinear;
+            }
+
             // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
             double oblique() const;
 

@@ -45,9 +45,13 @@ namespace lc {
 
                 std::vector<Bezier> splitHalf() const;
 
+                Bezier offset(const geo::Coordinate& offset) const;
+
                 Bezier rotate(const geo::Coordinate& center, double angle);
                 Bezier scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
                 Bezier move(const geo::Coordinate& offset) const;
+                Bezier mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const;
+
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 

@@ -8,7 +8,12 @@
 #include <cad/document/storagemanager.h>
 #include <cad/meta/icolor.h>
 #include <cad/operations/builder.h>
-
+#include <cad/base/visitor.h>
+#include <cad/meta/dxflinepattern.h>
+#include <cad/meta/metalinewidth.h>
+#include <cad/meta/metacolor.h>
+#include <cad/base/metainfo.h>
+#include <cad/meta/icolor.h>
 
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
@@ -17,6 +22,8 @@ class DXFimpl : public DRW_Interface {
     public:
 
     DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
+
+        // READ FUNCTIONALITY
         virtual void addHeader(const DRW_Header *data) override { }
         virtual void addDimStyle(const DRW_Dimstyle &data) override { }
         virtual void addVport(const DRW_Vport &data) override { }
@@ -33,18 +40,6 @@ class DXFimpl : public DRW_Interface {
         virtual void addViewport(const DRW_Viewport &data) override { }
         virtual void linkImage(const DRW_ImageDef *data) override;
         virtual void addComment(const char *comment) override { }
-
-        virtual void writeHeader(DRW_Header &data) override { }
-        virtual void writeBlocks() override { }
-        virtual void writeBlockRecords() override { }
-        virtual void writeEntities() override { }
-        virtual void writeLTypes() override { }
-        virtual void writeLayers() override { }
-        virtual void writeTextstyles() override { }
-        virtual void writeVports() override { }
-        virtual void writeDimstyles() override { }
-        virtual void writeAppId() override { }
-
         virtual void addLine(const DRW_Line& data) override;
         virtual void addCircle(const DRW_Circle& data) override;
         virtual void addLayer(const DRW_Layer& data) override;
@@ -70,6 +65,39 @@ class DXFimpl : public DRW_Interface {
         virtual void setBlock(const int handle) override;
         virtual void endBlock() override;
 
+
+        // WRITE FUNCTIONALITY
+        virtual void writeHeader(DRW_Header &data) override { }
+        virtual void writeBlocks() override { }
+        virtual void writeBlockRecords() override { }
+        virtual void writeEntities() override { }
+        virtual void writeLTypes() override;
+        virtual void writeLayers() override { }
+        virtual void writeTextstyles() override { }
+        virtual void writeVports() override { }
+        virtual void writeDimstyles() override { }
+        virtual void writeAppId() override;
+
+        void getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity);
+        void writeEntity(lc::entity::CADEntity_CSPtr e);
+        void writePoint(const lc::entity::Point_CSPtr p);
+        void writeLine(const lc::entity::Line_CSPtr l);
+        void writeCircle(const lc::entity::Circle_CSPtr c);
+        void writeArc(const lc::entity::Arc_CSPtr a);
+        void writeEllipse(const lc::entity::Ellipse_CSPtr s);
+        void writeDimension(const lc::entity::Dimension_CSPtr d);
+        void writeLWPolyline(const lc::entity::LWPolyline_CSPtr p);
+        void writeImage(const lc::entity::Image_CSPtr i);
+        void writeText(const lc::entity::Text_CSPtr t);
+
+
+        // UTILITIES FUNCTIONS
+        lc::AngleFormat numberToAngleFormat(int num);
+        int angleFormatToNumber(lc::AngleFormat af);
+        lc::Units numberToUnit(int num);
+        int unitToNumber(lc::Units unit);
+        std::string lineTypeToName(lc::LineType lineType);
+        lc::LineType nameToLineType(const std::string& name);
         template <typename T>
         std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
             std::shared_ptr<const T> mlw = nullptr;
@@ -104,6 +132,9 @@ class DXFimpl : public DRW_Interface {
         * This is usefull because most/all entities will share teh same basic properties
         * can be be read with just one routine
         */
+
+        dxfRW* dxfW;
+
         lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const&) const;
         /**
         * Convert from a DRW_Coord to a geo::Coordinate
