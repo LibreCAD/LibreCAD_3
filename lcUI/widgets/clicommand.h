@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include <cad/geometry/geocoordinate.h>
+
 namespace Ui {
     class CliCommand;
 }
@@ -23,17 +25,23 @@ class CliCommand : public QDockWidget {
 
 		bool addCommand(std::string name);
 
-		void enterCommand(QString command);
 		void write(QString message);
 		void focus();
 
 	public slots:
 		void onReturnPressed();
+		void onKeyPressed(QKeyEvent *event);
 
 	signals:
 		void commandEntered(QString command);
+		void coordinateEntered(lc::geo::Coordinate coordinate);
+		void numberEntered(double number);
 
     private:
+		void enterCommand(QString command);
+		void enterCoordinate(QString coordinate);
+		void enterNumber(double number);
+
 		Ui::CliCommand* ui;
 		std::shared_ptr<QCompleter> _completer;
 		std::shared_ptr<QStringListModel> _commands;

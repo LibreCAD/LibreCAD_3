@@ -1,4 +1,6 @@
 #include "lua/qtbridge.h"
+#include "luaqobject.h"
+#include "luainterface.h"
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
@@ -10,6 +12,7 @@ void luaOpenQtBridge(lua_State *L) {
 	addQtLayoutBindings(L);
 	addQtWidgetsBindings(L);
 	addLCBindings(L);
+	addQtMetaTypes();
 }
 
 void addQtBaseBindings(lua_State *L) {
@@ -145,7 +148,7 @@ void addLCBindings(lua_State *L) {
 
 	.beginModule("lc")
 		.beginExtendClass<CadMdiChild, QWidget>("CadMdiChild")
-			.addConstructor(LUA_SP(std::shared_ptr<CadMdiChild>), LUA_ARGS())
+			.addConstructor(LUA_SP(std::shared_ptr<CadMdiChild>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
@@ -183,9 +186,12 @@ void addLCBindings(lua_State *L) {
 		.beginExtendClass<CliCommand, QDockWidget>("CliCommand")
 			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(QWidget*))
 			.addFunction("addCommand", &CliCommand::addCommand)
-			.addFunction("focus", &CliCommand::focus)
 			.addFunction("write", &CliCommand::write, LUA_ARGS(const char*))
 		.endClass()
 
 	.endModule();
+}
+
+void addQtMetaTypes() {
+	qRegisterMetaType<lc::geo::Coordinate>();
 }

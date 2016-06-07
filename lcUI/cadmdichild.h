@@ -3,6 +3,7 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QKeyEvent>
 #include <lcadviewer.h>
 #include "cad/meta/color.h"
 #include <cad/document/storagemanager.h>
@@ -39,6 +40,8 @@ class CadMdiChild : public QWidget {
 
         void setDestroyCallback(LuaIntf::LuaRef callback);
 
+		void keyPressEvent(QKeyEvent* event);
+
     public slots:
         void on_actionAdd_Random_Lines_triggered();
 
@@ -49,6 +52,9 @@ class CadMdiChild : public QWidget {
         void on_addEllipse_clicked();
 
         void ctxMenu(const QPoint& pos);
+
+	signals:
+		void keyPressed(QKeyEvent* event);
 
     public:
         QWidget* view() const;

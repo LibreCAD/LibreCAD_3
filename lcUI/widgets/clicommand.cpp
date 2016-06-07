@@ -1,4 +1,3 @@
-#include <QtWidgets/QtWidgets>
 #include "clicommand.h"
 #include "ui_clicommand.h"
 
@@ -46,20 +45,81 @@ void CliCommand::write(QString message) {
 }
 
 void CliCommand::onReturnPressed() {
-    _history.push_front(ui->command->text());
+    auto text = ui->command->text();
+    bool isNumber;
+
+    _history.push_front(text);
 
     if(_history.size() > _historySize) {
         _history.pop_back();
     }
 
-    enterCommand(ui->command->text());
-}
+    auto number = text.toDouble(&isNumber);
+    if(isNumber) {
+        enterNumber(number);
+    }
+    else if(text.indexOf(";") != -1 || text.indexOf(",") != -1) {
+        enterCoordinate(text);
+    }
+    else {
+        enterCommand(text);
+    }
 
-void CliCommand::focus() {
-    ui->command->setFocus();
+    ui->command->clear();
 }
 
 void CliCommand::keyPressEvent(QKeyEvent *event) {
+    onKeyPressed(event);
+}
+
+void CliCommand::enterCommand(QString command) {
+    if(command == "") {
+        return;
+    }
+
+    auto completion = _completer->currentCompletion();
+
+    if(command.compare(completion, Qt::CaseInsensitive) == 0) {
+        write("Command: " + completion);
+        emit commandEntered(completion);
+    }
+    else {
+        write("Command " + command + " not found");
+        ui->history->item(ui->history->count() - 1)->setForeground(Qt::red);
+    }
+}
+
+void CliCommand::enterCoordinate(QString coordinate) {
+    lc::geo::Coordinate point;
+    QStringList numbers;
+
+    if(coordinate.indexOf(";") != -1) {
+        numbers = coordinate.split(";");
+    }
+    else {
+        numbers = coordinate.split(",");
+    }
+
+
+    if(numbers.size() > 2) {
+        point = lc::geo::Coordinate(numbers[0].toFloat(), numbers[1].toFloat(), numbers[2].toFloat());
+    }
+    else {
+        point = lc::geo::Coordinate(numbers[0].toFloat(), numbers[1].toFloat());
+    }
+
+    auto message = QString("Coordinate: x=%1; y=%2; z=%3").arg(point.x()).arg(point.y()).arg(point.z());
+    write(message);
+
+    emit coordinateEntered(point);
+}
+
+void CliCommand::enterNumber(double number) {
+    write(QString("Number: %1").arg(number));
+    emit numberEntered(number);
+}
+
+void CliCommand::onKeyPressed(QKeyEvent *event) {
     switch(event->key()) {
         case Qt::Key_Up:
             if(_historyIndex + 1 < _history.size()) {
@@ -67,6 +127,7 @@ void CliCommand::keyPressEvent(QKeyEvent *event) {
                 ui->command->setText(_history[_historyIndex]);
             }
             break;
+
         case Qt::Key_Down:
             if(_historyIndex > 0) {
                 _historyIndex--;
@@ -77,18 +138,10 @@ void CliCommand::keyPressEvent(QKeyEvent *event) {
                 ui->command->clear();
             }
             break;
-    }
-}
 
-void CliCommand::enterCommand(QString command) {
-    if(_commands->stringList().indexOf(command) == -1) {
-        write("Command " + command + " not found");
-        ui->history->item(ui->history->count() - 1)->setForeground(Qt::red);
+        default:
+            ui->command->setFocus();
+            ui->command->event(event);
+            break;
     }
-    else {
-        write("Command: " + command);
-        emit commandEntered(command);
-    }
-
-    ui->command->clear();
 }

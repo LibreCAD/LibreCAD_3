@@ -1,6 +1,5 @@
 #include "luaqobject.h"
-#include <iostream>
-#include "widgets/clicommand.h"
+
 LuaQObject::LuaQObject(QObject* object):
 	_object(object),
 	_valid(false)
@@ -94,52 +93,56 @@ QObject* LuaQObject::findChild(std::string name) {
 }
 
 void LuaQObject::pushArg(LuaIntf::LuaState s, int const type, void const* arg) {
-	switch (type)
-	{
+	if(type == qRegisterMetaType<lc::geo::Coordinate>()) {
+		s.push(*(lc::geo::Coordinate*) arg);
+		return;
+	}
+
+	switch (type) {
 		case QMetaType::Void:
 			s.push(nullptr);
 			break;
 		case QMetaType::Bool:
-			s.push(*(bool*)arg);
+			s.push(*(bool *) arg);
 			break;
 		case QMetaType::Int:
-			s.push(*(int*)arg);
+			s.push(*(int *) arg);
 			break;
 		case QMetaType::UInt:
-			s.push(*(unsigned int*)arg);
+			s.push(*(unsigned int *) arg);
 			break;
 		case QMetaType::Long:
-			s.push(*(long*)arg);
+			s.push(*(long *) arg);
 			break;
 		case QMetaType::LongLong:
-			s.push(*(long long*)arg);
+			s.push(*(long long *) arg);
 			break;
 		case QMetaType::Short:
-			s.push(*(short*)arg);
+			s.push(*(short *) arg);
 			break;
 		case QMetaType::Char:
-			s.push(*(char*)arg);
+			s.push(*(char *) arg);
 			break;
 		case QMetaType::ULong:
-			s.push(*(unsigned long*)arg);
+			s.push(*(unsigned long *) arg);
 			break;
 		case QMetaType::ULongLong:
-			s.push(*(unsigned long long*)arg);
+			s.push(*(unsigned long long *) arg);
 			break;
 		case QMetaType::UShort:
-			s.push(*(unsigned short*)arg);
+			s.push(*(unsigned short *) arg);
 			break;
 		case QMetaType::UChar:
-			s.push(*(unsigned char*)arg);
+			s.push(*(unsigned char *) arg);
 			break;
 		case QMetaType::Double:
-			s.push(*(double*)arg);
+			s.push(*(double *) arg);
 			break;
 		case QMetaType::Float:
-			s.push(*(float*)arg);
+			s.push(*(float *) arg);
 			break;
 		case QMetaType::QString:
-			s.push(reinterpret_cast<const QString*>(arg));
+			s.push(reinterpret_cast<const QString *>(arg));
 			break;
 		default:
 			s.push(nullptr);

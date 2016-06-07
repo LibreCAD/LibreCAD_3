@@ -11,6 +11,7 @@ extern "C"
 #include <QMetaMethod>
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
+#include "lua/qtbridge.h"
 
 class LuaQObject : public QObject {
 	public:

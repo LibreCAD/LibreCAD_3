@@ -7,15 +7,16 @@ function Operations:new(id)
 	Operations.__index = self
 	setmetatable(o, self)
 
-	self.id = id
-	event.register("command", self)
+	o.id = id
+
+	event.register("command", o)
 
 	return o
 end
 
 function Operations:onEvent(eventName, ...)
 	--If current window is focused
-	if(mdiArea:activeSubWindow():widget().id == self.id) then
+	if(active_widget().id == self.id) then
 		if(eventName == "point") then
 			self:get_line_point(...)
 		elseif(eventName == "command") then
@@ -38,10 +39,10 @@ end
 function Operations:get_line_point(point)
 	if(self.line_vars['lastPoint'] ~= nil) then
 		local lp = self.line_vars['lastPoint']
-		local d = mdiArea:activeSubWindow():widget():document()
+		local d = active_widget():document()
 		local b = Builder(d)
 		local layer = d:layerByName("0")
-		local l=Line(Coord(lp[1], lp[2]), Coord(point[1], point[2]), layer);
+		local l=Line(Coord(lp:x(), lp:y()), Coord(point:x(), point:y()), layer);
 		
 		b:append(l)
 		b:execute()

@@ -28,8 +28,8 @@ extern "C"
 #include "widgets/luascript.h"
 #include "widgets/clicommand.h"
 
-#include "luainterface.h"
-#include "luaqobject.h"
+
+Q_DECLARE_METATYPE(lc::geo::Coordinate);
 
 void luaOpenQtBridge(lua_State *L);
 
@@ -38,3 +38,4 @@ void addQtWindowBindings(lua_State *L);
 void addQtLayoutBindings(lua_State *L);
 void addQtWidgetsBindings(lua_State *L);
 void addLCBindings(lua_State *L);
+void addQtMetaTypes();
