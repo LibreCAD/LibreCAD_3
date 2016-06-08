@@ -35,6 +35,7 @@ class CliCommand : public QDockWidget {
 	signals:
 		void commandEntered(QString command);
 		void coordinateEntered(lc::geo::Coordinate coordinate);
+		void relativeCoordinateEntered(lc::geo::Coordinate coordinate);
 		void numberEntered(double number);
 
     private:

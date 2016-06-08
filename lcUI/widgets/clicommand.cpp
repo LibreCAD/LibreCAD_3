@@ -65,6 +65,7 @@ void CliCommand::onReturnPressed() {
         enterCommand(text);
     }
 
+    _historyIndex = -1;
     ui->command->clear();
 }
 
@@ -92,6 +93,12 @@ void CliCommand::enterCommand(QString command) {
 void CliCommand::enterCoordinate(QString coordinate) {
     lc::geo::Coordinate point;
     QStringList numbers;
+    bool isRelative = false;
+
+    if(coordinate.indexOf("@") != -1) {
+        isRelative = true;
+        coordinate.remove("@");
+    }
 
     if(coordinate.indexOf(";") != -1) {
         numbers = coordinate.split(";");
@@ -111,7 +118,12 @@ void CliCommand::enterCoordinate(QString coordinate) {
     auto message = QString("Coordinate: x=%1; y=%2; z=%3").arg(point.x()).arg(point.y()).arg(point.z());
     write(message);
 
-    emit coordinateEntered(point);
+    if(isRelative) {
+        emit relativeCoordinateEntered(point);
+    }
+    else {
+        emit coordinateEntered(point);
+    }
 }
 
 void CliCommand::enterNumber(double number) {

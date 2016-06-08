@@ -1,4 +1,5 @@
 local commands = {}
+local lastPoint = Coordinate(0,0)
 
 function message(message)
     cliCommand:write(tostring(message))
@@ -20,8 +21,18 @@ local function coordinate(coordinate)
     event.trigger("point", coordinate)
 end
 
+local function relativeCoordinate(relative)
+    local absolute = lastPoint:add(relative)
+    message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
+    event.trigger("point", absolute)
+end
+
 local function number(number)
     event.trigger("number", number)
+end
+
+local function setLastPoint(point)
+    lastPoint = point
 end
 
 function add_commandline()
@@ -30,7 +41,10 @@ function add_commandline()
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", coordinate)
+    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", relativeCoordinate)
     luaInterface:luaConnect(cliCommand, "numberEntered(double)", number)
 
     add_command("LINE", create_line)
+
+    event.register("point", setLastPoint)
 end
