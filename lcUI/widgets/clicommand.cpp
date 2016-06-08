@@ -48,25 +48,27 @@ void CliCommand::onReturnPressed() {
     auto text = ui->command->text();
     bool isNumber;
 
-    _history.push_front(text);
+    if(text != "") {
+        _history.push_front(text);
 
-    if(_history.size() > _historySize) {
-        _history.pop_back();
-    }
+        if (_history.size() > _historySize) {
+            _history.pop_back();
+        }
 
-    auto number = text.toDouble(&isNumber);
-    if(isNumber) {
-        enterNumber(number);
-    }
-    else if(text.indexOf(";") != -1 || text.indexOf(",") != -1) {
-        enterCoordinate(text);
-    }
-    else {
-        enterCommand(text);
-    }
+        auto number = text.toDouble(&isNumber);
+        if (isNumber) {
+            enterNumber(number);
+        }
+        else if (text.indexOf(";") != -1 || text.indexOf(",") != -1) {
+            enterCoordinate(text);
+        }
+        else {
+            enterCommand(text);
+        }
 
-    _historyIndex = -1;
-    ui->command->clear();
+        _historyIndex = -1;
+        ui->command->clear();
+    }
 }
 
 void CliCommand::keyPressEvent(QKeyEvent *event) {
@@ -74,10 +76,6 @@ void CliCommand::keyPressEvent(QKeyEvent *event) {
 }
 
 void CliCommand::enterCommand(QString command) {
-    if(command == "") {
-        return;
-    }
-
     auto completion = _completer->currentCompletion();
 
     if(command.compare(completion, Qt::CaseInsensitive) == 0) {
@@ -134,6 +132,7 @@ void CliCommand::enterNumber(double number) {
 void CliCommand::onKeyPressed(QKeyEvent *event) {
     switch(event->key()) {
         case Qt::Key_Up:
+
             if(_historyIndex + 1 < _history.size()) {
                 _historyIndex++;
                 ui->command->setText(_history[_historyIndex]);
