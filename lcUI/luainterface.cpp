@@ -29,8 +29,8 @@ void LuaInterface::initLua() {
     std::cout << out << std::endl;
 }
 
-bool LuaInterface::qtConnect(
-	QObject *sender,
+bool LuaInterface::luaConnect(
+	QObject* sender,
 	std::string signalName,
 	LuaIntf::LuaRef slot)
 {
@@ -40,9 +40,14 @@ bool LuaInterface::qtConnect(
 		std::cout << "No such signal " << signalName << std::endl;
 	}
 	else {
-		LuaQObject_SPtr lqo(new LuaQObject(sender));
+		auto lqo = std::make_shared<LuaQObject>(sender);
 		_luaQObjects.push_back(lqo);
-		return lqo->connect(signalId, slot);
+
+		auto connected = lqo->connect(signalId, slot);
+
+		cleanInvalidQObject();
+
+		return connected;
 	}
 
 	return false;
@@ -59,3 +64,27 @@ std::shared_ptr<QWidget> LuaInterface::loadUiFile(const char* fileName) {
 
     return widget;
 }
+
+void LuaInterface::cleanInvalidQObject() {
+	_luaQObjects.erase(std::remove_if(_luaQObjects.begin(),
+									  _luaQObjects.end(),
+							  [](LuaQObject_SPtr lqo){
+								  return !lqo->valid();
+							  }),
+					   _luaQObjects.end());
+}
+
+bool LuaInterface::qtConnect(QObject *sender, std::string signalName, QObject *receiver, std::string slotName) {
+	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
+	if(signalId < 0) {
+		std::cout << "No such signal " << signalName << std::endl;
+	}
+
+	int slotId = receiver->metaObject()->indexOfSlot(slotName.c_str());
+	if(slotId < 0) {
+		std::cout << "No such slot " << signalName << std::endl;
+	}
+
+	return QMetaObject::connect(sender, signalId, receiver, slotId);
+}
+

@@ -423,3 +423,8 @@ void CadMdiChild::setId(unsigned int id) {
 void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
 	_destroyCallback = destroyCallback;
 }
+
+void CadMdiChild::keyPressEvent(QKeyEvent *event) {
+    QWidget::keyPressEvent(event);
+    emit keyPressed(event);
+}
