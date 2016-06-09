@@ -26,7 +26,7 @@ class CliCommand : public QDockWidget {
 		bool addCommand(std::string name);
 
 		void write(QString message);
-		void focus();
+		void setText(QString text);
 
 	public slots:
 		void onReturnPressed();

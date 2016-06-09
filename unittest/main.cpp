@@ -8,6 +8,11 @@
 #include "testmatrices.h"
 #include "beziertest.h"
 #include "testselection.h"
+
+#ifdef WITH_QTUI
+    #include "ui/testcommandline.h"
+#endif
+
 using namespace std;
 using namespace lc;
 using namespace entity;

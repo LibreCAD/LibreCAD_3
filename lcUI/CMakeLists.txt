@@ -94,5 +94,23 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #  message(STATUS "dir='${dir}'")
 #endforeach()
 
+set(EXTRA_LIBS
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
+        Qt5::UiTools
+        ${LOG4CXX_LIBRARIES}
+        lckernel
+        lcluascript
+        lcviewerqt
+        lcviewernoqt
+        lcdxfdwg)
+
+#Create library for unit tests
+if(WITH_UNITTESTS)
+    add_library(lcui SHARED ${UI_srcs} ${UI_hdrs})
+    target_link_libraries(lcui ${EXTRA_LIBS})
+endif(WITH_UNITTESTS)
+
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
-target_link_libraries(librecad Qt5::Core Qt5::Gui Qt5::Widgets Qt5::UiTools ${LOG4CXX_LIBRARIES} lckernel lcluascript lcviewerqt lcviewernoqt lcdxfdwg)
+target_link_libraries(librecad ${EXTRA_LIBS})
