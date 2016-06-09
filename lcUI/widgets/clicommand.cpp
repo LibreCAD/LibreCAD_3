@@ -156,3 +156,8 @@ void CliCommand::onKeyPressed(QKeyEvent *event) {
             break;
     }
 }
+
+void CliCommand::setText(QString text) {
+    ui->command->setText(text);
+}
+

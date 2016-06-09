@@ -28,9 +28,22 @@ code.h
 testmath.h
 testmatrices.h
 beziertest.h
-testselection.h)
+testselection.h
+testintersect.h)
+
+if(WITH_QTUI)
+    find_package(Qt5Widgets)
+    find_package(Qt5Test)
+
+    set(EXTRA_LIBS ${EXTRA_LIBS} lcui Qt5::Widgets Qt5::Test)
+    set(hdrs
+            ${hdrs}
+            ui/testcommandline.h
+            ui/clicommandtest.h)
+    include_directories("${CMAKE_SOURCE_DIR}/lcUI")
+endif(WITH_QTUI)
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
-add_executable(lcunittest ${src} ${hdrs} testintersect.h)
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
+add_executable(lcunittest ${src} ${hdrs})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
