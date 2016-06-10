@@ -148,7 +148,9 @@ void addLCBindings(lua_State *L) {
 
 	.beginModule("lc")
 		.beginExtendClass<CadMdiChild, QWidget>("CadMdiChild")
-			.addConstructor(LUA_SP(std::shared_ptr<CadMdiChild>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
+			.addFactory([]() {
+				return new CadMdiChild;
+			})
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
