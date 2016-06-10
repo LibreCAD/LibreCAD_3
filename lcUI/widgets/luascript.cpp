@@ -1,12 +1,12 @@
 #include "luascript.h"
 #include "ui_luascript.h"
 
-#include <string>
 #include <lcadluascript.h>
 
-LuaScript::LuaScript(QMdiArea* mdiArea) :
+LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
-    _mdiArea(mdiArea) {
+    _mdiArea(mdiArea),
+	_cliCommand(cliCommand) {
     ui->setupUi(this);
 }
 
@@ -22,8 +22,46 @@ void LuaScript::on_luaRun_clicked() {
 		LCadLuaScript lc(mdiChild->document());
 
 		std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
-		ui->luaOutput->clear();
-		ui->luaOutput->textCursor().insertText(QString::fromStdString(out));
+		_cliCommand->write(QString::fromStdString(out));
 	}
 }
 
+void LuaScript::on_open_clicked() {
+	auto fileName = QFileDialog::getOpenFileName(
+		0,
+		tr("Open File"),
+		QString(),
+		tr("Lua (*.lua)")
+	);
+
+	if(!fileName.isEmpty()) {
+		QFile file(fileName);
+
+		file.open(QFile::ReadOnly | QFile::Text);
+		QTextStream stream(&file);
+
+		ui->luaInput->setPlainText(stream.readAll());
+
+		file.close();
+	}
+}
+
+void LuaScript::on_save_clicked() {
+	auto fileName = QFileDialog::getSaveFileName(
+		0,
+		tr("Save File"),
+		QString(),
+		tr("Lua (*.lua)")
+	);
+
+	if(!fileName.isEmpty()) {
+		QFile file(fileName);
+
+		file.open(QFile::WriteOnly | QFile::Text);
+		QTextStream stream(&file);
+
+		stream << ui->luaInput->toPlainText();
+
+		file.close();
+	}
+}
