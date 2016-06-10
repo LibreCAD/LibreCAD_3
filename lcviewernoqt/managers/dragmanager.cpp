@@ -15,7 +15,7 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 
 	auto entities = _docCanvas->selection();
 	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea, 5);
+		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea);
 	}
 
 	entities.each<const lc::Draggable>([&](lc::Draggable_CSPtr entity) {
@@ -105,7 +105,7 @@ void DragManager::onMousePress() {
 
 	auto entities = _docCanvas->selection();
 	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea, 5);
+		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingArea(_toleranceArea);
 	}
 
 	auto entitiesNearCursor = entities.asVector();
