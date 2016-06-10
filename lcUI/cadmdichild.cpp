@@ -149,26 +149,28 @@ void CadMdiChild::newDocument() {
     _undoManager->removeUndoables(); //Prevent undo of default layer creation
 
     // Create a cross at position 0,0
-    //auto builder = std::make_shared<lc::operation::Builder>(document());
-    //builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
-    //builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
-    /*
-    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 1000. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
-    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 2.*M_PI-0.1, true, layer));
-    builder->append(std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
-    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 0, 1.*M_PI, true, layer));
-     */
-    //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 0, layer));
-    //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
-    //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
-    //    builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
-    //    builder->append(std::make_shared<lc::Point>(0., 0., layer));
-   // builder->execute();
+//    auto builder = std::make_shared<lc::operation::Builder>(document());
+//    builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., 100.), lc::geo::Coordinate(100., -100.), layer));
+//    builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(-100., -100.), lc::geo::Coordinate(100., 100.), layer));
+
+//    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 100. * sqrtf(2.0), layer));
+//    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 1000. * sqrtf(2.0), layer));
+//    builder->append(std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(0.0, 0.0), 50. * sqrtf(2.0), layer));
+//    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0, 0.0), 300, 0, 2.*M_PI-0.1, true, layer));
+//    builder->append(std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(0.0, 0.0), lc::geo::Coordinate(500.0, 0.0), 100.0 , 0., 360.0 , layer));
+//    builder->append(std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(0.0 , 5.0), 700, 0, 1.*M_PI, true, layer));
+
+//        builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(300, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 0, layer));
+//        builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(350, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 1, layer));
+//        builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(400, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 2, layer));
+//        builder->append(std::make_shared<lc::Text>(lc::geo::Coordinate(450, 300), lc::geo::Coordinate(500, 500), 20.0, "Jai Sai Naath", 0.00, 45.0 * M_PI / 180. , "Style", 0, 0, 3, layer));
+//        builder->append(std::make_shared<lc::Point>(0., 0., layer));
+//   builder->execute();
 
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();
+//    std::string path ="/home/gagan/lol.dxf";
+//    exportDXF(path, lc::Version::R2010);
 }
 
 
@@ -218,7 +220,6 @@ void CadMdiChild::import(std::string str) {
     // This might not always work on operating system's that doesn't support extends well, like OS/X
     std::string ext = str.substr(str.length() - 3, 3);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    //#ifdef USE_lcDXFDWG
     if (ext == "dxf") {
         auto builder = std::make_shared<lc::operation::Builder>(document());
         DXFimpl* F = new DXFimpl(_document, builder);
@@ -232,9 +233,12 @@ void CadMdiChild::import(std::string str) {
         //_storageManager = F->storageManager();
         std::cerr << "Sorry, not compiled with DWG support";
     }
-    //#else
-    //    std::cout << "Sorry, not compiled with USE_lcDXFDWG";
-    //#endif
+}
+
+
+void CadMdiChild::exportDXF(std::string& str, lc::Version lcv) {
+    DXFimpl* F = new DXFimpl(_document);
+    F->writeDXF(str, lcv);
 }
 
 void CadMdiChild::on_actionAdd_Random_Lines_triggered() {

@@ -51,33 +51,44 @@ enum class AngleFormat {
 };
 
 enum class LineType {
-LineByLayer,
-LineByBlock,
-DotLine,
-DotLineTiny,
-DotLine2,
-DotLineX2,
-DashLine,
-DashLineTiny,
-DashLine2,
-DashLineX2,
-DashDotLine,
-DashDotLineTiny,
-DashDotLine2,
-DashDotLineX2,
-DivideLine,
-DivideLineTiny,
-DivideLine2,
-DivideLineX2,
-CenterLine,
-CenterLineTiny,
-CenterLine2,
-CenterLineX2,
-BorderLine,
-BorderLineTiny,
-BorderLine2,
-BorderLineX2,
-SolidLine
+    LineByLayer,
+    LineByBlock,
+    DotLine,
+    DotLineTiny,
+    DotLine2,
+    DotLineX2,
+    DashLine,
+    DashLineTiny,
+    DashLine2,
+    DashLineX2,
+    DashDotLine,
+    DashDotLineTiny,
+    DashDotLine2,
+    DashDotLineX2,
+    DivideLine,
+    DivideLineTiny,
+    DivideLine2,
+    DivideLineX2,
+    CenterLine,
+    CenterLineTiny,
+    CenterLine2,
+    CenterLineX2,
+    BorderLine,
+    BorderLineTiny,
+    BorderLine2,
+    BorderLineX2,
+    SolidLine
+};
+
+
+enum class Version {
+    R12,
+    R14,
+    R2000,
+    R2004,
+    R2007,
+    R2010,
+    R2013
 };
 
 }
