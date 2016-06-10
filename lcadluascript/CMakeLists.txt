@@ -27,7 +27,11 @@ link_directories(${LUA_LIBRARY_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
-include_directories( ${EIGEN3_INCLUDE_DIR})
+if( CMAKE_COMPILER_IS_GNUCXX)
+    include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
+else ()
+    include_directories( ${EIGEN3_INCLUDE_DIR})
+endif ()
 
 set(SEPARATE_BUILD OFF)
  

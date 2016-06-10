@@ -1,4 +1,6 @@
 #include "lua/qtbridge.h"
+#include "luaqobject.h"
+#include "luainterface.h"
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
@@ -10,6 +12,7 @@ void luaOpenQtBridge(lua_State *L) {
 	addQtLayoutBindings(L);
 	addQtWidgetsBindings(L);
 	addLCBindings(L);
+	addQtMetaTypes();
 }
 
 void addQtBaseBindings(lua_State *L) {
@@ -23,7 +26,7 @@ void addQtBaseBindings(lua_State *L) {
 			.addFunction("findChild", [](QObject* object, std::string name) {
 				return LuaQObject::findChild(object, name);
 			})
-			.addStaticFunction("tr", &QObject::tr)
+			.addStaticFunction("tr", &QObject::tr, LUA_ARGS(const char*, LuaIntf::_opt<const char*>, LuaIntf::_opt<int>))
 		.endClass()
 
 		.beginExtendClass<QWidget, QObject>("QWidget")
@@ -146,8 +149,7 @@ void addLCBindings(lua_State *L) {
 	.beginModule("lc")
 		.beginExtendClass<CadMdiChild, QWidget>("CadMdiChild")
 			.addFactory([]() {
-				CadMdiChild* child = new CadMdiChild;
-				return child;
+				return new CadMdiChild;
 			})
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
@@ -171,7 +173,8 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")
-			.addFunction("luaConnect", &LuaInterface::qtConnect)
+			.addFunction("luaConnect", &LuaInterface::luaConnect)
+			.addFunction("connect", &LuaInterface::qtConnect)
 		.endClass()
 		
 		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
@@ -182,6 +185,15 @@ void addLCBindings(lua_State *L) {
 			.addFunction("autoScale", &LCViewer::DocumentCanvas::autoScale)
 		.endClass()
 
+		.beginExtendClass<CliCommand, QDockWidget>("CliCommand")
+			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(QWidget*))
+			.addFunction("addCommand", &CliCommand::addCommand)
+			.addFunction("write", &CliCommand::write, LUA_ARGS(const char*))
+		.endClass()
 
 	.endModule();
+}
+
+void addQtMetaTypes() {
+	qRegisterMetaType<lc::geo::Coordinate>();
 }

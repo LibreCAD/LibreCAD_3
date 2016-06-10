@@ -103,12 +103,22 @@ void lua_openlckernel(lua_State* L) {
     .addFunction("z", &geo::Coordinate::z)
     .endClass()
     .beginClass<geo::Coordinate>("Coordinate")
-    .addConstructor(LUA_ARGS(
-                        double x,
-                        double y))
-    .addFunction("x", &geo::Coordinate::x)
-    .addFunction("y", &geo::Coordinate::y)
-    .addFunction("z", &geo::Coordinate::z)
+		.addConstructor(LUA_ARGS(
+							_opt<double> x,
+							_opt<double> y,
+							_opt<double> z))
+		.addFunction("x", &geo::Coordinate::x)
+		.addFunction("y", &geo::Coordinate::y)
+		.addFunction("z", &geo::Coordinate::z)
+
+		.addFunction("add", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
+			return *c1 + c2;
+		})
+
+		.addFunction("sub", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
+			return *c1 - c2;
+		})
+
     .endClass()
     .beginClass<geo::Vector>("Vector")
     .addConstructor(LUA_SP(std::shared_ptr<const geo::Vector>), LUA_ARGS(
