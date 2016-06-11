@@ -67,6 +67,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<LCViewer::Cursor> cursor() const;
         void cancelCurrentOperations();
         void import(std::string);
+        void exportDXF(std::string& str, lc::Version lcv);
 
         unsigned int id();
         void setId(unsigned int id);

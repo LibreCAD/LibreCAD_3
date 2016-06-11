@@ -462,6 +462,48 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
  * Write DXF Implementation BELOW
  *********************************************/
 
+bool DXFimpl::writeDXF(std::string& filename, lc::Version type) {
+    dxfW = new dxfRW(filename.c_str());
+
+    //Default setting
+    DRW::Version exportVersion;
+
+    switch(type) {
+    case lc::Version::R12:
+        exportVersion = DRW::AC1009;
+        break;
+    case lc::Version::R14:
+        exportVersion = DRW::AC1014;
+        break;
+    case lc::Version::R2000:
+        exportVersion = DRW::AC1015;
+        break;
+    case lc::Version::R2004:
+        exportVersion = DRW::AC1018;
+        break;
+    case lc::Version::R2007:
+        exportVersion = DRW::AC1021;
+        break;
+    case lc::Version::R2010:
+        exportVersion = DRW::AC1024;
+        break;
+    case lc::Version::R2013:
+        exportVersion = DRW::AC1027;
+        break;
+    default:
+        exportVersion = DRW::AC1024;
+        break;
+    }
+
+    bool success = dxfW->write(this, exportVersion, false); //ascii
+    delete dxfW;
+
+    if (!success) {
+        std::cout << "can't write file";
+        return false;
+    }
+}
+
 void DXFimpl::writePoint(const lc::entity::Point_CSPtr p) {
     DRW_Point point;
     getEntityAttributes(&point, p);
@@ -835,52 +877,67 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr t) {
 
 }
 
-void DXFimpl::writeEntity(lc::entity::CADEntity_CSPtr e) {
-    switch (e->entityType()) {
 
-    case lc::entity::EntityType::DimLinear:
-    case lc::entity::EntityType::DimAligned:
-    case lc::entity::EntityType::DimAngular:
-    case lc::entity::EntityType::DimRadial:
-    case lc::entity::EntityType::DimDiametric:
-        writeDimension(std::dynamic_pointer_cast<const lc::entity::Dimension>(e));
-                break;
-
-    case lc::entity::EntityType::Point:
-        writePoint(std::dynamic_pointer_cast<const lc::entity::Point>(e));
-                break;
-
-    case lc::entity::EntityType::Line:
-        writeLine(std::dynamic_pointer_cast<const lc::entity::Line>(e));
-                break;
-
-    case lc::entity::EntityType::Circle:
-        writeCircle(std::dynamic_pointer_cast<const lc::entity::Circle>(e));
-                break;
-
-    case lc::entity::EntityType::Arc:
-        writeArc(std::dynamic_pointer_cast<const lc::entity::Arc>(e));
-                break;
-
-    case lc::entity::EntityType::Ellipse:
-        writeEllipse(std::dynamic_pointer_cast<const lc::entity::Ellipse>(e));
-                break;
-
-    case lc::entity::EntityType::LWPolyline:
-        writeLWPolyline(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(e));
-                break;
-
-    case lc::entity::EntityType::Text:
-        writeText(std::dynamic_pointer_cast<const lc::entity::Text>(e));
-                break;
-
-    case lc::entity::EntityType::Image:
-        writeImage(std::dynamic_pointer_cast<const lc::entity::Image>(e));
-                break;
-
-    default:
-        break;
+void DXFimpl::writeEntities(){
+    for(const auto e :_document->entityContainer().asVector()) {
+        writeEntity(e);
     }
+}
+
+void DXFimpl::writeEntity(lc::entity::CADEntity_CSPtr entity) {
+    const auto Line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+    if (Line != nullptr) {
+        writeLine(Line);
+        return;
+    }
+
+    const auto Circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
+    if (Circle != nullptr) {
+        writeCircle(Circle);
+        return;
+    }
+
+    const auto Arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+    if (Arc != nullptr) {
+        writeArc(Arc);
+        return;
+    }
+
+    const auto Ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    if (Ellipse != nullptr) {
+        writeEllipse(Ellipse);
+        return;
+    }
+
+    const auto Image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+    if (Image != nullptr) {
+        writeImage(Image);
+        return;
+    }
+
+    const auto LWPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+    if (LWPolyline != nullptr) {
+        writeLWPolyline(LWPolyline);
+        return;
+    }
+
+    const auto Text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
+    if (Text != nullptr) {
+        writeText(Text);
+        return;
+    }
+
+    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    if (ellipse != nullptr) {
+        writeEllipse(ellipse);
+        return;
+    }
+
+    // const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    // if (ellipse != nullptr) {
+    //     writeEllipse(ellipse);
+    //     return;
+    // }
 }
 
 

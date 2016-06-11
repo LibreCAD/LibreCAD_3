@@ -22,6 +22,7 @@ class DXFimpl : public DRW_Interface {
     public:
 
     DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
+    DXFimpl(std::shared_ptr<lc::Document> document) : _document(document) {}
 
         // READ FUNCTIONALITY
         virtual void addHeader(const DRW_Header *data) override { }
@@ -67,10 +68,12 @@ class DXFimpl : public DRW_Interface {
 
 
         // WRITE FUNCTIONALITY
+        bool writeDXF(std::string& filename, lc::Version type);
+
         virtual void writeHeader(DRW_Header &data) override { }
         virtual void writeBlocks() override { }
         virtual void writeBlockRecords() override { }
-        virtual void writeEntities() override { }
+        virtual void writeEntities() override;
         virtual void writeLTypes() override;
         virtual void writeLayers() override { }
         virtual void writeTextstyles() override { }
