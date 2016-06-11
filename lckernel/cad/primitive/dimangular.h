@@ -72,7 +72,7 @@ namespace lc {
                                           const geo::Coordinate &scale_factor) const override;
 
             virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                    const geo::Coordinate& axis2) const override {}
+                    const geo::Coordinate& axis2) const override;
 
             /**
             * @brief boundingBox of the entity

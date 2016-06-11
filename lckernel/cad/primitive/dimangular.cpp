@@ -71,6 +71,12 @@ CADEntity_CSPtr DimAngular::scale(const geo::Coordinate& scale_center, const geo
     return newDimAngular;
 }
 
+CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    auto newDimAngular = std::make_shared<DimAngular>(this->definitionPoint().mirror(axis1,axis2),
+                                                      this->middleOfText().mirror(axis1,axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_defLine11.mirror(axis1,axis2), this->_defLine12.mirror(axis1,axis2), this->_defLine21.mirror(axis1,axis2), this->_defLine22.mirror(axis1,axis2), this->layer(), this->metaInfo());
+    return newDimAngular;
+}
+
 const geo::Area DimAngular::boundingBox() const {
     // TODO create proper bounding box for DimAngular
     return geo::Area(this->middleOfText(), 0., 0.);

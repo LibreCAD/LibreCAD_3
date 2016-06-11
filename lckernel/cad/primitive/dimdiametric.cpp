@@ -52,6 +52,12 @@ CADEntity_CSPtr DimDiametric::scale(const geo::Coordinate& scale_center, const g
     return newDimDiametric;
 }
 
+CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint().mirror(axis1, axis2),
+                                                          this->middleOfText().mirror(axis1, axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.mirror(axis1, axis2), this->_leader, this->layer(), this->metaInfo());
+    return newDimDiametric;
+}
+
 const geo::Area DimDiametric::boundingBox() const {
     // TODO create proper bounding box for DimLinear
     return geo::Area(this->middleOfText(), 0., 0.);

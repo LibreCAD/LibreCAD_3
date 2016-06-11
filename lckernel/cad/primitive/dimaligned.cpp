@@ -52,6 +52,14 @@ CADEntity_CSPtr DimAligned::scale(const geo::Coordinate& scale_center, const geo
     return newDimAligned;
 }
 
+CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
+                    const geo::Coordinate& axis2) const {
+
+    auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint().mirror(axis1, axis2),
+                                                      this->middleOfText().mirror(axis1, axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.mirror(axis1, axis2), this->_definitionPoint3.mirror(axis1, axis2),  this->layer(), this->metaInfo());
+    return newDimAligned;
+}
+
 const geo::Area DimAligned::boundingBox() const {
     // TODO create proper bounding box for DimAligned
     return geo::Area(this->middleOfText(), 0., 0.);
