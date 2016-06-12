@@ -47,11 +47,6 @@ pkg_check_modules(PANGO REQUIRED pango)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
 
-# Boost
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
@@ -79,5 +74,5 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(lcviewerqt SHARED ${lcviewerqt_srcs} ${lcviewerqt_hdrs})
-target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${BOOST_LIBRARIES} ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
+target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
 

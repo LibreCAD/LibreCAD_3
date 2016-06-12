@@ -1,19 +1,6 @@
 #include <cad/dochelpers/documentimpl.h>
 #include <fstream>
-#include <cstdio>
 
-#include <cad/functions/intersect.h>
-
-/*
-#include <cad/geometry/geovector.h>
-#include <cad/primitive/circle.h>
-#include <cad/primitive/arc.h>
-#include <cad/primitive/ellipse.h>
-#include <cad/primitive/line.h>
-#include <cad/primitive/lwpolyline.h>
-#include <cad/primitive/spline.h>
-#include <cad/primitive/point.h>
- */
 
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/operations/builder.h>
@@ -148,7 +135,7 @@ int main(int argc, char** argv) {
             [&](const unsigned int width, const unsigned int height) {
                 if (lcPainter==nullptr) {
                     if (fType == "pdf")
-                        LcPainter * lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
+                        lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
                     else if (fType == "svg")
                         lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
                         // cairo can print any surface to PNG

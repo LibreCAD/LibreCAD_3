@@ -134,13 +134,6 @@ cad/math/helpermethods.h)
 # DEPENDENCIES
 find_package(PkgConfig)
 
-# Boost
-set(Boost_USE_MULTITHREADED ON)
-#    set(Boost_ADDITIONAL_VERSIONS "1.55" "1.55.0")
-find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-#    find_package(maths REQUIRED)
 
 # LOG4CXX
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
@@ -172,7 +165,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
-target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} )
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
