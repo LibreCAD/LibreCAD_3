@@ -11,8 +11,17 @@ Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, d
 
 }
 
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed, const Layer_CSPtr layer)
+    : CADEntity(layer), geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle, reversed) {
+
+}
+
 Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
     : CADEntity(layer, metaInfo),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle) {
+}
+
+Ellipse::Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
+    : CADEntity(layer, metaInfo),  geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle, reversed) {
 }
 
 Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID)
@@ -48,6 +57,25 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate& scale_center, const geo::C
                                                 scaled.minorRadius(),
                                                 scaled.startAngle(),
                                                 scaled.endAngle(), layer());
+    newEllipse->setID(this->id());
+    return newEllipse;
+}
+
+CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    auto cen = this->center().mirror(axis1, axis2);
+    auto maj = (cen + this->majorP()).mirror(axis1, axis2);
+    auto majP = maj - cen;
+
+    geo::Coordinate startP, endP;
+    if(isArc()) {
+        startP = startPoint().mirror(axis1, axis2);
+        endP = endPoint().mirror(axis1, axis2);
+    }
+
+    auto newEllipse = std::make_shared<Ellipse>(cen, majP,
+                                                minorRadius(),
+                                                getEllipseAngle(startP),
+                                                getEllipseAngle(endP), !isReversed(), layer());
     newEllipse->setID(this->id());
     return newEllipse;
 }

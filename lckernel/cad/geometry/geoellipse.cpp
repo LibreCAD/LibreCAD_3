@@ -16,6 +16,16 @@ Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double mino
 
 }
 
+Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed) :
+    _center(center),
+    _majorP(majorP),
+    _minorRadius(minorRadius),
+    _startAngle(startAngle),
+    _endAngle(endAngle),
+    _isReversed(reversed) {
+
+}
+
 const Coordinate Ellipse::center() const {
     return _center;
 }
