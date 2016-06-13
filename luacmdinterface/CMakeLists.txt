@@ -38,9 +38,12 @@ endif ()
 
 # Boost
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
+#set(Boost_USE_STATIC_LIBS TRUE)
+#find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+message("Boost lib ${Boost_INCLUDE_DIRS}")
 FIND_PACKAGE ( Threads REQUIRED )
 
 set(SEPARATE_BUILD OFF)
@@ -63,4 +66,4 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
-target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${BOOST_LIBRARIES} ${PANGO_LIBRARIES} ${LIBCURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
+target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${LIBCURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
