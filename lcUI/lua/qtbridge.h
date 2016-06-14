@@ -27,6 +27,8 @@ extern "C"
 #include "lcadviewer.h"
 #include "widgets/luascript.h"
 #include "widgets/clicommand.h"
+#include "widgets/toolbar.h"
+#include "widgets/toolbartab.h"
 
 
 Q_DECLARE_METATYPE(lc::geo::Coordinate);

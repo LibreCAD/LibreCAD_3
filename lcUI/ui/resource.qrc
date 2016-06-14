@@ -1,1 +1,6 @@
-<RCC/>
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="linesfree.png">icons/linesfree.png</file>
+        <file alias="linesnormal.png">icons/linesnormal.png</file>
+    </qresource>
+</RCC>
