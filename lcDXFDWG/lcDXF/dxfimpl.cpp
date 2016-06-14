@@ -55,15 +55,16 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_
 void DXFimpl::setBlock(const int _blockHandle) {
     std::cout << "setBlock " << _blockHandle << "\n";
 }
+
 void DXFimpl::addBlock(const DRW_Block& data) {
     _blockHandle = data.handle;
     std::cout << "addBlock " << data.name << " " << data.handle << "\n";
 }
+
 void DXFimpl::endBlock() {
     std::cout << "endBlock " << "\n";
     _blockHandle = -1;
 }
-
 
 void DXFimpl::addLine(const DRW_Line& data) {
     if (_blockHandle != -1) {
@@ -455,3 +456,904 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
         }
     }
 }
+
+
+/*********************************************
+ * Write DXF Implementation BELOW
+ *********************************************/
+
+bool DXFimpl::writeDXF(std::string& filename, lc::Version type) {
+    dxfW = new dxfRW(filename.c_str());
+
+    //Default setting
+    DRW::Version exportVersion;
+
+    switch(type) {
+    case lc::Version::R12:
+        exportVersion = DRW::AC1009;
+        break;
+    case lc::Version::R14:
+        exportVersion = DRW::AC1014;
+        break;
+    case lc::Version::R2000:
+        exportVersion = DRW::AC1015;
+        break;
+    case lc::Version::R2004:
+        exportVersion = DRW::AC1018;
+        break;
+    case lc::Version::R2007:
+        exportVersion = DRW::AC1021;
+        break;
+    case lc::Version::R2010:
+        exportVersion = DRW::AC1024;
+        break;
+    case lc::Version::R2013:
+        exportVersion = DRW::AC1027;
+        break;
+    default:
+        exportVersion = DRW::AC1024;
+        break;
+    }
+
+    bool success = dxfW->write(this, exportVersion, false); //ascii
+    delete dxfW;
+
+    if (!success) {
+        std::cout << "can't write file";
+        return false;
+    }
+}
+
+void DXFimpl::writePoint(const lc::entity::Point_CSPtr p) {
+    DRW_Point point;
+    getEntityAttributes(&point, p);
+    point.basePoint.x = p->x();
+    point.basePoint.y = p->y();
+    dxfW->writePoint(&point);
+}
+
+void DXFimpl::writeLine(const lc::entity::Line_CSPtr l) {
+    DRW_Line line;
+    getEntityAttributes(&line, l);
+    line.basePoint.x = l->start().x();
+    line.basePoint.y = l->start().y();
+    line.secPoint.x = l->end().x();
+    line.secPoint.y = l->end().y();
+    dxfW->writeLine(&line);
+}
+
+void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr c) {
+    DRW_Circle circle;
+    getEntityAttributes(&circle, c);
+    circle.basePoint.x = c->center().x();
+    circle.basePoint.y = c->center().y();
+    circle.radious = c->radius();
+    dxfW->writeCircle(&circle);
+}
+
+void DXFimpl::writeArc(const lc::entity::Arc_CSPtr a) {
+    DRW_Arc arc;
+    getEntityAttributes(&arc, a);
+    arc.basePoint.x = a->center().x();
+    arc.basePoint.y = a->center().y();
+    arc.radious = a->radius();
+    if (a->CCW()) {
+        arc.staangle = a->startAngle();
+        arc.endangle = a->endAngle();
+    } else {
+        arc.staangle = a->endAngle();
+        arc.endangle = a->startAngle();
+    }
+    dxfW->writeArc(&arc);
+}
+
+void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
+    DRW_Ellipse el;
+    getEntityAttributes(&el, s);
+    el.basePoint.x = s->center().x();
+    el.basePoint.y = s->center().y();
+    el.secPoint.x = s->majorP().x();
+    el.secPoint.y = s->majorP().y();
+    el.ratio = s->ratio();
+    if (s->isReversed()) {
+        el.staparam = s->startAngle();
+        el.endparam = s->endAngle();
+    } else {
+        el.staparam = s->endAngle();
+        el.endparam = s->startAngle();
+    }
+    dxfW->writeEllipse(&el);
+}
+
+void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
+
+    /*
+     * TODO
+     */
+
+    //    auto layer_  = entity->layer();
+//    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
+//    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
+//    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+//    lc::iColor col;
+//    auto color_ = col.colorToInt(metaColor_);
+//    ent->color = color_;
+}
+
+void DXFimpl::writeLTypes() {
+    DRW_LType ltype;
+    // Standard linetypes for LibreCAD / AutoCAD
+    ltype.name = "CONTINUOUS";
+    ltype.desc = "Solid line";
+    dxfW->writeLineType(&ltype);
+    ltype.name = "ByLayer";
+    dxfW->writeLineType(&ltype);
+    ltype.name = "ByBlock";
+    dxfW->writeLineType(&ltype);
+
+    ltype.name = "DOT";
+    ltype.desc = "Dot . . . . . . . . . . . . . . . . . . . . . .";
+    ltype.size = 2;
+    ltype.length = 6.35;
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DOTTINY";
+    ltype.desc = "Dot (.15x) .....................................";
+    ltype.size = 2;
+    ltype.length = 0.9525;
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DOT2";
+    ltype.desc = "Dot (.5x) .....................................";
+    ltype.size = 2;
+    ltype.length = 3.175;
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DOTX2";
+    ltype.desc = "Dot (2x) .  .  .  .  .  .  .  .  .  .  .  .  .";
+    ltype.size = 2;
+    ltype.length = 12.7;
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHED";
+    ltype.desc = "Dashed _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
+    ltype.size = 2;
+    ltype.length = 19.05;
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHEDTINY";
+    ltype.desc = "Dashed (.15x) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
+    ltype.size = 2;
+    ltype.length = 2.8575;
+    ltype.path.push_back(1.905);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHED2";
+    ltype.desc = "Dashed (.5x) _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _";
+    ltype.size = 2;
+    ltype.length = 9.525;
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHEDX2";
+    ltype.desc = "Dashed (2x) ____  ____  ____  ____  ____  ___";
+    ltype.size = 2;
+    ltype.length = 38.1;
+    ltype.path.push_back(25.4);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHDOT";
+    ltype.desc = "Dash dot __ . __ . __ . __ . __ . __ . __ . __";
+    ltype.size = 4;
+    ltype.length = 25.4;
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHDOTTINY";
+    ltype.desc = "Dash dot (.15x) _._._._._._._._._._._._._._._.";
+    ltype.size = 4;
+    ltype.length = 3.81;
+    ltype.path.push_back(1.905);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHDOT2";
+    ltype.desc = "Dash dot (.5x) _._._._._._._._._._._._._._._.";
+    ltype.size = 4;
+    ltype.length = 12.7;
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DASHDOTX2";
+    ltype.desc = "Dash dot (2x) ____  .  ____  .  ____  .  ___";
+    ltype.size = 4;
+    ltype.length = 50.8;
+    ltype.path.push_back(25.4);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DIVIDE";
+    ltype.desc = "Divide ____ . . ____ . . ____ . . ____ . . ____";
+    ltype.size = 6;
+    ltype.length = 31.75;
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DIVIDETINY";
+    ltype.desc = "Divide (.15x) __..__..__..__..__..__..__..__.._";
+    ltype.size = 6;
+    ltype.length = 4.7625;
+    ltype.path.push_back(1.905);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DIVIDE2";
+    ltype.desc = "Divide (.5x) __..__..__..__..__..__..__..__.._";
+    ltype.size = 6;
+    ltype.length = 15.875;
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "DIVIDEX2";
+    ltype.desc = "Divide (2x) ________  .  .  ________  .  .  _";
+    ltype.size = 6;
+    ltype.length = 63.5;
+    ltype.path.push_back(25.4);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "BORDER";
+    ltype.desc = "Border __ __ . __ __ . __ __ . __ __ . __ __ .";
+    ltype.size = 6;
+    ltype.length = 44.45;
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "BORDERTINY";
+    ltype.desc = "Border (.15x) __.__.__.__.__.__.__.__.__.__.__.";
+    ltype.size = 6;
+    ltype.length = 6.6675;
+    ltype.path.push_back(1.905);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(1.905);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "BORDER2";
+    ltype.desc = "Border (.5x) __.__.__.__.__.__.__.__.__.__.__.";
+    ltype.size = 6;
+    ltype.length = 22.225;
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "BORDERX2";
+    ltype.desc = "Border (2x) ____  ____  .  ____  ____  .  ___";
+    ltype.size = 6;
+    ltype.length = 88.9;
+    ltype.path.push_back(25.4);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(25.4);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(0.0);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "CENTER";
+    ltype.desc = "Center ____ _ ____ _ ____ _ ____ _ ____ _ ____";
+    ltype.size = 4;
+    ltype.length = 50.8;
+    ltype.path.push_back(31.75);
+    ltype.path.push_back(-6.35);
+    ltype.path.push_back(6.35);
+    ltype.path.push_back(-6.35);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "CENTERTINY";
+    ltype.desc = "Center (.15x) ___ _ ___ _ ___ _ ___ _ ___ _ ___";
+    ltype.size = 4;
+    ltype.length = 7.62;
+    ltype.path.push_back(4.7625);
+    ltype.path.push_back(-0.9525);
+    ltype.path.push_back(0.9525);
+    ltype.path.push_back(-0.9525);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "CENTER2";
+    ltype.desc = "Center (.5x) ___ _ ___ _ ___ _ ___ _ ___ _ ___";
+    ltype.size = 4;
+    ltype.length = 28.575;
+    ltype.path.push_back(19.05);
+    ltype.path.push_back(-3.175);
+    ltype.path.push_back(3.175);
+    ltype.path.push_back(-3.175);
+    dxfW->writeLineType(&ltype);
+
+    ltype.path.clear();
+    ltype.name = "CENTERX2";
+    ltype.desc = "Center (2x) ________  __  ________  __  _____";
+    ltype.size = 4;
+    ltype.length = 101.6;
+    ltype.path.push_back(63.5);
+    ltype.path.push_back(-12.7);
+    ltype.path.push_back(12.7);
+    ltype.path.push_back(-12.7);
+    dxfW->writeLineType(&ltype);
+}
+
+void DXFimpl::writeAppId(){
+    DRW_AppId ai;
+    ai.name ="LibreCad";
+    dxfW->writeAppId(&ai);
+}
+
+void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr d) {
+
+}
+
+void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr p) {
+
+}
+
+void DXFimpl::writeImage(const lc::entity::Image_CSPtr i) {
+
+}
+
+void DXFimpl::writeText(const lc::entity::Text_CSPtr t) {
+
+}
+
+
+void DXFimpl::writeEntities(){
+    for(const auto e :_document->entityContainer().asVector()) {
+        writeEntity(e);
+    }
+}
+
+void DXFimpl::writeEntity(lc::entity::CADEntity_CSPtr entity) {
+    const auto Line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+    if (Line != nullptr) {
+        writeLine(Line);
+        return;
+    }
+
+    const auto Circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
+    if (Circle != nullptr) {
+        writeCircle(Circle);
+        return;
+    }
+
+    const auto Arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+    if (Arc != nullptr) {
+        writeArc(Arc);
+        return;
+    }
+
+    const auto Ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    if (Ellipse != nullptr) {
+        writeEllipse(Ellipse);
+        return;
+    }
+
+    const auto Image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+    if (Image != nullptr) {
+        writeImage(Image);
+        return;
+    }
+
+    const auto LWPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+    if (LWPolyline != nullptr) {
+        writeLWPolyline(LWPolyline);
+        return;
+    }
+
+    const auto Text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
+    if (Text != nullptr) {
+        writeText(Text);
+        return;
+    }
+
+    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    if (ellipse != nullptr) {
+        writeEllipse(ellipse);
+        return;
+    }
+
+    // const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    // if (ellipse != nullptr) {
+    //     writeEllipse(ellipse);
+    //     return;
+    // }
+}
+
+
+/*****************************************
+ * EXTRA Utilites
+ *****************************************/
+lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
+
+    lc::AngleFormat af;
+
+    switch (num) {
+    default:
+    case 0:
+        af = lc::AngleFormat::DegreesDecimal;
+        break;
+    case 1:
+        af = lc::AngleFormat::DegreesMinutesSeconds;
+        break;
+    case 2:
+        af = lc::AngleFormat::Gradians;
+        break;
+    case 3:
+        af = lc::AngleFormat::Radians;
+        break;
+    case 4:
+        af = lc::AngleFormat::Surveyors;
+        break;
+    }
+
+    return af;
+}
+
+
+/**
+ * Converts AngleFormat enum to DXF number.
+ */
+int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
+
+    int num;
+
+    switch (af) {
+    default:
+    case lc::AngleFormat::DegreesDecimal:
+        num = 0;
+        break;
+    case lc::AngleFormat::DegreesMinutesSeconds:
+        num = 1;
+        break;
+    case lc::AngleFormat::Gradians:
+        num = 2;
+        break;
+    case lc::AngleFormat::Radians:
+        num = 3;
+        break;
+    case lc::AngleFormat::Surveyors:
+        num = 4;
+        break;
+    }
+
+    return num;
+}
+
+
+
+/**
+ * converts a DXF units setting (e.g. INSUNITSs) to a units enum.
+ */
+lc::Units DXFimpl::numberToUnit(int num) {
+    switch (num) {
+    default:
+    case  0:
+        return lc::Units::None;
+        break;
+    case  1:
+        return lc::Units::Inch;
+        break;
+    case  2:
+        return lc::Units::Foot;
+        break;
+    case  3:
+        return lc::Units::Mile;
+        break;
+    case  4:
+        return lc::Units::Millimeter;
+        break;
+    case  5:
+        return lc::Units::Centimeter;
+        break;
+    case  6:
+        return lc::Units::Meter;
+        break;
+    case  7:
+        return lc::Units::Kilometer;
+        break;
+    case  8:
+        return lc::Units::Microinch;
+        break;
+    case  9:
+        return lc::Units::Mil;
+        break;
+    case 10:
+        return lc::Units::Yard;
+        break;
+    case 11:
+        return lc::Units::Angstrom;
+        break;
+    case 12:
+        return lc::Units::Nanometer;
+        break;
+    case 13:
+        return lc::Units::Micron;
+        break;
+    case 14:
+        return lc::Units::Decimeter;
+        break;
+    case 15:
+        return lc::Units::Decameter;
+        break;
+    case 16:
+        return lc::Units::Hectometer;
+        break;
+    case 17:
+        return lc::Units::Gigameter;
+        break;
+    case 18:
+        return lc::Units::Astro;
+        break;
+    case 19:
+        return lc::Units::Lightyear;
+        break;
+    case 20:
+        return lc::Units::Parsec;
+        break;
+    }
+
+    return lc::Units::None;
+}
+
+
+
+/**
+ * Converst a units enum into a DXF units number e.g. for INSUNITSs.
+ */
+int DXFimpl::unitToNumber(lc::Units unit) {
+    switch (unit) {
+    default:
+    case lc::Units::None:
+        return  0;
+        break;
+    case lc::Units::Inch:
+        return  1;
+        break;
+    case lc::Units::Foot:
+        return  2;
+        break;
+    case lc::Units::Mile:
+        return  3;
+        break;
+    case lc::Units::Millimeter:
+        return  4;
+        break;
+    case lc::Units::Centimeter:
+        return  5;
+        break;
+    case lc::Units::Meter:
+        return  6;
+        break;
+    case lc::Units::Kilometer:
+        return  7;
+        break;
+    case lc::Units::Microinch:
+        return  8;
+        break;
+    case lc::Units::Mil:
+        return  9;
+        break;
+    case lc::Units::Yard:
+        return 10;
+        break;
+    case lc::Units::Angstrom:
+        return 11;
+        break;
+    case lc::Units::Nanometer:
+        return 12;
+        break;
+    case lc::Units::Micron:
+        return 13;
+        break;
+    case lc::Units::Decimeter:
+        return 14;
+        break;
+    case lc::Units::Decameter:
+        return 15;
+        break;
+    case lc::Units::Hectometer:
+        return 16;
+        break;
+    case lc::Units::Gigameter:
+        return 17;
+        break;
+    case lc::Units::Astro:
+        return 18;
+        break;
+    case lc::Units::Lightyear:
+        return 19;
+        break;
+    case lc::Units::Parsec:
+        return 20;
+        break;
+    }
+
+    return 0;
+}
+
+lc::LineType DXFimpl::nameToLineType(const std::string& name) {
+
+    std::string uName = name;
+
+    std::transform(uName.begin(), uName.end(),uName.begin(), ::toupper);
+
+    // Standard linetypes for QCad II / AutoCAD
+    if (uName.empty() || uName=="BYLAYER") {
+        return lc::LineType::LineByLayer;
+
+    } else if (uName=="BYBLOCK") {
+        return lc::LineType::LineByBlock;
+
+    } else if (uName=="CONTINUOUS" || uName=="ACAD_ISO01W100") {
+        return lc::LineType::SolidLine;
+
+    } else if (uName=="ACAD_ISO07W100" || uName=="DOT") {
+        return lc::LineType::DotLine;
+
+    } else if (uName=="DOTTINY") {
+        return lc::LineType::DotLineTiny;
+
+    } else if (uName=="DOT2") {
+        return lc::LineType::DotLine2;
+
+    } else if (uName=="DOTX2") {
+        return lc::LineType::DotLineX2;
+
+
+    } else if (uName=="ACAD_ISO02W100" || uName=="ACAD_ISO03W100" ||
+               uName=="DASHED" || uName=="HIDDEN") {
+        return lc::LineType::DashLine;
+
+    } else if (uName=="DASHEDTINY" || uName=="HIDDEN2") {
+        return lc::LineType::DashLineTiny;
+
+    } else if (uName=="DASHED2" || uName=="HIDDEN2") {
+        return lc::LineType::DashLine2;
+
+    } else if (uName=="DASHEDX2" || uName=="HIDDENX2") {
+        return lc::LineType::DashLineX2;
+
+
+    } else if (uName=="ACAD_ISO10W100" ||
+               uName=="DASHDOT") {
+        return lc::LineType::DashDotLine;
+
+    } else if (uName=="DASHDOTTINY") {
+        return lc::LineType::DashDotLineTiny;
+
+    } else if (uName=="DASHDOT2") {
+        return lc::LineType::DashDotLine2;
+
+    } else if (uName=="ACAD_ISO04W100" ||
+               uName=="DASHDOTX2") {
+        return lc::LineType::DashDotLineX2;
+
+
+    } else if (uName=="ACAD_ISO12W100" || uName=="DIVIDE") {
+        return lc::LineType::DivideLine;
+
+    } else if (uName=="DIVIDETINY") {
+        return lc::LineType::DivideLineTiny;
+
+    } else if (uName=="DIVIDE2") {
+        return lc::LineType::DivideLine2;
+
+    } else if (uName=="ACAD_ISO05W100" || uName=="DIVIDEX2") {
+        return lc::LineType::DivideLineX2;
+
+
+    } else if (uName=="CENTER") {
+        return lc::LineType::CenterLine;
+
+    } else if (uName=="CENTERTINY") {
+        return lc::LineType::CenterLineTiny;
+
+    } else if (uName=="CENTER2") {
+        return lc::LineType::CenterLine2;
+
+    } else if (uName=="CENTERX2") {
+        return lc::LineType::CenterLineX2;
+
+
+    } else if (uName=="BORDER") {
+        return lc::LineType::BorderLine;
+
+    } else if (uName=="BORDERTINY") {
+        return lc::LineType::BorderLineTiny;
+
+    } else if (uName=="BORDER2") {
+        return lc::LineType::BorderLine2;
+
+    } else if (uName=="BORDERX2") {
+        return lc::LineType::BorderLineX2;
+    }
+
+    return lc::LineType::SolidLine;
+}
+
+
+
+/**
+ * Converts a RS_LineType into a name for a line type.
+ */
+std::string DXFimpl::lineTypeToName(lc::LineType lineType) {
+
+    // Standard linetypes for QCad II / AutoCAD
+    switch (lineType) {
+
+    case lc::LineType::SolidLine:
+        return "CONTINUOUS";
+        break;
+
+    case lc::LineType::DotLine:
+        return "DOT";
+        break;
+    case lc::LineType::DotLineTiny:
+        return "DOTTINY";
+        break;
+    case lc::LineType::DotLine2:
+        return "DOT2";
+        break;
+    case lc::LineType::DotLineX2:
+        return "DOTX2";
+        break;
+
+    case lc::LineType::DashLine:
+        return "DASHED";
+        break;
+    case lc::LineType::DashLineTiny:
+        return "DASHEDTINY";
+        break;
+    case lc::LineType::DashLine2:
+        return "DASHED2";
+        break;
+    case lc::LineType::DashLineX2:
+        return "DASHEDX2";
+        break;
+
+    case lc::LineType::DashDotLine:
+        return "DASHDOT";
+        break;
+    case lc::LineType::DashDotLineTiny:
+        return "DASHDOTTINY";
+        break;
+    case lc::LineType::DashDotLine2:
+        return "DASHDOT2";
+        break;
+    case lc::LineType::DashDotLineX2:
+        return "DASHDOTX2";
+        break;
+
+    case lc::LineType::DivideLine:
+        return "DIVIDE";
+        break;
+    case lc::LineType::DivideLineTiny:
+        return "DIVIDETINY";
+        break;
+    case lc::LineType::DivideLine2:
+        return "DIVIDE2";
+        break;
+    case lc::LineType::DivideLineX2:
+        return "DIVIDEX2";
+        break;
+
+    case lc::LineType::CenterLine:
+        return "CENTER";
+        break;
+    case lc::LineType::CenterLineTiny:
+        return "CENTERTINY";
+        break;
+    case lc::LineType::CenterLine2:
+        return "CENTER2";
+        break;
+    case lc::LineType::CenterLineX2:
+        return "CENTERX2";
+        break;
+
+    case lc::LineType::BorderLine:
+        return "BORDER";
+        break;
+    case lc::LineType::BorderLineTiny:
+        return "BORDERTINY";
+        break;
+    case lc::LineType::BorderLine2:
+        return "BORDER2";
+        break;
+    case lc::LineType::BorderLineX2:
+        return "BORDERX2";
+        break;
+
+    case lc::LineType::LineByLayer:
+        return "ByLayer";
+        break;
+    case lc::LineType::LineByBlock:
+        return "ByBlock";
+        break;
+    default:
+        break;
+    }
+
+    return "CONTINUOUS";
+}
+

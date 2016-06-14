@@ -79,6 +79,17 @@ CADEntity_CSPtr Line::scale(const geo::Coordinate& scale_center, const geo::Coor
     return newLine;
 }
 
+CADEntity_CSPtr Line::mirror(const geo::Coordinate& axis1,
+                             const geo::Coordinate& axis2) const {
+    auto newLine = std::make_shared<Line>(this->start().mirror(axis1,
+                                                               axis2),
+                                          this->end().mirror(axis1,
+                                                             axis2),
+                                          layer());
+    newLine->setID(this->id());
+    return newLine;
+}
+
 const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }

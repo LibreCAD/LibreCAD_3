@@ -28,8 +28,14 @@ namespace lc {
             Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
                     double endAngle, const Layer_CSPtr layer);
 
+            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle,
+                    double endAngle, bool reversed, const Layer_CSPtr layer);
+
             Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
                     double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+
+            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
+                    double endAngle, bool reversed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
 
@@ -65,6 +71,9 @@ namespace lc {
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const override;
 
+            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
+                    const geo::Coordinate& axis2) const override;
+
             /**
              * @brief boundingBox of the entity
              * @return geo::Area area
@@ -72,6 +81,11 @@ namespace lc {
             virtual const geo::Area boundingBox() const override;
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+
+            virtual EntityType entityType() const {
+                return EntityType::Ellipse;
+            }
+
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

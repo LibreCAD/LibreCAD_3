@@ -205,16 +205,23 @@ const double Bezier::length() const {
 }
 
 Bezier Bezier::rotate(const geo::Coordinate& center, double angle) {
-    return Bezier(_pointA.rotate(center, angle), _pointB.rotate(center, angle),
-                _pointC.rotate(center, angle));
+    return Bezier(_pointA.rotate(center, angle),
+                  _pointB.rotate(center, angle),
+                  _pointC.rotate(center, angle));
 }
 
 Bezier Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
-    return Bezier(_pointA.scale(center, factor), _pointB.scale(center, factor), _pointC.scale(center, factor));
+    return Bezier(_pointA.scale(center, factor),
+                  _pointB.scale(center, factor),
+                  _pointC.scale(center, factor)
+                  );
 }
 
 Bezier Bezier::move(const geo::Coordinate& offset) const {
-    return Bezier(_pointA + offset, _pointB + offset, _pointC + offset);
+    return Bezier(_pointA + offset,
+                  _pointB + offset,
+                  _pointC + offset
+                  );
 }
 
 const Coordinate Bezier::tangent(double t) const {
@@ -246,9 +253,34 @@ const Coordinate Bezier::normal(double t) const {
     return Coordinate(tanx, tany);
 }
 
+Bezier Bezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    return Bezier(_pointA.mirror(axis1, axis2),
+                  _pointB.mirror(axis1, axis2),
+                  _pointC.mirror(axis1, axis2)
+                  );
+}
+
 std::vector<Bezier> Bezier::splitHalf() const {
     auto AB = (_pointA + _pointB) / 2;
     auto BC = (_pointB + _pointC) / 2;
     auto D = (AB + BC)/2;
     return {Bezier(_pointA, AB, D), Bezier(D, BC, _pointC)};
+}
+
+Bezier Bezier::offset(const geo::Coordinate& offset) const {
+    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+
+//    if(tx_ > 0. && tx_ < 1.0) {
+//        auto bez1 = DirectValueAt(tx_);
+//        x_.push_back(bez1.x());
+//        y_.push_back(bez1.y());
+//    }
+
+//    if(ty_ > 0. && ty_ < 1.0) {
+//        auto bez2 = DirectValueAt(ty_);
+//        x_.push_back(bez2.x());
+//        y_.push_back(bez2.y());
+//    }
+
 }

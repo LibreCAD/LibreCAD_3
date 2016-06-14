@@ -85,6 +85,9 @@ namespace lc {
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const override;
 
+            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
+                    const geo::Coordinate& axis2) const override;
+
             /**
             * @brief boundingBox of the entity
             * @return geo::Area area
@@ -93,6 +96,9 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
+            virtual EntityType entityType() const {
+                return EntityType::DimDiametric;
+            }
 
             double leader() const;
 

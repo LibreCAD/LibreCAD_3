@@ -52,6 +52,12 @@ CADEntity_CSPtr DimRadial::scale(const geo::Coordinate& scale_center, const geo:
     return newDimRadial;
 }
 
+CADEntity_CSPtr DimRadial::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    auto newDimRadial = std::make_shared<DimRadial>(this->definitionPoint().mirror(axis1,axis2),
+                                                    this->middleOfText().mirror(axis1,axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.mirror(axis1,axis2), this->_leader, this->layer(), this->metaInfo());
+    return newDimRadial;
+}
+
 const geo::Area DimRadial::boundingBox() const {
     // TODO create proper bounding box for DimLinear
     return geo::Area(this->middleOfText(), 0., 0.);

@@ -120,6 +120,19 @@ CADEntity_CSPtr Arc::scale(const geo::Coordinate &scale_center, const geo::Coord
 
 }
 
+CADEntity_CSPtr Arc::mirror(const geo::Coordinate &axis1, const geo::Coordinate &axis2) const {
+    double a= (axis2- axis1).angle()*2;
+
+    auto newArc = std::make_shared<Arc>(this->center().mirror(axis1,axis2),
+                                        this->radius(),
+                                        lc::Math::correctAngle(a - this->startAngle()),
+                                        lc::Math::correctAngle(a - this->endAngle()),
+                                        !this->CCW(), layer());
+    newArc->setID(this->id());
+    return newArc;
+
+}
+
 const geo::Area Arc::boundingBox() const {
     return geo::Arc::boundingBox();
 }

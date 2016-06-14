@@ -14,6 +14,24 @@ namespace lc {
          *Class that all CAD entities must inherit
          *
          */
+        enum class EntityType {
+            Arc,
+            Line,
+            Circle,
+            Ellipse,
+            DimRadial,
+            DimDiametric,
+            Image,
+            DimAngular,
+            DimLinear,
+            DimAligned,
+            Bezier,
+            Spline,
+            LWPolyline,
+            Text,
+            Point
+        };
+
         class CADEntity : public ID, virtual public Visitable {
         public:
             CADEntity() {
@@ -78,6 +96,9 @@ namespace lc {
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const = 0;
 
+            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
+                                           const geo::Coordinate& axis2) const = 0;
+
             /**
              * @brief boundingBox
              * Return the bounding box of this entity.
@@ -126,6 +147,8 @@ namespace lc {
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
             virtual void dispatch(EntityDispatch &) const = 0;
+
+            virtual EntityType entityType() const = 0;
 
         private:
             Layer_CSPtr _layer;

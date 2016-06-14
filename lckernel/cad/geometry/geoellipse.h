@@ -14,7 +14,7 @@ namespace lc {
         class Ellipse : public Base, virtual public Visitable {
             public:
                 Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
-
+                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed);
                 /**
                  * @brief center, Returns Center point of Ellipse
                  * @return geo::Coordinate center
