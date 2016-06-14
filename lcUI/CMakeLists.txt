@@ -34,6 +34,8 @@ operations/qsnappedstate.h
 operations/trimoperation.h
 widgets/clicommand.h
 widgets/luascript.h
+widgets/toolbar.h
+        widgets/toolbartab.h
 lua/qtbridge.h
 lua/luaqobject.h)
 
@@ -48,12 +50,16 @@ operations/qsnappedstate.cpp
 operations/trimoperation.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
+widgets/toolbar.cpp
+        widgets/toolbartab.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
 widgets/clicommand.ui
-widgets/luascript.ui)
+widgets/luascript.ui
+widgets/toolbar.ui
+widgets/toolbartab.ui)
 
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
@@ -116,5 +122,5 @@ if(WITH_UNITTESTS)
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 
-add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS})
+add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 target_link_libraries(librecad ${EXTRA_LIBS})
