@@ -32,6 +32,8 @@ namespace lc {
 
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
 
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const;
+
             virtual Layer_CSPtr layerByName(const std::string& layerName) const;
             virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;
         protected:

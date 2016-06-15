@@ -96,10 +96,6 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
-            virtual EntityType entityType() const {
-                return EntityType::DimDiametric;
-            }
-
             double leader() const;
 
             geo::Coordinate definitionPoint2() const;  // Where definitionPoint is a edge, definitionPoint2 specifies the opposite ege. The mid point would be the center point.

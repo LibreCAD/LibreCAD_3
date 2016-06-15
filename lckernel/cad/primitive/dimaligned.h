@@ -82,10 +82,6 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
-            virtual EntityType entityType() const {
-                return EntityType::DimAligned;
-            }
-
             // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points
             const geo::Coordinate &definitionPoint2() const noexcept;

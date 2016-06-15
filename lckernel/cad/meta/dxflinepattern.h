@@ -17,6 +17,9 @@ namespace lc {
 
 
     public:
+
+        DxfLinePattern() {}
+
         DxfLinePattern(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length);
 
         virtual ~DxfLinePattern() = default;

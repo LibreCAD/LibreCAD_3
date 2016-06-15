@@ -102,6 +102,10 @@ EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entityContainer()  {
     return _storageManager->entityContainer();
 }
 
+std::map<std::string, Layer_CSPtr> DocumentImpl::allLayers() const {
+    return _storageManager->allLayers();
+}
+
 Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
     return _storageManager->layerByName(layerName);
 }

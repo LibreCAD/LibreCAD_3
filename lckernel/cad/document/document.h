@@ -158,6 +158,12 @@ namespace lc {
              */
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() = 0;
 
+
+            /**
+             * @brief Returns all layers
+             */
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const = 0;
+
             /**
              * @brief return a layer by it's name
              */

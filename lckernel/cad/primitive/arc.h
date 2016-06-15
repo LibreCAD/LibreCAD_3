@@ -89,10 +89,6 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
-            virtual EntityType entityType() const {
-                return EntityType::Arc;
-            }
-
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const override;
