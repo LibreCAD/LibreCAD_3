@@ -151,7 +151,9 @@ void addQtWidgetsBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<QPushButton, QAbstractButton>("QPushButton")
-			.addConstructor(LUA_ARGS(QString, LuaIntf::_opt<QWidget*>))
+			.addFactory([](QString name) {
+				return new QPushButton(name);
+			})
 			.addFunction("setFlat", &QPushButton::setFlat)
 		.endClass()
 	.endModule();
@@ -213,7 +215,9 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<ToolbarTab, QDockWidget>("ToolbarTab")
-			.addConstructor(LUA_SP(std::shared_ptr<ToolbarTab>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
+			.addFactory([]() {
+				return new ToolbarTab();
+			})
 			.addFunction("addButton", &ToolbarTab::addButton, LUA_ARGS(QGroupBox*,
 																	   QPushButton*,
 																	   LuaIntf::_opt<int>,
