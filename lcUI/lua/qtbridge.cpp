@@ -47,6 +47,14 @@ void addQtBaseBindings(lua_State *L) {
 			.addConstructor(LUA_ARGS(QObject*))
 			.addFunction("setText", &QAction::setText)
 		.endClass()
+
+		.beginClass<QIcon>("QIcon")
+			.addConstructor(LUA_ARGS(QString))
+		.endClass()
+
+		.beginClass<QSize>("QSize")
+			.addConstructor(LUA_ARGS(int, int))
+		.endClass()
 	.endModule();
 }
 
@@ -127,6 +135,9 @@ void addQtLayoutBindings(lua_State *L) {
 		.beginExtendClass<QVBoxLayout, QBoxLayout>("QVBoxLayout")
 			.addConstructor(LUA_ARGS())
 		.endClass()
+
+		.beginExtendClass<QGroupBox, QWidget>("QGroupBox")
+		.endClass()
 	.endModule();
 }
 
@@ -135,10 +146,13 @@ void addQtWidgetsBindings(lua_State *L) {
 
 	.beginModule("qt")
 		.beginExtendClass<QAbstractButton, QWidget>("QAbstractButton")
+			.addFunction("setIcon", &QAbstractButton::setIcon)
+			.addFunction("setIconSize", &QAbstractButton::setIconSize)
 		.endClass()
 
 		.beginExtendClass<QPushButton, QAbstractButton>("QPushButton")
-			.addConstructor(LUA_ARGS(QString))
+			.addConstructor(LUA_ARGS(QString, LuaIntf::_opt<QWidget*>))
+			.addFunction("setFlat", &QPushButton::setFlat)
 		.endClass()
 	.endModule();
 }
@@ -186,9 +200,35 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<CliCommand, QDockWidget>("CliCommand")
-			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(QWidget*))
+			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
 			.addFunction("addCommand", &CliCommand::addCommand)
 			.addFunction("write", &CliCommand::write, LUA_ARGS(const char*))
+		.endClass()
+
+		.beginExtendClass<Toolbar, QDockWidget>("Toolbar")
+			.addConstructor(LUA_SP(std::shared_ptr<Toolbar>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
+			.addFunction("addTab", &Toolbar::addTab)
+			.addFunction("removeTab", &Toolbar::removeTab)
+			.addFunction("tabByName", &Toolbar::tabByName)
+		.endClass()
+
+		.beginExtendClass<ToolbarTab, QDockWidget>("ToolbarTab")
+			.addConstructor(LUA_SP(std::shared_ptr<ToolbarTab>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
+			.addFunction("addButton", &ToolbarTab::addButton, LUA_ARGS(QGroupBox*,
+																	   QPushButton*,
+																	   LuaIntf::_opt<int>,
+																	   LuaIntf::_opt<int>,
+																	   LuaIntf::_opt<int>,
+																	   LuaIntf::_opt<int>))
+			.addFunction("addButtonStr", &ToolbarTab::addButtonStr, LUA_ARGS(QGroupBox*,
+																			 const char*,
+																			 LuaIntf::_opt<int>,
+																			 LuaIntf::_opt<int>,
+																			 LuaIntf::_opt<int>,
+																			 LuaIntf::_opt<int>))
+			.addFunction("addGroup", &ToolbarTab::addGroup)
+			.addFunction("buttonByText", &ToolbarTab::buttonByText)
+			.addFunction("groupByName", &ToolbarTab::groupByName)
 		.endClass()
 
 	.endModule();

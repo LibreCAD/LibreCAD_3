@@ -70,7 +70,9 @@ function create_main_window()
 
     add_commandline()
 
-    mainWindow:show()
+    add_toolbar()
+
+    mainWindow:showMaximized()
 
     new_file()
 end
