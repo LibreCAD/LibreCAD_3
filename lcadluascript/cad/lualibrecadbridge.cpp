@@ -107,9 +107,14 @@ void lua_openlckernel(lua_State* L) {
 							_opt<double> x,
 							_opt<double> y,
 							_opt<double> z))
+		.addStaticFunction("_fromAngle", [](const double angle) {
+			return geo::Coordinate(angle);
+		})
+
 		.addFunction("x", &geo::Coordinate::x)
 		.addFunction("y", &geo::Coordinate::y)
 		.addFunction("z", &geo::Coordinate::z)
+		.addFunction("angleTo", &geo::Coordinate::angleTo)
 
 		.addFunction("add", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
 			return *c1 + c2;
@@ -119,6 +124,9 @@ void lua_openlckernel(lua_State* L) {
 			return *c1 - c2;
 		})
 
+		.addFunction("mulDouble", [](const geo::Coordinate* c1, const double s) {
+			return *c1 * s;
+		})
     .endClass()
     .beginClass<geo::Vector>("Vector")
     .addConstructor(LUA_SP(std::shared_ptr<const geo::Vector>), LUA_ARGS(

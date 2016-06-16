@@ -15,6 +15,7 @@ function LineOperations:_init(id)
 
     self.lastPoint = nil
     self.lastLine = nil
+    self.length = nil
     self.line_id = ID():id()
 
     event.register('point', self)
@@ -31,6 +32,8 @@ function LineOperations:onEvent(eventName, ...)
         self:newPoint(...)
     elseif(eventName == "mouseMove") then
         self:createTempLine(...)
+    elseif(eventName == "number") then
+        self.length = ...
     end
 end
 
@@ -52,7 +55,8 @@ function LineOperations:newPoint(point)
         active_widget():tempEntities():addEntity(self.lastLine)
 
         event.register('mouseMove', self)
-        message("Click on second point")
+        event.register('number', self)
+        message("Click on second point or enter line length")
     end
 end
 
@@ -66,7 +70,14 @@ end
 function LineOperations:createLine(p1, p2)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local l = Line(Coord(p1:x(), p1:y()), Coord(p2:x(), p2:y()), layer);
+    local l
+    if(self.length == nil) then
+        l = Line(p1, p2, layer)
+    else
+        local angle = p1:angleTo(p2)
+        local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
+        l = Line(p1, p1:add(relativeCoordinate), layer)
+    end
     l:setId(self.line_id)
 
     return l
