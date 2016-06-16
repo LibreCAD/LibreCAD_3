@@ -27,5 +27,9 @@ function add_toolbar()
     quickAccess:addButton(creationGroup, circleButton, 1, 0, 1, 1)
     luaInterface:luaConnect(circleButton, "pressed()", create_circle)
 
+    local arcButton = create_button("", ":/icons/arc.svg")
+    quickAccess:addButton(creationGroup, arcButton, 0, 1, 1, 1)
+    luaInterface:luaConnect(arcButton, "pressed()", create_arc)
+
     toolbar:addTab("Quick Access", quickAccess)
 end
