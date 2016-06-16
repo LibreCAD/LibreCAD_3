@@ -1,5 +1,6 @@
 require 'actions.event'
 require 'actions.lineoperations'
+require 'actions.circleoperations'
 
 Operations = {}
 Operations.__index = Operations
