@@ -151,7 +151,9 @@ void addQtWidgetsBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<QPushButton, QAbstractButton>("QPushButton")
-			.addConstructor(LUA_ARGS(QString, LuaIntf::_opt<QWidget*>))
+			.addFactory([](QString name) {
+				return new QPushButton(name);
+			})
 			.addFunction("setFlat", &QPushButton::setFlat)
 		.endClass()
 	.endModule();
@@ -171,6 +173,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
+			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)
@@ -213,7 +216,9 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<ToolbarTab, QDockWidget>("ToolbarTab")
-			.addConstructor(LUA_SP(std::shared_ptr<ToolbarTab>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
+			.addFactory([]() {
+				return new ToolbarTab();
+			})
 			.addFunction("addButton", &ToolbarTab::addButton, LUA_ARGS(QGroupBox*,
 																	   QPushButton*,
 																	   LuaIntf::_opt<int>,
@@ -231,6 +236,10 @@ void addLCBindings(lua_State *L) {
 			.addFunction("groupByName", &ToolbarTab::groupByName)
 		.endClass()
 
+		.beginClass<LCViewer::TempEntities>("TempEntities")
+			.addFunction("addEntity", &LCViewer::TempEntities::addEntity)
+			.addFunction("removeEntity", &LCViewer::TempEntities::removeEntity)
+		.endClass()
 	.endModule();
 }
 

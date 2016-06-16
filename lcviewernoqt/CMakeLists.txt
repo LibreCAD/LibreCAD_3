@@ -35,6 +35,7 @@ managers/EventManager.cpp
 managers/dragmanager.cpp
 drawitems/lcimage.cpp
 drawables/dragpoints.cpp
+drawables/tempentities.cpp
 )
 
 # HEADER FILES
@@ -76,6 +77,7 @@ events/LocationEvent.h
 drawitems/lcimage.h
 drawables/dragpoints.h
 events/dragpointsevent.h
+drawables/tempentities.h
 )
 
 # Cairo

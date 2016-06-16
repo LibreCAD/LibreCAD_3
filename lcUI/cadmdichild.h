@@ -15,6 +15,7 @@
 #include <drawables/gradientbackground.h>
 #include <drawables/grid.h>
 #include <drawables/dragpoints.h>
+#include <drawables/tempentities.h>
 
 #include "operations/operationmanager.h"
 #include <managers/snapmanagerimpl.h>
@@ -65,6 +66,7 @@ class CadMdiChild : public QWidget {
         lc::StorageManager_SPtr storageManager() const;
         LCViewer::LCADViewer* viewer() const {return _viewer;} ;
         std::shared_ptr<LCViewer::Cursor> cursor() const;
+		LCViewer::TempEntities_SPtr tempEntities();
         void cancelCurrentOperations();
         void import(std::string);
         void exportDXF(std::string& str, lc::Version lcv);
@@ -88,6 +90,7 @@ class CadMdiChild : public QWidget {
         LCViewer::DragManager_SPtr _dragManager;
         LCViewer::DragPoints_SPtr _dragPoints;
         lc::StorageManager_SPtr _storageManager;
+		LCViewer::TempEntities_SPtr _tempEntities;
 
         std::shared_ptr<OperationManager>  _operationManager;
 

@@ -125,9 +125,11 @@ void CadMdiChild::newDocument() {
     _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
+    _tempEntities = std::make_shared<TempEntities>(_viewer->documentCanvas());
+    _viewer->documentCanvas()->background().connect<LCViewer::TempEntities, &LCViewer::TempEntities::onDraw>(_tempEntities.get());
+
     //Drag manager
-    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
-    _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(), _cursor, _tempEntities, 10);
     _viewer->setDragManager(_dragManager);
 
     _dragPoints = std::make_shared<LCViewer::DragPoints>();
@@ -201,9 +203,11 @@ void CadMdiChild::import(std::string str) {
     _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
+    _tempEntities = std::make_shared<TempEntities>(_viewer->documentCanvas());
+    _viewer->documentCanvas()->background().connect<LCViewer::TempEntities, &LCViewer::TempEntities::onDraw>(_tempEntities.get());
+
     //Drag manager
-    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(),  _cursor, 10);
-    _viewer->documentCanvas()->background().connect<LCViewer::DragManager, &LCViewer::DragManager::onDraw>(_dragManager.get());
+    _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(), _cursor, _tempEntities, 10);
     _viewer->setDragManager(_dragManager);
 
     _dragPoints = std::make_shared<LCViewer::DragPoints>();
@@ -431,4 +435,8 @@ void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
 void CadMdiChild::keyPressEvent(QKeyEvent *event) {
     QWidget::keyPressEvent(event);
     emit keyPressed(event);
+}
+
+LCViewer::TempEntities_SPtr CadMdiChild::tempEntities() {
+    return _tempEntities;
 }
