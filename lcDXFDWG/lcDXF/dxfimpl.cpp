@@ -52,6 +52,16 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_
 
 }
 
+inline int DXFimpl::widthToInt(double wid) const {
+    for (int i = 0; i < 24; i++) {
+        if (_intToLineWidth[i]->width() == wid) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 void DXFimpl::setBlock(const int _blockHandle) {
     std::cout << "setBlock " << _blockHandle << "\n";
 }
@@ -464,20 +474,23 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 
 void DXFimpl::writeLayers() {
     auto layers = _document->allLayers();
-
+    for(const auto &layer: layers) {
+        writeLayer(layer.second);
+    }
 }
 
-void DXFimpl::writeLayer(lc::Layer_CSPtr layer) {
+void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer> layer) {
     DRW_Layer lay;
     lc::iColor icol_inst;
 
     auto col = layer->color();
-//    lay.name = layer->getName().toUtf8().data();
+    lay.name = layer->name();
     lay.color = icol_inst.colorToInt(col);
-//    lay.color24 = exact_rgb;
-//    lay.lWeight = widthToNumber(layer->lineWidth());
-//    lay.lineType = lineTypeToName(layer->linePattern());
-//    lay.lineType = lineTypeToName(layer->pa).toStdString();
+    auto wid = layer->lineWidth().width();
+    std::cout << wid;
+//    auto val = widthToInt();
+
+//    lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>();
     lay.flags = layer->isFrozen() ? 0x01 : 0x00;
 
     dxfW->writeLayer(&lay);
@@ -587,18 +600,24 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
 }
 
 void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
+    auto layer_  = entity->layer();
+    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
+    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
+    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
 
-    /*
-     * TODO
-     */
+    ent->layer = layer_->name();
 
-    //    auto layer_  = entity->layer();
-//    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-//    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-//    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-//    lc::iColor col;
-//    auto color_ = col.colorToInt(metaColor_);
-//    ent->color = color_;
+    if(metaColor_!=nullptr) {
+        lc::iColor col;
+        auto color_ = col.colorToInt(metaColor_);
+        ent->color = color_;
+    }
+    if(metaPen_!=nullptr) {
+        ent->lineType = metaPen_->name();
+    }
+    if(metaWidth_!=nullptr) {
+        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidth_->width()));
+    }
 }
 
 void DXFimpl::writeLTypes() {
@@ -897,7 +916,6 @@ void DXFimpl::writeImage(const lc::entity::Image_CSPtr i) {
 void DXFimpl::writeText(const lc::entity::Text_CSPtr t) {
 
 }
-
 
 void DXFimpl::writeEntities(){
     for(const auto e :_document->entityContainer().asVector()) {

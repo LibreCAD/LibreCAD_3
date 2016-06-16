@@ -22,7 +22,7 @@ namespace lc {
             virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
             virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
             virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
-
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes();
             /**
              * @brief entitiesByLayer
              * @param layer

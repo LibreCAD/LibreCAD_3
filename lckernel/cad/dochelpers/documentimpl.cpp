@@ -85,7 +85,9 @@ void DocumentImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, 
     }
 }
 
-
+std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> DocumentImpl::allMetaTypes() {
+    return _storageManager->allMetaTypes();
+}
 
 EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const Layer_CSPtr layer) {
     std::lock_guard<std::mutex> lck(_documentMutex);

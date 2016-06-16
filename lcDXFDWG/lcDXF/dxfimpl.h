@@ -2,6 +2,7 @@
 
 #include <libdxfrw0/libdxfrw.h>
 #include <libdxfrw0/drw_interface.h>
+#include <libdxfrw0/drw_base.h>
 #include <iostream>
 
 #include <cad/document/document.h>
@@ -105,13 +106,14 @@ class DXFimpl : public DRW_Interface {
         void writeImage(const lc::entity::Image_CSPtr i);
         void writeText(const lc::entity::Text_CSPtr t);
 
-        void writeLayer(lc::Layer_CSPtr layer);
+        void writeLayer(const std::shared_ptr<const lc::Layer> layer);
 
         // UTILITIES FUNCTIONS
         lc::AngleFormat numberToAngleFormat(int num);
         int angleFormatToNumber(lc::AngleFormat af);
         lc::Units numberToUnit(int num);
         int unitToNumber(lc::Units unit);
+        inline int widthToInt(double wid) const;
 
         template <typename T>
         std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {

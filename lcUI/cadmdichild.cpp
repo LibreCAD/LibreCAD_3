@@ -232,6 +232,8 @@ void CadMdiChild::import(std::string str) {
         //_storageManager = F->storageManager();
         std::cerr << "Sorry, not compiled with DWG support";
     }
+        std::string path ="/home/gagan/lol.dxf";
+        exportDXF(path, DXF::version::R2010);
 }
 
 

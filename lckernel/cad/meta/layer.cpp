@@ -29,6 +29,7 @@ Color Layer::color() const {
 MetaLineWidthByValue Layer::lineWidth() const {
     return _lineWidth;
 }
+
 DxfLinePattern Layer::linePattern() const {
     return _linepattern;
 }

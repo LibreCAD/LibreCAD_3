@@ -88,6 +88,10 @@ void StorageManagerImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr ol
     }
 }
 
+std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive> StorageManagerImpl::allMetaTypes() {
+    return _documentMetaData;
+}
+
 DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string id) const {
     auto search = _documentMetaData.find(id);
     if (search != _documentMetaData.end()) {
