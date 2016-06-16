@@ -7,6 +7,7 @@
 #include "cad/dochelpers/entitycontainer.h"
 #include <cad/base/cadentity.h>
 #include "../drawables/lccursor.h"
+#include "../drawables/tempentities.h"
 #include <cad/document/document.h>
 #include "cad/operations/builder.h"
 #include "../events/dragpointsevent.h"
@@ -16,12 +17,11 @@ namespace LCViewer {
 	class DragManager {
 		friend class lc::Document;
 		public:
-			DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, unsigned int size);
+			DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, TempEntities_SPtr tempEntities, unsigned int size);
 
 			void onMouseMove();
 			void onMousePress();
 			void onMouseRelease();
-			void onDraw(DrawEvent const & event);
 
 			bool entityDragged();
 
@@ -36,6 +36,7 @@ namespace LCViewer {
 
 			DocumentCanvas_SPtr _docCanvas;
 			std::shared_ptr<Cursor> _cursor;
+			TempEntities_SPtr  _tempEntities;
 
 			bool _entityDragged;
 

@@ -173,6 +173,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
+			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)
@@ -235,6 +236,10 @@ void addLCBindings(lua_State *L) {
 			.addFunction("groupByName", &ToolbarTab::groupByName)
 		.endClass()
 
+		.beginClass<LCViewer::TempEntities>("TempEntities")
+			.addFunction("addEntity", &LCViewer::TempEntities::addEntity)
+			.addFunction("removeEntity", &LCViewer::TempEntities::removeEntity)
+		.endClass()
 	.endModule();
 }
 
