@@ -26,7 +26,7 @@ function open_file()
         cadMdiChild:showMaximized()
 
         id = nextTableId(op)
-        op[id] = Operations:new(id)
+        op[id] = Operations(id)
         window:widget().id = id
     end
 end
