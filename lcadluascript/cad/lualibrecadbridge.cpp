@@ -115,6 +115,7 @@ void lua_openlckernel(lua_State* L) {
 		.addFunction("y", &geo::Coordinate::y)
 		.addFunction("z", &geo::Coordinate::z)
 		.addFunction("angleTo", &geo::Coordinate::angleTo)
+		.addFunction("distanceTo", &geo::Coordinate::distanceTo)
 
 		.addFunction("add", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
 			return *c1 + c2;

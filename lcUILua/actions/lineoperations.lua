@@ -47,6 +47,7 @@ function LineOperations:newPoint(point)
         b:execute()
 
         event.delete('mouseMove', self)
+        event.delete('number', self)
         event.delete('point', self)
     else
         self.lastPoint = point

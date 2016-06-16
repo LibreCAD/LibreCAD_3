@@ -40,6 +40,8 @@ local function create_menu()
     local menuBar = mainWindow:menuBar()
     local drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
     local lineAction = drawMenu:addActionStr(qt.QString("Line"))
+    local circleAction = drawMenu:addActionStr(qt.QString("Circle"))
+    local arcAction = drawMenu:addActionStr(qt.QString("Arc"))
 
     local luaMenu = menuBar:addMenuStr(qt.QString("Lua"))
     local luaScriptAction = luaMenu:addActionStr(qt.QString("Run script"))
@@ -50,6 +52,8 @@ local function create_menu()
     luaInterface:luaConnect(mainWindow:findChild("actionRedo"), "triggered(bool)", redo)
 
     luaInterface:luaConnect(lineAction, "triggered(bool)", create_line)
+    luaInterface:luaConnect(circleAction, "triggered(bool)", create_circle)
+    luaInterface:luaConnect(arcAction, "triggered(bool)", create_arc)
 
     luaInterface:luaConnect(luaScriptAction, "triggered(bool)", open_lua_script)
 end

@@ -1,5 +1,7 @@
 require 'actions.event'
 require 'actions.lineoperations'
+require 'actions.circleoperations'
+require 'actions.arcoperations'
 
 Operations = {}
 Operations.__index = Operations
@@ -18,4 +20,20 @@ end
 
 function Operations:forMe()
 	return active_widget().id == self.id
+end
+
+function Operations:getDistance(center, point)
+	if(type(point) == "userdata") then
+		return center:distanceTo(point)
+	else
+		return point
+	end
+end
+
+function Operations:getAngle(center, point)
+	if(type(point) == "userdata") then
+		return center:angleTo(point)
+	else
+		return point
+	end
 end

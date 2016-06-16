@@ -2,5 +2,7 @@
     <qresource prefix="/icons">
         <file alias="linesfree.png">icons/linesfree.png</file>
         <file alias="linesnormal.png">icons/linesnormal.png</file>
+        <file alias="circle.svg">icons/circle.svg</file>
+        <file alias="arc.svg">icons/arc.svg</file>
     </qresource>
 </RCC>
