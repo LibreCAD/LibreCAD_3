@@ -7,19 +7,19 @@ using namespace lc;
 Layer::Layer() {
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color), _linepattern(nullptr) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const DxfLinePattern linepattern, const bool frozen) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color), _linepattern(linepattern), _isFrozen(frozen) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const std::shared_ptr<const DxfLinePattern> linepattern, const bool frozen) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color), _linepattern(linepattern), _isFrozen(frozen) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _linepattern(nullptr) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _color(color) {
+Layer::Layer(const std::string name, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _color(color), _linepattern(nullptr) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank"); // Name must be set
 }
 
@@ -30,7 +30,7 @@ MetaLineWidthByValue Layer::lineWidth() const {
     return _lineWidth;
 }
 
-DxfLinePattern Layer::linePattern() const {
+const std::shared_ptr<const DxfLinePattern> Layer::linePattern() const {
     return _linepattern;
 }
 
