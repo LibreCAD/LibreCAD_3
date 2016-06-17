@@ -172,6 +172,8 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
         }
     }
 
+    emit mouseMoveEvent();
+
     update();
 }
 

@@ -45,6 +45,8 @@ function add_commandline()
     luaInterface:luaConnect(cliCommand, "numberEntered(double)", number)
 
     add_command("LINE", create_line)
+    add_command("CIRCLE", create_circle)
+    add_command("ARC", create_arc)
 
     event.register("point", setLastPoint)
 end

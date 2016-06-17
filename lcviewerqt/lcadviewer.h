@@ -83,7 +83,7 @@ class LCADViewer : public QWidget {
 
     public:
     signals:
-        void mouseMoveEvent(const MouseMoveEvent&);
+        void mouseMoveEvent();
         void mousePressEvent();
         void mouseReleaseEvent(const MouseReleaseEvent&);
         void drawEvent(const DrawEvent&);
