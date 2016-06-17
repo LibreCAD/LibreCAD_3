@@ -88,6 +88,18 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
     return newSpline;
 }
 
+CADEntity_CSPtr Spline::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+    std::vector<geo::Coordinate> control_pts;
+
+    for (auto point : this->controlPoints()) {
+        control_pts.push_back(point.mirror(axis1, axis2));
+    }
+
+    auto newSpline = std::make_shared<Spline>(control_pts, knotPoints(), fitPoints(), degree(), closed(), fitTolerance(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), flags(), layer(), metaInfo());
+    newSpline->setID(this->id());
+    return newSpline;
+}
+
 const geo::Area Spline::boundingBox() const {
     return this->_boundingBox;
 }
