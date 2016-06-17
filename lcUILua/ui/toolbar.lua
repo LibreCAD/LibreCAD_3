@@ -12,6 +12,16 @@ local function create_button(name, icon)
     return button
 end
 
+local function create_action(menu, name, icon)
+    local action = menu:addActionStr(qt.QString(name))
+
+    if(icon ~= nil) then
+        action:setIcon(qt.QIcon(qt.QString(icon)))
+    end
+
+    return action
+end
+
 function add_toolbar()
     toolbar = lc.Toolbar(mainWindow)
     mainWindow:addDockWidget(4, toolbar)
@@ -30,6 +40,21 @@ function add_toolbar()
     local arcButton = create_button("", ":/icons/arc.svg")
     quickAccess:addButton(creationGroup, arcButton, 0, 1, 1, 1)
     luaInterface:luaConnect(arcButton, "pressed()", create_arc)
+
+    --
+    -- Ellipses
+    --
+    local ellipseButton = create_button("", ":/icons/ellipse.svg")
+    local ellipseMenu = qt.QMenu()
+
+    local ellipseAction = create_action(ellipseMenu, "Ellipse", ":/icons/ellipse_axis.svg")
+    luaInterface:luaConnect(ellipseAction, "triggered(bool)", create_ellipse)
+
+    local arcEllipseAction = create_action(ellipseMenu, "Arc Ellipse", ":/icons/ellipse_arc_axis.svg")
+    luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", create_arc_ellipse)
+
+    ellipseButton:setMenu(ellipseMenu)
+    quickAccess:addButton(creationGroup, ellipseButton, 1, 1, 1, 1)
 
     toolbar:addTab("Quick Access", quickAccess)
 end

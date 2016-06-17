@@ -2,6 +2,7 @@ require 'actions.event'
 require 'actions.lineoperations'
 require 'actions.circleoperations'
 require 'actions.arcoperations'
+require 'actions.ellipseoperations'
 
 Operations = {}
 Operations.__index = Operations
@@ -36,4 +37,12 @@ function Operations:getAngle(center, point)
 	else
 		return point
 	end
+end
+
+function Operations:getCoordinate(coordinate)
+	if(type(coordinate) == "userdata") then
+		return coordinate
+	end
+
+	return nil
 end

@@ -202,6 +202,7 @@ void lua_openlckernel(lua_State* L) {
                                                                double minorRadius,
                                                                double startAngle,
                                                                double endAngle,
+															   bool reversed,
                                                                const Layer_CSPtr layer))
                                                    .endClass()
                                                 .beginExtendClass<entity::Point, entity::CADEntity>("Point_")

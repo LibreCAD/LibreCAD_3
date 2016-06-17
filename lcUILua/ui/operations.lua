@@ -9,3 +9,11 @@ end
 function create_arc()
     op[active_widget().id] = ArcOperations(active_widget().id)
 end
+
+function create_ellipse()
+    op[active_widget().id] = EllipseOperations(active_widget().id, false)
+end
+
+function create_arc_ellipse()
+    op[active_widget().id] = EllipseOperations(active_widget().id, true)
+end

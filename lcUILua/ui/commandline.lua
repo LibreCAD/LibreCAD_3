@@ -47,6 +47,7 @@ function add_commandline()
     add_command("LINE", create_line)
     add_command("CIRCLE", create_circle)
     add_command("ARC", create_arc)
+    add_command("ELLIPSE", create_ellipse)
 
     event.register("point", setLastPoint)
 end
