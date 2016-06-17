@@ -32,7 +32,6 @@ bool LuaQObject::connect(int signalId, LuaIntf::LuaRef slot) {
 
 int LuaQObject::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
-
 	id = QObject::qt_metacall(c, id, a);
 
 	if(id == 0) {

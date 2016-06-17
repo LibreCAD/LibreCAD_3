@@ -44,8 +44,9 @@ void addQtBaseBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<QAction, QObject>("QAction")
-			.addConstructor(LUA_ARGS(QObject*))
+			.addConstructor(LUA_ARGS(LuaIntf::_opt<QObject*>))
 			.addFunction("setText", &QAction::setText)
+			.addFunction("setIcon", &QAction::setIcon)
 		.endClass()
 
 		.beginClass<QIcon>("QIcon")
@@ -77,7 +78,9 @@ void addQtWindowBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<QMenu, QWidget>("QMenu")
-			.addConstructor(LUA_ARGS(QWidget*))
+			.addFactory([]() {
+				return new QMenu();
+			})
 			.addFunction("setTitle", &QMenu::setTitle)
 			.addFunction("addActionStr", static_cast<QAction* (QMenu::*)(const QString&)>(&QMenu::addAction))
 		.endClass()
@@ -155,6 +158,7 @@ void addQtWidgetsBindings(lua_State *L) {
 				return new QPushButton(name);
 			})
 			.addFunction("setFlat", &QPushButton::setFlat)
+			.addFunction("setMenu", &QPushButton::setMenu)
 		.endClass()
 	.endModule();
 }
