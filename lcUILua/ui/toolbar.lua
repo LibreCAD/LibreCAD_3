@@ -57,4 +57,13 @@ function add_toolbar()
     quickAccess:addButton(creationGroup, ellipseButton, 1, 1, 1, 1)
 
     toolbar:addTab("Quick Access", quickAccess)
+
+    --
+    -- Dimensions
+    --
+    local dimGroup = quickAccess:addGroup("Dimensions")
+
+    local dimAligned = create_button("", ":/icons/dim_aligned.svg")
+    quickAccess:addButton(dimGroup, dimAligned, 0, 0, 1, 1)
+    luaInterface:luaConnect(dimAligned, "pressed()", create_dim_aligned)
 end

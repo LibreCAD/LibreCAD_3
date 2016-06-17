@@ -17,3 +17,7 @@ end
 function create_arc_ellipse()
     op[active_widget().id] = EllipseOperations(active_widget().id, true)
 end
+
+function create_dim_aligned()
+    op[active_widget().id] = DimAlignedOperations(active_widget().id)
+end

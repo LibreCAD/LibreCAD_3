@@ -6,6 +6,7 @@ TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) : _docCanvas(docCanvas
 }
 
 void TempEntities::addEntity(lc::entity::CADEntity_CSPtr entity) {
+
 	auto drawable = _docCanvas->asDrawable(entity);
 
 	_entities.insert(std::dynamic_pointer_cast<const lc::entity::CADEntity>(drawable));

@@ -3,6 +3,7 @@ require 'actions.lineoperations'
 require 'actions.circleoperations'
 require 'actions.arcoperations'
 require 'actions.ellipseoperations'
+require 'actions.dimalignedoperations'
 
 Operations = {}
 Operations.__index = Operations

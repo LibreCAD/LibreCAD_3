@@ -7,5 +7,6 @@
         <file alias="ellipse.svg">icons/ellipse.svg</file>
         <file alias="ellipse_axis.svg">icons/ellipse_axis.svg</file>
         <file alias="ellipse_arc_axis.svg">icons/ellipse_arc_axis.svg</file>
+        <file alias="dim_aligned.svg">icons/dim_aligned.svg</file>
     </qresource>
 </RCC>
