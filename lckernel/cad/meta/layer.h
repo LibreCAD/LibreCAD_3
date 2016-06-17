@@ -5,6 +5,7 @@
 #include "cad/const.h"
 
 #include "metalinewidth.h"
+#include "dxflinepattern.h"
 #include "cad/meta/color.h"
 
 
@@ -13,6 +14,7 @@ namespace lc {
         public:
             Layer();
             Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);
+            Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const DxfLinePattern linepattern, const bool frozen);
 
             // Change this to meta data?
             Layer(const std::string name, const Color color);
@@ -32,6 +34,8 @@ namespace lc {
 
             MetaLineWidthByValue lineWidth() const;
             Color color() const;
+            DxfLinePattern linePattern() const;
+            bool isFrozen() const;
             virtual const std::string name() const;
 
             bool operator == (const Layer& layer) const {
@@ -42,6 +46,8 @@ namespace lc {
             std::string _name;
             MetaLineWidthByValue _lineWidth;
             Color _color;
+            DxfLinePattern _linepattern;
+            bool _isFrozen;
 
             friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
                 os << "Layer(name" << layer.name() << " lineWidth=" << layer.lineWidth() << " color=" << layer.color() << ")" << std::endl;

@@ -233,11 +233,6 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
-            virtual EntityType entityType() const {
-                return EntityType::LWPolyline;
-            }
-
-
             /**
         * Return a vector of geometry entities for this polyline
         * The vector will contain geo::vector and geo::Arc items

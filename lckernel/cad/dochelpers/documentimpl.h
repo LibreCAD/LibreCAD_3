@@ -22,7 +22,7 @@ namespace lc {
             virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
             virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
             virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
-
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes();
             /**
              * @brief entitiesByLayer
              * @param layer
@@ -31,6 +31,8 @@ namespace lc {
             virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
 
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
+
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const;
 
             virtual Layer_CSPtr layerByName(const std::string& layerName) const;
             virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;

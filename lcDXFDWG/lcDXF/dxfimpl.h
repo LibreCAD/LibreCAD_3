@@ -2,6 +2,7 @@
 
 #include <libdxfrw0/libdxfrw.h>
 #include <libdxfrw0/drw_interface.h>
+#include <libdxfrw0/drw_base.h>
 #include <iostream>
 
 #include <cad/document/document.h>
@@ -14,9 +15,21 @@
 #include <cad/meta/metacolor.h>
 #include <cad/base/metainfo.h>
 #include <cad/meta/icolor.h>
-
+#include <tuple>
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
+
+namespace DXF {
+enum class version {
+    R12,
+    R14,
+    R2000,
+    R2004,
+    R2007,
+    R2010,
+    R2013
+};
+}
 
 class DXFimpl : public DRW_Interface {
     public:
@@ -68,14 +81,14 @@ class DXFimpl : public DRW_Interface {
 
 
         // WRITE FUNCTIONALITY
-        bool writeDXF(std::string& filename, lc::Version type);
+        bool writeDXF(std::string& filename, DXF::version type);
 
         virtual void writeHeader(DRW_Header &data) override { }
         virtual void writeBlocks() override { }
         virtual void writeBlockRecords() override { }
         virtual void writeEntities() override;
         virtual void writeLTypes() override;
-        virtual void writeLayers() override { }
+        virtual void writeLayers() override;
         virtual void writeTextstyles() override { }
         virtual void writeVports() override { }
         virtual void writeDimstyles() override { }
@@ -93,14 +106,15 @@ class DXFimpl : public DRW_Interface {
         void writeImage(const lc::entity::Image_CSPtr i);
         void writeText(const lc::entity::Text_CSPtr t);
 
+        void writeLayer(const std::shared_ptr<const lc::Layer> layer);
 
         // UTILITIES FUNCTIONS
         lc::AngleFormat numberToAngleFormat(int num);
         int angleFormatToNumber(lc::AngleFormat af);
         lc::Units numberToUnit(int num);
         int unitToNumber(lc::Units unit);
-        std::string lineTypeToName(lc::LineType lineType);
-        lc::LineType nameToLineType(const std::string& name);
+        inline int widthToInt(double wid) const;
+
         template <typename T>
         std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
             std::shared_ptr<const T> mlw = nullptr;
@@ -151,5 +165,3 @@ class DXFimpl : public DRW_Interface {
         std::vector<DRW_Image> imageMapCache;
 
 };
-
-

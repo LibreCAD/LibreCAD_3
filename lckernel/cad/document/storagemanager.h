@@ -4,7 +4,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
 #include "cad/dochelpers/entitycontainer.h"
-
+#include <cad/functions/string_helper.h>
 #include <map>
 #include <cad/meta/dxflinepattern.h>
 
@@ -65,6 +65,8 @@ namespace lc {
             *  \brief remove document meta type
             */
             virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) = 0;
+
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() = 0;
 
             /**
              * @brief optimise

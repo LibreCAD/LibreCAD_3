@@ -100,10 +100,6 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
 
-            virtual EntityType entityType() const {
-                return EntityType::DimRadial;
-            }
-
             double leader() const;
 
             geo::Coordinate definitionPoint2() const; // Where definitionPoint is the center, definitionPoint2 specifies the 'edge'

@@ -14,24 +14,6 @@ namespace lc {
          *Class that all CAD entities must inherit
          *
          */
-        enum class EntityType {
-            Arc,
-            Line,
-            Circle,
-            Ellipse,
-            DimRadial,
-            DimDiametric,
-            Image,
-            DimAngular,
-            DimLinear,
-            DimAligned,
-            Bezier,
-            Spline,
-            LWPolyline,
-            Text,
-            Point
-        };
-
         class CADEntity : public ID, virtual public Visitable {
         public:
             CADEntity() {
@@ -147,8 +129,6 @@ namespace lc {
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
             virtual void dispatch(EntityDispatch &) const = 0;
-
-            virtual EntityType entityType() const = 0;
 
         private:
             Layer_CSPtr _layer;

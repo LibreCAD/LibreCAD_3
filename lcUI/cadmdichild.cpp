@@ -26,7 +26,6 @@
 #include <QMessageBox>
 #include <iostream>
 // #include "lcDWG/dwgimpl.h"
-#include <lcDXF/dxfimpl.h>
 #include <QDebug>
 #include <QMenu>
 #include <QTime>
@@ -172,7 +171,7 @@ void CadMdiChild::newDocument() {
     //on_actionAdd_Random_Lines_triggered();
     //on_addCircles_clicked();
 //    std::string path ="/home/gagan/lol.dxf";
-//    exportDXF(path, lc::Version::R2010);
+//    exportDXF(path, DXF::version::R2010);
 }
 
 
@@ -240,7 +239,7 @@ void CadMdiChild::import(std::string str) {
 }
 
 
-void CadMdiChild::exportDXF(std::string& str, lc::Version lcv) {
+void CadMdiChild::exportDXF(std::string& str, DXF::version lcv) {
     DXFimpl* F = new DXFimpl(_document);
     F->writeDXF(str, lcv);
 }

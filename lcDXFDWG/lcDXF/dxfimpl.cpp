@@ -52,6 +52,16 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_
 
 }
 
+inline int DXFimpl::widthToInt(double wid) const {
+    for (int i = 0; i < 24; i++) {
+        if (_intToLineWidth[i]->width() == wid) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 void DXFimpl::setBlock(const int _blockHandle) {
     std::cout << "setBlock " << _blockHandle << "\n";
 }
@@ -462,32 +472,56 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
  * Write DXF Implementation BELOW
  *********************************************/
 
-bool DXFimpl::writeDXF(std::string& filename, lc::Version type) {
+void DXFimpl::writeLayers() {
+    auto layers = _document->allLayers();
+    for(const auto &layer: layers) {
+        writeLayer(layer.second);
+    }
+}
+
+void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer> layer) {
+    DRW_Layer lay;
+    lc::iColor icol_inst;
+
+    auto col = layer->color();
+    lay.name = layer->name();
+    lay.color = icol_inst.colorToInt(col);
+    auto wid = layer->lineWidth().width();
+    std::cout << wid;
+//    auto val = widthToInt();
+
+//    lay.lWeight = static_cast<DRW_LW_Conv::lineWidth>();
+    lay.flags = layer->isFrozen() ? 0x01 : 0x00;
+
+    dxfW->writeLayer(&lay);
+}
+
+bool DXFimpl::writeDXF(std::string& filename, DXF::version type) {
     dxfW = new dxfRW(filename.c_str());
 
     //Default setting
     DRW::Version exportVersion;
 
     switch(type) {
-    case lc::Version::R12:
+    case DXF::version::R12:
         exportVersion = DRW::AC1009;
         break;
-    case lc::Version::R14:
+    case DXF::version::R14:
         exportVersion = DRW::AC1014;
         break;
-    case lc::Version::R2000:
+    case DXF::version::R2000:
         exportVersion = DRW::AC1015;
         break;
-    case lc::Version::R2004:
+    case DXF::version::R2004:
         exportVersion = DRW::AC1018;
         break;
-    case lc::Version::R2007:
+    case DXF::version::R2007:
         exportVersion = DRW::AC1021;
         break;
-    case lc::Version::R2010:
+    case DXF::version::R2010:
         exportVersion = DRW::AC1024;
         break;
-    case lc::Version::R2013:
+    case DXF::version::R2013:
         exportVersion = DRW::AC1027;
         break;
     default:
@@ -566,18 +600,24 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
 }
 
 void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
+    auto layer_  = entity->layer();
+    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
+    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
+    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
 
-    /*
-     * TODO
-     */
+    ent->layer = layer_->name();
 
-    //    auto layer_  = entity->layer();
-//    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-//    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-//    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-//    lc::iColor col;
-//    auto color_ = col.colorToInt(metaColor_);
-//    ent->color = color_;
+    if(metaColor_!=nullptr) {
+        lc::iColor col;
+        auto color_ = col.colorToInt(metaColor_);
+        ent->color = color_;
+    }
+    if(metaPen_!=nullptr) {
+        ent->lineType = metaPen_->name();
+    }
+    if(metaWidth_!=nullptr) {
+        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidth_->width()));
+    }
 }
 
 void DXFimpl::writeLTypes() {
@@ -877,7 +917,6 @@ void DXFimpl::writeText(const lc::entity::Text_CSPtr t) {
 
 }
 
-
 void DXFimpl::writeEntities(){
     for(const auto e :_document->entityContainer().asVector()) {
         writeEntity(e);
@@ -1151,209 +1190,3 @@ int DXFimpl::unitToNumber(lc::Units unit) {
 
     return 0;
 }
-
-lc::LineType DXFimpl::nameToLineType(const std::string& name) {
-
-    std::string uName = name;
-
-    std::transform(uName.begin(), uName.end(),uName.begin(), ::toupper);
-
-    // Standard linetypes for QCad II / AutoCAD
-    if (uName.empty() || uName=="BYLAYER") {
-        return lc::LineType::LineByLayer;
-
-    } else if (uName=="BYBLOCK") {
-        return lc::LineType::LineByBlock;
-
-    } else if (uName=="CONTINUOUS" || uName=="ACAD_ISO01W100") {
-        return lc::LineType::SolidLine;
-
-    } else if (uName=="ACAD_ISO07W100" || uName=="DOT") {
-        return lc::LineType::DotLine;
-
-    } else if (uName=="DOTTINY") {
-        return lc::LineType::DotLineTiny;
-
-    } else if (uName=="DOT2") {
-        return lc::LineType::DotLine2;
-
-    } else if (uName=="DOTX2") {
-        return lc::LineType::DotLineX2;
-
-
-    } else if (uName=="ACAD_ISO02W100" || uName=="ACAD_ISO03W100" ||
-               uName=="DASHED" || uName=="HIDDEN") {
-        return lc::LineType::DashLine;
-
-    } else if (uName=="DASHEDTINY" || uName=="HIDDEN2") {
-        return lc::LineType::DashLineTiny;
-
-    } else if (uName=="DASHED2" || uName=="HIDDEN2") {
-        return lc::LineType::DashLine2;
-
-    } else if (uName=="DASHEDX2" || uName=="HIDDENX2") {
-        return lc::LineType::DashLineX2;
-
-
-    } else if (uName=="ACAD_ISO10W100" ||
-               uName=="DASHDOT") {
-        return lc::LineType::DashDotLine;
-
-    } else if (uName=="DASHDOTTINY") {
-        return lc::LineType::DashDotLineTiny;
-
-    } else if (uName=="DASHDOT2") {
-        return lc::LineType::DashDotLine2;
-
-    } else if (uName=="ACAD_ISO04W100" ||
-               uName=="DASHDOTX2") {
-        return lc::LineType::DashDotLineX2;
-
-
-    } else if (uName=="ACAD_ISO12W100" || uName=="DIVIDE") {
-        return lc::LineType::DivideLine;
-
-    } else if (uName=="DIVIDETINY") {
-        return lc::LineType::DivideLineTiny;
-
-    } else if (uName=="DIVIDE2") {
-        return lc::LineType::DivideLine2;
-
-    } else if (uName=="ACAD_ISO05W100" || uName=="DIVIDEX2") {
-        return lc::LineType::DivideLineX2;
-
-
-    } else if (uName=="CENTER") {
-        return lc::LineType::CenterLine;
-
-    } else if (uName=="CENTERTINY") {
-        return lc::LineType::CenterLineTiny;
-
-    } else if (uName=="CENTER2") {
-        return lc::LineType::CenterLine2;
-
-    } else if (uName=="CENTERX2") {
-        return lc::LineType::CenterLineX2;
-
-
-    } else if (uName=="BORDER") {
-        return lc::LineType::BorderLine;
-
-    } else if (uName=="BORDERTINY") {
-        return lc::LineType::BorderLineTiny;
-
-    } else if (uName=="BORDER2") {
-        return lc::LineType::BorderLine2;
-
-    } else if (uName=="BORDERX2") {
-        return lc::LineType::BorderLineX2;
-    }
-
-    return lc::LineType::SolidLine;
-}
-
-
-
-/**
- * Converts a RS_LineType into a name for a line type.
- */
-std::string DXFimpl::lineTypeToName(lc::LineType lineType) {
-
-    // Standard linetypes for QCad II / AutoCAD
-    switch (lineType) {
-
-    case lc::LineType::SolidLine:
-        return "CONTINUOUS";
-        break;
-
-    case lc::LineType::DotLine:
-        return "DOT";
-        break;
-    case lc::LineType::DotLineTiny:
-        return "DOTTINY";
-        break;
-    case lc::LineType::DotLine2:
-        return "DOT2";
-        break;
-    case lc::LineType::DotLineX2:
-        return "DOTX2";
-        break;
-
-    case lc::LineType::DashLine:
-        return "DASHED";
-        break;
-    case lc::LineType::DashLineTiny:
-        return "DASHEDTINY";
-        break;
-    case lc::LineType::DashLine2:
-        return "DASHED2";
-        break;
-    case lc::LineType::DashLineX2:
-        return "DASHEDX2";
-        break;
-
-    case lc::LineType::DashDotLine:
-        return "DASHDOT";
-        break;
-    case lc::LineType::DashDotLineTiny:
-        return "DASHDOTTINY";
-        break;
-    case lc::LineType::DashDotLine2:
-        return "DASHDOT2";
-        break;
-    case lc::LineType::DashDotLineX2:
-        return "DASHDOTX2";
-        break;
-
-    case lc::LineType::DivideLine:
-        return "DIVIDE";
-        break;
-    case lc::LineType::DivideLineTiny:
-        return "DIVIDETINY";
-        break;
-    case lc::LineType::DivideLine2:
-        return "DIVIDE2";
-        break;
-    case lc::LineType::DivideLineX2:
-        return "DIVIDEX2";
-        break;
-
-    case lc::LineType::CenterLine:
-        return "CENTER";
-        break;
-    case lc::LineType::CenterLineTiny:
-        return "CENTERTINY";
-        break;
-    case lc::LineType::CenterLine2:
-        return "CENTER2";
-        break;
-    case lc::LineType::CenterLineX2:
-        return "CENTERX2";
-        break;
-
-    case lc::LineType::BorderLine:
-        return "BORDER";
-        break;
-    case lc::LineType::BorderLineTiny:
-        return "BORDERTINY";
-        break;
-    case lc::LineType::BorderLine2:
-        return "BORDER2";
-        break;
-    case lc::LineType::BorderLineX2:
-        return "BORDERX2";
-        break;
-
-    case lc::LineType::LineByLayer:
-        return "ByLayer";
-        break;
-    case lc::LineType::LineByBlock:
-        return "ByBlock";
-        break;
-    default:
-        break;
-    }
-
-    return "CONTINUOUS";
-}
-
