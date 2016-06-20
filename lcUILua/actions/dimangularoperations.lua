@@ -1,7 +1,7 @@
-DimAlignedOperations = {}
-DimAlignedOperations.__index = DimAlignedOperations
+DimAngularOperations = {}
+DimAngularOperations.__index = DimAngularOperations
 
-setmetatable(DimAlignedOperations, {
+setmetatable(DimAngularOperations, {
     __index = Operations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
@@ -10,7 +10,7 @@ setmetatable(DimAlignedOperations, {
     end,
 })
 
-function DimAlignedOperations:_init(id)
+function DimAngularOperations:_init(id)
     Operations._init(self, id)
 
     self.startPoint = nil
@@ -18,30 +18,31 @@ function DimAlignedOperations:_init(id)
     self.textOffset = nil
     self.text = nil
 
-    self.dimAligned_id = ID():id()
-    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,1), 1, "<>")
+    self.dimAngular_id = ID():id()
+    self.dimAngular = self:getDimAngular(Coord(0,0), Coord(1,1), 1, "<>")
     self.dimLine = nil
 
-    active_widget():tempEntities():addEntity(self.dimAligned)
+    active_widget():tempEntities():addEntity(self.dimAngular)
 
     event.register('point', self)
     event.register('mouseMove', self)
     event.register('number', self)
     event.register('text', self)
 
+    message("Todo: fix DimAuto for DimAngular")
     message("Click on start point")
 end
 
-function DimAlignedOperations:getDimAligned(startPoint, endPoint, textOffset, text)
+function DimAngularOperations:getDimAngular(startPoint, endPoint, textOffset, text)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local dim = DimAligned.dimAuto(startPoint, endPoint, textOffset, text, layer, MetaInfo())
-    dim:setId(self.dimAligned_id)
+    local dim = DimAngular.dimAuto(startPoint, endPoint, textOffset, text, layer, MetaInfo())
+    dim:setId(self.dimAngular_id)
 
     return dim
 end
 
-function DimAlignedOperations:onEvent(eventName, ...)
+function DimAngularOperations:onEvent(eventName, ...)
     if(Operations.forMe(self) == false) then
         return
     end
@@ -49,13 +50,13 @@ function DimAlignedOperations:onEvent(eventName, ...)
     if(eventName == "point" or eventName == "number") then
         self:newData(...)
     elseif(eventName == "mouseMove") then
-        self:createTempDimAligned(...)
+        self:createTempDimAngular(...)
     elseif(eventName == "text") then
         self:setText(...)
     end
 end
 
-function DimAlignedOperations:newData(data)
+function DimAngularOperations:newData(data)
     if(self.startPoint == nil) then
         self.startPoint = Operations:getCoordinate(data)
 
@@ -77,7 +78,7 @@ function DimAlignedOperations:newData(data)
     end
 end
 
-function DimAlignedOperations:setText(text)
+function DimAngularOperations:setText(text)
     if(text == "") then
         self.text = "<>"
     else
@@ -85,10 +86,10 @@ function DimAlignedOperations:setText(text)
     end
 
     cli_get_text(false)
-    self:createDimAligned()
+    self:createDimAngular()
 end
 
-function DimAlignedOperations:createTempDimAligned(point)
+function DimAngularOperations:createTempDimAngular(point)
     local startPoint = self.startPoint
     local endPoint = self.endPoint
     local textOffset = self.textOffset
@@ -108,18 +109,18 @@ function DimAlignedOperations:createTempDimAligned(point)
     endPoint = endPoint or startPoint:add(Coord(10,0))
     textOffset = textOffset or 10
 
-    active_widget():tempEntities():removeEntity(self.dimAligned)
+    active_widget():tempEntities():removeEntity(self.dimAngular)
 
-    self.dimAligned = self:getDimAligned(startPoint, endPoint, textOffset, "<>")
+    self.dimAngular = self:getDimAngular(startPoint, endPoint, textOffset, "<>")
 
-    active_widget():tempEntities():addEntity(self.dimAligned)
+    active_widget():tempEntities():addEntity(self.dimAngular)
 end
 
-function DimAlignedOperations:createDimAligned()
-    active_widget():tempEntities():removeEntity(self.dimAligned)
+function DimAngularOperations:createDimAngular()
+    active_widget():tempEntities():removeEntity(self.dimAngular)
 
     local b = Builder(active_widget():document())
-    local c = self:getDimAligned(self.startPoint, self.endPoint, self.textOffset, self.text)
+    local c = self:getDimAngular(self.startPoint, self.endPoint, self.textOffset, self.text)
     b:append(c)
     b:execute()
 

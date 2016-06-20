@@ -21,3 +21,7 @@ end
 function create_dim_aligned()
     op[active_widget().id] = DimAlignedOperations(active_widget().id)
 end
+
+function create_dim_angular()
+    op[active_widget().id] = DimAngularOperations(active_widget().id)
+end

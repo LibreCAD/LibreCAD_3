@@ -8,5 +8,9 @@
         <file alias="ellipse_axis.svg">icons/ellipse_axis.svg</file>
         <file alias="ellipse_arc_axis.svg">icons/ellipse_arc_axis.svg</file>
         <file alias="dim_aligned.svg">icons/dim_aligned.svg</file>
+        <file alias="dim_radial.svg">icons/dim_radial.svg</file>
+        <file alias="dim_linear.svg">icons/dim_linear.svg</file>
+        <file alias="dim_diametric.svg">icons/dim_diametric.svg</file>
+        <file alias="dim_angular.svg">icons/dim_angular.svg</file>
     </qresource>
 </RCC>
