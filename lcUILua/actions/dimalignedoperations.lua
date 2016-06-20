@@ -16,9 +16,10 @@ function DimAlignedOperations:_init(id, isArc)
     self.startPoint = nil
     self.endPoint = nil
     self.textOffset = nil
+    self.text = nil
 
     self.dimAligned_id = ID():id()
-    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,1), 1)
+    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,1), 1, "<>")
     self.dimLine = nil
 
     active_widget():tempEntities():addEntity(self.dimAligned)
@@ -26,14 +27,15 @@ function DimAlignedOperations:_init(id, isArc)
     event.register('point', self)
     event.register('mouseMove', self)
     event.register('number', self)
+    event.register('text', self)
 
     message("Click on start point")
 end
 
-function DimAlignedOperations:getDimAligned(startPoint, endPoint, textOffset)
+function DimAlignedOperations:getDimAligned(startPoint, endPoint, textOffset, text)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local dim = DimAligned.dimAuto(startPoint, endPoint, textOffset, "<>", layer, MetaInfo())
+    local dim = DimAligned.dimAuto(startPoint, endPoint, textOffset, text, layer, MetaInfo())
     dim:setId(self.dimAligned_id)
 
     return dim
@@ -48,6 +50,8 @@ function DimAlignedOperations:onEvent(eventName, ...)
         self:newData(...)
     elseif(eventName == "mouseMove") then
         self:createTempDimAligned(...)
+    elseif(eventName == "text") then
+        self:setText(...)
     end
 end
 
@@ -67,8 +71,21 @@ function DimAlignedOperations:newData(data)
         else
             self.textOffset = data
         end
-        self:createDimAligned()
+
+        message("Enter dimension text or leave it empty (<> for value)")
+        cli_get_text(true)
     end
+end
+
+function DimAlignedOperations:setText(text)
+    if(text == "") then
+        self.text = "<>"
+    else
+        self.text = text
+    end
+
+    cli_get_text(false)
+    self:createDimAligned()
 end
 
 function DimAlignedOperations:createTempDimAligned(point)
@@ -93,7 +110,7 @@ function DimAlignedOperations:createTempDimAligned(point)
 
     active_widget():tempEntities():removeEntity(self.dimAligned)
 
-    self.dimAligned = self:getDimAligned(startPoint, endPoint, textOffset)
+    self.dimAligned = self:getDimAligned(startPoint, endPoint, textOffset, "<>")
 
     active_widget():tempEntities():addEntity(self.dimAligned)
 end
@@ -102,11 +119,12 @@ function DimAlignedOperations:createDimAligned()
     active_widget():tempEntities():removeEntity(self.dimAligned)
 
     local b = Builder(active_widget():document())
-    local c = self:getDimAligned(self.startPoint, self.endPoint, self.textOffset)
+    local c = self:getDimAligned(self.startPoint, self.endPoint, self.textOffset, self.text)
     b:append(c)
     b:execute()
 
     event.delete('mouseMove', self)
     event.delete('number', self)
     event.delete('point', self)
+    event.delete('text', self)
 end

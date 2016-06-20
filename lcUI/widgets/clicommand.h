@@ -28,6 +28,8 @@ class CliCommand : public QDockWidget {
 		void write(QString message);
 		void setText(QString text);
 
+		void returnText(bool returnText);
+
 	public slots:
 		void onReturnPressed();
 		void onKeyPressed(QKeyEvent *event);
@@ -37,6 +39,7 @@ class CliCommand : public QDockWidget {
 		void coordinateEntered(lc::geo::Coordinate coordinate);
 		void relativeCoordinateEntered(lc::geo::Coordinate coordinate);
 		void numberEntered(double number);
+		void textEntered(QString text);
 
     private:
 		void enterCommand(QString command);
@@ -46,6 +49,7 @@ class CliCommand : public QDockWidget {
 		Ui::CliCommand* ui;
 		std::shared_ptr<QCompleter> _completer;
 		std::shared_ptr<QStringListModel> _commands;
+		bool _returnText;
 
 		QStringList _history;
 		int _historySize;

@@ -210,6 +210,7 @@ void addLCBindings(lua_State *L) {
 			.addConstructor(LUA_SP(std::shared_ptr<CliCommand>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
 			.addFunction("addCommand", &CliCommand::addCommand)
 			.addFunction("write", &CliCommand::write, LUA_ARGS(const char*))
+			.addFunction("returnText", &CliCommand::returnText)
 		.endClass()
 
 		.beginExtendClass<Toolbar, QDockWidget>("Toolbar")

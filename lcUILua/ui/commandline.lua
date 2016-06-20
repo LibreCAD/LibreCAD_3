@@ -13,6 +13,10 @@ function add_command(name, callback)
     end
 end
 
+function cli_get_text(getText)
+    cliCommand:returnText(getText)
+end
+
 local function command(command)
     commands[command:toStdString()]()
 end
@@ -35,6 +39,10 @@ local function setLastPoint(point)
     lastPoint = point
 end
 
+local function text(text)
+    event.trigger("text", text:toStdString())
+end
+
 function add_commandline()
     cliCommand = lc.CliCommand(mainWindow)
     mainWindow:addDockWidget(8, cliCommand)
@@ -43,6 +51,7 @@ function add_commandline()
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", coordinate)
     luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", relativeCoordinate)
     luaInterface:luaConnect(cliCommand, "numberEntered(double)", number)
+    luaInterface:luaConnect(cliCommand, "textEntered(QString)", text)
 
     add_command("LINE", create_line)
     add_command("CIRCLE", create_circle)

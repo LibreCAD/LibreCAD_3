@@ -4,6 +4,7 @@
 CliCommand::CliCommand(QWidget* parent) :
     QDockWidget(parent),
     ui(new Ui::CliCommand),
+    _returnText(false),
     _historySize(10),
     _historyIndex(-1)
 {
@@ -48,7 +49,10 @@ void CliCommand::onReturnPressed() {
     auto text = ui->command->text();
     bool isNumber;
 
-    if(text != "") {
+    if(_returnText) {
+        emit textEntered(text);
+    }
+    else if(text != "") {
         _history.push_front(text);
 
         if (_history.size() > _historySize) {
@@ -65,10 +69,10 @@ void CliCommand::onReturnPressed() {
         else {
             enterCommand(text);
         }
-
-        _historyIndex = -1;
-        ui->command->clear();
     }
+
+    _historyIndex = -1;
+    ui->command->clear();
 }
 
 void CliCommand::keyPressEvent(QKeyEvent *event) {
@@ -151,7 +155,6 @@ void CliCommand::onKeyPressed(QKeyEvent *event) {
             break;
 
         default:
-            ui->command->setFocus();
             ui->command->event(event);
             break;
     }
@@ -161,3 +164,6 @@ void CliCommand::setText(QString text) {
     ui->command->setText(text);
 }
 
+void CliCommand::returnText(bool returnText) {
+    _returnText = returnText;
+}
