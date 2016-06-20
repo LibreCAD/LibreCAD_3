@@ -212,7 +212,17 @@ void lua_openlckernel(lua_State* L) {
 	.endClass()
 	.beginExtendClass<entity::DimRadial, entity::CADEntity>("DimRadial_")
 	.endClass()
-	.beginExtendClass<entity::DimDiametric, entity::CADEntity>("DimDiametric_")
+	.beginExtendClass<entity::DimDiametric, entity::CADEntity>("DimDiametric")
+		.addConstructor(LUA_SP(entity::DimDiametric_SPtr), LUA_ARGS(
+			const geo::Coordinate&,
+			const TextConst::AttachmentPoint&,
+			const double,
+			const TextConst::LineSpacingStyle&,
+			const std::string&,
+			const geo::Coordinate&,
+			const double,
+			const Layer_CSPtr,
+			const MetaInfo_CSPtr))
 	.endClass()
 	.beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear_")
 	.endClass()

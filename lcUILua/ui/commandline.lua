@@ -59,6 +59,7 @@ function add_commandline()
     add_command("ELLIPSE", create_ellipse)
     add_command("ARCELLIPSE", create_arc_ellipse)
     add_command("DIMALIGNED", create_dim_aligned)
+    add_command("DIMDIAMETRIC", create_dim_diametric)
 
     event.register("point", setLastPoint)
 end

@@ -25,3 +25,7 @@ end
 function create_dim_angular()
     op[active_widget().id] = DimAngularOperations(active_widget().id)
 end
+
+function create_dim_diametric()
+    op[active_widget().id] = DimDiametricOperations(active_widget().id)
+end
