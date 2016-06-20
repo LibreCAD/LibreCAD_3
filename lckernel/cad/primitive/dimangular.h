@@ -35,8 +35,8 @@ namespace lc {
 
             DimAngular(const DimAngular_CSPtr other, bool sameID = false);
 
-            static DimAngular_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2,
-                                           double const textOffset, std::string const &explicitValue,
+            static DimAngular_SPtr dimAuto(geo::Coordinate const &center, geo::Coordinate const &p1,
+                                           geo::Coordinate const &p2, std::string const &explicitValue,
                                            const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
         public:

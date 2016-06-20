@@ -13,13 +13,13 @@ setmetatable(DimAngularOperations, {
 function DimAngularOperations:_init(id)
     Operations._init(self, id)
 
-    self.startPoint = nil
-    self.endPoint = nil
-    self.textOffset = nil
+    self.centerPoint = nil
+    self.firstPoint = nil
+    self.secondPoint = nil
     self.text = nil
 
     self.dimAngular_id = ID():id()
-    self.dimAngular = self:getDimAngular(Coord(0,0), Coord(1,1), 1, "<>")
+    self.dimAngular = self:getDimAngular(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
     self.dimLine = nil
 
     active_widget():tempEntities():addEntity(self.dimAngular)
@@ -29,14 +29,13 @@ function DimAngularOperations:_init(id)
     event.register('number', self)
     event.register('text', self)
 
-    message("Todo: fix DimAuto for DimAngular")
-    message("Click on start point")
+    message("Click on center point")
 end
 
-function DimAngularOperations:getDimAngular(startPoint, endPoint, textOffset, text)
+function DimAngularOperations:getDimAngular(certerPoint, firstPoint, secondPoint, text)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local dim = DimAngular.dimAuto(startPoint, endPoint, textOffset, text, layer, MetaInfo())
+    local dim = DimAngular.dimAuto(certerPoint, firstPoint, secondPoint, text, layer, MetaInfo())
     dim:setId(self.dimAngular_id)
 
     return dim
@@ -57,21 +56,16 @@ function DimAngularOperations:onEvent(eventName, ...)
 end
 
 function DimAngularOperations:newData(data)
-    if(self.startPoint == nil) then
-        self.startPoint = Operations:getCoordinate(data)
+    if(self.centerPoint == nil) then
+        self.centerPoint = Operations:getCoordinate(data)
 
-        message("Click on end point")
-    elseif(self.endPoint == nil) then
-        self.endPoint = Operations:getCoordinate(data)
-        self.dimLine = Line(self.startPoint, self.endPoint, Layer("Temp", Color(0,0,0,0)))
+        message("Click on first point")
+    elseif(self.firstPoint == nil) then
+        self.firstPoint = Operations:getCoordinate(data)
 
-        message("Give dimension height")
-    elseif(self.textOffset == nil) then
-        if(type(data) == "userdata") then
-            self.textOffset = self.dimLine:nearestPointOnPath(data):distanceTo(data)
-        else
-            self.textOffset = data
-        end
+        message("Click on second point")
+    elseif(self.secondPoint == nil) then
+        self.secondPoint = Operations:getCoordinate(data)
 
         message("Enter dimension text or leave it empty (<> for value)")
         cli_get_text(true)
@@ -90,28 +84,24 @@ function DimAngularOperations:setText(text)
 end
 
 function DimAngularOperations:createTempDimAngular(point)
-    local startPoint = self.startPoint
-    local endPoint = self.endPoint
-    local textOffset = self.textOffset
+    local centerPoint = self.centerPoint
+    local firstPoint = self.firstPoint
+    local secondPoint = self.secondPoint
 
-    if(startPoint == nil) then
-        startPoint = point
-    elseif(endPoint == nil) then
-        endPoint = point
-
-        if(startPoint:x() == endPoint:x() and startPoint:y() == endPoint:y()) then
-            endPoint = endPoint:add(Coord(0.001,0.001))
-        end
-    elseif(textOffset == nil) then
-        textOffset = self.dimLine:nearestPointOnPath(point):distanceTo(point)
+    if(centerPoint == nil) then
+        centerPoint = point
+    elseif(firstPoint == nil) then
+        firstPoint = point
+    elseif(secondPoint == nil) then
+        secondPoint = point
     end
 
-    endPoint = endPoint or startPoint:add(Coord(10,0))
-    textOffset = textOffset or 10
+    firstPoint = firstPoint or centerPoint:add(Coord(-1, 1))
+    secondPoint = secondPoint or centerPoint:add(Coord(1, 1))
 
     active_widget():tempEntities():removeEntity(self.dimAngular)
 
-    self.dimAngular = self:getDimAngular(startPoint, endPoint, textOffset, "<>")
+    self.dimAngular = self:getDimAngular(centerPoint, firstPoint, secondPoint, "<>")
 
     active_widget():tempEntities():addEntity(self.dimAngular)
 end
@@ -120,7 +110,7 @@ function DimAngularOperations:createDimAngular()
     active_widget():tempEntities():removeEntity(self.dimAngular)
 
     local b = Builder(active_widget():document())
-    local c = self:getDimAngular(self.startPoint, self.endPoint, self.textOffset, self.text)
+    local c = self:getDimAngular(self.centerPoint, self.firstPoint, self.secondPoint, self.text)
     b:append(c)
     b:execute()
 
