@@ -1,7 +1,7 @@
-DimAlignedOperations = {}
-DimAlignedOperations.__index = DimAlignedOperations
+DimLinearOperations = {}
+DimLinearOperations.__index = DimLinearOperations
 
-setmetatable(DimAlignedOperations, {
+setmetatable(DimLinearOperations, {
     __index = Operations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
@@ -10,7 +10,7 @@ setmetatable(DimAlignedOperations, {
     end,
 })
 
-function DimAlignedOperations:_init(id)
+function DimLinearOperations:_init(id)
     Operations._init(self, id)
 
     self.startPoint = nil
@@ -18,11 +18,11 @@ function DimAlignedOperations:_init(id)
     self.middleOfText = nil
     self.text = nil
 
-    self.dimAligned_id = ID():id()
-    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
+    self.dimLinear_id = ID():id()
+    self.dimLinear = self:getDimLinear(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
     self.dimLine = nil
 
-    active_widget():tempEntities():addEntity(self.dimAligned)
+    active_widget():tempEntities():addEntity(self.dimLinear)
 
     event.register('point', self)
     event.register('mouseMove', self)
@@ -32,16 +32,16 @@ function DimAlignedOperations:_init(id)
     message("Click on start point")
 end
 
-function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
+function DimLinearOperations:getDimLinear(startPoint, endPoint, middleOfText, text)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, MetaInfo())
-    dim:setId(self.dimAligned_id)
+    local dim = DimLinear.dimAuto(startPoint, endPoint, middleOfText, text, layer, MetaInfo())
+    dim:setId(self.dimLinear_id)
 
     return dim
 end
 
-function DimAlignedOperations:onEvent(eventName, ...)
+function DimLinearOperations:onEvent(eventName, ...)
     if(Operations.forMe(self) == false) then
         return
     end
@@ -49,20 +49,19 @@ function DimAlignedOperations:onEvent(eventName, ...)
     if(eventName == "point" or eventName == "number") then
         self:newData(...)
     elseif(eventName == "mouseMove") then
-        self:createTempDimAligned(...)
+        self:createTempDimLinear(...)
     elseif(eventName == "text") then
         self:setText(...)
     end
 end
 
-function DimAlignedOperations:newData(data)
+function DimLinearOperations:newData(data)
     if(self.startPoint == nil) then
         self.startPoint = Operations:getCoordinate(data)
 
         message("Click on end point")
     elseif(self.endPoint == nil) then
         self.endPoint = Operations:getCoordinate(data)
-        self.dimLine = Line(self.startPoint, self.endPoint, Layer("Temp", Color(0,0,0,0)))
 
         message("Give dimension height")
     elseif(self.middleOfText == nil) then
@@ -73,7 +72,7 @@ function DimAlignedOperations:newData(data)
     end
 end
 
-function DimAlignedOperations:setText(text)
+function DimLinearOperations:setText(text)
     if(text == "") then
         self.text = "<>"
     else
@@ -81,10 +80,10 @@ function DimAlignedOperations:setText(text)
     end
 
     cli_get_text(false)
-    self:createDimAligned()
+    self:createDimLinear()
 end
 
-function DimAlignedOperations:createTempDimAligned(point)
+function DimLinearOperations:createTempDimLinear(point)
     local startPoint = self.startPoint
     local endPoint = self.endPoint
     local middleOfText = self.middleOfText
@@ -93,10 +92,6 @@ function DimAlignedOperations:createTempDimAligned(point)
         startPoint = point
     elseif(endPoint == nil) then
         endPoint = point
-
-        if(startPoint:x() == endPoint:x() and startPoint:y() == endPoint:y()) then
-            endPoint = endPoint:add(Coord(0.001,0.001))
-        end
     elseif(middleOfText == nil) then
         middleOfText = point
     end
@@ -104,19 +99,19 @@ function DimAlignedOperations:createTempDimAligned(point)
     endPoint = endPoint or startPoint:add(Coord(10,0))
     middleOfText = middleOfText or startPoint:add(Coord(5,10))
 
-    active_widget():tempEntities():removeEntity(self.dimAligned)
+    active_widget():tempEntities():removeEntity(self.dimLinear)
 
-    self.dimAligned = self:getDimAligned(startPoint, endPoint, middleOfText, "<>")
+    self.dimLinear = self:getDimLinear(startPoint, endPoint, middleOfText, "<>")
 
-    active_widget():tempEntities():addEntity(self.dimAligned)
+    active_widget():tempEntities():addEntity(self.dimLinear)
 end
 
-function DimAlignedOperations:createDimAligned()
+function DimLinearOperations:createDimLinear()
     self.finished = true
-    active_widget():tempEntities():removeEntity(self.dimAligned)
+    active_widget():tempEntities():removeEntity(self.dimLinear)
 
     local b = Builder(active_widget():document())
-    local c = self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text)
+    local c = self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text)
     b:append(c)
     b:execute()
 
@@ -126,13 +121,13 @@ function DimAlignedOperations:createDimAligned()
     event.delete('text', self)
 end
 
-function DimAlignedOperations:close()
+function DimLinearOperations:close()
     if(not self.finished) then
         if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
             self.text = "<>"
-            self:createDimAligned()
+            self:createDimLinear()
         else
-            active_widget():tempEntities():removeEntity(self.dimAligned)
+            active_widget():tempEntities():removeEntity(self.dimLinear)
             self.finished = true
 
             event.delete('mouseMove', self)

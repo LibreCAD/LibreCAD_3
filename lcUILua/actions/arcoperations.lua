@@ -96,6 +96,7 @@ function ArcOperations:createTempArc(point)
 end
 
 function ArcOperations:createArc()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.arc)
 
     local b = Builder(active_widget():document())
@@ -106,4 +107,15 @@ function ArcOperations:createArc()
     event.delete('mouseMove', self)
     event.delete('number', self)
     event.delete('point', self)
+end
+
+function ArcOperations:close()
+    if(not self.finished) then
+        active_widget():tempEntities():removeEntity(self.arc)
+        self.finished = true
+
+        event.delete('mouseMove', self)
+        event.delete('number', self)
+        event.delete('point', self)
+    end
 end

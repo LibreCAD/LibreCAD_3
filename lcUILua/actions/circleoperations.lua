@@ -74,6 +74,7 @@ function CircleOperations:createTempCircle(point)
 end
 
 function CircleOperations:createCircle(point)
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.circle)
 
     local b = Builder(active_widget():document())
@@ -84,4 +85,15 @@ function CircleOperations:createCircle(point)
     event.delete('mouseMove', self)
     event.delete('number', self)
     event.delete('point', self)
+end
+
+function CircleOperations:close()
+    if(not self.finished) then
+        active_widget():tempEntities():removeEntity(self.circle)
+        self.finished = true
+
+        event.delete('mouseMove', self)
+        event.delete('number', self)
+        event.delete('point', self)
+    end
 end

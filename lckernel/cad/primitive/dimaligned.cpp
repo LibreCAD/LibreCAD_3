@@ -17,14 +17,21 @@ DimAligned::DimAligned(geo::Coordinate const& definitionPoint, geo::Coordinate c
 DimAligned::DimAligned(const DimAligned_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _definitionPoint2(other->_definitionPoint2), _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, double const textOffset, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, geo::Coordinate const& middleOfText, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+    auto nearestPoint = geo::Vector(p1, p2).nearestPointOnPath(middleOfText);
+    auto distance = nearestPoint.distanceTo(middleOfText);
 
-    geo::Coordinate dir = (p3 - p2).rotate(0.5 * M_PI);
-    geo::Coordinate p0 = p3.move(dir, textOffset);
-    geo::Coordinate middletext(p2.mid(p3).move(dir, textOffset));
+    geo::Coordinate dir;
+    if(((p2.x() - p1.x()) * (middleOfText.y() - p1.y()) - (p2.y() - p1.y()) * (middleOfText.x() - p1.x())) >= 0) {
+        dir = (p2 - p1).rotate(0.5 * M_PI);
+    }
+    else {
+        dir = (p2 - p1).rotate(-0.5 * M_PI);
+    }
 
+    geo::Coordinate p0 = p2.move(dir, distance);
 
-    return std::make_shared<DimAligned>(p0, middletext, TextConst::AttachmentPoint::Top_center , 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p2, p3, layer, metaInfo);
+    return std::make_shared<DimAligned>(p0, middleOfText, TextConst::AttachmentPoint::Top_center , 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p1, p2, layer, metaInfo);
 }
 
 

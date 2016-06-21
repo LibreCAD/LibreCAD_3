@@ -210,7 +210,20 @@ void lua_openlckernel(lua_State* L) {
 	.endClass()
 	.beginExtendClass<entity::Text, entity::CADEntity>("Text_")
 	.endClass()
-	.beginExtendClass<entity::DimRadial, entity::CADEntity>("DimRadial_")
+	.beginExtendClass<entity::DimRadial, entity::CADEntity>("DimRadial")
+		.addConstructor(LUA_SP(entity::DimRadial_SPtr), LUA_ARGS(
+			const geo::Coordinate&,
+			const geo::Coordinate&,
+			const TextConst::AttachmentPoint&,
+			double,
+			const double,
+			const TextConst::LineSpacingStyle&,
+			const std::string&,
+			const geo::Coordinate&,
+			const double,
+			const Layer_CSPtr,
+			const MetaInfo_CSPtr
+		))
 	.endClass()
 	.beginExtendClass<entity::DimDiametric, entity::CADEntity>("DimDiametric")
 		.addConstructor(LUA_SP(entity::DimDiametric_SPtr), LUA_ARGS(
@@ -224,7 +237,8 @@ void lua_openlckernel(lua_State* L) {
 			const Layer_CSPtr,
 			const MetaInfo_CSPtr))
 	.endClass()
-	.beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear_")
+	.beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear")
+		.addStaticFunction("dimAuto", &entity::DimLinear::dimAuto)
 	.endClass()
 	.beginExtendClass<entity::DimAligned, entity::CADEntity>("DimAligned")
 		.addStaticFunction("dimAuto", &entity::DimAligned::dimAuto)

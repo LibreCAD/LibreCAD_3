@@ -6,6 +6,8 @@ require 'actions.ellipseoperations'
 require 'actions.dimalignedoperations'
 require 'actions.dimangularoperations'
 require 'actions.dimdiametricoperations'
+require 'actions.dimlinearoperations'
+require 'actions.dimradialoperations'
 
 Operations = {}
 Operations.__index = Operations
@@ -20,6 +22,7 @@ setmetatable(Operations, {
 
 function Operations:_init(id)
 	self.id = id
+	self.finished = false
 end
 
 function Operations:forMe()
@@ -48,4 +51,7 @@ function Operations:getCoordinate(coordinate)
 	end
 
 	return nil
+end
+
+function Operations:close()
 end

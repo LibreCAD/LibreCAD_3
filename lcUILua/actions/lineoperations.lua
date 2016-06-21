@@ -39,6 +39,7 @@ end
 
 function LineOperations:newPoint(point)
     if(self.lastPoint ~= nil) then
+        self.finished = true
         active_widget():tempEntities():removeEntity(self.lastLine)
 
         local b = Builder(active_widget():document())
@@ -82,4 +83,15 @@ function LineOperations:createLine(p1, p2)
     l:setId(self.line_id)
 
     return l
+end
+
+function LineOperations:close()
+    if(not self.finished) then
+        active_widget():tempEntities():removeEntity(self.lastLine)
+        self.finished = true
+
+        event.delete('mouseMove', self)
+        event.delete('number', self)
+        event.delete('point', self)
+    end
 end
