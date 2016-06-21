@@ -22,6 +22,7 @@ setmetatable(Operations, {
 
 function Operations:_init(id)
 	self.id = id
+	self.finished = false
 end
 
 function Operations:forMe()
@@ -50,4 +51,7 @@ function Operations:getCoordinate(coordinate)
 	end
 
 	return nil
+end
+
+function Operations:close()
 end

@@ -107,6 +107,7 @@ function DimAngularOperations:createTempDimAngular(point)
 end
 
 function DimAngularOperations:createDimAngular()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.dimAngular)
 
     local b = Builder(active_widget():document())
@@ -118,4 +119,21 @@ function DimAngularOperations:createDimAngular()
     event.delete('number', self)
     event.delete('point', self)
     event.delete('text', self)
+end
+
+function DimAngularOperations:close()
+    if(not self.finished) then
+        if(self.centerPoint ~= nil and self.firstPoint ~= nil and self.secondPoint ~= nil) then
+            self.text = "<>"
+            self:createDimAngular()
+        else
+            active_widget():tempEntities():removeEntity(self.dimAngular)
+            self.finished = true
+
+            event.delete('mouseMove', self)
+            event.delete('number', self)
+            event.delete('point', self)
+            event.delete('text', self)
+        end
+    end
 end

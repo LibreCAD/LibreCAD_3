@@ -101,6 +101,7 @@ function DimDiametricOperations:createTempDimDiametric(point)
 end
 
 function DimDiametricOperations:createDimDiametric()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.dimDiametric)
 
     local b = Builder(active_widget():document())
@@ -112,4 +113,21 @@ function DimDiametricOperations:createDimDiametric()
     event.delete('number', self)
     event.delete('point', self)
     event.delete('text', self)
+end
+
+function DimDiametricOperations:close()
+    if(not self.finished) then
+        if(self.definitionPoint ~= nil and self.definitionPoint2 ~= nil) then
+            self.text = "<>"
+            self:createDimDiametric()
+        else
+            active_widget():tempEntities():removeEntity(self.dimDiametric)
+            self.finished = true
+
+            event.delete('mouseMove', self)
+            event.delete('number', self)
+            event.delete('point', self)
+            event.delete('text', self)
+        end
+    end
 end

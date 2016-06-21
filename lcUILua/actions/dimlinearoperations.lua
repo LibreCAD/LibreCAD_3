@@ -107,6 +107,7 @@ function DimLinearOperations:createTempDimLinear(point)
 end
 
 function DimLinearOperations:createDimLinear()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.dimLinear)
 
     local b = Builder(active_widget():document())
@@ -118,4 +119,21 @@ function DimLinearOperations:createDimLinear()
     event.delete('number', self)
     event.delete('point', self)
     event.delete('text', self)
+end
+
+function DimLinearOperations:close()
+    if(not self.finished) then
+        if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
+            self.text = "<>"
+            self:createDimLinear()
+        else
+            active_widget():tempEntities():removeEntity(self.dimLinear)
+            self.finished = true
+
+            event.delete('mouseMove', self)
+            event.delete('number', self)
+            event.delete('point', self)
+            event.delete('text', self)
+        end
+    end
 end

@@ -112,6 +112,7 @@ function DimAlignedOperations:createTempDimAligned(point)
 end
 
 function DimAlignedOperations:createDimAligned()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.dimAligned)
 
     local b = Builder(active_widget():document())
@@ -123,4 +124,21 @@ function DimAlignedOperations:createDimAligned()
     event.delete('number', self)
     event.delete('point', self)
     event.delete('text', self)
+end
+
+function DimAlignedOperations:close()
+    if(not self.finished) then
+        if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
+            self.text = "<>"
+            self:createDimAligned()
+        else
+            active_widget():tempEntities():removeEntity(self.dimAligned)
+            self.finished = true
+
+            event.delete('mouseMove', self)
+            event.delete('number', self)
+            event.delete('point', self)
+            event.delete('text', self)
+        end
+    end
 end

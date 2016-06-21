@@ -112,6 +112,7 @@ function EllipseOperations:createTempEllipse(point)
 end
 
 function EllipseOperations:createEllipse()
+    self.finished = true
     active_widget():tempEntities():removeEntity(self.ellipse)
 
     if(not self.isArc) then
@@ -127,4 +128,15 @@ function EllipseOperations:createEllipse()
     event.delete('mouseMove', self)
     event.delete('number', self)
     event.delete('point', self)
+end
+
+function EllipseOperations:close()
+    if(not self.finished) then
+        active_widget():tempEntities():removeEntity(self.ellipse)
+        self.finished = true
+
+        event.delete('mouseMove', self)
+        event.delete('number', self)
+        event.delete('point', self)
+    end
 end
