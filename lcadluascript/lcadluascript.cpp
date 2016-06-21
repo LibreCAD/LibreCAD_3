@@ -183,11 +183,11 @@ static lc::entity::DimAligned_SPtr lua_dimAligned1(lc::geo::Coordinate const& de
                                             explicitValue, definitionPoint2, definitionPoint3, layer, metaInfo);
 }
 
-static lc::entity::DimAligned_SPtr lua_DimAligned_dimAuto(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer) {
-    return lc::entity::DimAligned::dimAuto(p1, p2, textOffset, explicitValue, layer, nullptr);
+static lc::entity::DimAligned_SPtr lua_DimAligned_dimAuto(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, lc::geo::Coordinate const& p3, std::string const& explicitValue, const lc::Layer_CSPtr layer) {
+    return lc::entity::DimAligned::dimAuto(p1, p2, p3, explicitValue, layer, nullptr);
 }
-static lc::entity::DimAligned_SPtr lua_DimAligned_dimAuto1(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
-    return lc::entity::DimAligned::dimAuto(p1, p2, textOffset, explicitValue, layer, metaInfo);
+static lc::entity::DimAligned_SPtr lua_DimAligned_dimAuto1(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, lc::geo::Coordinate const& p3, std::string const& explicitValue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return lc::entity::DimAligned::dimAuto(p1, p2, p3, explicitValue, layer, metaInfo);
 }
 /***
 *    |~\. _ _  /\  _  _    | _  _

@@ -15,11 +15,11 @@ function DimAlignedOperations:_init(id)
 
     self.startPoint = nil
     self.endPoint = nil
-    self.textOffset = nil
+    self.middleOfText = nil
     self.text = nil
 
     self.dimAligned_id = ID():id()
-    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,1), 1, "<>")
+    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
     self.dimLine = nil
 
     active_widget():tempEntities():addEntity(self.dimAligned)
@@ -32,10 +32,10 @@ function DimAlignedOperations:_init(id)
     message("Click on start point")
 end
 
-function DimAlignedOperations:getDimAligned(startPoint, endPoint, textOffset, text)
+function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local dim = DimAligned.dimAuto(startPoint, endPoint, textOffset, text, layer, MetaInfo())
+    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, MetaInfo())
     dim:setId(self.dimAligned_id)
 
     return dim
@@ -65,12 +65,8 @@ function DimAlignedOperations:newData(data)
         self.dimLine = Line(self.startPoint, self.endPoint, Layer("Temp", Color(0,0,0,0)))
 
         message("Give dimension height")
-    elseif(self.textOffset == nil) then
-        if(type(data) == "userdata") then
-            self.textOffset = self.dimLine:nearestPointOnPath(data):distanceTo(data)
-        else
-            self.textOffset = data
-        end
+    elseif(self.middleOfText == nil) then
+        self.middleOfText = Operations:getCoordinate(data)
 
         message("Enter dimension text or leave it empty (<> for value)")
         cli_get_text(true)
@@ -91,7 +87,7 @@ end
 function DimAlignedOperations:createTempDimAligned(point)
     local startPoint = self.startPoint
     local endPoint = self.endPoint
-    local textOffset = self.textOffset
+    local middleOfText = self.middleOfText
 
     if(startPoint == nil) then
         startPoint = point
@@ -101,16 +97,16 @@ function DimAlignedOperations:createTempDimAligned(point)
         if(startPoint:x() == endPoint:x() and startPoint:y() == endPoint:y()) then
             endPoint = endPoint:add(Coord(0.001,0.001))
         end
-    elseif(textOffset == nil) then
-        textOffset = self.dimLine:nearestPointOnPath(point):distanceTo(point)
+    elseif(middleOfText == nil) then
+        middleOfText = point
     end
 
     endPoint = endPoint or startPoint:add(Coord(10,0))
-    textOffset = textOffset or 10
+    middleOfText = middleOfText or startPoint:add(Coord(5,10))
 
     active_widget():tempEntities():removeEntity(self.dimAligned)
 
-    self.dimAligned = self:getDimAligned(startPoint, endPoint, textOffset, "<>")
+    self.dimAligned = self:getDimAligned(startPoint, endPoint, middleOfText, "<>")
 
     active_widget():tempEntities():addEntity(self.dimAligned)
 end
@@ -119,7 +115,7 @@ function DimAlignedOperations:createDimAligned()
     active_widget():tempEntities():removeEntity(self.dimAligned)
 
     local b = Builder(active_widget():document())
-    local c = self:getDimAligned(self.startPoint, self.endPoint, self.textOffset, self.text)
+    local c = self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text)
     b:append(c)
     b:execute()
 
