@@ -37,7 +37,7 @@ namespace lc {
             /**
              * Convenient function
             */
-            static DimLinear_SPtr dimAuto(geo::Coordinate const &p2, geo::Coordinate const &p3, const double textOffset,
+            static DimLinear_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2, geo::Coordinate const &middleOfText,
                                           std::string const &explicitValue, const Layer_CSPtr layer,
                                           const MetaInfo_CSPtr metaInfo);
 

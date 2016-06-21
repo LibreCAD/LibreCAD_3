@@ -224,7 +224,8 @@ void lua_openlckernel(lua_State* L) {
 			const Layer_CSPtr,
 			const MetaInfo_CSPtr))
 	.endClass()
-	.beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear_")
+	.beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear")
+		.addStaticFunction("dimAuto", &entity::DimLinear::dimAuto)
 	.endClass()
 	.beginExtendClass<entity::DimAligned, entity::CADEntity>("DimAligned")
 		.addStaticFunction("dimAuto", &entity::DimAligned::dimAuto)

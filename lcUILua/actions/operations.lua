@@ -6,6 +6,7 @@ require 'actions.ellipseoperations'
 require 'actions.dimalignedoperations'
 require 'actions.dimangularoperations'
 require 'actions.dimdiametricoperations'
+require 'actions.dimlinearoperations'
 
 Operations = {}
 Operations.__index = Operations

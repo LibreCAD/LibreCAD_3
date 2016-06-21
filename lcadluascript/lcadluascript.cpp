@@ -158,11 +158,11 @@ static lc::entity::DimLinear_SPtr lua_dimLinear1(lc::geo::Coordinate const& defi
                                          lc::geo::Coordinate const& definitionPoint2, lc::geo::Coordinate const& definitionPoint3, const double angle, const double oblique, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
     return std::make_shared<lc::entity::DimLinear>(definitionPoint, middleOfText, static_cast<lc::TextConst::AttachmentPoint>(attachmentPoint), textAngle, lineSpacingFactor, static_cast<lc::TextConst::LineSpacingStyle>(lineSpacingStyle), explicitValue, definitionPoint2, definitionPoint3, angle, oblique, layer, metaInfo);
 }
-static lc::entity::DimLinear_SPtr lua_DimLinear_dimAuto(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer) {
-    return lc::entity::DimLinear::dimAuto(p1, p2, textOffset, explicitValue, layer, nullptr);
+static lc::entity::DimLinear_SPtr lua_DimLinear_dimAuto(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, lc::geo::Coordinate const& p3, std::string const& explicitValue, const lc::Layer_CSPtr layer) {
+    return lc::entity::DimLinear::dimAuto(p1, p2, p3, explicitValue, layer, nullptr);
 }
-static lc::entity::DimLinear_SPtr lua_DimLinear_dimAuto1(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, double const textOffset, std::string const& explicitValue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
-    return lc::entity::DimLinear::dimAuto(p1, p2, textOffset, explicitValue, layer, metaInfo);
+static lc::entity::DimLinear_SPtr lua_DimLinear_dimAuto1(lc::geo::Coordinate const& p1, lc::geo::Coordinate const& p2, lc::geo::Coordinate const& p3, std::string const& explicitValue, const lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) {
+    return lc::entity::DimLinear::dimAuto(p1, p2, p3, explicitValue, layer, metaInfo);
 }
 
 /***
