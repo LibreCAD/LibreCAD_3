@@ -37,14 +37,10 @@ DimAngular::DimAngular(const DimAngular_CSPtr other, bool sameID) :
     _defLine22(other->_defLine22) {
 }
 
-DimAngular_SPtr DimAngular::dimAuto(geo::Coordinate const& p2, geo::Coordinate const& p3, double const textOffset, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+DimAngular_SPtr DimAngular::dimAuto(geo::Coordinate const& center, geo::Coordinate const& p1, geo::Coordinate const& p2, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+    geo::Coordinate middletext(p1.mid(p2));
 
-    geo::Coordinate dir = (p3 - p2).rotate(0.5 * M_PI);
-    geo::Coordinate p0 = p3.move(dir, textOffset);
-    geo::Coordinate middletext(p2.mid(p3).move(dir, textOffset));
-
-
-    return std::make_shared<DimAngular>(p0, middletext, TextConst::AttachmentPoint::Top_center, 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p2, p3, p3, p3, layer, metaInfo);
+    return std::make_shared<DimAngular>(center, middletext, TextConst::AttachmentPoint::Top_center, 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, center, p1, center, p2, layer, metaInfo);
 }
 
 

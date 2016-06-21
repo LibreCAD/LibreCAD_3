@@ -66,4 +66,12 @@ function add_toolbar()
     local dimAligned = create_button("", ":/icons/dim_aligned.svg")
     quickAccess:addButton(dimGroup, dimAligned, 0, 0, 1, 1)
     luaInterface:luaConnect(dimAligned, "pressed()", create_dim_aligned)
+
+    local dimAngular = create_button("", ":/icons/dim_angular.svg")
+    quickAccess:addButton(dimGroup, dimAngular, 1, 0, 1, 1)
+    luaInterface:luaConnect(dimAngular, "pressed()", create_dim_angular)
+
+    local dimDiametric = create_button("", ":/icons/dim_diametric.svg")
+    quickAccess:addButton(dimGroup, dimDiametric, 0, 1, 1, 1)
+    luaInterface:luaConnect(dimDiametric, "pressed()", create_dim_diametric)
 end
