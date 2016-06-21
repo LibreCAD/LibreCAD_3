@@ -78,4 +78,8 @@ function add_toolbar()
     local dimLinear = create_button("", ":/icons/dim_linear.svg")
     quickAccess:addButton(dimGroup, dimLinear, 1, 1, 1, 1)
     luaInterface:luaConnect(dimLinear, "pressed()", create_dim_linear)
+
+    local dimRadial = create_button("", ":/icons/dim_radial.svg")
+    quickAccess:addButton(dimGroup, dimRadial, 2, 0, 1, 1)
+    luaInterface:luaConnect(dimRadial, "pressed()", create_dim_radial)
 end

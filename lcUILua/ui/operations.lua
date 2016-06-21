@@ -32,3 +32,7 @@ end
 function create_dim_linear()
     op[active_widget().id] = DimLinearOperations(active_widget().id)
 end
+
+function create_dim_radial()
+    op[active_widget().id] = DimRadialOperations(active_widget().id)
+end
