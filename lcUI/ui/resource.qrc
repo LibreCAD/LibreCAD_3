@@ -12,5 +12,7 @@
         <file alias="dim_linear.svg">icons/dim_linear.svg</file>
         <file alias="dim_diametric.svg">icons/dim_diametric.svg</file>
         <file alias="dim_angular.svg">icons/dim_angular.svg</file>
+        <file alias="spline.svg">icons/spline.svg</file>
+        <file alias="quit.svg">icons/quit.svg</file>
     </qresource>
 </RCC>

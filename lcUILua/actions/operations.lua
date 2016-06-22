@@ -8,6 +8,7 @@ require 'actions.dimangularoperations'
 require 'actions.dimdiametricoperations'
 require 'actions.dimlinearoperations'
 require 'actions.dimradialoperations'
+require 'actions.splineoperations'
 
 Operations = {}
 Operations.__index = Operations

@@ -9,6 +9,7 @@ extern "C"
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
+	LUA_USING_LIST_TYPE(std::vector)
 }
 
 using namespace LuaIntf;
@@ -246,7 +247,27 @@ void lua_openlckernel(lua_State* L) {
 	.beginExtendClass<entity::DimAngular, entity::CADEntity>("DimAngular")
 		.addStaticFunction("dimAuto", &entity::DimAngular::dimAuto)
 	.endClass()
-	.beginExtendClass<entity::Spline, entity::CADEntity>("Spline_")
+	.beginExtendClass<entity::Spline, entity::CADEntity>("Spline")
+		.addConstructor(LUA_SP(entity::Spline_SPtr), LUA_ARGS(
+			const std::vector<geo::Coordinate>,
+			const std::vector<double>,
+			const std::vector<geo::Coordinate>,
+			int,
+			bool,
+			double,
+			double,
+			double,
+			double,
+			double,
+			double,
+			double,
+			double,
+			double,
+			double,
+			geo::Spline::splineflag,
+			const Layer_CSPtr,
+			const MetaInfo_CSPtr
+		))
 	.endClass()
 	.beginClass<entity::LWVertex2D>("LWVertex2D")
 		.addConstructor(LUA_ARGS(

@@ -1,8 +1,22 @@
 local function finish_operation()
-    message(tostring(active_widget().id))
     if(op[active_widget().id] ~= nil) then
         op[active_widget().id]:close()
     end
+
+    local tab = toolbar:tabByName("Quick Access")
+    local group = tab:groupByName("Current operation")
+    if(group ~= nil) then
+        tab:removeGroup(group)
+    end
+end
+
+local function create_cancel_button()
+    local tab = toolbar:tabByName("Quick Access")
+    local operationGroup = tab:addGroup("Current operation")
+
+    local cancelButton = create_button("", ":/icons/quit.svg")
+    tab:addButton(operationGroup, cancelButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(cancelButton, "pressed()", finish_operation)
 end
 
 function create_line()
@@ -53,4 +67,10 @@ end
 function create_dim_radial()
     finish_operation()
     op[active_widget().id] = DimRadialOperations(active_widget().id)
+end
+
+function create_spline()
+    finish_operation()
+    create_cancel_button()
+    op[active_widget().id] = SplineOperations(active_widget().id)
 end

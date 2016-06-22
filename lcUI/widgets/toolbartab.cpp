@@ -55,9 +55,9 @@ QGroupBox* ToolbarTab::groupByName(const char* groupName) {
 	auto nbGroups = _layout->count();
 
 	for (int i = 0; i < nbGroups; i++) {
-		auto groupBox = dynamic_cast<QGroupBox*>(_layout->itemAt(i));
+		auto groupBox = dynamic_cast<QGroupBox*>(_layout->itemAt(i)->widget());
 
-		if(groupBox && groupBox->title() == groupName) {
+		if (groupBox && groupBox->title() == groupName) {
 			return groupBox;
 		}
 	}
@@ -77,4 +77,12 @@ QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonTex
 	}
 
 	return nullptr;
+}
+
+void ToolbarTab::removeGroup(QGroupBox *group) {
+	if(group == nullptr) {
+		return;
+	}
+
+	delete group;
 }
