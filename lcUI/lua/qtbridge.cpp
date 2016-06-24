@@ -239,6 +239,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("addGroup", &ToolbarTab::addGroup)
 			.addFunction("buttonByText", &ToolbarTab::buttonByText)
 			.addFunction("groupByName", &ToolbarTab::groupByName)
+			.addFunction("removeGroup", &ToolbarTab::removeGroup)
 		.endClass()
 
 		.beginClass<LCViewer::TempEntities>("TempEntities")

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDockWidget>
+#include "toolbartab.h"
 
 namespace Ui {
 	class Toolbar;
@@ -14,7 +15,7 @@ class Toolbar : public QDockWidget {
 		void addTab(const char* name, QWidget* page);
 		void removeTab(QWidget* page);
 
-		QWidget* tabByName(const char* name);
+		ToolbarTab* tabByName(const char* name);
 
 	private:
 		Ui::Toolbar *ui;

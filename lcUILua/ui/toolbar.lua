@@ -1,6 +1,6 @@
 local iconSize = qt.QSize(24, 24)
 
-local function create_button(name, icon)
+function create_button(name, icon)
     local button = qt.QPushButton(qt.QString(name))
     button:setFlat(true)
 
@@ -12,7 +12,7 @@ local function create_button(name, icon)
     return button
 end
 
-local function create_action(menu, name, icon)
+function create_action(menu, name, icon)
     local action = menu:addActionStr(qt.QString(name))
 
     if(icon ~= nil) then
@@ -40,6 +40,15 @@ function add_toolbar()
     local arcButton = create_button("", ":/icons/arc.svg")
     quickAccess:addButton(creationGroup, arcButton, 0, 1, 1, 1)
     luaInterface:luaConnect(arcButton, "pressed()", create_arc)
+
+    local spline = create_button("", ":/icons/spline.svg")
+    quickAccess:addButton(creationGroup, spline, 2, 0, 1, 1)
+    luaInterface:luaConnect(spline, "pressed()", create_spline)
+
+    local polylineButton = create_button("", ":/icons/polylines.svg")
+    quickAccess:addButton(creationGroup, polylineButton, 2, 1, 1, 1)
+    luaInterface:luaConnect(polylineButton, "pressed()", create_lw_polyline)
+
 
     --
     -- Ellipses

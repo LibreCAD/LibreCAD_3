@@ -62,6 +62,7 @@ function add_commandline()
     add_command("DIMDIAMETRIC", create_dim_diametric)
     add_command("DIMLINEAR", create_dim_linear)
     add_command("DIMRADIAL", create_dim_radial)
+    add_command("SPLINE", create_spline)
 
     event.register("point", setLastPoint)
 end

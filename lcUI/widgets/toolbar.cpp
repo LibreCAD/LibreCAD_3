@@ -27,12 +27,12 @@ void Toolbar::removeTab(QWidget *page) {
 	ui->tabWidget->removeTab(index);
 }
 
-QWidget *Toolbar::tabByName(const char *name) {
+ToolbarTab* Toolbar::tabByName(const char *name) {
 	auto nbTab = ui->tabWidget->count();
 
 	for(int i = 0; i < nbTab; i++) {
 		if(ui->tabWidget->tabText(i) == name) {
-			return ui->tabWidget->widget(i);
+			return dynamic_cast<ToolbarTab*>(ui->tabWidget->widget(i));
 		}
 	}
 
