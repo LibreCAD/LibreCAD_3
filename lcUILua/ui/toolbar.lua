@@ -45,6 +45,11 @@ function add_toolbar()
     quickAccess:addButton(creationGroup, spline, 2, 0, 1, 1)
     luaInterface:luaConnect(spline, "pressed()", create_spline)
 
+    local polylineButton = create_button("", ":/icons/polylines.svg")
+    quickAccess:addButton(creationGroup, polylineButton, 2, 1, 1, 1)
+    luaInterface:luaConnect(polylineButton, "pressed()", create_lw_polyline)
+
+
     --
     -- Ellipses
     --

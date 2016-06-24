@@ -74,10 +74,10 @@ namespace lc {
             }
 
         public:
-            const geo::Coordinate _location;
-            const double _startWidth;
-            const double _endWidth;
-            const double _bulge;
+            geo::Coordinate _location;
+            double _startWidth;
+            double _endWidth;
+            double _bulge;
         };
 
         /**
