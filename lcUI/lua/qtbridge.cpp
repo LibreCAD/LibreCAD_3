@@ -4,6 +4,7 @@
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
+	LUA_USING_LIST_TYPE(std::vector)
 }
 
 void luaOpenQtBridge(lua_State *L) {	
@@ -175,6 +176,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("document", &CadMdiChild::document)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 			.addFunction("import", &CadMdiChild::import)
+			.addFunction("selection", &CadMdiChild::selection)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
 			.addFunction("tempEntities", &CadMdiChild::tempEntities)
@@ -191,6 +193,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("x", &LCViewer::LCADViewer::x)
 			.addFunction("y", &LCViewer::LCADViewer::y)
 			.addFunction("autoScale", &LCViewer::LCADViewer::autoScale)
+			.addFunction("setOperationActive", &LCViewer::LCADViewer::setOperationActive)
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")

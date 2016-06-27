@@ -64,5 +64,7 @@ function add_commandline()
     add_command("DIMRADIAL", create_dim_radial)
     add_command("SPLINE", create_spline)
 
+    add_command("MOVE", move_selected_entities)
+
     event.register("point", setLastPoint)
 end

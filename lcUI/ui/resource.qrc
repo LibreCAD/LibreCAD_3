@@ -14,6 +14,7 @@
         <file alias="dim_angular.svg">icons/dim_angular.svg</file>
         <file alias="spline.svg">icons/spline.svg</file>
         <file alias="quit.svg">icons/quit.svg</file>
-	<file alias="polylines.svg">icons/polylines.svg</file>
+        <file alias="polylines.svg">icons/polylines.svg</file>
+        <file alias="modify.svg">icons/modify.svg</file>
     </qresource>
 </RCC>

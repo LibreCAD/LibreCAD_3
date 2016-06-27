@@ -18,7 +18,7 @@
 using namespace LCViewer;
 
 LCADViewer::LCADViewer(QWidget *parent) :
-    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _disableSelection(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false) {
+    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _disableSelection(false), _operationActive(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -180,26 +180,29 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
 
-	_dragManager->onMousePress();
-    _disableSelection = _dragManager->entityDragged();
+    if(!_operationActive) {
+        _dragManager->onMousePress();
+        _disableSelection = _dragManager->entityDragged();
 
-    startSelectPos = event->pos();
+        startSelectPos = event->pos();
 
-    posX = event->x();
-    posY = event->y();
+        posX = event->x();
+        posY = event->y();
+
+        switch (event->buttons()) {
+            case Qt::MiddleButton: {
+                _mouseScrollKeyActive = true;
+            }
+                break;
+        }
+
+        if (!_ctrlKeyActive) {
+            _docCanvas->removeSelection();
+        }
+    }
 
     _docCanvas->device_to_user(&posX, &posY);
     emit mousePressEvent();
-
-    switch (event->buttons()) {
-        case Qt::MiddleButton: {
-            _mouseScrollKeyActive = true;
-        } break;
-    }
-
-    if(!_ctrlKeyActive) {
-        _docCanvas->removeSelection();
-    }
 }
 
 
@@ -236,6 +239,14 @@ double LCADViewer::x() {
 }
 double LCADViewer::y() {
 	return posY;
+}
+
+void LCADViewer::setOperationActive(bool operationActive) {
+    _operationActive = operationActive;
+
+    if(operationActive == false) {
+        documentCanvas()->removeSelection();
+    }
 }
 
 void LCADViewer::paintEvent(QPaintEvent *p) {
