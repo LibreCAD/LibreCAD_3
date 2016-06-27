@@ -71,6 +71,8 @@ class LCADViewer : public QWidget {
         double x();
         double y();
 
+        void setOperationActive(bool operationActive);
+
     protected:
         void paintEvent(QPaintEvent*);
         virtual void mousePressEvent(QMouseEvent* event);
@@ -102,6 +104,8 @@ class LCADViewer : public QWidget {
         std::shared_ptr<DocumentCanvas> _docCanvas;
         bool _mouseScrollKeyActive;
         bool _disableSelection;
+
+        bool _operationActive;
 
         std::map<LcPainter*,  QImage*> imagemaps;
 

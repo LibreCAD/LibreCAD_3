@@ -91,4 +91,13 @@ function add_toolbar()
     local dimRadial = create_button("", ":/icons/dim_radial.svg")
     quickAccess:addButton(dimGroup, dimRadial, 2, 0, 1, 1)
     luaInterface:luaConnect(dimRadial, "pressed()", create_dim_radial)
+
+    --
+    -- Modify
+    --
+    local modifyGroup = quickAccess:addGroup("Modify")
+
+    local moveButton = create_button("", ":/icons/modify.svg")
+    quickAccess:addButton(modifyGroup, moveButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(moveButton, "pressed()", move_selected_entities)
 end

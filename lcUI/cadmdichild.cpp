@@ -439,3 +439,7 @@ void CadMdiChild::keyPressEvent(QKeyEvent *event) {
 LCViewer::TempEntities_SPtr CadMdiChild::tempEntities() {
     return _tempEntities;
 }
+
+std::vector<lc::entity::CADEntity_SPtr> CadMdiChild::selection() {
+    return viewer()->documentCanvas()->selection().asVector();
+}
