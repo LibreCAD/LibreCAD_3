@@ -16,5 +16,6 @@
         <file alias="quit.svg">icons/quit.svg</file>
         <file alias="polylines.svg">icons/polylines.svg</file>
         <file alias="modify.svg">icons/modify.svg</file>
+        <file alias="modifyrotate.png">icons/modifyrotate.png</file>
     </qresource>
 </RCC>

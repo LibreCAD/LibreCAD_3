@@ -100,4 +100,8 @@ function add_toolbar()
     local moveButton = create_button("", ":/icons/modify.svg")
     quickAccess:addButton(modifyGroup, moveButton, 0, 0, 1, 1)
     luaInterface:luaConnect(moveButton, "pressed()", move_selected_entities)
+
+    local rotateButton = create_button("", ":/icons/modifyrotate.png")
+    quickAccess:addButton(modifyGroup, rotateButton, 1, 0, 1, 1)
+    luaInterface:luaConnect(rotateButton, "pressed()", rotate_selected_entities)
 end

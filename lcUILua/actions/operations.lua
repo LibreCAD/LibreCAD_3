@@ -12,6 +12,7 @@ require 'actions.splineoperations'
 require 'actions.lwpolylineoperations'
 
 require 'actions.moveoperation'
+require 'actions.rotateoperation'
 
 Operations = {}
 Operations.__index = Operations

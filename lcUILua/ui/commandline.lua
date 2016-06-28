@@ -65,6 +65,7 @@ function add_commandline()
     add_command("SPLINE", create_spline)
 
     add_command("MOVE", move_selected_entities)
+    add_command("ROTATE", rotate_selected_entities)
 
     event.register("point", setLastPoint)
 end
