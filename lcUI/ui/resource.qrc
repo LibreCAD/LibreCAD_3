@@ -18,5 +18,7 @@
         <file alias="modify.svg">icons/modify.svg</file>
         <file alias="modifyrotate.png">icons/modifyrotate.png</file>
         <file alias="move_copy.svg">icons/move_copy.svg</file>
+        <file alias="scale.png">icons/scale.png</file>
+        <file alias="delete.svg">icons/delete.svg</file>
     </qresource>
 </RCC>

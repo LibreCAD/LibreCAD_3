@@ -124,3 +124,13 @@ function copy_selected_entities()
     new_operation()
     op[active_widget().id] = CopyOperation(active_widget().id)
 end
+
+function scale_selected_entities()
+    new_operation()
+    op[active_widget().id] = ScaleOperation(active_widget().id)
+end
+
+function remove_selected_entities()
+    new_operation()
+    op[active_widget().id] = RemoveOperation(active_widget().id)
+end
