@@ -17,5 +17,6 @@
         <file alias="polylines.svg">icons/polylines.svg</file>
         <file alias="modify.svg">icons/modify.svg</file>
         <file alias="modifyrotate.png">icons/modifyrotate.png</file>
+        <file alias="move_copy.svg">icons/move_copy.svg</file>
     </qresource>
 </RCC>

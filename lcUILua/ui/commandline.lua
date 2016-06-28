@@ -66,6 +66,7 @@ function add_commandline()
 
     add_command("MOVE", move_selected_entities)
     add_command("ROTATE", rotate_selected_entities)
+    add_command("COPY", copy_selected_entities)
 
     event.register("point", setLastPoint)
 end

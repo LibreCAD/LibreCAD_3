@@ -119,3 +119,8 @@ function rotate_selected_entities()
     new_operation()
     op[active_widget().id] = RotateOperation(active_widget().id)
 end
+
+function copy_selected_entities()
+    new_operation()
+    op[active_widget().id] = CopyOperation(active_widget().id)
+end
