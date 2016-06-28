@@ -4,6 +4,8 @@ local function remove_operation_group()
     if(group ~= nil) then
         tab:removeGroup(group)
     end
+
+    active_widget():viewer():setOperationActive(false)
 end
 
 local function finish_operation()
@@ -19,6 +21,13 @@ local function create_cancel_button()
     local cancelButton = create_button("", ":/icons/quit.svg")
     tab:addButton(operationGroup, cancelButton, 0, 0, 1, 1)
     luaInterface:luaConnect(cancelButton, "pressed()", finish_operation)
+end
+
+local function new_operation()
+    finish_operation()
+    create_cancel_button()
+
+    active_widget():viewer():setOperationActive(true)
 end
 
 event.register("operationFinished", remove_operation_group)
@@ -99,4 +108,29 @@ function create_lw_polyline()
     end)
 
     op[active_widget().id] = LWPolylineOperations(active_widget().id)
+end
+
+function move_selected_entities()
+    new_operation()
+    op[active_widget().id] = MoveOperation(active_widget().id)
+end
+
+function rotate_selected_entities()
+    new_operation()
+    op[active_widget().id] = RotateOperation(active_widget().id)
+end
+
+function copy_selected_entities()
+    new_operation()
+    op[active_widget().id] = CopyOperation(active_widget().id)
+end
+
+function scale_selected_entities()
+    new_operation()
+    op[active_widget().id] = ScaleOperation(active_widget().id)
+end
+
+function remove_selected_entities()
+    new_operation()
+    op[active_widget().id] = RemoveOperation(active_widget().id)
 end

@@ -174,6 +174,9 @@ void lua_openlckernel(lua_State* L) {
 			.addFunction("setId", &ID::setID)
    .endClass()
     .beginExtendClass<entity::CADEntity, ID>("CADEntity")
+		.addFunction("move", &entity::CADEntity::move)
+		.addFunction("rotate", &entity::CADEntity::rotate)
+		.addFunction("copy", &entity::CADEntity::copy)
 	.endClass()
 	.beginExtendClass<entity::Line, entity::CADEntity>("Line")
 		.addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(

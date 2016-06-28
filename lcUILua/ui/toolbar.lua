@@ -91,4 +91,29 @@ function add_toolbar()
     local dimRadial = create_button("", ":/icons/dim_radial.svg")
     quickAccess:addButton(dimGroup, dimRadial, 2, 0, 1, 1)
     luaInterface:luaConnect(dimRadial, "pressed()", create_dim_radial)
+
+    --
+    -- Modify
+    --
+    local modifyGroup = quickAccess:addGroup("Modify")
+
+    local moveButton = create_button("", ":/icons/modifymove.png")
+    quickAccess:addButton(modifyGroup, moveButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(moveButton, "pressed()", move_selected_entities)
+
+    local rotateButton = create_button("", ":/icons/modifyrotate.png")
+    quickAccess:addButton(modifyGroup, rotateButton, 1, 0, 1, 1)
+    luaInterface:luaConnect(rotateButton, "pressed()", rotate_selected_entities)
+
+    local copyButton = create_button("", ":/icons/move_copy.svg")
+    quickAccess:addButton(modifyGroup, copyButton, 0, 1, 1, 1)
+    luaInterface:luaConnect(copyButton, "pressed()", copy_selected_entities)
+
+    local scaleButton = create_button("", ":/icons/scale.png")
+    quickAccess:addButton(modifyGroup, scaleButton, 1, 1, 1, 1)
+    luaInterface:luaConnect(scaleButton, "pressed()", scale_selected_entities)
+
+    local removeButton = create_button("", ":/icons/delete.svg")
+    quickAccess:addButton(modifyGroup, removeButton, 2, 0, 1, 1)
+    luaInterface:luaConnect(removeButton, "pressed()", remove_selected_entities)
 end

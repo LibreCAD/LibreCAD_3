@@ -11,6 +11,12 @@ require 'actions.dimradialoperations'
 require 'actions.splineoperations'
 require 'actions.lwpolylineoperations'
 
+require 'actions.moveoperation'
+require 'actions.rotateoperation'
+require 'actions.copyoperation'
+require 'actions.scaleoperation'
+require 'actions.removeoperation'
+
 Operations = {}
 Operations.__index = Operations
 

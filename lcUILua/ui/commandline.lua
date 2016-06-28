@@ -64,5 +64,11 @@ function add_commandline()
     add_command("DIMRADIAL", create_dim_radial)
     add_command("SPLINE", create_spline)
 
+    add_command("MOVE", move_selected_entities)
+    add_command("ROTATE", rotate_selected_entities)
+    add_command("COPY", copy_selected_entities)
+    add_command("SCALE", scale_selected_entities)
+    add_command("REMOVE", remove_selected_entities)
+
     event.register("point", setLastPoint)
 end
