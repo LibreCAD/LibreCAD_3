@@ -470,7 +470,7 @@ namespace lc {
         public:
             QuadTree(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) : QuadTreeSub<E>(level, pBounds, maxLevels, maxObjects) {}
             QuadTree(const geo::Area& bounds) : QuadTreeSub<E>(bounds) {}
-            QuadTree(const QuadTree& other) : QuadTreeSub<E>(other) {}
+            QuadTree(const QuadTree& other) : QuadTreeSub<E>(other), _cadentities(other._cadentities) {}
             QuadTree() : QuadTreeSub<E>(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {}
 
             /**
