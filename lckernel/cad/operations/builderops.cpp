@@ -180,17 +180,24 @@ SelectByLayer::SelectByLayer(const Layer_CSPtr layer) : Base(), _layer(layer) {
 
 std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
     const std::shared_ptr<Document> document,
-    const std::vector<entity::CADEntity_CSPtr> entitySet,
-    std::vector<entity::CADEntity_CSPtr>&,
+    const std::vector<entity::CADEntity_CSPtr>,
+    std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>&,
     const std::vector<Base_SPtr>) {
 
-    //auto c = storageManager->entitiesByLayer(_layer);
-    //return c.asVector();
-
     std::vector<entity::CADEntity_CSPtr> e;
-    return e;
 
+    for(auto it = workingBuffer.begin(); it != workingBuffer.end();) {
+        if((*it)->layer() == _layer) {
+            e.push_back(*it);
+            it = workingBuffer.erase(it);
+        }
+        else {
+            it++;
+        }
+    }
+
+    return e;
 }
 
 /********************************************************************************************************/
