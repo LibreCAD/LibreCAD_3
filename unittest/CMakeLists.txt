@@ -27,6 +27,7 @@ set(src
 main.cpp
 entitytest.cpp
 code.cpp
+lckernel/operations/buildertest.cpp
 )
 set(hdrs
 entitytest.h
