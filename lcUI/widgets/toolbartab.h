@@ -26,6 +26,7 @@ class ToolbarTab : public QWidget {
 		QPushButton* buttonByText(QGroupBox* groupBox, const char* buttonText);
 
 		void removeGroup(QGroupBox* group);
+		void removeButton(QPushButton* button);
 
 	private:
 		Ui::ToolbarTab* ui;

@@ -69,7 +69,7 @@ QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonTex
 	auto nbButtons = groupBox->layout()->count();
 
 	for (int i = 0; i < nbButtons; i++) {
-		auto button = dynamic_cast<QPushButton*>(groupBox->layout()->itemAt(i));
+		auto button = dynamic_cast<QPushButton*>(groupBox->layout()->itemAt(i)->widget());
 
 		if(button && button->text() == buttonText) {
 			return button;
@@ -85,4 +85,10 @@ void ToolbarTab::removeGroup(QGroupBox *group) {
 	}
 
 	delete group;
+}
+
+void ToolbarTab::removeButton(QPushButton *button) {
+	if(button != nullptr) {
+		delete button;
+	}
 }

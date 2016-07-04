@@ -47,6 +47,10 @@ if(WITH_QTUI)
             ${hdrs}
             ui/testcommandline.h
             ui/clicommandtest.h)
+
+    set(src
+            ${src}
+            ui/testtoolbar.cpp)
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
 endif(WITH_QTUI)
 

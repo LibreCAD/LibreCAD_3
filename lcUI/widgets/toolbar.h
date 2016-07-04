@@ -12,7 +12,7 @@ class Toolbar : public QDockWidget {
 		Toolbar(QWidget *parent = 0);
 		~Toolbar();
 
-		void addTab(const char* name, QWidget* page);
+		void addTab(const char* name, ToolbarTab* page);
 		void removeTab(QWidget* page);
 
 		ToolbarTab* tabByName(const char* name);

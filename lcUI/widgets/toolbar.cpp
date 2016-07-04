@@ -14,7 +14,7 @@ Toolbar::~Toolbar() {
 	delete ui;
 }
 
-void Toolbar::addTab(const char* name, QWidget* page) {
+void Toolbar::addTab(const char* name, ToolbarTab* page) {
 	ui->tabWidget->addTab(page, tr(name));
 }
 
