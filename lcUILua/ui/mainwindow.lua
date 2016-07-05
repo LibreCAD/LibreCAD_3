@@ -74,9 +74,11 @@ function create_main_window()
 
     add_commandline()
 
-    add_toolbar()
+    if(hideUI ~= true) then
+        add_toolbar()
 
-    mainWindow:showMaximized()
+        mainWindow:showMaximized()
+    end
 
     new_file()
 end
