@@ -1,8 +1,8 @@
 #include "luainterface.h"
 
 LuaInterface::LuaInterface() {
-	_L = luaL_newstate();
-	
+	_L = LuaIntf::LuaState::newState();
+
 	luaL_openlibs(_L);
 	luaOpenQtBridge(_L);
 	lua_openlckernel(_L);
@@ -12,21 +12,14 @@ LuaInterface::LuaInterface() {
 
 LuaInterface::~LuaInterface() {
 	_luaQObjects.clear();
-	
-	lua_close(_L);
+
+	_L.close();
 }
 
 void LuaInterface::initLua() {
 	std::string out;
 	QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-	int s = luaL_dofile(_L, luaFile.toStdString().c_str());
-
-	if (s != 0) {
-        out.append(lua_tostring(_L, -1));
-        lua_pop(_L, 1);
-    }
-    
-    std::cout << out << std::endl;
+	_L.doFile(luaFile.toStdString().c_str());
 }
 
 bool LuaInterface::luaConnect(
@@ -88,3 +81,10 @@ bool LuaInterface::qtConnect(QObject *sender, std::string signalName, QObject *r
 	return QMetaObject::connect(sender, signalId, receiver, slotId);
 }
 
+void LuaInterface::hideUI(bool hidden) {
+	LuaIntf::Lua::setGlobal(_L, "hideUI", hidden);
+}
+
+LuaIntf::LuaState LuaInterface::luaState() {
+	return _L;
+}

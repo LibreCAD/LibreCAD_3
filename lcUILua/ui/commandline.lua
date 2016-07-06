@@ -17,21 +17,21 @@ function cli_get_text(getText)
     cliCommand:returnText(getText)
 end
 
-local function command(command)
+function command(command)
     commands[command:toStdString()]()
 end
 
-local function coordinate(coordinate)
+function coordinate(coordinate)
     event.trigger("point", coordinate)
 end
 
-local function relativeCoordinate(relative)
+function relativeCoordinate(relative)
     local absolute = lastPoint:add(relative)
     message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
     event.trigger("point", absolute)
 end
 
-local function number(number)
+function number(number)
     event.trigger("number", number)
 end
 
@@ -39,7 +39,7 @@ local function setLastPoint(point)
     lastPoint = point
 end
 
-local function text(text)
+function text(text)
     event.trigger("text", text:toStdString())
 end
 

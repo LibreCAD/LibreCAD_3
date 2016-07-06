@@ -47,10 +47,19 @@ if(WITH_QTUI)
             ${hdrs}
             ui/testcommandline.h
             ui/clicommandtest.h)
+
+    set(src
+            ${src}
+            ui/testtoolbar.cpp
+            ui/testluaui.cpp
+            ui/testluaoperations.cpp)
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
+    include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 endif(WITH_QTUI)
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
+include_directories("${CMAKE_SOURCE_DIR}/lcDXFDWG")
 add_executable(lcunittest ${src} ${hdrs})
 target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})

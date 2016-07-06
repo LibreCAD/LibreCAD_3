@@ -112,7 +112,9 @@ end
 
 function LWPolylineOperations:close()
     if(not self.finished) then
-        active_widget():tempEntities():removeEntity(self.lwPolyline)
+        if(self.lwPolyline ~= nil) then
+            active_widget():tempEntities():removeEntity(self.lwPolyline)
+        end
         self.finished = true
 
         self:createLWPolyline()

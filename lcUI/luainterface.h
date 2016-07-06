@@ -45,7 +45,11 @@ class LuaInterface {
 
 		static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
 
-	private:		
-		lua_State* _L;
+		void hideUI(bool hidden);
+
+		LuaIntf::LuaState luaState();
+
+	private:
+		LuaIntf::LuaState _L;
 		std::vector<LuaQObject_SPtr> _luaQObjects;
 };
