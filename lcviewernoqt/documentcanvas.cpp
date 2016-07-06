@@ -88,6 +88,7 @@ DocumentCanvas::~DocumentCanvas() {
 
     if (_selectedArea != nullptr) {
         delete _selectedArea;
+        _selectedArea = nullptr;
     }
 }
 
@@ -99,6 +100,7 @@ void DocumentCanvas::removePainters()  {
 
     if (_selectedArea != nullptr) {
         delete _selectedArea;
+        _selectedArea = nullptr;
     }
 }
 
@@ -448,6 +450,7 @@ lc::geo::Area DocumentCanvas::bounds() const {
 void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool occupies, bool addTo) {
     if (_selectedArea != nullptr) {
         delete _selectedArea;
+        _selectedArea = nullptr;
     }
 
     _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), lc::geo::Coordinate(x + w, y + h));
