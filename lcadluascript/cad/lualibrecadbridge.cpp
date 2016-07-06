@@ -177,13 +177,25 @@ void lua_openlckernel(lua_State* L) {
 		.addFunction("move", &entity::CADEntity::move)
 		.addFunction("rotate", &entity::CADEntity::rotate)
 		.addFunction("copy", &entity::CADEntity::copy)
+
+		.addFunction("layer", &entity::CADEntity::layer)
+
+		.addProperty("entityType", [](entity::CADEntity*) {
+			return "unknown";
+		})
 	.endClass()
 	.beginExtendClass<entity::Line, entity::CADEntity>("Line")
 		.addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
 				   const geo::Coordinate & start,
 				   const geo::Coordinate & end,
 				   const Layer_CSPtr))
+		.addProperty("entityType", [](entity::Line*) {
+			return "line";
+		})
+		.addFunction("nearestPointOnEntity", &geo::Vector::nearestPointOnEntity)
 		.addFunction("nearestPointOnPath", &geo::Vector::nearestPointOnPath)
+		.addFunction("start", &geo::Vector::start)
+		.addFunction("finish", &geo::Vector::end) //"end" will make Lua crash
 	.endClass()
 	.beginExtendClass<entity::Circle, entity::CADEntity>("Circle")
 		.addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
@@ -312,6 +324,12 @@ void lua_openlckernel(lua_State* L) {
 		.addFunction("begin", &lc::operation::Builder::begin)
 		.addFunction("selectByLayer", &lc::operation::Builder::selectByLayer)
 		.addFunction("remove", &lc::operation::Builder::remove)
+		.addFunction("processStack", &lc::operation::Builder::processStack)
+	.endClass()
+
+	.beginClass<lc::IntersectMany>("IntersectMany")
+		.addConstructor(LUA_ARGS(std::vector<lc::entity::CADEntity_CSPtr>, _opt<lc::Intersect::Method>, _opt<double>))
+		.addFunction("result", &lc::IntersectMany::result)
 	.endClass()
 
 	.beginClass<operation::Base>("Base")

@@ -140,3 +140,8 @@ function remove_selected_entities()
     new_operation()
     op[active_widget().id] = RemoveOperation(active_widget().id)
 end
+
+function trim_entity()
+    new_operation()
+    op[active_widget().id] = TrimOperation(active_widget().id)
+end

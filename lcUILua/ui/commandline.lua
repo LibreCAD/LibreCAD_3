@@ -69,6 +69,7 @@ function add_commandline()
     add_command("COPY", copy_selected_entities)
     add_command("SCALE", scale_selected_entities)
     add_command("REMOVE", remove_selected_entities)
+    add_command("TRIM", trim_entity)
 
     event.register("point", setLastPoint)
 end

@@ -180,11 +180,15 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
 
+    startSelectPos = event->pos();
+
+    if (!_ctrlKeyActive) {
+        _docCanvas->removeSelection();
+    }
+
     if(!_operationActive) {
         _dragManager->onMousePress();
         _disableSelection = _dragManager->entityDragged();
-
-        startSelectPos = event->pos();
 
         posX = event->x();
         posY = event->y();
@@ -194,10 +198,6 @@ void LCADViewer::mousePressEvent(QMouseEvent *event) {
                 _mouseScrollKeyActive = true;
             }
                 break;
-        }
-
-        if (!_ctrlKeyActive) {
-            _docCanvas->removeSelection();
         }
     }
 
@@ -227,6 +227,9 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
     }
 
     _docCanvas->removeSelectionArea();
+
+    emit mouseReleaseEvent();
+
     update();
 }
 

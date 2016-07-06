@@ -12,6 +12,10 @@ local function mouseMove()
     event.trigger('mouseMove', position)
 end
 
+local function mouseRelease()
+    event.trigger('selectionChanged')
+end
+
 function new_document()
     cadMdiChild = lc.CadMdiChild()
     cadMdiChild:newDocument()
@@ -19,6 +23,7 @@ function new_document()
     cadMdiChild:setDestroyCallback(onMdiChildDestroyed)
 
     luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
+    luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", mouseRelease)
     luaInterface:luaConnect(cadMdiChild:view(), "mouseMoveEvent()", mouseMove)
     luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 
@@ -31,6 +36,7 @@ function load_document(fileName)
     cadMdiChild:viewer():autoScale()
 
     luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
+    luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", mouseRelease)
     luaInterface:luaConnect(cadMdiChild:view(), "mouseMoveEvent()", mouseMove)
     luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 

@@ -16,6 +16,7 @@ require 'actions.rotateoperation'
 require 'actions.copyoperation'
 require 'actions.scaleoperation'
 require 'actions.removeoperation'
+require 'actions.trimoperation'
 
 Operations = {}
 Operations.__index = Operations
