@@ -51,7 +51,8 @@ if(WITH_QTUI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            ui/testluaui.cpp)
+            ui/testluaui.cpp
+            ui/testluaoperations.cpp)
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 endif(WITH_QTUI)
