@@ -202,6 +202,13 @@ void lua_openlckernel(lua_State* L) {
 				   const geo::Coordinate & center,
 				   double radius,
 				   const Layer_CSPtr))
+        .addProperty("entityType", [](entity::Circle*) {
+            return "circle";
+        })
+        .addFunction("nearestPointOnEntity", &geo::Circle::nearestPointOnEntity)
+        .addFunction("nearestPointOnPath", &geo::Circle::nearestPointOnPath)
+        .addFunction("center", &entity::Circle::center)
+        .addFunction("radius", &entity::Circle::radius)
 	.endClass()
 	.beginExtendClass<entity::Arc, entity::CADEntity>("Arc")
 		.addConstructor(LUA_SP(entity::Arc_SPtr), LUA_ARGS(
