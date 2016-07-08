@@ -77,20 +77,6 @@ function TrimOperation:getIntersectionPoints()
 end
 
 function TrimOperation:trim()
-    local newEntity
-    if(self.toTrim.entityType == "line") then
-        local point = self.toTrim:nearestPointOnEntity(self.toRemovePoint)
-
-        local startToPoint = point:distanceTo(self.toTrim:start())
-        local startToIntersect = point:distanceTo(self.intersectionPoints[1])
-
-        if(startToPoint >= startToIntersect) then
-            newEntity = Line(self.toTrim:start(), self.intersectionPoints[1], self.toTrim:layer())
-        else
-            newEntity = Line(self.intersectionPoints[1], self.toTrim:finish(), self.toTrim:layer())
-        end
-    end
-
     local b = Builder(active_widget():document())
     b:append(self.toTrim)
 
@@ -98,7 +84,41 @@ function TrimOperation:trim()
     b:remove()
     b:processStack()
 
-    b:append(newEntity)
+    if(self.toTrim.entityType == "line") then
+        local point = self.toTrim:nearestPointOnEntity(self.toRemovePoint)
+        local start = self.toTrim:start()
+        local finish = self.toTrim:finish()
+
+        local startToPoint = point:distanceTo(start)
+
+        local previousIntersect = start
+        local previousIntersectDistance = 0
+
+        local nextIntersect = finish
+        local nextIntersectDistance = start:distanceTo(finish)
+
+        for k, v in pairs(self.intersectionPoints) do
+            local startToIntersect = start:distanceTo(v)
+
+            if(startToIntersect < startToPoint and startToIntersect > previousIntersectDistance) then
+                previousIntersect = v
+                previousIntersectDistance = startToIntersect
+            elseif(startToIntersect > startToPoint and startToIntersect < nextIntersectDistance) then
+                nextIntersect = v
+                nextIntersectDistance = startToIntersect
+            end
+        end
+
+        if(previousIntersect == start) then
+            b:append(Line(nextIntersect, finish, self.toTrim:layer()))
+        elseif(nextIntersect == finish) then
+            b:append(Line(start, previousIntersect, self.toTrim:layer()))
+        else
+            b:append(Line(start, previousIntersect, self.toTrim:layer()))
+            b:append(Line(nextIntersect, finish, self.toTrim:layer()))
+        end
+    end
+
     b:execute()
 
     self:close()
