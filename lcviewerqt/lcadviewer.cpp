@@ -18,7 +18,7 @@
 using namespace LCViewer;
 
 LCADViewer::LCADViewer(QWidget *parent) :
-    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _disableSelection(false), _operationActive(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false) {
+    QWidget(parent), _docCanvas(nullptr), _mouseScrollKeyActive(false), _operationActive(false), _scale(1.0), _zoomMin(0.05), _zoomMax(20.0), _scaleLineWidth(false) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -163,7 +163,7 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
             this->_docCanvas->pan(event->pos().x(), event->pos().y());
         }
     } else {
-        if (!startSelectPos.isNull() && !_disableSelection) {
+        if (!startSelectPos.isNull()) {
             bool occopies = startSelectPos.x() < event->pos().x();
             _docCanvas->makeSelectionDevice(
                 std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
@@ -180,28 +180,27 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 void LCADViewer::mousePressEvent(QMouseEvent *event) {
     QWidget::mousePressEvent(event);
 
+    startSelectPos = event->pos();
+
     if(!_operationActive) {
         _dragManager->onMousePress();
-        _disableSelection = _dragManager->entityDragged();
-
-        startSelectPos = event->pos();
-
-        posX = event->x();
-        posY = event->y();
-
-        switch (event->buttons()) {
-            case Qt::MiddleButton: {
-                _mouseScrollKeyActive = true;
-            }
-                break;
-        }
-
-        if (!_ctrlKeyActive) {
-            _docCanvas->removeSelection();
-        }
     }
 
-    _docCanvas->device_to_user(&posX, &posY);
+    if (!_ctrlKeyActive) {
+        _docCanvas->removeSelection();
+    }
+
+    if(_dragManager->entityDragged()) {
+        startSelectPos = QPoint();
+    }
+
+    switch (event->buttons()) {
+        case Qt::MiddleButton: {
+            _mouseScrollKeyActive = true;
+        }
+            break;
+    }
+
     emit mousePressEvent();
 }
 
@@ -227,18 +226,14 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
     }
 
     _docCanvas->removeSelectionArea();
+
+    emit mouseReleaseEvent();
+
     update();
 }
 
 std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
     return _docCanvas;
-}
-
-double LCADViewer::x() {
-	return posX;
-}
-double LCADViewer::y() {
-	return posY;
 }
 
 void LCADViewer::setOperationActive(bool operationActive) {

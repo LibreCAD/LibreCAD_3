@@ -21,5 +21,6 @@
         <file alias="scale.png">icons/scale.png</file>
         <file alias="delete.svg">icons/delete.svg</file>
         <file alias="modifymove.png">icons/modifymove.png</file>
+        <file alias="modifytrim.png">icons/modifytrim.png</file>
     </qresource>
 </RCC>

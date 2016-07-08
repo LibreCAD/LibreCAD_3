@@ -607,8 +607,8 @@ std::vector<geo::Coordinate> IntersectMany::result() const {
     Intersect intersect(_method, _tolerance);
     if (_entities.size() > 1) {
         for (size_t outer = 0; outer < (_entities.size() - 1); outer++) {
-            for (size_t inner = ++outer; inner < _entities.size(); inner++) {
-                // visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *_entities.at(outer).get(), *_entities.at(inner).get());
+            for (size_t inner = outer + 1; inner < _entities.size(); inner++) {
+                visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *_entities.at(outer).get(), *_entities.at(inner).get());
             }
         }
     }

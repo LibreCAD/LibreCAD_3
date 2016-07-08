@@ -116,4 +116,8 @@ function add_toolbar()
     local removeButton = create_button("", ":/icons/delete.svg")
     quickAccess:addButton(modifyGroup, removeButton, 2, 0, 1, 1)
     luaInterface:luaConnect(removeButton, "pressed()", remove_selected_entities)
+
+    local removeButton = create_button("", ":/icons/modifytrim.png")
+    quickAccess:addButton(modifyGroup, removeButton, 2, 1, 1, 1)
+    luaInterface:luaConnect(removeButton, "pressed()", trim_entity)
 end

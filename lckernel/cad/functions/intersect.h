@@ -184,7 +184,7 @@ namespace lc {
       */
     class IntersectMany {
     public:
-        IntersectMany(std::vector<entity::CADEntity_CSPtr>, Intersect::Method, double tolerance);
+        IntersectMany(std::vector<entity::CADEntity_CSPtr>, Intersect::Method = Intersect::OnEntity, double tolerance = LCTOLERANCE);
 
         std::vector<geo::Coordinate> result() const;
 
