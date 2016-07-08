@@ -145,6 +145,7 @@ void DragManager::onMouseRelease() {
 		for(auto entity : entities) {
 			_builder->append(entity);
 			_selectedEntities.remove(entity);
+            _tempEntities->removeEntity(entity);
 		}
 		_builder->execute();
 
