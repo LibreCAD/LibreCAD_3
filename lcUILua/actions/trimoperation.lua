@@ -117,6 +117,48 @@ function TrimOperation:trim()
             b:append(Line(start, previousIntersect, self.toTrim:layer()))
             b:append(Line(nextIntersect, finish, self.toTrim:layer()))
         end
+    elseif(self.toTrim.entityType == "circle") then
+        if(#self.intersectionPoints < 2) then
+            message("Circle need at least two intersection points")
+
+            self:close()
+            return
+        end
+
+        local center = self.toTrim:center()
+        local selectedPoint = self.toTrim:nearestPointOnEntity(self.toRemovePoint)
+        local selectedAngle = center:angleTo(selectedPoint)
+
+        local intersectAngles = {}
+        local previousAngle
+        local nextAngle
+
+        for k, v in pairs(self.intersectionPoints) do
+            table.insert(intersectAngles, center:angleTo(v))
+        end
+        table.sort(intersectAngles)
+
+        for i, v in ipairs(intersectAngles) do
+            if(selectedAngle < v) then
+                if(i > 1) then
+                    previousAngle = intersectAngles[i - 1]
+                    nextAngle = v
+                    break
+                else
+                    previousAngle = v
+                    nextAngle = intersectAngles[#intersectAngles]
+                    break
+                end
+            elseif(i == #intersectAngles) then
+                previousAngle = v
+                nextAngle = intersectAngles[1]
+                break
+            end
+        end
+
+        b:append(Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
+    else
+        message("Unsupported entity")
     end
 
     b:execute()
