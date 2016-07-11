@@ -157,6 +157,57 @@ function TrimOperation:trim()
         end
 
         b:append(Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
+
+    elseif(self.toTrim.entityType == "arc") then
+        local center = self.toTrim:center()
+        local startAngle
+        local endAngle
+
+        if(self.toTrim:CCW()) then
+            startAngle = self.toTrim:startAngle()
+            endAngle = self.toTrim:endAngle()
+        else
+            startAngle = self.toTrim:endAngle()
+            endAngle = self.toTrim:startAngle()
+        end
+
+        local selectedAngle = center:angleTo(self.toRemovePoint)
+        local intersectAngles = {startAngle, endAngle}
+        local previousAngle
+        local nextAngle
+
+        for k, v in pairs(self.intersectionPoints) do
+            table.insert(intersectAngles, center:angleTo(v))
+        end
+        table.sort(intersectAngles)
+
+        for i, v in ipairs(intersectAngles) do
+            if(selectedAngle < v) then
+                if(i > 1) then
+                    message("first")
+                    previousAngle = intersectAngles[i - 1]
+                    nextAngle = v
+                    break
+                else
+                    message("second")
+                    previousAngle = v
+                    nextAngle = intersectAngles[#intersectAngles]
+                    break
+                end
+            elseif(i == #intersectAngles) then
+                message("third")
+                previousAngle = v
+                nextAngle = intersectAngles[1]
+                break
+            end
+        end
+
+        if(nextIntersectAngle ~= endAngle) then
+            b:append(Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
+        end
+        if(previousIntersectAngle ~= startAngle) then
+            b:append(Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
+        end
     else
         message("Unsupported entity")
     end

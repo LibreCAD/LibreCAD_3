@@ -218,6 +218,20 @@ void lua_openlckernel(lua_State* L) {
 				   const double endAngle,
 				   bool CCW,
 				   const Layer_CSPtr layer))
+
+            .addFunction("nearestPointOnEntity", &geo::Arc::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &geo::Arc::nearestPointOnPath)
+
+            .addFunction("angle", &geo::Arc::angle)
+            .addFunction("startAngle", &geo::Arc::startAngle)
+            .addFunction("endAngle", &geo::Arc::endAngle)
+            .addFunction("center", &entity::Arc::center)
+            .addFunction("radius", &entity::Arc::radius)
+            .addFunction("CCW", &geo::Arc::CCW)
+
+		.addProperty("entityType", [](entity::CADEntity*) {
+			return "arc";
+		})
 	.endClass()
 	.beginExtendClass<entity::Ellipse, entity::CADEntity>("Ellipse")
 		.addConstructor(LUA_SP(entity::Ellipse_SPtr), LUA_ARGS(
