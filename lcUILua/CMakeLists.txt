@@ -5,6 +5,7 @@ file(
 	"${PROJECT_BINARY_DIR}/lcUI/path.lua"
 	"package.path = package.path .. ';${CMAKE_CURRENT_LIST_DIR}/?.lua' \n"
 	"ui_path='${PROJECT_SOURCE_DIR}/lcUI/ui' \n"
+	"plugin_path='${PROJECT_SOURCE_DIR}/lcUILua/plugins' \n"
 	"require 'ui.init'"
 )
 
@@ -14,6 +15,7 @@ if(WITH_UNITTESTS)
 		"${PROJECT_BINARY_DIR}/unittest/path.lua"
 		"package.path = package.path .. ';${CMAKE_CURRENT_LIST_DIR}/?.lua' \n"
 		"ui_path='${PROJECT_SOURCE_DIR}/lcUI/ui' \n"
+        "plugin_path='${PROJECT_SOURCE_DIR}/lcUILua/plugins' \n"
 		"require 'ui.init'"
 	)
 endif()

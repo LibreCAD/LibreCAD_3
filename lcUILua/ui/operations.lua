@@ -27,7 +27,7 @@ local function create_cancel_button()
     end
 end
 
-local function new_operation()
+function new_operation()
     finish_operation()
     create_cancel_button()
 

@@ -199,6 +199,7 @@ void addLCBindings(lua_State *L) {
 		.beginClass<LuaInterface>("LuaInterface")
 			.addFunction("luaConnect", &LuaInterface::luaConnect)
 			.addFunction("connect", &LuaInterface::qtConnect)
+			.addFunction("pluginList", &LuaInterface::pluginList)
 		.endClass()
 		
 		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
