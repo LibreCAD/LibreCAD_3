@@ -1,13 +1,6 @@
 #include "luainterface.h"
 
 LuaInterface::LuaInterface() {
-	_L = LuaIntf::LuaState::newState();
-
-	luaL_openlibs(_L);
-	luaOpenQtBridge(_L);
-	lua_openlckernel(_L);
-
-	LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
 }
 
 LuaInterface::~LuaInterface() {
@@ -17,9 +10,21 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua() {
-	std::string out;
-	QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-	_L.doFile(luaFile.toStdString().c_str());
+    _L = LuaIntf::LuaState::newState();
+
+    luaL_openlibs(_L);
+    luaOpenQtBridge(_L);
+    lua_openlckernel(_L);
+
+    LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
+
+    QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
+    int s = _L.doFile(luaFile.toStdString().c_str());
+
+    if (s != 0) {
+        std::cout << lua_tostring(_L, -1) << std::endl;
+        lua_pop(_L, 1);
+    }
 }
 
 bool LuaInterface::luaConnect(
@@ -87,4 +92,16 @@ void LuaInterface::hideUI(bool hidden) {
 
 LuaIntf::LuaState LuaInterface::luaState() {
 	return _L;
+}
+
+std::vector<std::string> LuaInterface::pluginList(const char* path) {
+    std::vector<std::string> plugins;
+    QDir dir(path);
+
+    auto list = dir.entryList(QDir::Filter::Dirs | QDir::Filter::NoDotAndDotDot);
+    for(auto dir : list) {
+        plugins.push_back(dir.toStdString());
+    }
+
+    return plugins;
 }

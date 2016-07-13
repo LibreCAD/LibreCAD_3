@@ -192,8 +192,8 @@ void lua_openlckernel(lua_State* L) {
 		.addProperty("entityType", [](entity::Line*) {
 			return "line";
 		})
-		.addFunction("nearestPointOnEntity", &geo::Vector::nearestPointOnEntity)
-		.addFunction("nearestPointOnPath", &geo::Vector::nearestPointOnPath)
+		.addFunction("nearestPointOnEntity", &entity::Line::nearestPointOnEntity)
+		.addFunction("nearestPointOnPath", &entity::Line::nearestPointOnPath)
 		.addFunction("start", &geo::Vector::start)
 		.addFunction("finish", &geo::Vector::end) //"end" will make Lua crash
 	.endClass()
