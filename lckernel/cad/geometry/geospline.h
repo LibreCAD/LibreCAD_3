@@ -3,6 +3,7 @@
 #include "geobase.h"
 #include "geocoordinate.h"
 #include <vector>
+#include "opennurbs_20130711/opennurbs.h"
 #include "cad/base/visitor.h"
 
 namespace lc {
@@ -118,7 +119,7 @@ namespace lc {
                 const double _nX;  // normal vector x coordinate
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
-
+                ON_NurbsCurve _splineCurve;
                 const splineflag _flags;
         };
     }

@@ -40,8 +40,10 @@ set(SEPARATE_BUILD OFF)
 
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/../third_party")
 else ()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/third_party")
 endif ()
 
 # DEBUGING PATHS

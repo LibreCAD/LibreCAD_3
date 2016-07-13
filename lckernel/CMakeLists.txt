@@ -4,6 +4,8 @@ ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
+message(${CMAKE_SOURCE_DIR})
+
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
@@ -154,8 +156,10 @@ set(SEPARATE_BUILD OFF)
 
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}")
+    include_directories("${CMAKE_SOURCE_DIR}/../third_party")
 else()
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/third_party")
 endif()
 
 # DEBUGGING PATHS
@@ -165,7 +169,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
-target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} )
+target_link_libraries(lckernel opennurbs ${LOG4CXX_LIBRARIES} )
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

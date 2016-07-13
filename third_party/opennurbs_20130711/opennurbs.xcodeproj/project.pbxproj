@@ -1,0 +1,1146 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1D2D85EE178B36C400D67434 /* opennurbs_quaternion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1D2D85EC178B36C400D67434 /* opennurbs_quaternion.cpp */; };
+		1D2D85EF178B36C400D67434 /* opennurbs_quaternion.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D2D85ED178B36C400D67434 /* opennurbs_quaternion.h */; };
+		1D84E56C161B8B75001C8C5E /* opennurbs_memory_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E56A161B8B75001C8C5E /* opennurbs_memory_util.c */; };
+		1D84E56D161B8B75001C8C5E /* opennurbs_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E56B161B8B75001C8C5E /* opennurbs_memory.c */; };
+		1D84E57B161B8BD4001C8C5E /* adler32.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E570161B8BD4001C8C5E /* adler32.c */; };
+		1D84E57C161B8BD4001C8C5E /* compress.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E571161B8BD4001C8C5E /* compress.c */; };
+		1D84E57D161B8BD4001C8C5E /* crc32.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E572161B8BD4001C8C5E /* crc32.c */; };
+		1D84E57E161B8BD4001C8C5E /* deflate.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E573161B8BD4001C8C5E /* deflate.c */; };
+		1D84E57F161B8BD4001C8C5E /* infback.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E574161B8BD4001C8C5E /* infback.c */; };
+		1D84E580161B8BD4001C8C5E /* inffast.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E575161B8BD4001C8C5E /* inffast.c */; };
+		1D84E581161B8BD4001C8C5E /* inflate.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E576161B8BD4001C8C5E /* inflate.c */; };
+		1D84E582161B8BD4001C8C5E /* inftrees.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E577161B8BD4001C8C5E /* inftrees.c */; };
+		1D84E583161B8BD4001C8C5E /* trees.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E578161B8BD4001C8C5E /* trees.c */; };
+		1D84E584161B8BD4001C8C5E /* uncompr.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E579161B8BD4001C8C5E /* uncompr.c */; };
+		1D84E585161B8BD4001C8C5E /* zutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 1D84E57A161B8BD4001C8C5E /* zutil.c */; };
+		1DB4EDA0161B81F000672B4E /* opennurbs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED3B161B81F000672B4E /* opennurbs.h */; };
+		1DB4EDA1161B81F000672B4E /* opennurbs_archive.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED3C161B81F000672B4E /* opennurbs_archive.h */; };
+		1DB4EDA2161B81F000672B4E /* opennurbs_defines.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED3D161B81F000672B4E /* opennurbs_defines.h */; };
+		1DB4EDA3161B81F000672B4E /* opennurbs_extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED3E161B81F000672B4E /* opennurbs_extensions.h */; };
+		1DB4EDA4161B81F000672B4E /* opennurbs_string.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED3F161B81F000672B4E /* opennurbs_string.h */; };
+		1DB4EDA5161B81F000672B4E /* opennurbs_system.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED40161B81F000672B4E /* opennurbs_system.h */; };
+		1DB4EDA6161B81F000672B4E /* opennurbs_array_defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED41161B81F000672B4E /* opennurbs_array_defs.h */; };
+		1DB4EDA7161B81F000672B4E /* opennurbs_math.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED42161B81F000672B4E /* opennurbs_math.h */; };
+		1DB4EDA8161B81F000672B4E /* opennurbs_unicode.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED43161B81F000672B4E /* opennurbs_unicode.h */; };
+		1DB4EDA9161B81F000672B4E /* opennurbs_3dm_attributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED44161B81F000672B4E /* opennurbs_3dm_attributes.h */; };
+		1DB4EDAA161B81F000672B4E /* opennurbs_3dm_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED45161B81F000672B4E /* opennurbs_3dm_properties.h */; };
+		1DB4EDAB161B81F000672B4E /* opennurbs_3dm_settings.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED46161B81F000672B4E /* opennurbs_3dm_settings.h */; };
+		1DB4EDAC161B81F000672B4E /* opennurbs_3dm.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED47161B81F000672B4E /* opennurbs_3dm.h */; };
+		1DB4EDAD161B81F000672B4E /* opennurbs_annotation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED48161B81F000672B4E /* opennurbs_annotation.h */; };
+		1DB4EDAE161B81F000672B4E /* opennurbs_annotation2.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED49161B81F000672B4E /* opennurbs_annotation2.h */; };
+		1DB4EDAF161B81F000672B4E /* opennurbs_arc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4A161B81F000672B4E /* opennurbs_arc.h */; };
+		1DB4EDB0161B81F000672B4E /* opennurbs_arccurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4B161B81F000672B4E /* opennurbs_arccurve.h */; };
+		1DB4EDB1161B81F000672B4E /* opennurbs_array.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4C161B81F000672B4E /* opennurbs_array.h */; };
+		1DB4EDB2161B81F000672B4E /* opennurbs_base32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4D161B81F000672B4E /* opennurbs_base32.h */; };
+		1DB4EDB3161B81F000672B4E /* opennurbs_base64.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4E161B81F000672B4E /* opennurbs_base64.h */; };
+		1DB4EDB4161B81F000672B4E /* opennurbs_beam.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED4F161B81F000672B4E /* opennurbs_beam.h */; };
+		1DB4EDB5161B81F000672B4E /* opennurbs_bezier.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED50161B81F000672B4E /* opennurbs_bezier.h */; };
+		1DB4EDB6161B81F000672B4E /* opennurbs_bitmap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED51161B81F000672B4E /* opennurbs_bitmap.h */; };
+		1DB4EDB7161B81F000672B4E /* opennurbs_bounding_box.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED52161B81F000672B4E /* opennurbs_bounding_box.h */; };
+		1DB4EDB8161B81F000672B4E /* opennurbs_box.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED53161B81F000672B4E /* opennurbs_box.h */; };
+		1DB4EDB9161B81F000672B4E /* opennurbs_brep.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED54161B81F000672B4E /* opennurbs_brep.h */; };
+		1DB4EDBA161B81F000672B4E /* opennurbs_circle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED55161B81F000672B4E /* opennurbs_circle.h */; };
+		1DB4EDBB161B81F000672B4E /* opennurbs_color.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED56161B81F000672B4E /* opennurbs_color.h */; };
+		1DB4EDBC161B81F000672B4E /* opennurbs_compress.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED57161B81F000672B4E /* opennurbs_compress.h */; };
+		1DB4EDBD161B81F000672B4E /* opennurbs_cone.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED58161B81F000672B4E /* opennurbs_cone.h */; };
+		1DB4EDBE161B81F000672B4E /* opennurbs_crc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED59161B81F000672B4E /* opennurbs_crc.h */; };
+		1DB4EDBF161B81F000672B4E /* opennurbs_curve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5A161B81F000672B4E /* opennurbs_curve.h */; };
+		1DB4EDC0161B81F000672B4E /* opennurbs_curveonsurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5B161B81F000672B4E /* opennurbs_curveonsurface.h */; };
+		1DB4EDC1161B81F000672B4E /* opennurbs_curveproxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5C161B81F000672B4E /* opennurbs_curveproxy.h */; };
+		1DB4EDC2161B81F000672B4E /* opennurbs_cylinder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5D161B81F000672B4E /* opennurbs_cylinder.h */; };
+		1DB4EDC3161B81F000672B4E /* opennurbs_detail.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5E161B81F000672B4E /* opennurbs_detail.h */; };
+		1DB4EDC4161B81F000672B4E /* opennurbs_dimstyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED5F161B81F000672B4E /* opennurbs_dimstyle.h */; };
+		1DB4EDC5161B81F000672B4E /* opennurbs_ellipse.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED60161B81F000672B4E /* opennurbs_ellipse.h */; };
+		1DB4EDC6161B81F000672B4E /* opennurbs_error.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED61161B81F000672B4E /* opennurbs_error.h */; };
+		1DB4EDC7161B81F000672B4E /* opennurbs_evaluate_nurbs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED62161B81F000672B4E /* opennurbs_evaluate_nurbs.h */; };
+		1DB4EDC8161B81F000672B4E /* opennurbs_font.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED63161B81F000672B4E /* opennurbs_font.h */; };
+		1DB4EDC9161B81F000672B4E /* opennurbs_fpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED64161B81F000672B4E /* opennurbs_fpoint.h */; };
+		1DB4EDCA161B81F000672B4E /* opennurbs_fsp_defs.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED65161B81F000672B4E /* opennurbs_fsp_defs.h */; };
+		1DB4EDCB161B81F000672B4E /* opennurbs_fsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED66161B81F000672B4E /* opennurbs_fsp.h */; };
+		1DB4EDCC161B81F000672B4E /* opennurbs_geometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED67161B81F000672B4E /* opennurbs_geometry.h */; };
+		1DB4EDCD161B81F000672B4E /* opennurbs_group.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED68161B81F000672B4E /* opennurbs_group.h */; };
+		1DB4EDCE161B81F000672B4E /* opennurbs_hatch.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED69161B81F000672B4E /* opennurbs_hatch.h */; };
+		1DB4EDCF161B81F000672B4E /* opennurbs_hsort_template.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6A161B81F000672B4E /* opennurbs_hsort_template.h */; };
+		1DB4EDD0161B81F000672B4E /* opennurbs_instance.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6B161B81F000672B4E /* opennurbs_instance.h */; };
+		1DB4EDD1161B81F000672B4E /* opennurbs_intersect.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6C161B81F000672B4E /* opennurbs_intersect.h */; };
+		1DB4EDD2161B81F000672B4E /* opennurbs_knot.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6D161B81F000672B4E /* opennurbs_knot.h */; };
+		1DB4EDD3161B81F000672B4E /* opennurbs_layer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6E161B81F000672B4E /* opennurbs_layer.h */; };
+		1DB4EDD4161B81F000672B4E /* opennurbs_light.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED6F161B81F000672B4E /* opennurbs_light.h */; };
+		1DB4EDD5161B81F000672B4E /* opennurbs_line.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED70161B81F000672B4E /* opennurbs_line.h */; };
+		1DB4EDD6161B81F000672B4E /* opennurbs_linecurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED71161B81F000672B4E /* opennurbs_linecurve.h */; };
+		1DB4EDD7161B81F000672B4E /* opennurbs_linestyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED72161B81F000672B4E /* opennurbs_linestyle.h */; };
+		1DB4EDD8161B81F000672B4E /* opennurbs_linetype.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED73161B81F000672B4E /* opennurbs_linetype.h */; };
+		1DB4EDD9161B81F000672B4E /* opennurbs_lookup.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED74161B81F000672B4E /* opennurbs_lookup.h */; };
+		1DB4EDDA161B81F000672B4E /* opennurbs_mapchan.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED75161B81F000672B4E /* opennurbs_mapchan.h */; };
+		1DB4EDDB161B81F000672B4E /* opennurbs_material.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED76161B81F000672B4E /* opennurbs_material.h */; };
+		1DB4EDDC161B81F000672B4E /* opennurbs_matrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED77161B81F000672B4E /* opennurbs_matrix.h */; };
+		1DB4EDDD161B81F000672B4E /* opennurbs_memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED78161B81F000672B4E /* opennurbs_memory.h */; };
+		1DB4EDDE161B81F000672B4E /* opennurbs_mesh.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED79161B81F000672B4E /* opennurbs_mesh.h */; };
+		1DB4EDDF161B81F000672B4E /* opennurbs_nurbscurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7A161B81F000672B4E /* opennurbs_nurbscurve.h */; };
+		1DB4EDE0161B81F000672B4E /* opennurbs_nurbssurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7B161B81F000672B4E /* opennurbs_nurbssurface.h */; };
+		1DB4EDE1161B81F000672B4E /* opennurbs_object_history.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7C161B81F000672B4E /* opennurbs_object_history.h */; };
+		1DB4EDE2161B81F000672B4E /* opennurbs_object.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7D161B81F000672B4E /* opennurbs_object.h */; };
+		1DB4EDE3161B81F000672B4E /* opennurbs_objref.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7E161B81F000672B4E /* opennurbs_objref.h */; };
+		1DB4EDE4161B81F000672B4E /* opennurbs_offsetsurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED7F161B81F000672B4E /* opennurbs_offsetsurface.h */; };
+		1DB4EDE5161B81F000672B4E /* opennurbs_optimize.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED80161B81F000672B4E /* opennurbs_optimize.h */; };
+		1DB4EDE6161B81F000672B4E /* opennurbs_plane.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED81161B81F000672B4E /* opennurbs_plane.h */; };
+		1DB4EDE7161B81F000672B4E /* opennurbs_planesurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED82161B81F000672B4E /* opennurbs_planesurface.h */; };
+		1DB4EDE8161B81F000672B4E /* opennurbs_pluginlist.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED83161B81F000672B4E /* opennurbs_pluginlist.h */; };
+		1DB4EDE9161B81F000672B4E /* opennurbs_point.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED84161B81F000672B4E /* opennurbs_point.h */; };
+		1DB4EDEA161B81F000672B4E /* opennurbs_pointcloud.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED85161B81F000672B4E /* opennurbs_pointcloud.h */; };
+		1DB4EDEB161B81F000672B4E /* opennurbs_pointgeometry.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED86161B81F000672B4E /* opennurbs_pointgeometry.h */; };
+		1DB4EDEC161B81F000672B4E /* opennurbs_pointgrid.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED87161B81F000672B4E /* opennurbs_pointgrid.h */; };
+		1DB4EDED161B81F000672B4E /* opennurbs_polycurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED88161B81F000672B4E /* opennurbs_polycurve.h */; };
+		1DB4EDEE161B81F000672B4E /* opennurbs_polyedgecurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED89161B81F000672B4E /* opennurbs_polyedgecurve.h */; };
+		1DB4EDEF161B81F000672B4E /* opennurbs_polyline.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8A161B81F000672B4E /* opennurbs_polyline.h */; };
+		1DB4EDF0161B81F000672B4E /* opennurbs_polylinecurve.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8B161B81F000672B4E /* opennurbs_polylinecurve.h */; };
+		1DB4EDF1161B81F000672B4E /* opennurbs_qsort_template.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8C161B81F000672B4E /* opennurbs_qsort_template.h */; };
+		1DB4EDF2161B81F000672B4E /* opennurbs_rand.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8D161B81F000672B4E /* opennurbs_rand.h */; };
+		1DB4EDF3161B81F000672B4E /* opennurbs_rendering.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8E161B81F000672B4E /* opennurbs_rendering.h */; };
+		1DB4EDF4161B81F000672B4E /* opennurbs_revsurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED8F161B81F000672B4E /* opennurbs_revsurface.h */; };
+		1DB4EDF5161B81F000672B4E /* opennurbs_rtree.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED90161B81F000672B4E /* opennurbs_rtree.h */; };
+		1DB4EDF6161B81F000672B4E /* opennurbs_sphere.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED91161B81F000672B4E /* opennurbs_sphere.h */; };
+		1DB4EDF7161B81F000672B4E /* opennurbs_sumsurface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED92161B81F000672B4E /* opennurbs_sumsurface.h */; };
+		1DB4EDF8161B81F000672B4E /* opennurbs_surface.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED93161B81F000672B4E /* opennurbs_surface.h */; };
+		1DB4EDF9161B81F000672B4E /* opennurbs_surfaceproxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED94161B81F000672B4E /* opennurbs_surfaceproxy.h */; };
+		1DB4EDFA161B81F000672B4E /* opennurbs_textlog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED95161B81F000672B4E /* opennurbs_textlog.h */; };
+		1DB4EDFB161B81F000672B4E /* opennurbs_texture_mapping.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED96161B81F000672B4E /* opennurbs_texture_mapping.h */; };
+		1DB4EDFC161B81F000672B4E /* opennurbs_texture.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED97161B81F000672B4E /* opennurbs_texture.h */; };
+		1DB4EDFD161B81F000672B4E /* opennurbs_torus.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED98161B81F000672B4E /* opennurbs_torus.h */; };
+		1DB4EDFE161B81F000672B4E /* opennurbs_userdata.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED99161B81F000672B4E /* opennurbs_userdata.h */; };
+		1DB4EDFF161B81F000672B4E /* opennurbs_uuid.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9A161B81F000672B4E /* opennurbs_uuid.h */; };
+		1DB4EE00161B81F000672B4E /* opennurbs_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9B161B81F000672B4E /* opennurbs_version.h */; };
+		1DB4EE01161B81F000672B4E /* opennurbs_viewport.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9C161B81F000672B4E /* opennurbs_viewport.h */; };
+		1DB4EE02161B81F000672B4E /* opennurbs_workspace.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9D161B81F000672B4E /* opennurbs_workspace.h */; };
+		1DB4EE03161B81F000672B4E /* opennurbs_xform.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9E161B81F000672B4E /* opennurbs_xform.h */; };
+		1DB4EE04161B81F000672B4E /* opennurbs_zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DB4ED9F161B81F000672B4E /* opennurbs_zlib.h */; };
+		1DB4EE6D161B825A00672B4E /* opennurbs_3dm_attributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE05161B825A00672B4E /* opennurbs_3dm_attributes.cpp */; };
+		1DB4EE6E161B825A00672B4E /* opennurbs_3dm_properties.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE06161B825A00672B4E /* opennurbs_3dm_properties.cpp */; };
+		1DB4EE6F161B825A00672B4E /* opennurbs_3dm_settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE07161B825A00672B4E /* opennurbs_3dm_settings.cpp */; };
+		1DB4EE70161B825A00672B4E /* opennurbs_annotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE08161B825A00672B4E /* opennurbs_annotation.cpp */; };
+		1DB4EE71161B825A00672B4E /* opennurbs_annotation2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE09161B825A00672B4E /* opennurbs_annotation2.cpp */; };
+		1DB4EE72161B825A00672B4E /* opennurbs_arc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0A161B825A00672B4E /* opennurbs_arc.cpp */; };
+		1DB4EE73161B825A00672B4E /* opennurbs_arccurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0B161B825A00672B4E /* opennurbs_arccurve.cpp */; };
+		1DB4EE74161B825A00672B4E /* opennurbs_archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0C161B825A00672B4E /* opennurbs_archive.cpp */; };
+		1DB4EE75161B825A00672B4E /* opennurbs_array.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0D161B825A00672B4E /* opennurbs_array.cpp */; };
+		1DB4EE76161B825A00672B4E /* opennurbs_base32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0E161B825A00672B4E /* opennurbs_base32.cpp */; };
+		1DB4EE77161B825A00672B4E /* opennurbs_base64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE0F161B825A00672B4E /* opennurbs_base64.cpp */; };
+		1DB4EE78161B825A00672B4E /* opennurbs_beam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE10161B825A00672B4E /* opennurbs_beam.cpp */; };
+		1DB4EE79161B825A00672B4E /* opennurbs_bezier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE11161B825A00672B4E /* opennurbs_bezier.cpp */; };
+		1DB4EE7A161B825A00672B4E /* opennurbs_beziervolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE12161B825A00672B4E /* opennurbs_beziervolume.cpp */; };
+		1DB4EE7B161B825A00672B4E /* opennurbs_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE13161B825A00672B4E /* opennurbs_bitmap.cpp */; };
+		1DB4EE7C161B825A00672B4E /* opennurbs_bounding_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE14161B825A00672B4E /* opennurbs_bounding_box.cpp */; };
+		1DB4EE7D161B825A00672B4E /* opennurbs_box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE15161B825A00672B4E /* opennurbs_box.cpp */; };
+		1DB4EE7E161B825A00672B4E /* opennurbs_brep_extrude.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE16161B825A00672B4E /* opennurbs_brep_extrude.cpp */; };
+		1DB4EE7F161B825A00672B4E /* opennurbs_brep_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE17161B825A00672B4E /* opennurbs_brep_io.cpp */; };
+		1DB4EE80161B825A00672B4E /* opennurbs_brep_isvalid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE18161B825A00672B4E /* opennurbs_brep_isvalid.cpp */; };
+		1DB4EE81161B825A00672B4E /* opennurbs_brep_region.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE19161B825A00672B4E /* opennurbs_brep_region.cpp */; };
+		1DB4EE82161B825A00672B4E /* opennurbs_brep_tools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1A161B825A00672B4E /* opennurbs_brep_tools.cpp */; };
+		1DB4EE83161B825A00672B4E /* opennurbs_brep_v2valid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1B161B825A00672B4E /* opennurbs_brep_v2valid.cpp */; };
+		1DB4EE84161B825A00672B4E /* opennurbs_brep.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1C161B825A00672B4E /* opennurbs_brep.cpp */; };
+		1DB4EE85161B825A00672B4E /* opennurbs_circle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1D161B825A00672B4E /* opennurbs_circle.cpp */; };
+		1DB4EE86161B825A00672B4E /* opennurbs_color.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1E161B825A00672B4E /* opennurbs_color.cpp */; };
+		1DB4EE87161B825A00672B4E /* opennurbs_compress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE1F161B825A00672B4E /* opennurbs_compress.cpp */; };
+		1DB4EE88161B825A00672B4E /* opennurbs_cone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE20161B825A00672B4E /* opennurbs_cone.cpp */; };
+		1DB4EE89161B825A00672B4E /* opennurbs_crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE21161B825A00672B4E /* opennurbs_crc.cpp */; };
+		1DB4EE8A161B825A00672B4E /* opennurbs_curve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE22161B825A00672B4E /* opennurbs_curve.cpp */; };
+		1DB4EE8B161B825A00672B4E /* opennurbs_curveonsurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE23161B825A00672B4E /* opennurbs_curveonsurface.cpp */; };
+		1DB4EE8C161B825A00672B4E /* opennurbs_curveproxy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE24161B825A00672B4E /* opennurbs_curveproxy.cpp */; };
+		1DB4EE8D161B825A00672B4E /* opennurbs_cylinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE25161B825A00672B4E /* opennurbs_cylinder.cpp */; };
+		1DB4EE8E161B825A00672B4E /* opennurbs_defines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE26161B825A00672B4E /* opennurbs_defines.cpp */; };
+		1DB4EE8F161B825A00672B4E /* opennurbs_detail.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE27161B825A00672B4E /* opennurbs_detail.cpp */; };
+		1DB4EE90161B825A00672B4E /* opennurbs_dimstyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE28161B825A00672B4E /* opennurbs_dimstyle.cpp */; };
+		1DB4EE91161B825A00672B4E /* opennurbs_ellipse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE29161B825A00672B4E /* opennurbs_ellipse.cpp */; };
+		1DB4EE92161B825A00672B4E /* opennurbs_embedded_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2A161B825A00672B4E /* opennurbs_embedded_file.cpp */; };
+		1DB4EE93161B825A00672B4E /* opennurbs_error_message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2B161B825A00672B4E /* opennurbs_error_message.cpp */; };
+		1DB4EE94161B825A00672B4E /* opennurbs_error.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2C161B825A00672B4E /* opennurbs_error.cpp */; };
+		1DB4EE95161B825A00672B4E /* opennurbs_evaluate_nurbs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2D161B825A00672B4E /* opennurbs_evaluate_nurbs.cpp */; };
+		1DB4EE96161B825A00672B4E /* opennurbs_extensions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2E161B825A00672B4E /* opennurbs_extensions.cpp */; };
+		1DB4EE97161B825A00672B4E /* opennurbs_font.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE2F161B825A00672B4E /* opennurbs_font.cpp */; };
+		1DB4EE98161B825A00672B4E /* opennurbs_fsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE30161B825A00672B4E /* opennurbs_fsp.cpp */; };
+		1DB4EE99161B825A00672B4E /* opennurbs_geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE31161B825A00672B4E /* opennurbs_geometry.cpp */; };
+		1DB4EE9A161B825A00672B4E /* opennurbs_group.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE32161B825A00672B4E /* opennurbs_group.cpp */; };
+		1DB4EE9B161B825A00672B4E /* opennurbs_hatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE33161B825A00672B4E /* opennurbs_hatch.cpp */; };
+		1DB4EE9C161B825A00672B4E /* opennurbs_instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE34161B825A00672B4E /* opennurbs_instance.cpp */; };
+		1DB4EE9D161B825A00672B4E /* opennurbs_intersect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE35161B825A00672B4E /* opennurbs_intersect.cpp */; };
+		1DB4EE9E161B825A00672B4E /* opennurbs_knot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE36161B825A00672B4E /* opennurbs_knot.cpp */; };
+		1DB4EE9F161B825A00672B4E /* opennurbs_layer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE37161B825A00672B4E /* opennurbs_layer.cpp */; };
+		1DB4EEA0161B825A00672B4E /* opennurbs_light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE38161B825A00672B4E /* opennurbs_light.cpp */; };
+		1DB4EEA1161B825A00672B4E /* opennurbs_line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE39161B825A00672B4E /* opennurbs_line.cpp */; };
+		1DB4EEA2161B825A00672B4E /* opennurbs_linecurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3A161B825A00672B4E /* opennurbs_linecurve.cpp */; };
+		1DB4EEA3161B825A00672B4E /* opennurbs_linetype.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3B161B825A00672B4E /* opennurbs_linetype.cpp */; };
+		1DB4EEA4161B825A00672B4E /* opennurbs_lookup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3C161B825A00672B4E /* opennurbs_lookup.cpp */; };
+		1DB4EEA5161B825A00672B4E /* opennurbs_material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3D161B825A00672B4E /* opennurbs_material.cpp */; };
+		1DB4EEA6161B825A00672B4E /* opennurbs_math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3E161B825A00672B4E /* opennurbs_math.cpp */; };
+		1DB4EEA7161B825A00672B4E /* opennurbs_matrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE3F161B825A00672B4E /* opennurbs_matrix.cpp */; };
+		1DB4EEA8161B825A00672B4E /* opennurbs_mesh_ngon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE40161B825A00672B4E /* opennurbs_mesh_ngon.cpp */; };
+		1DB4EEA9161B825A00672B4E /* opennurbs_mesh_tools.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE41161B825A00672B4E /* opennurbs_mesh_tools.cpp */; };
+		1DB4EEAA161B825A00672B4E /* opennurbs_mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE42161B825A00672B4E /* opennurbs_mesh.cpp */; };
+		1DB4EEAB161B825A00672B4E /* opennurbs_morph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE43161B825A00672B4E /* opennurbs_morph.cpp */; };
+		1DB4EEAC161B825A00672B4E /* opennurbs_nurbscurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE44161B825A00672B4E /* opennurbs_nurbscurve.cpp */; };
+		1DB4EEAD161B825A00672B4E /* opennurbs_nurbssurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE45161B825A00672B4E /* opennurbs_nurbssurface.cpp */; };
+		1DB4EEAE161B825A00672B4E /* opennurbs_nurbsvolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE46161B825A00672B4E /* opennurbs_nurbsvolume.cpp */; };
+		1DB4EEAF161B825A00672B4E /* opennurbs_object_history.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE47161B825A00672B4E /* opennurbs_object_history.cpp */; };
+		1DB4EEB0161B825A00672B4E /* opennurbs_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE48161B825A00672B4E /* opennurbs_object.cpp */; };
+		1DB4EEB1161B825A00672B4E /* opennurbs_objref.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE49161B825A00672B4E /* opennurbs_objref.cpp */; };
+		1DB4EEB2161B825A00672B4E /* opennurbs_offsetsurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4A161B825A00672B4E /* opennurbs_offsetsurface.cpp */; };
+		1DB4EEB3161B825A00672B4E /* opennurbs_optimize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4B161B825A00672B4E /* opennurbs_optimize.cpp */; };
+		1DB4EEB4161B825A00672B4E /* opennurbs_plane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4C161B825A00672B4E /* opennurbs_plane.cpp */; };
+		1DB4EEB5161B825A00672B4E /* opennurbs_planesurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4D161B825A00672B4E /* opennurbs_planesurface.cpp */; };
+		1DB4EEB6161B825A00672B4E /* opennurbs_pluginlist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4E161B825A00672B4E /* opennurbs_pluginlist.cpp */; };
+		1DB4EEB7161B825A00672B4E /* opennurbs_point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE4F161B825A00672B4E /* opennurbs_point.cpp */; };
+		1DB4EEB8161B825A00672B4E /* opennurbs_pointcloud.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE50161B825A00672B4E /* opennurbs_pointcloud.cpp */; };
+		1DB4EEB9161B825A00672B4E /* opennurbs_pointgeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE51161B825A00672B4E /* opennurbs_pointgeometry.cpp */; };
+		1DB4EEBA161B825A00672B4E /* opennurbs_pointgrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE52161B825A00672B4E /* opennurbs_pointgrid.cpp */; };
+		1DB4EEBB161B825A00672B4E /* opennurbs_polycurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE53161B825A00672B4E /* opennurbs_polycurve.cpp */; };
+		1DB4EEBC161B825A00672B4E /* opennurbs_polyedgecurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE54161B825A00672B4E /* opennurbs_polyedgecurve.cpp */; };
+		1DB4EEBD161B825A00672B4E /* opennurbs_polyline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE55161B825A00672B4E /* opennurbs_polyline.cpp */; };
+		1DB4EEBE161B825A00672B4E /* opennurbs_polylinecurve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE56161B825A00672B4E /* opennurbs_polylinecurve.cpp */; };
+		1DB4EEBF161B825A00672B4E /* opennurbs_precompiledheader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE57161B825A00672B4E /* opennurbs_precompiledheader.cpp */; };
+		1DB4EEC0161B825A00672B4E /* opennurbs_rand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE58161B825A00672B4E /* opennurbs_rand.cpp */; };
+		1DB4EEC1161B825A00672B4E /* opennurbs_revsurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE59161B825A00672B4E /* opennurbs_revsurface.cpp */; };
+		1DB4EEC2161B825A00672B4E /* opennurbs_rtree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5A161B825A00672B4E /* opennurbs_rtree.cpp */; };
+		1DB4EEC3161B825A00672B4E /* opennurbs_sort.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5B161B825A00672B4E /* opennurbs_sort.cpp */; };
+		1DB4EEC4161B825A00672B4E /* opennurbs_sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5C161B825A00672B4E /* opennurbs_sphere.cpp */; };
+		1DB4EEC5161B825A00672B4E /* opennurbs_string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5D161B825A00672B4E /* opennurbs_string.cpp */; };
+		1DB4EEC6161B825A00672B4E /* opennurbs_sum.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5E161B825A00672B4E /* opennurbs_sum.cpp */; };
+		1DB4EEC7161B825A00672B4E /* opennurbs_sumsurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE5F161B825A00672B4E /* opennurbs_sumsurface.cpp */; };
+		1DB4EEC8161B825A00672B4E /* opennurbs_surface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE60161B825A00672B4E /* opennurbs_surface.cpp */; };
+		1DB4EEC9161B825A00672B4E /* opennurbs_surfaceproxy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE61161B825A00672B4E /* opennurbs_surfaceproxy.cpp */; };
+		1DB4EECA161B825A00672B4E /* opennurbs_textlog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE62161B825A00672B4E /* opennurbs_textlog.cpp */; };
+		1DB4EECB161B825A00672B4E /* opennurbs_torus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE63161B825A00672B4E /* opennurbs_torus.cpp */; };
+		1DB4EECC161B825A00672B4E /* opennurbs_unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE64161B825A00672B4E /* opennurbs_unicode.cpp */; };
+		1DB4EECD161B825A00672B4E /* opennurbs_userdata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE65161B825A00672B4E /* opennurbs_userdata.cpp */; };
+		1DB4EECE161B825A00672B4E /* opennurbs_uuid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE66161B825A00672B4E /* opennurbs_uuid.cpp */; };
+		1DB4EECF161B825A00672B4E /* opennurbs_viewport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE67161B825A00672B4E /* opennurbs_viewport.cpp */; };
+		1DB4EED0161B825A00672B4E /* opennurbs_workspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE68161B825A00672B4E /* opennurbs_workspace.cpp */; };
+		1DB4EED1161B825A00672B4E /* opennurbs_wstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE69161B825A00672B4E /* opennurbs_wstring.cpp */; };
+		1DB4EED2161B825A00672B4E /* opennurbs_xform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE6A161B825A00672B4E /* opennurbs_xform.cpp */; };
+		1DB4EED3161B825A00672B4E /* opennurbs_zlib_memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE6B161B825A00672B4E /* opennurbs_zlib_memory.cpp */; };
+		1DB4EED4161B825A00672B4E /* opennurbs_zlib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1DB4EE6C161B825A00672B4E /* opennurbs_zlib.cpp */; };
+		1DDEA4A3161B8C7900A55CF6 /* crc32.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA499161B8C7900A55CF6 /* crc32.h */; };
+		1DDEA4A4161B8C7900A55CF6 /* deflate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49A161B8C7900A55CF6 /* deflate.h */; };
+		1DDEA4A5161B8C7900A55CF6 /* inffast.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49B161B8C7900A55CF6 /* inffast.h */; };
+		1DDEA4A6161B8C7900A55CF6 /* inffixed.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49C161B8C7900A55CF6 /* inffixed.h */; };
+		1DDEA4A7161B8C7900A55CF6 /* inflate.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49D161B8C7900A55CF6 /* inflate.h */; };
+		1DDEA4A8161B8C7900A55CF6 /* inftrees.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49E161B8C7900A55CF6 /* inftrees.h */; };
+		1DDEA4A9161B8C7900A55CF6 /* trees.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA49F161B8C7900A55CF6 /* trees.h */; };
+		1DDEA4AA161B8C7900A55CF6 /* zconf.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA4A0161B8C7900A55CF6 /* zconf.h */; };
+		1DDEA4AB161B8C7900A55CF6 /* zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA4A1161B8C7900A55CF6 /* zlib.h */; };
+		1DDEA4AC161B8C7900A55CF6 /* zutil.h in Headers */ = {isa = PBXBuildFile; fileRef = 1DDEA4A2161B8C7900A55CF6 /* zutil.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1D2D85EC178B36C400D67434 /* opennurbs_quaternion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_quaternion.cpp; sourceTree = "<group>"; };
+		1D2D85ED178B36C400D67434 /* opennurbs_quaternion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_quaternion.h; sourceTree = "<group>"; };
+		1D84E56A161B8B75001C8C5E /* opennurbs_memory_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = opennurbs_memory_util.c; sourceTree = "<group>"; };
+		1D84E56B161B8B75001C8C5E /* opennurbs_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = opennurbs_memory.c; sourceTree = "<group>"; };
+		1D84E570161B8BD4001C8C5E /* adler32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = adler32.c; path = zlib/adler32.c; sourceTree = "<group>"; };
+		1D84E571161B8BD4001C8C5E /* compress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = compress.c; path = zlib/compress.c; sourceTree = "<group>"; };
+		1D84E572161B8BD4001C8C5E /* crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = crc32.c; path = zlib/crc32.c; sourceTree = "<group>"; };
+		1D84E573161B8BD4001C8C5E /* deflate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = deflate.c; path = zlib/deflate.c; sourceTree = "<group>"; };
+		1D84E574161B8BD4001C8C5E /* infback.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = infback.c; path = zlib/infback.c; sourceTree = "<group>"; };
+		1D84E575161B8BD4001C8C5E /* inffast.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inffast.c; path = zlib/inffast.c; sourceTree = "<group>"; };
+		1D84E576161B8BD4001C8C5E /* inflate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inflate.c; path = zlib/inflate.c; sourceTree = "<group>"; };
+		1D84E577161B8BD4001C8C5E /* inftrees.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = inftrees.c; path = zlib/inftrees.c; sourceTree = "<group>"; };
+		1D84E578161B8BD4001C8C5E /* trees.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = trees.c; path = zlib/trees.c; sourceTree = "<group>"; };
+		1D84E579161B8BD4001C8C5E /* uncompr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uncompr.c; path = zlib/uncompr.c; sourceTree = "<group>"; };
+		1D84E57A161B8BD4001C8C5E /* zutil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = zutil.c; path = zlib/zutil.c; sourceTree = "<group>"; };
+		1D9119D8161B812C0090B65E /* libopennurbs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libopennurbs.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DB4ED3B161B81F000672B4E /* opennurbs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs.h; sourceTree = "<group>"; };
+		1DB4ED3C161B81F000672B4E /* opennurbs_archive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_archive.h; sourceTree = "<group>"; };
+		1DB4ED3D161B81F000672B4E /* opennurbs_defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_defines.h; sourceTree = "<group>"; };
+		1DB4ED3E161B81F000672B4E /* opennurbs_extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_extensions.h; sourceTree = "<group>"; };
+		1DB4ED3F161B81F000672B4E /* opennurbs_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_string.h; sourceTree = "<group>"; };
+		1DB4ED40161B81F000672B4E /* opennurbs_system.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_system.h; sourceTree = "<group>"; };
+		1DB4ED41161B81F000672B4E /* opennurbs_array_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_array_defs.h; sourceTree = "<group>"; };
+		1DB4ED42161B81F000672B4E /* opennurbs_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_math.h; sourceTree = "<group>"; };
+		1DB4ED43161B81F000672B4E /* opennurbs_unicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_unicode.h; sourceTree = "<group>"; };
+		1DB4ED44161B81F000672B4E /* opennurbs_3dm_attributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_3dm_attributes.h; sourceTree = "<group>"; };
+		1DB4ED45161B81F000672B4E /* opennurbs_3dm_properties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_3dm_properties.h; sourceTree = "<group>"; };
+		1DB4ED46161B81F000672B4E /* opennurbs_3dm_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_3dm_settings.h; sourceTree = "<group>"; };
+		1DB4ED47161B81F000672B4E /* opennurbs_3dm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_3dm.h; sourceTree = "<group>"; };
+		1DB4ED48161B81F000672B4E /* opennurbs_annotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_annotation.h; sourceTree = "<group>"; };
+		1DB4ED49161B81F000672B4E /* opennurbs_annotation2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_annotation2.h; sourceTree = "<group>"; };
+		1DB4ED4A161B81F000672B4E /* opennurbs_arc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_arc.h; sourceTree = "<group>"; };
+		1DB4ED4B161B81F000672B4E /* opennurbs_arccurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_arccurve.h; sourceTree = "<group>"; };
+		1DB4ED4C161B81F000672B4E /* opennurbs_array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_array.h; sourceTree = "<group>"; };
+		1DB4ED4D161B81F000672B4E /* opennurbs_base32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_base32.h; sourceTree = "<group>"; };
+		1DB4ED4E161B81F000672B4E /* opennurbs_base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_base64.h; sourceTree = "<group>"; };
+		1DB4ED4F161B81F000672B4E /* opennurbs_beam.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_beam.h; sourceTree = "<group>"; };
+		1DB4ED50161B81F000672B4E /* opennurbs_bezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_bezier.h; sourceTree = "<group>"; };
+		1DB4ED51161B81F000672B4E /* opennurbs_bitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_bitmap.h; sourceTree = "<group>"; };
+		1DB4ED52161B81F000672B4E /* opennurbs_bounding_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_bounding_box.h; sourceTree = "<group>"; };
+		1DB4ED53161B81F000672B4E /* opennurbs_box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_box.h; sourceTree = "<group>"; };
+		1DB4ED54161B81F000672B4E /* opennurbs_brep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_brep.h; sourceTree = "<group>"; };
+		1DB4ED55161B81F000672B4E /* opennurbs_circle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_circle.h; sourceTree = "<group>"; };
+		1DB4ED56161B81F000672B4E /* opennurbs_color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_color.h; sourceTree = "<group>"; };
+		1DB4ED57161B81F000672B4E /* opennurbs_compress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_compress.h; sourceTree = "<group>"; };
+		1DB4ED58161B81F000672B4E /* opennurbs_cone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_cone.h; sourceTree = "<group>"; };
+		1DB4ED59161B81F000672B4E /* opennurbs_crc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_crc.h; sourceTree = "<group>"; };
+		1DB4ED5A161B81F000672B4E /* opennurbs_curve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_curve.h; sourceTree = "<group>"; };
+		1DB4ED5B161B81F000672B4E /* opennurbs_curveonsurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_curveonsurface.h; sourceTree = "<group>"; };
+		1DB4ED5C161B81F000672B4E /* opennurbs_curveproxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_curveproxy.h; sourceTree = "<group>"; };
+		1DB4ED5D161B81F000672B4E /* opennurbs_cylinder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_cylinder.h; sourceTree = "<group>"; };
+		1DB4ED5E161B81F000672B4E /* opennurbs_detail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_detail.h; sourceTree = "<group>"; };
+		1DB4ED5F161B81F000672B4E /* opennurbs_dimstyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_dimstyle.h; sourceTree = "<group>"; };
+		1DB4ED60161B81F000672B4E /* opennurbs_ellipse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_ellipse.h; sourceTree = "<group>"; };
+		1DB4ED61161B81F000672B4E /* opennurbs_error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_error.h; sourceTree = "<group>"; };
+		1DB4ED62161B81F000672B4E /* opennurbs_evaluate_nurbs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_evaluate_nurbs.h; sourceTree = "<group>"; };
+		1DB4ED63161B81F000672B4E /* opennurbs_font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_font.h; sourceTree = "<group>"; };
+		1DB4ED64161B81F000672B4E /* opennurbs_fpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_fpoint.h; sourceTree = "<group>"; };
+		1DB4ED65161B81F000672B4E /* opennurbs_fsp_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_fsp_defs.h; sourceTree = "<group>"; };
+		1DB4ED66161B81F000672B4E /* opennurbs_fsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_fsp.h; sourceTree = "<group>"; };
+		1DB4ED67161B81F000672B4E /* opennurbs_geometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_geometry.h; sourceTree = "<group>"; };
+		1DB4ED68161B81F000672B4E /* opennurbs_group.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_group.h; sourceTree = "<group>"; };
+		1DB4ED69161B81F000672B4E /* opennurbs_hatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_hatch.h; sourceTree = "<group>"; };
+		1DB4ED6A161B81F000672B4E /* opennurbs_hsort_template.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_hsort_template.h; sourceTree = "<group>"; };
+		1DB4ED6B161B81F000672B4E /* opennurbs_instance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_instance.h; sourceTree = "<group>"; };
+		1DB4ED6C161B81F000672B4E /* opennurbs_intersect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_intersect.h; sourceTree = "<group>"; };
+		1DB4ED6D161B81F000672B4E /* opennurbs_knot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_knot.h; sourceTree = "<group>"; };
+		1DB4ED6E161B81F000672B4E /* opennurbs_layer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_layer.h; sourceTree = "<group>"; };
+		1DB4ED6F161B81F000672B4E /* opennurbs_light.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_light.h; sourceTree = "<group>"; };
+		1DB4ED70161B81F000672B4E /* opennurbs_line.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_line.h; sourceTree = "<group>"; };
+		1DB4ED71161B81F000672B4E /* opennurbs_linecurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_linecurve.h; sourceTree = "<group>"; };
+		1DB4ED72161B81F000672B4E /* opennurbs_linestyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_linestyle.h; sourceTree = "<group>"; };
+		1DB4ED73161B81F000672B4E /* opennurbs_linetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_linetype.h; sourceTree = "<group>"; };
+		1DB4ED74161B81F000672B4E /* opennurbs_lookup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_lookup.h; sourceTree = "<group>"; };
+		1DB4ED75161B81F000672B4E /* opennurbs_mapchan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_mapchan.h; sourceTree = "<group>"; };
+		1DB4ED76161B81F000672B4E /* opennurbs_material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_material.h; sourceTree = "<group>"; };
+		1DB4ED77161B81F000672B4E /* opennurbs_matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_matrix.h; sourceTree = "<group>"; };
+		1DB4ED78161B81F000672B4E /* opennurbs_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_memory.h; sourceTree = "<group>"; };
+		1DB4ED79161B81F000672B4E /* opennurbs_mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_mesh.h; sourceTree = "<group>"; };
+		1DB4ED7A161B81F000672B4E /* opennurbs_nurbscurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_nurbscurve.h; sourceTree = "<group>"; };
+		1DB4ED7B161B81F000672B4E /* opennurbs_nurbssurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_nurbssurface.h; sourceTree = "<group>"; };
+		1DB4ED7C161B81F000672B4E /* opennurbs_object_history.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_object_history.h; sourceTree = "<group>"; };
+		1DB4ED7D161B81F000672B4E /* opennurbs_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_object.h; sourceTree = "<group>"; };
+		1DB4ED7E161B81F000672B4E /* opennurbs_objref.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_objref.h; sourceTree = "<group>"; };
+		1DB4ED7F161B81F000672B4E /* opennurbs_offsetsurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_offsetsurface.h; sourceTree = "<group>"; };
+		1DB4ED80161B81F000672B4E /* opennurbs_optimize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_optimize.h; sourceTree = "<group>"; };
+		1DB4ED81161B81F000672B4E /* opennurbs_plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_plane.h; sourceTree = "<group>"; };
+		1DB4ED82161B81F000672B4E /* opennurbs_planesurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_planesurface.h; sourceTree = "<group>"; };
+		1DB4ED83161B81F000672B4E /* opennurbs_pluginlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_pluginlist.h; sourceTree = "<group>"; };
+		1DB4ED84161B81F000672B4E /* opennurbs_point.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_point.h; sourceTree = "<group>"; };
+		1DB4ED85161B81F000672B4E /* opennurbs_pointcloud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_pointcloud.h; sourceTree = "<group>"; };
+		1DB4ED86161B81F000672B4E /* opennurbs_pointgeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_pointgeometry.h; sourceTree = "<group>"; };
+		1DB4ED87161B81F000672B4E /* opennurbs_pointgrid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_pointgrid.h; sourceTree = "<group>"; };
+		1DB4ED88161B81F000672B4E /* opennurbs_polycurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_polycurve.h; sourceTree = "<group>"; };
+		1DB4ED89161B81F000672B4E /* opennurbs_polyedgecurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_polyedgecurve.h; sourceTree = "<group>"; };
+		1DB4ED8A161B81F000672B4E /* opennurbs_polyline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_polyline.h; sourceTree = "<group>"; };
+		1DB4ED8B161B81F000672B4E /* opennurbs_polylinecurve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_polylinecurve.h; sourceTree = "<group>"; };
+		1DB4ED8C161B81F000672B4E /* opennurbs_qsort_template.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_qsort_template.h; sourceTree = "<group>"; };
+		1DB4ED8D161B81F000672B4E /* opennurbs_rand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_rand.h; sourceTree = "<group>"; };
+		1DB4ED8E161B81F000672B4E /* opennurbs_rendering.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_rendering.h; sourceTree = "<group>"; };
+		1DB4ED8F161B81F000672B4E /* opennurbs_revsurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_revsurface.h; sourceTree = "<group>"; };
+		1DB4ED90161B81F000672B4E /* opennurbs_rtree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_rtree.h; sourceTree = "<group>"; };
+		1DB4ED91161B81F000672B4E /* opennurbs_sphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_sphere.h; sourceTree = "<group>"; };
+		1DB4ED92161B81F000672B4E /* opennurbs_sumsurface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_sumsurface.h; sourceTree = "<group>"; };
+		1DB4ED93161B81F000672B4E /* opennurbs_surface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_surface.h; sourceTree = "<group>"; };
+		1DB4ED94161B81F000672B4E /* opennurbs_surfaceproxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_surfaceproxy.h; sourceTree = "<group>"; };
+		1DB4ED95161B81F000672B4E /* opennurbs_textlog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_textlog.h; sourceTree = "<group>"; };
+		1DB4ED96161B81F000672B4E /* opennurbs_texture_mapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_texture_mapping.h; sourceTree = "<group>"; };
+		1DB4ED97161B81F000672B4E /* opennurbs_texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_texture.h; sourceTree = "<group>"; };
+		1DB4ED98161B81F000672B4E /* opennurbs_torus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_torus.h; sourceTree = "<group>"; };
+		1DB4ED99161B81F000672B4E /* opennurbs_userdata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_userdata.h; sourceTree = "<group>"; };
+		1DB4ED9A161B81F000672B4E /* opennurbs_uuid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_uuid.h; sourceTree = "<group>"; };
+		1DB4ED9B161B81F000672B4E /* opennurbs_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_version.h; sourceTree = "<group>"; };
+		1DB4ED9C161B81F000672B4E /* opennurbs_viewport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_viewport.h; sourceTree = "<group>"; };
+		1DB4ED9D161B81F000672B4E /* opennurbs_workspace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_workspace.h; sourceTree = "<group>"; };
+		1DB4ED9E161B81F000672B4E /* opennurbs_xform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_xform.h; sourceTree = "<group>"; };
+		1DB4ED9F161B81F000672B4E /* opennurbs_zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opennurbs_zlib.h; sourceTree = "<group>"; };
+		1DB4EE05161B825A00672B4E /* opennurbs_3dm_attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_3dm_attributes.cpp; sourceTree = "<group>"; };
+		1DB4EE06161B825A00672B4E /* opennurbs_3dm_properties.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_3dm_properties.cpp; sourceTree = "<group>"; };
+		1DB4EE07161B825A00672B4E /* opennurbs_3dm_settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_3dm_settings.cpp; sourceTree = "<group>"; };
+		1DB4EE08161B825A00672B4E /* opennurbs_annotation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_annotation.cpp; sourceTree = "<group>"; };
+		1DB4EE09161B825A00672B4E /* opennurbs_annotation2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_annotation2.cpp; sourceTree = "<group>"; };
+		1DB4EE0A161B825A00672B4E /* opennurbs_arc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_arc.cpp; sourceTree = "<group>"; };
+		1DB4EE0B161B825A00672B4E /* opennurbs_arccurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_arccurve.cpp; sourceTree = "<group>"; };
+		1DB4EE0C161B825A00672B4E /* opennurbs_archive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_archive.cpp; sourceTree = "<group>"; };
+		1DB4EE0D161B825A00672B4E /* opennurbs_array.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_array.cpp; sourceTree = "<group>"; };
+		1DB4EE0E161B825A00672B4E /* opennurbs_base32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_base32.cpp; sourceTree = "<group>"; };
+		1DB4EE0F161B825A00672B4E /* opennurbs_base64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_base64.cpp; sourceTree = "<group>"; };
+		1DB4EE10161B825A00672B4E /* opennurbs_beam.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_beam.cpp; sourceTree = "<group>"; };
+		1DB4EE11161B825A00672B4E /* opennurbs_bezier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_bezier.cpp; sourceTree = "<group>"; };
+		1DB4EE12161B825A00672B4E /* opennurbs_beziervolume.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_beziervolume.cpp; sourceTree = "<group>"; };
+		1DB4EE13161B825A00672B4E /* opennurbs_bitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_bitmap.cpp; sourceTree = "<group>"; };
+		1DB4EE14161B825A00672B4E /* opennurbs_bounding_box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_bounding_box.cpp; sourceTree = "<group>"; };
+		1DB4EE15161B825A00672B4E /* opennurbs_box.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_box.cpp; sourceTree = "<group>"; };
+		1DB4EE16161B825A00672B4E /* opennurbs_brep_extrude.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_extrude.cpp; sourceTree = "<group>"; };
+		1DB4EE17161B825A00672B4E /* opennurbs_brep_io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_io.cpp; sourceTree = "<group>"; };
+		1DB4EE18161B825A00672B4E /* opennurbs_brep_isvalid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_isvalid.cpp; sourceTree = "<group>"; };
+		1DB4EE19161B825A00672B4E /* opennurbs_brep_region.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_region.cpp; sourceTree = "<group>"; };
+		1DB4EE1A161B825A00672B4E /* opennurbs_brep_tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_tools.cpp; sourceTree = "<group>"; };
+		1DB4EE1B161B825A00672B4E /* opennurbs_brep_v2valid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep_v2valid.cpp; sourceTree = "<group>"; };
+		1DB4EE1C161B825A00672B4E /* opennurbs_brep.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_brep.cpp; sourceTree = "<group>"; };
+		1DB4EE1D161B825A00672B4E /* opennurbs_circle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_circle.cpp; sourceTree = "<group>"; };
+		1DB4EE1E161B825A00672B4E /* opennurbs_color.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_color.cpp; sourceTree = "<group>"; };
+		1DB4EE1F161B825A00672B4E /* opennurbs_compress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_compress.cpp; sourceTree = "<group>"; };
+		1DB4EE20161B825A00672B4E /* opennurbs_cone.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_cone.cpp; sourceTree = "<group>"; };
+		1DB4EE21161B825A00672B4E /* opennurbs_crc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_crc.cpp; sourceTree = "<group>"; };
+		1DB4EE22161B825A00672B4E /* opennurbs_curve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_curve.cpp; sourceTree = "<group>"; };
+		1DB4EE23161B825A00672B4E /* opennurbs_curveonsurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_curveonsurface.cpp; sourceTree = "<group>"; };
+		1DB4EE24161B825A00672B4E /* opennurbs_curveproxy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_curveproxy.cpp; sourceTree = "<group>"; };
+		1DB4EE25161B825A00672B4E /* opennurbs_cylinder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_cylinder.cpp; sourceTree = "<group>"; };
+		1DB4EE26161B825A00672B4E /* opennurbs_defines.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_defines.cpp; sourceTree = "<group>"; };
+		1DB4EE27161B825A00672B4E /* opennurbs_detail.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_detail.cpp; sourceTree = "<group>"; };
+		1DB4EE28161B825A00672B4E /* opennurbs_dimstyle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_dimstyle.cpp; sourceTree = "<group>"; };
+		1DB4EE29161B825A00672B4E /* opennurbs_ellipse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_ellipse.cpp; sourceTree = "<group>"; };
+		1DB4EE2A161B825A00672B4E /* opennurbs_embedded_file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_embedded_file.cpp; sourceTree = "<group>"; };
+		1DB4EE2B161B825A00672B4E /* opennurbs_error_message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_error_message.cpp; sourceTree = "<group>"; };
+		1DB4EE2C161B825A00672B4E /* opennurbs_error.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_error.cpp; sourceTree = "<group>"; };
+		1DB4EE2D161B825A00672B4E /* opennurbs_evaluate_nurbs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_evaluate_nurbs.cpp; sourceTree = "<group>"; };
+		1DB4EE2E161B825A00672B4E /* opennurbs_extensions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_extensions.cpp; sourceTree = "<group>"; };
+		1DB4EE2F161B825A00672B4E /* opennurbs_font.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_font.cpp; sourceTree = "<group>"; };
+		1DB4EE30161B825A00672B4E /* opennurbs_fsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_fsp.cpp; sourceTree = "<group>"; };
+		1DB4EE31161B825A00672B4E /* opennurbs_geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_geometry.cpp; sourceTree = "<group>"; };
+		1DB4EE32161B825A00672B4E /* opennurbs_group.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_group.cpp; sourceTree = "<group>"; };
+		1DB4EE33161B825A00672B4E /* opennurbs_hatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_hatch.cpp; sourceTree = "<group>"; };
+		1DB4EE34161B825A00672B4E /* opennurbs_instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_instance.cpp; sourceTree = "<group>"; };
+		1DB4EE35161B825A00672B4E /* opennurbs_intersect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_intersect.cpp; sourceTree = "<group>"; };
+		1DB4EE36161B825A00672B4E /* opennurbs_knot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_knot.cpp; sourceTree = "<group>"; };
+		1DB4EE37161B825A00672B4E /* opennurbs_layer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_layer.cpp; sourceTree = "<group>"; };
+		1DB4EE38161B825A00672B4E /* opennurbs_light.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_light.cpp; sourceTree = "<group>"; };
+		1DB4EE39161B825A00672B4E /* opennurbs_line.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_line.cpp; sourceTree = "<group>"; };
+		1DB4EE3A161B825A00672B4E /* opennurbs_linecurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_linecurve.cpp; sourceTree = "<group>"; };
+		1DB4EE3B161B825A00672B4E /* opennurbs_linetype.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_linetype.cpp; sourceTree = "<group>"; };
+		1DB4EE3C161B825A00672B4E /* opennurbs_lookup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_lookup.cpp; sourceTree = "<group>"; };
+		1DB4EE3D161B825A00672B4E /* opennurbs_material.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_material.cpp; sourceTree = "<group>"; };
+		1DB4EE3E161B825A00672B4E /* opennurbs_math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_math.cpp; sourceTree = "<group>"; };
+		1DB4EE3F161B825A00672B4E /* opennurbs_matrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_matrix.cpp; sourceTree = "<group>"; };
+		1DB4EE40161B825A00672B4E /* opennurbs_mesh_ngon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_mesh_ngon.cpp; sourceTree = "<group>"; };
+		1DB4EE41161B825A00672B4E /* opennurbs_mesh_tools.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_mesh_tools.cpp; sourceTree = "<group>"; };
+		1DB4EE42161B825A00672B4E /* opennurbs_mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_mesh.cpp; sourceTree = "<group>"; };
+		1DB4EE43161B825A00672B4E /* opennurbs_morph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_morph.cpp; sourceTree = "<group>"; };
+		1DB4EE44161B825A00672B4E /* opennurbs_nurbscurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_nurbscurve.cpp; sourceTree = "<group>"; };
+		1DB4EE45161B825A00672B4E /* opennurbs_nurbssurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_nurbssurface.cpp; sourceTree = "<group>"; };
+		1DB4EE46161B825A00672B4E /* opennurbs_nurbsvolume.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_nurbsvolume.cpp; sourceTree = "<group>"; };
+		1DB4EE47161B825A00672B4E /* opennurbs_object_history.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_object_history.cpp; sourceTree = "<group>"; };
+		1DB4EE48161B825A00672B4E /* opennurbs_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_object.cpp; sourceTree = "<group>"; };
+		1DB4EE49161B825A00672B4E /* opennurbs_objref.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_objref.cpp; sourceTree = "<group>"; };
+		1DB4EE4A161B825A00672B4E /* opennurbs_offsetsurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_offsetsurface.cpp; sourceTree = "<group>"; };
+		1DB4EE4B161B825A00672B4E /* opennurbs_optimize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_optimize.cpp; sourceTree = "<group>"; };
+		1DB4EE4C161B825A00672B4E /* opennurbs_plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_plane.cpp; sourceTree = "<group>"; };
+		1DB4EE4D161B825A00672B4E /* opennurbs_planesurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_planesurface.cpp; sourceTree = "<group>"; };
+		1DB4EE4E161B825A00672B4E /* opennurbs_pluginlist.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_pluginlist.cpp; sourceTree = "<group>"; };
+		1DB4EE4F161B825A00672B4E /* opennurbs_point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_point.cpp; sourceTree = "<group>"; };
+		1DB4EE50161B825A00672B4E /* opennurbs_pointcloud.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_pointcloud.cpp; sourceTree = "<group>"; };
+		1DB4EE51161B825A00672B4E /* opennurbs_pointgeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_pointgeometry.cpp; sourceTree = "<group>"; };
+		1DB4EE52161B825A00672B4E /* opennurbs_pointgrid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_pointgrid.cpp; sourceTree = "<group>"; };
+		1DB4EE53161B825A00672B4E /* opennurbs_polycurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_polycurve.cpp; sourceTree = "<group>"; };
+		1DB4EE54161B825A00672B4E /* opennurbs_polyedgecurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_polyedgecurve.cpp; sourceTree = "<group>"; };
+		1DB4EE55161B825A00672B4E /* opennurbs_polyline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_polyline.cpp; sourceTree = "<group>"; };
+		1DB4EE56161B825A00672B4E /* opennurbs_polylinecurve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_polylinecurve.cpp; sourceTree = "<group>"; };
+		1DB4EE57161B825A00672B4E /* opennurbs_precompiledheader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_precompiledheader.cpp; sourceTree = "<group>"; };
+		1DB4EE58161B825A00672B4E /* opennurbs_rand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_rand.cpp; sourceTree = "<group>"; };
+		1DB4EE59161B825A00672B4E /* opennurbs_revsurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_revsurface.cpp; sourceTree = "<group>"; };
+		1DB4EE5A161B825A00672B4E /* opennurbs_rtree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_rtree.cpp; sourceTree = "<group>"; };
+		1DB4EE5B161B825A00672B4E /* opennurbs_sort.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_sort.cpp; sourceTree = "<group>"; };
+		1DB4EE5C161B825A00672B4E /* opennurbs_sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_sphere.cpp; sourceTree = "<group>"; };
+		1DB4EE5D161B825A00672B4E /* opennurbs_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_string.cpp; sourceTree = "<group>"; };
+		1DB4EE5E161B825A00672B4E /* opennurbs_sum.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_sum.cpp; sourceTree = "<group>"; };
+		1DB4EE5F161B825A00672B4E /* opennurbs_sumsurface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_sumsurface.cpp; sourceTree = "<group>"; };
+		1DB4EE60161B825A00672B4E /* opennurbs_surface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_surface.cpp; sourceTree = "<group>"; };
+		1DB4EE61161B825A00672B4E /* opennurbs_surfaceproxy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_surfaceproxy.cpp; sourceTree = "<group>"; };
+		1DB4EE62161B825A00672B4E /* opennurbs_textlog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_textlog.cpp; sourceTree = "<group>"; };
+		1DB4EE63161B825A00672B4E /* opennurbs_torus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_torus.cpp; sourceTree = "<group>"; };
+		1DB4EE64161B825A00672B4E /* opennurbs_unicode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_unicode.cpp; sourceTree = "<group>"; };
+		1DB4EE65161B825A00672B4E /* opennurbs_userdata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_userdata.cpp; sourceTree = "<group>"; };
+		1DB4EE66161B825A00672B4E /* opennurbs_uuid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_uuid.cpp; sourceTree = "<group>"; };
+		1DB4EE67161B825A00672B4E /* opennurbs_viewport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_viewport.cpp; sourceTree = "<group>"; };
+		1DB4EE68161B825A00672B4E /* opennurbs_workspace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_workspace.cpp; sourceTree = "<group>"; };
+		1DB4EE69161B825A00672B4E /* opennurbs_wstring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_wstring.cpp; sourceTree = "<group>"; };
+		1DB4EE6A161B825A00672B4E /* opennurbs_xform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_xform.cpp; sourceTree = "<group>"; };
+		1DB4EE6B161B825A00672B4E /* opennurbs_zlib_memory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_zlib_memory.cpp; sourceTree = "<group>"; };
+		1DB4EE6C161B825A00672B4E /* opennurbs_zlib.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opennurbs_zlib.cpp; sourceTree = "<group>"; };
+		1DDEA499161B8C7900A55CF6 /* crc32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = crc32.h; path = zlib/crc32.h; sourceTree = "<group>"; };
+		1DDEA49A161B8C7900A55CF6 /* deflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deflate.h; path = zlib/deflate.h; sourceTree = "<group>"; };
+		1DDEA49B161B8C7900A55CF6 /* inffast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inffast.h; path = zlib/inffast.h; sourceTree = "<group>"; };
+		1DDEA49C161B8C7900A55CF6 /* inffixed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inffixed.h; path = zlib/inffixed.h; sourceTree = "<group>"; };
+		1DDEA49D161B8C7900A55CF6 /* inflate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inflate.h; path = zlib/inflate.h; sourceTree = "<group>"; };
+		1DDEA49E161B8C7900A55CF6 /* inftrees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = inftrees.h; path = zlib/inftrees.h; sourceTree = "<group>"; };
+		1DDEA49F161B8C7900A55CF6 /* trees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trees.h; path = zlib/trees.h; sourceTree = "<group>"; };
+		1DDEA4A0161B8C7900A55CF6 /* zconf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zconf.h; path = zlib/zconf.h; sourceTree = "<group>"; };
+		1DDEA4A1161B8C7900A55CF6 /* zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zlib.h; path = zlib/zlib.h; sourceTree = "<group>"; };
+		1DDEA4A2161B8C7900A55CF6 /* zutil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zutil.h; path = zlib/zutil.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1D9119D5161B812C0090B65E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1D84E56F161B8B7F001C8C5E /* zlib */ = {
+			isa = PBXGroup;
+			children = (
+				1DDEA499161B8C7900A55CF6 /* crc32.h */,
+				1DDEA49A161B8C7900A55CF6 /* deflate.h */,
+				1DDEA49B161B8C7900A55CF6 /* inffast.h */,
+				1DDEA49C161B8C7900A55CF6 /* inffixed.h */,
+				1DDEA49D161B8C7900A55CF6 /* inflate.h */,
+				1DDEA49E161B8C7900A55CF6 /* inftrees.h */,
+				1DDEA49F161B8C7900A55CF6 /* trees.h */,
+				1DDEA4A0161B8C7900A55CF6 /* zconf.h */,
+				1DDEA4A1161B8C7900A55CF6 /* zlib.h */,
+				1DDEA4A2161B8C7900A55CF6 /* zutil.h */,
+				1D84E570161B8BD4001C8C5E /* adler32.c */,
+				1D84E571161B8BD4001C8C5E /* compress.c */,
+				1D84E572161B8BD4001C8C5E /* crc32.c */,
+				1D84E573161B8BD4001C8C5E /* deflate.c */,
+				1D84E574161B8BD4001C8C5E /* infback.c */,
+				1D84E575161B8BD4001C8C5E /* inffast.c */,
+				1D84E576161B8BD4001C8C5E /* inflate.c */,
+				1D84E577161B8BD4001C8C5E /* inftrees.c */,
+				1D84E578161B8BD4001C8C5E /* trees.c */,
+				1D84E579161B8BD4001C8C5E /* uncompr.c */,
+				1D84E57A161B8BD4001C8C5E /* zutil.c */,
+			);
+			name = zlib;
+			sourceTree = "<group>";
+		};
+		1D9119CD161B812C0090B65E = {
+			isa = PBXGroup;
+			children = (
+				1DB4ED3A161B817E00672B4E /* Header Files */,
+				1DB4ED38161B817200672B4E /* Source Files */,
+				1D84E56F161B8B7F001C8C5E /* zlib */,
+				1D9119D9161B812C0090B65E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1D9119D9161B812C0090B65E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D9119D8161B812C0090B65E /* libopennurbs.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1DB4ED38161B817200672B4E /* Source Files */ = {
+			isa = PBXGroup;
+			children = (
+				1D84E56A161B8B75001C8C5E /* opennurbs_memory_util.c */,
+				1D84E56B161B8B75001C8C5E /* opennurbs_memory.c */,
+				1DB4EE05161B825A00672B4E /* opennurbs_3dm_attributes.cpp */,
+				1DB4EE06161B825A00672B4E /* opennurbs_3dm_properties.cpp */,
+				1DB4EE07161B825A00672B4E /* opennurbs_3dm_settings.cpp */,
+				1DB4EE08161B825A00672B4E /* opennurbs_annotation.cpp */,
+				1DB4EE09161B825A00672B4E /* opennurbs_annotation2.cpp */,
+				1DB4EE0A161B825A00672B4E /* opennurbs_arc.cpp */,
+				1DB4EE0B161B825A00672B4E /* opennurbs_arccurve.cpp */,
+				1DB4EE0C161B825A00672B4E /* opennurbs_archive.cpp */,
+				1DB4EE0D161B825A00672B4E /* opennurbs_array.cpp */,
+				1DB4EE0E161B825A00672B4E /* opennurbs_base32.cpp */,
+				1DB4EE0F161B825A00672B4E /* opennurbs_base64.cpp */,
+				1DB4EE10161B825A00672B4E /* opennurbs_beam.cpp */,
+				1DB4EE11161B825A00672B4E /* opennurbs_bezier.cpp */,
+				1DB4EE12161B825A00672B4E /* opennurbs_beziervolume.cpp */,
+				1DB4EE13161B825A00672B4E /* opennurbs_bitmap.cpp */,
+				1DB4EE14161B825A00672B4E /* opennurbs_bounding_box.cpp */,
+				1DB4EE15161B825A00672B4E /* opennurbs_box.cpp */,
+				1DB4EE16161B825A00672B4E /* opennurbs_brep_extrude.cpp */,
+				1DB4EE17161B825A00672B4E /* opennurbs_brep_io.cpp */,
+				1DB4EE18161B825A00672B4E /* opennurbs_brep_isvalid.cpp */,
+				1DB4EE19161B825A00672B4E /* opennurbs_brep_region.cpp */,
+				1DB4EE1A161B825A00672B4E /* opennurbs_brep_tools.cpp */,
+				1DB4EE1B161B825A00672B4E /* opennurbs_brep_v2valid.cpp */,
+				1DB4EE1C161B825A00672B4E /* opennurbs_brep.cpp */,
+				1DB4EE1D161B825A00672B4E /* opennurbs_circle.cpp */,
+				1DB4EE1E161B825A00672B4E /* opennurbs_color.cpp */,
+				1DB4EE1F161B825A00672B4E /* opennurbs_compress.cpp */,
+				1DB4EE20161B825A00672B4E /* opennurbs_cone.cpp */,
+				1DB4EE21161B825A00672B4E /* opennurbs_crc.cpp */,
+				1DB4EE22161B825A00672B4E /* opennurbs_curve.cpp */,
+				1DB4EE23161B825A00672B4E /* opennurbs_curveonsurface.cpp */,
+				1DB4EE24161B825A00672B4E /* opennurbs_curveproxy.cpp */,
+				1DB4EE25161B825A00672B4E /* opennurbs_cylinder.cpp */,
+				1DB4EE26161B825A00672B4E /* opennurbs_defines.cpp */,
+				1DB4EE27161B825A00672B4E /* opennurbs_detail.cpp */,
+				1DB4EE28161B825A00672B4E /* opennurbs_dimstyle.cpp */,
+				1DB4EE29161B825A00672B4E /* opennurbs_ellipse.cpp */,
+				1DB4EE2A161B825A00672B4E /* opennurbs_embedded_file.cpp */,
+				1DB4EE2B161B825A00672B4E /* opennurbs_error_message.cpp */,
+				1DB4EE2C161B825A00672B4E /* opennurbs_error.cpp */,
+				1DB4EE2D161B825A00672B4E /* opennurbs_evaluate_nurbs.cpp */,
+				1DB4EE2E161B825A00672B4E /* opennurbs_extensions.cpp */,
+				1DB4EE2F161B825A00672B4E /* opennurbs_font.cpp */,
+				1DB4EE30161B825A00672B4E /* opennurbs_fsp.cpp */,
+				1DB4EE31161B825A00672B4E /* opennurbs_geometry.cpp */,
+				1DB4EE32161B825A00672B4E /* opennurbs_group.cpp */,
+				1DB4EE33161B825A00672B4E /* opennurbs_hatch.cpp */,
+				1DB4EE34161B825A00672B4E /* opennurbs_instance.cpp */,
+				1DB4EE35161B825A00672B4E /* opennurbs_intersect.cpp */,
+				1DB4EE36161B825A00672B4E /* opennurbs_knot.cpp */,
+				1DB4EE37161B825A00672B4E /* opennurbs_layer.cpp */,
+				1DB4EE38161B825A00672B4E /* opennurbs_light.cpp */,
+				1DB4EE39161B825A00672B4E /* opennurbs_line.cpp */,
+				1DB4EE3A161B825A00672B4E /* opennurbs_linecurve.cpp */,
+				1DB4EE3B161B825A00672B4E /* opennurbs_linetype.cpp */,
+				1DB4EE3C161B825A00672B4E /* opennurbs_lookup.cpp */,
+				1DB4EE3D161B825A00672B4E /* opennurbs_material.cpp */,
+				1DB4EE3E161B825A00672B4E /* opennurbs_math.cpp */,
+				1DB4EE3F161B825A00672B4E /* opennurbs_matrix.cpp */,
+				1DB4EE40161B825A00672B4E /* opennurbs_mesh_ngon.cpp */,
+				1DB4EE41161B825A00672B4E /* opennurbs_mesh_tools.cpp */,
+				1DB4EE42161B825A00672B4E /* opennurbs_mesh.cpp */,
+				1DB4EE43161B825A00672B4E /* opennurbs_morph.cpp */,
+				1DB4EE44161B825A00672B4E /* opennurbs_nurbscurve.cpp */,
+				1DB4EE45161B825A00672B4E /* opennurbs_nurbssurface.cpp */,
+				1DB4EE46161B825A00672B4E /* opennurbs_nurbsvolume.cpp */,
+				1DB4EE47161B825A00672B4E /* opennurbs_object_history.cpp */,
+				1DB4EE48161B825A00672B4E /* opennurbs_object.cpp */,
+				1DB4EE49161B825A00672B4E /* opennurbs_objref.cpp */,
+				1DB4EE4A161B825A00672B4E /* opennurbs_offsetsurface.cpp */,
+				1DB4EE4B161B825A00672B4E /* opennurbs_optimize.cpp */,
+				1DB4EE4C161B825A00672B4E /* opennurbs_plane.cpp */,
+				1DB4EE4D161B825A00672B4E /* opennurbs_planesurface.cpp */,
+				1DB4EE4E161B825A00672B4E /* opennurbs_pluginlist.cpp */,
+				1DB4EE4F161B825A00672B4E /* opennurbs_point.cpp */,
+				1DB4EE50161B825A00672B4E /* opennurbs_pointcloud.cpp */,
+				1DB4EE51161B825A00672B4E /* opennurbs_pointgeometry.cpp */,
+				1DB4EE52161B825A00672B4E /* opennurbs_pointgrid.cpp */,
+				1DB4EE53161B825A00672B4E /* opennurbs_polycurve.cpp */,
+				1DB4EE54161B825A00672B4E /* opennurbs_polyedgecurve.cpp */,
+				1DB4EE55161B825A00672B4E /* opennurbs_polyline.cpp */,
+				1DB4EE56161B825A00672B4E /* opennurbs_polylinecurve.cpp */,
+				1DB4EE57161B825A00672B4E /* opennurbs_precompiledheader.cpp */,
+				1D2D85EC178B36C400D67434 /* opennurbs_quaternion.cpp */,
+				1DB4EE58161B825A00672B4E /* opennurbs_rand.cpp */,
+				1DB4EE59161B825A00672B4E /* opennurbs_revsurface.cpp */,
+				1DB4EE5A161B825A00672B4E /* opennurbs_rtree.cpp */,
+				1DB4EE5B161B825A00672B4E /* opennurbs_sort.cpp */,
+				1DB4EE5C161B825A00672B4E /* opennurbs_sphere.cpp */,
+				1DB4EE5D161B825A00672B4E /* opennurbs_string.cpp */,
+				1DB4EE5E161B825A00672B4E /* opennurbs_sum.cpp */,
+				1DB4EE5F161B825A00672B4E /* opennurbs_sumsurface.cpp */,
+				1DB4EE60161B825A00672B4E /* opennurbs_surface.cpp */,
+				1DB4EE61161B825A00672B4E /* opennurbs_surfaceproxy.cpp */,
+				1DB4EE62161B825A00672B4E /* opennurbs_textlog.cpp */,
+				1DB4EE63161B825A00672B4E /* opennurbs_torus.cpp */,
+				1DB4EE64161B825A00672B4E /* opennurbs_unicode.cpp */,
+				1DB4EE65161B825A00672B4E /* opennurbs_userdata.cpp */,
+				1DB4EE66161B825A00672B4E /* opennurbs_uuid.cpp */,
+				1DB4EE67161B825A00672B4E /* opennurbs_viewport.cpp */,
+				1DB4EE68161B825A00672B4E /* opennurbs_workspace.cpp */,
+				1DB4EE69161B825A00672B4E /* opennurbs_wstring.cpp */,
+				1DB4EE6A161B825A00672B4E /* opennurbs_xform.cpp */,
+				1DB4EE6B161B825A00672B4E /* opennurbs_zlib_memory.cpp */,
+				1DB4EE6C161B825A00672B4E /* opennurbs_zlib.cpp */,
+			);
+			name = "Source Files";
+			sourceTree = "<group>";
+		};
+		1DB4ED3A161B817E00672B4E /* Header Files */ = {
+			isa = PBXGroup;
+			children = (
+				1DB4ED3B161B81F000672B4E /* opennurbs.h */,
+				1DB4ED3C161B81F000672B4E /* opennurbs_archive.h */,
+				1DB4ED3D161B81F000672B4E /* opennurbs_defines.h */,
+				1DB4ED3E161B81F000672B4E /* opennurbs_extensions.h */,
+				1DB4ED3F161B81F000672B4E /* opennurbs_string.h */,
+				1DB4ED40161B81F000672B4E /* opennurbs_system.h */,
+				1DB4ED41161B81F000672B4E /* opennurbs_array_defs.h */,
+				1DB4ED42161B81F000672B4E /* opennurbs_math.h */,
+				1DB4ED43161B81F000672B4E /* opennurbs_unicode.h */,
+				1DB4ED44161B81F000672B4E /* opennurbs_3dm_attributes.h */,
+				1DB4ED45161B81F000672B4E /* opennurbs_3dm_properties.h */,
+				1DB4ED46161B81F000672B4E /* opennurbs_3dm_settings.h */,
+				1DB4ED47161B81F000672B4E /* opennurbs_3dm.h */,
+				1DB4ED48161B81F000672B4E /* opennurbs_annotation.h */,
+				1DB4ED49161B81F000672B4E /* opennurbs_annotation2.h */,
+				1DB4ED4A161B81F000672B4E /* opennurbs_arc.h */,
+				1DB4ED4B161B81F000672B4E /* opennurbs_arccurve.h */,
+				1DB4ED4C161B81F000672B4E /* opennurbs_array.h */,
+				1DB4ED4D161B81F000672B4E /* opennurbs_base32.h */,
+				1DB4ED4E161B81F000672B4E /* opennurbs_base64.h */,
+				1DB4ED4F161B81F000672B4E /* opennurbs_beam.h */,
+				1DB4ED50161B81F000672B4E /* opennurbs_bezier.h */,
+				1DB4ED51161B81F000672B4E /* opennurbs_bitmap.h */,
+				1DB4ED52161B81F000672B4E /* opennurbs_bounding_box.h */,
+				1DB4ED53161B81F000672B4E /* opennurbs_box.h */,
+				1DB4ED54161B81F000672B4E /* opennurbs_brep.h */,
+				1DB4ED55161B81F000672B4E /* opennurbs_circle.h */,
+				1DB4ED56161B81F000672B4E /* opennurbs_color.h */,
+				1DB4ED57161B81F000672B4E /* opennurbs_compress.h */,
+				1DB4ED58161B81F000672B4E /* opennurbs_cone.h */,
+				1DB4ED59161B81F000672B4E /* opennurbs_crc.h */,
+				1DB4ED5A161B81F000672B4E /* opennurbs_curve.h */,
+				1DB4ED5B161B81F000672B4E /* opennurbs_curveonsurface.h */,
+				1DB4ED5C161B81F000672B4E /* opennurbs_curveproxy.h */,
+				1DB4ED5D161B81F000672B4E /* opennurbs_cylinder.h */,
+				1DB4ED5E161B81F000672B4E /* opennurbs_detail.h */,
+				1DB4ED5F161B81F000672B4E /* opennurbs_dimstyle.h */,
+				1DB4ED60161B81F000672B4E /* opennurbs_ellipse.h */,
+				1DB4ED61161B81F000672B4E /* opennurbs_error.h */,
+				1DB4ED62161B81F000672B4E /* opennurbs_evaluate_nurbs.h */,
+				1DB4ED63161B81F000672B4E /* opennurbs_font.h */,
+				1DB4ED64161B81F000672B4E /* opennurbs_fpoint.h */,
+				1DB4ED65161B81F000672B4E /* opennurbs_fsp_defs.h */,
+				1DB4ED66161B81F000672B4E /* opennurbs_fsp.h */,
+				1DB4ED67161B81F000672B4E /* opennurbs_geometry.h */,
+				1DB4ED68161B81F000672B4E /* opennurbs_group.h */,
+				1DB4ED69161B81F000672B4E /* opennurbs_hatch.h */,
+				1DB4ED6A161B81F000672B4E /* opennurbs_hsort_template.h */,
+				1DB4ED6B161B81F000672B4E /* opennurbs_instance.h */,
+				1DB4ED6C161B81F000672B4E /* opennurbs_intersect.h */,
+				1DB4ED6D161B81F000672B4E /* opennurbs_knot.h */,
+				1DB4ED6E161B81F000672B4E /* opennurbs_layer.h */,
+				1DB4ED6F161B81F000672B4E /* opennurbs_light.h */,
+				1DB4ED70161B81F000672B4E /* opennurbs_line.h */,
+				1DB4ED71161B81F000672B4E /* opennurbs_linecurve.h */,
+				1DB4ED72161B81F000672B4E /* opennurbs_linestyle.h */,
+				1DB4ED73161B81F000672B4E /* opennurbs_linetype.h */,
+				1DB4ED74161B81F000672B4E /* opennurbs_lookup.h */,
+				1DB4ED75161B81F000672B4E /* opennurbs_mapchan.h */,
+				1DB4ED76161B81F000672B4E /* opennurbs_material.h */,
+				1DB4ED77161B81F000672B4E /* opennurbs_matrix.h */,
+				1DB4ED78161B81F000672B4E /* opennurbs_memory.h */,
+				1DB4ED79161B81F000672B4E /* opennurbs_mesh.h */,
+				1DB4ED7A161B81F000672B4E /* opennurbs_nurbscurve.h */,
+				1DB4ED7B161B81F000672B4E /* opennurbs_nurbssurface.h */,
+				1DB4ED7C161B81F000672B4E /* opennurbs_object_history.h */,
+				1DB4ED7D161B81F000672B4E /* opennurbs_object.h */,
+				1DB4ED7E161B81F000672B4E /* opennurbs_objref.h */,
+				1DB4ED7F161B81F000672B4E /* opennurbs_offsetsurface.h */,
+				1DB4ED80161B81F000672B4E /* opennurbs_optimize.h */,
+				1DB4ED81161B81F000672B4E /* opennurbs_plane.h */,
+				1DB4ED82161B81F000672B4E /* opennurbs_planesurface.h */,
+				1DB4ED83161B81F000672B4E /* opennurbs_pluginlist.h */,
+				1DB4ED84161B81F000672B4E /* opennurbs_point.h */,
+				1DB4ED85161B81F000672B4E /* opennurbs_pointcloud.h */,
+				1DB4ED86161B81F000672B4E /* opennurbs_pointgeometry.h */,
+				1DB4ED87161B81F000672B4E /* opennurbs_pointgrid.h */,
+				1DB4ED88161B81F000672B4E /* opennurbs_polycurve.h */,
+				1DB4ED89161B81F000672B4E /* opennurbs_polyedgecurve.h */,
+				1DB4ED8A161B81F000672B4E /* opennurbs_polyline.h */,
+				1DB4ED8B161B81F000672B4E /* opennurbs_polylinecurve.h */,
+				1DB4ED8C161B81F000672B4E /* opennurbs_qsort_template.h */,
+				1D2D85ED178B36C400D67434 /* opennurbs_quaternion.h */,
+				1DB4ED8D161B81F000672B4E /* opennurbs_rand.h */,
+				1DB4ED8E161B81F000672B4E /* opennurbs_rendering.h */,
+				1DB4ED8F161B81F000672B4E /* opennurbs_revsurface.h */,
+				1DB4ED90161B81F000672B4E /* opennurbs_rtree.h */,
+				1DB4ED91161B81F000672B4E /* opennurbs_sphere.h */,
+				1DB4ED92161B81F000672B4E /* opennurbs_sumsurface.h */,
+				1DB4ED93161B81F000672B4E /* opennurbs_surface.h */,
+				1DB4ED94161B81F000672B4E /* opennurbs_surfaceproxy.h */,
+				1DB4ED95161B81F000672B4E /* opennurbs_textlog.h */,
+				1DB4ED96161B81F000672B4E /* opennurbs_texture_mapping.h */,
+				1DB4ED97161B81F000672B4E /* opennurbs_texture.h */,
+				1DB4ED98161B81F000672B4E /* opennurbs_torus.h */,
+				1DB4ED99161B81F000672B4E /* opennurbs_userdata.h */,
+				1DB4ED9A161B81F000672B4E /* opennurbs_uuid.h */,
+				1DB4ED9B161B81F000672B4E /* opennurbs_version.h */,
+				1DB4ED9C161B81F000672B4E /* opennurbs_viewport.h */,
+				1DB4ED9D161B81F000672B4E /* opennurbs_workspace.h */,
+				1DB4ED9E161B81F000672B4E /* opennurbs_xform.h */,
+				1DB4ED9F161B81F000672B4E /* opennurbs_zlib.h */,
+			);
+			name = "Header Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		1D9119D6161B812C0090B65E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1DB4EDA0161B81F000672B4E /* opennurbs.h in Headers */,
+				1DB4EDA1161B81F000672B4E /* opennurbs_archive.h in Headers */,
+				1DB4EDA2161B81F000672B4E /* opennurbs_defines.h in Headers */,
+				1DB4EDA3161B81F000672B4E /* opennurbs_extensions.h in Headers */,
+				1DB4EDA4161B81F000672B4E /* opennurbs_string.h in Headers */,
+				1DB4EDA5161B81F000672B4E /* opennurbs_system.h in Headers */,
+				1DB4EDA6161B81F000672B4E /* opennurbs_array_defs.h in Headers */,
+				1DB4EDA7161B81F000672B4E /* opennurbs_math.h in Headers */,
+				1DB4EDA8161B81F000672B4E /* opennurbs_unicode.h in Headers */,
+				1DB4EDA9161B81F000672B4E /* opennurbs_3dm_attributes.h in Headers */,
+				1DB4EDAA161B81F000672B4E /* opennurbs_3dm_properties.h in Headers */,
+				1DB4EDAB161B81F000672B4E /* opennurbs_3dm_settings.h in Headers */,
+				1DB4EDAC161B81F000672B4E /* opennurbs_3dm.h in Headers */,
+				1DB4EDAD161B81F000672B4E /* opennurbs_annotation.h in Headers */,
+				1DB4EDAE161B81F000672B4E /* opennurbs_annotation2.h in Headers */,
+				1DB4EDAF161B81F000672B4E /* opennurbs_arc.h in Headers */,
+				1DB4EDB0161B81F000672B4E /* opennurbs_arccurve.h in Headers */,
+				1DB4EDB1161B81F000672B4E /* opennurbs_array.h in Headers */,
+				1DB4EDB2161B81F000672B4E /* opennurbs_base32.h in Headers */,
+				1DB4EDB3161B81F000672B4E /* opennurbs_base64.h in Headers */,
+				1DB4EDB4161B81F000672B4E /* opennurbs_beam.h in Headers */,
+				1DB4EDB5161B81F000672B4E /* opennurbs_bezier.h in Headers */,
+				1DB4EDB6161B81F000672B4E /* opennurbs_bitmap.h in Headers */,
+				1DB4EDB7161B81F000672B4E /* opennurbs_bounding_box.h in Headers */,
+				1DB4EDB8161B81F000672B4E /* opennurbs_box.h in Headers */,
+				1DB4EDB9161B81F000672B4E /* opennurbs_brep.h in Headers */,
+				1DB4EDBA161B81F000672B4E /* opennurbs_circle.h in Headers */,
+				1DB4EDBB161B81F000672B4E /* opennurbs_color.h in Headers */,
+				1DB4EDBC161B81F000672B4E /* opennurbs_compress.h in Headers */,
+				1DB4EDBD161B81F000672B4E /* opennurbs_cone.h in Headers */,
+				1DB4EDBE161B81F000672B4E /* opennurbs_crc.h in Headers */,
+				1DB4EDBF161B81F000672B4E /* opennurbs_curve.h in Headers */,
+				1DB4EDC0161B81F000672B4E /* opennurbs_curveonsurface.h in Headers */,
+				1DB4EDC1161B81F000672B4E /* opennurbs_curveproxy.h in Headers */,
+				1DB4EDC2161B81F000672B4E /* opennurbs_cylinder.h in Headers */,
+				1DB4EDC3161B81F000672B4E /* opennurbs_detail.h in Headers */,
+				1DB4EDC4161B81F000672B4E /* opennurbs_dimstyle.h in Headers */,
+				1DB4EDC5161B81F000672B4E /* opennurbs_ellipse.h in Headers */,
+				1DB4EDC6161B81F000672B4E /* opennurbs_error.h in Headers */,
+				1DB4EDC7161B81F000672B4E /* opennurbs_evaluate_nurbs.h in Headers */,
+				1DB4EDC8161B81F000672B4E /* opennurbs_font.h in Headers */,
+				1DB4EDC9161B81F000672B4E /* opennurbs_fpoint.h in Headers */,
+				1DB4EDCA161B81F000672B4E /* opennurbs_fsp_defs.h in Headers */,
+				1DB4EDCB161B81F000672B4E /* opennurbs_fsp.h in Headers */,
+				1DB4EDCC161B81F000672B4E /* opennurbs_geometry.h in Headers */,
+				1DB4EDCD161B81F000672B4E /* opennurbs_group.h in Headers */,
+				1DB4EDCE161B81F000672B4E /* opennurbs_hatch.h in Headers */,
+				1DB4EDCF161B81F000672B4E /* opennurbs_hsort_template.h in Headers */,
+				1DB4EDD0161B81F000672B4E /* opennurbs_instance.h in Headers */,
+				1DB4EDD1161B81F000672B4E /* opennurbs_intersect.h in Headers */,
+				1DB4EDD2161B81F000672B4E /* opennurbs_knot.h in Headers */,
+				1DB4EDD3161B81F000672B4E /* opennurbs_layer.h in Headers */,
+				1DB4EDD4161B81F000672B4E /* opennurbs_light.h in Headers */,
+				1DB4EDD5161B81F000672B4E /* opennurbs_line.h in Headers */,
+				1DB4EDD6161B81F000672B4E /* opennurbs_linecurve.h in Headers */,
+				1DB4EDD7161B81F000672B4E /* opennurbs_linestyle.h in Headers */,
+				1DB4EDD8161B81F000672B4E /* opennurbs_linetype.h in Headers */,
+				1DB4EDD9161B81F000672B4E /* opennurbs_lookup.h in Headers */,
+				1DB4EDDA161B81F000672B4E /* opennurbs_mapchan.h in Headers */,
+				1DB4EDDB161B81F000672B4E /* opennurbs_material.h in Headers */,
+				1DB4EDDC161B81F000672B4E /* opennurbs_matrix.h in Headers */,
+				1DB4EDDD161B81F000672B4E /* opennurbs_memory.h in Headers */,
+				1DB4EDDE161B81F000672B4E /* opennurbs_mesh.h in Headers */,
+				1DB4EDDF161B81F000672B4E /* opennurbs_nurbscurve.h in Headers */,
+				1DB4EDE0161B81F000672B4E /* opennurbs_nurbssurface.h in Headers */,
+				1DB4EDE1161B81F000672B4E /* opennurbs_object_history.h in Headers */,
+				1DB4EDE2161B81F000672B4E /* opennurbs_object.h in Headers */,
+				1DB4EDE3161B81F000672B4E /* opennurbs_objref.h in Headers */,
+				1DB4EDE4161B81F000672B4E /* opennurbs_offsetsurface.h in Headers */,
+				1DB4EDE5161B81F000672B4E /* opennurbs_optimize.h in Headers */,
+				1DB4EDE6161B81F000672B4E /* opennurbs_plane.h in Headers */,
+				1DB4EDE7161B81F000672B4E /* opennurbs_planesurface.h in Headers */,
+				1DB4EDE8161B81F000672B4E /* opennurbs_pluginlist.h in Headers */,
+				1DB4EDE9161B81F000672B4E /* opennurbs_point.h in Headers */,
+				1DB4EDEA161B81F000672B4E /* opennurbs_pointcloud.h in Headers */,
+				1DB4EDEB161B81F000672B4E /* opennurbs_pointgeometry.h in Headers */,
+				1DB4EDEC161B81F000672B4E /* opennurbs_pointgrid.h in Headers */,
+				1DB4EDED161B81F000672B4E /* opennurbs_polycurve.h in Headers */,
+				1DB4EDEE161B81F000672B4E /* opennurbs_polyedgecurve.h in Headers */,
+				1DB4EDEF161B81F000672B4E /* opennurbs_polyline.h in Headers */,
+				1DB4EDF0161B81F000672B4E /* opennurbs_polylinecurve.h in Headers */,
+				1DB4EDF1161B81F000672B4E /* opennurbs_qsort_template.h in Headers */,
+				1DB4EDF2161B81F000672B4E /* opennurbs_rand.h in Headers */,
+				1DB4EDF3161B81F000672B4E /* opennurbs_rendering.h in Headers */,
+				1DB4EDF4161B81F000672B4E /* opennurbs_revsurface.h in Headers */,
+				1DB4EDF5161B81F000672B4E /* opennurbs_rtree.h in Headers */,
+				1DB4EDF6161B81F000672B4E /* opennurbs_sphere.h in Headers */,
+				1DB4EDF7161B81F000672B4E /* opennurbs_sumsurface.h in Headers */,
+				1DB4EDF8161B81F000672B4E /* opennurbs_surface.h in Headers */,
+				1DB4EDF9161B81F000672B4E /* opennurbs_surfaceproxy.h in Headers */,
+				1DB4EDFA161B81F000672B4E /* opennurbs_textlog.h in Headers */,
+				1DB4EDFB161B81F000672B4E /* opennurbs_texture_mapping.h in Headers */,
+				1DB4EDFC161B81F000672B4E /* opennurbs_texture.h in Headers */,
+				1DB4EDFD161B81F000672B4E /* opennurbs_torus.h in Headers */,
+				1DB4EDFE161B81F000672B4E /* opennurbs_userdata.h in Headers */,
+				1DB4EDFF161B81F000672B4E /* opennurbs_uuid.h in Headers */,
+				1DB4EE00161B81F000672B4E /* opennurbs_version.h in Headers */,
+				1DB4EE01161B81F000672B4E /* opennurbs_viewport.h in Headers */,
+				1DB4EE02161B81F000672B4E /* opennurbs_workspace.h in Headers */,
+				1DB4EE03161B81F000672B4E /* opennurbs_xform.h in Headers */,
+				1DB4EE04161B81F000672B4E /* opennurbs_zlib.h in Headers */,
+				1DDEA4A3161B8C7900A55CF6 /* crc32.h in Headers */,
+				1DDEA4A4161B8C7900A55CF6 /* deflate.h in Headers */,
+				1DDEA4A5161B8C7900A55CF6 /* inffast.h in Headers */,
+				1DDEA4A6161B8C7900A55CF6 /* inffixed.h in Headers */,
+				1DDEA4A7161B8C7900A55CF6 /* inflate.h in Headers */,
+				1DDEA4A8161B8C7900A55CF6 /* inftrees.h in Headers */,
+				1DDEA4A9161B8C7900A55CF6 /* trees.h in Headers */,
+				1DDEA4AA161B8C7900A55CF6 /* zconf.h in Headers */,
+				1DDEA4AB161B8C7900A55CF6 /* zlib.h in Headers */,
+				1DDEA4AC161B8C7900A55CF6 /* zutil.h in Headers */,
+				1D2D85EF178B36C400D67434 /* opennurbs_quaternion.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		1D9119D7161B812C0090B65E /* opennurbs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D9119DC161B812C0090B65E /* Build configuration list for PBXNativeTarget "opennurbs" */;
+			buildPhases = (
+				1D9119D4161B812C0090B65E /* Sources */,
+				1D9119D5161B812C0090B65E /* Frameworks */,
+				1D9119D6161B812C0090B65E /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = opennurbs;
+			productName = opennurbs;
+			productReference = 1D9119D8161B812C0090B65E /* libopennurbs.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1D9119CF161B812C0090B65E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = OpenNURBS;
+			};
+			buildConfigurationList = 1D9119D2161B812C0090B65E /* Build configuration list for PBXProject "opennurbs" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 1D9119CD161B812C0090B65E;
+			productRefGroup = 1D9119D9161B812C0090B65E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D9119D7161B812C0090B65E /* opennurbs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1D9119D4161B812C0090B65E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1DB4EE6D161B825A00672B4E /* opennurbs_3dm_attributes.cpp in Sources */,
+				1DB4EE6E161B825A00672B4E /* opennurbs_3dm_properties.cpp in Sources */,
+				1DB4EE6F161B825A00672B4E /* opennurbs_3dm_settings.cpp in Sources */,
+				1DB4EE70161B825A00672B4E /* opennurbs_annotation.cpp in Sources */,
+				1DB4EE71161B825A00672B4E /* opennurbs_annotation2.cpp in Sources */,
+				1DB4EE72161B825A00672B4E /* opennurbs_arc.cpp in Sources */,
+				1DB4EE73161B825A00672B4E /* opennurbs_arccurve.cpp in Sources */,
+				1DB4EE74161B825A00672B4E /* opennurbs_archive.cpp in Sources */,
+				1DB4EE75161B825A00672B4E /* opennurbs_array.cpp in Sources */,
+				1DB4EE76161B825A00672B4E /* opennurbs_base32.cpp in Sources */,
+				1DB4EE77161B825A00672B4E /* opennurbs_base64.cpp in Sources */,
+				1DB4EE78161B825A00672B4E /* opennurbs_beam.cpp in Sources */,
+				1DB4EE79161B825A00672B4E /* opennurbs_bezier.cpp in Sources */,
+				1DB4EE7A161B825A00672B4E /* opennurbs_beziervolume.cpp in Sources */,
+				1DB4EE7B161B825A00672B4E /* opennurbs_bitmap.cpp in Sources */,
+				1DB4EE7C161B825A00672B4E /* opennurbs_bounding_box.cpp in Sources */,
+				1DB4EE7D161B825A00672B4E /* opennurbs_box.cpp in Sources */,
+				1DB4EE7E161B825A00672B4E /* opennurbs_brep_extrude.cpp in Sources */,
+				1DB4EE7F161B825A00672B4E /* opennurbs_brep_io.cpp in Sources */,
+				1DB4EE80161B825A00672B4E /* opennurbs_brep_isvalid.cpp in Sources */,
+				1DB4EE81161B825A00672B4E /* opennurbs_brep_region.cpp in Sources */,
+				1DB4EE82161B825A00672B4E /* opennurbs_brep_tools.cpp in Sources */,
+				1DB4EE83161B825A00672B4E /* opennurbs_brep_v2valid.cpp in Sources */,
+				1DB4EE84161B825A00672B4E /* opennurbs_brep.cpp in Sources */,
+				1DB4EE85161B825A00672B4E /* opennurbs_circle.cpp in Sources */,
+				1DB4EE86161B825A00672B4E /* opennurbs_color.cpp in Sources */,
+				1DB4EE87161B825A00672B4E /* opennurbs_compress.cpp in Sources */,
+				1DB4EE88161B825A00672B4E /* opennurbs_cone.cpp in Sources */,
+				1DB4EE89161B825A00672B4E /* opennurbs_crc.cpp in Sources */,
+				1DB4EE8A161B825A00672B4E /* opennurbs_curve.cpp in Sources */,
+				1DB4EE8B161B825A00672B4E /* opennurbs_curveonsurface.cpp in Sources */,
+				1DB4EE8C161B825A00672B4E /* opennurbs_curveproxy.cpp in Sources */,
+				1DB4EE8D161B825A00672B4E /* opennurbs_cylinder.cpp in Sources */,
+				1DB4EE8E161B825A00672B4E /* opennurbs_defines.cpp in Sources */,
+				1DB4EE8F161B825A00672B4E /* opennurbs_detail.cpp in Sources */,
+				1DB4EE90161B825A00672B4E /* opennurbs_dimstyle.cpp in Sources */,
+				1DB4EE91161B825A00672B4E /* opennurbs_ellipse.cpp in Sources */,
+				1DB4EE92161B825A00672B4E /* opennurbs_embedded_file.cpp in Sources */,
+				1DB4EE93161B825A00672B4E /* opennurbs_error_message.cpp in Sources */,
+				1DB4EE94161B825A00672B4E /* opennurbs_error.cpp in Sources */,
+				1DB4EE95161B825A00672B4E /* opennurbs_evaluate_nurbs.cpp in Sources */,
+				1DB4EE96161B825A00672B4E /* opennurbs_extensions.cpp in Sources */,
+				1DB4EE97161B825A00672B4E /* opennurbs_font.cpp in Sources */,
+				1DB4EE98161B825A00672B4E /* opennurbs_fsp.cpp in Sources */,
+				1DB4EE99161B825A00672B4E /* opennurbs_geometry.cpp in Sources */,
+				1DB4EE9A161B825A00672B4E /* opennurbs_group.cpp in Sources */,
+				1DB4EE9B161B825A00672B4E /* opennurbs_hatch.cpp in Sources */,
+				1DB4EE9C161B825A00672B4E /* opennurbs_instance.cpp in Sources */,
+				1DB4EE9D161B825A00672B4E /* opennurbs_intersect.cpp in Sources */,
+				1DB4EE9E161B825A00672B4E /* opennurbs_knot.cpp in Sources */,
+				1DB4EE9F161B825A00672B4E /* opennurbs_layer.cpp in Sources */,
+				1DB4EEA0161B825A00672B4E /* opennurbs_light.cpp in Sources */,
+				1DB4EEA1161B825A00672B4E /* opennurbs_line.cpp in Sources */,
+				1DB4EEA2161B825A00672B4E /* opennurbs_linecurve.cpp in Sources */,
+				1DB4EEA3161B825A00672B4E /* opennurbs_linetype.cpp in Sources */,
+				1DB4EEA4161B825A00672B4E /* opennurbs_lookup.cpp in Sources */,
+				1DB4EEA5161B825A00672B4E /* opennurbs_material.cpp in Sources */,
+				1DB4EEA6161B825A00672B4E /* opennurbs_math.cpp in Sources */,
+				1DB4EEA7161B825A00672B4E /* opennurbs_matrix.cpp in Sources */,
+				1DB4EEA8161B825A00672B4E /* opennurbs_mesh_ngon.cpp in Sources */,
+				1DB4EEA9161B825A00672B4E /* opennurbs_mesh_tools.cpp in Sources */,
+				1DB4EEAA161B825A00672B4E /* opennurbs_mesh.cpp in Sources */,
+				1DB4EEAB161B825A00672B4E /* opennurbs_morph.cpp in Sources */,
+				1DB4EEAC161B825A00672B4E /* opennurbs_nurbscurve.cpp in Sources */,
+				1DB4EEAD161B825A00672B4E /* opennurbs_nurbssurface.cpp in Sources */,
+				1DB4EEAE161B825A00672B4E /* opennurbs_nurbsvolume.cpp in Sources */,
+				1DB4EEAF161B825A00672B4E /* opennurbs_object_history.cpp in Sources */,
+				1DB4EEB0161B825A00672B4E /* opennurbs_object.cpp in Sources */,
+				1DB4EEB1161B825A00672B4E /* opennurbs_objref.cpp in Sources */,
+				1DB4EEB2161B825A00672B4E /* opennurbs_offsetsurface.cpp in Sources */,
+				1DB4EEB3161B825A00672B4E /* opennurbs_optimize.cpp in Sources */,
+				1DB4EEB4161B825A00672B4E /* opennurbs_plane.cpp in Sources */,
+				1DB4EEB5161B825A00672B4E /* opennurbs_planesurface.cpp in Sources */,
+				1DB4EEB6161B825A00672B4E /* opennurbs_pluginlist.cpp in Sources */,
+				1DB4EEB7161B825A00672B4E /* opennurbs_point.cpp in Sources */,
+				1DB4EEB8161B825A00672B4E /* opennurbs_pointcloud.cpp in Sources */,
+				1DB4EEB9161B825A00672B4E /* opennurbs_pointgeometry.cpp in Sources */,
+				1DB4EEBA161B825A00672B4E /* opennurbs_pointgrid.cpp in Sources */,
+				1DB4EEBB161B825A00672B4E /* opennurbs_polycurve.cpp in Sources */,
+				1DB4EEBC161B825A00672B4E /* opennurbs_polyedgecurve.cpp in Sources */,
+				1DB4EEBD161B825A00672B4E /* opennurbs_polyline.cpp in Sources */,
+				1DB4EEBE161B825A00672B4E /* opennurbs_polylinecurve.cpp in Sources */,
+				1DB4EEBF161B825A00672B4E /* opennurbs_precompiledheader.cpp in Sources */,
+				1DB4EEC0161B825A00672B4E /* opennurbs_rand.cpp in Sources */,
+				1DB4EEC1161B825A00672B4E /* opennurbs_revsurface.cpp in Sources */,
+				1DB4EEC2161B825A00672B4E /* opennurbs_rtree.cpp in Sources */,
+				1DB4EEC3161B825A00672B4E /* opennurbs_sort.cpp in Sources */,
+				1DB4EEC4161B825A00672B4E /* opennurbs_sphere.cpp in Sources */,
+				1DB4EEC5161B825A00672B4E /* opennurbs_string.cpp in Sources */,
+				1DB4EEC6161B825A00672B4E /* opennurbs_sum.cpp in Sources */,
+				1DB4EEC7161B825A00672B4E /* opennurbs_sumsurface.cpp in Sources */,
+				1DB4EEC8161B825A00672B4E /* opennurbs_surface.cpp in Sources */,
+				1DB4EEC9161B825A00672B4E /* opennurbs_surfaceproxy.cpp in Sources */,
+				1DB4EECA161B825A00672B4E /* opennurbs_textlog.cpp in Sources */,
+				1DB4EECB161B825A00672B4E /* opennurbs_torus.cpp in Sources */,
+				1DB4EECC161B825A00672B4E /* opennurbs_unicode.cpp in Sources */,
+				1DB4EECD161B825A00672B4E /* opennurbs_userdata.cpp in Sources */,
+				1DB4EECE161B825A00672B4E /* opennurbs_uuid.cpp in Sources */,
+				1DB4EECF161B825A00672B4E /* opennurbs_viewport.cpp in Sources */,
+				1DB4EED0161B825A00672B4E /* opennurbs_workspace.cpp in Sources */,
+				1DB4EED1161B825A00672B4E /* opennurbs_wstring.cpp in Sources */,
+				1DB4EED2161B825A00672B4E /* opennurbs_xform.cpp in Sources */,
+				1DB4EED3161B825A00672B4E /* opennurbs_zlib_memory.cpp in Sources */,
+				1DB4EED4161B825A00672B4E /* opennurbs_zlib.cpp in Sources */,
+				1D84E56C161B8B75001C8C5E /* opennurbs_memory_util.c in Sources */,
+				1D84E56D161B8B75001C8C5E /* opennurbs_memory.c in Sources */,
+				1D84E57B161B8BD4001C8C5E /* adler32.c in Sources */,
+				1D84E57C161B8BD4001C8C5E /* compress.c in Sources */,
+				1D84E57D161B8BD4001C8C5E /* crc32.c in Sources */,
+				1D84E57E161B8BD4001C8C5E /* deflate.c in Sources */,
+				1D84E57F161B8BD4001C8C5E /* infback.c in Sources */,
+				1D84E580161B8BD4001C8C5E /* inffast.c in Sources */,
+				1D84E581161B8BD4001C8C5E /* inflate.c in Sources */,
+				1D84E582161B8BD4001C8C5E /* inftrees.c in Sources */,
+				1D84E583161B8BD4001C8C5E /* trees.c in Sources */,
+				1D84E584161B8BD4001C8C5E /* uncompr.c in Sources */,
+				1D84E585161B8BD4001C8C5E /* zutil.c in Sources */,
+				1D2D85EE178B36C400D67434 /* opennurbs_quaternion.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1D9119DA161B812C0090B65E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		1D9119DB161B812C0090B65E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		1D9119DD161B812C0090B65E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1D9119DE161B812C0090B65E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1D9119D2161B812C0090B65E /* Build configuration list for PBXProject "opennurbs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D9119DA161B812C0090B65E /* Debug */,
+				1D9119DB161B812C0090B65E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1D9119DC161B812C0090B65E /* Build configuration list for PBXNativeTarget "opennurbs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D9119DD161B812C0090B65E /* Debug */,
+				1D9119DE161B812C0090B65E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1D9119CF161B812C0090B65E /* Project object */;
+}
