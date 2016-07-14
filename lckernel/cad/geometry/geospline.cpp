@@ -102,3 +102,32 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
      */
     return Coordinate();
 }
+
+void Spline::populateCurve() {
+    // Periodic
+    ON_3dPointArray points;
+    for(const auto& p: _controlPoints) {
+        points.Append(ON_3dPoint(p.x(), p.y(), p.z()));
+    }
+    ON_NurbsCurve* nc = ON_NurbsCurve::New();
+    if(_flags == splineflag::PERIODIC) {
+        nc->CreatePeriodicUniformNurbs(3, _degree, _controlPoints.size(), points);
+    }
+}
+
+std::vector<std::vector<lc::geo::Coordinate>> Spline::getBeziers() const {
+    auto curve = _splineCurve.Duplicate();
+    curve->MakePiecewiseBezier();
+    int span_count = curve->SpanCount();
+    int order = curve->m_order;
+    for(int spani = 0; spani < span_count; spani++) {
+        ON_3dPoint *ctrl_points = new ON_3dPoint[order];
+        //Load bezier control points
+        for(int i = 0; i < order; i++ ){
+            curve->GetCV(spani*(order-1) + i,ctrl_points[i]);
+        }
+        //Use control points to create bezier with our representation,
+        // if the order is 3 elevate degree to make cubic bezier
+    }
+
+}

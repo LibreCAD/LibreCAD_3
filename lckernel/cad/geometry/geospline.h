@@ -33,7 +33,9 @@ namespace lc {
                         _fitTolerance(fitTolerance),
                         _sTanX(stanx), _sTanY(stany), _sTanZ(stanz),
                         _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
-                        _nX(nx), _nY(ny), _nZ(nz), _flags(flags) {}
+                        _nX(nx), _nY(ny), _nZ(nz), _flags(flags) {
+                    populateCurve();
+                }
 
                 /**
                  * @brief control_points, Returns Control points of spline
@@ -87,7 +89,8 @@ namespace lc {
                  * @return bool closed
                  */
                 bool closed() const;
-
+                std::vector<std::vector<Coordinate> > getBeziers() const;
+                void populateCurve();
                 /*!
                  * \brief returns the nearest Point On Path
                  * \param lc::geo::Coordinate coord
