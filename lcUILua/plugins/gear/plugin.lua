@@ -1,5 +1,3 @@
-local layer = Layer("Gear", Color(255,255,255,255))
-
 local Gear = {}
 Gear.__index = Gear
 
@@ -136,6 +134,7 @@ local group = tab:addGroup("Gear")
 local gearButton = create_button("Gear")
 tab:addButton(group, gearButton, 0, 0, 1, 1)
 luaInterface:luaConnect(gearButton, "pressed()", function()
+    layer = active_layer()
     local gear=Gear()
 
     b=Builder(active_widget():document())

@@ -31,6 +31,10 @@ function open_file()
     end
 end
 
+function active_layer()
+    return layers:activeLayer()
+end
+
 local function open_lua_script()
     local luaScript = lc.LuaScript(mdiArea, cliCommand)
     luaScript:show()
@@ -73,6 +77,9 @@ function create_main_window()
     create_menu()
 
     add_commandline()
+
+    layers = lc.Layers(mdiArea)
+    mainWindow:addDockWidget(2, layers)
 
     if(hideUI ~= true) then
         add_toolbar()

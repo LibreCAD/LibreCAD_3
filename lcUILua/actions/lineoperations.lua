@@ -71,7 +71,7 @@ end
 
 function LineOperations:createLine(p1, p2)
     local d = active_widget():document()
-    local layer = d:layerByName("0")
+    local layer = active_layer()
     local l
     if(self.length == nil) then
         l = Line(p1, p2, layer)
