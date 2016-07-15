@@ -1,0 +1,72 @@
+#include "layermodel.h"
+
+LayerModel::LayerModel(QObject *parent) :
+    QAbstractTableModel(parent) {
+
+    _lockedIcon = QIcon(":/icons/locked.svg");
+    _unlockedIcon = QIcon(":/icons/unlocked.svg");
+}
+
+void LayerModel::setLayers(std::vector<lc::Layer_CSPtr> layers) {
+    beginResetModel();
+
+    _layers = layers;
+
+    endResetModel();
+}
+
+int LayerModel::rowCount(const QModelIndex&) const {
+    return _layers.size();
+}
+
+int LayerModel::columnCount(const QModelIndex&) const {
+    return LAST;
+}
+
+QVariant LayerModel::data(const QModelIndex& index, int role) const {
+    if (!index.isValid()) {
+        return QVariant();
+    }
+
+    auto layer = _layers.at(index.row());
+
+    if(role == Qt::DisplayRole && index.column() == NAME) {
+        return layer->name().c_str();
+    }
+    else if(role == Qt::DecorationRole) {
+        switch (index.column()) {
+            case LOCKED:
+                if (layer->isFrozen()) {
+                    return _lockedIcon;
+                }
+                return _unlockedIcon;
+        }
+    }
+
+    return QVariant();
+}
+
+Qt::ItemFlags LayerModel::flags(const QModelIndex& index) const {
+    if(index.column() == NAME) {
+        return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
+    }
+}
+
+
+bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+    if(!index.isValid()) {
+        return false;
+    }
+
+    emit nameChanged(_layers.at(index.row()), value.toString().toStdString());
+    return true;
+}
+
+lc::Layer_CSPtr LayerModel::layerAt(int row) {
+    try {
+        return _layers.at(row);
+    }
+    catch(std::out_of_range& e) {
+        return nullptr;
+    }
+}

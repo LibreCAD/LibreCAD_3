@@ -250,8 +250,17 @@ void addLCBindings(lua_State *L) {
 			.addFunction("addEntity", &LCViewer::TempEntities::addEntity)
 			.addFunction("removeEntity", &LCViewer::TempEntities::removeEntity)
 		.endClass()
+
+		.beginExtendClass<Layers, QDockWidget>("Layers")
+            .addFactory([](QMdiArea* mdiArea) {
+                return new Layers(mdiArea);
+            })
+			.addFunction("activeLayer", &Layers::activeLayer)
+		.endClass()
+
 	.endModule();
 }
+
 
 void addQtMetaTypes() {
 	qRegisterMetaType<lc::geo::Coordinate>();
