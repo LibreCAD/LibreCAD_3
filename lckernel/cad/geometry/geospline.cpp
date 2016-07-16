@@ -105,29 +105,98 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 
 void Spline::populateCurve() {
     // Periodic
+
+    //  std::cout << "Populating";
+    //  std::cout << _flags;
+
+    // convert LC Spline Control points to nurbs type coordinates.
     ON_3dPointArray points;
     for(const auto& p: _controlPoints) {
         points.Append(ON_3dPoint(p.x(), p.y(), p.z()));
     }
-    ON_NurbsCurve* nc = ON_NurbsCurve::New();
+    auto cpcount = _controlPoints.size();
+
+    // UNIFORM OPEN CURVE
+
     if(_flags == splineflag::PERIODIC) {
-        nc->CreatePeriodicUniformNurbs(3, _degree, _controlPoints.size(), points);
+        _splineCurve.CreatePeriodicUniformNurbs(3, _degree, cpcount, points);
     }
+
+    // UNIFORM BUT CLOSED ONE
+
+    else if (_knotPoints.size()==0) {
+
+        _splineCurve.Create(3, false, _degree+1, cpcount);
+        auto i = 0;
+
+        //  for(const auto & cp: _controlPoints) {
+        //      _splineCurve.SetCV(i, ON_3dPoint(cp.x(), cp.y(), cp.z()));
+        //      i++;
+        //  }
+
+        for(auto i = 0; i < cpcount; i++) {
+            _splineCurve.SetCV(i, points[i]);
+        }
+
+        int knotcount = _degree+_controlPoints.size()-1;
+
+        double* knots = new double[knotcount];
+        ON_MakeClampedUniformKnotVector(_degree+1, _controlPoints.size(), knots);
+        for (int i=0; i<knotcount; ++i) {
+            _splineCurve.SetKnot(i, knots[i]);
+        }
+        // _splineCurve.CreateClam pedUniformNurbs(3, _degree+1, _controlPoints.size(), points);
+    }
+
+    //  NON UNIFORM NURBS.
+
+    else if(knotPoints().size() > 0) {
+        _splineCurve.Create(3, false, _degree+1, _controlPoints.size());
+
+        //  auto i = 0;
+        //  for(const auto & cp: _controlPoints) {
+        //      _splineCurve.SetCV(i, ON_3dPoint(cp.x(), cp.y(), cp.z()));
+        //      i++;
+        //  }
+
+        // SET CP's
+
+        for(auto i = 0; i < cpcount; i++) {
+            _splineCurve.SetCV(i, points[i]);
+        }
+
+        // SET Knot vectors
+        auto i = 0;
+        for(const auto& kp: _knotPoints) {
+            _splineCurve.SetKnot(i, kp);
+            i++;
+        }
+
+    }
+
 }
 
 std::vector<std::vector<lc::geo::Coordinate>> Spline::getBeziers() const {
+    std::vector<std::vector<lc::geo::Coordinate>> ret;
     auto curve = _splineCurve.Duplicate();
+//    std::cout << _splineCurve.CVSize();
     curve->MakePiecewiseBezier();
     int span_count = curve->SpanCount();
     int order = curve->m_order;
     for(int spani = 0; spani < span_count; spani++) {
+        std::vector<geo::Coordinate> coords;
         ON_3dPoint *ctrl_points = new ON_3dPoint[order];
         //Load bezier control points
         for(int i = 0; i < order; i++ ){
             curve->GetCV(spani*(order-1) + i,ctrl_points[i]);
+            coords.push_back(geo::Coordinate(ctrl_points[i].x, ctrl_points[i].y, ctrl_points[i].z));
         }
+
+        std::cout << "DEBUG: Degree : "<< order - 1 << "\n";
+
         //Use control points to create bezier with our representation,
         // if the order is 3 elevate degree to make cubic bezier
+        ret.push_back(coords);
     }
-
+    return ret;
 }
