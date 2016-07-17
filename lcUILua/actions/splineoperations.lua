@@ -44,7 +44,7 @@ end
 function SplineOperations:getSpline(points)
     local d = active_widget():document()
     local layer = d:layerByName("0")
-    local s = Spline(points, {}, {}, 1, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, MetaInfo())
+    local s = Spline(points, {}, {}, 3, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, MetaInfo())
     s:setId(self.spline_id)
 
     return s
