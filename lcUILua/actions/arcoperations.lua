@@ -61,7 +61,7 @@ end
 
 function ArcOperations:getArc(center, radius, beginAngle, endAngle)
     local d = active_widget():document()
-    local layer = d:layerByName("0")
+    local layer = active_layer()
     local a = Arc(center, radius, beginAngle, endAngle, false, layer)
     a:setId(self.arc_id)
 

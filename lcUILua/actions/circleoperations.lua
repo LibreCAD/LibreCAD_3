@@ -58,7 +58,7 @@ function CircleOperations:getCircle(center, radius)
     end
 
     local d = active_widget():document()
-    local layer = d:layerByName("0")
+    local layer = active_layer()
     local c = Circle(center, radius, layer)
     c:setId(self.circle_id)
 

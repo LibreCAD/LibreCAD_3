@@ -22,5 +22,7 @@
         <file alias="delete.svg">icons/delete.svg</file>
         <file alias="modifymove.png">icons/modifymove.png</file>
         <file alias="modifytrim.png">icons/modifytrim.png</file>
+        <file alias="locked.svg">icons/locked.svg</file>
+        <file alias="unlocked.svg">icons/unlocked.svg</file>
     </qresource>
 </RCC>

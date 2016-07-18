@@ -35,9 +35,12 @@ operations/trimoperation.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
-        widgets/toolbartab.h
+widgets/toolbartab.h
+widgets/layers.h
+widgets/layermodel.h
 lua/qtbridge.h
-lua/luaqobject.h)
+lua/luaqobject.h
+dialogs/addlayerdialog.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -51,15 +54,20 @@ operations/trimoperation.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
-        widgets/toolbartab.cpp
+widgets/toolbartab.cpp
+widgets/layers.cpp
+widgets/layermodel.cpp
 lua/qtbridge.cpp
-lua/luaqobject.cpp)
+lua/luaqobject.cpp
+dialogs/addlayerdialog.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
 widgets/clicommand.ui
 widgets/luascript.ui
 widgets/toolbar.ui
-widgets/toolbartab.ui)
+widgets/toolbartab.ui
+widgets/layers.ui
+dialogs/addlayerdialog.ui)
 
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)

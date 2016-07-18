@@ -66,15 +66,12 @@ void ReplaceLayer::processInternal() {
     auto le = document()->entityContainer().entitiesByLayer(_oldLayer).asVector();
 
     for (auto i : le) {
-        //        document()->removeEntity(i);
+        document()->removeEntity(i);
+        document()->insertEntity(i->modify(_newLayer, i->metaInfo()));
     }
 
     document()->removeDocumentMetaType(_oldLayer);
-    document()->removeDocumentMetaType(_newLayer);
-
-    for (auto i : le) {
-        //        document()->removeEntity(i);
-    }
+    document()->addDocumentMetaType(_newLayer);
 }
 
 void ReplaceLayer::undo() const {

@@ -29,6 +29,7 @@ extern "C"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
 #include "widgets/toolbartab.h"
+#include "widgets/layers.h"
 #include <drawables/tempentities.h>
 
 

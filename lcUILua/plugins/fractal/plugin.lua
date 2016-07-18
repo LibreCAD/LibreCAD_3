@@ -1,4 +1,3 @@
-layer = Layer("Fractal", Color(255,255,255,255))
 function drawTree( ce, x1,  y1,  angle,  depth)
     if depth == 0 then  return end;
 
@@ -17,6 +16,7 @@ local group = tab:addGroup("Fractal")
 local fractalButton = create_button("Fractal tree")
 tab:addButton(group, fractalButton, 0, 0, 1, 1)
 luaInterface:luaConnect(fractalButton, "pressed()", function()
+    layer = active_layer()
     local b=Builder(active_widget():document())
     drawTree(b, 0, 0, 90, 14);
     b:execute()
