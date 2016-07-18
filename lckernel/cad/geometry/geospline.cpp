@@ -3,31 +3,6 @@
 using namespace lc;
 using namespace geo;
 
-/*
-Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _controlPoints(control_points), _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-                                                                                         _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-                                                                                         _eTanZ(0.) {
-}
-
-
-Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<double>& knotPoints, int degree,
-               bool closed) :  _controlPoints(control_points), _knotPoints(knotPoints),
-    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-    _eTanZ(0.) {
-}
-
-Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<double>& knotPoints,
-               const std::vector<Coordinate>& fitPoints, int degree,
-               bool closed) : _controlPoints(control_points), _knotPoints(knotPoints),
-    _fitPoints(fitPoints),
-    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-    _eTanZ(0.) {
-}
-*/
 const std::vector<Coordinate> &Spline::controlPoints() const {
     return _controlPoints;
 }
@@ -104,10 +79,7 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 }
 
 void Spline::populateCurve() {
-    // Periodic
-
     //  std::cout << "Populating";
-    //  std::cout << _flags;
 
     // convert LC Spline Control points to nurbs type coordinates.
     ON_3dPointArray points;
@@ -117,22 +89,15 @@ void Spline::populateCurve() {
     auto cpcount = _controlPoints.size();
 
     // UNIFORM OPEN CURVE
-
     if(_flags == splineflag::PERIODIC) {
         _splineCurve.CreatePeriodicUniformNurbs(3, _degree+1, cpcount, points);
     }
 
     // UNIFORM BUT CLOSED ONE
-
     else if (_knotPoints.size()==0) {
 
         _splineCurve.Create(3, false, _degree+1, cpcount);
         auto i = 0;
-
-        //  for(const auto & cp: _controlPoints) {
-        //      _splineCurve.SetCV(i, ON_3dPoint(cp.x(), cp.y(), cp.z()));
-        //      i++;
-        //  }
 
         for(auto i = 0; i < cpcount; i++) {
             _splineCurve.SetCV(i, points[i]);
@@ -145,22 +110,13 @@ void Spline::populateCurve() {
         for (int i=0; i<knotcount; ++i) {
             _splineCurve.SetKnot(i, knots[i]);
         }
-        // _splineCurve.CreateClam pedUniformNurbs(3, _degree+1, _controlPoints.size(), points);
     }
 
     //  NON UNIFORM NURBS.
-
     else if(knotPoints().size() > 0) {
         _splineCurve.Create(3, false, _degree+1, cpcount);
 
-        //  auto i = 0;
-        //  for(const auto & cp: _controlPoints) {
-        //      _splineCurve.SetCV(i, ON_3dPoint(cp.x(), cp.y(), cp.z()));
-        //      i++;
-        //  }
-
         // SET CP's
-
         for(auto i = 0; i < cpcount; i++) {
             _splineCurve.SetCV(i, points[i]);
         }
@@ -171,49 +127,32 @@ void Spline::populateCurve() {
             _splineCurve.SetKnot(i, kp);
             i++;
         }
-
     }
-
 }
 
+/*
+ * Need to be updated to return bezier objects instead of returning coordinate vectors.
+ * No external need to cast to bezier and then find intersections.
+ */
 std::vector<std::vector<lc::geo::Coordinate>> Spline::getBeziers() const {
     std::vector<std::vector<lc::geo::Coordinate>> bezlist;
     auto curve = _splineCurve.Duplicate();
-//    std::cout << _splineCurve.CVSize();
     curve->MakePiecewiseBezier();
-    int span_count = curve->SpanCount();
-//    for(int spani = 0; spani < span_count; spani++) {
-//        std::vector<geo::Coordinate> coords;
-//        ON_3dPoint *ctrl_points = new ON_3dPoint[order];
-//        //Load bezier control points
-//        for(int i = 0; i < order; i++ ){
-////            curve->GetCV(spani*(order-1) + i,ctrl_points[i]);
+    ON_3dPoint p;
 
+    int deg = curve->Degree();
+    int cpcount = curve->CVCount();
 
-//            coords.push_back(geo::Coordinate(ctrl_points[i].x, ctrl_points[i].y, ctrl_points[i].z));
-//        }
-
-//        std::cout << "DEBUG: Degree : "<< order - 1 << "\n";
-
-//        //Use control points to create bezier with our representation,
-//        // if the order is 3 elevate degree to make cubic bezier
-//        ret.push_back(coords);
-//    }
-
-    for (int i=0; i<=span_count; ++i) {
+    for (int i=0; i<deg+cpcount+2; ++i) {
         ON_BezierCurve bc;
-        if (!curve->ConvertSpanToBezier(i, bc)) {
-            continue;
+        if (curve->ConvertSpanToBezier(i, bc)) {
+            std::vector<geo::Coordinate> bez;
+            for (int j=0; j<bc.CVCount(); j++) {
+                bc.GetCV(j, p);
+                bez.push_back(geo::Coordinate(p.x, p.y, p.z));
+            }
+            bezlist.push_back(bez);
         }
-
-        std::vector<geo::Coordinate> bez;
-        for (int j=0; j<bc.CVCount(); j++) {
-            ON_3dPoint onp;
-            bc.GetCV(j, onp);
-            bez.push_back(geo::Coordinate(onp.x, onp.y, onp.z));
-        }
-        bezlist.push_back(bez);
     }
-
     return bezlist;
 }
