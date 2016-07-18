@@ -110,6 +110,7 @@ void Spline::populateCurve() {
         for (int i=0; i<knotcount; ++i) {
             _splineCurve.SetKnot(i, knots[i]);
         }
+        delete knots;
     }
 
     //  NON UNIFORM NURBS.
@@ -130,11 +131,15 @@ void Spline::populateCurve() {
     }
 }
 
+const std::vector<std::vector<lc::geo::Coordinate>> Spline::beziers() const {
+    return _beziers;
+}
+
 /*
  * Need to be updated to return bezier objects instead of returning coordinate vectors.
  * No external need to cast to bezier and then find intersections.
  */
-std::vector<std::vector<lc::geo::Coordinate>> Spline::getBeziers() const {
+void Spline::generateBeziers() {
     std::vector<std::vector<lc::geo::Coordinate>> bezlist;
     auto curve = _splineCurve.Duplicate();
     curve->MakePiecewiseBezier();
@@ -151,8 +156,7 @@ std::vector<std::vector<lc::geo::Coordinate>> Spline::getBeziers() const {
                 bc.GetCV(j, p);
                 bez.push_back(geo::Coordinate(p.x, p.y, p.z));
             }
-            bezlist.push_back(bez);
+            _beziers.push_back(bez);
         }
     }
-    return bezlist;
 }

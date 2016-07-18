@@ -35,6 +35,7 @@ namespace lc {
                         _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
                         _nX(nx), _nY(ny), _nZ(nz), _flags(flags) {
                     populateCurve();
+                    generateBeziers();
                 }
 
                 /**
@@ -89,7 +90,10 @@ namespace lc {
                  * @return bool closed
                  */
                 bool closed() const;
-                std::vector<std::vector<Coordinate> > getBeziers() const;
+                const std::vector<std::vector<lc::geo::Coordinate>> beziers() const;
+                void generateBeziers();
+
+
                 void populateCurve();
                 /*!
                  * \brief returns the nearest Point On Path
@@ -123,6 +127,7 @@ namespace lc {
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
                 ON_NurbsCurve _splineCurve;
+                std::vector<std::vector<geo::Coordinate>> _beziers;
                 const splineflag _flags;
         };
     }

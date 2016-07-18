@@ -12,7 +12,7 @@ LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr spline) : LCVDrawItem(true),
 
 void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
 
-    auto bezlist = getBeziers();
+    auto bezlist = beziers();
 
     for(const auto &bez: bezlist) {
         painter.move_to(bez[0].x(), bez[0].y());
