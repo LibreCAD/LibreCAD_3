@@ -3,31 +3,6 @@
 using namespace lc;
 using namespace geo;
 
-/*
-Spline::Spline(const std::vector<Coordinate>& control_points, int degree, bool closed) : _controlPoints(control_points), _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-                                                                                         _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-                                                                                         _eTanZ(0.) {
-}
-
-
-Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<double>& knotPoints, int degree,
-               bool closed) :  _controlPoints(control_points), _knotPoints(knotPoints),
-    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-    _eTanZ(0.) {
-}
-
-Spline::Spline(const std::vector<Coordinate>& control_points,
-               const std::vector<double>& knotPoints,
-               const std::vector<Coordinate>& fitPoints, int degree,
-               bool closed) : _controlPoints(control_points), _knotPoints(knotPoints),
-    _fitPoints(fitPoints),
-    _degree(degree), _closed(closed), _sTanX(0.), _sTanY(0.),
-    _sTanZ(0.), _eTanX(0.), _eTanY(0.),
-    _eTanZ(0.) {
-}
-*/
 const std::vector<Coordinate> &Spline::controlPoints() const {
     return _controlPoints;
 }
@@ -101,4 +76,87 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
      * fix compiler warning
      */
     return Coordinate();
+}
+
+void Spline::populateCurve() {
+    //  std::cout << "Populating";
+
+    // convert LC Spline Control points to nurbs type coordinates.
+    ON_3dPointArray points;
+    for(const auto& p: _controlPoints) {
+        points.Append(ON_3dPoint(p.x(), p.y(), p.z()));
+    }
+    auto cpcount = _controlPoints.size();
+
+    // UNIFORM OPEN CURVE
+    if(_flags == splineflag::PERIODIC) {
+        _splineCurve.CreatePeriodicUniformNurbs(3, _degree+1, cpcount, points);
+    }
+
+    // UNIFORM BUT CLOSED ONE
+    else if (_knotPoints.size()==0) {
+
+        _splineCurve.Create(3, false, _degree+1, cpcount);
+        auto i = 0;
+
+        for(auto i = 0; i < cpcount; i++) {
+            _splineCurve.SetCV(i, points[i]);
+        }
+
+        int knotcount = _degree+cpcount-1;
+
+        double* knots = new double[knotcount];
+        ON_MakeClampedUniformKnotVector(_degree+1, cpcount, knots);
+        for (int i=0; i<knotcount; ++i) {
+            _splineCurve.SetKnot(i, knots[i]);
+        }
+        delete knots;
+    }
+
+    //  NON UNIFORM NURBS.
+    else if(knotPoints().size() > 0) {
+        _splineCurve.Create(3, false, _degree+1, cpcount);
+
+        // SET CP's
+        for(auto i = 0; i < cpcount; i++) {
+            _splineCurve.SetCV(i, points[i]);
+        }
+
+        // SET Knot vectors
+        auto i = 0;
+        for(const auto& kp: _knotPoints) {
+            _splineCurve.SetKnot(i, kp);
+            i++;
+        }
+    }
+}
+
+const std::vector<std::vector<lc::geo::Coordinate>> Spline::beziers() const {
+    return _beziers;
+}
+
+/*
+ * Need to be updated to return bezier objects instead of returning coordinate vectors.
+ * No external need to cast to bezier and then find intersections.
+ */
+void Spline::generateBeziers() {
+    std::vector<std::vector<lc::geo::Coordinate>> bezlist;
+    auto curve = _splineCurve.Duplicate();
+    curve->MakePiecewiseBezier();
+    ON_3dPoint p;
+
+    int deg = curve->Degree();
+    int cpcount = curve->CVCount();
+
+    for (int i=0; i<deg+cpcount+2; ++i) {
+        ON_BezierCurve bc;
+        if (curve->ConvertSpanToBezier(i, bc)) {
+            std::vector<geo::Coordinate> bez;
+            for (int j=0; j<bc.CVCount(); j++) {
+                bc.GetCV(j, p);
+                bez.push_back(geo::Coordinate(p.x, p.y, p.z));
+            }
+            _beziers.push_back(bez);
+        }
+    }
 }

@@ -12,11 +12,11 @@ option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
 option(WITH_QTUI "Build Qt graphical user interface" ON)
 
-if(WITH_LCDXFDWG)
-endif(WITH_LCDXFDWG)
+add_subdirectory("third_party/opennurbs_20130711")
 
 ADD_SUBDIRECTORY("lckernel")
 ADD_SUBDIRECTORY("lcDXFDWG")
+
 add_definitions(-DUSE_lcDXFDWG=1)
 
 ADD_SUBDIRECTORY("lcviewernoqt")
