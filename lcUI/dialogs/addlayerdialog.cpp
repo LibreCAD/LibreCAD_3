@@ -1,11 +1,18 @@
 #include "addlayerdialog.h"
 #include "ui_addlayerdialog.h"
 
-AddLayerDialog::AddLayerDialog(QWidget* parent) :
+AddLayerDialog::AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent) :
     QDialog(parent),
     ui(new Ui::AddLayerDialog){
 
     ui->setupUi(this);
+
+    linePatternSelect = new LinePatternSelect(linePatterns, nullptr);
+
+    auto layout = dynamic_cast<QFormLayout*>(this->layout());
+    if(layout) {
+        layout->setWidget(3, QFormLayout::FieldRole, linePatternSelect);
+    }
 }
 
 AddLayerDialog::~AddLayerDialog() {
@@ -18,15 +25,33 @@ void AddLayerDialog::accept() {
         return;
     }
 
-    auto layer = std::make_shared<const lc::Layer>(
-            ui->name->text().toStdString(),
-            lc::MetaLineWidthByValue(ui->width->value()),
-            lc::Color(ui->r->value(),
-                      ui->g->value(),
-                      ui->b->value(),
-                      ui->a->value()
-            )
-    );
+    auto linePattern = linePatternSelect->linePattern();
+    lc::Layer_CSPtr layer;
+
+    if(linePattern == nullptr) {
+        layer = std::make_shared<const lc::Layer>(
+                ui->name->text().toStdString(),
+                lc::MetaLineWidthByValue(ui->width->value()),
+                lc::Color(ui->r->value(),
+                          ui->g->value(),
+                          ui->b->value(),
+                          ui->a->value()
+                )
+        );
+    }
+    else {
+        layer = std::make_shared<const lc::Layer>(
+                ui->name->text().toStdString(),
+                lc::MetaLineWidthByValue(ui->width->value()),
+                lc::Color(ui->r->value(),
+                          ui->g->value(),
+                          ui->b->value(),
+                          ui->a->value()
+                ),
+                linePattern,
+                false
+        );
+    }
 
     emit newLayer(layer);
 

@@ -73,7 +73,6 @@ namespace lc {
              * \brief Event to replace a layer
              */
             virtual  Nano::Signal<void(const lc::ReplaceLayerEvent&)>& replaceLayerEvent();
-
         protected:
             /*!
                  * \brief execute
@@ -175,6 +174,11 @@ namespace lc {
              * @brief return a line pattern by it's name
              */
             virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
+
+            /**
+             * @brief return all line patterns
+             */
+            virtual std::vector<DxfLinePattern_CSPtr> linePatterns() const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 
@@ -189,7 +193,6 @@ namespace lc {
             Nano::Signal<void(const lc::AddLayerEvent&)>  _addLayerEvent;
             Nano::Signal<void(const lc::ReplaceLayerEvent&)>  _replaceLayerEvent;
             Nano::Signal<void(const lc::RemoveLayerEvent&)>  _removeLayerEvent;
-
     };
 
 

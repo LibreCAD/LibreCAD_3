@@ -43,7 +43,7 @@ lc::Layer_CSPtr Layers::activeLayer() {
 }
 
 void Layers::on_newButton_clicked() {
-    auto dialog = new AddLayerDialog(this);
+    auto dialog = new AddLayerDialog(document->linePatterns(), this);
     dialog->show();
 
     connect(dialog, &AddLayerDialog::newLayer, this, &Layers::createLayer);
