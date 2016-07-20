@@ -34,13 +34,6 @@ std::vector<double> DxfLinePattern::generatePattern(const std::vector<double> &d
         return dxfPat;
     }
 
-    std::vector<double> d;
-    d.push_back(0);
-    d.push_back(-5);
-    d.push_back(0);
-    d.push_back(-6);
-    d.push_back(10);
-
     double last = dxfPattern.at(0);
     bool isInk = true;
     for (auto d : dxfPattern) {
@@ -76,7 +69,7 @@ std::vector<double> DxfLinePattern::generatePattern(const std::vector<double> &d
 
     // Set length for this pattern
     double mul = length / last;
-    for (int i = 0; i < dxfPat.size(); i++) {
+    for (unsigned int i = 0; i < dxfPat.size(); i++) {
         dxfPat[i] = dxfPat[i] * mul;
     }
 

@@ -115,3 +115,7 @@ Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
 DxfLinePattern_CSPtr DocumentImpl::linePatternByName(const std::string& linePatternName) const {
     return _storageManager->linePatternByName(linePatternName);
 }
+
+std::vector<DxfLinePattern_CSPtr> DocumentImpl::linePatterns() const {
+    return _storageManager->metaTypes<const DxfLinePattern>();
+}

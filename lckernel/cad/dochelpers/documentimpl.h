@@ -36,6 +36,11 @@ namespace lc {
 
             virtual Layer_CSPtr layerByName(const std::string& layerName) const;
             virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;
+
+            /**
+             * @brief return all line patterns
+             */
+            virtual std::vector<DxfLinePattern_CSPtr> linePatterns() const;
         protected:
             /*!
              * \brief execute's a operation

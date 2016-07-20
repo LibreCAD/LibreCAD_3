@@ -66,7 +66,7 @@ namespace lc {
             */
             virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) = 0;
 
-            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() = 0;
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() const = 0;
 
             /**
              * @brief optimise
@@ -86,6 +86,21 @@ namespace lc {
                     return dp;
                 }
                 return nullptr;
+            };
+
+            template <typename T>
+            const std::vector<std::shared_ptr<const T>> metaTypes() const {
+                auto metaTypes = allMetaTypes();
+                std::vector<std::shared_ptr<T>> matches;
+
+                for(auto metaType : metaTypes) {
+                    auto castedMetaType = std::dynamic_pointer_cast<T>(metaType.second);
+                    if(castedMetaType) {
+                        matches.push_back(castedMetaType);
+                    }
+                }
+
+                return matches;
             };
 
         private:

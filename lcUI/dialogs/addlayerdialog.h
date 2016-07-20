@@ -3,6 +3,9 @@
 #include <QDialog>
 #include <QColorDialog>
 #include <QToolTip>
+#include <QFormLayout>
+
+#include "widgets/linepatternselect.h"
 
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
@@ -15,7 +18,7 @@ class AddLayerDialog : public QDialog {
     Q_OBJECT
 
     public:
-        AddLayerDialog(QWidget* parent = 0);
+        AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent = 0);
         ~AddLayerDialog();
 
     signals:
@@ -28,4 +31,5 @@ class AddLayerDialog : public QDialog {
 
     private:
         Ui::AddLayerDialog* ui;
+        LinePatternSelect* linePatternSelect;
 };
