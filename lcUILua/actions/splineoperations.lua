@@ -16,13 +16,14 @@ function SplineOperations:_init(id)
     self.points = {}
 
     self.spline_id = ID():id()
-    self.spline = self:getSpline({Coord(0,0)})
+    self.degree = 3
+    self.spline = self:getSpline({Coord(0,0)}, self.degree)
 
     event.register('point', self)
     event.register('mouseMove', self)
     event.register('number', self)
 
-    message("Add a new point")
+    message("Add a new points or enter degree")
 end
 
 function SplineOperations:onEvent(eventName, ...)
@@ -34,6 +35,10 @@ function SplineOperations:onEvent(eventName, ...)
         self:newPoint(...)
     elseif(eventName == "mouseMove") then
         self:createTempSpline(...)
+    elseif(eventName == "number") then
+        if(... >= 0 and ... <= 3) then
+            self.degree = ...
+        end
     end
 end
 
@@ -41,11 +46,11 @@ function SplineOperations:newPoint(point)
     table.insert(self.points, point)
 end
 
-function SplineOperations:getSpline(points)
+function SplineOperations:getSpline(points, degree)
     local d = active_widget():document()
     
     local layer = active_layer()
-    local s = Spline(points, {}, {}, 3, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, MetaInfo())
+    local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, MetaInfo())
 
     s:setId(self.spline_id)
 
@@ -61,36 +66,30 @@ function SplineOperations:createTempSpline(point)
     end
     table.insert(points, point)
 
-    self.spline = self:getSpline(points)
+    self.spline = self:getSpline(points, self.degree)
 
     active_widget():tempEntities():addEntity(self.spline)
 end
 
 function SplineOperations:createSpline()
     local b = Builder(active_widget():document())
-    local s = self:getSpline(self.points)
+    local s = self:getSpline(self.points, self.degree)
     b:append(s)
     b:execute()
-
-    active_widget():tempEntities():removeEntity(self.spline)
-    self.finished = true
-
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
 end
 
 function SplineOperations:close()
     if(not self.finished) then
         if(#self.points > 1) then
             self:createSpline()
-        else
-            active_widget():tempEntities():removeEntity(self.spline)
-            self.finished = true
-
-            event.delete('mouseMove', self)
-            event.delete('number', self)
-            event.delete('point', self)
         end
+        active_widget():tempEntities():removeEntity(self.spline)
+        self.finished = true
+
+        event.trigger('operationFinished')
+
+        event.delete('mouseMove', self)
+        event.delete('number', self)
+        event.delete('point', self)
     end
 end
