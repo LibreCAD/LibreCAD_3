@@ -380,6 +380,10 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
 		const double* path = &entityLinePattern->lcPattern()[0];
 		painter.set_dash(path, entityLinePattern->lcPattern().size(), 0., true);
 	}
+    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern().size() > 0) {
+        const double* path = &layer->linePattern()->lcPattern()[0];
+        painter.set_dash(path, layer->linePattern()->lcPattern().size(), 0., true);
+    }
 
 	// Decide what color to render the entity into
 	if (entity->selected()) {
