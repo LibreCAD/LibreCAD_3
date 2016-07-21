@@ -172,18 +172,6 @@ const std::vector<Coordinate> Bezier::Curve(double precession) {
     return ret;
 }
 
-const Coordinate Bezier::pointA() const {
-    return _pointA;
-}
-
-const Coordinate Bezier::pointB() const {
-    return _pointB;
-}
-
-const Coordinate Bezier::pointC() const {
-    return _pointC;
-}
-
 const double Bezier::length() const {
 
      auto  Bx = 2*(_pointB.x() - _pointA.x());
@@ -204,24 +192,24 @@ const double Bezier::length() const {
      return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }
 
-Bezier Bezier::rotate(const geo::Coordinate& center, double angle) {
-    return Bezier(_pointA.rotate(center, angle),
-                  _pointB.rotate(center, angle),
-                  _pointC.rotate(center, angle));
+BB_CSPtr Bezier::rotate(const geo::Coordinate& center, double angle) {
+//    return Bezier(_pointA.rotate(center, angle),
+//                  _pointB.rotate(center, angle),
+//                  _pointC.rotate(center, angle));
 }
 
-Bezier Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
-    return Bezier(_pointA.scale(center, factor),
-                  _pointB.scale(center, factor),
-                  _pointC.scale(center, factor)
-                  );
+BB_CSPtr Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
+//    return Bezier(_pointA.scale(center, factor),
+//                  _pointB.scale(center, factor),
+//                  _pointC.scale(center, factor)
+//                  );
 }
 
-Bezier Bezier::move(const geo::Coordinate& offset) const {
-    return Bezier(_pointA + offset,
-                  _pointB + offset,
-                  _pointC + offset
-                  );
+BB_CSPtr Bezier::move(const geo::Coordinate& offset) const {
+//    return Bezier(_pointA + offset,
+//                  _pointB + offset,
+//                  _pointC + offset
+//                  );
 }
 
 const Coordinate Bezier::tangent(double t) const {
@@ -253,21 +241,21 @@ const Coordinate Bezier::normal(double t) const {
     return Coordinate(tanx, tany);
 }
 
-Bezier Bezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    return Bezier(_pointA.mirror(axis1, axis2),
-                  _pointB.mirror(axis1, axis2),
-                  _pointC.mirror(axis1, axis2)
-                  );
+BB_CSPtr Bezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
+//    return Bezier(_pointA.mirror(axis1, axis2),
+//                  _pointB.mirror(axis1, axis2),
+//                  _pointC.mirror(axis1, axis2)
+//                  );
 }
 
-std::vector<Bezier> Bezier::splitHalf() const {
+std::vector<BB_CSPtr> Bezier::splitHalf() const {
     auto AB = (_pointA + _pointB) / 2;
     auto BC = (_pointB + _pointC) / 2;
     auto D = (AB + BC)/2;
-    return {Bezier(_pointA, AB, D), Bezier(D, BC, _pointC)};
+//    return {Bezier(_pointA, AB, D), Bezier(D, BC, _pointC)};
 }
 
-Bezier Bezier::offset(const geo::Coordinate& offset) const {
+BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
     auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
     auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
 

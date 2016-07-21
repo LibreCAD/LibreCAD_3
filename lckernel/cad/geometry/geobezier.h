@@ -8,10 +8,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+#include "geobezierbase.h"
 
 namespace lc {
     namespace geo {
-        class Bezier  : public Base, virtual public Visitable {
+        class Bezier  : public BezierBase {
             public:
                 /**
                  * Create a new Bezier
@@ -20,12 +21,10 @@ namespace lc {
 
                 Bezier(const Bezier &bez);
 
-                const Coordinate pointA() const;
-
-                const Coordinate pointB() const;
-
-                const Coordinate pointC() const;
-
+                std::vector<Coordinate> getCP() {
+                    std::vector<Coordinate> ret{_pointA, _pointB, _pointC};
+                    return ret;
+                }
                 const Area boundingBox() const;
 
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
@@ -43,16 +42,16 @@ namespace lc {
 
                 const Coordinate normal(double t) const;
 
-                std::vector<Bezier> splitHalf() const;
+                std::vector<BB_CSPtr> splitHalf() const;
 
-                Bezier offset(const geo::Coordinate& offset) const;
+                BB_CSPtr offset(const geo::Coordinate& offset) const;
 
-                Bezier rotate(const geo::Coordinate& center, double angle);
-                Bezier scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
-                Bezier move(const geo::Coordinate& offset) const;
-                Bezier mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const;
+                BB_CSPtr rotate(const geo::Coordinate& center, double angle);
+                BB_CSPtr scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
+                BB_CSPtr move(const geo::Coordinate& offset) const;
+                BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const;
 
-                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+//                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
                 std::vector<double> nearestPointTValue(const Coordinate &coord) const;

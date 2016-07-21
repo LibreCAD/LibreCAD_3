@@ -18,6 +18,7 @@ namespace lc {
         class Ellipse;
         class Spline;
         class Arc;
+        class BezierBase;
     }
 
     class EntityDispatch;
@@ -83,7 +84,6 @@ namespace lc {
         class Image;
         using Image_SPtr = std::shared_ptr<Image>;
         using Image_CSPtr = std::shared_ptr<const Image>;
-
     }
 }
 
