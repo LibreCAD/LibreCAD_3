@@ -177,6 +177,8 @@ void lua_openlckernel(lua_State* L) {
 		.addFunction("move", &entity::CADEntity::move)
 		.addFunction("rotate", &entity::CADEntity::rotate)
 		.addFunction("copy", &entity::CADEntity::copy)
+		.addFunction("scale", &entity::CADEntity::scale)
+		.addFunction("mirror", &entity::CADEntity::mirror)
 
 		.addFunction("layer", &entity::CADEntity::layer)
 
