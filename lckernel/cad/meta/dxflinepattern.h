@@ -21,7 +21,7 @@ namespace lc {
 
         DxfLinePattern() {}
 
-        DxfLinePattern(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length, const double lineWidth = 1);
+        DxfLinePattern(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length);
 
         virtual ~DxfLinePattern() = default;
 
@@ -67,7 +67,11 @@ namespace lc {
         std::string _name;
         std::string _description;
         std::vector<double> _path;
+
+        //Might grow out of proportions if too much line sizes are rendered
+        //We should find a way to remove widths unrendered for x drawing cycles
         mutable std::map<double, std::vector<double>> _lcPatterns;
+
         double _length;
     };
     using DxfLinePattern_SPtr = std::shared_ptr<DxfLinePattern>;
