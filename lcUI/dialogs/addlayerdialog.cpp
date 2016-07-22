@@ -2,8 +2,13 @@
 #include "ui_addlayerdialog.h"
 
 AddLayerDialog::AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent) :
-    QDialog(parent),
-    ui(new Ui::AddLayerDialog){
+    AddLayerDialog(nullptr, linePatterns, parent) {
+}
+
+AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget *parent) :
+        QDialog(parent),
+        ui(new Ui::AddLayerDialog),
+        _oldLayer(oldLayer) {
 
     ui->setupUi(this);
 
@@ -12,6 +17,25 @@ AddLayerDialog::AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePattern
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
     if(layout) {
         layout->setWidget(3, QFormLayout::FieldRole, linePatternSelect);
+    }
+
+    if(oldLayer != nullptr) {
+        ui->name->setText(oldLayer->name().c_str());
+
+        ui->r->setValue(oldLayer->color().redI());
+        ui->g->setValue(oldLayer->color().greenI());
+        ui->b->setValue(oldLayer->color().blueI());
+        ui->a->setValue(oldLayer->color().alphaI());
+
+        ui->width->setValue(oldLayer->lineWidth().width());
+
+        if(oldLayer->linePattern() != nullptr) {
+            int linePatternIndex = linePatternSelect->findText(oldLayer->linePattern()->name().c_str());
+
+            if (linePatternIndex != -1) {
+                linePatternSelect->setCurrentIndex(linePatternIndex);
+            }
+        }
     }
 }
 
@@ -53,7 +77,12 @@ void AddLayerDialog::accept() {
         );
     }
 
-    emit newLayer(layer);
+    if(_oldLayer == nullptr) {
+        emit newLayer(layer);
+    }
+    else {
+        emit editLayer(_oldLayer, layer);
+    }
 
     this->close();
 }

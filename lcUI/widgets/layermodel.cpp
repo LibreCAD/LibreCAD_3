@@ -3,6 +3,7 @@
 LayerModel::LayerModel(QObject *parent) :
     QAbstractTableModel(parent) {
 
+    _editIcon = QIcon(":/icons/layeredit");
     _lockedIcon = QIcon(":/icons/locked.svg");
     _unlockedIcon = QIcon(":/icons/unlocked.svg");
 }
@@ -35,6 +36,9 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
     }
     else if(role == Qt::DecorationRole) {
         switch (index.column()) {
+            case EDIT:
+                return _editIcon;
+
             case LOCKED:
                 if (layer->isFrozen()) {
                     return _lockedIcon;
@@ -50,10 +54,12 @@ Qt::ItemFlags LayerModel::flags(const QModelIndex& index) const {
     if(index.column() == NAME) {
         return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
     }
+
+    return Qt::ItemIsEnabled;
 }
 
 
-bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int) {
     if(!index.isValid()) {
         return false;
     }

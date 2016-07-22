@@ -19,10 +19,12 @@ class AddLayerDialog : public QDialog {
 
     public:
         AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent = 0);
+        AddLayerDialog(lc::Layer_CSPtr oldLayer, std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent = 0);
         ~AddLayerDialog();
 
     signals:
         void newLayer(lc::Layer_CSPtr);
+        void editLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer);
 
     private slots:
         void accept();
@@ -32,4 +34,5 @@ class AddLayerDialog : public QDialog {
     private:
         Ui::AddLayerDialog* ui;
         LinePatternSelect* linePatternSelect;
+        lc::Layer_CSPtr _oldLayer;
 };

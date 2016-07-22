@@ -91,6 +91,13 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
             case LayerModel::LOCKED:
                 locked = !locked;
                 break;
+
+            case LayerModel::EDIT:
+                auto dialog = new AddLayerDialog(layer, document->linePatterns(), this);
+                dialog->show();
+
+                connect(dialog, &AddLayerDialog::editLayer, this, &Layers::replaceLayer);
+                return;
         }
 
         auto newLayer = std::make_shared<const lc::Layer>(

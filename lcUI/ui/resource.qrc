@@ -24,5 +24,6 @@
         <file alias="modifytrim.png">icons/modifytrim.png</file>
         <file alias="locked.svg">icons/locked.svg</file>
         <file alias="unlocked.svg">icons/unlocked.svg</file>
+        <file alias="layeredit">icons/layeredit.png</file>
     </qresource>
 </RCC>
