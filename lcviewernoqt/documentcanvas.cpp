@@ -361,28 +361,25 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
 	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
 	double alpha_compensation = 0.9;
 
-	// Decide on line width
+    // Decide on line width
+    // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+    // TODO: Find a better algo
+    double width;
 	if (entityLineWidth != nullptr) {
-		// We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
-		// TODO: Find a better algo
-		double width = entityLineWidth->width() * 1.5;
-		// Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-		painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+		width = entityLineWidth->width() * 1.5;
 	} else {
-		// We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
-		// TODO: Find a better algo
-		double width = layer->lineWidth().width() * 1.5;
-		// Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-		painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+		width = layer->lineWidth().width() * 1.5;
 	}
+    // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+    painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
 
-	if (entityLinePattern != nullptr && entityLinePattern->lcPattern().size()>0) {
-		const double* path = &entityLinePattern->lcPattern()[0];
-		painter.set_dash(path, entityLinePattern->lcPattern().size(), 0., true);
+	if (entityLinePattern != nullptr && entityLinePattern->lcPattern(width).size()>0) {
+        auto path = entityLinePattern->lcPattern(width);
+		painter.set_dash(&path[0], path.size(), 0., true);
 	}
-    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern().size() > 0) {
-        const double* path = &layer->linePattern()->lcPattern()[0];
-        painter.set_dash(path, layer->linePattern()->lcPattern().size(), 0., true);
+    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern(width).size() > 0) {
+        auto path = layer->linePattern()->lcPattern(width);
+        painter.set_dash(&path[0], path.size(), 0., true);
     }
 
 	// Decide what color to render the entity into
