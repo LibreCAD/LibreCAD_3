@@ -43,7 +43,7 @@ lc::Layer_CSPtr Layers::activeLayer() {
 }
 
 void Layers::on_newButton_clicked() {
-    auto dialog = new AddLayerDialog(document->linePatterns(), this);
+    auto dialog = new AddLayerDialog(document, this);
     dialog->show();
 
     connect(dialog, &AddLayerDialog::newLayer, this, &Layers::createLayer);
@@ -93,7 +93,7 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
                 break;
 
             case LayerModel::EDIT:
-                auto dialog = new AddLayerDialog(layer, document->linePatterns(), this);
+                auto dialog = new AddLayerDialog(layer, document, this);
                 dialog->show();
 
                 connect(dialog, &AddLayerDialog::editLayer, this, &Layers::replaceLayer);
@@ -110,10 +110,6 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
 
         replaceLayer(layer, newLayer);
     }
-}
-
-void Layers::onSelectionChanged(const QItemSelection& selection, const QItemSelection&) {
-
 }
 
 void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {

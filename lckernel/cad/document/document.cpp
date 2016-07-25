@@ -49,3 +49,15 @@ Nano::Signal<void(const lc::AddLayerEvent&)>& Document::addLayerEvent() {
 Nano::Signal<void(const lc::ReplaceLayerEvent&)>& Document::replaceLayerEvent() {
     return this->_replaceLayerEvent;
 }
+
+Nano::Signal<void(const lc::RemoveLinePatternEvent&)>& Document::removeLinePatternEvent() {
+    return this->_removeLinePatternEvent;
+}
+
+Nano::Signal<void(const lc::AddLinePatternEvent&)>& Document::addLinePatternEvent() {
+    return this->_addLinePatternEvent;
+}
+
+Nano::Signal<void(const lc::ReplaceLinePatternEvent&)>& Document::replaceLinePatternEvent() {
+    return this->_replaceLinePatternEvent;
+}

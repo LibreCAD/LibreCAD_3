@@ -28,7 +28,6 @@ class Layers : public QDockWidget {
         void on_newButton_clicked();
         void on_deleteButton_clicked();
         void on_layerList_clicked(const QModelIndex& index);
-        void onSelectionChanged(const QItemSelection& selected, const QItemSelection&);
         void onSubwindowActivated(QMdiSubWindow *window);
 
         void createLayer(lc::Layer_CSPtr layer);

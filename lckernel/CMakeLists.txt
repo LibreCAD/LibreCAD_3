@@ -74,12 +74,15 @@ cad/document/storagemanager.h
 cad/document/undomanager.h
 cad/events/addentityevent.h
 cad/events/addlayerevent.h
+cad/events/addlinepatternevent.h
 cad/events/beginprocessevent.h
 cad/events/commitprocessevent.h
 cad/events/removeentityevent.h
 cad/events/removelayerevent.h
+cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
+cad/events/replacelinepatternevent.h
 cad/functions/ftrim.h
 cad/functions/intersect.h
 cad/geometry/geobase.h

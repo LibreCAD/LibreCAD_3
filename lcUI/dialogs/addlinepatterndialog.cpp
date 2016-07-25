@@ -1,14 +1,15 @@
 #include "addlinepatterndialog.h"
 #include "ui_addlinepatterndialog.h"
 
-AddLinePatternDialog::AddLinePatternDialog(QWidget *parent) :
-    AddLinePatternDialog(nullptr, parent) {
+AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, QWidget *parent) :
+    AddLinePatternDialog(document, nullptr, parent) {
 }
 
-AddLinePatternDialog::AddLinePatternDialog(lc::DxfLinePattern_CSPtr linePattern, QWidget *parent) :
+AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePattern_CSPtr linePattern, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddLinePatternDialog),
-    _linePattern(linePattern) {
+    _document(document),
+    _oldLinePattern(linePattern) {
 
     ui->setupUi(this);
 
@@ -16,8 +17,6 @@ AddLinePatternDialog::AddLinePatternDialog(lc::DxfLinePattern_CSPtr linePattern,
     if(!_layout) {
         throw "Unable to cast AddLinePatternDialog pathList layout to QVBoxLayout";
     }
-
-    connect(ui->newValueButton, &QPushButton::pressed, this, &AddLinePatternDialog::onNewValuePressed);
 
     if(linePattern != nullptr) {
         ui->name->setText(linePattern->name().c_str());
@@ -29,6 +28,12 @@ AddLinePatternDialog::AddLinePatternDialog(lc::DxfLinePattern_CSPtr linePattern,
 
             _layout->insertWidget(_layout->count() - 1, pathPart);
         }
+
+        ui->saveButton->setText(SAVE_AS_NEW_TEXT);
+
+        auto editButton = new QPushButton(EDIT_TEXT);
+        connect(editButton, &QPushButton::pressed, this, &AddLinePatternDialog::onEditButtonPressed);
+        ui->buttonLayout->addWidget(editButton);
     }
 }
 
@@ -79,13 +84,27 @@ void AddLinePatternDialog::generatePreview() {
 }
 
 
-void AddLinePatternDialog::onNewValuePressed() {
+void AddLinePatternDialog::on_newValueButton_pressed() {
     auto pathPart = new LinePatternPathPart(this);
     connect(pathPart, &LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
 
     _layout->insertWidget(_layout->count() - 1, pathPart);
 }
 
-lc::DxfLinePattern_CSPtr AddLinePatternDialog::linePattern() {
-    return _linePattern;
+void AddLinePatternDialog::on_cancelButton_pressed() {
+    this->close();
+}
+
+void AddLinePatternDialog::on_saveButton_pressed() {
+    auto operation = std::make_shared<lc::operation::AddLinePattern>(_document, _linePattern);
+    operation->execute();
+
+    this->close();
+}
+
+void AddLinePatternDialog::onEditButtonPressed() {
+    auto operation = std::make_shared<lc::operation::ReplaceLinePattern>(_document, _oldLinePattern, _linePattern);
+    operation->execute();
+
+    this->close();
 }

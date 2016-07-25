@@ -1,18 +1,19 @@
 #include "addlayerdialog.h"
 #include "ui_addlayerdialog.h"
 
-AddLayerDialog::AddLayerDialog(std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget* parent) :
-    AddLayerDialog(nullptr, linePatterns, parent) {
+AddLayerDialog::AddLayerDialog(lc::Document_SPtr document, QWidget* parent) :
+    AddLayerDialog(nullptr, document, parent) {
 }
 
-AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, std::vector<lc::DxfLinePattern_CSPtr> linePatterns, QWidget *parent) :
+AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr document, QWidget *parent) :
         QDialog(parent),
         ui(new Ui::AddLayerDialog),
+        _document(document),
         _oldLayer(oldLayer) {
 
     ui->setupUi(this);
 
-    linePatternSelect = new LinePatternSelect(linePatterns, nullptr);
+    linePatternSelect = new LinePatternSelect(document, nullptr);
 
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
     if(layout) {

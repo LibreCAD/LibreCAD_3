@@ -61,6 +61,12 @@ void DocumentImpl::addDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
         AddLayerEvent event(layer);
         addLayerEvent()(event);
     }
+
+    auto linePattern = std::dynamic_pointer_cast<const DxfLinePattern>(dmt);
+    if(linePattern != nullptr) {
+        AddLinePatternEvent event(linePattern);
+        addLinePatternEvent()(event);
+    }
 }
 void DocumentImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
     _storageManager->removeDocumentMetaType(dmt);
@@ -70,6 +76,11 @@ void DocumentImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
         removeLayerEvent()(event);
     }
 
+    auto linePattern = std::dynamic_pointer_cast<const DxfLinePattern>(dmt);
+    if(linePattern != nullptr) {
+        RemoveLinePatternEvent event(linePattern);
+        removeLinePatternEvent()(event);
+    }
 }
 void DocumentImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) {
     _storageManager->replaceDocumentMetaType(oldDmt, newDmt);
@@ -81,6 +92,15 @@ void DocumentImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, 
             replaceLayerEvent()(event);
         } else {
             throw;
+        }
+    }
+
+    auto oldLinePattern = std::dynamic_pointer_cast<const DxfLinePattern>(oldDmt);
+    if(oldLinePattern != nullptr) {
+        auto newLinePattern = std::dynamic_pointer_cast<const DxfLinePattern>(newDmt);
+        if(newLinePattern != nullptr) {
+            ReplaceLinePatternEvent event(oldLinePattern, newLinePattern);
+            replaceLinePatternEvent()(event);
         }
     }
 }
