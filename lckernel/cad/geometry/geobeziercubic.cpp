@@ -17,27 +17,27 @@ const Area CubicBezier::boundingBox() const {
     /*
      * T = A-B/(A - 2B + C)
      */
-//    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
-//    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
-//    std::vector<double> x_{_pointA.x(), _pointC.x() };
-//    std::vector<double> y_{_pointA.y(), _pointC.y() };
+    //    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    //    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+    //    std::vector<double> x_{_pointA.x(), _pointC.x() };
+    //    std::vector<double> y_{_pointA.y(), _pointC.y() };
 
-//    if(tx_ > 0. && tx_ < 1.0) {
-//        auto bez1 = DirectValueAt(tx_);
-//        x_.push_back(bez1.x());
-//        y_.push_back(bez1.y());
-//    }
+    //    if(tx_ > 0. && tx_ < 1.0) {
+    //        auto bez1 = DirectValueAt(tx_);
+    //        x_.push_back(bez1.x());
+    //        y_.push_back(bez1.y());
+    //    }
 
-//    if(ty_ > 0. && ty_ < 1.0) {
-//        auto bez2 = DirectValueAt(ty_);
-//        x_.push_back(bez2.x());
-//        y_.push_back(bez2.y());
-//    }
+    //    if(ty_ > 0. && ty_ < 1.0) {
+    //        auto bez2 = DirectValueAt(ty_);
+    //        x_.push_back(bez2.x());
+    //        y_.push_back(bez2.y());
+    //    }
 
-//    std::sort(x_.begin(), x_.end());
-//    std::sort(y_.begin(), y_.end());
+    //    std::sort(x_.begin(), x_.end());
+    //    std::sort(y_.begin(), y_.end());
 
-//    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
+    //    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
 }
 
 Coordinate CubicBezier::nearestPointOnPath(const Coordinate& coord) const {
@@ -94,19 +94,24 @@ Coordinate CubicBezier::nearestPointOnEntity(const Coordinate& coord) const {
  * @return vector of t values for bezier
  */
 std::vector<double> CubicBezier::nearestPointTValue(const lc::geo::Coordinate &coord) const {
-//    auto pos = _pointA - coord;
+    //    auto pos = _pointA - coord;
 
-//    auto Ax = _pointB.x() - _pointA.x();
-//    auto Ay = _pointB.y() - _pointA.y();
-//    auto Bx = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
-//    auto By = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
+    //    auto Ax = _pointB.x() - _pointA.x();
+    //    auto Ay = _pointB.y() - _pointA.y();
+    //    auto Bx = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();
+    //    auto By = _pointA.y() - (_pointB.y()*2.0) + _pointC.y();
 
-//    auto a = Bx * Bx + By * By;
-//    auto b = (3 * (Ax * Bx + Ay * By)) / a;
-//    auto c = (2 * (Ax * Ax + Ay * Ay) + pos.x() * Bx + pos.y() * By) / a;
-//    auto d = (pos.x() * Ax + pos.y() * Ay) / a;
+    //    auto a = Bx * Bx + By * By;
+    //    auto b = (3 * (Ax * Bx + Ay * By)) / a;
+    //    auto c = (2 * (Ax * Ax + Ay * Ay) + pos.x() * Bx + pos.y() * By) / a;
+    //    auto d = (pos.x() * Ax + pos.y() * Ay) / a;
 
-//    return lc::Math::cubicSolver({b, c, d});
+    //    return lc::Math::cubicSolver({b, c, d});
+}
+
+const std::vector<geo::Coordinate> CubicBezier::getCP() const {
+    std::vector<Coordinate> ret{_pointA, _pointB, _pointC, _pointD};
+    return ret;
 }
 
 
@@ -121,19 +126,19 @@ std::vector<double> CubicBezier::nearestPointTValue(const lc::geo::Coordinate &c
 const lc::geo::Coordinate CubicBezier::returnCasesForNearestPoint(
         double min_distance, const lc::geo::Coordinate &coord,
         const lc::geo::Coordinate &ret) const {
-//    auto distance_to_A = coord.distanceTo(_pointA);
-//    auto distance_to_C = coord.distanceTo(_pointC);
+    //    auto distance_to_A = coord.distanceTo(_pointA);
+    //    auto distance_to_C = coord.distanceTo(_pointC);
 
-//    // Point is on curve
-//    if(min_distance < distance_to_A && min_distance < distance_to_C) {
-//        return ret;
-//    }
-//    // Point is on starting of Curve
-//    if (distance_to_A < distance_to_C) {
-//        return _pointA;
-//    }
-//    // Point is end of curve
-//    return _pointC;
+    //    // Point is on curve
+    //    if(min_distance < distance_to_A && min_distance < distance_to_C) {
+    //        return ret;
+    //    }
+    //    // Point is on starting of Curve
+    //    if (distance_to_A < distance_to_C) {
+    //        return _pointA;
+    //    }
+    //    // Point is end of curve
+    //    return _pointC;
 }
 
 Coordinate CubicBezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
@@ -155,16 +160,16 @@ Coordinate CubicBezier::DirectValueAt(double t) const {
     auto one_minus_square = one_minus_t*one_minus_t;
     auto one_minus_cube = one_minus_square * one_minus_t;
 
-    return (_pointA* one_minus_cube) + (_pointC*3*one_minus_square*t) + (_pointC*3*one_minus_t*t_square) + (_pointD*t_cube);
+    return (_pointA*one_minus_cube) + (_pointB*3*one_minus_square*t) + (_pointC*3*one_minus_t*t_square) + (_pointD*t_cube);
 }
 
 const std::vector<Coordinate> CubicBezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC, _pointD };
     std::vector<Coordinate> ret;
-    for(auto i = 0.; i < 1.; i+=precession) {
+    for(auto i = 0.; i < 1.0; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
 
-       /* TODO
+        /* TODO
         * Should we use Casteljau or direct method?
         */
 
@@ -176,30 +181,30 @@ const std::vector<Coordinate> CubicBezier::Curve(double precession) {
 const double CubicBezier::length() const {
 }
 
-BB_CSPtr CubicBezier::rotate(const geo::Coordinate& center, double angle) {
-    CubicBezier Bez(_pointA.rotate(center, angle),
-                  _pointB.rotate(center, angle),
-                  _pointC.rotate(center, angle),
-                    _pointD.rotate(center, angle));
-
-    auto z = std::make_shared<const lc::geo::BezierBase>(Bez);
+BB_CSPtr CubicBezier::rotate(const geo::Coordinate& center, double angle) const {
+    auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA.rotate(center, angle),
+                                                          _pointB.rotate(center, angle),
+                                                          _pointC.rotate(center, angle),
+                                                          _pointD.rotate(center, angle));
     return z;
 }
 
 BB_CSPtr CubicBezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
-    CubicBezier(  _pointA.scale(center, factor),
-                  _pointB.scale(center, factor),
-                  _pointC.scale(center, factor),
-                  _pointD.scale(center, factor)
-                );
+    auto z = std::make_shared<const lc::geo::CubicBezier>(  _pointA.scale(center, factor),
+                                                            _pointB.scale(center, factor),
+                                                            _pointC.scale(center, factor),
+                                                            _pointD.scale(center, factor)
+                                                            );
+    return z;
 }
 
 BB_CSPtr CubicBezier::move(const geo::Coordinate& offset) const {
-    CubicBezier(_pointA + offset,
-                  _pointB + offset,
-                  _pointC + offset,
-                  _pointD + offset
-                );
+    auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA + offset,
+                                                          _pointB + offset,
+                                                          _pointC + offset,
+                                                          _pointD + offset
+                                                          );
+    return z;
 }
 
 const Coordinate CubicBezier::tangent(double t) const {
@@ -210,14 +215,16 @@ const Coordinate CubicBezier::normal(double t) const {
 }
 
 BB_CSPtr  CubicBezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-    CubicBezier(_pointA.mirror(axis1, axis2),
-                  _pointB.mirror(axis1, axis2),
-                  _pointC.mirror(axis1, axis2),
-                  _pointD.mirror(axis1, axis2)
-                );
+    auto z = std::make_shared<const lc::geo::CubicBezier>(_pointA.mirror(axis1, axis2),
+                                                          _pointB.mirror(axis1, axis2),
+                                                          _pointC.mirror(axis1, axis2),
+                                                          _pointD.mirror(axis1, axis2)
+                                                          );
+    return z;
 }
 
 std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
+
 }
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {

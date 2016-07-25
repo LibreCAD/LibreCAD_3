@@ -21,10 +21,7 @@ namespace lc {
 
                 CubicBezier(const CubicBezier &bez);
 
-                virtual const std::vector<Coordinate> getCP() const override {
-                    std::vector<Coordinate> ret{_pointA, _pointB, _pointC, _pointD};
-                    return ret;
-                }
+                virtual const std::vector<Coordinate> getCP() const override;
 
                 virtual const Area boundingBox() const override ;
 
@@ -47,7 +44,7 @@ namespace lc {
 
                 virtual BB_CSPtr offset(const geo::Coordinate& offset) const override;
 
-                virtual BB_CSPtr rotate(const geo::Coordinate& center, double angle) override;
+                virtual BB_CSPtr rotate(const geo::Coordinate& center, double angle) const override;
                 virtual BB_CSPtr scale(const geo::Coordinate& center, const geo::Coordinate& factor) const override;
                 virtual BB_CSPtr move(const geo::Coordinate& offset) const override;
                 virtual BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;

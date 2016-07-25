@@ -6,7 +6,7 @@
 #include "testgeoarc.h"
 #include "testintersect.h"
 #include "testmatrices.h"
-#include "beziertest.h"
+//#include "beziertest.h"
 #include "testselection.h"
 
 #ifdef WITH_QTUI

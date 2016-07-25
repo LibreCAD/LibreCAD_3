@@ -192,7 +192,7 @@ const double Bezier::length() const {
      return ( A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * std::log((2* A_2 + BA + Sabc)/(BA + C_2))) / (4 * A_32);
 }
 
-BB_CSPtr Bezier::rotate(const geo::Coordinate& center, double angle) {
+BB_CSPtr Bezier::rotate(const geo::Coordinate& center, double angle) const {
 //    return Bezier(_pointA.rotate(center, angle),
 //                  _pointB.rotate(center, angle),
 //                  _pointC.rotate(center, angle));

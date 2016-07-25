@@ -46,7 +46,7 @@ namespace lc {
 
                 BB_CSPtr offset(const geo::Coordinate& offset) const;
 
-                BB_CSPtr rotate(const geo::Coordinate& center, double angle);
+                BB_CSPtr rotate(const geo::Coordinate& center, double angle) const;
                 BB_CSPtr scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
                 BB_CSPtr move(const geo::Coordinate& offset) const;
                 BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const;
