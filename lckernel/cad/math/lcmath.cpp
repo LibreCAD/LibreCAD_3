@@ -144,6 +144,33 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
 
 }
 
+std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
+    //    std::cout<<"x^4+("<<ce[0]<<")*x^3+("<<ce[1]<<")*x^2+("<<ce[2]<<")*x+("<<ce[3]<<")==0"<<std::endl;
+
+    std::vector<double> ans(0, 0.);
+    Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
+    Eigen::VectorXd coeff(7);
+
+    if (ce.size() != 6) {
+        return ans;
+    }
+
+    coeff[0] = ce[5];
+    coeff[1] = ce[4];
+    coeff[2] = ce[3];
+    coeff[3] = ce[2];
+    coeff[4] = ce[1];
+    coeff[5] = ce[0];
+    coeff[6] = 1;
+
+    solver.compute(coeff);
+
+    solver.realRoots(ans);
+    return ans;
+
+}
+
+
 /** quartic solver
 * ce[4] x^4 + ce[3] x^3 + ce[2] x^2 + ce[1] x + ce[0] = 0
 @ce, a vector of size 5 contains the coefficient in order

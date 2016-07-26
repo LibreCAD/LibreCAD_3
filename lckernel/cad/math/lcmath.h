@@ -65,7 +65,7 @@ namespace lc {
                     @ce, a vector of size 5 contains the coefficient in order
                     @return, a vector contains real roots
                     **/
-
+            static std::vector<double> sexticSolver(const std::vector<double>& ce);
             static std::vector<double> quarticSolverFull(const std::vector<double>& ce);
 
             /** solver quadratic simultaneous equations of a set of two **/

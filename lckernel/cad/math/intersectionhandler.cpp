@@ -1,7 +1,7 @@
 #include "cad/math/intersectionhandler.h"
 using namespace lc;
 using namespace maths;
-
+#include <iostream>
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
                                           const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;
@@ -85,13 +85,14 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
 
     // Solving this for T will get the required intersection
     std::vector<double>roots;
-    auto r = C.radius();
-    auto d = C.center().x();
-    auto h = C.center().y();
 
     auto points = B->getCP();
 
-    if(points.size()== 4) {
+    if(points.size()== 3) {
+
+        auto r = C.radius();
+        auto d = C.center().x();
+        auto h = C.center().y();
 
         auto a = points.at(0).x();
         auto b = points.at(1).x();
@@ -114,22 +115,41 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
         auto a = points.at(0).x();
         auto b = points.at(1).x();
         auto c = points.at(2).x();
-        auto e = points.at(3).x();
+        auto d = points.at(3).x();
 
-        auto f = points.at(0).y();
-        auto g = points.at(1).y();
-        auto i = points.at(2).y();
-        auto j = points.at(3).x();
+        auto e = points.at(0).y();
+        auto f = points.at(1).y();
+        auto g = points.at(2).y();
+        auto h = points.at(3).x();
 
-        //    auto t4 = (g*g + (2*e - 4*f)*g + 4* f*f - 4* e * f + e*e + c*c + (2*a-4*b)*c + 4*b*b - 4*a*b + a*a);
-        //    auto t3 = ((4*f - 4*e)*g - 8*f*f + 12*e*f - 4*e*e + (4*b - 4*a)*c - 8*b*b + 12*a*b -4*a*a)/t4;
-        //    auto t2 = ((-2*g + 4*f -2*e)*h + 2*e*g + 4*f*f - 12*e*f + 6*e*e + (-2*c + 4*b - 2*a)*d + 2*a*c + 4*b*b -12*a*b + 6*a*a)/t4;
-        //    auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
-        //    auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
+        auto r = C.radius();
+        auto m = C.center().x();
+        auto n = C.center().y();
 
-//        auto roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
+        auto a_sq = a*a;
+        auto b_sq = b*b;
+        auto c_sq = c*c;
+        auto d_sq = d*d;
+        auto e_sq = e*e;
+        auto f_sq = f*f;
+        auto g_sq = g*g;
+        auto h_sq = h*h;
+        auto m_sq = m*m;
+        auto n_sq = n*n;
+        auto r_sq = r*r;
+
+        auto t6 = (a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + e_sq - 6*e*f + 6*e*g - 2*e*h + 9*f_sq - 18*f*g + 6*f*h + 9*g_sq - 6*g*h + h_sq);
+        auto t5 = ( - 6*a_sq + 30*a*b - 24*a*c + 6*a*d - 36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*e_sq + 30*e*f - 24*e*g + 6*e*h - 36*f_sq + 54*f*g - 12*f*h - 18*g_sq + 6*g*h)/t6;
+        auto t4 = (15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*e_sq - 60*e*f + 36*e*g - 6*e*h + 54*f_sq - 54*f*g + 6*f*h + 9*g_sq)/t6;
+        auto t3 = ( - 20*a_sq + 60*a*b - 24*a*c + 2*a*d + 2*a*m - 36*b_sq + 18*b*c - 6*b*m + 6*c*m - 2*d*m - 20*e_sq + 60*e*f - 24*e*g + 2*e*h + 2*e*n - 36*f_sq + 18*f*g - 6*f*n + 6*g*n - 2*h*n)/t6;
+        auto t2 = (15*a_sq - 30*a*b + 6*a*c - 6*a*m + 9*b_sq + 12*b*m - 6*c*m + 15*e_sq - 30*e*f + 6*e*g - 6*e*n + 9*f_sq + 12*f*n - 6*g*n)/t6;
+        auto t1 = ( - 6*a_sq + 6*a*b + 6*a*m - 6*b*m - 6*e_sq + 6*e*f + 6*e*n - 6*f*n)/t6;
+        auto t = (a_sq - 2*a*m + e_sq - 2*e*n + m_sq + n_sq - r_sq)/t6;
+        roots = lc::Math::sexticSolver({t5, t4, t3, t2, t1, t});
 
     }
+
+    std::cout << roots.size() << std::endl;
 
     for(const auto &root : roots) {
         if(root > 0 && root < 1) {
@@ -164,6 +184,7 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
 
+
     auto C = geo::Ellipse(E.center() - E.center(), E.majorP(), E.minorRadius(), E.startAngle(), E.endAngle())
             .georotate(geo::Coordinate(0,0), -E.getAngle())
             .geoscale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
@@ -175,7 +196,7 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
 
     auto points = B->getCP();
 
-    if(points.size()== 4) {
+    if(points.size()== 3) {
         auto r = C.minorRadius();
         auto d = C.center().x();
         auto h = C.center().y();
@@ -198,6 +219,7 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
 
     } else {
 
+        std::cout << "bezier cubic becier cubiz";
         auto a = points.at(0).x();
         auto b = points.at(1).x();
         auto c = points.at(2).x();
@@ -209,35 +231,30 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
         auto h = points.at(3).x();
 
         auto r = C.minorRadius();
+        auto m = C.center().x();
+        auto n = C.center().y();
 
         auto a_sq = a*a;
         auto b_sq = b*b;
         auto c_sq = c*c;
         auto d_sq = d*d;
-
         auto e_sq = e*e;
         auto f_sq = f*f;
         auto g_sq = g*g;
         auto h_sq = h*h;
+        auto m_sq = m*m;
+        auto n_sq = n*n;
         auto r_sq = r*r;
 
-        auto t6 = (a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + e_sq - 6*e*f + 6*e*g -2*e*h +9*f_sq - 18*f*g + 6*f*h + 9*g_sq -6*g*h + h_sq);
-        auto t5 = (-6*a_sq + 30*a*b - 24*a*c + 6*a*d -36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*e_sq + 30*e*f - 24*e*g + 6*e*h - 36*f_sq + 54*f*g + 12*f*h - 18*g_sq + 6*g*h)/(t6);
-        auto t4 = (15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*e_sq - 60*e*f + 36*e*g - 6*e*h + 54*f_sq - 54*f*g + 6*f*h + 9*g_sq)/(t6);
-        auto t3 = (-20*a_sq + 60*a*b - 24*a*c + 2*a*d - 36*b_sq + 18*b*c - 20*e_sq + 60*e*f - 24*e*g + 2*e*h - 36*f_sq + 18*f*g)/(t6);
-        auto t2 = (15*a_sq - 30*a*b + 6*a*c + 9*b_sq + 15*e_sq - 30*e*f + 6*e*g + 9*f_sq)/(t6);
-        auto t1 = (-6*a_sq + 6*a*b - 6*e_sq + 6*e*f)/(t6);
-        auto coeff = a_sq * e_sq - r_sq/(t6);
-        //    auto t4 = (g*g + (2*e - 4*f)*g + 4* f*f - 4* e * f + e*e + c*c + (2*a-4*b)*c + 4*b*b - 4*a*b + a*a);
-        //    auto t3 = ((4*f - 4*e)*g - 8*f*f + 12*e*f - 4*e*e + (4*b - 4*a)*c - 8*b*b + 12*a*b -4*a*a)/t4;
-        //    auto t2 = ((-2*g + 4*f -2*e)*h + 2*e*g + 4*f*f - 12*e*f + 6*e*e + (-2*c + 4*b - 2*a)*d + 2*a*c + 4*b*b -12*a*b + 6*a*a)/t4;
-        //    auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
-        //    auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
+        auto t6 = (a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + e_sq - 6*e*f + 6*e*g - 2*e*h + 9*f_sq - 18*f*g + 6*f*h + 9*g_sq - 6*g*h + h_sq);
+        auto t5 = ( - 6*a_sq + 30*a*b - 24*a*c + 6*a*d - 36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*e_sq + 30*e*f - 24*e*g + 6*e*h - 36*f_sq + 54*f*g - 12*f*h - 18*g_sq + 6*g*h)/t6;
+        auto t4 = (15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*e_sq - 60*e*f + 36*e*g - 6*e*h + 54*f_sq - 54*f*g + 6*f*h + 9*g_sq)/t6;
+        auto t3 = ( - 20*a_sq + 60*a*b - 24*a*c + 2*a*d + 2*a*m - 36*b_sq + 18*b*c - 6*b*m + 6*c*m - 2*d*m - 20*e_sq + 60*e*f - 24*e*g + 2*e*h + 2*e*n - 36*f_sq + 18*f*g - 6*f*n + 6*g*n - 2*h*n)/t6;
+        auto t2 = (15*a_sq - 30*a*b + 6*a*c - 6*a*m + 9*b_sq + 12*b*m - 6*c*m + 15*e_sq - 30*e*f + 6*e*g - 6*e*n + 9*f_sq + 12*f*n - 6*g*n)/t6;
+        auto t1 = ( - 6*a_sq + 6*a*b + 6*a*m - 6*b*m - 6*e_sq + 6*e*f + 6*e*n - 6*f*n)/t6;
+        auto t = (a_sq - 2*a*m + e_sq - 2*e*n + m_sq + n_sq - r_sq)/t6;
 
-
-
-//        auto roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
-
+        roots = lc::Math::sexticSolver({t5, t4, t3, t2, t1, t});
     }
 
     for(const auto &root : roots) {
