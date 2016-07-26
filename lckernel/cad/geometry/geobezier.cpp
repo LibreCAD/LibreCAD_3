@@ -13,6 +13,11 @@ Bezier::Bezier(const Bezier &bez) :
 
 }
 
+const std::vector<geo::Coordinate> Bezier::getCP() const {
+    return {_pointA, _pointB, _pointC };
+}
+
+
 const Area Bezier::boundingBox() const {
 
     /*
@@ -162,12 +167,6 @@ const std::vector<Coordinate> Bezier::Curve(double precession) {
     std::vector<Coordinate> ret;
     for(auto i = 0.; i < 1.; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
-
-       /* TODO
-        * Should we use Casteljau or direct method?
-        */
-
-        // ret.push_back(DirectValueAt(i));
     }
     return ret;
 }
@@ -193,23 +192,26 @@ const double Bezier::length() const {
 }
 
 BB_CSPtr Bezier::rotate(const geo::Coordinate& center, double angle) const {
-//    return Bezier(_pointA.rotate(center, angle),
-//                  _pointB.rotate(center, angle),
-//                  _pointC.rotate(center, angle));
+    auto z = std::make_shared<const Bezier>(_pointA.rotate(center, angle),
+                  _pointB.rotate(center, angle),
+                  _pointC.rotate(center, angle));
+    return z;
 }
 
 BB_CSPtr Bezier::scale(const geo::Coordinate& center, const geo::Coordinate& factor) const {
-//    return Bezier(_pointA.scale(center, factor),
-//                  _pointB.scale(center, factor),
-//                  _pointC.scale(center, factor)
-//                  );
+    auto z = std::make_shared<const Bezier>(_pointA.scale(center, factor),
+                                            _pointB.scale(center, factor),
+                                            _pointC.scale(center, factor)
+                                            );
+    return z;
 }
 
 BB_CSPtr Bezier::move(const geo::Coordinate& offset) const {
-//    return Bezier(_pointA + offset,
-//                  _pointB + offset,
-//                  _pointC + offset
-//                  );
+    auto z = std::make_shared<const Bezier>(_pointA + offset,
+                  _pointB + offset,
+                  _pointC + offset
+                  );
+    return z;
 }
 
 const Coordinate Bezier::tangent(double t) const {
@@ -242,17 +244,22 @@ const Coordinate Bezier::normal(double t) const {
 }
 
 BB_CSPtr Bezier::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
-//    return Bezier(_pointA.mirror(axis1, axis2),
-//                  _pointB.mirror(axis1, axis2),
-//                  _pointC.mirror(axis1, axis2)
-//                  );
+    auto z = std::make_shared<const Bezier>(_pointA.mirror(axis1, axis2),
+                  _pointB.mirror(axis1, axis2),
+                  _pointC.mirror(axis1, axis2)
+                  );
+    return z;
 }
 
 std::vector<BB_CSPtr> Bezier::splitHalf() const {
     auto AB = (_pointA + _pointB) / 2;
     auto BC = (_pointB + _pointC) / 2;
     auto D = (AB + BC)/2;
-//    return {Bezier(_pointA, AB, D), Bezier(D, BC, _pointC)};
+
+    BB_CSPtr b1 = std::make_shared<Bezier>(Bezier(_pointA, AB, D));
+    BB_CSPtr b2 = std::make_shared<Bezier>(Bezier(D, BC, _pointC));
+
+    return {b1, b2};
 }
 
 BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {

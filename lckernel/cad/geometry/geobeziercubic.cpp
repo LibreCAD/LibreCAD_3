@@ -14,30 +14,39 @@ CubicBezier::CubicBezier(const CubicBezier &bez) :
 
 const Area CubicBezier::boundingBox() const {
 
-    /*
-     * T = A-B/(A - 2B + C)
-     */
-    //    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
-    //    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
-    //    std::vector<double> x_{_pointA.x(), _pointC.x() };
-    //    std::vector<double> y_{_pointA.y(), _pointC.y() };
+    auto v1 =(_pointB - _pointA)*3;
+    auto v2 = (_pointC - _pointB)*3;
+    auto v3 = (_pointD - _pointC)*3;
 
-    //    if(tx_ > 0. && tx_ < 1.0) {
-    //        auto bez1 = DirectValueAt(tx_);
-    //        x_.push_back(bez1.x());
-    //        y_.push_back(bez1.y());
-    //    }
+    auto a = v1 - (v2*2) + v3;
+    auto b = (v2 - v1)*2;
+    auto c = v1;
 
-    //    if(ty_ > 0. && ty_ < 1.0) {
-    //        auto bez2 = DirectValueAt(ty_);
-    //        x_.push_back(bez2.x());
-    //        y_.push_back(bez2.y());
-    //    }
+    std::vector<double> x_roots = lc::Math::quadraticSolver({b.x()/a.x(), c.x()/a.x()});
+    std::vector<double>y_roots = lc::Math::quadraticSolver({b.y()/a.y(), b.y()/a.y()});
 
-    //    std::sort(x_.begin(), x_.end());
-    //    std::sort(y_.begin(), y_.end());
+    std::vector<double> x_{_pointA.x(), _pointD.x() };
+    std::vector<double> y_{_pointA.y(), _pointD.y() };
 
-    //    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
+
+    for(const double tx_ : x_roots) {
+        if(tx_ > 0. && tx_ < 1.0) {
+            auto bez1 = DirectValueAt(tx_);
+            x_.push_back(bez1.x());
+            y_.push_back(bez1.y());
+        }
+    }
+    for(const double ty_ : y_roots) {
+        if(ty_ > 0. && ty_ < 1.0) {
+            auto bez2 = DirectValueAt(ty_);
+            x_.push_back(bez2.x());
+            y_.push_back(bez2.y());
+        }
+    }
+    std::sort(x_.begin(), x_.end());
+    std::sort(y_.begin(), y_.end());
+
+    return Area(geo::Coordinate(x_.front(), y_.front()), geo::Coordinate (x_.back() ,y_.back()));
 }
 
 Coordinate CubicBezier::nearestPointOnPath(const Coordinate& coord) const {
@@ -168,12 +177,6 @@ const std::vector<Coordinate> CubicBezier::Curve(double precession) {
     std::vector<Coordinate> ret;
     for(auto i = 0.; i < 1.0; i+=precession) {
         ret.push_back(CasteljauAt(v, i));
-
-        /* TODO
-        * Should we use Casteljau or direct method?
-        */
-
-        // ret.push_back(DirectValueAt(i));
     }
     return ret;
 }
@@ -224,7 +227,17 @@ BB_CSPtr  CubicBezier::mirror(const geo::Coordinate& axis1, const geo::Coordinat
 }
 
 std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
+    auto E = (_pointA+_pointB)/2;
+    auto F = (_pointB+_pointC)/2;
+    auto G = (_pointC+_pointD)/2;
+    auto H = (E+F)/2;
+    auto J = (F+G)/2;
+    auto K = (H+J)/2;
 
+    BB_CSPtr b1 = std::make_shared<CubicBezier>(CubicBezier(_pointA,E,H,K));
+    BB_CSPtr b2 = std::make_shared<CubicBezier>(CubicBezier(K,J,G,_pointD));
+
+    return {b1, b2};
 }
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {

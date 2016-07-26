@@ -5,6 +5,7 @@
 #define LCTOLERANCE 1.0e-10
 #define LCARCTOLERANCE 1.0e-10
 #define BBHEURISTIC 1.0e-5
+#define BBHEURISTIC2 1.0e-3
 //squared tolerance
 #define TOLERANCE15 1.5e-15
 #define TOLERANCE2 1.0e-20

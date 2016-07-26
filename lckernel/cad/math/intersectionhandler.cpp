@@ -145,6 +145,7 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
         auto t2 = (15*a_sq - 30*a*b + 6*a*c - 6*a*m + 9*b_sq + 12*b*m - 6*c*m + 15*e_sq - 30*e*f + 6*e*g - 6*e*n + 9*f_sq + 12*f*n - 6*g*n)/t6;
         auto t1 = ( - 6*a_sq + 6*a*b + 6*a*m - 6*b*m - 6*e_sq + 6*e*f + 6*e*n - 6*f*n)/t6;
         auto t = (a_sq - 2*a*m + e_sq - 2*e*n + m_sq + n_sq - r_sq)/t6;
+
         roots = lc::Math::sexticSolver({t5, t4, t3, t2, t1, t});
 
     }
@@ -288,7 +289,7 @@ void Intersection::BezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::ve
         return;
     }
 
-    if(bb1.height() + bb2.height() <= BBHEURISTIC && bb1.width() + bb2.width() <= BBHEURISTIC) {
+    if(bb1.height() + bb2.height() <= BBHEURISTIC2 && bb1.width() + bb2.width() <= BBHEURISTIC2) {
         ret.push_back(B1->getCP().at(1));
         return;
     }
