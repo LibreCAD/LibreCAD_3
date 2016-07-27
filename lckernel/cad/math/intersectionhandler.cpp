@@ -3,7 +3,7 @@ using namespace lc;
 using namespace maths;
 #include <iostream>
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
-                                          const Equation& l2) {
+                                                    const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;
     const auto &m1 = l1.Matrix();
     const auto &m2 = l2.Matrix();
@@ -11,7 +11,7 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
     Eigen::Vector2d V;
 
     M << m1(2,0) + m1(0,2), m1(2,1) + m1(1,2),
-         m2(2,0) + m2(0,2), m2(2,1) + m2(1,2);
+            m2(2,0) + m2(0,2), m2(2,1) + m2(1,2);
     V << -m1(2,2), -m2(2,2);
 
     Eigen::Vector2d R = M.colPivHouseholderQr().solve(V);
@@ -20,21 +20,21 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
 }
 
 std::vector<lc::geo::Coordinate> Intersection::LineQuad(const Equation& l1,
-                                          const Equation& q1) {
+                                                        const Equation& q1) {
     auto &&tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
     std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
     return tcoords;
 }
 
 std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
-                                           const Equation& l2) {
+                                                        const Equation& l2) {
     const auto &m1 = l1.Matrix();
     const auto &m2 = l2.Matrix();
 
     if (std::abs(m1(0, 0)) < LCTOLERANCE && std::abs(m1(0, 1)) < LCTOLERANCE
-        &&
-        std::abs(m2(0, 0)) < LCTOLERANCE && std::abs(m2(0, 1)) < LCTOLERANCE
-       ) {
+            &&
+            std::abs(m2(0, 0)) < LCTOLERANCE && std::abs(m2(0, 1)) < LCTOLERANCE
+            ) {
         if (std::abs(m1(1, 1)) < LCTOLERANCE && std::abs(m2(1, 1)) < LCTOLERANCE) {
             return LineLine(l1, l2);
         }
@@ -49,33 +49,47 @@ std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
 
 
 std::vector<geo::Coordinate> Intersection::BezierLine(
-    geo::BB_CSPtr B, const geo::Vector& V) {
+        geo::BB_CSPtr B, const geo::Vector& V) {
 
     std::vector<geo::Coordinate> ret;
+    std::vector<double> roots;
 
-    auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
-    auto rotate_angle = -ml.Angle1();
+    auto pts = B->getCP();
 
-//    auto rl = geo::Vector(ml.start().rotate(ml.start(), rotate_angle), ml.end().rotate(ml.start(), rotate_angle));
-//    auto moved_bezier = geo::Bezier(B.pointA() -V.start(), B.pointB() -V.start(), B.pointC() -V.start());
-//    auto rb = moved_bezier.rotate(ml.start(), rotate_angle);
+    if(pts.size()==3) {
+        auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
+        auto rotate_angle = -ml.Angle1();
+        auto cps = B->move(-V.start())->rotate(ml.start(), rotate_angle)->getCP();
 
-//    auto t2 = rb.pointA().y() - 2*rb.pointB().y() + rb.pointC().y();
-//    auto t1 = 2*(rb.pointB().y() - rb.pointA().y())/t2;
-//    auto coeff = rb.pointA().y()/t2;
+        auto t2 = cps[0].y() - 2*cps[1].y() + cps[2].y();
+        auto t1 = 2*(cps[1].y() - cps[0].y())/t2;
+        auto coeff = cps[0].y()/t2;
 
-//    auto roots = lc::Math::quadraticSolver({t1, coeff});
-//    for(const auto &root : roots) {
-//        if(root > 0 && root < 1) {
-//            ret.push_back(B.DirectValueAt(root));
-//        }
-//    }
-//    return ret;
+        roots = lc::Math::quadraticSolver({t1, coeff});
+    } else {
+        auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
+        auto rotate_angle = -ml.Angle1();
+        auto cps = B->move(-V.start())->rotate(ml.start(), rotate_angle)->getCP();
+
+        auto t3 = -cps[0].y() + 3*cps[1].y() - 3*cps[2].y() + cps[3].y();
+        auto t2 = (3*cps[0].y() - 6*cps[1].y() + 3*cps[2].y())/t3;
+        auto t1 = (-3*cps[0].y() +3*cps[1].y())/t3;
+        auto coeff = cps[0].y()/t3;
+
+        roots = lc::Math::cubicSolver({t2, t1, coeff});
+    }
+    for(const auto &root : roots) {
+        if(root > 0 && root < 1) {
+            ret.push_back(B->DirectValueAt(root));
+        }
+    }
+
+    return ret;
 }
 
 
 std::vector<geo::Coordinate> Intersection::BezierCircle(
-    geo::BB_CSPtr B, const geo::Circle& C) {
+        geo::BB_CSPtr B, const geo::Circle& C) {
 
     std::vector<geo::Coordinate> ret;
 
@@ -162,7 +176,7 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
 
 
 std::vector<geo::Coordinate> Intersection::BezierArc(
-    geo::BB_CSPtr B, const geo::Arc& A) {
+        geo::BB_CSPtr B, const geo::Arc& A) {
 
     // BezierCircle Intersection
 
@@ -181,7 +195,7 @@ std::vector<geo::Coordinate> Intersection::BezierArc(
 
 
 std::vector<geo::Coordinate> Intersection::BezierEllipse(
-    geo::BB_CSPtr B, const geo::Ellipse& E) {
+        geo::BB_CSPtr B, const geo::Ellipse& E) {
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
 
@@ -219,8 +233,6 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
         roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
 
     } else {
-
-        std::cout << "bezier cubic becier cubiz";
         auto a = points.at(0).x();
         auto b = points.at(1).x();
         auto c = points.at(2).x();
@@ -275,7 +287,7 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
 }
 
 std::vector<geo::Coordinate> Intersection::BezierBezier(
-    geo::BB_CSPtr B1, geo::BB_CSPtr B2) {
+        geo::BB_CSPtr B1, geo::BB_CSPtr B2) {
     std::vector<geo::Coordinate> ret;
     BezBez(B1,B2, ret);
     return ret;

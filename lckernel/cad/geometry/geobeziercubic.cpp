@@ -242,3 +242,4 @@ std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {
 }
+

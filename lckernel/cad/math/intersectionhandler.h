@@ -4,6 +4,8 @@
 #include "cad/math/equation.h"
 #include <Eigen/Dense>
 #include "cad/geometry/geobezierbase.h"
+#include "cad/geometry/geobezier.h"
+#include "cad/geometry/geobeziercubic.h"
 #include "cad/geometry/geovector.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/geometry/geoarc.h"
