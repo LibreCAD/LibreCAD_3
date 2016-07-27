@@ -120,4 +120,15 @@ function add_toolbar()
     local removeButton = create_button("", ":/icons/modifytrim.png")
     quickAccess:addButton(modifyGroup, removeButton, 2, 1, 1, 1)
     luaInterface:luaConnect(removeButton, "pressed()", trim_entity)
+
+    --
+    -- Line Patterns
+    --
+    local linePatternsGroup = quickAccess:addGroup("Entity properties")
+
+    local linePatternsButton = create_button("Line Patterns")
+    quickAccess:addButton(linePatternsGroup, linePatternsButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(linePatternsButton, "pressed()", function()
+        lc.LinePatternManager(active_widget():document())
+    end)
 end

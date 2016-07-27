@@ -258,6 +258,12 @@ void addLCBindings(lua_State *L) {
 			.addFunction("activeLayer", &Layers::activeLayer)
 		.endClass()
 
+		.beginExtendClass<LinePatternManager, QDialog>("LinePatternManager")
+            .addFactory([](lc::Document_SPtr document){
+                return new LinePatternManager(document);
+            })
+        .endClass()
+
 	.endModule();
 }
 

@@ -41,10 +41,12 @@ widgets/layermodel.h
 widgets/linepatternselect.h
 widgets/linepatternpainter.h
 widgets/linepatternpathpart.h
+widgets/linepatternmodel.h
 lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
-dialogs/addlinepatterndialog.h)
+dialogs/addlinepatterndialog.h
+dialogs/linepatternmanager.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -64,10 +66,12 @@ widgets/layermodel.cpp
 widgets/linepatternselect.cpp
 widgets/linepatternpainter.cpp
 widgets/linepatternpathpart.cpp
+widgets/linepatternmodel.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp
-dialogs/addlinepatterndialog.cpp)
+dialogs/addlinepatterndialog.cpp
+dialogs/linepatternmanager.cpp)
 
 QT5_WRAP_UI(UI_HEADERS
 widgets/clicommand.ui
@@ -77,7 +81,8 @@ widgets/toolbartab.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui
-dialogs/addlinepatterndialog.ui)
+dialogs/addlinepatterndialog.ui
+dialogs/linepatternmanager.ui)
 
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
