@@ -28,12 +28,12 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 //    painter.point(z.x(), z.y(), 5, 1);
 //    painter.stroke();
 
-//    auto c1 = lc::geo::Coordinate(0, 0);
+    auto c1 = lc::geo::Coordinate(0, 0);
 //    auto mp = lc::geo::Coordinate(1000, 0);
-//    auto rad = 200;
+    auto rad = 200;
 //    auto sa = 0;
 //    auto ea = 3.14 * 2;
-//    auto ell= lc::geo::Circle(c1, rad);
+    auto ell= lc::geo::Circle(c1, rad);
 
 //    auto ellipse = ell;
 //    auto E = ell;
@@ -44,12 +44,12 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 //    painter.line_to(400, 200);
 //    painter.stroke();
 
-//    auto p1 = lc::geo::Coordinate(200,300);
-//    auto p2 = lc::geo::Coordinate(0,-900);
-//    auto p3 = lc::geo::Coordinate(-200,300);
-//    auto p4 = lc::geo::Coordinate(-600,600);
-//    auto bez = lc::geo::CubicBezier(p1,p2,p3, p4);
-//    lc::geo::BB_CSPtr B = std::make_shared<const lc::geo::CubicBezier>(bez);
+    auto p1 = lc::geo::Coordinate(200,300);
+    auto p2 = lc::geo::Coordinate(0,-900);
+    auto p3 = lc::geo::Coordinate(-200,300);
+    auto p4 = lc::geo::Coordinate(-600,600);
+    auto bez = lc::geo::CubicBezier(p1,p2,p3, p4);
+    lc::geo::BB_CSPtr B = std::make_shared<const lc::geo::CubicBezier>(bez);
 
 //    auto bp1 = lc::geo::Coordinate(200,300);
 //    auto bp2 = lc::geo::Coordinate(-900,0);
@@ -58,9 +58,9 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 //    auto bez2 = lc::geo::CubicBezier(bp1,bp2,bp3, bp4);
 //    lc::geo::BB_CSPtr B2 = std::make_shared<const lc::geo::CubicBezier>(bez2);
 
-//    painter.move_to(p1.x(), p1.y());
-//    painter.curve_to(p2.x(), p2.y(), p3.x(), p3.y(), p4.x(), p4.y());
-//    painter.stroke();
+    painter.move_to(p1.x(), p1.y());
+    painter.curve_to(p2.x(), p2.y(), p3.x(), p3.y(), p4.x(), p4.y());
+    painter.stroke();
 
 //    painter.move_to(bp1.x(), bp1.y());
 //    painter.curve_to(bp2.x(), bp2.y(), bp3.x(), bp3.y(), bp4.x(), bp4.y());
@@ -68,12 +68,12 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
 //    auto ret = lc::maths::Intersection::BezierLine(B, line_);
 
-//    auto ret = lc::maths::Intersection::BezierBezier(B, B2);
+    auto ret = lc::maths::Intersection::BezierCircle(B, ell);
 
-//    for(auto r : ret) {
-//        painter.point(r.x(), r.y(), 5, 1);
-//    }
-//    painter.stroke();
+    for(auto r : ret) {
+        painter.point(r.x(), r.y(), 5, 1);
+    }
+    painter.stroke();
 
 //    painter.move_to(bp1.x(), bp1.y());
 //    painter.quadratic_curve_to(bp2.x(), bp2.y(), bp3.x(), bp3.y());
@@ -95,8 +95,8 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 //    painter.stroke();
 
 //    painter.ellipse(ell.center().x(), ell.center().y(), ell.majorRadius(), ell.minorRadius(), ell.startAngle(), ell.endAngle(), ell.getAngle());
-//    painter.circle(ell.center().x(), ell.center().y(), ell.radius());
-//    painter.stroke();
+    painter.circle(ell.center().x(), ell.center().y(), ell.radius());
+    painter.stroke();
 
 //    painter.move_to(p1.x(), p1.y());
 //    painter.quadratic_curve_to(p2.x(), p2.y(), p3.x(), p3.y());

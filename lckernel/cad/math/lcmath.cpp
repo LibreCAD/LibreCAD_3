@@ -4,6 +4,7 @@
 #include "cad/const.h"
 #include <Eigen/Dense>
 #include <unsupported/Eigen/Polynomials>
+#include <iostream>
 
 using namespace lc;
 using namespace geo;
@@ -151,9 +152,11 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
     Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
     Eigen::VectorXd coeff(7);
 
-    if (ce.size() != 6) {
-        return ans;
-    }
+//    if (ce.size() != 6) {
+//        return ans;
+//    }
+
+    std::cout << ce.size();
 
     coeff[0] = ce[5];
     coeff[1] = ce[4];
@@ -163,9 +166,21 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
     coeff[5] = ce[0];
     coeff[6] = 1;
 
+//    coeff[0] = ce[6];
+//    coeff[1] = ce[5];
+//    coeff[2] = ce[4];
+//    coeff[3] = ce[3];
+//    coeff[4] = ce[2];
+//    coeff[5] = ce[1];
+//    coeff[6] = ce[0];
+
+
     solver.compute(coeff);
 
     solver.realRoots(ans);
+
+    std::cout << ans.size();
+
     return ans;
 
 }
