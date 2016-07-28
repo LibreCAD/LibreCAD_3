@@ -70,16 +70,16 @@ function LineOperations:createTempLine(point)
 end
 
 function LineOperations:createLine(p1, p2)
-    local d = active_widget():document()
     local layer = active_layer()
-    local l
-    if(self.length == nil) then
-        l = Line(p1, p2, layer)
-    else
+    local metaInfo = active_metaInfo()
+
+    if(self.length ~= nil) then
         local angle = p1:angleTo(p2)
         local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
-        l = Line(p1, p1:add(relativeCoordinate), layer)
+        p2 = p1:add(relativeCoordinate)
     end
+
+    local l = Line(p1, p2, layer, metaInfo)
     l:setId(self.line_id)
 
     return l

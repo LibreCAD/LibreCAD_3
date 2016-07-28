@@ -2,6 +2,7 @@ local Gear = {}
 Gear.__index = Gear
 
 setmetatable(Gear, {
+    __index = Operations,
     __call = function (cls, ...)
         return cls.new(...)
     end,
@@ -9,7 +10,68 @@ setmetatable(Gear, {
 
 function Gear.new()
     local self = setmetatable({}, Gear)
+
+    Operations._init(self, id)
+
+    self.n = nil
+    self.phi = nil
+    self.pc = nil
+    self.origin = nil
+    self.scalePoint = nil
+
+    self.entities = {}
+
+    event.register("number", self)
+    event.register("point", self)
+    event.register("mouseMove", self)
+
+    message("Enter number of teeth")
+
     return self
+end
+
+function Gear:onEvent(eventName, ...)
+    if(Operations.forMe(self) == false) then
+        return
+    end
+
+    if(eventName == "number" or eventName == "point") then
+        self:newData(...)
+    elseif(eventName == "mouseMove") then
+        self:tempGear(...)
+    end
+end
+
+function Gear:newData(data)
+    if(self.n == nil) then
+        if(type(data) == "number") then
+            self.n = data
+
+            message("Enter pressure angle")
+        end
+    elseif(self.phi == nil) then
+        if(type(data) == "number") then
+            self.phi = data
+
+            message("Enter circilar pitch")
+        end
+    elseif(self.pc == nil) then
+        if(type(data) == "number") then
+            self.pc = data
+
+            message("Give center point")
+        end
+    elseif(self.origin == nil) then
+        self.origin = Operations:getCoordinate(data)
+
+        message("Give external point")
+    elseif(self.scalePoint == nil) then
+        self.scalePoint = Operations:getCoordinate(data)
+
+        if(self.scalePoint ~= nil) then
+            self:drawGear()
+        end
+    end
 end
 
 function Gear:involute_intersect_angle(Rb, R)
@@ -27,7 +89,10 @@ end
 --phi = pressure angle
 --PC = Circular Pitch
 --teeth = no of teeth
-function Gear:calc(builder, N, phi, Pc)
+function Gear:calc(N, phi, Pc)
+    local layer = active_layer()
+    local entities = {}
+
     -- Pitch Circle
     local D = N * Pc / math.pi
     local R = D / 2.0
@@ -121,11 +186,74 @@ function Gear:calc(builder, N, phi, Pc)
     local fKeep = first
     table.remove(points, 1)
     for k,v in pairs(points) do
-        builder:append(Line(Coord(first.x,first.y), Coord(v.x,v.y),layer))
+        table.insert(entities, Line(Coord(first.x,first.y), Coord(v.x,v.y),layer))
         first=v
     end
-    builder:append(Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer))
+    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer))
 
+    return entities
+end
+
+function Gear:drawGear()
+    local entities = Gear:calc(self.n, math.rad(self.phi), math.rad(self.pc))
+    local b = Builder(active_widget():document())
+
+    for k, v in pairs(entities) do
+        b:append(v)
+    end
+
+    b:push()
+    b:move(self.origin)
+
+    local distance = self.scalePoint:distanceTo(self.origin)
+    b:scale(self.origin, Coord(distance, distance))
+
+    b:execute()
+
+    self:close()
+end
+
+function Gear:tempGear(point)
+    local n = self.n or 10
+    local phi = self.phi or 10
+    local pc = self.pc or 10
+    local origin = self.origin
+    local scalePoint = self.scalePoint
+
+    if(origin == nil) then
+        origin = point
+        scalePoint = Coord(10, 10)
+    elseif(scalePoint == nil) then
+        local distance = point:distanceTo(origin)
+        scalePoint = Coord(distance, distance)
+    end
+
+    for k, v in pairs(self.entities) do
+        active_widget():tempEntities():removeEntity(v)
+    end
+
+    self.entities = self:calc(n, math.rad(phi), math.rad(pc))
+
+    for k, v in pairs(self.entities) do
+        v = v:move(origin):scale(origin, scalePoint)
+        active_widget():tempEntities():addEntity(v)
+    end
+end
+
+function Gear:close()
+    if(self.finished == false) then
+        self.finished = true
+
+        for k, v in pairs(self.entities) do
+            active_widget():tempEntities():removeEntity(v)
+        end
+
+        event.delete("number", self)
+        event.delete("point", self)
+        event.delete("mouseMove", self)
+
+        event.trigger("operationFinished")
+    end
 end
 
 local tab = toolbar:tabByName("Quick Access")
@@ -134,14 +262,6 @@ local group = tab:addGroup("Gear")
 local gearButton = create_button("Gear")
 tab:addButton(group, gearButton, 0, 0, 1, 1)
 luaInterface:luaConnect(gearButton, "pressed()", function()
-    layer = active_layer()
-    local gear=Gear()
-
-    b=Builder(active_widget():document())
-
-    gear:calc(b, 20,math.rad(10),math.rad(10))
-    gear:calc(b, 10,math.rad(10),math.rad(10))
-    b:push()
-    b:scale(Coord(0,0),Coord(10,10))
-    b:execute()
+    new_operation()
+    op[active_widget().id] = Gear(active_widget().id)
 end)

@@ -19,17 +19,16 @@ class Layers : public QDockWidget {
     Q_OBJECT
 
     public:
-        Layers(QMdiArea* mdiArea, QWidget* parent = 0);
+        Layers(lc::Document_SPtr document = nullptr, QWidget* parent = 0);
         ~Layers();
 
+        void setDocument(lc::Document_SPtr document = nullptr);
         lc::Layer_CSPtr activeLayer();
 
     private slots:
         void on_newButton_clicked();
         void on_deleteButton_clicked();
         void on_layerList_clicked(const QModelIndex& index);
-        void onSelectionChanged(const QItemSelection& selected, const QItemSelection&);
-        void onSubwindowActivated(QMdiSubWindow *window);
 
         void createLayer(lc::Layer_CSPtr layer);
         void deleteLayer(lc::Layer_CSPtr layer);
@@ -40,7 +39,7 @@ class Layers : public QDockWidget {
     private:
         Ui::Layers* ui;
         LayerModel* model;
-        std::shared_ptr<lc::Document> document;
+        lc::Document_SPtr _document;
 
         void updateLayerList();
 

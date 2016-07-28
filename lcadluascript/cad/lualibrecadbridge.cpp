@@ -72,6 +72,13 @@ void lua_openlckernel(lua_State* L) {
                         const Color))
     .endClass()
 
+    .beginExtendClass<DxfLinePattern, EntityMetaType>("DxfLinePattern")
+        .addConstructor(LUA_SP(DxfLinePattern_SPtr), LUA_ARGS(const std::string&,
+                                                               const std::string&,
+                                                               const std::vector<double>&,
+                                                               const double))
+    .endClass()
+
     .beginExtendClass<MetaColor, DocumentMetaType>("DocumentMetaColor")
     .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
     .endClass()
@@ -90,10 +97,9 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginClass<MetaInfo>("MetaInfo")
-    .addConstructor(LUA_SP(std::shared_ptr<lc::MetaInfo>), LUA_ARGS())
-    .addFunction("add", &lc::MetaInfo::add)
+    .addConstructor(LUA_SP(MetaInfo_SPtr), LUA_ARGS())
+    .addFunction("add", &MetaInfo::add)
     .endClass()
-
 
     .beginClass<geo::Coordinate>("Coord")
     .addConstructor(LUA_ARGS(
@@ -177,6 +183,8 @@ void lua_openlckernel(lua_State* L) {
 		.addFunction("move", &entity::CADEntity::move)
 		.addFunction("rotate", &entity::CADEntity::rotate)
 		.addFunction("copy", &entity::CADEntity::copy)
+		.addFunction("scale", &entity::CADEntity::scale)
+		.addFunction("mirror", &entity::CADEntity::mirror)
 
 		.addFunction("layer", &entity::CADEntity::layer)
 
@@ -188,7 +196,9 @@ void lua_openlckernel(lua_State* L) {
 		.addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
 				   const geo::Coordinate & start,
 				   const geo::Coordinate & end,
-				   const Layer_CSPtr))
+				   const Layer_CSPtr,
+                   const MetaInfo_CSPtr
+        ))
 		.addProperty("entityType", [](entity::Line*) {
 			return "line";
 		})
@@ -201,7 +211,9 @@ void lua_openlckernel(lua_State* L) {
 		.addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
 				   const geo::Coordinate & center,
 				   double radius,
-				   const Layer_CSPtr))
+				   const Layer_CSPtr,
+                   const MetaInfo_CSPtr
+        ))
         .addProperty("entityType", [](entity::Circle*) {
             return "circle";
         })
@@ -217,7 +229,9 @@ void lua_openlckernel(lua_State* L) {
 				   const double startAngle,
 				   const double endAngle,
 				   bool CCW,
-				   const Layer_CSPtr layer))
+				   const Layer_CSPtr layer,
+                   const MetaInfo_CSPtr
+        ))
 
             .addFunction("nearestPointOnEntity", &geo::Arc::nearestPointOnEntity)
             .addFunction("nearestPointOnPath", &geo::Arc::nearestPointOnPath)
@@ -241,7 +255,9 @@ void lua_openlckernel(lua_State* L) {
 				   double startAngle,
 				   double endAngle,
 				   bool reversed,
-				   const Layer_CSPtr layer))
+				   const Layer_CSPtr layer,
+                   const MetaInfo_CSPtr
+        ))
 	.endClass()
 	.beginExtendClass<entity::Point, entity::CADEntity>("Point_")
 	.endClass()

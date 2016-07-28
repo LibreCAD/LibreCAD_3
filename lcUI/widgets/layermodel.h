@@ -11,6 +11,7 @@ class LayerModel : public QAbstractTableModel {
     public:
         enum columns {
             NAME,
+            EDIT,
             LOCKED,
             LAST
         };
@@ -34,6 +35,7 @@ class LayerModel : public QAbstractTableModel {
         std::vector<lc::Layer_CSPtr> _layers;
         lc::Layer_CSPtr _selectedLayer;
 
+        QIcon _editIcon;
         QIcon _lockedIcon;
         QIcon _unlockedIcon;
 };

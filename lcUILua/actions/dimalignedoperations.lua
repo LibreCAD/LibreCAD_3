@@ -33,9 +33,9 @@ function DimAlignedOperations:_init(id)
 end
 
 function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
-    local d = active_widget():document()
     local layer = active_layer()
-    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, MetaInfo())
+    local metaInfo = active_metaInfo()
+    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
     dim:setId(self.dimAligned_id)
 
     return dim
@@ -61,8 +61,11 @@ function DimAlignedOperations:newData(data)
 
         message("Click on end point")
     elseif(self.endPoint == nil) then
+        local metaInfo = active_metaInfo()
+        local layer = active_layer()
+
         self.endPoint = Operations:getCoordinate(data)
-        self.dimLine = Line(self.startPoint, self.endPoint, Layer("Temp", Color(0,0,0,0)))
+        self.dimLine = Line(self.startPoint, self.endPoint, layer, metaInfo)
 
         message("Give dimension height")
     elseif(self.middleOfText == nil) then

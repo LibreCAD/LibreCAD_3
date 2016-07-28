@@ -2,11 +2,13 @@
 #include "layers.h"
 #include "ui_layers.h"
 
-Layers::Layers(QMdiArea* mdiArea, QWidget *parent) :
+Layers::Layers(lc::Document_SPtr document, QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::Layers) {
 
     ui->setupUi(this);
+
+    setDocument(document);
 
     model = new LayerModel(this);
 
@@ -14,14 +16,29 @@ Layers::Layers(QMdiArea* mdiArea, QWidget *parent) :
     ui->layerList->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->layerList->horizontalHeader()->setSectionResizeMode(LayerModel::NAME, QHeaderView::Stretch);
 
-    onSubwindowActivated(mdiArea->activeSubWindow());
-
-    connect(mdiArea, &QMdiArea::subWindowActivated, this, &Layers::onSubwindowActivated);
     connect(model, &LayerModel::nameChanged, this, &Layers::changeLayerName);
 }
 
 Layers::~Layers() {
     delete ui;
+}
+
+void Layers::setDocument(lc::Document_SPtr document) {
+    if(_document != nullptr) {
+        _document->addLayerEvent().disconnect<Layers, &Layers::on_addLayerEvent>(this);
+        _document->removeLayerEvent().disconnect<Layers, &Layers::on_removeLayerEvent>(this);
+        _document->replaceLayerEvent().disconnect<Layers, &Layers::on_replaceLayerEvent>(this);
+    }
+
+    _document = document;
+
+    if(_document != nullptr) {
+        _document->addLayerEvent().connect<Layers, &Layers::on_addLayerEvent>(this);
+        _document->removeLayerEvent().connect<Layers, &Layers::on_removeLayerEvent>(this);
+        _document->replaceLayerEvent().connect<Layers, &Layers::on_replaceLayerEvent>(this);
+    }
+
+    updateLayerList();
 }
 
 lc::Layer_CSPtr Layers::activeLayer() {
@@ -43,7 +60,7 @@ lc::Layer_CSPtr Layers::activeLayer() {
 }
 
 void Layers::on_newButton_clicked() {
-    auto dialog = new AddLayerDialog(document->linePatterns(), this);
+    auto dialog = new AddLayerDialog(_document, this);
     dialog->show();
 
     connect(dialog, &AddLayerDialog::newLayer, this, &Layers::createLayer);
@@ -53,28 +70,6 @@ void Layers::on_deleteButton_clicked() {
     QModelIndexList selection = ui->layerList->selectionModel()->selectedRows();
 
     deleteLayer(model->layerAt(selection.first().row()));
-}
-
-void Layers::onSubwindowActivated(QMdiSubWindow *window) {
-    if(document != nullptr) {
-        document->addLayerEvent().disconnect<Layers, &Layers::on_addLayerEvent>(this);
-        document->removeLayerEvent().disconnect<Layers, &Layers::on_removeLayerEvent>(this);
-        document->replaceLayerEvent().disconnect<Layers, &Layers::on_replaceLayerEvent>(this);
-    }
-
-    if(window != 0) {
-        auto cadMdiChild = static_cast<CadMdiChild*>(window->widget());
-        document = cadMdiChild->document();
-
-        document->addLayerEvent().connect<Layers, &Layers::on_addLayerEvent>(this);
-        document->removeLayerEvent().connect<Layers, &Layers::on_removeLayerEvent>(this);
-        document->replaceLayerEvent().connect<Layers, &Layers::on_replaceLayerEvent>(this);
-
-        updateLayerList();
-    }
-    else {
-        document = nullptr;
-    }
 }
 
 void Layers::on_layerList_clicked(const QModelIndex& index) {
@@ -91,6 +86,13 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
             case LayerModel::LOCKED:
                 locked = !locked;
                 break;
+
+            case LayerModel::EDIT:
+                auto dialog = new AddLayerDialog(layer, _document, this);
+                dialog->show();
+
+                connect(dialog, &AddLayerDialog::editLayer, this, &Layers::replaceLayer);
+                return;
         }
 
         auto newLayer = std::make_shared<const lc::Layer>(
@@ -103,10 +105,6 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
 
         replaceLayer(layer, newLayer);
     }
-}
-
-void Layers::onSelectionChanged(const QItemSelection& selection, const QItemSelection&) {
-
 }
 
 void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {
@@ -126,30 +124,31 @@ void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {
 }
 
 void Layers::createLayer(lc::Layer_CSPtr layer) {
-    if(document != nullptr) {
-        auto operation = std::make_shared<lc::operation::AddLayer>(document, layer);
+    if(_document != nullptr) {
+        auto operation = std::make_shared<lc::operation::AddLayer>(_document, layer);
         operation->execute();
     }
 }
 
 void Layers::deleteLayer(lc::Layer_CSPtr layer) {
-    if(document != nullptr) {
-        auto operation = std::make_shared<lc::operation::RemoveLayer>(document, layer);
+    if(_document != nullptr) {
+        auto operation = std::make_shared<lc::operation::RemoveLayer>(_document, layer);
         operation->execute();
     }
 }
 
 void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
-    if(document != nullptr) {
-        auto operation = std::make_shared<lc::operation::ReplaceLayer>(document, oldLayer, newLayer);
+    if(_document != nullptr) {
+        auto operation = std::make_shared<lc::operation::ReplaceLayer>(_document, oldLayer, newLayer);
         operation->execute();
     }
 }
 
 void Layers::updateLayerList() {
-    if(document != nullptr) {
-        auto layersMap = document->allLayers();
+    if(_document != nullptr) {
         std::vector<lc::Layer_CSPtr> layersVector;
+
+        auto layersMap = _document->allLayers();
 
         for(auto layer : layersMap) {
             layersVector.push_back(layer.second);

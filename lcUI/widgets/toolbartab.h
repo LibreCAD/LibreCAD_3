@@ -19,6 +19,7 @@ class ToolbarTab : public QWidget {
 
 		QGroupBox* addGroup(const char* name);
 		void addButton(QGroupBox* groupBox, QPushButton* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
+	    void addWidget(QGroupBox *groupBox, QWidget* widget, int x = 0, int y = 0, int w = 0, int h = 1);
 		QPushButton* addButtonStr(QGroupBox* groupBox, const char* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
 
 

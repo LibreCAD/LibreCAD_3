@@ -33,9 +33,9 @@ function DimLinearOperations:_init(id)
 end
 
 function DimLinearOperations:getDimLinear(startPoint, endPoint, middleOfText, text)
-    local d = active_widget():document()
     local layer = active_layer()
-    local dim = DimLinear.dimAuto(startPoint, endPoint, middleOfText, text, layer, MetaInfo())
+    local metaInfo = active_metaInfo()
+    local dim = DimLinear.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
     dim:setId(self.dimLinear_id)
 
     return dim

@@ -19,6 +19,11 @@ void LinePatternPainter::drawLinePattern() {
             dashes << a;
         }
 
+        //Qt always want a space at end
+        if(dashes.size() % 2 != 0) {
+            dashes << 0;
+        }
+
         pen.setDashPattern(dashes);
     }
 

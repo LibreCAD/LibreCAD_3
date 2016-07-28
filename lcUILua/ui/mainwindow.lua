@@ -35,9 +35,33 @@ function active_layer()
     return layers:activeLayer()
 end
 
+function active_metaInfo()
+    local metaInfo = MetaInfo()
+
+    local linePattern = linePatternSelect:linePattern()
+    if(linePattern ~= nil) then
+        metaInfo:add(linePattern)
+    end
+
+    return metaInfo
+end
+
 local function open_lua_script()
     local luaScript = lc.LuaScript(mdiArea, cliCommand)
     luaScript:show()
+end
+
+local function onSubWindowChanged(window)
+    local document = active_document()
+
+    --setDocument called without parameters to use nullptr
+    if(document == nil) then
+        layers:setDocument()
+        linePatternSelect:setDocument()
+    else
+        layers:setDocument(document)
+        linePatternSelect:setDocument(document)
+    end
 end
 
 local function create_menu()
@@ -68,6 +92,7 @@ function create_main_window()
     mainWindow:setUnifiedTitleAndToolBarOnMac(true);
 
     mdiArea = mainWindow:findChild("centralWidget"):findChild("mdiArea")
+    luaInterface:luaConnect(mdiArea, "subWindowActivated(QMdiSubWindow*)", onSubWindowChanged)
 
     mdiArea:setHorizontalScrollBarPolicy(0)
     mdiArea:setVerticalScrollBarPolicy(0)
@@ -78,8 +103,10 @@ function create_main_window()
 
     add_commandline()
 
-    layers = lc.Layers(mdiArea)
+    layers = lc.Layers(active_document())
     mainWindow:addDockWidget(2, layers)
+
+    linePatternSelect = lc.LinePatternSelect()
 
     if(hideUI ~= true) then
         add_toolbar()
