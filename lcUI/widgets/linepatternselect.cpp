@@ -9,7 +9,6 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
     setIconSize(qIconSize);
 
     setDocument(document);
-    createEntries();
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
 }
@@ -28,6 +27,8 @@ void LinePatternSelect::setDocument(lc::Document_SPtr document) {
         _document->removeLinePatternEvent().connect<LinePatternSelect, &LinePatternSelect::on_removeLinePatternEvent>(this);
         _document->replaceLinePatternEvent().connect<LinePatternSelect, &LinePatternSelect::on_replaceLinePatternEvent>(this);
     }
+
+    createEntries();
 }
 
 lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {

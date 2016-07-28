@@ -240,6 +240,12 @@ void addLCBindings(lua_State *L) {
 																			 LuaIntf::_opt<int>,
 																			 LuaIntf::_opt<int>,
 																			 LuaIntf::_opt<int>))
+            .addFunction("addWidget", &ToolbarTab::addWidget, LUA_ARGS(QGroupBox*,
+                                                                         QWidget*,
+                                                                         LuaIntf::_opt<int>,
+                                                                         LuaIntf::_opt<int>,
+                                                                         LuaIntf::_opt<int>,
+                                                                         LuaIntf::_opt<int>))
 			.addFunction("addGroup", &ToolbarTab::addGroup)
 			.addFunction("buttonByText", &ToolbarTab::buttonByText)
 			.addFunction("groupByName", &ToolbarTab::groupByName)
@@ -252,16 +258,26 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 
 		.beginExtendClass<Layers, QDockWidget>("Layers")
-            .addFactory([](QMdiArea* mdiArea) {
-                return new Layers(mdiArea);
+            .addFactory([]() {
+                return new Layers();
             })
 			.addFunction("activeLayer", &Layers::activeLayer)
+			.addFunction("setDocument", &Layers::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
 		.endClass()
 
 		.beginExtendClass<LinePatternManager, QDialog>("LinePatternManager")
             .addFactory([](lc::Document_SPtr document){
                 return new LinePatternManager(document);
             })
+            .addFunction("setDocument", &LinePatternManager::setDocument)
+        .endClass()
+
+        .beginExtendClass<LinePatternSelect, QDialog>("LinePatternSelect")
+            .addFactory([](){
+                return new LinePatternSelect();
+            })
+            .addFunction("setDocument", &LinePatternSelect::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
+            .addFunction("linePattern", &LinePatternSelect::linePattern)
         .endClass()
 
 	.endModule();

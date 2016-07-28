@@ -126,9 +126,11 @@ function add_toolbar()
     --
     local linePatternsGroup = quickAccess:addGroup("Entity properties")
 
+    quickAccess:addWidget(linePatternsGroup, linePatternSelect, 0, 0, 1, 1)
+
     local linePatternsButton = create_button("Line Patterns")
-    quickAccess:addButton(linePatternsGroup, linePatternsButton, 0, 0, 1, 1)
+    quickAccess:addButton(linePatternsGroup, linePatternsButton, 0, 1, 1, 1)
     luaInterface:luaConnect(linePatternsButton, "pressed()", function()
-        lc.LinePatternManager(active_widget():document())
+        lc.LinePatternManager(active_document())
     end)
 end

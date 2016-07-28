@@ -59,7 +59,7 @@ function CircleOperations:getCircle(center, radius)
 
     local d = active_widget():document()
     local layer = active_layer()
-    local c = Circle(center, radius, layer)
+    local c = Circle(center, radius, layer, active_metaInfo())
     c:setId(self.circle_id)
 
     return c

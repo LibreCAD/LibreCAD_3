@@ -15,8 +15,8 @@ class LinePatternSelect : public QComboBox {
     Q_OBJECT
 
     public:
-        LinePatternSelect(lc::Document_SPtr document, QWidget *parent, bool showByLayer = false, bool showByBlock = false);
-        void setDocument(lc::Document_SPtr document);
+        LinePatternSelect(lc::Document_SPtr document = nullptr, QWidget *parent = 0, bool showByLayer = false, bool showByBlock = false);
+        void setDocument(lc::Document_SPtr document = nullptr);
 
         lc::DxfLinePattern_CSPtr linePattern();
 

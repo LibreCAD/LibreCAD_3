@@ -74,11 +74,11 @@ function LineOperations:createLine(p1, p2)
     local layer = active_layer()
     local l
     if(self.length == nil) then
-        l = Line(p1, p2, layer)
+        l = Line(p1, p2, layer, active_metaInfo())
     else
         local angle = p1:angleTo(p2)
         local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
-        l = Line(p1, p1:add(relativeCoordinate), layer)
+        l = Line(p1, p1:add(relativeCoordinate), layer, active_metaInfo())
     end
     l:setId(self.line_id)
 

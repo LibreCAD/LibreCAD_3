@@ -1,14 +1,39 @@
 function active_widget()
-    return mdiArea:activeSubWindow():widget()
+    local subWindow = mdiArea:activeSubWindow()
+    if(subWindow == nil) then
+        return nil
+    end
+
+    return subWindow:widget()
+end
+
+function active_document()
+    local widget = active_widget()
+
+    if(widget == nil) then
+        return nil
+    end
+
+    return active_widget():document()
 end
 
 local function click()
-    local position = active_widget():cursor():position()
+    local widget = active_widget()
+    if(widget == nil) then
+        return
+    end
+
+    local position = widget:cursor():position()
     event.trigger('point', position)
 end
 
 local function mouseMove()
-    local position = active_widget():cursor():position()
+    local widget = active_widget()
+    if(widget == nil) then
+        return
+    end
+
+    local position = widget:cursor():position()
     event.trigger('mouseMove', position)
 end
 

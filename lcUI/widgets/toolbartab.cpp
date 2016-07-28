@@ -51,6 +51,21 @@ QPushButton* ToolbarTab::addButtonStr(QGroupBox* groupBox, const char* buttonNam
 	return button;
 }
 
+void ToolbarTab::addWidget(QGroupBox *groupBox, QWidget *widget, int x, int y, int w, int h) {
+	if(groupBox == nullptr) {
+		return;
+	}
+
+	auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
+
+    if(gridLayout) {
+        gridLayout->addWidget(widget, y, x, h, w);
+    }
+    else {
+        groupBox->layout()->addWidget(widget);
+    }
+}
+
 QGroupBox* ToolbarTab::groupByName(const char* groupName) {
 	auto nbGroups = _layout->count();
 
