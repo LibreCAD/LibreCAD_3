@@ -124,35 +124,15 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
 
         roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
 
+        for(const auto &root : roots) {
+            if(root > 0 && root < 1) {
+                ret.push_back(B->DirectValueAt(root));
+            }
+        }
+
     } else {
 
-        std::cout << "bezier cubic becier cubiz";
-        auto a = points.at(0).x();
-        auto b = points.at(1).x();
-        auto c = points.at(2).x();
-        auto d = points.at(3).x();
-
-        auto e = points.at(0).y();
-        auto f = points.at(1).y();
-        auto g = points.at(2).y();
-        auto h = points.at(3).x();
-
-        auto r = C.radius();
-        auto m = C.center().x();
-        auto n = C.center().y();
-
-        auto a_sq = a*a;
-        auto b_sq = b*b;
-        auto c_sq = c*c;
-        auto d_sq = d*d;
-        auto e_sq = e*e;
-        auto f_sq = f*f;
-        auto g_sq = g*g;
-        auto h_sq = h*h;
-        auto m_sq = m*m;
-        auto n_sq = n*n;
-        auto r_sq = r*r;
-
+//        std::cout << "bezier cubic becier cubiz";
 //        auto a = points.at(0).x();
 //        auto b = points.at(1).x();
 //        auto c = points.at(2).x();
@@ -164,8 +144,8 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
 //        auto i = points.at(3).x();
 
 //        auto r = C.radius();
-//        auto z = C.center().x();
-//        auto y = C.center().y();
+//        auto cx = C.center().x();
+//        auto cy = C.center().y();
 
 //        auto a_sq = a*a;
 //        auto b_sq = b*b;
@@ -177,46 +157,27 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
 //        auto h_sq = h*h;
 //        auto i_sq = i*i;
 
-//        auto z_sq = z*z;
-//        auto y_sq = y*y;
+//        auto cx_sq = cx*cx;
+//        auto cy_sq = cy*cy;
 //        auto r_sq = r*r;
 
-        auto t6 = (a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + e_sq - 6*e*f + 6*e*g - 2*e*h + 9*f_sq - 18*f*g + 6*f*h + 9*g_sq - 6*g*h + h_sq);
-        auto t5 = ( - 6*a_sq + 30*a*b - 24*a*c + 6*a*d - 36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*e_sq + 30*e*f - 24*e*g + 6*e*h - 36*f_sq + 54*f*g - 12*f*h - 18*g_sq + 6*g*h)/t6;
-        auto t4 = (15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*e_sq - 60*e*f + 36*e*g - 6*e*h + 54*f_sq - 54*f*g + 6*f*h + 9*g_sq)/t6;
-        auto t3 = ( - 20*a_sq + 60*a*b - 24*a*c + 2*a*d + 2*a*m - 36*b_sq + 18*b*c - 6*b*m + 6*c*m - 2*d*m - 20*e_sq + 60*e*f - 24*e*g + 2*e*h + 2*e*n - 36*f_sq + 18*f*g - 6*f*n + 6*g*n - 2*h*n)/t6;
-        auto t2 = (15*a_sq - 30*a*b + 6*a*c - 6*a*m + 9*b_sq + 12*b*m - 6*c*m + 15*e_sq - 30*e*f + 6*e*g - 6*e*n + 9*f_sq + 12*f*n - 6*g*n)/t6;
-        auto t = ( - 6*a_sq + 6*a*b + 6*a*m - 6*b*m - 6*e_sq + 6*e*f + 6*e*n - 6*f*n)/t6;
-        auto coeff = (a_sq - 2*a*m + e_sq - 2*e*n + m_sq + n_sq - r_sq)/t6;
+//        auto t6 = a_sq + f_sq - 6*a*b - 6*f*g + 9*c_sq + 9*h_sq + d_sq + i_sq - 6*d*c - 6*i*h + 6*a*c + 6*f*h - 2*a*d - 2*f*i - 18*b*c - 18*g*h + 6*b*d + 6*g*i;
+//        auto t5 = (-6*a_sq - 6*f_sq + 30*a*b + 30*f*g - 18*c_sq - 18*h_sq - 6*d_sq - 6*i_sq + 6*d*c + 6*h*i - 24*a*c - 24*f*h + 6*a*d + 6*f*i + 54*b*c + 54*g*h - 12*b*d - 12*g*i)/t6;
+//        auto t4 = (15*a_sq + 15*f_sq + 9*b_sq + 9*g_sq - 60*a*b - 60*f*g + 9*c_sq +9*h_sq + 15*d_sq + 15*i_sq + 36*a*c + 36*f*h - 6*a*d - 6*f*i - 54*b*c - 54*g*h +6*b*d + 6*g*i)/t6;
+//        auto t3 = (-20*a_sq - 20*f_sq - 18*b_sq - 18*g_sq + 60*a*b + 60*f*g - 20*d_sq - 20*i_sq - 6*cx*b -6*cy*g + 2*d*cx + 2*i*cy + 6*cx*c + 6*cy*h - 24*a*c -24*f*h + 2*a*d + 2*f*i + 2*cx*a + 2*cy*f + 18*b*c + 18*g*h)/t6;
+//        auto t2 = (15*a_sq + 15*f_sq + 9*b_sq + 9*g_sq - 30*a*b - 30*f*g + 15*d_sq + 15*i_sq +12*cx*b + 12*cy*g - 6*cx*c - 6*cy*h + 6*a*c + 6*f*h - 6*cx*a - 6*cy*f)/t6;
+//        auto t = (-6*a_sq - 6*f_sq + 6*a*b + 6*f*g - 6*d_sq - 6*i_sq - 6*cx*b - 6*cy*g + 6*cx*a + 6*cy*f)/t6;
+//        auto coeff = (a_sq + f_sq + d_sq + i_sq + cx_sq + cy_sq - 2*cx*a - 2*cy*f - r_sq)/t6;
 
-//        auto t6 = a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + f_sq - 6*f*g + 6*f*h - 2*f*i + 9*g_sq - 18*g*h + 6*g*i + 9*h_sq - 6*h*i + i_sq;
-//        auto t5 = -6*a_sq + 30*a*b - 24*a*c + 6*a*d - 36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*f_sq + 30*f*g - 24*f*h + 6*f*i - 36*g_sq + 54*g*h - 12*g*i - 18*h_sq + 6*h*i;
-//        auto t4 = 15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*f_sq - 60*f*g + 36*f*h - 6*f*i + 54*g_sq - 54*g*h + 6*g*i + 9*h_sq;
-//        auto t3 = -20*a_sq + 60*a*b - 24*a*c + 2*a*d + 2*a*z -36*b_sq + 18*b*c - 6*b*z + 6*c*z - 2*d*z - 20*f_sq + 60*f*g -24*f*h + 2*f*i + 2*f*y - 36*g_sq + 18*g*h - 6*g*y + 6*h*y - 2*i*y;
-//        auto t2 = 15*a_sq - 30*a*b + 6*a*c - 6*a*z + 9*b_sq + 12*b*z - 6*c*z + 15*f_sq - 30*f*g - 6*f*h - 6*f*y + 9*g_sq + 12*g*y - 6*h*y;
-//        auto t =  - 6*a_sq + 6*a*b + 6*a*z - 6*b*z - 6*f_sq + 6*f*g * 6*f*y - 6*g*y;
-//        auto coeff =a_sq  - 2*a*z + f_sq - 2*f*y - r_sq + y_sq + z_sq;
-//        roots = lc::Math::sexticSolver({t6, t5, t4, t3, t2, t, coeff});
+//        roots = lc::Math::sexticSolver({t5, t4, t3, t2, t, coeff});
 
-//        auto t6 = (a_sq - 6*a*b + 6*a*c - 2*a*d + 9*b_sq - 18*b*c + 6*b*d + 9*c_sq - 6*c*d + d_sq + f_sq - 6*f*g + 6*f*h - 2*f*i + 9*g_sq - 18*g*h + 6*g*i + 9*h_sq - 6*h*i + i_sq);
-//        auto t5 = (-6*a_sq + 30*a*b - 24*a*c + 6*a*d - 36*b_sq + 54*b*c - 12*b*d - 18*c_sq + 6*c*d - 6*f_sq + 30*f*g - 24*f*h + 6*f*i - 36*g_sq + 54*g*h - 12*g*i - 18*h_sq + 6*h*i)/t6;
-//        auto t4 = (15*a_sq - 60*a*b + 36*a*c - 6*a*d + 54*b_sq - 54*b*c + 6*b*d + 9*c_sq + 15*f_sq - 60*f*g + 36*f*h - 6*f*i + 54*g_sq - 54*g*h + 6*g*i + 9*h_sq)/t6;
-//        auto t3 = (-20*a_sq + 60*a*b - 24*a*c + 2*a*d + 2*a*z -36*b_sq + 18*b*c - 6*b*z + 6*c*z - 2*d*z - 20*f_sq + 60*f*g -24*f*h + 2*f*i + 2*f*y - 36*g_sq + 18*g*h - 6*g*y + 6*h*y - 2*i*y)/t6;
-//        auto t2 = (15*a_sq - 30*a*b + 6*a*c - 6*a*z + 9*b_sq + 12*b*z - 6*c*z + 15*f_sq - 30*f*g - 6*f*h - 6*f*y + 9*g_sq + 12*g*y - 6*h*y)/t6;
-//        auto t =  (- 6*a_sq + 6*a*b + 6*a*z - 6*b*z - 6*f_sq + 6*f*g * 6*f*y - 6*g*y)/t6;
-//        auto coeff = (a_sq  - 2*a*z + f_sq - 2*f*y - r_sq + y_sq + z_sq)/t6;
+        geo::Area Ar = geo::Area(geo::Coordinate(C.center().x() - C.radius(), C.center().y() - C.radius()),
+                         geo::Coordinate(C.center().x() + C.radius(), C.center().y() + C.radius()));
 
-        roots = lc::Math::sexticSolver({t5, t4, t3, t2, t, coeff});
-
+        BezCir(C, Ar , B, ret);
     }
 
     std::cout << roots.size() << std::endl;
-
-    for(const auto &root : roots) {
-        if(root > 0 && root < 1) {
-            ret.push_back(B->DirectValueAt(root));
-        }
-    }
     return ret;
 }
 
@@ -358,4 +319,31 @@ void Intersection::BezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::ve
     BezBez(b1split[1], b2split[0], ret);
     BezBez(b1split[0], b2split[1], ret);
     BezBez(b1split[1], b2split[1], ret);
+}
+
+void Intersection::BezCir(const geo::Circle C, const geo::Area c_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
+    std::cout << "Called";
+    auto bb2 = B2->boundingBox();
+
+//    if(!c_area.inArea(bb2)) {
+//        return;
+//    }
+
+    if(!(c_area.minP().x() < bb2.minP().x() && c_area.maxP().x() > bb2.maxP().x() && c_area.minP().y() < bb2.minP().y() && c_area.maxP().y() > bb2.maxP().y())) {
+        return;
+    }
+
+    std::cout << C;
+
+    std::cout << C.center().distanceTo(bb2.minP()) - C.radius();
+
+    if(std::fabs(C.center().distanceTo(bb2.minP()) - C.radius()) <= 100) {
+        std::cout << "hi";
+        ret.push_back(B2->getCP().at(1));
+        return;
+    }
+
+    auto b2split = B2->splitHalf();
+    BezCir(C, c_area, b2split[0], ret);
+    BezCir(C, c_area, b2split[1], ret);
 }

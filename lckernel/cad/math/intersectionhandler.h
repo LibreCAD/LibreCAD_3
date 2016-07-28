@@ -33,6 +33,7 @@ namespace lc {
 
         private:
         static void BezBez(const geo::BB_CSPtr B1, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);
+        static void BezCir(const geo::Circle C, const geo::Area c_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);
         };
     }
 }
