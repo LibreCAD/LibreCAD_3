@@ -3,7 +3,9 @@
 #include "cad/geometry/geocoordinate.h"
 #include "cad/math/equation.h"
 #include <Eigen/Dense>
+#include "cad/geometry/geobezierbase.h"
 #include "cad/geometry/geobezier.h"
+#include "cad/geometry/geobeziercubic.h"
 #include "cad/geometry/geovector.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/geometry/geoarc.h"
@@ -20,18 +22,17 @@ namespace lc {
         static std::vector<geo::Coordinate> QuadQuad(
             const Equation& l1, const Equation& l2);
         static std::vector<geo::Coordinate> BezierLine(
-            const geo::Bezier& B, const geo::Vector& V);
+            geo::BB_CSPtr B, const geo::Vector& V);
         static std::vector<geo::Coordinate> BezierCircle(
-            const geo::Bezier& B, const geo::Circle& C);
+            geo::BB_CSPtr B, const geo::Circle& C);
         static std::vector<geo::Coordinate> BezierArc(
-            const geo::Bezier& B, const geo::Arc& A);
-        static std::vector<geo::Coordinate> BezierEllipse(
-            const geo::Bezier& B, const geo::Ellipse& E);
+            geo::BB_CSPtr B, const geo::Arc& A);
+        static std::vector<geo::Coordinate> BezierEllipse(geo::BB_CSPtr B, const geo::Ellipse& E);
         static std::vector<geo::Coordinate> BezierBezier(
-            const geo::Bezier& B1, const geo::Bezier& B2);
+            geo::BB_CSPtr B1, geo::BB_CSPtr B2);
 
         private:
-        static void BezBez(const geo::Bezier& B1,const geo::Bezier& B2, std::vector<geo::Coordinate>&ret);
+        static void BezBez(const geo::BB_CSPtr B1, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);
         };
     }
 }

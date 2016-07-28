@@ -599,6 +599,26 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
     dxfW->writeEllipse(&el);
 }
 
+void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
+    DRW_Spline sp;
+    //getEntityAttributes(&el, s);
+
+//    el.basePoint.x = s->center().x();
+//    el.basePoint.y = s->center().y();
+//    el.secPoint.x = s->majorP().x();
+//    el.secPoint.y = s->majorP().y();
+//    el.ratio = s->ratio();
+//    if (s->isReversed()) {
+//        el.staparam = s->startAngle();
+//        el.endparam = s->endAngle();
+//    } else {
+//        el.staparam = s->endAngle();
+//        el.endparam = s->startAngle();
+//    }
+//    dxfW->writeEllipse(&el);
+    dxfW->writeSpline(&sp);
+}
+
 void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
     auto layer_  = entity->layer();
     auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());

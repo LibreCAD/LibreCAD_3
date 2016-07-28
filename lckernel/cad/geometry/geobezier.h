@@ -8,10 +8,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+#include "geobezierbase.h"
 
 namespace lc {
     namespace geo {
-        class Bezier  : public Base, virtual public Visitable {
+        class Bezier  : public BezierBase {
             public:
                 /**
                  * Create a new Bezier
@@ -20,45 +21,41 @@ namespace lc {
 
                 Bezier(const Bezier &bez);
 
-                const Coordinate pointA() const;
+                virtual const std::vector<Coordinate> getCP() const override;
 
-                const Coordinate pointB() const;
+                const Area boundingBox() const override;
 
-                const Coordinate pointC() const;
+                Coordinate nearestPointOnPath(const Coordinate& coord) const override;
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const override;
 
-                const Area boundingBox() const;
+                Coordinate CasteljauAt(std::vector<Coordinate> points, double t) const override;
 
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
+                Coordinate DirectValueAt(double t) const override;
 
-                Coordinate CasteljauAt(std::vector<Coordinate> points, double t) const;
+                const std::vector<Coordinate> Curve(double precession) override;
 
-                Coordinate DirectValueAt(double t) const;
+                const double length() const override;
 
-                const std::vector<Coordinate> Curve(double precession);
+                const Coordinate tangent(double t) const override;
 
-                const double length() const;
+                const Coordinate normal(double t) const override;
 
-                const Coordinate tangent(double t) const;
+                std::vector<BB_CSPtr> splitHalf() const override;
 
-                const Coordinate normal(double t) const;
+                BB_CSPtr offset(const geo::Coordinate& offset) const override;
 
-                std::vector<Bezier> splitHalf() const;
+                BB_CSPtr rotate(const geo::Coordinate& center, double angle) const override;
+                BB_CSPtr scale(const geo::Coordinate& center, const geo::Coordinate& factor) const override;
+                BB_CSPtr move(const geo::Coordinate& offset) const override;
+                BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
 
-                Bezier offset(const geo::Coordinate& offset) const;
-
-                Bezier rotate(const geo::Coordinate& center, double angle);
-                Bezier scale(const geo::Coordinate& center, const geo::Coordinate& factor) const;
-                Bezier move(const geo::Coordinate& offset) const;
-                Bezier mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const;
-
-                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+//                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
-                std::vector<double> nearestPointTValue(const Coordinate &coord) const;
+                std::vector<double> nearestPointTValue(const Coordinate &coord) const override;
                 const lc::geo::Coordinate returnCasesForNearestPoint(
                         double min_distance, const lc::geo::Coordinate &coord,
-                        const Coordinate &ret) const;
+                        const Coordinate &ret) const override;
 
                 friend std::ostream& operator<<(std::ostream& os, const Bezier& bez) {
                     os << "Bezier(A=" << bez._pointA << " radius=" << bez._pointB << " startAngle=" << bez._pointC << ")";

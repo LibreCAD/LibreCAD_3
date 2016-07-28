@@ -101,6 +101,7 @@ class DXFimpl : public DRW_Interface {
         void writeCircle(const lc::entity::Circle_CSPtr c);
         void writeArc(const lc::entity::Arc_CSPtr a);
         void writeEllipse(const lc::entity::Ellipse_CSPtr s);
+        void writeSpline(const lc::entity::Spline_CSPtr s);
         void writeDimension(const lc::entity::Dimension_CSPtr d);
         void writeLWPolyline(const lc::entity::LWPolyline_CSPtr p);
         void writeImage(const lc::entity::Image_CSPtr i);

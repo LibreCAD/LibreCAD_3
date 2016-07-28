@@ -27,6 +27,7 @@ cad/geometry/geocoordinate.cpp
 cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
+cad/geometry/geobeziercubic.cpp
 cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
@@ -93,7 +94,9 @@ cad/geometry/geocircle.h
 cad/geometry/geoellipse.h
 cad/geometry/geospline.h
 cad/geometry/geovector.h
+cad/geometry/geobezierbase.h
 cad/geometry/geobezier.h
+cad/geometry/geobeziercubic.h
 cad/interface/entitydispatch.h
 cad/interface/metatype.h
 cad/interface/snapable.h
