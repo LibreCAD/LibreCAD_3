@@ -59,9 +59,9 @@ end
 
 function LWPolylineOperations:getLWPolyline(vertexes)
     if(#vertexes > 1) then
-        local d = active_widget():document()
         local layer = active_layer()
-        local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, MetaInfo())
+        local metaInfo = active_metaInfo()
+        local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, metaInfo)
         lwp:setId(self.lwPolyline_id)
 
         return lwp

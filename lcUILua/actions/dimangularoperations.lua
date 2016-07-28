@@ -33,9 +33,9 @@ function DimAngularOperations:_init(id)
 end
 
 function DimAngularOperations:getDimAngular(certerPoint, firstPoint, secondPoint, text)
-    local d = active_widget():document()
     local layer = active_layer()
-    local dim = DimAngular.dimAuto(certerPoint, firstPoint, secondPoint, text, layer, MetaInfo())
+    local metaInfo = active_metaInfo()
+    local dim = DimAngular.dimAuto(certerPoint, firstPoint, secondPoint, text, layer, metaInfo)
     dim:setId(self.dimAngular_id)
 
     return dim

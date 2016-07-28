@@ -71,9 +71,9 @@ function EllipseOperations:newData(data)
 end
 
 function EllipseOperations:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
-    local d = active_widget():document()
     local layer = active_layer()
-    local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer)
+    local metaInfo = active_metaInfo()
+    local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer, metaInfo)
     e:setId(self.ellipse_id)
 
     return e

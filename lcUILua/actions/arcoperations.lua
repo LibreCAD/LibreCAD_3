@@ -60,9 +60,9 @@ function ArcOperations:newData(point)
 end
 
 function ArcOperations:getArc(center, radius, beginAngle, endAngle)
-    local d = active_widget():document()
     local layer = active_layer()
-    local a = Arc(center, radius, beginAngle, endAngle, false, layer)
+    local metaInfo = active_metaInfo()
+    local a = Arc(center, radius, beginAngle, endAngle, false, layer, metaInfo)
     a:setId(self.arc_id)
 
     return a

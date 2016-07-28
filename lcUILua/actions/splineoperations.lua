@@ -47,10 +47,9 @@ function SplineOperations:newPoint(point)
 end
 
 function SplineOperations:getSpline(points, degree)
-    local d = active_widget():document()
-    
     local layer = active_layer()
-    local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, MetaInfo())
+    local metaInfo = active_metaInfo()
+    local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, metaInfo)
 
     s:setId(self.spline_id)
 

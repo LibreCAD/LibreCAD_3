@@ -1,6 +1,7 @@
 #include "luainterface.h"
 
 LuaInterface::LuaInterface() {
+	_L = LuaIntf::LuaState::newState();
 }
 
 LuaInterface::~LuaInterface() {
@@ -10,8 +11,6 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua() {
-    _L = LuaIntf::LuaState::newState();
-
     luaL_openlibs(_L);
     luaOpenQtBridge(_L);
     lua_openlckernel(_L);

@@ -32,9 +32,9 @@ function DimRadialOperations:_init(id)
 end
 
 function DimRadialOperations:getDimRadial(defPoint1, defPoint2, middleOfText, text)
-    local d = active_widget():document()
     local layer = active_layer()
-    local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, MetaInfo())
+    local metaInfo = active_metaInfo()
+    local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, metaInfo)
     dim:setId(self.dimRadial_id)
 
     return dim
