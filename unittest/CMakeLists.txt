@@ -7,6 +7,7 @@ ADD_DEFINITIONS("-Wall")
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(PkgConfig)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 #LOG4CXX
 pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
@@ -37,23 +38,38 @@ testmatrices.h
 beziertest.h
 testselection.h
 testintersect.h)
-
 if(WITH_QTUI)
     find_package(Qt5Widgets)
+    find_package(Qt5Core)
+    find_package(Qt5Gui REQUIRED)
     find_package(Qt5Test)
 
-    set(EXTRA_LIBS ${EXTRA_LIBS} lcui Qt5::Widgets Qt5::Test)
+    set(EXTRA_LIBS
+            ${EXTRA_LIBS}
+            lcui
+            Qt5::Core
+            Qt5::Gui
+            Qt5::Widgets
+            Qt5::Test)
     set(hdrs
             ${hdrs}
             ui/testcommandline.h
-            ui/clicommandtest.h)
+            ui/clicommandtest.h
+            ui/uitests.h
+            ui/widgets/layers.h
+            ui/dialogs/addlinepatterndialog.h)
 
     set(src
             ${src}
             ui/testtoolbar.cpp
             ui/testluaui.cpp
-            ui/testluaoperations.cpp)
+            ui/testluaoperations.cpp
+            ui/uitests.cpp
+            ui/testlayers.cpp
+            ui/testlinepatterns.cpp)
+
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
+    include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
 endif(WITH_QTUI)
 

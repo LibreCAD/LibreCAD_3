@@ -30,15 +30,16 @@ class Layers : public QDockWidget {
         void on_deleteButton_clicked();
         void on_layerList_clicked(const QModelIndex& index);
 
+        void changeLayerName(lc::Layer_CSPtr& layer, const std::string& name);
+
+    protected:
+        Ui::Layers* ui;
+        LayerModel* model;
         void createLayer(lc::Layer_CSPtr layer);
         void deleteLayer(lc::Layer_CSPtr layer);
         void replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer);
 
-        void changeLayerName(lc::Layer_CSPtr& layer, const std::string& name);
-
     private:
-        Ui::Layers* ui;
-        LayerModel* model;
         lc::Document_SPtr _document;
 
         void updateLayerList();

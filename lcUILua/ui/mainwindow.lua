@@ -108,9 +108,9 @@ function create_main_window()
 
     linePatternSelect = lc.LinePatternSelect()
 
-    if(hideUI ~= true) then
-        add_toolbar()
+    add_toolbar()
 
+    if(hideUI ~= true) then
         mainWindow:showMaximized()
     end
 

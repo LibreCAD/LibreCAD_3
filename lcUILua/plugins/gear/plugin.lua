@@ -186,10 +186,10 @@ function Gear:calc(N, phi, Pc)
     local fKeep = first
     table.remove(points, 1)
     for k,v in pairs(points) do
-        table.insert(entities, Line(Coord(first.x,first.y), Coord(v.x,v.y),layer))
+        table.insert(entities, Line(Coord(first.x,first.y), Coord(v.x,v.y),layer,MetaInfo()))
         first=v
     end
-    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer))
+    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer,MetaInfo()))
 
     return entities
 end

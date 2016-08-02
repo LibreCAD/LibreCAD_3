@@ -58,7 +58,7 @@ ReplaceLinePattern::ReplaceLinePattern(std::shared_ptr<Document> document,  cons
 
 void ReplaceLinePattern::processInternal() {
     document()->removeDocumentMetaType(_oldLinePattern);
-    document()->removeDocumentMetaType(_newLinePattern);
+    document()->addDocumentMetaType(_newLinePattern);
 }
 
 void ReplaceLinePattern::undo() const {

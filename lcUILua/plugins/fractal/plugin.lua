@@ -56,7 +56,7 @@ function FractalTree.drawTree(b, x1, y1, angle, depth)
     local x2 = x1 +  (math.cos(math.rad(angle)) * depth * 10.0);
     local y2 = y1 + (math.sin(math.rad(angle)) * depth * 10.0);
 
-    b:append(Line(Coord(x1, y1), Coord(x2, y2), active_layer()));
+    b:append(Line(Coord(x1, y1), Coord(x2, y2), active_layer(), MetaInfo()));
     FractalTree.drawTree(b, x2, y2, angle - 20, depth - 1);
     FractalTree.drawTree(b, x2, y2, angle + 20, depth - 1);
 end

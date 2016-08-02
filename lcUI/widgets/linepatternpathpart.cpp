@@ -1,6 +1,8 @@
 #include "linepatternpathpart.h"
 #include "ui_linepatternpathpart.h"
 
+#include <iostream>
+
 LinePatternPathPart::LinePatternPathPart(QWidget* parent) :
     LinePatternPathPart(1, parent) {
 }
@@ -19,15 +21,16 @@ LinePatternPathPart::LinePatternPathPart(double value, QWidget* parent) :
 
     int typeIndex;
     if(value == 0) {
-        typeIndex = ui->type->findData(PATH_DOT_NAME);
+        typeIndex = ui->type->findText(PATH_DOT_NAME);
         ui->value->setDisabled(true);
     }
     else if(value > 0) {
-        typeIndex = ui->type->findData(PATH_PLAIN_NAME);
+        typeIndex = ui->type->findText(PATH_PLAIN_NAME);
     }
     else {
-        typeIndex = ui->type->findData(PATH_SPACE_NAME);
+        typeIndex = ui->type->findText(PATH_SPACE_NAME);
     }
+
 
     if (typeIndex != -1) {
         ui->type->setCurrentIndex(typeIndex);
