@@ -31,7 +31,7 @@ AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLi
 
         ui->saveButton->setText(SAVE_AS_NEW_TEXT);
 
-        auto editButton = new QPushButton(EDIT_TEXT);
+        editButton = new QPushButton(EDIT_TEXT);
         connect(editButton, &QPushButton::pressed, this, &AddLinePatternDialog::onEditButtonPressed);
         ui->buttonLayout->addWidget(editButton);
     }

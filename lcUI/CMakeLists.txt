@@ -143,7 +143,7 @@ set(EXTRA_LIBS
 
 #Create library for unit tests
 if(WITH_UNITTESTS)
-    add_library(lcui SHARED ${UI_srcs} ${UI_hdrs})
+    add_library(lcui SHARED ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
     target_link_libraries(lcui ${EXTRA_LIBS})
 endif(WITH_UNITTESTS)
 

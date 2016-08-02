@@ -8,9 +8,8 @@ Layers::Layers(lc::Document_SPtr document, QWidget *parent) :
 
     ui->setupUi(this);
 
-    setDocument(document);
-
     model = new LayerModel(this);
+    setDocument(document);
 
     ui->layerList->setModel(model);
     ui->layerList->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -78,7 +77,6 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
     }
 
     auto layer = model->layerAt(index.row());
-
     if(index.column() != LayerModel::NAME) {
         auto locked = layer->isFrozen();
 
@@ -145,17 +143,17 @@ void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
 }
 
 void Layers::updateLayerList() {
-    if(_document != nullptr) {
-        std::vector<lc::Layer_CSPtr> layersVector;
+    std::vector<lc::Layer_CSPtr> layersVector;
 
+    if(_document != nullptr) {
         auto layersMap = _document->allLayers();
 
         for(auto layer : layersMap) {
             layersVector.push_back(layer.second);
         }
-
-        model->setLayers(layersVector);
     }
+
+    model->setLayers(layersVector);
 }
 
 void Layers::on_addLayerEvent(const lc::AddLayerEvent &) {

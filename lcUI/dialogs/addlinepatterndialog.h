@@ -37,10 +37,12 @@ class AddLinePatternDialog : public QDialog {
 
         void generatePreview();
 
-    private:
+    protected:
         Ui::AddLinePatternDialog* ui;
+        QPushButton* editButton;
         QVBoxLayout* _layout;
 
+    private:
         lc::Document_SPtr _document;
 
         lc::DxfLinePattern_CSPtr _linePattern;
