@@ -21,7 +21,7 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.stroke();
 
     auto c1 = lc::geo::Coordinate(0, 0);
-    auto rad = 100;
+    auto rad = 300;
     auto ell= lc::geo::Circle(c1, rad);
 
     auto p1 = lc::geo::Coordinate(200,300);
@@ -36,9 +36,9 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     lc::geo::Area cc2 = lc::geo::Area(lc::geo::Coordinate(ell.center().x() - ell.radius(), ell.center().y() - ell.radius()),
                      lc::geo::Coordinate(ell.center().x() + ell.radius(), ell.center().y() + ell.radius()));
 
-    for(auto p : B->getCP()) {
-        painter.point(p.x(), p.y(), 5, 1);
-    }
+//    for(auto p : B->getCP()) {
+//        painter.point(p.x(), p.y(), 5, 1);
+//    }
 
     painter.rectangle(bb2.minP().x(), bb2.minP().y(), bb2.maxP().x()-bb2.minP().x(), bb2.maxP().y()-bb2.minP().y());
     painter.rectangle(cc2.minP().x(), cc2.minP().y(), cc2.maxP().x()-cc2.minP().x(), cc2.maxP().y()-cc2.minP().y());
