@@ -7,5 +7,6 @@
 static int argc = 0;
 static char** argv = NULL;
 
-LuaIntf::LuaState startLC();
+LuaInterface* startLC();
 lc::Document_SPtr createDocument();
+CadMdiChild* getMdiChild(lua_State* L);

@@ -1,12 +1,11 @@
 #include <cmath>
 #include <cad/math/lcmath.h>
+#include <cad/const.h>
 #include <gtest/gtest.h>
 
 //
 // Created by R. van Twisk on 5/5/15.
 //
-
-#pragma once
 
 TEST(MathTest, getAngleDifferenceShort) {
     ASSERT_NEAR(0.1, lc::Math::getAngleDifferenceShort(0., 0.1, true), LCARCTOLERANCE);

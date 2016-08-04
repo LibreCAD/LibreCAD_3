@@ -7,23 +7,19 @@
 #include <cad/operations/documentoperation.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
-
 #include <cad/primitive/line.h>
-
 #include "drawitems/lcvdrawitem.h"
-
-#pragma once
 
 TEST(SelectionTest, NormalSelection) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -46,14 +42,14 @@ TEST(SelectionTest, NormalSelection) {
 
 TEST(SelectionTest, IntersectionSelection) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -76,14 +72,14 @@ TEST(SelectionTest, IntersectionSelection) {
 
 TEST(SelectionTest, AddToSelection) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -109,14 +105,14 @@ TEST(SelectionTest, AddToSelection) {
 
 TEST(SelectionTest, Reselect) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -142,14 +138,14 @@ TEST(SelectionTest, Reselect) {
 
 TEST(SelectionTest, ClearSelection) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -175,14 +171,14 @@ TEST(SelectionTest, ClearSelection) {
 
 TEST(SelectionTest, Deselect) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
@@ -206,14 +202,14 @@ TEST(SelectionTest, Deselect) {
 
 TEST(SelectionTest, DeselectAddTo) {
 	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<DocumentImpl>(storageManager);
+	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<operation::Builder>(document);
+	auto builder = std::make_shared<lc::operation::Builder>(document);
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
 	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
