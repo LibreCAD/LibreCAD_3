@@ -1,5 +1,3 @@
-#pragma once
-
 #include <QApplication>
 #include <QSignalSpy>
 

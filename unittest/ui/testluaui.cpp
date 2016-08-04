@@ -3,17 +3,12 @@
 #include <QApplication>
 
 #include <luainterface.h>
-
-static int argc = 0;
-static char** argv = NULL;
+#include "uitests.h"
 
 TEST(LuaUITest, NewFile) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
-
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
+	auto luaInterface = startLC();
+	auto L = luaInterface->luaState();
 
 	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
 	int nbOpenWindow = mdiArea->subWindowList().count();
@@ -21,15 +16,13 @@ TEST(LuaUITest, NewFile) {
 	LuaIntf::LuaRef(L, "new_file")();
 
 	EXPECT_EQ(nbOpenWindow + 1, mdiArea->subWindowList().count());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, CloseWindow) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
-
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
 	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
 
@@ -42,25 +35,16 @@ TEST(LuaUITest, CloseWindow) {
 	mdiArea->subWindowList().at(0)->close();
 
 	EXPECT_EQ(nbOpenWindow - 1, mdiArea->subWindowList().count());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, UndoRedo) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+	auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 	auto nbEntities = storageManager->entityContainer().asVector().size();
 
@@ -77,25 +61,16 @@ TEST(LuaUITest, UndoRedo) {
 	LuaIntf::LuaRef(L, "redo")();
 
 	EXPECT_EQ(nbEntities + 1, storageManager->entityContainer().asVector().size());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, LineCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Line_CSPtr createdEntity;
@@ -143,25 +118,16 @@ TEST(LuaUITest, LineCreation) {
 
 	EXPECT_EQ(lc::geo::Coordinate(0, 0), createdEntity->start());
 	EXPECT_EQ(lc::geo::Coordinate(100, 0), createdEntity->end());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, CircleCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Circle_CSPtr createdEntity;
@@ -208,25 +174,16 @@ TEST(LuaUITest, CircleCreation) {
 
 	EXPECT_EQ(lc::geo::Coordinate(100, 100), createdEntity->center());
 	EXPECT_EQ(100, createdEntity->radius());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, ArcCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+	auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Arc_CSPtr createdEntity;
@@ -281,25 +238,16 @@ TEST(LuaUITest, ArcCreation) {
 	EXPECT_EQ(100, createdEntity->radius());
 	EXPECT_EQ(0, createdEntity->startAngle());
 	EXPECT_EQ(1 * M_PI, createdEntity->endAngle());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, EllipseCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Ellipse_CSPtr createdEntity;
@@ -350,25 +298,16 @@ TEST(LuaUITest, EllipseCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(100, 100), createdEntity->center());
 	EXPECT_EQ(100, createdEntity->majorRadius());
 	EXPECT_EQ(10, createdEntity->minorRadius());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, ArcEllipseCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Ellipse_CSPtr createdEntity;
@@ -427,25 +366,16 @@ TEST(LuaUITest, ArcEllipseCreation) {
 	EXPECT_EQ(10, createdEntity->minorRadius());
 	EXPECT_EQ(0, createdEntity->startAngle());
 	EXPECT_EQ(1 * M_PI, createdEntity->endAngle());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, DimAlignedCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();;
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::DimAligned_CSPtr createdEntity;
@@ -472,25 +402,16 @@ TEST(LuaUITest, DimAlignedCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(100, 0), createdEntity->definitionPoint3());
 	EXPECT_EQ(lc::geo::Coordinate(50, 100), createdEntity->middleOfText());
 	EXPECT_EQ("Test: <>", createdEntity->explicitValue());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, DimAngularCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::DimAngular_CSPtr createdEntity;
@@ -517,25 +438,16 @@ TEST(LuaUITest, DimAngularCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(0, 100), createdEntity->defLine12());
 	EXPECT_EQ(lc::geo::Coordinate(100, 100), createdEntity->defLine22());
 	EXPECT_EQ("Test: <>", createdEntity->explicitValue());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, DimDiametricCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::DimDiametric_CSPtr createdEntity;
@@ -560,25 +472,16 @@ TEST(LuaUITest, DimDiametricCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(0, 10), createdEntity->definitionPoint());
 	EXPECT_EQ(lc::geo::Coordinate(100, 10), createdEntity->definitionPoint2());
 	EXPECT_EQ("Test: <>", createdEntity->explicitValue());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, DimLinearCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::DimLinear_CSPtr createdEntity;
@@ -605,25 +508,16 @@ TEST(LuaUITest, DimLinearCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(100, 10), createdEntity->definitionPoint3());
 	EXPECT_EQ(lc::geo::Coordinate(50, 100), createdEntity->middleOfText());
 	EXPECT_EQ("Test: <>", createdEntity->explicitValue());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, DimRadialCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::DimRadial_CSPtr createdEntity;
@@ -650,25 +544,16 @@ TEST(LuaUITest, DimRadialCreation) {
 	EXPECT_EQ(lc::geo::Coordinate(100, 10), createdEntity->definitionPoint2());
 	EXPECT_EQ(lc::geo::Coordinate(50, 100), createdEntity->middleOfText());
 	EXPECT_EQ("Test: <>", createdEntity->explicitValue());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, SplineCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::Spline_CSPtr createdEntity;
@@ -702,25 +587,16 @@ TEST(LuaUITest, SplineCreation) {
 	createdEntity = std::static_pointer_cast<const lc::entity::Spline>(*storageManager->entityContainer().asVector().begin());
 
 	EXPECT_EQ(points, createdEntity->controlPoints());
+    delete luaInterface;
 }
 
 TEST(LuaUITest, LWPolylineCreation) {
 	QApplication app(argc, argv);
-	LuaInterface luaInterface;
-	auto L = luaInterface.luaState();
+	auto luaInterface = startLC();
+    auto L = luaInterface->luaState();
 
-	luaInterface.hideUI(true);
-	luaInterface.initLua();
-
-	auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
-
-	if(mdiArea->subWindowList().count() == 0) {
-		LuaIntf::LuaRef(L, "new_file")();
-	}
-
-	mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
-
-	auto mdiChild = dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    auto mdiChild = getMdiChild(L);
+    
 	auto storageManager = mdiChild->storageManager();
 
 	lc::entity::LWPolyline_CSPtr createdEntity;
@@ -760,4 +636,5 @@ TEST(LuaUITest, LWPolylineCreation) {
 
 	EXPECT_EQ(lc::geo::Coordinate(100, 100), vertex.at(2).location());
 	EXPECT_FLOAT_EQ(1, vertex.at(2).bulge());
+    delete luaInterface;
 }

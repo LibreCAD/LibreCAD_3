@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include "entitytest.h"
 #include <iostream>
 #include <memory>

@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 #include "cad/math/equation.h"
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geovector.h"
