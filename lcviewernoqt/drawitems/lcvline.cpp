@@ -20,7 +20,7 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.line_to(end().x(), end().y());
     painter.stroke();
 
-    auto c1 = lc::geo::Coordinate(0, 0);
+    /*auto c1 = lc::geo::Coordinate(0, 0);
     auto rad = 100;
     auto ell= lc::geo::Circle(c1, rad);
 
@@ -55,6 +55,6 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     }
     painter.stroke();
     painter.circle(ell.center().x(), ell.center().y(), ell.radius());
-    painter.stroke();
+    painter.stroke();*/
 }
 

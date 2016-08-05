@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include "cad/interface/metatype.h"
+#include "cad/meta/dxflinepattern.h"
 
 namespace lc {
     /**
@@ -13,6 +14,8 @@ namespace lc {
         public:
             // COnvenience function to add a MetaType to the MetaInfo map
             std::shared_ptr<MetaInfo> add(EntityMetaType_CSPtr mi);
+            std::shared_ptr<MetaInfo> addDxfLinePattern(DxfLinePattern_CSPtr lp);
+
             // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);
 
             virtual ~MetaInfo() = default;
