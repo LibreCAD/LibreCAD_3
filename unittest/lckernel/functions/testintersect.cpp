@@ -6,13 +6,6 @@
 //
 // Created by R. van Twisk on 5/6/15.
 //
-
-#ifndef LC_TESTINTERSECT_H
-#define LC_TESTINTERSECT_H
-
-#endif //LC_TESTINTERSECT_H
-
-
 TEST(IntersectTest, LineLine1) {
     lc::entity::CADEntity_CSPtr i1=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0),  lc::geo::Coordinate(10,10), nullptr);
     lc::entity::CADEntity_CSPtr i2=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,10), lc::geo::Coordinate(10,0), nullptr);

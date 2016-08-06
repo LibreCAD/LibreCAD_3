@@ -26,18 +26,22 @@ FIND_PACKAGE ( Threads REQUIRED )
 
 set(src
 main.cpp
-entitytest.cpp
-code.cpp
+lckernel/primitive/entitytest.cpp
+lckernel/math/code.cpp
+lckernel/math/testmath.cpp
 lckernel/operations/buildertest.cpp
+lckernel/geometry/testgeoarc.cpp
+lckernel/geometry/testgeocircle.cpp
+lckernel/functions/testintersect.cpp
+lckernel/math/testmatrices.cpp
+lckernel/geometry/beziertest.cpp
+lcviewernoqt/testselection.cpp
 )
+
 set(hdrs
-entitytest.h
-code.h
-testmath.h
-testmatrices.h
-beziertest.h
-testselection.h
-testintersect.h)
+lckernel/primitive/entitytest.h
+lckernel/math/code.h
+)
 if(WITH_QTUI)
     find_package(Qt5Widgets)
     find_package(Qt5Core)
@@ -53,7 +57,6 @@ if(WITH_QTUI)
             Qt5::Test)
     set(hdrs
             ${hdrs}
-            ui/testcommandline.h
             ui/clicommandtest.h
             ui/uitests.h
             ui/widgets/layers.h
@@ -66,7 +69,8 @@ if(WITH_QTUI)
             ui/testluaoperations.cpp
             ui/uitests.cpp
             ui/testlayers.cpp
-            ui/testlinepatterns.cpp)
+            ui/testlinepatterns.cpp
+            ui/testcommandline.cpp)
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files

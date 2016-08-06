@@ -97,8 +97,9 @@ void lua_openlckernel(lua_State* L) {
     .endClass()
 
     .beginClass<MetaInfo>("MetaInfo")
-    .addConstructor(LUA_SP(MetaInfo_SPtr), LUA_ARGS())
-    .addFunction("add", &MetaInfo::add)
+        .addConstructor(LUA_SP(MetaInfo_SPtr), LUA_ARGS())
+        .addFunction("add", &MetaInfo::add)
+        .addFunction("addDxfLinePattern", &MetaInfo::addDxfLinePattern)
     .endClass()
 
     .beginClass<geo::Coordinate>("Coord")

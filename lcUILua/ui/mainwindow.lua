@@ -40,7 +40,7 @@ function active_metaInfo()
 
     local linePattern = linePatternSelect:linePattern()
     if(linePattern ~= nil) then
-        metaInfo:add(linePattern)
+        metaInfo:addDxfLinePattern(linePattern)
     end
 
     return metaInfo

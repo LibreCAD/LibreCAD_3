@@ -1,11 +1,10 @@
 #include <cmath>
+#include <cad/geometry/geocircle.h>
 #include <gtest/gtest.h>
 
 //
 // Created by R. van Twisk on 5/5/15.
 //
-
-#pragma once
 
 using namespace lc;
 using namespace geo;

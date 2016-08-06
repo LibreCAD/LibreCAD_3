@@ -1,11 +1,9 @@
 #include <cmath>
 #include <gtest/gtest.h>
-
+#include <cad/geometry/geoarc.h>
 //
 // Created by R. van Twisk on 5/5/15.
 //
-
-#pragma once
 
 using namespace lc;
 using namespace geo;

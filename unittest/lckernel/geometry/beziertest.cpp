@@ -1,7 +1,9 @@
+#include <gtest/gtest.h>
 #include "cad/geometry/geobezier.h"
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geovector.h"
 #include <cmath>
+
 TEST(BEZIER, LENGTH) {
     auto p1 = lc::geo::Coordinate(50,230);
     auto p2 = lc::geo::Coordinate(50,50);
@@ -42,7 +44,7 @@ TEST(BEZIER, NORMAL) {
 //    lc::maths::Intersection::BezierLine(bezier_, line_);
 //}
 
-TEST(BEZIER, CIRCLE) {
+/*TEST(BEZIER, CIRCLE) {
     auto c1 = lc::geo::Coordinate(0,0);
     auto circle_ = lc::geo::Circle(c1, 200.);
 
@@ -59,4 +61,4 @@ TEST(BEZIER, CIRCLE) {
     for(auto r : ret) {
         std::cout << r << std::endl;
     }
-}
+}*/
