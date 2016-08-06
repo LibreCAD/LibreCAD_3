@@ -601,21 +601,26 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
 
 void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
     DRW_Spline sp;
-    //getEntityAttributes(&el, s);
+    getEntityAttributes(&sp, s);
 
-//    el.basePoint.x = s->center().x();
-//    el.basePoint.y = s->center().y();
-//    el.secPoint.x = s->majorP().x();
-//    el.secPoint.y = s->majorP().y();
-//    el.ratio = s->ratio();
-//    if (s->isReversed()) {
-//        el.staparam = s->startAngle();
-//        el.endparam = s->endAngle();
-//    } else {
-//        el.staparam = s->endAngle();
-//        el.endparam = s->startAngle();
-//    }
-//    dxfW->writeEllipse(&el);
+    sp.knotslist = s->knotPoints();
+    sp.normalVec = DRW_Coord(s->nX(), s->nY(), s->nZ());
+    sp.tgEnd = DRW_Coord(s->endTanX(), s->endTanY(), s->endTanZ());
+    sp.tgStart = DRW_Coord(s->startTanX(), s->startTanY(), s->startTanZ());
+
+    sp.degree = s->degree();
+    for(const auto & cp : s->controlPoints()) {
+        sp.controllist.push_back(new DRW_Coord(cp.x(), cp.y(), cp.z()));
+    }
+
+    for(const auto & fp : s->fitPoints()) {
+        sp.fitlist.push_back(new DRW_Coord(fp.x(), fp.y(), fp.z()));
+    }
+    sp.flags = s->flags();
+    sp.nknots = sp.knotslist.size();
+    sp.nfit = sp.fitlist.size();
+    sp.ncontrol = sp.controllist.size();
+
     dxfW->writeSpline(&sp);
 }
 
