@@ -154,6 +154,9 @@ void addQtWidgetsBindings(lua_State *L) {
 			.addFunction("setIconSize", &QAbstractButton::setIconSize)
 		.endClass()
 
+        .beginExtendClass<QComboBox, QWidget>("QComboBox")
+        .endClass()
+
 		.beginExtendClass<QPushButton, QAbstractButton>("QPushButton")
 			.addFactory([](QString name) {
 				return new QPushButton(name);
@@ -272,12 +275,19 @@ void addLCBindings(lua_State *L) {
             .addFunction("setDocument", &LinePatternManager::setDocument)
         .endClass()
 
-        .beginExtendClass<LinePatternSelect, QDialog>("LinePatternSelect")
-            .addFactory([](){
-                return new LinePatternSelect();
+        .beginExtendClass<LinePatternSelect, QComboBox>("LinePatternSelect")
+            .addFactory([](QWidget* parent){
+                return new LinePatternSelect(nullptr, parent);
             })
             .addFunction("setDocument", &LinePatternSelect::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
             .addFunction("linePattern", &LinePatternSelect::linePattern)
+        .endClass()
+
+        .beginExtendClass<LineWidthSelect, QComboBox>("LineWidthSelect")
+            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
+                return new LineWidthSelect(parent, showByLayer, showByBlock);
+            })
+            .addFunction("lineWidth", &LineWidthSelect::lineWidth)
         .endClass()
 
 	.endModule();

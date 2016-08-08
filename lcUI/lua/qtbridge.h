@@ -32,6 +32,7 @@ extern "C"
 #include "widgets/layers.h"
 #include "dialogs/linepatternmanager.h"
 #include <drawables/tempentities.h>
+#include "widgets/linewidthselect.h"
 
 
 Q_DECLARE_METATYPE(lc::geo::Coordinate);

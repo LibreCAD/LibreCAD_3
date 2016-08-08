@@ -6,6 +6,7 @@
 #include <QFormLayout>
 
 #include "widgets/linepatternselect.h"
+#include "widgets/linewidthselect.h"
 
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
@@ -36,5 +37,6 @@ class AddLayerDialog : public QDialog {
         Ui::AddLayerDialog* ui;
         lc::Document_SPtr _document;
         LinePatternSelect* linePatternSelect;
+        LineWidthSelect* lineWidthSelect;
         lc::Layer_CSPtr _oldLayer;
 };

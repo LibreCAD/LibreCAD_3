@@ -1,21 +1,28 @@
 #include "linepatternpainter.h"
 
-LinePatternPainter::LinePatternPainter(lc::DxfLinePattern_CSPtr linePattern, QPaintDevice *device) :
+LinePatternPainter::LinePatternPainter(QPaintDevice *device, lc::DxfLinePattern_CSPtr linePattern, int width) :
+    _device(device),
     _linePattern(linePattern),
-    _device(device) {
+    _width(width) {
+}
+
+LinePatternPainter::LinePatternPainter(QPaintDevice *device, int width, lc::DxfLinePattern_CSPtr linePattern)  :
+    _device(device),
+    _linePattern(linePattern),
+    _width(width) {
 }
 
 void LinePatternPainter::drawLinePattern() {
-    if(_linePattern == nullptr || _device == NULL) {
+    if(_device == NULL) {
         return;
     }
 
     QPen pen;
 
-    if(_linePattern->length() != 0) {
+    if(_linePattern != nullptr && _linePattern->length() != 0) {
         QVector<qreal> dashes;
 
-        for(auto a : _linePattern->lcPattern()) {
+        for(auto a : _linePattern->lcPattern(_width)) {
             dashes << a;
         }
 
@@ -28,7 +35,7 @@ void LinePatternPainter::drawLinePattern() {
     }
 
     pen.setColor(Qt::black);
-    pen.setWidth(1);
+    pen.setWidth(_width);
 
     QPainter painter(_device);
     painter.fillRect(QRect(0, 0, _device->width(), _device->height()), QBrush(Qt::white));
