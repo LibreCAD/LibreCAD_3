@@ -289,3 +289,66 @@ void Intersection::BezCir(const geo::Circle C, const geo::Area c_area, const geo
     BezCir(C, c_area, m_area, b2split[1], ret);
 
 }
+
+std::vector<geo::Coordinate> Intersection::SplineLine(geo::Spline B, const geo::Vector& V) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = BezierLine(bezier, V);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::SplineCircle(geo::Spline B, const geo::Circle& C) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = BezierCircle(bezier, C);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::SplineArc(geo::Spline B, const geo::Arc& A) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = BezierArc(bezier, A);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::SplineEllipse(geo::Spline B, const geo::Ellipse& E) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = BezierEllipse(bezier, E);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::SplineSpline(geo::Spline B1, geo::Spline B2) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B1.beziers();
+    auto beziers2 = B2.beziers();
+    for(const auto & bezier : beziers) {
+        for(const auto & bezier2 : beziers2) {
+            auto vecret = BezierBezier(bezier, bezier2);
+            ret.insert(ret.end(), vecret.begin(), vecret.end());
+        }
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::SplineBezier(geo::Spline B1, geo::BB_CSPtr B2) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B1.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = BezierBezier(bezier, B2);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}

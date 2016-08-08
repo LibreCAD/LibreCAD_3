@@ -10,6 +10,7 @@
 #include "cad/geometry/geocircle.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/geometry/geoellipse.h"
+#include "cad/geometry/geospline.h"
 
 namespace lc {
     namespace maths {
@@ -30,6 +31,18 @@ namespace lc {
         static std::vector<geo::Coordinate> BezierEllipse(geo::BB_CSPtr B, const geo::Ellipse& E);
         static std::vector<geo::Coordinate> BezierBezier(
             geo::BB_CSPtr B1, geo::BB_CSPtr B2);
+
+        static std::vector<geo::Coordinate> SplineLine(
+            geo::Spline B, const geo::Vector& V);
+        static std::vector<geo::Coordinate> SplineCircle(
+            geo::Spline B, const geo::Circle& C);
+        static std::vector<geo::Coordinate> SplineArc(
+            geo::Spline B, const geo::Arc& A);
+        static std::vector<geo::Coordinate> SplineEllipse(geo::Spline B, const geo::Ellipse& E);
+        static std::vector<geo::Coordinate> SplineBezier(
+            geo::Spline B1, geo::BB_CSPtr B2);
+        static std::vector<geo::Coordinate> SplineSpline(
+            geo::Spline B1, geo::Spline B2);
 
         private:
         static void BezBez(const geo::BB_CSPtr B1, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);

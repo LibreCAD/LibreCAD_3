@@ -131,8 +131,22 @@ void Spline::populateCurve() {
     }
 }
 
-const std::vector<std::vector<lc::geo::Coordinate>> Spline::beziers() const {
-    return _beziers;
+const std::vector<BB_CSPtr> Spline::beziers() const {
+    std::vector<BB_CSPtr> ret;
+
+    if(_degree == 3) {
+        for(const auto & r : _beziers) {
+            auto z = std::make_shared<const CubicBezier>(r[0], r[1], r[2], r[3]);
+            ret.push_back(z);
+        }
+    } else if (_degree == 2) {
+        for(const auto & r : _beziers) {
+            auto z = std::make_shared<const Bezier>(r[0], r[1], r[2]);
+            ret.push_back(z);
+        }
+    }
+
+    return ret;
 }
 
 /*

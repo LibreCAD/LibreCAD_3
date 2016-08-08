@@ -5,6 +5,9 @@
 #include <vector>
 #include "opennurbs_20130711/opennurbs.h"
 #include "cad/base/visitor.h"
+#include "cad/geometry/geobezierbase.h"
+#include "cad/geometry/geobezier.h"
+#include "cad/geometry/geobeziercubic.h"
 
 namespace lc {
     namespace geo {
@@ -90,7 +93,7 @@ namespace lc {
                  * @return bool closed
                  */
                 bool closed() const;
-                const std::vector<std::vector<lc::geo::Coordinate>> beziers() const;
+                const std::vector<BB_CSPtr> beziers() const;
                 void generateBeziers();
 
 
