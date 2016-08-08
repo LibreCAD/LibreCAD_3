@@ -42,6 +42,7 @@ widgets/linepatternselect.h
 widgets/linepatternpainter.h
 widgets/linepatternpathpart.h
 widgets/linepatternmodel.h
+widgets/linewidthselect.h
 lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
@@ -67,6 +68,7 @@ widgets/linepatternselect.cpp
 widgets/linepatternpainter.cpp
 widgets/linepatternpathpart.cpp
 widgets/linepatternmodel.cpp
+widgets/linewidthselect.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp

@@ -77,7 +77,7 @@ void AddLinePatternDialog::generatePreview() {
 
     QPixmap previewPixmap(ui->preview->frameSize());
 
-    LinePatternPainter painter(_linePattern, &previewPixmap);
+    LinePatternPainter painter(&previewPixmap, _linePattern);
     painter.drawLinePattern();
 
     ui->preview->setPixmap(previewPixmap);

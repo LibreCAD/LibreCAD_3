@@ -5,7 +5,7 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
     _showByLayer(showByLayer),
     _showByBlock(showByBlock) {
 
-    qIconSize = QSize(256, 32);
+    qIconSize = QSize(128, 32);
     setIconSize(qIconSize);
 
     setDocument(document);
@@ -52,7 +52,7 @@ lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
 QIcon LinePatternSelect::generateQIcon(lc::DxfLinePattern_CSPtr linePattern) {
     QPixmap pixmap(qIconSize);
 
-    LinePatternPainter painter(linePattern, &pixmap);
+    LinePatternPainter painter(&pixmap, linePattern);
     painter.drawLinePattern();
 
     return QIcon(pixmap);

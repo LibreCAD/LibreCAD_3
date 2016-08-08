@@ -43,6 +43,11 @@ function active_metaInfo()
         metaInfo:addDxfLinePattern(linePattern)
     end
 
+    local lineWidth = lineWidthSelect:lineWidth()
+    if(lineWidth ~= nil) then
+        metaInfo:add(lineWidth)
+    end
+
     return metaInfo
 end
 
@@ -106,7 +111,8 @@ function create_main_window()
     layers = lc.Layers(active_document())
     mainWindow:addDockWidget(2, layers)
 
-    linePatternSelect = lc.LinePatternSelect()
+    linePatternSelect = lc.LinePatternSelect(mainWindow)
+    lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
 
     add_toolbar()
 

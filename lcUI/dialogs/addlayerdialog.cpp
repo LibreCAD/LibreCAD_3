@@ -13,10 +13,12 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
 
     ui->setupUi(this);
 
-    linePatternSelect = new LinePatternSelect(document, nullptr);
+    linePatternSelect = new LinePatternSelect(document, this);
+    lineWidthSelect = new LineWidthSelect(this);
 
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
     if(layout) {
+        layout->setWidget(2, QFormLayout::FieldRole, lineWidthSelect);
         layout->setWidget(3, QFormLayout::FieldRole, linePatternSelect);
     }
 
@@ -27,8 +29,6 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
         ui->g->setValue(oldLayer->color().greenI());
         ui->b->setValue(oldLayer->color().blueI());
         ui->a->setValue(oldLayer->color().alphaI());
-
-        ui->width->setValue(oldLayer->lineWidth().width());
 
         if(oldLayer->linePattern() != nullptr) {
             int linePatternIndex = linePatternSelect->findText(oldLayer->linePattern()->name().c_str());
@@ -56,7 +56,7 @@ void AddLayerDialog::accept() {
     if(linePattern == nullptr) {
         layer = std::make_shared<const lc::Layer>(
                 ui->name->text().toStdString(),
-                lc::MetaLineWidthByValue(ui->width->value()),
+                *lineWidthSelect->lineWidth(),
                 lc::Color(ui->r->value(),
                           ui->g->value(),
                           ui->b->value(),
@@ -67,7 +67,7 @@ void AddLayerDialog::accept() {
     else {
         layer = std::make_shared<const lc::Layer>(
                 ui->name->text().toStdString(),
-                lc::MetaLineWidthByValue(ui->width->value()),
+                *lineWidthSelect->lineWidth(),
                 lc::Color(ui->r->value(),
                           ui->g->value(),
                           ui->b->value(),

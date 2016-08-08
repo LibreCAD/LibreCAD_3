@@ -33,7 +33,7 @@ QVariant LinePatternModel::data(const QModelIndex &index, int role) const {
 
     if(role == Qt::DecorationRole && index.column() == PREVIEW) {
         QPixmap pixmap(PREVIEW_WIDTH, PREVIEW_HEIGHT);
-        auto painter = LinePatternPainter(linePattern, &pixmap);
+        auto painter = LinePatternPainter(&pixmap, linePattern);
 
         painter.drawLinePattern();
 
