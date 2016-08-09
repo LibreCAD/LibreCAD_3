@@ -279,3 +279,26 @@ BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
 //    }
 
 }
+
+BB_CSPtr Bezier::splitAtT(double t) const {
+        auto x1 = _pointA.x();
+        auto y1 = _pointA.y();
+
+        auto x2 = _pointB.x();
+        auto y2 = _pointB.y();
+
+        auto x3 = _pointC.x();
+        auto y3 = _pointC.y();
+
+        auto x12 = (x2-x1)*t+x1;
+        auto y12 = (y2-y1)*t+y1;
+
+        auto x23 = (x3-x2)*t+x2;
+        auto y23 = (y3-y2)*t+y2;
+
+        auto x123 = (x23-x12)*t+x12;
+        auto y123 = (y23-y12)*t+y12;
+
+        return std::make_shared<Bezier>(Bezier({x1, y1}, {x12, y12}, {x123, y123}));
+}
+

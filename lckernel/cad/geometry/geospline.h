@@ -95,7 +95,7 @@ namespace lc {
                 bool closed() const;
                 const std::vector<BB_CSPtr> beziers() const;
                 void generateBeziers();
-
+                void trimAtPoint(const geo::Coordinate& c);
 
                 void populateCurve();
                 /*!

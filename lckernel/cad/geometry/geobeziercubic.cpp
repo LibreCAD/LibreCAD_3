@@ -243,3 +243,36 @@ std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {
 }
 
+BB_CSPtr CubicBezier::splitAtT(double t) const {
+        auto x1 = _pointA.x();
+        auto y1 = _pointA.y();
+
+        auto x2 = _pointB.x();
+        auto y2 = _pointB.y();
+
+        auto x3 = _pointC.x();
+        auto y3 = _pointC.y();
+
+        auto x4 = _pointD.x();
+        auto y4 = _pointD.y();
+
+        auto x12 = (x2-x1)*t+x1;
+        auto y12 = (y2-y1)*t+y1;
+
+        auto x23 = (x3-x2)*t+x2;
+        auto y23 = (y3-y2)*t+y2;
+
+        auto x34 = (x4-x3)*t+x3;
+        auto y34 = (y4-y3)*t+y3;
+
+        auto x123 = (x23-x12)*t+x12;
+        auto y123 = (y23-y12)*t+y12;
+
+        auto x234 = (x34-x23)*t+x23;
+        auto y234 = (y34-y23)*t+y23;
+
+        auto x1234 = (x234-x123)*t+x123;
+        auto y1234 = (y234-y123)*t+y123;
+
+        return std::make_shared<CubicBezier>(CubicBezier({x1, y1}, {x12, y12}, {x123, y123}, {x1234, y1234}));
+}

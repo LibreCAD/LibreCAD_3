@@ -173,3 +173,11 @@ void Spline::generateBeziers() {
         }
     }
 }
+
+void Spline::trimAtPoint(const geo::Coordinate& c) {
+    for(const auto & bez : _beziers) {
+        if(bez->boundingBox().inArea(c)) {
+
+        }
+    }
+}
