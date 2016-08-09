@@ -290,6 +290,13 @@ void addLCBindings(lua_State *L) {
             .addFunction("lineWidth", &LineWidthSelect::lineWidth)
         .endClass()
 
+        .beginExtendClass<ColorSelect, QComboBox>("ColorSelect")
+            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
+                return new ColorSelect(parent, showByLayer, showByBlock);
+            })
+            .addFunction("color", &ColorSelect::color)
+        .endClass()
+
 	.endModule();
 }
 

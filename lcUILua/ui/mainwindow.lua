@@ -48,6 +48,11 @@ function active_metaInfo()
         metaInfo:add(lineWidth)
     end
 
+    local color = colorSelect:color()
+    if(color ~= nil) then
+        metaInfo:add(color)
+    end
+
     return metaInfo
 end
 
@@ -113,6 +118,7 @@ function create_main_window()
 
     linePatternSelect = lc.LinePatternSelect(mainWindow)
     lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
+    colorSelect = lc.ColorSelect(mainWindow, true, true)
 
     add_toolbar()
 

@@ -128,5 +128,6 @@ function add_toolbar()
 
     quickAccess:addWidget(metaInfoGroup, linePatternSelect, 0, 0, 1, 1)
     quickAccess:addWidget(metaInfoGroup, lineWidthSelect, 0, 1, 1, 1)
+    quickAccess:addWidget(metaInfoGroup, colorSelect, 0, 2, 1, 1)
 
 end

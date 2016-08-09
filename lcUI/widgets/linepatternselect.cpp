@@ -8,6 +8,8 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
     qIconSize = QSize(128, 32);
     setIconSize(qIconSize);
 
+    setMaximumHeight(32);
+
     setDocument(document);
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));

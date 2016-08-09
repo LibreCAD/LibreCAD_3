@@ -6,6 +6,8 @@ LineWidthSelect::LineWidthSelect(QWidget* parent, bool showByLayer, bool showByB
     qIconSize = QSize(128, 32);
     setIconSize(qIconSize);
 
+    setMaximumHeight(32);
+
     if(showByLayer) {
         addItem(BY_LAYER);
     }
