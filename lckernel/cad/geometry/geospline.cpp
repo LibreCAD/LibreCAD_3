@@ -132,21 +132,7 @@ void Spline::populateCurve() {
 }
 
 const std::vector<BB_CSPtr> Spline::beziers() const {
-    std::vector<BB_CSPtr> ret;
-
-    if(_degree == 3) {
-        for(const auto & r : _beziers) {
-            auto z = std::make_shared<const CubicBezier>(r[0], r[1], r[2], r[3]);
-            ret.push_back(z);
-        }
-    } else if (_degree == 2) {
-        for(const auto & r : _beziers) {
-            auto z = std::make_shared<const Bezier>(r[0], r[1], r[2]);
-            ret.push_back(z);
-        }
-    }
-
-    return ret;
+    return _beziers;
 }
 
 /*
@@ -154,7 +140,6 @@ const std::vector<BB_CSPtr> Spline::beziers() const {
  * No external need to cast to bezier and then find intersections.
  */
 void Spline::generateBeziers() {
-    std::vector<std::vector<lc::geo::Coordinate>> bezlist;
     auto curve = _splineCurve.Duplicate();
     curve->MakePiecewiseBezier();
     ON_3dPoint p;
@@ -162,15 +147,29 @@ void Spline::generateBeziers() {
     int deg = curve->Degree();
     int cpcount = curve->CVCount();
 
-    for (int i=0; i<deg+cpcount+2; ++i) {
-        ON_BezierCurve bc;
-        if (curve->ConvertSpanToBezier(i, bc)) {
-            std::vector<geo::Coordinate> bez;
-            for (int j=0; j<bc.CVCount(); j++) {
-                bc.GetCV(j, p);
-                bez.push_back(geo::Coordinate(p.x, p.y, p.z));
+    if(deg==2) {
+        for (int i=0; i<deg+cpcount+2; ++i) {
+            ON_BezierCurve bc;
+            if (curve->ConvertSpanToBezier(i, bc)) {
+                std::vector<geo::Coordinate> bez;
+                for (int j=0; j<bc.CVCount(); j++) {
+                    bc.GetCV(j, p);
+                    bez.push_back(geo::Coordinate(p.x, p.y, p.z));
+                }
+                _beziers.push_back(std::make_shared<Bezier>(bez.at(0),bez.at(1),bez.at(2)));
             }
-            _beziers.push_back(bez);
+        }
+    } else if(deg==3) {
+        for (int i=0; i<deg+cpcount+2; ++i) {
+            ON_BezierCurve bc;
+            if (curve->ConvertSpanToBezier(i, bc)) {
+                std::vector<geo::Coordinate> bez;
+                for (int j=0; j<bc.CVCount(); j++) {
+                    bc.GetCV(j, p);
+                    bez.push_back(geo::Coordinate(p.x, p.y, p.z));
+                }
+                _beziers.push_back(std::make_shared<CubicBezier>(bez.at(0),bez.at(1),bez.at(2),bez.at(3)));
+            }
         }
     }
 }

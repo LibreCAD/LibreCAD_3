@@ -130,7 +130,7 @@ namespace lc {
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
                 ON_NurbsCurve _splineCurve;
-                std::vector<std::vector<geo::Coordinate>> _beziers;
+                std::vector<BB_CSPtr> _beziers;
                 const splineflag _flags;
         };
     }
