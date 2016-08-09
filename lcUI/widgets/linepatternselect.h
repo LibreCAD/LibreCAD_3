@@ -5,11 +5,13 @@
 #include <cad/meta/dxflinepattern.h>
 #include <widgets/linepatternpainter.h>
 #include <dialogs/addlinepatterndialog.h>
+#include <dialogs/linepatternmanager.h>
 #include <cad/document/document.h>
 
 #define BY_BLOCK "ByBlock"
 #define BY_LAYER "ByLayer"
 #define NEW_LP "New line pattern"
+#define MANAGE_LP "Manage line patterns"
 
 class LinePatternSelect : public QComboBox {
     Q_OBJECT

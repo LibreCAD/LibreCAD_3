@@ -68,11 +68,11 @@ TEST(LinePatternTest, Selection) {
     auto document = createDocument();
 
     auto linePatternSelect = new LinePatternSelect(document);
-    EXPECT_EQ(1, linePatternSelect->count()) << "Select should contains New";
+    EXPECT_EQ(3, linePatternSelect->count()) << "Select should contains New/Manage/Separator";
     delete linePatternSelect;
 
     linePatternSelect = new LinePatternSelect(document, 0, true, true);
-    EXPECT_EQ(3, linePatternSelect->count()) << "Select should contains New/ByBlock/ByLayer";
+    EXPECT_EQ(5, linePatternSelect->count()) << "Select should contains New/Manage/Separator/ByBlock/ByLayer";
 
     auto linePattern1 = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
     auto linePattern2 = std::make_shared<const lc::DxfLinePattern>("NLP", "New Line Pattern", std::vector<double>{0, -1, 1, -1}, 3);
@@ -82,7 +82,7 @@ TEST(LinePatternTest, Selection) {
     operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern2);
     operation->execute();
 
-    EXPECT_EQ(5, linePatternSelect->count()) << "Layers were not added to line pattern select";
+    EXPECT_EQ(7, linePatternSelect->count()) << "Line patterns were not added to select";
 
     linePatternSelect->setCurrentText(linePattern1->name().c_str());
     EXPECT_EQ(linePattern1, linePatternSelect->linePattern()) << "Selected line pattern wasn't returned";

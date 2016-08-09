@@ -63,21 +63,26 @@ void LinePatternSelect::onActivated(const QString& text) {
         auto dialog = new AddLinePatternDialog(_document, this);
         dialog->show();
     }
+    else if(text == MANAGE_LP) {
+        auto dialog = new LinePatternManager(_document, this);
+        dialog->show();
+    }
 }
 
 void LinePatternSelect::createEntries() {
     clear();
 
     if(_document != nullptr) {
-        if(_showByBlock) {
-            insertItem(0, BY_BLOCK);
-        }
+        addItem(NEW_LP);
+        addItem(MANAGE_LP);
+        insertSeparator(2);
 
         if(_showByLayer) {
-            insertItem(0, BY_LAYER);
+            addItem(BY_LAYER);
         }
-
-        insertItem(0, NEW_LP);
+        if(_showByBlock) {
+            addItem(BY_BLOCK);
+        }
 
         auto linePatterns = _document->linePatterns();
         for (auto linePattern : linePatterns) {

@@ -6,7 +6,7 @@ LinePatternPainter::LinePatternPainter(QPaintDevice *device, lc::DxfLinePattern_
     _width(width) {
 }
 
-LinePatternPainter::LinePatternPainter(QPaintDevice *device, int width, lc::DxfLinePattern_CSPtr linePattern)  :
+LinePatternPainter::LinePatternPainter(QPaintDevice *device, double width, lc::DxfLinePattern_CSPtr linePattern)  :
     _device(device),
     _linePattern(linePattern),
     _width(width) {

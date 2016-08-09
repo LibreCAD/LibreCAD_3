@@ -7,7 +7,7 @@
 class LinePatternPainter {
     public:
         LinePatternPainter(QPaintDevice* device, lc::DxfLinePattern_CSPtr linePattern, int width = 1);
-        LinePatternPainter(QPaintDevice* device, int width, lc::DxfLinePattern_CSPtr linePattern = nullptr);
+        LinePatternPainter(QPaintDevice* device, double width, lc::DxfLinePattern_CSPtr linePattern = nullptr);
         void drawLinePattern();
 
     private:
