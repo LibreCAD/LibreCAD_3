@@ -113,6 +113,9 @@ void addQtWindowBindings(lua_State *L) {
 			.addStaticFunction("getOpenFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
 				return QFileDialog::getOpenFileName(parent, caption, dir, filter);
 			})
+			.addStaticFunction("getSaveFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
+				return QFileDialog::getSaveFileName(parent, caption, dir, filter);
+			})
 		.endClass()
 
 		.beginExtendClass<QDockWidget, QWidget>("QDockWidget")
@@ -177,6 +180,7 @@ void addLCBindings(lua_State *L) {
 			})
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
+            .addFunction("exportDXF", &CadMdiChild::exportDXF)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 			.addFunction("import", &CadMdiChild::import)
 			.addFunction("selection", &CadMdiChild::selection)

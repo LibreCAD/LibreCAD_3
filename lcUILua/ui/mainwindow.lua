@@ -31,6 +31,27 @@ function open_file()
     end
 end
 
+function save_file()
+    if(active_widget() == nil) then
+        return
+    end
+
+    local fileName = qt.QFileDialog.getSaveFileName(
+        mainWindow,
+        qt.QObject.tr("Save File"),
+        qt.QString(""),
+        qt.QObject.tr("dxf(*.dxf);;dwg(*.dwg)")
+    )
+
+    if(not fileName:isEmpty()) then
+        if(active_widget() == nil) then
+            return
+        end
+
+        active_widget():exportDXF(fileName:toStdString(), 6)
+    end
+end
+
 function active_layer()
     return layers:activeLayer()
 end
@@ -86,6 +107,8 @@ local function create_menu()
 
     luaInterface:luaConnect(mainWindow:findChild("actionNew"), "triggered(bool)", new_file)
     luaInterface:luaConnect(mainWindow:findChild("actionOpen"), "triggered(bool)", open_file)
+    luaInterface:luaConnect(mainWindow:findChild("actionSave_2"), "triggered(bool)", save_file)
+    luaInterface:luaConnect(mainWindow:findChild("actionSave_As"), "triggered(bool)", save_file)
     luaInterface:luaConnect(mainWindow:findChild("actionUndo"), "triggered(bool)", undo)
     luaInterface:luaConnect(mainWindow:findChild("actionRedo"), "triggered(bool)", redo)
 
