@@ -7,6 +7,7 @@
 
 #include "widgets/linepatternselect.h"
 #include "widgets/linewidthselect.h"
+#include "widgets/colorselect.h"
 
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
@@ -30,13 +31,12 @@ class AddLayerDialog : public QDialog {
 
     private slots:
         void accept();
-        void on_pickColorButton_clicked();
-        void on_colorChanged(const QColor& color);
 
     private:
         Ui::AddLayerDialog* ui;
         lc::Document_SPtr _document;
         LinePatternSelect* linePatternSelect;
         LineWidthSelect* lineWidthSelect;
+        ColorSelect* colorSelect;
         lc::Layer_CSPtr _oldLayer;
 };

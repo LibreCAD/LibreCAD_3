@@ -69,7 +69,7 @@ function active_metaInfo()
         metaInfo:add(lineWidth)
     end
 
-    local color = colorSelect:color()
+    local color = colorSelect:metaColor()
     if(color ~= nil) then
         metaInfo:add(color)
     end

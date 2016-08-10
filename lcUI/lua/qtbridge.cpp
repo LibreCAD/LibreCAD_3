@@ -298,7 +298,7 @@ void addLCBindings(lua_State *L) {
             .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
                 return new ColorSelect(parent, showByLayer, showByBlock);
             })
-            .addFunction("color", &ColorSelect::color)
+            .addFunction("metaColor", &ColorSelect::metaColor)
         .endClass()
 
 	.endModule();
