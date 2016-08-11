@@ -22,6 +22,9 @@ class LinePatternSelect : public QComboBox {
 
         lc::DxfLinePattern_CSPtr linePattern();
 
+    public slots:
+        void onLayerChanged(lc::Layer_CSPtr layer);
+
     private slots:
         void onActivated(const QString& text);
 

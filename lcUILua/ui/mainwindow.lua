@@ -139,9 +139,13 @@ function create_main_window()
     layers = lc.Layers(active_document())
     mainWindow:addDockWidget(2, layers)
 
-    linePatternSelect = lc.LinePatternSelect(mainWindow)
+    linePatternSelect = lc.LinePatternSelect(mainWindow, true, true)
     lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
     colorSelect = lc.ColorSelect(mainWindow, true, true)
+
+    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", linePatternSelect, "onLayerChanged(lc::Layer_CSPtr)")
+    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", lineWidthSelect, "onLayerChanged(lc::Layer_CSPtr)")
+    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", colorSelect, "onLayerChanged(lc::Layer_CSPtr)")
 
     add_toolbar()
 

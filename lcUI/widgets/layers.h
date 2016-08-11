@@ -25,6 +25,9 @@ class Layers : public QDockWidget {
         void setDocument(lc::Document_SPtr document = nullptr);
         lc::Layer_CSPtr activeLayer();
 
+    signals:
+        void layerChanged(lc::Layer_CSPtr layer);
+
     private slots:
         void on_newButton_clicked();
         void on_deleteButton_clicked();

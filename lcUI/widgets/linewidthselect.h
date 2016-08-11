@@ -10,9 +10,14 @@
 #define BY_LAYER "ByLayer"
 
 class LineWidthSelect : public QComboBox {
+    Q_OBJECT
+
     public:
         LineWidthSelect(QWidget* parent = 0, bool showByLayer = false, bool showByBlock = false);
         lc::MetaLineWidthByValue_CSPtr lineWidth();
+
+    public slots:
+        void onLayerChanged(lc::Layer_CSPtr layer);
 
     private:
         void createEntries();

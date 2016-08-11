@@ -1,3 +1,4 @@
+#include <cad/meta/layer.h>
 #include "linewidthselect.h"
 
 LineWidthSelect::LineWidthSelect(QWidget* parent, bool showByLayer, bool showByBlock) :
@@ -64,5 +65,18 @@ lc::MetaLineWidthByValue_CSPtr LineWidthSelect::lineWidth() {
     }
     catch(std::out_of_range& e) {
         return std::make_shared<lc::MetaLineWidthByValue>(0);
+    }
+}
+
+void LineWidthSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+    auto index = findText(BY_LAYER);
+
+    if(index != -1) {
+        QPixmap pixmap(qIconSize);
+
+        LinePatternPainter painter(&pixmap, layer->lineWidth().width());
+        painter.drawLinePattern();
+
+        setItemIcon(index, QIcon(pixmap));
     }
 }

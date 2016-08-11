@@ -72,3 +72,14 @@ void ColorSelect::onActivated(const QString& text) {
 void ColorSelect::on_customColorChanged(const QColor &color) {
     _customColor = color;
 }
+
+void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+    auto index = findText(BY_LAYER);
+
+    if(index != -1) {
+        QColor color(layer->color().redI(), layer->color().greenI(), layer->color().blueI(), layer->color().alphaI());
+        QPixmap pixmap(qIconSize);
+        pixmap.fill(color);
+        setItemIcon(index, QIcon(pixmap));
+    }
+}

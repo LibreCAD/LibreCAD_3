@@ -280,8 +280,8 @@ void addLCBindings(lua_State *L) {
         .endClass()
 
         .beginExtendClass<LinePatternSelect, QComboBox>("LinePatternSelect")
-            .addFactory([](QWidget* parent){
-                return new LinePatternSelect(nullptr, parent);
+            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
+                return new LinePatternSelect(nullptr, parent, showByLayer, showByBlock);
             })
             .addFunction("setDocument", &LinePatternSelect::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
             .addFunction("linePattern", &LinePatternSelect::linePattern)

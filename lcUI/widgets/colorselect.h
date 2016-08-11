@@ -6,6 +6,7 @@
 #include <QColorDialog>
 
 #include <cad/meta/metacolor.h>
+#include <cad/meta/layer.h>
 
 #define BY_BLOCK "ByBlock"
 #define BY_LAYER "ByLayer"
@@ -18,6 +19,9 @@ class ColorSelect : public QComboBox {
         ColorSelect(QWidget* parent = 0, bool showByLayer = false, bool showByBlock = false);
         lc::MetaColor_CSPtr metaColor();
         lc::Color color();
+
+    public slots:
+        void onLayerChanged(lc::Layer_CSPtr layer);
 
     private slots:
         void onActivated(const QString& text);
