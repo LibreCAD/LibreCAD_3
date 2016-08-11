@@ -26,6 +26,9 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
 
     if(oldLayer != nullptr) {
         ui->name->setText(oldLayer->name().c_str());
+        linePatternSelect->setCurrentText(oldLayer->linePattern()->name().c_str());
+        lineWidthSelect->setWidth(oldLayer->lineWidth().width());
+        colorSelect->setColor(oldLayer->color());
 
         if(oldLayer->linePattern() != nullptr) {
             int linePatternIndex = linePatternSelect->findText(oldLayer->linePattern()->name().c_str());

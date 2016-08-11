@@ -15,6 +15,7 @@ class LineWidthSelect : public QComboBox {
     public:
         LineWidthSelect(QWidget* parent = 0, bool showByLayer = false, bool showByBlock = false);
         lc::MetaLineWidthByValue_CSPtr lineWidth();
+        void setWidth(double width);
 
     public slots:
         void onLayerChanged(lc::Layer_CSPtr layer);

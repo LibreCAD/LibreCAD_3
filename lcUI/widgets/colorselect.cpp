@@ -70,6 +70,12 @@ void ColorSelect::onActivated(const QString& text) {
 }
 
 void ColorSelect::on_customColorChanged(const QColor &color) {
+    QPixmap pixmap(qIconSize);
+
+    auto index = findText(CUSTOM);
+    pixmap.fill(color);
+    setItemIcon(index, QIcon(pixmap));
+
     _customColor = color;
 }
 
@@ -82,4 +88,11 @@ void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
         pixmap.fill(color);
         setItemIcon(index, QIcon(pixmap));
     }
+}
+
+void ColorSelect::setColor(lc::Color color) {
+    QColor qColor(color.redI(), color.greenI(), color.blueI(), color.alphaI());
+    setCurrentText(CUSTOM);
+
+    on_customColorChanged(qColor);
 }

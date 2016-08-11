@@ -80,3 +80,12 @@ void LineWidthSelect::onLayerChanged(lc::Layer_CSPtr layer) {
         setItemIcon(index, QIcon(pixmap));
     }
 }
+
+void LineWidthSelect::setWidth(double width) {
+    for(auto v : values) {
+        if(v.second == width) {
+            setCurrentText(v.first);
+            break;
+        }
+    }
+}

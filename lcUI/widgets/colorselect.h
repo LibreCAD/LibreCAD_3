@@ -19,6 +19,7 @@ class ColorSelect : public QComboBox {
         ColorSelect(QWidget* parent = 0, bool showByLayer = false, bool showByBlock = false);
         lc::MetaColor_CSPtr metaColor();
         lc::Color color();
+        void setColor(lc::Color color);
 
     public slots:
         void onLayerChanged(lc::Layer_CSPtr layer);
