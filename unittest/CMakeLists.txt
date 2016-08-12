@@ -71,7 +71,8 @@ if(WITH_QTUI)
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
             ui/testcommandline.cpp
-            ui/testcolorselect.cpp)
+            ui/testcolorselect.cpp
+            ui/testlinewidthselect.cpp)
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files
