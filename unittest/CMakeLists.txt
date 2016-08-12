@@ -70,7 +70,8 @@ if(WITH_QTUI)
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
-            ui/testcommandline.cpp)
+            ui/testcommandline.cpp
+            ui/testcolorselect.cpp)
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files
@@ -82,5 +83,5 @@ include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 include_directories("${CMAKE_SOURCE_DIR}/lcDXFDWG")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-#add_executable(lcunittest ${src} ${hdrs})
-#target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
+add_executable(lcunittest ${src} ${hdrs})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
