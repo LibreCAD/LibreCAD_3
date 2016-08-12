@@ -32,11 +32,12 @@ class AddLayerDialog : public QDialog {
     private slots:
         void accept();
 
-    private:
+    protected:
         Ui::AddLayerDialog* ui;
-        lc::Document_SPtr _document;
         LinePatternSelect* linePatternSelect;
         LineWidthSelect* lineWidthSelect;
         ColorSelect* colorSelect;
+
+    private:
         lc::Layer_CSPtr _oldLayer;
 };

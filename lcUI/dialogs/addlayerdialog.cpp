@@ -8,7 +8,6 @@ AddLayerDialog::AddLayerDialog(lc::Document_SPtr document, QWidget* parent) :
 AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr document, QWidget *parent) :
         QDialog(parent),
         ui(new Ui::AddLayerDialog),
-        _document(document),
         _oldLayer(oldLayer) {
 
     ui->setupUi(this);
@@ -26,7 +25,9 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
 
     if(oldLayer != nullptr) {
         ui->name->setText(oldLayer->name().c_str());
-        linePatternSelect->setCurrentText(oldLayer->linePattern()->name().c_str());
+        if(oldLayer->linePattern() != nullptr) {
+            linePatternSelect->setCurrentText(oldLayer->linePattern()->name().c_str());
+        }
         lineWidthSelect->setWidth(oldLayer->lineWidth().width());
         colorSelect->setColor(oldLayer->color());
 

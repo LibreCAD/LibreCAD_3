@@ -60,7 +60,8 @@ if(WITH_QTUI)
             ui/clicommandtest.h
             ui/uitests.h
             ui/widgets/layers.h
-            ui/dialogs/addlinepatterndialog.h)
+            ui/dialogs/addlinepatterndialog.h
+            ui/dialogs/addlayerdialog.h)
 
     set(src
             ${src}
