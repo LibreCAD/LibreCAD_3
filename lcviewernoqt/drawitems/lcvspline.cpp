@@ -14,7 +14,9 @@ void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc:
 
     auto bezlist = beziers();
 
-    for(const auto &bez: bezlist) {
+    for(const auto &bezier: bezlist) {
+        auto bez = bezier->getCP();
+
         painter.move_to(bez[0].x(), bez[0].y());
 
         if(bez.size()==4) {
