@@ -61,4 +61,4 @@ class LayerModel : public QAbstractTableModel {
         QIcon _editIcon;
         QIcon _lockedIcon;
         QIcon _unlockedIcon;
-};s
+};
