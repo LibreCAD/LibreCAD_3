@@ -41,7 +41,7 @@ namespace lc {
                 virtual const Coordinate normal(double t) const override;
 
                 virtual std::vector<BB_CSPtr> splitHalf() const override;
-
+                virtual BB_CSPtr splitAtT(double t) const override;
                 virtual BB_CSPtr offset(const geo::Coordinate& offset) const override;
 
                 virtual BB_CSPtr rotate(const geo::Coordinate& center, double angle) const override;
@@ -49,7 +49,6 @@ namespace lc {
                 virtual BB_CSPtr move(const geo::Coordinate& offset) const override;
                 virtual BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
 
-//                virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
             private:
 
                 virtual std::vector<double> nearestPointTValue(const Coordinate &coord) const override;

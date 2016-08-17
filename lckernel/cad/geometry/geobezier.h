@@ -41,7 +41,7 @@ namespace lc {
                 const Coordinate normal(double t) const override;
 
                 std::vector<BB_CSPtr> splitHalf() const override;
-
+                BB_CSPtr splitAtT(double t) const override;
                 BB_CSPtr offset(const geo::Coordinate& offset) const override;
 
                 BB_CSPtr rotate(const geo::Coordinate& center, double angle) const override;

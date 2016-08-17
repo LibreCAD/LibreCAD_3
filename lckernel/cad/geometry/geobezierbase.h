@@ -41,7 +41,7 @@ namespace lc {
                 virtual const Coordinate normal(double t) const = 0;
 
                 virtual std::vector<BB_CSPtr> splitHalf() const = 0;
-
+                virtual BB_CSPtr splitAtT(double t) const = 0;
                 virtual BB_CSPtr offset(const geo::Coordinate& offset) const = 0;
 
                 virtual BB_CSPtr rotate(const geo::Coordinate& center, double angle) const = 0;

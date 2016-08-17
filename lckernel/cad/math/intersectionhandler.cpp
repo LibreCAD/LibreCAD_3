@@ -48,7 +48,7 @@ std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
 }
 
 
-std::vector<geo::Coordinate> Intersection::BezierLine(
+std::vector<geo::Coordinate> Intersection::bezierLine(
         geo::BB_CSPtr B, const geo::Vector& V) {
 
     std::vector<geo::Coordinate> ret;
@@ -88,7 +88,7 @@ std::vector<geo::Coordinate> Intersection::BezierLine(
 }
 
 
-std::vector<geo::Coordinate> Intersection::BezierCircle(
+std::vector<geo::Coordinate> Intersection::bezierCircle(
         geo::BB_CSPtr B, const geo::Circle& C) {
 
     std::vector<geo::Coordinate> ret;
@@ -144,13 +144,13 @@ std::vector<geo::Coordinate> Intersection::BezierCircle(
         geo::Area minAr = geo::Area(geo::Coordinate(C.center().x() - newRad, C.center().y() - newRad),
                                    geo::Coordinate(C.center().x() + newRad, C.center().y() + newRad));
 
-        BezCir(C, Ar, minAr, B, ret);
+        bezCir(C, Ar, minAr, B, ret);
     }
     return ret;
 }
 
 
-std::vector<geo::Coordinate> Intersection::BezierArc(
+std::vector<geo::Coordinate> Intersection::bezierArc(
         geo::BB_CSPtr B, const geo::Arc& A) {
 
     // BezierCircle Intersection
@@ -158,7 +158,7 @@ std::vector<geo::Coordinate> Intersection::BezierArc(
     // Check intersection points are on Arc.
 
     std::vector<geo::Coordinate> ret;
-    const auto &points = BezierCircle(B, geo::Circle(A.center(), A.radius()));
+    const auto &points = bezierCircle(B, geo::Circle(A.center(), A.radius()));
 
     for(const auto & pt : points) {
         if(A.isAngleBetween(pt.angle())) {
@@ -169,7 +169,7 @@ std::vector<geo::Coordinate> Intersection::BezierArc(
 }
 
 
-std::vector<geo::Coordinate> Intersection::BezierEllipse(
+std::vector<geo::Coordinate> Intersection::bezierEllipse(
         geo::BB_CSPtr B, const geo::Ellipse& E) {
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
@@ -227,14 +227,14 @@ std::vector<geo::Coordinate> Intersection::BezierEllipse(
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::BezierBezier(
+std::vector<geo::Coordinate> Intersection::bezierBezier(
         geo::BB_CSPtr B1, geo::BB_CSPtr B2) {
     std::vector<geo::Coordinate> ret;
-    BezBez(B1,B2, ret);
+    bezBez(B1,B2, ret);
     return ret;
 }
 
-void Intersection::BezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
+void Intersection::bezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
     auto bb1 = B1->boundingBox();
     auto bb2 = B2->boundingBox();
 
@@ -249,13 +249,13 @@ void Intersection::BezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::ve
 
     auto b1split = B1->splitHalf();
     auto b2split = B2->splitHalf();
-    BezBez(b1split[0], b2split[0], ret);
-    BezBez(b1split[1], b2split[0], ret);
-    BezBez(b1split[0], b2split[1], ret);
-    BezBez(b1split[1], b2split[1], ret);
+    bezBez(b1split[0], b2split[0], ret);
+    bezBez(b1split[1], b2split[0], ret);
+    bezBez(b1split[0], b2split[1], ret);
+    bezBez(b1split[1], b2split[1], ret);
 }
 
-void Intersection::BezCir(const geo::Circle C, const geo::Area c_area, const geo::Area m_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
+void Intersection::bezCir(const geo::Circle C, const geo::Area c_area, const geo::Area m_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
 
     auto bb2 = B2->boundingBox();
     auto cmin = c_area.minP();
@@ -285,7 +285,70 @@ void Intersection::BezCir(const geo::Circle C, const geo::Area c_area, const geo
         return;
     }
     auto b2split = B2->splitHalf();
-    BezCir(C, c_area, m_area, b2split[0], ret);
-    BezCir(C, c_area, m_area, b2split[1], ret);
+    bezCir(C, c_area, m_area, b2split[0], ret);
+    bezCir(C, c_area, m_area, b2split[1], ret);
 
+}
+
+std::vector<geo::Coordinate> Intersection::splineLine(geo::Spline B, const geo::Vector& V) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = bezierLine(bezier, V);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::splineCircle(geo::Spline B, const geo::Circle& C) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = bezierCircle(bezier, C);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::splineArc(geo::Spline B, const geo::Arc& A) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = bezierArc(bezier, A);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::splineEllipse(geo::Spline B, const geo::Ellipse& E) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = bezierEllipse(bezier, E);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::splineSpline(geo::Spline B1, geo::Spline B2) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B1.beziers();
+    auto beziers2 = B2.beziers();
+    for(const auto & bezier : beziers) {
+        for(const auto & bezier2 : beziers2) {
+            auto vecret = bezierBezier(bezier, bezier2);
+            ret.insert(ret.end(), vecret.begin(), vecret.end());
+        }
+    }
+    return ret;
+}
+
+std::vector<geo::Coordinate> Intersection::splineBezier(geo::Spline B1, geo::BB_CSPtr B2) {
+    std::vector<geo::Coordinate> ret;
+    auto beziers = B1.beziers();
+    for(const auto & bezier : beziers) {
+        auto vecret = bezierBezier(bezier, B2);
+        ret.insert(ret.end(), vecret.begin(), vecret.end());
+    }
+    return ret;
 }

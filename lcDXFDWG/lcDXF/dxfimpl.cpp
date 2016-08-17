@@ -601,14 +601,15 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
 
 void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
     DRW_Spline sp;
+
     getEntityAttributes(&sp, s);
 
     sp.knotslist = s->knotPoints();
     sp.normalVec = DRW_Coord(s->nX(), s->nY(), s->nZ());
     sp.tgEnd = DRW_Coord(s->endTanX(), s->endTanY(), s->endTanZ());
     sp.tgStart = DRW_Coord(s->startTanX(), s->startTanY(), s->startTanZ());
-
     sp.degree = s->degree();
+
     for(const auto & cp : s->controlPoints()) {
         sp.controllist.push_back(new DRW_Coord(cp.x(), cp.y(), cp.z()));
     }
@@ -616,6 +617,7 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
     for(const auto & fp : s->fitPoints()) {
         sp.fitlist.push_back(new DRW_Coord(fp.x(), fp.y(), fp.z()));
     }
+
     sp.flags = s->flags();
     sp.nknots = sp.knotslist.size();
     sp.nfit = sp.fitlist.size();
