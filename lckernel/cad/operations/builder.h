@@ -96,6 +96,10 @@ namespace lc {
                 virtual void undo() const;
                 virtual void redo() const;
 
+                /**
+                 * \brief Apply the operations
+                 * Apply operations on the entities without updating the document, and clear the stack.
+                 */
                 void processStack();
 
             protected:

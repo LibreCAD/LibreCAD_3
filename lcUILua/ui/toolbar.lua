@@ -1,5 +1,6 @@
 local iconSize = qt.QSize(24, 24)
 
+--Create a new QPushbutton with name and icon
 function create_button(name, icon)
     local button = qt.QPushButton(qt.QString(name))
     button:setFlat(true)
@@ -12,6 +13,7 @@ function create_button(name, icon)
     return button
 end
 
+--Create a new action in given menu with name and icon
 function create_action(menu, name, icon)
     local action = menu:addActionStr(qt.QString(name))
 
@@ -22,6 +24,7 @@ function create_action(menu, name, icon)
     return action
 end
 
+--Add toolbar to main window
 function add_toolbar()
     toolbar = lc.Toolbar(mainWindow)
     mainWindow:addDockWidget(4, toolbar)

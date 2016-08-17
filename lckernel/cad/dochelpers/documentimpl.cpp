@@ -136,6 +136,10 @@ DxfLinePattern_CSPtr DocumentImpl::linePatternByName(const std::string& linePatt
     return _storageManager->linePatternByName(linePatternName);
 }
 
+/**
+ * Return all line patterns
+ * @todo probably change this to metaTypes<T>()
+ */
 std::vector<DxfLinePattern_CSPtr> DocumentImpl::linePatterns() const {
     return _storageManager->metaTypes<const DxfLinePattern>();
 }

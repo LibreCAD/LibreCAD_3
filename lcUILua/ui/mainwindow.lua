@@ -1,5 +1,6 @@
 op = {}
 
+--Create empty new window
 function new_file()
     cadMdiChild = new_document()
 
@@ -11,6 +12,7 @@ function new_file()
     window:widget().id = id
 end
 
+--Create open file dialog, and create a new window containing this file
 function open_file()
     local fileName = qt.QFileDialog.getOpenFileName(
         mainWindow,
@@ -31,6 +33,7 @@ function open_file()
     end
 end
 
+--Create save file dialog and save the file
 function save_file()
     if(active_widget() == nil) then
         return
@@ -52,10 +55,12 @@ function save_file()
     end
 end
 
+--Return the selected layer
 function active_layer()
     return layers:activeLayer()
 end
 
+--Create MetaInfo containing every selected MetaTypes
 function active_metaInfo()
     local metaInfo = MetaInfo()
 
@@ -77,11 +82,13 @@ function active_metaInfo()
     return metaInfo
 end
 
+--Create dialog to enter Lua script
 local function open_lua_script()
     local luaScript = lc.LuaScript(mdiArea, cliCommand)
     luaScript:show()
 end
 
+--Called when a new window is focused, and refreshes all the widgets
 local function onSubWindowChanged(window)
     local document = active_document()
 
@@ -95,6 +102,7 @@ local function onSubWindowChanged(window)
     end
 end
 
+--Create main window menu
 local function create_menu()
     local menuBar = mainWindow:menuBar()
     local drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
@@ -119,6 +127,7 @@ local function create_menu()
     luaInterface:luaConnect(luaScriptAction, "triggered(bool)", open_lua_script)
 end
 
+--Create main window and show it if required
 function create_main_window()
     mainWindow = qt.loadUi(ui_path .. "/mainwindow.ui")
     mainWindow:setWindowTitle(qt.QObject.tr("LibreCAD"));
@@ -156,6 +165,8 @@ function create_main_window()
     new_file()
 end
 
+--Get next available index in the table
+--It's used to store the CadMdiChild ids
 function nextTableId(table)
     count = 0
     for id, v in pairs(table) do

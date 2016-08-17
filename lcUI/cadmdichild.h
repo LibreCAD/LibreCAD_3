@@ -40,6 +40,10 @@ class CadMdiChild : public QWidget {
 
         void newDocument();
 
+        /**
+         * \brief Give function to call when window is destroyed
+         * \param callback Lua function
+         */
         void setDestroyCallback(LuaIntf::LuaRef callback);
 
 		void keyPressEvent(QKeyEvent* event);
@@ -67,13 +71,38 @@ class CadMdiChild : public QWidget {
         lc::StorageManager_SPtr storageManager() const;
         LCViewer::LCADViewer* viewer() const {return _viewer;}
         std::shared_ptr<LCViewer::Cursor> cursor() const;
+
+		/**
+		 * \brief Get container of temporary entities
+		 * \return Temporary entities container
+		 */
 		LCViewer::TempEntities_SPtr tempEntities();
+
+		/**
+		 * \brief Get selected entities
+		 * \return Selected entities
+		 * Return a vector of selected entities.
+		 * This function was added for Lua which can't access EntityContainer functions
+		 */
 		std::vector<lc::entity::CADEntity_SPtr> selection();
+
         void cancelCurrentOperations();
         void import(std::string);
         void exportDXF(std::string& str, DXF::version lcv);
 
+        /**
+         * \brief Get window ID
+         * \return Window ID
+         * This is used by Lua to distinguish the different windows.
+         */
         unsigned int id();
+
+        /**
+         * \brief Set window ID
+         * \param id Window ID
+         * This is used by Lua to distinguish the different windows.
+         * This function should not be used.
+         */
         void setId(unsigned int id);
 
     private:
