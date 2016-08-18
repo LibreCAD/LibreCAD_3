@@ -28,25 +28,10 @@ QGroupBox* ToolbarTab::addGroup(const char* name) {
 	return group;
 }
 
-void ToolbarTab::addButton(QGroupBox *groupBox, QPushButton *button, int x, int y, int w, int h) {
-	if(groupBox == nullptr) {
-		return;
-	}
-
-	auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
-	
-	if(gridLayout) {
-		gridLayout->addWidget(button, y, x, h, w);
-	}
-	else {
-		groupBox->layout()->addWidget(button);
-	}
-}
-
-QPushButton* ToolbarTab::addButtonStr(QGroupBox* groupBox, const char* buttonName, int x, int y, int w, int h) {
+QPushButton* ToolbarTab::addButton(QGroupBox* groupBox, const char* buttonName, int x, int y, int w, int h) {
 	auto button = new QPushButton(buttonName);
 
-	addButton(groupBox, button, x, y, w, h);
+	addWidget(groupBox, button, x, y, w, h);
 
 	return button;
 }

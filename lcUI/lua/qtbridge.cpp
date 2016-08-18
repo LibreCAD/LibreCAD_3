@@ -188,7 +188,6 @@ void addLCBindings(lua_State *L) {
 			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
 			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
-			.addFunction("view", &CadMdiChild::view)
 			.addFunction("viewer", &CadMdiChild::viewer)
 		.endClass()
 
@@ -236,12 +235,6 @@ void addLCBindings(lua_State *L) {
 				return new ToolbarTab();
 			})
 			.addFunction("addButton", &ToolbarTab::addButton, LUA_ARGS(QGroupBox*,
-																	   QPushButton*,
-																	   LuaIntf::_opt<int>,
-																	   LuaIntf::_opt<int>,
-																	   LuaIntf::_opt<int>,
-																	   LuaIntf::_opt<int>))
-			.addFunction("addButtonStr", &ToolbarTab::addButtonStr, LUA_ARGS(QGroupBox*,
 																			 const char*,
 																			 LuaIntf::_opt<int>,
 																			 LuaIntf::_opt<int>,

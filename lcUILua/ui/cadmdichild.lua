@@ -47,30 +47,28 @@ local function mouseRelease()
 end
 
 -- Create a new window containing an empty document
-function new_document()
-    cadMdiChild = lc.CadMdiChild()
+function new_document(fileName)
+    local cadMdiChild = lc.CadMdiChild()
     cadMdiChild:newDocument()
+
+    if(fileName ~= nil) then
+        cadMdiChild:import(fileName)
+    end
+
     cadMdiChild:viewer():autoScale()
     cadMdiChild:setDestroyCallback(onMdiChildDestroyed)
 
-    luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
-    luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", mouseRelease)
-    luaInterface:luaConnect(cadMdiChild:view(), "mouseMoveEvent()", mouseMove)
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mousePressEvent()", click)
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseReleaseEvent()", mouseRelease)
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseMoveEvent()", mouseMove)
     luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 
-    return cadMdiChild
-end
+    mdiArea:addSubWindow(cadMdiChild)
+    cadMdiChild:showMaximized()
 
--- Create a new window with an existing document
-function load_document(fileName)
-    cadMdiChild = lc.CadMdiChild()
-    cadMdiChild:import(fileName)
-    cadMdiChild:viewer():autoScale()
-
-    luaInterface:luaConnect(cadMdiChild:view(), "mousePressEvent()", click)
-    luaInterface:luaConnect(cadMdiChild:view(), "mouseReleaseEvent()", mouseRelease)
-    luaInterface:luaConnect(cadMdiChild:view(), "mouseMoveEvent()", mouseMove)
-    luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
+    local id = nextTableId(op)
+    op[id] = Operations(id)
+    cadMdiChild.id = id
 
     return cadMdiChild
 end

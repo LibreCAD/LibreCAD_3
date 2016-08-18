@@ -18,7 +18,6 @@
 #include <lcDXF/dxfimpl.h>
 #include <drawables/tempentities.h>
 
-#include "operations/operationmanager.h"
 #include <managers/snapmanagerimpl.h>
 #include "cad/dochelpers/undomanagerimpl.h"
 
@@ -38,7 +37,17 @@ class CadMdiChild : public QWidget {
         explicit CadMdiChild(QWidget* parent = 0);
         ~CadMdiChild();
 
+		/**
+		 * \brief Create a new document.
+		 */
         void newDocument();
+
+        /**
+         * \brief Load existing file.
+         * \param path Path to file
+         * A new document must be created first.
+         */
+        void import(std::string path);
 
         /**
          * \brief Give function to call when window is destroyed
@@ -49,14 +58,6 @@ class CadMdiChild : public QWidget {
 		void keyPressEvent(QKeyEvent* event);
 
     public slots:
-        void on_actionAdd_Random_Lines_triggered();
-
-        void on_addCircles_clicked();
-
-        void on_addArcs_clicked();
-
-        void on_addEllipse_clicked();
-
         void ctxMenu(const QPoint& pos);
 
 	signals:
@@ -67,7 +68,6 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<lc::Document> document() const;
         lc::UndoManager_SPtr undoManager() const;
         LCViewer::SnapManager_SPtr  snapManager() const;
-        std::shared_ptr<OperationManager>  operationManager() const;
         lc::StorageManager_SPtr storageManager() const;
         LCViewer::LCADViewer* viewer() const {return _viewer;}
         std::shared_ptr<LCViewer::Cursor> cursor() const;
@@ -85,9 +85,6 @@ class CadMdiChild : public QWidget {
 		 * This function was added for Lua which can't access EntityContainer functions
 		 */
 		std::vector<lc::entity::CADEntity_SPtr> selection();
-
-        void cancelCurrentOperations();
-        void import(std::string);
         void exportDXF(std::string& str, DXF::version lcv);
 
         /**
@@ -106,7 +103,6 @@ class CadMdiChild : public QWidget {
         void setId(unsigned int id);
 
     private:
-        int randInt(int low, int high);
         unsigned int _id;
 
         LuaIntf::LuaRef _destroyCallback;
@@ -122,8 +118,6 @@ class CadMdiChild : public QWidget {
         LCViewer::DragPoints_SPtr _dragPoints;
         lc::StorageManager_SPtr _storageManager;
 		LCViewer::TempEntities_SPtr _tempEntities;
-
-        std::shared_ptr<OperationManager>  _operationManager;
 
 
         QScrollBar* horizontalScrollBar;

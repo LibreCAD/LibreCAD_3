@@ -2,14 +2,7 @@ op = {}
 
 --Create empty new window
 function new_file()
-    cadMdiChild = new_document()
-
-    window = mdiArea:addSubWindow(cadMdiChild)
-    cadMdiChild:showMaximized()
-
-    id = nextTableId(op)
-    op[id] = Operations(id)
-    window:widget().id = id
+    new_document()
 end
 
 --Create open file dialog, and create a new window containing this file
@@ -22,14 +15,7 @@ function open_file()
     )
 
     if(not fileName:isEmpty()) then
-        cadMdiChild = load_document(fileName:toStdString())
-
-        window = mdiArea:addSubWindow(cadMdiChild)
-        cadMdiChild:showMaximized()
-
-        id = nextTableId(op)
-        op[id] = Operations(id)
-        window:widget().id = id
+        new_document(fileName:toStdString())
     end
 end
 

@@ -32,17 +32,6 @@ class ToolbarTab : public QWidget {
 		QGroupBox* addGroup(const char* name);
 
         /**
-         * \brief Add new button
-         * \param groupBox Pointer to target group
-         * \param button Pointer to existing QPushButton
-         * \param x Horizontal position
-         * \param y Vertical position
-         * \param w Width
-         * \param h Height
-         */
-		void addButton(QGroupBox* groupBox, QPushButton* button, int x = 0, int y = 0, int w = 1, int h = 1);
-
-        /**
          * \brief Add new widget
          * \param groupBox Pointer to target group
          * \param button Pointer to existing QPushButton
@@ -62,7 +51,7 @@ class ToolbarTab : public QWidget {
          * \param w Width
          * \param h Height
          */
-		QPushButton* addButtonStr(QGroupBox* groupBox, const char* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
+		QPushButton* addButton(QGroupBox* groupBox, const char* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
 
         /**
          * \brief Get existing group

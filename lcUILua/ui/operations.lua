@@ -25,7 +25,7 @@ local function create_cancel_button()
         local operationGroup = tab:addGroup("Current operation")
 
         local cancelButton = create_button("", ":/icons/quit.svg")
-        tab:addButton(operationGroup, cancelButton, 0, 0, 1, 1)
+        tab:addWidget(operationGroup, cancelButton, 0, 0, 1, 1)
         luaInterface:luaConnect(cancelButton, "pressed()", finish_operation)
     end
 end
@@ -106,13 +106,13 @@ function create_lw_polyline()
         local group = tab:groupByName("Current operation")
 
         local lineButton = create_button("", ":/icons/linesnormal.png")
-        tab:addButton(group, lineButton, 0, 1, 1, 1)
+        tab:addWidget(group, lineButton, 0, 1, 1, 1)
         luaInterface:luaConnect(lineButton, "pressed()", function()
             op[active_widget().id]:createLine()
         end)
 
         local arcButton = create_button("", ":/icons/arc.svg")
-        tab:addButton(group, arcButton, 1, 1, 1, 1)
+        tab:addWidget(group, arcButton, 1, 1, 1, 1)
         luaInterface:luaConnect(arcButton, "pressed()", function()
             op[active_widget().id]:createArc()
         end)

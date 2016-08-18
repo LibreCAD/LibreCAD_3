@@ -45,7 +45,7 @@ TEST(ToolbarTest, ButtonOperations) {
 	toolbarTab.addGroup("Test");
 	auto group = toolbarTab.groupByName("Test");
 
-	toolbarTab.addButtonStr(group, "TestButton");
+	toolbarTab.addButton(group, "TestButton");
 	auto button = toolbarTab.buttonByText(group, "TestButton");
 
 	EXPECT_NE(nullptr, button);
