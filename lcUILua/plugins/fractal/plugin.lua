@@ -76,7 +76,7 @@ local tab = toolbar:tabByName("Quick Access")
 local group = tab:addGroup("Fractal")
 
 local fractalButton = create_button("Fractal tree")
-tab:addButton(group, fractalButton, 0, 0, 1, 1)
+tab:addWidget(group, fractalButton, 0, 0, 1, 1)
 luaInterface:luaConnect(fractalButton, "pressed()", function()
     new_operation()
     op[active_widget().id] = FractalTree(active_widget().id)

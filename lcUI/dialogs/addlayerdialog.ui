@@ -55,66 +55,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <layout class="QHBoxLayout" name="colorLayout">
-     <item>
-      <widget class="QSpinBox" name="r">
-       <property name="frame">
-        <bool>true</bool>
-       </property>
-       <property name="prefix">
-        <string>R: </string>
-       </property>
-       <property name="maximum">
-        <number>255</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="g">
-       <property name="prefix">
-        <string>G: </string>
-       </property>
-       <property name="maximum">
-        <number>255</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="b">
-       <property name="prefix">
-        <string>B: </string>
-       </property>
-       <property name="maximum">
-        <number>255</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="a">
-       <property name="frame">
-        <bool>true</bool>
-       </property>
-       <property name="prefix">
-        <string>A: </string>
-       </property>
-       <property name="maximum">
-        <number>255</number>
-       </property>
-       <property name="value">
-        <number>255</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pickColorButton">
-       <property name="text">
-        <string>Pick color</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
   </layout>
  </widget>
  <resources/>

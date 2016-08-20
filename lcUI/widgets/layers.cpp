@@ -52,6 +52,7 @@ lc::Layer_CSPtr Layers::activeLayer() {
         }
 
         ui->layerList->selectRow(0);
+        emit layerChanged(model->layerAt(0));
         return model->layerAt(0);
     }
 
@@ -102,6 +103,9 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
         );
 
         replaceLayer(layer, newLayer);
+    }
+    else {
+        emit layerChanged(layer);
     }
 }
 

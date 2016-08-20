@@ -119,7 +119,16 @@ namespace lc {
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
+                /**
+                 * Returns the angle between start and end points
+                 * \return double angle
+                 */
                 double angle() const;
+
+                /**
+                 * Returns arc bulge
+                 * \return double bulge
+                 */
                 double bulge() const;
             private:
                 friend std::ostream& operator<<(std::ostream& os, const Arc& a) {

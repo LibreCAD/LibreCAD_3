@@ -260,7 +260,7 @@ local tab = toolbar:tabByName("Quick Access")
 local group = tab:addGroup("Gear")
 
 local gearButton = create_button("Gear")
-tab:addButton(group, gearButton, 0, 0, 1, 1)
+tab:addWidget(group, gearButton, 0, 0, 1, 1)
 luaInterface:luaConnect(gearButton, "pressed()", function()
     new_operation()
     op[active_widget().id] = Gear(active_widget().id)

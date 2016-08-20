@@ -2,6 +2,9 @@
 #include "uitests.h"
 #include "widgets/layers.h"
 
+#include "dialogs/addlayerdialog.h"
+#include <cad/meta/metalinewidth.h>
+
 TEST(LayersTest, Creation) {
     QApplication app(argc, argv);
     auto document = createDocument();
@@ -107,4 +110,30 @@ TEST(LayersTest, Remove) {
     EXPECT_EQ(0, layers->nbLayers()) << "Layer was not removed";
 
     delete layers;
+}
+
+TEST(LayersTest, EditionDialog) {
+    QApplication app(argc, argv);
+    auto document = createDocument();
+
+    auto width = 0.13;
+    auto color = lc::Color(1, 2, 3, 4);
+    auto linePattern = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto layer = std::make_shared<const lc::Layer>("Layer", lc::MetaLineWidthByValue(width), color, linePattern, false);
+
+    auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern);
+    operation->execute();
+
+    AddLayerDialogTest layerDialog(layer, document);
+
+    auto dialogColor = layerDialog.color();
+
+    EXPECT_EQ(layer->name(), layerDialog.layerName());
+    EXPECT_EQ(linePattern->name(), layerDialog.linePatternName());
+    EXPECT_EQ(width, layerDialog.lineWidthValue());
+    EXPECT_TRUE(
+            color.red() == dialogColor.red() &&
+            color.green() == dialogColor.green() &&
+            color.blue() == dialogColor.blue()
+    );
 }

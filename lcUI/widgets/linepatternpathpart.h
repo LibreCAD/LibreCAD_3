@@ -12,6 +12,9 @@ namespace Ui {
     class LinePatternPathPart;
 }
 
+/**
+ * \brief Model used to construct line pattern path
+ */
 class LinePatternPathPart : public QWidget {
     Q_OBJECT
 
@@ -21,10 +24,28 @@ class LinePatternPathPart : public QWidget {
             PATH_SPACE,
             PATH_DOT
         };
+        /**
+         * \brief Create empty model
+         * \param parent Pointer to parent widget
+         */
         LinePatternPathPart(QWidget* parent = 0);
+
+        /**
+         * \brief Create model pre-filled with value
+         * \param value DXF size
+         * \param parent Pointer to parent widget
+         */
         LinePatternPathPart(double value, QWidget* parent = 0);
 
+        /**
+         * \brief Return type (plain, space or dot)
+         * \return PATH_PLAIN, PATH_SPACE or PATH_DOT
+         */
         PathType type();
+        /**
+         * \brief Return length
+         * \return length (always positive)
+         */
         double value();
 
     signals:

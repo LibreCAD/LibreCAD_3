@@ -10,7 +10,10 @@ std::shared_ptr<MetaInfo> MetaInfo::add(EntityMetaType_CSPtr mt) {
     return shared_from_this();
 }
 
-//Temp function to add DxfLinePatterns from Lua
+/**
+ * Temp function to add DxfLinePatterns from Lua.
+ * Casting from DxfLinePattern to EntityMetaType in Lua result in nullptr.
+ */
 std::shared_ptr<MetaInfo> MetaInfo::addDxfLinePattern(DxfLinePattern_CSPtr lp) {
     this->emplace(lp->metaTypeID(), lp);
     return shared_from_this();

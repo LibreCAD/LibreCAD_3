@@ -59,8 +59,22 @@ namespace lc {
             return "_LINEPATTERN";
         }
 
+        /**
+         * \brief Generate new LibreCAD compatible pattern
+         * \param dxfPattern Pattern from DXF file
+         * \param length Length of DXF pattern
+         * \param lineWidth Width of the line (for dots size)
+         * \return New line pattern
+         * Generate a new pattern compatible with LibreCAD from a DXF pattern.
+         */
         std::vector<double> generatePattern(const std::vector<double> & dxfPattern, const double length, const double lineWidth) const;
 
+        /**
+         * \brief Get cached LibreCAD compatible pattern
+         * \param lineWidth Width of the line (for dots size)
+         * \return New or cached line pattern
+         * Get LibreCAD compatible pattern from cache and generate it if needed.
+         */
         const std::vector<double> lcPattern(double lineWidth = 1) const;
 
     private:

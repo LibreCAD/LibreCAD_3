@@ -24,14 +24,6 @@ set(UI_hdrs
 cadmdichild.h
 const.h
 luainterface.h
-operations/circlecreateoperation.h
-operations/groupoperations.h
-operations/guioperationfinishedevent.h
-operations/guioperation.h
-operations/linecreateoperation.h
-operations/operationmanager.h
-operations/qsnappedstate.h
-operations/trimoperation.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -43,6 +35,7 @@ widgets/linepatternpainter.h
 widgets/linepatternpathpart.h
 widgets/linepatternmodel.h
 widgets/linewidthselect.h
+widgets/colorselect.h
 lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
@@ -53,11 +46,6 @@ set(UI_srcs
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
-operations/circlecreateoperation.cpp
-operations/linecreateoperation.cpp
-operations/operationmanager.cpp
-operations/qsnappedstate.cpp
-operations/trimoperation.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
@@ -69,6 +57,7 @@ widgets/linepatternpainter.cpp
 widgets/linepatternpathpart.cpp
 widgets/linepatternmodel.cpp
 widgets/linewidthselect.cpp
+widgets/colorselect.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp

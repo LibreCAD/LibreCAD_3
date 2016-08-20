@@ -8,6 +8,8 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
     qIconSize = QSize(128, 32);
     setIconSize(qIconSize);
 
+    setMaximumHeight(32);
+
     setDocument(document);
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
@@ -62,6 +64,18 @@ void LinePatternSelect::onActivated(const QString& text) {
     if(text.toStdString() == NEW_LP) {
         auto dialog = new AddLinePatternDialog(_document, this);
         dialog->show();
+
+        if(_showByLayer) {
+            setCurrentText(BY_LAYER);
+        }
+    }
+    else if(text == MANAGE_LP) {
+        auto dialog = new LinePatternManager(_document, this);
+        dialog->show();
+
+        if(_showByLayer) {
+            setCurrentText(BY_LAYER);
+        }
     }
 }
 
@@ -69,15 +83,17 @@ void LinePatternSelect::createEntries() {
     clear();
 
     if(_document != nullptr) {
-        if(_showByBlock) {
-            insertItem(0, BY_BLOCK);
-        }
+        addItem(NEW_LP);
+        addItem(MANAGE_LP);
+        insertSeparator(2);
 
         if(_showByLayer) {
-            insertItem(0, BY_LAYER);
+            addItem(BY_LAYER);
+            setCurrentText(BY_LAYER);
         }
-
-        insertItem(0, NEW_LP);
+        if(_showByBlock) {
+            addItem(BY_BLOCK);
+        }
 
         auto linePatterns = _document->linePatterns();
         for (auto linePattern : linePatterns) {
@@ -91,14 +107,27 @@ void LinePatternSelect::createEntries() {
     }
 }
 
-void LinePatternSelect::on_addLinePatternEvent(const lc::AddLinePatternEvent &) {
+void LinePatternSelect::on_addLinePatternEvent(const lc::AddLinePatternEvent& event) {
+    createEntries();
+
+    setCurrentText(event.linePattern()->name().c_str());
+}
+
+void LinePatternSelect::on_removeLinePatternEvent(const lc::RemoveLinePatternEvent& event) {
     createEntries();
 }
 
-void LinePatternSelect::on_removeLinePatternEvent(const lc::RemoveLinePatternEvent &) {
+void LinePatternSelect::on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent& event) {
     createEntries();
+
+    setCurrentText(event.newLinePattern()->name().c_str());
 }
 
-void LinePatternSelect::on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent &) {
-    createEntries();
+void LinePatternSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+    auto index = findText(BY_LAYER);
+
+    if(index != -1) {
+        auto icon = generateQIcon(layer->linePattern());
+        setItemIcon(index, icon);
+    }
 }

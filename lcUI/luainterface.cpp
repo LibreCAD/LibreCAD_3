@@ -79,7 +79,7 @@ bool LuaInterface::qtConnect(QObject *sender, std::string signalName, QObject *r
 
 	int slotId = receiver->metaObject()->indexOfSlot(slotName.c_str());
 	if(slotId < 0) {
-		std::cout << "No such slot " << signalName << std::endl;
+		std::cout << "No such slot " << slotName << std::endl;
 	}
 
 	return QMetaObject::connect(sender, signalId, receiver, slotId);

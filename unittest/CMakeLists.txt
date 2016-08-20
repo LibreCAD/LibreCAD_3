@@ -60,7 +60,8 @@ if(WITH_QTUI)
             ui/clicommandtest.h
             ui/uitests.h
             ui/widgets/layers.h
-            ui/dialogs/addlinepatterndialog.h)
+            ui/dialogs/addlinepatterndialog.h
+            ui/dialogs/addlayerdialog.h)
 
     set(src
             ${src}
@@ -70,7 +71,9 @@ if(WITH_QTUI)
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
-            ui/testcommandline.cpp)
+            ui/testcommandline.cpp
+            ui/testcolorselect.cpp
+            ui/testlinewidthselect.cpp)
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files

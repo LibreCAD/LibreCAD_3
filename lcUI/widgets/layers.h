@@ -15,15 +15,35 @@ namespace Ui {
     class Layers;
 }
 
+/**
+ * \brief Widget which shows a list of layers
+ */
 class Layers : public QDockWidget {
     Q_OBJECT
 
     public:
+        /**
+         * \brief Create widget
+         */
         Layers(lc::Document_SPtr document = nullptr, QWidget* parent = 0);
         ~Layers();
 
+        /**
+         * \brief Set new document.
+         * \param document New document
+         * Update the layer list.
+         */
         void setDocument(lc::Document_SPtr document = nullptr);
+
+        /**
+         * \brief Get the selected layer.
+         * \return Shared pointer to Layer
+         * It never returns nullptr. The first layer is selected or a new one is created.
+         */
         lc::Layer_CSPtr activeLayer();
+
+    signals:
+        void layerChanged(lc::Layer_CSPtr layer);
 
     private slots:
         void on_newButton_clicked();
