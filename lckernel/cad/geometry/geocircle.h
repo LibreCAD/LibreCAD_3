@@ -32,6 +32,10 @@ namespace lc {
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
                 Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
+                /**
+                 * @brief Returns equation of the circle
+                 * @return Equation
+                 */
                 const maths::Equation equation() const {
                     return maths::Equation(1., 0.,1., 0., 0., -_radius* _radius).move(_center);
                 }

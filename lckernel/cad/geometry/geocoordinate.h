@@ -333,6 +333,12 @@ namespace lc {
                     return Coordinate(xx * _x + xy * _y + x0, yx * _x + yy * _y + y0, _z);
                 }
 
+                /**
+                 * @brief mirror a coordinate
+                 * @param axis1 : First point of line to be mirroed about
+                 * @param axis2 : Second point of line to be mirroed about
+                 * @return mirrored cooridnate
+                 */
                 inline Coordinate mirror(const Coordinate& axis1, const Coordinate& axis2) const {
                     Coordinate dir(axis2 - axis1);
                     auto a= dir.squared();

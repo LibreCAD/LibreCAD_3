@@ -290,7 +290,7 @@ void Intersection::bezCir(const geo::Circle C, const geo::Area c_area, const geo
 
 }
 
-std::vector<geo::Coordinate> bezCircleIntersect(BB_CSPtr bez, const geo::Coordinate &ec, double rx, double ry) {
+std::vector<geo::Coordinate> bezCircleIntersect(lc::geo::BB_CSPtr bez, const geo::Coordinate &ec, double rx, double ry) {
     auto coords = bez->getCP();
     auto p1 = coords.at(0);
     auto p2 = coords.at(1);
@@ -312,32 +312,32 @@ std::vector<geo::Coordinate> bezCircleIntersect(BB_CSPtr bez, const geo::Coordin
     a = p1 * -3;
     b = p2 * 3;
     c = a + b;
-    c1 = geo::Coordinate(c.x(), c.y());
+    auto c1 = geo::Coordinate(c.x(), c.y());
 
     auto c0 = geo::Coordinate(p1.x(), p1.y());
 
     auto rxrx  = rx*rx;
     auto ryry  = ry*ry;
-    auto poly = new Polynomial(
-        c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
+//    auto poly = new Polynomial(
+//        c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
 
-        2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
+//        2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
 
-        2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
+//        2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
 
-        2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
-            2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
+//        2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
+//            2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
 
-        2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
-            c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
+//        2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
+//            c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
 
-        2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
+//        2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
 
-        c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
-            c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
-    );
+//        c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
+//            c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
+//    );
 
-    std::vector<geo::Coordinate> roots = poly.getRootsInInterval(0,1);
+//    std::vector<geo::Coordinate> roots = poly.getRootsInInterval(0,1);
 
     // for ( auto i = 0; i < roots.size(); i++ ) {
     //     auto t = roots[i];
@@ -348,14 +348,14 @@ std::vector<geo::Coordinate> bezCircleIntersect(BB_CSPtr bez, const geo::Coordin
     //     );
     // }
 
-    for(const auto& root : roots) {
-        auto t = root;
-        results.push_back(c3*t*t*t + c2*t*t + c1*t + c0);
-    }
+//    for(const auto& root : roots) {
+//        auto t = root;
+//        results.push_back(c3*t*t*t + c2*t*t + c1*t + c0);
+//    }
 
-//    if ( result.points.length > 0 ) result.status = "Intersection";
+////    if ( result.points.length > 0 ) result.status = "Intersection";
 
-    return results;
+//    return results;
 }
 
 std::vector<geo::Coordinate> Intersection::splineLine(geo::Spline B, const geo::Vector& V) {

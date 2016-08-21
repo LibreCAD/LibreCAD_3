@@ -64,6 +64,10 @@ namespace lc {
                 */
                 const std::vector<Coordinate> &fitPoints() const;
 
+                /**
+                 * @brief Returns the fit point tolerance of the spline
+                 * @return double tolerance value
+                 */
                 double fitTolerance() const;
 
             // start tangent x coordinate
@@ -97,13 +101,22 @@ namespace lc {
                 void generateBeziers();
                 void trimAtPoint(const geo::Coordinate& c);
 
+                /**
+                 * @brief Fills the opennurbs curve with the data from spline constructor
+                 */
                 void populateCurve();
                 /*!
                  * \brief returns the nearest Point On Path
                  * \param lc::geo::Coordinate coord
-                 * \return lc::geo::Coordinate
+                 * \return lc::geo::Coordinate nearest coordinate
                  */
                 Coordinate nearestPointOnPath(const Coordinate &coord) const;
+
+                /*!
+                 * \brief returns the nearest Point On Entity itself.
+                 * \param lc::geo::Coordinate coord
+                 * \return lc::geo::Coordinate nearest coordinate
+                 */
                 Coordinate nearestPointOnEntity(const Coordinate &coord) const;
 
                 virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

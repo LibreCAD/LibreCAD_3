@@ -30,7 +30,7 @@ std::vector<double> values = {-90, -96.3402, -104.036, -113.199, -123.69,
                              -180 };
 
 
-    auto z= 0;
+    auto z = 0;
     auto bb = lc::geo::Bezier(p1,p2,p3);
     for(double i = 0.; i < 1.; i = i + 0.1) {
         auto start = bb.DirectValueAt(i);
@@ -176,69 +176,49 @@ TEST(BEZIER_CUBIC, LINE) {
 
 }
 
-
-TEST(BEZIER_CUBIC, CIRCLE) {
-    auto c1 = lc::geo::Coordinate(200,0);
-    auto circle_ = lc::geo::Circle(c1, 100.);
-
-    auto p1 = lc::geo::Coordinate(100,-500);
-    auto p2 = lc::geo::Coordinate(300,1500);
-    auto p3 = lc::geo::Coordinate(600,-1500);
-    auto p4 = lc::geo::Coordinate(1000,500);
-
-    auto bezier_ = std::make_shared<lc::geo::CubicBezier>(lc::geo::CubicBezier(p1,p2,p3,p4));
-
-    auto ret = lc::maths::Intersection::bezierCircle(bezier_, circle_);
-    auto ret_size = 6;
-    ASSERT_EQ(ret_size, ret.size());
-
+/*
+TEST(SPLINE, SPLINESPLINE) {
+    auto sp1 = lc::geo::Spline();
+    auto sp2 = lc::geo::Spline();
+    auto expectedres = 2;
+    auto result = lc::maths::Intersection::splineSpline(sp1, sp2);
+    ASSERT_EQ(result, expectedres);
 }
 
-//TEST(BEZIER_CUBIC, ARC) {
-//    auto c1 = lc::geo::Coordinate(0,0);
-//    auto arc_ = lc::geo::Arc(c1, 200., 90*TRD, 270*TRD);
+TEST(SPLINE, SPLINELINE) {
+    auto sp1 = lc::geo::Spline();
 
-//    auto p1 = lc::geo::Coordinate(200,300);
-//    auto p2 = lc::geo::Coordinate(0,0);
-//    auto p3 = lc::geo::Coordinate(-200,300);
-//    auto p4 = lc::geo::Coordinate(400,300);
+    auto c1 = lc::geo::Coordinate(50,50);
+    auto c2 = lc::geo::Coordinate(1000,1000);
+    auto line_ = lc::geo::Vector(c1,c2);
 
-//    auto bezier_ = std::make_shared<lc::geo::CubicBezier>(lc::geo::Bezier(p1,p2,p3,p4));
+    auto expectedres = 2;
+    auto result = lc::maths::Intersection::splineLine(sp1, line_);
+    ASSERT_EQ(result, expectedres);
+}
 
-//    auto ret = lc::maths::Intersection::bezierArc(bezier_, arc_);
+TEST(SPLINE, SPLINECIRCLE) {
+    auto sp1 = lc::geo::Spline();
 
-//    auto ret_size = 1;
-//    ASSERT_EQ(ret_size, ret.size());
+    auto c1 = lc::geo::Coordinate(0,0);
+    auto circle_ = lc::geo::Circle(c1, 200.);
 
+    auto expectedres = 2;
+    auto result = lc::maths::Intersection::splineCircle(sp1, circle_);
+    ASSERT_EQ(result, expectedres);
+}
 
-//    c1 = lc::geo::Coordinate(0,0);
-//    arc_ = lc::geo::Arc(c1, 200., 0, PI);
+TEST(SPLINE, SPLINEBEZIER) {
+    auto sp1 = lc::geo::Spline();
 
-//    p1 = lc::geo::Coordinate(200,300);
-//    p2 = lc::geo::Coordinate(0,0);
-//    p3 = lc::geo::Coordinate(-200,300);
-//    p4 = lc::geo::Coordinate(400,300);
+    auto p1 = lc::geo::Coordinate(200,300);
+    auto p2 = lc::geo::Coordinate(0,0);
+    auto p3 = lc::geo::Coordinate(-200,300);
 
-//    auto bezier_ = std::make_shared<lc::geo::CubicBezier>(lc::geo::Bezier(p1,p2,p3,p4));
+    auto bezier_ = std::make_shared<lc::geo::Bezier>(lc::geo::Bezier(p1,p2,p3));
 
-//    ret = lc::maths::Intersection::bezierArc(bezier_2, arc_);
-//    ret_size = 2;
-//    ASSERT_EQ(ret_size, ret.size());
-
-
-//    c1 = lc::geo::Coordinate(0,0);
-//    arc_ = lc::geo::Arc(c1, 200., PI, 2*PI);
-
-//    p1 = lc::geo::Coordinate(200,300);
-//    p2 = lc::geo::Coordinate(0,0);
-//    p3 = lc::geo::Coordinate(-200,300);
-//    p4 = lc::geo::Coordinate(400,300);
-
-//    auto bezier_ = std::make_shared<lc::geo::CubicBezier>(lc::geo::Bezier(p1,p2,p3,p4));
-
-//    ret = lc::maths::Intersection::bezierArc(bezier_3, arc_);
-//    ret_size = 0;
-//    ASSERT_EQ(ret_size, ret.size());
-
-//}
-
+    auto expectedres = 2;
+    auto result = lc::maths::Intersection::splineLine(sp1, bezier_);
+    ASSERT_EQ(result, expectedres);
+}
+*/

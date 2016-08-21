@@ -66,15 +66,29 @@ namespace lc {
                                         double angle) const;
 
             /**
-             * @brief Matrix
-             * @return
+             * @brief Matrix Returns matrix of equation
+             * @return Matrix equation
              */
             const Eigen::Matrix3d Matrix() const;
 
+            /**
+             * @brief flipXY Flips the matrix values
+             * @return equation vith flipped XY
+             */
             const Equation flipXY() const;
 
+            /**
+             * @brief rotationMatrix Rotates the matrix by an angle
+             * @param angle
+             * @return Matrix equation
+             */
             static Eigen::Matrix3d rotationMatrix(double angle);
 
+            /**
+             * @brief translateMatrix Translates the matrix by some coordinate value
+             * @param v offset coordinate value
+             * @return Matrix equation
+             */
             static Eigen::Matrix3d translateMatrix(const geo::Coordinate &v);
 
         private:
