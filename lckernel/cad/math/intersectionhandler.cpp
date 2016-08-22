@@ -361,8 +361,9 @@ std::vector<geo::Coordinate> bezCircleIntersect(lc::geo::BB_CSPtr bez, const geo
 std::vector<geo::Coordinate> Intersection::splineLine(geo::Spline B, const geo::Vector& V) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B.beziers();
-    for(const auto & bezier : beziers) {
+    for(const auto bezier : beziers) {
         auto vecret = bezierLine(bezier, V);
+        std::cout << vecret.size() << std::endl;
         ret.insert(ret.end(), vecret.begin(), vecret.end());
     }
     return ret;

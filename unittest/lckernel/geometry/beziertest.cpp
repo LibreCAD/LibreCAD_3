@@ -29,7 +29,6 @@ std::vector<double> values = {-90, -96.3402, -104.036, -113.199, -123.69,
                             -135, -146.31, -156.801, -165.964, -173.66,
                              -180 };
 
-
     auto z = 0;
     auto bb = lc::geo::Bezier(p1,p2,p3);
     for(double i = 0.; i < 1.; i = i + 0.1) {
@@ -176,49 +175,21 @@ TEST(BEZIER_CUBIC, LINE) {
 
 }
 
-/*
-TEST(SPLINE, SPLINESPLINE) {
-    auto sp1 = lc::geo::Spline();
-    auto sp2 = lc::geo::Spline();
-    auto expectedres = 2;
-    auto result = lc::maths::Intersection::splineSpline(sp1, sp2);
-    ASSERT_EQ(result, expectedres);
-}
-
 TEST(SPLINE, SPLINELINE) {
-    auto sp1 = lc::geo::Spline();
+    using namespace lc;
 
-    auto c1 = lc::geo::Coordinate(50,50);
-    auto c2 = lc::geo::Coordinate(1000,1000);
-    auto line_ = lc::geo::Vector(c1,c2);
+    auto p1 = geo::Coordinate(87.74071358645254, -38.85660173114327);
+    auto p2 = geo::Coordinate(206.8173963109239, 139.1317029728033);
 
-    auto expectedres = 2;
-    auto result = lc::maths::Intersection::splineLine(sp1, line_);
+    auto line = geo::Vector(p1,p2);
+    std::vector<geo::Coordinate> cp = { {52.25, 57.25},
+    {114.75, -4.5}, {174.5, 19.75}, {193.25, 77}, {239.75, 54}};
+
+    auto degree = 2;
+    auto spline_ = geo::Spline(cp, {}, {}, degree, false, 0, 0,0,0, 0,0,0, 0,0,0, static_cast<geo::Spline::splineflag>(1));
+
+    auto expectedres = 1;
+    auto result = lc::maths::Intersection::splineLine(spline_, line).size();
+
     ASSERT_EQ(result, expectedres);
 }
-
-TEST(SPLINE, SPLINECIRCLE) {
-    auto sp1 = lc::geo::Spline();
-
-    auto c1 = lc::geo::Coordinate(0,0);
-    auto circle_ = lc::geo::Circle(c1, 200.);
-
-    auto expectedres = 2;
-    auto result = lc::maths::Intersection::splineCircle(sp1, circle_);
-    ASSERT_EQ(result, expectedres);
-}
-
-TEST(SPLINE, SPLINEBEZIER) {
-    auto sp1 = lc::geo::Spline();
-
-    auto p1 = lc::geo::Coordinate(200,300);
-    auto p2 = lc::geo::Coordinate(0,0);
-    auto p3 = lc::geo::Coordinate(-200,300);
-
-    auto bezier_ = std::make_shared<lc::geo::Bezier>(lc::geo::Bezier(p1,p2,p3));
-
-    auto expectedres = 2;
-    auto result = lc::maths::Intersection::splineLine(sp1, bezier_);
-    ASSERT_EQ(result, expectedres);
-}
-*/
