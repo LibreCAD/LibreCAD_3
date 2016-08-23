@@ -105,10 +105,26 @@ namespace lc {
                     return Math::isAngleBetween(angle, _startAngle, _endAngle, !_isReversed);
                 }
 
-
+                /**
+                 * @brief rotate an ellipse at a center by an angle
+                 * @param center of rotation
+                 * @param rotation_angle
+                 * @return Rotated Ellipse
+                 */
                 Ellipse georotate(const Coordinate& center, const double rotation_angle) const;
+
+                /**
+                 * @brief scale an ellipse at some center by some factor
+                 * @param center of scaling
+                 * @param factor of scaling
+                 * @return scaled ellipse
+                 */
                 Ellipse geoscale(const Coordinate& center, const Coordinate &factor) const;
 
+                /**
+                 * @brief Returns the quadratic equation
+                 * @return Equation
+                 */
                 const maths::Equation equation() const {
                     auto ce0 = _majorP.squared();
                     auto ce2 = this->ratio() * this->ratio() * ce0;
