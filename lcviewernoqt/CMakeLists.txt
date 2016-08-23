@@ -81,15 +81,14 @@ drawables/tempentities.h
 )
 
 # Cairo
-find_package(PkgConfig)
-pkg_check_modules(CAIRO REQUIRED cairo>=1.14)
+find_package(Cairo 1.14 REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARY_DIRS})
+link_directories(${CAIRO_LIBRARIES})
 
 # Pango
-pkg_check_modules(PANGO REQUIRED pango>=1.38)
+find_package(Pango 1.38 REQUIRED)
 include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARY_DIRS})
+link_directories(${PANGO_LIBRARIES})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)

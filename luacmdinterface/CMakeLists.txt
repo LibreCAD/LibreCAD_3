@@ -6,27 +6,25 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(PkgConfig)
-
-# Cairo
-pkg_check_modules(CAIRO REQUIRED cairo)
-include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARY_DIRS})
-
-# Pango
-pkg_check_modules(PANGO REQUIRED pango)
-include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARY_DIRS})
-
 # LOG4CXX
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+find_package(Log4CXX REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
+# Cairo
+find_package(Cairo REQUIRED)
+include_directories(${CAIRO_INCLUDE_DIRS})
+link_directories(${CAIRO_LIBRARIES})
+
+# Pango
+find_package(Pango REQUIRED)
+include_directories(${PANGO_INCLUDE_DIRS})
+link_directories(${PANGO_LIBRARIES})
+
 # Curl
-PKG_CHECK_MODULES(LIBCURL REQUIRED libcurl)
-include_directories(${LIBCURL_INCLUDE_DIRS})
-link_directories(${LIBCURL_LIBRARY_DIRS})
+find_package(CURL REQUIRED)
+include_directories(${CURL_INCLUDE_DIRS})
+link_directories(${CURL_LIBRARIES})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -69,4 +67,4 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
-target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${LIBCURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
+target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${CURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)

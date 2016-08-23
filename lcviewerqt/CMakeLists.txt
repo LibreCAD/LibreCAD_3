@@ -24,8 +24,6 @@ lcadviewer.cpp
 #qrc_icons.cpp)
 
 
-find_package(PkgConfig)
-
 # Qt
 find_package(Qt5Widgets)
 find_package(Qt5Core)
@@ -33,19 +31,19 @@ find_package(Qt5Designer)
 SET(QT_USE_QTDESIGNER ON)
 
 # LOG4CXX
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+find_package(Log4CXX REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 # Cairo
-pkg_check_modules(CAIRO REQUIRED cairo)
+find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARY_DIRS})
+link_directories(${CAIRO_LIBRARIES})
 
 # Pango
-pkg_check_modules(PANGO REQUIRED pango)
+find_package(Pango REQUIRED)
 include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARY_DIRS})
+link_directories(${PANGO_LIBRARIES})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)

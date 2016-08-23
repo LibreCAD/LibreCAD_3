@@ -139,12 +139,8 @@ cad/primitive/beziercurve.h
 cad/primitive/image.h
 cad/math/helpermethods.h)
 
-# DEPENDENCIES
-find_package(PkgConfig)
-
-
 # LOG4CXX
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+find_package(Log4CXX 1.10 REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 

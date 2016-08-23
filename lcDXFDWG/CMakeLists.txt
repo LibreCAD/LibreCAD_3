@@ -21,8 +21,7 @@ include_directories(${LIBDXFRW_INCLUDE_DIRS})
 link_directories(${LIBDXFRW_LIBRARY})
 
 # LOG4CXX
-find_package(PkgConfig QUIET)
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx>=1.10)
+find_package(Log4CXX 1.10 REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -54,7 +53,7 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(lcdxfdwg SHARED ${lcdxfdwg_srcs} ${lcdxfdwg_hdrs})
-target_link_libraries(lcdxfdwg lckernel ${LIBDXFRW_LIBRARY})
+target_link_libraries(lcdxfdwg lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES})
 
 # INSTALLATION
 install(TARGETS lcdxfdwg DESTINATION lib)
