@@ -14,9 +14,10 @@ function LineOperations:_init(id)
     Operations._init(self, id)
 
     self.lastPoint = nil
-    self.lastLine = nil
     self.length = nil
     self.line_id = ID():id()
+    self.lastLine = self:createLine(Coord(0, 0), Coord(0, 0))
+    active_widget():tempEntities():addEntity(self.lastLine)
 
     event.register('point', self)
 
@@ -53,8 +54,6 @@ function LineOperations:newPoint(point)
     else
         self.lastPoint = point
         self.lastLine = self:createLine(point, point)
-
-        active_widget():tempEntities():addEntity(self.lastLine)
 
         event.register('mouseMove', self)
         event.register('number', self)
