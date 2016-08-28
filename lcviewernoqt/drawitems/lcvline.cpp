@@ -5,6 +5,7 @@
 #include "cad/math/intersectionhandler.h"
 #include "cad/geometry/geocircle.h"
 #include "cad/geometry/geobeziercubic.h"
+#include "cad/geometry/geocircle.h"
 #include "cad/geometry/geobezierbase.h"
 
 using namespace LCViewer;
@@ -16,4 +17,3 @@ void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     painter.line_to(end().x(), end().y());
     painter.stroke();
 }
-

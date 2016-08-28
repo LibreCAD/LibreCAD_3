@@ -156,23 +156,23 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
 //        return ans;
 //    }
 
-    std::cout << ce.size();
+//    std::cout << ce.size();
 
-    coeff[0] = ce[5];
-    coeff[1] = ce[4];
-    coeff[2] = ce[3];
-    coeff[3] = ce[2];
-    coeff[4] = ce[1];
-    coeff[5] = ce[0];
-    coeff[6] = 1;
+//    coeff[0] = ce[5];
+//    coeff[1] = ce[4];
+//    coeff[2] = ce[3];
+//    coeff[3] = ce[2];
+//    coeff[4] = ce[1];
+//    coeff[5] = ce[0];
+//    coeff[6] = 1;
 
-//    coeff[0] = ce[6];
-//    coeff[1] = ce[5];
-//    coeff[2] = ce[4];
-//    coeff[3] = ce[3];
-//    coeff[4] = ce[2];
-//    coeff[5] = ce[1];
-//    coeff[6] = ce[0];
+    coeff[0] = ce[6];
+    coeff[1] = ce[5];
+    coeff[2] = ce[4];
+    coeff[3] = ce[3];
+    coeff[4] = ce[2];
+    coeff[5] = ce[1];
+    coeff[6] = ce[0];
 
 
     solver.compute(coeff);

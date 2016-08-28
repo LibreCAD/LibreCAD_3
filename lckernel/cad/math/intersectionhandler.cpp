@@ -132,19 +132,21 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(
 
     } else {
 
-        // get outer Bounding box
+//        // get outer Bounding box
 
-        geo::Area Ar = geo::Area(geo::Coordinate(C.center().x() - C.radius(), C.center().y() - C.radius()),
-                         geo::Coordinate(C.center().x() + C.radius(), C.center().y() + C.radius()));
+//        geo::Area Ar = geo::Area(geo::Coordinate(C.center().x() - C.radius(), C.center().y() - C.radius()),
+//                         geo::Coordinate(C.center().x() + C.radius(), C.center().y() + C.radius()));
 
-        // get inner Bounding box
+//        // get inner Bounding box
 
-        auto newRad = C.radius() * 0.7071;
+//        auto newRad = C.radius() * 0.7071;
 
-        geo::Area minAr = geo::Area(geo::Coordinate(C.center().x() - newRad, C.center().y() - newRad),
-                                   geo::Coordinate(C.center().x() + newRad, C.center().y() + newRad));
+//        geo::Area minAr = geo::Area(geo::Coordinate(C.center().x() - newRad, C.center().y() - newRad),
+//                                   geo::Coordinate(C.center().x() + newRad, C.center().y() + newRad));
 
-        bezCir(C, Ar, minAr, B, ret);
+//        bezCir(C, Ar, minAr, B, ret);
+        ret = bezCircleIntersect(B, C.center(), C.radius(), C.radius());
+
     }
     return ret;
 }
@@ -319,30 +321,30 @@ std::vector<geo::Coordinate> Intersection::bezCircleIntersect(lc::geo::BB_CSPtr 
 
     auto rxrx  = rx*rx;
     auto ryry  = ry*ry;
-    auto poly = lc::Polynomial({
-        c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
+    auto roots = lc::Math::sexticSolver({
+            c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
 
-        2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
+            2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
 
-        2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
+            2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
 
-        2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
-            2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
+            2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
+                2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
 
-        2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
-            c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
+            2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
+                c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
 
-        2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
+            2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
 
-        c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
-            c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
-    });
+            c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
+                c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
+        });
 
-    auto roots = poly.getRootsInInterval(0,1);
-//    for(const auto& root : roots) {
-//        auto t = root;
-//        results.push_back(c3*t*t*t + c2*t*t + c1*t + c0);
-//    }
+    for(const auto& t : roots) {
+        if(t > 0.000000000 && t < 1.000000000) {
+            results.push_back(c3*t*t*t + c2*t*t + c1*t + c0);
+        }
+    }
 
     return results;
 }
