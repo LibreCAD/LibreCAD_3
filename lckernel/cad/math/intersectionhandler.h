@@ -11,6 +11,7 @@
 #include "cad/geometry/geoarc.h"
 #include "cad/geometry/geoellipse.h"
 #include "cad/geometry/geospline.h"
+#include "cad/math/helpermethods.h"
 
 namespace lc {
     namespace maths {
@@ -43,10 +44,9 @@ namespace lc {
             geo::Spline B1, geo::BB_CSPtr B2);
         static std::vector<geo::Coordinate> splineSpline(
             geo::Spline B1, geo::Spline B2);
-
+        static std::vector<geo::Coordinate> bezCircleIntersect(lc::geo::BB_CSPtr bez, const geo::Coordinate &ec, double rx, double ry);
         private:
         static void bezBez(const geo::BB_CSPtr B1, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);
-        static void bezCir(const geo::Circle C, const geo::Area c_area, const geo::Area m_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret);
         };
     }
 }

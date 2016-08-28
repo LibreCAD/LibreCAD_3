@@ -34,7 +34,7 @@ namespace lc {
                 out.emplace_back(c.transform2d(xx, yx, xy, yy, x0, y0));
             }
             return out;
-        };
+        }
 
     };
 }
