@@ -131,22 +131,7 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(
         }
 
     } else {
-
-//        // get outer Bounding box
-
-//        geo::Area Ar = geo::Area(geo::Coordinate(C.center().x() - C.radius(), C.center().y() - C.radius()),
-//                         geo::Coordinate(C.center().x() + C.radius(), C.center().y() + C.radius()));
-
-//        // get inner Bounding box
-
-//        auto newRad = C.radius() * 0.7071;
-
-//        geo::Area minAr = geo::Area(geo::Coordinate(C.center().x() - newRad, C.center().y() - newRad),
-//                                   geo::Coordinate(C.center().x() + newRad, C.center().y() + newRad));
-
-//        bezCir(C, Ar, minAr, B, ret);
         ret = bezCircleIntersect(B, C.center(), C.radius(), C.radius());
-
     }
     return ret;
 }
@@ -255,41 +240,6 @@ void Intersection::bezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::ve
     bezBez(b1split[1], b2split[0], ret);
     bezBez(b1split[0], b2split[1], ret);
     bezBez(b1split[1], b2split[1], ret);
-}
-
-void Intersection::bezCir(const geo::Circle C, const geo::Area c_area, const geo::Area m_area, const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
-
-    auto bb2 = B2->boundingBox();
-    auto cmin = c_area.minP();
-    auto cmax = c_area.maxP();
-    auto bmin = bb2.minP();
-    auto bmax = bb2.maxP();
-    auto mmax = m_area.maxP();
-    auto mmin = m_area.minP();
-
-    // BOUNDING BOX CHECKS. I WOULD BE HAPPY IF SOMEHOW IN FUTURE WE REPLACE THIS METHOD WITH A MATHEMATICAL METHOD.
-
-    if((bmin.x() < cmin.x() && bmax.x() < cmin.x()) || (bmin.y() < cmin.y() && bmax.y() < cmin.y())
-            || (bmin.x() > cmax.x() && bmax.x() > cmax.x()) || (bmin.y() > cmax.y() && bmax.y() > cmax.y())) {
-        return;
-    }
-
-    if(bmin.x() > mmin.x() && bmax.x() < mmax.x() && bmin.y() > mmin.y() && bmax.y() < mmax.y()) {
-        return;
-    }
-
-    if(bb2.height() <= 5 || bb2.width() <= 5) {
-        return;
-    }
-
-    if(std::fabs(C.center().distanceTo(bb2.minP()) - C.radius()) <= 10 || std::fabs(C.center().distanceTo(bb2.maxP()) - C.radius()) <= 10 ) {
-        ret.push_back(B2->getCP().at(1));
-        return;
-    }
-    auto b2split = B2->splitHalf();
-    bezCir(C, c_area, m_area, b2split[0], ret);
-    bezCir(C, c_area, m_area, b2split[1], ret);
-
 }
 
 std::vector<geo::Coordinate> Intersection::bezCircleIntersect(lc::geo::BB_CSPtr bez, const geo::Coordinate &ec, double rx, double ry) {

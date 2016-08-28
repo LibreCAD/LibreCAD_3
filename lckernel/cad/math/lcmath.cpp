@@ -146,25 +146,14 @@ std::vector<double> Math::quarticSolver(const std::vector<double>& ce) {
 }
 
 std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
-    //    std::cout<<"x^4+("<<ce[0]<<")*x^3+("<<ce[1]<<")*x^2+("<<ce[2]<<")*x+("<<ce[3]<<")==0"<<std::endl;
 
     std::vector<double> ans(0, 0.);
     Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
     Eigen::VectorXd coeff(7);
 
-//    if (ce.size() != 6) {
-//        return ans;
-//    }
-
-//    std::cout << ce.size();
-
-//    coeff[0] = ce[5];
-//    coeff[1] = ce[4];
-//    coeff[2] = ce[3];
-//    coeff[3] = ce[2];
-//    coeff[4] = ce[1];
-//    coeff[5] = ce[0];
-//    coeff[6] = 1;
+    if (ce.size() != 7) {
+        return ans;
+    }
 
     coeff[0] = ce[6];
     coeff[1] = ce[5];
@@ -174,15 +163,11 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
     coeff[5] = ce[1];
     coeff[6] = ce[0];
 
-
     solver.compute(coeff);
 
     solver.realRoots(ans);
 
-    std::cout << ans.size();
-
     return ans;
-
 }
 
 
@@ -208,14 +193,14 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
             if (std::abs(ce[2]) < 1.0e-14) {  // this should not happen
                 if (std::abs(ce[1]) > 1.0e-14) {
                     roots.push_back(-ce[0] / ce[1]);
-                } else { // can not determine y. this means overlapped, but overlap should have been detected before, therefore return empty set
+                } else {
+                    // can not determine y. this means overlapped, but overlap should have been detected before, therefore return empty set
                     return roots;
                 }
             } else {
                 ce2.resize(2);
                 ce2[0] = ce[1] / ce[2];
                 ce2[1] = ce[0] / ce[2];
-                //std::cout<<"ce2[2]={ "<<ce2[0]<<' '<<ce2[1]<<" }\n";
                 roots = Math::quadraticSolver(ce2);
             }
         } else {
@@ -223,7 +208,6 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
             ce2[0] = ce[2] / ce[3];
             ce2[1] = ce[1] / ce[3];
             ce2[2] = ce[0] / ce[3];
-            //std::cout<<"ce2[3]={ "<<ce2[0]<<' '<<ce2[1]<<' '<<ce2[2]<<" }\n";
             roots = Math::cubicSolver(ce2);
         }
     } else {
@@ -232,10 +216,6 @@ std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
         ce2[2] = ce[1] / ce[4];
         ce2[3] = ce[0] / ce[4];
 
-        //        if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-        //            DEBUG_HEADER();
-        //            std::cout<<"ce2[4]={ "<<ce2[0]<<' '<<ce2[1]<<' '<<ce2[2]<<' '<<ce2[3]<<" }\n";
-        //        }
         if (std::abs(ce2[3]) <= TOLERANCE15) {
             //constant term is zero, factor 0 out, solve a cubic equation
             ce2.resize(3);
@@ -373,16 +353,8 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
     //y^0
     qy[0] = -d2 * g * l + a * d * j * l - a2 * l2
             - (f2 * g2 - d * f * g * j + a * f * j2 - 2.*a * f * g * l);
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        DEBUG_HEADER();
-    //        std::cout<<qy[4]<<"*y^4 +("<<qy[3]<<")*y^3+("<<qy[2]<<")*y^2+("<<qy[1]<<")*y+("<<qy[0]<<")==0"<<std::endl;
-    //    }
     //quarticSolver
     auto&& roots = quarticSolverFull(qy);
-
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        std::cout<<"roots.size()= "<<roots.size()<<std::endl;
-    //    }
 
     if (roots.size() == 0) { // no intersection found
         return ret;
@@ -391,10 +363,6 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
     std::vector<double> ce(0, 0.);
 
     for (size_t i0 = 0; i0 < roots.size(); i0++) {
-        //        if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-        //            DEBUG_HEADER();
-        //            std::cout<<"y="<<roots[i0]<<std::endl;
-        //        }
         /*
           Collect[Eliminate[{ a*x^2 + b*x*y+c*y^2+d*x+e*y+f==0,g*x^2+h*x*y+i*y^2+j*x+k*y+l==0},x],y]
           */
@@ -403,15 +371,10 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
         ce[1] = b * roots[i0] + d;
         ce[2] = c * roots[i0] * roots[i0] + e * roots[i0] + f;
 
-        //    DEBUG_HEADER();
-        //                std::cout<<"("<<ce[0]<<")*x^2 + ("<<ce[1]<<")*x + ("<<ce[2]<<") == 0"<<std::endl;
         if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
             ce[0] = g;
             ce[1] = h * roots[i0] + j;
             ce[2] = i * roots[i0] * roots[i0] + k * roots[i0] + f;
-            //            DEBUG_HEADER();
-            //            std::cout<<"("<<ce[0]<<")*x^2 + ("<<ce[1]<<")*x + ("<<ce[2]<<") == 0"<<std::endl;
-
         }
 
         if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
@@ -422,13 +385,9 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
             std::vector<double> ce2(2, 0.);
             ce2[0] = ce[1] / ce[0];
             ce2[1] = ce[2] / ce[0];
-            //                DEBUG_HEADER();
-            //                        std::cout<<"x^2 +("<<ce2[0]<<")*x+("<<ce2[1]<<")==0"<<std::endl;
             auto&& xRoots = quadraticSolver(ce2);
 
             for (size_t j0 = 0; j0 < xRoots.size(); j0++) {
-                //                DEBUG_HEADER();
-                //                std::cout<<"x="<<xRoots[j0]<<std::endl;
                 geo::Coordinate vp(xRoots[j0], roots[i0]);
 
                 if (simultaneousQuadraticVerify(m, vp)) {
@@ -446,10 +405,6 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
         }
     }
 
-    //    if(RS_DEBUG->getLevel()>=RS_Debug::D_INFORMATIONAL){
-    //        DEBUG_HEADER();
-    //        std::cout<<"ret="<<ret<<std::endl;
-    //    }
     return ret;
 }
 
@@ -565,12 +520,6 @@ bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& 
         sum1 += terms0[i];
     }
 
-    //    DEBUG_HEADER();
-    //    std::cout<<"verifying: x="<<x<<"\ty="<<y<<std::endl;
-    //    std::cout<<"0: maxterm: "<<amax0<<std::endl;
-    //    std::cout<<"verifying: std::abs(a*x2 + b*x*y+c*y2+d*x+e*y+f)/maxterm="<<std::abs(sum0)/amax0<<" required to be smaller than "<<sqrt(6.)*sqrt(DBL_EPSILON)<<std::endl;
-    //    std::cout<<"1: maxterm: "<<amax1<<std::endl;
-    //    std::cout<<"verifying: std::abs(g*x2+h*x*y+i*y2+j*x+k*y+l)/maxterm="<< std::abs(sum1)/amax1<<std::endl;
     const double tols = 2.*sqrt(6.) * sqrt(DBL_EPSILON); //experimental tolerances to verify simultaneous quadratic
 
     return (amax0 <= tols || std::abs(sum0) / amax0 < tols) && (amax1 <= tols || std::abs(sum1) / amax1 < tols);
