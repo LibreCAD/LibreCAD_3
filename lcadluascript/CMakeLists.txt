@@ -20,10 +20,9 @@ set(lcluascript_hdrs
     cad/timer.h)
 
 
-find_package(PkgConfig)
-pkg_check_modules(LUA REQUIRED lua>=5.3)
-include_directories(${LUA_INCLUDE_DIRS})
-link_directories(${LUA_LIBRARY_DIRS})
+find_package(Lua 5.3 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+link_directories(${LUA_LIBRARIES})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)

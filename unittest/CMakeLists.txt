@@ -6,11 +6,10 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(PkgConfig)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 #LOG4CXX
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+find_package(Log4CXX REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -78,6 +77,10 @@ if(WITH_QTUI)
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
+
+    #Lua
+    find_package(Lua 5.3 REQUIRED)
+    include_directories(${LUA_INCLUDE_DIR})
 endif(WITH_QTUI)
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")

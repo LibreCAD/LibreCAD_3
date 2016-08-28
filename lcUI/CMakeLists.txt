@@ -79,10 +79,14 @@ qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
 
 # LOG4CXX
-find_package(PkgConfig)
-pkg_check_modules(LOG4CXX REQUIRED liblog4cxx)
+find_package(Log4CXX 1.10 REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
+
+#Lua
+find_package(Lua 5.3 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+link_directories(${LUA_LIBRARIES})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -126,6 +130,7 @@ set(EXTRA_LIBS
         Qt5::Widgets
         Qt5::UiTools
         ${LOG4CXX_LIBRARIES}
+        ${LUA_LIBRARIES}
         lckernel
         lcluascript
         lcviewerqt
