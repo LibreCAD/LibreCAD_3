@@ -3,7 +3,9 @@
 #include "geobase.h"
 #include "geocoordinate.h"
 #include <vector>
-#include "opennurbs_20130711/opennurbs.h"
+#ifndef DISABLE_OPENNURBS
+    #include "opennurbs_20130711/opennurbs.h"
+#endif
 #include "cad/base/visitor.h"
 #include "cad/geometry/geobezierbase.h"
 #include "cad/geometry/geobezier.h"
@@ -142,7 +144,9 @@ namespace lc {
                 const double _nX;  // normal vector x coordinate
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
-                ON_NurbsCurve _splineCurve;
+                #ifndef DISABLE_OPENNURBS
+                    ON_NurbsCurve _splineCurve;
+                #endif
                 std::vector<BB_CSPtr> _beziers;
                 const splineflag _flags;
         };

@@ -166,7 +166,7 @@ public:
 
     template<CairoPainter::backend T_ = T>
     LcCairoPainter(typename std::enable_if<T_ == CairoPainter::backend::Image, unsigned char>::type *data,
-                   uint width, uint height) : _constantLineWidth(true), _lineWidth(1.), _lineWidthCompensation(0.) {
+                   unsigned int width, unsigned int height) : _constantLineWidth(true), _lineWidth(1.), _lineWidthCompensation(0.) {
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         _surface = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, width, height, stride);
         _cr = cairo_create(_surface);
@@ -183,10 +183,10 @@ public:
     /**
     * @brief backend constructor for PDF, SVG - join stream if needed
     *
-    * @param width, height, cairo_status_t (void * closure, const uchar *data, uint length)
+    * @param width, height, cairo_status_t (void * closure, const uchar *data, unsigned int length)
     * @see http://cairographics.org/manual/cairo-PNG-Support.html#cairo-write-func-t
     */
-    using cairo_stream_func = cairo_status_t(void *closure, const unsigned char *data, uint length);
+    using cairo_stream_func = cairo_status_t(void *closure, const unsigned char *data, unsigned int length);
     LcCairoPainter(double width, double height, cairo_stream_func *f_) : _constantLineWidth(true), _lineWidth(1.), _lineWidthCompensation(0.) {
 
         switch (T) {

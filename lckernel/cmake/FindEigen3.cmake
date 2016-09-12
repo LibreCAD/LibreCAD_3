@@ -55,7 +55,7 @@ macro(_eigen3_check_version)
   if(NOT EIGEN3_VERSION_OK)
 
     message(STATUS "Eigen3 version ${EIGEN3_VERSION} found in ${EIGEN3_INCLUDE_DIR}, "
-                   "but at least version ${Eigen3_FIND_VERSION} is required")
+            "but at least version ${Eigen3_FIND_VERSION} is required")
   endif(NOT EIGEN3_VERSION_OK)
 endmacro(_eigen3_check_version)
 
@@ -66,16 +66,14 @@ if (EIGEN3_INCLUDE_DIR)
   set(EIGEN3_FOUND ${EIGEN3_VERSION_OK})
 
 else (EIGEN3_INCLUDE_DIR)
-
   find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
-      HINTS
-      ENV EIGEN3_ROOT 
-      ENV EIGEN3_ROOT_DIR
-      PATHS
-      ${CMAKE_INSTALL_PREFIX}/include
-      ${KDE4_INCLUDE_DIR}
-      PATH_SUFFIXES eigen3 eigen
-    )
+          HINTS
+          ENV EIGEN3_ROOT
+          ENV EIGEN3_ROOT_DIR
+          PATHS
+          "${PROJECT_SOURCE_DIR}/../third_party/eigen"
+          PATH_SUFFIXES eigen3 eigen
+          )
 
   if(EIGEN3_INCLUDE_DIR)
     _eigen3_check_version()

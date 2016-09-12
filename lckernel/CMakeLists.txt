@@ -156,6 +156,10 @@ endif ()
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
+if(NOT WINDOWS_MSYS2)
+    set(OPENNURBS_LIB opennurbs)
+endif()
+
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
@@ -171,7 +175,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
-target_link_libraries(lckernel opennurbs ${LOG4CXX_LIBRARIES} )
+target_link_libraries(lckernel ${OPENNURBS_LIB} ${LOG4CXX_LIBRARIES} ${G_EXTRA_LIBS})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

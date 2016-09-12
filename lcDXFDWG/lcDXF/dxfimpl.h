@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libdxfrw0/libdxfrw.h>
-#include <libdxfrw0/drw_interface.h>
-#include <libdxfrw0/drw_base.h>
+#include <libdxfrw.h>
+#include <drw_interface.h>
+#include <drw_base.h>
 #include <iostream>
 
 #include <cad/document/document.h>

@@ -96,6 +96,10 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
+# LibbDXFRW
+find_package(LibDxfrw REQUIRED)
+include_directories(${LIBDXFRW_INCLUDE_DIR})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
@@ -125,17 +129,17 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 set(EXTRA_LIBS
+        lcluascript
+        lcviewerqt
+        lcviewernoqt
+        lcdxfdwg
+        lckernel
+        ${LUA_LIBRARIES}
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
-        ${LOG4CXX_LIBRARIES}
-        ${LUA_LIBRARIES}
-        lckernel
-        lcluascript
-        lcviewerqt
-        lcviewernoqt
-        lcdxfdwg)
+        ${LOG4CXX_LIBRARIES})
 
 #Create library for unit tests
 if(WITH_UNITTESTS)

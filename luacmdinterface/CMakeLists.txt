@@ -14,7 +14,6 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 # Cairo
 find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARIES})
 
 # Pango
 find_package(Pango REQUIRED)

@@ -83,7 +83,6 @@ drawables/tempentities.h
 # Cairo
 find_package(Cairo 1.14 REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARIES})
 
 # Pango
 find_package(Pango 1.38 REQUIRED)

@@ -79,6 +79,7 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 }
 
 void Spline::populateCurve() {
+    #ifndef DISABLE_OPENNURBS
     //  std::cout << "Populating";
 
     // convert LC Spline Control points to nurbs type coordinates.
@@ -129,6 +130,7 @@ void Spline::populateCurve() {
             i++;
         }
     }
+    #endif
 }
 
 const std::vector<BB_CSPtr> Spline::beziers() const {
@@ -140,6 +142,7 @@ const std::vector<BB_CSPtr> Spline::beziers() const {
  * No external need to cast to bezier and then find intersections.
  */
 void Spline::generateBeziers() {
+    #ifndef DISABLE_OPENNURBS
     auto curve = _splineCurve.Duplicate();
     curve->MakePiecewiseBezier();
     ON_3dPoint p;
@@ -172,6 +175,7 @@ void Spline::generateBeziers() {
             }
         }
     }
+    #endif
 }
 
 void Spline::trimAtPoint(const geo::Coordinate& c) {

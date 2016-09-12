@@ -11,8 +11,15 @@ PROJECT (LC)
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
 option(WITH_QTUI "Build Qt graphical user interface" ON)
+option(WINDOWS_MSYS2 "Compile on Windows system" OFF)
 
-add_subdirectory("third_party/opennurbs_20130711")
+
+if(WINDOWS_MSYS2)
+    add_definitions(-DDISABLE_OPENNURBS=1)
+    set(G_EXTRA_LIBS "stdc++")
+else()
+    add_subdirectory("third_party/opennurbs_20130711")
+endif()
 
 ADD_SUBDIRECTORY("lckernel")
 ADD_SUBDIRECTORY("lcDXFDWG")
