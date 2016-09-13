@@ -96,27 +96,38 @@ MSYS2
 pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest
 ```
 
-Log4CXX:
-Use lastest code from repo : https://issues.apache.org/jira/browse/LOGCXX-463
-git://git.apache.org/log4cxx.git
+###Log4CXX:
+
+Use lastest code from repo : git://git.apache.org/log4cxx.git
+https://issues.apache.org/jira/browse/LOGCXX-463
+
 Put the source in /third_party/apache-log4cxx
 
+```
 ./autogen.sh
 ./configure
 make
 make install
+```
 
-LibDxfrw:
+###LibDxfrw:
 Get code from https://github.com/rvt/libdxfrw.git
-target_link_libraries(dxfrw stdc++)
+```
 cmake . 
 make
 make install
+```
 
-LibreCAD:
+###LibreCAD:
+```
 mkdir build
 cd build
 cmake -DWINDOWS_MSYS2=ON ..
+```
+
+Create symlinks for .so files with ```ln -s ../lc*/lib*.so```
+
+Replace paths in build/lcUI/path.lua with Windows-style pathes ```C:\msys64\…```
 
 Reading materials for feature usage
 =========

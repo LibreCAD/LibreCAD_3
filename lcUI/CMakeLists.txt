@@ -80,6 +80,9 @@ ui/resource.qrc)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)
+if(WINDOWS_MSYS2)
+    find_package(APR)
+endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -139,7 +142,8 @@ set(EXTRA_LIBS
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
-        ${LOG4CXX_LIBRARIES})
+        ${LOG4CXX_LIBRARIES}
+        ${APR_LIBRARIES})
 
 #Create library for unit tests
 if(WITH_UNITTESTS)

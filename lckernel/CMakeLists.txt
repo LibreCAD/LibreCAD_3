@@ -141,6 +141,9 @@ cad/math/helpermethods.h)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)
+if(WINDOWS_MSYS2)
+    find_package(APR)
+endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -175,7 +178,7 @@ foreach(dir ${dirs})
 endforeach()
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
-target_link_libraries(lckernel ${OPENNURBS_LIB} ${LOG4CXX_LIBRARIES} ${G_EXTRA_LIBS})
+target_link_libraries(lckernel ${OPENNURBS_LIB} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS})
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
