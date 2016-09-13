@@ -8,13 +8,15 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # LOG4CXX
 find_package(Log4CXX REQUIRED)
+if(WINDOWS_MSYS2)
+    find_package(APR)
+endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 # Cairo
 find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARIES})
 
 # Pango
 find_package(Pango REQUIRED)
@@ -67,4 +69,4 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
-target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${CURL_LIBRARIES} ${LOG4CXX_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
+target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${CURL_LIBRARIES} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)

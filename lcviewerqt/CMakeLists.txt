@@ -32,13 +32,15 @@ SET(QT_USE_QTDESIGNER ON)
 
 # LOG4CXX
 find_package(Log4CXX REQUIRED)
+if(WINDOWS_MSYS2)
+    find_package(APR)
+endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 # Cairo
 find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARIES})
 
 # Pango
 find_package(Pango REQUIRED)
@@ -74,5 +76,5 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(lcviewerqt SHARED ${lcviewerqt_srcs} ${lcviewerqt_hdrs})
-target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
+target_link_libraries(lcviewerqt ${Qt5_LIBRARIES} ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES}  Qt5::Designer  lcviewernoqt lckernel)
 

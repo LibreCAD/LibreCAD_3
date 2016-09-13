@@ -37,6 +37,7 @@ FIND_PATH(CAIRO_INCLUDE_DIRS
         ${PC_CAIRO_INCLUDEDIR}
         ${PC_CAIRO_INCLUDE_DIRS}
         "/opt/local/include/"
+        "${PROJECT_SOURCE_DIR}/../third_party/cairo/src"
         PATH_SUFFIXES cairo
         )
 
@@ -46,6 +47,7 @@ FIND_LIBRARY(CAIRO_LIBRARIES
         ${PC_CAIRO_LIBDIR}
         ${PC_CAIRO_LIBRARY_DIRS}
         "/opt/local/lib/"
+        "${PROJECT_SOURCE_DIR}/../third_party/cairo/lib"
         PATH_SUFFIXES cairo
         )
 

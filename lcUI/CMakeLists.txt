@@ -80,6 +80,9 @@ ui/resource.qrc)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)
+if(WINDOWS_MSYS2)
+    find_package(APR)
+endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -95,6 +98,10 @@ if( CMAKE_COMPILER_IS_GNUCXX)
 else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
+
+# LibbDXFRW
+find_package(LibDxfrw REQUIRED)
+include_directories(${LIBDXFRW_INCLUDE_DIR})
 
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
@@ -125,17 +132,18 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 set(EXTRA_LIBS
+        lcluascript
+        lcviewerqt
+        lcviewernoqt
+        lcdxfdwg
+        lckernel
+        ${LUA_LIBRARIES}
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
         ${LOG4CXX_LIBRARIES}
-        ${LUA_LIBRARIES}
-        lckernel
-        lcluascript
-        lcviewerqt
-        lcviewernoqt
-        lcdxfdwg)
+        ${APR_LIBRARIES})
 
 #Create library for unit tests
 if(WITH_UNITTESTS)

@@ -61,7 +61,7 @@ std::string loadFile(std::string url) {
 }
 
 std::ofstream ofile;
-cairo_status_t write_func (void * closure, const unsigned char *data, uint length) {
+cairo_status_t write_func (void * closure, const unsigned char *data, unsigned int length) {
 
     if (ofile.is_open())
         ofile.write((const char *)data, length);

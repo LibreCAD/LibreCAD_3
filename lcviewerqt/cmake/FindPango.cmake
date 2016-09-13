@@ -24,8 +24,15 @@ ELSE(PANGO_MIN_VERSION)
 ENDIF(PANGO_MIN_VERSION)
 
 IF(NOT PANGO_FOUND AND NOT PKG_CONFIG_FOUND)
-    FIND_PATH(PANGO_INCLUDE_DIRS pango.h)
-    FIND_LIBRARY(PANGO_LIBRARIES pango pangocairo)
+    FIND_PATH(PANGO_INCLUDE_DIRS
+            pango.h
+            HINTS
+            "${PROJECT_SOURCE_DIR}/../third_party/pango/pango")
+
+    FIND_LIBRARY(PANGO_LIBRARIES
+            pango pangocairo
+            HINTS
+            "${PROJECT_SOURCE_DIR}/../third_party/pango/lib")
 
     # Report results
     IF(PANGO_LIBRARIES AND PANGO_INCLUDE_DIRS)

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-
+#include "../const.h"
 #include "lualibrecadbridge.h"
 #include "lua-intf/LuaIntf/LuaIntf.h"
 
@@ -36,6 +35,5 @@
 #include <cad/interface/snapable.h>
 #include <cad/interface/metatype.h>
 
-
 struct lua_State;
-void lua_openlckernel(lua_State* L);
+void DLL_EXPORT lua_openlckernel(lua_State* L);

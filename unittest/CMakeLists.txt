@@ -21,6 +21,10 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
+# LibbDXFRW
+find_package(LibDxfrw REQUIRED)
+include_directories(${LIBDXFRW_INCLUDE_DIR})
+
 FIND_PACKAGE ( Threads REQUIRED )
 
 set(src

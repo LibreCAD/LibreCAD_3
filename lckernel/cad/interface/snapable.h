@@ -50,7 +50,7 @@ namespace lc {
              * Use this function in your snapPoints function to cleanup any additional point's and confirm to
              * the requirements of maxNumberOfSnapPoints and minDistanceToSnap
              */
-            static void snapPointsCleanup(std::vector<EntityCoordinate> &points, const geo::Coordinate &reference, const uint maxNumberOfSnapPoints, const double minDistanceToSnap) {
+            static void snapPointsCleanup(std::vector<EntityCoordinate> &points, const geo::Coordinate &reference, const unsigned int maxNumberOfSnapPoints, const double minDistanceToSnap) {
                 // Remove point's further away then given by minDistanceToSnap
                 Snapable::remove_ifDistanceGreaterThen(points, reference, minDistanceToSnap);
                 // Sort in order of distance
