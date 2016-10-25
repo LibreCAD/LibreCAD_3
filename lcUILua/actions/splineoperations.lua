@@ -17,7 +17,7 @@ function SplineOperations:_init(id)
 
     self.spline_id = ID():id()
     self.degree = 3
-    self.spline = self:getSpline({Coord(0,0)}, self.degree)
+    self.spline = nil
 
     event.register('point', self)
     event.register('mouseMove', self)
@@ -47,6 +47,10 @@ function SplineOperations:newPoint(point)
 end
 
 function SplineOperations:getSpline(points, degree)
+    if(#points <= degree) then
+        return nil
+    end
+
     local layer = active_layer()
     local metaInfo = active_metaInfo()
     local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, metaInfo)
@@ -57,7 +61,9 @@ function SplineOperations:getSpline(points, degree)
 end
 
 function SplineOperations:createTempSpline(point)
-    active_widget():tempEntities():removeEntity(self.spline)
+    if(self.spline ~= nil) then
+        active_widget():tempEntities():removeEntity(self.spline)
+    end
 
     local points = {}
     for k, v in pairs(self.points) do
@@ -67,22 +73,28 @@ function SplineOperations:createTempSpline(point)
 
     self.spline = self:getSpline(points, self.degree)
 
-    active_widget():tempEntities():addEntity(self.spline)
+    if(self.spline ~= nil) then
+        active_widget():tempEntities():addEntity(self.spline)
+    end
 end
 
 function SplineOperations:createSpline()
     local b = Builder(active_widget():document())
     local s = self:getSpline(self.points, self.degree)
-    b:append(s)
-    b:execute()
+    if(s ~= nil) then
+        b:append(s)
+        b:execute()
+    end
 end
 
 function SplineOperations:close()
     if(not self.finished) then
-        if(#self.points > 1) then
-            self:createSpline()
+        self:createSpline()
+
+        if(self.spline ~= nil) then
+            active_widget():tempEntities():removeEntity(self.spline)
         end
-        active_widget():tempEntities():removeEntity(self.spline)
+
         self.finished = true
 
         event.trigger('operationFinished')

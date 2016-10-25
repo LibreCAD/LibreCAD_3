@@ -1,4 +1,4 @@
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include "lcdimlinear.h"
 #include "endcaps.h"

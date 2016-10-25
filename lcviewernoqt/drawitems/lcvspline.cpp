@@ -1,5 +1,5 @@
 #include "lcvspline.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include <vector>
 #include "cad/geometry/geocoordinate.h"

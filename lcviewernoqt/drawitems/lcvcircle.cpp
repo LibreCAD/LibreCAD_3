@@ -1,5 +1,5 @@
 #include "lcvcircle.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
 LCVCircle::LCVCircle(const lc::entity::Circle_CSPtr circle) : LCVDrawItem(true), lc::entity::Circle(circle, true) {

@@ -1,5 +1,5 @@
 #include "lcvpoint.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
 

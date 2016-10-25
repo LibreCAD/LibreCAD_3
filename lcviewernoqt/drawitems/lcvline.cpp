@@ -1,5 +1,5 @@
 #include "lcvline.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include "cad/geometry/geovector.h"
 #include "cad/math/intersectionhandler.h"

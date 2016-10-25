@@ -1,6 +1,6 @@
 #include "lcdimension.h"
 
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>

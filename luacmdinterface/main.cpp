@@ -5,7 +5,7 @@
 #include <cad/dochelpers/storagemanagerimpl.h>
 #include <cad/operations/builder.h>
 #include <documentcanvas.h>
-#include <lccairopainter.tcc>
+#include <painters/lccairopainter.tcc>
 #include <drawables/gradientbackground.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <lcadluascript.h>

@@ -21,6 +21,7 @@ SET(PANGO_INCLUDE_HINTS
         $ENV{PANGO_ROOT}/include
         /usr/local/include
         /usr/include
+        /usr/lib #For glibconfig.h
         /pango/include
         ${PROJECT_SOURCE_DIR}/../third_party/pango
         )
@@ -28,6 +29,16 @@ FIND_PATH(PANGO_INCLUDE_DIR
         NAMES pango/pango.h
         HINTS ${PANGO_INCLUDE_HINTS}
         PATH_SUFFIXES pango pango-1.0 pango1.0
+        )
+FIND_PATH(GLIB_INCLUDE_DIR
+        NAMES glib.h
+        HINTS ${PANGO_INCLUDE_HINTS}
+        PATH_SUFFIXES glib glib-2 glib-2.0
+        )
+FIND_PATH(GLIBCONFIG_INCLUDE_DIR
+        NAMES glibconfig.h
+        HINTS ${PANGO_INCLUDE_HINTS}
+        PATH_SUFFIXES glib glib-2 glib-2.0 glib/include glib-2/include glib-2.0/include
         )
 
 SET(PANGO_LIBRARY_HINTS
@@ -47,7 +58,7 @@ FIND_LIBRARY(PANGO_LIBRARY
         PATH_SUFFIXES pango pango-1.0 pango1.0
         )
 
-SET(PANGO_INCLUDE_DIRS ${PANGO_INCLUDE_DIR})
+SET(PANGO_INCLUDE_DIRS ${PANGO_INCLUDE_DIR} ${GLIB_INCLUDE_DIR} ${GLIBCONFIG_INCLUDE_DIR})
 SET(PANGO_LIBRARIES ${PANGO_LIBRARY})
 
 INCLUDE(FindPackageHandleStandardArgs)

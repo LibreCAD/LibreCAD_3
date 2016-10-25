@@ -1,6 +1,6 @@
 #include "endcaps.h"
 #include <cmath>
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
 
