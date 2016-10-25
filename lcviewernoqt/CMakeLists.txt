@@ -29,6 +29,7 @@ drawitems/lcdimaligned.cpp
 drawitems/lcdimangular.cpp
 drawitems/lclwpolyline.cpp
 drawables/lccursor.cpp
+painters/createpainter.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
 managers/EventManager.cpp
@@ -66,8 +67,9 @@ events/mousemoveevent.h
 events/mousereleaseevent.h
 events/selecteditemsevent.h
 events/snappointevent.h
-lcpainter.h
-lccairopainter.tcc
+painters/lcpainter.h
+painters/createpainter.h
+painters/lccairopainter.tcc
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h

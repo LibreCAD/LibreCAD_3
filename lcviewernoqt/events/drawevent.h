@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cad/geometry/geoarea.h>
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 
 

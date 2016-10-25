@@ -1,6 +1,6 @@
 #include <cmath>
 #include "grid.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
 using namespace LCViewer;

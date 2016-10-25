@@ -25,7 +25,7 @@
 #include "drawitems/lcvspline.h"
 #include "drawitems/lcimage.h"
 
-#include "lcpainter.h"
+#include "painters/lcpainter.h"
 
 #include <cad/meta/metacolor.h>
 #include <cad/meta/metalinewidth.h>

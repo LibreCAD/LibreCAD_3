@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "lcpainter.h"
+#include "painters/lcpainter.h"
 
 #include "cad/dochelpers/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"

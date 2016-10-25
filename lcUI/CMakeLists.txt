@@ -24,6 +24,7 @@ set(UI_hdrs
 cadmdichild.h
 const.h
 luainterface.h
+lcadviewer.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -46,6 +47,7 @@ set(UI_srcs
 cadmdichild.cpp
 main.cpp
 luainterface.cpp
+lcadviewer.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
@@ -133,7 +135,6 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 
 set(EXTRA_LIBS
         lcluascript
-        lcviewerqt
         lcviewernoqt
         lcdxfdwg
         lckernel

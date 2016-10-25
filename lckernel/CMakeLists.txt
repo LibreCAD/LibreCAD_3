@@ -159,10 +159,6 @@ endif ()
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
-if(NOT WINDOWS_MSYS2)
-    set(OPENNURBS_LIB opennurbs)
-endif()
-
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
@@ -177,8 +173,8 @@ foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
 
-add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs} )
-target_link_libraries(lckernel ${OPENNURBS_LIB} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS})
+add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
+target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared)
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

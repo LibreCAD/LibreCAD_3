@@ -3,13 +3,11 @@
 #include "geobase.h"
 #include "geocoordinate.h"
 #include <vector>
-#ifndef DISABLE_OPENNURBS
-    #include "opennurbs_20130711/opennurbs.h"
-#endif
 #include "cad/base/visitor.h"
 #include "cad/geometry/geobezierbase.h"
 #include "cad/geometry/geobezier.h"
 #include "cad/geometry/geobeziercubic.h"
+#include <tinyspline/tinysplinecpp.h>
 
 namespace lc {
     namespace geo {
@@ -144,9 +142,8 @@ namespace lc {
                 const double _nX;  // normal vector x coordinate
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
-                #ifndef DISABLE_OPENNURBS
-                    ON_NurbsCurve _splineCurve;
-                #endif
+
+                ts::BSpline _splineCurve;
                 std::vector<BB_CSPtr> _beziers;
                 const splineflag _flags;
         };

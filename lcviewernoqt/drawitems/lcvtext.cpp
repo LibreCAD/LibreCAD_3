@@ -1,5 +1,5 @@
 #include "lcvtext.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include <cad/primitive/textconst.h>
 

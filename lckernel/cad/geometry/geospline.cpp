@@ -79,58 +79,24 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 }
 
 void Spline::populateCurve() {
-    #ifndef DISABLE_OPENNURBS
-    //  std::cout << "Populating";
+    try {
+        auto nbControlPoints = _controlPoints.size();
 
-    // convert LC Spline Control points to nurbs type coordinates.
-    ON_3dPointArray points;
-    for(const auto& p: _controlPoints) {
-        points.Append(ON_3dPoint(p.x(), p.y(), p.z()));
-    }
-    auto cpcount = _controlPoints.size();
+        _splineCurve = ts::BSpline(degree(), 3, nbControlPoints, TS_CLAMPED);
 
-    // UNIFORM OPEN CURVE
-    if(_flags == splineflag::PERIODIC) {
-        _splineCurve.CreatePeriodicUniformNurbs(3, _degree+1, cpcount, points);
-    }
-
-    // UNIFORM BUT CLOSED ONE
-    else if (_knotPoints.size()==0) {
-
-        _splineCurve.Create(3, false, _degree+1, cpcount);
-        auto i = 0;
-
-        for(auto i = 0; i < cpcount; i++) {
-            _splineCurve.SetCV(i, points[i]);
+        //Set control points
+        std::vector<tsRational> ts_controlPoints;
+        for (auto cp : _controlPoints) {
+            ts_controlPoints.push_back(cp.x());
+            ts_controlPoints.push_back(cp.y());
+            ts_controlPoints.push_back(cp.z());
         }
 
-        int knotcount = _degree+cpcount-1;
-
-        double* knots = new double[knotcount];
-        ON_MakeClampedUniformKnotVector(_degree+1, cpcount, knots);
-        for (int i=0; i<knotcount; ++i) {
-            _splineCurve.SetKnot(i, knots[i]);
-        }
-        delete knots;
+        _splineCurve.setCtrlp(ts_controlPoints);
     }
-
-    //  NON UNIFORM NURBS.
-    else if(knotPoints().size() > 0) {
-        _splineCurve.Create(3, false, _degree+1, cpcount);
-
-        // SET CP's
-        for(auto i = 0; i < cpcount; i++) {
-            _splineCurve.SetCV(i, points[i]);
-        }
-
-        // SET Knot vectors
-        auto i = 0;
-        for(const auto& kp: _knotPoints) {
-            _splineCurve.SetKnot(i, kp);
-            i++;
-        }
+    catch (std::runtime_error e) {
+        _splineCurve = ts::BSpline();
     }
-    #endif
 }
 
 const std::vector<BB_CSPtr> Spline::beziers() const {
@@ -142,40 +108,43 @@ const std::vector<BB_CSPtr> Spline::beziers() const {
  * No external need to cast to bezier and then find intersections.
  */
 void Spline::generateBeziers() {
-    #ifndef DISABLE_OPENNURBS
-    auto curve = _splineCurve.Duplicate();
-    curve->MakePiecewiseBezier();
-    ON_3dPoint p;
+    auto beziers = _splineCurve.toBeziers();
 
-    int deg = curve->Degree();
-    int cpcount = curve->CVCount();
+    int nbBeziers = beziers.nCtrlp() / _splineCurve.order();
+    int nbCoordinate = _splineCurve.order() * _splineCurve.dim();
 
-    if(deg==2) {
-        for (int i=0; i<deg+cpcount+2; ++i) {
-            ON_BezierCurve bc;
-            if (curve->ConvertSpanToBezier(i, bc)) {
-                std::vector<geo::Coordinate> bez;
-                for (int j=0; j<bc.CVCount(); j++) {
-                    bc.GetCV(j, p);
-                    bez.push_back(geo::Coordinate(p.x, p.y, p.z));
-                }
-                _beziers.push_back(std::make_shared<Bezier>(bez.at(0),bez.at(1),bez.at(2)));
+    if(_splineCurve.deg() == 2) {
+        for (int i = 0; i < nbBeziers; i++) {
+            std::vector<geo::Coordinate> bez;
+
+            auto j = nbCoordinate * i;
+            auto end = nbCoordinate * (i+1);
+
+            while(j < end) {
+                lc::geo::Coordinate cp(beziers.ctrlp()[j], beziers.ctrlp()[j+1], beziers.ctrlp()[j+2]);
+                bez.push_back(cp);
+                j = j + 3;
             }
+
+            _beziers.push_back(std::make_shared<Bezier>(bez.at(0),bez.at(1),bez.at(2)));
         }
-    } else if(deg==3) {
-        for (int i=0; i<deg+cpcount+2; ++i) {
-            ON_BezierCurve bc;
-            if (curve->ConvertSpanToBezier(i, bc)) {
-                std::vector<geo::Coordinate> bez;
-                for (int j=0; j<bc.CVCount(); j++) {
-                    bc.GetCV(j, p);
-                    bez.push_back(geo::Coordinate(p.x, p.y, p.z));
-                }
-                _beziers.push_back(std::make_shared<CubicBezier>(bez.at(0),bez.at(1),bez.at(2),bez.at(3)));
+    } else if(_splineCurve.deg() == 3) {
+        for (int i = 0; i < nbBeziers; i++) {
+            std::vector<geo::Coordinate> bez;
+
+            auto j = nbCoordinate * i;
+            auto end = nbCoordinate * (i+1);
+
+            while(j < end) {
+                lc::geo::Coordinate cp(beziers.ctrlp()[j], beziers.ctrlp()[j+1], beziers.ctrlp()[j+2]);
+                bez.push_back(cp);
+
+                j = j + 3;
             }
+
+            _beziers.push_back(std::make_shared<CubicBezier>(bez.at(0),bez.at(1),bez.at(2),bez.at(3)));
         }
     }
-    #endif
 }
 
 void Spline::trimAtPoint(const geo::Coordinate& c) {

@@ -1,5 +1,5 @@
 #include "lcimage.h"
-#include "../lcpainter.h"
+#include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include <cad/math/helpermethods.h>
 
