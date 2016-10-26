@@ -8,6 +8,11 @@ message(${CMAKE_SOURCE_DIR})
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# TINYSPLINE_DOUBLE_PRECISION
+add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+#This is defined here and in TinySpline CMakeLists.txt
+#Maybe we should build the TS lib in kernel
+
 # SOURCE FILES
 set(lckernel_srcs
 cad/base/cadentity.cpp

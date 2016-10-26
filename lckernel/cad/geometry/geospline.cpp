@@ -85,7 +85,7 @@ void Spline::populateCurve() {
         _splineCurve = ts::BSpline(degree(), 3, nbControlPoints, TS_CLAMPED);
 
         //Set control points
-        std::vector<tsRational> ts_controlPoints;
+        std::vector<ts::rational> ts_controlPoints;
         for (auto cp : _controlPoints) {
             ts_controlPoints.push_back(cp.x());
             ts_controlPoints.push_back(cp.y());
