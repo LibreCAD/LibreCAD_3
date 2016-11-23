@@ -38,9 +38,7 @@ endif ()
 
 # Boost
 set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_LIBS TRUE)
-#find_package(Boost COMPONENTS thread date_time program_options filesystem system REQUIRED)
-find_package(Boost COMPONENTS program_options filesystem REQUIRED)
+find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 message("Boost lib ${Boost_INCLUDE_DIRS}")
