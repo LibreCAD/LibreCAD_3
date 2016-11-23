@@ -89,7 +89,7 @@ include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 #Lua
-find_package(Lua 5.3 REQUIRED)
+find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARIES})
 

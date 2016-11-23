@@ -5,10 +5,14 @@
 #  CURL_LIBRARIES    - List of libraries when using curl.
 #  CURL_FOUND        - True if curl found.
 
+FIND_PACKAGE(PkgConfig)
+PKG_CHECK_MODULES(PC_CURL libcurl)
+
 # Look for the header file.
 FIND_PATH(CURL_INCLUDE_DIR curl/curl.h
+        ${PC_CURL_INCLUDEDIR}
         $ENV{INCLUDE}
-        "$ENV{LIB_DIR}/include"
+        $ENV{LIB_DIR}/include
         /usr/local/include
         /usr/include
         NO_DEFAULT_PATH
@@ -20,8 +24,9 @@ MARK_AS_ADVANCED(CURL_INCLUDE_DIR)
 FIND_LIBRARY(CURL_LIBRARY
         NAMES curl libcurl_imp
         PATHS
+        ${PC_CURL_LIBDIR}
         $ENV{LIB}
-        "$ENV{LIB_DIR}/lib"
+        $ENV{LIB_DIR}/lib
         /usr/local/lib
         /usr/lib
         NO_DEFAULT_PATH

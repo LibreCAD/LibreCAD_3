@@ -20,7 +20,7 @@ set(lcluascript_hdrs
     cad/timer.h)
 
 
-find_package(Lua 5.3 REQUIRED)
+find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARIES})
 
