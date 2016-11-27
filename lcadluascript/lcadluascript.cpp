@@ -500,16 +500,17 @@ local rx = 100;
 local ry = 100;
 local p =rx;
 local q=ry;
+local num=4;
 
 doc=active.document()
 ce=Builder(doc,em)
 layer = active.proxy.layerByName("0")
 local count=0
-while (d< 8*math.pi) do
+while (d< (2*num)*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
     local y=ry+(math.sin(d+(math.pi/2))*(d+(math.pi/2)) * r);
     if (d>0) then
-        ce:append(Line(Coord(x,y), Coord(p,q),layer));
+        ce:append(Line(Coord(x,y), Coord(p,q),layer, MetaInfo()));
     end
     p=x;
     q=y;
