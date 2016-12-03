@@ -140,7 +140,9 @@ namespace lc {
                                           const geo::Coordinate &scale_factor) const override;
 
             virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                    const geo::Coordinate& axis2) const override {}
+                    const geo::Coordinate& axis2) const override {
+                return NULL; // TODO: no return statement, not implemented in lwpolyline.cpp
+            }
 
             /**
             * @brief boundingBox of the entity

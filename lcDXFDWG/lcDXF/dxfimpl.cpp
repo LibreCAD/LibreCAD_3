@@ -534,8 +534,8 @@ bool DXFimpl::writeDXF(std::string& filename, DXF::version type) {
 
     if (!success) {
         std::cout << "can't write file";
-        return false;
     }
+    return success;
 }
 
 void DXFimpl::writePoint(const lc::entity::Point_CSPtr p) {
