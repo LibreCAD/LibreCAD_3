@@ -11,11 +11,35 @@ This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modulari
 Compilation Instructions
 ==========
 
-Install cairo  
-Install Qt 5  
-Install git  
-Install liblog4cxx  
-Install Google test  
+Required libraries
+----------
+
+1) cairo
+2) Pango
+3) Qt 5
+4) git
+5) liblog4cxx
+6) Google test
+7) Eigen 3
+8) Lua >= 5.2
+9) Curl
+10) Boost
+11) LibDxfRW (see compilation instruction after)
+
+LibDxfRW compilation
+----------
+```
+git clone https://github.com/rvt/libdxfrw
+cd libdxfrw
+mkdir release
+cd release
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+sudo make install
+```
+
+LibreCAD compilation
+----------
  
 ```
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
@@ -26,7 +50,6 @@ cmake .. (for a release you would use cmake -DCMAKE_BUILD_TYPE=Release ..)
 make -j 4
 ./lcUI/librecad
 ```
-
 
 OSX MacPorts
 ========
@@ -45,27 +68,16 @@ For a release build you would do:
 /opt/local/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
 ```
 
-MacPorts/brew might not have **libdxfrw** in it so you need to compile it yourself.
-
-```
-git clone https://github.com/rvt/libdxfrw
-cd libdxfrw
-mkdir release
-cd release
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
-sudo make install
-```
 
 OSX X-Code
 ========
 
-If you like X-Code as your editor you can ask cmake to generate the build file for you.  
-mkdir xcode  
-cd build  
-cmake -G Xcode ..  
+If you like X-Code as your editor you can ask cmake to generate the build file for you.
+mkdir xcode
+cd build
+cmake -G Xcode ..
 
-Then open the project in x-code and buikd.
+Then open the project in x-code and build.
 Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile **libdxfrw** yourself.
 
 ![X-Code add headers]
@@ -86,7 +98,7 @@ Ubuntu/Mint
 ========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev
 ```
 
 MSYS2
@@ -113,7 +125,7 @@ make install
 ###LibDxfrw:
 Get code from https://github.com/rvt/libdxfrw.git
 ```
-cmake . 
+cmake .
 make
 make install
 ```
