@@ -93,6 +93,24 @@ void Grid::draw(DrawEvent const & event) const {
 
     painter.source_rgba(_minorColor.red(), _minorColor.green(), _minorColor.blue(), _minorColor.alpha());
     painter.stroke();
+
+    // Origin marker drawing
+    double originRealSize = 30;
+    double someDouble = 30;
+    event.painter().device_to_user(&originRealSize, &someDouble);
+    double originSize = (originRealSize - zeroCornerX) / 2.0; // Calculation of the marker size in the viewer
+
+    painter.line_width(3);
+    event.painter().move_to(-originSize, 0.); // Drawing of marker in same principe as cursor
+    event.painter().line_to(originSize, 0.);
+    event.painter().source_rgba(1., 0., 0., 1.);
+    event.painter().stroke();
+
+    event.painter().move_to(0., -originSize);
+    event.painter().line_to(0., originSize);
+    event.painter().source_rgba(0., 1., 0., 1.);
+    event.painter().stroke();
+
     painter.restore();
 }
 
