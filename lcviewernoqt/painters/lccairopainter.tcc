@@ -13,6 +13,7 @@
 #include <pango/pangocairo.h>
 #include <mutex>
 #include <cad/geometry/geocoordinate.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #ifndef CAIRO_ANTIALIAS_GOOD
 #define CAIRO_ANTIALIAS_GOOD    CAIRO_ANTIALIAS_SUBPIXEL
 #endif
