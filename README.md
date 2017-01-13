@@ -98,17 +98,33 @@ Ubuntu/Mint
 ========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev
 ```
 
-MSYS2
+You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
+
+###Ubuntu 14.xx
+GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
+http://askubuntu.com/a/456849
+
+Windows
 ========
+
+###Bash for Windows 10
+This is the only way to get LibreCAD running on Windows at the moment.
+1) Follow the instructions for Ubuntu 14.04.
+
+2) Install Xming or any other X server for Windows
+
+3) Enter `export DISPLAY=:0` before running LibreCAD
+
+###MSYS2
 
 ```
 pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest
 ```
 
-###Log4CXX:
+####Log4CXX:
 
 Use lastest code from repo : git://git.apache.org/log4cxx.git
 https://issues.apache.org/jira/browse/LOGCXX-463
@@ -122,15 +138,7 @@ make
 make install
 ```
 
-###LibDxfrw:
-Get code from https://github.com/rvt/libdxfrw.git
-```
-cmake .
-make
-make install
-```
-
-###LibreCAD:
+####LibreCAD:
 ```
 mkdir build
 cd build
