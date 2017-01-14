@@ -13,6 +13,7 @@
 #include <pango/pangocairo.h>
 #include <mutex>
 #include <cad/geometry/geocoordinate.h>
+#include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #ifndef CAIRO_ANTIALIAS_GOOD
 #define CAIRO_ANTIALIAS_GOOD    CAIRO_ANTIALIAS_SUBPIXEL
@@ -80,7 +81,6 @@ public:
      */
     const long image_create(const std::string &file) {
         std::lock_guard<std::mutex> lck(_imageMapMutex);
-        long ret = -1;
 
         // test if we have this image already loaded
         for (auto i : _imageMap) {
@@ -89,20 +89,33 @@ public:
             }
         }
 
-        std::string lowercase = file;
-        std::transform(lowercase.begin(), lowercase.end(), lowercase.begin(), ::tolower);
-        cairo_surface_t *image_surface = nullptr;
-        // TODO: Make a better way to load images by extension, also, what about mime types for example when we plan to load images over
-        // URL's? (file:// .... or http:// .....)
-        if (lowercase.find(".png") != std::string::npos) {
-            image_surface = _create_image_map["png"](file.c_str());
-        }
+        // TODO: Support load files from URL
+        GError* gdkError = NULL;
+        GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(file.c_str(), &gdkError);
 
-        if (image_surface != nullptr) {
-            ret = ++_imageMapNum;
-            _imageMap.emplace(ret, Cairo_surface_store<cairo_surface_t *>(file, image_surface));
+        if(!pixbuf) {
+            std::cout << gdkError->message << std::endl;
+            g_error_free(gdkError);
+
+            return -1;
         }
-        return ret;
+        else {
+            cairo_surface_t* image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                                        gdk_pixbuf_get_width(pixbuf),
+                                                                        gdk_pixbuf_get_height(pixbuf)
+            );
+
+            cairo_t* context = cairo_create(image_surface);
+            gdk_cairo_set_source_pixbuf(context, pixbuf, 0, 0);
+            cairo_paint(context);
+
+            _imageMapNum++;
+            _imageMap.emplace(_imageMapNum, Cairo_surface_store<cairo_surface_t *>(file, image_surface));
+
+            cairo_destroy(context);
+            g_object_unref(pixbuf);
+            return _imageMapNum;
+        }
     };
 
     void image_destroy(long image) {
