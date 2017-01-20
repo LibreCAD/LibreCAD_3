@@ -2,9 +2,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LCVIEWERNOQT)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wno-missing-braces")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+message("***** LibreCAD lcviewernoqt *****")
 
 # SOURCE FILES
 set(viewer_srcs
@@ -37,6 +38,7 @@ managers/dragmanager.cpp
 drawitems/lcimage.cpp
 drawables/dragpoints.cpp
 drawables/tempentities.cpp
+drawables/CursorLocation.cpp
 )
 
 # HEADER FILES
@@ -80,6 +82,7 @@ drawitems/lcimage.h
 drawables/dragpoints.h
 events/dragpointsevent.h
 drawables/tempentities.h
+drawables/CursorLocation.h
 )
 
 # Cairo
@@ -113,10 +116,5 @@ endif ()
 
 # DEBUGING PATHS
 
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-#foreach(dir ${dirs})
-#  message(STATUS "dir='${dir}'")
-#endforeach()
-
-add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs}   drawables/CursorLocation.cpp drawables/CursorLocation.h)
+add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} lckernel)

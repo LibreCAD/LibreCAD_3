@@ -47,8 +47,7 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-unset(_lua_include_subdirs)
-unset(_lua_library_names)
+unset(_lua_versions)
 
 # this is a function only to have all the variables inside go away automatically
 function(set_lua_version_vars)
@@ -76,55 +75,60 @@ function(set_lua_version_vars)
         set(lua_append_versions ${LUA_VERSIONS5})
     endif ()
 
-    foreach (ver IN LISTS lua_append_versions)
-        string(REGEX MATCH "^([0-9]+)\\.([0-9]+)$" _ver "${ver}")
-        list(APPEND _lua_include_subdirs
-             include/lua${CMAKE_MATCH_1}${CMAKE_MATCH_2}
-             include/lua${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
-             include/lua-${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
-        )
-        list(APPEND _lua_library_names
-             lua${CMAKE_MATCH_1}${CMAKE_MATCH_2}
-             lua${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
-             lua-${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
-             lua.${CMAKE_MATCH_1}.${CMAKE_MATCH_2}
-        )
-    endforeach ()
-
-    set(_lua_include_subdirs "${_lua_include_subdirs}" PARENT_SCOPE)
-    set(_lua_library_names "${_lua_library_names}" PARENT_SCOPE)
+    set(_lua_versions "${lua_append_versions}" PARENT_SCOPE)
 endfunction(set_lua_version_vars)
 
 set_lua_version_vars()
 
-find_path(LUA_INCLUDE_DIR lua.h
-  HINTS
-    ENV LUA_DIR
-  PATH_SUFFIXES ${_lua_include_subdirs} include/lua include
-  PATHS
-  ~/Library/Frameworks
-  /Library/Frameworks
-  /sw # Fink
-  /opt/local # DarwinPorts
-  /opt/csw # Blastwave
-  /opt
-)
-unset(_lua_include_subdirs)
+foreach(version IN LISTS _lua_versions)
+    string(REGEX REPLACE "([0-9]).([0-9])" "\\1\\2" version_nodot ${version})
 
-find_library(LUA_LIBRARY
-  NAMES ${_lua_library_names} lua
-  HINTS
-    ENV LUA_DIR
-  PATH_SUFFIXES lib
-  PATHS
-  ~/Library/Frameworks
-  /Library/Frameworks
-  /sw
-  /opt/local
-  /opt/csw
-  /opt
-)
-unset(_lua_library_names)
+    find_path(LUA_INCLUDE_DIR lua.h
+            HINTS
+            ENV LUA_DIR
+            PATH_SUFFIXES
+                include/lua${version}
+                include/lua${version_nodot}
+                include/lua
+                include
+            PATHS
+                /usr
+                ~/Library/Frameworks
+                /Library/Frameworks
+                /sw # Fink
+                /opt/local # DarwinPorts
+                /opt/csw # Blastwave
+                /opt
+    )
+
+    find_library(LUA_LIBRARY
+            NAMES
+                lua${version}
+                lua${version_nodot}
+                lua
+            HINTS
+            ENV LUA_DIR
+            PATH_SUFFIXES lib
+            PATHS
+                /usr
+                ~/Library/Frameworks
+                /Library/Frameworks
+                /sw
+                /opt/local
+                /opt/csw
+                /opt
+    )
+
+    if(LUA_INCLUDE_DIR AND LUA_LIBRARY)
+        message(STATUS "Found Lua ${version} include dir: ${LUA_INCLUDE_DIR}")
+        message(STATUS "Found Lua ${version} library: ${LUA_LIBRARY}")
+        break()
+    endif()
+endforeach()
+
+if(NOT LUA_INCLUDE_DIR AND NOT LUA_LIBRARY)
+    message(FATAL_ERROR "Lua not found")
+endif()
 
 if (LUA_LIBRARY)
     # include the math library for Unix

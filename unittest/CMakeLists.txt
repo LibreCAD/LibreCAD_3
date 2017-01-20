@@ -2,7 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (UnitTest)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wno-missing-braces")
+
+message("***** LibreCAD unit tests *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -45,11 +46,12 @@ set(hdrs
 lckernel/primitive/entitytest.h
 lckernel/math/code.h
 )
-if(WITH_QTUI)
+if(WITH_QT_UI)
     find_package(Qt5Widgets)
     find_package(Qt5Core)
     find_package(Qt5Gui REQUIRED)
     find_package(Qt5Test)
+    find_package(Qt5UiTools REQUIRED)
 
     set(EXTRA_LIBS
             ${EXTRA_LIBS}
@@ -57,6 +59,7 @@ if(WITH_QTUI)
             Qt5::Core
             Qt5::Gui
             Qt5::Widgets
+            Qt5::UiTools
             Qt5::Test)
     set(hdrs
             ${hdrs}
@@ -85,7 +88,7 @@ if(WITH_QTUI)
     #Lua
     find_package(Lua 5.2 REQUIRED)
     include_directories(${LUA_INCLUDE_DIR})
-endif(WITH_QTUI)
+endif(WITH_QT_UI)
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")

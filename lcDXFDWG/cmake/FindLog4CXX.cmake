@@ -12,20 +12,21 @@
 ################################################################################
 
 include(FindPackageHandleStandardArgs)
+find_package(PkgConfig)
 
 set(LOG4CXX_INC_LIST
         "/usr/include"
         "/usr/local/include"
         "/mingw32/include"
         "/mingw64/include"
-        )
+)
 
 set(LOG4CXX_LIB_LIST
         "/usr/lib"
         "/usr/local/lib"
         "/mingw32/lib"
         "/mingw64/lib"
-        )
+)
 
 # If LOG4CXX_ROOT is available, set up our hints
 if(LOG4CXX_ROOT)
@@ -34,11 +35,24 @@ if(LOG4CXX_ROOT)
             "${LOG4CXX_ROOT}/src/main/include"
             "${LOG4CXX_ROOT}/include"
             "${LOG4CXX_ROOT}"
-            )
+    )
 
     # Libraries all
     list(APPEND LOG4CXX_LIB_LIST "${LOG4CXX_ROOT}/lib")
 endif()
+
+#Search lib on pkg-config
+pkg_search_module(PC_LOG4CXX "liblog4cxx")
+
+if(PC_LOG4CXX_FOUND)
+    list(APPEND LOG4CXX_INC_LIST
+            ${PC_LOG4CXX_INCLUDEDIR}
+    )
+
+    list(APPEND LOG4CXX_LIB_LIST
+            ${PC_LOG4CXX_LIBDIR}
+    )
+endif(PC_LOG4CXX_FOUND)
 
 # Find headers
 find_path(
@@ -71,27 +85,11 @@ if(LOG4CXX_FOUND)
         LIST(APPEND LOG4CXX_LIBRARIES optimized ${LOG4CXX_LIBRARY})
     endif()
 
-    if(WINDOWS_MSYS2)
-        find_library(
-                APR_LIBRARY
-                NAMES
-                apr apr-1 apr-1.dll
-                HINTS
-                ${LOG4CXX_LIB_LIST}
-        )
-        LIST(APPEND LOG4CXX_LIBRARIES ${APR_LIBRARY})
-
-        find_library(
-                APRUTIL_LIBRARY
-                NAMES
-                aprutil aprutil-1 aprutil-1.dll
-                HINTS
-                ${LOG4CXX_LIB_LIST}
-        )
-        LIST(APPEND LOG4CXX_LIBRARIES ${APRUTIL_LIBRARY})
-    endif()
     # Link dirs
     get_filename_component(LOG4CXX_LIBRARY_DIRS ${LOG4CXX_LIBRARY} PATH)
+
+    message(STATUS "Found log4cxx include dirs: ${LOG4CXX_INCLUDE_DIRS}")
+    message(STATUS "Found log4cxx library: ${LOG4CXX_LIBRARY}")
 else()
     message(FATAL_ERROR "LOG4CXX library not found")
 endif()
