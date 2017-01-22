@@ -1,20 +1,21 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
-PROJECT (LCKERNEL)
-ADD_DEFINITIONS(-std=c++14)
-ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wno-missing-braces")
+cmake_minimum_required(VERSION 2.8.11)
+project(LCKERNEL)
 
-message(${CMAKE_SOURCE_DIR})
+add_definitions("-Wall")
+
+#Include TinySpline
+add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+add_subdirectory("tinyspline")
+
+add_definitions(-std=c++14)
+
+message("***** LibreCAD kernel *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# TINYSPLINE_DOUBLE_PRECISION
-add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
-#This is defined here and in TinySpline CMakeLists.txt
-#Maybe we should build the TS lib in kernel
-
 # SOURCE FILES
 set(lckernel_srcs
+version.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -66,6 +67,7 @@ cad/math/helpermethods.cpp
 
 # HEADER FILES
 set(lckernel_hdrs
+version.h
 cad/const.h
 cad/base/id.h
 cad/base/cadentity.h
@@ -142,23 +144,21 @@ cad/primitive/textconst.h
 cad/functions/string_helper.h
 cad/primitive/beziercurve.h
 cad/primitive/image.h
-cad/math/helpermethods.h)
+cad/math/helpermethods.h
+version.h version.h)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)
-if(WINDOWS_MSYS2)
-    find_package(APR)
-endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
-if( CMAKE_COMPILER_IS_GNUCXX)
-    include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
-else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
-endif ()
+if(CMAKE_COMPILER_IS_GNUCXX)
+    include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+else()
+    include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
 
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
@@ -172,14 +172,23 @@ else()
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
 endif()
 
-# DEBUGGING PATHS
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
+#Create version.cpp
+add_custom_command(
+        PRE_BUILD
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
+        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        DEPENDS always_rebuild
+)
+
+# Anything that depends on this will always be rebuilt.
+add_custom_command(
+        OUTPUT always_rebuild
+        COMMAND ${CMAKE_COMMAND} -E echo
+)
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
 target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared)
+
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)

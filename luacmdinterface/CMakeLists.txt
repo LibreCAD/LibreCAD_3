@@ -2,15 +2,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LudaCmdInterface)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wno-missing-braces")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+message("***** Lua command line interface *****")
+
 # LOG4CXX
 find_package(Log4CXX REQUIRED)
-if(WINDOWS_MSYS2)
-    find_package(APR)
-endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -61,9 +59,10 @@ endif()
 
 
 set(src
-main.cpp
+    main.cpp
 )
 set(hdrs
+
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})

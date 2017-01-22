@@ -8,7 +8,7 @@
 #   Disable C++11 specific features in C++ interface.
 ###############################################################################
 # TINYSPLINE_DOUBLE_PRECISION
-option(TINYSPLINE_DOUBLE_PRECISION "Build TinySpline with double precision" ON)
+option(TINYSPLINE_DOUBLE_PRECISION "Build TinySpline with double precision" OFF)
 
 # TINYSPLINE_DISABLE_CXX11_FEATURES
 option(TINYSPLINE_DISABLE_CXX11_FEATURES "Build TinySpline without C++11 features" OFF)
