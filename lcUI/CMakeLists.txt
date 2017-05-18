@@ -100,11 +100,6 @@ find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARIES})
 
-# LibbDXFRW
-find_package(LibDxfrw REQUIRED)
-include_directories(${LIBDXFRW_INCLUDE_DIR})
-link_directories(${LIBDXFRW_LIBRARY})
-
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)

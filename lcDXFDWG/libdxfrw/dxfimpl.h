@@ -4,6 +4,8 @@
 #include <drw_interface.h>
 #include <drw_base.h>
 #include <iostream>
+#include "../file.h"
+#include "../generic/helpers.h"
 
 #include <cad/document/document.h>
 #include <cad/document/storagemanager.h>
@@ -18,18 +20,6 @@
 #include <tuple>
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
-
-namespace DXF {
-enum class version {
-    R12,
-    R14,
-    R2000,
-    R2004,
-    R2007,
-    R2010,
-    R2013
-};
-}
 
 class DXFimpl : public DRW_Interface {
     public:
@@ -81,7 +71,7 @@ class DXFimpl : public DRW_Interface {
 
 
         // WRITE FUNCTIONALITY
-        bool writeDXF(std::string& filename, DXF::version type);
+        bool writeDXF(const std::string& filename, lc::File::Type type);
 
         virtual void writeHeader(DRW_Header &data) override { }
         virtual void writeBlocks() override { }
@@ -132,7 +122,7 @@ class DXFimpl : public DRW_Interface {
                     mlw=std::dynamic_pointer_cast<const T>(tmp);
                 default:
                     if (lw >= DRW_LW_Conv::lineWidth::width00 && lw <= DRW_LW_Conv::lineWidth::width23) {
-                        mlw=DXFimpl::_intToLineWidth[lw];
+                        mlw = std::make_shared<lc::MetaLineWidthByValue>(lc::FileHelpers::intToLW(lw).width());
                     }
             }
 
@@ -162,7 +152,6 @@ class DXFimpl : public DRW_Interface {
     private:
         lc::iColor icol;
 
-        std::shared_ptr<lc::MetaLineWidthByValue> _intToLineWidth[24];
         std::vector<DRW_Image> imageMapCache;
 
 };

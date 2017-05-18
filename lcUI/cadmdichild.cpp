@@ -5,10 +5,10 @@
 #include "cad/dochelpers/storagemanagerimpl.h"
 #include "cad/dochelpers/documentimpl.h"
 
-#include "cadmdichild.h"
-// #include "lcDWG/dwgimpl.h"
 #include <QMenu>
 #include <cad/operations/layerops.h>
+#include <file.h>
+#include <QtWidgets/QFileDialog>
 
 
 using namespace LCViewer;
@@ -110,29 +110,66 @@ void CadMdiChild::newDocument() {
 }
 
 
-void CadMdiChild::import(std::string path) {
-    // This might not always work on operating system's that doesn't support extends well, like OS/X
-    std::string ext = path.substr(path.length() - 3, 3);
-    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-    if (ext == "dxf") {
-        auto builder = std::make_shared<lc::operation::Builder>(document());
-        DXFimpl *F = new DXFimpl(_document, builder);
-        dxfRW R(path.c_str());
-        R.read(F, true);
-        builder->execute();
-    } else if (ext == "dwg" || ext == "DWG") {
-        // DWGimpl* F = new DWGimpl(_storageManager, _document);
-        // F->readFile((char*)path.c_str());
-        // _document = F->document();
-        //_storageManager = F->storageManager();
-        std::cerr << "Sorry, not compiled with DWG support";
+bool CadMdiChild::openFile() {
+    auto file = QFileDialog::getOpenFileName();
+
+    if(file == "") {
+        return false;
     }
+
+    auto fileInfo = QFileInfo(file);
+
+    auto ext = fileInfo.suffix().toStdString();
+    auto availableLibraries = lc::File::getAvailableLibrariesForFormat(ext);
+
+    if(availableLibraries.size() > 0) {
+        //TODO: if more than once, ask which one to choose
+        newDocument();
+        lc::File::open(_document, file.toStdString(), availableLibraries.begin()->first);
+    }
+    else {
+        return false;
+    }
+
+    return true;
 }
 
 
-void CadMdiChild::exportDXF(std::string& str, DXF::version lcv) {
-    DXFimpl* F = new DXFimpl(_document);
-    F->writeDXF(str, lcv);
+void CadMdiChild::saveFile() {
+    QString filterList;
+    QString selectedFilter;
+    lc::File::Type type;
+    auto availableTypes = lc::File::getAvailableFileTypes();
+
+    if(availableTypes.size() == 0) {
+        return;
+        //TODO: show an error here
+    }
+
+    auto it = availableTypes.begin();
+    type = it->first;
+    filterList = it->second.c_str();
+    it++;
+
+    while(it != availableTypes.end()) {
+        filterList += ";;";
+        filterList += it->second.c_str();
+
+        it++;
+    }
+
+    auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
+
+    auto selectedType = selectedFilter.toStdString();
+
+    for(auto availableType : availableTypes) {
+        if(selectedType == availableType.second) {
+            type = availableType.first;
+            break;
+        }
+    }
+
+    lc::File::save(_document, file.toStdString(), type);
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {

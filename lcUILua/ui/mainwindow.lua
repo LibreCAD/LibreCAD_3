@@ -2,20 +2,17 @@ op = {}
 
 --Create empty new window
 function new_file()
-    new_document()
+    local cadMdiChild = lc.CadMdiChild()
+    cadMdiChild:newDocument()
+
+    addCadMdiChild(cadMdiChild)
 end
 
---Create open file dialog, and create a new window containing this file
 function open_file()
-    local fileName = qt.QFileDialog.getOpenFileName(
-        mainWindow,
-        qt.QObject.tr("Open File"),
-        qt.QString(""),
-        qt.QObject.tr("dxf(*.dxf);;dwg(*.dwg)")
-    )
-
-    if(not fileName:isEmpty()) then
-        new_document(fileName:toStdString())
+    -- @todo: It could be better if we create the CadMdiChild only if the filename is correct
+    local cadMdiChild = lc.CadMdiChild()
+    if(cadMdiChild:openFile()) then
+        addCadMdiChild(cadMdiChild)
     end
 end
 
@@ -25,20 +22,7 @@ function save_file()
         return
     end
 
-    local fileName = qt.QFileDialog.getSaveFileName(
-        mainWindow,
-        qt.QObject.tr("Save File"),
-        qt.QString(""),
-        qt.QObject.tr("dxf(*.dxf);;dwg(*.dwg)")
-    )
-
-    if(not fileName:isEmpty()) then
-        if(active_widget() == nil) then
-            return
-        end
-
-        active_widget():exportDXF(fileName:toStdString(), 6)
-    end
+    active_widget():saveFile()
 end
 
 --Return the selected layer

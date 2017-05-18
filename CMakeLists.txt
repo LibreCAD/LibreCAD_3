@@ -4,6 +4,7 @@ project(LC)
 option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
+option(WITH_LIBOPENCAD "Use libopencad" ON)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
@@ -26,6 +27,7 @@ message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
 message("  - Unit tests: ${WITH_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
+message("  - Use libopencad: ${WITH_LIBOPENCAD}")
 
 message("\n")
 

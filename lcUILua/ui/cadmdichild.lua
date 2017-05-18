@@ -46,13 +46,10 @@ local function mouseRelease()
     event.trigger('selectionChanged')
 end
 
--- Create a new window containing an empty document
-function new_document(fileName)
-    local cadMdiChild = lc.CadMdiChild()
-    cadMdiChild:newDocument()
-
-    if(fileName ~= nil) then
-        cadMdiChild:import(fileName)
+-- Add a new CadMdiChild
+function addCadMdiChild(cadMdiChild)
+    if(cadMdiChild == nil) then
+        return
     end
 
     cadMdiChild:viewer():autoScale()
@@ -69,8 +66,6 @@ function new_document(fileName)
     local id = nextTableId(op)
     op[id] = Operations(id)
     cadMdiChild.id = id
-
-    return cadMdiChild
 end
 
 -- Undo last operation of the current window
