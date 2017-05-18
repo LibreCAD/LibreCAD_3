@@ -23,8 +23,15 @@ namespace lc {
             private:
                 Layer_SPtr addLayer(const CADLayer& layer);
                 void addGeometry(lc::Layer_SPtr layer, const CADGeometry* geometry);
+
                 void addArc(lc::Layer_SPtr layer, const CADArc* arc);
+                void addLine(lc::Layer_SPtr layer, const CADLine* line);
+                void addCircle(lc::Layer_SPtr layer, const CADCircle* circle);
+                void addEllipse(lc::Layer_SPtr layer, const CADEllipse* ellipse);
+                void addLWPolyline(lc::Layer_SPtr layer, const CADLWPolyline* lwPolyline);
+
                 lc::MetaInfo_SPtr metaInfo(const CADGeometry* geometry);
+                lc::geo::Coordinate toLcPostiton(const CADVector& position);
 
                 Document_SPtr _document;
                 lc::operation::Builder_SPtr _builder;
