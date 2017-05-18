@@ -138,19 +138,20 @@ bool CadMdiChild::openFile() {
 void CadMdiChild::saveFile() {
     QString filterList;
     QString selectedFilter;
+    lc::File::Type type;
+    auto availableTypes = lc::File::getAvailableFileTypes();
 
-    auto availableFilters = lc::File::getAvailableFileTypes();
-
-    if(availableFilters.size() == 0) {
+    if(availableTypes.size() == 0) {
         return;
         //TODO: show an error here
     }
 
-    auto it = availableFilters.begin();
+    auto it = availableTypes.begin();
+    type = it->first;
     filterList = it->second.c_str();
     it++;
 
-    while(it != availableFilters.end()) {
+    while(it != availableTypes.end()) {
         filterList += ";;";
         filterList += it->second.c_str();
 
@@ -158,8 +159,17 @@ void CadMdiChild::saveFile() {
     }
 
     auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
-    //TODO: append extension if needed
-    lc::File::save(_document, file.toStdString(), lc::File::LIBDXFRW_DXF_R2013);
+
+    auto selectedType = selectedFilter.toStdString();
+
+    for(auto availableType : availableTypes) {
+        if(selectedType == availableType.second) {
+            type = availableType.first;
+            break;
+        }
+    }
+
+    lc::File::save(_document, file.toStdString(), type);
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {
