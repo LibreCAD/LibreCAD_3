@@ -61,6 +61,10 @@ find_library(LIBDXFRW_LIBRARY
 )
 mark_as_advanced(LIBDXFRW_LIBRARY)
 
-
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibDxfrw DEFAULT_MSG LIBDXFRW_LIBRARY LIBDXFRW_INCLUDE_DIR)
+
+if(LibDxfrw_FOUND)
+	message(STATUS "Found libDxfrw include dir: ${LIBDXFRW_INCLUDE_DIR}")
+	message(STATUS "Found libDxfrw library: ${LIBDXFRW_LIBRARY}")
+endif(LibDxfrw_FOUND)

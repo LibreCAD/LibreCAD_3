@@ -15,11 +15,12 @@
 #include <drawables/gradientbackground.h>
 #include <drawables/grid.h>
 #include <drawables/dragpoints.h>
-#include <lcDXF/dxfimpl.h>
 #include <drawables/tempentities.h>
 
 #include <managers/snapmanagerimpl.h>
 #include "cad/dochelpers/undomanagerimpl.h"
+
+#include <file.h>
 
 extern "C"
 {
@@ -45,9 +46,9 @@ class CadMdiChild : public QWidget {
         /**
          * \brief Load existing file.
          * \param path Path to file
-         * A new document must be created first.
+         * \return bool True if the file was correctly opened, false otherwise.
          */
-        void import(std::string path);
+        bool openFile();
 
         /**
          * \brief Give function to call when window is destroyed
@@ -85,7 +86,7 @@ class CadMdiChild : public QWidget {
 		 * This function was added for Lua which can't access EntityContainer functions
 		 */
 		std::vector<lc::entity::CADEntity_SPtr> selection();
-        void exportDXF(std::string& str, DXF::version lcv);
+        void saveFile();
 
         /**
          * \brief Get window ID

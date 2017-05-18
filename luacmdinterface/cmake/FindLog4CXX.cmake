@@ -18,14 +18,14 @@ set(LOG4CXX_INC_LIST
         "/usr/local/include"
         "/mingw32/include"
         "/mingw64/include"
-        )
+)
 
 set(LOG4CXX_LIB_LIST
         "/usr/lib"
         "/usr/local/lib"
         "/mingw32/lib"
         "/mingw64/lib"
-        )
+)
 
 # If LOG4CXX_ROOT is available, set up our hints
 if(LOG4CXX_ROOT)
@@ -34,11 +34,25 @@ if(LOG4CXX_ROOT)
             "${LOG4CXX_ROOT}/src/main/include"
             "${LOG4CXX_ROOT}/include"
             "${LOG4CXX_ROOT}"
-            )
+    )
 
     # Libraries all
     list(APPEND LOG4CXX_LIB_LIST "${LOG4CXX_ROOT}/lib")
 endif()
+
+#Search lib on pkg-config
+find_package(PkgConfig)
+pkg_search_module(PC_LOG4CXX "liblog4cxx")
+
+if(PC_LOG4CXX_FOUND)
+    list(APPEND LOG4CXX_INC_LIST
+            ${PC_LOG4CXX_INCLUDEDIR}
+    )
+
+    list(APPEND LOG4CXX_LIB_LIST
+            ${PC_LOG4CXX_LIBDIR}
+    )
+endif(PC_LOG4CXX_FOUND)
 
 # Find headers
 find_path(
@@ -73,6 +87,9 @@ if(LOG4CXX_FOUND)
 
     # Link dirs
     get_filename_component(LOG4CXX_LIBRARY_DIRS ${LOG4CXX_LIBRARY} PATH)
+
+    message(STATUS "Found log4cxx include dirs: ${LOG4CXX_INCLUDE_DIRS}")
+    message(STATUS "Found log4cxx library: ${LOG4CXX_LIBRARY}")
 else()
     message(FATAL_ERROR "LOG4CXX library not found")
 endif()

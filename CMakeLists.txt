@@ -1,41 +1,59 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
-PROJECT (LC)
+cmake_minimum_required(VERSION 2.8.11)
+project(LC)
 
-#option(ENABLE_MY_ASSERT "Turn on NDEBUG checks" OFF)
-#if(NDEBUG)
-#  add_definitions(-DNDEBUG=1)
-#else()
-#  add_definitions(-DNDEBUG=0)
-#endif()
-
+option(WITH_QT_UI "With QT user interface" ON)
+option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
+option(WITH_LIBOPENCAD "Use libopencad" ON)
+
+#make doc/tests ?
+option(WITH_DOCUMENTATION "Build documentation" OFF)
+
 option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
-option(WITH_QTUI "Build Qt graphical user interface" ON)
-option(WINDOWS_MSYS2 "Compile on Windows system" OFF)
 
-
-if(WINDOWS_MSYS2)
-    add_definitions(-DDISABLE_OPENNURBS=1)
-    add_definitions(-DWINDOWS_MSYS2=1)
-    set(G_EXTRA_LIBS "stdc++")
+#Try to find version
+if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
+    file(READ "${CMAKE_SOURCE_DIR}/lckernel/version.h" FILE_VERSION_H REGEX "^#define")
+    string(REGEX REPLACE ".*#define VERSION_MAJOR ([0-9]+).*" "\\1" VERSION_MAJOR ${FILE_VERSION_H})
+    string(REGEX REPLACE ".*#define VERSION_MINOR ([0-9]+).*" "\\1" VERSION_MINOR ${FILE_VERSION_H})
 endif()
 
-ADD_SUBDIRECTORY("third_party/tinyspline")
+#Print infos about compilation
+message("***** LibreCAD *****")
+message("Version: ${VERSION_MAJOR}.${VERSION_MINOR}\n")
+message("Options:")
+message("  - Qt user interface: ${WITH_QT_UI}")
+message("  - Lua command line interface: ${WITH_LUACMDINTERFACE}")
+message("  - Unit tests: ${WITH_UNITTESTS}")
+message("  - Documentation: ${WITH_DOCUMENTATION}")
+message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
+message("  - Use libopencad: ${WITH_LIBOPENCAD}")
 
-ADD_SUBDIRECTORY("lckernel")
-ADD_SUBDIRECTORY("lcDXFDWG")
+message("\n")
 
-add_definitions(-DUSE_lcDXFDWG=1)
+#Add each LibreCAD component
+add_subdirectory("lckernel")
+add_subdirectory("lcUILua")
+add_subdirectory("lcadluascript")
 
-ADD_SUBDIRECTORY("lcviewernoqt")
-ADD_SUBDIRECTORY("lcadluascript")
-if(WITH_QTUI)
-    add_definitions(-DWITH_QTUI=${WITH_QTUI})
-    ADD_SUBDIRECTORY("lcUI")
-endif(WITH_QTUI)
-ADD_SUBDIRECTORY("lcUILua")
+if(WITH_LCDXFDWG)
+    add_subdirectory("lcDXFDWG")
+    add_definitions(-DUSE_lcDXFDWG=1)
+else()
+    add_definitions(-DUSE_lcDXFDWG=0)
+endif()
+
+add_subdirectory("lcviewernoqt")
+
+if(WITH_QT_UI)
+    add_definitions(-DWITH_QTUI)
+    add_subdirectory("lcUI")
+endif(WITH_QT_UI)
+
+if(WITH_LUACMDINTERFACE)
+    add_subdirectory("luacmdinterface")
+endif(WITH_LUACMDINTERFACE)
 
 if(WITH_UNITTESTS)
-    ADD_SUBDIRECTORY("unittest")
+    add_subdirectory("unittest")
 endif()
-ADD_SUBDIRECTORY("luacmdinterface")

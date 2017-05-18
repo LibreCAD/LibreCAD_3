@@ -6,14 +6,22 @@ ADD_DEFINITIONS("-Wall")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+message("***** LibreCAD lcDXFDWG *****")
+
 # HEADER FILES
 set(lcdxfdwg_srcs
-        lcDXF/dxfimpl.cpp
+        libdxfrw/dxfimpl.cpp
+        file.cpp
+        libopencad_interface/libopencad.cpp
+        generic/helpers.cpp
 )
 
 set(lcdxfdwg_hdrs
-        lcDXF/dxfimpl.h
-        )
+        libdxfrw/dxfimpl.h
+        file.h
+        libopencad_interface/libopencad.h
+        generic/helpers.h
+)
 
 # LibbDXFRW
 find_package(LibDxfrw REQUIRED)
@@ -48,6 +56,16 @@ else ()
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
 endif ()
 
+if(WITH_LIBOPENCAD)
+    set(BUILD_SHARED_LIBS ON)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libopencad/lib")
+    link_directories("${CMAKE_CURRENT_BINARY_DIR}/libopencad/lib")
+
+    add_subdirectory("libopencad")
+
+    set(OPENCAD_LIB opencad)
+endif()
+
 # DEBUGING PATHS
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
@@ -56,7 +74,7 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(lcdxfdwg SHARED ${lcdxfdwg_srcs} ${lcdxfdwg_hdrs})
-target_link_libraries(lcdxfdwg lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES})
+target_link_libraries(lcdxfdwg lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
 install(TARGETS lcdxfdwg DESTINATION lib)

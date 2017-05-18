@@ -14,7 +14,7 @@ Compilation Instructions
 Required libraries
 ----------
 
-1) cairo
+1) cairo 
 2) Pango
 3) Qt 5
 4) git

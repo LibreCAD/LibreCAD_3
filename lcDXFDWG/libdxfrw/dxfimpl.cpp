@@ -1,4 +1,5 @@
 #include "dxfimpl.h"
+#include "../generic/helpers.h"
 
 #include <cad/primitive/circle.h>
 #include <cad/primitive/arc.h>
@@ -25,36 +26,11 @@
 #include <cad/functions/string_helper.h>
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : _document(document), _builder(builder), _blockHandle(-1) {
-    _intToLineWidth[0] = std::make_shared<lc::MetaLineWidthByValue>(0.00);
-    _intToLineWidth[1] = std::make_shared<lc::MetaLineWidthByValue>(0.05);
-    _intToLineWidth[2] = std::make_shared<lc::MetaLineWidthByValue>(0.09);
-    _intToLineWidth[3] = std::make_shared<lc::MetaLineWidthByValue>(0.13);
-    _intToLineWidth[4] = std::make_shared<lc::MetaLineWidthByValue>(0.15);
-    _intToLineWidth[5] = std::make_shared<lc::MetaLineWidthByValue>(0.18);
-    _intToLineWidth[6] = std::make_shared<lc::MetaLineWidthByValue>(0.20);
-    _intToLineWidth[7] = std::make_shared<lc::MetaLineWidthByValue>(0.25);
-    _intToLineWidth[8] = std::make_shared<lc::MetaLineWidthByValue>(0.30);
-    _intToLineWidth[9] = std::make_shared<lc::MetaLineWidthByValue>(0.35);
-    _intToLineWidth[10] = std::make_shared<lc::MetaLineWidthByValue>(0.40);
-    _intToLineWidth[11] = std::make_shared<lc::MetaLineWidthByValue>(0.50);
-    _intToLineWidth[12] = std::make_shared<lc::MetaLineWidthByValue>(0.53);
-    _intToLineWidth[13] = std::make_shared<lc::MetaLineWidthByValue>(0.60);
-    _intToLineWidth[14] = std::make_shared<lc::MetaLineWidthByValue>(0.70);
-    _intToLineWidth[15] = std::make_shared<lc::MetaLineWidthByValue>(0.80);
-    _intToLineWidth[16] = std::make_shared<lc::MetaLineWidthByValue>(0.90);
-    _intToLineWidth[17] = std::make_shared<lc::MetaLineWidthByValue>(1.00);
-    _intToLineWidth[18] = std::make_shared<lc::MetaLineWidthByValue>(1.06);
-    _intToLineWidth[19] = std::make_shared<lc::MetaLineWidthByValue>(1.20);
-    _intToLineWidth[20] = std::make_shared<lc::MetaLineWidthByValue>(1.40);
-    _intToLineWidth[21] = std::make_shared<lc::MetaLineWidthByValue>(1.58);
-    _intToLineWidth[22] = std::make_shared<lc::MetaLineWidthByValue>(2.0);
-    _intToLineWidth[23] = std::make_shared<lc::MetaLineWidthByValue>(2.11);
-
 }
 
 inline int DXFimpl::widthToInt(double wid) const {
     for (int i = 0; i < 24; i++) {
-        if (_intToLineWidth[i]->width() == wid) {
+        if (lc::FileHelpers::intToLW(i).width() == wid) {
             return i;
         }
     }
@@ -496,45 +472,51 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer> layer) {
     dxfW->writeLayer(&lay);
 }
 
-bool DXFimpl::writeDXF(std::string& filename, DXF::version type) {
+bool DXFimpl::writeDXF(const std::string& filename, lc::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
 
     //Default setting
     DRW::Version exportVersion;
 
     switch(type) {
-    case DXF::version::R12:
-        exportVersion = DRW::AC1009;
-        break;
-    case DXF::version::R14:
-        exportVersion = DRW::AC1014;
-        break;
-    case DXF::version::R2000:
-        exportVersion = DRW::AC1015;
-        break;
-    case DXF::version::R2004:
-        exportVersion = DRW::AC1018;
-        break;
-    case DXF::version::R2007:
-        exportVersion = DRW::AC1021;
-        break;
-    case DXF::version::R2010:
-        exportVersion = DRW::AC1024;
-        break;
-    case DXF::version::R2013:
-        exportVersion = DRW::AC1027;
-        break;
-    default:
-        exportVersion = DRW::AC1024;
+        case lc::File::LIBDXFRW_DXF_R12:
+        case lc::File::LIBDXFRW_DXB_R12:
+            exportVersion = DRW::AC1009;
+            break;
+        case lc::File::LIBDXFRW_DXF_R14:
+        case lc::File::LIBDXFRW_DXB_R14:
+            exportVersion = DRW::AC1014;
+            break;
+        case lc::File::LIBDXFRW_DXF_R2000:
+        case lc::File::LIBDXFRW_DXB_R2000:
+            exportVersion = DRW::AC1015;
+            break;
+        case lc::File::LIBDXFRW_DXF_R2004:
+        case lc::File::LIBDXFRW_DXB_R2004:
+            exportVersion = DRW::AC1018;
+            break;
+        case lc::File::LIBDXFRW_DXF_R2007:
+        case lc::File::LIBDXFRW_DXB_R2007:
+            exportVersion = DRW::AC1021;
+            break;
+        case lc::File::LIBDXFRW_DXF_R2010:
+        case lc::File::LIBDXFRW_DXB_R2010:
+            exportVersion = DRW::AC1024;
+            break;
+        case lc::File::LIBDXFRW_DXF_R2013:
+        case lc::File::LIBDXFRW_DXB_R2013:
+            exportVersion = DRW::AC1027;
+            break;
+        default:
+            exportVersion = DRW::AC1024;
         break;
     }
 
-    bool success = dxfW->write(this, exportVersion, false); //ascii
+    bool isBinary = type >= lc::File::LIBDXFRW_DXB_R12 && type < lc::File::LIBDXFRW_DXB_R2013;
+
+    bool success = dxfW->write(this, exportVersion, isBinary);
     delete dxfW;
 
-    if (!success) {
-        std::cout << "can't write file";
-    }
     return success;
 }
 

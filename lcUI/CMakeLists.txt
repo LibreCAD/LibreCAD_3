@@ -2,7 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
-#ADD_DEFINITIONS("-Wno-missing-braces")
+
+message("***** LibreCAD Qt user interface *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -16,7 +17,7 @@ find_package(Qt5Core)
 find_package(Qt5Designer)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5UiTools REQUIRED)
-#include(${QT_USE_FILE})
+
 SET(QT_USE_QTDESIGNER ON)
 
 # HEADERS
@@ -80,11 +81,17 @@ dialogs/linepatternmanager.ui)
 qt5_add_resources(UI_RESOURCES
 ui/resource.qrc)
 
+# Eigen 3
+find_package(Eigen3 REQUIRED)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+else()
+    include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
+
+
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)
-if(WINDOWS_MSYS2)
-    find_package(APR)
-endif()
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
@@ -93,45 +100,27 @@ find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARIES})
 
-# Eigen 3
-find_package(Eigen3 REQUIRED)
-if( CMAKE_COMPILER_IS_GNUCXX)
-    include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
-else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
-endif ()
-
-# LibbDXFRW
-find_package(LibDxfrw REQUIRED)
-include_directories(${LIBDXFRW_INCLUDE_DIR})
-
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
 if (SEPARATE_BUILD STREQUAL "ON")
-include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
-include_directories("${CMAKE_SOURCE_DIR}/../third_party")
-include_directories("${CMAKE_SOURCE_DIR}/../lcDXFDWG")
-include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
-include_directories("${CMAKE_SOURCE_DIR}/../lcviewerqt")
-include_directories("${CMAKE_SOURCE_DIR}/../lcadluascript")
-include_directories("${CMAKE_SOURCE_DIR}/../lcUI")
+    include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/../third_party")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcDXFDWG")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcviewerqt")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcadluascript")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcUI")
 else() 
-include_directories("${CMAKE_SOURCE_DIR}/lckernel")
-include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${CMAKE_SOURCE_DIR}/lcDXFDWG")
-include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
-include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
-include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
-include_directories("${CMAKE_SOURCE_DIR}/lcUI")
+    include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+    include_directories("${CMAKE_SOURCE_DIR}/third_party")
+    include_directories("${CMAKE_SOURCE_DIR}/lcDXFDWG")
+    include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
+    include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
+    include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
+    include_directories("${CMAKE_SOURCE_DIR}/lcUI")
 endif()
-
-# DEBUGGING PATHS 
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-#foreach(dir ${dirs})
-#  message(STATUS "dir='${dir}'")
-#endforeach()
 
 set(EXTRA_LIBS
         lcluascript
