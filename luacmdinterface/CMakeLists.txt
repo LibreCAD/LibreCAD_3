@@ -42,6 +42,14 @@ include_directories(${Boost_INCLUDE_DIRS})
 message("Boost lib ${Boost_INCLUDE_DIRS}")
 FIND_PACKAGE ( Threads REQUIRED )
 
+# GDK-Pixbuf
+find_package(GDK-Pixbuf REQUIRED)
+include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
+
+#GDK
+find_package(GDK REQUIRED)
+include_directories(${GDK_INCLUDE_DIRS})
+
 set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")

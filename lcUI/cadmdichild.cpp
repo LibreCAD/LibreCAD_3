@@ -90,11 +90,11 @@ void CadMdiChild::newDocument() {
 
     // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
     _cursor = std::make_shared<LCViewer::Cursor>(40, _viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    _viewer->documentCanvas()->background().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
+    _viewer->documentCanvas()->foreground().connect<LCViewer::Cursor, &LCViewer::Cursor::onDraw>(_cursor.get());
     _snapManager->snapPointEvents().connect<LCViewer::Cursor, &LCViewer::Cursor::onSnapPointEvent>(_cursor.get());
 
     _tempEntities = std::make_shared<TempEntities>(_viewer->documentCanvas());
-    _viewer->documentCanvas()->background().connect<LCViewer::TempEntities, &LCViewer::TempEntities::onDraw>(_tempEntities.get());
+    _viewer->documentCanvas()->foreground().connect<LCViewer::TempEntities, &LCViewer::TempEntities::onDraw>(_tempEntities.get());
 
     //Drag manager
     _dragManager = std::make_shared<DragManager>(_viewer->documentCanvas(), _cursor, _tempEntities, 10);
@@ -102,7 +102,7 @@ void CadMdiChild::newDocument() {
 
     _dragPoints = std::make_shared<LCViewer::DragPoints>();
     _dragManager->dragPointsEvent().connect<LCViewer::DragPoints, &LCViewer::DragPoints::setPoints>(_dragPoints.get());
-    _viewer->documentCanvas()->background().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
+    _viewer->documentCanvas()->foreground().connect<LCViewer::DragPoints, &LCViewer::DragPoints::onDraw>(_dragPoints.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(10);

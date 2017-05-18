@@ -102,6 +102,14 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
+# GDK-Pixbuf
+find_package(GDK-Pixbuf REQUIRED)
+include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
+
+#GDK
+find_package(GDK REQUIRED)
+include_directories(${GDK_INCLUDE_DIRS})
+
 # BUILDING CONFIG
 # SEPERATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
@@ -114,7 +122,5 @@ else ()
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
 endif ()
 
-# DEBUGING PATHS
-
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} lckernel)
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel)
