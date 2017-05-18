@@ -50,6 +50,12 @@ include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
 find_package(GDK REQUIRED)
 include_directories(${GDK_INCLUDE_DIRS})
 
+#GLib
+set(GLIB_FIND_COMPONENTS gobject)
+find_package(GLib REQUIRED)
+include_directories(${GLIB_INCLUDE_DIRS})
+
+
 set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
@@ -74,4 +80,12 @@ set(hdrs
 )
 
 add_executable(luacmdinterface ${src} ${hdrs})
-target_link_libraries(luacmdinterface ${CMAKE_THREAD_LIBS_INIT} ${CAIRO_LIBRARIES} ${Boost_LIBRARIES} ${PANGO_LIBRARIES} ${CURL_LIBRARIES} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} lcluascript lckernel lcluascript lcviewernoqt)
+target_link_libraries(luacmdinterface
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${CURL_LIBRARIES}
+        ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES}
+        ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
+        lcluascript lckernel lcluascript lcviewernoqt
+)
