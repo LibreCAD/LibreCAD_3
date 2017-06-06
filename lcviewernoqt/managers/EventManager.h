@@ -4,7 +4,6 @@
 
 #pragma once
 
-
 #include <nano-signal-slot/nano_signal_slot.hpp>
 #include "../events/LocationEvent.h"
 
@@ -15,18 +14,13 @@ namespace lc {
 }
 
 namespace LCViewer {
-class EventManager {
-public:
-    void location(const lc::geo::Coordinate &);
+    class EventManager {
+        public:
+            void location(const lc::geo::Coordinate &);
 
+            Nano::Signal<void(const LocationEvent&)>& locationEvents();
 
-
-public:
-    Nano::Signal<void(const LocationEvent&)> locationEvents() const;
-
-private:
-    Nano::Signal<void(const LocationEvent&)>  _locationEvents;
-
-};
-
+        private:
+            Nano::Signal<void(const LocationEvent&)>  _locationEvents;
+    };
 }

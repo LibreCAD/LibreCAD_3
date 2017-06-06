@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
+set(CMAKE_CXX_STANDARD 14)
 
 message("***** LibreCAD Qt user interface *****")
 
@@ -88,7 +89,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 else()
     include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
-
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

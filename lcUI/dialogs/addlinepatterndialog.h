@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cad/document/document.h>
 #include <cmath>
 
 #include <QDialog>
@@ -10,7 +10,7 @@
 
 #include <cad/meta/dxflinepattern.h>
 #include <cad/operations/linepatternops.h>
-#include <cad/document/document.h>
+
 
 #include "widgets/linepatternpathpart.h"
 #include "widgets/linepatternpainter.h"

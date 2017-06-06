@@ -14,6 +14,8 @@
 #include <cad/events/removeentityevent.h>
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
+#include <cad/document/document.h>
+
 // Minimum linewidth we reander, below this the lines might start to loog 'jagged'
 // We migth one to consider at lower linewidth to simply reduce alpha to get a similat effect of smaller line?
 static const double MINIMUM_READER_LINEWIDTH = 1.0;
@@ -193,7 +195,7 @@ class DocumentCanvas {
         /*
          * Return CADEntity as LCVDrawItem
          */
-        LCVDrawItem_SPtr asDrawable(lc::entity::CADEntity_CSPtr entity);
+        static LCVDrawItem_SPtr asDrawable(lc::entity::CADEntity_CSPtr entity);
 private:
         /**
          * @brief cachedPainter

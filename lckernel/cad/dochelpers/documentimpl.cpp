@@ -34,6 +34,9 @@ void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
+    if(cadEntity->block() != nullptr) {
+
+    }
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
         _storageManager->removeEntity(cadEntity);
         RemoveEntityEvent event(cadEntity);
@@ -142,4 +145,12 @@ DxfLinePattern_CSPtr DocumentImpl::linePatternByName(const std::string& linePatt
  */
 std::vector<DxfLinePattern_CSPtr> DocumentImpl::linePatterns() const {
     return _storageManager->metaTypes<const DxfLinePattern>();
+}
+
+EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(const Block_CSPtr block) {
+    return _storageManager->entitiesByBlock(block);
+}
+
+std::vector<Block_CSPtr> DocumentImpl::blocks() const {
+    return _storageManager->metaTypes<const Block>();
 }

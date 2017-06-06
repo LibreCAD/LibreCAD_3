@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cad/base/metainfo.h>
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
-
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/base/cadentity.h"
@@ -10,10 +10,14 @@
 #include "cad/meta/layer.h"
 #include "cad/interface/snapable.h"
 #include "cad/interface/draggable.h"
+#include <cad/base/cadentity.h>
+#include <cad/builders/arc.h>
 
 namespace lc {
     namespace entity {
         class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable, public Draggable {
+        friend class builder::ArcBuilder;
+
         public:
             /**
          * @brief Arc, Default Arc constructor
@@ -104,13 +108,12 @@ namespace lc {
         public:
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+
+        private:
+            Arc(const builder::ArcBuilder& builder);
         };
+
         using Arc_SPtr = std::shared_ptr<Arc>;
         using Arc_CSPtr = std::shared_ptr<const Arc>;
-
     }
 }
-
-// ARC_H
-
-

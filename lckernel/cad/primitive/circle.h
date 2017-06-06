@@ -9,12 +9,15 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
+#include <cad/builders/circle.h>
 
 namespace lc {
     namespace entity {
 
         class Circle
                 : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+        friend class builder::CircleBuilder;
+
         public:
             /**
              * @brief Circle, Default Circle Constructor
@@ -92,6 +95,9 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+        private:
+            Circle(const builder::CircleBuilder& builder);
 
         };
         using Circle_SPtr = std::shared_ptr<Circle>;

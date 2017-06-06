@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cad/document/document.h>
+
 #include <QComboBox>
 
 #include <cad/meta/dxflinepattern.h>
 #include <widgets/linepatternpainter.h>
 #include <dialogs/addlinepatterndialog.h>
 #include <dialogs/linepatternmanager.h>
-#include <cad/document/document.h>
 
 #define BY_BLOCK "ByBlock"
 #define BY_LAYER "ByLayer"

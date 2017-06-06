@@ -31,6 +31,7 @@ FIND_PACKAGE ( Threads REQUIRED )
 set(src
 main.cpp
 lckernel/primitive/entitytest.cpp
+        lckernel/builders/buildertest.cpp
 lckernel/math/code.cpp
 lckernel/math/testmath.cpp
 lckernel/operations/buildertest.cpp
@@ -72,14 +73,15 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            ui/testluaui.cpp
-            ui/testluaoperations.cpp
+            #ui/testluaui.cpp
+            #ui/testluaoperations.cpp
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
-            ui/testlinewidthselect.cpp)
+            ui/testlinewidthselect.cpp
+    )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files

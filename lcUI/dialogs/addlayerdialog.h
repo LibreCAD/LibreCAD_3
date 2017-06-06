@@ -1,4 +1,5 @@
 #pragma once
+#include <cad/document/document.h>
 
 #include <QDialog>
 #include <QColorDialog>
@@ -11,7 +12,6 @@
 
 #include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
-#include <cad/document/document.h>
 
 namespace Ui {
     class AddLayerDialog;

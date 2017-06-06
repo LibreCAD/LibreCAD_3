@@ -18,6 +18,8 @@
 #include <cad/base/metainfo.h>
 #include <cad/meta/icolor.h>
 #include <tuple>
+#include <cad/meta/block.h>
+
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 
@@ -36,7 +38,7 @@ class DXFimpl : public DRW_Interface {
         virtual void addRay(const DRW_Ray &data) override { }
         virtual void addXline(const DRW_Xline &data) override { }
         virtual void addKnot(const DRW_Entity &data) override { }
-        virtual void addInsert(const DRW_Insert &data) override { }
+        virtual void addInsert(const DRW_Insert &data) override;
         virtual void addTrace(const DRW_Trace &data) override { }
         virtual void add3dFace(const DRW_3Dface &data) override { }
         virtual void addSolid(const DRW_Solid &data) override { }
@@ -74,8 +76,8 @@ class DXFimpl : public DRW_Interface {
         bool writeDXF(const std::string& filename, lc::File::Type type);
 
         virtual void writeHeader(DRW_Header &data) override { }
-        virtual void writeBlocks() override { }
-        virtual void writeBlockRecords() override { }
+        virtual void writeBlocks() override;
+        virtual void writeBlockRecords() override;
         virtual void writeEntities() override;
         virtual void writeLTypes() override;
         virtual void writeLayers() override;
@@ -96,8 +98,10 @@ class DXFimpl : public DRW_Interface {
         void writeLWPolyline(const lc::entity::LWPolyline_CSPtr p);
         void writeImage(const lc::entity::Image_CSPtr i);
         void writeText(const lc::entity::Text_CSPtr t);
+        void writeInsert(const lc::entity::Insert_CSPtr i);
 
         void writeLayer(const std::shared_ptr<const lc::Layer> layer);
+        void writeBlock(const lc::Block_CSPtr block);
 
         // UTILITIES FUNCTIONS
         lc::AngleFormat numberToAngleFormat(int num);
@@ -131,8 +135,7 @@ class DXFimpl : public DRW_Interface {
 
         std::shared_ptr<lc::Document> _document;
         lc::operation::Builder_SPtr _builder;
-        int _blockHandle;
-
+        lc::Block_SPtr _currentBlock;
 
     private:
         /**
@@ -153,5 +156,5 @@ class DXFimpl : public DRW_Interface {
         lc::iColor icol;
 
         std::vector<DRW_Image> imageMapCache;
-
+        std::map<std::string, lc::Block_CSPtr> _blocks;
 };

@@ -2,7 +2,7 @@
 
 #include "cad/operations/documentoperation.h"
 #include "cad/operations/undoable.h"
-#include "nano-signal-slot/nano_signal_slot.hpp"
+#include <nano-signal-slot/nano_signal_slot.hpp>
 
 using namespace lc;
 

@@ -1,11 +1,7 @@
-#include <QApplication>
-#include <QLibrary>
-#include <QtDebug>
 #include "luainterface.h"
-
+#include <QApplication>
 
 #include <log4cxx/xml/domconfigurator.h>
-
 
 int main(int argc, char* argv[]) {
     QApplication a(argc, argv);

@@ -15,6 +15,8 @@
 #include <cad/geometry/geocoordinate.h>
 #include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <functional>
+
 #ifndef CAIRO_ANTIALIAS_GOOD
 #define CAIRO_ANTIALIAS_GOOD    CAIRO_ANTIALIAS_SUBPIXEL
 #endif

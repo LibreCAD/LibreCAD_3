@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cad/document/document.h>
+
 #include <QDockWidget>
 #include <QVBoxLayout>
 #include <QMdiArea>
@@ -8,7 +10,6 @@
 
 #include "dialogs/addlayerdialog.h"
 #include "layermodel.h"
-#include <cad/document/document.h>
 #include <cad/operations/layerops.h>
 
 namespace Ui {

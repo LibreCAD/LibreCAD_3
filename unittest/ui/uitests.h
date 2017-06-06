@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QApplication>
 #include <luainterface.h>
 #include <cad/dochelpers/documentimpl.h>
+#include <QApplication>
 
 static int argc = 0;
 static char** argv = NULL;

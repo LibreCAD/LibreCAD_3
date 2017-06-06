@@ -15,3 +15,4 @@ xcode
 debug
 doc
 lckernel/version.cpp
+cmake-build-debug

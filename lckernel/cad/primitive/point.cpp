@@ -24,6 +24,11 @@ Point::Point(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaIn
 Point::Point(const Point_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
 }
 
+Point::Point(const builder::PointBuilder& builder) :
+    CADEntity(builder),
+    geo::Coordinate(builder.coordinate()) {
+}
+
 CADEntity_CSPtr Point::move(const geo::Coordinate& offset) const {
     auto newCoordinate = std::make_shared<Point>(this->x() + offset.x(), this->y() + offset.y(), layer());
     newCoordinate->setID(this->id());
