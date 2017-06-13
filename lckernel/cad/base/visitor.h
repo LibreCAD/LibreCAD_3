@@ -84,6 +84,10 @@ namespace lc {
         class Image;
         using Image_SPtr = std::shared_ptr<Image>;
         using Image_CSPtr = std::shared_ptr<const Image>;
+
+        class Insert;
+        using Insert_SPtr = std::shared_ptr<Insert>;
+        using Insert_CSPtr = std::shared_ptr<const Insert>;
     }
 }
 

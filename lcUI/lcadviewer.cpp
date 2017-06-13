@@ -12,8 +12,6 @@
 
 #include <managers/snapmanager.h>
 
-#include "nano-signal-slot/nano_signal_slot.hpp"
-
 using namespace LCViewer;
 
 LCADViewer::LCADViewer(QWidget *parent) :

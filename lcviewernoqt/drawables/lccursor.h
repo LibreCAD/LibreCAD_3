@@ -25,7 +25,7 @@ namespace LCViewer {
 
         lc::geo::Coordinate position() const;
 
-        Nano::Signal<void(const LocationEvent &)> locationEvents() const;
+        Nano::Signal<void(const LocationEvent &)>& locationEvents();
 
     private:
         const lc::Color _xAxisColor;

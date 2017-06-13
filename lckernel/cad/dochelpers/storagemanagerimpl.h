@@ -62,7 +62,7 @@ namespace lc {
              * @return EntityContainer<entity::CADEntity_CSPtr> entities on layer
              * @Deprecated use entityContainer()->entitiesByLayer()
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
+            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
 
             /**
              * @brief returns layer By Name
@@ -88,7 +88,7 @@ namespace lc {
              * @brief returns entity Container
              * @return entityContainer<entity::CADEntity_CSPtr>
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const;
+            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entityContainer() const;
 
             /**
             *  \brief add a document meta type
@@ -109,6 +109,8 @@ namespace lc {
 
             virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() const;
 
+            lc::EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) const override;
+
             /**
              * @brief optimise the quadtree
              */
@@ -122,5 +124,6 @@ namespace lc {
 
             EntityContainer<entity::CADEntity_CSPtr> _entities;
             std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive> _documentMetaData;
+            std::map<std::string, lc::EntityContainer<entity::CADEntity_CSPtr>> _blocksEntities;
     };
 }

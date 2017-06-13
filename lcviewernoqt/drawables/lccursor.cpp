@@ -74,7 +74,7 @@ void Cursor::onSnapPointEvent(SnapPointEvent const & event) {
 }
 
 
-Nano::Signal<void(const LocationEvent&)> Cursor::locationEvents() const {
+Nano::Signal<void(const LocationEvent&)>& Cursor::locationEvents() {
     return _locationEvent;
 }
 

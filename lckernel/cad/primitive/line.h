@@ -1,16 +1,18 @@
 #pragma once
 
 #include <list>
+#include <cad/base/cadentity.h>
+#include <cad/base/metainfo.h>
 
 #include "cad/interface/entitydispatch.h"
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geovector.h"
-#include "cad/base/cadentity.h"
 #include "cad/interface/snapable.h"
 #include "cad/interface/draggable.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/meta/layer.h"
+#include <cad/builders/line.h>
 
 namespace lc {
     namespace entity {
@@ -24,6 +26,8 @@ namespace lc {
          * \date 2012-04-16
          */
         class Line : public std::enable_shared_from_this<Line>, public CADEntity, public geo::Vector, public Snapable, public Draggable {
+        friend class builder::LineBuilder;
+
         public:
             /*!
              * \brief Construct a new line
@@ -119,11 +123,12 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
+        private:
+            Line(const builder::LineBuilder& builder);
         };
+
         using Line_SPtr = std::shared_ptr<Line>;
         using Line_CSPtr = std::shared_ptr<const Line>;
 
     }
-
 }
-// LINE_H

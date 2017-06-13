@@ -21,6 +21,8 @@ namespace lc {
             virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
             virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const = 0;
 
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) const = 0;
+
             /*!
              * \brief layer
              * Return a single document layer

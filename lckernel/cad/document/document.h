@@ -6,7 +6,7 @@
 #include "cad/dochelpers/entitycontainer.h"
 #include "cad/document/storagemanager.h"
 
-#include "nano-signal-slot/nano_signal_slot.hpp"
+#include <nano-signal-slot/nano_signal_slot.hpp>
 
 #include <cad/events/addlayerevent.h>
 #include <cad/events/removelayerevent.h>
@@ -171,6 +171,13 @@ namespace lc {
             virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) = 0;
 
             /**
+             * @brief Search entities in a given block
+             * @param block
+             * @return EntityContainer
+             */
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) = 0;
+
+            /**
              * @brief entityContainer
              * Return a copy of all entities within the document
              * @return
@@ -199,6 +206,11 @@ namespace lc {
              * @brief return all line patterns
              */
             virtual std::vector<DxfLinePattern_CSPtr> linePatterns() const = 0;
+
+            /**
+             * @return all blocks
+             */
+            virtual std::vector<Block_CSPtr> blocks() const = 0;
         public:
             friend class lc::operation::DocumentOperation;
 

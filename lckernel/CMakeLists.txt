@@ -60,9 +60,15 @@ cad/primitive/dimlinear.cpp
 cad/primitive/dimaligned.cpp
 cad/primitive/dimangular.cpp
 cad/primitive/lwpolyline.cpp
-cad/primitive/beziercurve.cpp
 cad/primitive/image.cpp
+cad/primitive/insert.cpp
 cad/math/helpermethods.cpp
+cad/meta/block.cpp
+cad/builders/line.cpp
+cad/builders/arc.cpp
+cad/builders/circle.cpp
+cad/builders/point.cpp
+cad/builders/insert.cpp
 )
 
 # HEADER FILES
@@ -142,10 +148,18 @@ cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
 cad/functions/string_helper.h
-cad/primitive/beziercurve.h
 cad/primitive/image.h
 cad/math/helpermethods.h
-version.h version.h)
+version.h
+cad/meta/block.h
+cad/builders/cadentity.h
+cad/builders/line.h
+cad/builders/arc.h
+cad/builders/circle.h
+cad/builders/point.h
+cad/primitive/insert.h
+cad/builders/insert.h
+)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

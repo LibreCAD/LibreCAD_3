@@ -24,6 +24,11 @@ Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),
                                                         other->endAngle(), other->CCW()) {
 }
 
+Arc::Arc(const builder::ArcBuilder& builder) :
+    CADEntity(builder),
+    geo::Arc(builder.center(), builder.radius(), builder.startAngle(), builder.endAngle(), builder.isCCW()) {
+}
+
 std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
                                               double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
@@ -165,4 +170,3 @@ CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> d
         return shared_from_this();
     }
 }
-

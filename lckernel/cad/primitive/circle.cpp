@@ -20,6 +20,10 @@ Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other, sameID)
                                                         geo::Circle(other->center(), other->radius()) {
 }
 
+Circle::Circle(const builder::CircleBuilder& builder) :
+    CADEntity(builder),
+    geo::Circle(builder.center(), builder.radius()) {
+}
 
 std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
                                                  double minDistanceToSnap, int maxNumberOfSnapPoints) const {

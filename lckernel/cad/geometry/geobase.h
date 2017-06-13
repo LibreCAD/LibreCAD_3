@@ -14,5 +14,6 @@ namespace lc {
                 virtual ~Base() = default;
 
         };
+
     }
 }

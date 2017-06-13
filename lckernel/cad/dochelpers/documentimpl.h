@@ -30,6 +30,8 @@ namespace lc {
              */
             virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
 
+            EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) override;
+
             virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
 
             virtual std::map<std::string, Layer_CSPtr> allLayers() const;
@@ -61,6 +63,8 @@ namespace lc {
 
             virtual StorageManager_SPtr storageManager() const;
 
+        public:
+            std::vector<Block_CSPtr> blocks() const override;
 
         private:
             std::mutex _documentMutex;

@@ -8,6 +8,7 @@
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
 #include <cad/primitive/image.h>
+#include <cad/primitive/insert.h>
 #include "lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
 #include "drawitems/lcvarc.h"
@@ -26,6 +27,7 @@
 #include "drawitems/lcimage.h"
 
 #include "painters/lcpainter.h"
+#include "drawitems/lcvinsert.h"
 
 #include <cad/meta/metacolor.h>
 #include <cad/meta/metalinewidth.h>
@@ -340,6 +342,7 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
 void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
 	lc::entity::CADEntity_CSPtr ci = std::dynamic_pointer_cast<const lc::entity::CADEntity>(entity);
+
 	lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
 	lc::MetaLineWidthByValue_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
 	lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
@@ -415,6 +418,12 @@ void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
 }
 
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
+    auto entity = event.entity();
+
+    if(entity->block() != nullptr) {
+        return;
+    }
+
     auto drawable = asDrawable(event.entity());
 
     if (drawable != nullptr) {
@@ -644,6 +653,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(lc::entity::CADEntity_CSPtr entity) 
 
     if (image != nullptr) {
         return std::make_shared<LCImage>(image);
+    }
+
+    // Add 'Insert'
+    const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+
+    if (insert != nullptr) {
+        return std::make_shared<LCVInsert>(insert);
     }
 
     return nullptr;

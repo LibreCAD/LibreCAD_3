@@ -20,7 +20,21 @@ StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 }
 
 void StorageManagerImpl::insertEntity(const entity::CADEntity_CSPtr entity) {
-    _entities.insert(entity);
+    if(entity->block() != nullptr) {
+        auto it = _blocksEntities.find(entity->block()->name());
+
+        if(it == _blocksEntities.end()) {
+            EntityContainer<entity::CADEntity_CSPtr> ec;
+            ec.insert(entity);
+            _blocksEntities.insert(std::pair<std::string, EntityContainer<entity::CADEntity_CSPtr>>(entity->block()->name(), ec));
+        }
+        else {
+            it->second.insert(entity);
+        }
+    }
+    else {
+        _entities.insert(entity);
+    }
 }
 
 void StorageManagerImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
@@ -66,6 +80,9 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entityContainer() c
 
 void StorageManagerImpl::optimise() {
     _entities.optimise();
+    for(auto ec : _blocksEntities) {
+        ec.second.optimise();
+    }
 }
 
 
@@ -98,4 +115,13 @@ DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string
         return search->second;
     }
     return nullptr;
+}
+
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(const Block_CSPtr block) const {
+    try {
+        return _blocksEntities.at(block->name());
+    }
+    catch (std::out_of_range& e) {
+        return EntityContainer<entity::CADEntity_CSPtr>();
+    }
 }

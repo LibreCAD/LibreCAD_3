@@ -1,9 +1,9 @@
 #pragma once
 
+#include <cad/document/document.h>
+
 #include <QDialog>
 #include <QHeaderView>
-
-#include <cad/document/document.h>
 
 #include <dialogs/addlinepatterndialog.h>
 #include <widgets/linepatternmodel.h>

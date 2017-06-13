@@ -11,6 +11,7 @@ void EventManager::location(const lc::geo::Coordinate &coordinate) {
    LocationEvent event(coordinate);
     _locationEvents(event);
 }
-Nano::Signal<void(const LocationEvent&)> EventManager::locationEvents() const {
+
+Nano::Signal<void(const LocationEvent&)>& EventManager::locationEvents() {
     return _locationEvents;
 }

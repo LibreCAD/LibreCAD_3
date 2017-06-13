@@ -7,19 +7,45 @@ using namespace lc;
 Layer::Layer() {
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color), _linepattern(nullptr) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color) :
+        EntityMetaType(),
+        DocumentMetaType(),
+        _name(name),
+        _lineWidth(lineWidth),
+        _color(color),
+        _linepattern(nullptr),
+        _isFrozen(false) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const std::shared_ptr<const DxfLinePattern> linepattern, const bool frozen) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _color(color), _linepattern(linepattern), _isFrozen(frozen) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const std::shared_ptr<const DxfLinePattern> linepattern, const bool frozen) :
+        EntityMetaType(),
+        DocumentMetaType(),
+        _name(name),
+        _lineWidth(lineWidth),
+        _color(color),
+        _linepattern(linepattern),
+        _isFrozen(frozen) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth) : EntityMetaType(), DocumentMetaType(), _name(name), _lineWidth(lineWidth), _linepattern(nullptr) {
+Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth) :
+        EntityMetaType(),
+        DocumentMetaType(),
+        _name(name),
+        _lineWidth(lineWidth),
+        _linepattern(nullptr),
+        _isFrozen(false) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const Color color) : EntityMetaType(), DocumentMetaType(), _name(name), _color(color), _linepattern(nullptr) {
+Layer::Layer(const std::string name, const Color color) :
+        EntityMetaType(),
+        DocumentMetaType(),
+        _name(name),
+        _color(color),
+        _linepattern(nullptr),
+        _isFrozen(false) {
     assert(!StringHelper::isBlank(name) && "Name cannot be blank"); // Name must be set
 }
 

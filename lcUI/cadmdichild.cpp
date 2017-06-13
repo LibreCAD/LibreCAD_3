@@ -9,6 +9,7 @@
 #include <cad/operations/layerops.h>
 #include <file.h>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 
 
 using namespace LCViewer;
@@ -128,6 +129,7 @@ bool CadMdiChild::openFile() {
         lc::File::open(_document, file.toStdString(), availableLibraries.begin()->first);
     }
     else {
+        QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
         return false;
     }
 
@@ -142,8 +144,8 @@ void CadMdiChild::saveFile() {
     auto availableTypes = lc::File::getAvailableFileTypes();
 
     if(availableTypes.size() == 0) {
+        QMessageBox::critical(nullptr, "Save error", "No library available for file saving.");
         return;
-        //TODO: show an error here
     }
 
     auto it = availableTypes.begin();

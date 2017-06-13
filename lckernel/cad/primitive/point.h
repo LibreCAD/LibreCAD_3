@@ -10,9 +10,13 @@
 
 #include <cad/meta/layer.h>
 
+#include <cad/builders/point.h>
+
 namespace lc {
     namespace entity {
         class Point : public std::enable_shared_from_this<Point>, public CADEntity, public geo::Coordinate, virtual public Visitable {
+        friend class builder::PointBuilder;
+
         public:
 
             /**
@@ -41,6 +45,9 @@ namespace lc {
             Point(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
             Point(const Point_CSPtr other, bool sameID = false);
+
+        private:
+            Point(const builder::PointBuilder& builder);
 
         public:
             /**

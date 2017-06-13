@@ -1,5 +1,4 @@
 #pragma once
-
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>

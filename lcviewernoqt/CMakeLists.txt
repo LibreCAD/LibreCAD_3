@@ -39,6 +39,7 @@ drawitems/lcimage.cpp
 drawables/dragpoints.cpp
 drawables/tempentities.cpp
 drawables/CursorLocation.cpp
+drawitems/lcvinsert.cpp
 )
 
 # HEADER FILES
@@ -83,6 +84,7 @@ drawables/dragpoints.h
 events/dragpointsevent.h
 drawables/tempentities.h
 drawables/CursorLocation.h
+drawitems/lcvinsert.h
 )
 
 # Cairo

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cad/meta/block.h>
+#include <cad/builders/cadentity.h>
 #include "cad/const.h"
 #include "cad/base/id.h"
 #include "cad/base/metainfo.h"
@@ -15,15 +17,18 @@ namespace lc {
          *
          */
         class CADEntity : public ID, virtual public Visitable {
+        template <typename T>
+        friend class lc::builder::CADEntityBuilder;
+
         public:
             CADEntity() {
             }
 
             /*!
-                         * \brief Default CADEntity Constructor.
-                         * \sa lc::ID
-                         * \sa lc::MetaInfo
-                         */
+             * \brief Default CADEntity Constructor.
+             * \sa lc::ID
+             * \sa lc::MetaInfo
+             */
             CADEntity(Layer_CSPtr _layer);
 
             /*!
@@ -39,7 +44,6 @@ namespace lc {
             CADEntity(CADEntity_CSPtr cadEntity, bool sameID);
 
             CADEntity(CADEntity_CSPtr cadEntity);
-
 
             virtual ~CADEntity() = default;
 
@@ -130,9 +134,25 @@ namespace lc {
 
             virtual void dispatch(EntityDispatch &) const = 0;
 
+            /**
+             * @brief Return the current entity block
+             * @return Entity block or nullptr if not defined
+             */
+            Block_CSPtr block() const;
+
+        protected:
+            template<typename ReturnType>
+            CADEntity(const lc::builder::CADEntityBuilder<ReturnType>& builder) :
+                        ID(),
+                        _layer(builder.layer()),
+                        _metaInfo(builder.metaInfo()),
+                        _block(builder.block()) {
+            }
+
         private:
             Layer_CSPtr _layer;
             MetaInfo_CSPtr _metaInfo;
+            Block_CSPtr _block;
         };
         using CADEntity_SPtr = std::shared_ptr<CADEntity>;
         using CADEntity_CSPtr = std::shared_ptr<const CADEntity>;

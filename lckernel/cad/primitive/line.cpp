@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "cad/geometry/geoarea.h"
 
+
 using namespace lc;
 using namespace entity;
 
@@ -22,7 +23,10 @@ Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const MetaInfo_CS
 Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), geo::Vector(other->start(), other->end()) {
 }
 
-
+Line::Line(const builder::LineBuilder& builder) :
+    CADEntity(builder),
+    geo::Vector(builder.start(), builder.end()) {
+}
 
 std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
