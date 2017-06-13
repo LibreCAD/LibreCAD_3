@@ -49,5 +49,11 @@ void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
 }
 
 void LCVInsert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
-    _entities.erase(event.entity());
+    auto entity = event.entity();
+
+    if(!entity->block() || entity->id() == id()) {
+        return;
+    }
+
+    _entities.erase(entity);
 }
