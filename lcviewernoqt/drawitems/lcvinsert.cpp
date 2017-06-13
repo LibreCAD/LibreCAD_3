@@ -40,12 +40,12 @@ void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOption
 }
 
 void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
-    /*auto entity = event.entity();
+    auto entity = event.entity();
     _entities.erase(entity);
 
     if(entity->block() == displayBlock()) {
         append(entity);
-    }*/
+    }
 }
 
 void LCVInsert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {

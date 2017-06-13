@@ -3,7 +3,7 @@
 	url = https://github.com/SteveKChiu/lua-intf
 [submodule "lckernel/nano-signal-slot"]
 	path = lckernel/nano-signal-slot
-	url = https://github.com/rvt/nano-signal-slot
+	url = https://github.com/feragon/nano-signal-slot
 [submodule "lcDXFDWG/libopencad"]
 	path = lcDXFDWG/libopencad
 	url = https://github.com/sandyre/libopencad.git
