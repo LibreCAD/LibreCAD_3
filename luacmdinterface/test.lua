@@ -18,7 +18,7 @@ while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;
     local y=ry+(math.sin(d+(math.pi/2))*(d+(math.pi/2)) * r);
     if (d>0) then
-        ce:append(Line(Coord(x,y), Coord(p,q),layer));
+        ce:append(Line(Coord(x,y), Coord(p,q),layer,MetaInfo()));
     end
     p=x;
     q=y;

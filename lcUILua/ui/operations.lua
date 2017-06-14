@@ -1,10 +1,9 @@
 --Remove "Current operation" group in the toolbar
 local function remove_operation_group()
     if(hideUI ~= true) then
-        local tab = toolbar:tabByName("Quick Access")
-        local group = tab:groupByName("Current operation")
+        local group = quickAccessTab:groupByName("Current operation")
         if(group ~= nil) then
-            tab:removeGroup(group)
+            quickAccessTab:removeGroup(group)
         end
     end
 
@@ -21,11 +20,10 @@ end
 --Add a cancel button in the toolbar for the current operation
 local function create_cancel_button()
     if(hideUI ~= true) then
-        local tab = toolbar:tabByName("Quick Access")
-        local operationGroup = tab:addGroup("Current operation")
+        local operationGroup = quickAccessTab:addGroup("Current operation")
 
         local cancelButton = create_button("", ":/icons/quit.svg")
-        tab:addWidget(operationGroup, cancelButton, 0, 0, 1, 1)
+        quickAccessTab:addWidget(operationGroup, cancelButton, 0, 0, 1, 1)
         luaInterface:luaConnect(cancelButton, "pressed()", finish_operation)
     end
 end
@@ -102,17 +100,16 @@ function create_lw_polyline()
     create_cancel_button()
 
     if(hideUI ~= true) then
-        local tab = toolbar:tabByName("Quick Access")
-        local group = tab:groupByName("Current operation")
+        local group = quickAccessTab:groupByName("Current operation")
 
         local lineButton = create_button("", ":/icons/linesnormal.png")
-        tab:addWidget(group, lineButton, 0, 1, 1, 1)
+        quickAccessTab:addWidget(group, lineButton, 0, 1, 1, 1)
         luaInterface:luaConnect(lineButton, "pressed()", function()
             op[active_widget().id]:createLine()
         end)
 
         local arcButton = create_button("", ":/icons/arc.svg")
-        tab:addWidget(group, arcButton, 1, 1, 1, 1)
+        quickAccessTab:addWidget(group, arcButton, 1, 1, 1, 1)
         luaInterface:luaConnect(arcButton, "pressed()", function()
             op[active_widget().id]:createArc()
         end)

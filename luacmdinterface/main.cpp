@@ -129,10 +129,11 @@ int main(int argc, char** argv) {
 
     using namespace CairoPainter;
 
-    LcPainter * lcPainter;
+    LcPainter* lcPainter = nullptr;
 
     _canvas->createPainterFunctor(
             [&](const unsigned int width, const unsigned int height) {
+
                 if (lcPainter==nullptr) {
                     if (fType == "pdf")
                         lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
@@ -146,8 +147,7 @@ int main(int argc, char** argv) {
                 return lcPainter;
             });
 
-    _canvas->deletePainterFunctor([&]
-                                          (LcPainter * painter) {
+    _canvas->deletePainterFunctor([&] (LcPainter * painter) {
         if (painter != nullptr && lcPainter!=nullptr) {
             delete painter;
             lcPainter=nullptr;
