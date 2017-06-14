@@ -13,6 +13,8 @@
 #include <curl/curl.h>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <managers/pluginmanager.h>
+
 namespace po = boost::program_options;
 
 using LcPainter = LCViewer::LcPainter;
@@ -162,6 +164,9 @@ int main(int argc, char** argv) {
                     [&](LcPainter & lcPainter) {});
 
     // Render Lua Code
+    lc::PluginManager pluginManager("cli");
+    pluginManager.loadPlugins();
+
     LCadLuaScript luaScript(_document, false);
     std::string luaCode = loadFile(fIn);
 

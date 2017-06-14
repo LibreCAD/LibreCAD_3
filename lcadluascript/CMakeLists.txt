@@ -11,6 +11,7 @@ message("***** LibreCAD lcadluascript *****")
 set(lcluascript_srcs 
         lcadluascript.cpp
         cad/lualibrecadbridge.cpp
+        managers/pluginmanager.cpp
 )
 
 # HEADER FILES
@@ -20,6 +21,7 @@ set(lcluascript_hdrs
         lcadluascript.h
         cad/lualibrecadbridge.h
         cad/timer.h
+        managers/pluginmanager.h
 )
 
 
@@ -34,6 +36,11 @@ if( CMAKE_COMPILER_IS_GNUCXX)
 else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
+
+#Lua
+find_package(Lua 5.2 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+link_directories(${LUA_LIBRARIES})
 
 set(SEPARATE_BUILD OFF)
  

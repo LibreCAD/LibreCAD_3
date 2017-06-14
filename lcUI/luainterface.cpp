@@ -1,7 +1,8 @@
 #include "luainterface.h"
 
-LuaInterface::LuaInterface() {
-	_L = LuaIntf::LuaState::newState();
+LuaInterface::LuaInterface() :
+    _L(LuaIntf::LuaState::newState()),
+	_pluginManager("gui") {
 }
 
 LuaInterface::~LuaInterface() {
@@ -24,6 +25,8 @@ void LuaInterface::initLua() {
         std::cout << lua_tostring(_L, -1) << std::endl;
         lua_pop(_L, 1);
     }
+
+	_pluginManager.loadPlugins();
 }
 
 bool LuaInterface::luaConnect(

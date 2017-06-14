@@ -17,6 +17,7 @@ extern "C"
 #include <QTextStream>
 #include <QtUiTools/QUiLoader>
 #include <QCoreApplication>
+#include <managers/pluginmanager.h>
 #include "lua/luaqobject.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
@@ -97,4 +98,5 @@ class LuaInterface {
 	private:
 		LuaIntf::LuaState _L;
 		std::vector<LuaQObject_SPtr> _luaQObjects;
+        lc::PluginManager _pluginManager;
 };
