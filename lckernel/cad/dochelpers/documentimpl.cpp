@@ -6,7 +6,7 @@
 using namespace lc;
 
 DocumentImpl::DocumentImpl(const StorageManager_SPtr storageManager) : Document() , _storageManager(storageManager) {
-
+    _storageManager->addDocumentMetaType(std::make_shared<Layer>("0", Color(255, 255, 255)));
 }
 
 DocumentImpl::~DocumentImpl() {

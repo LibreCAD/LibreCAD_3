@@ -3,8 +3,6 @@
 #include "../generic/helpers.h"
 #include <cad/meta/icolor.h>
 #include <cad/operations/layerops.h>
-#include <cadcolors.h>
-
 
 lc::FileLibs::LibOpenCad::LibOpenCad(lc::Document_SPtr document, lc::operation::Builder_SPtr builder) :
     _document(document),
@@ -48,7 +46,13 @@ lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& data) {
     auto color = icolor.intToColor(data.getColor())->color();
 
     auto layer = std::make_shared<Layer>(data.getName(), lw, color);
-    std::make_shared<lc::operation::AddLayer>(_document, layer)->execute();
+
+    if(data.getName() == "0") {
+        std::make_shared<lc::operation::AddLayer>(_document, layer)->execute();
+    }
+    else {
+        std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer)->execute();
+    }
 
     return layer;
 }

@@ -43,7 +43,8 @@ lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
-dialogs/linepatternmanager.h)
+dialogs/linepatternmanager.h
+)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -66,7 +67,8 @@ lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
-dialogs/linepatternmanager.cpp)
+dialogs/linepatternmanager.cpp
+)
 
 QT5_WRAP_UI(UI_HEADERS
 widgets/clicommand.ui

@@ -189,6 +189,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("viewer", &CadMdiChild::viewer)
+			.addFunction("activeLayer", &CadMdiChild::activeLayer)
 		.endClass()
 
 		.beginClass<LCViewer::Cursor>("Cursor")
@@ -261,8 +262,7 @@ void addLCBindings(lua_State *L) {
             .addFactory([]() {
                 return new Layers();
             })
-			.addFunction("activeLayer", &Layers::activeLayer)
-			.addFunction("setDocument", &Layers::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
+			.addFunction("setMdiChild", &Layers::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
 		.endClass()
 
 		.beginExtendClass<LinePatternManager, QDialog>("LinePatternManager")

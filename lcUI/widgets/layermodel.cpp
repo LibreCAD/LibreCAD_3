@@ -76,3 +76,13 @@ lc::Layer_CSPtr LayerModel::layerAt(int row) {
         return nullptr;
     }
 }
+
+unsigned int LayerModel::indexOf(lc::Layer_CSPtr layer) {
+    for(unsigned int i = 0; i < _layers.size(); i++) {
+        if(_layers[i] == layer) {
+            return i;
+        }
+    }
+
+    return 0;
+}

@@ -5,8 +5,8 @@
 
 class LayersTest : public Layers {
     public:
-        LayersTest(lc::Document_SPtr document = nullptr, QWidget* parent = 0) :
-                Layers(document, parent)
+        LayersTest(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0) :
+                Layers(mdiChild, parent)
         {}
 
         unsigned int nbLayers() {

@@ -27,7 +27,11 @@ end
 
 --Return the selected layer
 function active_layer()
-    return layers:activeLayer()
+    if(active_widget() == nil) then
+        return nil
+    end
+
+    return active_widget():activeLayer()
 end
 
 --Create MetaInfo containing every selected MetaTypes
@@ -64,10 +68,10 @@ local function onSubWindowChanged(window)
 
     --setDocument called without parameters to use nullptr
     if(document == nil) then
-        layers:setDocument()
+        layers:setMdiChild()
         linePatternSelect:setDocument()
     else
-        layers:setDocument(document)
+        layers:setMdiChild(active_widget())
         linePatternSelect:setDocument(document)
     end
 end
@@ -115,7 +119,7 @@ function create_main_window()
 
     add_commandline()
 
-    layers = lc.Layers(active_document())
+    layers = lc.Layers()
     mainWindow:addDockWidget(2, layers)
 
     linePatternSelect = lc.LinePatternSelect(mainWindow, true, true)

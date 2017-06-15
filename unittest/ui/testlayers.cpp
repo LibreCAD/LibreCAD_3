@@ -3,50 +3,43 @@
 #include "widgets/layers.h"
 
 #include "dialogs/addlayerdialog.h"
-#include <cad/meta/metalinewidth.h>
 
 TEST(LayersTest, Creation) {
     QApplication app(argc, argv);
-    auto document = createDocument();
+    auto mdiChild = new CadMdiChild;
+    mdiChild->newDocument();
 
-    auto layers = new LayersTest(document);
+    auto layers = new LayersTest(mdiChild);
     auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     /*
      * Creation when document exists
      */
-    ASSERT_EQ(0, layers->nbLayers()) << "Document contains layers after creation";
 
     layers->addLayer(layer);
-    EXPECT_EQ(1, layers->nbLayers()) << "Layer was not appended to document";
+    EXPECT_EQ(2, layers->nbLayers()) << "Layer was not appended to document";
 
     /*
      * Creation when document doesn't exist
      */
 
-    layers->setDocument(nullptr);
+    layers->setMdiChild(nullptr);
     ASSERT_EQ(0, layers->nbLayers()) << "Unexisting document contains layers";
 
     layers->addLayer(layer);
     EXPECT_EQ(0, layers->nbLayers()) << "Layer was added to unexisting document";
 
     delete layers;
+    delete mdiChild;
 }
 
 TEST(LayersTest, Selection) {
     QApplication app(argc, argv);
-    auto document = createDocument();
+    auto mdiChild = new CadMdiChild;
+    mdiChild->newDocument();
 
-    auto layers = new LayersTest(document);
+    auto layers = new LayersTest(mdiChild);
     auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
-
-    /*
-     * Selection when no layers are present in the document
-     */
-    ASSERT_EQ(0, layers->nbLayers()) << "Document contains layers after creation";
-
-    EXPECT_NE(nullptr, layers->activeLayer()) << "Empty layer should be created";
-    EXPECT_EQ(1, layers->nbLayers()) << "Empty layer should be added to document";
 
     /*
      * Select layer
@@ -55,61 +48,66 @@ TEST(LayersTest, Selection) {
     ASSERT_EQ(2, layers->nbLayers()) << "Layer was not added to document";
 
     layers->selectLayer(0);
-    auto selectedLayer1 = layers->activeLayer();
+    auto selectedLayer1 = mdiChild->activeLayer();
 
     layers->selectLayer(1);
-    auto selectedLayer2 = layers->activeLayer();
+    auto selectedLayer2 = mdiChild->activeLayer();
 
     EXPECT_TRUE((selectedLayer1 == layer) ^ (selectedLayer2 == layer)) << "Wrong layer selected";
 
     delete layers;
+    delete mdiChild;
 }
 
 TEST(LayersTest, Edition) {
     QApplication app(argc, argv);
-    auto document = createDocument();
+    auto mdiChild = new CadMdiChild;
+    mdiChild->newDocument();
 
-    auto layers = new LayersTest(document);
+    auto layers = new LayersTest(mdiChild);
     auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     layers->addLayer(layer);
-    ASSERT_EQ(1, layers->nbLayers()) << "Layer was not added to document";
+    ASSERT_EQ(2, layers->nbLayers()) << "Layer was not added to document";
 
     /*
      * Trigger locked
      */
-    bool locked = layers->activeLayer()->isFrozen();
+    bool locked = mdiChild->activeLayer()->isFrozen();
 
     layers->cellClick(LayerModel::LOCKED, 0);
     locked = !locked;
 
-    ASSERT_EQ(locked, layers->activeLayer()->isFrozen()) << "Locked value didn't change";
+    ASSERT_EQ(locked, mdiChild->activeLayer()->isFrozen()) << "Locked value didn't change";
 
     layers->cellClick(LayerModel::LOCKED, 0);
     locked = !locked;
 
-    EXPECT_EQ(locked, layers->activeLayer()->isFrozen()) << "Locked value didn't change";
+    EXPECT_EQ(locked, mdiChild->activeLayer()->isFrozen()) << "Locked value didn't change";
 
     delete layers;
+    delete mdiChild;
 }
 
 TEST(LayersTest, Remove) {
     QApplication app(argc, argv);
-    auto document = createDocument();
+    auto mdiChild = new CadMdiChild;
+    mdiChild->newDocument();
 
-    auto layers = new LayersTest(document);
+    auto layers = new LayersTest(mdiChild);
     auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     layers->addLayer(layer);
-    ASSERT_EQ(1, layers->nbLayers()) << "Layer was not added to document";
+    ASSERT_EQ(2, layers->nbLayers()) << "Layer was not added to document";
 
     layers->selectLayer(0);
-    ASSERT_EQ(layer, layers->activeLayer());
+    ASSERT_EQ(layer, mdiChild->activeLayer());
 
     layers->remove();
-    EXPECT_EQ(0, layers->nbLayers()) << "Layer was not removed";
+    EXPECT_EQ(1, layers->nbLayers()) << "Layer was not removed";
 
     delete layers;
+    delete mdiChild;
 }
 
 TEST(LayersTest, EditionDialog) {

@@ -1,66 +1,57 @@
 #include <cadmdichild.h>
+#include <QtWidgets/QMessageBox>
 #include "layers.h"
 #include "ui_layers.h"
 
-Layers::Layers(lc::Document_SPtr document, QWidget *parent) :
+Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     QDockWidget(parent),
-    ui(new Ui::Layers) {
+    ui(new Ui::Layers),
+    _mdiChild(nullptr) {
 
     ui->setupUi(this);
 
     model = new LayerModel(this);
-    setDocument(document);
+    setMdiChild(mdiChild);
 
     ui->layerList->setModel(model);
     ui->layerList->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->layerList->horizontalHeader()->setSectionResizeMode(LayerModel::NAME, QHeaderView::Stretch);
 
     connect(model, &LayerModel::nameChanged, this, &Layers::changeLayerName);
+    connect(ui->layerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 }
 
 Layers::~Layers() {
     delete ui;
 }
 
-void Layers::setDocument(lc::Document_SPtr document) {
-    if(_document != nullptr) {
-        _document->addLayerEvent().disconnect<Layers, &Layers::on_addLayerEvent>(this);
-        _document->removeLayerEvent().disconnect<Layers, &Layers::on_removeLayerEvent>(this);
-        _document->replaceLayerEvent().disconnect<Layers, &Layers::on_replaceLayerEvent>(this);
+void Layers::setMdiChild(CadMdiChild* mdiChild) {
+    if(_mdiChild != nullptr) {
+        auto document = _mdiChild->document();
+        document->addLayerEvent().disconnect<Layers, &Layers::on_addLayerEvent>(this);
+        document->removeLayerEvent().disconnect<Layers, &Layers::on_removeLayerEvent>(this);
+        document->replaceLayerEvent().disconnect<Layers, &Layers::on_replaceLayerEvent>(this);
     }
 
-    _document = document;
+    _mdiChild = mdiChild;
 
-    if(_document != nullptr) {
-        _document->addLayerEvent().connect<Layers, &Layers::on_addLayerEvent>(this);
-        _document->removeLayerEvent().connect<Layers, &Layers::on_removeLayerEvent>(this);
-        _document->replaceLayerEvent().connect<Layers, &Layers::on_replaceLayerEvent>(this);
+    if(mdiChild != nullptr) {
+        auto document = mdiChild->document();
+        document->addLayerEvent().connect<Layers, &Layers::on_addLayerEvent>(this);
+        document->removeLayerEvent().connect<Layers, &Layers::on_removeLayerEvent>(this);
+        document->replaceLayerEvent().connect<Layers, &Layers::on_replaceLayerEvent>(this);
     }
 
     updateLayerList();
 }
 
-lc::Layer_CSPtr Layers::activeLayer() {
-    QModelIndexList selection = ui->layerList->selectionModel()->selectedRows();
-
-    if(selection.isEmpty()) {
-        if(model->rowCount() == 0) {
-            createLayer(std::make_shared<lc::Layer>(
-                    "0",
-                    lc::Color(255, 255, 255, 255)
-            ));
-        }
-
-        ui->layerList->selectRow(0);
-        emit layerChanged(model->layerAt(0));
-        return model->layerAt(0);
+void Layers::on_newButton_clicked() {
+    if(_mdiChild == nullptr) {
+        return;
     }
 
-    return model->layerAt(selection.first().row());
-}
-
-void Layers::on_newButton_clicked() {
-    auto dialog = new AddLayerDialog(_document, this);
+    auto dialog = new AddLayerDialog(_mdiChild->document(), this);
     dialog->show();
 
     connect(dialog, &AddLayerDialog::newLayer, this, &Layers::createLayer);
@@ -73,7 +64,7 @@ void Layers::on_deleteButton_clicked() {
 }
 
 void Layers::on_layerList_clicked(const QModelIndex& index) {
-    if(!index.isValid()) {
+    if(!index.isValid() || _mdiChild == nullptr) {
         return;
     }
 
@@ -81,13 +72,13 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
     if(index.column() != LayerModel::NAME) {
         auto locked = layer->isFrozen();
 
-        switch(index.column()) {
+        switch (index.column()) {
             case LayerModel::LOCKED:
                 locked = !locked;
                 break;
 
             case LayerModel::EDIT:
-                auto dialog = new AddLayerDialog(layer, _document, this);
+                auto dialog = new AddLayerDialog(layer, _mdiChild->document(), this);
                 dialog->show();
 
                 connect(dialog, &AddLayerDialog::editLayer, this, &Layers::replaceLayer);
@@ -103,9 +94,6 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
         );
 
         replaceLayer(layer, newLayer);
-    }
-    else {
-        emit layerChanged(layer);
     }
 }
 
@@ -126,22 +114,27 @@ void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {
 }
 
 void Layers::createLayer(lc::Layer_CSPtr layer) {
-    if(_document != nullptr) {
-        auto operation = std::make_shared<lc::operation::AddLayer>(_document, layer);
+    if(_mdiChild != nullptr) {
+        auto operation = std::make_shared<lc::operation::AddLayer>(_mdiChild->document(), layer);
         operation->execute();
     }
 }
 
 void Layers::deleteLayer(lc::Layer_CSPtr layer) {
-    if(_document != nullptr) {
-        auto operation = std::make_shared<lc::operation::RemoveLayer>(_document, layer);
-        operation->execute();
+    if(_mdiChild != nullptr) {
+        try {
+            auto operation = std::make_shared<lc::operation::RemoveLayer>(_mdiChild->document(), layer);
+            operation->execute();
+        }
+        catch(const char* message) {
+            QMessageBox::critical(nullptr, "Error", message);
+        }
     }
 }
 
 void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
-    if(_document != nullptr) {
-        auto operation = std::make_shared<lc::operation::ReplaceLayer>(_document, oldLayer, newLayer);
+    if(_mdiChild != nullptr) {
+        auto operation = std::make_shared<lc::operation::ReplaceLayer>(_mdiChild->document(), oldLayer, newLayer);
         operation->execute();
     }
 }
@@ -149,25 +142,52 @@ void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
 void Layers::updateLayerList() {
     std::vector<lc::Layer_CSPtr> layersVector;
 
-    if(_document != nullptr) {
-        auto layersMap = _document->allLayers();
+    if (_mdiChild != nullptr) {
+        auto layersMap = _mdiChild->document()->allLayers();
 
-        for(auto layer : layersMap) {
-            layersVector.push_back(layer.second);
+        for (auto layer : layersMap) {
+            layersVector.insert(layersVector.begin(), layer.second);
         }
     }
 
     model->setLayers(layersVector);
+
+    if(_mdiChild != nullptr && _mdiChild->activeLayer() != nullptr) {
+        auto layer = _mdiChild->activeLayer();
+        ui->layerList->selectRow(model->indexOf(layer));
+
+        emit layerChanged(layer);
+    }
 }
 
-void Layers::on_addLayerEvent(const lc::AddLayerEvent &) {
+void Layers::on_addLayerEvent(const lc::AddLayerEvent& event) {
+    _mdiChild->setActiveLayer(event.layer());
+
     updateLayerList();
 }
 
-void Layers::on_removeLayerEvent(const lc::RemoveLayerEvent &) {
+void Layers::on_removeLayerEvent(const lc::RemoveLayerEvent& event) {
+    if(_mdiChild->activeLayer() == event.layer()) {
+        _mdiChild->setActiveLayer(_mdiChild->document()->layerByName("0"));
+    }
+
     updateLayerList();
 }
 
-void Layers::on_replaceLayerEvent(const lc::ReplaceLayerEvent &) {
+void Layers::on_replaceLayerEvent(const lc::ReplaceLayerEvent& event) {
+    if(_mdiChild->activeLayer() == event.oldLayer()) {
+        _mdiChild->setActiveLayer(event.newLayer());
+    }
+
     updateLayerList();
+}
+
+void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected) {
+    if(selected.isEmpty()) {
+        return;
+    }
+
+    auto layer = model->layerAt(selected.first().top());
+    _mdiChild->setActiveLayer(layer);
+    emit layerChanged(layer);
 }

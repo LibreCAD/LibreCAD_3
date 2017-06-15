@@ -134,11 +134,14 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         lw = getLcLineWidth<lc::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
     }
 
+    auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
     // If a layer starts with a * it's a special layer we don't process yet
-    if (data.name.length()>0 && data.name.compare(0,1,"*")) {
-        auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
+    if(data.name == "0") {
+        auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
+        al->execute();
+    }
+    else if (data.name.length()>0 && data.name.compare(0,1,"*")) {
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        //_builder->appendMetaData(layer);
         al->execute();
     }
 }
