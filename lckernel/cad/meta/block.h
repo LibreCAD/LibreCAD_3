@@ -5,6 +5,7 @@
 #include <cad/geometry/geocoordinate.h>
 #include "metacolor.h"
 #include "dxflinepattern.h"
+#include "metalinewidth.h"
 
 #define BLOCK_ID_PREFIX "BLOCK"
 
@@ -12,7 +13,7 @@ namespace lc {
     class Block : public DocumentMetaType {
         public:
             Block(std::string name, geo::Coordinate base,
-                  lc::MetaColor_CSPtr color, lc::EntityMetaType_CSPtr lineWidth, lc::DxfLinePattern_CSPtr linePattern);
+                  lc::MetaColor_CSPtr color, lc::MetaLineWidth_CSPtr lineWidth, lc::DxfLinePattern_CSPtr linePattern);
 
             const std::string id() const override;
             const std::string name() const override;
@@ -26,7 +27,7 @@ namespace lc {
             std::string _name;
             geo::Coordinate _base;
             lc::MetaColor_CSPtr _color; //TODO: that's should probably be changed to a pointer to lc::Color
-            lc::EntityMetaType_CSPtr _lineWidth; //TODO: we should have a better type for LineWidth
+            lc::MetaLineWidth_CSPtr _lineWidth;
             lc::DxfLinePattern_CSPtr _linePattern;
     };
 

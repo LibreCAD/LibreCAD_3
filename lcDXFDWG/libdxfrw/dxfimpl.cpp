@@ -48,7 +48,7 @@ void DXFimpl::setBlock(const int _blockHandle) {
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    auto lw = getLcLineWidth<lc::EntityMetaType>(data.lWeight);
+    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
     auto color = icol.intToColor(data.color);
     lc::DxfLinePattern_CSPtr lp = nullptr;
 

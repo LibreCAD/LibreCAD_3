@@ -1,7 +1,7 @@
 #include "block.h"
 
 lc::Block::Block(std::string name, lc::geo::Coordinate base,
-                 lc::MetaColor_CSPtr color, lc::EntityMetaType_CSPtr lineWidth, lc::DxfLinePattern_CSPtr linePattern) :
+                 lc::MetaColor_CSPtr color, lc::MetaLineWidth_CSPtr lineWidth, lc::DxfLinePattern_CSPtr linePattern) :
         _name(name),
         _base(base),
         _color(color),
