@@ -44,7 +44,7 @@ lua/luaqobject.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
-)
+        managers/metainfomanager.cpp managers/metainfomanager.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -68,7 +68,7 @@ lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-)
+        managers/metainfomanager.cpp managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
 widgets/clicommand.ui

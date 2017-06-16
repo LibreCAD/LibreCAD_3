@@ -12,9 +12,9 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
 
     ui->setupUi(this);
 
-    linePatternSelect = new LinePatternSelect(document, this);
-    lineWidthSelect = new LineWidthSelect(this);
-    colorSelect = new ColorSelect(this);
+    linePatternSelect = new lc::ui::LinePatternSelect(document, this, false, false);
+    lineWidthSelect = new lc::ui::LineWidthSelect(nullptr, this, false, false);
+    colorSelect = new lc::ui::ColorSelect(nullptr, this, false, false);
 
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
     if(layout) {
@@ -28,7 +28,7 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
         if(oldLayer->linePattern() != nullptr) {
             linePatternSelect->setCurrentText(oldLayer->linePattern()->name().c_str());
         }
-        lineWidthSelect->setWidth(oldLayer->lineWidth().width());
+        lineWidthSelect->setWidth(std::make_shared<lc::MetaLineWidthByValue>(oldLayer->lineWidth()));
         colorSelect->setColor(oldLayer->color());
 
         if(oldLayer->linePattern() != nullptr) {
@@ -54,17 +54,22 @@ void AddLayerDialog::accept() {
     auto linePattern = linePatternSelect->linePattern();
     lc::Layer_CSPtr layer;
 
+    auto lineWidth = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect->lineWidth());
+    if(lineWidth == nullptr) {
+        return;
+    }
+
     if(linePattern == nullptr) {
         layer = std::make_shared<const lc::Layer>(
                 ui->name->text().toStdString(),
-                *lineWidthSelect->lineWidth(),
+                *lineWidth,
                 colorSelect->color()
         );
     }
     else {
         layer = std::make_shared<const lc::Layer>(
                 ui->name->text().toStdString(),
-                *lineWidthSelect->lineWidth(),
+                *lineWidth,
                 colorSelect->color(),
                 linePattern,
                 false

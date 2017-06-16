@@ -20,6 +20,7 @@
 #include "cad/dochelpers/undomanagerimpl.h"
 
 #include <file.h>
+#include <managers/metainfomanager.h>
 
 extern "C"
 {
@@ -81,6 +82,12 @@ class CadMdiChild : public QWidget {
         void setActiveLayer(const lc::Layer_CSPtr& activeLayer);
 
         /**
+         * @brief Get the MetaInfo manager
+         * @return MetaInfoManager
+         */
+        lc::ui::MetaInfoManager_SPtr metaInfoManager() const;
+
+        /**
          * \brief Get container of temporary entities
          * \return Temporary entities container
          */
@@ -128,6 +135,7 @@ class CadMdiChild : public QWidget {
 		LCViewer::TempEntities_SPtr _tempEntities;
 
 		lc::Layer_CSPtr _activeLayer;
+		lc::ui::MetaInfoManager_SPtr _metaInfoManager;
 
         QScrollBar* horizontalScrollBar;
         QScrollBar* verticalScrollBar;

@@ -67,11 +67,11 @@ TEST(LinePatternTest, Selection) {
     QApplication app(argc, argv);
     auto document = createDocument();
 
-    auto linePatternSelect = new LinePatternSelect(document);
+    auto linePatternSelect = new lc::ui::LinePatternSelect(document);
     EXPECT_EQ(3, linePatternSelect->count()) << "Select should contains New/Manage/Separator";
     delete linePatternSelect;
 
-    linePatternSelect = new LinePatternSelect(document, 0, true, true);
+    linePatternSelect = new lc::ui::LinePatternSelect(document, 0, true, true);
     EXPECT_EQ(5, linePatternSelect->count()) << "Select should contains New/Manage/Separator/ByBlock/ByLayer";
 
     auto linePattern1 = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);

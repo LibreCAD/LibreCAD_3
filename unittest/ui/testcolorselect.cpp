@@ -5,8 +5,8 @@
 
 TEST(ColorSelectTest, Selection) {
     QApplication app(argc, argv);
-    ColorSelect colorSelect(0, false, false);
-    ColorSelect colorSelect_ByBlock_ByLayer(0, true, true);
+    lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
+    lc::ui::ColorSelect colorSelect_ByBlock_ByLayer(nullptr, 0, true, true);
     auto nbColors = QColor::colorNames().size();
 
     /*
@@ -35,7 +35,7 @@ TEST(ColorSelectTest, Selection) {
 
 TEST(ColorSelectTest, CustomColor) {
     QApplication app(argc, argv);
-    ColorSelect colorSelect(0, false, false);
+    lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::Color lcColor(1, 2, 3, 4);
     lc::MetaColor lcMetaColor(lcColor);
 

@@ -56,6 +56,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     verticalScrollBar->setMinimum(-1000);
     verticalScrollBar->setMaximum(1000);
 
+    _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
+
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
             _viewer, SLOT(setHorizontalOffset(int)));
     connect(verticalScrollBar, SIGNAL(valueChanged(int)),
@@ -230,4 +232,8 @@ lc::Layer_CSPtr CadMdiChild::activeLayer() const {
 
 void CadMdiChild::setActiveLayer(const lc::Layer_CSPtr& activeLayer) {
     _activeLayer = activeLayer;
+}
+
+lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
+    return _metaInfoManager;
 }

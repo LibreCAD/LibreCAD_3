@@ -24,7 +24,7 @@ class AddLayerDialogTest : public AddLayerDialog {
         };
 
         double lineWidthValue() {
-            return lineWidthSelect->lineWidth()->width();
+            return std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect->lineWidth())->width();
         };
 
         lc::Color color() {

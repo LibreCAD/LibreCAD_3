@@ -1,6 +1,9 @@
 #include "colorselect.h"
 
-ColorSelect::ColorSelect(QWidget *parent, bool showByLayer, bool showByBlock) :
+using namespace lc;
+using namespace ui;
+
+ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *parent, bool showByLayer, bool showByBlock) :
     QComboBox(parent) {
 
     qIconSize = QSize(32, 32);
@@ -25,35 +28,8 @@ ColorSelect::ColorSelect(QWidget *parent, bool showByLayer, bool showByBlock) :
     }
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
-}
 
-QColor ColorSelect::getColor() {
-    if(currentText() == CUSTOM) {
-        return _customColor;
-    }
-    else {
-        return QColor(currentText());
-    }
-}
-
-lc::MetaColor_CSPtr ColorSelect::metaColor() {
-    QColor color = getColor();
-
-    if(!color.isValid()) {
-        return nullptr;
-    }
-
-    return std::make_shared<lc::MetaColor>(color.redF(), color.greenF(), color.blueF(), color.alphaF());
-}
-
-lc::Color ColorSelect::color() {
-    QColor color = getColor();
-
-    if(!color.isValid()) {
-        return lc::Color();
-    }
-
-    return lc::Color(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    setMetaInfoManager(metaInfoManager);
 }
 
 void ColorSelect::onActivated(const QString& text) {
@@ -67,6 +43,9 @@ void ColorSelect::onActivated(const QString& text) {
 
         connect(colorDialog, &QColorDialog::colorSelected, this, &ColorSelect::on_customColorChanged);
     }
+    else {
+        updateMetaInfoManager();
+    }
 }
 
 void ColorSelect::on_customColorChanged(const QColor &color) {
@@ -77,6 +56,8 @@ void ColorSelect::on_customColorChanged(const QColor &color) {
     setItemIcon(index, QIcon(pixmap));
 
     _customColor = color;
+
+    updateMetaInfoManager();
 }
 
 void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
@@ -87,6 +68,8 @@ void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
         QPixmap pixmap(qIconSize);
         pixmap.fill(color);
         setItemIcon(index, QIcon(pixmap));
+
+        updateMetaInfoManager();
     }
 }
 
@@ -95,4 +78,53 @@ void ColorSelect::setColor(lc::Color color) {
     setCurrentText(CUSTOM);
 
     on_customColorChanged(qColor);
+    updateMetaInfoManager();
+}
+
+void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {
+    _metaInfoManager = metaInfoManager;
+
+    if(metaInfoManager != nullptr && metaInfoManager->color() != nullptr) {
+        setColor(metaInfoManager->color()->color());
+    }
+}
+
+void ColorSelect::updateMetaInfoManager() {
+    if(!_metaInfoManager) {
+        return;
+    }
+
+    _metaInfoManager->setColor(metaColor());
+}
+
+lc::MetaColor_CSPtr ColorSelect::metaColor() {
+    if(currentText() == BY_LAYER) {
+        return nullptr;
+    }
+    if(currentText() == BY_BLOCK) {
+        return nullptr;
+    }
+
+    return std::make_shared<const lc::MetaColor>(color());
+}
+
+lc::Color ColorSelect::color() {
+    if(currentText() == BY_LAYER || currentText() == BY_BLOCK) {
+        throw "Color can't be returned if ByLayer or ByBlock is selected.";
+    }
+
+    QColor color;
+
+    if(currentText() == CUSTOM) {
+        color = _customColor;
+    }
+    else {
+        color = QColor(currentText());
+    }
+
+    if(!color.isValid()) {
+        throw "The selected color is invalid.";
+    }
+
+    return lc::Color(color.red(), color.green(), color.blue(), color.alpha());
 }
