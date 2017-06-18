@@ -15,7 +15,6 @@ namespace lc {
 
         private:
             void loadPlugin(const char* file);
-            void addLuaLibs(lua_State* L);
 
             const char* _interface;
     };

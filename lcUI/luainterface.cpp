@@ -1,3 +1,4 @@
+#include <lclua.h>
 #include "luainterface.h"
 
 LuaInterface::LuaInterface() :
@@ -14,7 +15,7 @@ LuaInterface::~LuaInterface() {
 void LuaInterface::initLua() {
     luaL_openlibs(_L);
     luaOpenQtBridge(_L);
-    lua_openlckernel(_L);
+    lc::LCLua::importLCKernel(_L);
 
     LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
 

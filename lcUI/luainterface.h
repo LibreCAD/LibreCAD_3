@@ -21,7 +21,6 @@ extern "C"
 #include "lua/luaqobject.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
-#include "cad/lualibrecadbridge.h"
 #include "lua/qtbridge.h"
 
 /**

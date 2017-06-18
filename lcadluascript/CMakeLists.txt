@@ -8,20 +8,18 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 message("***** LibreCAD lcadluascript *****")
 
 # SOURCE FILES
-set(lcluascript_srcs 
-        lcadluascript.cpp
-        cad/lualibrecadbridge.cpp
+set(lcluascript_srcs
+        lckernelbridge.cpp
         managers/pluginmanager.cpp
+        lclua.cpp
 )
 
 # HEADER FILES
 set(lcluascript_hdrs 
         const.h
-        LuaIntf.h
-        lcadluascript.h
-        cad/lualibrecadbridge.h
-        cad/timer.h
+        utils/timer.h
         managers/pluginmanager.h
+        lclua.h
 )
 
 

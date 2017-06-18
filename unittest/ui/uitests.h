@@ -3,6 +3,7 @@
 #include <luainterface.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <QApplication>
+#include <cad/dochelpers/storagemanagerimpl.h>
 
 static int argc = 0;
 static char** argv = NULL;

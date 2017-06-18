@@ -7,12 +7,11 @@ local p =rx;
 local q=ry;
 
 layer=Layer("0", Color(1,1,1,1));
-al = AddLayer(active.document(), layer);
+al = AddLayer(document, layer);
 al:execute();
 
-doc=active.document()
-ce=Builder(doc,em)
-layer = active.proxy.layerByName("0")
+ce=Builder(document,em)
+layer = document:layerByName("0")
 local count=0
 while (d< 8*math.pi) do
     local x=rx+(math.sin(d)*d)*r;

@@ -1,7 +1,7 @@
 #include "luascript.h"
 #include "ui_luascript.h"
 
-#include <lcadluascript.h>
+#include <lclua.h>
 
 LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
@@ -19,9 +19,13 @@ void LuaScript::on_luaRun_clicked() {
 	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
         CadMdiChild* mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
 
-		LCadLuaScript lc(mdiChild->document());
+		auto luaState = LuaIntf::LuaState::newState();
+        lc::LCLua::addLuaLibs(luaState);
+        lc::LCLua::importLCKernel(luaState);
+        lc::LCLua::setDocument(luaState, mdiChild->document());
 
-		std::string out = lc.run(ui->luaInput->toPlainText().toStdString());
+        auto out = lc::LCLua::runString(luaState, ui->luaInput->toPlainText().toStdString().c_str());
+
 		_cliCommand->write(QString::fromStdString(out));
 	}
 }
