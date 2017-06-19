@@ -15,7 +15,9 @@ LuaInterface::~LuaInterface() {
 void LuaInterface::initLua() {
     luaL_openlibs(_L);
     luaOpenQtBridge(_L);
-    lc::LCLua::importLCKernel(_L);
+
+	auto lcLua = lc::LCLua(_L);
+	lcLua.importLCKernel();
 
     LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
 

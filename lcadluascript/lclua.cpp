@@ -16,35 +16,65 @@ static const luaL_Reg loadedlibs[] = {
         {NULL, NULL}
 };
 
-LCLua::LCLua() {
+LCLua::LCLua(lua_State* L) :
+    _L(L) {
 
 }
 
-void LCLua::addLuaLibs(lua_State* L) {
+void LCLua::addLuaLibs() {
     const luaL_Reg *lib;
 
     for (lib = loadedlibs; lib->func; lib++) {
-        luaL_requiref(L, lib->name, lib->func, 1);
-        lua_pop(L, 1);
+        luaL_requiref(_L, lib->name, lib->func, 1);
+        lua_pop(_L, 1);
     }
 
     //Add others non-LC functions
-    LuaBinding(L)
-        .addFunction("microtime", &lua_microtime);
+    LuaBinding(_L)
+        .addFunction("microtime", &lua_microtime)
+        .addFunction("openFile", &openFile)
+
+        .beginClass<FILE>("FILE")
+            .addFunction("read", [](FILE* file, const size_t len) {
+                return read(file, len);
+            })
+            .addFunction("write", [](FILE* file, const char* content) {
+                return write(file, content);
+            })
+        .endClass();
 }
 
-void LCLua::setDocument(lua_State* L, lc::Document_SPtr document) {
-    LuaIntf::Lua::setGlobal(L, "document", document);
+void LCLua::setDocument(lc::Document_SPtr document) {
+    LuaIntf::Lua::setGlobal(_L, "document", document);
 }
 
-std::string LCLua::runString(lua_State* L, const char* code) {
+std::string LCLua::runString(const char* code) {
     std::string out;
 
-    auto s = luaL_dostring(L, code);
+    auto s = luaL_dostring(_L, code);
     if (s != 0) {
-        out.append(lua_tostring(L, -1));
-        lua_pop(L, 1);
+        out.append(lua_tostring(_L, -1));
+        lua_pop(_L, 1);
     }
 
     return out;
+}
+
+FILE* LCLua::openFile(const char* path, const char* mode) {
+    //TODO: check if the file can be opened
+
+    return fopen(path, mode);
+}
+
+std::string LCLua::read(FILE* file, const size_t len) {
+    char buf[len + 1];
+
+    size_t n = fread(buf, sizeof(char), len, file);
+    buf[n] = '\0';
+
+    return std::string(buf);
+}
+
+void LCLua::write(FILE* file, const char* content) {
+    fwrite(content, sizeof(char), strlen(content), file);
 }

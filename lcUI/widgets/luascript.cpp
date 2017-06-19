@@ -20,11 +20,13 @@ void LuaScript::on_luaRun_clicked() {
         CadMdiChild* mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
 
 		auto luaState = LuaIntf::LuaState::newState();
-        lc::LCLua::addLuaLibs(luaState);
-        lc::LCLua::importLCKernel(luaState);
-        lc::LCLua::setDocument(luaState, mdiChild->document());
+		auto lcLua = lc::LCLua(luaState);
 
-        auto out = lc::LCLua::runString(luaState, ui->luaInput->toPlainText().toStdString().c_str());
+		lcLua.addLuaLibs();
+		lcLua.importLCKernel();
+        lcLua.setDocument(mdiChild->document());
+
+        auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
 
 		_cliCommand->write(QString::fromStdString(out));
 	}

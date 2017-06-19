@@ -168,14 +168,15 @@ int main(int argc, char** argv) {
 
 
     auto luaState = LuaIntf::LuaState::newState();
-    lc::LCLua::addLuaLibs(luaState);
-    lc::LCLua::importLCKernel(luaState);
-    lc::LCLua::setDocument(luaState, _document);
+    auto lcLua = lc::LCLua(luaState);
+    lcLua.addLuaLibs();
+    lcLua.importLCKernel();
+    lcLua.setDocument(_document);
 
     std::string luaCode = loadFile(fIn);
 
     if (luaCode.size() != 0) {
-        std::string out = lc::LCLua::runString(luaState, luaCode.c_str());
+        std::string out = lcLua.runString(luaCode.c_str());
 
         if (out.size() > 0) {
             std::cerr << out << std::endl;

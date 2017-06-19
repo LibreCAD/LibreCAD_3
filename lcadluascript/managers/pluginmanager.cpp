@@ -31,9 +31,9 @@ void lc::PluginManager::loadPlugins() {
 
 void lc::PluginManager::loadPlugin(const char* file) {
     auto state = LuaIntf::LuaState::newState();
-
-    LCLua::addLuaLibs(state);
-    LCLua::importLCKernel(state);
+    auto lcLua = LCLua(state);
+    lcLua.addLuaLibs();
+    lcLua.importLCKernel();
 
     LuaIntf::Lua::setGlobal(state, "LC_interface", _interface);
 

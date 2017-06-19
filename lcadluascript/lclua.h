@@ -17,15 +17,18 @@ namespace LuaIntf {
 namespace lc {
     class LCLua {
         public:
-            LCLua();
+            LCLua(lua_State* L);
 
-            static void addLuaLibs(lua_State* L);
-            static void importLCKernel(lua_State* L);
-            static void setDocument(lua_State* L, lc::Document_SPtr document);
-            static std::string runString(lua_State* L, const char* code);
+            void addLuaLibs();
+            void importLCKernel();
+            void setDocument(lc::Document_SPtr document);
+            std::string runString(const char* code);
 
-            static std::string openFile(std::string path);
-            //TODO: 1 global version with path as param
-            //TODO: 1 local version with dialog -> subclass LCLua
+            static FILE* openFile(const char* path, const char* mode);
+            static std::string read(FILE* file, const size_t len);
+            static void write(FILE* file, const char* content);
+
+        private:
+            lua_State* _L;
     };
 }

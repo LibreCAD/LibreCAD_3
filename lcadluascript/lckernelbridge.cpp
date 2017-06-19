@@ -20,8 +20,8 @@ using namespace lc;
 
 
 
-void LCLua::importLCKernel(lua_State* L) {
-    LuaBinding(L)
+void LCLua::importLCKernel() {
+    LuaBinding(_L)
         .beginClass<Color>("Color")
             .addConstructor(LUA_ARGS(
                                 double r,
