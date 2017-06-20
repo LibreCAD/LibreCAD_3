@@ -137,3 +137,25 @@ TEST(BuilderTest, Insert) {
     EXPECT_EQ(document, insert->document());
     EXPECT_EQ(displayBlock, insert->displayBlock());
 }
+
+TEST(BuilderTest, Layer) {
+    auto builder = lc::builder::LayerBuilder();
+    auto name = "Test Layer";
+    auto lp = std::make_shared<const lc::DxfLinePattern>();
+    auto lw = lc::MetaLineWidthByValue(2);
+    auto color = lc::Color();
+
+    auto layer = builder
+        .setName(name)
+        ->setLinePattern(lp)
+        ->setLineWidth(lw)
+        ->setColor(color)
+        ->setIsFrozen(true)
+        ->build();
+
+    EXPECT_EQ(name, layer->name());
+    EXPECT_EQ(lp, layer->linePattern());
+    EXPECT_EQ(lw.width(), layer->lineWidth().width());
+    EXPECT_TRUE(color == layer->color());
+    EXPECT_TRUE(layer->isFrozen());
+}

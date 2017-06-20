@@ -49,6 +49,16 @@ Layer::Layer(const std::string name, const Color color) :
     assert(!StringHelper::isBlank(name) && "Name cannot be blank"); // Name must be set
 }
 
+Layer::Layer(const builder::LayerBuilder& builder) :
+    EntityMetaType(),
+    DocumentMetaType(),
+    _name(builder.name()),
+    _lineWidth(builder.lineWidth()),
+    _color(builder.color()),
+    _linepattern(builder.linePattern()),
+    _isFrozen(builder.isFrozen()) {
+}
+
 Color Layer::color() const {
     return _color;
 }
