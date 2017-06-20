@@ -8,6 +8,7 @@
 #include <cad/primitive/insert.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/meta/dxflinepattern.h>
 
 TEST(BuilderTest, Line) {
     auto layer = std::make_shared<lc::Layer>();
@@ -158,4 +159,26 @@ TEST(BuilderTest, Layer) {
     EXPECT_EQ(lw.width(), layer->lineWidth().width());
     EXPECT_TRUE(color == layer->color());
     EXPECT_TRUE(layer->isFrozen());
+}
+
+TEST(BuilderTest, DxfLinePattern) {
+    auto builder = lc::builder::LinePatternBuilder();
+    auto name = "Test LP";
+    auto description = "Test";
+    std::vector<double> initialPath = {5, 0, 1, 2};
+    double lastElement = 3;
+
+    auto lp = builder
+        .setName(name)
+        ->setDescription(description)
+        ->setPath(initialPath)
+        ->addElement(lastElement)
+        ->build();
+
+    initialPath.push_back(lastElement);
+
+    EXPECT_EQ(name, lp->name());
+    EXPECT_EQ(description, lp->description());
+    EXPECT_EQ(initialPath, lp->path());
+    EXPECT_EQ(11, lp->length());
 }

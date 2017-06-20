@@ -70,6 +70,7 @@ cad/builders/circle.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
+cad/builders/linepattern.cpp
 )
 
 # HEADER FILES
@@ -161,6 +162,7 @@ cad/builders/point.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
+cad/builders/linepattern.h
 )
 
 # LOG4CXX

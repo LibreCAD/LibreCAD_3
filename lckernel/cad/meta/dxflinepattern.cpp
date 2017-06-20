@@ -15,6 +15,14 @@ DxfLinePattern::DxfLinePattern(const std::string &name, const std::string &descr
     // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }
 
+DxfLinePattern::DxfLinePattern(const builder::LinePatternBuilder& builder) :
+    _name(builder.name()),
+    _description(builder.description()),
+    _path(builder.path()),
+    _length(calculatePathLength(builder.path())) {
+
+}
+
 double DxfLinePattern::calculatePathLength(const std::vector<double> &_path) {
     return std::fabs(std::accumulate(_path.begin(), _path.end(), 0.));
 }
