@@ -1,14 +1,13 @@
 #include "pluginmanager.h"
 #include "lclua.h"
 #include <dirent.h>
-#include <iostream>
 
 lc::PluginManager::PluginManager(const char* interface) :
     _interface(interface) {
 
 }
 
-void lc::PluginManager::loadPlugins() {
+void lc::PluginManager::loadPlugins(FILE* (*f_openFileDialog)(bool, const char*, const char*)) {
     const char* path = "../lcUILua/plugins/"; //TODO: get path
 
     DIR* dir;
@@ -20,7 +19,7 @@ void lc::PluginManager::loadPlugins() {
                 continue;
             }
 
-            loadPlugin((std::string(path) + ent->d_name + "/plugin.lua").c_str());
+            loadPlugin((std::string(path) + ent->d_name + "/plugin.lua").c_str(), f_openFileDialog);
         }
         closedir(dir);
     }
@@ -29,9 +28,10 @@ void lc::PluginManager::loadPlugins() {
     }
 }
 
-void lc::PluginManager::loadPlugin(const char* file) {
+void lc::PluginManager::loadPlugin(const char* file, FILE* (*f_openFileDialog)(bool, const char*, const char*)) {
     auto state = LuaIntf::LuaState::newState();
     auto lcLua = LCLua(state);
+    lcLua.setF_openFileDialog(f_openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
 

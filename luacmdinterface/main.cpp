@@ -69,6 +69,21 @@ cairo_status_t write_func (void * closure, const unsigned char *data, unsigned i
     return CAIRO_STATUS_SUCCESS;
 }
 
+static FILE* openFileDialog(bool isOpening, const char* description, const char* mode) {
+    std::string path;
+
+    if(isOpening) {
+        std::cout << "Enter path to open " << description << ": ";
+    }
+    else {
+        std::cout << "Enter path to save " << description << ": ";
+    }
+
+    std::cin >> path;
+
+    return fopen(path.c_str(), mode);
+}
+
 int main(int argc, char** argv) {
     int width = DEFAULT_IMAGE_WIDTH;
     int height = DEFAULT_IMAGE_HEIGHT;
@@ -164,11 +179,12 @@ int main(int argc, char** argv) {
 
     // Render Lua Code
     lc::PluginManager pluginManager("cli");
-    pluginManager.loadPlugins();
+    pluginManager.loadPlugins(&openFileDialog);
 
 
     auto luaState = LuaIntf::LuaState::newState();
     auto lcLua = lc::LCLua(luaState);
+    lcLua.setF_openFileDialog(&openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
     lcLua.setDocument(_document);

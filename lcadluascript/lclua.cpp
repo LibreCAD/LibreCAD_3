@@ -17,7 +17,8 @@ static const luaL_Reg loadedlibs[] = {
 };
 
 LCLua::LCLua(lua_State* L) :
-    _L(L) {
+    _L(L),
+    _f_openFileDialog(nullptr) {
 
 }
 
@@ -42,6 +43,15 @@ void LCLua::addLuaLibs() {
                 return write(file, content);
             })
         .endClass();
+
+    if(_f_openFileDialog == nullptr) {
+        LuaBinding(_L).addFunction("openFileDialog", []() {
+            return (FILE*) nullptr;
+        });
+    }
+    else {
+        LuaBinding(_L).addFunction("openFileDialog", _f_openFileDialog);
+    }
 }
 
 void LCLua::setDocument(lc::Document_SPtr document) {
@@ -77,4 +87,8 @@ std::string LCLua::read(FILE* file, const size_t len) {
 
 void LCLua::write(FILE* file, const char* content) {
     fwrite(content, sizeof(char), strlen(content), file);
+}
+
+void LCLua::setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*)) {
+    _f_openFileDialog = f_openFileDialog;
 }

@@ -19,10 +19,16 @@ namespace lc {
         public:
             LCLua(lua_State* L);
 
+            /**
+             * @brief Bind Lua functions and others functions required by LibreCAD
+             * @param f_openFileDialog Function which asks user to choose a file
+             */
             void addLuaLibs();
             void importLCKernel();
             void setDocument(lc::Document_SPtr document);
             std::string runString(const char* code);
+
+            void setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*));
 
             static FILE* openFile(const char* path, const char* mode);
             static std::string read(FILE* file, const size_t len);
@@ -30,5 +36,6 @@ namespace lc {
 
         private:
             lua_State* _L;
+            FILE* (*_f_openFileDialog)(bool, const char*, const char*);
     };
 }

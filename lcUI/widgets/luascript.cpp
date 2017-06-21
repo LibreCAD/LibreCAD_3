@@ -2,6 +2,7 @@
 #include "ui_luascript.h"
 
 #include <lclua.h>
+#include <luainterface.h>
 
 LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
@@ -21,7 +22,7 @@ void LuaScript::on_luaRun_clicked() {
 
 		auto luaState = LuaIntf::LuaState::newState();
 		auto lcLua = lc::LCLua(luaState);
-
+		lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
 		lcLua.addLuaLibs();
 		lcLua.importLCKernel();
         lcLua.setDocument(mdiChild->document());

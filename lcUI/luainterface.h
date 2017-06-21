@@ -94,6 +94,8 @@ class LuaInterface {
          */
 		LuaIntf::LuaState luaState();
 
+		static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
+
 	private:
 		LuaIntf::LuaState _L;
 		std::vector<LuaQObject_SPtr> _luaQObjects;

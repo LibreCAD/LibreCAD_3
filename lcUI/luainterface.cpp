@@ -13,11 +13,11 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua() {
-    luaL_openlibs(_L);
-    luaOpenQtBridge(_L);
-
 	auto lcLua = lc::LCLua(_L);
+    lcLua.addLuaLibs();
 	lcLua.importLCKernel();
+
+    luaOpenQtBridge(_L);
 
     LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
 
@@ -29,7 +29,7 @@ void LuaInterface::initLua() {
         lua_pop(_L, 1);
     }
 
-	_pluginManager.loadPlugins();
+	_pluginManager.loadPlugins(&LuaInterface::openFileDialog);
 }
 
 bool LuaInterface::luaConnect(
@@ -109,4 +109,21 @@ std::vector<std::string> LuaInterface::pluginList(const char* path) {
     }
 
     return plugins;
+}
+
+FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, const char* mode) {
+    QString path;
+
+    if(isOpening) {
+        path = QFileDialog::getOpenFileName(nullptr, (std::string("Open ") + description).c_str());
+    }
+    else {
+        path = QFileDialog::getSaveFileName(nullptr, (std::string("Save ") + description).c_str());
+    }
+
+    if(path.isEmpty()) {
+        return nullptr;
+    }
+
+    return fopen(path.toStdString().c_str(), mode);
 }
