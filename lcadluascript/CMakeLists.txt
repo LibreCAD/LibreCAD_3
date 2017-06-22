@@ -8,18 +8,18 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 message("***** LibreCAD lcadluascript *****")
 
 # SOURCE FILES
-set(lcluascript_srcs 
-        lcadluascript.cpp
-        cad/lualibrecadbridge.cpp
+set(lcluascript_srcs
+        lckernelbridge.cpp
+        managers/pluginmanager.cpp
+        lclua.cpp
 )
 
 # HEADER FILES
 set(lcluascript_hdrs 
         const.h
-        LuaIntf.h
-        lcadluascript.h
-        cad/lualibrecadbridge.h
-        cad/timer.h
+        utils/timer.h
+        managers/pluginmanager.h
+        lclua.h
 )
 
 
@@ -34,6 +34,11 @@ if( CMAKE_COMPILER_IS_GNUCXX)
 else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
+
+#Lua
+find_package(Lua 5.2 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+link_directories(${LUA_LIBRARIES})
 
 set(SEPARATE_BUILD OFF)
  

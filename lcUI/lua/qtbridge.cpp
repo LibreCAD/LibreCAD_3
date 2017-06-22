@@ -189,6 +189,8 @@ void addLCBindings(lua_State *L) {
 			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("viewer", &CadMdiChild::viewer)
+			.addFunction("activeLayer", &CadMdiChild::activeLayer)
+			.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
 		.endClass()
 
 		.beginClass<LCViewer::Cursor>("Cursor")
@@ -257,12 +259,15 @@ void addLCBindings(lua_State *L) {
 			.addFunction("removeEntity", &LCViewer::TempEntities::removeEntity)
 		.endClass()
 
+        .beginClass<lc::ui::MetaInfoManager>("MetaInfoManager")
+			.addFunction("metaInfo", &lc::ui::MetaInfoManager::metaInfo)
+        .endClass()
+
 		.beginExtendClass<Layers, QDockWidget>("Layers")
             .addFactory([]() {
                 return new Layers();
             })
-			.addFunction("activeLayer", &Layers::activeLayer)
-			.addFunction("setDocument", &Layers::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
+			.addFunction("setMdiChild", &Layers::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
 		.endClass()
 
 		.beginExtendClass<LinePatternManager, QDialog>("LinePatternManager")
@@ -272,26 +277,31 @@ void addLCBindings(lua_State *L) {
             .addFunction("setDocument", &LinePatternManager::setDocument)
         .endClass()
 
-        .beginExtendClass<LinePatternSelect, QComboBox>("LinePatternSelect")
+        .beginExtendClass<lc::ui::LinePatternSelect, QComboBox>("LinePatternSelect")
             .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new LinePatternSelect(nullptr, parent, showByLayer, showByBlock);
+                return new lc::ui::LinePatternSelect(nullptr, parent, showByLayer, showByBlock);
             })
-            .addFunction("setDocument", &LinePatternSelect::setDocument, LUA_ARGS(LuaIntf::_opt<lc::Document_SPtr>))
-            .addFunction("linePattern", &LinePatternSelect::linePattern)
+            .addFunction("setMdiChild", &lc::ui::LinePatternSelect::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
         .endClass()
 
-        .beginExtendClass<LineWidthSelect, QComboBox>("LineWidthSelect")
+        .beginExtendClass<lc::ui::LineWidthSelect, QComboBox>("LineWidthSelect")
             .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new LineWidthSelect(parent, showByLayer, showByBlock);
+                return new lc::ui::LineWidthSelect(nullptr, parent, showByLayer, showByBlock);
             })
-            .addFunction("lineWidth", &LineWidthSelect::lineWidth)
+            .addFunction("setMetaInfoManager",
+                         &lc::ui::LineWidthSelect::setMetaInfoManager,
+                         LUA_ARGS(LuaIntf::_opt<lc::ui::MetaInfoManager_SPtr>)
+            )
         .endClass()
 
-        .beginExtendClass<ColorSelect, QComboBox>("ColorSelect")
+        .beginExtendClass<lc::ui::ColorSelect, QComboBox>("ColorSelect")
             .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new ColorSelect(parent, showByLayer, showByBlock);
+                return new lc::ui::ColorSelect(nullptr, parent, showByLayer, showByBlock);
             })
-            .addFunction("metaColor", &ColorSelect::metaColor)
+            .addFunction("setMetaInfoManager",
+                         &lc::ui::ColorSelect::setMetaInfoManager,
+                         LUA_ARGS(LuaIntf::_opt<lc::ui::MetaInfoManager_SPtr>)
+            )
         .endClass()
 
 	.endModule();

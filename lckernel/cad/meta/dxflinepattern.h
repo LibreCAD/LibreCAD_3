@@ -9,13 +9,14 @@
 #include <cassert>
 #include <vector>
 #include <map>
+#include <cad/builders/linepattern.h>
 
 namespace lc {
     /**
      * Represents a line style
      */
     class DxfLinePattern : public DocumentMetaType, public EntityMetaType {
-
+    friend class builder::LinePatternBuilder;
 
     public:
 
@@ -78,6 +79,8 @@ namespace lc {
         const std::vector<double> lcPattern(double lineWidth = 1) const;
 
     private:
+        DxfLinePattern(const builder::LinePatternBuilder& builder);
+
         std::string _name;
         std::string _description;
         std::vector<double> _path;

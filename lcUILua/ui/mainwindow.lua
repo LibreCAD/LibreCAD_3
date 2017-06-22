@@ -27,26 +27,24 @@ end
 
 --Return the selected layer
 function active_layer()
-    return layers:activeLayer()
+    if(active_widget() == nil) then
+        return nil
+    end
+
+    return active_widget():activeLayer()
 end
 
 --Create MetaInfo containing every selected MetaTypes
 function active_metaInfo()
-    local metaInfo = MetaInfo()
+    local widget = active_widget()
 
-    local linePattern = linePatternSelect:linePattern()
-    if(linePattern ~= nil) then
-        metaInfo:addDxfLinePattern(linePattern)
+    if(widget == nil) then
+        return nil
     end
 
-    local lineWidth = lineWidthSelect:lineWidth()
-    if(lineWidth ~= nil) then
-        metaInfo:add(lineWidth)
-    end
-
-    local color = colorSelect:metaColor()
-    if(color ~= nil) then
-        metaInfo:add(color)
+    local metaInfo = widget:metaInfoManager():metaInfo()
+    if(metaInfo == nil) then
+        metaInfo = MetaInfo() -- nil != nullptr when calling a c++ function
     end
 
     return metaInfo
@@ -60,15 +58,19 @@ end
 
 --Called when a new window is focused, and refreshes all the widgets
 local function onSubWindowChanged(window)
-    local document = active_document()
+    local widget = active_widget()
 
     --setDocument called without parameters to use nullptr
-    if(document == nil) then
-        layers:setDocument()
-        linePatternSelect:setDocument()
+    if(widget == nil) then
+        layers:setMdiChild()
+        linePatternSelect:setMdiChild()
+        lineWidthSelect:setMetaInfoManager()
+        colorSelect:setMetaInfoManager()
     else
-        layers:setDocument(document)
-        linePatternSelect:setDocument(document)
+        layers:setMdiChild(widget)
+        linePatternSelect:setMdiChild(widget)
+        lineWidthSelect:setMetaInfoManager(widget:metaInfoManager())
+        colorSelect:setMetaInfoManager(widget:metaInfoManager())
     end
 end
 
@@ -115,7 +117,7 @@ function create_main_window()
 
     add_commandline()
 
-    layers = lc.Layers(active_document())
+    layers = lc.Layers()
     mainWindow:addDockWidget(2, layers)
 
     linePatternSelect = lc.LinePatternSelect(mainWindow, true, true)

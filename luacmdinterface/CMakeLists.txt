@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
-PROJECT (LudaCmdInterface)
+PROJECT (LuaCmdInterface)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 
@@ -55,6 +55,10 @@ set(GLIB_FIND_COMPONENTS gobject)
 find_package(GLib REQUIRED)
 include_directories(${GLIB_INCLUDE_DIRS})
 
+#Lua
+find_package(Lua 5.2 REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+link_directories(${LUA_LIBRARIES})
 
 set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
@@ -87,5 +91,6 @@ target_link_libraries(luacmdinterface
         ${CURL_LIBRARIES}
         ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
+        ${LUA_LIBRARIES}
         lcluascript lckernel lcluascript lcviewernoqt
 )

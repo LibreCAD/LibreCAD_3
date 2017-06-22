@@ -17,10 +17,10 @@ extern "C"
 #include <QTextStream>
 #include <QtUiTools/QUiLoader>
 #include <QCoreApplication>
+#include <managers/pluginmanager.h>
 #include "lua/luaqobject.h"
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
-#include "cad/lualibrecadbridge.h"
 #include "lua/qtbridge.h"
 
 /**
@@ -94,7 +94,10 @@ class LuaInterface {
          */
 		LuaIntf::LuaState luaState();
 
+		static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
+
 	private:
 		LuaIntf::LuaState _L;
 		std::vector<LuaQObject_SPtr> _luaQObjects;
+        lc::PluginManager _pluginManager;
 };

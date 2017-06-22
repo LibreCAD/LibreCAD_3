@@ -26,7 +26,7 @@ class Layers : public QDockWidget {
         /**
          * \brief Create widget
          */
-        Layers(lc::Document_SPtr document = nullptr, QWidget* parent = 0);
+        Layers(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0);
         ~Layers();
 
         /**
@@ -34,19 +34,13 @@ class Layers : public QDockWidget {
          * \param document New document
          * Update the layer list.
          */
-        void setDocument(lc::Document_SPtr document = nullptr);
-
-        /**
-         * \brief Get the selected layer.
-         * \return Shared pointer to Layer
-         * It never returns nullptr. The first layer is selected or a new one is created.
-         */
-        lc::Layer_CSPtr activeLayer();
+        void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
     signals:
         void layerChanged(lc::Layer_CSPtr layer);
 
     private slots:
+        void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void on_newButton_clicked();
         void on_deleteButton_clicked();
         void on_layerList_clicked(const QModelIndex& index);
@@ -56,12 +50,13 @@ class Layers : public QDockWidget {
     protected:
         Ui::Layers* ui;
         LayerModel* model;
+
         void createLayer(lc::Layer_CSPtr layer);
         void deleteLayer(lc::Layer_CSPtr layer);
         void replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer);
 
     private:
-        lc::Document_SPtr _document;
+        CadMdiChild* _mdiChild;
 
         void updateLayerList();
 

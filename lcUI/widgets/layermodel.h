@@ -39,6 +39,13 @@ class LayerModel : public QAbstractTableModel {
         lc::Layer_CSPtr layerAt(int row);
 
         /**
+         * @brief Give the index of the given layer
+         * @param layer
+         * @return Index of layer
+         */
+        unsigned int indexOf(lc::Layer_CSPtr layer);
+
+        /**
          * \brief Get number of layers
          * \return Number of layers
          */
@@ -56,7 +63,6 @@ class LayerModel : public QAbstractTableModel {
 
     private:
         std::vector<lc::Layer_CSPtr> _layers;
-        lc::Layer_CSPtr _selectedLayer;
 
         QIcon _editIcon;
         QIcon _lockedIcon;

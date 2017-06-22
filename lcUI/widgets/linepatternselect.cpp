@@ -1,5 +1,8 @@
 #include "linepatternselect.h"
 
+using namespace lc;
+using namespace ui;
+
 LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent, bool showByLayer, bool showByBlock) :
     QComboBox(parent),
     _showByLayer(showByLayer),
@@ -13,6 +16,23 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
     setDocument(document);
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
+}
+
+LinePatternSelect::LinePatternSelect(CadMdiChild* mdiChild, QWidget* parent, bool showByLayer, bool showByBlock) :
+    LinePatternSelect((lc::Document_SPtr) nullptr, parent, showByLayer, showByBlock) {
+
+    setMdiChild(mdiChild);
+}
+
+void LinePatternSelect::setMdiChild(CadMdiChild* mdiChild) {
+    if(mdiChild == nullptr) {
+        setDocument(nullptr);
+    }
+    else {
+        setDocument(mdiChild->document());
+
+        _metaInfoManager = mdiChild->metaInfoManager();
+    }
 }
 
 void LinePatternSelect::setDocument(lc::Document_SPtr document) {
@@ -76,6 +96,9 @@ void LinePatternSelect::onActivated(const QString& text) {
         if(_showByLayer) {
             setCurrentText(BY_LAYER);
         }
+    }
+    else if(_metaInfoManager != nullptr) {
+        _metaInfoManager->setLinePattern(linePattern());
     }
 }
 

@@ -8,63 +8,89 @@
 #include <widgets/linepatternpainter.h>
 #include <dialogs/addlinepatterndialog.h>
 #include <dialogs/linepatternmanager.h>
+#include <cadmdichild.h>
 
 #define BY_BLOCK "ByBlock"
 #define BY_LAYER "ByLayer"
 #define NEW_LP "New line pattern"
 #define MANAGE_LP "Manage line patterns"
 
-/**
- * \brief Dropdown select for DxfLinePatterns
- */
-class LinePatternSelect : public QComboBox {
-    Q_OBJECT
-
-    public:
+namespace lc {
+    namespace ui {
         /**
-         * \brief Create widget
-         * \param document Document containing the line patterns
-         * \param parent Pointer to parent widget
-         * \param showByLayer Add "ByLayer" option
-         * \param showByBlock Add "ByBlock" option
+         * \brief Dropdown select for DxfLinePatterns
          */
-        LinePatternSelect(lc::Document_SPtr document = nullptr, QWidget *parent = 0, bool showByLayer = false, bool showByBlock = false);
+        class LinePatternSelect : public QComboBox {
+            Q_OBJECT
 
-        /**
-         * \brief Change document
-         * \param document New document
-         */
-        void setDocument(lc::Document_SPtr document = nullptr);
+            public:
+                /**
+                 * \brief Create widget
+                 * \param document Document containing the line patterns
+                 * \param parent Pointer to parent widget
+                 * \param showByLayer Add "ByLayer" option
+                 * \param showByBlock Add "ByBlock" option
+                 */
+                LinePatternSelect(lc::Document_SPtr document = nullptr, QWidget* parent = 0, bool showByLayer = false,
+                                  bool showByBlock = false);
 
-        /**
-         * \brief Return selected line pattern
-         * \return Pointer to DxfLinePattern
-         */
-        lc::DxfLinePattern_CSPtr linePattern();
+                /**
+                 * \brief Create widget (for drawing)
+                 * \param document Document containing the line patterns
+                 * \param parent Pointer to parent widget
+                 * \param showByLayer Add "ByLayer" option
+                 * \param showByBlock Add "ByBlock" option
+                 */
+                LinePatternSelect(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0, bool showByLayer = false,
+                                  bool showByBlock = false);
 
-    public slots:
-        /**
-         * \brief Event when a new layer is selected.
-         * \param layer New selected layer
-         * This function update the "ByLayer" preview
-         */
-        void onLayerChanged(lc::Layer_CSPtr layer);
+                /**
+                 * \brief Change document
+                 * \param document New document
+                 */
+                void setDocument(lc::Document_SPtr document = nullptr);
 
-    private slots:
-        void onActivated(const QString& text);
+                /**
+                 * @brief Set the window on which line pattern is applied
+                 * @param mdiChild or nullptr
+                 */
+                void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
-    private:
-        void createEntries();
+                /**
+                 * \brief Return selected line pattern
+                 * \return Pointer to DxfLinePattern
+                 */
+                lc::DxfLinePattern_CSPtr linePattern();
 
-        QIcon generateQIcon(lc::DxfLinePattern_CSPtr linePattern);
-        QSize qIconSize;
+            public slots:
 
-        bool _showByLayer;
-        bool _showByBlock;
+                /**
+                 * \brief Event when a new layer is selected.
+                 * \param layer New selected layer
+                 * This function update the "ByLayer" preview
+                 */
+                void onLayerChanged(lc::Layer_CSPtr layer);
 
-        lc::Document_SPtr _document;
+            private slots:
 
-        void on_addLinePatternEvent(const lc::AddLinePatternEvent&);
-        void on_removeLinePatternEvent(const lc::RemoveLinePatternEvent&);
-        void on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent&);
-};
+                void onActivated(const QString& text);
+
+            private:
+                void createEntries();
+
+                QIcon generateQIcon(lc::DxfLinePattern_CSPtr linePattern);
+
+                QSize qIconSize;
+
+                bool _showByLayer;
+                bool _showByBlock;
+
+                lc::Document_SPtr _document;
+                lc::ui::MetaInfoManager_SPtr _metaInfoManager;
+
+                void on_addLinePatternEvent(const lc::AddLinePatternEvent&);
+                void on_removeLinePatternEvent(const lc::RemoveLinePatternEvent&);
+                void on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent&);
+        };
+    }
+}

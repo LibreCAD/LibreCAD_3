@@ -7,10 +7,12 @@
 #include "metalinewidth.h"
 #include "dxflinepattern.h"
 #include "cad/meta/color.h"
-
+#include <cad/builders/layer.h>
 
 namespace lc {
     class Layer : public EntityMetaType, public DocumentMetaType {
+        friend class builder::LayerBuilder;
+
         public:
             Layer();
             Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);
@@ -43,6 +45,8 @@ namespace lc {
             }
 
         private:
+            Layer(const builder::LayerBuilder& builder);
+
             std::string _name;
             MetaLineWidthByValue _lineWidth;
             Color _color;

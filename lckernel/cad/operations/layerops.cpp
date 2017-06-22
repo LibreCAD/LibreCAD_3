@@ -25,7 +25,15 @@ void AddLayer::redo() const {
 /********************************************************************************************************/
 /** RemoveLayer                                                                                       ***/
 /********************************************************************************************************/
-RemoveLayer::RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("RemoveLayer"), _layer(layer)  {
+RemoveLayer::RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) :
+        DocumentOperation(document),
+        Undoable("RemoveLayer"),
+        _layer(layer)  {
+
+    if(layer->name() == "0") {
+        throw "Layer 0 cannot be removed";
+    }
+
 }
 
 void RemoveLayer::processInternal() {

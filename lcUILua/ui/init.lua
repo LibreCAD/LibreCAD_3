@@ -7,4 +7,3 @@ require 'ui.operations'
 require 'kernel.pluginmanager'
 
 create_main_window()
-load_plugins()

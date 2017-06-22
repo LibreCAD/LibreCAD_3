@@ -53,9 +53,9 @@ class AddLayerDialog : public QDialog {
 
     protected:
         Ui::AddLayerDialog* ui;
-        LinePatternSelect* linePatternSelect;
-        LineWidthSelect* lineWidthSelect;
-        ColorSelect* colorSelect;
+        lc::ui::LinePatternSelect* linePatternSelect;
+        lc::ui::LineWidthSelect* lineWidthSelect;
+        lc::ui::ColorSelect* colorSelect;
 
     private:
         lc::Layer_CSPtr _oldLayer;

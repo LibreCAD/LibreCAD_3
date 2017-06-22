@@ -5,51 +5,70 @@
 
 #include <cad/meta/metalinewidth.h>
 #include <widgets/linepatternpainter.h>
+#include <managers/metainfomanager.h>
 
 #define BY_BLOCK "ByBlock"
 #define BY_LAYER "ByLayer"
 
-/**
- * \brief Dropdown select for line widths.
- * Line widths are hardcoded in the constructor
- */
-class LineWidthSelect : public QComboBox {
-    Q_OBJECT
-
-    public:
+namespace lc {
+    namespace ui {
         /**
-         * \brief Create widget
-         * \param parent Pointer to parent widget
-         * \param showByLayer Add "ByLayer" option
-         * \param showByBlock Add "ByBlock" option
+         * \brief Dropdown select for line widths.
+         * Line widths are hardcoded in the constructor
          */
-        LineWidthSelect(QWidget* parent = 0, bool showByLayer = false, bool showByBlock = false);
+        class LineWidthSelect : public QComboBox {
+            Q_OBJECT
 
-        /**
-         * \brief Return selected line width
-         * \return Pointer to MetaLineWidthByValue
-         */
-        lc::MetaLineWidthByValue_CSPtr lineWidth();
+            public:
+                /**
+                 * \brief Create widget
+                 * \param parent Pointer to parent widget
+                 * \param showByLayer Add "ByLayer" option
+                 * \param showByBlock Add "ByBlock" option
+                 */
+                LineWidthSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager,
+                                QWidget* parent = 0,
+                                bool showByLayer = false, bool showByBlock = false);
 
-        /**
-         * \brief Select a new width.
-         * \param width New width
-         * Does nothing if the width is not present in the values.
-         */
-        void setWidth(double width);
+                /**
+                 * @brief Set the MetaInfo manager
+                 * @param new MetaInfoManager or nullptr
+                 */
+                void setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager);
 
-    public slots:
-        /**
-         * \brief Event when a new layer is selected.
-         * \param layer New selected layer
-         * This function update the "ByLayer" preview
-         */
-        void onLayerChanged(lc::Layer_CSPtr layer);
+                /**
+                 * \brief Return selected line width
+                 * \return Pointer to MetaLineWidth or nullptr if ByLayer or invalid value is selected
+                 */
+                lc::MetaLineWidth_CSPtr lineWidth();
 
-    private:
-        void createEntries();
+                /**
+                 * \brief Select a new width.
+                 * \param width New LineWidth
+                 * Does nothing if the width is not present in the values.
+                 */
+                void setWidth(lc::MetaLineWidth_CSPtr lineWidth);
 
-        QSize qIconSize;
+            public slots:
+                /**
+                 * \brief Event when a new layer is selected.
+                 * \param layer New selected layer
+                 * This function update the "ByLayer" preview
+                 */
+                void onLayerChanged(lc::Layer_CSPtr layer);
 
-        std::map<QString, double> values;
-};
+            private slots:
+                void onActivated(const QString& text);
+
+            private:
+                void createEntries();
+                void updateMetaInfoManager();
+
+                lc::ui::MetaInfoManager_SPtr _metaInfoManager;
+
+                QSize qIconSize;
+
+                std::map<QString, double> values;
+        };
+    }
+}

@@ -15,9 +15,8 @@
 using namespace LCViewer;
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
-    QWidget(parent) {
-
-
+    QWidget(parent),
+    _activeLayer(nullptr) {
 
     if (this->objectName().isEmpty()) {
         this->setObjectName(QStringLiteral("CadMdiChild"));
@@ -56,6 +55,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     horizontalScrollBar->setMaximum(1000);
     verticalScrollBar->setMinimum(-1000);
     verticalScrollBar->setMaximum(1000);
+
+    _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 
     connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
             _viewer, SLOT(setHorizontalOffset(int)));
@@ -108,6 +109,8 @@ void CadMdiChild::newDocument() {
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::UndoManagerImpl>(10);
     _document->commitProcessEvent().connect<lc::UndoManagerImpl, &lc::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
+
+    _activeLayer = _document->layerByName("0");
 }
 
 
@@ -221,4 +224,16 @@ LCViewer::TempEntities_SPtr CadMdiChild::tempEntities() {
 
 std::vector<lc::entity::CADEntity_SPtr> CadMdiChild::selection() {
     return viewer()->documentCanvas()->selection().asVector();
+}
+
+lc::Layer_CSPtr CadMdiChild::activeLayer() const {
+    return _activeLayer;
+}
+
+void CadMdiChild::setActiveLayer(const lc::Layer_CSPtr& activeLayer) {
+    _activeLayer = activeLayer;
+}
+
+lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
+    return _metaInfoManager;
 }

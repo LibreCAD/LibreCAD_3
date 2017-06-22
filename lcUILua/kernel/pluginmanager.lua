@@ -35,7 +35,7 @@ function createSandboxEnv()
     return env
 end
 
-function load_plugins()
+function load_plugins() -- TODO: remove
     local plugins = luaInterface:pluginList(plugin_path)
     for k, v in pairs(plugins) do
         plugin, err = loadfile(plugin_path .. "/" .. v .. "/plugin.lua", "t", createSandboxEnv())
