@@ -78,7 +78,6 @@ DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document) : _docume
 }
 
 DocumentCanvas::~DocumentCanvas() {
-
     _document->addEntityEvent().disconnect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
     _document->removeEntityEvent().disconnect<DocumentCanvas, &DocumentCanvas::on_removeEntityEvent>(this);
     _document->commitProcessEvent().disconnect<DocumentCanvas, &DocumentCanvas::on_commitProcessEvent>(this);
@@ -340,26 +339,33 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
 }
 
-void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
+void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity, lc::entity::Insert_CSPtr insert) {
+    LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
+    LcDrawOptions lcDrawOptions;
+
+    double x = 0.;
+    double y = 0.;
+    double w = _deviceWidth;
+    double h = _deviceHeight;
+    painter.device_to_user(&x, &y);
+    painter.device_to_user_distance(&w, &h);
+    lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+
+    auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(entity);
+    if(asInsert != nullptr) {
+        asInsert->draw(shared_from_this());
+        return;
+    }
+
+    painter.save();
+
 	lc::entity::CADEntity_CSPtr ci = std::dynamic_pointer_cast<const lc::entity::CADEntity>(entity);
 
-	lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-	lc::MetaLineWidthByValue_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-	lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-	lc::Layer_CSPtr layer = ci->layer();
-	
-	LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
-	LcDrawOptions lcDrawOptions;
+    lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+    lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidthByValue::LCMETANAME());
+    lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
 
-	double x = 0.;
-	double y = 0.;
-	double w = _deviceWidth;
-	double h = _deviceHeight;
-	painter.device_to_user(&x, &y);
-	painter.device_to_user_distance(&w, &h);
-	lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
-
-	painter.save();
+    lc::Layer_CSPtr layer = ci->layer();
 
 	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
 	double alpha_compensation = 0.9;
@@ -367,12 +373,22 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
     // Decide on line width
     // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
     // TODO: Find a better algo
+    auto entityLineWidthByValue = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(entityLineWidth);
+    lc::MetaLineWidthByValue_CSPtr insertLW;
     double width;
-	if (entityLineWidth != nullptr) {
-		width = entityLineWidth->width() * 1.5;
-	} else {
+
+	if (entityLineWidthByValue != nullptr) {
+		width = entityLineWidthByValue->width() * 1.5;
+	}
+    else if(insert != nullptr &&
+            std::dynamic_pointer_cast<const lc::MetaLineWidthByBlock>(entityLineWidth) != nullptr &&
+            (insertLW = insert->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME())) != nullptr) {
+        width = insertLW->width();
+    }
+    else {
 		width = layer->lineWidth().width() * 1.5;
 	}
+
     // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
     painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
 
@@ -386,6 +402,9 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
     }
 
 	// Decide what color to render the entity into
+    lc::MetaColorByValue_CSPtr colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(entityColor);
+    lc::MetaColorByValue_CSPtr insertColor;
+
 	if (entity->selected()) {
 		painter.source_rgba(
 			lcDrawOptions.selectedColor().red(),
@@ -393,13 +412,26 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity) {
 			lcDrawOptions.selectedColor().blue(),
 			lcDrawOptions.selectedColor().alpha() * alpha_compensation
 		);
-	} else if (entityColor != nullptr) {
+	}
+    else if (colorByValue != nullptr) {
 		painter.source_rgba(
-			entityColor->red(),
-			entityColor->green(),
-			entityColor->blue(),
-			entityColor->alpha() * alpha_compensation);
-	} else {
+			colorByValue->red(),
+            colorByValue->green(),
+            colorByValue->blue(),
+            colorByValue->alpha() * alpha_compensation);
+	}
+    else if(insert != nullptr &&
+            std::dynamic_pointer_cast<const lc::MetaColorByBlock>(entityColor) &&
+            (insertColor = insert->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME())) != nullptr) {
+
+        painter.source_rgba(
+            insertColor->red(),
+            insertColor->green(),
+            insertColor->blue(),
+            insertColor->alpha() * alpha_compensation
+        );
+    }
+    else {
 		lc::Color layerColor = layer->color();
 		painter.source_rgba(
 			layerColor.red(),
@@ -556,7 +588,7 @@ Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::foreground ()  {
 }
 
 LCVDrawItem_SPtr DocumentCanvas::asDrawable(lc::entity::CADEntity_CSPtr entity) {
-	    // Add a line
+    // Add a line
     const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
 
     if (line != nullptr) {

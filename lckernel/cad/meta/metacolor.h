@@ -7,40 +7,44 @@
 #include <cmath>
 
 namespace lc {
-
     /**
     * Represents a MetaColor
     */
     class MetaColor : public EntityMetaType {
+        protected:
+            MetaColor() : EntityMetaType() {
+
+            }
+
         public:
-
-            MetaColor() : EntityMetaType(), _color(1., 1., 1., 1.) {
-            }
-
-            MetaColor(const MetaColor& other) : EntityMetaType(), _color(other.color()) {
-            }
-
-            MetaColor(const Color& other) : EntityMetaType(), _color(other) {
-            }
-
-            MetaColor(double r, double g, double b, double a = 1.) : EntityMetaType(), _color(r, g, b, a) {
-            }
-
-            virtual ~MetaColor() = default;
-
-        //MetaColor(int r, int g, int b, int a=0xff) : Color(r, g, b, a), MetaType() {
-            //}
-
-            virtual const std::string id() const override {
-                // TODO create proper ID
-                return MetaColor::LCMETANAME() + "_" + std::to_string(red()) + "_" +  std::to_string(green()) + "_" +  std::to_string(blue());
-            }
-
             virtual const std::string metaTypeID() const override {
-                return MetaColor::LCMETANAME();
+                return LCMETANAME();
             }
             static const std::string LCMETANAME() {
                 return "_COLOR";
+            }
+    };
+
+    class MetaColorByValue : public MetaColor {
+        public:
+
+            MetaColorByValue() : MetaColor(), _color(1., 1., 1., 1.) {
+            }
+
+            MetaColorByValue(const MetaColorByValue& other) : MetaColor(), _color(other.color()) {
+            }
+
+            MetaColorByValue(const Color& other) : MetaColor(), _color(other) {
+            }
+
+            MetaColorByValue(double r, double g, double b, double a = 1.) : MetaColor(), _color(r, g, b, a) {
+            }
+
+            virtual ~MetaColorByValue() = default;
+
+            virtual const std::string id() const override {
+                // TODO create proper ID
+                return LCMETANAME() + "_" + std::to_string(red()) + "_" +  std::to_string(green()) + "_" +  std::to_string(blue());
             }
 
             Color color() const {
@@ -82,13 +86,28 @@ namespace lc {
         private:
             Color _color;
 
-            friend std::ostream& operator<<(std::ostream& os, const MetaColor& metaColor) {
-                os << "MetaColor(red=" << metaColor.red() << " green=" << metaColor.green() << " blue=" << metaColor.blue() << " alpha" << metaColor.alpha() << ")";
+            friend std::ostream& operator<<(std::ostream& os, const MetaColorByValue& metaColor) {
+                os << "MetaColorByValue(red=" << metaColor.red() << " green=" << metaColor.green() << " blue=" << metaColor.blue() << " alpha" << metaColor.alpha() << ")";
                 return os;
+            }
+    };
+
+    class MetaColorByBlock : public MetaColor {
+        public:
+            MetaColorByBlock() {
+
+            }
+
+            virtual const std::string id() const override {
+                return LCMETANAME() + "_BYBLOCK";
             }
     };
 
     using MetaColor_SPtr = std::shared_ptr<MetaColor>;
     using MetaColor_CSPtr = std::shared_ptr<const MetaColor>;
+    using MetaColorByValue_SPtr = std::shared_ptr<MetaColorByValue>;
+    using MetaColorByValue_CSPtr = std::shared_ptr<const MetaColorByValue>;
+    using MetaColorByBlock_SPtr = std::shared_ptr<MetaColorByBlock>;
+    using MetaColorByBlock_CSPtr = std::shared_ptr<const MetaColorByBlock>;
 }
 

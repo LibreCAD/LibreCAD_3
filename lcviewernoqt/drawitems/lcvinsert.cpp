@@ -39,6 +39,12 @@ void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOption
     }
 }
 
+void LCVInsert::draw(DocumentCanvas_SPtr docCanvas) const {
+    for(auto entity : _entities) {
+        docCanvas->drawEntity(std::dynamic_pointer_cast<const LCVDrawItem>(entity), shared_from_this());
+    }
+}
+
 void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto entity = event.entity();
     _entities.erase(entity);

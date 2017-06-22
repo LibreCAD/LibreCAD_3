@@ -97,7 +97,7 @@ void ColorSelect::updateMetaInfoManager() {
     _metaInfoManager->setColor(metaColor());
 }
 
-lc::MetaColor_CSPtr ColorSelect::metaColor() {
+lc::MetaColorByValue_CSPtr ColorSelect::metaColor() {
     if(currentText() == BY_LAYER) {
         return nullptr;
     }
@@ -105,7 +105,7 @@ lc::MetaColor_CSPtr ColorSelect::metaColor() {
         return nullptr;
     }
 
-    return std::make_shared<const lc::MetaColor>(color());
+    return std::make_shared<const lc::MetaColorByValue>(color());
 }
 
 lc::Color ColorSelect::color() {

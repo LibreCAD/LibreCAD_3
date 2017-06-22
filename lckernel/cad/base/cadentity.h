@@ -113,7 +113,7 @@ namespace lc {
             /**
             * Retreive meta information back from this entity
             * returns nullptr when the specific meta info wasn't found
-            * example: auto metaData = myEntity.metaInfo<lc::MetaColor>(lc::MetaInfo::_COLOR);
+            * example: auto metaData = myEntity.metaInfo<lc::MetaColorByValue>(lc::MetaInfo::_COLOR);
             */
             template<typename T>
             const std::shared_ptr<const T> metaInfo(std::string metaName) const {

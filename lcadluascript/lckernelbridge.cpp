@@ -55,12 +55,12 @@ void LCLua::importLCKernel() {
             )
         .endClass()
 
-        .beginExtendClass<MetaColor, DocumentMetaType>("DocumentMetaColor")
-           .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<MetaColorByValue, DocumentMetaType>("DocumentMetaColor")
+           .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
         .endClass()
 
-        .beginExtendClass<MetaColor, EntityMetaType>("EntityMetaColor")
-          .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<MetaColorByValue, EntityMetaType>("EntityMetaColor")
+          .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
         .endClass()
 
         .beginExtendClass<MetaLineWidthByBlock, MetaType>("MetaLineWidthByBlock")

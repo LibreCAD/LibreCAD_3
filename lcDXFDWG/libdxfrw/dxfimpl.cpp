@@ -48,15 +48,7 @@ void DXFimpl::setBlock(const int _blockHandle) {
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
-    auto color = icol.intToColor(data.color);
-    lc::DxfLinePattern_CSPtr lp = nullptr;
-
-    if(!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
-        lp = _document->linePatternByName(data.lineType);
-    }
-
-    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint), color, lw, lp);
+    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint));
     _builder->appendMetaData(_currentBlock);
 
     _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
@@ -407,7 +399,14 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     }
 
     // Try to find a entities meta color
-    auto col = icol.intToColor(data.color);
+    lc::MetaColor_CSPtr col;
+    if(data.color == BYBLOCK_COLOR) {
+        col = std::make_shared<const lc::MetaColorByBlock>();
+    }
+    else {
+        col = icol.intToColor(data.color);
+    }
+
     if (col != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
@@ -681,15 +680,20 @@ void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr e
     auto layer_  = entity->layer();
     auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
     auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+    auto metaColorByBlock_ = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColorByValue::LCMETANAME());
 
     ent->layer = layer_->name();
 
-    if(metaColor_!=nullptr) {
+    if(metaColorByBlock_ != nullptr) {
+        ent->color = BYBLOCK_COLOR;
+    }
+    else {
+        auto metaColor_ = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColorByValue::LCMETANAME());
         lc::iColor col;
         auto color_ = col.colorToInt(metaColor_);
         ent->color = color_;
     }
+
     if(metaPen_!=nullptr) {
         ent->lineType = metaPen_->name();
     }
@@ -1080,21 +1084,6 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();
-
-    if(block->color() != nullptr) {
-        lc::iColor col;
-        auto color_ = col.colorToInt(block->color()->color());
-        drwBlock.color = color_;
-    }
-
-    if(block->linePattern() != nullptr) {
-        drwBlock.lineType = block->linePattern()->name();
-    }
-
-    auto lineWidth = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(block->lineWidth());
-    if(lineWidth != nullptr) {
-        drwBlock.lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(lineWidth->width()));
-    }
 
     dxfW->writeBlock(&drwBlock);
 

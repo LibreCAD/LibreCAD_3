@@ -28,7 +28,7 @@ enum PainterCacheType {
 };
 
 
-class DocumentCanvas {
+class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
     public:
         DocumentCanvas(std::shared_ptr<lc::Document> document);
         virtual ~DocumentCanvas();
@@ -44,9 +44,10 @@ class DocumentCanvas {
         /**
          * @brief drawEntity
          * Draw entity without adding it to the current document
-         * @param LCVDrawItem_CSPtr
+         * @param entity LCVDrawItem_CSPtr
+         * @param insert Insert entity if we are rendering a bloc
          */
-        void drawEntity(LCVDrawItem_CSPtr entity);
+        void drawEntity(LCVDrawItem_CSPtr entity, lc::entity::Insert_CSPtr insert = nullptr);
 
         /**
          * @brief autoScale

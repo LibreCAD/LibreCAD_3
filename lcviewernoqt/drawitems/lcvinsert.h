@@ -5,6 +5,7 @@
 #include <cad/document/document.h>
 #include <unordered_set>
 #include "lcvdrawitem.h"
+#include "../documentcanvas.h"
 
 namespace LCViewer {
     class LCVInsert : public lc::entity::Insert, public LCVDrawItem {
@@ -13,6 +14,7 @@ namespace LCViewer {
             virtual ~LCVInsert();
 
             void draw(LcPainter& _painter, const LcDrawOptions& options, const lc::geo::Area& updateRect) const override;
+            void draw(DocumentCanvas_SPtr docCanvas) const;
 
         private:
             void append(lc::entity::CADEntity_CSPtr entity);

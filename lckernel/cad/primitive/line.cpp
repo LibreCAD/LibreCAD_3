@@ -59,7 +59,7 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
-    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
+    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer(), metaInfo());
     newLine->setID(this->id());
     return newLine;
 }

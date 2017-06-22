@@ -19,7 +19,7 @@ TEST(ColorSelectTest, Selection) {
      * Check color selection
      */
     auto lcColor = lc::Color(255, 0, 0, 255);
-    auto lcMetaColor = lc::MetaColor(lcColor);
+    auto lcMetaColor = lc::MetaColorByValue(lcColor);
     colorSelect.setCurrentText("red");
     EXPECT_TRUE(
             lcColor.red() == colorSelect.color().red() &&
@@ -37,7 +37,7 @@ TEST(ColorSelectTest, CustomColor) {
     QApplication app(argc, argv);
     lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::Color lcColor(1, 2, 3, 4);
-    lc::MetaColor lcMetaColor(lcColor);
+    lc::MetaColorByValue lcMetaColor(lcColor);
 
     colorSelect.setColor(lcColor);
     EXPECT_TRUE(

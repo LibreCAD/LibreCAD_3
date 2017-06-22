@@ -22,7 +22,7 @@ namespace lc {
                 MetaInfo_CSPtr metaInfo();
 
                 DxfLinePattern_CSPtr linePattern() const;
-                MetaColor_CSPtr color() const;
+                MetaColorByValue_CSPtr color() const;
                 MetaLineWidth_CSPtr lineWidth() const;
 
             private:
@@ -35,11 +35,11 @@ namespace lc {
                 MetaInfo_SPtr addMetaType(MetaInfo_SPtr metaInfo, EntityMetaType_CSPtr metaType);
 
                 void setLinePattern(const DxfLinePattern_CSPtr& linePattern);
-                void setColor(const MetaColor_CSPtr& color);
+                void setColor(const MetaColorByValue_CSPtr& color);
                 void setLineWidth(const MetaLineWidth_CSPtr& lineWidth);
 
                 DxfLinePattern_CSPtr _linePattern;
-                MetaColor_CSPtr _color;
+                MetaColorByValue_CSPtr _color;
                 MetaLineWidth_CSPtr _lineWidth;
         };
 

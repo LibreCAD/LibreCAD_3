@@ -19,7 +19,7 @@ namespace lc {
 
             // Given a specific DXF color ID return a MetaCOlor shared pointer
             // Codes <0 and > 255 will return nullptr
-            std::shared_ptr<lc::MetaColor> intToColor(int code) const {
+            std::shared_ptr<lc::MetaColorByValue> intToColor(int code) const {
                 if (code < 0 || code > 255) {
                     return nullptr;
                 }
@@ -46,7 +46,7 @@ namespace lc {
             * This is usefull when a DXF that was imported needs to be exported
             * with the same DXF color ID's.
             */
-            inline int colorToInt(std::shared_ptr<const lc::MetaColor>& col) const {
+            inline int colorToInt(std::shared_ptr<const lc::MetaColorByValue>& col) const {
                 for (int i = 0; i < 256; i++) {
                     if (_intToCol[i] == col) {
                         return i;
@@ -57,7 +57,7 @@ namespace lc {
             }
 
         public:
-            std::shared_ptr<lc::MetaColor> _intToCol[256];
+            std::shared_ptr<lc::MetaColorByValue> _intToCol[256];
     };
 
 

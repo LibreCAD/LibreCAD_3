@@ -36,7 +36,7 @@ DxfLinePattern_CSPtr MetaInfoManager::linePattern() const {
     return _linePattern;
 }
 
-MetaColor_CSPtr MetaInfoManager::color() const {
+MetaColorByValue_CSPtr MetaInfoManager::color() const {
     return _color;
 }
 
@@ -48,7 +48,7 @@ void MetaInfoManager::setLinePattern(const DxfLinePattern_CSPtr& linePattern) {
     _linePattern = linePattern;
 }
 
-void MetaInfoManager::setColor(const MetaColor_CSPtr& color) {
+void MetaInfoManager::setColor(const MetaColorByValue_CSPtr& color) {
     _color = color;
 }
 

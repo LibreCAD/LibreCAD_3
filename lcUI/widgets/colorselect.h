@@ -43,7 +43,7 @@ namespace lc {
                  * \brief Returns selected color
                  * \return Shared pointer to MetaColor
                  */
-                lc::MetaColor_CSPtr metaColor();
+                lc::MetaColorByValue_CSPtr metaColor();
 
                 /**
                  * \brief Returns selected color

@@ -20,6 +20,8 @@
 #include <tuple>
 #include <cad/meta/block.h>
 
+#define BYBLOCK_COLOR 0
+
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 
