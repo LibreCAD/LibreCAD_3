@@ -1,5 +1,4 @@
 #include "lcvinsert.h"
-#include "../documentcanvas.h"
 
 using namespace LCViewer;
 
@@ -29,19 +28,27 @@ void LCVInsert::append(lc::entity::CADEntity_CSPtr entity) {
         return;
     }
 
-    _entities.insert(std::dynamic_pointer_cast<const lc::entity::CADEntity>(drawable));
+    _entities.insert(std::make_pair(entity->id(), drawable));
 }
 
 void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOptions& options,
                                const lc::geo::Area& updateRect) const {
     for(auto entity : _entities) {
-        std::dynamic_pointer_cast<const LCVDrawItem>(entity)->draw(_painter, options, updateRect);
+        entity.second->draw(_painter, options, updateRect);
+    }
+}
+
+void LCVInsert::draw(DocumentCanvas_SPtr docCanvas) const {
+    auto shared = shared_from_this();
+
+    for(auto entity : _entities) {
+        docCanvas->drawEntity(entity.second, shared);
     }
 }
 
 void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto entity = event.entity();
-    _entities.erase(entity);
+    _entities.erase(entity->id());
 
     if(entity->block() == displayBlock()) {
         append(entity);
@@ -55,5 +62,13 @@ void LCVInsert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
         return;
     }
 
-    _entities.erase(entity);
+    _entities.erase(entity->id());
+}
+
+void LCVInsert::selected(bool selected) {
+    LCVDrawItem::selected(selected);
+
+    for(auto entity : _entities) {
+        entity.second->selected(selected);
+    }
 }

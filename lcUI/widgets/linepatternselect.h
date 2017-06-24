@@ -78,7 +78,7 @@ namespace lc {
             private:
                 void createEntries();
 
-                QIcon generateQIcon(lc::DxfLinePattern_CSPtr linePattern);
+                QIcon generateQIcon(lc::DxfLinePatternByValue_CSPtr linePattern);
 
                 QSize qIconSize;
 

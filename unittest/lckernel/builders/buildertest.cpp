@@ -13,7 +13,7 @@
 TEST(BuilderTest, Line) {
     auto layer = std::make_shared<lc::Layer>();
     auto metaInfo = lc::MetaInfo::create();
-    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
+    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate());
 
     const lc::geo::Coordinate start(0, 0);
     const lc::geo::Coordinate end(100, 100);
@@ -37,7 +37,7 @@ TEST(BuilderTest, Line) {
 TEST(BuilderTest, Arc) {
     auto layer = std::make_shared<lc::Layer>();
     auto metaInfo = lc::MetaInfo::create();
-    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
+    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate());
 
     const lc::geo::Coordinate center(0, 0);
     const double radius = 10;
@@ -70,7 +70,7 @@ TEST(BuilderTest, Arc) {
 TEST(BuilderTest, Circle) {
     auto layer = std::make_shared<lc::Layer>();
     auto metaInfo = lc::MetaInfo::create();
-    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
+    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate());
 
     const lc::geo::Coordinate center(0, 0);
     const double radius = 10;
@@ -94,7 +94,7 @@ TEST(BuilderTest, Circle) {
 TEST(BuilderTest, Point) {
     auto layer = std::make_shared<lc::Layer>();
     auto metaInfo = lc::MetaInfo::create();
-    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
+    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate());
 
     const lc::geo::Coordinate coordinate(11, 15);
 
@@ -115,8 +115,8 @@ TEST(BuilderTest, Point) {
 TEST(BuilderTest, Insert) {
     auto layer = std::make_shared<lc::Layer>();
     auto metaInfo = lc::MetaInfo::create();
-    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
-    auto displayBlock = std::make_shared<lc::Block>("Display Block", lc::geo::Coordinate(), nullptr, nullptr, nullptr);
+    auto block = std::make_shared<lc::Block>("Test Block", lc::geo::Coordinate());
+    auto displayBlock = std::make_shared<lc::Block>("Display Block", lc::geo::Coordinate());
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
 
     const lc::geo::Coordinate coordinate(11, 15);
@@ -142,7 +142,7 @@ TEST(BuilderTest, Insert) {
 TEST(BuilderTest, Layer) {
     auto builder = lc::builder::LayerBuilder();
     auto name = "Test Layer";
-    auto lp = std::make_shared<const lc::DxfLinePattern>();
+    auto lp = std::make_shared<const lc::DxfLinePatternByValue>();
     auto lw = lc::MetaLineWidthByValue(2);
     auto color = lc::Color();
 
@@ -161,7 +161,7 @@ TEST(BuilderTest, Layer) {
     EXPECT_TRUE(layer->isFrozen());
 }
 
-TEST(BuilderTest, DxfLinePattern) {
+TEST(BuilderTest, DxfLinePatternByValue) {
     auto builder = lc::builder::LinePatternBuilder();
     auto name = "Test LP";
     auto description = "Test";

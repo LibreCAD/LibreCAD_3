@@ -18,7 +18,11 @@ Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const
     assert(!StringHelper::isBlank(name) && "Name cannot be blank");
 }
 
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const std::shared_ptr<const DxfLinePattern> linepattern, const bool frozen) :
+Layer::Layer(const std::string name,
+             const MetaLineWidthByValue lineWidth,
+             const Color color,
+             DxfLinePatternByValue_CSPtr linepattern,
+             const bool frozen) :
         EntityMetaType(),
         DocumentMetaType(),
         _name(name),
@@ -66,7 +70,7 @@ MetaLineWidthByValue Layer::lineWidth() const {
     return _lineWidth;
 }
 
-const std::shared_ptr<const DxfLinePattern> Layer::linePattern() const {
+DxfLinePatternByValue_CSPtr Layer::linePattern() const {
     return _linepattern;
 }
 

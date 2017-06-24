@@ -19,6 +19,8 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
     }
 
     addItem(CUSTOM);
+    setColor(Color(255, 255, 255));
+
     insertSeparator(count());
 
     for(auto color : QColor::colorNames()){
@@ -84,8 +86,19 @@ void ColorSelect::setColor(lc::Color color) {
 void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {
     _metaInfoManager = metaInfoManager;
 
-    if(metaInfoManager != nullptr && metaInfoManager->color() != nullptr) {
-        setColor(metaInfoManager->color()->color());
+    if(metaInfoManager != nullptr) {
+        if(metaInfoManager->color() == nullptr) {
+            setCurrentText(BY_LAYER);
+        }
+        else if(std::dynamic_pointer_cast<const lc::MetaColorByBlock>(metaInfoManager->color())) {
+            setCurrentText(BY_BLOCK);
+        }
+        else {
+            auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(metaInfoManager->color());
+            if(colorByValue != nullptr) {
+                setColor(colorByValue->color());
+            }
+        }
     }
 }
 
@@ -102,10 +115,10 @@ lc::MetaColor_CSPtr ColorSelect::metaColor() {
         return nullptr;
     }
     if(currentText() == BY_BLOCK) {
-        return nullptr;
+        return std::make_shared<lc::MetaColorByBlock>();
     }
 
-    return std::make_shared<const lc::MetaColor>(color());
+    return std::make_shared<const lc::MetaColorByValue>(color());
 }
 
 lc::Color ColorSelect::color() {

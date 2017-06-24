@@ -37,7 +37,7 @@ class LinePatternModel : public QAbstractTableModel {
          * \param linePatterns New list of DxfLinePatterns
          * Update the list
          */
-        void setLinePatterns(std::vector<lc::DxfLinePattern_CSPtr> linePatterns);
+        void setLinePatterns(std::vector<lc::DxfLinePatternByValue_CSPtr> linePatterns);
 
         /**
          * \brief Return line pattern at specific row.
@@ -53,5 +53,5 @@ class LinePatternModel : public QAbstractTableModel {
         QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     private:
-        std::vector<lc::DxfLinePattern_CSPtr> _linePatterns;
+        std::vector<lc::DxfLinePatternByValue_CSPtr> _linePatterns;
 };

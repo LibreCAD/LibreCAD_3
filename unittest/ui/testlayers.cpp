@@ -116,7 +116,7 @@ TEST(LayersTest, EditionDialog) {
 
     auto width = 0.13;
     auto color = lc::Color(1, 2, 3, 4);
-    auto linePattern = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto linePattern = std::make_shared<const lc::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
     auto layer = std::make_shared<const lc::Layer>("Layer", lc::MetaLineWidthByValue(width), color, linePattern, false);
 
     auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern);

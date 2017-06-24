@@ -54,8 +54,12 @@ void LinePatternSelect::setDocument(lc::Document_SPtr document) {
 }
 
 lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
-    if(currentText() == BY_BLOCK || currentText() == BY_LAYER) {
+    if(currentText() == BY_LAYER) {
         return nullptr;
+    }
+
+    if(currentText() == BY_BLOCK) {
+        return std::make_shared<const lc::DxfLinePatternByBlock>();
     }
 
     auto linePatterns = _document->linePatterns();
@@ -71,7 +75,7 @@ lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     }
 }
 
-QIcon LinePatternSelect::generateQIcon(lc::DxfLinePattern_CSPtr linePattern) {
+QIcon LinePatternSelect::generateQIcon(lc::DxfLinePatternByValue_CSPtr linePattern) {
     QPixmap pixmap(qIconSize);
 
     LinePatternPainter painter(&pixmap, linePattern);
@@ -120,11 +124,13 @@ void LinePatternSelect::createEntries() {
 
         auto linePatterns = _document->linePatterns();
         for (auto linePattern : linePatterns) {
-            if (linePattern->name() == BY_BLOCK || linePattern->name() == BY_LAYER) {
+            auto lp = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePattern);
+
+            if(lp == nullptr) {
                 continue;
             }
 
-            auto icon = generateQIcon(linePattern);
+            auto icon = generateQIcon(lp);
             addItem(icon, linePattern->name().c_str());
         }
     }

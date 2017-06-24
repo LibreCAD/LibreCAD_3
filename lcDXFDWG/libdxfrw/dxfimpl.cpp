@@ -48,15 +48,7 @@ void DXFimpl::setBlock(const int _blockHandle) {
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
-    auto color = icol.intToColor(data.color);
-    lc::DxfLinePattern_CSPtr lp = nullptr;
-
-    if(!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
-        lp = _document->linePatternByName(data.lineType);
-    }
-
-    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint), color, lw, lp);
+    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint));
     _builder->appendMetaData(_currentBlock);
 
     _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
@@ -134,7 +126,10 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         lw = getLcLineWidth<lc::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
     }
 
-    auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color());
+    auto lp = _document->linePatternByName(data.lineType);
+    bool isFrozen = data.flags & 1;
+
+    auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
     // If a layer starts with a * it's a special layer we don't process yet
     if(data.name == "0") {
         auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
@@ -397,7 +392,7 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
 
     // Try to find a entities meta line weight
-    auto lw = getLcLineWidth<lc::EntityMetaType>(data.lWeight);
+    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
     if (lw != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
@@ -407,7 +402,14 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     }
 
     // Try to find a entities meta color
-    auto col = icol.intToColor(data.color);
+    lc::MetaColor_CSPtr col;
+    if(data.color == BYBLOCK_COLOR) {
+        col = std::make_shared<const lc::MetaColorByBlock>();
+    }
+    else {
+        col = icol.intToColor(data.color);
+    }
+
     if (col != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
@@ -418,15 +420,23 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     // Most likely a lot of entities within a drawing will be 'BYLAYER' and with the CONTINUOUS linetype.
     // These are the default's for LibreCAD
-    // One thing we need to solve is when entities within a block are loaded and use the BY_LAYER line type and styles
-    // I will solve that during block importing.
-    if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+    lc::DxfLinePattern_CSPtr linePattern = nullptr;
+    if(data.lineType == LTYPE_BYBLOCK) {
+        linePattern = std::make_shared<lc::DxfLinePatternByBlock>();
+    }
+    else if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+        linePattern = _document->linePatternByName(data.lineType);
+    }
+
+    if(linePattern != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
         }
 
-        mf->add(_document->linePatternByName(data.lineType));
+        mf->add(linePattern);
     }
+
+
     return mf;
 }
 
@@ -443,7 +453,7 @@ std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordL
 }
 
 void DXFimpl::addLType(const DRW_LType& data) {
-    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePattern>(data.name, data.desc, data.path, data.length))->execute();
+    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
 }
 
 /**
@@ -679,22 +689,39 @@ void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr i) {
 
 void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
     auto layer_  = entity->layer();
-    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-    auto metaColor_ = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+
+    auto lpByValue = entity->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
+    auto lpByBlock = entity->metaInfo<lc::DxfLinePatternByBlock>(lc::DxfLinePattern::LCMETANAME());
+
+    auto metaWidthByValue = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME());
+    auto metaWidthByBlock = entity->metaInfo<lc::MetaLineWidthByBlock>(lc::MetaLineWidth::LCMETANAME());
+
+    auto metaColorByBlock = entity->metaInfo<lc::MetaColorByBlock>(lc::MetaColor::LCMETANAME());
+    auto metaColorByValue = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME());
 
     ent->layer = layer_->name();
 
-    if(metaColor_!=nullptr) {
+    if(metaColorByBlock != nullptr) {
+        ent->color = BYBLOCK_COLOR;
+    }
+    else if(metaColorByValue != nullptr) {
         lc::iColor col;
-        auto color_ = col.colorToInt(metaColor_);
+        auto color_ = col.colorToInt(metaColorByValue->color());
         ent->color = color_;
     }
-    if(metaPen_!=nullptr) {
-        ent->lineType = metaPen_->name();
+
+    if(lpByValue != nullptr) {
+        ent->lineType = lpByValue->name();
     }
-    if(metaWidth_!=nullptr) {
-        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidth_->width()));
+    else if(lpByBlock != nullptr) {
+        ent->lineType = LTYPE_BYBLOCK;
+    }
+
+    if(metaWidthByValue != nullptr) {
+        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidthByValue->width()));
+    }
+    else if(metaWidthByBlock != nullptr) {
+        ent->lWeight = DRW_LW_Conv::lineWidth::widthByBlock;
     }
 }
 
@@ -1080,21 +1107,6 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();
-
-    if(block->color() != nullptr) {
-        lc::iColor col;
-        auto color_ = col.colorToInt(block->color()->color());
-        drwBlock.color = color_;
-    }
-
-    if(block->linePattern() != nullptr) {
-        drwBlock.lineType = block->linePattern()->name();
-    }
-
-    auto lineWidth = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(block->lineWidth());
-    if(lineWidth != nullptr) {
-        drwBlock.lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(lineWidth->width()));
-    }
 
     dxfW->writeBlock(&drwBlock);
 

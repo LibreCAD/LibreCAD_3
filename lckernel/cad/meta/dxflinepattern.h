@@ -16,58 +16,47 @@ namespace lc {
      * Represents a line style
      */
     class DxfLinePattern : public DocumentMetaType, public EntityMetaType {
-    friend class builder::LinePatternBuilder;
+        public:
+            virtual const std::string metaTypeID() const override {
+                return DxfLinePattern::LCMETANAME();
+            }
 
-    public:
+            static std::string LCMETANAME() {
+                return "_LINEPATTERN";
+            }
 
-        DxfLinePattern() {}
+            virtual const std::string id() const override {
+                return DxfLinePattern::LCMETANAME() + "_" + name();
+            }
 
-        DxfLinePattern(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length);
+            virtual std::string description() const;
+    };
 
-        virtual ~DxfLinePattern() = default;
+    class DxfLinePatternByValue : public DxfLinePattern {
+        friend class builder::LinePatternBuilder;
+        public:
+            DxfLinePatternByValue() {}
+            DxfLinePatternByValue(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length);
+            virtual ~DxfLinePatternByValue() = default;
 
-        /**
-         * Calculates the total length of a path
-         */
-        static double calculatePathLength(const std::vector<double> &_path);
+            /**
+             * Calculates the total length of a path
+             */
+            static double calculatePathLength(const std::vector<double> &_path);
 
-        const std::string description() const {
-            return _description;
-        }
+            const std::string name() const override;
+            std::string description() const override;
+            const std::vector<double>& path() const;
+            double length() const;
 
-        virtual const std::string name() const override {
-            return _name;
-        }
-
-        const std::vector<double> &path() const {
-            return _path;
-        }
-
-        const double length() const {
-            return _length;
-        }
-
-        virtual const std::string id() const override {
-            // TODO create proper ID
-            return DxfLinePattern::LCMETANAME() + "_" + _name;
-        }
-
-        virtual const std::string metaTypeID() const override {
-            return DxfLinePattern::LCMETANAME();
-        }
-
-        static std::string LCMETANAME() {
-            return "_LINEPATTERN";
-        }
-
-        /**
-         * \brief Generate new LibreCAD compatible pattern
-         * \param dxfPattern Pattern from DXF file
-         * \param length Length of DXF pattern
-         * \param lineWidth Width of the line (for dots size)
-         * \return New line pattern
-         * Generate a new pattern compatible with LibreCAD from a DXF pattern.
-         */
+            /**
+             * \brief Generate new LibreCAD compatible pattern
+             * \param dxfPattern Pattern from DXF file
+             * \param length Length of DXF pattern
+             * \param lineWidth Width of the line (for dots size)
+             * \return New line pattern
+             * Generate a new pattern compatible with LibreCAD from a DXF pattern.
+             */
         std::vector<double> generatePattern(const std::vector<double> & dxfPattern, const double length, const double lineWidth) const;
 
         /**
@@ -79,7 +68,7 @@ namespace lc {
         const std::vector<double> lcPattern(double lineWidth = 1) const;
 
     private:
-        DxfLinePattern(const builder::LinePatternBuilder& builder);
+        DxfLinePatternByValue(const builder::LinePatternBuilder& builder);
 
         std::string _name;
         std::string _description;
@@ -91,6 +80,16 @@ namespace lc {
 
         double _length;
     };
+
+    class DxfLinePatternByBlock : public DxfLinePattern {
+        public:
+            virtual const std::string name() const override;
+    };
+
     using DxfLinePattern_SPtr = std::shared_ptr<DxfLinePattern>;
     using DxfLinePattern_CSPtr = std::shared_ptr<const DxfLinePattern>;
+    using DxfLinePatternByValue_SPtr = std::shared_ptr<DxfLinePatternByValue>;
+    using DxfLinePatternByValue_CSPtr = std::shared_ptr<const DxfLinePatternByValue>;
+    using DxfLinePatternByBlock_SPtr = std::shared_ptr<DxfLinePatternByBlock>;
+    using DxfLinePatternByBlock_CSPtr = std::shared_ptr<const DxfLinePatternByBlock>;
 }

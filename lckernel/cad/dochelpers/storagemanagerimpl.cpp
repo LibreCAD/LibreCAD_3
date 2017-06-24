@@ -58,8 +58,8 @@ Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const 
     return metaDataTypeByName<Layer>(layerName);
 }
 
-DxfLinePattern_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
-    return metaDataTypeByName<DxfLinePattern>(linePatternName);
+DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
+    return metaDataTypeByName<DxfLinePatternByValue>(linePatternName);
 }
 
 std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {

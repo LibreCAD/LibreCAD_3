@@ -9,13 +9,17 @@
 
 using namespace lc;
 
-DxfLinePattern::DxfLinePattern(const std::string &name, const std::string &description, const std::vector<double> &path, const double length) :
+std::string DxfLinePattern::description() const {
+    return "";
+}
+
+DxfLinePatternByValue::DxfLinePatternByValue(const std::string &name, const std::string &description, const std::vector<double> &path, const double length) :
         _name(name), _description(description), _path(path), _length(length) {
-    assert(!StringHelper::isBlank(name) > 0 && "Name of DxfLinePattern must be given");
+    assert(!StringHelper::isBlank(name) > 0 && "Name of DxfLinePatternByValue must be given");
     // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }
 
-DxfLinePattern::DxfLinePattern(const builder::LinePatternBuilder& builder) :
+DxfLinePatternByValue::DxfLinePatternByValue(const builder::LinePatternBuilder& builder) :
     _name(builder.name()),
     _description(builder.description()),
     _path(builder.path()),
@@ -23,11 +27,11 @@ DxfLinePattern::DxfLinePattern(const builder::LinePatternBuilder& builder) :
 
 }
 
-double DxfLinePattern::calculatePathLength(const std::vector<double> &_path) {
+double DxfLinePatternByValue::calculatePathLength(const std::vector<double> &_path) {
     return std::fabs(std::accumulate(_path.begin(), _path.end(), 0.));
 }
 
-std::vector<double> DxfLinePattern::generatePattern(const std::vector<double> &dxfPattern, const double length, const double lineWidth) const {
+std::vector<double> DxfLinePatternByValue::generatePattern(const std::vector<double> &dxfPattern, const double length, const double lineWidth) const {
     // DXF Linestyle Pattern is as follows
     // Parameters pattern – is a list of float values, elements > 0 are solid line segments, elements < 0 are gaps and elements = 0 are points. pattern[0] = total pattern length in drawing units
     // w need to generate them as follows:
@@ -84,7 +88,7 @@ std::vector<double> DxfLinePattern::generatePattern(const std::vector<double> &d
     return dxfPat;
 }
 
-const std::vector<double> DxfLinePattern::lcPattern(double lineWidth) const {
+const std::vector<double> DxfLinePatternByValue::lcPattern(double lineWidth) const {
     try {
         return _lcPatterns.at(lineWidth);
     }
@@ -93,4 +97,24 @@ const std::vector<double> DxfLinePattern::lcPattern(double lineWidth) const {
         _lcPatterns[lineWidth] = pattern;
         return pattern;
     }
+}
+
+const std::string DxfLinePatternByValue::name() const {
+    return _name;
+}
+
+std::string DxfLinePatternByValue::description() const {
+    return _description;
+}
+
+const std::vector<double>& DxfLinePatternByValue::path() const {
+    return _path;
+}
+
+double lc::DxfLinePatternByValue::length() const {
+    return _length;
+}
+
+const std::string DxfLinePatternByBlock::name() const {
+    return "ByBlock";
 }

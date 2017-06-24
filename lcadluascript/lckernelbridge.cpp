@@ -48,19 +48,26 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<DxfLinePattern, EntityMetaType>("DxfLinePattern")
-            .addConstructor(LUA_SP(DxfLinePattern_SPtr), LUA_ARGS(const std::string&,
+        .endClass()
+
+        .beginExtendClass<DxfLinePatternByValue, DxfLinePattern>("DxfLinePatternByValue")
+            .addConstructor(LUA_SP(DxfLinePatternByValue_SPtr), LUA_ARGS(const std::string&,
                                                                    const std::string&,
                                                                    const std::vector<double>&,
                                                                    const double)
             )
         .endClass()
 
-        .beginExtendClass<MetaColor, DocumentMetaType>("DocumentMetaColor")
-           .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<DxfLinePatternByBlock, DxfLinePattern>("DxfLinePatternByBlock")
+            .addConstructor(LUA_SP(DxfLinePatternByBlock_SPtr), LUA_ARGS())
         .endClass()
 
-        .beginExtendClass<MetaColor, EntityMetaType>("EntityMetaColor")
-          .addConstructor(LUA_SP(MetaColor_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<MetaColorByValue, DocumentMetaType>("DocumentMetaColor")
+           .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
+        .endClass()
+
+        .beginExtendClass<MetaColorByValue, EntityMetaType>("EntityMetaColor")
+          .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
         .endClass()
 
         .beginExtendClass<MetaLineWidthByBlock, MetaType>("MetaLineWidthByBlock")

@@ -15,7 +15,7 @@ class LinePatternPainter {
          * \param linePattern LinePattern to paint
          * \param width Width of the line (optional)
          */
-        LinePatternPainter(QPaintDevice* device, lc::DxfLinePattern_CSPtr linePattern, int width = 1);
+        LinePatternPainter(QPaintDevice* device, lc::DxfLinePatternByValue_CSPtr linePattern, int width = 1);
 
         /**
          * \brief Constructor used to paint line width
@@ -23,7 +23,7 @@ class LinePatternPainter {
          * \param width Width of the line
          * \param linePattern LinePattern to paint (optional)
          */
-        LinePatternPainter(QPaintDevice* device, double width, lc::DxfLinePattern_CSPtr linePattern = nullptr);
+        LinePatternPainter(QPaintDevice* device, double width, lc::DxfLinePatternByValue_CSPtr linePattern = nullptr);
         /**
          * \brief Paint line
          */
@@ -31,6 +31,6 @@ class LinePatternPainter {
 
     private:
         QPaintDevice* _device;
-        lc::DxfLinePattern_CSPtr _linePattern;
+        lc::DxfLinePatternByValue_CSPtr _linePattern;
         int _width;
 };

@@ -44,12 +44,12 @@ bool LinePatternBuilder::checkValues() {
     return _name != "";
 }
 
-DxfLinePattern_CSPtr LinePatternBuilder::build() {
+DxfLinePatternByValue_CSPtr LinePatternBuilder::build() {
     if(!checkValues()) {
         throw "Missing values";
     }
 
-    return DxfLinePattern_CSPtr(new DxfLinePattern(*this));
+    return DxfLinePatternByValue_CSPtr(new DxfLinePatternByValue(*this));
 }
 
 LinePatternBuilder* LinePatternBuilder::addElement(double element) {

@@ -19,17 +19,20 @@ TEST(ColorSelectTest, Selection) {
      * Check color selection
      */
     auto lcColor = lc::Color(255, 0, 0, 255);
-    auto lcMetaColor = lc::MetaColor(lcColor);
+    auto lcMetaColor = lc::MetaColorByValue(lcColor);
     colorSelect.setCurrentText("red");
+
+    auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(colorSelect.metaColor());
+
     EXPECT_TRUE(
             lcColor.red() == colorSelect.color().red() &&
             lcColor.green() == colorSelect.color().green() &&
             lcColor.blue() == colorSelect.color().blue()
     );
     EXPECT_TRUE(
-            lcMetaColor.red() == colorSelect.metaColor()->red() &&
-            lcMetaColor.green() == colorSelect.metaColor()->green() &&
-            lcMetaColor.blue() == colorSelect.metaColor()->blue()
+            lcMetaColor.red() == colorByValue->red() &&
+            lcMetaColor.green() == colorByValue->green() &&
+            lcMetaColor.blue() == colorByValue->blue()
     );
 }
 
@@ -37,17 +40,20 @@ TEST(ColorSelectTest, CustomColor) {
     QApplication app(argc, argv);
     lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::Color lcColor(1, 2, 3, 4);
-    lc::MetaColor lcMetaColor(lcColor);
+    lc::MetaColorByValue lcMetaColor(lcColor);
 
     colorSelect.setColor(lcColor);
+
+    auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(colorSelect.metaColor());
+
     EXPECT_TRUE(
             lcColor.red() == colorSelect.color().red() &&
             lcColor.green() == colorSelect.color().green() &&
             lcColor.blue() == colorSelect.color().blue()
     );
     EXPECT_TRUE(
-            lcMetaColor.red() == colorSelect.metaColor()->red() &&
-            lcMetaColor.green() == colorSelect.metaColor()->green() &&
-            lcMetaColor.blue() == colorSelect.metaColor()->blue()
+            lcMetaColor.red() == colorByValue->red() &&
+            lcMetaColor.green() == colorByValue->green() &&
+            lcMetaColor.blue() == colorByValue->blue()
     );
 }

@@ -9,6 +9,10 @@ Insert::Insert(Insert_CSPtr other, bool sameID) :
     _position(other->_position),
     _displayBlock(other->_displayBlock) {
 
+    calculateBoundingBox();
+
+    _document->addEntityEvent().connect<Insert, &Insert::on_addEntityEvent>(this);
+    _document->removeEntityEvent().connect<Insert, &Insert::on_removeEntityEvent>(this);
 }
 
 Insert::Insert(const builder::InsertBuilder& builder) :
@@ -16,8 +20,17 @@ Insert::Insert(const builder::InsertBuilder& builder) :
     _document(builder.document()),
     _position(builder.coordinate()),
     _displayBlock(builder.displayBlock()) {
+
+    calculateBoundingBox();
+
+    _document->addEntityEvent().connect<Insert, &Insert::on_addEntityEvent>(this);
+    _document->removeEntityEvent().connect<Insert, &Insert::on_removeEntityEvent>(this);
 }
 
+Insert::~Insert() {
+    document()->addEntityEvent().disconnect<Insert, &Insert::on_addEntityEvent>(this);
+    document()->removeEntityEvent().disconnect<Insert, &Insert::on_removeEntityEvent>(this);
+}
 
 const Block_CSPtr& Insert::displayBlock() const {
     return _displayBlock;
@@ -57,13 +70,7 @@ CADEntity_CSPtr Insert::mirror(const geo::Coordinate& axis1, const geo::Coordina
 }
 
 const geo::Area Insert::boundingBox() const {
-    geo::Area area;
-
-    for(auto entity : _document->entitiesByBlock(_displayBlock).asVector()) {
-        area.merge(entity->boundingBox());
-    }
-
-    return area;
+    return _boundingBox;
 }
 
 CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
@@ -115,4 +122,36 @@ geo::Coordinate Insert::nearestPointOnPath(const geo::Coordinate& coord) const {
 
 const Document_SPtr& Insert::document() const {
     return _document;
+}
+
+void Insert::calculateBoundingBox() {
+    auto entities = _document->entitiesByBlock(_displayBlock).asVector();
+
+    if(entities.empty()) {
+        _boundingBox = geo::Area(_position, _position);
+        return;
+    }
+
+    auto offset = _position - displayBlock()->base();
+    auto it = entities.begin();
+
+    _boundingBox = (*it)->move(offset)->boundingBox();
+    it++;
+
+    while (it != entities.end()) {
+        _boundingBox.merge((*it)->move(offset)->boundingBox());
+        it++;
+    }
+}
+
+void Insert::on_addEntityEvent(const lc::AddEntityEvent& event) {
+    if(event.entity()->block() == _displayBlock) {
+        calculateBoundingBox();
+    }
+}
+
+void Insert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
+    if(event.entity()->block() == _displayBlock) {
+        calculateBoundingBox();
+    }
 }

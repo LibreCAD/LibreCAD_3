@@ -160,7 +160,7 @@ lc::MetaInfo_SPtr lc::FileLibs::LibOpenCad::metaInfo(const CADGeometry* geometry
     auto metaInfo = MetaInfo::create();
 
     auto color = geometry->getColor();
-    metaInfo->add(std::make_shared<lc::MetaColor>(lc::Color(color.R, color.G, color.B)));
+    metaInfo->add(std::make_shared<lc::MetaColorByValue>(lc::Color(color.R, color.G, color.B)));
 
     metaInfo->add(std::make_shared<lc::MetaLineWidthByValue>(geometry->getThickness()));
 

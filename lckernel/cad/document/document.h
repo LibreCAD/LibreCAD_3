@@ -200,12 +200,12 @@ namespace lc {
             /**
              * @brief return a line pattern by it's name
              */
-            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
+            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
 
             /**
              * @brief return all line patterns
              */
-            virtual std::vector<DxfLinePattern_CSPtr> linePatterns() const = 0;
+            virtual std::vector<DxfLinePatternByValue_CSPtr> linePatterns() const = 0;
 
             /**
              * @return all blocks

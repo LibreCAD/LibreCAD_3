@@ -5,8 +5,8 @@
 #include <memory>
 
 namespace lc {
-    class DxfLinePattern;
-    using DxfLinePattern_CSPtr = std::shared_ptr<const DxfLinePattern>;
+    class DxfLinePatternByValue;
+    using DxfLinePatternByValue_CSPtr = std::shared_ptr<const DxfLinePatternByValue>;
 
     namespace builder {
         class LinePatternBuilder {
@@ -23,7 +23,7 @@ namespace lc {
                 LinePatternBuilder* addElement(double element);
 
                 bool checkValues();
-                DxfLinePattern_CSPtr build();
+                DxfLinePatternByValue_CSPtr build();
 
             private:
                 std::string _name;
