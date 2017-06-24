@@ -389,7 +389,7 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     std::shared_ptr<lc::MetaInfo> mf = nullptr;
 
     // Try to find a entities meta line weight
-    auto lw = getLcLineWidth<lc::EntityMetaType>(data.lWeight);
+    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
     if (lw != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
@@ -417,15 +417,23 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     // Most likely a lot of entities within a drawing will be 'BYLAYER' and with the CONTINUOUS linetype.
     // These are the default's for LibreCAD
-    // One thing we need to solve is when entities within a block are loaded and use the BY_LAYER line type and styles
-    // I will solve that during block importing.
-    if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+    lc::DxfLinePattern_CSPtr linePattern = nullptr;
+    if(data.lineType == LTYPE_BYBLOCK) {
+        linePattern = std::make_shared<lc::DxfLinePatternByBlock>();
+    }
+    else if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+        linePattern = _document->linePatternByName(data.lineType);
+    }
+
+    if(linePattern != nullptr) {
         if (mf == nullptr) {
             mf = lc::MetaInfo::create();
         }
 
-        mf->add(_document->linePatternByName(data.lineType));
+        mf->add(linePattern);
     }
+
+
     return mf;
 }
 
@@ -442,7 +450,7 @@ std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordL
 }
 
 void DXFimpl::addLType(const DRW_LType& data) {
-    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePattern>(data.name, data.desc, data.path, data.length))->execute();
+    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
 }
 
 /**
@@ -678,27 +686,39 @@ void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr i) {
 
 void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
     auto layer_  = entity->layer();
-    auto metaPen_ = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-    auto metaWidth_ = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidthByValue::LCMETANAME());
-    auto metaColorByBlock_ = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColorByValue::LCMETANAME());
+
+    auto lpByValue = entity->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
+    auto lpByBlock = entity->metaInfo<lc::DxfLinePatternByBlock>(lc::DxfLinePattern::LCMETANAME());
+
+    auto metaWidthByValue = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME());
+    auto metaWidthByBlock = entity->metaInfo<lc::MetaLineWidthByBlock>(lc::MetaLineWidth::LCMETANAME());
+
+    auto metaColorByBlock = entity->metaInfo<lc::MetaColorByBlock>(lc::MetaColor::LCMETANAME());
+    auto metaColorByValue = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME());
 
     ent->layer = layer_->name();
 
-    if(metaColorByBlock_ != nullptr) {
+    if(metaColorByBlock != nullptr) {
         ent->color = BYBLOCK_COLOR;
     }
-    else {
-        auto metaColor_ = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColorByValue::LCMETANAME());
+    else if(metaColorByValue != nullptr) {
         lc::iColor col;
-        auto color_ = col.colorToInt(metaColor_);
+        auto color_ = col.colorToInt(metaColorByValue->color());
         ent->color = color_;
     }
 
-    if(metaPen_!=nullptr) {
-        ent->lineType = metaPen_->name();
+    if(lpByValue != nullptr) {
+        ent->lineType = lpByValue->name();
     }
-    if(metaWidth_!=nullptr) {
-        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidth_->width()));
+    else if(lpByBlock != nullptr) {
+        ent->lineType = LTYPE_BYBLOCK;
+    }
+
+    if(metaWidthByValue != nullptr) {
+        ent->lWeight = static_cast<DRW_LW_Conv::lineWidth>(widthToInt(metaWidthByValue->width()));
+    }
+    else if(metaWidthByBlock != nullptr) {
+        ent->lWeight = DRW_LW_Conv::lineWidth::widthByBlock;
     }
 }
 

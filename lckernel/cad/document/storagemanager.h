@@ -37,7 +37,7 @@ namespace lc {
              * \param linePatternName
              * \return
              */
-            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
+            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
             /*!
              * \brief Returns all the layers present in the document.
              * \return Hash Layername, Layer

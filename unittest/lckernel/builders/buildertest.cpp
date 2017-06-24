@@ -142,7 +142,7 @@ TEST(BuilderTest, Insert) {
 TEST(BuilderTest, Layer) {
     auto builder = lc::builder::LayerBuilder();
     auto name = "Test Layer";
-    auto lp = std::make_shared<const lc::DxfLinePattern>();
+    auto lp = std::make_shared<const lc::DxfLinePatternByValue>();
     auto lw = lc::MetaLineWidthByValue(2);
     auto color = lc::Color();
 
@@ -161,7 +161,7 @@ TEST(BuilderTest, Layer) {
     EXPECT_TRUE(layer->isFrozen());
 }
 
-TEST(BuilderTest, DxfLinePattern) {
+TEST(BuilderTest, DxfLinePatternByValue) {
     auto builder = lc::builder::LinePatternBuilder();
     auto name = "Test LP";
     auto description = "Test";

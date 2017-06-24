@@ -16,13 +16,13 @@ namespace lc {
                 const std::string& name() const;
                 const MetaLineWidthByValue& lineWidth() const;
                 const Color& color() const;
-                DxfLinePattern_CSPtr linePattern() const;
+                DxfLinePatternByValue_CSPtr linePattern() const;
                 bool isFrozen() const;
 
                 LayerBuilder* setName(const std::string& name);
                 LayerBuilder* setLineWidth(const MetaLineWidthByValue& lineWidth);
                 LayerBuilder* setColor(const Color& color);
-                LayerBuilder* setLinePattern(const DxfLinePattern_CSPtr& linepattern);
+                LayerBuilder* setLinePattern(const DxfLinePatternByValue_CSPtr& linepattern);
                 LayerBuilder* setIsFrozen(bool isFrozen);
 
                 Layer_CSPtr build();
@@ -33,7 +33,7 @@ namespace lc {
                 std::string _name;
                 MetaLineWidthByValue _lineWidth;
                 Color _color;
-                lc::DxfLinePattern_CSPtr _linePattern;
+                lc::DxfLinePatternByValue_CSPtr _linePattern;
                 bool _isFrozen;
         };
     }

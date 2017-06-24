@@ -1,3 +1,4 @@
+#include <QtWidgets/QMessageBox>
 #include "addlayerdialog.h"
 #include "ui_addlayerdialog.h"
 
@@ -51,7 +52,7 @@ void AddLayerDialog::accept() {
         return;
     }
 
-    auto linePattern = linePatternSelect->linePattern();
+    auto linePattern = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePatternSelect->linePattern());
     lc::Layer_CSPtr layer;
 
     auto lineWidth = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect->lineWidth());

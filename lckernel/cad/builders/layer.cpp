@@ -25,7 +25,7 @@ const Color& LayerBuilder::color() const {
     return _color;
 }
 
-DxfLinePattern_CSPtr LayerBuilder::linePattern() const {
+DxfLinePatternByValue_CSPtr LayerBuilder::linePattern() const {
     return _linePattern;
 }
 
@@ -51,7 +51,7 @@ LayerBuilder* LayerBuilder::setColor(const Color& color) {
     return this;
 }
 
-LayerBuilder* LayerBuilder::setLinePattern(const DxfLinePattern_CSPtr& linePattern) {
+LayerBuilder* LayerBuilder::setLinePattern(const DxfLinePatternByValue_CSPtr& linePattern) {
     _linePattern = linePattern;
 
     return this;

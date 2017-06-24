@@ -47,7 +47,10 @@ void LinePatternManager::on_editButton_pressed() {
     }
 
     auto row = select->selectedRows().first().row();
-    auto linePattern = _model->linePatternAt(row);
+    auto linePattern = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(_model->linePatternAt(row));
+    if(linePattern == nullptr) {
+        return;
+    }
 
     auto dialog = new AddLinePatternDialog(_document, linePattern, this);
     dialog->show();
@@ -63,7 +66,10 @@ void LinePatternManager::on_lpView_doubleClicked(const QModelIndex &index) {
         return;
     }
 
-    auto linePattern = _model->linePatternAt(index.row());
+    auto linePattern = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(_model->linePatternAt(index.row()));
+    if(!linePattern) {
+        return;
+    }
 
     auto dialog = new AddLinePatternDialog(_document, linePattern, this);
     dialog->show();

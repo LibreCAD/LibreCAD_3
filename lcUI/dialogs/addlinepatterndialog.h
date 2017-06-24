@@ -41,7 +41,7 @@ class AddLinePatternDialog : public QDialog {
          * \param linePattern Line pattern to edit
          * \param parent Parent widget
          */
-        AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePattern_CSPtr linePattern, QWidget* parent = 0);
+        AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0);
 
     private slots:
         /**
@@ -81,6 +81,6 @@ class AddLinePatternDialog : public QDialog {
     private:
         lc::Document_SPtr _document;
 
-        lc::DxfLinePattern_CSPtr _linePattern;
-        lc::DxfLinePattern_CSPtr _oldLinePattern;
+        lc::DxfLinePatternByValue_CSPtr _linePattern;
+        lc::DxfLinePatternByValue_CSPtr _oldLinePattern;
 };

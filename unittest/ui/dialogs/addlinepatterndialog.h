@@ -11,7 +11,7 @@ class AddLinePatternDialogTest : AddLinePatternDialog {
                 AddLinePatternDialog(document, parent) {
         }
 
-        AddLinePatternDialogTest(lc::Document_SPtr document, lc::DxfLinePattern_CSPtr linePattern, QWidget* parent = 0) :
+        AddLinePatternDialogTest(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0) :
                 AddLinePatternDialog(document, linePattern, parent) {
         }
 

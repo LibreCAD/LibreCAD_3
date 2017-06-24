@@ -5,7 +5,7 @@
 namespace lc {
     /**
      * \brief Event that get's emited when a new line pattern was replaced in the document
-     * \param DxfLinePattern_CSPtr
+     * \param DxfLinePatternByValue_CSPtr
      */
     class ReplaceLinePatternEvent {
     public:
@@ -14,28 +14,28 @@ namespace lc {
          * \param LinePattern_CSPtr old line pattern
          * \param LinePattern_CSPtr new line pattern
          */
-        ReplaceLinePatternEvent(const DxfLinePattern_CSPtr oldLinePattern, const DxfLinePattern_CSPtr newLinePattern)
+        ReplaceLinePatternEvent(const DxfLinePatternByValue_CSPtr oldLinePattern, const DxfLinePatternByValue_CSPtr newLinePattern)
                 : _oldLinePattern(oldLinePattern), _newLinePattern(newLinePattern) {
         }
 
         /*!
          * \brief Return LinePattern to replace
-         * \return DxfLinePattern_CSPtr
+         * \return DxfLinePatternByValue_CSPtr
          */
-        const DxfLinePattern_CSPtr oldLinePattern() const {
+        const DxfLinePatternByValue_CSPtr oldLinePattern() const {
             return _oldLinePattern;
         }
 
         /*!
          * \brief Return LinePattern to add
-         * \return DxfLinePattern_CSPtr
+         * \return DxfLinePatternByValue_CSPtr
          */
-        const DxfLinePattern_CSPtr newLinePattern() const {
+        const DxfLinePatternByValue_CSPtr newLinePattern() const {
             return _newLinePattern;
         }
 
     private:
-        const DxfLinePattern_CSPtr _oldLinePattern;
-        const DxfLinePattern_CSPtr _newLinePattern;
+        const DxfLinePatternByValue_CSPtr _oldLinePattern;
+        const DxfLinePatternByValue_CSPtr _newLinePattern;
     };
 }

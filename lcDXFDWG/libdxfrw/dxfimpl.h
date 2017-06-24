@@ -21,6 +21,7 @@
 #include <cad/meta/block.h>
 
 #define BYBLOCK_COLOR 0
+#define LTYPE_BYBLOCK "ByBlock"
 
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";

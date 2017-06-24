@@ -76,7 +76,7 @@ namespace lc {
              * @param string& linePatternName
              * @return DxfLinePattern_CSPtr layer
              */
-            virtual DxfLinePattern_CSPtr linePatternByName(const std::string& linePatternName) const;
+            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const;
 
             /**
              * @brief return all Layers

@@ -65,7 +65,7 @@ void DocumentImpl::addDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
         addLayerEvent()(event);
     }
 
-    auto linePattern = std::dynamic_pointer_cast<const DxfLinePattern>(dmt);
+    auto linePattern = std::dynamic_pointer_cast<const DxfLinePatternByValue>(dmt);
     if(linePattern != nullptr) {
         AddLinePatternEvent event(linePattern);
         addLinePatternEvent()(event);
@@ -79,7 +79,7 @@ void DocumentImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
         removeLayerEvent()(event);
     }
 
-    auto linePattern = std::dynamic_pointer_cast<const DxfLinePattern>(dmt);
+    auto linePattern = std::dynamic_pointer_cast<const DxfLinePatternByValue>(dmt);
     if(linePattern != nullptr) {
         RemoveLinePatternEvent event(linePattern);
         removeLinePatternEvent()(event);
@@ -98,9 +98,9 @@ void DocumentImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, 
         }
     }
 
-    auto oldLinePattern = std::dynamic_pointer_cast<const DxfLinePattern>(oldDmt);
+    auto oldLinePattern = std::dynamic_pointer_cast<const DxfLinePatternByValue>(oldDmt);
     if(oldLinePattern != nullptr) {
-        auto newLinePattern = std::dynamic_pointer_cast<const DxfLinePattern>(newDmt);
+        auto newLinePattern = std::dynamic_pointer_cast<const DxfLinePatternByValue>(newDmt);
         if(newLinePattern != nullptr) {
             ReplaceLinePatternEvent event(oldLinePattern, newLinePattern);
             replaceLinePatternEvent()(event);
@@ -135,7 +135,7 @@ Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
     return _storageManager->layerByName(layerName);
 }
 
-DxfLinePattern_CSPtr DocumentImpl::linePatternByName(const std::string& linePatternName) const {
+DxfLinePatternByValue_CSPtr DocumentImpl::linePatternByName(const std::string& linePatternName) const {
     return _storageManager->linePatternByName(linePatternName);
 }
 
@@ -143,8 +143,8 @@ DxfLinePattern_CSPtr DocumentImpl::linePatternByName(const std::string& linePatt
  * Return all line patterns
  * @todo probably change this to metaTypes<T>()
  */
-std::vector<DxfLinePattern_CSPtr> DocumentImpl::linePatterns() const {
-    return _storageManager->metaTypes<const DxfLinePattern>();
+std::vector<DxfLinePatternByValue_CSPtr> DocumentImpl::linePatterns() const {
+    return _storageManager->metaTypes<const DxfLinePatternByValue>();
 }
 
 EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(const Block_CSPtr block) {

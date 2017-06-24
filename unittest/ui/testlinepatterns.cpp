@@ -13,7 +13,7 @@ TEST(LinePatternTest, Creation) {
     ASSERT_EQ(0, document->linePatterns().size()) << "Document already contains line patterns";
 
 
-    auto linePattern = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto linePattern = std::make_shared<const lc::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
 
     AddLinePatternDialogTest linePatternDialog(document);
 
@@ -36,8 +36,8 @@ TEST(LinePatternTest, Edition) {
     QApplication app(argc, argv);
     auto document = createDocument();
 
-    auto linePattern = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
-    auto newLinePattern = std::make_shared<const lc::DxfLinePattern>("NLP", "New Line Pattern", std::vector<double>{0, -1, 1, -1}, 3);
+    auto linePattern = std::make_shared<const lc::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto newLinePattern = std::make_shared<const lc::DxfLinePatternByValue>("NLP", "New Line Pattern", std::vector<double>{0, -1, 1, -1}, 3);
 
     auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern);
     operation->execute();
@@ -74,8 +74,8 @@ TEST(LinePatternTest, Selection) {
     linePatternSelect = new lc::ui::LinePatternSelect(document, 0, true, true);
     EXPECT_EQ(5, linePatternSelect->count()) << "Select should contains New/Manage/Separator/ByBlock/ByLayer";
 
-    auto linePattern1 = std::make_shared<const lc::DxfLinePattern>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
-    auto linePattern2 = std::make_shared<const lc::DxfLinePattern>("NLP", "New Line Pattern", std::vector<double>{0, -1, 1, -1}, 3);
+    auto linePattern1 = std::make_shared<const lc::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto linePattern2 = std::make_shared<const lc::DxfLinePatternByValue>("NLP", "New Line Pattern", std::vector<double>{0, -1, 1, -1}, 3);
 
     auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern1);
     operation->execute();

@@ -16,7 +16,12 @@ namespace lc {
         public:
             Layer();
             Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);
-            Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color, const std::shared_ptr<const DxfLinePattern> linepattern, const bool frozen);
+            Layer(const std::string name,
+                  const MetaLineWidthByValue lineWidth,
+                  const Color color,
+                  DxfLinePatternByValue_CSPtr linepattern,
+                  const bool frozen
+            );
 
             // Change this to meta data?
             Layer(const std::string name, const Color color);
@@ -36,7 +41,7 @@ namespace lc {
 
             MetaLineWidthByValue lineWidth() const;
             Color color() const;
-            const std::shared_ptr<const DxfLinePattern> linePattern() const;
+            DxfLinePatternByValue_CSPtr linePattern() const;
             bool isFrozen() const;
             virtual const std::string name() const;
 
@@ -50,7 +55,7 @@ namespace lc {
             std::string _name;
             MetaLineWidthByValue _lineWidth;
             Color _color;
-            std::shared_ptr<const DxfLinePattern> _linepattern;
+            DxfLinePatternByValue_CSPtr _linepattern;
             bool _isFrozen;
 
             friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {

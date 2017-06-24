@@ -5,7 +5,7 @@ AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, QWidget *
     AddLinePatternDialog(document, nullptr, parent) {
 }
 
-AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePattern_CSPtr linePattern, QWidget *parent) :
+AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddLinePatternDialog),
     _document(document),
@@ -69,7 +69,7 @@ void AddLinePatternDialog::generatePreview() {
         }
     }
 
-    _linePattern = std::make_shared<lc::DxfLinePattern>(
+    _linePattern = std::make_shared<lc::DxfLinePatternByValue>(
             name,
             ui->description->text().toStdString(),
             path,
