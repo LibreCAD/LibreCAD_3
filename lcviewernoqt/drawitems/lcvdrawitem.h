@@ -30,7 +30,8 @@ class LCVDrawItem {
 
         bool selectable() const;
         bool selected() const;
-        void selected(bool selected);
+
+        virtual void selected(bool selected);
     private:
         bool _selectable;
         bool _selected;
