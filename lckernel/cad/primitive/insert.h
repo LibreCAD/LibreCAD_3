@@ -14,6 +14,7 @@ namespace lc {
 
             public:
                 Insert(Insert_CSPtr other, bool sameID = false);
+                ~Insert();
 
                 const Block_CSPtr& displayBlock() const;
                 const geo::Coordinate& position() const;
@@ -40,10 +41,15 @@ namespace lc {
 
             private:
                 Insert(const builder::InsertBuilder& builder);
+                void calculateBoundingBox();
+
+                void on_addEntityEvent(const lc::AddEntityEvent&);
+                void on_removeEntityEvent(const lc::RemoveEntityEvent&);
 
                 Document_SPtr _document;
                 geo::Coordinate _position;
                 Block_CSPtr _displayBlock;
+                geo::Area _boundingBox;
         };
 
         using Insert_SPtr = std::shared_ptr<Insert>;
