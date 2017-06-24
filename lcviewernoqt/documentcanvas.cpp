@@ -339,6 +339,89 @@ void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::functio
 
 }
 
+double DocumentCanvas::drawWidth(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert) {
+    auto entityLineWidth = entity->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidthByValue::LCMETANAME());
+    auto entityLineWidthByValue = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(entityLineWidth);
+
+    if (entityLineWidthByValue != nullptr) {
+        return entityLineWidthByValue->width();
+    }
+    else if(insert != nullptr &&
+            std::dynamic_pointer_cast<const lc::MetaLineWidthByBlock>(entityLineWidth) != nullptr) {
+
+        auto insertLW = insert->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME());
+
+        if(insertLW != nullptr) {
+            return insertLW->width();
+        }
+        else {
+            return insert->layer()->lineWidth().width();
+        }
+    }
+    else {
+        return entity->layer()->lineWidth().width();
+    }
+}
+
+std::vector<double> DocumentCanvas::drawLinePattern(
+        lc::entity::CADEntity_CSPtr entity,
+        lc::entity::Insert_CSPtr insert,
+        double width) {
+
+    auto layer = entity->layer();
+
+    lc::DxfLinePattern_CSPtr entityLinePattern = entity->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
+    auto linePatternByValue = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(entityLinePattern);
+    auto linePatternByBlock = std::dynamic_pointer_cast<const lc::DxfLinePatternByBlock>(entityLinePattern);
+
+    if (linePatternByValue != nullptr && linePatternByValue->lcPattern(width).size()>0) {
+        return linePatternByValue->lcPattern(width);
+    }
+    else if(linePatternByBlock != nullptr && insert != nullptr) {
+        auto insertLP = insert->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
+
+        if(insertLP != nullptr) {
+            return insertLP->lcPattern(width);
+        }
+        else if(insert->layer()->linePattern() != nullptr) {
+            return insert->layer()->linePattern()->lcPattern(width);
+        }
+    }
+    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern(width).size() > 0) {
+        return layer->linePattern()->lcPattern(width);
+    }
+
+    return std::vector<double>();
+}
+
+lc::Color DocumentCanvas::drawColor(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert, bool selected) {
+    LcDrawOptions lcDrawOptions;
+
+    lc::MetaColor_CSPtr entityColor = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
+    lc::MetaColorByValue_CSPtr colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(entityColor);
+
+    if (selected) {
+        return lcDrawOptions.selectedColor();
+    }
+    else if (colorByValue != nullptr) {
+        return colorByValue->color();
+    }
+    else if(insert != nullptr &&
+            std::dynamic_pointer_cast<const lc::MetaColorByBlock>(entityColor) != nullptr) {
+        auto insertColor = insert->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME());
+
+        if(insertColor != nullptr) {
+            return insertColor->color();
+        }
+        else {
+            return insert->layer()->color();
+        }
+    }
+    else {
+        return entity->layer()->color();
+    }
+}
+
 void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity, lc::entity::Insert_CSPtr insert) {
     LcPainter& painter = cachedPainter(VIEWER_DOCUMENT);
     LcDrawOptions lcDrawOptions;
@@ -361,11 +444,6 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity, lc::entity::Insert_CSP
 
 	lc::entity::CADEntity_CSPtr ci = std::dynamic_pointer_cast<const lc::entity::CADEntity>(entity);
 
-    lc::MetaColor_CSPtr entityColor = ci->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
-    lc::MetaLineWidth_CSPtr entityLineWidth = ci->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidthByValue::LCMETANAME());
-    lc::DxfLinePattern_CSPtr entityLinePattern = ci->metaInfo<lc::DxfLinePattern>(lc::DxfLinePattern::LCMETANAME());
-
-    lc::Layer_CSPtr layer = ci->layer();
 
 	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
 	double alpha_compensation = 0.9;
@@ -373,103 +451,23 @@ void DocumentCanvas::drawEntity(LCVDrawItem_CSPtr entity, lc::entity::Insert_CSP
     // Decide on line width
     // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
     // TODO: Find a better algo
-    auto entityLineWidthByValue = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(entityLineWidth);
-
-    double width;
-
-	if (entityLineWidthByValue != nullptr) {
-		width = entityLineWidthByValue->width() * 1.5;
-	}
-    else if(insert != nullptr &&
-            std::dynamic_pointer_cast<const lc::MetaLineWidthByBlock>(entityLineWidth) != nullptr) {
-        auto insertLW = insert->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME());
-
-        if(insertLW != nullptr) {
-            width = insertLW->width();
-        }
-        else {
-            width = insert->layer()->lineWidth().width();
-        }
-    }
-    else {
-		width = layer->lineWidth().width() * 1.5;
-	}
+    double width = drawWidth(ci, insert) * 1.5;
 
     // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
     painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
 
-    auto linePatternByValue = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(entityLinePattern);
-    auto linePatternByBlock = std::dynamic_pointer_cast<const lc::DxfLinePatternByBlock>(entityLinePattern);
-
-	if (linePatternByValue != nullptr && linePatternByValue->lcPattern(width).size()>0) {
-        auto path = linePatternByValue->lcPattern(width);
-		painter.set_dash(&path[0], path.size(), 0., true);
-	}
-    else if(linePatternByBlock != nullptr && insert != nullptr) {
-        auto insertLP = insert->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
-
-        if(insertLP != nullptr) {
-            auto path = insertLP->lcPattern(width);
-            painter.set_dash(&path[0], path.size(), 0., true);
-        }
-        else if(insert->layer()->linePattern() != nullptr) {
-            auto path = insert->layer()->linePattern()->lcPattern(width);
-            painter.set_dash(&path[0], path.size(), 0., true);
-        }
-    }
-    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern(width).size() > 0) {
-        auto path = layer->linePattern()->lcPattern(width);
-        painter.set_dash(&path[0], path.size(), 0., true);
-    }
+    auto path = drawLinePattern(ci, insert, width);
+    painter.set_dash(&path[0], path.size(), 0., true);
 
 	// Decide what color to render the entity into
-    lc::MetaColorByValue_CSPtr colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(entityColor);
 
-	if (entity->selected()) {
-		painter.source_rgba(
-			lcDrawOptions.selectedColor().red(),
-			lcDrawOptions.selectedColor().green(),
-			lcDrawOptions.selectedColor().blue(),
-			lcDrawOptions.selectedColor().alpha() * alpha_compensation
-		);
-	}
-    else if (colorByValue != nullptr) {
-		painter.source_rgba(
-			colorByValue->red(),
-            colorByValue->green(),
-            colorByValue->blue(),
-            colorByValue->alpha() * alpha_compensation);
-	}
-    else if(insert != nullptr &&
-            std::dynamic_pointer_cast<const lc::MetaColorByBlock>(entityColor) != nullptr) {
-        auto insertColor = insert->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME());
-
-        if(insertColor != nullptr) {
-            painter.source_rgba(
-                    insertColor->red(),
-                    insertColor->green(),
-                    insertColor->blue(),
-                    insertColor->alpha() * alpha_compensation
-            );
-        }
-        else {
-            lc::Color layerColor = insert->layer()->color();
-            painter.source_rgba(
-                    layerColor.red(),
-                    layerColor.green(),
-                    layerColor.blue(),
-                    layerColor.alpha() * alpha_compensation
-            );
-        }
-    }
-    else {
-		lc::Color layerColor = layer->color();
-		painter.source_rgba(
-			layerColor.red(),
-			layerColor.green(),
-			layerColor.blue(),
-			layerColor.alpha() * alpha_compensation);
-	}
+    auto color = drawColor(ci, insert, entity->selected());
+    painter.source_rgba(
+            color.red(),
+            color.green(),
+            color.blue(),
+            color.alpha() * alpha_compensation
+    );
 
 	entity->draw(painter, lcDrawOptions, visibleUserArea);
 

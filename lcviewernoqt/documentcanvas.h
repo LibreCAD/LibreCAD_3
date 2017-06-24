@@ -213,6 +213,14 @@ private:
         void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
     private:
+        double drawWidth(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert);
+        std::vector<double> drawLinePattern(
+                lc::entity::CADEntity_CSPtr entity,
+                lc::entity::Insert_CSPtr insert,
+                double width
+        );
+        lc::Color drawColor(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert, bool selected);
+
         // Original document
         std::shared_ptr<lc::Document> _document;
 
