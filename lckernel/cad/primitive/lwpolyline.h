@@ -259,9 +259,6 @@ namespace lc {
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
 
-        using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;
-        using LWPolyline_CSPtr = std::shared_ptr<const LWPolyline>;
+        DECLARE_SHORT_SHARED_PTR(LWPolyline)
     }
 }
-
-// geo::Coordinate_H

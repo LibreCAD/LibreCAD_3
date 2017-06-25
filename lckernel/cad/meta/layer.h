@@ -63,7 +63,7 @@ namespace lc {
                 return os;
             }
     };
-    using Layer_SPtr = std::shared_ptr<Layer>;
-    using Layer_CSPtr = std::shared_ptr<const Layer>;
+
+    DECLARE_SHORT_SHARED_PTR(Layer)
 }
 

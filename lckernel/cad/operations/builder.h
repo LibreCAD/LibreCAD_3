@@ -117,7 +117,7 @@ namespace lc {
         };
 
         class Builder;
-        using Builder_SPtr = std::shared_ptr<Builder>;
+        DECLARE_SHORT_SHARED_PTR(Builder)
     }
 }
 

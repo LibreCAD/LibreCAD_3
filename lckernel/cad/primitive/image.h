@@ -154,9 +154,8 @@ namespace lc {
             double _fade;                  /*!< Brightness value, code 283, (0-100) default 0 */
 
         };
-        using Image_SPtr = std::shared_ptr<Image>;
-        using Image_CSPtr = std::shared_ptr<const Image>;
 
+        DECLARE_SHORT_SHARED_PTR(Image)
     }
 
 }

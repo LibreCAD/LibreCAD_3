@@ -71,7 +71,6 @@ namespace lc {
 
 
     };
-    using UndoManagerImpl_SPtr = std::shared_ptr<UndoManagerImpl>;
-    using UndoManagerImpl_CSPtr = std::shared_ptr<const UndoManagerImpl>;
 
+    DECLARE_SHORT_SHARED_PTR(UndoManagerImpl)
 }

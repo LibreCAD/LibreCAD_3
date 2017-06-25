@@ -6,7 +6,7 @@
 
 namespace lc {
     class Layer;
-    using Layer_CSPtr = std::shared_ptr<const Layer>;
+    DECLARE_SHORT_SHARED_PTR(Layer)
 
     namespace builder {
         class LayerBuilder {

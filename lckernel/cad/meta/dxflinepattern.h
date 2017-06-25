@@ -86,10 +86,7 @@ namespace lc {
             virtual const std::string name() const override;
     };
 
-    using DxfLinePattern_SPtr = std::shared_ptr<DxfLinePattern>;
-    using DxfLinePattern_CSPtr = std::shared_ptr<const DxfLinePattern>;
-    using DxfLinePatternByValue_SPtr = std::shared_ptr<DxfLinePatternByValue>;
-    using DxfLinePatternByValue_CSPtr = std::shared_ptr<const DxfLinePatternByValue>;
-    using DxfLinePatternByBlock_SPtr = std::shared_ptr<DxfLinePatternByBlock>;
-    using DxfLinePatternByBlock_CSPtr = std::shared_ptr<const DxfLinePatternByBlock>;
+    DECLARE_SHORT_SHARED_PTR(DxfLinePattern)
+    DECLARE_SHORT_SHARED_PTR(DxfLinePatternByValue)
+    DECLARE_SHORT_SHARED_PTR(DxfLinePatternByBlock)
 }

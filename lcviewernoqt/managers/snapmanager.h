@@ -26,7 +26,7 @@ public:
     virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents() = 0;
 
 };
-using SnapManager_SPtr = std::shared_ptr<SnapManager>;
+DECLARE_SHORT_SHARED_PTR(SnapManager)
 
 }
 

@@ -127,8 +127,6 @@ namespace lc {
             Line(const builder::LineBuilder& builder);
         };
 
-        using Line_SPtr = std::shared_ptr<Line>;
-        using Line_CSPtr = std::shared_ptr<const Line>;
-
+        DECLARE_SHORT_SHARED_PTR(Line)
     }
 }

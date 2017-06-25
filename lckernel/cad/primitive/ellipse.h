@@ -89,8 +89,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        using Ellipse_SPtr = std::shared_ptr<Ellipse>;
-        using Ellipse_CSPtr = std::shared_ptr<const Ellipse>;
+
+        DECLARE_SHORT_SHARED_PTR(Ellipse)
     }
 }
 

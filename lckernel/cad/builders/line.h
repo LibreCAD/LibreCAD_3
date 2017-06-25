@@ -3,12 +3,6 @@
 #include "cadentity.h"
 
 namespace lc {
-    namespace entity {
-        class Line;
-        using Line_SPtr = std::shared_ptr<Line>;
-        using Line_CSPtr = std::shared_ptr<const Line>;
-    }
-
     namespace builder {
         class LineBuilder;
         class LineBuilder : public CADEntityBuilder<LineBuilder> {

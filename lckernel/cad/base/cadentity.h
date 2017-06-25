@@ -154,7 +154,7 @@ namespace lc {
             MetaInfo_CSPtr _metaInfo;
             Block_CSPtr _block;
         };
-        using CADEntity_SPtr = std::shared_ptr<CADEntity>;
-        using CADEntity_CSPtr = std::shared_ptr<const CADEntity>;
+
+        DECLARE_SHORT_SHARED_PTR(CADEntity)
     }
 }

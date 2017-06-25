@@ -163,8 +163,8 @@ namespace lc {
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
-        using Text_SPtr = std::shared_ptr<Text>;
-        using Text_CSPtr = std::shared_ptr<const Text>;
+
+        DECLARE_SHORT_SHARED_PTR(Text)
     }
 }
 

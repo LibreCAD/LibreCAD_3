@@ -99,8 +99,8 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
         };
-        using Point_SPtr = std::shared_ptr<Point>;
-        using Point_CSPtr = std::shared_ptr<const Point>;
+
+        DECLARE_SHORT_SHARED_PTR(Point)
     }
 }
 

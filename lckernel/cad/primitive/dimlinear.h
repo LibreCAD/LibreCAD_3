@@ -113,8 +113,8 @@ namespace lc {
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
-        using DimLinear_SPtr = std::shared_ptr<DimLinear>;
-        using DimLinear_CSPtr = std::shared_ptr<const DimLinear>;
+
+        DECLARE_SHORT_SHARED_PTR(DimLinear)
     }
 }
 

@@ -52,7 +52,6 @@ namespace lc {
                 geo::Area _boundingBox;
         };
 
-        using Insert_SPtr = std::shared_ptr<Insert>;
-        using Insert_CSPtr = std::shared_ptr<const Insert>;
+        DECLARE_SHORT_SHARED_PTR(Insert)
     }
 }

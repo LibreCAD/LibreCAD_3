@@ -111,7 +111,5 @@ namespace lc {
             }
     };
 
-    class StorageManager;
-    using StorageManager_SPtr = std::shared_ptr<StorageManager>;
-    using StorageManager_CSPtr = std::shared_ptr<const StorageManager>;
+    DECLARE_SHORT_SHARED_PTR(StorageManager)
 }

@@ -35,6 +35,5 @@ namespace lc {
     };
 
     class FTrim;
-    using FTrim_SPtr = std::shared_ptr<FTrim>;
-    using FTrim_CSPtr = std::shared_ptr<const FTrim>;
+    DECLARE_SHORT_SHARED_PTR(FTrim)
 }

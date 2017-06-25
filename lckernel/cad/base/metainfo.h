@@ -25,7 +25,5 @@ namespace lc {
             }
     };
 
-
-    using MetaInfo_SPtr = std::shared_ptr<MetaInfo>;
-    using MetaInfo_CSPtr = std::shared_ptr<const MetaInfo>;
+    DECLARE_SHORT_SHARED_PTR(MetaInfo)
 }

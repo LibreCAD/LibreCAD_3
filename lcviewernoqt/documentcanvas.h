@@ -261,5 +261,5 @@ private:
         lc::EntityContainer<lc::entity::CADEntity_SPtr> _newSelection;
 };
 
-using DocumentCanvas_SPtr = std::shared_ptr<DocumentCanvas>;
+DECLARE_SHORT_SHARED_PTR(DocumentCanvas)
 }
