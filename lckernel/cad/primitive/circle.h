@@ -100,9 +100,8 @@ namespace lc {
             Circle(const builder::CircleBuilder& builder);
 
         };
-        using Circle_SPtr = std::shared_ptr<Circle>;
-        using Circle_CSPtr = std::shared_ptr<const Circle>;
 
+        DECLARE_SHORT_SHARED_PTR(Circle)
     }
 }
 // CIRCLE_H

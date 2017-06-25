@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cad/const.h>
 #include <string>
 #include <vector>
 #include <memory>
 
 namespace lc {
     class DxfLinePatternByValue;
-    using DxfLinePatternByValue_CSPtr = std::shared_ptr<const DxfLinePatternByValue>;
+    DECLARE_SHORT_SHARED_PTR(DxfLinePatternByValue)
 
     namespace builder {
         class LinePatternBuilder {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cad/const.h>
 #include <string>
 #include <memory>
 #include <iostream>
@@ -70,12 +71,7 @@ namespace lc {
             }
     };
 
-    using MetaType_SPtr = std::shared_ptr<MetaType>;
-    using MetaType_CSPtr = std::shared_ptr<const MetaType>;
-
-    using DocumentMetaType_SPtr = std::shared_ptr<DocumentMetaType>;
-    using DocumentMetaType_CSPtr = std::shared_ptr<const DocumentMetaType>;
-
-    using EntityMetaType_SPtr = std::shared_ptr<EntityMetaType>;
-    using EntityMetaType_CSPtr = std::shared_ptr<const EntityMetaType>;
+    DECLARE_SHORT_SHARED_PTR(MetaType)
+    DECLARE_SHORT_SHARED_PTR(DocumentMetaType)
+    DECLARE_SHORT_SHARED_PTR(EntityMetaType)
 }

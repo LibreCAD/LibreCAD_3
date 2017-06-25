@@ -112,8 +112,8 @@ namespace lc {
             void calculateBoundingBox();
 			geo::Area _boundingBox;
         };
-        using Spline_SPtr = std::shared_ptr<Spline>;
-        using Spline_CSPtr = std::shared_ptr<const Spline>;
+
+        DECLARE_SHORT_SHARED_PTR(Spline)
     }
 }
 

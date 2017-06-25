@@ -7,6 +7,7 @@
 
 namespace lc {
     class Document;
+    DECLARE_SHORT_SHARED_PTR(Document)
 
     class StorageManager;
     namespace operation {
@@ -15,9 +16,7 @@ namespace lc {
         * all operations should extends from Base
         */
         class Base;
-
-        using Base_SPtr = std::shared_ptr<Base>;
-        using Base_CSPtr = std::shared_ptr<const Base>;
+        DECLARE_SHORT_SHARED_PTR(Base)
 
         class Base {
             public:
@@ -29,9 +28,6 @@ namespace lc {
                     const std::vector<Base_SPtr> operationStack
                 ) = 0;
         };
-
-        using Base_SPtr = std::shared_ptr<Base>;
-        using Base_CSPtr = std::shared_ptr<const Base>;
 
         /**
         *
@@ -60,7 +56,7 @@ namespace lc {
                 }
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const Document_SPtr document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,

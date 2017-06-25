@@ -57,7 +57,7 @@ namespace lc {
             }
 
         public:
-            std::shared_ptr<lc::MetaColorByValue> _intToCol[256];
+            lc::MetaColorByValue_SPtr _intToCol[256];
     };
 
 

@@ -24,6 +24,5 @@ namespace lc {
             geo::Coordinate _base;
     };
 
-    using Block_SPtr = std::shared_ptr<Block>;
-    using Block_CSPtr = std::shared_ptr<const Block>;
+    DECLARE_SHORT_SHARED_PTR(Block)
 }

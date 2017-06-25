@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <cad/const.h>
 /**
   * LCADCairoViewerDrawItem is a abstract class that any class needs to implement if it want's to draw something on backgrounds or foregrounds
   *
@@ -39,6 +40,5 @@ class LCVDrawItem {
 
 
 class LCVDrawItem;
-using LCVDrawItem_SPtr = std::shared_ptr<LCVDrawItem>;
-using LCVDrawItem_CSPtr = std::shared_ptr<const LCVDrawItem>;
+DECLARE_SHORT_SHARED_PTR(LCVDrawItem)
 }

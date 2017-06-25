@@ -26,6 +26,5 @@ namespace lc {
             virtual lc::entity::CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const = 0;
 	};
 
-    using Draggable_SPtr = std::shared_ptr<Draggable>;
-	using Draggable_CSPtr = std::shared_ptr<const Draggable>;
+    DECLARE_SHORT_SHARED_PTR(Draggable)
 }

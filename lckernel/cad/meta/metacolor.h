@@ -103,11 +103,8 @@ namespace lc {
             }
     };
 
-    using MetaColor_SPtr = std::shared_ptr<MetaColor>;
-    using MetaColor_CSPtr = std::shared_ptr<const MetaColor>;
-    using MetaColorByValue_SPtr = std::shared_ptr<MetaColorByValue>;
-    using MetaColorByValue_CSPtr = std::shared_ptr<const MetaColorByValue>;
-    using MetaColorByBlock_SPtr = std::shared_ptr<MetaColorByBlock>;
-    using MetaColorByBlock_CSPtr = std::shared_ptr<const MetaColorByBlock>;
+    DECLARE_SHORT_SHARED_PTR(MetaColor)
+    DECLARE_SHORT_SHARED_PTR(MetaColorByValue)
+    DECLARE_SHORT_SHARED_PTR(MetaColorByBlock)
 }
 

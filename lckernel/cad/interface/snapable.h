@@ -61,8 +61,8 @@ namespace lc {
                 }
             }
     };
-    using Snapable_SPtr = std::shared_ptr<Snapable>;
-    using Snapable_CSPtr = std::shared_ptr<const Snapable>;
+
+    DECLARE_SHORT_SHARED_PTR(Snapable)
 }
 
 // SNAPABLE_H

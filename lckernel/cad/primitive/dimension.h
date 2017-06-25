@@ -123,8 +123,8 @@ namespace lc {
             const TextConst::LineSpacingStyle _lineSpacingStyle;
             const std::string _explicitValue;
         };
-        using Dimension_SPtr = std::shared_ptr<Dimension>;
-        using Dimension_CSPtr = std::shared_ptr<const Dimension>;
+
+        DECLARE_SHORT_SHARED_PTR(Dimension)
     }
 }
 

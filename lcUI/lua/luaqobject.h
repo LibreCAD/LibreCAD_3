@@ -91,5 +91,4 @@ class LuaQObject : public QObject {
 		bool _valid;
 };
 
-using LuaQObject_SPtr = std::shared_ptr<LuaQObject>;
-using LuaQObject_CSPtr = std::shared_ptr<const LuaQObject>;
+DECLARE_SHORT_SHARED_PTR(LuaQObject)

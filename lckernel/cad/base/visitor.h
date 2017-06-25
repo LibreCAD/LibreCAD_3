@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cad/const.h>
 #include <memory>
 #include <array>
 
@@ -26,68 +27,52 @@ namespace lc {
 
     namespace entity {
         class Arc;
-        using Arc_SPtr = std::shared_ptr<Arc>;
-        using Arc_CSPtr = std::shared_ptr<const Arc>;
+        DECLARE_SHORT_SHARED_PTR(Arc)
 
         class Point;
-        using Point_SPtr = std::shared_ptr<Point>;
-        using Point_CSPtr = std::shared_ptr<const Point>;
+        DECLARE_SHORT_SHARED_PTR(Point)
 
         class Line;
-        using Line_SPtr = std::shared_ptr<Line>;
-        using Line_CSPtr = std::shared_ptr<const Line>;
+        DECLARE_SHORT_SHARED_PTR(Line)
 
         class Text;
-        using Text_SPtr = std::shared_ptr<Text>;
-        using Text_CSPtr = std::shared_ptr<const Text>;
+        DECLARE_SHORT_SHARED_PTR(Text)
 
         class Spline;
-        using Spline_SPtr = std::shared_ptr<Spline>;
-        using Spline_CSPtr = std::shared_ptr<const Spline>;
+        DECLARE_SHORT_SHARED_PTR(Spline)
 
         class Ellipse;
-        using Ellipse_SPtr = std::shared_ptr<Ellipse>;
-        using Ellipse_CSPtr = std::shared_ptr<const Ellipse>;
+        DECLARE_SHORT_SHARED_PTR(Ellipse)
 
         class Circle;
-        using Circle_SPtr = std::shared_ptr<Circle>;
-        using Circle_CSPtr = std::shared_ptr<const Circle>;
+        DECLARE_SHORT_SHARED_PTR(Circle)
 
         class CADEntity;
-        using CADEntity_SPtr = std::shared_ptr<CADEntity>;
-        using CADEntity_CSPtr = std::shared_ptr<const CADEntity>;
+        DECLARE_SHORT_SHARED_PTR(CADEntity)
 
         class DimAligned;
-        using DimAligned_SPtr = std::shared_ptr<DimAligned>;
-        using DimAligned_CSPtr = std::shared_ptr<const DimAligned>;
+        DECLARE_SHORT_SHARED_PTR(DimAligned)
 
         class DimAngular;
-        using DimAngular_SPtr = std::shared_ptr<DimAngular>;
-        using DimAngular_CSPtr = std::shared_ptr<const DimAngular>;
+        DECLARE_SHORT_SHARED_PTR(DimAngular)
 
         class DimDiametric;
-        using DimDiametric_SPtr = std::shared_ptr<DimDiametric>;
-        using DimDiametric_CSPtr = std::shared_ptr<const DimDiametric>;
+        DECLARE_SHORT_SHARED_PTR(DimDiametric)
 
         class DimLinear;
-        using DimLinear_SPtr = std::shared_ptr<DimLinear>;
-        using DimLinear_CSPtr = std::shared_ptr<const DimLinear>;
+        DECLARE_SHORT_SHARED_PTR(DimLinear)
 
         class DimRadial;
-        using DimRadial_SPtr = std::shared_ptr<DimRadial>;
-        using DimRadial_CSPtr = std::shared_ptr<const DimRadial>;
+        DECLARE_SHORT_SHARED_PTR(DimRadial)
 
         class LWPolyline;
-        using LWPolyline_SPtr = std::shared_ptr<LWPolyline>;
-        using LWPolyline_CSPtr = std::shared_ptr<const LWPolyline>;
+        DECLARE_SHORT_SHARED_PTR(LWPolyline)
 
         class Image;
-        using Image_SPtr = std::shared_ptr<Image>;
-        using Image_CSPtr = std::shared_ptr<const Image>;
+        DECLARE_SHORT_SHARED_PTR(Image)
 
         class Insert;
-        using Insert_SPtr = std::shared_ptr<Insert>;
-        using Insert_CSPtr = std::shared_ptr<const Insert>;
+        DECLARE_SHORT_SHARED_PTR(Insert)
     }
 }
 

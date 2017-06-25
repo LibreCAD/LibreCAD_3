@@ -4,8 +4,6 @@
 
 namespace lc {
     namespace builder {
-        class ArcBuilder;
-
         class ArcBuilder : public CADEntityBuilder<ArcBuilder> {
             public:
                 ArcBuilder();

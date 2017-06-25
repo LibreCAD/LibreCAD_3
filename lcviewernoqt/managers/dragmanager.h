@@ -76,5 +76,6 @@ namespace LCViewer {
 
 			Nano::Signal<void(const DragPointsEvent&)> _dragPointsEvent;
 	};
-	using DragManager_SPtr = std::shared_ptr<DragManager>;
+
+	DECLARE_SHORT_SHARED_PTR(DragManager)
 }

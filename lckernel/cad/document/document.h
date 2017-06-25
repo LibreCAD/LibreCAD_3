@@ -32,8 +32,7 @@ namespace lc {
 
     namespace operation {
         class DocumentOperation;
-        using DocumentOperation_SPtr = std::shared_ptr<DocumentOperation>;
-        using DocumentOperation_CSPtr = std::shared_ptr<const DocumentOperation>;
+        DECLARE_SHORT_SHARED_PTR(DocumentOperation)
     }
 
     class Document {
@@ -231,6 +230,5 @@ namespace lc {
             Nano::Signal<void(const lc::RemoveLinePatternEvent&)>  _removeLinePatternEvent;
     };
 
-    using Document_SPtr = std::shared_ptr<Document>;
-    using Document_CSPtr = std::shared_ptr<const Document>;
+    DECLARE_SHORT_SHARED_PTR(Document);
 }

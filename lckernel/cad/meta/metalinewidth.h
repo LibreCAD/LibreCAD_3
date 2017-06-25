@@ -62,12 +62,7 @@ namespace lc {
             }
     };
 
-    using MetaLineWidth_SPtr = std::shared_ptr<MetaLineWidth>;
-    using MetaLineWidth_CSPtr = std::shared_ptr<const MetaLineWidth>;
-
-    using MetaLineWidthByValue_SPtr = std::shared_ptr<MetaLineWidthByValue>;
-    using MetaLineWidthByValue_CSPtr = std::shared_ptr<const MetaLineWidthByValue>;
-
-    using MetaLineWidthByBlock_SPtr = std::shared_ptr<MetaLineWidthByBlock>;
-    using MetaLineWidthByBlock_CSPtr = std::shared_ptr<const MetaLineWidthByBlock>;
+    DECLARE_SHORT_SHARED_PTR(MetaLineWidth)
+    DECLARE_SHORT_SHARED_PTR(MetaLineWidthByBlock)
+    DECLARE_SHORT_SHARED_PTR(MetaLineWidthByValue)
 }

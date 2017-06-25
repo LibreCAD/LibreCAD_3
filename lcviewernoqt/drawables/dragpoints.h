@@ -28,5 +28,5 @@ namespace LCViewer {
             int _size;
     };
 
-    using DragPoints_SPtr = std::shared_ptr<DragPoints>;
+    DECLARE_SHORT_SHARED_PTR(DragPoints)
 }

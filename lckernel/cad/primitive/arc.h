@@ -113,7 +113,6 @@ namespace lc {
             Arc(const builder::ArcBuilder& builder);
         };
 
-        using Arc_SPtr = std::shared_ptr<Arc>;
-        using Arc_CSPtr = std::shared_ptr<const Arc>;
+        DECLARE_SHORT_SHARED_PTR(Arc)
     }
 }

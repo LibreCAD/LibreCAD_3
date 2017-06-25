@@ -43,6 +43,6 @@ namespace lc {
                 MetaLineWidth_CSPtr _lineWidth;
         };
 
-        using MetaInfoManager_SPtr = std::shared_ptr<MetaInfoManager>;
+        DECLARE_SHORT_SHARED_PTR(MetaInfoManager)
     }
 }
