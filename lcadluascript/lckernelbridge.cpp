@@ -13,6 +13,7 @@
 #include <cad/operations/builderops.h>
 #include <cad/operations/builder.h>
 #include <cad/operations/layerops.h>
+#include <cad/meta/customentitystorage.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -439,5 +440,27 @@ void LCLua::importLCKernel() {
                     const Layer_CSPtr,
                     const Layer_CSPtr
             ))
-        .endClass();
+        .endClass()
+
+        .beginExtendClass<Block, DocumentMetaType>("Block")
+            .addConstructor(LUA_SP(Block_SPtr), LUA_ARGS(
+                std::string,
+                geo::Coordinate
+            ))
+            .addFunction("base", &Block::base)
+        .endClass()
+
+        .beginExtendClass<CustomEntityStorage, Block>("CustomEntityStorage")
+            .addConstructor(LUA_SP(CustomEntityStorage_SPtr), LUA_ARGS(
+                const std::string&,
+                const std::string&,
+                const geo::Coordinate&
+            ))
+
+            .addFunction("pluginName", &CustomEntityStorage::pluginName)
+            .addFunction("entityName", &CustomEntityStorage::entityName)
+            .addFunction("param", &CustomEntityStorage::param)
+            .addFunction("setParam", &CustomEntityStorage::setParam)
+        .endClass()
+        ;
 }
