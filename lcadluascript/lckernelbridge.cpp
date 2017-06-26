@@ -14,6 +14,7 @@
 #include <cad/operations/builder.h>
 #include <cad/operations/layerops.h>
 #include <cad/meta/customentitystorage.h>
+#include <cad/operations/blockops.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -461,6 +462,28 @@ void LCLua::importLCKernel() {
             .addFunction("entityName", &CustomEntityStorage::entityName)
             .addFunction("param", &CustomEntityStorage::param)
             .addFunction("setParam", &CustomEntityStorage::setParam)
+        .endClass()
+
+        .beginExtendClass<operation::AddBlock, operation::DocumentOperation>("AddBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::RemoveBlock, operation::DocumentOperation>("RemoveBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::ReplaceBlock, operation::DocumentOperation>("ReplaceBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr,
+                    const Block_CSPtr
+            ))
         .endClass()
         ;
 }

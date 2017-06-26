@@ -72,6 +72,7 @@ cad/builders/insert.cpp
 cad/builders/layer.cpp
 cad/builders/linepattern.cpp
 cad/meta/customentitystorage.cpp
+cad/operations/blockops.cpp
 )
 
 # HEADER FILES
@@ -165,6 +166,7 @@ cad/builders/insert.h
 cad/builders/layer.h
 cad/builders/linepattern.h
 cad/meta/customentitystorage.h
+cad/operations/blockops.h
 )
 
 # LOG4CXX

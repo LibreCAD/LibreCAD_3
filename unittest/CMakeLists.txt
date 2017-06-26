@@ -42,6 +42,7 @@ lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
+lckernel/operations/blocksopstest.cpp
 )
 
 set(hdrs
