@@ -6,7 +6,7 @@
 
 namespace lc {
     namespace operation {
-        class AddBlock : public DocumentOperation, public Undoable {
+        class AddBlock : public DocumentOperation {
             public:
                 AddBlock(const Document_SPtr& document, const Block_CSPtr& block);
 
@@ -20,7 +20,7 @@ namespace lc {
                 Block_CSPtr _block;
         };
 
-        class RemoveBlock : public DocumentOperation, public Undoable {
+        class RemoveBlock : public DocumentOperation {
             public:
                 RemoveBlock(const Document_SPtr& document, const Block_CSPtr& block);
 
@@ -34,7 +34,7 @@ namespace lc {
                 Block_CSPtr _block;
         };
 
-        class ReplaceBlock : public DocumentOperation, public Undoable {
+        class ReplaceBlock : public DocumentOperation {
             public:
                 ReplaceBlock(const Document_SPtr& document, const Block_CSPtr& oldBlock, const Block_CSPtr& newBlock);
 

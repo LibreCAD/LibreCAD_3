@@ -2,9 +2,11 @@
 #include "cad/document/document.h"
 
 using namespace lc;
-using namespace lc::operation;
+using namespace operation;
 
-DocumentOperation::DocumentOperation(std::shared_ptr<Document> document) : _document(document) {
+DocumentOperation::DocumentOperation(Document_SPtr document, const std::string& description) :
+    Undoable(description),
+    _document(document) {
 }
 
 std::shared_ptr<Document> DocumentOperation::document() const {

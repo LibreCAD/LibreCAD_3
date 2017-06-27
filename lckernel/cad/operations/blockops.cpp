@@ -4,8 +4,7 @@ using namespace lc;
 using namespace operation;
 
 AddBlock::AddBlock(const Document_SPtr& document, const Block_CSPtr& block) :
-    DocumentOperation(document),
-    Undoable("AddBlock"),
+    DocumentOperation(document, "AddBlock"),
     _block(block) {
 
 }
@@ -24,8 +23,7 @@ void AddBlock::processInternal() {
 
 
 RemoveBlock::RemoveBlock(const Document_SPtr& document, const Block_CSPtr& block) :
-    DocumentOperation(document),
-    Undoable("RemoveBlock"),
+    DocumentOperation(document, "RemoveBlock"),
     _block(block){
 
 }
@@ -44,8 +42,7 @@ void RemoveBlock::processInternal() {
 
 
 ReplaceBlock::ReplaceBlock(const Document_SPtr& document, const Block_CSPtr& oldBlock, const Block_CSPtr& newBlock) :
-    DocumentOperation(document),
-    Undoable("ReplaceBlock"),
+    DocumentOperation(document, "ReplaceBlock"),
     _oldBlock(oldBlock),
     _newBlock(newBlock) {
 

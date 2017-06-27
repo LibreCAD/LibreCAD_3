@@ -3,7 +3,7 @@
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
 
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/operations/documentoperation.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
@@ -19,9 +19,9 @@ TEST(SelectionTest, NormalSelection) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 5, 10, true, false);
@@ -49,9 +49,9 @@ TEST(SelectionTest, IntersectionSelection) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 5, 5, false, false);
@@ -79,9 +79,9 @@ TEST(SelectionTest, AddToSelection) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false, false);
@@ -112,9 +112,9 @@ TEST(SelectionTest, Reselect) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 10, 1, false, false);
@@ -145,9 +145,9 @@ TEST(SelectionTest, ClearSelection) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false, false);
@@ -178,9 +178,9 @@ TEST(SelectionTest, Deselect) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false, false);
@@ -209,9 +209,9 @@ TEST(SelectionTest, DeselectAddTo) {
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
-	auto builder = std::make_shared<lc::operation::Builder>(document);
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
-	builder->append(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
+	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false, false);

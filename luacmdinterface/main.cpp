@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include <cad/dochelpers/storagemanagerimpl.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <documentcanvas.h>
 #include <painters/lccairopainter.tcc>
 #include <drawables/gradientbackground.h>

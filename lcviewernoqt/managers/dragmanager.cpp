@@ -103,7 +103,7 @@ void DragManager::onMouseMove() {
 }
 
 void DragManager::onMousePress() {
-	_builder = std::make_shared<lc::operation::Builder>(_docCanvas->document());
+	_builder = std::make_shared<lc::operation::EntityBuilder>(_docCanvas->document());
 
 	auto entities = _docCanvas->selection();
 	if(entities.asVector().size() == 0) {
@@ -121,7 +121,7 @@ void DragManager::onMousePress() {
 				if(_toleranceArea.inArea(point.second)) {
 					_selectedEntities.insert(entity);
 					_selectedPoint = point.second;
-					_builder->append(entity);
+					_builder->appendEntity(entity);
 					_docCanvas->document()->removeEntity(entity);
 
 					break;
@@ -132,8 +132,8 @@ void DragManager::onMousePress() {
 
 	_entityDragged = _selectedEntities.asVector().size() != 0;
 
-	_builder->push();
-	_builder->remove();
+	_builder->appendOperation(std::make_shared<lc::operation::Push>());
+	_builder->appendOperation(std::make_shared<lc::operation::Remove>());
 	_builder->processStack();
 }
 
@@ -143,7 +143,7 @@ void DragManager::onMouseRelease() {
 
 		auto entities = _selectedEntities.asVector();
 		for(auto entity : entities) {
-			_builder->append(entity);
+			_builder->appendEntity(entity);
 			_selectedEntities.remove(entity);
             _tempEntities->removeEntity(entity);
 		}

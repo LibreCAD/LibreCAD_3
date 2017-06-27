@@ -10,7 +10,7 @@
 #include <cad/document/document.h>
 #include <cad/document/storagemanager.h>
 #include <cad/meta/icolor.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/base/visitor.h>
 #include <cad/meta/dxflinepattern.h>
 #include <cad/meta/metalinewidth.h>
@@ -19,6 +19,7 @@
 #include <cad/meta/icolor.h>
 #include <tuple>
 #include <cad/meta/block.h>
+#include <cad/operations/builder.h>
 
 #define BYBLOCK_COLOR 0
 #define LTYPE_BYBLOCK "ByBlock"
@@ -138,6 +139,7 @@ class DXFimpl : public DRW_Interface {
 
         std::shared_ptr<lc::Document> _document;
         lc::operation::Builder_SPtr _builder;
+        lc::operation::EntityBuilder_SPtr _entityBuilder;
         lc::Block_SPtr _currentBlock;
 
     private:

@@ -5,7 +5,7 @@
 using namespace lc;
 
 void File::open(lc::Document_SPtr document, const std::string& path, File::Library library) {
-    auto builder = std::make_shared<operation::Builder>(document);
+    auto builder = std::make_shared<operation::Builder>(document, "Open file");
 
     switch(library) {
         case LIBDXFRW: {

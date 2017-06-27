@@ -2,11 +2,14 @@
 
 #include "cad/const.h"
 #include "cad/document/storagemanager.h"
+#include "undoable.h"
 
 namespace lc {
-
     class Document;
+    DECLARE_SHORT_SHARED_PTR(Document)
+
     class StorageManager;
+
     namespace operation {
 
 
@@ -17,12 +20,13 @@ namespace lc {
          *
          * @param document
          */
-        class DocumentOperation : public std::enable_shared_from_this<operation::DocumentOperation> {
-                friend class lc::Document;
+        class DocumentOperation : public Undoable, public std::enable_shared_from_this<operation::DocumentOperation> {
+            friend class lc::Document;
+            friend class Builder;
 
             public:
-                DocumentOperation(std::shared_ptr<Document> document);
-                std::shared_ptr<Document> document() const;
+                DocumentOperation(Document_SPtr document, const std::string& description);
+                Document_SPtr document() const;
 
                 /*!
                  * \brief execute this operation
@@ -48,7 +52,7 @@ namespace lc {
                  */
                 virtual void finnish() const {};
 
-                std::shared_ptr<Document> _document;
+                Document_SPtr _document;
             protected:
                 /**
                  * This function get's called when a operation starts and when the document is locked for you

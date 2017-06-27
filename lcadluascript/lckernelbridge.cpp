@@ -10,11 +10,12 @@
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
-#include <cad/operations/builderops.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entityops.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/operations/blockops.h>
+#include <cad/operations/builder.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -360,21 +361,21 @@ void LCLua::importLCKernel() {
             .addFunction("execute", &operation::DocumentOperation::execute)
         .endClass()
 
-        .beginExtendClass<lc::operation::Builder, operation::DocumentOperation>("Builder")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::Builder>), LUA_ARGS(
-                    std::shared_ptr<lc::Document> doc
+        .beginExtendClass<operation::Builder, operation::DocumentOperation>("Builder")
+            .addConstructor(LUA_SP(operation::Builder_SPtr), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const std::string&
             ))
-            .addFunction("append", &lc::operation::Builder::append)
-            .addFunction("move", &lc::operation::Builder::move)
-            .addFunction("copy", &lc::operation::Builder::copy)
-            .addFunction("scale", &lc::operation::Builder::scale)
-            .addFunction("rotate", &lc::operation::Builder::rotate)
-            .addFunction("push", &lc::operation::Builder::push)
-            .addFunction("loop", &lc::operation::Builder::repeat)
-            .addFunction("begin", &lc::operation::Builder::begin)
-            .addFunction("selectByLayer", &lc::operation::Builder::selectByLayer)
-            .addFunction("remove", &lc::operation::Builder::remove)
-            .addFunction("processStack", &lc::operation::Builder::processStack)
+            .addFunction("append", &operation::Builder::append)
+        .endClass()
+
+        .beginExtendClass<operation::EntityBuilder, operation::DocumentOperation>("EntityBuilder")
+            .addConstructor(LUA_SP(operation::EntityBuilder_SPtr), LUA_ARGS(
+                    std::shared_ptr<lc::Document>
+            ))
+            .addFunction("appendEntity", &operation::EntityBuilder::appendEntity)
+            .addFunction("appendOperation", &operation::EntityBuilder::appendOperation)
+            .addFunction("processStack", &operation::EntityBuilder::processStack)
         .endClass()
 
         .beginClass<lc::IntersectMany>("IntersectMany")
@@ -391,7 +392,7 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<operation::Move, operation::Base>("Move")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Move>), LUA_ARGS(const geo::Coordinate & offset))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Move>), LUA_ARGS(const geo::Coordinate&))
         .endClass()
 
         .beginExtendClass<operation::Begin, operation::Base>("Begin")
@@ -399,17 +400,17 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<operation::Loop, operation::Base>("Loop")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Loop>), LUA_ARGS(const int numTimes))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Loop>), LUA_ARGS(const int))
         .endClass()
 
         .beginExtendClass<operation::Copy, operation::Base>("Copy")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Copy>), LUA_ARGS(const geo::Coordinate & offset))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Copy>), LUA_ARGS(const geo::Coordinate&))
         .endClass()
 
         .beginExtendClass<operation::Scale, operation::Base>("Scale")
             .addConstructor(LUA_SP(std::shared_ptr<operation::Scale>), LUA_ARGS(
-                    const geo::Coordinate & scale_center,
-                    const geo::Coordinate & scale_factor
+                    const geo::Coordinate&,
+                    const geo::Coordinate&
             ))
         .endClass()
 

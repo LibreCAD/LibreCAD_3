@@ -9,7 +9,6 @@ namespace lc {
     class Document;
     DECLARE_SHORT_SHARED_PTR(Document)
 
-    class StorageManager;
     namespace operation {
         /**
         * @brief The Base class for operations within the builder
@@ -50,11 +49,6 @@ namespace lc {
             public:
                 Loop(const int numTimes);
 
-                virtual ~
-                Loop() {
-                    // LOG4CXX_DEBUG(logger, "Loop removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document_SPtr document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -65,6 +59,7 @@ namespace lc {
             private:
                 int _numTimes;
         };
+        DECLARE_SHORT_SHARED_PTR(Loop)
 
         /**
         *
@@ -88,10 +83,6 @@ namespace lc {
             public:
                 Begin();
 
-                virtual ~Begin() {
-                    // LOG4CXX_DEBUG(logger, "Begin removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -104,6 +95,7 @@ namespace lc {
             private:
                 std::vector<entity::CADEntity_CSPtr> _entities;
         };
+        DECLARE_SHORT_SHARED_PTR(Begin)
 
         /**
         *
@@ -127,10 +119,6 @@ namespace lc {
             public:
                 Move(const geo::Coordinate& offset);
 
-                virtual ~Move() {
-                    // LOG4CXX_DEBUG(logger, "Move removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -141,6 +129,7 @@ namespace lc {
             private:
                 geo::Coordinate _offset;
         };
+        DECLARE_SHORT_SHARED_PTR(Move)
 
         /**
         *
@@ -164,10 +153,6 @@ namespace lc {
             public:
                 Copy(const geo::Coordinate& offset);
 
-                virtual ~Copy() {
-                    // LOG4CXX_DEBUG(logger, "Copy removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -179,6 +164,7 @@ namespace lc {
                 geo::Coordinate
                 _offset;
         };
+        DECLARE_SHORT_SHARED_PTR(Copy)
 
         /**
         *
@@ -202,10 +188,6 @@ namespace lc {
             public:
                 Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
 
-                virtual ~Rotate() {
-                    // LOG4CXX_DEBUG(logger, "Rotate removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -218,14 +200,11 @@ namespace lc {
                 geo::Coordinate _rotation_center;
                 double _rotation_angle;
         };
+        DECLARE_SHORT_SHARED_PTR(Rotate)
 
         class Scale : public Base {
             public:
                 Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
-
-                virtual ~Scale() {
-                    // LOG4CXX_DEBUG(logger, "Scale removed");
-                }
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -238,6 +217,7 @@ namespace lc {
                 geo::Coordinate
                 _scale_center, _scale_factor;
         };
+        DECLARE_SHORT_SHARED_PTR(Scale)
 
         /**
         *
@@ -263,10 +243,6 @@ namespace lc {
             public:
                 Push();
 
-                virtual ~Push() {
-                    // LOG4CXX_DEBUG(logger, "Push removed")
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -274,6 +250,7 @@ namespace lc {
                     std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
         };
+        DECLARE_SHORT_SHARED_PTR(Push)
 
         /**
         * @brief The SelectByLayer class
@@ -294,13 +271,7 @@ namespace lc {
         */
         class SelectByLayer : public Base {
             public:
-                SelectByLayer(const Layer_CSPtr
-
-                              layer);
-
-                virtual ~SelectByLayer() {
-                    // LOG4CXX_DEBUG(logger, "SelectByLayer removed");
-                }
+                SelectByLayer(const Layer_CSPtr layer);
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -312,6 +283,7 @@ namespace lc {
             private:
                 Layer_CSPtr _layer;
         };
+        DECLARE_SHORT_SHARED_PTR(SelectByLayer)
 
         /**
         * @brief The Delete class
@@ -334,10 +306,6 @@ namespace lc {
             public:
                 Remove();
 
-                virtual ~Remove() {
-                    // LOG4CXX_DEBUG(logger, "Remove removed");
-                }
-
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -348,7 +316,6 @@ namespace lc {
             private:
                 Layer_CSPtr _layer;
         };
+        DECLARE_SHORT_SHARED_PTR(Remove)
     }
 }
-
-// BUILDEROPS_H

@@ -34,7 +34,7 @@ lckernel/primitive/entitytest.cpp
 lckernel/builders/buildertest.cpp
 lckernel/math/code.cpp
 lckernel/math/testmath.cpp
-lckernel/operations/buildertest.cpp
+lckernel/operations/entitybuildertest.cpp
 lckernel/geometry/testgeoarc.cpp
 lckernel/geometry/testgeocircle.cpp
 lckernel/functions/testintersect.cpp
@@ -43,6 +43,7 @@ lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/operations/blocksopstest.cpp
+lckernel/operations/buildertest.cpp
 )
 
 set(hdrs

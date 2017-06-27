@@ -16,7 +16,7 @@
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/operations/documentoperation.h>
 #include <cad/document/storagemanager.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/document/document.h>
 #include <cad/document/undomanager.h>
 

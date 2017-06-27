@@ -13,7 +13,7 @@
 #include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
 #include <cad/primitive/lwpolyline.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
 #include <cad/operations/linepatternops.h>
@@ -26,10 +26,12 @@
 #include <cad/functions/string_helper.h>
 #include <cad/meta/block.h>
 #include <cad/primitive/insert.h>
+#include <cad/operations/blockops.h>
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
         _document(document), 
-        _builder(builder), 
+        _builder(builder),
+        _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)),
         _currentBlock(nullptr) {
 }
 
@@ -49,7 +51,7 @@ void DXFimpl::setBlock(const int _blockHandle) {
 
 void DXFimpl::addBlock(const DRW_Block& data) {
     _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint));
-    _builder->appendMetaData(_currentBlock);
+    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
     _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
 }
@@ -67,7 +69,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
           ->setStart(coord(data.basePoint))
           ->setEnd(coord(data.secPoint));
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
@@ -79,7 +81,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
           ->setRadius(data.radious)
           ->setBlock(_currentBlock);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
@@ -94,7 +96,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
           ->setEndAngle(data.endangle)
           ->setIsCCW((bool) data.isccw);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
@@ -110,7 +112,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
         //TODO: block
     }
 
-    _builder->append(lcEllipse);
+    _entityBuilder->appendEntity(lcEllipse);
 }
 
 void DXFimpl::addLayer(const DRW_Layer& data) {
@@ -133,11 +135,11 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
     // If a layer starts with a * it's a special layer we don't process yet
     if(data.name == "0") {
         auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
-        al->execute();
+        _builder->append(al);
     }
     else if (data.name.length()>0 && data.name.compare(0,1,"*")) {
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        al->execute();
+        _builder->append(al);
     }
 }
 
@@ -170,7 +172,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
         //TODO: block
     }
 
-    _builder->append(lcSpline);
+    _entityBuilder->appendEntity(lcSpline);
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
@@ -191,7 +193,7 @@ void DXFimpl::addText(const DRW_Text& data) {
         //TODO: block
     }
 
-    _builder->append(lcText);
+    _entityBuilder->appendEntity(lcText);
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
@@ -207,7 +209,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
         //TODO: block
     }
 
-    _builder->append(lcPoint);
+    _entityBuilder->appendEntity(lcPoint);
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
@@ -232,7 +234,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimAligned);
+    _entityBuilder->appendEntity(lcDimAligned);
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
@@ -259,7 +261,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimLinear);
+    _entityBuilder->appendEntity(lcDimLinear);
 }
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
@@ -285,7 +287,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimRadial);
+    _entityBuilder->appendEntity(lcDimRadial);
 }
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
@@ -311,7 +313,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimDiametric);
+    _entityBuilder->appendEntity(lcDimDiametric);
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
@@ -339,7 +341,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimAngular);
+    _entityBuilder->appendEntity(lcDimAngular);
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
@@ -373,7 +375,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
         //TODO: block
     }
 
-    _builder->append(lcLWPolyline);
+    _entityBuilder->appendEntity(lcLWPolyline);
 }
 
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
@@ -490,7 +492,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                 //TODO: block
             }
 
-            _builder->append(lcImage);
+            _entityBuilder->appendEntity(lcImage);
 
             image = imageMapCache.erase( image ) ; // advances iter
         } else {
@@ -508,7 +510,7 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
           ->setDisplayBlock(_blocks[data.name])
           ->setDocument(_document);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 /*********************************************

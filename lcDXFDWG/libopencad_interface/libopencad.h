@@ -1,10 +1,11 @@
 #pragma once
 
 #include <cad/document/document.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/meta/layer.h>
 
 #include <opencad_api.h>
+#include <cad/operations/builder.h>
 
 namespace lc {
     namespace FileLibs {
@@ -30,11 +31,12 @@ namespace lc {
                 void addEllipse(lc::Layer_SPtr layer, const CADEllipse* ellipse);
                 void addLWPolyline(lc::Layer_SPtr layer, const CADLWPolyline* lwPolyline);
 
-                lc::MetaInfo_SPtr metaInfo(const CADGeometry* geometry);
-                lc::geo::Coordinate toLcPostiton(const CADVector& position);
+                MetaInfo_SPtr metaInfo(const CADGeometry* geometry);
+                geo::Coordinate toLcPostiton(const CADVector& position);
 
                 Document_SPtr _document;
-                lc::operation::Builder_SPtr _builder;
+                operation::Builder_SPtr _builder;
+                operation::EntityBuilder_SPtr _entityBuilder;
         };
     }
 }
