@@ -110,9 +110,9 @@ function DimAngularOperations:createDimAngular()
     self.finished = true
     active_widget():tempEntities():removeEntity(self.dimAngular)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getDimAngular(self.centerPoint, self.firstPoint, self.secondPoint, self.text)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)

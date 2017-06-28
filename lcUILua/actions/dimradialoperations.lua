@@ -113,9 +113,9 @@ function DimRadialOperations:createDimRadial()
     self.finished = true
     active_widget():tempEntities():removeEntity(self.dimRadial)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)

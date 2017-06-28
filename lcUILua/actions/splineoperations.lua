@@ -79,10 +79,10 @@ function SplineOperations:createTempSpline(point)
 end
 
 function SplineOperations:createSpline()
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local s = self:getSpline(self.points, self.degree)
     if(s ~= nil) then
-        b:append(s)
+        b:appendEntity(s)
         b:execute()
     end
 end

@@ -104,9 +104,9 @@ function LWPolylineOperations:createTempLWPolyline(point)
 end
 
 function LWPolylineOperations:createLWPolyline()
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local lwp = self:getLWPolyline(self.lwVertexes)
-    b:append(lwp)
+    b:appendEntity(lwp)
     b:execute()
 end
 

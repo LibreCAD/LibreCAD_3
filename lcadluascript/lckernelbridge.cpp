@@ -422,6 +422,17 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_SP(std::shared_ptr<operation::SelectByLayer>), LUA_ARGS(const Layer_CSPtr))
         .endClass()
 
+        .beginExtendClass<operation::Rotate, operation::Base>("Rotate")
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Rotate>), LUA_ARGS(
+                    const geo::Coordinate&,
+                    const double
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::Remove, operation::Base>("Remove")
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Remove>), LUA_ARGS())
+        .endClass()
+
         .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(
                     std::shared_ptr<lc::Document> doc,

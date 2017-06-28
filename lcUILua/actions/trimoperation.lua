@@ -77,11 +77,11 @@ function TrimOperation:getIntersectionPoints()
 end
 
 function TrimOperation:trim()
-    local b = Builder(active_widget():document())
-    b:append(self.toTrim)
+    local b = EntityBuilder(active_widget():document())
+    b:appendEntity(self.toTrim)
 
-    b:push()
-    b:remove()
+    b:appendOperation(Push())
+    b:appendOperation(Remove())
     b:processStack()
 
     if(self.toTrim.entityType == "line") then
@@ -110,12 +110,12 @@ function TrimOperation:trim()
         end
 
         if(previousIntersect == start) then
-            b:append(Line(nextIntersect, finish, self.toTrim:layer()))
+            b:appendEntity(Line(nextIntersect, finish, self.toTrim:layer()))
         elseif(nextIntersect == finish) then
-            b:append(Line(start, previousIntersect, self.toTrim:layer()))
+            b:appendEntity(Line(start, previousIntersect, self.toTrim:layer()))
         else
-            b:append(Line(start, previousIntersect, self.toTrim:layer()))
-            b:append(Line(nextIntersect, finish, self.toTrim:layer()))
+            b:appendEntity(Line(start, previousIntersect, self.toTrim:layer()))
+            b:appendEntity(Line(nextIntersect, finish, self.toTrim:layer()))
         end
     elseif(self.toTrim.entityType == "circle") then
         if(#self.intersectionPoints < 2) then
@@ -156,7 +156,7 @@ function TrimOperation:trim()
             end
         end
 
-        b:append(Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
+        b:appendEntity(Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
 
     elseif(self.toTrim.entityType == "arc") then
         local center = self.toTrim:center()
@@ -203,10 +203,10 @@ function TrimOperation:trim()
         end
 
         if(nextIntersectAngle ~= endAngle) then
-            b:append(Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
+            b:appendEntity(Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
         end
         if(previousIntersectAngle ~= startAngle) then
-            b:append(Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
+            b:appendEntity(Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
         end
     else
         message("Unsupported entity")
