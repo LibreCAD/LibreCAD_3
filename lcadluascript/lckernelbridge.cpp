@@ -16,6 +16,7 @@
 #include <cad/meta/customentitystorage.h>
 #include <cad/operations/blockops.h>
 #include <cad/operations/builder.h>
+#include <cad/builders/insert.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -496,6 +497,97 @@ void LCLua::importLCKernel() {
                     const Block_CSPtr,
                     const Block_CSPtr
             ))
+        .endClass()
+
+        //ArcBuilder is used here because it needs a template
+        //This doesn't cause RTTI problems in Lua
+        .beginClass<builder::CADEntityBuilder<builder::ArcBuilder>>("CADEntityBuilder")
+            .addFunction("layer", &builder::CADEntityBuilder<builder::ArcBuilder>::layer)
+            .addFunction("setLayer", &builder::CADEntityBuilder<builder::ArcBuilder>::setLayer)
+            .addFunction("metaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::metaInfo)
+            .addFunction("setMetaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::setMetaInfo)
+            .addFunction("block", &builder::CADEntityBuilder<builder::ArcBuilder>::block)
+            .addFunction("setBlock", &builder::CADEntityBuilder<builder::ArcBuilder>::setBlock)
+            .addFunction("checkValues", &builder::CADEntityBuilder<builder::ArcBuilder>::checkValues)
+        .endClass()
+
+        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("ArcBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("center", &builder::ArcBuilder::center)
+            .addFunction("setCenter", &builder::ArcBuilder::setCenter)
+            .addFunction("radius", &builder::ArcBuilder::radius)
+            .addFunction("setRadius", &builder::ArcBuilder::setRadius)
+            .addFunction("startAngle", &builder::ArcBuilder::startAngle)
+            .addFunction("setStartAngle", &builder::ArcBuilder::setStartAngle)
+            .addFunction("endAngle", &builder::ArcBuilder::endAngle)
+            .addFunction("setEndAngle", &builder::ArcBuilder::setEndAngle)
+            .addFunction("isCCW", &builder::ArcBuilder::isCCW)
+            .addFunction("setIsCCW", &builder::ArcBuilder::setIsCCW)
+            .addFunction("build", &builder::ArcBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("CircleBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("center", &builder::CircleBuilder::center)
+            .addFunction("setCenter", &builder::CircleBuilder::setCenter)
+            .addFunction("radius", &builder::CircleBuilder::radius)
+            .addFunction("setRadius", &builder::CircleBuilder::setRadius)
+            .addFunction("build", &builder::CircleBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("InsertBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("displayBlock", &builder::InsertBuilder::displayBlock)
+            .addFunction("setDisplayBlock", &builder::InsertBuilder::setDisplayBlock)
+            .addFunction("coordinate", &builder::InsertBuilder::coordinate)
+            .addFunction("setCoordinate", &builder::InsertBuilder::setCoordinate)
+            .addFunction("document", &builder::InsertBuilder::document)
+            .addFunction("setDocument", &builder::InsertBuilder::setDocument)
+            .addFunction("build", &builder::InsertBuilder::build)
+        .endClass()
+
+        .beginClass<builder::LayerBuilder>("LayerBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("name", &builder::LayerBuilder::name)
+            .addFunction("setName", &builder::LayerBuilder::setName)
+            .addFunction("lineWidth", &builder::LayerBuilder::lineWidth)
+            .addFunction("setLineWidth", &builder::LayerBuilder::setLineWidth)
+            .addFunction("color", &builder::LayerBuilder::color)
+            .addFunction("setColor", &builder::LayerBuilder::setColor)
+            .addFunction("linePattern", &builder::LayerBuilder::linePattern)
+            .addFunction("setLinePattern", &builder::LayerBuilder::setLinePattern)
+            .addFunction("isFrozen", &builder::LayerBuilder::isFrozen)
+            .addFunction("setIsFrozen", &builder::LayerBuilder::setIsFrozen)
+            .addFunction("build", &builder::LayerBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("LineBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("start", &builder::LineBuilder::start)
+            .addFunction("setStart", &builder::LineBuilder::setStart)
+            .addFunction("end", &builder::LineBuilder::end)
+            .addFunction("setEnd", &builder::LineBuilder::setEnd)
+            .addFunction("build", &builder::LineBuilder::build)
+        .endClass()
+
+        .beginClass<builder::LinePatternBuilder>("LinePatternBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("name", &builder::LinePatternBuilder::name)
+            .addFunction("setName", &builder::LinePatternBuilder::setName)
+            .addFunction("description", &builder::LinePatternBuilder::description)
+            .addFunction("setDescription", &builder::LinePatternBuilder::setDescription)
+            .addFunction("path", &builder::LinePatternBuilder::path)
+            .addFunction("setPath", &builder::LinePatternBuilder::setPath)
+            .addFunction("addElement", &builder::LinePatternBuilder::addElement)
+            .addFunction("checkValues", &builder::LinePatternBuilder::checkValues)
+            .addFunction("build", &builder::LinePatternBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("PointBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("coordinate", &builder::PointBuilder::coordinate)
+            .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)
+            .addFunction("build", &builder::PointBuilder::build)
         .endClass()
         ;
 }
