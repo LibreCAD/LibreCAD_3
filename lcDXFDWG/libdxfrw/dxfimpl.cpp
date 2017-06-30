@@ -33,6 +33,7 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_
         _builder(builder),
         _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)),
         _currentBlock(nullptr) {
+    _builder->append(_entityBuilder);
 }
 
 inline int DXFimpl::widthToInt(double wid) const {
