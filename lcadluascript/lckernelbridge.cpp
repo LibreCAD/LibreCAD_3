@@ -16,7 +16,7 @@
 #include <cad/meta/customentitystorage.h>
 #include <cad/operations/blockops.h>
 #include <cad/operations/builder.h>
-#include <cad/builders/insert.h>
+#include <cad/primitive/insert.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -588,6 +588,12 @@ void LCLua::importLCKernel() {
             .addFunction("coordinate", &builder::PointBuilder::coordinate)
             .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)
             .addFunction("build", &builder::PointBuilder::build)
+        .endClass()
+
+        .beginExtendClass<entity::Insert, entity::CADEntity>("Insert")
+            .addFunction("displayBlock", &entity::Insert::displayBlock)
+            .addFunction("position", &entity::Insert::position)
+            .addFunction("document", &entity::Insert::document)
         .endClass()
         ;
 }
