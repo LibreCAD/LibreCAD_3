@@ -24,6 +24,11 @@
 #define BYBLOCK_COLOR 0
 #define LTYPE_BYBLOCK "ByBlock"
 
+#define APP_NAME_CODE 102
+#define PLUGIN_NAME_CODE 103
+#define ENTITY_NAME_CODE 104
+#define APP_NAME "LibreCAD"
+
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
 

@@ -10,13 +10,18 @@ namespace lc {
      */
     class CustomEntityStorage : public Block {
         public:
-            CustomEntityStorage(const std::string& pluginName, const std::string& entityName, const geo::Coordinate& base);
+            CustomEntityStorage(const std::string& pluginName,
+                                const std::string& entityName,
+                                const geo::Coordinate& base,
+                                const std::map<std::string, std::string> params = std::map<std::string, std::string>()
+            );
 
             const std::string& pluginName() const;
             const std::string& entityName() const;
 
             void setParam(const std::string& param, const std::string& value);
             std::string param(const std::string& param) const;
+            const std::map<std::string, std::string>& params() const;
 
         private:
             std::string _pluginName;

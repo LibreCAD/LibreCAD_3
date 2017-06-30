@@ -27,6 +27,7 @@
 #include <cad/meta/block.h>
 #include <cad/primitive/insert.h>
 #include <cad/operations/blockops.h>
+#include <cad/meta/customentitystorage.h>
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
         _document(document), 
@@ -51,7 +52,51 @@ void DXFimpl::setBlock(const int _blockHandle) {
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint));
+    _currentBlock = nullptr;
+
+    auto base = coord(data.basePoint);
+
+    auto appData = data.appData;
+    auto it = appData.begin();
+    std::string appName;
+
+    while(appName != APP_NAME && it != appData.end()) {
+        appName = *(it->begin()->content.s);
+        it++;
+    }
+
+    if(it != appData.end() && it->size() >= 3) {
+        auto it2 = it->begin();
+
+        it2++;
+        auto pluginName = *(it2->content.s);
+
+        it2++;
+        auto entityName = *(it2->content.s);
+
+        it2++;
+
+        std::map<std::string, std::string> params;
+        while(it2 != it->end()) {
+            auto key = *(it2->content.s);
+
+            it2++;
+
+            if(it2 == it->end()) {
+                break;
+            }
+
+            auto value = *(it2->content.s);
+            params[key] = value;
+            it2++;
+        }
+
+        _currentBlock = std::make_shared<lc::CustomEntityStorage>(pluginName, entityName, base, params);
+    }
+
+    if(_currentBlock == nullptr) {
+        _currentBlock = std::make_shared<lc::Block>(data.name, base);
+    }
     _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
     _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
@@ -1110,6 +1155,25 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();
+
+    auto customEntity = std::dynamic_pointer_cast<const lc::CustomEntityStorage>(block);
+    if(customEntity) {
+        auto list = std::list<DRW_Variant>({
+            DRW_Variant(APP_NAME_CODE, APP_NAME),
+            DRW_Variant(PLUGIN_NAME_CODE, customEntity->pluginName()),
+            DRW_Variant(ENTITY_NAME_CODE, customEntity->entityName()),
+        });
+
+        unsigned i = 1000;
+        for(auto data : customEntity->params()) {
+            list.emplace_back(DRW_Variant(i, data.first));
+            i++;
+            list.emplace_back(DRW_Variant(i, data.second));
+            i++;
+        }
+
+        drwBlock.appData.push_back(list);
+    }
 
     dxfW->writeBlock(&drwBlock);
 
