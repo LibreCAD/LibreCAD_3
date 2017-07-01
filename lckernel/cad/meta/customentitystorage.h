@@ -4,6 +4,9 @@
 #include "block.h"
 
 namespace lc {
+    class CustomEntityStorage;
+    DECLARE_SHORT_SHARED_PTR(CustomEntityStorage);
+
     /**
      * @brief Class for storage of components of custom entities
      * Child of Block for compatibility with other CAD software
@@ -19,7 +22,7 @@ namespace lc {
             const std::string& pluginName() const;
             const std::string& entityName() const;
 
-            void setParam(const std::string& param, const std::string& value);
+            CustomEntityStorage_CSPtr setParam(const std::string& param, const std::string& value) const;
             std::string param(const std::string& param) const;
             const std::map<std::string, std::string>& params() const;
 
@@ -28,6 +31,4 @@ namespace lc {
             std::string _entityName;
             std::map<std::string, std::string> _params;
     };
-
-    DECLARE_SHORT_SHARED_PTR(CustomEntityStorage);
 }

@@ -23,8 +23,11 @@ const std::string& CustomEntityStorage::entityName() const {
     return _entityName;
 }
 
-void CustomEntityStorage::setParam(const std::string& param, const std::string& value) {
-    _params[param] = value;
+CustomEntityStorage_CSPtr CustomEntityStorage::setParam(const std::string& param, const std::string& value) const {
+    auto ces = std::make_shared<CustomEntityStorage>(_pluginName, _entityName, base(), _params);
+    ces->_params[param] = value;
+
+    return ces;
 }
 
 std::string CustomEntityStorage::param(const std::string& param) const {
