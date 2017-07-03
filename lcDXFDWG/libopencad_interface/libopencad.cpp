@@ -6,7 +6,8 @@
 
 lc::FileLibs::LibOpenCad::LibOpenCad(lc::Document_SPtr document, lc::operation::Builder_SPtr builder) :
     _document(document),
-    _builder(builder) {
+    _builder(builder),
+    _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)) {
 
 }
 
@@ -48,10 +49,10 @@ lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& data) {
     auto layer = std::make_shared<Layer>(data.getName(), lw, color);
 
     if(data.getName() == "0") {
-        std::make_shared<lc::operation::AddLayer>(_document, layer)->execute();
+        _builder->append(std::make_shared<lc::operation::AddLayer>(_document, layer));
     }
     else {
-        std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer)->execute();
+        _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer));
     }
 
     return layer;
@@ -92,7 +93,7 @@ void lc::FileLibs::LibOpenCad::addArc(lc::Layer_SPtr layer, const CADArc* arc) {
             toLcPostiton(position), arc->getRadius(), arc->getStartingAngle(), arc->getEndingAngle(),
             true, layer, metaInfo(arc));
 
-    _builder->append(lcArc);
+    _entityBuilder->appendEntity(lcArc);
 }
 
 void lc::FileLibs::LibOpenCad::addLine(lc::Layer_SPtr layer, const CADLine* line) {
@@ -103,7 +104,7 @@ void lc::FileLibs::LibOpenCad::addLine(lc::Layer_SPtr layer, const CADLine* line
             metaInfo(line)
     );
 
-    _builder->append(lcLine);
+    _entityBuilder->appendEntity(lcLine);
 }
 
 void lc::FileLibs::LibOpenCad::addCircle(lc::Layer_SPtr layer, const CADCircle* circle) {
@@ -114,7 +115,7 @@ void lc::FileLibs::LibOpenCad::addCircle(lc::Layer_SPtr layer, const CADCircle* 
             metaInfo(circle)
     );
 
-    _builder->append(lcCircle);
+    _entityBuilder->appendEntity(lcCircle);
 }
 
 void lc::FileLibs::LibOpenCad::addEllipse(lc::Layer_SPtr layer, const CADEllipse* ellipse) {
@@ -128,7 +129,7 @@ void lc::FileLibs::LibOpenCad::addEllipse(lc::Layer_SPtr layer, const CADEllipse
             metaInfo(ellipse)
     );
 
-    _builder->append(lcEllipse);
+    _entityBuilder->appendEntity(lcEllipse);
 }
 
 void lc::FileLibs::LibOpenCad::addLWPolyline(lc::Layer_SPtr layer, const CADLWPolyline* lwPolyline) {
@@ -153,7 +154,7 @@ void lc::FileLibs::LibOpenCad::addLWPolyline(lc::Layer_SPtr layer, const CADLWPo
             metaInfo(lwPolyline)
     );
 
-    _builder->append(lcLWPolyline);
+    _entityBuilder->appendEntity(lcLWPolyline);
 }
 
 lc::MetaInfo_SPtr lc::FileLibs::LibOpenCad::metaInfo(const CADGeometry* geometry) {

@@ -19,28 +19,46 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto line = std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(10.0, 10.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();
-    builder->move(_offset1);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    
+    
+    line = std::make_shared<Line>(geo::Coordinate(110., 0.), geo::Coordinate(100., 110.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(20.0, 20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(110., 0.), geo::Coordinate(100., 110.), layer)).push();;
-    builder->move(_offset2);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    
+    
+    line = std::make_shared<Line>(geo::Coordinate(550., 60.), geo::Coordinate(90., -100.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(-20.0, 20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(550., 60.), geo::Coordinate(90., -100.), layer)).push();;
-    builder->move(_offset3);
+    
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    
+    
+    line = std::make_shared<Line>(geo::Coordinate(200., 750.), geo::Coordinate(-100., 100.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(-20.0, -20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(200., 750.), geo::Coordinate(-100., 100.), layer)).push();;
-    builder->move(_offset4);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -63,28 +81,46 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto line = std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(10.0, 10.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();
-    builder->copy(_offset1);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+
+
+    line = std::make_shared<Line>(geo::Coordinate(110., 0.), geo::Coordinate(100., 110.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(20.0, 20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(110., 0.), geo::Coordinate(100., 110.), layer)).push();;
-    builder->copy(_offset2);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+
+
+    line = std::make_shared<Line>(geo::Coordinate(550., 60.), geo::Coordinate(90., -100.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(-20.0, 20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(550., 60.), geo::Coordinate(90., -100.), layer)).push();;
-    builder->copy(_offset3);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+
+
+    line = std::make_shared<Line>(geo::Coordinate(200., 750.), geo::Coordinate(-100., 100.), layer);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(-20.0, -20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(200., 750.), geo::Coordinate(-100., 100.), layer)).push();;
-    builder->copy(_offset4);
+
+    builder->appendEntity(line);
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -105,32 +141,36 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
     double angle1 = 30;
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();
-    builder->rotate(_center1, angle1);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center1, angle1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(-20.0, -20.0);
     double angle2 = 60.;
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->rotate(_center2, angle2);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));;
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center2, angle2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(10.0, 43.0);
     double angle3 = 90;
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->rotate(_center3, angle3);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));;
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center3, angle3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(55.0, 20.0);
     double angle4 = 180;
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->rotate(_center4, angle4);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center4, angle4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -151,32 +191,36 @@ std::vector<Line_CSPtr> entitytest::LineScale() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(10.0, 10.0);
     geo::Coordinate _ratio1(5.0, 5.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();
-    builder->scale(_center1, _ratio1);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center1, _ratio1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(-20.0, -20.0);
     geo::Coordinate _ratio2(2.0, 3.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->scale(_center2, _ratio2);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));;
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center2, _ratio2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(55.0, 72.0);
     geo::Coordinate _ratio3(2.0, 6.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->scale(_center3, _ratio3);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));;
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center3, _ratio3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(10.0, 21.0);
     geo::Coordinate _ratio4(20.0, 20.0);
-    builder->append(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer)).push();;
-    builder->scale(_center4, _ratio4);
+    builder->appendEntity(std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer));;
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center4, _ratio4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -198,31 +242,35 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(0.0, 0.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->move(_offset1);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(20.0, -20.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->move(_offset2);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(-20.0, -30.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->move(_offset3);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(-20.0, 20.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->move(_offset4);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -244,31 +292,35 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(0.0, 0.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(10., 0.), 50., layer)).push();
-    builder->copy(_offset1);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(10., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset1));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(20.0, -20.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 20.), 50., layer)).push();
-    builder->copy(_offset2);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 20.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset2));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(-20.0, -30.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(22., -50.), 50., layer)).push();
-    builder->copy(_offset3);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(22., -50.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset3));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(-20.0, 20.0);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(-555., 1000.), 50., layer)).push();
-    builder->copy(_offset4);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(-555., 1000.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset4));
     builder->execute();
 
 
@@ -291,35 +343,39 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
     double angle1 = -45.;
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->rotate(_center1, angle1);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center1, angle1));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(-20.0, -0.0);
     double angle2 = 30.;
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->rotate(_center2, angle2);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center2, angle2));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(60.0, 30.0);
     double angle3 = -100.;
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->rotate(_center3, angle3);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center3, angle3));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(20.0, 20.0);
     double angle4 = 180.;
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->rotate(_center4, angle4);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center4, angle4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -340,35 +396,39 @@ std::vector<Circle_CSPtr> entitytest::CircleScale() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
     geo::Coordinate _ratio1(5, 2);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->scale(_center1, _ratio1);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center1, _ratio1));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(100.0, 100.0);
     geo::Coordinate _ratio2(2, 2);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->scale(_center2, _ratio2);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center2, _ratio2));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(-100.0, -100.0);
     geo::Coordinate _ratio3(1, 7);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->scale(_center3, _ratio3);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center3, _ratio3));
     builder->execute();
 
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(73.0, 20.0);
     geo::Coordinate _ratio4(4, 10);
-    builder->append(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer)).push();
-    builder->scale(_center4, _ratio4);
+    builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center4, _ratio4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -390,28 +450,32 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(20., 10.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->move(_offset1);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(33., 21.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->move(_offset2);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(75., 75.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->move(_offset3);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(3000., 1110.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->move(_offset4);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -432,28 +496,32 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(20., 10.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->copy(_offset1);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(33., 21.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->copy(_offset2);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(75., 75.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->copy(_offset3);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(3000., 1110.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->copy(_offset4);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -474,32 +542,36 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(9700., 555.);
     double angle1 = 15;
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->rotate(_center1, angle1);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center1, angle1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(5825., 8078.);
     double angle2 = 105.;
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->rotate(_center2, angle2);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center2, angle2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(1045., 154.);
     double angle3 = 95.;
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->rotate(_center3, angle3);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center3, angle3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(0., 1550.);
     double angle4 = 72.;
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->rotate(_center4, angle4);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center4, angle4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -520,32 +592,36 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
-    auto builder = std::make_shared<operation::Builder>(_document);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(120., 150.);
     geo::Coordinate _ratio1(1., 10.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->scale(_center1, _ratio1);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center1, _ratio1));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center2(55., 00.);
     geo::Coordinate _ratio2(2., 10.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->scale(_center2, _ratio2);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center2, _ratio2));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center3(0., 0.);
     geo::Coordinate _ratio3(3., 3.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->scale(_center3, _ratio3);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center3, _ratio3));
     builder->execute();
 
-    builder = std::make_shared<operation::Builder>(_document);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center4(1., 10.);
     geo::Coordinate _ratio4(1., 1.);
-    builder->append(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer)).push();
-    builder->scale(_center4, _ratio4);
+    builder->appendEntity(std::make_shared<Arc>(geo::Coordinate(0., 0.), 100, 30 * 0.0174532925, 120 * 0.0174532925, true, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center4, _ratio4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -568,28 +644,32 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
     al->execute();
 
     geo::Coordinate _offset1(10., 10.);
-    auto builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->move(_offset1);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
     geo::Coordinate _offset2(10000., 15550.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->move(_offset2);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
 
 
     geo::Coordinate _offset3(3210., -1220.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->move(_offset3);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
     geo::Coordinate _offset4(-10000., -10000.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->move(_offset4);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Move>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -611,28 +691,32 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
     al->execute();
 
     geo::Coordinate _offset1(10., 10.);
-    auto builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->copy(_offset1);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset1));
     builder->execute();
 
     geo::Coordinate _offset2(10000., 15550.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->copy(_offset2);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset2));
     builder->execute();
 
 
     geo::Coordinate _offset3(3210., -1220.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->copy(_offset3);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset3));
     builder->execute();
 
     geo::Coordinate _offset4(-10000., -10000.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->copy(_offset4);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -655,31 +739,35 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
 
     geo::Coordinate _center1(10., 10.);
     double angle1 = 70;
-    auto builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->rotate(_center1, angle1);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center1, angle1));
     builder->execute();
 
     geo::Coordinate _center2(10., 10.);
     double angle2 = 113;
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->rotate(_center2, angle2);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center2, angle2));
     builder->execute();
 
 
     geo::Coordinate _center3(10., 10.);
     double angle3 = 91;
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->rotate(_center3, angle3);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center3, angle3));
     builder->execute();
 
     geo::Coordinate _center4(10., 10.);
     double angle4 = 360.;
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->rotate(_center4, angle4);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center4, angle4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();
@@ -702,31 +790,35 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
 
     geo::Coordinate _center1(100., 100.);
     geo::Coordinate _ratio1(11., 1.);
-    auto builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->scale(_center1, _ratio1);
+    auto builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center1, _ratio1));
     builder->execute();
 
     geo::Coordinate _center2(0., 0.);
     geo::Coordinate _ratio2(6., 3.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->scale(_center2, _ratio2);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center2, _ratio2));
     builder->execute();
 
 
     geo::Coordinate _center3(-10., -10.);
     geo::Coordinate _ratio3(1., 2.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->scale(_center3, _ratio3);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center3, _ratio3));
     builder->execute();
 
     geo::Coordinate _center4(2700., 5000.);
     geo::Coordinate _ratio4(10., 10.);
-    builder = std::make_shared<operation::Builder>(_document);
-    builder->append(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer)).push();
-    builder->scale(_center4, _ratio4);
+    builder = std::make_shared<operation::EntityBuilder>(_document);
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendOperation(std::make_shared<lc::operation::Push>());
+    builder->appendOperation(std::make_shared<lc::operation::Scale>(_center4, _ratio4));
     builder->execute();
 
     auto _entities = _document->entityContainer().asVector();

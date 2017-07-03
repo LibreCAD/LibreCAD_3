@@ -10,7 +10,7 @@
 #include <cad/document/document.h>
 #include <cad/document/storagemanager.h>
 #include <cad/meta/icolor.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/base/visitor.h>
 #include <cad/meta/dxflinepattern.h>
 #include <cad/meta/metalinewidth.h>
@@ -19,9 +19,15 @@
 #include <cad/meta/icolor.h>
 #include <tuple>
 #include <cad/meta/block.h>
+#include <cad/operations/builder.h>
 
 #define BYBLOCK_COLOR 0
 #define LTYPE_BYBLOCK "ByBlock"
+
+#define APP_NAME_CODE 102
+#define PLUGIN_NAME_CODE 103
+#define ENTITY_NAME_CODE 104
+#define APP_NAME "LibreCAD"
 
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
@@ -138,6 +144,7 @@ class DXFimpl : public DRW_Interface {
 
         std::shared_ptr<lc::Document> _document;
         lc::operation::Builder_SPtr _builder;
+        lc::operation::EntityBuilder_SPtr _entityBuilder;
         lc::Block_SPtr _currentBlock;
 
     private:

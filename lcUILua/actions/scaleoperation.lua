@@ -56,14 +56,14 @@ function ScaleOperation:newData(data)
 end
 
 function ScaleOperation:scale()
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
 
     for k, entity in pairs(self.selection) do
-        b:append(entity)
+        b:appendEntity(entity)
     end
 
-    b:push()
-    b:scale(self.origin, self.factor)
+    b:appendOperation(Push())
+    b:appendOperation(Scale(self.origin, self.factor))
     b:execute()
 
     self:close()

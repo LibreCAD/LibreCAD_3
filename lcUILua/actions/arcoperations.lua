@@ -99,9 +99,9 @@ function ArcOperations:createArc()
     self.finished = true
     active_widget():tempEntities():removeEntity(self.arc)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local a = self:getArc(self.center, self.radius, self.beginAngle, self.endAngle)
-    b:append(a)
+    b:appendEntity(a)
     b:execute()
 
     event.delete('mouseMove', self)

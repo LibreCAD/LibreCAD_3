@@ -76,14 +76,14 @@ end
 
 function CopyOperation:copy()
     local offset = self.destination:sub(self.origin)
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
 
     for k, entity in pairs(self.selection) do
-        b:append(entity)
+        b:appendEntity(entity)
     end
 
-    b:push()
-    b:copy(offset)
+    b:appendOperation(Push())
+    b:appendOperation(Copy(offset))
     b:execute()
 
     self:close()

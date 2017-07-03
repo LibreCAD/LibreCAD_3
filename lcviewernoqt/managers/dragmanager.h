@@ -9,7 +9,7 @@
 #include "../drawables/lccursor.h"
 #include "../drawables/tempentities.h"
 #include <cad/document/document.h>
-#include "cad/operations/builder.h"
+#include "cad/operations/entitybuilder.h"
 #include "../events/dragpointsevent.h"
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
@@ -69,7 +69,7 @@ namespace LCViewer {
 
 			bool _entityDragged;
 
-			lc::operation::Builder_SPtr _builder;
+			lc::operation::EntityBuilder_SPtr _builder;
 
 			lc::geo::Coordinate _selectedPoint;
 			lc::EntityContainer<lc::entity::CADEntity_CSPtr> _selectedEntities;

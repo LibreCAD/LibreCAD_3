@@ -10,9 +10,13 @@
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
-#include <cad/operations/builderops.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entityops.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
+#include <cad/meta/customentitystorage.h>
+#include <cad/operations/blockops.h>
+#include <cad/operations/builder.h>
+#include <cad/primitive/insert.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -358,21 +362,21 @@ void LCLua::importLCKernel() {
             .addFunction("execute", &operation::DocumentOperation::execute)
         .endClass()
 
-        .beginExtendClass<lc::operation::Builder, operation::DocumentOperation>("Builder")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::Builder>), LUA_ARGS(
-                    std::shared_ptr<lc::Document> doc
+        .beginExtendClass<operation::Builder, operation::DocumentOperation>("Builder")
+            .addConstructor(LUA_SP(operation::Builder_SPtr), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const std::string&
             ))
-            .addFunction("append", &lc::operation::Builder::append)
-            .addFunction("move", &lc::operation::Builder::move)
-            .addFunction("copy", &lc::operation::Builder::copy)
-            .addFunction("scale", &lc::operation::Builder::scale)
-            .addFunction("rotate", &lc::operation::Builder::rotate)
-            .addFunction("push", &lc::operation::Builder::push)
-            .addFunction("loop", &lc::operation::Builder::repeat)
-            .addFunction("begin", &lc::operation::Builder::begin)
-            .addFunction("selectByLayer", &lc::operation::Builder::selectByLayer)
-            .addFunction("remove", &lc::operation::Builder::remove)
-            .addFunction("processStack", &lc::operation::Builder::processStack)
+            .addFunction("append", &operation::Builder::append)
+        .endClass()
+
+        .beginExtendClass<operation::EntityBuilder, operation::DocumentOperation>("EntityBuilder")
+            .addConstructor(LUA_SP(operation::EntityBuilder_SPtr), LUA_ARGS(
+                    std::shared_ptr<lc::Document>
+            ))
+            .addFunction("appendEntity", &operation::EntityBuilder::appendEntity)
+            .addFunction("appendOperation", &operation::EntityBuilder::appendOperation)
+            .addFunction("processStack", &operation::EntityBuilder::processStack)
         .endClass()
 
         .beginClass<lc::IntersectMany>("IntersectMany")
@@ -389,7 +393,7 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<operation::Move, operation::Base>("Move")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Move>), LUA_ARGS(const geo::Coordinate & offset))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Move>), LUA_ARGS(const geo::Coordinate&))
         .endClass()
 
         .beginExtendClass<operation::Begin, operation::Base>("Begin")
@@ -397,17 +401,17 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<operation::Loop, operation::Base>("Loop")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Loop>), LUA_ARGS(const int numTimes))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Loop>), LUA_ARGS(const int))
         .endClass()
 
         .beginExtendClass<operation::Copy, operation::Base>("Copy")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Copy>), LUA_ARGS(const geo::Coordinate & offset))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Copy>), LUA_ARGS(const geo::Coordinate&))
         .endClass()
 
         .beginExtendClass<operation::Scale, operation::Base>("Scale")
             .addConstructor(LUA_SP(std::shared_ptr<operation::Scale>), LUA_ARGS(
-                    const geo::Coordinate & scale_center,
-                    const geo::Coordinate & scale_factor
+                    const geo::Coordinate&,
+                    const geo::Coordinate&
             ))
         .endClass()
 
@@ -417,6 +421,17 @@ void LCLua::importLCKernel() {
 
         .beginExtendClass<operation::SelectByLayer, operation::Base>("SelectByLayer")
             .addConstructor(LUA_SP(std::shared_ptr<operation::SelectByLayer>), LUA_ARGS(const Layer_CSPtr))
+        .endClass()
+
+        .beginExtendClass<operation::Rotate, operation::Base>("Rotate")
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Rotate>), LUA_ARGS(
+                    const geo::Coordinate&,
+                    const double
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::Remove, operation::Base>("Remove")
+            .addConstructor(LUA_SP(std::shared_ptr<operation::Remove>), LUA_ARGS())
         .endClass()
 
         .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
@@ -439,5 +454,146 @@ void LCLua::importLCKernel() {
                     const Layer_CSPtr,
                     const Layer_CSPtr
             ))
-        .endClass();
+        .endClass()
+
+        .beginExtendClass<Block, DocumentMetaType>("Block")
+            .addConstructor(LUA_SP(Block_SPtr), LUA_ARGS(
+                std::string,
+                geo::Coordinate
+            ))
+            .addFunction("base", &Block::base)
+        .endClass()
+
+        .beginExtendClass<CustomEntityStorage, Block>("CustomEntityStorage")
+            .addConstructor(LUA_SP(CustomEntityStorage_SPtr), LUA_ARGS(
+                const std::string&,
+                const std::string&,
+                const geo::Coordinate&
+            ))
+
+            .addFunction("pluginName", &CustomEntityStorage::pluginName)
+            .addFunction("entityName", &CustomEntityStorage::entityName)
+            .addFunction("param", &CustomEntityStorage::param)
+            .addFunction("setParam", &CustomEntityStorage::setParam)
+        .endClass()
+
+        .beginExtendClass<operation::AddBlock, operation::DocumentOperation>("AddBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::RemoveBlock, operation::DocumentOperation>("RemoveBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr
+            ))
+        .endClass()
+
+        .beginExtendClass<operation::ReplaceBlock, operation::DocumentOperation>("ReplaceBlock")
+            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceBlock>), LUA_ARGS(
+                    std::shared_ptr<lc::Document>,
+                    const Block_CSPtr,
+                    const Block_CSPtr
+            ))
+        .endClass()
+
+        //ArcBuilder is used here because it needs a template
+        //This doesn't cause RTTI problems in Lua
+        .beginClass<builder::CADEntityBuilder<builder::ArcBuilder>>("CADEntityBuilder")
+            .addFunction("layer", &builder::CADEntityBuilder<builder::ArcBuilder>::layer)
+            .addFunction("setLayer", &builder::CADEntityBuilder<builder::ArcBuilder>::setLayer)
+            .addFunction("metaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::metaInfo)
+            .addFunction("setMetaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::setMetaInfo)
+            .addFunction("block", &builder::CADEntityBuilder<builder::ArcBuilder>::block)
+            .addFunction("setBlock", &builder::CADEntityBuilder<builder::ArcBuilder>::setBlock)
+            .addFunction("checkValues", &builder::CADEntityBuilder<builder::ArcBuilder>::checkValues)
+        .endClass()
+
+        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("ArcBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("center", &builder::ArcBuilder::center)
+            .addFunction("setCenter", &builder::ArcBuilder::setCenter)
+            .addFunction("radius", &builder::ArcBuilder::radius)
+            .addFunction("setRadius", &builder::ArcBuilder::setRadius)
+            .addFunction("startAngle", &builder::ArcBuilder::startAngle)
+            .addFunction("setStartAngle", &builder::ArcBuilder::setStartAngle)
+            .addFunction("endAngle", &builder::ArcBuilder::endAngle)
+            .addFunction("setEndAngle", &builder::ArcBuilder::setEndAngle)
+            .addFunction("isCCW", &builder::ArcBuilder::isCCW)
+            .addFunction("setIsCCW", &builder::ArcBuilder::setIsCCW)
+            .addFunction("build", &builder::ArcBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("CircleBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("center", &builder::CircleBuilder::center)
+            .addFunction("setCenter", &builder::CircleBuilder::setCenter)
+            .addFunction("radius", &builder::CircleBuilder::radius)
+            .addFunction("setRadius", &builder::CircleBuilder::setRadius)
+            .addFunction("build", &builder::CircleBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("InsertBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("displayBlock", &builder::InsertBuilder::displayBlock)
+            .addFunction("setDisplayBlock", &builder::InsertBuilder::setDisplayBlock)
+            .addFunction("coordinate", &builder::InsertBuilder::coordinate)
+            .addFunction("setCoordinate", &builder::InsertBuilder::setCoordinate)
+            .addFunction("document", &builder::InsertBuilder::document)
+            .addFunction("setDocument", &builder::InsertBuilder::setDocument)
+            .addFunction("build", &builder::InsertBuilder::build)
+        .endClass()
+
+        .beginClass<builder::LayerBuilder>("LayerBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("name", &builder::LayerBuilder::name)
+            .addFunction("setName", &builder::LayerBuilder::setName)
+            .addFunction("lineWidth", &builder::LayerBuilder::lineWidth)
+            .addFunction("setLineWidth", &builder::LayerBuilder::setLineWidth)
+            .addFunction("color", &builder::LayerBuilder::color)
+            .addFunction("setColor", &builder::LayerBuilder::setColor)
+            .addFunction("linePattern", &builder::LayerBuilder::linePattern)
+            .addFunction("setLinePattern", &builder::LayerBuilder::setLinePattern)
+            .addFunction("isFrozen", &builder::LayerBuilder::isFrozen)
+            .addFunction("setIsFrozen", &builder::LayerBuilder::setIsFrozen)
+            .addFunction("build", &builder::LayerBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("LineBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("start", &builder::LineBuilder::start)
+            .addFunction("setStart", &builder::LineBuilder::setStart)
+            .addFunction("end", &builder::LineBuilder::end)
+            .addFunction("setEnd", &builder::LineBuilder::setEnd)
+            .addFunction("build", &builder::LineBuilder::build)
+        .endClass()
+
+        .beginClass<builder::LinePatternBuilder>("LinePatternBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("name", &builder::LinePatternBuilder::name)
+            .addFunction("setName", &builder::LinePatternBuilder::setName)
+            .addFunction("description", &builder::LinePatternBuilder::description)
+            .addFunction("setDescription", &builder::LinePatternBuilder::setDescription)
+            .addFunction("path", &builder::LinePatternBuilder::path)
+            .addFunction("setPath", &builder::LinePatternBuilder::setPath)
+            .addFunction("addElement", &builder::LinePatternBuilder::addElement)
+            .addFunction("checkValues", &builder::LinePatternBuilder::checkValues)
+            .addFunction("build", &builder::LinePatternBuilder::build)
+        .endClass()
+
+        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("PointBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("coordinate", &builder::PointBuilder::coordinate)
+            .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)
+            .addFunction("build", &builder::PointBuilder::build)
+        .endClass()
+
+        .beginExtendClass<entity::Insert, entity::CADEntity>("Insert")
+            .addFunction("displayBlock", &entity::Insert::displayBlock)
+            .addFunction("position", &entity::Insert::position)
+            .addFunction("document", &entity::Insert::document)
+        .endClass()
+        ;
 }

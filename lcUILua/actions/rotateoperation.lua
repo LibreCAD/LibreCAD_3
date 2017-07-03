@@ -81,14 +81,14 @@ end
 
 function RotateOperation:rotate()
     local angle = self.origin:angleTo(self.secondPoint) - self.origin:angleTo(self.firstPoint)
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
 
     for k, entity in pairs(self.selection) do
-        b:append(entity)
+        b:appendEntity(entity)
     end
 
-    b:push()
-    b:rotate(self.origin, angle)
+    b:appendOperation(Push())
+    b:appendOperation(Rotate(self.origin, angle))
     b:execute()
 
     self:close()

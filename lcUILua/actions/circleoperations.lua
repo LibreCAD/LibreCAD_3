@@ -77,9 +77,9 @@ function CircleOperations:createCircle(point)
     self.finished = true
     active_widget():tempEntities():removeEntity(self.circle)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getCircle(self.center, point)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)

@@ -19,7 +19,6 @@ version.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
-cad/base/visitor.h
 cad/dochelpers/documentimpl.cpp
 cad/dochelpers/entitycontainer.cpp
 cad/dochelpers/quadtree.cpp
@@ -41,8 +40,8 @@ cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
-cad/operations/builder.cpp
-cad/operations/builderops.cpp
+        cad/operations/entitybuilder.cpp
+        cad/operations/entityops.cpp
 cad/operations/documentoperation.cpp
 cad/operations/layerops.cpp
 cad/operations/linepatternops.cpp
@@ -71,6 +70,9 @@ cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
 cad/builders/linepattern.cpp
+cad/meta/customentitystorage.cpp
+cad/operations/blockops.cpp
+cad/operations/builder.cpp
 )
 
 # HEADER FILES
@@ -125,10 +127,9 @@ cad/meta/metacolor.h
 cad/meta/layer.h
 cad/meta/metalinewidth.h
 cad/meta/dxflinepattern.h
-cad/operations/builder.h
-cad/operations/builderops.h
+        cad/operations/entitybuilder.h
+        cad/operations/entityops.h
 cad/operations/documentoperation.h
-cad/operations/trim.h
 cad/operations/layerops.h
 cad/operations/undoable.h
 cad/operations/linepatternops.h
@@ -163,6 +164,10 @@ cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
 cad/builders/linepattern.h
+cad/meta/customentitystorage.h
+cad/operations/blockops.h
+cad/operations/builder.h
+cad/base/visitor.h
 )
 
 # LOG4CXX

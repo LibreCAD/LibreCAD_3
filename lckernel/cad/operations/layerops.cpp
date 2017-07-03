@@ -2,12 +2,14 @@
 #include "cad/document/document.h"
 
 using namespace lc;
-using namespace lc::operation;
+using namespace operation;
 
 /********************************************************************************************************/
 /** AddLayer                                                                                          ***/
 /********************************************************************************************************/
-AddLayer::AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) : DocumentOperation(document), Undoable("AddLayer"), _layer(layer)  {
+AddLayer::AddLayer(std::shared_ptr<Document> document, const Layer_CSPtr layer) :
+        DocumentOperation(document, "AddLayer"),
+        _layer(layer) {
 }
 
 void AddLayer::processInternal() {
@@ -25,10 +27,9 @@ void AddLayer::redo() const {
 /********************************************************************************************************/
 /** RemoveLayer                                                                                       ***/
 /********************************************************************************************************/
-RemoveLayer::RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) :
-        DocumentOperation(document),
-        Undoable("RemoveLayer"),
-        _layer(layer)  {
+RemoveLayer::RemoveLayer(std::shared_ptr<Document> document, const Layer_CSPtr layer) :
+        DocumentOperation(document, "RemoveLayer"),
+        _layer(layer) {
 
     if(layer->name() == "0") {
         throw "Layer 0 cannot be removed";
@@ -67,7 +68,10 @@ void RemoveLayer::redo() const {
 /********************************************************************************************************/
 /** ReplaceLayer                                                                                       ***/
 /********************************************************************************************************/
-ReplaceLayer::ReplaceLayer(std::shared_ptr<Document> document,  const Layer_CSPtr oldLayer,  const Layer_CSPtr newLayer) : DocumentOperation(document), Undoable("ReplaceLayer"), _oldLayer(oldLayer), _newLayer(newLayer)  {
+ReplaceLayer::ReplaceLayer(std::shared_ptr<Document> document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) :
+        DocumentOperation(document, "ReplaceLayer"),
+        _oldLayer(oldLayer),
+        _newLayer(newLayer) {
 }
 
 void ReplaceLayer::processInternal() {

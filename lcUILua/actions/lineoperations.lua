@@ -43,9 +43,9 @@ function LineOperations:newPoint(point)
         self.finished = true
         active_widget():tempEntities():removeEntity(self.lastLine)
 
-        local b = Builder(active_widget():document())
+        local b = EntityBuilder(active_widget():document())
         local l = self:createLine(self.lastPoint, point)
-        b:append(l)
+        b:appendEntity(l)
         b:execute()
 
         event.delete('mouseMove', self)

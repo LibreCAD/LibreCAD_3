@@ -104,9 +104,9 @@ function DimDiametricOperations:createDimDiametric()
     self.finished = true
     active_widget():tempEntities():removeEntity(self.dimDiametric)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)

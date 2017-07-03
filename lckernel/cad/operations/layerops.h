@@ -10,13 +10,9 @@ namespace lc {
         /**
         * This class can be used to add or remove layers from the document
         */
-        class AddLayer : public DocumentOperation, public Undoable {
+        class AddLayer : public DocumentOperation {
             public:
                 AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
-
-                virtual ~AddLayer() {
-                    // LOG4CXX_DEBUG(logger, "AddLayer removed");
-                }
 
                 virtual void undo() const;
                 virtual void redo() const;
@@ -33,13 +29,9 @@ namespace lc {
         /**
         * Remove layer from document
         */
-        class RemoveLayer : public DocumentOperation, public Undoable {
+        class RemoveLayer : public DocumentOperation {
             public:
                 RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
-
-                virtual ~RemoveLayer() {
-                    // LOG4CXX_DEBUG(logger, "RemoveLayer removed");
-                }
 
                 virtual void undo() const;
                 virtual void redo() const;
@@ -57,13 +49,9 @@ namespace lc {
         /**
         * Remove layer from document
         */
-        class ReplaceLayer : public DocumentOperation, public Undoable {
+        class ReplaceLayer : public DocumentOperation {
             public:
                 ReplaceLayer(std::shared_ptr<Document> document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
-
-                virtual ~ReplaceLayer() {
-                    // LOG4CXX_DEBUG(logger, "ReplaceLayer removed");
-                }
 
                 virtual void undo() const;
                 virtual void redo() const;
@@ -79,5 +67,3 @@ namespace lc {
         };
     }
 }
-
-// TRIMENTITY_H

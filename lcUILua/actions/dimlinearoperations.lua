@@ -110,9 +110,9 @@ function DimLinearOperations:createDimLinear()
     self.finished = true
     active_widget():tempEntities():removeEntity(self.dimLinear)
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)

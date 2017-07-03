@@ -13,7 +13,7 @@
 #include <cad/primitive/point.h>
 #include <cad/primitive/spline.h>
 #include <cad/primitive/lwpolyline.h>
-#include <cad/operations/builder.h>
+#include <cad/operations/entitybuilder.h>
 #include <cad/meta/layer.h>
 #include <cad/operations/layerops.h>
 #include <cad/operations/linepatternops.h>
@@ -26,11 +26,15 @@
 #include <cad/functions/string_helper.h>
 #include <cad/meta/block.h>
 #include <cad/primitive/insert.h>
+#include <cad/operations/blockops.h>
+#include <cad/meta/customentitystorage.h>
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
         _document(document), 
-        _builder(builder), 
+        _builder(builder),
+        _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)),
         _currentBlock(nullptr) {
+    _builder->append(_entityBuilder);
 }
 
 inline int DXFimpl::widthToInt(double wid) const {
@@ -48,8 +52,52 @@ void DXFimpl::setBlock(const int _blockHandle) {
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-    _currentBlock = std::make_shared<lc::Block>(data.name, coord(data.basePoint));
-    _builder->appendMetaData(_currentBlock);
+    _currentBlock = nullptr;
+
+    auto base = coord(data.basePoint);
+
+    auto appData = data.appData;
+    auto it = appData.begin();
+    std::string appName;
+
+    while(appName != APP_NAME && it != appData.end()) {
+        appName = *(it->begin()->content.s);
+        it++;
+    }
+
+    if(it != appData.end() && it->size() >= 3) {
+        auto it2 = it->begin();
+
+        it2++;
+        auto pluginName = *(it2->content.s);
+
+        it2++;
+        auto entityName = *(it2->content.s);
+
+        it2++;
+
+        std::map<std::string, std::string> params;
+        while(it2 != it->end()) {
+            auto key = *(it2->content.s);
+
+            it2++;
+
+            if(it2 == it->end()) {
+                break;
+            }
+
+            auto value = *(it2->content.s);
+            params[key] = value;
+            it2++;
+        }
+
+        _currentBlock = std::make_shared<lc::CustomEntityStorage>(pluginName, entityName, base, params);
+    }
+
+    if(_currentBlock == nullptr) {
+        _currentBlock = std::make_shared<lc::Block>(data.name, base);
+    }
+    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
     _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
 }
@@ -67,7 +115,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
           ->setStart(coord(data.basePoint))
           ->setEnd(coord(data.secPoint));
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
@@ -79,7 +127,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
           ->setRadius(data.radious)
           ->setBlock(_currentBlock);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
@@ -94,7 +142,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
           ->setEndAngle(data.endangle)
           ->setIsCCW((bool) data.isccw);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
@@ -110,7 +158,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
         //TODO: block
     }
 
-    _builder->append(lcEllipse);
+    _entityBuilder->appendEntity(lcEllipse);
 }
 
 void DXFimpl::addLayer(const DRW_Layer& data) {
@@ -133,11 +181,11 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
     // If a layer starts with a * it's a special layer we don't process yet
     if(data.name == "0") {
         auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
-        al->execute();
+        _builder->append(al);
     }
     else if (data.name.length()>0 && data.name.compare(0,1,"*")) {
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        al->execute();
+        _builder->append(al);
     }
 }
 
@@ -170,7 +218,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
         //TODO: block
     }
 
-    _builder->append(lcSpline);
+    _entityBuilder->appendEntity(lcSpline);
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
@@ -191,7 +239,7 @@ void DXFimpl::addText(const DRW_Text& data) {
         //TODO: block
     }
 
-    _builder->append(lcText);
+    _entityBuilder->appendEntity(lcText);
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
@@ -207,7 +255,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
         //TODO: block
     }
 
-    _builder->append(lcPoint);
+    _entityBuilder->appendEntity(lcPoint);
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
@@ -232,7 +280,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimAligned);
+    _entityBuilder->appendEntity(lcDimAligned);
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
@@ -259,7 +307,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimLinear);
+    _entityBuilder->appendEntity(lcDimLinear);
 }
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
@@ -285,7 +333,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimRadial);
+    _entityBuilder->appendEntity(lcDimRadial);
 }
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
@@ -311,7 +359,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimDiametric);
+    _entityBuilder->appendEntity(lcDimDiametric);
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
@@ -339,7 +387,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
         //TODO: block
     }
 
-    _builder->append(lcDimAngular);
+    _entityBuilder->appendEntity(lcDimAngular);
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
@@ -373,7 +421,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
         //TODO: block
     }
 
-    _builder->append(lcLWPolyline);
+    _entityBuilder->appendEntity(lcLWPolyline);
 }
 
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
@@ -490,7 +538,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                 //TODO: block
             }
 
-            _builder->append(lcImage);
+            _entityBuilder->appendEntity(lcImage);
 
             image = imageMapCache.erase( image ) ; // advances iter
         } else {
@@ -508,7 +556,7 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
           ->setDisplayBlock(_blocks[data.name])
           ->setDocument(_document);
 
-    _builder->append(builder.build());
+    _entityBuilder->appendEntity(builder.build());
 }
 
 /*********************************************
@@ -1107,6 +1155,25 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
     drwBlock.basePoint.x = block->base().x();
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();
+
+    auto customEntity = std::dynamic_pointer_cast<const lc::CustomEntityStorage>(block);
+    if(customEntity) {
+        auto list = std::list<DRW_Variant>({
+            DRW_Variant(APP_NAME_CODE, APP_NAME),
+            DRW_Variant(PLUGIN_NAME_CODE, customEntity->pluginName()),
+            DRW_Variant(ENTITY_NAME_CODE, customEntity->entityName()),
+        });
+
+        unsigned i = 1000;
+        for(auto data : customEntity->params()) {
+            list.emplace_back(DRW_Variant(i, data.first));
+            i++;
+            list.emplace_back(DRW_Variant(i, data.second));
+            i++;
+        }
+
+        drwBlock.appData.push_back(list);
+    }
 
     dxfW->writeBlock(&drwBlock);
 

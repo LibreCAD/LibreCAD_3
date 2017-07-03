@@ -19,14 +19,14 @@ function RemoveOperation:_init(id)
 end
 
 function RemoveOperation:remove()
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
 
     for k, entity in pairs(self.selection) do
-        b:append(entity)
+        b:appendEntity(entity)
     end
 
-    b:push()
-    b:remove()
+    b:appendOperation(Push())
+    b:appendOperation(Remove())
     b:execute()
 
     message(tostring(#self.selection) .. " items removed")

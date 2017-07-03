@@ -120,9 +120,9 @@ function EllipseOperations:createEllipse()
         self.endAngle = 0
     end
 
-    local b = Builder(active_widget():document())
+    local b = EntityBuilder(active_widget():document())
     local c = self:getEllipse(self.center, self.majorPoint, self.minorRadius, self.startAngle, self.endAngle)
-    b:append(c)
+    b:appendEntity(c)
     b:execute()
 
     event.delete('mouseMove', self)
