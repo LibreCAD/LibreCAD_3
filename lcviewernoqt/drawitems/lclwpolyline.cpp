@@ -3,27 +3,12 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
-LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) : LCVDrawItem(true), lc::entity::LWPolyline(lwpolyline, true) {
+LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) :
+        LCVDrawItem(lwpolyline, true),
+        _polyLine(lwpolyline) {
 }
 
 void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
-
-
-    /* THis might be a bit slower because it will do memory allocations
-    auto items = asGeometrics();
-    for (auto geoItem : items) {
-        if (auto vector = std::dynamic_pointer_cast<lc::geo::Vector>(geoItem)) {
-            painter.move_to(vector->start().x(), vector->start().y());
-            painter.line_to(vector->end().x(), vector->end().y());
-            painter.stroke();
-        } else if (auto arc = std::dynamic_pointer_cast<lc::geo::Arc>(geoItem)) {
-            painter.arc(arc->center().x(), arc->center().y(), arc->radius(), arc->startAngle(), arc->endAngle());
-            painter.stroke();
-        } else {
-        }
-    } */
-
-    bool modified = false;
     auto draw_arc = [&painter](lc::geo::Coordinate const & p1, lc::geo::Coordinate const & p2, double const bulge) {
        auto &&a = lc::geo::Arc::createArcBulge(p1, p2, bulge);
         painter.new_sub_path();
@@ -34,7 +19,7 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
         }
     };
 
-    auto drawTo = [&painter, &draw_arc](const decltype(vertex().begin()) &currentPoint, const decltype(vertex().begin()) &beforePoint) {
+    auto drawTo = [&painter, &draw_arc](const decltype(_polyLine->vertex().begin()) &currentPoint, const decltype(_polyLine->vertex().begin()) &beforePoint) {
 
         lc::geo::Coordinate sWp1 = beforePoint->location()
                                    , sWp2 = beforePoint->location()
@@ -112,35 +97,23 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
     };// end drawTo
 
     // main part
-    auto itr = vertex().begin();
+    auto itr = _polyLine->vertex().begin();
     painter.move_to(itr->location().x(), itr->location().y());
     auto lastPoint = itr;
     itr++;
-    while (itr != vertex().end()) {
+    while (itr != _polyLine->vertex().end()) {
         drawTo(itr, lastPoint);
         lastPoint = itr;
         itr++;
     }
 
-    if (closed()) {
-        drawTo(vertex().begin(), lastPoint);
+    if (_polyLine->closed()) {
+        drawTo(_polyLine->vertex().begin(), lastPoint);
     }
-    /** Draw bounding box
-    auto &&plb = this->boundingBox();
-    painter.save();
-    painter.source_rgba(0, 1., 0., 0.8);
-    painter.move_to(plb.top().start().x(), plb.top().start().y());
-    painter.line_to(plb.top().end().x(), plb.top().end().y());
-    painter.line_to(plb.right().start().x(), plb.right().start().y());
-    painter.line_to(plb.bottom().start().x(), plb.bottom().start().y());
-    painter.line_to(plb.left().end().x(), plb.left().end().y());
-    painter.stroke();
-    painter.restore();
-     */
+}
 
-    if (modified) {
-        painter.restore();
-    }
+lc::entity::CADEntity_CSPtr LCLWPolyline::entity() const {
+    return _polyLine;
 }
 
 

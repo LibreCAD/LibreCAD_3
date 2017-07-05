@@ -175,6 +175,9 @@ find_package(Log4CXX 1.10 REQUIRED)
 include_directories(${LOG4CXX_INCLUDE_DIRS})
 link_directories(${LOG4CXX_LIBRARY_DIRS})
 
+include_directories("${CMAKE_SOURCE_DIR}/lckernel")
+include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
+
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if(CMAKE_COMPILER_IS_GNUCXX)

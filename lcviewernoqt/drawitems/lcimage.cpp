@@ -5,16 +5,18 @@
 
 using namespace LCViewer;
 
-LCImage::LCImage(const lc::entity::Image_CSPtr image) : LCVDrawItem(true), lc::entity::Image(image, true) {
+LCImage::LCImage(const lc::entity::Image_CSPtr image) : 
+        LCVDrawItem(image, true),
+        _image(image) {
 }
 
 void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
 
     // if (_imageid==-1) {
-    long _imageid = painter.image_create(this->name());
+    long _imageid = painter.image_create(_image->name());
 
     if (_imageid > -1) {
-        painter.image(_imageid, uv().x(), uv().y(), vv().x(), vv().y(), base().x(), base().y());
+        painter.image(_imageid, _image->uv().x(), _image->uv().y(), _image->vv().x(), _image->vv().y(), _image->base().x(), _image->base().y());
     }
 
 
@@ -22,14 +24,18 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
         std::vector<lc::geo::Coordinate> c;
         // Create 4 corners
         c.emplace_back(0., 0.);
-        c.emplace_back(0., height());
-        c.emplace_back(width(), height());
-        c.emplace_back(width(), 0.);
+        c.emplace_back(0., _image->height());
+        c.emplace_back(_image->width(), _image->height());
+        c.emplace_back(_image->width(), 0.);
 
         // Apply Transform
         std::vector<lc::geo::Coordinate> c2 =
-                lc::HelperMethods::transform2d<lc::geo::Coordinate>(c, uv().x(), uv().y(), vv().x(), vv().y(),
-                                                                         base().x(), base().y());
+                lc::HelperMethods::transform2d<lc::geo::Coordinate>(
+                        c,
+                        _image->uv().x(), _image->uv().y(),
+                        _image->vv().x(), _image->vv().y(),
+                        _image->base().x(), _image->base().y()
+                );
 
         painter.save();
         auto color = options.imageOutlineColor();
@@ -44,5 +50,9 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
     }
 
 
+}
+
+lc::entity::CADEntity_CSPtr LCImage::entity() const {
+    return _image;
 }
 

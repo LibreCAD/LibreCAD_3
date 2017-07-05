@@ -5,7 +5,9 @@
 
 using namespace LCViewer;
 
-LCVText::LCVText(const lc::entity::Text_CSPtr Text) : LCVDrawItem(true), lc::entity::Text(Text, true) {
+LCVText::LCVText(const lc::entity::Text_CSPtr text) :
+        LCVDrawItem(text, true),
+        _text(text) {
 }
 
 /**
@@ -20,26 +22,25 @@ LCVText::LCVText(const lc::entity::Text_CSPtr Text) : LCVDrawItem(true), lc::ent
 * also we shouldn't draw text smaller then XX pixels when rendered on screen.
 */
 void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    bool modified = false;
-    painter.font_size(height(), false);
+    painter.font_size(_text->height(), false);
     painter.select_font_face("stick3.ttf");
 
-    TextExtends te = painter.text_extends(text_value().c_str());
+    TextExtends te = painter.text_extends(_text->text_value().c_str());
     double alignX = 0.0;
     double alignY = 0.0;
 
     //    double alignX, alignY;
     // The idea of height() * .2 is just a average basline offset. Don't this value to seriously,
     // we could get it from font exists but that sounds over exaggerating for the moment.
-    switch (valign()) {
+    switch (_text->valign()) {
         case lc::TextConst::VAMiddle:
             alignX += 0.0;
-            alignY += -height() / 2. + (height() * .2);
+            alignY += -_text->height() / 2. + (_text->height() * .2);
             break;
 
         case lc::TextConst::VABottom:
             alignX += 0.0;
-            alignY += -height() + (height() * .2);
+            alignY += -_text->height() + (_text->height() * .2);
             break;
 
         case lc::TextConst::VABaseline:
@@ -49,7 +50,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
 
         case lc::TextConst::VATop:
             alignX += 0.0;
-            alignY += 0.0 + (height() * .2);
+            alignY += 0.0 + (_text->height() * .2);
             break;
 
         default:
@@ -57,7 +58,7 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     }
 
     // Horizontal Align:
-    switch (halign()) {
+    switch (_text->halign()) {
         case lc::TextConst::HALeft:
             alignX += - te.width;
             alignY += 0.;
@@ -83,18 +84,17 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     }
 
     painter.save();
-    painter.translate(insertion_point().x(), -insertion_point().y());
-    painter.rotate(-angle());
+    painter.translate(_text->insertion_point().x(), -_text->insertion_point().y());
+    painter.rotate(-_text->angle());
     painter.translate(alignX, -alignY);
     painter.move_to(0., 0.);
-    painter.text(text_value().c_str());
+    painter.text(_text->text_value().c_str());
     painter.stroke();
     painter.restore();
+}
 
-    if (modified) {
-        painter.restore();
-    }
-
+lc::entity::CADEntity_CSPtr LCVText::entity() const {
+    return _text;
 }
 
 

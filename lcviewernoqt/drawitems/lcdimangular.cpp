@@ -4,9 +4,12 @@
 #include "endcaps.h"
 #include "cad/functions/string_helper.h"
 #include "cad/functions/intersect.h"
-#include "cad/base/visitor.h"
+
 using namespace LCViewer;
-LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) : LCVDrawItem(true), lc::entity::DimAngular(dimAngular, true) {
+
+LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) :
+        LCVDrawItem(dimAngular, true),
+        _dimAngular(dimAngular) {
 }
 
 /**
@@ -17,13 +20,11 @@ LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) : LCVD
 *
 */
 void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    bool modified = false;
-
     // Calculate intersection point
     lc::Intersect intersect(lc::Intersect::OnPath, 10e-4);
 
-    auto v1 = lc::geo::Vector(defLine11(), defLine12());
-    auto v2 = lc::geo::Vector(defLine21(), defLine22());
+    auto v1 = lc::geo::Vector(_dimAngular->defLine11(), _dimAngular->defLine12());
+    auto v2 = lc::geo::Vector(_dimAngular->defLine21(), _dimAngular->defLine22());
 
 
     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v1, v2);
@@ -38,13 +39,13 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
     lc::geo::Coordinate const center(intersect.result().at(0));
 
     // Angle of text position and radious of angular dimension
-    double const radius = middleOfText().distanceTo(center);
-    double const textAngle = center.angleTo(middleOfText());
+    double const radius = _dimAngular->middleOfText().distanceTo(center);
+    double const textAngle = center.angleTo(_dimAngular->middleOfText());
 
-    lc::geo::Coordinate const dl11 = defLine11();
-    lc::geo::Coordinate const dl12 = defLine12();
-    lc::geo::Coordinate const dl21 = defLine21();
-    lc::geo::Coordinate const dl22 = defLine22();
+    lc::geo::Coordinate const dl11 = _dimAngular->defLine11();
+    lc::geo::Coordinate const dl12 = _dimAngular->defLine12();
+    lc::geo::Coordinate const dl21 = _dimAngular->defLine21();
+    lc::geo::Coordinate const dl22 = _dimAngular->defLine22();
 
     double aStart;
     double aEnd;
@@ -94,7 +95,7 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
 
     double const angle = std::abs(aEnd - aStart);
     // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(explicitValue(), options.angleFormat(), (angle / (2.*M_PI)) * 360.);
+    std::string value = lc::StringHelper::dim_value(_dimAngular->explicitValue(), options.angleFormat(), (angle / (2.*M_PI)) * 360.);
 
     // Draw the arc
     painter.arc(center.x(), center.y(), radius, aStart, aEnd);
@@ -134,26 +135,9 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
     lc::geo::Coordinate pText = center.move(((acStart + acEnd) / 2.), radius); // Position of text
     if(angle > M_PI) pText = lc::geo::Coordinate(2. * center.x() - pText.x(), 2. * center.y() - pText.y()); // opposite text position for concave angles
 
-    this->drawText(value, (aEnd - aStart) / 2. + aStart + -0.5 * M_PI + this->textAngle(), lc::TextConst::Top_center, pText, painter, options, rect);
+    this->drawText(value, (aEnd - aStart) / 2. + aStart + -0.5 * M_PI + _dimAngular->textAngle(), lc::TextConst::Top_center, pText, painter, options, rect);
+}
 
-    if (modified) {
-        painter.restore();
-    }
-
-
-    /*
-    painter.move_to(middleOfText().x(), middleOfText().y());
-    painter.text("MT");
-    painter.move_to(defLine11().x(), defLine11().y());
-    painter.text("11");
-    painter.move_to(defLine12().x(), defLine12().y());
-    painter.text("12");
-    painter.move_to(defLine21().x(), defLine21().y());
-    painter.text("21");
-    painter.move_to(defLine22().x(), defLine22().y());
-    painter.text("22");
-    painter.move_to(definitionPoint().x(), definitionPoint().y());
-    painter.text("D");
-    painter.stroke(); */
-
+lc::entity::CADEntity_CSPtr LCDimAngular::entity() const {
+    return _dimAngular;
 }

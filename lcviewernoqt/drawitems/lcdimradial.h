@@ -5,20 +5,24 @@
 #include <cad/primitive/dimradial.h>
 
 namespace LCViewer {
+    class LcDrawOptions;
+    class LcPainter;
 
-class LcDrawOptions;
-class LcPainter;
+    class LCDimRadial  : public LCVDrawItem, public LCDimension {
+        public:
+            LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial);
 
-class LCDimRadial  : public LCVDrawItem, public lc::entity::DimRadial, public LCDimension {
-    public:
-        LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial);
+            /**
+            * @brief draw, Draws the DimRadial
+            * @param LcPainter painter, surface to be painted
+            * @param LcDrawOptions options
+            * @param geo::Area rect
+            */
+            virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
 
-        /**
-        * @brief draw, Draws the DimRadial
-        * @param LcPainter painter, surface to be painted
-        * @param LcDrawOptions options
-        * @param geo::Area rect
-        */
-        virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const;
-};
+            lc::entity::CADEntity_CSPtr entity() const override;
+
+        private:
+            lc::entity::DimRadial_CSPtr _dimRadial;
+    };
 }
