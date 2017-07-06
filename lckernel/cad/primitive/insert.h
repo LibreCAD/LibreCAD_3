@@ -34,13 +34,15 @@ namespace lc {
                 std::map<unsigned int, geo::Coordinate> dragPoints() const override;
                 CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 
-                std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain& simpleSnapConstrain,
+                virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain& simpleSnapConstrain,
                            double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
 
-                geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
+                virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
+
+            protected:
+                Insert(const builder::InsertBuilder& builder);
 
             private:
-                Insert(const builder::InsertBuilder& builder);
                 void calculateBoundingBox();
 
                 void on_addEntityEvent(const lc::AddEntityEvent&);

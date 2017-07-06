@@ -17,6 +17,7 @@
 #include <cad/operations/blockops.h>
 #include <cad/operations/builder.h>
 #include <cad/primitive/insert.h>
+#include <primitive/customentity.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -168,6 +169,10 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginClass<Snapable>("Snapable")
+            .addFunction("snapPoints", &Snapable::snapPoints)
+            .addFunction("nearestPointOnPath", &Snapable::nearestPointOnPath)
+            .addStaticFunction("remove_ifDistanceGreaterThen", &Snapable::remove_ifDistanceGreaterThen)
+            .addStaticFunction("snapPointsCleanup", &Snapable::snapPointsCleanup)
         .endClass()
 
         .beginClass<ID>("ID")
@@ -594,6 +599,46 @@ void LCLua::importLCKernel() {
             .addFunction("displayBlock", &entity::Insert::displayBlock)
             .addFunction("position", &entity::Insert::position)
             .addFunction("document", &entity::Insert::document)
+        .endClass()
+
+        .beginExtendClass<entity::CustomEntity, entity::Insert>("CustomEntity")
+        .endClass()
+
+        .beginExtendClass<entity::LuaCustomEntity, entity::CustomEntity>("LuaCustomEntity")
+        .endClass()
+
+        .beginExtendClass<builder::CustomEntityBuilder, builder::InsertBuilder>("CustomEntityBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("snapFunction", &builder::CustomEntityBuilder::snapFunction)
+            .addFunction("setSnapFunction", &builder::CustomEntityBuilder::setSnapFunction)
+            .addFunction("nearestPointFunction", &builder::CustomEntityBuilder::nearestPointFunction)
+            .addFunction("setNearestPointFunction", &builder::CustomEntityBuilder::setNearestPointFunction)
+            .addFunction("checkValues", &builder::CustomEntityBuilder::checkValues)
+            .addFunction("build", &builder::CustomEntityBuilder::build)
+        .endClass()
+
+        .beginClass<lc::SimpleSnapConstrain>("SimpleSnapConstrain")
+            .addConstant("NONE", SimpleSnapConstrain::NONE)
+            .addConstant("ON_ENTITY", SimpleSnapConstrain::ON_ENTITY)
+            .addConstant("ON_ENTITYPATH", SimpleSnapConstrain::ON_ENTITYPATH)
+            .addConstant("ENTITY_CENTER", SimpleSnapConstrain::ENTITY_CENTER)
+            .addConstant("LOGICAL", SimpleSnapConstrain::LOGICAL)
+            .addConstant("DIVIDED", SimpleSnapConstrain::DIVIDED)
+
+            .addFunction("constrain", &SimpleSnapConstrain::constrain)
+            .addFunction("divisions", &SimpleSnapConstrain::divisions)
+            .addFunction("angle", &SimpleSnapConstrain::angle)
+            .addFunction("setDivisions", &SimpleSnapConstrain::setDivisions)
+            .addFunction("setAngle", &SimpleSnapConstrain::setAngle)
+            .addFunction("enableConstrain", &SimpleSnapConstrain::enableConstrain)
+            .addFunction("disableConstrain", &SimpleSnapConstrain::disableConstrain)
+            .addFunction("hasConstrain", &SimpleSnapConstrain::hasConstrain)
+        .endClass()
+
+        .beginClass<EntityCoordinate>("EntityCoordinate")
+            .addConstructor(LUA_ARGS(geo::Coordinate, int))
+            .addFunction("coordinate", &EntityCoordinate::coordinate)
+            .addFunction("pointId", &EntityCoordinate::pointId)
         .endClass()
         ;
 }

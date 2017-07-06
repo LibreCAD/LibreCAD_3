@@ -73,6 +73,8 @@ cad/builders/linepattern.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
 cad/operations/builder.cpp
+cad/primitive/customentity.cpp
+cad/interface/snapconstrain.cpp
 )
 
 # HEADER FILES
@@ -168,6 +170,7 @@ cad/meta/customentitystorage.h
 cad/operations/blockops.h
 cad/operations/builder.h
 cad/base/visitor.h
+cad/primitive/customentity.h
 )
 
 # LOG4CXX

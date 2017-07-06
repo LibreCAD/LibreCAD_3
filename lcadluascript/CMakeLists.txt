@@ -12,6 +12,8 @@ set(lcluascript_srcs
         lckernelbridge.cpp
         managers/pluginmanager.cpp
         lclua.cpp
+        primitive/customentity.cpp
+        builders/customentity.cpp
 )
 
 # HEADER FILES
@@ -20,6 +22,8 @@ set(lcluascript_hdrs
         utils/timer.h
         managers/pluginmanager.h
         lclua.h
+        primitive/customentity.h
+        builders/customentity.h
 )
 
 

@@ -14,14 +14,14 @@ namespace lc {
      */
     class SimpleSnapConstrain {
     public:
-        const static uint16_t NONE = 0x00;
-        const static uint16_t ON_ENTITY = 0x01; // Find a point anywhere on it's entity.
-        const static uint16_t ON_ENTITYPATH = 0x02; // Find a point anywhere on it's entity's path
-        const static uint16_t ENTITY_CENTER = 0x04; // Get a snap point centered along the entity. For a arc with will be in the middle between arc start and arc end, for line it will be the center, for a circle this is not possible.
+        const static uint16_t NONE;
+        const static uint16_t ON_ENTITY; // Find a point anywhere on it's entity.
+        const static uint16_t ON_ENTITYPATH; // Find a point anywhere on it's entity's path
+        const static uint16_t ENTITY_CENTER; // Get a snap point centered along the entity. For a arc with will be in the middle between arc start and arc end, for line it will be the center, for a circle this is not possible.
         // ENTITY_GRAVCENTER = 8; // Entities gravitationally center, for a circle this would be the circle's center
-        const static uint16_t LOGICAL = 0x08; // enable to entities 'handles' There can be for example end point's of a line, or the center of a circle, or the 4 corners of a circle, grid point's etc..
+        const static uint16_t LOGICAL; // enable to entities 'handles' There can be for example end point's of a line, or the center of a circle, or the 4 corners of a circle, grid point's etc..
         // basically anything that might makes sense to snap into.
-        const static uint16_t DIVIDED = 0x10; // DIVIDED divides the entity into X equal portions given by divisions
+        const static uint16_t DIVIDED; // DIVIDED divides the entity into X equal portions given by divisions
 
 
         SimpleSnapConstrain &operator=(const SimpleSnapConstrain &other) {
@@ -70,6 +70,10 @@ namespace lc {
 
         SimpleSnapConstrain disableConstrain(uint16_t constrain) const {
             return SimpleSnapConstrain(_constrain & ~constrain, _divisions, _angle);
+        }
+
+        bool hasConstrain(uint16_t constrain) const {
+            return (bool) (_constrain & constrain);
         }
 
 
