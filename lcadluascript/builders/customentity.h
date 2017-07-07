@@ -19,6 +19,12 @@ namespace lc {
                 const LuaIntf::LuaRef& nearestPointFunction() const;
                 void setNearestPointFunction(const LuaIntf::LuaRef& nearestPointFunction);
 
+                const LuaIntf::LuaRef& dragPointsFunction() const;
+                void setDragPointsFunction(const LuaIntf::LuaRef& dragPointsFunction);
+
+                const LuaIntf::LuaRef& newDragPointsFunction() const;
+                void setNewDragPointsFunction(const LuaIntf::LuaRef& newDragPointsFunction);
+
                 bool checkValues() override;
 
                 entity::LuaCustomEntity_CSPtr build();
@@ -26,6 +32,8 @@ namespace lc {
             private:
                 LuaIntf::LuaRef _snapFunction;
                 LuaIntf::LuaRef _nearestPointFunction;
+                LuaIntf::LuaRef _dragPointsFunction;
+                LuaIntf::LuaRef _newDragPointsFunction;
         };
     }
 }

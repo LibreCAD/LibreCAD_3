@@ -7,13 +7,17 @@ using namespace entity;
 LuaCustomEntity::LuaCustomEntity(const lc::builder::CustomEntityBuilder& builder) :
         CustomEntity(builder),
         _snapPoints(builder.snapFunction()),
-        _nearestPoint(builder.nearestPointFunction()) {
+        _nearestPoint(builder.nearestPointFunction()),
+        _dragPoints(builder.dragPointsFunction()),
+        _newDragPoints(builder.newDragPointsFunction()) {
 }
 
 LuaCustomEntity::LuaCustomEntity(Insert_CSPtr insert, LuaCustomEntity_CSPtr customEntity, bool sameID) :
     CustomEntity(insert, sameID),
     _snapPoints(customEntity->_snapPoints),
-    _nearestPoint(customEntity->_nearestPoint) {
+    _nearestPoint(customEntity->_nearestPoint),
+    _dragPoints(customEntity->_dragPoints),
+    _newDragPoints(customEntity->_newDragPoints) {
 
 }
 
@@ -65,4 +69,14 @@ CADEntity_CSPtr LuaCustomEntity::mirror(const geo::Coordinate& axis1, const geo:
 
 CADEntity_CSPtr LuaCustomEntity::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
     return modifyInsert(Insert::modify(layer, metaInfo));
+}
+
+std::map<unsigned int, geo::Coordinate> LuaCustomEntity::dragPoints() const {
+    auto dragPointsDupl = _dragPoints;
+    return dragPointsDupl.call<std::map<unsigned int, geo::Coordinate>>();
+}
+
+CADEntity_CSPtr LuaCustomEntity::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    auto newDragPointsDupl = _newDragPoints;
+    return newDragPointsDupl.call<CADEntity_CSPtr>(dragPoints);
 }

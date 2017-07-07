@@ -16,6 +16,9 @@ namespace lc {
 
                 virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override = 0;
 
+                virtual std::map<unsigned int, geo::Coordinate> dragPoints() const override = 0;
+                virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override = 0;
+
                 virtual CADEntity_CSPtr move(const geo::Coordinate& offset) const override = 0;
                 virtual CADEntity_CSPtr copy(const geo::Coordinate& offset) const override = 0;
                 virtual CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const override = 0;

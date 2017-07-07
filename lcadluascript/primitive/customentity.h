@@ -24,6 +24,9 @@ namespace lc {
 
                 virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
 
+                std::map<unsigned int, geo::Coordinate> dragPoints() const override;
+                CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+
                 CADEntity_CSPtr modifyInsert(CADEntity_CSPtr insert) const;
                 CADEntity_CSPtr move(const geo::Coordinate& offset) const override;
                 CADEntity_CSPtr copy(const geo::Coordinate& offset) const override;
@@ -35,6 +38,8 @@ namespace lc {
             private:
                 LuaIntf::LuaRef _snapPoints;
                 LuaIntf::LuaRef _nearestPoint;
+                LuaIntf::LuaRef _dragPoints;
+                LuaIntf::LuaRef _newDragPoints;
         };
 
         DECLARE_SHORT_SHARED_PTR(LuaCustomEntity)
