@@ -473,7 +473,8 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_SP(CustomEntityStorage_SPtr), LUA_ARGS(
                 const std::string&,
                 const std::string&,
-                const geo::Coordinate&
+                const geo::Coordinate&,
+                LuaIntf::_opt<const std::map<std::string, std::string>&>
             ))
 
             .addFunction("pluginName", &CustomEntityStorage::pluginName)

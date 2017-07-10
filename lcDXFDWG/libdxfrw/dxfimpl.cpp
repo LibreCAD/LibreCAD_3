@@ -60,8 +60,15 @@ void DXFimpl::addBlock(const DRW_Block& data) {
     auto it = appData.begin();
     std::string appName;
 
-    while(appName != APP_NAME && it != appData.end()) {
-        appName = *(it->begin()->content.s);
+    while(it != appData.end()) {
+        if(it->size() > 0) {
+            appName = *(it->begin()->content.s);
+
+            if(appName == APP_NAME) {
+                break;
+            }
+        }
+
         it++;
     }
 
@@ -1164,12 +1171,9 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
             DRW_Variant(ENTITY_NAME_CODE, customEntity->entityName()),
         });
 
-        unsigned i = 1000;
         for(auto data : customEntity->params()) {
-            list.emplace_back(DRW_Variant(i, data.first));
-            i++;
-            list.emplace_back(DRW_Variant(i, data.second));
-            i++;
+            list.emplace_back(DRW_Variant(470, data.first));
+            list.emplace_back(DRW_Variant(471, data.second));
         }
 
         drwBlock.appData.push_back(list);
