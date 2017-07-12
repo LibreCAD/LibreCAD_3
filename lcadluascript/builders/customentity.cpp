@@ -28,7 +28,7 @@ bool CustomEntityBuilder::checkValues() {
     return InsertBuilder::checkValues() &&
            _snapFunction.isValid() && _snapFunction.isFunction() &&
            _nearestPointFunction.isValid() && _nearestPointFunction.isFunction() &&
-           _dragPointsFunction.isValid() && _dragPointsFunction.isFunction();
+           _dragPointsFunction.isValid() && _dragPointsFunction.isFunction() &&
            _newDragPointsFunction.isValid() && _newDragPointsFunction.isFunction();
 }
 

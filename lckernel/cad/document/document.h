@@ -210,6 +210,12 @@ namespace lc {
              * @return all blocks
              */
             virtual std::vector<Block_CSPtr> blocks() const = 0;
+
+            /**
+             * @return all the custom entities which aren't managed by a plugin
+             */
+            virtual std::map<ID_DATATYPE, entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) = 0;
+
         public:
             friend class lc::operation::DocumentOperation;
 

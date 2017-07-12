@@ -139,6 +139,7 @@ void LCLua::importLCKernel() {
         .beginClass<Document>("Document")
             .addFunction("layerByName", &Document::layerByName)
             .addFunction("entitiesByLayer", &Document::entitiesByLayer)
+            .addFunction("waitingCustomEntities", &Document::waitingCustomEntities)
         .endClass()
 
         .beginExtendClass<DocumentImpl, Document>("DocumentImpl")

@@ -64,12 +64,16 @@ namespace lc {
             virtual StorageManager_SPtr storageManager() const;
 
         public:
+            std::map<ID_DATATYPE, entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) override;
+
             std::vector<Block_CSPtr> blocks() const override;
 
         private:
             std::mutex _documentMutex;
             // AI am considering remove the shared_ptr from this one so we can never get a shared object from it
             StorageManager_SPtr _storageManager;
+
+            std::map<std::string, std::map<ID_DATATYPE, entity::Insert_CSPtr>> _waitingCustomEntities;
 
     };
 }

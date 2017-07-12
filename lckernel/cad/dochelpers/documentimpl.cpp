@@ -1,7 +1,10 @@
 
 #include <string>
 #include <unordered_map>
+#include <cad/meta/customentitystorage.h>
 #include "documentimpl.h"
+#include <cad/primitive/insert.h>
+#include <cad/primitive/customentity.h>
 
 using namespace lc;
 
@@ -34,24 +37,36 @@ void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
-    if(cadEntity->block() != nullptr) {
-
-    }
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
-        _storageManager->removeEntity(cadEntity);
-        RemoveEntityEvent event(cadEntity);
-        removeEntityEvent()(event);
+        removeEntity(cadEntity);
     }
 
     _storageManager->insertEntity(cadEntity);
     AddEntityEvent event(cadEntity);
     addEntityEvent()(event);
+
+    auto insert = std::dynamic_pointer_cast<const entity::Insert>(cadEntity);
+    if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(cadEntity) == nullptr) {
+        auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
+
+        if(ces != nullptr) {
+            _waitingCustomEntities[ces->pluginName()][insert->id()] = insert;
+        }
+    }
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
     _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
     removeEntityEvent()(event);
+
+    auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
+    if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
+        auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
+        if(ces != nullptr) {
+            _waitingCustomEntities[ces->pluginName()].erase(insert->id());
+        }
+    }
 }
 
 
@@ -153,4 +168,8 @@ EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(const Blo
 
 std::vector<Block_CSPtr> DocumentImpl::blocks() const {
     return _storageManager->metaTypes<const Block>();
+}
+
+std::map<ID_DATATYPE, entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
+    return _waitingCustomEntities[pluginName];
 }
