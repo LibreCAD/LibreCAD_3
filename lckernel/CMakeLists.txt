@@ -75,6 +75,7 @@ cad/operations/blockops.cpp
 cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
+cad/dochelpers/documentlist.cpp
 )
 
 # HEADER FILES
@@ -171,6 +172,8 @@ cad/operations/blockops.h
 cad/operations/builder.h
 cad/base/visitor.h
 cad/primitive/customentity.h
+cad/events/newwaitingcustomentityevent.h
+cad/dochelpers/documentlist.h
 )
 
 # LOG4CXX

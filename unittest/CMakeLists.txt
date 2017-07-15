@@ -44,6 +44,7 @@ lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
+lckernel/dochelpers/documentlist.cpp
 )
 
 set(hdrs
@@ -84,7 +85,7 @@ if(WITH_QT_UI)
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp
-    )
+            )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
     include_directories("${PROJECT_BINARY_DIR}/../lcUI") #Include ui_* files

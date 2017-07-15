@@ -64,7 +64,7 @@ namespace lc {
             virtual StorageManager_SPtr storageManager() const;
 
         public:
-            std::map<ID_DATATYPE, entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) override;
+            std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) override;
 
             std::vector<Block_CSPtr> blocks() const override;
 
@@ -73,7 +73,7 @@ namespace lc {
             // AI am considering remove the shared_ptr from this one so we can never get a shared object from it
             StorageManager_SPtr _storageManager;
 
-            std::map<std::string, std::map<ID_DATATYPE, entity::Insert_CSPtr>> _waitingCustomEntities;
+            std::map<std::string, std::unordered_set<entity::Insert_CSPtr>> _waitingCustomEntities;
 
     };
 }

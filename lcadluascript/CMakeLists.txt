@@ -14,6 +14,7 @@ set(lcluascript_srcs
         lclua.cpp
         primitive/customentity.cpp
         builders/customentity.cpp
+        managers/luacustomentitymanager.cpp
 )
 
 # HEADER FILES
@@ -24,6 +25,7 @@ set(lcluascript_hdrs
         lclua.h
         primitive/customentity.h
         builders/customentity.h
+        managers/luacustomentitymanager.h
 )
 
 

@@ -1,3 +1,4 @@
+#include <cad/dochelpers/documentlist.h>
 #include "document.h"
 #include "cad/operations/documentoperation.h"
 
@@ -8,6 +9,14 @@
 #include "cad/events/replaceentityevent.h"
 
 using namespace lc;
+
+Document::Document() {
+    DocumentList::getInstance().addDocument(this);
+}
+
+Document::~Document() {
+    DocumentList::getInstance().removeDocument(this);
+}
 
 void Document::operationStart(operation::DocumentOperation_SPtr operation) {
     operation->start();
@@ -60,4 +69,8 @@ Nano::Signal<void(const lc::AddLinePatternEvent&)>& Document::addLinePatternEven
 
 Nano::Signal<void(const lc::ReplaceLinePatternEvent&)>& Document::replaceLinePatternEvent() {
     return this->_replaceLinePatternEvent;
+}
+
+Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& Document::newWaitingCustomEntityEvent() {
+    return _newWaitingCustomEntityEvent;
 }

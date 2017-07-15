@@ -50,7 +50,10 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
         auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
 
         if(ces != nullptr) {
-            _waitingCustomEntities[ces->pluginName()][insert->id()] = insert;
+            _waitingCustomEntities[ces->pluginName()].insert(insert);
+
+            NewWaitingCustomEntityEvent customEntityEvent(insert);
+            newWaitingCustomEntityEvent()(customEntityEvent);
         }
     }
 }
@@ -64,7 +67,7 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
     if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
         if(ces != nullptr) {
-            _waitingCustomEntities[ces->pluginName()].erase(insert->id());
+            _waitingCustomEntities[ces->pluginName()].erase(insert);
         }
     }
 }
@@ -170,6 +173,6 @@ std::vector<Block_CSPtr> DocumentImpl::blocks() const {
     return _storageManager->metaTypes<const Block>();
 }
 
-std::map<ID_DATATYPE, entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
+std::unordered_set<entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
     return _waitingCustomEntities[pluginName];
 }
