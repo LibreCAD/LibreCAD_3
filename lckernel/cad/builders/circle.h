@@ -5,7 +5,7 @@
 
 namespace lc {
     namespace builder {
-        class CircleBuilder : public CADEntityBuilder<CircleBuilder> {
+        class CircleBuilder : public CADEntityBuilder {
             public:
                 CircleBuilder();
 

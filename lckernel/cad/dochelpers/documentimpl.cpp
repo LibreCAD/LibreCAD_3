@@ -17,10 +17,21 @@ DocumentImpl::~DocumentImpl() {
 }
 
 void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
-    std::lock_guard<std::mutex> lck(_documentMutex);
-    begin(operation);
-    this->operationProcess(operation);
-    commit(operation);
+    {
+        std::lock_guard<std::mutex> lck(_documentMutex);
+        begin(operation);
+        this->operationProcess(operation);
+        commit(operation);
+
+        _documentMutex.unlock();
+    }
+
+    auto tmp = _newWaitingCustomEntities;
+    _newWaitingCustomEntities.clear();
+    for (auto insert : tmp) {
+        NewWaitingCustomEntityEvent customEntityEvent(insert);
+        newWaitingCustomEntityEvent()(customEntityEvent);
+    }
 }
 
 void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
@@ -33,7 +44,6 @@ void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
     _storageManager->optimise();
     CommitProcessEvent event(operation);
     commitProcessEvent()(event);
-
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
@@ -51,18 +61,12 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
 
         if(ces != nullptr) {
             _waitingCustomEntities[ces->pluginName()].insert(insert);
-
-            NewWaitingCustomEntityEvent customEntityEvent(insert);
-            newWaitingCustomEntityEvent()(customEntityEvent);
+            _newWaitingCustomEntities.insert(insert);
         }
     }
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
-    _storageManager->removeEntity(entity);
-    RemoveEntityEvent event(entity);
-    removeEntityEvent()(event);
-
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
     if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
@@ -70,6 +74,10 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
             _waitingCustomEntities[ces->pluginName()].erase(insert);
         }
     }
+
+    _storageManager->removeEntity(entity);
+    RemoveEntityEvent event(entity);
+    removeEntityEvent()(event);
 }
 
 

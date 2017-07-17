@@ -31,8 +31,8 @@ TEST(SelectionTest, NormalSelection) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
-		if(di->selected() == true) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -61,7 +61,7 @@ TEST(SelectionTest, IntersectionSelection) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}
@@ -94,7 +94,7 @@ TEST(SelectionTest, AddToSelection) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}
@@ -127,7 +127,7 @@ TEST(SelectionTest, Reselect) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}
@@ -160,7 +160,7 @@ TEST(SelectionTest, ClearSelection) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}
@@ -191,7 +191,7 @@ TEST(SelectionTest, Deselect) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}
@@ -225,7 +225,7 @@ TEST(SelectionTest, DeselectAddTo) {
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_SPtr di) {
+	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
 		if(di->selected() == true) {
 			i++;
 		}

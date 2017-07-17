@@ -76,7 +76,7 @@ cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
 cad/dochelpers/documentlist.cpp
-)
+        )
 
 # HEADER FILES
 set(lckernel_hdrs
@@ -174,7 +174,7 @@ cad/base/visitor.h
 cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
 cad/dochelpers/documentlist.h
-)
+        )
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

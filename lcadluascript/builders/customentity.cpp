@@ -56,4 +56,3 @@ void CustomEntityBuilder::setNewDragPointsFunction(const LuaIntf::LuaRef& setDra
     _newDragPointsFunction = setDragPointsFunction;
 }
 
-

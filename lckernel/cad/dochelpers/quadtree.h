@@ -496,6 +496,7 @@ namespace lc {
                 }
 
                 _cadentities.insert(std::make_pair(entity->id(), entity));
+
                 QuadTreeSub<E>::insert(entity);
             }
 
@@ -525,6 +526,7 @@ namespace lc {
 
                 E work = _cadentities.at(entity->id());
                 _cadentities.erase(entity->id());
+
                 return QuadTreeSub<E>::erase(work);
             }
 

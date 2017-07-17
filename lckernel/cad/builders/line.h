@@ -5,7 +5,7 @@
 namespace lc {
     namespace builder {
         class LineBuilder;
-        class LineBuilder : public CADEntityBuilder<LineBuilder> {
+        class LineBuilder : public CADEntityBuilder {
             public:
                 LineBuilder();
 

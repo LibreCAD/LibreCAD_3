@@ -191,7 +191,7 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
          * Get the current entity container,
          * don not store this as a reference, always call it
          */
-        lc::EntityContainer<lc::entity::CADEntity_SPtr> & entityContainer();
+        const lc::EntityContainer<lc::entity::CADEntity_SPtr>& entityContainer() const;
 
         /*
          * Return CADEntity as LCVDrawItem

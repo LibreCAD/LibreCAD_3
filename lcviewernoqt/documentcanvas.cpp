@@ -488,13 +488,14 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto drawable = asDrawable(event.entity());
 
     if (drawable != nullptr) {
-		auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(drawable);
-        _entityContainer.insert(entity);
+		auto drawableEntity = std::dynamic_pointer_cast<lc::entity::CADEntity>(drawable);
+        _entityContainer.insert(drawableEntity);
     }
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
     auto i = _entityContainer.entityByID(event.entity()->id());
+
     _entityContainer.remove(i);
 }
 
@@ -502,7 +503,7 @@ std::shared_ptr<lc::Document> DocumentCanvas::document() const {
     return _document;
 }
 
-lc::EntityContainer<lc::entity::CADEntity_SPtr> & DocumentCanvas::entityContainer() {
+const lc::EntityContainer<lc::entity::CADEntity_SPtr>& DocumentCanvas::entityContainer() const {
     return _entityContainer;
 }
 

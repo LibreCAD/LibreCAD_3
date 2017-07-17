@@ -4,7 +4,7 @@
 
 namespace lc {
     namespace builder {
-        class PointBuilder : public CADEntityBuilder<PointBuilder> {
+        class PointBuilder : public CADEntityBuilder {
             public:
                 const geo::Coordinate& coordinate() const;
                 PointBuilder* setCoordinate(const geo::Coordinate& coordinate);

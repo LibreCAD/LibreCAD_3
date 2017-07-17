@@ -382,7 +382,11 @@ namespace lc {
              * </pre>
              */
             template<typename U, typename T> void each(T func) {
-                _tree->template each< U>(func);
+                _tree->template each<U>(func);
+            }
+
+            template<typename U, typename T> void each(T func) const {
+                _tree->template each<const U>(func);
             }
         private:
             //std::map<ID_DATATYPE, CT> _cadentities;

@@ -506,19 +506,19 @@ void LCLua::importLCKernel() {
             ))
         .endClass()
 
-        //ArcBuilder is used here because it needs a template
-        //This doesn't cause RTTI problems in Lua
-        .beginClass<builder::CADEntityBuilder<builder::ArcBuilder>>("CADEntityBuilder")
-            .addFunction("layer", &builder::CADEntityBuilder<builder::ArcBuilder>::layer)
-            .addFunction("setLayer", &builder::CADEntityBuilder<builder::ArcBuilder>::setLayer)
-            .addFunction("metaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::metaInfo)
-            .addFunction("setMetaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::setMetaInfo)
-            .addFunction("block", &builder::CADEntityBuilder<builder::ArcBuilder>::block)
-            .addFunction("setBlock", &builder::CADEntityBuilder<builder::ArcBuilder>::setBlock)
-            .addFunction("checkValues", &builder::CADEntityBuilder<builder::ArcBuilder>::checkValues)
+        .beginClass<builder::CADEntityBuilder>("CADEntityBuilder")
+            .addFunction("layer", &builder::CADEntityBuilder::layer)
+            .addFunction("setLayer", &builder::CADEntityBuilder::setLayer)
+            .addFunction("metaInfo", &builder::CADEntityBuilder::metaInfo)
+            .addFunction("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
+            .addFunction("block", &builder::CADEntityBuilder::block)
+            .addFunction("setBlock", &builder::CADEntityBuilder::setBlock)
+            .addFunction("id", &builder::CADEntityBuilder::id)
+            .addFunction("setID", &builder::CADEntityBuilder::setID)
+            .addFunction("checkValues", &builder::CADEntityBuilder::checkValues)
         .endClass()
 
-        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("ArcBuilder")
+        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder>("ArcBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("center", &builder::ArcBuilder::center)
             .addFunction("setCenter", &builder::ArcBuilder::setCenter)
@@ -533,7 +533,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::ArcBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("CircleBuilder")
+        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder>("CircleBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("center", &builder::CircleBuilder::center)
             .addFunction("setCenter", &builder::CircleBuilder::setCenter)
@@ -542,7 +542,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::CircleBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("InsertBuilder")
+        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder>("InsertBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("displayBlock", &builder::InsertBuilder::displayBlock)
             .addFunction("setDisplayBlock", &builder::InsertBuilder::setDisplayBlock)
@@ -550,6 +550,7 @@ void LCLua::importLCKernel() {
             .addFunction("setCoordinate", &builder::InsertBuilder::setCoordinate)
             .addFunction("document", &builder::InsertBuilder::document)
             .addFunction("setDocument", &builder::InsertBuilder::setDocument)
+            .addFunction("copy", &builder::InsertBuilder::copy)
             .addFunction("build", &builder::InsertBuilder::build)
         .endClass()
 
@@ -568,7 +569,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::LayerBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("LineBuilder")
+        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder>("LineBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("start", &builder::LineBuilder::start)
             .addFunction("setStart", &builder::LineBuilder::setStart)
@@ -590,7 +591,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::LinePatternBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("PointBuilder")
+        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder>("PointBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("coordinate", &builder::PointBuilder::coordinate)
             .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)

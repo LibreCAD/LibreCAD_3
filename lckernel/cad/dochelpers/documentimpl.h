@@ -72,8 +72,10 @@ namespace lc {
             std::mutex _documentMutex;
             // AI am considering remove the shared_ptr from this one so we can never get a shared object from it
             StorageManager_SPtr _storageManager;
+            std::thread _testThread;
 
             std::map<std::string, std::unordered_set<entity::Insert_CSPtr>> _waitingCustomEntities;
+            std::unordered_set<entity::Insert_CSPtr> _newWaitingCustomEntities;
 
     };
 }
