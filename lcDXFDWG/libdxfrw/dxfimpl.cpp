@@ -60,8 +60,15 @@ void DXFimpl::addBlock(const DRW_Block& data) {
     auto it = appData.begin();
     std::string appName;
 
-    while(appName != APP_NAME && it != appData.end()) {
-        appName = *(it->begin()->content.s);
+    while(it != appData.end()) {
+        if(it->size() > 0) {
+            appName = *(it->begin()->content.s);
+
+            if(appName == APP_NAME) {
+                break;
+            }
+        }
+
         it++;
     }
 
@@ -109,11 +116,11 @@ void DXFimpl::endBlock() {
 void DXFimpl::addLine(const DRW_Line& data) {
     lc::builder::LineBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data))
-          ->setBlock(_currentBlock)
-          ->setLayer(_document->layerByName(data.layer))
-          ->setStart(coord(data.basePoint))
-          ->setEnd(coord(data.secPoint));
+    builder.setMetaInfo(getMetaInfo(data));
+    builder.setBlock(_currentBlock);
+    builder.setLayer(_document->layerByName(data.layer));
+    builder.setStart(coord(data.basePoint));
+    builder.setEnd(coord(data.secPoint));
 
     _entityBuilder->appendEntity(builder.build());
 }
@@ -121,11 +128,11 @@ void DXFimpl::addLine(const DRW_Line& data) {
 void DXFimpl::addCircle(const DRW_Circle& data) {
     lc::builder::CircleBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data))
-          ->setLayer(_document->layerByName(data.layer))
-          ->setCenter(coord(data.basePoint))
-          ->setRadius(data.radious)
-          ->setBlock(_currentBlock);
+    builder.setMetaInfo(getMetaInfo(data));
+    builder.setLayer(_document->layerByName(data.layer));
+    builder.setCenter(coord(data.basePoint));
+    builder.setRadius(data.radious);
+    builder.setBlock(_currentBlock);
 
     _entityBuilder->appendEntity(builder.build());
 }
@@ -133,14 +140,14 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 void DXFimpl::addArc(const DRW_Arc& data) {
     lc::builder::ArcBuilder builder;
 
-    builder.setMetaInfo(getMetaInfo(data))
-          ->setLayer(_document->layerByName(data.layer))
-          ->setBlock(_currentBlock)
-          ->setCenter(coord(data.basePoint))
-          ->setRadius(data.radious)
-          ->setStartAngle(data.staangle)
-          ->setEndAngle(data.endangle)
-          ->setIsCCW((bool) data.isccw);
+    builder.setMetaInfo(getMetaInfo(data));
+    builder.setLayer(_document->layerByName(data.layer));
+    builder.setBlock(_currentBlock);
+    builder.setCenter(coord(data.basePoint));
+    builder.setRadius(data.radious);
+    builder.setStartAngle(data.staangle);
+    builder.setEndAngle(data.endangle);
+    builder.setIsCCW((bool) data.isccw);
 
     _entityBuilder->appendEntity(builder.build());
 }
@@ -549,12 +556,12 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
     lc::builder::InsertBuilder builder;
-    builder.setMetaInfo(getMetaInfo(data))
-          ->setBlock(_currentBlock)
-          ->setLayer(_document->layerByName(data.layer))
-          ->setCoordinate(coord(data.basePoint))
-          ->setDisplayBlock(_blocks[data.name])
-          ->setDocument(_document);
+    builder.setMetaInfo(getMetaInfo(data));
+    builder.setBlock(_currentBlock);
+    builder.setLayer(_document->layerByName(data.layer));
+    builder.setCoordinate(coord(data.basePoint));
+    builder.setDisplayBlock(_blocks[data.name]);
+    builder.setDocument(_document);
 
     _entityBuilder->appendEntity(builder.build());
 }
@@ -1164,12 +1171,9 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
             DRW_Variant(ENTITY_NAME_CODE, customEntity->entityName()),
         });
 
-        unsigned i = 1000;
         for(auto data : customEntity->params()) {
-            list.emplace_back(DRW_Variant(i, data.first));
-            i++;
-            list.emplace_back(DRW_Variant(i, data.second));
-            i++;
+            list.emplace_back(DRW_Variant(470, data.first));
+            list.emplace_back(DRW_Variant(471, data.second));
         }
 
         drwBlock.appData.push_back(list);

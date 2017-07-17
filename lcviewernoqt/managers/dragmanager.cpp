@@ -19,14 +19,21 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
 	}
 
-	entities.each<const lc::Draggable>([&](lc::Draggable_CSPtr entity) {
-		if(entity) {
-			auto entityDragPoints = entity->dragPoints();
+	entities.each<const LCVDrawItem>([&](LCVDrawItem_CSPtr drawable) {
+        if(!drawable) {
+            return;
+        }
 
-			for(auto dragPoint : entityDragPoints) {
-				dragPoints.push_back(dragPoint.second);
-			}
-		}
+        auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
+        if(!draggable) {
+            return;
+        }
+
+        auto entityDragPoints = draggable->dragPoints();
+
+        for(auto dragPoint : entityDragPoints) {
+            dragPoints.push_back(dragPoint.second);
+        }
 	});
 
 	return dragPoints;
@@ -36,14 +43,21 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 std::vector<lc::geo::Coordinate> DragManager::selectedEntitiesDragPoints() {
 	std::vector<lc::geo::Coordinate> dragPoints;
 
-	_selectedEntities.each<const lc::Draggable>([&](lc::Draggable_CSPtr entity) {
-		if(entity) {
-			auto entityDragPoints = entity->dragPoints();
+	_selectedEntities.each<const LCVDrawItem>([&](LCVDrawItem_CSPtr drawable) {
+        if(!drawable) {
+            return;
+        }
 
-			for(auto dragPoint : entityDragPoints) {
-				dragPoints.push_back(dragPoint.second);
-			}
-		}
+        auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable);
+        if(!draggable) {
+            return;
+        }
+
+        auto entityDragPoints = draggable->dragPoints();
+
+        for(auto dragPoint : entityDragPoints) {
+            dragPoints.push_back(dragPoint.second);
+        }
 	});
 
 	return dragPoints;
@@ -113,16 +127,21 @@ void DragManager::onMousePress() {
 	auto entitiesNearCursor = entities.asVector();
 
 	for(auto entity : entitiesNearCursor) {
-		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(entity);
+        auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity);
+        if(!drawable) {
+            return;
+        }
+
+		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
 		if(draggable) {
 			auto entityDragPoints = draggable->dragPoints();
 
 			for(auto point : entityDragPoints) {
 				if(_toleranceArea.inArea(point.second)) {
-					_selectedEntities.insert(entity);
+					_selectedEntities.insert(drawable->entity());
 					_selectedPoint = point.second;
-					_builder->appendEntity(entity);
-					_docCanvas->document()->removeEntity(entity);
+					_builder->appendEntity(drawable->entity());
+					_docCanvas->document()->removeEntity(drawable->entity());
 
 					break;
 				}

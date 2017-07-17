@@ -17,6 +17,7 @@
 #include <cad/operations/blockops.h>
 #include <cad/operations/builder.h>
 #include <cad/primitive/insert.h>
+#include <primitive/customentity.h>
 #include "lclua.h"
 
 using namespace LuaIntf;
@@ -138,6 +139,7 @@ void LCLua::importLCKernel() {
         .beginClass<Document>("Document")
             .addFunction("layerByName", &Document::layerByName)
             .addFunction("entitiesByLayer", &Document::entitiesByLayer)
+            .addFunction("waitingCustomEntities", &Document::waitingCustomEntities)
         .endClass()
 
         .beginExtendClass<DocumentImpl, Document>("DocumentImpl")
@@ -168,6 +170,10 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginClass<Snapable>("Snapable")
+            .addFunction("snapPoints", &Snapable::snapPoints)
+            .addFunction("nearestPointOnPath", &Snapable::nearestPointOnPath)
+            .addStaticFunction("remove_ifDistanceGreaterThen", &Snapable::remove_ifDistanceGreaterThen)
+            .addStaticFunction("snapPointsCleanup", &Snapable::snapPointsCleanup)
         .endClass()
 
         .beginClass<ID>("ID")
@@ -468,7 +474,8 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_SP(CustomEntityStorage_SPtr), LUA_ARGS(
                 const std::string&,
                 const std::string&,
-                const geo::Coordinate&
+                const geo::Coordinate&,
+                LuaIntf::_opt<const std::map<std::string, std::string>&>
             ))
 
             .addFunction("pluginName", &CustomEntityStorage::pluginName)
@@ -499,19 +506,19 @@ void LCLua::importLCKernel() {
             ))
         .endClass()
 
-        //ArcBuilder is used here because it needs a template
-        //This doesn't cause RTTI problems in Lua
-        .beginClass<builder::CADEntityBuilder<builder::ArcBuilder>>("CADEntityBuilder")
-            .addFunction("layer", &builder::CADEntityBuilder<builder::ArcBuilder>::layer)
-            .addFunction("setLayer", &builder::CADEntityBuilder<builder::ArcBuilder>::setLayer)
-            .addFunction("metaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::metaInfo)
-            .addFunction("setMetaInfo", &builder::CADEntityBuilder<builder::ArcBuilder>::setMetaInfo)
-            .addFunction("block", &builder::CADEntityBuilder<builder::ArcBuilder>::block)
-            .addFunction("setBlock", &builder::CADEntityBuilder<builder::ArcBuilder>::setBlock)
-            .addFunction("checkValues", &builder::CADEntityBuilder<builder::ArcBuilder>::checkValues)
+        .beginClass<builder::CADEntityBuilder>("CADEntityBuilder")
+            .addFunction("layer", &builder::CADEntityBuilder::layer)
+            .addFunction("setLayer", &builder::CADEntityBuilder::setLayer)
+            .addFunction("metaInfo", &builder::CADEntityBuilder::metaInfo)
+            .addFunction("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
+            .addFunction("block", &builder::CADEntityBuilder::block)
+            .addFunction("setBlock", &builder::CADEntityBuilder::setBlock)
+            .addFunction("id", &builder::CADEntityBuilder::id)
+            .addFunction("setID", &builder::CADEntityBuilder::setID)
+            .addFunction("checkValues", &builder::CADEntityBuilder::checkValues)
         .endClass()
 
-        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("ArcBuilder")
+        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder>("ArcBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("center", &builder::ArcBuilder::center)
             .addFunction("setCenter", &builder::ArcBuilder::setCenter)
@@ -526,7 +533,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::ArcBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("CircleBuilder")
+        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder>("CircleBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("center", &builder::CircleBuilder::center)
             .addFunction("setCenter", &builder::CircleBuilder::setCenter)
@@ -535,7 +542,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::CircleBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("InsertBuilder")
+        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder>("InsertBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("displayBlock", &builder::InsertBuilder::displayBlock)
             .addFunction("setDisplayBlock", &builder::InsertBuilder::setDisplayBlock)
@@ -543,6 +550,7 @@ void LCLua::importLCKernel() {
             .addFunction("setCoordinate", &builder::InsertBuilder::setCoordinate)
             .addFunction("document", &builder::InsertBuilder::document)
             .addFunction("setDocument", &builder::InsertBuilder::setDocument)
+            .addFunction("copy", &builder::InsertBuilder::copy)
             .addFunction("build", &builder::InsertBuilder::build)
         .endClass()
 
@@ -561,7 +569,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::LayerBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("LineBuilder")
+        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder>("LineBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("start", &builder::LineBuilder::start)
             .addFunction("setStart", &builder::LineBuilder::setStart)
@@ -583,7 +591,7 @@ void LCLua::importLCKernel() {
             .addFunction("build", &builder::LinePatternBuilder::build)
         .endClass()
 
-        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder<builder::ArcBuilder>>("PointBuilder")
+        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder>("PointBuilder")
             .addConstructor(LUA_ARGS())
             .addFunction("coordinate", &builder::PointBuilder::coordinate)
             .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)
@@ -594,6 +602,50 @@ void LCLua::importLCKernel() {
             .addFunction("displayBlock", &entity::Insert::displayBlock)
             .addFunction("position", &entity::Insert::position)
             .addFunction("document", &entity::Insert::document)
+        .endClass()
+
+        .beginExtendClass<entity::CustomEntity, entity::Insert>("CustomEntity")
+        .endClass()
+
+        .beginExtendClass<entity::LuaCustomEntity, entity::CustomEntity>("LuaCustomEntity")
+        .endClass()
+
+        .beginExtendClass<builder::CustomEntityBuilder, builder::InsertBuilder>("CustomEntityBuilder")
+            .addConstructor(LUA_ARGS())
+            .addFunction("snapFunction", &builder::CustomEntityBuilder::snapFunction)
+            .addFunction("setSnapFunction", &builder::CustomEntityBuilder::setSnapFunction)
+            .addFunction("nearestPointFunction", &builder::CustomEntityBuilder::nearestPointFunction)
+            .addFunction("setNearestPointFunction", &builder::CustomEntityBuilder::setNearestPointFunction)
+            .addFunction("dragPointsFunction", &builder::CustomEntityBuilder::dragPointsFunction)
+            .addFunction("setDragPointsFunction", &builder::CustomEntityBuilder::setDragPointsFunction)
+            .addFunction("newDragPointsFunction", &builder::CustomEntityBuilder::newDragPointsFunction)
+            .addFunction("setNewDragPointsFunction", &builder::CustomEntityBuilder::setNewDragPointsFunction)
+            .addFunction("checkValues", &builder::CustomEntityBuilder::checkValues)
+            .addFunction("build", &builder::CustomEntityBuilder::build)
+        .endClass()
+
+        .beginClass<lc::SimpleSnapConstrain>("SimpleSnapConstrain")
+            .addConstant("NONE", SimpleSnapConstrain::NONE)
+            .addConstant("ON_ENTITY", SimpleSnapConstrain::ON_ENTITY)
+            .addConstant("ON_ENTITYPATH", SimpleSnapConstrain::ON_ENTITYPATH)
+            .addConstant("ENTITY_CENTER", SimpleSnapConstrain::ENTITY_CENTER)
+            .addConstant("LOGICAL", SimpleSnapConstrain::LOGICAL)
+            .addConstant("DIVIDED", SimpleSnapConstrain::DIVIDED)
+
+            .addFunction("constrain", &SimpleSnapConstrain::constrain)
+            .addFunction("divisions", &SimpleSnapConstrain::divisions)
+            .addFunction("angle", &SimpleSnapConstrain::angle)
+            .addFunction("setDivisions", &SimpleSnapConstrain::setDivisions)
+            .addFunction("setAngle", &SimpleSnapConstrain::setAngle)
+            .addFunction("enableConstrain", &SimpleSnapConstrain::enableConstrain)
+            .addFunction("disableConstrain", &SimpleSnapConstrain::disableConstrain)
+            .addFunction("hasConstrain", &SimpleSnapConstrain::hasConstrain)
+        .endClass()
+
+        .beginClass<EntityCoordinate>("EntityCoordinate")
+            .addConstructor(LUA_ARGS(geo::Coordinate, int))
+            .addFunction("coordinate", &EntityCoordinate::coordinate)
+            .addFunction("pointId", &EntityCoordinate::pointId)
         .endClass()
         ;
 }

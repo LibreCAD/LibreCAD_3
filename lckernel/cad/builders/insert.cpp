@@ -8,6 +8,16 @@ InsertBuilder::InsertBuilder() :
         _displayBlock(nullptr) {
 }
 
+InsertBuilder* InsertBuilder::copy(entity::Insert_CSPtr insert) {
+    CADEntityBuilder::copy(insert);
+
+    _displayBlock = insert->_displayBlock;
+    _document = insert->_document;
+    _coordinate = insert->_position;
+
+    return this;
+}
+
 bool InsertBuilder::checkValues() {
     return CADEntityBuilder::checkValues() &&
            _displayBlock != nullptr &&

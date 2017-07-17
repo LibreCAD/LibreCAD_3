@@ -139,7 +139,7 @@ void Insert::calculateBoundingBox() {
     it++;
 
     while (it != entities.end()) {
-        _boundingBox.merge((*it)->move(offset)->boundingBox());
+        _boundingBox = _boundingBox.merge((*it)->move(offset)->boundingBox());
         it++;
     }
 }

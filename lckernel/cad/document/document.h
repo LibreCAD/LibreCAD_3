@@ -11,6 +11,8 @@
 #include <cad/events/addlayerevent.h>
 #include <cad/events/removelayerevent.h>
 #include <cad/events/replacelayerevent.h>
+#include <cad/events/newwaitingcustomentityevent.h>
+#include <unordered_set>
 #include "cad/meta/dxflinepattern.h"
 
 #include "cad/events/beginprocessevent.h"
@@ -36,8 +38,10 @@ namespace lc {
     }
 
     class Document {
-
         public:
+            Document();
+            virtual ~Document();
+
             /*!
              * \brief begins a Process Event
              */
@@ -91,6 +95,11 @@ namespace lc {
              * \brief Event to replace a line pattern
              */
             virtual  Nano::Signal<void(const lc::ReplaceLinePatternEvent&)>& replaceLinePatternEvent();
+
+            /**
+             * @brief Event called when an unmanaged entity is added to the document
+             */
+            virtual Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& newWaitingCustomEntityEvent();
 
         protected:
             /*!
@@ -210,6 +219,12 @@ namespace lc {
              * @return all blocks
              */
             virtual std::vector<Block_CSPtr> blocks() const = 0;
+
+            /**
+             * @return all the custom entities which aren't managed by a plugin
+             */
+            virtual std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) = 0;
+
         public:
             friend class lc::operation::DocumentOperation;
 
@@ -228,6 +243,8 @@ namespace lc {
             Nano::Signal<void(const lc::AddLinePatternEvent&)>  _addLinePatternEvent;
             Nano::Signal<void(const lc::ReplaceLinePatternEvent&)>  _replaceLinePatternEvent;
             Nano::Signal<void(const lc::RemoveLinePatternEvent&)>  _removeLinePatternEvent;
+
+            Nano::Signal<void(const lc::NewWaitingCustomEntityEvent&)> _newWaitingCustomEntityEvent;
     };
 
     DECLARE_SHORT_SHARED_PTR(Document);

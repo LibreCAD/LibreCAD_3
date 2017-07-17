@@ -1,7 +1,10 @@
 
 #include <string>
 #include <unordered_map>
+#include <cad/meta/customentitystorage.h>
 #include "documentimpl.h"
+#include <cad/primitive/insert.h>
+#include <cad/primitive/customentity.h>
 
 using namespace lc;
 
@@ -14,10 +17,21 @@ DocumentImpl::~DocumentImpl() {
 }
 
 void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
-    std::lock_guard<std::mutex> lck(_documentMutex);
-    begin(operation);
-    this->operationProcess(operation);
-    commit(operation);
+    {
+        std::lock_guard<std::mutex> lck(_documentMutex);
+        begin(operation);
+        this->operationProcess(operation);
+        commit(operation);
+
+        _documentMutex.unlock();
+    }
+
+    auto tmp = _newWaitingCustomEntities;
+    _newWaitingCustomEntities.clear();
+    for (auto insert : tmp) {
+        NewWaitingCustomEntityEvent customEntityEvent(insert);
+        newWaitingCustomEntityEvent()(customEntityEvent);
+    }
 }
 
 void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
@@ -30,25 +44,37 @@ void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
     _storageManager->optimise();
     CommitProcessEvent event(operation);
     commitProcessEvent()(event);
-
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr cadEntity) {
-    if(cadEntity->block() != nullptr) {
-
-    }
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
-        _storageManager->removeEntity(cadEntity);
-        RemoveEntityEvent event(cadEntity);
-        removeEntityEvent()(event);
+        removeEntity(cadEntity);
     }
 
     _storageManager->insertEntity(cadEntity);
     AddEntityEvent event(cadEntity);
     addEntityEvent()(event);
+
+    auto insert = std::dynamic_pointer_cast<const entity::Insert>(cadEntity);
+    if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(cadEntity) == nullptr) {
+        auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
+
+        if(ces != nullptr) {
+            _waitingCustomEntities[ces->pluginName()].insert(insert);
+            _newWaitingCustomEntities.insert(insert);
+        }
+    }
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
+    auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
+    if(insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
+        auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
+        if(ces != nullptr) {
+            _waitingCustomEntities[ces->pluginName()].erase(insert);
+        }
+    }
+
     _storageManager->removeEntity(entity);
     RemoveEntityEvent event(entity);
     removeEntityEvent()(event);
@@ -153,4 +179,8 @@ EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(const Blo
 
 std::vector<Block_CSPtr> DocumentImpl::blocks() const {
     return _storageManager->metaTypes<const Block>();
+}
+
+std::unordered_set<entity::Insert_CSPtr> DocumentImpl::waitingCustomEntities(const std::string& pluginName) {
+    return _waitingCustomEntities[pluginName];
 }

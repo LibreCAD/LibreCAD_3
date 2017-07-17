@@ -3,22 +3,23 @@
 #include "lcdimaligned.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
+
 using namespace LCViewer;
-LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned) : LCVDrawItem(true), lc::entity::DimAligned(dimAligned, true) {
+
+LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned) :
+        LCVDrawItem(dimAligned, true),
+        _dimAligned(dimAligned) {
 }
 
-/**
-* Draw a DimRadial
-* TODO: 1) When dimension is small then text draw a outside version see https://github.com/LibreCAD/LibreCAD_3/issues/19
-*
-*/
 void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
-    bool modified = false;
     const double capSize = 10.;
-    //const lc::geo::Coordinate &mousePos = middleOfText();
 
-    // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(explicitValue(), options.alignedFormat(), this->definitionPoint3().distanceTo(this->definitionPoint2()));
+    // Decide to show the explicit value or the measured value
+    std::string value = lc::StringHelper::dim_value(
+            _dimAligned->explicitValue(),
+            options.alignedFormat(),
+            _dimAligned->definitionPoint3().distanceTo(_dimAligned->definitionPoint2())
+    );
 
     // get text size
     painter.save();
@@ -28,74 +29,106 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
 
     // Draw line
     EndCaps endCaps;
-    bool shortOnSpace = (definitionPoint3().distanceTo(definitionPoint2()) - te.width - capSize * 2) < 0;
+    bool shortOnSpace = (_dimAligned->definitionPoint3().distanceTo(_dimAligned->definitionPoint2()) - te.width - capSize * 2) < 0;
 
-    lc::geo::Coordinate p2 = definitionPoint2() + (definitionPoint() - definitionPoint3());
+    lc::geo::Coordinate p2 = _dimAligned->definitionPoint2() + (_dimAligned->definitionPoint() - _dimAligned->definitionPoint3());
 
     // Draw dimension lines
     if (shortOnSpace) {
-        painter.move_to(definitionPoint3().x(), definitionPoint3().y());
-        painter.line_to(definitionPoint().x(), definitionPoint().y());
+        painter.move_to(_dimAligned->definitionPoint3().x(), _dimAligned->definitionPoint3().y());
+        painter.line_to(_dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y());
 
-        auto d0ext = definitionPoint().move(definitionPoint() - p2, capSize * 2);
+        auto d0ext = _dimAligned->definitionPoint().move(_dimAligned->definitionPoint() - p2, capSize * 2);
         painter.move_to(d0ext.x(), d0ext.y());
-        painter.line_to(definitionPoint().x(), definitionPoint().y());
+        painter.line_to(_dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y());
         
-        auto p2ext = p2.move(definitionPoint() - p2, -(capSize * 2));
+        auto p2ext = p2.move(_dimAligned->definitionPoint() - p2, -(capSize * 2));
         painter.move_to(p2ext.x(), p2ext.y());
         painter.line_to(p2.x(), p2.y());
-        painter.line_to(definitionPoint2().x(), definitionPoint2().y());
+        painter.line_to(_dimAligned->definitionPoint2().x(), _dimAligned->definitionPoint2().y());
         
         
         /* draw a nice line for text
-         * TODO maybe we will need mousePos for this in future
          */
         if (std::abs(d0ext.angleTo(p2ext)) >= 90. / 180.*M_PI) {
             painter.move_to(d0ext.x() + te.width, d0ext.y());
             painter.line_to(d0ext.x(), d0ext.y());
-            this->drawText(value, textAngle(), this->attachmentPoint(), {d0ext.x() + te.width / 2, d0ext.y()}, painter, options, rect);
-        } else {
+            this->drawText(
+                    value,
+                    _dimAligned->textAngle(),
+                    _dimAligned->attachmentPoint(),
+                    {d0ext.x() + te.width / 2, d0ext.y()},
+                    painter,
+                    options,
+                    rect
+            );
+        }
+        else {
             painter.move_to(p2ext.x() + te.width, p2ext.y());
             painter.line_to(p2ext.x(), p2ext.y());
-            this->drawText(value, textAngle(), this->attachmentPoint(), {p2ext.x() + te.width / 2, p2ext.y()}, painter, options, rect);
+            this->drawText(
+                    value,
+                    _dimAligned->textAngle(),
+                    _dimAligned->attachmentPoint(),
+                    {p2ext.x() + te.width / 2, p2ext.y()},
+                    painter,
+                    options,
+                    rect
+            );
         }
 
         painter.stroke();
 
         // Draw arrows
-
-        endCaps.render(painter, EndCaps::CLOSEDARROW, d0ext.x(), d0ext.y(), definitionPoint().x(), definitionPoint().y(), capSize) ;
-        endCaps.render(painter, EndCaps::CLOSEDARROW, p2ext.x(), p2ext.y(), p2.x(), p2.y(), capSize) ;
-
-    } else {
-
-        painter.move_to(this->definitionPoint3().x(), this->definitionPoint3().y());
-        painter.line_to(definitionPoint().x(), definitionPoint().y());
+        endCaps.render(
+                painter,
+                EndCaps::CLOSEDARROW,
+                d0ext.x(), d0ext.y(),
+                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+                capSize
+        ) ;
+        endCaps.render(
+                painter,
+                EndCaps::CLOSEDARROW,
+                p2ext.x(), p2ext.y(),
+                p2.x(), p2.y(),
+                capSize
+        ) ;
+    }
+    else {
+        painter.move_to(_dimAligned->definitionPoint3().x(), _dimAligned->definitionPoint3().y());
+        painter.line_to(_dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y());
         painter.line_to(p2.x(), p2.y());
-        painter.line_to(definitionPoint2().x(), definitionPoint2().y());
+        painter.line_to(_dimAligned->definitionPoint2().x(), _dimAligned->definitionPoint2().y());
         painter.stroke();
 
         // Draw arrows
-        endCaps.render(painter, EndCaps::CLOSEDARROW, definitionPoint().x(), definitionPoint().y(), p2.x(), p2.y(), capSize) ;
-        endCaps.render(painter, EndCaps::CLOSEDARROW, p2.x(), p2.y(), this->definitionPoint().x(), this->definitionPoint().y(), capSize) ;
-        this->drawText(value, this->definitionPoint2().angleTo(this->definitionPoint3()) + textAngle(), this->attachmentPoint(), this->middleOfText(), painter, options, rect);
+        endCaps.render(
+                painter,
+                EndCaps::CLOSEDARROW,
+                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+                p2.x(), p2.y(),
+                capSize
+        );
+        endCaps.render(
+                painter,
+                EndCaps::CLOSEDARROW,
+                p2.x(), p2.y(),
+                _dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y(),
+                capSize
+        );
+        this->drawText(
+                value,
+                _dimAligned->definitionPoint2().angleTo(_dimAligned->definitionPoint3()) + _dimAligned->textAngle(),
+                _dimAligned->attachmentPoint(),
+                _dimAligned->middleOfText(),
+                painter,
+                options,
+                rect
+        );
     }
+}
 
-    /* Added to verify the points locations
-    painter.move_to(middleOfText().x(), middleOfText().y());
-    painter.text("MT");
-    painter.move_to(definitionPoint().x(), definitionPoint().y());
-    painter.text("0");
-    painter.move_to(definitionPoint2().x(), definitionPoint2().y());
-    painter.text("2");
-    painter.move_to(definitionPoint3().x(), definitionPoint3().y());
-    painter.text("3");
-    painter.move_to(p2.x(), p2.y());
-    painter.text("p2");
-    painter.stroke();*/
-
-    if (modified) {
-        painter.restore();
-    }
-
+lc::entity::CADEntity_CSPtr LCDimAligned::entity() const {
+    return _dimAligned;
 }

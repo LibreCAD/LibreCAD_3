@@ -19,13 +19,12 @@ TEST(BuilderTest, Line) {
     const lc::geo::Coordinate end(100, 100);
 
     lc::builder::LineBuilder builder;
-    auto line = builder
-            .setStart(start)
-            ->setEnd(end)
-            ->setLayer(layer)
-            ->setMetaInfo(metaInfo)
-            ->setBlock(block)
-            ->build();
+    builder.setStart(start);
+    builder.setEnd(end);
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+    auto line = builder.build();
 
     EXPECT_EQ(start, line->start());
     EXPECT_EQ(end, line->end());
@@ -46,16 +45,15 @@ TEST(BuilderTest, Arc) {
     const bool isCCW = true;
 
     lc::builder::ArcBuilder builder;
-    auto arc = builder
-            .setCenter(center)
-            ->setRadius(radius)
-            ->setStartAngle(startAngle)
-            ->setEndAngle(endAngle)
-            ->setIsCCW(isCCW)
-            ->setLayer(layer)
-            ->setMetaInfo(metaInfo)
-            ->setBlock(block)
-            ->build();
+    builder.setCenter(center);
+    builder.setRadius(radius);
+    builder.setStartAngle(startAngle);
+    builder.setEndAngle(endAngle);
+    builder.setIsCCW(isCCW);
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+    auto arc = builder.build();
 
     EXPECT_EQ(center, arc->center());
     EXPECT_EQ(radius, arc->radius());
@@ -76,13 +74,12 @@ TEST(BuilderTest, Circle) {
     const double radius = 10;
 
     lc::builder::CircleBuilder builder;
-    auto circle = builder
-            .setCenter(center)
-            ->setRadius(radius)
-            ->setLayer(layer)
-            ->setMetaInfo(metaInfo)
-            ->setBlock(block)
-            ->build();
+    builder.setCenter(center);
+    builder.setRadius(radius);
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+    auto circle = builder.build();
 
     EXPECT_EQ(center, circle->center());
     EXPECT_EQ(radius, circle->radius());
@@ -99,12 +96,11 @@ TEST(BuilderTest, Point) {
     const lc::geo::Coordinate coordinate(11, 15);
 
     lc::builder::PointBuilder builder;
-    auto point = builder
-            .setCoordinate(coordinate)
-            ->setLayer(layer)
-            ->setMetaInfo(metaInfo)
-            ->setBlock(block)
-            ->build();
+    builder.setCoordinate(coordinate);
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+    auto point = builder.build();
 
     EXPECT_EQ(coordinate, *point);
     EXPECT_EQ(layer, point->layer());
@@ -122,14 +118,13 @@ TEST(BuilderTest, Insert) {
     const lc::geo::Coordinate coordinate(11, 15);
 
     lc::builder::InsertBuilder builder;
-    auto insert = builder
-            .setCoordinate(coordinate)
-            ->setLayer(layer)
-            ->setMetaInfo(metaInfo)
-            ->setBlock(block)
-            ->setDisplayBlock(displayBlock)
-            ->setDocument(document)
-            ->build();
+    builder.setCoordinate(coordinate);
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+    builder.setDisplayBlock(displayBlock);
+    builder.setDocument(document);
+    auto insert = builder.build();
 
     EXPECT_EQ(coordinate, insert->position());
     EXPECT_EQ(layer, insert->layer());
@@ -146,13 +141,12 @@ TEST(BuilderTest, Layer) {
     auto lw = lc::MetaLineWidthByValue(2);
     auto color = lc::Color();
 
-    auto layer = builder
-        .setName(name)
-        ->setLinePattern(lp)
-        ->setLineWidth(lw)
-        ->setColor(color)
-        ->setIsFrozen(true)
-        ->build();
+    builder.setName(name);
+    builder.setLinePattern(lp);
+    builder.setLineWidth(lw);
+    builder.setColor(color);
+    builder.setIsFrozen(true);
+    auto layer = builder.build();
 
     EXPECT_EQ(name, layer->name());
     EXPECT_EQ(lp, layer->linePattern());
@@ -168,12 +162,11 @@ TEST(BuilderTest, DxfLinePatternByValue) {
     std::vector<double> initialPath = {5, 0, 1, 2};
     double lastElement = 3;
 
-    auto lp = builder
-        .setName(name)
-        ->setDescription(description)
-        ->setPath(initialPath)
-        ->addElement(lastElement)
-        ->build();
+    builder.setName(name);
+    builder.setDescription(description);
+    builder.setPath(initialPath);
+    builder.addElement(lastElement);
+    auto lp = builder.build();
 
     initialPath.push_back(lastElement);
 

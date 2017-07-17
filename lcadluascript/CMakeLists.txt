@@ -12,6 +12,9 @@ set(lcluascript_srcs
         lckernelbridge.cpp
         managers/pluginmanager.cpp
         lclua.cpp
+        primitive/customentity.cpp
+        builders/customentity.cpp
+        managers/luacustomentitymanager.cpp
 )
 
 # HEADER FILES
@@ -20,6 +23,9 @@ set(lcluascript_hdrs
         utils/timer.h
         managers/pluginmanager.h
         lclua.h
+        primitive/customentity.h
+        builders/customentity.h
+        managers/luacustomentitymanager.h
 )
 
 
@@ -46,10 +52,12 @@ if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
     include_directories("${CMAKE_SOURCE_DIR}/../lcadluascript")
+    include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
 else() 
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
+    include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
 endif()
 
 add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})

@@ -3,8 +3,12 @@
 #include "lcdimlinear.h"
 #include "endcaps.h"
 #include <cad/functions/string_helper.h>
+
 using namespace LCViewer;
-LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) : LCVDrawItem(true), lc::entity::DimLinear(dimLinear, true) {
+
+LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) :
+        LCVDrawItem(dimLinear, true),
+        _dimLinear(dimLinear) {
 }
 
 /**
@@ -15,20 +19,18 @@ LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) : LCVDrawI
 *
 */
 void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    bool modified = false;
-
-    const double dx = this->definitionPoint3().x() - this->definitionPoint2().x();
-    const double dy = this->definitionPoint3().y() - this->definitionPoint2().y();
+    const double dx = _dimLinear->definitionPoint3().x() - _dimLinear->definitionPoint2().x();
+    const double dy = _dimLinear->definitionPoint3().y() - _dimLinear->definitionPoint2().y();
     bool isHorizontal = false;
     const double capSize = 10.;
 
-    const lc::geo::Coordinate &firstPoint = (definitionPoint2().magnitude() <= definitionPoint3().magnitude())
-                                          ? definitionPoint2() : definitionPoint3();
+    const lc::geo::Coordinate &firstPoint = (_dimLinear->definitionPoint2().magnitude() <= _dimLinear->definitionPoint3().magnitude())
+                                          ? _dimLinear->definitionPoint2() : _dimLinear->definitionPoint3();
                                           
-    const lc::geo::Coordinate &secondPoint = (definitionPoint2().magnitude() <= definitionPoint3().magnitude())
-                                           ? definitionPoint3() : definitionPoint2();
+    const lc::geo::Coordinate &secondPoint = (_dimLinear->definitionPoint2().magnitude() <= _dimLinear->definitionPoint3().magnitude())
+                                           ? _dimLinear->definitionPoint3() : _dimLinear->definitionPoint2();
                                            
-    const lc::geo::Coordinate& mousePos = middleOfText();
+    const lc::geo::Coordinate& mousePos = _dimLinear->middleOfText();
 
     /* TODO maybe need to check for vertical too ?
      * asume firstPoint is always on left side...
@@ -39,8 +41,11 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
     }
 
     // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(explicitValue(), options.linearFormat()
-                                                    , isHorizontal ? std::abs(dx) : std::abs(dy));
+    std::string value = lc::StringHelper::dim_value(
+            _dimLinear->explicitValue(),
+            options.linearFormat(),
+            isHorizontal ? std::abs(dx) : std::abs(dy)
+    );
 
     // get text size
     painter.save();
@@ -75,8 +80,8 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         endCaps.render(painter, EndCaps::CLOSEDARROW, secondPoint.x() + capSize * 2, mousePos.y(), secondPoint.x(), mousePos.y(), capSize) ;
         endCaps.render(painter, EndCaps::CLOSEDARROW, firstPoint.x() - capSize * 2, mousePos.y(), firstPoint.x(), mousePos.y(), capSize) ;
 
-    } else if (isHorizontal) {
-
+    }
+    else if (isHorizontal) {
         // right
         painter.move_to(secondPoint.x(), secondPoint.y());
         painter.line_to(secondPoint.x(), mousePos.y() + (mousePos.y() >= secondPoint.y() ? capSize / 2 : -capSize / 2));
@@ -93,8 +98,8 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         endCaps.render(painter, EndCaps::CLOSEDARROW, secondPoint.x(), mousePos.y(), firstPoint.x(), mousePos.y(), capSize) ;
         endCaps.render(painter, EndCaps::CLOSEDARROW, firstPoint.x(), mousePos.y(), secondPoint.x(), mousePos.y(), capSize) ;
 
-    } else if (!isHorizontal && shortOnSpace) {
-
+    }
+    else if (!isHorizontal && shortOnSpace) {
         // top
         painter.move_to(secondPoint.x(), secondPoint.y());
         painter.line_to(mousePos.x() + (mousePos.x() >= secondPoint.x() ? capSize / 2 : -capSize / 2), secondPoint.y());
@@ -114,7 +119,8 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), firstPoint.y() - capSize * 2, mousePos.x(), firstPoint.y(), capSize) ;
 
 
-    } else if (!isHorizontal) {
+    }
+    else if (!isHorizontal) {
 
         // top
         painter.move_to(secondPoint.x(), secondPoint.y());
@@ -133,34 +139,32 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         endCaps.render(painter, EndCaps::CLOSEDARROW, mousePos.x(), firstPoint.y(), mousePos.x(), secondPoint.y(), capSize) ;
     }
 
-    /* Added to verify the points locations
-    painter.move_to(rect.width(), middleOfText().y());
-    painter.text("MT");
-
-    painter.move_to(middleOfText().x(), middleOfText().y());
-    painter.text("MT");
-    painter.move_to(definitionPoint().x(), definitionPoint().y());
-    painter.text("0");
-    painter.move_to(definitionPoint2().x(), definitionPoint2().y());
-    painter.text("2");
-    painter.move_to(definitionPoint3().x(), definitionPoint3().y());
-    painter.text("3");
-    painter.stroke();
-    */
-
-
-
     if (isHorizontal && shortOnSpace) {
-
         // TODO on short left or right side ?
-        this->drawText(value, (isHorizontal ? 0. : (90. / 180.) * M_PI) + textAngle(), attachmentPoint(), {mousePos.x() + capSize * 2.5, mousePos.y()}, painter, options, rect);
+        this->drawText(
+                value,
+                (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
+                _dimLinear->attachmentPoint(),
+                {mousePos.x() + capSize * 2.5, mousePos.y()},
+                painter,
+                options,
+                rect
+        );
 
-    } else if (isHorizontal) {
+    }
+    else if (isHorizontal) {
+        this->drawText(
+                value,
+                (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
+                _dimLinear->attachmentPoint(),
+                _dimLinear->middleOfText(),
+                painter,
+                options,
+                rect
+        );
 
-        this->drawText(value, (isHorizontal ? 0. : (90. / 180.) * M_PI) + textAngle(), attachmentPoint(), middleOfText(), painter, options, rect);
-
-    } else if (!isHorizontal && shortOnSpace) {
-
+    }
+    else if (!isHorizontal && shortOnSpace) {
         // vertical, hard coded top line
         painter.move_to(mousePos.x(), secondPoint.y() + capSize * 2);
         painter.line_to(mousePos.x() + te.width, secondPoint.y() + capSize * 2);
@@ -171,12 +175,19 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         // vertical, text rotated based on side
         const double rotationAngle = mousePos.x() >= secondPoint.x() ? -90. / 180. : 90. / 180.;
 
-        this->drawText(value, (rotationAngle * M_PI) + textAngle(), attachmentPoint(), middleOfText(), painter, options, rect);
+        this->drawText(
+                value,
+                (rotationAngle * M_PI) + _dimLinear->textAngle(),
+                _dimLinear->attachmentPoint(),
+                _dimLinear->middleOfText(),
+                painter,
+                options,
+                rect
+        );
 
     }
+}
 
-    if (modified) {
-        painter.restore();
-    }
-
+lc::entity::CADEntity_CSPtr LCDimLinear::entity() const {
+    return _dimLinear;
 }

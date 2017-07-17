@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cad/meta/block.h>
-#include <cad/builders/cadentity.h>
 #include "cad/const.h"
 #include "cad/base/id.h"
 #include "cad/base/metainfo.h"
@@ -11,13 +10,15 @@
 #include "cad/geometry/geoarea.h"
 
 namespace lc {
+    namespace builder {
+        class CADEntityBuilder;
+    }
     namespace entity {
         /**
          *Class that all CAD entities must inherit
          *
          */
         class CADEntity : public ID, virtual public Visitable {
-        template <typename T>
         friend class lc::builder::CADEntityBuilder;
 
         public:
@@ -141,13 +142,7 @@ namespace lc {
             Block_CSPtr block() const;
 
         protected:
-            template<typename ReturnType>
-            CADEntity(const lc::builder::CADEntityBuilder<ReturnType>& builder) :
-                        ID(),
-                        _layer(builder.layer()),
-                        _metaInfo(builder.metaInfo()),
-                        _block(builder.block()) {
-            }
+            CADEntity(const lc::builder::CADEntityBuilder& builder);
 
         private:
             Layer_CSPtr _layer;

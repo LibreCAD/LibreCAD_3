@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <limits>
+#include <drawitems/lcvdrawitem.h>
 
 #include "cad/const.h"
 #include "cad/base/id.h"
@@ -308,7 +309,16 @@ namespace lc {
                 // Now calculate for each entity if we are near the entities path
                 std::vector<lc::EntityDistance> entities;
                 for (auto item : ent) {
-                    Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+                    Snapable_CSPtr entity;
+
+                    //TODO: remove this when EntityContainer will support LCVDrawItem
+                    auto drawable = std::dynamic_pointer_cast<const LCViewer::LCVDrawItem>(item);
+                    if(drawable) {
+                        entity = std::dynamic_pointer_cast<const lc::Snapable>(drawable->entity());
+                    }
+                    else {
+                        entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+                    }
 
                     if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                         lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
@@ -372,7 +382,11 @@ namespace lc {
              * </pre>
              */
             template<typename U, typename T> void each(T func) {
-                _tree->template each< U>(func);
+                _tree->template each<U>(func);
+            }
+
+            template<typename U, typename T> void each(T func) const {
+                _tree->template each<const U>(func);
             }
         private:
             //std::map<ID_DATATYPE, CT> _cadentities;

@@ -1,6 +1,7 @@
 #include <cad/document/document.h>
 #include "lclua.h"
 #include <utils/timer.h>
+#include <managers/luacustomentitymanager.h>
 
 using namespace lc;
 using namespace LuaIntf;
@@ -20,6 +21,11 @@ LCLua::LCLua(lua_State* L) :
     _L(L),
     _f_openFileDialog(nullptr) {
 
+    LuaBinding(L)
+    .beginClass<LuaCustomEntityManager>("LuaCustomEntityManager")
+        .addStaticFunction("getInstance", &LuaCustomEntityManager::getInstance)
+        .addFunction("registerPlugin", &LuaCustomEntityManager::registerPlugin)
+    .endClass();
 }
 
 void LCLua::addLuaLibs() {

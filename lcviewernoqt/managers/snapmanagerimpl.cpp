@@ -79,7 +79,16 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     if (entities.size() > 0) {
         // GO over all entities, first closest to teh cursor gradually moving away
         for (auto &entity : entities) {
-            const lc::Snapable_CSPtr captr = std::dynamic_pointer_cast<const lc::Snapable>(entity.entity());
+            lc::Snapable_CSPtr captr;
+
+            auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity.entity());
+            if(drawable) {
+                captr = std::dynamic_pointer_cast<const lc::Snapable>(drawable->entity());
+            }
+            else {
+                captr = std::dynamic_pointer_cast<const lc::Snapable>(entity.entity());
+            }
+
             if (captr) {
                 // Locale snap points
                 std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
