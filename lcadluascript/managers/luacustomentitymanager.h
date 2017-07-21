@@ -23,6 +23,12 @@ namespace lc {
              */
             void registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction);
 
+            /**
+             * @brief Remove all registered plugins
+             * This should be called before the Lua instance get deleted
+             */
+            void removePlugins();
+
         private:
             LuaCustomEntityManager();
 

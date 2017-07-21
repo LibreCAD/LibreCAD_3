@@ -1,19 +1,25 @@
 #include <lclua.h>
+#include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
 LuaInterface::LuaInterface() :
     _L(LuaIntf::LuaState::newState()),
-	_pluginManager("gui") {
+	_pluginManager(_L, "gui") {
 }
 
 LuaInterface::~LuaInterface() {
 	_luaQObjects.clear();
+    _operations.clear();
+    _events.clear();
+
+    lc::LuaCustomEntityManager::getInstance().removePlugins();
 
 	_L.close();
 }
 
 void LuaInterface::initLua() {
 	auto lcLua = lc::LCLua(_L);
+    lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
 	lcLua.importLCKernel();
 
@@ -29,7 +35,7 @@ void LuaInterface::initLua() {
         lua_pop(_L, 1);
     }
 
-	_pluginManager.loadPlugins(&LuaInterface::openFileDialog);
+	_pluginManager.loadPlugins();
 }
 
 bool LuaInterface::luaConnect(
@@ -126,4 +132,44 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
     }
 
     return fopen(path.toStdString().c_str(), mode);
+}
+
+LuaIntf::LuaRef LuaInterface::operation(unsigned int windowID) {
+    if(_operations.find(windowID) != _operations.end()) {
+        return _operations[windowID];
+    }
+
+    return LuaIntf::LuaRef();
+}
+
+void LuaInterface::setOperation(unsigned int windowID, LuaIntf::LuaRef operation) {
+    _operations[windowID] = operation;
+}
+
+void LuaInterface::registerEvent(const std::string& event, LuaIntf::LuaRef callback) {
+    if(callback.isTable() && !callback.has("onEvent")) {
+        return;
+    }
+
+    _events[event].push_back(callback);
+}
+
+void LuaInterface::deleteEvent(const std::string& event, LuaIntf::LuaRef callback) {
+    auto it = std::find(_events[event].begin(), _events[event].end(), callback);
+
+    if(it != _events[event].end()) {
+        _events[event].erase(it);
+    }
+}
+
+void LuaInterface::triggerEvent(const std::string& event, LuaIntf::LuaRef args) {
+    auto events = _events[event];
+    for(auto eventCallback : events) {
+        if(eventCallback.isFunction()) {
+            eventCallback(event, args);
+        }
+        else if(eventCallback.isTable()) {
+            eventCallback.get("onEvent").call(eventCallback, event, args);
+        }
+    }
 }

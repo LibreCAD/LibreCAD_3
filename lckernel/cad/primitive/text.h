@@ -27,28 +27,6 @@ namespace lc {
             * @param TextConst::HAlign halign, Horizontal alignment
             * @param TextConst::VAlign valign, Vertical alignment
             * @param Layer_CSPtr layer, Layer of the entity
-            */
-            Text(const geo::Coordinate &insertion_point,
-                 const std::string text_value,
-                 const double height,
-                 const double angle,
-                 const std::string style,
-                 const TextConst::DrawingDirection textgeneration,
-                 const TextConst::HAlign halign,
-                 const TextConst::VAlign valign,
-                 const Layer_CSPtr layer);
-
-            /**
-            * @brief Text, default constructor
-            * @param geo::Coordinate insertion_point, insertion_point of the text
-            * @param double height, height of the text
-            * @param string text_value, the text itself
-            * @param double angle, angle of obliqueness
-            * @param string style, name of text style
-            * @param TextConst::DrawingDirection textgeneration, Text drawing direction
-            * @param TextConst::HAlign halign, Horizontal alignment
-            * @param TextConst::VAlign valign, Vertical alignment
-            * @param Layer_CSPtr layer, Layer of the entity
             * @param metatypes metatypes of the cad entity
             */
             Text(const geo::Coordinate &insertion_point,
@@ -60,7 +38,9 @@ namespace lc {
                  const TextConst::HAlign halign,
                  const TextConst::VAlign valign,
                  const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo);
+                 const MetaInfo_CSPtr metaInfo = nullptr,
+                 const Block_CSPtr block = nullptr
+            );
 
             Text(const Text_CSPtr &other, bool sameID);
 
@@ -150,7 +130,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

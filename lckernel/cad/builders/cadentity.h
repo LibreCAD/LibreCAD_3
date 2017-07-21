@@ -84,7 +84,13 @@ namespace lc {
                  */
                 void setID(ID_DATATYPE id) {
                     _id.setID(id);
-                    
+                }
+
+                /**
+                 * @brief Generate new ID for the entity
+                 */
+                void newID() {
+                    _id = ID();
                 }
 
                 virtual bool checkValues() {

@@ -125,6 +125,7 @@ void lc::FileLibs::LibOpenCad::addEllipse(lc::Layer_SPtr layer, const CADEllipse
             ellipse->getRadius(),
             ellipse->getStartingAngle(),
             ellipse->getEndingAngle(),
+            false,
             layer,
             metaInfo(ellipse)
     );

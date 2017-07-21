@@ -119,13 +119,3 @@ function Rectangle:close()
         event.trigger("operationFinished")
     end
 end
-
-local tab = toolbar:tabByName("Quick Access")
-local group = tab:addGroup("Rectangle")
-
-local RectangleButton = create_button("Rectangle")
-tab:addWidget(group, RectangleButton, 0, 0, 1, 1)
-luaInterface:luaConnect(RectangleButton, "pressed()", function()
-    new_operation()
-    op[active_widget().id] = Rectangle(active_widget().id)
-end)

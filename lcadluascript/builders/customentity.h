@@ -22,8 +22,14 @@ namespace lc {
                 const LuaIntf::LuaRef& dragPointsFunction() const;
                 void setDragPointsFunction(const LuaIntf::LuaRef& dragPointsFunction);
 
-                const LuaIntf::LuaRef& newDragPointsFunction() const;
-                void setNewDragPointsFunction(const LuaIntf::LuaRef& newDragPointsFunction);
+                const LuaIntf::LuaRef& newDragPointFunction() const;
+                void setNewDragPointFunction(const LuaIntf::LuaRef& newDragPointsFunction);
+
+                const LuaIntf::LuaRef& dragPointsClickedFunction() const;
+                void setDragPointsClickedFunction(const LuaIntf::LuaRef& dragPointsClickedFunction);
+
+                const LuaIntf::LuaRef& dragPointsReleasedFunction() const;
+                void setDragPointsReleasedFunction(const LuaIntf::LuaRef& dragPointsReleasedFunction);
 
                 bool checkValues() override;
 
@@ -33,7 +39,9 @@ namespace lc {
                 LuaIntf::LuaRef _snapFunction;
                 LuaIntf::LuaRef _nearestPointFunction;
                 LuaIntf::LuaRef _dragPointsFunction;
-                LuaIntf::LuaRef _newDragPointsFunction;
+                LuaIntf::LuaRef _newDragPointFunction;
+                LuaIntf::LuaRef _dragPointsClickedFunction;
+                LuaIntf::LuaRef _dragPointsReleasedFunction;
         };
     }
 }

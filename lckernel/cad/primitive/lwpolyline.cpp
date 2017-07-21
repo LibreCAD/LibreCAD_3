@@ -10,16 +10,22 @@ using namespace lc;
 using namespace entity;
 
 
-LWPolyline::LWPolyline(const std::vector<LWVertex2D> &vertex, double width, double elevation, double tickness,
-                       bool closed, geo::Coordinate const &extrusionDirection, const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo)
-        : CADEntity(layer, metaInfo),
-          _vertex(vertex),
-          _width(width),
-          _elevation(elevation),
-          _tickness(tickness),
-          _closed(closed),
-          _extrusionDirection(extrusionDirection) {
+LWPolyline::LWPolyline(const std::vector<LWVertex2D> &vertex,
+                       double width,
+                       double elevation,
+                       double tickness,
+                       bool closed,
+                       geo::Coordinate const &extrusionDirection,
+                       const Layer_CSPtr layer,
+                       const MetaInfo_CSPtr metaInfo,
+                       const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        _vertex(vertex),
+        _width(width),
+        _elevation(elevation),
+        _tickness(tickness),
+        _closed(closed),
+        _extrusionDirection(extrusionDirection) {
 }
 
 LWPolyline::LWPolyline(const LWPolyline_CSPtr other, bool sameID) : CADEntity(other, sameID),
@@ -105,9 +111,20 @@ const geo::Area LWPolyline::boundingBox() const {
     return area;
 }
 
-CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newEntity = std::make_shared<LWPolyline>(shared_from_this(), true);
+CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newEntity = std::make_shared<LWPolyline>(
+            _vertex,
+            _width,
+            _elevation,
+            _tickness,
+            _closed,
+            _extrusionDirection,
+            layer,
+            metaInfo,
+            block
+    );
     newEntity->setID(this->id());
+
     return newEntity;
 }
 

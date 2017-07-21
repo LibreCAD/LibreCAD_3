@@ -30,14 +30,15 @@ namespace lc {
                        double const lineSpacingFactor,
                        TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
                        geo::Coordinate const &definitionPoint2, geo::Coordinate const &definitionPoint3,
-                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
 
 
             DimAligned(const DimAligned_CSPtr other, bool sameID = false);
 
             static DimAligned_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2,
                                            geo::Coordinate const &middleOfText, std::string const &explicitValue,
-                                           const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                                           const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr,
+                                           const Block_CSPtr block = nullptr);
 
         public:
             /**
@@ -80,7 +81,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points

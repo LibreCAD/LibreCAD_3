@@ -21,10 +21,10 @@ function LWPolylineOperations:_init(id)
     self.lwPolyline_id = ID():id()
     self.lwPolyline = nil
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
-    event.register('text', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
+    luaInterface:registerEvent('text', self)
 
     message("Choose entity type")
 end
@@ -119,12 +119,12 @@ function LWPolylineOperations:close()
 
         self:createLWPolyline()
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
-        event.delete('text', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
+        luaInterface:deleteEvent('text', self)
 
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 

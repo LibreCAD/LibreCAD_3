@@ -79,7 +79,7 @@ void ReplaceLayer::processInternal() {
 
     for (auto i : le) {
         document()->removeEntity(i);
-        document()->insertEntity(i->modify(_newLayer, i->metaInfo()));
+        document()->insertEntity(i->modify(_newLayer, i->metaInfo(), i->block()));
     }
 
     document()->removeDocumentMetaType(_oldLayer);

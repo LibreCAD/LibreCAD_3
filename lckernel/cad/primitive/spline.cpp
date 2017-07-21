@@ -12,16 +12,40 @@ Spline::Spline(
         int degree, bool closed, double fitTolerance,
         double stanx, double stany, double stanz,
         double etanx, double etany, double etanz,
-        double nx, double ny, double nz, enum Spline::splineflag flags, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Spline(controlPoints, knotPoints, fitPoints, degree, closed, fitTolerance, stanx, stany, stanz,etanx, etany, etanz, nx, ny, nz, flags) {
+        double nx, double ny, double nz,
+        enum Spline::splineflag flags,
+        const Layer_CSPtr layer,
+        const MetaInfo_CSPtr metaInfo,
+        const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Spline(controlPoints,
+                    knotPoints,
+                    fitPoints,
+                    degree,
+                    closed,
+                    fitTolerance,
+                    stanx, stany, stanz,
+                    etanx, etany, etanz,
+                    nx, ny, nz,
+                    flags
+        ) {
 	calculateBoundingBox();
 }
 
-Spline::Spline(const Spline_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Spline(
-        other->controlPoints(), other->knotPoints(), other->fitPoints(),
-        other->degree(), other->closed(), other->fitTolerance(),
-        other->startTanX(), other->startTanY(), other->startTanZ(),
-        other->endTanX(), other->endTanY(), other->endTanZ(),
-        other->nX(), other->nY(), other->nZ(), other->flags()),
+Spline::Spline(const Spline_CSPtr other, bool sameID) :
+        CADEntity(other, sameID),
+        geo::Spline(
+                other->controlPoints(),
+                other->knotPoints(),
+                other->fitPoints(),
+                other->degree(),
+                other->closed(),
+                other->fitTolerance(),
+                other->startTanX(), other->startTanY(), other->startTanZ(),
+                other->endTanX(), other->endTanY(), other->endTanZ(),
+                other->nX(), other->nY(), other->nZ(),
+                other->flags()
+        ),
         _boundingBox(other->boundingBox()) {
 }
 
@@ -104,8 +128,22 @@ const geo::Area Spline::boundingBox() const {
     return this->_boundingBox;
 }
 
-CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newSpline = std::make_shared<Spline>(controlPoints(), knotPoints(), fitPoints(), degree(), closed(), fitTolerance(), startTanX(), startTanY(), startTanZ(), endTanX(), endTanY(), endTanZ(), nX(), nY(), nZ(), flags(), layer, metaInfo);
+CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newSpline = std::make_shared<Spline>(
+            controlPoints(),
+            knotPoints(),
+            fitPoints(),
+            degree(),
+            closed(),
+            fitTolerance(),
+            startTanX(), startTanY(), startTanZ(),
+            endTanX(), endTanY(), endTanZ(),
+            nX(), nY(), nZ(), flags(),
+            layer,
+            metaInfo,
+            block
+    );
+    newSpline->setID(id());
 
     return newSpline;
 }

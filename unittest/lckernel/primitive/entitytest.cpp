@@ -645,14 +645,14 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
 
     geo::Coordinate _offset1(10., 10.);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
     geo::Coordinate _offset2(10000., 15550.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
@@ -660,14 +660,14 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
 
     geo::Coordinate _offset3(3210., -1220.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
     geo::Coordinate _offset4(-10000., -10000.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset4));
     builder->execute();
@@ -692,14 +692,14 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
 
     geo::Coordinate _offset1(10., 10.);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset1));
     builder->execute();
 
     geo::Coordinate _offset2(10000., 15550.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset2));
     builder->execute();
@@ -707,14 +707,14 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
 
     geo::Coordinate _offset3(3210., -1220.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset3));
     builder->execute();
 
     geo::Coordinate _offset4(-10000., -10000.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Copy>(_offset4));
     builder->execute();
@@ -740,7 +740,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     geo::Coordinate _center1(10., 10.);
     double angle1 = 70;
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center1, angle1));
     builder->execute();
@@ -748,7 +748,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     geo::Coordinate _center2(10., 10.);
     double angle2 = 113;
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center2, angle2));
     builder->execute();
@@ -757,7 +757,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     geo::Coordinate _center3(10., 10.);
     double angle3 = 91;
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center3, angle3));
     builder->execute();
@@ -765,7 +765,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     geo::Coordinate _center4(10., 10.);
     double angle4 = 360.;
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Rotate>(_center4, angle4));
     builder->execute();
@@ -791,7 +791,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     geo::Coordinate _center1(100., 100.);
     geo::Coordinate _ratio1(11., 1.);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Scale>(_center1, _ratio1));
     builder->execute();
@@ -799,7 +799,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     geo::Coordinate _center2(0., 0.);
     geo::Coordinate _ratio2(6., 3.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Scale>(_center2, _ratio2));
     builder->execute();
@@ -808,7 +808,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     geo::Coordinate _center3(-10., -10.);
     geo::Coordinate _ratio3(1., 2.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Scale>(_center3, _ratio3));
     builder->execute();
@@ -816,7 +816,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     geo::Coordinate _center4(2700., 5000.);
     geo::Coordinate _ratio4(10., 10.);
     builder = std::make_shared<operation::EntityBuilder>(_document);
-    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, layer));
+    builder->appendEntity(std::make_shared<Ellipse>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), 100, 30 * 0.0174532925, 120 * 0.0174532925, false, layer));
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Scale>(_center4, _ratio4));
     builder->execute();

@@ -14,20 +14,6 @@ namespace lc {
     namespace entity {
         class DimDiametric : public std::enable_shared_from_this<DimDiametric>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
         public:
-
-            /**
-            * @brief DimDiametric
-            * @param Dimension dimension
-            * @param double leader
-            * @param Layer_CSPtr layer
-            */
-            DimDiametric(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                         TextConst::AttachmentPoint const &attachmentPoint, double angle,
-                         double const lineSpacingFactor,
-                         TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                         geo::Coordinate const &definitionPoint2,
-                         const double leader, const Layer_CSPtr layer);
-
             /**
             * @brief DimDiametric
             * @param Dimension dimension
@@ -35,21 +21,34 @@ namespace lc {
             * @param Layer_CSPtr layer
             * @param MetaTypes_CSPtr metaTypes
             */
-            DimDiametric(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                         TextConst::AttachmentPoint const &attachmentPoint, double angle,
+            DimDiametric(geo::Coordinate const &definitionPoint,
+                         geo::Coordinate const &middleOfText,
+                         TextConst::AttachmentPoint const &attachmentPoint,
+                         double angle,
                          double const lineSpacingFactor,
-                         TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
+                         TextConst::LineSpacingStyle const &lineSpacingStyle,
+                         std::string const &explicitValue,
                          geo::Coordinate const &definitionPoint2,
-                         const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                         const double leader,
+                         const Layer_CSPtr layer,
+                         const MetaInfo_CSPtr metaInfo = nullptr,
+                         const Block_CSPtr block = nullptr
+            );
 
             /**
             * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
             */
-            DimDiametric(geo::Coordinate const &definitionPoint, TextConst::AttachmentPoint const &attachmentPoint,
+            DimDiametric(geo::Coordinate const &definitionPoint,
+                         TextConst::AttachmentPoint const &attachmentPoint,
                          double const lineSpacingFactor,
-                         TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
+                         TextConst::LineSpacingStyle const &lineSpacingStyle,
+                         std::string const &explicitValue,
                          geo::Coordinate const &definitionPoint2,
-                         const double leader, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                         const double leader,
+                         const Layer_CSPtr layer,
+                         const MetaInfo_CSPtr metaInfo = nullptr,
+                         const Block_CSPtr block = nullptr
+            );
 
             DimDiametric(const DimDiametric_CSPtr other, bool sameID = false);
 
@@ -94,7 +93,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             double leader() const;
 

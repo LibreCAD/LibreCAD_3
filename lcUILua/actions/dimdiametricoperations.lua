@@ -22,10 +22,10 @@ function DimDiametricOperations:_init(id)
 
     active_widget():tempEntities():addEntity(self.dimDiametric)
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
-    event.register('text', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
+    luaInterface:registerEvent('text', self)
     
     message("Click on first point")
 end
@@ -109,10 +109,10 @@ function DimDiametricOperations:createDimDiametric()
     b:appendEntity(c)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
-    event.delete('text', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
+    luaInterface:deleteEvent('text', self)
 end
 
 function DimDiametricOperations:close()
@@ -124,10 +124,10 @@ function DimDiametricOperations:close()
             active_widget():tempEntities():removeEntity(self.dimDiametric)
             self.finished = true
 
-            event.delete('mouseMove', self)
-            event.delete('number', self)
-            event.delete('point', self)
-            event.delete('text', self)
+            luaInterface:deleteEvent('mouseMove', self)
+            luaInterface:deleteEvent('number', self)
+            luaInterface:deleteEvent('point', self)
+            luaInterface:deleteEvent('text', self)
         end
     end
 end

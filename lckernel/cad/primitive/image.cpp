@@ -8,23 +8,30 @@
 using namespace lc;
 using namespace entity;
 
+Image::Image(const std::string &name,
+             const geo::Coordinate &base,
+             const geo::Coordinate &uv,
+             const geo::Coordinate &vv,
+             double width,
+             double height,
+             double brightness,
+             double contrast,
+             double fade,
+             const Layer_CSPtr layer,
+             const MetaInfo_CSPtr metaInfo,
+             const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        _name(name),
+        _base(base),
+        _uv(uv),
+        _vv(vv),
+        _width(width),
+        _height(height),
+        _brightness(brightness),
+        _contrast(contrast),
+        _fade(fade) {
 
-Image::Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-      double brightness, double contrast, double fade, const Layer_CSPtr layer) :
-        CADEntity(layer), _name(name), _base(base), _uv(uv), _vv(vv), _width(width), _height(height), _brightness(brightness), _contrast(contrast), _fade(fade) {}
-
-Image::Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-             const Layer_CSPtr layer) :
-        CADEntity(layer), _name(name), _base(base), _uv(uv), _vv(vv), _width(width), _height(height), _brightness(0.5), _contrast(0.5), _fade(0) {}
-
-Image::Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-      double brightness, double contrast, double fade, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) :
-        CADEntity(layer, metaInfo), _name(name), _base(base), _uv(uv), _vv(vv), _width(width), _height(height), _brightness(brightness), _contrast(contrast), _fade(fade) {}
-
-Image::Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) :
-        CADEntity(layer, metaInfo), _name(name), _base(base), _uv(uv), _vv(vv), _width(width), _height(height), _brightness(0.5), _contrast(0.5), _fade(0) {}
-
+}
 
 Image::Image(const Image_CSPtr other, bool sameID) :
         CADEntity(other, sameID), _name(other->_name), _base(other->_base), _uv(other->_uv), _vv(other->_vv), _width(other->_width), _height(other->_height),
@@ -125,7 +132,20 @@ const geo::Area Image::boundingBox() const {
     return area;
 }
 
-CADEntity_CSPtr Image::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newImage = std::make_shared<Image>(_name, _base, _uv, _vv, _width, _height, _brightness, _contrast, _fade, layer, metaInfo);
+CADEntity_CSPtr Image::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newImage = std::make_shared<Image>(
+            _name,
+            _base,
+            _uv,
+            _vv,
+            _width,
+            _height,
+            _brightness,
+            _contrast,
+            _fade,
+            layer,
+            metaInfo,
+            block
+    );
     return newImage;
 }

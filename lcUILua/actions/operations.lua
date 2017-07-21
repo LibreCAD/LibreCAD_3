@@ -1,4 +1,3 @@
-require 'kernel.event'
 require 'actions.lineoperations'
 require 'actions.circleoperations'
 require 'actions.arcoperations'

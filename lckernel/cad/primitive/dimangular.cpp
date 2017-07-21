@@ -17,13 +17,14 @@ DimAngular::DimAngular(
     geo::Coordinate const& defLine21,
     geo::Coordinate const& defLine22,
     const Layer_CSPtr layer,
-    const MetaInfo_CSPtr metaInfo) :
-    CADEntity(layer, metaInfo),
-    Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
-    _defLine11(defLine11),
-    _defLine12(defLine12),
-    _defLine21(defLine21),
-    _defLine22(defLine22) {
+    const MetaInfo_CSPtr metaInfo,
+    const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
+        _defLine11(defLine11),
+        _defLine12(defLine12),
+        _defLine21(defLine21),
+        _defLine22(defLine22) {
 
 }
 
@@ -37,10 +38,31 @@ DimAngular::DimAngular(const DimAngular_CSPtr other, bool sameID) :
     _defLine22(other->_defLine22) {
 }
 
-DimAngular_SPtr DimAngular::dimAuto(geo::Coordinate const& center, geo::Coordinate const& p1, geo::Coordinate const& p2, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
+DimAngular_SPtr DimAngular::dimAuto(
+        geo::Coordinate const& center,
+        geo::Coordinate const& p1,
+        geo::Coordinate const& p2,
+        std::string const& explicitValue,
+        const Layer_CSPtr layer,
+        const MetaInfo_CSPtr metaInfo,
+        const Block_CSPtr block) {
     geo::Coordinate middletext(p1.mid(p2));
 
-    return std::make_shared<DimAngular>(center, middletext, TextConst::AttachmentPoint::Top_center, 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, center, p1, center, p2, layer, metaInfo);
+    return std::make_shared<DimAngular>(center,
+                                        middletext,
+                                        TextConst::AttachmentPoint::Top_center,
+                                        0.,
+                                        0.,
+                                        TextConst::LineSpacingStyle::AtLeast,
+                                        explicitValue,
+                                        center,
+                                        p1,
+                                        center,
+                                        p2,
+                                        layer,
+                                        metaInfo,
+                                        block
+    );
 }
 
 
@@ -78,9 +100,24 @@ const geo::Area DimAngular::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-                             this->definitionPoint(), this->middleOfText(), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_defLine11, this->_defLine12, this->_defLine21, this->_defLine22, this->layer(), metaInfo);
+                             this->definitionPoint(),
+                             this->middleOfText(),
+                             this->attachmentPoint(),
+                             this->textAngle(),
+                             this->lineSpacingFactor(),
+                             this->lineSpacingStyle(),
+                             this->explicitValue(),
+                             this->_defLine11,
+                             this->_defLine12,
+                             this->_defLine21,
+                             this->_defLine22,
+                             layer,
+                             metaInfo,
+                             block
+    );
+
     return newDimAngular;
 }
 

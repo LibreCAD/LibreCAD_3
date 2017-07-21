@@ -33,20 +33,17 @@ namespace lc {
              * \brief Construct a new line
              *
              * \param start,end Coordinate the line should start and end from
-             */
-            Line(const geo::Coordinate &start, const geo::Coordinate &end, const Layer_CSPtr layer);
-
-            /*!
-             * \brief Construct a new line
-             *
-             * \param start,end Coordinate the line should start and end from
              * \param metaTypes A list of metatypes associated with this line
              * \sa Color
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Coordinate &start, const geo::Coordinate &end, const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo);
+            Line(const geo::Coordinate &start,
+                 const geo::Coordinate &end,
+                 const Layer_CSPtr layer,
+                 const MetaInfo_CSPtr metaInfo = nullptr,
+                 const Block_CSPtr block = nullptr
+            );
 
             /*!
              * \brief Construct a new line
@@ -57,9 +54,10 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Vector &vector, const Layer_CSPtr layer);
-
-            Line(const geo::Vector &vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Line(const geo::Vector &vector,
+                 const Layer_CSPtr layer,
+                 const MetaInfo_CSPtr metaInfo = nullptr,
+                 const Block_CSPtr block = nullptr);
 
             Line(const Line_CSPtr other, bool sameID = false);
 
@@ -114,7 +112,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

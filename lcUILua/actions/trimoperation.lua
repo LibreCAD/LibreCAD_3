@@ -18,8 +18,8 @@ function TrimOperation:_init(id)
     self.intersectionPoints = {}
     self.toRemovePoint = nil
 
-    event.register("point", self)
-    event.register("selectionChanged", self)
+    luaInterface:registerEvent("point", self)
+    luaInterface:registerEvent("selectionChanged", self)
 
     message("Select limit entity")
 end
@@ -221,9 +221,9 @@ function TrimOperation:close()
     if(not self.finished) then
         self.finished = true
 
-        event.delete("point", self)
-        event.delete("selectionChanged", self)
+        luaInterface:deleteEvent("point", self)
+        luaInterface:deleteEvent("selectionChanged", self)
 
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end

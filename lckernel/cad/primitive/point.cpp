@@ -8,17 +8,16 @@
 using namespace lc;
 using namespace entity;
 
-
-Point::Point(const double x, const double y, const Layer_CSPtr layer)
-    : CADEntity(layer), geo::Coordinate(x, y) {
+Point::Point(const double x, const double y,
+             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Coordinate(x, y) {
 }
 
-Point::Point(const double x, const double y, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
-    : CADEntity(layer, metaInfo),  geo::Coordinate(x, y) {
-}
-
-Point::Point(geo::Coordinate const& coord, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Coordinate(coord) {
-
+Point::Point(geo::Coordinate const& coord,
+             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Coordinate(coord) {
 }
 
 Point::Point(const Point_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
@@ -65,9 +64,14 @@ const geo::Area Point::boundingBox() const {
     return geo::Area(geo::Coordinate(this->x(), this->y()), 0., 0.);
 }
 
-CADEntity_CSPtr Point::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newEntity = std::make_shared<Point>(this->x(), this->y(), layer, metaInfo);
+CADEntity_CSPtr Point::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newEntity = std::make_shared<Point>(this->x(), this->y(),
+                                             layer,
+                                             metaInfo,
+                                             block
+    );
     newEntity->setID(this->id());
+
     return newEntity;
 }
 

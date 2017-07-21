@@ -24,13 +24,13 @@ function RotateOperation:_init(id)
 
         self.tempEntities = {}
 
-        event.register('point', self)
-        event.register('mouseMove', self)
+        luaInterface:registerEvent('point', self)
+        luaInterface:registerEvent('mouseMove', self)
 
         message("Give origin point")
     else
         self.finished = true
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
@@ -102,9 +102,9 @@ function RotateOperation:close()
             active_widget():tempEntities():removeEntity(entity)
         end
 
-        event.delete('mouseMove', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('point', self)
 
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end

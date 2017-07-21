@@ -9,6 +9,7 @@ lc::LuaCustomEntityManager::LuaCustomEntityManager() {
 }
 
 lc::LuaCustomEntityManager::~LuaCustomEntityManager() {
+    _plugins.clear();
     DocumentList::getInstance().newWaitingCustomEntityEvent().disconnect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }
 
@@ -39,4 +40,8 @@ void lc::LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf
     for(auto entity : DocumentList::getInstance().waitingCustomEntities(name)) {
         onNewWaitingEntityFunction(entity);
     }
+}
+
+void lc::LuaCustomEntityManager::removePlugins() {
+    _plugins.clear();
 }

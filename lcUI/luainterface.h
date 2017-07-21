@@ -96,8 +96,17 @@ class LuaInterface {
 
 		static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
+        LuaIntf::LuaRef operation(unsigned int windowID);
+        void setOperation(unsigned int windowID, LuaIntf::LuaRef);
+
+        void registerEvent(const std::string& event, LuaIntf::LuaRef callback);
+        void deleteEvent(const std::string& event, LuaIntf::LuaRef callback);
+        void triggerEvent(const std::string& event, LuaIntf::LuaRef args);
+
 	private:
 		LuaIntf::LuaState _L;
 		std::vector<LuaQObject_SPtr> _luaQObjects;
         lc::PluginManager _pluginManager;
+		std::map<unsigned int, LuaIntf::LuaRef> _operations;
+        std::map<std::string, std::vector<LuaIntf::LuaRef>> _events;
 };

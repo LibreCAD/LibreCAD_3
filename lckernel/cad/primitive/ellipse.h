@@ -25,17 +25,16 @@ namespace lc {
          */
         class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
-            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
-                    double endAngle, const Layer_CSPtr layer);
-
-            Ellipse(const geo::Coordinate& center, const geo::Coordinate& majorP, double minorRadius, double startAngle,
-                    double endAngle, bool reversed, const Layer_CSPtr layer);
-
-            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
-                    double endAngle, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
-
-            Ellipse(const geo::Coordinate &center, const geo::Coordinate &majorP, double minorRadius, double startAngle,
-                    double endAngle, bool reversed, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Ellipse(const geo::Coordinate &center,
+                    const geo::Coordinate &majorP,
+                    double minorRadius,
+                    double startAngle,
+                    double endAngle,
+                    bool reversed,
+                    const Layer_CSPtr layer,
+                    const MetaInfo_CSPtr metaInfo = nullptr,
+                    const Block_CSPtr block = nullptr
+            );
 
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
 
@@ -80,7 +79,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

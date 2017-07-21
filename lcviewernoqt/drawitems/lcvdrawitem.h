@@ -49,7 +49,8 @@ namespace LCViewer {
             lc::entity::CADEntity_CSPtr rotate(const lc::geo::Coordinate& rotation_center, const double rotation_angle) const override;
             lc::entity::CADEntity_CSPtr scale(const lc::geo::Coordinate& scale_center, const lc::geo::Coordinate& scale_factor) const override;
             lc::entity::CADEntity_CSPtr mirror(const lc::geo::Coordinate& axis1, const lc::geo::Coordinate& axis2) const override;const lc::geo::Area boundingBox() const override;
-            lc::entity::CADEntity_CSPtr modify(lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) const override;
+            lc::entity::CADEntity_CSPtr
+            modify(lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo, lc::Block_CSPtr block) const override;
             void dispatch(lc::EntityDispatch& dispatch) const override;
 
         private:

@@ -87,19 +87,25 @@ namespace lc {
         public:
 
             /**
-        * LWPolyline Constructor
-        * @param width of the vertex on each entity
-        * @param elevation of the polyline
-        * @param tickness of the polyline
-        * @param extrusionDirection of the polyline
-        * @param vertex entries of the polyline
-        * @param layer
-        * @param metaInfo
-        */
-            LWPolyline(const std::vector<LWVertex2D> &vertex, double width, double elevation, double tickness,
+             * LWPolyline Constructor
+             * @param width of the vertex on each entity
+             * @param elevation of the polyline
+             * @param tickness of the polyline
+             * @param extrusionDirection of the polyline
+             * @param vertex entries of the polyline
+             * @param layer
+             * @param metaInfo
+             */
+            LWPolyline(const std::vector<LWVertex2D> &vertex,
+                       double width,
+                       double elevation,
+                       double tickness,
                        bool closed,
                        geo::Coordinate const &extrusionDirection,
-                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr);
+                       const Layer_CSPtr layer,
+                       const MetaInfo_CSPtr metaInfo = nullptr,
+                       const Block_CSPtr block = nullptr
+            );
 
             LWPolyline(const LWPolyline_CSPtr other, bool sameID = false);
 
@@ -233,7 +239,7 @@ namespace lc {
         */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             /**
         * Return a vector of geometry entities for this polyline

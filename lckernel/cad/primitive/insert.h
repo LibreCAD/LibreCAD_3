@@ -25,7 +25,7 @@ namespace lc {
                 CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const override;
                 CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const override;
                 CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
-                CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+                CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
                 const geo::Area boundingBox() const override;
 

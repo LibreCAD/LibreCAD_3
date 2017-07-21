@@ -59,6 +59,19 @@ void ReplaceBlock::redo() const {
 }
 
 void ReplaceBlock::processInternal() {
+    auto entities = document()->entitiesByBlock(_oldBlock).asVector();
+
+    for(auto entity : entities) {
+        document()->removeEntity(entity);
+        document()->insertEntity(entity->modify(
+                entity->layer(),
+                entity->metaInfo(),
+                _newBlock
+        ));
+    }
+
     document()->removeDocumentMetaType(_oldBlock);
     document()->addDocumentMetaType(_newBlock);
+
+    //TODO: should we modify the inserts ?
 }

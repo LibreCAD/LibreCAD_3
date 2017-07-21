@@ -14,35 +14,18 @@ Text::Text(const geo::Coordinate& insertion_point,
            const TextConst::DrawingDirection textgeneration,
            const TextConst::HAlign halign,
            const TextConst::VAlign valign,
-           const Layer_CSPtr layer) : CADEntity(layer),
-    _insertion_point(insertion_point),
-    _text_value(text_value),
-    _height(height),
-    _angle(angle),
-    _style(style),
-    _textgeneration(textgeneration),
-    _valign(valign),
-    _halign(halign) {
-}
-
-Text::Text(const geo::Coordinate& insertion_point,
-           const std::string text_value,
-           const double height,
-           const double angle,
-           const std::string style,
-           const TextConst::DrawingDirection textgeneration,
-           const TextConst::HAlign halign,
-           const TextConst::VAlign valign,
            const Layer_CSPtr layer,
-           const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),
-    _insertion_point(insertion_point),
-    _text_value(text_value),
-    _height(height),
-    _angle(angle),
-    _style(style),
-    _textgeneration(textgeneration),
-    _valign(valign),
-    _halign(halign) {
+           const MetaInfo_CSPtr metaInfo,
+           const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        _insertion_point(insertion_point),
+        _text_value(text_value),
+        _height(height),
+        _angle(angle),
+        _style(style),
+        _textgeneration(textgeneration),
+        _valign(valign),
+        _halign(halign) {
 }
 
 Text::Text(const Text_CSPtr& other, bool sameID) : CADEntity(other, sameID),
@@ -123,7 +106,7 @@ const geo::Area Text::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
     auto newText = std::make_shared<Text>(
                        this->_insertion_point,
                        this->_text_value,
@@ -133,9 +116,12 @@ CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) c
                        this->_textgeneration,
                        this->_halign,
                        this->_valign,
-                       this->layer(),
-                       this->metaInfo());
+                       layer,
+                       metaInfo,
+                       block
+    );
     newText->setID(this->id());
+
     return newText;
 }
 

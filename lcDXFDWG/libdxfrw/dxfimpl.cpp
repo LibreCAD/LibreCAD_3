@@ -158,12 +158,13 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
     auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
                                                            coord(data.secPoint),
                                                            coord(data.basePoint).distanceTo(coord(data.secPoint)) / data.ratio,
-                                                           data.staparam, data.endparam,
-                                                           layer, mf);
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+                                                           data.staparam,
+                                                           data.endparam,
+                                                           data.isccw,
+                                                           layer,
+                                                           mf,
+                                                           _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcEllipse);
 }
@@ -219,11 +220,10 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                                                          data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
                                                          data->normalVec.x, data->normalVec.y, data->normalVec.z,
                                                          static_cast<lc::geo::Spline::splineflag>(data->flags),
-                                                         layer, mf);
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+                                                         layer,
+                                                         mf,
+                                                         _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcSpline);
 }
@@ -240,11 +240,10 @@ void DXFimpl::addText(const DRW_Text& data) {
                                                      lc::TextConst::DrawingDirection(data.textgen),
                                                      lc::TextConst::HAlign(data.alignH),
                                                      lc::TextConst::VAlign(data.alignV),
-                                                     layer, mf);
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+                                                     layer,
+                                                     mf,
+                                                     _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcText);
 }
@@ -255,12 +254,11 @@ void DXFimpl::addPoint(const DRW_Point& data) {
         return;
     }
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
-    auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint), layer, mf);
-
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+    auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
+                                                       layer,
+                                                       mf,
+                                                       _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcPoint);
 }
@@ -281,11 +279,10 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
             data->getText(),
             coord(data->getDef1Point()),
             coord(data->getDef2Point()),
-            layer, mf);
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+            layer,
+            mf,
+            _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcDimAligned);
 }
@@ -308,11 +305,10 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
             coord(data->getDef2Point()),
             data->getAngle(),
             data->getOblique(),
-            layer, mf);
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
+            layer,
+            mf,
+            _currentBlock
+    );
 
     _entityBuilder->appendEntity(lcDimLinear);
 }
@@ -333,12 +329,10 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
              data->getText(),
              coord(data->getDiameterPoint()),
              data->getLeaderLength(),
-             layer, mf
+             layer,
+             mf,
+             _currentBlock
     );
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
 
     _entityBuilder->appendEntity(lcDimRadial);
 }
@@ -359,12 +353,10 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
              data->getText(),
              coord(data->getDiameter2Point()),
              data->getLeaderLength(),
-             layer, mf
+             layer,
+             mf,
+             _currentBlock
     );
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
 
     _entityBuilder->appendEntity(lcDimDiametric);
 }
@@ -387,12 +379,10 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
              coord(data->getFirstLine2()),
              coord(data->getSecondLine1()),
              coord(data->getSecondLine2()),
-             layer, mf
+             layer,
+             mf,
+             _currentBlock
     );
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
 
     _entityBuilder->appendEntity(lcDimAngular);
 }
@@ -421,12 +411,16 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
 
     auto isCLosed = data.flags&0x01;
     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
-            points, data.width, data.elevation, data.thickness,  isCLosed, coord(data.extPoint),layer, mf
+            points,
+            data.width,
+            data.elevation,
+            data.thickness,
+            isCLosed,
+            coord(data.extPoint),
+            layer,
+            mf,
+            _currentBlock
     );
-
-    if (_currentBlock == nullptr) {
-        //TODO: block
-    }
 
     _entityBuilder->appendEntity(lcLWPolyline);
 }
@@ -538,13 +532,10 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                     base, uv, vv,
                     image->sizeu, image->sizev,
                     image->brightness, image->contrast, image->fade,
-                    layer, mf
+                    layer,
+                    mf,
+                    _currentBlock
             );
-
-            if (_currentBlock == nullptr) {
-                //TODO: block
-            }
-
             _entityBuilder->appendEntity(lcImage);
 
             image = imageMapCache.erase( image ) ; // advances iter
