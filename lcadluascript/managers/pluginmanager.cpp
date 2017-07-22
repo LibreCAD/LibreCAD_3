@@ -2,12 +2,13 @@
 #include "lclua.h"
 #include <dirent.h>
 
-lc::PluginManager::PluginManager(const char* interface) :
+lc::PluginManager::PluginManager(lua_State* l, const char* interface) :
+    _L(l),
     _interface(interface) {
 
 }
 
-void lc::PluginManager::loadPlugins(FILE* (*f_openFileDialog)(bool, const char*, const char*)) {
+void lc::PluginManager::loadPlugins() {
     const char* path = "../lcUILua/plugins/"; //TODO: get path
 
     DIR* dir;
@@ -19,7 +20,7 @@ void lc::PluginManager::loadPlugins(FILE* (*f_openFileDialog)(bool, const char*,
                 continue;
             }
 
-            loadPlugin((std::string(path) + ent->d_name + "/plugin.lua").c_str(), f_openFileDialog);
+            loadPlugin((std::string(path) + ent->d_name + "/plugin.lua").c_str());
         }
         closedir(dir);
     }
@@ -28,19 +29,13 @@ void lc::PluginManager::loadPlugins(FILE* (*f_openFileDialog)(bool, const char*,
     }
 }
 
-void lc::PluginManager::loadPlugin(const char* file, FILE* (*f_openFileDialog)(bool, const char*, const char*)) {
-    auto state = LuaIntf::LuaState::newState();
-    auto lcLua = LCLua(state);
-    lcLua.setF_openFileDialog(f_openFileDialog);
-    lcLua.addLuaLibs();
-    lcLua.importLCKernel();
-
+void lc::PluginManager::loadPlugin(const char* file) {
+    auto state = LuaIntf::LuaState(_L);
     LuaIntf::Lua::setGlobal(state, "LC_interface", _interface);
-
     int s = state.doFile(file);
 
     if (s != 0) {
-        std::cout << lua_tostring(state, -1) << std::endl;
+        std::cout << lua_tostring(_L, -1) << std::endl;
         lua_pop(state, 1);
     }
 }

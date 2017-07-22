@@ -23,13 +23,13 @@ function ScaleOperation:_init(id)
 
         self.tempEntities = {}
 
-        event.register('point', self)
-        event.register('number', self)
+        luaInterface:registerEvent('point', self)
+        luaInterface:registerEvent('number', self)
 
         message("Give origin point")
     else
         self.finished = true
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
@@ -77,9 +77,9 @@ function ScaleOperation:close()
             active_widget():tempEntities():removeEntity(entity)
         end
 
-        event.delete('point', self)
-        event.delete('number', self)
+        luaInterface:deleteEvent('point', self)
+        luaInterface:deleteEvent('number', self)
 
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end

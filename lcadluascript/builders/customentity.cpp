@@ -29,7 +29,9 @@ bool CustomEntityBuilder::checkValues() {
            _snapFunction.isValid() && _snapFunction.isFunction() &&
            _nearestPointFunction.isValid() && _nearestPointFunction.isFunction() &&
            _dragPointsFunction.isValid() && _dragPointsFunction.isFunction() &&
-           _newDragPointsFunction.isValid() && _newDragPointsFunction.isFunction();
+           _newDragPointFunction.isValid() && _newDragPointFunction.isFunction() &&
+           _dragPointsClickedFunction.isValid() && _dragPointsClickedFunction.isFunction() &&
+           _dragPointsReleasedFunction.isValid() && _dragPointsReleasedFunction.isFunction();
 }
 
 const LuaIntf::LuaRef& CustomEntityBuilder::nearestPointFunction() const {
@@ -48,11 +50,27 @@ void CustomEntityBuilder::setDragPointsFunction(const LuaIntf::LuaRef& dragPoint
     _dragPointsFunction = dragPointsFunction;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::newDragPointsFunction() const {
-    return _newDragPointsFunction;
+const LuaIntf::LuaRef& CustomEntityBuilder::newDragPointFunction() const {
+    return _newDragPointFunction;
 }
 
-void CustomEntityBuilder::setNewDragPointsFunction(const LuaIntf::LuaRef& setDragPointsFunction) {
-    _newDragPointsFunction = setDragPointsFunction;
+void CustomEntityBuilder::setNewDragPointFunction(const LuaIntf::LuaRef& setDragPointFunction) {
+    _newDragPointFunction = setDragPointFunction;
+}
+
+const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsClickedFunction() const {
+    return _dragPointsClickedFunction;
+}
+
+void CustomEntityBuilder::setDragPointsClickedFunction(const LuaIntf::LuaRef& dragPointsClickedFunction) {
+    _dragPointsClickedFunction = dragPointsClickedFunction;
+}
+
+const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsReleasedFunction() const {
+    return _dragPointsReleasedFunction;
+}
+
+void CustomEntityBuilder::setDragPointsReleasedFunction(const LuaIntf::LuaRef& dragPointsReleasedFunction) {
+    _dragPointsReleasedFunction = dragPointsReleasedFunction;
 }
 

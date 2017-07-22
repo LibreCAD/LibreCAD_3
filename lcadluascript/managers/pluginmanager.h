@@ -6,21 +6,22 @@ extern "C" {
 #include "lauxlib.h"
 }
 #include "lua-intf/LuaIntf/LuaIntf.h"
+#include <map>
 
 namespace lc {
     class PluginManager {
         public:
-            PluginManager(const char* interface);
+            PluginManager(lua_State* l, const char* interface);
 
             /**
              * @brief Load the Lua plugins
-             * @param f_openFileDialog Function which ask the user to choose a file, this might be moved later
              */
-            void loadPlugins(FILE* (*f_openFileDialog)(bool, const char*, const char*));
+            void loadPlugins();
 
         private:
-            void loadPlugin(const char* file, FILE* (*f_openFileDialog)(bool, const char*, const char*));
+            void loadPlugin(const char* file);
 
+            lua_State* _L;
             const char* _interface;
     };
 }

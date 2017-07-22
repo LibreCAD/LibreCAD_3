@@ -24,10 +24,10 @@ function DimLinearOperations:_init(id)
 
     active_widget():tempEntities():addEntity(self.dimLinear)
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
-    event.register('text', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
+    luaInterface:registerEvent('text', self)
 
     message("Click on start point")
 end
@@ -115,10 +115,10 @@ function DimLinearOperations:createDimLinear()
     b:appendEntity(c)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
-    event.delete('text', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
+    luaInterface:deleteEvent('text', self)
 end
 
 function DimLinearOperations:close()
@@ -130,10 +130,10 @@ function DimLinearOperations:close()
             active_widget():tempEntities():removeEntity(self.dimLinear)
             self.finished = true
 
-            event.delete('mouseMove', self)
-            event.delete('number', self)
-            event.delete('point', self)
-            event.delete('text', self)
+            luaInterface:deleteEvent('mouseMove', self)
+            luaInterface:deleteEvent('number', self)
+            luaInterface:deleteEvent('point', self)
+            luaInterface:deleteEvent('text', self)
         end
     end
 end

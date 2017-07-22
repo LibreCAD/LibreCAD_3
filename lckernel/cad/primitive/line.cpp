@@ -3,21 +3,24 @@
 #include <algorithm>
 #include "cad/geometry/geoarea.h"
 
-
 using namespace lc;
 using namespace entity;
 
-
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer) : CADEntity(layer), geo::Vector(start, end) {
+Line::Line(const geo::Coordinate& start,
+           const geo::Coordinate& end,
+           const Layer_CSPtr layer,
+           const MetaInfo_CSPtr metaInfo,
+           const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Vector(start, end) {
 }
 
-Line::Line(const geo::Coordinate& start, const geo::Coordinate& end, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Vector(start, end) {
-}
-
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer) : CADEntity(layer), geo::Vector(vector) {
-}
-
-Line::Line(const geo::Vector& vector, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo), geo::Vector(vector) {
+Line::Line(const geo::Vector& vector,
+           const Layer_CSPtr layer,
+           const MetaInfo_CSPtr metaInfo,
+           const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Vector(vector) {
 }
 
 Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), geo::Vector(other->start(), other->end()) {
@@ -98,9 +101,16 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
-CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newEntity = std::make_shared<Line>(this->start(), this->end(), layer, metaInfo);
+CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newEntity = std::make_shared<Line>(
+            this->start(),
+            this->end(),
+            layer,
+            metaInfo,
+            block
+    );
     newEntity->setID(this->id());
+
     return newEntity;
 }
 

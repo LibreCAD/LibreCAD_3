@@ -26,13 +26,6 @@ namespace lc {
             }
 
             /*!
-             * \brief Default CADEntity Constructor.
-             * \sa lc::ID
-             * \sa lc::MetaInfo
-             */
-            CADEntity(Layer_CSPtr _layer);
-
-            /*!
              * \brief CADEntity Constructor
              *
              * \param metaTypes A list of metatypes associated with this line
@@ -40,7 +33,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            CADEntity(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
 
             CADEntity(CADEntity_CSPtr cadEntity, bool sameID);
 
@@ -102,7 +95,7 @@ namespace lc {
             * Return a new entity with the same ID bit with possible modified metainfo and/pr layer information
             * #return new entity with same ID
             */
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const = 0;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const = 0;
 
             /*!
              * \brief layer

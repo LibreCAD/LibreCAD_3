@@ -24,12 +24,21 @@ namespace lc {
              * @param double oblique
              * @param Layer_CSPtr layer
              */
-            DimLinear(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint, double textAngle,
+            DimLinear(geo::Coordinate const &definitionPoint,
+                      geo::Coordinate const &middleOfText,
+                      TextConst::AttachmentPoint const &attachmentPoint,
+                      double textAngle,
                       double const lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2, geo::Coordinate const &definitionPoint3,
-                      const double angle, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+                      TextConst::LineSpacingStyle const &lineSpacingStyle,
+                      std::string const &explicitValue,
+                      geo::Coordinate const &definitionPoint2,
+                      geo::Coordinate const &definitionPoint3,
+                      const double angle,
+                      const double oblique,
+                      const Layer_CSPtr layer,
+                      const MetaInfo_CSPtr metaInfo = nullptr,
+                      const Block_CSPtr block = nullptr
+            );
 
 
             DimLinear(const DimLinear_CSPtr other, bool sameID = false);
@@ -37,9 +46,14 @@ namespace lc {
             /**
              * Convenient function
             */
-            static DimLinear_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2, geo::Coordinate const &middleOfText,
-                                          std::string const &explicitValue, const Layer_CSPtr layer,
-                                          const MetaInfo_CSPtr metaInfo);
+            static DimLinear_SPtr dimAuto(geo::Coordinate const &p1,
+                                          geo::Coordinate const &p2,
+                                          geo::Coordinate const &middleOfText,
+                                          std::string const &explicitValue,
+                                          const Layer_CSPtr layer,
+                                          const MetaInfo_CSPtr metaInfo = nullptr,
+                                          const Block_CSPtr block = nullptr
+            );
 
         public:
             /**
@@ -83,7 +97,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
             double oblique() const;

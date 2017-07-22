@@ -44,8 +44,9 @@ const lc::geo::Area LCVDrawItem::boundingBox() const {
     return entity()->boundingBox();
 }
 
-lc::entity::CADEntity_CSPtr LCVDrawItem::modify(lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo) const {
-    return entity()->modify(layer, metaInfo);
+lc::entity::CADEntity_CSPtr
+LCVDrawItem::modify(lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo, lc::Block_CSPtr block) const {
+    return entity()->modify(layer, metaInfo, lc::Block_CSPtr());
 }
 
 void LCVDrawItem::dispatch(lc::EntityDispatch& dispatch) const {

@@ -24,10 +24,10 @@ function DimAlignedOperations:_init(id)
 
     active_widget():tempEntities():addEntity(self.dimAligned)
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
-    event.register('text', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
+    luaInterface:registerEvent('text', self)
 
     message("Click on start point")
 end
@@ -123,10 +123,10 @@ function DimAlignedOperations:createDimAligned()
     b:appendEntity(c)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
-    event.delete('text', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
+    luaInterface:deleteEvent('text', self)
 end
 
 function DimAlignedOperations:close()
@@ -138,10 +138,10 @@ function DimAlignedOperations:close()
             active_widget():tempEntities():removeEntity(self.dimAligned)
             self.finished = true
 
-            event.delete('mouseMove', self)
-            event.delete('number', self)
-            event.delete('point', self)
-            event.delete('text', self)
+            luaInterface:deleteEvent('mouseMove', self)
+            luaInterface:deleteEvent('number', self)
+            luaInterface:deleteEvent('point', self)
+            luaInterface:deleteEvent('text', self)
         end
     end
 end

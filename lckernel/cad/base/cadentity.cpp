@@ -4,10 +4,11 @@
 using namespace lc;
 using namespace  entity;
 
-CADEntity::CADEntity(const Layer_CSPtr layer) : ID(), _layer(layer) {
-}
-
-CADEntity::CADEntity(const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : ID(), _layer(layer), _metaInfo(metaInfo) {
+CADEntity::CADEntity(const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+        ID(),
+        _layer(layer),
+        _metaInfo(metaInfo),
+        _block(block) {
 }
 
 CADEntity::CADEntity(CADEntity_CSPtr cadEntity) : ID(), _layer(cadEntity->_layer), _metaInfo(cadEntity->_metaInfo),

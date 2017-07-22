@@ -4,14 +4,9 @@ using namespace lc;
 using namespace entity;
 
 Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW,
-         const Layer_CSPtr layer) : CADEntity(layer), geo::Arc(center, radius, startAngle, endAngle, isCCW) {
-
-}
-
-Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW,
-         const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) : CADEntity(layer, metaInfo),
-                                                                   geo::Arc(center, radius, startAngle, endAngle,
-                                                                            isCCW) {
+         const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+        CADEntity(layer, metaInfo, block),
+        geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
 Arc::Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) :
@@ -142,9 +137,9 @@ const geo::Area Arc::boundingBox() const {
     return geo::Arc::boundingBox();
 }
 
-CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
     auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer, metaInfo);
+                                        this->CCW(), layer, metaInfo, block);
     newArc->setID(this->id());
     return newArc;
 }

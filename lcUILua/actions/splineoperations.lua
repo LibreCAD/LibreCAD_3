@@ -19,9 +19,9 @@ function SplineOperations:_init(id)
     self.degree = 3
     self.spline = nil
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
 
     message("Add a new points or enter degree")
 end
@@ -97,10 +97,10 @@ function SplineOperations:close()
 
         self.finished = true
 
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     end
 end

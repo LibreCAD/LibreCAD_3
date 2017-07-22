@@ -27,19 +27,19 @@ end
 
 --Send an event when coordinate is entered
 function coordinate(coordinate)
-    event.trigger("point", coordinate)
+    luaInterface:triggerEvent('point', coordinate)
 end
 
 --Send an event when relative coordinate is entered and show real coordinate in command line
 function relativeCoordinate(relative)
     local absolute = lastPoint:add(relative)
     message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
-    event.trigger("point", absolute)
+    luaInterface:triggerEvent('point', absolute)
 end
 
 --Send an event when a number is entered
 function number(number)
-    event.trigger("number", number)
+    luaInterface:triggerEvent('number', number)
 end
 
 --Store the point in memory when needed for relative coordinates
@@ -49,7 +49,7 @@ end
 
 --Send an event when text is entered
 function text(text)
-    event.trigger("text", text:toStdString())
+    luaInterface:triggerEvent('text', text:toStdString())
 end
 
 --Create the command line and add it to the main window
@@ -82,5 +82,5 @@ function add_commandline()
     add_command("REMOVE", remove_selected_entities)
     add_command("TRIM", trim_entity)
 
-    event.register("point", setLastPoint)
+    luaInterface:registerEvent('point', setLastPoint)
 end

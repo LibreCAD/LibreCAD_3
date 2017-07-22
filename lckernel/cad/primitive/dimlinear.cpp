@@ -3,20 +3,61 @@
 using namespace lc;
 using namespace entity;
 
-DimLinear::DimLinear(geo::Coordinate const& definitionPoint, geo::Coordinate const& middleOfText, TextConst::AttachmentPoint const& attachmentPoint, double textAngle, double const lineSpacingFactor,
-                     TextConst::LineSpacingStyle const& lineSpacingStyle, std::string const& explicitValue,
-                     geo::Coordinate const& definitionPoint2, geo::Coordinate const& definitionPoint3, const double angle, const double oblique, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo):
-    CADEntity(layer, metaInfo), Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
-    _angle(angle), _oblique(oblique), _definitionPoint2(definitionPoint2), _definitionPoint3(definitionPoint3) {
+DimLinear::DimLinear(geo::Coordinate const& definitionPoint,
+                     geo::Coordinate const& middleOfText,
+                     TextConst::AttachmentPoint const& attachmentPoint,
+                     double textAngle,
+                     double const lineSpacingFactor,
+                     TextConst::LineSpacingStyle const& lineSpacingStyle,
+                     std::string const& explicitValue,
+                     geo::Coordinate const& definitionPoint2,
+                     geo::Coordinate const& definitionPoint3,
+                     const double angle,
+                     const double oblique,
+                     const Layer_CSPtr layer,
+                     const MetaInfo_CSPtr metaInfo,
+                     const Block_CSPtr block) :
+    CADEntity(layer, metaInfo, block),
+    Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
+    _angle(angle),
+    _oblique(oblique),
+    _definitionPoint2(definitionPoint2),
+    _definitionPoint3(definitionPoint3) {
 
 }
 
 
-DimLinear::DimLinear(const DimLinear_CSPtr other, bool sameID) : CADEntity(other, sameID), Dimension(*other), _angle(other->_angle), _oblique(other->_oblique), _definitionPoint2(other->_definitionPoint2), _definitionPoint3(other->_definitionPoint3) {
+DimLinear::DimLinear(const DimLinear_CSPtr other, bool sameID) :
+        CADEntity(other, sameID),
+        Dimension(*other),
+        _angle(other->_angle),
+        _oblique(other->_oblique),
+        _definitionPoint2(other->_definitionPoint2),
+        _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1, geo::Coordinate const& p2, geo::Coordinate const &middleOfText, std::string const& explicitValue, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) {
-    return std::make_shared<DimLinear>(p1, middleOfText, TextConst::AttachmentPoint::Middle_center , 0., 0., TextConst::LineSpacingStyle::AtLeast, explicitValue, p1, p2, 0., 0., layer, metaInfo);
+DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
+                                  geo::Coordinate const& p2,
+                                  geo::Coordinate const &middleOfText,
+                                  std::string const& explicitValue,
+                                  const Layer_CSPtr layer,
+                                  const MetaInfo_CSPtr metaInfo,
+                                  const Block_CSPtr block) {
+    return std::make_shared<DimLinear>(p1,
+                                       middleOfText,
+                                       TextConst::AttachmentPoint::Middle_center,
+                                       0.,
+                                       0.,
+                                       TextConst::LineSpacingStyle::AtLeast,
+                                       explicitValue,
+                                       p1,
+                                       p2,
+                                       0.,
+                                       0.,
+                                       layer,
+                                       metaInfo,
+                                       block
+    );
 }
 
 
@@ -49,9 +90,24 @@ const geo::Area DimLinear::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimLinear::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
+CADEntity_CSPtr DimLinear::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
     auto newDimLinear = std::make_shared<DimLinear>(
-                            this->definitionPoint(), this->middleOfText(), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2, this->_definitionPoint3, this->_angle, this->_oblique, this->layer(), metaInfo);
+                            this->definitionPoint(),
+                            this->middleOfText(),
+                            this->attachmentPoint(),
+                            this->textAngle(),
+                            this->lineSpacingFactor(),
+                            this->lineSpacingStyle(),
+                            this->explicitValue(),
+                            this->_definitionPoint2,
+                            this->_definitionPoint3,
+                            this->_angle,
+                            this->_oblique,
+                            layer,
+                            metaInfo,
+                            block
+    );
+
     return newDimLinear;
 }
 

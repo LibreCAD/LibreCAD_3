@@ -20,30 +20,20 @@ namespace lc {
 
         public:
             /**
-         * @brief Arc, Default Arc constructor
-         * @param geo::Coordinate center, center of Arc
-         * @param double radius, radius of Arc
-         * @param double startAngle, starting angle of Arc
-         * @param double endAngle, ending angle of Arc
-         * @param Layer_CSPtr layer, layer of entity
-         */
-            Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
-                bool isCCW,
-                const Layer_CSPtr layer);
-
-            /**
-         * @brief Arc, Arc constructor with MetaTypes
-         * @param geo::Coordinate center, center of Arc
-         * @param double radius, radius of Arc
-         * @param double startAngle, starting angle of Arc
-         * @param double endAngle, ending angle of Arc
-         * @param Layer_CSPtr layer, layer of entity
-         * @param MetaTypes metaTypes
-         */
+             * @brief Arc, Arc constructor
+             * @param geo::Coordinate center, center of Arc
+             * @param double radius, radius of Arc
+             * @param double startAngle, starting angle of Arc
+             * @param double endAngle, ending angle of Arc
+             * @param Layer_CSPtr layer, layer of entity
+             * @param MetaTypes metaTypes
+             */
             Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
                 bool CCW,
                 const Layer_CSPtr layer,
-                const MetaInfo_CSPtr metaInfo);
+                const MetaInfo_CSPtr metaInfo = nullptr,
+                const Block_CSPtr block = nullptr
+            );
 
             Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
 
@@ -91,7 +81,7 @@ namespace lc {
          */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,

@@ -73,9 +73,15 @@ const geo::Area Insert::boundingBox() const {
     return _boundingBox;
 }
 
-CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    //TODO
-    return shared_from_this();
+CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto builder = builder::InsertBuilder();
+
+    builder.copy(shared_from_this());
+    builder.setLayer(layer);
+    builder.setMetaInfo(metaInfo);
+    builder.setBlock(block);
+
+    return builder.build();
 }
 
 void Insert::dispatch(EntityDispatch& dispatch) const {

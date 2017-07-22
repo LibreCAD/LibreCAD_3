@@ -25,9 +25,9 @@ function EllipseOperations:_init(id, isArc)
 
     active_widget():tempEntities():addEntity(self.ellipse)
 
-    event.register('point', self)
-    event.register('mouseMove', self)
-    event.register('number', self)
+    luaInterface:registerEvent('point', self)
+    luaInterface:registerEvent('mouseMove', self)
+    luaInterface:registerEvent('number', self)
 
     message("Click on center")
 end
@@ -125,9 +125,9 @@ function EllipseOperations:createEllipse()
     b:appendEntity(c)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
 end
 
 function EllipseOperations:close()
@@ -135,8 +135,8 @@ function EllipseOperations:close()
         active_widget():tempEntities():removeEntity(self.ellipse)
         self.finished = true
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     end
 end

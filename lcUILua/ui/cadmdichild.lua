@@ -1,3 +1,5 @@
+mdiChildIDs = {}
+
 -- Return current window widget
 function active_widget()
     local subWindow = mdiArea:activeSubWindow()
@@ -27,7 +29,7 @@ local function click()
     end
 
     local position = widget:cursor():position()
-    event.trigger('point', position)
+    luaInterface:triggerEvent('point', position)
 end
 
 -- Send an event with new position of the cursor on the current window
@@ -38,12 +40,12 @@ local function mouseMove()
     end
 
     local position = widget:cursor():position()
-    event.trigger('mouseMove', position)
+    luaInterface:triggerEvent('mouseMove', position)
 end
 
 -- Event triggered when the mouse is released
 local function mouseRelease()
-    event.trigger('selectionChanged')
+    luaInterface:triggerEvent('selectionChanged', nil)
 end
 
 -- Add a new CadMdiChild
@@ -63,8 +65,8 @@ function addCadMdiChild(cadMdiChild)
     mdiArea:addSubWindow(cadMdiChild)
     cadMdiChild:showMaximized()
 
-    local id = nextTableId(op)
-    op[id] = Operations(id)
+    local id = nextTableId(mdiChildIDs)
+    mdiChildIDs[id] = true
     cadMdiChild.id = id
 end
 
@@ -84,5 +86,5 @@ end
 
 -- Clean Lua informations of window when it's destroyed
 function onMdiChildDestroyed(id)
-    op[id] = nil
+    mdiChildIDs[id] = nil
 end

@@ -75,9 +75,11 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
         }
     }
 
-    _storageManager->removeEntity(entity);
-    RemoveEntityEvent event(entity);
-    removeEntityEvent()(event);
+    if(_storageManager->entityByID(entity->id()) != nullptr) {
+        _storageManager->removeEntity(entity);
+        RemoveEntityEvent event(entity);
+        removeEntityEvent()(event);
+    }
 }
 
 

@@ -22,18 +22,19 @@ namespace lc {
          */
         class Image : public std::enable_shared_from_this<Image>, public CADEntity, public Snapable, virtual public Visitable  {
         public:
-
-            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-                        double brightness, double contrast, double fade, const Layer_CSPtr layer);
-
-            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-                        const Layer_CSPtr layer);
-
-            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-                        double brightness, double contrast, double fade, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
-
-            Image(const std::string &name, const geo::Coordinate &base, const geo::Coordinate &uv, const geo::Coordinate &vv, double width, double height,
-                        const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Image(const std::string &name,
+                  const geo::Coordinate &base,
+                  const geo::Coordinate &uv,
+                  const geo::Coordinate &vv,
+                  double width,
+                  double height,
+                  double brightness,
+                  double contrast,
+                  double fade,
+                  const Layer_CSPtr layer,
+                  const MetaInfo_CSPtr metaInfo = nullptr,
+                  const Block_CSPtr block = nullptr
+            );
 
             /*!
              * \brief Construct a new line
@@ -95,7 +96,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             const std::string &name() const {
                 return _name;

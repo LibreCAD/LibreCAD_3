@@ -140,6 +140,7 @@ void LCLua::importLCKernel() {
             .addFunction("layerByName", &Document::layerByName)
             .addFunction("entitiesByLayer", &Document::entitiesByLayer)
             .addFunction("waitingCustomEntities", &Document::waitingCustomEntities)
+            .addFunction("entitiesByBlock", &Document::entitiesByBlock)
         .endClass()
 
         .beginExtendClass<DocumentImpl, Document>("DocumentImpl")
@@ -157,6 +158,9 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginClass<EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
+            .addFunction("asVector", &EntityContainer<lc::entity::CADEntity_CSPtr>::asVector, LUA_ARGS(
+                    LuaIntf::_opt<short>
+            ))
         .endClass()
 
         .beginClass<StorageManager>("StorageManager")
@@ -190,6 +194,9 @@ void LCLua::importLCKernel() {
             .addFunction("mirror", &entity::CADEntity::mirror)
 
             .addFunction("layer", &entity::CADEntity::layer)
+            .addFunction("metaInfo", [](const entity::CADEntity* ce) {
+                return ce->metaInfo();
+            })
 
             .addProperty("entityType", [](entity::CADEntity*) {
                 return "unknown";
@@ -515,6 +522,7 @@ void LCLua::importLCKernel() {
             .addFunction("setBlock", &builder::CADEntityBuilder::setBlock)
             .addFunction("id", &builder::CADEntityBuilder::id)
             .addFunction("setID", &builder::CADEntityBuilder::setID)
+            .addFunction("newID", &builder::CADEntityBuilder::newID)
             .addFunction("checkValues", &builder::CADEntityBuilder::checkValues)
         .endClass()
 
@@ -618,8 +626,12 @@ void LCLua::importLCKernel() {
             .addFunction("setNearestPointFunction", &builder::CustomEntityBuilder::setNearestPointFunction)
             .addFunction("dragPointsFunction", &builder::CustomEntityBuilder::dragPointsFunction)
             .addFunction("setDragPointsFunction", &builder::CustomEntityBuilder::setDragPointsFunction)
-            .addFunction("newDragPointsFunction", &builder::CustomEntityBuilder::newDragPointsFunction)
-            .addFunction("setNewDragPointsFunction", &builder::CustomEntityBuilder::setNewDragPointsFunction)
+            .addFunction("newDragPointFunction", &builder::CustomEntityBuilder::newDragPointFunction)
+            .addFunction("setNewDragPointFunction", &builder::CustomEntityBuilder::setNewDragPointFunction)
+            .addFunction("dragPointsClickedFunction", &builder::CustomEntityBuilder::dragPointsClickedFunction)
+            .addFunction("setDragPointsClickedFunction", &builder::CustomEntityBuilder::setDragPointsClickedFunction)
+            .addFunction("dragPointsReleasedFunction", &builder::CustomEntityBuilder::dragPointsReleasedFunction)
+            .addFunction("setDragPointsReleasedFunction", &builder::CustomEntityBuilder::setDragPointsReleasedFunction)
             .addFunction("checkValues", &builder::CustomEntityBuilder::checkValues)
             .addFunction("build", &builder::CustomEntityBuilder::build)
         .endClass()
@@ -643,7 +655,7 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginClass<EntityCoordinate>("EntityCoordinate")
-            .addConstructor(LUA_ARGS(geo::Coordinate, int))
+            .addConstructor(LUA_ARGS(const geo::Coordinate&, int))
             .addFunction("coordinate", &EntityCoordinate::coordinate)
             .addFunction("pointId", &EntityCoordinate::pointId)
         .endClass()

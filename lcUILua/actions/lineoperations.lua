@@ -19,7 +19,7 @@ function LineOperations:_init(id)
     self.lastLine = self:createLine(Coord(0, 0), Coord(0, 0))
     active_widget():tempEntities():addEntity(self.lastLine)
 
-    event.register('point', self)
+    luaInterface:registerEvent('point', self)
 
     message("Click on first point")
 end
@@ -48,15 +48,15 @@ function LineOperations:newPoint(point)
         b:appendEntity(l)
         b:execute()
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     else
         self.lastPoint = point
         self.lastLine = self:createLine(point, point)
 
-        event.register('mouseMove', self)
-        event.register('number', self)
+        luaInterface:registerEvent('mouseMove', self)
+        luaInterface:registerEvent('number', self)
         message("Click on second point or enter line length")
     end
 end
@@ -89,8 +89,8 @@ function LineOperations:close()
         active_widget():tempEntities():removeEntity(self.lastLine)
         self.finished = true
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     end
 end

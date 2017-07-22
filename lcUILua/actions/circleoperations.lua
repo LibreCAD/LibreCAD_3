@@ -17,7 +17,7 @@ function CircleOperations:_init(id)
     self.circle = nil
     self.circle_id = ID():id()
 
-    event.register('point', self)
+    luaInterface:registerEvent('point', self)
 
     message("Click on center")
 end
@@ -43,8 +43,8 @@ function CircleOperations:newPoint(point)
 
         active_widget():tempEntities():addEntity(self.circle)
 
-        event.register('mouseMove', self)
-        event.register('number', self)
+        luaInterface:registerEvent('mouseMove', self)
+        luaInterface:registerEvent('number', self)
 
         message("Click on second point or enter the radius")
     else
@@ -82,9 +82,9 @@ function CircleOperations:createCircle(point)
     b:appendEntity(c)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
 end
 
 function CircleOperations:close()
@@ -92,8 +92,8 @@ function CircleOperations:close()
         active_widget():tempEntities():removeEntity(self.circle)
         self.finished = true
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     end
 end

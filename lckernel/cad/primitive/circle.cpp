@@ -6,13 +6,9 @@
 using namespace lc;
 using namespace entity;
 
-Circle::Circle(const geo::Coordinate &center, double radius, const Layer_CSPtr layer) : CADEntity(layer),
-                                                                                        geo::Circle(center, radius) {
-
-}
-
-Circle::Circle(const geo::Coordinate &center, double radius, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo)
-        : CADEntity(layer, metaInfo), geo::Circle(center, radius) {
+Circle::Circle(const geo::Coordinate &center, double radius, const Layer_CSPtr layer,
+               const MetaInfo_CSPtr metaInfo, const Block_CSPtr block)
+        : CADEntity(layer, metaInfo, block), geo::Circle(center, radius) {
 }
 
 
@@ -102,8 +98,8 @@ const geo::Area Circle::boundingBox() const {
                      geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
 
-CADEntity_CSPtr Circle::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) const {
-    auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, metaInfo);
+CADEntity_CSPtr Circle::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+    auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, metaInfo, block);
     newEntity->setID(this->id());
     return newEntity;
 }

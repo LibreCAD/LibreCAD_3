@@ -37,6 +37,6 @@ end
 function RemoveOperation:close()
     if(not self.finished) then
         self.finished = true
-        event.trigger('operationFinished')
+        luaInterface:triggerEvent('operationFinished')
     end
 end

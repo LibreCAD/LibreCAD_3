@@ -20,7 +20,7 @@ function ArcOperations:_init(id)
     self.arc = nil
     self.arc_id = ID():id()
 
-    event.register('point', self)
+    luaInterface:registerEvent('point', self)
 
     message("Click on center")
 end
@@ -43,8 +43,8 @@ function ArcOperations:newData(point)
         self.arc = self:getArc(point, 0, 0, 0)
         active_widget():tempEntities():addEntity(self.arc)
 
-        event.register('mouseMove', self)
-        event.register('number', self)
+        luaInterface:registerEvent('mouseMove', self)
+        luaInterface:registerEvent('number', self)
 
         message("Click on second point or enter the radius")
     elseif(self.radius == nil) then
@@ -104,9 +104,9 @@ function ArcOperations:createArc()
     b:appendEntity(a)
     b:execute()
 
-    event.delete('mouseMove', self)
-    event.delete('number', self)
-    event.delete('point', self)
+    luaInterface:deleteEvent('mouseMove', self)
+    luaInterface:deleteEvent('number', self)
+    luaInterface:deleteEvent('point', self)
 end
 
 function ArcOperations:close()
@@ -114,8 +114,8 @@ function ArcOperations:close()
         active_widget():tempEntities():removeEntity(self.arc)
         self.finished = true
 
-        event.delete('mouseMove', self)
-        event.delete('number', self)
-        event.delete('point', self)
+        luaInterface:deleteEvent('mouseMove', self)
+        luaInterface:deleteEvent('number', self)
+        luaInterface:deleteEvent('point', self)
     end
 end

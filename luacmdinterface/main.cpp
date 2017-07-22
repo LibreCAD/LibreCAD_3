@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <managers/pluginmanager.h>
+#include <managers/luacustomentitymanager.h>
 
 
 namespace po = boost::program_options;
@@ -178,11 +179,11 @@ int main(int argc, char** argv) {
                     [&](LcPainter& lcPainter) {});
 
     // Render Lua Code
-    lc::PluginManager pluginManager("cli");
-    pluginManager.loadPlugins(&openFileDialog);
-
-
     auto luaState = LuaIntf::LuaState::newState();
+
+    lc::PluginManager pluginManager(luaState, "cli");
+    pluginManager.loadPlugins();
+
     auto lcLua = lc::LCLua(luaState);
     lcLua.setF_openFileDialog(&openFileDialog);
     lcLua.addLuaLibs();
@@ -211,5 +212,7 @@ int main(int argc, char** argv) {
         static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(fOut);
 
     ofile.close();
+
+    lc::LuaCustomEntityManager::getInstance().removePlugins();
     return 0;
 }
