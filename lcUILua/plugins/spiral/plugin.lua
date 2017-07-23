@@ -19,9 +19,9 @@ function Spiral.new(id)
 
     self.entities = {}
 
-    event.register("number", self)
-    event.register("point", self)
-    event.register("mouseMove", self)
+    luaInterface:registerEvent("number", self)
+    luaInterface:registerEvent("point", self)
+    luaInterface:registerEvent("mouseMove", self)
 
     message("Enter the number of rotations in the spiral")
 
@@ -68,10 +68,9 @@ function Spiral:point_on_circle(radius, angle)
     return p
 end
 
-function Spiral:calc(N, R)
+function Spiral:calc(N, R, layer, metaInfo, block)
 	local points = {}
 	local arcCenter
-    local layer = active_layer()
     local entities = {}
 	local half = true
 	local kR = (R / (2 * math.pi)) / N
@@ -84,10 +83,10 @@ function Spiral:calc(N, R)
 		half = not half
 		if(half) then			
 			arcCenter = Coordinate(math.pi * kR, 0)
-			table.insert(entities, Arc(arcCenter, math.abs(v.y), 0, math.pi, false, layer,MetaInfo()))
+			table.insert(entities, Arc(arcCenter, math.abs(v.y), 0, math.pi, false, layer, metaInfo, block))
 		else		
 			arcCenter = Coordinate(0, 0)
-			table.insert(entities, Arc(arcCenter, math.abs(v.y), math.pi, math.pi*2, false, layer,MetaInfo()))
+			table.insert(entities, Arc(arcCenter, math.abs(v.y), math.pi, math.pi*2, false, layer, metaInfo, block))
 		end
     end
 
@@ -95,16 +94,28 @@ function Spiral:calc(N, R)
 end
 
 function Spiral:drawSpiral()
-    local entities = self:calc(self.n, self.R)
-    local b = Builder(active_widget():document())
+    local layer = active_layer()
+    local metaInfo = active_metaInfo()
+    local block = Block("Spiral_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
 
+    local entities = self:calc(self.n, self.R, layer, metaInfo, block)
+
+    local b = Builder(active_widget():document(), "Star")
+    b:append(AddBlock(active_widget():document(), block))
+
+    local eb = EntityBuilder(active_widget():document())
     for k, v in pairs(entities) do
-        b:append(v)
+        eb:appendEntity(v)
     end
 
-    b:push()
-    b:move(self.origin)
-	
+    local insertBuilder = InsertBuilder()
+    insertBuilder:setLayer(layer)
+    insertBuilder:setDisplayBlock(block)
+    insertBuilder:setCoordinate(self.origin)
+    insertBuilder:setDocument(active_widget():document())
+    eb:appendEntity(insertBuilder:build())
+
+    b:append(eb)
     b:execute()
 
     self:close()
@@ -119,7 +130,7 @@ function Spiral:tempSpiral(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, R)
+    self.entities = self:calc(n, R, active_layer(), active_metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin)
@@ -135,20 +146,22 @@ function Spiral:close()
             active_widget():tempEntities():removeEntity(v)
         end
 
-        event.delete("number", self)
-        event.delete("point", self)
-        event.delete("mouseMove", self)
+        luaInterface:deleteEvent("number", self)
+        luaInterface:deleteEvent("point", self)
+        luaInterface:deleteEvent("mouseMove", self)
 
-        event.trigger("operationFinished")
+        luaInterface:triggerEvent("operationFinished")
     end
 end
 
-local tab = toolbar:tabByName("Quick Access")
-local group = tab:addGroup("Spiral")
+if(LC_interface == "gui") then
+    local tab = toolbar:tabByName("Quick Access")
+    local group = tab:addGroup("Spiral")
 
-local SpiralButton = create_button("Spiral")
-tab:addWidget(group, SpiralButton, 0, 0, 1, 1)
-luaInterface:luaConnect(SpiralButton, "pressed()", function()
-    new_operation()
-    op[active_widget().id] = Spiral(active_widget().id)
-end)
+    local SpiralButton = create_button("Spiral")
+    tab:addWidget(group, SpiralButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(SpiralButton, "pressed()", function()
+        new_operation()
+        luaInterface:setOperation(active_widget().id, Spiral(active_widget().id))
+    end)
+end
