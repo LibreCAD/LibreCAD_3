@@ -62,37 +62,52 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
 }
 
 CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
-    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer(), metaInfo());
+    auto newLine = std::make_shared<Line>(this->start() + offset,
+                                          this->end() + offset,
+                                          layer(),
+                                          metaInfo(),
+                                          block()
+    );
     newLine->setID(this->id());
     return newLine;
 }
 
 CADEntity_CSPtr Line::copy(const geo::Coordinate& offset) const {
-    auto newLine = std::make_shared<Line>(this->start() + offset, this->end() + offset, layer());
+    auto newLine = std::make_shared<Line>(this->start() + offset,
+                                          this->end() + offset,
+                                          layer(),
+                                          metaInfo(),
+                                          block());
     return newLine;
 }
 
 CADEntity_CSPtr Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newLine = std::make_shared<Line>(this->start().rotate(rotation_center, rotation_angle),
-                                          this->end().rotate(rotation_center, rotation_angle), layer());
+                                          this->end().rotate(rotation_center, rotation_angle),
+                                          layer(),
+                                          metaInfo(),
+                                          block());
     newLine->setID(this->id());
     return newLine;
 }
 
 CADEntity_CSPtr Line::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newLine = std::make_shared<Line>(this->start().scale(scale_center, scale_factor),
-                                          this->end().scale(scale_center, scale_factor), layer());
+                                          this->end().scale(scale_center, scale_factor),
+                                          layer(),
+                                          metaInfo(),
+                                          block());
     newLine->setID(this->id());
     return newLine;
 }
 
 CADEntity_CSPtr Line::mirror(const geo::Coordinate& axis1,
                              const geo::Coordinate& axis2) const {
-    auto newLine = std::make_shared<Line>(this->start().mirror(axis1,
-                                                               axis2),
-                                          this->end().mirror(axis1,
-                                                             axis2),
-                                          layer());
+    auto newLine = std::make_shared<Line>(this->start().mirror(axis1, axis2),
+                                          this->end().mirror(axis1, axis2),
+                                          layer(),
+                                          metaInfo(),
+                                          block());
     newLine->setID(this->id());
     return newLine;
 }
@@ -125,7 +140,12 @@ std::map<unsigned int, lc::geo::Coordinate> Line::dragPoints() const {
 
 CADEntity_CSPtr Line::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-	    auto newEntity = std::make_shared<Line>(dragPoints.at(0), dragPoints.at(1), layer(), metaInfo());
+	    auto newEntity = std::make_shared<Line>(dragPoints.at(0),
+                                                dragPoints.at(1),
+                                                layer(),
+                                                metaInfo(),
+                                                block()
+        );
 	    newEntity->setID(this->id());
 	    return newEntity;
     }

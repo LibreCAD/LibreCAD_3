@@ -8,7 +8,7 @@ setmetatable(Gear, {
     end,
 })
 
-function Gear.new()
+function Gear.new(id)
     local self = setmetatable({}, Gear)
 
     Operations._init(self, id)
@@ -21,9 +21,9 @@ function Gear.new()
 
     self.entities = {}
 
-    event.register("number", self)
-    event.register("point", self)
-    event.register("mouseMove", self)
+    luaInterface:registerEvent("number", self)
+    luaInterface:registerEvent("point", self)
+    luaInterface:registerEvent("mouseMove", self)
 
     message("Enter number of teeth")
 
@@ -89,8 +89,7 @@ end
 --phi = pressure angle
 --PC = Circular Pitch
 --teeth = no of teeth
-function Gear:calc(N, phi, Pc)
-    local layer = active_layer()
+function Gear:calc(N, phi, Pc, layer, metaInfo, block)
     local entities = {}
 
     -- Pitch Circle
@@ -118,7 +117,6 @@ function Gear:calc(N, phi, Pc)
     local U = (2 / (math.sin(phi) * (math.sin(phi))))
     local needs_undercut = N < U
     -- sys.stderr.write("N:%s R:%s Rb:%s\n" % (N,R,Rb))
-
 
     -- Clearance
     local c = 0.0
@@ -186,27 +184,44 @@ function Gear:calc(N, phi, Pc)
     local fKeep = first
     table.remove(points, 1)
     for k,v in pairs(points) do
-        table.insert(entities, Line(Coord(first.x,first.y), Coord(v.x,v.y),layer,MetaInfo()))
+        table.insert(entities, Line(Coord(first.x,first.y), Coord(v.x,v.y), layer, metaInfo, block))
         first=v
     end
-    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer,MetaInfo()))
+    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y), layer, metaInfo, block))
 
     return entities
 end
 
 function Gear:drawGear()
-    local entities = Gear:calc(self.n, math.rad(self.phi), math.rad(self.pc))
-    local b = Builder(active_widget():document())
+    local layer = active_layer()
+    local metaInfo = active_metaInfo()
+    local block = Block("Gear_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
+
+    local entities = Gear:calc(self.n, math.rad(self.phi), math.rad(self.pc), layer, metaInfo, block)
+
+    local b = Builder(active_widget():document(), "Gear")
+    b:append(AddBlock(active_widget():document(), block))
+
+    local eb = EntityBuilder(active_widget():document())
 
     for k, v in pairs(entities) do
-        b:append(v)
+        eb:appendEntity(v)
     end
 
-    b:push()
-    b:move(self.origin)
+    local insertBuilder = InsertBuilder()
+    insertBuilder:setLayer(layer)
+    insertBuilder:setDisplayBlock(block)
+    insertBuilder:setCoordinate(self.origin)
+    insertBuilder:setDocument(active_widget():document())
+
+    eb:appendOperation(Push())
 
     local distance = self.scalePoint:distanceTo(self.origin)
-    b:scale(self.origin, Coord(distance, distance))
+    eb:appendOperation(Scale(Coordinate(0, 0, 0), Coord(distance, distance)))
+
+    eb:processStack()
+    eb:appendEntity(insertBuilder:build())
+    b:append(eb)
 
     b:execute()
 
@@ -232,7 +247,7 @@ function Gear:tempGear(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, math.rad(phi), math.rad(pc))
+    self.entities = self:calc(n, math.rad(phi), math.rad(pc), active_layer(), active_metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin):scale(origin, scalePoint)
@@ -248,20 +263,22 @@ function Gear:close()
             active_widget():tempEntities():removeEntity(v)
         end
 
-        event.delete("number", self)
-        event.delete("point", self)
-        event.delete("mouseMove", self)
+        luaInterface:deleteEvent("number", self)
+        luaInterface:deleteEvent("point", self)
+        luaInterface:deleteEvent("mouseMove", self)
 
-        event.trigger("operationFinished")
+        luaInterface:triggerEvent("operationFinished")
     end
 end
 
-local tab = toolbar:tabByName("Quick Access")
-local group = tab:addGroup("Gear")
+if(LC_interface == "gui") then
+    local tab = toolbar:tabByName("Quick Access")
+    local group = tab:addGroup("Gear")
 
-local gearButton = create_button("Gear")
-tab:addWidget(group, gearButton, 0, 0, 1, 1)
-luaInterface:luaConnect(gearButton, "pressed()", function()
-    new_operation()
-    op[active_widget().id] = Gear(active_widget().id)
-end)
+    local gearButton = create_button("Gear")
+    tab:addWidget(group, gearButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(gearButton, "pressed()", function()
+        new_operation()
+        luaInterface:setOperation(active_widget().id, Gear(active_widget().id))
+    end)
+end

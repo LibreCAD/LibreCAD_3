@@ -20,9 +20,9 @@ function Star.new(id)
 
     self.entities = {}
 
-    event.register("number", self)
-    event.register("point", self)
-    event.register("mouseMove", self)
+    luaInterface:registerEvent("number", self)
+    luaInterface:registerEvent("point", self)
+    luaInterface:registerEvent("mouseMove", self)
 
     message("Enter the number of star points")
 
@@ -42,7 +42,6 @@ function Star:onEvent(eventName, ...)
 end
 
 function Star:newData(data)
-
     if(self.n == nil) then
         if(type(data) == "number") then
             self.n = data
@@ -72,9 +71,8 @@ function Star:point_on_circle(radius, angle)
     return p
 end
 
-function Star:calc(N, innerR, outerR)
+function Star:calc(N, innerR, outerR, layer, metaInfo, block)
 	local points = {}
-    local layer = active_layer()
     local entities = {}
 	for i=1,N do
 		table.insert(points, self:point_on_circle(outerR, ((i * 360) / N)))
@@ -84,25 +82,36 @@ function Star:calc(N, innerR, outerR)
     local first = points[1]
 	local fKeep = points[1]
     for k,v in pairs(points) do
-        table.insert(entities, Line(Coord(first.x, first.y), Coord(v.x, v.y), layer,MetaInfo()))
+        table.insert(entities, Line(Coord(first.x, first.y), Coord(v.x, v.y), layer, metaInfo, block))
         first=v
     end
-    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y),layer,MetaInfo()))
+    table.insert(entities, Line(Coord(first.x,first.y), Coord(fKeep.x,fKeep.y), layer, metaInfo, block))
 
     return entities
 end
 
 function Star:drawStar()
-    local entities = self:calc(self.n, self.innerR, self.outerR)
-    local b = Builder(active_widget():document())
+    local layer = active_layer()
+    local metaInfo = active_metaInfo()
+    local block = Block("Star_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
+    local entities = self:calc(self.n, self.innerR, self.outerR, layer, metaInfo, block)
 
+    local b = Builder(active_widget():document(), "Star")
+    b:append(AddBlock(active_widget():document(), block))
+
+    local eb = EntityBuilder(active_widget():document())
     for k, v in pairs(entities) do
-        b:append(v)
+        eb:appendEntity(v)
     end
 
-    b:push()
-    b:move(self.origin)
-	
+    local insertBuilder = InsertBuilder()
+    insertBuilder:setLayer(layer)
+    insertBuilder:setDisplayBlock(block)
+    insertBuilder:setCoordinate(self.origin)
+    insertBuilder:setDocument(active_widget():document())
+    eb:appendEntity(insertBuilder:build())
+
+    b:append(eb)
     b:execute()
 
     self:close()
@@ -136,7 +145,7 @@ function Star:tempStar(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, innerR, outerR)
+    self.entities = self:calc(n, innerR, outerR, active_layer(), active_metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin)
@@ -152,20 +161,22 @@ function Star:close()
             active_widget():tempEntities():removeEntity(v)
         end
 
-        event.delete("number", self)
-        event.delete("point", self)
-        event.delete("mouseMove", self)
+        luaInterface:deleteEvent("number", self)
+        luaInterface:deleteEvent("point", self)
+        luaInterface:deleteEvent("mouseMove", self)
 
-        event.trigger("operationFinished")
+        luaInterface:triggerEvent("operationFinished")
     end
 end
 
 local tab = toolbar:tabByName("Quick Access")
 local group = tab:addGroup("Star")
 
-local StarButton = create_button("Star")
-tab:addWidget(group, StarButton, 0, 0, 1, 1)
-luaInterface:luaConnect(StarButton, "pressed()", function()
-    new_operation()
-    op[active_widget().id] = Star(active_widget().id)
-end)
+if(LC_interface == "gui") then
+    local StarButton = create_button("Star")
+    tab:addWidget(group, StarButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(StarButton, "pressed()", function()
+        new_operation()
+        luaInterface:setOperation(active_widget().id, Star(active_widget().id))
+    end)
+end

@@ -208,7 +208,8 @@ void LCLua::importLCKernel() {
                        const geo::Coordinate & start,
                        const geo::Coordinate & end,
                        const Layer_CSPtr,
-                       const MetaInfo_CSPtr
+                       LuaIntf::_opt<const MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const Block_CSPtr>
             ))
             .addProperty("entityType", [](entity::Line*) {
                 return "line";
@@ -224,7 +225,8 @@ void LCLua::importLCKernel() {
                        const geo::Coordinate & center,
                        double radius,
                        const Layer_CSPtr,
-                       const MetaInfo_CSPtr
+                       LuaIntf::_opt<const MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const Block_CSPtr>
             ))
             .addProperty("entityType", [](entity::Circle*) {
                 return "circle";
@@ -243,7 +245,8 @@ void LCLua::importLCKernel() {
                        const double endAngle,
                        bool CCW,
                        const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr
+                       LuaIntf::_opt<const MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const Block_CSPtr>
             ))
 
             .addFunction("nearestPointOnEntity", &geo::Arc::nearestPointOnEntity)
@@ -270,7 +273,8 @@ void LCLua::importLCKernel() {
                        double endAngle,
                        bool reversed,
                        const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr
+                       LuaIntf::_opt<const MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const Block_CSPtr>
             ))
         .endClass()
 
@@ -292,7 +296,8 @@ void LCLua::importLCKernel() {
                 const geo::Coordinate&,
                 const double,
                 const Layer_CSPtr,
-                const MetaInfo_CSPtr
+                LuaIntf::_opt<const MetaInfo_CSPtr>,
+                LuaIntf::_opt<const Block_CSPtr>
             ))
         .endClass()
 
@@ -306,7 +311,9 @@ void LCLua::importLCKernel() {
                 const geo::Coordinate&,
                 const double,
                 const Layer_CSPtr,
-                const MetaInfo_CSPtr))
+                LuaIntf::_opt<const MetaInfo_CSPtr>,
+                LuaIntf::_opt<const Block_CSPtr>
+            ))
         .endClass()
 
         .beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear")
@@ -340,7 +347,8 @@ void LCLua::importLCKernel() {
                 double,
                 geo::Spline::splineflag,
                 const Layer_CSPtr,
-                const MetaInfo_CSPtr
+                LuaIntf::_opt<const MetaInfo_CSPtr>,
+                LuaIntf::_opt<const Block_CSPtr>
             ))
         .endClass()
 
@@ -362,7 +370,8 @@ void LCLua::importLCKernel() {
                     bool,
                     const geo::Coordinate,
                     const Layer_CSPtr,
-                    const MetaInfo_CSPtr
+                    LuaIntf::_opt<const MetaInfo_CSPtr>,
+                    LuaIntf::_opt<const Block_CSPtr>
             ))
             .addFunction("width", &lc::entity::LWPolyline::width)
             .addFunction("elevation", &lc::entity::LWPolyline::elevation)
