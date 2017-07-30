@@ -96,6 +96,48 @@ if(WITH_QT_UI)
     include_directories(${LUA_INCLUDE_DIR})
 endif(WITH_QT_UI)
 
+if(WITH_RENDERING_UNITTESTS)
+    # GDK-Pixbuf
+    find_package(GDK-Pixbuf REQUIRED)
+    include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
+
+    #GDK
+    find_package(GDK REQUIRED)
+    include_directories(${GDK_INCLUDE_DIRS})
+
+    #GLib
+    find_package(GLib)
+    include_directories(${GLib_INCLUDE_DIRS})
+
+    #GObject
+    find_package(GObject)
+    include_directories(${GOBJECT_INCLUDE_DIR})
+
+    # Cairo
+    find_package(Cairo 1.13 REQUIRED)
+    include_directories(${CAIRO_INCLUDE_DIRS})
+
+    # Pango
+    find_package(Pango 1.38 REQUIRED)
+    include_directories(${PANGO_INCLUDE_DIRS})
+    link_directories(${PANGO_LIBRARIES})
+
+    set(EXTRA_LIBS
+        ${EXTRA_LIBS}
+        ${CAIRO_LIBRARIES}
+        ${PANGO_LIBRARIES}
+        ${GDK-PIXBUF_LIBRARIES}
+        ${GDK_LIBRARIES}
+        ${GLib_LIBRARY}
+        ${GOBJECT_LIBRARIES}
+    )
+
+    set(src
+        ${src}
+        rendering/renderingtest.cpp
+    )
+endif()
+
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")

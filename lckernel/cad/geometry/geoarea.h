@@ -221,7 +221,8 @@ namespace lc {
                  * Increase the area on each side by increaseBy
                  */
                 inline Area increaseBy (double increaseBy) const {
-                    return Area(_minP - increaseBy, _maxP + increaseBy);
+                    return Area(geo::Coordinate(_minP.x() - increaseBy, _minP.y() - increaseBy, _minP.z()),
+                                geo::Coordinate(_maxP.x() + increaseBy, _maxP.y() + increaseBy, _maxP.z()));
                 }
 
                 /**
