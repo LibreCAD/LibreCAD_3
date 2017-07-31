@@ -122,6 +122,11 @@ if(WITH_RENDERING_UNITTESTS)
     include_directories(${PANGO_INCLUDE_DIRS})
     link_directories(${PANGO_LIBRARIES})
 
+    # Boost
+    set(Boost_USE_MULTITHREADED ON)
+    find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
+
     set(EXTRA_LIBS
         ${EXTRA_LIBS}
         ${CAIRO_LIBRARIES}
@@ -130,6 +135,7 @@ if(WITH_RENDERING_UNITTESTS)
         ${GDK_LIBRARIES}
         ${GLib_LIBRARY}
         ${GOBJECT_LIBRARIES}
+        ${Boost_LIBRARIES}
     )
 
     set(src

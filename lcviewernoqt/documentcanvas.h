@@ -55,6 +55,12 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
          */
         void autoScale();
 
+        /**
+         * @brief Set display area
+         * @param area Area to display
+         */
+        void setDisplayArea(const lc::geo::Area& area);
+
         void pan(double move_x, double move_y);
 
         void transX(int x);
