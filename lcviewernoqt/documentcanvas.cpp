@@ -244,8 +244,19 @@ void DocumentCanvas::transY(int y) {
 
 void DocumentCanvas::autoScale() {
     auto extends = _entityContainer.boundingBox();
-    double zoom = std::min(_deviceWidth / extends.width(), _deviceHeight / extends.height());
-//    this->zoom(zoom, false, extends.width() / 2 + extends.minP().x(), extends.height() / 2. + extends.minP().y(), _deviceWidth / 2., _deviceHeight / 2.);
+    extends = extends.increaseBy(std::min(extends.width(), extends.height()) * 0.1);
+
+    setDisplayArea(extends);
+}
+
+void DocumentCanvas::setDisplayArea(const lc::geo::Area& area) {
+    double zoom = std::min(_deviceWidth / area.width(), _deviceHeight / area.height());
+    this->zoom(zoom, false,
+               area.width() / 2 + area.minP().x(),
+               area.height() / 2. + area.minP().y(),
+               _deviceWidth / 2.,
+               _deviceHeight / 2.
+    );
 }
 
 void DocumentCanvas::render(std::function<void(LcPainter&)> before, std::function<void(LcPainter&)> after) {

@@ -210,7 +210,6 @@ int main(int argc, char** argv) {
 
     if (fType == "png" || (fType != "pdf" && fType != "svg"))
         static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(fOut);
-
     ofile.close();
 
     lc::LuaCustomEntityManager::getInstance().removePlugins();
