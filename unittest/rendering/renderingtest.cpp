@@ -91,7 +91,7 @@ bool checkRender(const std::string& image1, const std::string& image2, int toler
     GError* error2 = NULL;
 
     auto pixbuf1 = gdk_pixbuf_new_from_file(image1.c_str(), &error1);
-    auto pixbuf2 = gdk_pixbuf_new_from_file(image1.c_str(), &error2);
+    auto pixbuf2 = gdk_pixbuf_new_from_file(image2.c_str(), &error2);
 
     if(error1) {
         std::cout << error1->message << std::endl;
@@ -149,23 +149,23 @@ TEST(RenderingTest, Test) {
             ("h", po::value<int>(&h), "Canvas height")
             ("tolerance", po::value<int>(&tolerance), "Tolerance (between 0 and 100)");
 
-    DIR* dir = opendir("../unittest/rendering/res"); //TODO: get correct folder
-    if(!dir) {
+    dirent** files = NULL;
+    int nbFiles = scandir("../unittest/rendering/res", &files, NULL, alphasort); //TODO: get correct folder
+    if(nbFiles < 0) {
         perror("Error");
         FAIL() << "Cannot open rendering resources dir.";
     }
 
-    dirent* file = NULL;
     unsigned int testNumber = 0;
     bool dxfFound = false;
     bool pngFound = false;
     bool configFound = false;
 
-    while ((file = readdir(dir)) != NULL) {
+    for(auto i = 0; i < nbFiles; i++) {
         unsigned int newNumber;
         char extension[256];
 
-        if(sscanf(file->d_name, "%u.%s", &newNumber, extension) != 2) {
+        if(sscanf(files[i]->d_name, "%u.%s", &newNumber, extension) != 2) {
             continue;
         }
 
@@ -208,6 +208,4 @@ TEST(RenderingTest, Test) {
             configFound = false;
         }
     }
-
-    closedir(dir);
 }
