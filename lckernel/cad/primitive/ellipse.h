@@ -25,6 +25,18 @@ namespace lc {
          */
         class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
         public:
+            /**
+             * @brief Create ellipse
+             * @param center
+             * @param majorP relative to center
+             * @param minorRadius
+             * @param startAngle
+             * @param endAngle
+             * @param reversed
+             * @param layer
+             * @param metaInfo
+             * @param block
+             */
             Ellipse(const geo::Coordinate &center,
                     const geo::Coordinate &majorP,
                     double minorRadius,

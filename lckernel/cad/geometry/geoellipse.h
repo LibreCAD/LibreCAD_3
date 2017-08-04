@@ -13,8 +13,16 @@ namespace lc {
     namespace geo {
         class Ellipse : public Base, virtual public Visitable {
             public:
-                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle);
-                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed);
+                /**
+                 * @brief
+                 * @param center
+                 * @param majorP relative to center
+                 * @param minorRadius
+                 * @param startAngle
+                 * @param endAngle
+                 * @param reversed
+                 */
+                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed = false);
                 /**
                  * @brief center, Returns Center point of Ellipse
                  * @return geo::Coordinate center
@@ -22,7 +30,7 @@ namespace lc {
                 const Coordinate center() const;
 
                 /**
-                 * @brief majorP, Returns major point of the ellipse
+                 * @brief majorP, Returns major point of the ellipse, relative to center
                  * @return geo::Coordinate majorP
                  */
                 const Coordinate majorP() const;

@@ -51,6 +51,9 @@ function EllipseOperations:newData(data)
         message("Click on major point")
     elseif(self.majorPoint == nil) then
         self.majorPoint = Operations:getCoordinate(data)
+        if(self.majorPoint ~= nil) then
+            self.majorPoint = self.majorPoint:sub(self.center)
+        end
 
         message("Give minor radius")
     elseif(self.minorRadius == nil) then
@@ -89,7 +92,7 @@ function EllipseOperations:createTempEllipse(point)
     if(center == nil) then
         center = point
     elseif(majorPoint == nil) then
-        majorPoint = point
+        majorPoint = point:sub(self.center)
         minorRadius = Operations:getDistance(center, majorPoint) / 2
     elseif(minorRadius == nil) then
         minorRadius = Operations:getDistance(center, point)
