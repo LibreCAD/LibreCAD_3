@@ -5,17 +5,6 @@
 using namespace lc;
 using namespace geo;
 
-Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle) :
-    Base(),
-    _center(center),
-    _majorP(majorP),
-    _minorRadius(minorRadius),
-    _startAngle(startAngle),
-    _endAngle(endAngle),
-    _isReversed(false){
-
-}
-
 Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed) :
     _center(center),
     _majorP(majorP),

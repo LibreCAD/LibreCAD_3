@@ -351,12 +351,17 @@ public:
     }
 
     void ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra = 0) {
-        double cosrotangle = std::cos(ra);
-        double sinrotangle = std::sin(ra);
-        cairo_matrix_t transformmatrix;
-        cairo_matrix_init(&transformmatrix, rx * cosrotangle, rx * sinrotangle, ry * sinrotangle, -ry * cosrotangle, cx, -cy);
+        if(rx == 0) {
+            rx = 0.1;
+        }
+        if(ry == 0) {
+            ry = 0.1;
+        }
+
         cairo_save(_cr);
-        cairo_transform(_cr, &transformmatrix);
+        cairo_translate(_cr, cx, - cy);
+        cairo_rotate(_cr, - ra);
+        cairo_scale(_cr, rx, ry);
         cairo_arc(_cr, 0, 0, 1, sa, ea);
         cairo_restore(_cr);
     }

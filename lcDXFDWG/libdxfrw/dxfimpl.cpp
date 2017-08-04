@@ -155,9 +155,11 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
+
+    auto secPoint = coord(data.secPoint);
     auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
-                                                           coord(data.secPoint),
-                                                           coord(data.basePoint).distanceTo(coord(data.secPoint)) / data.ratio,
+                                                           secPoint,
+                                                           secPoint.magnitude() * data.ratio,
                                                            data.staparam,
                                                            data.endparam,
                                                            data.isccw,

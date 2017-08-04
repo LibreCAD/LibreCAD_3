@@ -19,7 +19,7 @@ Ellipse::Ellipse(const geo::Coordinate& center,
 
 Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) :
         CADEntity(other, sameID),
-        geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle()) {
+        geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle(), other->isReversed()) {
 }
 
 

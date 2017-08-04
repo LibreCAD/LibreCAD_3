@@ -12,7 +12,7 @@ void LCVEllipse::draw(LcPainter& painter, const LcDrawOptions &options, const lc
     if (_ellipse->minorRadius()) {
         painter.ellipse(
                 _ellipse->center().x(), _ellipse->center().y(),
-                _ellipse->majorRadius(), _ellipse->minorRadius() ,
+                _ellipse->majorRadius(), _ellipse->minorRadius(),
                 _ellipse->startAngle(), _ellipse->endAngle(),
                 _ellipse->getAngle()
         );
