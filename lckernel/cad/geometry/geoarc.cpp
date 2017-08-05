@@ -49,7 +49,7 @@ Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinat
 }
 
 Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double bulge) {
-    auto isCCW = bulge<0.;
+    auto isCCW = bulge>0.;
     auto alpha = atan(bulge)*4.;
 
     auto middle = p1.mid(p2);
@@ -179,7 +179,9 @@ double Arc::angle() const {
 double Arc::bulge() const {
     double bulge = std::tan(angle()/4.0);
 
-    if(CCW()) bulge *= -1;
+    if(!CCW()) {
+        bulge *= -1;
+    }
 
     return bulge;
 }

@@ -35,7 +35,7 @@ namespace lc {
                 const Block_CSPtr block = nullptr
             );
 
-            Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo);
+            Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block = nullptr);
 
             Arc(const Arc_CSPtr other, bool sameID = false);
 

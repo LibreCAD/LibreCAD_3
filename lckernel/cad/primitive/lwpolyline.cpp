@@ -5,6 +5,8 @@
 #include <cad/vo/entitycoordinate.h>
 #include <cad/interface/snapconstrain.h>
 #include <cad/interface/snapable.h>
+#include <cad/primitive/arc.h>
+#include <cad/primitive/line.h>
 
 using namespace lc;
 using namespace entity;
@@ -26,6 +28,9 @@ LWPolyline::LWPolyline(const std::vector<LWVertex2D> &vertex,
         _tickness(tickness),
         _closed(closed),
         _extrusionDirection(extrusionDirection) {
+
+    generateEntities();
+
 }
 
 LWPolyline::LWPolyline(const LWPolyline_CSPtr other, bool sameID) : CADEntity(other, sameID),
@@ -35,6 +40,7 @@ LWPolyline::LWPolyline(const LWPolyline_CSPtr other, bool sameID) : CADEntity(ot
                                                                     _tickness(other->_tickness),
                                                                     _closed(other->_closed),
                                                                     _extrusionDirection(other->_extrusionDirection) {
+    generateEntities();
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate &offset) const {
@@ -84,28 +90,17 @@ CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate &scale_center, const geo
 }
 
 const geo::Area LWPolyline::boundingBox() const {
-    auto &&items = asGeometrics();
-
-    // TODO To think about: Currently I use dynamic_pointer_cast because I didn't want virtual function
-    // on the Base class of geometric entities, I like them to be 'stand alone' as much as possible
-    // If we see we start to do dynamic_pointer_cast more frequently w emay he to re-consider
-    geo::Area area;
-    if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(items.front())) {
-        area = geo::Area(vector->start(), vector->end());
-    } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(items.front())) {
-        area = arc->boundingBox();
-    } else {
-        std::cerr << "Unknown entity found in LWPolyline during boundingBox front generation " << std::endl;
+    if(_entities.size() == 0) {
+        return geo::Area();
     }
 
-    for (auto geoItem : items) {
-        if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
-            area = area.merge(geo::Area(vector->start(), vector->end()));
-        } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
-            area = area.merge(arc->boundingBox());
-        } else {
-            std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
-        }
+    auto it = _entities.begin();
+    geo::Area area = (*it)->boundingBox();
+    it++;
+
+    while(it != _entities.end()) {
+        area = area.merge((*it)->boundingBox());
+        it++;
     }
 
     return area;
@@ -128,18 +123,21 @@ CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaI
     return newEntity;
 }
 
-std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() const {
-    std::vector<std::shared_ptr<const geo::Base>> items;
-
+void LWPolyline::generateEntities() {
     auto itr = _vertex.begin();
     auto lastPoint = itr;
     itr++;
     while (itr != vertex().end()) {
         if (lastPoint->bulge() != 0.) {
-            auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<const geo::Arc>(std::move(arc)));
-        } else {
-            items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), itr->location()));
+            _entities.push_back(std::make_shared<const Arc>(
+                    geo::Arc::createArcBulge(lastPoint->location(), itr->location(), lastPoint->bulge()),
+                    layer(),
+                    metaInfo(),
+                    block()
+            ));
+        }
+        else {
+            _entities.push_back(std::make_shared<const Line>(lastPoint->location(), itr->location(), layer(), metaInfo(), block()));
         }
         lastPoint = itr;
         itr++;
@@ -148,13 +146,17 @@ std::vector<std::shared_ptr<const geo::Base>> const LWPolyline::asGeometrics() c
     if (_closed) {
         auto firstP = _vertex.begin();
         if (lastPoint->bulge() != 0.) {
-            auto &&arc = geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge());
-            items.push_back(std::make_shared<const geo::Arc>(std::move(arc)));
-        } else {
-            items.push_back(std::make_shared<const geo::Vector>(lastPoint->location(), firstP->location()));
+            _entities.push_back(std::make_shared<const Arc>(
+                    geo::Arc::createArcBulge(lastPoint->location(), firstP->location(), lastPoint->bulge()),
+                    layer(),
+                    metaInfo(),
+                    block()
+            ));
+        }
+        else {
+            _entities.push_back(std::make_shared<const Line>(lastPoint->location(), firstP->location(), layer(), metaInfo(), block()));
         }
     }
-    return items;
 }
 
 std::vector<EntityCoordinate> LWPolyline::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
@@ -162,7 +164,7 @@ std::vector<EntityCoordinate> LWPolyline::snapPoints(const geo::Coordinate &coor
                                                      int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
     if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
-        const auto &&entities = asGeometrics();
+        const auto &&entities = asEntities();
         for (auto &geoItem : entities) {
             if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
                 points.emplace_back(vector->start(), -1);
@@ -231,7 +233,7 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate &coord) con
 
 std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>  LWPolyline::nearestPointOnPath2(
         const geo::Coordinate &coord) const {
-    const auto &&entities = asGeometrics();
+    const auto &&entities = asEntities();
 
     double minimumDistance = std::numeric_limits<double>::max();
     std::shared_ptr<const geo::Vector> nearestVector = nullptr;
@@ -292,4 +294,8 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
     catch(std::out_of_range& e) {
         return shared_from_this();
     }
+}
+
+std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
+    return _entities;
 }
