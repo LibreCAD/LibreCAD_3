@@ -20,5 +20,6 @@ namespace LCViewer {
 
         private:
             lc::entity::LWPolyline_CSPtr _polyLine;
+            std::vector<LCVDrawItem_CSPtr> _drawItems;
     };
 }

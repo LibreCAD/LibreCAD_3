@@ -318,32 +318,14 @@ public:
     }
 
     /**
-     * @brief it is important from which point we start to draw
+     * @brief Draw an arc clockwise
      */
     void arc(double x, double y, double r, double start, double end) {
-        // new_sub_path();
-        cairo_arc(_cr, x, -y, r, 2. * M_PI - end, 2. * M_PI - start);
-        /* Test to see if we can get end/start cap's on a path
-        cairo_path_t *path;
-        cairo_path_data_t *data;
-        path = cairo_copy_path_flat (_cr);
-        cairo_stroke (_cr);
-
-        data = &path->data[0];
-        cairo_arc(_cr, data[1].point.x, data[1].point.y, 3. / scale() , 0, 2 * M_PI);
-        cairo_fill(_cr);
-
-        data = &path->data[path->num_data - path->data[0].header.length];
-        cairo_arc(_cr, data[1].point.x, data[1].point.y, 3. / scale() , 0, 2 * M_PI);
-        cairo_fill(_cr);
-
-        cairo_path_destroy (path); */
+        cairo_arc(_cr, x, -y, r, 2. * M_PI - start, 2. * M_PI - end);
     }
 
     void arcNegative(double x, double y, double r, double start, double end) {
-        // new_sub_path();
-        cairo_arc_negative(_cr, x, -y, r, 2. * M_PI - end, 2. * M_PI - start);
-//            cairo_arc_negative(_cr, x, -y, r, start, end);
+        cairo_arc_negative(_cr, x, -y, r, 2. * M_PI - start, 2. * M_PI - end);
     }
 
     void circle(double x, double y, double r) {

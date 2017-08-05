@@ -144,57 +144,18 @@ namespace lc {
             std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>> nearestPointOnPath2(const geo::Coordinate &coord) const;
 
         private:
+            /**
+             * @brief Generate entities of the polyline
+             */
+            void generateEntities();
+
             const std::vector<LWVertex2D> _vertex;
             const double _width;
             const double _elevation;
             const double _tickness;
             const bool _closed; // If we had more 'flag' options we shoudl consuder using a enum instead of seperate variables to make constructors easer
             const geo::Coordinate _extrusionDirection;
-
-
-            // LW LWPolyline this seems to be the facto standard
-            // int vertexnum;            /*!< number of vertex, code 90 */
-            // int flags;                /*!< LWPolyline flag, code 70, default 0 */
-            // double width;             /*!< constant width, code 43 */
-            // double elevation;         /*!< elevation, code 38 */
-            // double thickness;         /*!< thickness, code 39 */
-            // DRW_Coord extPoint;       /*!<  Dir extrusion normal vector, code 210, 220 & 230 */
-            // std::vector<DRW_LWVertex2D *> vertlist;  /*!< vertex list */
-
-            //DRW_LWVertex2D
-            //double x;                 /*!< x geo::Coordinate, code 10 */
-            //double y;                 /*!< y geo::Coordinate, code 20 */
-            //double stawidth;          /*!< Start width, code 40 */
-            //double endwidth;          /*!< End width, code 41 */
-            //double bulge;             /*!< bulge, code 42 */
-
-
-
-
-            // LWPolyline
-            //int flags;               /*!< LWPolyline flag, code 70, default 0 */
-            //double defstawidth;      /*!< Start width, code 40, default 0 */
-            //double defendwidth;      /*!< End width, code 41, default 0 */
-            //int vertexcount;         /*!< polygon mesh M vertex or  polyface vertex num, code 71, default 0 */
-            //int facecount;           /*!< polygon mesh N vertex or  polyface face num, code 72, default 0 */
-            //int smoothM;             /*!< smooth surface M density, code 73, default 0 */
-            //int smoothN;             /*!< smooth surface M density, code 74, default 0 */
-            //int curvetype;           /*!< curves & smooth surface type, code 75, default 0 */
-            //std::vector<DRW_Vertex *> vertlist;  /*!< vertex list */
-
-
-            //DRW_Vertex
-            //double stawidth;          /*!< Start width, code 40 */
-            //double endwidth;          /*!< End width, code 41 */
-            //double bulge;             /*!< bulge, code 42 */
-            //int flags;                 /*!< vertex flag, code 70, default 0 */
-            //double tgdir;           /*!< curve fit tangent direction, code 50 */
-            //int vindex1;             /*!< polyface mesh vertex index, code 71, default 0 */
-            //int vindex2;             /*!< polyface mesh vertex index, code 72, default 0 */
-            //int vindex3;             /*!< polyface mesh vertex index, code 73, default 0 */
-            //int vindex4;             /*!< polyface mesh vertex index, code 74, default 0 */
-            //int identifier;           /*!< vertex identifier, code 91, default 0 */
-
+            std::vector<CADEntity_CSPtr> _entities;
 
         public:
             /**
@@ -242,15 +203,10 @@ namespace lc {
             virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             /**
-        * Return a vector of geometry entities for this polyline
-        * The vector will contain geo::vector and geo::Arc items
-        * In the current implementation no caching of the bounding box is done
-        * If we see that bounding box calcualtion takes up a lot of time we
-        * can consider calculating the bounding box in the constructor
-        * and just return the cached result. We also use this for snapPoint's
-       * and if performance is a issue, we can cache it.
-        */
-            std::vector<std::shared_ptr<const geo::Base>> const asGeometrics() const;
+             * Return a vector of entities for this polyline
+             * The vector will contain entity::vector and entity::Arc items
+             */
+            std::vector<CADEntity_CSPtr> const asEntities() const;
 
 
         public:

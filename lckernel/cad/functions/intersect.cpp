@@ -68,7 +68,7 @@ bool Intersect::operator()(const lc::geo::Vector &v, const lc::entity::Spline &s
 }
 
 bool Intersect::operator()(const lc::geo::Vector &v, const lc::entity::LWPolyline &l) {
-    auto list1 = l.asGeometrics();
+    auto list1 = l.asEntities();
 
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
@@ -129,7 +129,7 @@ bool Intersect::operator()(const lc::entity::Line &, const lc::entity::Spline &)
 }
 
 bool Intersect::operator()(const lc::entity::Line &l, const lc::entity::LWPolyline &p) {
-    auto &&list1 = p.asGeometrics();
+    auto &&list1 = p.asEntities();
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
     // to use double dispatch can decide to use a specific implementation.
@@ -245,7 +245,7 @@ bool Intersect::operator()(const lc::entity::Circle &c, const lc::entity::Spline
 }
 
 bool Intersect::operator()(const lc::entity::Circle &c, const lc::entity::LWPolyline &l) {
-    auto &list1 = l.asGeometrics();
+    auto &list1 = l.asEntities();
     auto a = lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI);
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
@@ -348,7 +348,7 @@ bool Intersect::operator()(const lc::entity::Arc &a, const lc::entity::Spline &s
 }
 
 bool Intersect::operator()(const lc::entity::Arc &a1, const lc::entity::LWPolyline &l1) {
-    auto &list1 = l1.asGeometrics();
+    auto &list1 = l1.asEntities();
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
     // to use double dispatch can decide to use a specific implementation.
@@ -490,8 +490,8 @@ bool Intersect::operator()(const lc::entity::LWPolyline &p, const lc::entity::Sp
 }
 
 bool Intersect::operator()(const lc::entity::LWPolyline &l1, const lc::entity::LWPolyline &l2) {
-    auto &list1 = l1.asGeometrics();
-    auto &list2 = l2.asGeometrics();
+    auto &list1 = l1.asEntities();
+    auto &list2 = l2.asEntities();
 
     // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding

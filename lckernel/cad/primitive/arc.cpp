@@ -9,8 +9,8 @@ Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double
         geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
-Arc::Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo) :
-    CADEntity(layer, metaInfo),
+Arc::Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+    CADEntity(layer, metaInfo, block),
     geo::Arc(a) {
 }
 

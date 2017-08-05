@@ -11,13 +11,13 @@ using namespace geo;
 
 TEST(lc__geo__ArcTest, createArcBulge) {
 
-    lc::geo::Arc arc = lc::geo::Arc::createArcBulge(lc::geo::Coordinate(15.,5.), lc::geo::Coordinate(5.,5.), 0.5);
+    lc::geo::Arc arc = lc::geo::Arc::createArcBulge(lc::geo::Coordinate(15.,5.), lc::geo::Coordinate(5.,5.), -0.5);
     ASSERT_NEAR(10.,arc.center().x(), LCTOLERANCE);
     ASSERT_NEAR(8.75,arc.center().y(), LCTOLERANCE);
     ASSERT_NEAR(6.25,arc.radius(), LCTOLERANCE);
     ASSERT_FALSE(arc.CCW());
 
-    arc = lc::geo::Arc::createArcBulge(lc::geo::Coordinate(15.,15.), lc::geo::Coordinate(25.,5.), -0.5);
+    arc = lc::geo::Arc::createArcBulge(lc::geo::Coordinate(15.,15.), lc::geo::Coordinate(25.,5.), 0.5);
     ASSERT_NEAR(23.75,arc.center().x(), LCTOLERANCE);
     ASSERT_NEAR(13.75,arc.center().y(), LCTOLERANCE);
     ASSERT_NEAR(8.8388347648318444,arc.radius(), LCTOLERANCE);
