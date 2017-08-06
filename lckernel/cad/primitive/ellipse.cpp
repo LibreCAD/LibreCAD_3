@@ -107,24 +107,29 @@ CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate& axis1, const geo::Coordin
 }
 
 const geo::Area Ellipse::boundingBox() const {
+    auto r_majorPoint = majorP();
 
-    // http://fridrich.blogspot.nl/2011/06/bounding-box-of-svg-elliptical-arc.html
-    //geo::Coordinate p = geo::Coordinate(this->center().x(), this->center().y() + this->minorRadius()).rotate(this->majorP() - this->center());
+    auto minorAngle = getAngle() + (M_PI / 2);
+    auto r_minorPoint = geo::Coordinate(
+        minorRadius() * cos(minorAngle),
+        minorRadius() * sin(minorAngle)
+    );
 
-    //    double r_min = this->minorRadius();
-    //    double r_max = p.distanceTo(this->majorP());
-    //    double rot = (this->majorP() - this->center()).angle();
+    auto bb_halfWidth = sqrt(r_majorPoint.x() * r_majorPoint.x() + r_minorPoint.x() * r_minorPoint.x());
+    auto bb_halfHeight = sqrt(r_majorPoint.y() * r_majorPoint.y() + r_minorPoint.y() * r_minorPoint.y());
 
-    //    double t_nil = atan(-r_min * tan(rot) / r_max);
-    //    double t_inf = atan(r_min * (cos(rot) / sin(rot)) / r_max);
-    //    double rect_width = 2 * (r_max * cos(t_nil) * cos(rot) - r_min * sin(t_nil) * sin(rot));
-    //    double rect_height = 2 * (r_min * sin(t_inf) * cos(rot) + r_max * cos(t_inf) * sin(rot));
+    auto ellipseBB = geo::Area(
+        geo::Coordinate(center().x() - bb_halfWidth, center().y() - bb_halfHeight),
+        geo::Coordinate(center().x() + bb_halfWidth, center().y() + bb_halfHeight)
+    );
 
-    //   return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
-    /* TODO implement
-     * fix compiler warning
-     */
-    return geo::Area();
+    if(!isArc()) {
+        return ellipseBB;
+    }
+
+    //TODO: bounding box for arc ellipse
+
+    return ellipseBB;
 }
 
 CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
