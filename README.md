@@ -80,8 +80,7 @@ cmake -G Xcode ..
 Then open the project in x-code and build.
 Under some conditions you might want to set a additional search path if libraries are not found, for example if you compile **libdxfrw** yourself.
 
-![X-Code add headers]
-(http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
+![X-Code add headers](http://skitch.rvantwisk.nl/~rvt/blog/LC.xcodeproj-20150115-143036.jpg)
 
 
 When using ports I had to use:
@@ -103,14 +102,14 @@ apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev 
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
 
-###Ubuntu 14.xx
+### Ubuntu 14.xx
 GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
 http://askubuntu.com/a/456849
 
 Windows
 ========
 
-###Bash for Windows 10
+### Bash for Windows 10
 This is the only way to get LibreCAD running on Windows at the moment.
 1) Follow the instructions for Ubuntu 14.04.
 
@@ -118,13 +117,13 @@ This is the only way to get LibreCAD running on Windows at the moment.
 
 3) Enter `export DISPLAY=:0` before running LibreCAD
 
-###MSYS2
+### MSYS2
 
 ```
 pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest
 ```
 
-####Log4CXX:
+#### Log4CXX:
 
 Use lastest code from repo : git://git.apache.org/log4cxx.git
 https://issues.apache.org/jira/browse/LOGCXX-463
@@ -138,7 +137,8 @@ make
 make install
 ```
 
-####LibreCAD:
+#### LibreCAD:
+
 ```
 mkdir build
 cd build
