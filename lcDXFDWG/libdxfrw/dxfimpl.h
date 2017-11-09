@@ -150,7 +150,7 @@ class DXFimpl : public DRW_Interface {
     private:
         /**
         * Return the MetaInfo object from a DRW_Entity.
-        * This is usefull because most/all entities will share teh same basic properties
+        * This is useful because most/all entities will share the same basic properties
         * can be be read with just one routine
         */
 

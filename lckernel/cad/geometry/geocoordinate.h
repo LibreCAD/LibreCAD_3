@@ -7,7 +7,7 @@
 namespace lc {
     namespace geo {
         /**
-          * Class that represent a coordinate in space
+          * Class that represents a coordinate in space
           */
         class Coordinate {
             public:
@@ -98,7 +98,7 @@ namespace lc {
                 }
 
                 /**
-                  * Calculate the distance between this coordinate and a other coordinate
+                  * Calculate the distance between this coordinate and another coordinate
                   * @return double
                   */
                 inline double distanceTo(const geo::Coordinate& c) const {
@@ -172,7 +172,7 @@ namespace lc {
                 }
 
                 /**
-                  * Magnitude or lenth of the point relative to zero : return sqrtf(_x * _x + _y * _y + _z * _z)
+                  * Magnitude or length of the point relative to zero : return sqrtf(_x * _x + _y * _y + _z * _z)
                   *
                   * @return double  Length of the vector
                   */
@@ -186,9 +186,9 @@ namespace lc {
 
 
                 /**
-                  * Quared of this Coordinate : return _x * _x + _y * _y + _z * _z;
+                  * Squared of this Coordinate : return _x * _x + _y * _y + _z * _z;
                   *
-                  * @return double   Quared value
+                  * @return double   Squared value
                   */
                 inline double squared() const {
                     return _x * _x + _y * _y + _z * _z;
@@ -287,7 +287,7 @@ namespace lc {
                 }
 
                 /**
-                * Midpoint bewteen two coordinates
+                * Midpoint between two coordinates
                 */
                 inline Coordinate mid(const Coordinate& other) const {
                     return (other - *this) / 2. + *this;
@@ -325,8 +325,8 @@ namespace lc {
 
                 /**
                  * Apply transformation matrix to coordinates in X/Y only
-                 * Note: this is a very naieve approche to transform if we see
-                 * ourselve using this function on large vectors of coordinates we should consider
+                 * Note: this is a very naive approach to transform if we see
+                 * ourselves using this function on large vectors of coordinates we should consider
                  * using Eigen
                  */
                 inline Coordinate transform2d(double xx, double yx, double xy, double yy, double x0, double y0) {
@@ -337,7 +337,7 @@ namespace lc {
                  * @brief mirror a coordinate
                  * @param axis1 : First point of line to be mirroed about
                  * @param axis2 : Second point of line to be mirroed about
-                 * @return mirrored cooridnate
+                 * @return mirrored coordinate
                  */
                 inline Coordinate mirror(const Coordinate& axis1, const Coordinate& axis2) const {
                     Coordinate dir(axis2 - axis1);
@@ -361,7 +361,7 @@ namespace lc {
         /*!
           * \brief sort a Collection in order of distance to a specific coordinate
           *
-          * \note This routine is not very fast in the sense that it would re-calculate the distance for each comparison. It shouls still be fast enough to sort a collection of let's say 10.000 points
+          * \note This routine is not very fast in the sense that it would re-calculate the distance for each comparison. It should still be fast enough to sort a collection of let's say 10.000 points
           *
           * \code
           * std::vector<geo::Coordinate> myList;

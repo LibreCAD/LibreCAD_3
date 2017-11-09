@@ -70,10 +70,10 @@ bool Intersect::operator()(const lc::geo::Vector &v, const lc::entity::Spline &s
 bool Intersect::operator()(const lc::geo::Vector &v, const lc::entity::LWPolyline &l) {
     auto list1 = l.asEntities();
 
-    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
     // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
@@ -130,10 +130,10 @@ bool Intersect::operator()(const lc::entity::Line &, const lc::entity::Spline &)
 
 bool Intersect::operator()(const lc::entity::Line &l, const lc::entity::LWPolyline &p) {
     auto &&list1 = p.asEntities();
-    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
     // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
@@ -247,10 +247,10 @@ bool Intersect::operator()(const lc::entity::Circle &c, const lc::entity::Spline
 bool Intersect::operator()(const lc::entity::Circle &c, const lc::entity::LWPolyline &l) {
     auto &list1 = l.asEntities();
     auto a = lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI);
-    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
     // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
@@ -349,10 +349,10 @@ bool Intersect::operator()(const lc::entity::Arc &a, const lc::entity::Spline &s
 
 bool Intersect::operator()(const lc::entity::Arc &a1, const lc::entity::LWPolyline &l1) {
     auto &list1 = l1.asEntities();
-    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
     // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
@@ -493,10 +493,10 @@ bool Intersect::operator()(const lc::entity::LWPolyline &l1, const lc::entity::L
     auto &list1 = l1.asEntities();
     auto &list2 = l2.asEntities();
 
-    // Note: The dynamic_pointer_cast won't winn a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a applicaiton deciding
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
     // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid ot the dynamic_pointer_casts and simply
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         for (auto &entity2 : list2) {

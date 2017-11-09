@@ -4,7 +4,7 @@
 
 namespace lc {
     /**
-     * Event that get's emited when beginning of a operation starts
+     * Event that gets emited when beginning of a operation starts
      */
     class BeginProcessEvent {
         public:

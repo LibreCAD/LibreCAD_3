@@ -13,7 +13,7 @@ LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric
 
 /**
 * Draw a DimDiametric
-* TODO: draw correct leader and verification if we draw this correctly compared ot other CAD drawings
+* TODO: draw correct leader and verification if we draw this correctly compared to other CAD drawings
 */
 void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
     // Decide to show the explecit value or the measured value
@@ -71,7 +71,7 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
 
     }
     else {
-        // When we draw text outside, we move the arrows arround (facing inwards) and we draw a small leader where we place the text on
+        // When we draw text outside, we move the arrows around (facing inwards) and we draw a small leader where we place the text on
         // here we ignore _dimDiametric->middleOfText() and I am not sure if that's suppose to work like that (RVT)
         auto center = _dimDiametric->definitionPoint().mid(_dimDiametric->definitionPoint2());
         auto p1 = _dimDiametric->definitionPoint().moveTo(center, -capSize * 1.5);

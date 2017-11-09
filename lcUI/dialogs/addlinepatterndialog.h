@@ -36,7 +36,7 @@ class AddLinePatternDialog : public QDialog {
         AddLinePatternDialog(lc::Document_SPtr document, QWidget* parent = 0);
 
         /**
-         * \brief Create dialog pre-filled with existing line pattern informations.
+         * \brief Create dialog pre-filled with existing line pattern information.
          * \param document Document which contains the DXFLinePatterns.
          * \param linePattern Line pattern to edit
          * \param parent Parent widget

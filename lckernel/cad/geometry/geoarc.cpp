@@ -104,7 +104,7 @@ Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
         return center() + angle * radius();
     }
 
-    // Find out if angle is closer to start or end and return teh appropriate coordinate
+    // Find out if angle is closer to start or end and return the appropriate coordinate
     const auto ad1 = std::abs(angle - _startAngle);
     const auto ad2 = std::abs(angle - _endAngle);
 

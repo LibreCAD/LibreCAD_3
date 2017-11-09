@@ -6,7 +6,7 @@
 namespace lc {
 
     /**
-     * Event that get's emitted when a operation has been comitted
+     * Event that gets emitted when a operation has been committed
      */
     class CommitProcessEvent {
         public:

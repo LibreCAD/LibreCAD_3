@@ -5,7 +5,7 @@
 
 
 /**
-  * Event that get's dispatched each time the mouse is moved.
+  * Event that gets dispatched each time the mouse is moved.
   */
 namespace LCViewer {
 class MouseMoveEvent  {

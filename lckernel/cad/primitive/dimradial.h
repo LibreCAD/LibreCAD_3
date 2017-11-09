@@ -16,7 +16,7 @@ namespace lc {
         * DimRadial dimension
         * DefinitionPoint hold's the center of the radius
         * DefinitionPoint2 holds the circle/arc edge
-        * CenterText holds' teh location of the text
+        * CenterText holds' the location of the text
         */
         class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
         public:

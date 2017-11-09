@@ -16,8 +16,8 @@
 
 #include <cad/document/document.h>
 
-// Minimum linewidth we reander, below this the lines might start to loog 'jagged'
-// We migth one to consider at lower linewidth to simply reduce alpha to get a similat effect of smaller line?
+// Minimum linewidth we render, below this the lines might start to look 'jagged'
+// We migth want to consider at lower linewidth to simply reduce alpha to get a similar effect of smaller line?
 static const double MINIMUM_READER_LINEWIDTH = 1.0;
 namespace LCViewer {
 
@@ -98,16 +98,16 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 
         /**
          * Remove all painter's
-         * This can be usefull if your viewer that uses the document canvas get's deleted before
-         * it will delete the canvas itself. This can happen if your UI layer claim's ownership
+         * This can be useful if your viewer that uses the document canvas gets deleted before
+         * it will delete the canvas itself. This can happen if your UI layer claims ownership
          * and you don't have the chance to control order of destruction of objects.
          */
         void removePainters();
 
         /**
          * @brief createPainterFunctor
-         * is called each time a new LcPainter is required. The underlaying implementation allow's you to decide
-         * into what the document get's painted.
+         * is called each time a new LcPainter is required. The underlaying implementation allows you to decide
+         * into what the document gets painted.
          * @param createPainterFunctor
          */
         void createPainterFunctor(const std::function<LcPainter *(const unsigned int, const unsigned int)>& createPainterFunctor);
@@ -121,14 +121,14 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 
         /**
          * @brief bounds
-         * return the opproximate size of the current document
+         * return the approximate size of the current document
          * @return
          */
         lc::geo::Area bounds() const;
 
         /**
          * @brief makeSelection
-         * within the document. It wil color the area red/green depending on the occupies flag.
+         * within the document. It will color the area red/green depending on the occupies flag.
          * The coordinates must be given in user coordinates
          * @param x
          * @param y
@@ -158,7 +158,7 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
         void closeSelection();
 
         /**
-        * @brief removeSelectionArea removed the colord selection area from the screen
+        * @brief removeSelectionArea removed the colored selection area from the screen
         */
         void removeSelectionArea();
 
@@ -178,7 +178,7 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 
         /**
          * I don't like this because it requires a painting context
-         * However, for now I will do it because there wasn't a easy and quick way to have
+         * However, for now I will do it because there wasn't an easy and quick way to have
          * some matrix calculations done.
          */
         void device_to_user(double *x, double *y) const {
@@ -195,7 +195,7 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
 
         /**
          * Get the current entity container,
-         * don not store this as a reference, always call it
+         * do not store this as a reference, always call it
          */
         const lc::EntityContainer<lc::entity::CADEntity_SPtr>& entityContainer() const;
 
@@ -208,7 +208,7 @@ private:
          * @brief cachedPainter
          * fetch a painter, if no painter was found or the painter's size doesn't match anymore
          * with the device size the old painter will request adestruction through deletePainterFunctor and
-         * a new painter will be created through  createPainterFunctor
+         * a new painter will be created through createPainterFunctor
          * @param cacheType
          * @return
          */
@@ -256,7 +256,7 @@ private:
         // When !=null it show's a selected area
         lc::geo::Area* _selectedArea;
 
-        // When set to true, a entity will be selected if it intersects or occupies,
+        // When set to true, an entity will be selected if it intersects or occupies,
         // when false it will only select when the entity is fully contained
         bool _selectedAreaIntersects;
 

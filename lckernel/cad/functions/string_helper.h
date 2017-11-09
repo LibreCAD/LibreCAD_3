@@ -18,7 +18,7 @@ namespace lc {
              */
             template<typename ... Args>
             static std::string dim_value(std::string explicitValue, const std::string format, const Args ... args) {
-                /* asume we always have "<>" somewhere */
+                /* assume we always have "<>" somewhere */
                 size_t pos = explicitValue.find("<>");
                 if (pos !=std::string::npos)
                     return explicitValue.replace(pos, 2, StringHelper::string_format(format, args...));
@@ -53,7 +53,7 @@ namespace lc {
             }
 
             /**
-             * Comparator for map to setup case Insensetive comparison ofstd::strings, usefull in std::map
+             * Comparator for map to setup case Insensitive comparison ofstd::strings, useful in std::map
              */
             struct cmpCaseInsensetive : std::binary_function<std::string, std::string, bool>
             {

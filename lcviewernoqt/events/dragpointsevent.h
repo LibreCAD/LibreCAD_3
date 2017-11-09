@@ -4,7 +4,7 @@
 #include <cad/geometry/geocoordinate.h>
 
 /**
-  * Event that get's dispatched each time we want to have the cursor snapping to this point
+  * Event that gets dispatched each time we want to have the cursor snapping to this point
   *
   */
 

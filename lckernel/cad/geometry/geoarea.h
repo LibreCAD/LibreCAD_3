@@ -10,7 +10,7 @@
 namespace lc {
     namespace geo {
         /**
-          * Class that describes a area or window.
+          * Class that describes an area or window.
           */
         class Area : public Base, virtual public Visitable {
             public:
@@ -55,14 +55,14 @@ namespace lc {
                 }
 
                 /**
-                  * Return the smalles corner (closest to (0,0,0) )
+                  * Return the smallest corner (closest to (0,0,0) )
                   */
                 inline const Coordinate minP() const {
                     return _minP;
                 }
 
                 /**
-                  * Return the heigest corner
+                  * Return the highest corner
                   */
                 inline const Coordinate maxP() const {
                     return _maxP;
@@ -70,7 +70,7 @@ namespace lc {
 
                 /**
                  * @brief width
-                 * Returns the wid th of this area
+                 * Returns the width of this area
                  * @return
                  */
                 inline double width() const {
@@ -79,7 +79,7 @@ namespace lc {
 
                 /**
                  * @brief height
-                 * Returns the height f this area
+                 * Returns the height of this area
                  * @return
                  */
                 inline double height() const {
@@ -87,8 +87,8 @@ namespace lc {
                 }
 
                 /**
-                  * @brief Test of a specific point lies within a area
-                  * @param point Point to test agains
+                  * @brief Test of a specific point lies within area
+                  * @param point Point to test against
                   * @return boolean true of the point is within the area
                   */
                 inline bool inArea(const Coordinate& point, double tolerance = 0.) const {
@@ -97,7 +97,7 @@ namespace lc {
 
                 /**
                  * @brief inArea
-                 * test if this object's fit's fully in area
+                 * test if this object's fits fully in area
                  * @param area
                  * @return
                  */
@@ -107,7 +107,7 @@ namespace lc {
 
                 /**
                  * @brief overlaps
-                 * returns true if any overlap is happening between the two area's, even if otherArea fit's within this area
+                 * returns true if any overlap is happening between the two area's, even if otherArea fits within this area
                  * @param other
                  * @return
                  */

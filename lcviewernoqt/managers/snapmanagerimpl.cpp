@@ -77,7 +77,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
     // Emit snappoint based on closest entity
     if (entities.size() > 0) {
-        // GO over all entities, first closest to teh cursor gradually moving away
+        // GO over all entities, first closest to the cursor gradually moving away
         for (auto &entity : entities) {
             lc::Snapable_CSPtr captr;
 
@@ -119,7 +119,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 	//If no snap points found show cursor at mouse pos
 	_snapPointEvent(SnapPointEvent(location));
 
-    // FIXME: Currently sending a snapEvent so the cursor get's updated, what we really want is some sort of a release snap event
+    // FIXME: Currently sending a snapEvent so the cursor gets updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
     //SnapPointEvent snapEvent(lc::geo::Coordinate(event.mousePosition().x(), event.mousePosition().y()));
     //_lastSnapEvent = snapEvent;

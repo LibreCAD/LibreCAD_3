@@ -34,7 +34,7 @@ namespace lc {
             /**
              * @brief EntityContainer
              * Default constructor.
-             * Usually you would retreive a EntityContainer from the document
+             * Usually you would retrieve a EntityContainer from the document
              */
             EntityContainer() {
                 _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-500000., -500000.), geo::Coordinate(500000., 500000.)));
@@ -95,8 +95,8 @@ namespace lc {
 
             /**
              * @brief asVector
-             * return all entities as std::vector optionally up untill a given level
-             * This is usefull to return entities for screen rendering where you don't
+             * return all entities as std::vector optionally up until a given level
+             * This is useful to return entities for screen rendering where you don't
              * want to render very small entities (< XX pixels)
              * @return
              */

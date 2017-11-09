@@ -52,9 +52,9 @@ const Area CubicBezier::boundingBox() const {
 Coordinate CubicBezier::nearestPointOnPath(const Coordinate& coord) const {
 
     /*
-     * Diffrence between nearest point on path and
+     * Difference between nearest point on path and
      * nearest point on entity for a bezier curve is that
-     * for calcualting the nearest point on entity you check
+     * for calculating the nearest point on entity you check
      * that if the value of "t" is between 0 and 1
      * whereas for nearest point on path, you don't check that
      */

@@ -5,7 +5,7 @@
 
 namespace lc {
     /**
-     * Event that get's emited when a entity was replace.
+     * Event that gets emitted when an entity was replaced.
      *
      * @param oldEntity
      * @param newEntity

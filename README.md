@@ -147,7 +147,7 @@ cmake -DWINDOWS_MSYS2=ON ..
 
 Create symlinks for .so files with ```ln -s ../lc*/lib*.so```
 
-Replace paths in build/lcUI/path.lua with Windows-style pathes ```C:\msys64\…```
+Replace paths in build/lcUI/path.lua with Windows-style paths ```C:\msys64\…```
 
 Reading materials for feature usage
 =========
