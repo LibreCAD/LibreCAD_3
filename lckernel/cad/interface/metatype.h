@@ -59,7 +59,7 @@ namespace lc {
     class EntityMetaType : public MetaType {
         public:
             /**
-             * metaTypeName, for example '_LAYER' this method isn't ment to be used
+             * metaTypeName, for example '_LAYER' this method isn't meant to be used
              * for RTTI purpose, do use dynamic_casts or static_casts for that.
             */
             virtual const std::string metaTypeID() const = 0;

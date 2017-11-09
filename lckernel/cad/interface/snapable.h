@@ -26,7 +26,7 @@ namespace lc {
 
             /*!
              * \brief Find the nearest point on the path for this entity for the coordinate \em coord
-             * The path of a entity that it can possibly take. For example for any Arc the path is the full circle if thge start/stop angle is 0 to 2*pi
+             * The path of a entity that it can possibly take. For example for any Arc the path is the full circle if the start/stop angle is 0 to 2*pi
              * \param coord Coordinate to lookup the nearest coordinate from
              * \sa lc::entity::CADEntity
              */

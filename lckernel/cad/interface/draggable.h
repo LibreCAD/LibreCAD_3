@@ -19,7 +19,7 @@ namespace lc {
             /**
              * \brief Return modified entity
              * \param dragPoints Modified points
-             * \return New entity or same entity if an error occured
+             * \return New entity or same entity if an error occurred
              * Return the new entity which corresponds to the given points.
              * Points must be associated to the same number given in dragPoints().
              */

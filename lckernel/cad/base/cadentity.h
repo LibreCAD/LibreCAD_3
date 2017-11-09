@@ -83,7 +83,7 @@ namespace lc {
              * @brief boundingBox
              * Return the bounding box of this entity.
              * This should be as tight around the entity as possible but care should be taken that this routine
-             * is also as fast as possible. in essense, favor speed over tightness.
+             * is also as fast as possible. in essence, favor speed over tightness.
              * This routine will in generally be used during testing if entities cross for example to find snap points
              * and to build relationships of tree for example using quad trees
              * @return geo::Area
@@ -105,7 +105,7 @@ namespace lc {
             Layer_CSPtr layer() const;
 
             /**
-            * Retreive meta information back from this entity
+            * Retrieve meta information back from this entity
             * returns nullptr when the specific meta info wasn't found
             * example: auto metaData = myEntity.metaInfo<lc::MetaColorByValue>(lc::MetaInfo::_COLOR);
             */

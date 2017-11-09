@@ -38,7 +38,7 @@ class LinePatternManager : public QDialog {
         /**
          * \brief Create update dialog.
          * This function is called when "Edit" button is pressed.
-         * It create a new dialog pre-filled with the line pattern informations.
+         * It create a new dialog pre-filled with the line pattern information.
          */
         void on_editButton_pressed();
         /**
@@ -49,7 +49,7 @@ class LinePatternManager : public QDialog {
         void on_newButton_pressed();
         /**
          * \brief Create update dialog.
-         * It create a new dialog pre-filled with the line pattern informations.
+         * It create a new dialog pre-filled with the line pattern information.
          * This function is called when an element of the list is double clicked.
          */
         void on_lpView_doubleClicked(const QModelIndex& index);

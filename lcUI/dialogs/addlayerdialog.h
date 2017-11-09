@@ -31,7 +31,7 @@ class AddLayerDialog : public QDialog {
         AddLayerDialog(lc::Document_SPtr document, QWidget* parent = 0);
 
         /**
-         * \brief Create dialog pre-filled with existing Layer informations
+         * \brief Create dialog pre-filled with existing Layer information
          * \param oldLayer Layer to edit
          * \param document Document which contains the DXFLinePatterns
          * \param parent Parent widget
@@ -47,7 +47,7 @@ class AddLayerDialog : public QDialog {
         /**
          * \brief Create layer
          * This function is called when "Ok" button is pressed.
-         * It creates the layer according to the entered informations and send it back to Layers widget.
+         * It creates the layer according to the entered information and send it back to Layers widget.
          */
         void accept();
 

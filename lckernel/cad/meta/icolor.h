@@ -9,7 +9,7 @@ namespace lc {
     * TODO create a list of MetaColors instead of colors, this might save
     * memory when loading files that have a lot'f of indexed color values
     * then we only have to create a set of MetaColor shared pointer's
-    * instead of a new SharedPtr for each entety
+    * instead of a new SharedPtr for each entity
     */
     class iColor {
         public:
@@ -43,7 +43,7 @@ namespace lc {
 
             /**
             * Use this function to test of a MetaColor shared ptr matches a DXF color
-            * This is usefull when a DXF that was imported needs to be exported
+            * This is useful when a DXF that was imported needs to be exported
             * with the same DXF color ID's.
             */
             inline int colorToInt(std::shared_ptr<const lc::MetaColorByValue>& col) const {

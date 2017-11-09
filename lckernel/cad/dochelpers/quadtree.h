@@ -80,8 +80,8 @@ namespace lc {
             /**
              * @brief insert
              * Insert entity into the qauad tree
-            * @param pRect
-            * @param pRect
+             * @param pRect
+             * @param pRect
              * @param entity
              */
             void insert(const E entity, const lc::geo::Area& entityBoundingBox) {
@@ -97,14 +97,14 @@ namespace lc {
 
                 _objects.push_back(entity);
 
-                // If it fit's in this box, see if we can/must split this area into sub area's
+                // If it fits in this box, see if we can/must split this area into sub area's
                 // loop over the current container and see if the entities fit at a lower level
                 // So each entity is only tried once
                 if (_nodes[0] == nullptr && _objects.size() >= _maxObjects && _level < _maxLevels) {
 
                     split();
                     // Split two level's deep to reduce the number of object iterations
-                    // This will help mostly when adding lot's of little objects that would fit in 1/8 of the quad
+                    // This will help mostly when adding lots of little objects that would fit in 1/8 of the quad
                     _nodes[0]->split();
                     _nodes[1]->split();
                     _nodes[2]->split();
@@ -177,7 +177,7 @@ namespace lc {
 
             /**
              * @brief retrieve
-             * all object's within this QuadTree up untill some level
+             * all object's within this QuadTree up until some level
              * @param list
              * @param area
              */
@@ -198,7 +198,7 @@ namespace lc {
 
             /**
              * @brief entityByID
-             * return's a entity by it's ID
+             * returns a entity by its ID
              * @param id
              * @return
              */
@@ -226,7 +226,7 @@ namespace lc {
 
             /**
              * @brief level
-             * return's the current level of this QuadTree
+             * returns the current level of this QuadTree
              * @return
              */
             short level() const {
@@ -245,7 +245,7 @@ namespace lc {
             /**
              * @brief maxObjects
              * Maximum number of objects on this level
-             * This value shoild be copied one level to a other level within a single tree
+             * This value should be copied one level to a other level within a single tree
              * @return
              */
             short maxObjects() const {
@@ -254,7 +254,7 @@ namespace lc {
 
             /**
              * @brief walk
-             * Allow's to walk over each node within the tree specifying a function that can be called for each QuadTreeSub
+             * Allows to walk over each node within the tree specifying a function that can be called for each QuadTreeSub
              * @param foo
              */
             void walkQuad(const std::function<void(const QuadTreeSub<E>&)>& func) {
@@ -453,7 +453,7 @@ namespace lc {
     /**
      * @brief The QuadTree class
      * Quad tree implementation to spatially store CADEntities
-     * Usefull for area selections of large entities
+     * Useful for area selections of large entities
      *
      * Considerations, speed vs memory consumption
      * The more level's are created, the more memory it consumes, but the faster the tree will be for smaller objects
@@ -484,7 +484,7 @@ namespace lc {
 
             /**
              * @brief insert
-             * Insert entity into the qauad tree
+             * Insert entity into the quad tree
              * @param pRect
              * @param entity
              */
@@ -520,7 +520,7 @@ namespace lc {
              */
             bool erase(const E entity) {
                 if (_cadentities.count(entity->id()) == 0) {
-                    // // LOG4CXX_DEBUG(logger, "It's bad that we end up here, nortmally we should call erase on entoties we know that don't exists. ")
+                    // // LOG4CXX_DEBUG(logger, "It's bad that we end up here, normally we should call erase on entoties we know that don't exists. ")
                     return false;
                 }
 

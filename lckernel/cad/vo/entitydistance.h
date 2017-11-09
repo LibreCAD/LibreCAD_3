@@ -5,7 +5,7 @@
 namespace lc {
     /**
       * Entity Distance is a value object that can be used to associate a entity with a specific distance
-      * Ususally distances comes from a calculation between a coordinate and this entity
+      * Usually distances comes from a calculation between a coordinate and this entity
       *
       */
     class EntityDistance {

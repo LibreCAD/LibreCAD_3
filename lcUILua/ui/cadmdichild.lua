@@ -84,7 +84,7 @@ function redo()
     end
 end
 
--- Clean Lua informations of window when it's destroyed
+-- Clean Lua information of window when it's destroyed
 function onMdiChildDestroyed(id)
     mdiChildIDs[id] = nil
 end

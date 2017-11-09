@@ -16,7 +16,7 @@ namespace lc {
         /**
          * An operation is a grouped set of 'things' we can do on a document
          * Only one operation can run at a time because the document needs to get locked
-         * during a operaion.
+         * during an operation.
          *
          * @param document
          */
@@ -38,7 +38,7 @@ namespace lc {
             private:
 
                 /**
-                 * This function get's called when a operation starts and when the document is locked for you
+                 * This function gets called when an operation starts and when the document is locked for you
                  * so you can do your work
                  */
                 void process();
@@ -48,14 +48,14 @@ namespace lc {
                 virtual void start() const {};
 
                 /**
-                 * This function will get called when the process of this operation is finnished
+                 * This function will get called when the process of this operation is finished
                  */
                 virtual void finnish() const {};
 
                 Document_SPtr _document;
             protected:
                 /**
-                 * This function get's called when a operation starts and when the document is locked for you
+                 * This function gets called when an operation starts and when the document is locked for you
                  * so you can do your work
                  */
                 virtual void processInternal() = 0;

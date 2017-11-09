@@ -276,7 +276,7 @@ namespace detail {
         Ret operator () (F&& f, const Tuple&t, index_sequence<Is...>)
         {
             const int dummy[] = {(set_index<Is>(t), 0)...};
-            static_cast<void>(dummy); // silent the warning unused varaible
+            static_cast<void>(dummy); // silent the warning unused variable
             constexpr auto a = GetAllOverload<Ret, F&&, Tuple>::
             template get<sizeof...(Is), typename IVisitor::tuple_type>();
             auto func = multi_array_getter<N>::get(a, index);

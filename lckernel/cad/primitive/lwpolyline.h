@@ -153,7 +153,7 @@ namespace lc {
             const double _width;
             const double _elevation;
             const double _tickness;
-            const bool _closed; // If we had more 'flag' options we shoudl consuder using a enum instead of seperate variables to make constructors easer
+            const bool _closed; // If we had more 'flag' options we should consider using an enum instead of separate variables to make constructors easier
             const geo::Coordinate _extrusionDirection;
             std::vector<CADEntity_CSPtr> _entities;
 

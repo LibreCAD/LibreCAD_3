@@ -33,7 +33,7 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
     const lc::geo::Coordinate& mousePos = _dimLinear->middleOfText();
 
     /* TODO maybe need to check for vertical too ?
-     * asume firstPoint is always on left side...
+     * assume firstPoint is always on left side...
      */
     if (!(mousePos.x() <= firstPoint.x() || mousePos.x() >= secondPoint.x())
         && !(mousePos.y() >= firstPoint.y() && mousePos.y() <= secondPoint.y())) {

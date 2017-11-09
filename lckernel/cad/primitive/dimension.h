@@ -11,7 +11,7 @@ namespace lc {
         /**
         * Base class for all dimensions
         * It takes in the values pretty much as given by the DXF reference
-        * TODO: Should we move some variables to the implementation of a actualy Dimension like DimRadial and have all optional variables as part of the meta map ?
+        * TODO: Should we move some variables to the implementation of an actual Dimension like DimRadial and have all optional variables as part of the meta map?
         */
         class Dimension {
 
@@ -108,9 +108,9 @@ namespace lc {
             TextConst::LineSpacingStyle lineSpacingStyle() const;
 
             /**
-            * Return's the explicit value of this dimension
-            * The explicit value is the value has given by the ueaser instead of the measured one
-            * default is the measurement. If "" or "<>" if a blank space it's surpressed
+            * Returns the explicit value of this dimension
+            * The explicit value is the value given by the user instead of the measured one
+            * default is the measurement. If "" or "<>" if a blank space it's suppressed
             */
             std::string explicitValue() const;
 

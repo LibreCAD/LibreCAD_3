@@ -115,7 +115,7 @@ class LCADViewer : public QWidget {
         int h_ = 0;
 
 
-        // When set to true, the line width on screen will scale with teh zoom factor
+        // When set to true, the line width on screen will scale with the zoom factor
         bool _scaleLineWidth;
 
         //

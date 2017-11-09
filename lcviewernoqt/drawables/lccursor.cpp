@@ -57,14 +57,14 @@ void Cursor::onDraw(DrawEvent const & event) const {
     event.painter().source_rgba(_yAxisColor.red(), _yAxisColor.green(), _yAxisColor.blue(), _yAxisColor.alpha());
     event.painter().stroke();
 
-    /** Cursor added temprary untill we have a better system for this **/
+    /** Cursor added temporarily until we have a better system for this **/
     event.painter().source_rgb(1.,1.,1.);
     event.painter().move_to(x, y);
     std::string foo = lc::StringHelper::string_format("%.2f,%.2f",x, y);
     event.painter().font_size(12, true);
     event.painter().text(foo.c_str());
     event.painter().stroke();
-    /** Cursor added temprary untill we have a better system for this **/
+    /** Cursor added temporarily until we have a better system for this **/
 
     event.painter().restore();
 }
