@@ -44,7 +44,7 @@ void AddLinePatternDialog::generatePreview() {
     }
 
     std::vector<double> path;
-    double length;
+    double length = 0.0;
 
     auto parts = findChildren<LinePatternPathPart*>();
 
