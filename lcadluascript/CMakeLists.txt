@@ -29,10 +29,6 @@ set(lcluascript_hdrs
 )
 
 
-find_package(Lua 5.2 REQUIRED)
-include_directories(${LUA_INCLUDE_DIR})
-link_directories(${LUA_LIBRARIES})
-
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
@@ -44,7 +40,6 @@ endif ()
 #Lua
 find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
-link_directories(${LUA_LIBRARIES})
 
 set(SEPARATE_BUILD OFF)
  

@@ -100,7 +100,7 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 #Lua
 find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
-link_directories(${LUA_LIBRARIES})
+link_directories(${LUA_LIBRARY_DIRS})
 
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
@@ -123,6 +123,8 @@ else()
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
 endif()
+
+link_directories(${PANGO_LIBRARY_DIRS})
 
 set(EXTRA_LIBS
         lcluascript
