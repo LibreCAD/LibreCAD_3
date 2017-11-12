@@ -5,6 +5,7 @@
 
 int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
+    a.setAttribute(Qt::AA_ShareOpenGLContexts);
 
     //log4cxx::xml::DOMConfigurator::configure("Log4cxxConfig.xml");
 
