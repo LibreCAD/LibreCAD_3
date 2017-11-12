@@ -19,12 +19,12 @@ include_directories(${CAIRO_INCLUDE_DIRS})
 # Pango
 find_package(Pango REQUIRED)
 include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARIES})
+link_directories(${PANGO_LIBRARY_DIRS})
 
 # Curl
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
-link_directories(${CURL_LIBRARIES})
+link_directories(${CURL_LIBRARY_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -58,7 +58,7 @@ include_directories(${GLIB_INCLUDE_DIRS})
 #Lua
 find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
-link_directories(${LUA_LIBRARIES})
+link_directories(${LUA_LIBRARY_DIRS})
 
 set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")

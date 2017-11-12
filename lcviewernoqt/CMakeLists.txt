@@ -87,14 +87,17 @@ drawables/CursorLocation.h
 drawitems/lcvinsert.h
 )
 
+find_package(PkgConfig)
+
 # Cairo
-find_package(Cairo 1.13 REQUIRED)
+pkg_check_modules(CAIRO REQUIRED cairo>=1.13)
 include_directories(${CAIRO_INCLUDE_DIRS})
+link_directories(${CAIRO_LIBRARY_DIRS})
 
 # Pango
-find_package(Pango 1.38 REQUIRED)
+pkg_check_modules(PANGO REQUIRED pango>=1.38)
 include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARIES})
+link_directories(${PANGO_LIBRARY_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)

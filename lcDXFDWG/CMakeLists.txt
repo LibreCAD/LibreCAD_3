@@ -26,7 +26,6 @@ set(lcdxfdwg_hdrs
 # LibbDXFRW
 find_package(LibDxfrw REQUIRED)
 include_directories(${LIBDXFRW_INCLUDE_DIR})
-link_directories(${LIBDXFRW_LIBRARY})
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

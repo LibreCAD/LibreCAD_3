@@ -17,3 +17,6 @@ doc
 lckernel/version.cpp
 cmake-build-debug
 unittest/rendering/res/*.out
+
+# macOS
+.DS_Store

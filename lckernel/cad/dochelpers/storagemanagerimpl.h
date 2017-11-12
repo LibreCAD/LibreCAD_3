@@ -35,26 +35,26 @@ namespace lc {
              * @brief insertEntity
              * \param entity::CADEntity_CSPtr
              */
-            virtual void insertEntity(const entity::CADEntity_CSPtr);
+            virtual void insertEntity(const entity::CADEntity_CSPtr) override;
 
             /**
              * @brief remove Entity from the container
              * \param entity::CADEntity_CSPtr
              */
-            virtual void removeEntity(const entity::CADEntity_CSPtr);
+            virtual void removeEntity(const entity::CADEntity_CSPtr) override;
 
             /**
              * @brief insertEntityContainer
              * \param EntityContainer<entity::CADEntity_CSPtr>
              */
-            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr> &);
+            virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr> &) override;
 
            /**
              * @brief return entity By ID
              * @param id
              * @return entity::CADEntity_CSPtr entity
              */
-            virtual entity::CADEntity_CSPtr entityByID(const ID_DATATYPE id) const;
+            virtual entity::CADEntity_CSPtr entityByID(const ID_DATATYPE id) const override;
 
             /**
              * @brief Returns entities By Layer
@@ -62,63 +62,63 @@ namespace lc {
              * @return EntityContainer<entity::CADEntity_CSPtr> entities on layer
              * @Deprecated use entityContainer()->entitiesByLayer()
              */
-            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const;
+            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const override;
 
             /**
              * @brief returns layer By Name
              * @param layerName
              * @return Layer_CSPtr layer
              */
-            virtual Layer_CSPtr layerByName(const std::string& layerName) const;
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const override;
 
             /**
              * @brief returns line pattern By Name
              * @param string& linePatternName
              * @return DxfLinePattern_CSPtr layer
              */
-            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const;
+            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
             /**
              * @brief return all Layers
              * @return map<string, Layer_CSPtr>
              */
-            virtual std::map<std::string, Layer_CSPtr> allLayers() const;
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const override;
 
             /**
              * @brief returns entity Container
              * @return entityContainer<entity::CADEntity_CSPtr>
              */
-            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entityContainer() const;
+            virtual lc::EntityContainer<entity::CADEntity_CSPtr> entityContainer() const override;
 
             /**
             *  \brief add a document meta type
             *  \param layer layer to be added.
             */
-            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt) override;
 
             /**
             *  \brief remove a document meta type from the document
             *  \param layer layer to be added.
             */
-            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) override;
 
             /**
             *  \brief remove document meta type
             */
-            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) override;
 
-            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() const;
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() const override;
 
             lc::EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) const override;
 
             /**
              * @brief optimise the quadtree
              */
-            virtual void optimise();
+            virtual void optimise() override;
 
 
     private:
-            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string id) const;
+            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string id) const override;
 
     private:
 
