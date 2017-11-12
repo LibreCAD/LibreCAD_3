@@ -16,50 +16,50 @@ namespace lc {
             virtual ~DocumentImpl();
 
         public:
-            virtual void insertEntity(const entity::CADEntity_CSPtr cadEntity);
-            virtual void removeEntity(entity::CADEntity_CSPtr entity);
+            virtual void insertEntity(const entity::CADEntity_CSPtr cadEntity) override;
+            virtual void removeEntity(entity::CADEntity_CSPtr entity) override;
 
-            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt);
-            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt);
-            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt);
-            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes();
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt) override;
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) override;
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) override;
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() override;
             /**
              * @brief entitiesByLayer
              * @param layer
              * @return
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer);
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) override;
 
             EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) override;
 
-            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer();
+            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() override;
 
-            virtual std::map<std::string, Layer_CSPtr> allLayers() const;
+            virtual std::map<std::string, Layer_CSPtr> allLayers() const override;
 
-            virtual Layer_CSPtr layerByName(const std::string& layerName) const;
-            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const;
+            virtual Layer_CSPtr layerByName(const std::string& layerName) const override;
+            virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
             /**
              * @brief return all line patterns
              */
-            virtual std::vector<DxfLinePatternByValue_CSPtr> linePatterns() const;
+            virtual std::vector<DxfLinePatternByValue_CSPtr> linePatterns() const override;
         protected:
             /*!
              * \brief execute's a operation
              * \param operation
              */
-            void execute(operation::DocumentOperation_SPtr operation);
+            void execute(operation::DocumentOperation_SPtr operation) override;
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            virtual void begin(operation::DocumentOperation_SPtr operation);
+            virtual void begin(operation::DocumentOperation_SPtr operation) override;
             /*!
              * \brief commits operation
              * \param operation
              */
-            virtual void commit(operation::DocumentOperation_SPtr operation);
+            virtual void commit(operation::DocumentOperation_SPtr operation) override;
 
             virtual StorageManager_SPtr storageManager() const;
 
