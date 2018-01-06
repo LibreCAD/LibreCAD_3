@@ -83,19 +83,110 @@ Ellipse Ellipse::georotate(const geo::Coordinate& rotation_center, const double 
                     minorRadius(), startAngle(), endAngle());
 }
 
+std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &coord) const
+{
+    std::vector<Coordinate> pnp;
+    pnp.push_back(this->startPoint());
+    pnp.push_back(this->endPoint());
+
+    double ellipseAngle = this->getAngle();
+
+    Coordinate trcoord = coord-_center;
+    trcoord = trcoord.rotate(Coordinate(0, 0), -ellipseAngle);
+
+    double b = _minorRadius;
+    double a = _majorP.magnitude();
+
+    double x=trcoord.x(),y=trcoord.y();
+
+    double twoa2b2=2*(a*a-b*b);
+    double twoax=2*a*x;
+    double twoby=2*b*y;
+    double a0=twoa2b2*twoa2b2;
+    std::vector<double> ce(4,0.);
+    std::vector<double> roots(0,0.);
+
+    if(a0 > LCTOLERANCE ) { // a != b , ellipse
+        ce[0]=-2.*twoax/twoa2b2;
+        ce[1]= (twoax*twoax+twoby*twoby)/a0-1.;
+        ce[2]= - ce[0];
+        ce[3]= -twoax*twoax/a0;
+        //std::cout<<"1::find cosine, variable c, solve(c^4 +("<<ce[0]<<")*c^3+("<<ce[1]<<")*c^2+("<<ce[2]<<")*c+("<<ce[3]<<")=0,c)\n";
+        roots=Math::quarticSolver(ce);
+    } else {//a=b, quadratic equation for circle
+        a0=twoby/twoax;
+        roots.push_back(sqrt(1./(1.+a0*a0)));
+        roots.push_back(-roots[0]);
+    }
+
+    if(roots.size()==0) {
+        //this should not happen
+        std::cout<<"(a= "<<a<<" b= "<<b<<" x= "<<x<<" y= "<<y<<" )\n";
+        std::cout<<"finding minimum for ("<<x<<"-"<<a<<"*cos(t))^2+("<<y<<"-"<<b<<"*sin(t))^2\n";
+        std::cout<<"2::find cosine, variable c, solve(c^4 +("<<ce[0]<<")*c^3+("<<ce[1]<<")*c^2+("<<ce[2]<<")*c+("<<ce[3]<<")=0,c)\n";
+        std::cout<<ce[0]<<' '<<ce[1]<<' '<<ce[2]<<' '<<ce[3]<<std::endl;
+        std::cerr<<"lcmath::geoellipse::findPotentialNearestPoints() finds no root from quartic, this should not happen\n";
+        return pnp;
+    }
+
+
+    for(size_t i=0; i<roots.size(); i++) {
+        double const s=twoby*roots[i]/(twoax-twoa2b2*roots[i]); //sine
+        double const d2=twoa2b2+(twoax-2.*roots[i]*twoa2b2)*roots[i]+twoby*s;
+        if (d2<0) continue; // fartherest
+        Coordinate t(a*roots[i], b*s);
+        //double d=(t-trcoord).magnitude();
+        //double angle = atan2(roots[i],s);
+        // std::cout<<i<<" Find Point: cos= "<<roots[i]<<" sin= "<<s<<" angle= "<<angle<<" ds2= "<<d<<" d="<<d2<<std::endl;
+        t = t.rotate(ellipseAngle);
+        t = t + _center;
+        pnp.push_back(t);
+    }
+    return pnp;
+}
+
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
-    /* TODO implement
-     * fix compiler warning
-     */
-    return Coordinate();
+
+    Coordinate res;
+    double minDist = DBL_MAX;
+    std::vector<Coordinate> potencialPoinst = this->findPotentialNearestPoints(coord);
+
+    for (auto verifiedPoint: potencialPoinst)
+    {
+        double d = verifiedPoint.distanceTo(coord);
+        if (d<minDist)
+        {
+            minDist = verifiedPoint.distanceTo(coord);
+            res = verifiedPoint;
+        }
+    };
+
+    return res;
 }
 
 Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
-    /* TODO implement
-     * fix compiler warning
-     */
-    return Coordinate();
+
+    Coordinate res;
+    double minDist = DBL_MAX;
+    std::vector<Coordinate> potencialPoinst = this->findPotentialNearestPoints(coord);
+
+
+    for (auto verifiedPoint: potencialPoinst)
+    {
+        if (this->isAngleBetween(verifiedPoint.angle()))
+        {
+            double d = verifiedPoint.distanceTo(coord);
+            if (d<minDist)
+            {
+                minDist = verifiedPoint.distanceTo(coord);
+                res = verifiedPoint;
+            }
+        }
+    };
+
+    return res;
 }
+
 
 /*
  * DEPRECATED, but keeping source for reference
