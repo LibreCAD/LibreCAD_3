@@ -69,10 +69,24 @@ namespace lc {
                  * @return for elliptic arc, return the endPoint, otherwise return end of majorP
                  */
                 Coordinate endPoint() const;
-
-                Coordinate nearestPointOnPath(const Coordinate& coord) const;
-                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
                 /**
+                 * @brief findPotentialNearestPoints
+                 * @param coord, the point of which we search
+                 * @return
+                 */
+                std::vector<Coordinate> findPotentialNearestPoints(const Coordinate& coord) const;
+                /**
+                 * @brief nearestPointOnPath, (ignore if it arc)
+                 * @param coord, the point of which we search
+                 * @return nearest point on the ellipse path
+                 */
+                Coordinate nearestPointOnPath(const Coordinate& coord) const;
+                /**
+                 * @brief nearestPointOnEntity, ( not ignore arc)
+                * @param coord, the point of which we search
+                * @return nearest point on the ellipse Entity
+                */
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const;                /**
                  * @brief isArc
                  * @return true if entity is an elliptic arc
                  */
