@@ -124,6 +124,8 @@ namespace lc {
                 double getEllipseAngle(const Coordinate& coord) const;
 
                 bool isAngleBetween(double angle) const {
+                    if (!isArc())
+                        return true;
                     return Math::isAngleBetween(angle, _startAngle, _endAngle, !_isReversed);
                 }
 

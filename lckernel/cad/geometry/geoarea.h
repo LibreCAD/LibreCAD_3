@@ -224,8 +224,17 @@ namespace lc {
                     return Area(geo::Coordinate(_minP.x() - increaseBy, _minP.y() - increaseBy, _minP.z()),
                                 geo::Coordinate(_maxP.x() + increaseBy, _maxP.y() + increaseBy, _maxP.z()));
                 }
-
                 /**
+                 * @brief checks for the equality of Area
+                 * @param Area
+                 * @return bool equality
+                 */
+                inline bool operator==(const Area& ar) const {
+                    return this->minP() == ar.minP() && this->maxP() == ar.maxP();
+                }
+
+
+            /**
                  * @brief right
                  * vector of this area
                  * @return

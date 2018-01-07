@@ -141,7 +141,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(src
         ${src}
         rendering/renderingtest.cpp
-            lckernel/geometry/testgeoellipse.cpp)
+            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp)
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")

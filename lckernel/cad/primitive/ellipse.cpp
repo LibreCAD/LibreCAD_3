@@ -107,29 +107,94 @@ CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate& axis1, const geo::Coordin
 }
 
 const geo::Area Ellipse::boundingBox() const {
-    auto r_majorPoint = majorP();
+    const double a = majorP().magnitude();
+    const double b = this->minorRadius();
+    const double angle = this->getAngle();
+    geo::Coordinate c1, c2, c3, c4;
+    double a1,a2,a3,a4;
+    bool simple = false; // (major axis = ox axis) or (major axis =  oy axis)
 
-    auto minorAngle = getAngle() + (M_PI / 2);
-    auto r_minorPoint = geo::Coordinate(
-        minorRadius() * cos(minorAngle),
-        minorRadius() * sin(minorAngle)
-    );
+    if (sin(angle) == 0) {
+        c1 = geo::Coordinate(this->center().x() + a, this->center().y());
+        a1 = 0;
+        c2 = geo::Coordinate(this->center().x(), this->center().y() + b);
+        a2 = 0.5*M_PI;
+        c3 = geo::Coordinate(this->center().x() - a, this->center().y());
+        a3 = M_PI;
+        c4 = geo::Coordinate(this->center().x(), this->center().y() - b);
+        a4 = 2*M_PI;
 
-    auto bb_halfWidth = sqrt(r_majorPoint.x() * r_majorPoint.x() + r_minorPoint.x() * r_minorPoint.x());
-    auto bb_halfHeight = sqrt(r_majorPoint.y() * r_majorPoint.y() + r_minorPoint.y() * r_minorPoint.y());
-
-    auto ellipseBB = geo::Area(
-        geo::Coordinate(center().x() - bb_halfWidth, center().y() - bb_halfHeight),
-        geo::Coordinate(center().x() + bb_halfWidth, center().y() + bb_halfHeight)
-    );
-
-    if(!isArc()) {
-        return ellipseBB;
+        simple = true;
     }
 
-    //TODO: bounding box for arc ellipse
+    if (cos(angle) == 0) {
+        c1 = geo::Coordinate(this->center().x() + b, this->center().y());
+        a1 = 0;
+        c2 = geo::Coordinate(this->center().x(), this->center().y() + a);
+        a2 = 0.5*M_PI;
+        c3 = geo::Coordinate(this->center().x() - b, this->center().y());
+        a3 = M_PI;
+        c4 = geo::Coordinate(this->center().x(), this->center().y() - a);
+        a4 = 2*M_PI;        simple = true;
+    }
 
-    return ellipseBB;
+
+    double minX, minY, maxX, maxY;
+
+
+    geo::Coordinate sp = startPoint();
+    minX = sp.x();
+    maxX = sp.x();
+    minY = sp.y();
+    maxY = sp.y();
+
+    auto checkPoint = [&](geo::Coordinate point, double angle) {
+        if (this->isAngleBetween(angle)) {
+            if (point.x() < minX)
+                minX = point.x();
+            if (point.x() > maxX)
+                maxX = point.x();
+            if (point.y() < minY)
+                minY = point.y();
+            if (point.y() > maxY)
+                maxY = point.y();
+        }
+    };
+    checkPoint(this->endPoint(), this->endAngle());
+
+    if (!simple) {
+        double tanAngle = std::tan(this->getAngle());
+
+        auto getY = [&](double x) {
+            return -b * b * x / (a * a * tanAngle);
+        };
+
+        double x = a * a * tanAngle / (sqrt(a * a * tanAngle * tanAngle + b * b));
+        c1 = geo::Coordinate(x, getY(x));
+        c2 = geo::Coordinate(-x, getY(-x));
+
+        tanAngle = -1 / tanAngle;
+        x = a * a * tanAngle / (sqrt(a * a * tanAngle * tanAngle + b * b));
+        c3 = geo::Coordinate(x, getY(x));
+        c4 = geo::Coordinate(-x, getY(-x));
+        a1 = c1.angle()-angle;
+        a2 = c2.angle()-angle;
+        a3 = c3.angle()-angle;
+        a4 = c4.angle()-angle;
+
+        c1 = c1.rotate(-angle) + this->center();
+        c2 = c2.rotate(-angle) + this->center();
+        c3 = c3.rotate(-angle) + this->center();
+        c4 = c4.rotate(-angle) + this->center();
+    }
+
+    checkPoint(c1,a1);
+    checkPoint(c2,a2);
+    checkPoint(c3,a3);
+    checkPoint(c4,a4);
+
+    return geo::Area(geo::Coordinate(minX,minY),
+                     geo::Coordinate(maxX,maxY));
 }
 
 CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
