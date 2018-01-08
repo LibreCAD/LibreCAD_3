@@ -120,9 +120,9 @@ const geo::Area Ellipse::boundingBox() const {
         c2 = geo::Coordinate(this->center().x(), this->center().y() + b);
         a2 = 0.5*M_PI;
         c3 = geo::Coordinate(this->center().x() - a, this->center().y());
-        a3 = M_PI;
+        a3 = 1.*M_PI;
         c4 = geo::Coordinate(this->center().x(), this->center().y() - b);
-        a4 = 2*M_PI;
+        a4 = 1.5*M_PI;
 
         simple = true;
     }
@@ -133,9 +133,9 @@ const geo::Area Ellipse::boundingBox() const {
         c2 = geo::Coordinate(this->center().x(), this->center().y() + a);
         a2 = 0.5*M_PI;
         c3 = geo::Coordinate(this->center().x() - b, this->center().y());
-        a3 = M_PI;
+        a3 = 1.0*M_PI;
         c4 = geo::Coordinate(this->center().x(), this->center().y() - a);
-        a4 = 2*M_PI;        simple = true;
+        a4 = 1.5*M_PI;        simple = true;
     }
 
 

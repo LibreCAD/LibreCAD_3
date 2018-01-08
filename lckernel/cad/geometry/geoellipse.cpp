@@ -1,6 +1,8 @@
 #include "geoellipse.h"
 
 #include "math.h"
+#include <cad/math/lcmath.h>
+
 
 using namespace lc;
 using namespace geo;
@@ -230,7 +232,18 @@ double Ellipse::endAngle() const {
 }
 
 Coordinate Ellipse::getPoint(const double& angle) const {
-    return _center + Coordinate(majorP().magnitude() * cos(angle), minorRadius() * sin(angle)).rotate(Coordinate(0., 0.), majorP().angle());
+    const double a = majorP().magnitude();
+    const double b = minorRadius();
+
+    double ang = Math::correctAngle(angle-majorP().angle());
+
+    double p = atan(tan(ang)*a/b);
+
+    if (M_PI_2<=ang)
+        p += M_PI;
+    if (-M_PI_2>=ang)
+        p -= M_PI;
+    return _center + Coordinate(a * cos(p), b * sin(p)).rotate(Coordinate(0., 0.), majorP().angle());
 }
 
 Coordinate Ellipse::startPoint() const {
