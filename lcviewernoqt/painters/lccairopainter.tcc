@@ -344,7 +344,7 @@ public:
         cairo_translate(_cr, cx, - cy);
         cairo_rotate(_cr, - ra);
         cairo_scale(_cr, rx, ry);
-        cairo_arc(_cr, 0, 0, 1, sa, ea);
+        cairo_arc(_cr, 0, 0, 1, 2*M_PI - ea, 2*M_PI - sa);
         cairo_restore(_cr);
     }
 

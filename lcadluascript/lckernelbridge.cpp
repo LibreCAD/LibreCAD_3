@@ -276,7 +276,10 @@ void LCLua::importLCKernel() {
                        LuaIntf::_opt<const MetaInfo_CSPtr>,
                        LuaIntf::_opt<const Block_CSPtr>
             ))
-        .endClass()
+
+            .addFunction("getEllipseAngle", &entity::Ellipse::getEllipseAngle)
+
+            .endClass()
 
         .beginExtendClass<entity::Point, entity::CADEntity>("Point_")
         .endClass()
