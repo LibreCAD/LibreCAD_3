@@ -41,5 +41,15 @@ TEST(lc__entity__EllipseTest, boundingBox) {
     Ellipse el5(geo::Coordinate(285, -129), geo::Coordinate(58,36), 17.204650534085253, 1.5669968920869093, -1.2295236480943998, false, nullptr);
     res = el5.boundingBox();
     ASSERT_NEAR(res.maxP().x(), 312.9616691494428,0.0000001);
+}
 
+TEST(lc__entity__EllipseTest, snapPoints) {
+    Ellipse el(geo::Coordinate(0.,0.),geo::Coordinate(20.,10.), 10, 0, 0, false, nullptr);
+    auto flag = SimpleSnapConstrain();
+    auto res = el.snapPoints(geo::Coordinate(-5.,9), flag, 5, 10);
+    ASSERT_EQ(res.size(), 1);
+
+    Ellipse el2(geo::Coordinate(0.,0.),geo::Coordinate(20.,0.), 10, 0, 0, false, nullptr);
+    auto res2 = el2.snapPoints(geo::Coordinate(20.,10.), flag, 30, 10);
+    ASSERT_EQ(res2.size(), 4);
 }

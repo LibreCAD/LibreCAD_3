@@ -42,20 +42,20 @@ namespace lc {
                 double minorRadius() const;
 
                 /**
-                 * @brief startAngle, Returns Startangle of ellipse
+                 * @brief startAngle, Returns Start elliptic!! angle of ellipse
                  * @return double startangle
                  */
                 double startAngle() const;
 
                 /**
-                 * @brief endAngle, Return the end angle of ellipse
+                 * @brief endAngle, Return the end elliptic!! angle of ellipse
                  * @return double endangle
                  */
                 double endAngle() const;
 
                 /**
                  * @brief getPoint, return a point on ellipse with given elliptic angle
-                 * @param angle, elliptic angle in radians
+                 * @param angle, elliptic!! angle in radians
                  * @return coordinates of a point on ellipse with given elliptic angle
                  */
                 Coordinate getPoint(const double& angle) const;
@@ -86,7 +86,8 @@ namespace lc {
                 * @param coord, the point of which we search
                 * @return nearest point on the ellipse Entity
                 */
-                Coordinate nearestPointOnEntity(const Coordinate& coord) const;                /**
+                Coordinate nearestPointOnEntity(const Coordinate& coord) const;
+                /**
                  * @brief isArc
                  * @return true if entity is an elliptic arc
                  */

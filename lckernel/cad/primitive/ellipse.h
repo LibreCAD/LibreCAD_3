@@ -2,6 +2,7 @@
 
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
+#include <cad/interface/snapable.h>
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoellipse.h"
@@ -23,7 +24,7 @@ namespace lc {
          *
          * \date 2012-04-16
          */
-        class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse {
+        class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse, public Snapable {
         public:
             /**
              * @brief Create ellipse
@@ -71,7 +72,8 @@ namespace lc {
              * @param double rotation_angle
              * @return CADEntity_CSPtr rotated entity
              */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr
+            rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
 
             /**
              * @brief scale, scales the entity
@@ -82,8 +84,9 @@ namespace lc {
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const override;
 
-            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                    const geo::Coordinate& axis2) const override;
+            virtual CADEntity_CSPtr mirror(const geo::Coordinate &axis1,
+                                           const geo::Coordinate &axis2) const override;
+
 
             /**
              * @brief boundingBox of the entity
@@ -91,7 +94,24 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr
+            modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+
+        public:
+
+            /**
+             * @return left, rigth, top, bottom, startPoint(for arc), endPoint(for arc)
+             */
+            std::vector<lc::geo::Coordinate> findBoxPoints() const;
+
+            /**
+             * @brief see interface Snapable
+             */
+            virtual std::vector<EntityCoordinate>
+            snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain, double minDistanceToSnap,
+                       int maxNumberOfSnapPoints) const override;
+
+            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
