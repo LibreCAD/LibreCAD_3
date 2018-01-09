@@ -11,12 +11,13 @@ using namespace entity;
 TEST(lc__entity__EllipseTest, boundingBox) {
 
 
-    Ellipse el1(geo::Coordinate(0,0), geo::Coordinate(20,20), 10, 0, 0, false,nullptr);
+    Ellipse el1(geo::Coordinate(20,40), geo::Coordinate(20,20), 10, 0.001, 0, false,nullptr);
     auto res = el1.boundingBox();
-    ASSERT_NEAR(res.minP().x(), -21.213203435,0.00000001);
-    ASSERT_NEAR(res.minP().y(), -21.213203435,0.00000001);
-    ASSERT_NEAR(res.maxP().x(), 21.213203435,0.00000001);
-    ASSERT_NEAR(res.maxP().y(), 21.213203435,0.00000001);
+    ASSERT_NEAR(res.minP().x(), 20+-21.213203435,0.00000001);
+    ASSERT_NEAR(res.minP().y(), 40+-21.213203435,0.00000001);
+    ASSERT_NEAR(res.maxP().x(), 20+21.213203435,0.00000001);
+    ASSERT_NEAR(res.maxP().y(), 40+21.213203435,0.00000001);
+
 
     Ellipse el2(geo::Coordinate(0,0), geo::Coordinate(20,0), 10, 0, M_PI_4, false,nullptr);
     res = el2.boundingBox();
@@ -40,7 +41,11 @@ TEST(lc__entity__EllipseTest, boundingBox) {
 
     Ellipse el5(geo::Coordinate(285, -129), geo::Coordinate(58,36), 17.204650534085253, 1.5669968920869093, -1.2295236480943998, false, nullptr);
     res = el5.boundingBox();
-    ASSERT_NEAR(res.maxP().x(), 312.9616691494428,0.0000001);
+    ASSERT_NEAR(res.minP().x(), 226.294625203129,0.001);
+    ASSERT_NEAR(res.minP().y(), -167.854587501749,0.001);
+
+    ASSERT_NEAR(res.maxP().x(), 312.961423084428,0.001);
+    ASSERT_NEAR(res.maxP().y(), -114.245564049154,0.001);
 }
 
 TEST(lc__entity__EllipseTest, snapPoints) {

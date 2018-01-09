@@ -111,7 +111,7 @@ CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate &axis1, const geo::Coordin
 
 const geo::Area Ellipse::boundingBox() const {
 
-    std::vector<geo::Coordinate> points = findBoxPoints();
+    const std::vector<geo::Coordinate> points = findBoxPoints();
     double minX, minY, maxX, maxY;
 
     minX = points[0].x();
@@ -119,7 +119,7 @@ const geo::Area Ellipse::boundingBox() const {
     minY = points[0].y();
     maxY = points[0].y();
 
-    auto checkPoint = [&](geo::Coordinate point) {
+    const auto checkPoint = [&](const geo::Coordinate& point) {
         if (point.x() < minX)
             minX = point.x();
         if (point.x() > maxX)
@@ -130,7 +130,7 @@ const geo::Area Ellipse::boundingBox() const {
             maxY = point.y();
     };
 
-    for (const auto point : points)
+    for (const auto& point : points)
         checkPoint(point);
 
     return geo::Area(geo::Coordinate(minX, minY),
