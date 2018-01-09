@@ -685,13 +685,13 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
     el.basePoint.y = s->center().y();
     el.secPoint.x = s->majorP().x();
     el.secPoint.y = s->majorP().y();
-    el.ratio = s->ratio();
+    el.ratio = 1/s->ratio();
     if (s->isReversed()) {
-        el.staparam = s->startAngle();
-        el.endparam = s->endAngle();
-    } else {
         el.staparam = s->endAngle();
         el.endparam = s->startAngle();
+    } else {
+        el.staparam = s->startAngle();
+        el.endparam = s->endAngle();
     }
     dxfW->writeEllipse(&el);
 }
