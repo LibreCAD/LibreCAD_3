@@ -65,10 +65,10 @@ function EllipseOperations:newData(data)
             message("Enter start angle")
         end
     elseif(self.startAngle == nil) then
-        self.startAngle = Operations:getAngle(self.center, data)
+        self.startAngle = self.ellipse:getEllipseAngle(data);
         message("Enter end angle")
     elseif(self.endAngle == nil) then
-        self.endAngle = Operations:getAngle(self.center, data)
+        self.endAngle = self.ellipse:getEllipseAngle(data);
         self:createEllipse()
     end
 end
@@ -97,9 +97,9 @@ function EllipseOperations:createTempEllipse(point)
     elseif(minorRadius == nil) then
         minorRadius = Operations:getDistance(center, point)
     elseif(startAngle == nil) then
-        startAngle = Operations:getAngle(self.center, point)
+        startAngle = self.ellipse:getEllipseAngle(point);
     elseif(endAngle == nil) then
-        endAngle = Operations:getAngle(self.center, point)
+        endAngle = self.ellipse:getEllipseAngle(point);
     end
 
     majorPoint = majorPoint or Coord(0,0)
@@ -119,7 +119,7 @@ function EllipseOperations:createEllipse()
     active_widget():tempEntities():removeEntity(self.ellipse)
 
     if(not self.isArc) then
-        self.startAngle = 0.001
+        self.startAngle = 0
         self.endAngle = 0
     end
 

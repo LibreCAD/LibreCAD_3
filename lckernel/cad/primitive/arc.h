@@ -3,6 +3,7 @@
 #include <cad/base/metainfo.h>
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
+#include "cad/interface/snapable.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/base/cadentity.h"

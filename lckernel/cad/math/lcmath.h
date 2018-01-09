@@ -21,7 +21,7 @@ namespace lc {
                                        bool CCW);
 
             /**
-             * @brief correctAngle, Corrects angle to be in 0 - 2 * PI
+             * @brief correctAngle, Corrects angle to be in -PI to PI
              * @param double a, angle
              * @return double corrected angle
              */

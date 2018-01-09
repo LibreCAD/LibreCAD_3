@@ -42,20 +42,20 @@ namespace lc {
                 double minorRadius() const;
 
                 /**
-                 * @brief startAngle, Returns Startangle of ellipse
+                 * @brief startAngle, Returns Start elliptic!! angle of ellipse
                  * @return double startangle
                  */
                 double startAngle() const;
 
                 /**
-                 * @brief endAngle, Return the end angle of ellipse
+                 * @brief endAngle, Return the end elliptic!! angle of ellipse
                  * @return double endangle
                  */
                 double endAngle() const;
 
                 /**
                  * @brief getPoint, return a point on ellipse with given elliptic angle
-                 * @param angle, elliptic angle in radians
+                 * @param angle, elliptic!! angle in radians
                  * @return coordinates of a point on ellipse with given elliptic angle
                  */
                 Coordinate getPoint(const double& angle) const;
@@ -69,8 +69,23 @@ namespace lc {
                  * @return for elliptic arc, return the endPoint, otherwise return end of majorP
                  */
                 Coordinate endPoint() const;
-
+                /**
+                 * @brief findPotentialNearestPoints
+                 * @param coord, the point of which we search
+                 * @return
+                 */
+                std::vector<Coordinate> findPotentialNearestPoints(const Coordinate& coord) const;
+                /**
+                 * @brief nearestPointOnPath, (ignore if it arc)
+                 * @param coord, the point of which we search
+                 * @return nearest point on the ellipse path
+                 */
                 Coordinate nearestPointOnPath(const Coordinate& coord) const;
+                /**
+                 * @brief nearestPointOnEntity, ( not ignore arc)
+                * @param coord, the point of which we search
+                * @return nearest point on the ellipse Entity
+                */
                 Coordinate nearestPointOnEntity(const Coordinate& coord) const;
                 /**
                  * @brief isArc
@@ -110,6 +125,8 @@ namespace lc {
                 double getEllipseAngle(const Coordinate& coord) const;
 
                 bool isAngleBetween(double angle) const {
+                    if (!isArc())
+                        return true;
                     return Math::isAngleBetween(angle, _startAngle, _endAngle, !_isReversed);
                 }
 
