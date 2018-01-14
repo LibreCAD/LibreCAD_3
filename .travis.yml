@@ -4,7 +4,7 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      sudo: true
+      sudo: false
       compiler: gcc
       addons:
         apt:
@@ -29,17 +29,23 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
+cache: ccache
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
 before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
   - mkdir -p third_party
   - cd third_party
-  - mkdir gtest_build
+  - mkdir -p gtest_build
   - cd gtest_build
   - cmake /usr/src/gtest
   - make -j2
-  - sudo cp *.a /usr/lib
   - cd ..
   - git clone https://github.com/rvt/libdxfrw.git libdxfrw
   - cd libdxfrw

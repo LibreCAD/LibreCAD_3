@@ -28,6 +28,8 @@ include_directories(${LIBDXFRW_INCLUDE_DIR})
 
 FIND_PACKAGE ( Threads REQUIRED )
 
+link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
+
 set(src
 main.cpp
 lckernel/primitive/entitytest.cpp
