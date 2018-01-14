@@ -25,10 +25,16 @@ TEST(lc__geo__ArcTest, createArcBulge) {
 }
 
 TEST(lc__geo__ArcTest, isAngleBetween) {
+    auto arc = Arc(Coordinate(0, 0), 1, 0, M_PI, false);
+    auto arcCCW = Arc(Coordinate(0, 0), 1, 0, M_PI, true);
 
-    lc::geo::Arc arc = lc::geo::Arc::createArcBulge(lc::geo::Coordinate(15.,5.), lc::geo::Coordinate(5.,5.), 0.5);
-    ASSERT_TRUE(!arc.isAngleBetween(1.));
+    ASSERT_TRUE(arcCCW.isAngleBetween(0));
+    ASSERT_TRUE(arcCCW.isAngleBetween(1));
+    ASSERT_TRUE(arcCCW.isAngleBetween(M_PI));
+    ASSERT_FALSE(arcCCW.isAngleBetween(-1));
 
-    ASSERT_FALSE(arc.isAngleBetween(M_PI));
-    ASSERT_TRUE(arc.isAngleBetween(-0.5*M_PI));
+    ASSERT_TRUE(arc.isAngleBetween(0));
+    ASSERT_TRUE(arc.isAngleBetween(-1));
+    ASSERT_TRUE(arc.isAngleBetween(-M_PI));
+    ASSERT_FALSE(arc.isAngleBetween(1));
 }
