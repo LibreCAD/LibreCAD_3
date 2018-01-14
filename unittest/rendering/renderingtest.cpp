@@ -94,12 +94,12 @@ bool checkRender(const std::string& image1, const std::string& image2, int toler
     auto pixbuf2 = gdk_pixbuf_new_from_file(image2.c_str(), &error2);
 
     if(error1) {
-        std::cout << error1->message << std::endl;
+        std::cerr << error1->message << std::endl;
         g_error_free(error1);
         return false;
     }
     if(error2) {
-        std::cout << error2->message << std::endl;
+        std::cerr << error2->message << std::endl;
         g_error_free(error2);
         return false;
     }
@@ -120,6 +120,7 @@ bool checkRender(const std::string& image1, const std::string& image2, int toler
         auto pixel1 = pixels1[i];
         auto pixel2 = pixels2[i];
         if(pixel1 < pixel2 - channelTolerance || pixel1 > pixel2 + channelTolerance) {
+            std::cerr << "Pixel " << i << " failed: " << (int) pixel1 << " - " << (int) pixel2 << " with tolerance " << channelTolerance << std::endl;
             return false;
         }
     }
@@ -199,6 +200,11 @@ TEST(RenderingTest, Test) {
 
             po::store(po::parse_config_file(configStream, desc), vm);
             po::notify(vm);
+
+            std::cout << "Running rendering test " << newNumber << std::endl;
+            std::cout << "Size " << imageW << "*" << imageH << std::endl;
+            std::cout << "Box " << x << ";" << y << " - " << w << "*" << h << std::endl;
+            std::cout << "Tolerance " << tolerance << std::endl;
 
             render(dxfFile, resultFile, imageW, imageH, x, y, w, h);
             ASSERT_TRUE(checkRender(expectedFile, resultFile, tolerance)) << "Failed with " << expectedFile;
