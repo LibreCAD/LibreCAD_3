@@ -50,3 +50,13 @@ script:
   - cd build
   - cmake ..
   - make -j2
+
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#librecad"
+    template:
+      - "%{repository_slug}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Result: %{result} in %{duration}"
+      - "Change view : %{compare_url}"
+      - "Build details : %{build_url}"
