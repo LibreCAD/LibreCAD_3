@@ -50,6 +50,7 @@ script:
   - cd build
   - cmake ..
   - make -j2
+  - ./unittest/lcunittest
 
 notifications:
   irc:
