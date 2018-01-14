@@ -24,40 +24,34 @@ class test {
 TEST(test, quad) {
     test c;
 
-    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
-    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+    EXPECT_NEAR(-2, c.quad(5, 6)[0], LCTOLERANCE);
+    EXPECT_NEAR(-3, c.quad(5, 6)[1], LCTOLERANCE);
 
-    EXPECT_TRUE(fabs(c.quad(100, 50)[0]) - 0.50252531694167146 < 0.000000001);
-    EXPECT_DOUBLE_EQ(-99.497474683058329, c.quad(100, 50)[1]);
-
-    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
-    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
-
-    //    EXPECT_DOUBLE_EQ(-2, c.quad(5, 6)[0]);
-    //    EXPECT_DOUBLE_EQ(-3, c.quad(5, 6)[1]);
+    EXPECT_NEAR(-0.50252531694167146, c.quad(100, 50)[0], LCTOLERANCE);
+    EXPECT_NEAR(-99.497474683058329, c.quad(100, 50)[1], LCTOLERANCE);
 }
 
 TEST(test, cubic) {
     test c;
 
     EXPECT_TRUE(fabs(c.cubic(5, 6, 1)[0]) - 0.19806226419516171 < .00000001);
-    EXPECT_DOUBLE_EQ(-1.5549581320873713, c.cubic(5, 6, 1)[1]);
-    EXPECT_DOUBLE_EQ(-3.2469796037174667, c.cubic(5, 6, 1)[2]);
+    EXPECT_NEAR(-1.5549581320873713, c.cubic(5, 6, 1)[1], LCTOLERANCE);
+    EXPECT_NEAR(-3.2469796037174667, c.cubic(5, 6, 1)[2], LCTOLERANCE);
 }
 
 TEST(test, quartic) {
     test c;
 
-    EXPECT_DOUBLE_EQ(-2.0, c.quartic(5, 6, 1, 2)[0]);
-    EXPECT_DOUBLE_EQ(-3.1038034027355366, c.quartic(5, 6, 1, 2)[1]);
+    EXPECT_NEAR(-3.1038034027355366, c.quartic(5, 6, 1, 2)[0], LCTOLERANCE);
+    EXPECT_NEAR(-2.0, c.quartic(5, 6, 1, 2)[1], LCTOLERANCE);
 }
 
 TEST(test, testin) {
     test a;
     const double rootY = 200. / sqrt(100. * 100. + 1.);
     const double rootX = 100. * rootY;
-    EXPECT_DOUBLE_EQ(-rootX, a.testin()[0].x());
-    EXPECT_DOUBLE_EQ(-rootY, a.testin()[0].y());
-    EXPECT_DOUBLE_EQ(rootX, a.testin()[1].x());
-    EXPECT_DOUBLE_EQ(rootY, a.testin()[1].y());
+    EXPECT_NEAR(-rootX, a.testin()[0].x(), LCTOLERANCE);
+    EXPECT_NEAR(-rootY, a.testin()[0].y(), LCTOLERANCE);
+    EXPECT_NEAR(rootX, a.testin()[1].x(), LCTOLERANCE);
+    EXPECT_NEAR(rootY, a.testin()[1].y(), LCTOLERANCE);
 }

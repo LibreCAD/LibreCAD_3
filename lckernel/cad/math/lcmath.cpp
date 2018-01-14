@@ -46,23 +46,21 @@ double Math::getAngleDifferenceShort(double a1, double a2, bool CCW) {
     return correctAngle(a2 - a1);
 }
 
-/*
-std::cout <<getAngleDifference(0., 0.1, false) << "\n"; // 1 -6.18319
-std::cout <<getAngleDifference(0., 0.1, true) << "\n";  // 2 0.1
-std::cout <<getAngleDifference(0.1, 0, true) << "\n"; // 3 6.18319
-std::cout <<getAngleDifference(0.1, 0, false) << "\n"; // 4 -0.1
-*/
 double Math::getAngleDifference(double start, double end, bool CCW) {
-    double d = end - start;
-    if (d < 0.) {
-        d = 2. * M_PI - std::abs(d);
+    double difference;
+
+    if(CCW) {
+        difference = end - start;
+    }
+    else {
+        difference = start - end;
     }
 
-    if (!CCW) {
-        d = 2.* M_PI - d;
+    if (difference < 0.) {
+        difference = 2.0 * M_PI - std::abs(difference);
     }
 
-    return d;
+    return difference;
 }
 
 

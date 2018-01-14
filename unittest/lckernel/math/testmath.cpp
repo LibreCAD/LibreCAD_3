@@ -21,6 +21,8 @@ TEST(MathTest, getAngleDifference) {
     ASSERT_NEAR(M_PI, lc::Math::getAngleDifference(0., -M_PI, true), LCARCTOLERANCE);
     ASSERT_NEAR(2.*M_PI, lc::Math::getAngleDifference(0., 2.*M_PI, true), LCARCTOLERANCE);
     ASSERT_NEAR(2.* M_PI - 0.1, lc::Math::getAngleDifference(0., 0.1, false), LCARCTOLERANCE);
+    ASSERT_NEAR(0, lc::Math::getAngleDifference(0.0, 0.0, false), LCARCTOLERANCE);
+    ASSERT_NEAR(0, lc::Math::getAngleDifference(0.0, 0.0, true), LCARCTOLERANCE);
 }
 
 TEST(MathTest, correctAngle) {

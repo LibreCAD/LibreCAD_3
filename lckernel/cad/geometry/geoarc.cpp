@@ -50,12 +50,12 @@ Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinat
 
 Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double bulge) {
     auto isCCW = bulge>0.;
-    auto alpha = atan(bulge)*4.;
+    auto delta = atan(bulge) * 4.0;
 
     auto middle = p1.mid(p2);
     auto dist = p1.distanceTo(p2)/2.0;
 
-    auto radius = std::abs(dist / std::sin(alpha/2.0));
+    auto radius = std::abs(dist / std::sin(delta/2.0));
 
     auto wu = std::abs(std::pow(radius, 2.0) - std::pow(dist, 2.0));
     auto h = std::sqrt(wu);
@@ -67,7 +67,7 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
         angle+=M_PI/2.0;
     }
 
-    if (std::abs(alpha)<M_PI) {
+    if (std::abs(delta)<M_PI) {
         h*=-1.0;
     }
 
@@ -162,14 +162,6 @@ Area Arc::boundingBox() const {
 
 bool Arc::isAngleBetween(double angle) const {
     return Math::isAngleBetween(angle, _startAngle, _endAngle, _CCW);
-
-    /*
-    auto cAngle = Math::correctAngle(angle);
-    if (_startAngle < _endAngle) {
-        return _startAngle > cAngle && cAngle > _endAngle;
-    } else {
-        return _startAngle < cAngle && cAngle < _endAngle;
-    }*/
 }
 
 double Arc::angle() const {
