@@ -86,7 +86,7 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(output);
 }
 
-bool checkRender(const std::string& image1, const std::string& image2, int tolerance) {
+bool checkRender(const std::string& image1, const std::string& image2, float tolerance) {
     GError* error1 = NULL;
     GError* error2 = NULL;
 
@@ -110,7 +110,7 @@ bool checkRender(const std::string& image1, const std::string& image2, int toler
         return false;
     }
 
-    auto channelTolerance = 256 * (tolerance / 100);
+    auto channelTolerance = 256.0 * (tolerance / 100.0);
     auto nbPixels = gdk_pixbuf_get_height(pixbuf1) * gdk_pixbuf_get_rowstride(pixbuf1);
 
     auto pixels1 = gdk_pixbuf_get_pixels(pixbuf1);
