@@ -113,8 +113,8 @@ bool checkRender(const std::string& image1, const std::string& image2, int toler
     auto channelTolerance = 256 * (tolerance / 100);
     auto nbPixels = gdk_pixbuf_get_height(pixbuf1) * gdk_pixbuf_get_rowstride(pixbuf1);
 
-    auto pixels1 = gdk_pixbuf_read_pixels(pixbuf1);
-    auto pixels2 = gdk_pixbuf_read_pixels(pixbuf2);
+    auto pixels1 = gdk_pixbuf_get_pixels(pixbuf1);
+    auto pixels2 = gdk_pixbuf_get_pixels(pixbuf2);
 
     for(auto i = 0; i < nbPixels; i++) {
         auto pixel1 = pixels1[i];

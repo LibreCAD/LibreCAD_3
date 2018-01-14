@@ -98,7 +98,7 @@ endif(WITH_QT_UI)
 
 if(WITH_RENDERING_UNITTESTS)
     # GDK-Pixbuf
-    find_package(GDK-Pixbuf REQUIRED)
+    find_package(GDK-Pixbuf 2.30 REQUIRED)
     include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
 
     #GDK
