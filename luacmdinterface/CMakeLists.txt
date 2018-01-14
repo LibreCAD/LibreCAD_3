@@ -17,7 +17,7 @@ find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
 
 # Pango
-find_package(Pango REQUIRED)
+find_package(Pango 1.36 REQUIRED)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
 

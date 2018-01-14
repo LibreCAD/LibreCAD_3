@@ -1,0 +1,46 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - qtbase5-dev
+            - qttools5-dev
+            - liblua5.2-dev
+            - libcairo2-dev
+            - liblog4cxx10-dev
+            - libpango1.0-dev
+            - libboost-all-dev
+            - libqt5svg5-dev
+            - libgtest-dev
+            - libeigen3-dev
+            - libcurl4-gnutls-dev
+            - libgtk-3-dev
+            - libgdk-pixbuf2.0-dev
+            - gcc-4.9
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - mkdir -p third_party
+  - cd third_party
+  - git clone https://github.com/rvt/libdxfrw.git libdxfrw
+  - cd libdxfrw
+  - cmake .
+  - make -j2
+  - cd ../..
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - make -j2

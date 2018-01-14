@@ -95,7 +95,7 @@ include_directories(${CAIRO_INCLUDE_DIRS})
 link_directories(${CAIRO_LIBRARY_DIRS})
 
 # Pango
-pkg_check_modules(PANGO REQUIRED pango>=1.38)
+pkg_check_modules(PANGO REQUIRED pango>=1.36)
 include_directories(${PANGO_INCLUDE_DIRS})
 link_directories(${PANGO_LIBRARY_DIRS})
 
