@@ -4,7 +4,7 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      sudo: false
+      sudo: true
       compiler: gcc
       addons:
         apt:
@@ -35,6 +35,12 @@ before_install:
 script:
   - mkdir -p third_party
   - cd third_party
+  - mkdir gtest_build
+  - cd gtest_build
+  - cmake /usr/src/gtest
+  - make -j2
+  - sudo cp *.a /usr/lib
+  - cd ..
   - git clone https://github.com/rvt/libdxfrw.git libdxfrw
   - cd libdxfrw
   - cmake .
