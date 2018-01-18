@@ -2,7 +2,7 @@ gridSnapableOptions = {}
 gridSnapableOptions.__index = gridSnapableOptions
 
 setmetatable(gridSnapableOptions, {
-    __index = optionsOperations,
+    __index = OptionsOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)

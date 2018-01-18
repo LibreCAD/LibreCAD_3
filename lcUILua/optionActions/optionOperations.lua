@@ -1,7 +1,7 @@
-optionsOperations = {}
-optionsOperations.__index = optionsOperations
+OptionsOperations = {}
+OptionsOperations.__index = OptionsOperations
 
-setmetatable(optionsOperations, {
+setmetatable(OptionsOperations, {
     __index = Operations
 })
 
