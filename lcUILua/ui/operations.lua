@@ -148,3 +148,7 @@ function trim_entity()
     new_operation()
     luaInterface:setOperation(active_widget().id, TrimOperation(active_widget().id))
 end
+
+function snapable_options(enabled)
+    gridSnapableOptions(enabled)
+end

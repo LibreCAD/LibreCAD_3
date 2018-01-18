@@ -237,3 +237,7 @@ void CadMdiChild::setActiveLayer(const lc::Layer_CSPtr& activeLayer) {
 lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
     return _metaInfoManager;
 }
+
+const SnapManagerImpl_SPtr &CadMdiChild::getSnapManager() const {
+    return _snapManager;
+}

@@ -2,7 +2,7 @@ SplineOperations = {}
 SplineOperations.__index = SplineOperations
 
 setmetatable(SplineOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,17 +11,17 @@ setmetatable(SplineOperations, {
 })
 
 function SplineOperations:_init(id)
-    Operations._init(self, id)
+
 
     self.points = {}
 
-    self.spline_id = ID():id()
+    self.entity_id = ID():id()
     self.degree = 3
-    self.spline = nil
+    self.entity = nil
 
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
+    self:registerEvents()
+
+    Operations._init(self, id)
 
     message("Add a new points or enter degree")
 end
@@ -55,35 +55,26 @@ function SplineOperations:getSpline(points, degree)
     local metaInfo = active_metaInfo()
     local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, metaInfo)
 
-    s:setId(self.spline_id)
+    s:setId(self.entity_id)
 
     return s
 end
 
 function SplineOperations:createTempSpline(point)
-    if(self.spline ~= nil) then
-        active_widget():tempEntities():removeEntity(self.spline)
-    end
-
     local points = {}
     for k, v in pairs(self.points) do
         points[k] = v
     end
     table.insert(points, point)
 
-    self.spline = self:getSpline(points, self.degree)
-
-    if(self.spline ~= nil) then
-        active_widget():tempEntities():addEntity(self.spline)
-    end
+    self.entity = self:getSpline(points, self.degree)
+    self:refreshTempEntity()
 end
 
 function SplineOperations:createSpline()
-    local b = EntityBuilder(active_widget():document())
     local s = self:getSpline(self.points, self.degree)
     if(s ~= nil) then
-        b:appendEntity(s)
-        b:execute()
+        self:createEntity(s)
     end
 end
 
@@ -91,16 +82,11 @@ function SplineOperations:close()
     if(not self.finished) then
         self:createSpline()
 
-        if(self.spline ~= nil) then
-            active_widget():tempEntities():removeEntity(self.spline)
-        end
+        self:removeTempEntity()
+        self:unregisterEvents()
 
         self.finished = true
 
         luaInterface:triggerEvent('operationFinished')
-
-        luaInterface:deleteEvent('mouseMove', self)
-        luaInterface:deleteEvent('number', self)
-        luaInterface:deleteEvent('point', self)
     end
 end

@@ -125,6 +125,15 @@ function add_toolbar()
     luaInterface:luaConnect(removeButton, "pressed()", trim_entity)
 
     --
+    -- Snap options
+    --
+    local snapOptionGroup = quickAccessTab:addGroup("Snap options")
+    local Button = create_button("", ":/icons/snap_grid.svg")
+    Button:setCheckable(true)
+    quickAccessTab:addWidget(snapOptionGroup, Button, 0, 0, 1, 1)
+    luaInterface:luaConnect(Button, "toggled(bool)", snapable_options)
+
+    --
     -- MetaInfo
     --
     local metaInfoGroup = quickAccessTab:addGroup("Entity properties")

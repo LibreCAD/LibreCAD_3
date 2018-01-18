@@ -2,7 +2,7 @@ CircleOperations = {}
 CircleOperations.__index = CircleOperations
 
 setmetatable(CircleOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,14 +11,13 @@ setmetatable(CircleOperations, {
 })
 
 function CircleOperations:_init(id)
-    Operations._init(self, id)
-
     self.center = nil
-    self.circle = nil
-    self.circle_id = ID():id()
+    self.entity = nil
+    self.entity_id = ID():id()
 
     luaInterface:registerEvent('point', self)
 
+    CreateOperations._init(self, id)
     message("Click on center")
 end
 
@@ -39,9 +38,9 @@ end
 function CircleOperations:newPoint(point)
     if(self.center == nil) then
         self.center = point
-        self.circle = self:getCircle(point, 0)
+        self.entity = self:getCircle(point, 0)
 
-        active_widget():tempEntities():addEntity(self.circle)
+        self:refreshTempEntity()
 
         luaInterface:registerEvent('mouseMove', self)
         luaInterface:registerEvent('number', self)
@@ -60,40 +59,22 @@ function CircleOperations:getCircle(center, radius)
     local layer = active_layer()
     local metaInfo = active_metaInfo()
     local c = Circle(center, radius, layer, metaInfo)
-    c:setId(self.circle_id)
+    c:setId(self.entity_id)
 
     return c
 end
 
 function CircleOperations:createTempCircle(point)
-    active_widget():tempEntities():removeEntity(self.circle)
-
-    self.circle = self:getCircle(self.center, point)
-
-    active_widget():tempEntities():addEntity(self.circle)
+    self.entity = self:getCircle(self.center, point)
+    self:refreshTempEntity()
 end
 
 function CircleOperations:createCircle(point)
     self.finished = true
-    active_widget():tempEntities():removeEntity(self.circle)
+    self:removeTempEntity()
 
-    local b = EntityBuilder(active_widget():document())
     local c = self:getCircle(self.center, point)
-    b:appendEntity(c)
-    b:execute()
+    self:createEntity(c)
 
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-end
-
-function CircleOperations:close()
-    if(not self.finished) then
-        active_widget():tempEntities():removeEntity(self.circle)
-        self.finished = true
-
-        luaInterface:deleteEvent('mouseMove', self)
-        luaInterface:deleteEvent('number', self)
-        luaInterface:deleteEvent('point', self)
-    end
+    self:unregisterEvents()
 end
