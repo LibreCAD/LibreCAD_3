@@ -2,7 +2,7 @@ CircleOperations = {}
 CircleOperations.__index = CircleOperations
 
 setmetatable(CircleOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)

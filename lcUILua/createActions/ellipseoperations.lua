@@ -23,13 +23,13 @@ function EllipseOperations:_init(id, isArc)
     message("Click on center")
 
     CreateOperations._init(self, id)
+    self:registerEvents()
 end
 
 function EllipseOperations:onEvent(eventName, ...)
     if(Operations.forMe(self) == false) then
         return
     end
-
     if(eventName == "point" or eventName == "number") then
         self:newData(...)
     elseif(eventName == "mouseMove") then
@@ -103,7 +103,7 @@ function EllipseOperations:createTempEllipse(point)
 
     self.entity = self:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
 
-    self:addTempEntity()
+    self:refreshTempEntity()
 end
 
 function EllipseOperations:createEllipse()
@@ -115,9 +115,7 @@ function EllipseOperations:createEllipse()
         self.endAngle = 0
     end
 
-
     local el = self:getEllipse(self.center, self.majorPoint, self.minorRadius, self.startAngle, self.endAngle)
     self:createEntity(el)
-
     self:unregisterEvents()
 end

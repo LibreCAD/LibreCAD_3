@@ -2,7 +2,7 @@ LWPolylineOperations = {}
 LWPolylineOperations.__index = LWPolylineOperations
 
 setmetatable(LWPolylineOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,22 +11,20 @@ setmetatable(LWPolylineOperations, {
 })
 
 function LWPolylineOperations:_init(id)
-    Operations._init(self, id)
-
     self.currentVertex_Bulge = 1
     self.currentVertex_StartWidth = 0
     self.currentVertex_EndWidth = 0
 
     self.lwVertexes = {}
-    self.lwPolyline_id = ID():id()
-    self.lwPolyline = nil
+    self.entity_id = ID():id()
+    self.entity = nil
 
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
-    luaInterface:registerEvent('text', self)
+    self:registerEvents()
+    --luaInterface:registerEvent('text', self)
 
     message("Choose entity type")
+
+    CreateOperations._init(self, id)
 end
 
 function LWPolylineOperations:onEvent(eventName, ...)
@@ -62,7 +60,7 @@ function LWPolylineOperations:getLWPolyline(vertexes)
         local layer = active_layer()
         local metaInfo = active_metaInfo()
         local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, metaInfo)
-        lwp:setId(self.lwPolyline_id)
+        lwp:setId(self.entity_id)
 
         return lwp
     else
@@ -86,9 +84,6 @@ function LWPolylineOperations:createTempVertex(point)
 end
 
 function LWPolylineOperations:createTempLWPolyline(point)
-    if(self.lwPolyline ~= nil) then
-        active_widget():tempEntities():removeEntity(self.lwPolyline)
-    end
 
     local vertexes = {}
     for k, v in pairs(self.lwVertexes) do
@@ -96,33 +91,26 @@ function LWPolylineOperations:createTempLWPolyline(point)
     end
     table.insert(vertexes, self:createTempVertex(point))
 
-    self.lwPolyline = self:getLWPolyline(vertexes)
+    self.entity = self:getLWPolyline(vertexes)
 
-    if(self.lwPolyline ~= nil) then
-        active_widget():tempEntities():addEntity(self.lwPolyline)
-    end
+    self:refreshTempEntity()
+
 end
 
 function LWPolylineOperations:createLWPolyline()
-    local b = EntityBuilder(active_widget():document())
     local lwp = self:getLWPolyline(self.lwVertexes)
-    b:appendEntity(lwp)
-    b:execute()
+    self:createEntity(lwp)
 end
 
 function LWPolylineOperations:close()
     if(not self.finished) then
-        if(self.lwPolyline ~= nil) then
-            active_widget():tempEntities():removeEntity(self.lwPolyline)
-        end
+
+        self:removeTempEntity()
         self.finished = true
-
         self:createLWPolyline()
+        self:unregisterEvents()
 
-        luaInterface:deleteEvent('mouseMove', self)
-        luaInterface:deleteEvent('number', self)
-        luaInterface:deleteEvent('point', self)
-        luaInterface:deleteEvent('text', self)
+        --luaInterface:deleteEvent('text', self)
 
         luaInterface:triggerEvent('operationFinished')
     end

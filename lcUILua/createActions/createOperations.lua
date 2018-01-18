@@ -8,9 +8,7 @@ function CreateOperations:_init(id)
     Operations._init(self, id)
 
     self.prevEntity = nil
-    self:addTempEntity()
-
-    self:registerEvents()
+    self:refreshTempEntity()
 end
 
 function CreateOperations:createEntity(entity)
@@ -19,13 +17,16 @@ function CreateOperations:createEntity(entity)
     b:execute()
 end
 
-function CreateOperations:addTempEntity()
+function CreateOperations:refreshTempEntity()
 
     if (self.prevEntity ~= nil) then
         active_widget():tempEntities():removeEntity(self.prevEntity)
     end
 
-    active_widget():tempEntities():addEntity(self.entity)
+    if (self.entity ~= nil) then
+        active_widget():tempEntities():addEntity(self.entity)
+    end
+
     self.prevEntity = self.entity
 end
 
