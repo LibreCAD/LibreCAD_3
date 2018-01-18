@@ -2,7 +2,7 @@ LineOperations = {}
 LineOperations.__index = LineOperations
 
 setmetatable(LineOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,17 +11,16 @@ setmetatable(LineOperations, {
 })
 
 function LineOperations:_init(id)
-    Operations._init(self, id)
-
     self.lastPoint = nil
     self.length = nil
-    self.line_id = ID():id()
-    self.lastLine = self:createLine(Coord(0, 0), Coord(0, 0))
-    active_widget():tempEntities():addEntity(self.lastLine)
-
-    luaInterface:registerEvent('point', self)
-
+    self.entity_id = ID():id()
+    self.entity = self:createLine(Coord(0, 0), Coord(0, 0))
+    --luaInterface:registerEvent('point', self)
     message("Click on first point")
+
+    CreateOperations._init(self)
+
+
 end
 
 function LineOperations:onEvent(eventName, ...)
@@ -41,7 +40,7 @@ end
 function LineOperations:newPoint(point)
     if(self.lastPoint ~= nil) then
         self.finished = true
-        active_widget():tempEntities():removeEntity(self.lastLine)
+        active_widget():tempEntities():removeEntity(self.entity)
 
         local b = EntityBuilder(active_widget():document())
         local l = self:createLine(self.lastPoint, point)
@@ -53,7 +52,7 @@ function LineOperations:newPoint(point)
         luaInterface:deleteEvent('point', self)
     else
         self.lastPoint = point
-        self.lastLine = self:createLine(point, point)
+        self.entity = self:createLine(point, point)
 
         luaInterface:registerEvent('mouseMove', self)
         luaInterface:registerEvent('number', self)
@@ -62,10 +61,8 @@ function LineOperations:newPoint(point)
 end
 
 function LineOperations:createTempLine(point)
-    active_widget():tempEntities():removeEntity(self.lastLine)
-
-    self.lastLine = self:createLine(self.lastPoint, point)
-    active_widget():tempEntities():addEntity(self.lastLine)
+    self.entity = self:createLine(self.lastPoint, point)
+    self:addTempEntity()
 end
 
 function LineOperations:createLine(p1, p2)
@@ -79,14 +76,14 @@ function LineOperations:createLine(p1, p2)
     end
 
     local l = Line(p1, p2, layer, metaInfo)
-    l:setId(self.line_id)
+    l:setId(self.entity_id)
 
     return l
 end
 
 function LineOperations:close()
     if(not self.finished) then
-        active_widget():tempEntities():removeEntity(self.lastLine)
+        active_widget():tempEntities():removeEntity(self.entity)
         self.finished = true
 
         luaInterface:deleteEvent('mouseMove', self)

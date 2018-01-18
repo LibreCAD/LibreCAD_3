@@ -155,6 +155,7 @@ void addQtWidgetsBindings(lua_State *L) {
 		.beginExtendClass<QAbstractButton, QWidget>("QAbstractButton")
 			.addFunction("setIcon", &QAbstractButton::setIcon)
 			.addFunction("setIconSize", &QAbstractButton::setIconSize)
+			.addFunction("setCheckable", &QAbstractButton::setCheckable)
 		.endClass()
 
         .beginExtendClass<QComboBox, QWidget>("QComboBox")
@@ -178,6 +179,7 @@ void addLCBindings(lua_State *L) {
 			.addFactory([]() {
 				return new CadMdiChild;
 			})
+			.addFunction("getSnapManager", &CadMdiChild::getSnapManager)
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
             .addFunction("saveFile", &CadMdiChild::saveFile)
@@ -273,6 +275,10 @@ void addLCBindings(lua_State *L) {
                 return new Layers();
             })
 			.addFunction("setMdiChild", &Layers::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
+		.endClass()
+
+		.beginClass<LCViewer::SnapManagerImpl>("SnapManager")
+			.addFunction("setGridSnappable", &LCViewer::SnapManagerImpl::setGridSnappable)
 		.endClass()
 
 		.beginExtendClass<LinePatternManager, QDialog>("LinePatternManager")

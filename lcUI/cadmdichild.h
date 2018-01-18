@@ -117,6 +117,8 @@ class CadMdiChild : public QWidget {
          */
         void setId(unsigned int id);
 
+        const LCViewer::SnapManagerImpl_SPtr &getSnapManager() const;
+
     private:
         unsigned int _id;
 
@@ -129,6 +131,7 @@ class CadMdiChild : public QWidget {
         std::shared_ptr<LCViewer::GradientBackground> _gradientBackground;
         std::shared_ptr<LCViewer::Cursor>  _cursor;
         LCViewer::SnapManagerImpl_SPtr  _snapManager;
+
         LCViewer::DragManager_SPtr _dragManager;
         LCViewer::DragPoints_SPtr _dragPoints;
         lc::StorageManager_SPtr _storageManager;

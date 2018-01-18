@@ -1,6 +1,4 @@
 require 'actions.operations'
-
-require 'actions.lineoperations'
 require 'actions.circleoperations'
 require 'actions.arcoperations'
 require 'actions.dimalignedoperations'
@@ -8,7 +6,6 @@ require 'actions.dimangularoperations'
 require 'actions.dimdiametricoperations'
 require 'actions.dimlinearoperations'
 require 'actions.dimradialoperations'
-require 'actions.splineoperations'
 require 'actions.lwpolylineoperations'
 
 require 'actions.moveoperation'
@@ -20,3 +17,7 @@ require 'actions.trimoperation'
 
 require 'createActions.createOperations'
 require 'createActions.ellipseoperations'
+require 'createActions.lineoperations'
+require 'createActions.splineoperations'
+
+require 'optionActions.gridSnappable'

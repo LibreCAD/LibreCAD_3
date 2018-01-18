@@ -25,5 +25,9 @@
         <file alias="locked.svg">icons/locked.svg</file>
         <file alias="unlocked.svg">icons/unlocked.svg</file>
         <file alias="layeredit">icons/layeredit.png</file>
+        <file alias="snap_center.svg">icons/snap_center.svg</file>
+        <file alias="snap_endpoints.svg">icons/snap_endpoints.svg</file>
+        <file alias="snap_entity.svg">icons/snap_entity.svg</file>
+        <file alias="snap_grid.svg">icons/snap_grid.svg</file>
     </qresource>
 </RCC>
