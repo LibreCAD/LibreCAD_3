@@ -2,7 +2,7 @@ EllipseOperations = {}
 EllipseOperations.__index = EllipseOperations
 
 setmetatable(EllipseOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,25 +11,18 @@ setmetatable(EllipseOperations, {
 })
 
 function EllipseOperations:_init(id, isArc)
-    Operations._init(self, id)
-
     self.isArc = isArc or false
     self.center = nil
     self.majorPoint = nil
     self.minorRadius = nil
     self.startAngle = nil
     self.endAngle = nil
-
-    self.ellipse_id = ID():id()
-    self.ellipse = self:getEllipse(Coord(0,0), Coord(0,0), 0, 0, 0)
-
-    active_widget():tempEntities():addEntity(self.ellipse)
-
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
+    self.entity_id = ID():id()
+    self.entity = self:getEllipse(Coord(0,0), Coord(0,0), 0, 0, 0)
 
     message("Click on center")
+
+    CreateOperations._init(self, id)
 end
 
 function EllipseOperations:onEvent(eventName, ...)
@@ -65,10 +58,10 @@ function EllipseOperations:newData(data)
             message("Enter start angle")
         end
     elseif(self.startAngle == nil) then
-        self.startAngle = self.ellipse:getEllipseAngle(data);
+        self.startAngle = self.entity:getEllipseAngle(data);
         message("Enter end angle")
     elseif(self.endAngle == nil) then
-        self.endAngle = self.ellipse:getEllipseAngle(data);
+        self.endAngle = self.entity:getEllipseAngle(data);
         self:createEllipse()
     end
 end
@@ -77,7 +70,7 @@ function EllipseOperations:getEllipse(center, majorPoint, minorRadius, startAngl
     local layer = active_layer()
     local metaInfo = active_metaInfo()
     local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer, metaInfo)
-    e:setId(self.ellipse_id)
+    e:setId(self.entity_id)
 
     return e
 end
@@ -97,9 +90,9 @@ function EllipseOperations:createTempEllipse(point)
     elseif(minorRadius == nil) then
         minorRadius = Operations:getDistance(center, point)
     elseif(startAngle == nil) then
-        startAngle = self.ellipse:getEllipseAngle(point);
+        startAngle = self.entity:getEllipseAngle(point);
     elseif(endAngle == nil) then
-        endAngle = self.ellipse:getEllipseAngle(point);
+        endAngle = self.entity:getEllipseAngle(point);
     end
 
     majorPoint = majorPoint or Coord(0,0)
@@ -107,39 +100,24 @@ function EllipseOperations:createTempEllipse(point)
     startAngle = startAngle or 0.001
     endAngle = endAngle or 0
 
-    active_widget():tempEntities():removeEntity(self.ellipse)
 
-    self.ellipse = self:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
+    self.entity = self:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
 
-    active_widget():tempEntities():addEntity(self.ellipse)
+    self:addTempEntity()
 end
 
 function EllipseOperations:createEllipse()
     self.finished = true
-    active_widget():tempEntities():removeEntity(self.ellipse)
+    self:removeTempEntity()
 
     if(not self.isArc) then
         self.startAngle = 0
         self.endAngle = 0
     end
 
-    local b = EntityBuilder(active_widget():document())
-    local c = self:getEllipse(self.center, self.majorPoint, self.minorRadius, self.startAngle, self.endAngle)
-    b:appendEntity(c)
-    b:execute()
 
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-end
+    local el = self:getEllipse(self.center, self.majorPoint, self.minorRadius, self.startAngle, self.endAngle)
+    self:createEntity(el)
 
-function EllipseOperations:close()
-    if(not self.finished) then
-        active_widget():tempEntities():removeEntity(self.ellipse)
-        self.finished = true
-
-        luaInterface:deleteEvent('mouseMove', self)
-        luaInterface:deleteEvent('number', self)
-        luaInterface:deleteEvent('point', self)
-    end
+    self:unregisterEvents()
 end

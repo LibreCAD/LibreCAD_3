@@ -1,10 +1,8 @@
 require 'actions.operations'
-require 'createActions.createOperations'
 
 require 'actions.lineoperations'
 require 'actions.circleoperations'
 require 'actions.arcoperations'
-require 'actions.ellipseoperations'
 require 'actions.dimalignedoperations'
 require 'actions.dimangularoperations'
 require 'actions.dimdiametricoperations'
@@ -19,3 +17,6 @@ require 'actions.copyoperation'
 require 'actions.scaleoperation'
 require 'actions.removeoperation'
 require 'actions.trimoperation'
+
+require 'createActions.createOperations'
+require 'createActions.ellipseoperations'
