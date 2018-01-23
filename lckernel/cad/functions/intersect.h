@@ -38,7 +38,7 @@ namespace lc {
             OnEntity = 0,     // Means that the location must be on both entities
             OnPath = 1       // means that the paths may intersect outside of the real path.
             // For example two lines in a slight angle might intersect outside of line's Area
-            // When method == Any is selected, the system will return that coordinate, otherwhise
+            // When method == Any is selected, the system will return that coordinate, otherwise
             // the point must be on both
 
             // Test = 2 // I am considering to add a 'Test' option, this would allow to set a boolean if

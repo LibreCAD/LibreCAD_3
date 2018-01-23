@@ -6,7 +6,7 @@
 #include <iostream>
 
 /**
-  * If a object is a meta object, eg something that can be attached to a entity then this object must extend MetaType
+  * If a object is a meta object, eg something that can be attached to an entity then this object must extend MetaType
   * and provide a unique meta name.
   * meta types can also be put into a variant so it can be stored in a map
   */
@@ -54,7 +54,7 @@ namespace lc {
     };
 
     /**
-     * A meta type that can be attched to a entity
+     * A meta type that can be attached to an entity
      */
     class EntityMetaType : public MetaType {
         public:

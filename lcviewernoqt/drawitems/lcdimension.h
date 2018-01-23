@@ -15,7 +15,7 @@ class LCDimension  {
         * 'flip' the attachment point
         * @param value text value
         * @param angle Angle of text, it's assumed this is between 0 and 2*PI
-        * @param attachmentPoint How the text is attached to tis point (top left, bottom rigth etc...)
+        * @param attachmentPoint How the text is attached to this point (top left, bottom right etc...)
         * @param textLocation location of the text
         * @param painter Pointer to the painter object
         * @param options Draw options

@@ -90,7 +90,7 @@ namespace lc {
                 virtual const Coordinate normal(double t) const = 0;
 
                 /**
-                 * @brief splitHalf Splits the bezier into two halfs.
+                 * @brief splitHalf Splits the bezier into two halves.
                  * @return Vector of two beziers.
                  */
                 virtual std::vector<BB_CSPtr> splitHalf() const = 0;
@@ -98,7 +98,7 @@ namespace lc {
                 /**
                  * @brief splitAtT Splits bezier at specific time.
                  * @param t Time t
-                 * @return Splitted bezier.
+                 * @return Split bezier.
                  */
                 virtual BB_CSPtr splitAtT(double t) const = 0;
 

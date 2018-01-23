@@ -16,7 +16,7 @@ namespace lc {
 }
 namespace LCViewer {
     /**
-     * LCVDrawItem is a abstract class that any class needs to implement if it want's to draw an entity on backgrounds or foregrounds
+     * LCVDrawItem is a abstract class that any class needs to implement if it wants to draw an entity on backgrounds or foregrounds
      * For other objects (Cursor, ...) see files in drawables folder
      * LCVDrawItem is a child of CADEntity as it's the only way to store it in EntityContainer
      */

@@ -100,7 +100,7 @@ namespace lc {
         public:
 
             /**
-             * @return left, rigth, top, bottom, startPoint(for arc), endPoint(for arc)
+             * @return left, right, top, bottom, startPoint(for arc), endPoint(for arc)
              */
             std::vector<lc::geo::Coordinate> findBoxPoints() const;
 

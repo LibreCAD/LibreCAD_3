@@ -5,7 +5,7 @@
 
 namespace lc {
     /**
-     * Event that gets emited when a new entity was added to the document
+     * Event that gets emitted when a new entity was added to the document
      * @param cadEntity
      */
     class AddEntityEvent {
