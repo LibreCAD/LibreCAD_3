@@ -4,7 +4,7 @@
 
 namespace lc {
     /**
-     * \brief Event that gets emited when a new line pattern was replaced in the document
+     * \brief Event that gets emitted when a new line pattern was replaced in the document
      * \param DxfLinePatternByValue_CSPtr
      */
     class ReplaceLinePatternEvent {

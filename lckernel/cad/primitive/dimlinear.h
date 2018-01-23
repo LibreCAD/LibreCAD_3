@@ -105,7 +105,7 @@ namespace lc {
             // Angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
             double angle() const;
 
-            // Where p2 specifies the first point of the dimension, p3 specifies that second point ofthe dimension
+            // Where p2 specifies the first point of the dimension, p3 specifies that second point of the dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points
             const geo::Coordinate &definitionPoint2() const noexcept;
 

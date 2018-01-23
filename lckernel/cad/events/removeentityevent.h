@@ -5,7 +5,7 @@
 
 namespace lc {
     /**
-     * Event that gets emited when a entity was removed
+     * Event that gets emitted when a entity was removed
      * @param id
      */
     class RemoveEntityEvent {

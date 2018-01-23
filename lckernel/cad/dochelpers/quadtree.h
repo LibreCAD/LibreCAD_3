@@ -361,7 +361,7 @@ namespace lc {
                 list.insert(list.end(), _objects.begin(), _objects.end());
             }
             /**
-            * Retur the number of items inthis andlower nodes
+            * Return the number of items in this and lower nodes
             */
             unsigned int _size(unsigned int c) const {
                 if (_nodes[0] != nullptr) {
@@ -428,7 +428,7 @@ namespace lc {
                 double y = _bounds.minP().y();
 
                 if (_nodes[0] != nullptr) {
-                    // // LOG4CXX_DEBUG(logger, "Split is called on a already splitted node, please fix!");
+                    // // LOG4CXX_DEBUG(logger, "Split is called on an already split node, please fix!");
                 } else {
                     _nodes[0] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x + subWidth, y + subHeight), geo::Coordinate(_bounds.maxP().x(), _bounds.maxP().y())), _maxLevels, _maxObjects);
                     _nodes[1] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x, y + subHeight), geo::Coordinate(x + subWidth, _bounds.maxP().y())), _maxLevels, _maxObjects);

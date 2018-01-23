@@ -167,7 +167,7 @@ namespace lc {
 
             /**
              * @brief entitiesByArea
-             * Find all entities within a selected area based on boundingbox of the entites
+             * Find all entities within a selected area based on boundingbox of the entities
              * @param area
              * @return
              * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
@@ -346,7 +346,7 @@ namespace lc {
                 return entities;
             }
 
-            //DOn't show underlaying impementation
+            //Don't show underlaying implementation
             /*
             QuadTree<CT>* tree() {
                 return _tree;

@@ -15,8 +15,8 @@ namespace lc {
         class Area : public Base, virtual public Visitable {
             public:
                 /**
-                  * Create a new Area. The coordinates coordA and coordB will be ordered so that minP wil always be < maxP
-                  * The corordinates are not allowed to describe a volume
+                  * Create a new Area. The coordinates coordA and coordB will be ordered so that minP will always be < maxP
+                  * The coordinates are not allowed to describe a volume
                   *
                   * @param CoordA First coordinate of a area
                   * @param CoordB Second coordinate of a area

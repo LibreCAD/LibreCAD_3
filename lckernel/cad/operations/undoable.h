@@ -32,7 +32,7 @@ namespace lc {
                  * \brief Undo a given operation.
                  *
                  * For any operation that means for example when it added entities to the document
-                 * it now needs to remove all created entites on the document.
+                 * it now needs to remove all created entities on the document.
                  * When the operation added a layer or block, it will call functions to remove that block
                  */
                 virtual void undo() const = 0;

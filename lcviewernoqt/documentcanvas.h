@@ -92,9 +92,9 @@ class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
          * @brief newSize
          * for the device. When using a pixel based device this is the number of pixels of the painter
          * @param width
-         * @param hight
+         * @param height
          */
-        void newDeviceSize(unsigned int width, unsigned int hight);
+        void newDeviceSize(unsigned int width, unsigned int height);
 
         /**
          * Remove all painter's

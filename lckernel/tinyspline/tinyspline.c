@@ -761,7 +761,7 @@ void ts_internal_bspline_to_beziers(
     const size_t order = bspline->order;
     tsBSpline tmp;
     int resize; /* The number of control points to add/remove. */
-    size_t k; /* The index of the splitted knot value. */
+    size_t k; /* The index of the split knot value. */
     tsRational u_min; /* The minimum of the knot values. */
     tsRational u_max; /* The maximum of the knot values. */
 
