@@ -30,7 +30,7 @@ namespace LCViewer {
 
     class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
         public:
-            DocumentCanvas(std::shared_ptr<lc::Document> document, std::function<void(double*, double*)> deviceToUser);
+            DocumentCanvas(std::shared_ptr<lc::Document> document, std::function<void(double*, double*)> deviceToUser = [](double*, double*){});
             virtual ~DocumentCanvas();
 
         /**
