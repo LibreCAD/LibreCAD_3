@@ -50,40 +50,20 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     );
     _canvas->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
 
-    LcPainter* lcPainter = nullptr;
-    _canvas->createPainterFunctor(
-            [&](const unsigned int width, const unsigned int height) {
-                if (lcPainter == nullptr) {
-                    lcPainter = new LcCairoPainter<CairoPainter::backend::SVG>(imageWidth, imageHeight, nullptr);
-                }
-
-                return lcPainter;
-            }
-    );
-
-    _canvas->deletePainterFunctor([&](LcPainter* painter) {
-        if (painter != nullptr && lcPainter != nullptr) {
-            delete painter;
-            lcPainter = nullptr;
-        }
-    });
+    LcPainter* lcPainter = new LcCairoPainter<CairoPainter::backend::SVG>(imageWidth, imageHeight, nullptr);;
 
     _canvas->newDeviceSize(imageWidth, imageHeight);
 
-    _canvas->render(
-            [&](LcPainter&) {},
-            [&](LcPainter&) {}
-    );
-
     lc::File::open(_document, dxf, lc::File::LIBDXFRW);
 
-    _canvas->setDisplayArea(lc::geo::Area(lc::geo::Coordinate(x, y), w, h));
-    _canvas->render(
-            [&](LcPainter&) {},
-            [&](LcPainter&) {}
-    );
+    _canvas->setDisplayArea(*lcPainter, lc::geo::Area(lc::geo::Coordinate(x, y), w, h));
+    _canvas->render(*lcPainter, VIEWER_BACKGROUND);
+    _canvas->render(*lcPainter, VIEWER_DOCUMENT);
+    _canvas->render(*lcPainter, VIEWER_FOREGROUND);
 
     static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(output);
+
+    delete lcPainter;
 }
 
 bool checkRender(const std::string& image1, const std::string& image2, float tolerance) {

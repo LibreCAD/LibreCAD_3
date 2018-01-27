@@ -38,11 +38,11 @@ void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOption
     }
 }
 
-void LCVInsert::draw(DocumentCanvas_SPtr docCanvas) const {
+void LCVInsert::draw(DocumentCanvas_SPtr docCanvas, LcPainter& painter) const {
     auto shared = _insert->shared_from_this();
 
     for(auto entity : _entities) {
-        docCanvas->drawEntity(entity.second, shared);
+        docCanvas->drawEntity(painter, entity.second, shared);
     }
 }
 

@@ -147,36 +147,16 @@ int main(int argc, char** argv) {
     using namespace CairoPainter;
 
     LcPainter* lcPainter = nullptr;
-
-    _canvas->createPainterFunctor(
-            [&](const unsigned int width, const unsigned int height) {
-
-                if (lcPainter == nullptr) {
-                    if (fType == "pdf")
-                        lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
-                    else if (fType == "svg")
-                        lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
-                        // cairo can print any surface to PNG
-                    else
-                        lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
-                }
-
-                return lcPainter;
-            });
-
-    _canvas->deletePainterFunctor([&](LcPainter* painter) {
-        if (painter != nullptr && lcPainter != nullptr) {
-            delete painter;
-            lcPainter = nullptr;
-        }
-    });
+    if (fType == "pdf")
+        lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
+    else if (fType == "svg")
+        lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
+        // cairo can print any surface to PNG
+    else
+        lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
 
     // Set device width/height
     _canvas->newDeviceSize(width, height);
-
-    // This creates a painter, a bit ugly but will do for now
-    _canvas->render([&](LcPainter& lcPainter) {},
-                    [&](LcPainter& lcPainter) {});
 
     // Render Lua Code
     auto luaState = LuaIntf::LuaState::newState();
@@ -204,14 +184,17 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    _canvas->autoScale();
-    _canvas->render([&](LcPainter& lcPainter) {},
-                    [&](LcPainter& lcPainter) {});
+    _canvas->autoScale(*lcPainter);
+    _canvas->render(*lcPainter, VIEWER_BACKGROUND);
+    _canvas->render(*lcPainter, VIEWER_DOCUMENT);
+    _canvas->render(*lcPainter, VIEWER_FOREGROUND);
 
     if (fType == "png" || (fType != "pdf" && fType != "svg"))
         static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(fOut);
     ofile.close();
 
     lc::LuaCustomEntityManager::getInstance().removePlugins();
+
+    delete lcPainter;
     return 0;
 }

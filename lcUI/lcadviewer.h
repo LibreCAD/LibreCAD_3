@@ -69,7 +69,9 @@ class LCADViewer : public QWidget {
         void setSnapManager(std::shared_ptr<SnapManager> snapmanager);
         void setDragManager(DragManager_SPtr dragManager);
         std::shared_ptr<DocumentCanvas> documentCanvas() const;
-        void autoScale() const {documentCanvas()->autoScale();}
+        void autoScale() const {
+            documentCanvas()->autoScale(*_documentPainter);
+        }
 
         void setOperationActive(bool operationActive);
 
@@ -95,6 +97,11 @@ class LCADViewer : public QWidget {
         void setHorizontalOffset(int v);
 
     private:
+        void createPainters(unsigned int width, unsigned int height);
+        void deletePainters();
+        void updateBackground();
+        void updateDocument();
+
         void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
         /* for panning */
@@ -106,7 +113,7 @@ class LCADViewer : public QWidget {
 
         bool _operationActive;
 
-        std::map<LcPainter*,  QImage*> imagemaps;
+        std::map<LcPainter*, QImage*> imagemaps;
 
         double _scale;
         double _zoomMin;
@@ -126,5 +133,9 @@ class LCADViewer : public QWidget {
         std::shared_ptr<lc::Document> _document;
         std::shared_ptr<SnapManager> _snapManager;
 		DragManager_SPtr _dragManager;
+
+        LcPainter* _backgroundPainter;
+        LcPainter* _documentPainter;
+        LcPainter* _foregroundPainter;
 };
 }

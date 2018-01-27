@@ -16,7 +16,7 @@ namespace LCViewer {
             virtual void selected(bool selected) override;
 
             void draw(LcPainter& _painter, const LcDrawOptions& options, const lc::geo::Area& updateRect) const override;
-            void draw(DocumentCanvas_SPtr docCanvas) const;
+            void draw(DocumentCanvas_SPtr docCanvas, LcPainter& painter) const;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

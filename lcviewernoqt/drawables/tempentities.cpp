@@ -18,6 +18,6 @@ void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
 
 void TempEntities::onDraw(DrawEvent const &event) {
 	_entities.each<const LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr entity) {
-		_docCanvas->drawEntity(entity);
+		_docCanvas->drawEntity(event.painter(), entity);
 	});
 }
