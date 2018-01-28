@@ -53,6 +53,7 @@ end
 
 function CreateOperations:close()
     if(not self.finished) then
+        luaInterface:triggerEvent('operationFinished')
         self:removeTempEntity()
         self:unregisterEvents()
         self.finished = true

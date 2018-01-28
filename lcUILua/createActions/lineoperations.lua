@@ -14,8 +14,6 @@ function LineOperations:_init(id)
     self.lastPoint = nil
     self.length = nil
     self.entity_id = ID():id()
-    self.entity = self:createLine(Coord(0, 0), Coord(0, 0))
-    luaInterface:registerEvent('point', self)
     message("Click on first point")
 
     CreateOperations._init(self, id)
@@ -37,26 +35,20 @@ end
 
 function LineOperations:newPoint(point)
     if(self.lastPoint ~= nil) then
-        self.finished = true
-        self:removeTempEntity()
-
         local l = self:createLine(self.lastPoint, point)
         self:createEntity(l)
-        self:unregisterEvents()
-
+        CreateOperations.close(self)
     else
         self.lastPoint = point
-        self.entity = self:createLine(point, point)
-
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
         message("Click on second point or enter line length")
     end
 end
 
 function LineOperations:createTempLine(point)
-    self.entity = self:createLine(self.lastPoint, point)
-    self:refreshTempEntity()
+    if(self.lastPoint ~= nil) then
+        self.entity = self:createLine(self.lastPoint, point)
+        self:refreshTempEntity()
+    end
 end
 
 function LineOperations:createLine(p1, p2)

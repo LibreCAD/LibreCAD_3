@@ -18,12 +18,10 @@ function EllipseOperations:_init(id, isArc)
     self.startAngle = nil
     self.endAngle = nil
     self.entity_id = ID():id()
-    self.entity = self:getEllipse(Coord(0,0), Coord(0,0), 0, 0, 0)
 
     message("Click on center")
 
     CreateOperations._init(self, id)
-    self:registerEvents()
 end
 
 function EllipseOperations:onEvent(eventName, ...)
@@ -107,15 +105,13 @@ function EllipseOperations:createTempEllipse(point)
 end
 
 function EllipseOperations:createEllipse()
-    self.finished = true
-    self:removeTempEntity()
-
     if(not self.isArc) then
         self.startAngle = 0
-        self.endAngle = 0
+        self.endAngle = 2 * math.pi
     end
 
     local el = self:getEllipse(self.center, self.majorPoint, self.minorRadius, self.startAngle, self.endAngle)
     self:createEntity(el)
-    self:unregisterEvents()
+
+    CreateOperations.close(self)
 end

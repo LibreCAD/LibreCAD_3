@@ -17,10 +17,6 @@ function LWPolylineOperations:_init(id)
 
     self.lwVertexes = {}
     self.entity_id = ID():id()
-    self.entity = nil
-
-    self:registerEvents()
-    --luaInterface:registerEvent('text', self)
 
     message("Choose entity type")
 
@@ -104,15 +100,8 @@ end
 
 function LWPolylineOperations:close()
     if(not self.finished) then
-
-        self:removeTempEntity()
-        self.finished = true
         self:createLWPolyline()
-        self:unregisterEvents()
-
-        --luaInterface:deleteEvent('text', self)
-
-        luaInterface:triggerEvent('operationFinished')
+        CreateOperations.close(self)
     end
 end
 

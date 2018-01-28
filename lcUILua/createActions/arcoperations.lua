@@ -11,15 +11,12 @@ setmetatable(ArcOperations, {
 })
 
 function ArcOperations:_init(id)
-
     self.center = nil
     self.radius = nil
     self.beginAngle = nil
     self.endAngle = nil
-    self.entity = nil
     self.entity_id = ID():id()
 
-    luaInterface:registerEvent('point', self)
     CreateOperations._init(self, id)
 
     message("Click on center")
@@ -40,11 +37,6 @@ end
 function ArcOperations:newData(point)
     if(self.center == nil) then
         self.center = point
-        self.entity = self:getArc(point, 0, 0, 0)
-        self:refreshTempEntity()
-
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
 
         message("Click on second point or enter the radius")
     elseif(self.radius == nil) then
@@ -86,18 +78,15 @@ function ArcOperations:createTempArc(point)
 
     radius = radius or 0
     beginAngle = beginAngle or 0
-    endAngle = endAngle or 0.001
+    endAngle = endAngle or 0.5 * math.pi
 
     self.entity = self:getArc(center, radius, beginAngle, endAngle)
     self:refreshTempEntity()
 end
 
 function ArcOperations:createArc()
-    self.finished = true
-    self:removeTempEntity()
-
     local a = self:getArc(self.center, self.radius, self.beginAngle, self.endAngle)
     self:createEntity(a)
 
-    self:unregisterEvents()
+    CreateOperations.close(self)
 end

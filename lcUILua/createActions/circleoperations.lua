@@ -12,10 +12,7 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init(id)
     self.center = nil
-    self.entity = nil
     self.entity_id = ID():id()
-
-    luaInterface:registerEvent('point', self)
 
     CreateOperations._init(self, id)
     message("Click on center")
@@ -38,12 +35,6 @@ end
 function CircleOperations:newPoint(point)
     if(self.center == nil) then
         self.center = point
-        self.entity = self:getCircle(point, 0)
-
-        self:refreshTempEntity()
-
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
 
         message("Click on second point or enter the radius")
     else
@@ -65,16 +56,15 @@ function CircleOperations:getCircle(center, radius)
 end
 
 function CircleOperations:createTempCircle(point)
-    self.entity = self:getCircle(self.center, point)
-    self:refreshTempEntity()
+    if(self.center ~= nil) then
+        self.entity = self:getCircle(self.center, point)
+        self:refreshTempEntity()
+    end
 end
 
 function CircleOperations:createCircle(point)
-    self.finished = true
-    self:removeTempEntity()
-
     local c = self:getCircle(self.center, point)
     self:createEntity(c)
 
-    self:unregisterEvents()
+    CreateOperations.close(self)
 end
