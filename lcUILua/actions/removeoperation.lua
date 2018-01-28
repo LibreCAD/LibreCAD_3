@@ -13,13 +13,13 @@ setmetatable(RemoveOperation, {
 function RemoveOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = active_widget():selection()
+    self.selection = getWindow(id):selection()
 
     self:remove()
 end
 
 function RemoveOperation:remove()
-    local b = EntityBuilder(active_widget():document())
+    local b = EntityBuilder(getWindow(self.target_widget):document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -29,7 +29,7 @@ function RemoveOperation:remove()
     b:appendOperation(Remove())
     b:execute()
 
-    message(tostring(#self.selection) .. " items removed")
+    message(tostring(#self.selection) .. " items removed", self.target_widget)
 
     self:close()
 end
@@ -37,6 +37,6 @@ end
 function RemoveOperation:close()
     if(not self.finished) then
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.target_widget)
     end
 end

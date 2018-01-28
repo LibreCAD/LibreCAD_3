@@ -17,31 +17,31 @@ function DimDiametricOperations:_init(id)
 
     self.dimDiametric_id = ID():id()
 
-    message("Click on first point")
+    message("Click on first point", id)
 
     CreateOperations._init(self, id)
 end
 
 function DimDiametricOperations:getDimDiametric(defPoint1, defPoint2, text)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local dim = DimDiametric(defPoint1, 5, 1, 1, text, defPoint2, 1, layer, metaInfo)
     dim:setId(self.dimDiametric_id)
 
     return dim
 end
 
-function DimDiametricOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function DimDiametricOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempDimDiametric(...)
+        self:createTempDimDiametric(data["position"])
     elseif(eventName == "text") then
-        self:setText(...)
+        self:setText(data["text"])
     end
 end
 
@@ -49,12 +49,12 @@ function DimDiametricOperations:newData(data)
     if(self.definitionPoint == nil) then
         self.definitionPoint = Operations:getCoordinate(data)
 
-        message("Click on second point")
+        message("Click on second point", self.target_widget)
     elseif(self.definitionPoint2 == nil) then
         self.definitionPoint2 = Operations:getCoordinate(data)
 
-        message("Enter dimension text or leave it empty (<> for value)")
-        cli_get_text(true)
+        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        cli_get_text(self.target_widget, true)
     end
 end
 
@@ -65,7 +65,7 @@ function DimDiametricOperations:setText(text)
         self.text = text
     end
 
-    cli_get_text(false)
+    cli_get_text(self.target_widget, false)
     self:createDimDiametric()
 end
 
@@ -90,7 +90,7 @@ function DimDiametricOperations:createTempDimDiametric(point)
 end
 
 function DimDiametricOperations:createDimDiametric()
-    CreateOperations:createEntity(self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text))
+    CreateOperations.createEntity(self, self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text))
     CreateOperations.close(self)
 end
 

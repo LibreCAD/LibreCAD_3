@@ -13,9 +13,9 @@ setmetatable(MoveOperation, {
 function MoveOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = active_widget():selection()
+    self.selection = getWindow(id):selection()
 
-    message(tostring(#self.selection) .. " items selected")
+    message(tostring(#self.selection) .. " items selected", id)
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -24,22 +24,22 @@ function MoveOperation:_init(id)
         luaInterface:registerEvent('point', self)
         luaInterface:registerEvent('mouseMove', self)
 
-        message("Give origin point")
+        message("Give origin point", id)
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', id)
     end
 end
 
-function MoveOperation:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function MoveOperation:onEvent(eventName, event)
+    if(Operations.forMe(self, event) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(event["position"])
     elseif(eventName == "mouseMove") then
-        self:tempMove(...)
+        self:tempMove(event["position"])
     end
 end
 
@@ -47,10 +47,10 @@ function MoveOperation:newData(point)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(point)
 
-        message("Give destination point")
+        message("Give destination point", id)
     elseif(Operations:getCoordinate(point) ~= nil) then
         local offset = point:sub(self.origin)
-        local b = EntityBuilder(active_widget():document())
+        local b = EntityBuilder(getWindow(self.target_widget):document())
 
         for k, entity in pairs(self.selection) do
             b:appendEntity(entity)
@@ -66,8 +66,9 @@ end
 
 function MoveOperation:tempMove(point)
     if(self.origin ~= nil) then
+        local window = getWindow(self.target_widget)
         for k, entity in pairs(self.tempEntities) do
-            active_widget():tempEntities():removeEntity(entity)
+            window:tempEntities():removeEntity(entity)
         end
         self.tempEntities = {}
 
@@ -75,7 +76,7 @@ function MoveOperation:tempMove(point)
 
         for k, entity in pairs(self.selection) do
             local newEntity = entity:move(offset)
-            active_widget():tempEntities():addEntity(newEntity)
+            window:tempEntities():addEntity(newEntity)
             table.insert(self.tempEntities, newEntity)
         end
     end
@@ -83,15 +84,16 @@ end
 
 function MoveOperation:close()
     if(not self.finished) then
+        local window = getWindow(self.target_widget)
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            active_widget():tempEntities():removeEntity(entity)
+            window:tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.target_widget)
     end
 end

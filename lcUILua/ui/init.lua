@@ -6,4 +6,4 @@ require 'ui.toolbar'
 require 'ui.operations'
 require 'ui.listOperations'
 
-create_main_window()
+new_file()

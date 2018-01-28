@@ -13,9 +13,9 @@ setmetatable(ScaleOperation, {
 function ScaleOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = active_widget():selection()
+    self.selection = getWindow(id):selection()
 
-    message(tostring(#self.selection) .. " items selected")
+    message(tostring(#self.selection) .. " items selected", id)
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -29,17 +29,19 @@ function ScaleOperation:_init(id)
         message("Give origin point")
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', id)
     end
 end
 
-function ScaleOperation:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function ScaleOperation:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
-    if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+    if(eventName == "point") then
+        self:newData(data["position"])
+    elseif(eventName == "number") then
+        self:newData(data["number"])
     end
 end
 
@@ -47,7 +49,7 @@ function ScaleOperation:newData(data)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(data)
 
-        message("Enter scale factor or entity end")
+        message("Enter scale factor or entity end", self.target_widget)
     elseif(type(data) == "number") then
         self.factor = Coordinate(data, data, data)
 
@@ -56,7 +58,7 @@ function ScaleOperation:newData(data)
 end
 
 function ScaleOperation:scale()
-    local b = EntityBuilder(active_widget():document())
+    local b = EntityBuilder(getWindow(self.target_widget):document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -74,12 +76,12 @@ function ScaleOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            active_widget():tempEntities():removeEntity(entity)
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('point', self)
         luaInterface:deleteEvent('number', self)
 
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.target_widget)
     end
 end

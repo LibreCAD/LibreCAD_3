@@ -14,54 +14,46 @@ function LineOperations:_init(id)
     self.lastPoint = nil
     self.length = nil
     self.entity_id = ID():id()
-    self.entity = self:createLine(Coord(0, 0), Coord(0, 0))
-    luaInterface:registerEvent('point', self)
-    message("Click on first point")
+    message("Click on first point", id)
 
     CreateOperations._init(self, id)
 end
 
-function LineOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function LineOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point") then
-        self:newPoint(...)
+        self:newPoint(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempLine(...)
+        self:createTempLine(data["position"])
     elseif(eventName == "number") then
-        self.length = ...
+        self.length = data["number"]
     end
 end
 
 function LineOperations:newPoint(point)
     if(self.lastPoint ~= nil) then
-        self.finished = true
-        self:removeTempEntity()
-
         local l = self:createLine(self.lastPoint, point)
         self:createEntity(l)
-        self:unregisterEvents()
-
+        CreateOperations.close(self)
     else
         self.lastPoint = point
-        self.entity = self:createLine(point, point)
-
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
         message("Click on second point or enter line length")
     end
 end
 
 function LineOperations:createTempLine(point)
-    self.entity = self:createLine(self.lastPoint, point)
-    self:refreshTempEntity()
+    if(self.lastPoint ~= nil) then
+        self.entity = self:createLine(self.lastPoint, point)
+        self:refreshTempEntity()
+    end
 end
 
 function LineOperations:createLine(p1, p2)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
 
     if(self.length ~= nil) then
         local angle = p1:angleTo(p2)

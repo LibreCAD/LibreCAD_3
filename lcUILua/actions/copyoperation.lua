@@ -10,12 +10,12 @@ setmetatable(CopyOperation, {
     end,
 })
 
-function CopyOperation:_init(id)
-    Operations._init(self, id)
+function CopyOperation:_init(widget)
+    Operations._init(self, widget)
 
-    self.selection = active_widget():selection()
+    self.selection = getWindow(widget):selection()
 
-    message(tostring(#self.selection) .. " items selected")
+    message(tostring(#self.selection) .. " items selected", self.target_widget)
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -26,22 +26,22 @@ function CopyOperation:_init(id)
         luaInterface:registerEvent('point', self)
         luaInterface:registerEvent('mouseMove', self)
 
-        message("Give origin point")
+        message("Give origin point", widget)
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', widget)
     end
 end
 
-function CopyOperation:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function CopyOperation:onEvent(eventName, event)
+    if(Operations.forMe(self, event) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(event["position"])
     elseif(eventName == "mouseMove") then
-        self:tempCopy(...)
+        self:tempCopy(event["position"])
     end
 end
 
@@ -49,7 +49,7 @@ function CopyOperation:newData(point)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(point)
 
-        message("Give destination point")
+        message("Give destination point", self.target_widget)
     elseif(Operations:getCoordinate(point) ~= nil) then
         self.destination = Operations:getCoordinate(point)
 
@@ -59,8 +59,9 @@ end
 
 function CopyOperation:tempCopy(point)
     if(self.origin ~= nil) then
+        local window = getWindow(self.target_widget)
         for k, entity in pairs(self.tempEntities) do
-            active_widget():tempEntities():removeEntity(entity)
+            window:tempEntities():removeEntity(entity)
         end
         self.tempEntities = {}
 
@@ -68,7 +69,7 @@ function CopyOperation:tempCopy(point)
 
         for k, entity in pairs(self.selection) do
             local newEntity = entity:copy(offset)
-            active_widget():tempEntities():addEntity(newEntity)
+            window:tempEntities():addEntity(newEntity)
             table.insert(self.tempEntities, newEntity)
         end
     end
@@ -76,7 +77,7 @@ end
 
 function CopyOperation:copy()
     local offset = self.destination:sub(self.origin)
-    local b = EntityBuilder(active_widget():document())
+    local b = EntityBuilder(getWindow(self.target_widget):document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -92,14 +93,14 @@ end
 function CopyOperation:close()
     if(not self.finished) then
         self.finished = true
-
+        local window = getWindow(self.target_widget)
         for k, entity in pairs(self.tempEntities) do
-            active_widget():tempEntities():removeEntity(entity)
+            window:tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.target_widget)
     end
 end

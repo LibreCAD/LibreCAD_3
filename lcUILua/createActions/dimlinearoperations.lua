@@ -19,31 +19,31 @@ function DimLinearOperations:_init(id)
     self.dimLinear_id = ID():id()
     self.dimLine = nil
 
-    message("Click on start point")
+    message("Click on start point", id)
 
     CreateOperations._init(self, id)
 end
 
 function DimLinearOperations:getDimLinear(startPoint, endPoint, middleOfText, text)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local dim = DimLinear.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
     dim:setId(self.dimLinear_id)
 
     return dim
 end
 
-function DimLinearOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function DimLinearOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempDimLinear(...)
+        self:createTempDimLinear(data["position"])
     elseif(eventName == "text") then
-        self:setText(...)
+        self:setText(data["text"])
     end
 end
 
@@ -51,16 +51,16 @@ function DimLinearOperations:newData(data)
     if(self.startPoint == nil) then
         self.startPoint = Operations:getCoordinate(data)
 
-        message("Click on end point")
+        message("Click on end point", self.target_widget)
     elseif(self.endPoint == nil) then
         self.endPoint = Operations:getCoordinate(data)
 
-        message("Give dimension height")
+        message("Give dimension height", self.target_widget)
     elseif(self.middleOfText == nil) then
         self.middleOfText = Operations:getCoordinate(data)
 
-        message("Enter dimension text or leave it empty (<> for value)")
-        cli_get_text(true)
+        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        cli_get_text(self.target_widget, true)
     end
 end
 
@@ -71,7 +71,7 @@ function DimLinearOperations:setText(text)
         self.text = text
     end
 
-    cli_get_text(false)
+    cli_get_text(self.target_widget, false)
     self:createDimLinear()
 end
 
@@ -96,7 +96,7 @@ function DimLinearOperations:createTempDimLinear(point)
 end
 
 function DimLinearOperations:createDimLinear()
-    CreateOperations:createEntity(self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text))
+    CreateOperations.createEntity(self, self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text))
     CreateOperations.close(self)
 end
 

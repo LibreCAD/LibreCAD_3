@@ -10,49 +10,41 @@ setmetatable(ArcOperations, {
     end,
 })
 
-function ArcOperations:_init(id)
-
+function ArcOperations:_init(widget)
     self.center = nil
     self.radius = nil
     self.beginAngle = nil
     self.endAngle = nil
-    self.entity = nil
     self.entity_id = ID():id()
 
-    luaInterface:registerEvent('point', self)
-    CreateOperations._init(self, id)
+    CreateOperations._init(self, widget)
 
-    message("Click on center")
+    message("Click on center", widget)
 end
 
-function ArcOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function ArcOperations:onEvent(eventName, event)
+    if(Operations.forMe(self, event) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(event["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempArc(...)
+        self:createTempArc(event["position"])
     end
 end
 
 function ArcOperations:newData(point)
     if(self.center == nil) then
         self.center = point
-        self.entity = self:getArc(point, 0, 0, 0)
-        self:refreshTempEntity()
 
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
-
-        message("Click on second point or enter the radius")
+        message("Click on second point or enter the radius", self.target_widget)
     elseif(self.radius == nil) then
         self.radius = Operations:getDistance(self.center, point)
-        message("Click on start point or enter the start angle")
+        message("Click on start point or enter the start angle", self.target_widget)
     elseif(self.beginAngle == nil) then
         self.beginAngle = Operations:getAngle(self.center, point)
-        message("Click on end point or enter the end angle")
+        message("Click on end point or enter the end angle", self.target_widget)
     else
         self.endAngle = Operations:getAngle(self.center, point)
         self:createArc()
@@ -60,8 +52,8 @@ function ArcOperations:newData(point)
 end
 
 function ArcOperations:getArc(center, radius, beginAngle, endAngle)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local a = Arc(center, radius, beginAngle, endAngle, false, layer, metaInfo)
     a:setId(self.entity_id)
 
@@ -86,18 +78,15 @@ function ArcOperations:createTempArc(point)
 
     radius = radius or 0
     beginAngle = beginAngle or 0
-    endAngle = endAngle or 0.001
+    endAngle = endAngle or 0.5 * math.pi
 
     self.entity = self:getArc(center, radius, beginAngle, endAngle)
     self:refreshTempEntity()
 end
 
 function ArcOperations:createArc()
-    self.finished = true
-    self:removeTempEntity()
-
     local a = self:getArc(self.center, self.radius, self.beginAngle, self.endAngle)
     self:createEntity(a)
 
-    self:unregisterEvents()
+    CreateOperations.close(self)
 end

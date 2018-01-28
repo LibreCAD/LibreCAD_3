@@ -1,45 +1,36 @@
 local commands = {}
+local cliCommands = {}
 local lastPoint = Coordinate(0,0)
 
 --Write a message to the command line log
-function message(message)
-    cliCommand:write(tostring(message))
+function message(message, id)
+    if cliCommands[id] ~= nil then
+        cliCommands[id]:write(tostring(message))
+    end
 end
 
 --Register a new command
 function add_command(name, callback)
-    if(cliCommand:addCommand(name)) then
-        commands[name] = callback
-    else
-        print("Command " .. name .. " is already defined")
+    commands[name] = callback
+
+    for i, cliCommand in pairs(cliCommands) do
+        if(not cliCommand:addCommand(name)) then
+            print("Command " .. name .. " is already defined")
+            break
+        end
     end
 end
 
 --Configure command line to return raw text
-function cli_get_text(getText)
-    cliCommand:returnText(getText)
+function cli_get_text(id, getText)
+    if cliCommands[id] ~= nil then
+        cliCommands[id]:returnText(getText)
+    end
 end
 
 --Execute a command from command line
-function command(command)
-    commands[command:toStdString()]()
-end
-
---Send an event when coordinate is entered
-function coordinate(coordinate)
-    luaInterface:triggerEvent('point', coordinate)
-end
-
---Send an event when relative coordinate is entered and show real coordinate in command line
-function relativeCoordinate(relative)
-    local absolute = lastPoint:add(relative)
-    message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
-    luaInterface:triggerEvent('point', absolute)
-end
-
---Send an event when a number is entered
-function number(number)
-    luaInterface:triggerEvent('number', number)
+function command(id, command)
+    commands[command:toStdString()](id)
 end
 
 --Store the point in memory when needed for relative coordinates
@@ -47,40 +38,69 @@ local function setLastPoint(point)
     lastPoint = point
 end
 
---Send an event when text is entered
-function text(text)
-    luaInterface:triggerEvent('text', text:toStdString())
-end
-
 --Create the command line and add it to the main window
-function add_commandline()
-    cliCommand = lc.CliCommand(mainWindow)
+function add_commandline(mainWindow, id)
+    local cliCommand = lc.CliCommand(mainWindow)
     mainWindow:addDockWidget(8, cliCommand)
+    cliCommands[id] = cliCommand
 
-    luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)
-    luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", coordinate)
-    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", relativeCoordinate)
-    luaInterface:luaConnect(cliCommand, "numberEntered(double)", number)
-    luaInterface:luaConnect(cliCommand, "textEntered(QString)", text)
+    luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
 
-    --Register every commands
-    add_command("LINE", create_line)
-    add_command("CIRCLE", create_circle)
-    add_command("ARC", create_arc)
-    add_command("ELLIPSE", create_ellipse)
-    add_command("ARCELLIPSE", create_arc_ellipse)
-    add_command("DIMALIGNED", create_dim_aligned)
-    add_command("DIMDIAMETRIC", create_dim_diametric)
-    add_command("DIMLINEAR", create_dim_linear)
-    add_command("DIMRADIAL", create_dim_radial)
-    add_command("SPLINE", create_spline)
+    luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
+        luaInterface:triggerEvent('point', {
+            position = coordinate,
+            widget = mainWindow:centralWidget()
+        })
+    end)
 
-    add_command("MOVE", move_selected_entities)
-    add_command("ROTATE", rotate_selected_entities)
-    add_command("COPY", copy_selected_entities)
-    add_command("SCALE", scale_selected_entities)
-    add_command("REMOVE", remove_selected_entities)
-    add_command("TRIM", trim_entity)
+    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
+        local absolute = lastPoint:add(relative)
+        message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z(), id)
+        luaInterface:triggerEvent('point', {
+            position = absolute,
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
+        luaInterface:triggerEvent('number', {
+            number = number,
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    luaInterface:luaConnect(cliCommand, "textEntered(QString)", function(text)
+        luaInterface:triggerEvent('text', {
+            text = text:toStdString(),
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    for name, cb in pairs(commands) do
+        cliCommand:addCommand(name)
+    end
 
     luaInterface:registerEvent('point', setLastPoint)
+
+    return cliCommand
 end
+
+--Register every commands
+add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
+add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
+add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
+add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
+add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, true) end)
+add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
+add_command("DIMDIAMETRIC", function(id) run_basic_operation(id, DimDiametricOperations) end)
+add_command("DIMLINEAR", function(id) run_basic_operation(id, DimLinearOperations) end)
+add_command("DIMRADIAL", function(id) run_basic_operation(id, DimRadialOperations) end)
+add_command("SPLINE", function(id) run_basic_operation(id, SplineOperations) end)
+add_command("POLYLINE", function(id) create_lw_polyline(id) end)
+
+add_command("MOVE", function(id) run_basic_operation(id, MoveOperation) end)
+add_command("ROTATE", function(id) run_basic_operation(id, RotateOperation) end)
+add_command("COPY", function(id) run_basic_operation(id, CopyOperation) end)
+add_command("SCALE", function(id) run_basic_operation(id, ScaleOperation) end)
+add_command("REMOVE", function(id) run_basic_operation(id, RemoveOperation) end)
+add_command("TRIM", function(id) run_basic_operation(id, TrimOperation) end)

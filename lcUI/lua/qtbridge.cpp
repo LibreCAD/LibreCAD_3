@@ -68,6 +68,7 @@ void addQtWindowBindings(lua_State *L) {
 			.addConstructor(LUA_ARGS())
 			.addFunction("addDockWidget", static_cast<void (QMainWindow::*)(Qt::DockWidgetArea, QDockWidget *)>(&QMainWindow::addDockWidget))
 			.addFunction("menuBar", &QMainWindow::menuBar)
+			.addFunction("centralWidget", &QMainWindow::centralWidget)
 			.addFunction("setCentralWidget", &QMainWindow::setCentralWidget)
 			.addFunction("setUnifiedTitleAndToolBarOnMac", &QMainWindow::setUnifiedTitleAndToolBarOnMac)
 		.endClass()

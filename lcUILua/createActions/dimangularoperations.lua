@@ -19,33 +19,31 @@ function DimAngularOperations:_init(id)
     self.dimAngular_id = ID():id()
     self.dimLine = nil
 
-    CreateOperations.refreshTempEntity(self)
-
-    message("Click on center point")
+    message("Click on center point", id)
 
     CreateOperations._init(self, id)
 end
 
 function DimAngularOperations:getDimAngular(centerPoint, firstPoint, secondPoint, text)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local dim = DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, metaInfo)
     dim:setId(self.dimAngular_id)
 
     return dim
 end
 
-function DimAngularOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function DimAngularOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempDimAngular(...)
+        self:createTempDimAngular(data["position"])
     elseif(eventName == "text") then
-        self:setText(...)
+        self:setText(data["text"])
     end
 end
 
@@ -53,16 +51,16 @@ function DimAngularOperations:newData(data)
     if(self.centerPoint == nil) then
         self.centerPoint = Operations:getCoordinate(data)
 
-        message("Click on first point")
+        message("Click on first point", self.target_widget)
     elseif(self.firstPoint == nil) then
         self.firstPoint = Operations:getCoordinate(data)
 
-        message("Click on second point")
+        message("Click on second point", self.target_widget)
     elseif(self.secondPoint == nil) then
         self.secondPoint = Operations:getCoordinate(data)
 
-        message("Enter dimension text or leave it empty (<> for value)")
-        cli_get_text(true)
+        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        cli_get_text(self.target_widget, true)
     end
 end
 
@@ -73,7 +71,7 @@ function DimAngularOperations:setText(text)
         self.text = text
     end
 
-    cli_get_text(false)
+    cli_get_text(self.target_widget, false)
     self:createDimAngular()
 end
 

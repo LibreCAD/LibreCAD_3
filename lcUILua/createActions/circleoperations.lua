@@ -12,40 +12,31 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init(id)
     self.center = nil
-    self.entity = nil
     self.entity_id = ID():id()
 
-    luaInterface:registerEvent('point', self)
-
     CreateOperations._init(self, id)
-    message("Click on center")
+    message("Click on center", self.target_widget)
 end
 
-function CircleOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function CircleOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point") then
-        self:newPoint(...)
+        self:newPoint(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempCircle(...)
+        self:createTempCircle(data["position"])
     elseif(eventName == "number") then
-        self:createCircle(...)
+        self:createCircle(data["number"])
     end
 end
 
 function CircleOperations:newPoint(point)
     if(self.center == nil) then
         self.center = point
-        self.entity = self:getCircle(point, 0)
 
-        self:refreshTempEntity()
-
-        luaInterface:registerEvent('mouseMove', self)
-        luaInterface:registerEvent('number', self)
-
-        message("Click on second point or enter the radius")
+        message("Click on second point or enter the radius", self.target_widget)
     else
         self:createCircle(point)
     end
@@ -56,8 +47,8 @@ function CircleOperations:getCircle(center, radius)
         radius = center:distanceTo(radius)
     end
 
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local c = Circle(center, radius, layer, metaInfo)
     c:setId(self.entity_id)
 
@@ -65,16 +56,15 @@ function CircleOperations:getCircle(center, radius)
 end
 
 function CircleOperations:createTempCircle(point)
-    self.entity = self:getCircle(self.center, point)
-    self:refreshTempEntity()
+    if(self.center ~= nil) then
+        self.entity = self:getCircle(self.center, point)
+        self:refreshTempEntity()
+    end
 end
 
 function CircleOperations:createCircle(point)
-    self.finished = true
-    self:removeTempEntity()
-
     local c = self:getCircle(self.center, point)
     self:createEntity(c)
 
-    self:unregisterEvents()
+    CreateOperations.close(self)
 end
