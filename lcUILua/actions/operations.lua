@@ -11,13 +11,13 @@ setmetatable(Operations, {
 	end,
 })
 
-function Operations:_init(id)
-	self.id = id
+function Operations:_init(widget)
+	self.target_widget = widget
 	self.finished = false
 end
 
-function Operations:forMe()
-	return active_widget().id == self.id
+function Operations:forMe(event)
+	return event["widget"].id == self.target_widget
 end
 
 function Operations:getDistance(center, point)

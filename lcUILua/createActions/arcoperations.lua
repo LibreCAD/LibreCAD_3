@@ -10,27 +10,27 @@ setmetatable(ArcOperations, {
     end,
 })
 
-function ArcOperations:_init(id)
+function ArcOperations:_init(widget)
     self.center = nil
     self.radius = nil
     self.beginAngle = nil
     self.endAngle = nil
     self.entity_id = ID():id()
 
-    CreateOperations._init(self, id)
+    CreateOperations._init(self, widget)
 
     message("Click on center")
 end
 
-function ArcOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function ArcOperations:onEvent(eventName, event)
+    if(Operations.forMe(self, event) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(event["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempArc(...)
+        self:createTempArc(event["position"])
     end
 end
 

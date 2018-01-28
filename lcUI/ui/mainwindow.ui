@@ -30,9 +30,6 @@
     <property name="bottomMargin">
      <number>12</number>
     </property>
-    <item>
-     <widget class="QMdiArea" name="mdiArea"/>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -41,12 +38,12 @@
      <x>0</x>
      <y>0</y>
      <width>981</width>
-     <height>28</height>
+     <height>32</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuDemo_Project">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
@@ -62,7 +59,7 @@
     </property>
     <widget class="QMenu" name="menuSelect">
      <property name="title">
-      <string>Select</string>
+      <string>&amp;Select</string>
      </property>
      <addaction name="actionSelect_All"/>
      <addaction name="actionSelect_None"/>
@@ -79,18 +76,18 @@
    </widget>
    <widget class="QMenu" name="menuDemo">
     <property name="title">
-     <string>Create</string>
+     <string>C&amp;reate</string>
     </property>
     <widget class="QMenu" name="menuLine">
      <property name="title">
-      <string>Line</string>
+      <string>&amp;Line</string>
      </property>
      <addaction name="action2_Point_Line"/>
      <addaction name="actionConstruction_Line"/>
     </widget>
     <widget class="QMenu" name="menuCircle">
      <property name="title">
-      <string>Circle</string>
+      <string>C&amp;ircle</string>
      </property>
      <addaction name="actionCenter_Radius"/>
      <addaction name="actionCenter_Diameter"/>
@@ -123,7 +120,7 @@
     </widget>
     <widget class="QMenu" name="menuDimension">
      <property name="title">
-      <string>Dimension</string>
+      <string>&amp;Dimension</string>
      </property>
      <addaction name="actionOrdinate"/>
      <addaction name="actionLinear"/>
@@ -161,42 +158,42 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionNew">
    <property name="text">
-    <string>New</string>
+    <string>&amp;New</string>
    </property>
   </action>
   <action name="actionUndo">
    <property name="text">
-    <string>Undo</string>
+    <string>&amp;Undo</string>
    </property>
   </action>
   <action name="actionRedo">
    <property name="text">
-    <string>Redo</string>
+    <string>&amp;Redo</string>
    </property>
   </action>
   <action name="actionAdd_Random_Lines">
    <property name="text">
-    <string>Add Random Lines</string>
+    <string>&amp;Add Random Lines</string>
    </property>
   </action>
   <action name="actionAdd_Random_Circles">
    <property name="text">
-    <string>Add Random Circles</string>
+    <string>Add &amp;Random Circles</string>
    </property>
   </action>
   <action name="actionAdd_Random_Arc">
    <property name="text">
-    <string>Add Random Arc</string>
+    <string>Add Ra&amp;ndom Arc</string>
    </property>
   </action>
   <action name="actionClear_Undoable_Stack">
    <property name="text">
-    <string>Clear Undoable Stack</string>
+    <string>&amp;Clear Undoable Stack</string>
    </property>
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Open</string>
    </property>
   </action>
   <action name="actionSave">
@@ -206,47 +203,47 @@
   </action>
   <action name="actionSave_2">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
   </action>
   <action name="actionSave_As">
    <property name="text">
-    <string>Save As</string>
+    <string>Sa&amp;ve As</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
   <action name="actionCut">
    <property name="text">
-    <string>Cut</string>
+    <string>&amp;Cut</string>
    </property>
   </action>
   <action name="actionCopy">
    <property name="text">
-    <string>Copy</string>
+    <string>C&amp;opy</string>
    </property>
   </action>
   <action name="actionPaste">
    <property name="text">
-    <string>Paste</string>
+    <string>&amp;Paste</string>
    </property>
   </action>
   <action name="actionSelect_All">
    <property name="text">
-    <string>Select All</string>
+    <string>&amp;Select All</string>
    </property>
   </action>
   <action name="actionSelect_None">
    <property name="text">
-    <string>Select None</string>
+    <string>Select &amp;None</string>
    </property>
   </action>
   <action name="actionInvert_Selection">
    <property name="text">
-    <string>Invert Selection</string>
+    <string>&amp;Invert Selection</string>
    </property>
   </action>
   <action name="actionLine">
@@ -256,27 +253,27 @@
   </action>
   <action name="actionEllipse">
    <property name="text">
-    <string>Ellipse</string>
+    <string>&amp;Ellipse</string>
    </property>
   </action>
   <action name="actionPolyline">
    <property name="text">
-    <string>Polyline</string>
+    <string>&amp;Polyline</string>
    </property>
   </action>
   <action name="actionSpline">
    <property name="text">
-    <string>Spline</string>
+    <string>&amp;Spline</string>
    </property>
   </action>
   <action name="action2_Point_Line">
    <property name="text">
-    <string>2 Point Line</string>
+    <string>&amp;2 Point Line</string>
    </property>
   </action>
   <action name="actionCenter_Radius">
    <property name="text">
-    <string>Center, Radius</string>
+    <string>&amp;Center, Radius</string>
    </property>
   </action>
   <action name="action3_Point_Circle">
@@ -291,7 +288,7 @@
   </action>
   <action name="action3_Point_Arc">
    <property name="text">
-    <string>3 Point Arc</string>
+    <string>&amp;3 Point Arc</string>
    </property>
   </action>
   <action name="actionStart_Center_End">
@@ -346,117 +343,117 @@
   </action>
   <action name="actionStart_Center_End_2">
    <property name="text">
-    <string>Start, Center, End</string>
+    <string>&amp;Start, Center, End</string>
    </property>
   </action>
   <action name="actionStart_Center_Angle_2">
    <property name="text">
-    <string>Start, Center, Angle</string>
+    <string>Start, Center, An&amp;gle</string>
    </property>
   </action>
   <action name="actionStart_Center_Length">
    <property name="text">
-    <string>Start, Center, Length</string>
+    <string>Start, Center, &amp;Length</string>
    </property>
   </action>
   <action name="actionStart_End_Angle_3">
    <property name="text">
-    <string>Start, End, Angle</string>
+    <string>Start, &amp;End, Angle</string>
    </property>
   </action>
   <action name="actionStart_End_Direction_2">
    <property name="text">
-    <string>Start, End, Direction</string>
+    <string>Start, End, &amp;Direction</string>
    </property>
   </action>
   <action name="actionStart_End_Radius_2">
    <property name="text">
-    <string>Start, End, Radius</string>
+    <string>Start, End, &amp;Radius</string>
    </property>
   </action>
   <action name="actionCenter_Start_End_2">
    <property name="text">
-    <string>Center, Start, End</string>
+    <string>&amp;Center, Start, End</string>
    </property>
   </action>
   <action name="actionCenter_Start_Angle_2">
    <property name="text">
-    <string>Center, Start, Angle</string>
+    <string>Ce&amp;nter, Start, Angle</string>
    </property>
   </action>
   <action name="actionCenter_Start_Length_2">
    <property name="text">
-    <string>Center, Start, Length</string>
+    <string>Center, Start, Lengt&amp;h</string>
    </property>
   </action>
   <action name="actionContinue">
    <property name="text">
-    <string>Continue</string>
+    <string>C&amp;ontinue</string>
    </property>
   </action>
   <action name="actionCenter_Diameter">
    <property name="text">
-    <string>Center, Diameter</string>
+    <string>Center, &amp;Diameter</string>
    </property>
   </action>
   <action name="action2_Point_Circle">
    <property name="text">
-    <string>2 Point Circle</string>
+    <string>&amp;2 Point Circle</string>
    </property>
   </action>
   <action name="action3_Point_Circle_2">
    <property name="text">
-    <string>3 Point Circle</string>
+    <string>&amp;3 Point Circle</string>
    </property>
   </action>
   <action name="actionTan_Tan_Radius">
    <property name="text">
-    <string>Tan, Tan, Radius</string>
+    <string>&amp;Tan, Tan, Radius</string>
    </property>
   </action>
   <action name="actionTan_Tan_Tan">
    <property name="text">
-    <string>Tan, Tan, Tan</string>
+    <string>Ta&amp;n, Tan, Tan</string>
    </property>
   </action>
   <action name="actionConstruction_Line">
    <property name="text">
-    <string>Construction Line</string>
+    <string>&amp;Construction Line</string>
    </property>
   </action>
   <action name="actionOrdinate">
    <property name="text">
-    <string>Ordinate</string>
+    <string>&amp;Ordinate</string>
    </property>
   </action>
   <action name="actionLinear">
    <property name="text">
-    <string>Linear</string>
+    <string>&amp;Linear</string>
    </property>
   </action>
   <action name="actionAligned">
    <property name="text">
-    <string>Aligned</string>
+    <string>&amp;Aligned</string>
    </property>
   </action>
   <action name="actionANG3PT">
    <property name="text">
-    <string>ANG3PT</string>
+    <string>A&amp;NG3PT</string>
    </property>
   </action>
   <action name="actionANG2LN">
    <property name="text">
-    <string>ANG2LN</string>
+    <string>AN&amp;G2LN</string>
    </property>
   </action>
   <action name="actionRadius">
    <property name="text">
-    <string>Radius</string>
+    <string>&amp;Radius</string>
    </property>
   </action>
   <action name="actionDiameter">
    <property name="text">
-    <string>Diameter</string>
+    <string>&amp;Diameter</string>
    </property>
   </action>
  </widget>

@@ -1,55 +1,11 @@
-mdiChildIDs = {}
+windows = {}
 
--- Return current window widget
-function active_widget()
-    local subWindow = mdiArea:activeSubWindow()
-    if(subWindow == nil) then
-        return nil
-    end
-
-    return subWindow:widget()
-end
-
--- Return current window document
-function active_document()
-    local widget = active_widget()
-
-    if(widget == nil) then
-        return nil
-    end
-
-    return active_widget():document()
-end
-
--- Send a click event on the current window
-local function click()
-    local widget = active_widget()
-    if(widget == nil) then
-        return
-    end
-
-    local position = widget:cursor():position()
-    luaInterface:triggerEvent('point', position)
-end
-
--- Send an event with new position of the cursor on the current window
-local function mouseMove()
-    local widget = active_widget()
-    if(widget == nil) then
-        return
-    end
-
-    local position = widget:cursor():position()
-    luaInterface:triggerEvent('mouseMove', position)
-end
-
--- Event triggered when the mouse is released
-local function mouseRelease()
-    luaInterface:triggerEvent('selectionChanged', nil)
+function getWindow(id)
+    return windows[id]
 end
 
 -- Add a new CadMdiChild
-function addCadMdiChild(cadMdiChild)
+function addCadMdiChild(cadMdiChild, id, cliCommand)
     if(cadMdiChild == nil) then
         return
     end
@@ -57,34 +13,27 @@ function addCadMdiChild(cadMdiChild)
     cadMdiChild:viewer():autoScale()
     cadMdiChild:setDestroyCallback(onMdiChildDestroyed)
 
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mousePressEvent()", click)
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseReleaseEvent()", mouseRelease)
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseMoveEvent()", mouseMove)
-    luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
-
-    mdiArea:addSubWindow(cadMdiChild)
-    cadMdiChild:showMaximized()
-
-    local id = nextTableId(mdiChildIDs)
-    mdiChildIDs[id] = true
+    windows[id] = cadMdiChild
     cadMdiChild.id = id
-end
 
--- Undo last operation of the current window
-function undo()
-    if(active_widget() ~= nil) then
-        active_widget():undoManager():undo()
-    end
-end
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mousePressEvent()", function()
+        local position = cadMdiChild:cursor():position()
+        luaInterface:triggerEvent('point', {position = position, widget = cadMdiChild})
+    end)
 
--- Redo last operation of the current window
-function redo()
-    if(active_widget() ~= nil) then
-        active_widget():undoManager():redo()
-    end
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseReleaseEvent()", function()
+        luaInterface:triggerEvent('selectionChanged', {widget = cadMdiChild})
+    end)
+
+    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseMoveEvent()", function()
+        local position = cadMdiChild:cursor():position()
+        luaInterface:triggerEvent('mouseMove', {position = position, widget = cadMdiChild})
+    end)
+
+    luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 end
 
 -- Clean Lua information of window when it's destroyed
 function onMdiChildDestroyed(id)
-    mdiChildIDs[id] = nil
+    windows[id] = nil
 end

@@ -14,22 +14,22 @@ function LineOperations:_init(id)
     self.lastPoint = nil
     self.length = nil
     self.entity_id = ID():id()
-    message("Click on first point")
+    message("Click on first point", id)
 
     CreateOperations._init(self, id)
 end
 
-function LineOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function LineOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point") then
-        self:newPoint(...)
+        self:newPoint(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempLine(...)
+        self:createTempLine(data["position"])
     elseif(eventName == "number") then
-        self.length = ...
+        self.length = data["number"]
     end
 end
 
@@ -52,8 +52,8 @@ function LineOperations:createTempLine(point)
 end
 
 function LineOperations:createLine(p1, p2)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
 
     if(self.length ~= nil) then
         local angle = p1:angleTo(p2)

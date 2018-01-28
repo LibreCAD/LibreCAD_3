@@ -1,27 +1,35 @@
 local commands = {}
+local cliCommands = {}
 local lastPoint = Coordinate(0,0)
 
 --Write a message to the command line log
-function message(message)
-    cliCommand:write(tostring(message))
+function message(message, id)
+    if cliCommands[id] ~= nil then
+        cliCommands[id]:write(tostring(message))
+    end
 end
 
 --Register a new command
 function add_command(name, callback)
-    if(cliCommand:addCommand(name)) then
-        commands[name] = callback
-    else
-        print("Command " .. name .. " is already defined")
+    for i, cliCommand in pairs(cliCommands) do
+        if(cliCommand:addCommand(name)) then
+            commands[name] = callback
+        else
+            print("Command " .. name .. " is already defined")
+            break
+        end
     end
 end
 
 --Configure command line to return raw text
-function cli_get_text(getText)
-    cliCommand:returnText(getText)
+function cli_get_text(getText, id)
+    if cliCommands[id] ~= nil then
+        cliCommands[id]:returnText(getText)
+    end
 end
 
 --Execute a command from command line
-function command(command)
+function command(command, id)
     commands[command:toStdString()]()
 end
 
@@ -33,7 +41,7 @@ end
 --Send an event when relative coordinate is entered and show real coordinate in command line
 function relativeCoordinate(relative)
     local absolute = lastPoint:add(relative)
-    message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
+    --message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
     luaInterface:triggerEvent('point', absolute)
 end
 
@@ -53,9 +61,10 @@ function text(text)
 end
 
 --Create the command line and add it to the main window
-function add_commandline()
-    cliCommand = lc.CliCommand(mainWindow)
+function add_commandline(mainWindow, id)
+    local cliCommand = lc.CliCommand(mainWindow)
     mainWindow:addDockWidget(8, cliCommand)
+    cliCommands[id] = cliCommand
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", coordinate)
@@ -83,4 +92,6 @@ function add_commandline()
     add_command("TRIM", trim_entity)
 
     luaInterface:registerEvent('point', setLastPoint)
+
+    return cliCommand
 end

@@ -1,4 +1,5 @@
 local iconSize = qt.QSize(24, 24)
+toolbars = {}
 
 --Create a new QPushbutton with name and icon
 function create_button(name, icon)
@@ -24,29 +25,51 @@ function create_action(menu, name, icon)
     return action
 end
 
+function create_tab(id, name)
+    local tab = lc.ToolbarTab()
+
+    toolbars[id]["tabs"][name] = tab
+    toolbars[id]["widget"]:addTab(name, tab)
+
+    return tab
+end
+
+function get_tab(id, name)
+    if(toolbars[id] ~= nil) then
+        return toolbars[id]["tabs"][name]
+    end
+
+    return nil
+end
+
 --Add toolbar to main window
-function add_toolbar()
-    toolbar = lc.Toolbar(mainWindow)
+function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSelect)
+    local toolbar = lc.Toolbar(mainWindow)
+    toolbars[id] = {
+        widget = toolbar,
+        tabs = {}
+    }
+
     mainWindow:addDockWidget(4, toolbar)
 
-    quickAccessTab = lc.ToolbarTab()
+    local quickAccessTab = create_tab(id, "Quick Access")
     local creationGroup = quickAccessTab:addGroup("Creation")
 
     local lineButton = create_button("", ":/icons/linesnormal.png")
     quickAccessTab:addWidget(creationGroup, lineButton, 0, 0, 1, 1)
-    luaInterface:luaConnect(lineButton, "pressed()", create_line)
+    luaInterface:luaConnect(lineButton, "pressed()", function() run_basic_operation(id, LineOperations) end)
 
     local circleButton = create_button("", ":/icons/circle.svg")
     quickAccessTab:addWidget(creationGroup, circleButton, 1, 0, 1, 1)
-    luaInterface:luaConnect(circleButton, "pressed()", create_circle)
+    luaInterface:luaConnect(circleButton, "pressed()", function() run_basic_operation(id, CircleOperations) end)
 
     local arcButton = create_button("", ":/icons/arc.svg")
     quickAccessTab:addWidget(creationGroup, arcButton, 0, 1, 1, 1)
-    luaInterface:luaConnect(arcButton, "pressed()", create_arc)
+    luaInterface:luaConnect(arcButton, "pressed()", function() run_basic_operation(id, ArcOperations) end)
 
     local spline = create_button("", ":/icons/spline.svg")
     quickAccessTab:addWidget(creationGroup, spline, 2, 0, 1, 1)
-    luaInterface:luaConnect(spline, "pressed()", create_spline)
+    luaInterface:luaConnect(spline, "pressed()", function() run_basic_operation(id, SplineOperations) end)
 
     local polylineButton = create_button("", ":/icons/polylines.svg")
     quickAccessTab:addWidget(creationGroup, polylineButton, 2, 1, 1, 1)
@@ -60,16 +83,13 @@ function add_toolbar()
     local ellipseMenu = qt.QMenu()
 
     local ellipseAction = create_action(ellipseMenu, "Ellipse", ":/icons/ellipse_axis.svg")
-    luaInterface:luaConnect(ellipseAction, "triggered(bool)", create_ellipse)
+    luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
 
     local arcEllipseAction = create_action(ellipseMenu, "Arc Ellipse", ":/icons/ellipse_arc_axis.svg")
     luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", create_arc_ellipse)
 
     ellipseButton:setMenu(ellipseMenu)
     quickAccessTab:addWidget(creationGroup, ellipseButton, 1, 1, 1, 1)
-
-    toolbar:addTab("Quick Access", quickAccessTab)
-
     --
     -- Dimensions
     --
@@ -102,7 +122,7 @@ function add_toolbar()
 
     local moveButton = create_button("", ":/icons/modifymove.png")
     quickAccessTab:addWidget(modifyGroup, moveButton, 0, 0, 1, 1)
-    luaInterface:luaConnect(moveButton, "pressed()", move_selected_entities)
+    luaInterface:luaConnect(moveButton, "pressed()", function() run_basic_operation(id, MoveOperation) end)
 
     local rotateButton = create_button("", ":/icons/modifyrotate.png")
     quickAccessTab:addWidget(modifyGroup, rotateButton, 1, 0, 1, 1)
@@ -110,7 +130,7 @@ function add_toolbar()
 
     local copyButton = create_button("", ":/icons/move_copy.svg")
     quickAccessTab:addWidget(modifyGroup, copyButton, 0, 1, 1, 1)
-    luaInterface:luaConnect(copyButton, "pressed()", copy_selected_entities)
+    luaInterface:luaConnect(copyButton, "pressed()", function() run_basic_operation(id, CopyOperation) end)
 
     local scaleButton = create_button("", ":/icons/scale.png")
     quickAccessTab:addWidget(modifyGroup, scaleButton, 1, 1, 1, 1)
