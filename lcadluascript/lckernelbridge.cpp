@@ -320,15 +320,39 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear")
-            .addStaticFunction("dimAuto", &entity::DimLinear::dimAuto)
+            .addStaticFunction("dimAuto", &entity::DimLinear::dimAuto, LUA_ARGS(
+                    geo::Coordinate const&,
+                    geo::Coordinate const&,
+                    geo::Coordinate const&,
+                    std::string const&,
+                    const Layer_CSPtr,
+                    LuaIntf::_opt<const MetaInfo_CSPtr>,
+                    LuaIntf::_opt<const Block_CSPtr>
+            ))
         .endClass()
 
         .beginExtendClass<entity::DimAligned, entity::CADEntity>("DimAligned")
-            .addStaticFunction("dimAuto", &entity::DimAligned::dimAuto)
+            .addStaticFunction("dimAuto", &entity::DimAligned::dimAuto, LUA_ARGS(
+                geo::Coordinate const&,
+                geo::Coordinate const&,
+                geo::Coordinate const&,
+                std::string const&,
+                const Layer_CSPtr,
+                LuaIntf::_opt<const MetaInfo_CSPtr>,
+                LuaIntf::_opt<const Block_CSPtr>
+            ))
         .endClass()
 
         .beginExtendClass<entity::DimAngular, entity::CADEntity>("DimAngular")
-            .addStaticFunction("dimAuto", &entity::DimAngular::dimAuto)
+            .addStaticFunction("dimAuto", &entity::DimAngular::dimAuto, LUA_ARGS(
+                geo::Coordinate const&,
+                geo::Coordinate const&,
+                geo::Coordinate const&,
+                std::string const&,
+                const Layer_CSPtr,
+                LuaIntf::_opt<const MetaInfo_CSPtr>,
+                LuaIntf::_opt<const Block_CSPtr>
+            ))
         .endClass()
 
         .beginExtendClass<entity::Spline, entity::CADEntity>("Spline")

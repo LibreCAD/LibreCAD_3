@@ -9,6 +9,7 @@ function CreateOperations:_init(id)
 
     self.prevEntity = nil
     self:refreshTempEntity()
+    self:registerEvents()
 end
 
 function CreateOperations:createEntity(entity)
@@ -40,12 +41,14 @@ function CreateOperations:unregisterEvents()
     luaInterface:deleteEvent('mouseMove', self)
     luaInterface:deleteEvent('number', self)
     luaInterface:deleteEvent('point', self)
+    luaInterface:deleteEvent('text', self)
 end
 
 function CreateOperations:registerEvents()
     luaInterface:registerEvent('point', self)
     luaInterface:registerEvent('mouseMove', self)
     luaInterface:registerEvent('number', self)
+    luaInterface:registerEvent('text', self)
 end
 
 function CreateOperations:close()

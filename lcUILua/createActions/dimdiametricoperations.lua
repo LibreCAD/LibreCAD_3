@@ -2,7 +2,7 @@ DimDiametricOperations = {}
 DimDiametricOperations.__index = DimDiametricOperations
 
 setmetatable(DimDiametricOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,23 +11,15 @@ setmetatable(DimDiametricOperations, {
 })
 
 function DimDiametricOperations:_init(id)
-    Operations._init(self, id)
-
     self.definitionPoint = nil
     self.definitionPoint2 = nil
     self.text = nil
 
     self.dimDiametric_id = ID():id()
-    self.dimDiametric = self:getDimDiametric(Coord(0,0), Coord(1,1), "<>")
 
-    active_widget():tempEntities():addEntity(self.dimDiametric)
-
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
-    luaInterface:registerEvent('text', self)
-    
     message("Click on first point")
+
+    CreateOperations._init(self, id)
 end
 
 function DimDiametricOperations:getDimDiametric(defPoint1, defPoint2, text)
@@ -93,26 +85,13 @@ function DimDiametricOperations:createTempDimDiametric(point)
 
     definitionPoint2 = definitionPoint2 or definitionPoint:add(Coord(10,0))
 
-    active_widget():tempEntities():removeEntity(self.dimDiametric)
-
-    self.dimDiametric = self:getDimDiametric(definitionPoint, definitionPoint2, "<>")
-
-    active_widget():tempEntities():addEntity(self.dimDiametric)
+    self.entity = self:getDimDiametric(definitionPoint, definitionPoint2, "<>")
+    CreateOperations.refreshTempEntity(self)
 end
 
 function DimDiametricOperations:createDimDiametric()
-    self.finished = true
-    active_widget():tempEntities():removeEntity(self.dimDiametric)
-
-    local b = EntityBuilder(active_widget():document())
-    local c = self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text)
-    b:appendEntity(c)
-    b:execute()
-
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-    luaInterface:deleteEvent('text', self)
+    CreateOperations:createEntity(self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text))
+    CreateOperations.close(self)
 end
 
 function DimDiametricOperations:close()
@@ -120,14 +99,8 @@ function DimDiametricOperations:close()
         if(self.definitionPoint ~= nil and self.definitionPoint2 ~= nil) then
             self.text = "<>"
             self:createDimDiametric()
-        else
-            active_widget():tempEntities():removeEntity(self.dimDiametric)
-            self.finished = true
-
-            luaInterface:deleteEvent('mouseMove', self)
-            luaInterface:deleteEvent('number', self)
-            luaInterface:deleteEvent('point', self)
-            luaInterface:deleteEvent('text', self)
         end
     end
+
+    CreateOperations.close(self)
 end

@@ -2,7 +2,7 @@ DimAlignedOperations = {}
 DimAlignedOperations.__index = DimAlignedOperations
 
 setmetatable(DimAlignedOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,25 +11,17 @@ setmetatable(DimAlignedOperations, {
 })
 
 function DimAlignedOperations:_init(id)
-    Operations._init(self, id)
-
     self.startPoint = nil
     self.endPoint = nil
     self.middleOfText = nil
     self.text = nil
 
     self.dimAligned_id = ID():id()
-    self.dimAligned = self:getDimAligned(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
     self.dimLine = nil
 
-    active_widget():tempEntities():addEntity(self.dimAligned)
-
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
-    luaInterface:registerEvent('text', self)
-
     message("Click on start point")
+
+    CreateOperations._init(self, id)
 end
 
 function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
@@ -107,26 +99,14 @@ function DimAlignedOperations:createTempDimAligned(point)
     endPoint = endPoint or startPoint:add(Coord(10,0))
     middleOfText = middleOfText or startPoint:add(Coord(5,10))
 
-    active_widget():tempEntities():removeEntity(self.dimAligned)
+    self.entity = self:getDimAligned(startPoint, endPoint, middleOfText, "<>")
 
-    self.dimAligned = self:getDimAligned(startPoint, endPoint, middleOfText, "<>")
-
-    active_widget():tempEntities():addEntity(self.dimAligned)
+    CreateOperations.refreshTempEntity(self)
 end
 
 function DimAlignedOperations:createDimAligned()
-    self.finished = true
-    active_widget():tempEntities():removeEntity(self.dimAligned)
-
-    local b = EntityBuilder(active_widget():document())
-    local c = self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text)
-    b:appendEntity(c)
-    b:execute()
-
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-    luaInterface:deleteEvent('text', self)
+    CreateOperations:createEntity(self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text))
+    CreateOperations.close(self)
 end
 
 function DimAlignedOperations:close()
@@ -134,14 +114,8 @@ function DimAlignedOperations:close()
         if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
             self.text = "<>"
             self:createDimAligned()
-        else
-            active_widget():tempEntities():removeEntity(self.dimAligned)
-            self.finished = true
-
-            luaInterface:deleteEvent('mouseMove', self)
-            luaInterface:deleteEvent('number', self)
-            luaInterface:deleteEvent('point', self)
-            luaInterface:deleteEvent('text', self)
         end
     end
+
+    CreateOperations.close(self)
 end

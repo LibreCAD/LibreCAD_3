@@ -2,7 +2,7 @@ DimRadialOperations = {}
 DimRadialOperations.__index = DimRadialOperations
 
 setmetatable(DimRadialOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,24 +11,16 @@ setmetatable(DimRadialOperations, {
 })
 
 function DimRadialOperations:_init(id)
-    Operations._init(self, id)
-
     self.definitionPoint = nil
     self.definitionPoint2 = nil
     self.middleOfText = nil
     self.text = nil
 
     self.dimRadial_id = ID():id()
-    self.dimRadial = self:getDimRadial(Coord(0,0), Coord(0,1), Coord(1,1), "<>")
-
-    active_widget():tempEntities():addEntity(self.dimRadial)
-
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
-    luaInterface:registerEvent('text', self)
 
     message("Click on first definition point")
+
+    CreateOperations._init(self, id)
 end
 
 function DimRadialOperations:getDimRadial(defPoint1, defPoint2, middleOfText, text)
@@ -102,26 +94,13 @@ function DimRadialOperations:createTempDimRadial(point)
     definitionPoint2 = definitionPoint2 or definitionPoint:add(Coord(10,0))
     middleOfText = middleOfText or definitionPoint:add(Coord(5,10))
 
-    active_widget():tempEntities():removeEntity(self.dimRadial)
-
-    self.dimRadial = self:getDimRadial(definitionPoint, definitionPoint2, middleOfText, "<>")
-
-    active_widget():tempEntities():addEntity(self.dimRadial)
+    self.entity = self:getDimRadial(definitionPoint, definitionPoint2, middleOfText, "<>")
+    CreateOperations.refreshTempEntity(self)
 end
 
 function DimRadialOperations:createDimRadial()
-    self.finished = true
-    active_widget():tempEntities():removeEntity(self.dimRadial)
-
-    local b = EntityBuilder(active_widget():document())
-    local c = self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text)
-    b:appendEntity(c)
-    b:execute()
-
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-    luaInterface:deleteEvent('text', self)
+    CreateOperations:createEntity(self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text))
+    CreateOperations.close(self)
 end
 
 function DimRadialOperations:close()
@@ -129,14 +108,8 @@ function DimRadialOperations:close()
         if(self.definitionPoint ~= nil and self.definitionPoint2 ~= nil and self.middleOfText ~= nil) then
             self.text = "<>"
             self:createDimRadial()
-        else
-            active_widget():tempEntities():removeEntity(self.dimRadial)
-            self.finished = true
-
-            luaInterface:deleteEvent('mouseMove', self)
-            luaInterface:deleteEvent('number', self)
-            luaInterface:deleteEvent('point', self)
-            luaInterface:deleteEvent('text', self)
         end
     end
+
+    CreateOperations.close(self)
 end

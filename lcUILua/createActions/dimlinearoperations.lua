@@ -2,7 +2,7 @@ DimLinearOperations = {}
 DimLinearOperations.__index = DimLinearOperations
 
 setmetatable(DimLinearOperations, {
-    __index = Operations,
+    __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
         self:_init(...)
@@ -11,25 +11,17 @@ setmetatable(DimLinearOperations, {
 })
 
 function DimLinearOperations:_init(id)
-    Operations._init(self, id)
-
     self.startPoint = nil
     self.endPoint = nil
     self.middleOfText = nil
     self.text = nil
 
     self.dimLinear_id = ID():id()
-    self.dimLinear = self:getDimLinear(Coord(0,0), Coord(1,0), Coord(1,1), "<>")
     self.dimLine = nil
 
-    active_widget():tempEntities():addEntity(self.dimLinear)
-
-    luaInterface:registerEvent('point', self)
-    luaInterface:registerEvent('mouseMove', self)
-    luaInterface:registerEvent('number', self)
-    luaInterface:registerEvent('text', self)
-
     message("Click on start point")
+
+    CreateOperations._init(self, id)
 end
 
 function DimLinearOperations:getDimLinear(startPoint, endPoint, middleOfText, text)
@@ -99,26 +91,13 @@ function DimLinearOperations:createTempDimLinear(point)
     endPoint = endPoint or startPoint:add(Coord(10,0))
     middleOfText = middleOfText or startPoint:add(Coord(5,10))
 
-    active_widget():tempEntities():removeEntity(self.dimLinear)
-
-    self.dimLinear = self:getDimLinear(startPoint, endPoint, middleOfText, "<>")
-
-    active_widget():tempEntities():addEntity(self.dimLinear)
+    self.entity = self:getDimLinear(startPoint, endPoint, middleOfText, "<>")
+    CreateOperations.refreshTempEntity(self)
 end
 
 function DimLinearOperations:createDimLinear()
-    self.finished = true
-    active_widget():tempEntities():removeEntity(self.dimLinear)
-
-    local b = EntityBuilder(active_widget():document())
-    local c = self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text)
-    b:appendEntity(c)
-    b:execute()
-
-    luaInterface:deleteEvent('mouseMove', self)
-    luaInterface:deleteEvent('number', self)
-    luaInterface:deleteEvent('point', self)
-    luaInterface:deleteEvent('text', self)
+    CreateOperations:createEntity(self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text))
+    CreateOperations.close(self)
 end
 
 function DimLinearOperations:close()
@@ -126,14 +105,8 @@ function DimLinearOperations:close()
         if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
             self.text = "<>"
             self:createDimLinear()
-        else
-            active_widget():tempEntities():removeEntity(self.dimLinear)
-            self.finished = true
-
-            luaInterface:deleteEvent('mouseMove', self)
-            luaInterface:deleteEvent('number', self)
-            luaInterface:deleteEvent('point', self)
-            luaInterface:deleteEvent('text', self)
         end
     end
+
+    CreateOperations.close(self)
 end

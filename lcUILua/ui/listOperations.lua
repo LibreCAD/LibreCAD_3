@@ -1,12 +1,5 @@
 require 'actions.operations'
 
-require 'actions.dimalignedoperations'
-require 'actions.dimangularoperations'
-require 'actions.dimdiametricoperations'
-require 'actions.dimlinearoperations'
-require 'actions.dimradialoperations'
-
-
 require 'actions.moveoperation'
 require 'actions.rotateoperation'
 require 'actions.copyoperation'
@@ -21,5 +14,10 @@ require 'createActions.splineoperations'
 require 'createActions.circleoperations'
 require 'createActions.arcoperations'
 require 'createActions.lwpolylineoperations'
+require 'createActions.dimalignedoperations'
+require 'createActions.dimangularoperations'
+require 'createActions.dimdiametricoperations'
+require 'createActions.dimlinearoperations'
+require 'createActions.dimradialoperations'
 
 require 'optionActions.gridSnappable'
