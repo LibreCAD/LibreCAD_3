@@ -126,7 +126,7 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
 
     local rotateButton = create_button("", ":/icons/modifyrotate.png")
     quickAccessTab:addWidget(modifyGroup, rotateButton, 1, 0, 1, 1)
-    luaInterface:luaConnect(rotateButton, "pressed()", rotate_selected_entities)
+    luaInterface:luaConnect(rotateButton, "pressed()", function() run_basic_operation(id, RotateOperation) end)
 
     local copyButton = create_button("", ":/icons/move_copy.svg")
     quickAccessTab:addWidget(modifyGroup, copyButton, 0, 1, 1, 1)
@@ -134,15 +134,15 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
 
     local scaleButton = create_button("", ":/icons/scale.png")
     quickAccessTab:addWidget(modifyGroup, scaleButton, 1, 1, 1, 1)
-    luaInterface:luaConnect(scaleButton, "pressed()", scale_selected_entities)
+    luaInterface:luaConnect(scaleButton, "pressed()", function() run_basic_operation(id, ScaleOperation) end)
 
     local removeButton = create_button("", ":/icons/delete.svg")
     quickAccessTab:addWidget(modifyGroup, removeButton, 2, 0, 1, 1)
-    luaInterface:luaConnect(removeButton, "pressed()", remove_selected_entities)
+    luaInterface:luaConnect(removeButton, "pressed()", function() run_basic_operation(id, RemoveOperation) end)
 
     local removeButton = create_button("", ":/icons/modifytrim.png")
     quickAccessTab:addWidget(modifyGroup, removeButton, 2, 1, 1, 1)
-    luaInterface:luaConnect(removeButton, "pressed()", trim_entity)
+    luaInterface:luaConnect(removeButton, "pressed()", function() run_basic_operation(id, TrimOperation) end)
 
     --
     -- Snap options

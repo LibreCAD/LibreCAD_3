@@ -26,10 +26,10 @@ function CopyOperation:_init(widget)
         luaInterface:registerEvent('point', self)
         luaInterface:registerEvent('mouseMove', self)
 
-        message("Give origin point")
+        message("Give origin point", widget)
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', widget)
     end
 end
 

@@ -21,36 +21,37 @@ function TrimOperation:_init(id)
     luaInterface:registerEvent("point", self)
     luaInterface:registerEvent("selectionChanged", self)
 
-    message("Select limit entity")
+    message("Select limit entity", id)
 end
 
-function TrimOperation:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function TrimOperation:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "selectionChanged") then
         self:selectionChanged()
     elseif(eventName == "point") then
-        self:newPoint(...)
+        self:newPoint(data)
     end
 end
 
 function TrimOperation:selectionChanged()
     if(self.toTrim == nil) then
-        nbEntities = #active_widget():selection()
+        local window = getWindow(self.target_widget)
+        local nbEntities = #window:selection()
         if(nbEntities == 1) then
             if(self.limit == nil) then
-                self.limit = active_widget():selection()[1]
+                self.limit = window:selection()[1]
 
-                message("Select entity to trim")
+                message("Select entity to trim", self.target_widget)
             elseif(self.toTrim == nil) then
-                self.toTrim = active_widget():selection()[1]
+                self.toTrim = window:selection()[1]
 
                 self:getIntersectionPoints()
             end
         elseif(nbEntities > 1) then
-            message("Select only one entity")
+            message("Select only one entity", self.target_widget)
         end
     end
 end
@@ -68,16 +69,16 @@ function TrimOperation:getIntersectionPoints()
     self.intersectionPoints = intersect:result()
 
     if(#self.intersectionPoints == 0) then
-        message("No intersection found")
+        message("No intersection found", self.target_widget)
 
         self:close()
     elseif(#self.intersectionPoints >= 1) then
-        message("Click on the part of the entity to remove")
+        message("Click on the part of the entity to remove", self.target_widget)
     end
 end
 
 function TrimOperation:trim()
-    local b = EntityBuilder(active_widget():document())
+    local b = EntityBuilder(getWindow(self.target_widget):document())
     b:appendEntity(self.toTrim)
 
     b:appendOperation(Push())
@@ -119,7 +120,7 @@ function TrimOperation:trim()
         end
     elseif(self.toTrim.entityType == "circle") then
         if(#self.intersectionPoints < 2) then
-            message("Circle need at least two intersection points")
+            message("Circle need at least two intersection points", self.target_widget)
 
             self:close()
             return
@@ -184,12 +185,12 @@ function TrimOperation:trim()
         for i, v in ipairs(intersectAngles) do
             if(selectedAngle < v) then
                 if(i > 1) then
-                    message("first")
+                    message("first", self.target_widget)
                     previousAngle = intersectAngles[i - 1]
                     nextAngle = v
                     break
                 else
-                    message("second")
+                    message("second", self.target_widget)
                     previousAngle = v
                     nextAngle = intersectAngles[#intersectAngles]
                     break
@@ -209,7 +210,7 @@ function TrimOperation:trim()
             b:appendEntity(Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
         end
     else
-        message("Unsupported entity")
+        message("Unsupported entity", self.target_widget)
     end
 
     b:execute()
@@ -224,6 +225,6 @@ function TrimOperation:close()
         luaInterface:deleteEvent("point", self)
         luaInterface:deleteEvent("selectionChanged", self)
 
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.target_widget)
     end
 end
