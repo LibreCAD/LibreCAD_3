@@ -93,9 +93,12 @@ function create_new_window(widget)
     create_menu(mainWindow, widget)
 
     local layers = lc.Layers()
+    layers:setMdiChild(widget)
     mainWindow:addDockWidget(2, layers)
 
     local linePatternSelect = lc.LinePatternSelect(mainWindow, true, true)
+    linePatternSelect:setMdiChild(widget)
+
     local lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
     local colorSelect = lc.ColorSelect(mainWindow, true, true)
 
