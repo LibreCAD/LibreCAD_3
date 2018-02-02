@@ -62,7 +62,3 @@ function create_lw_polyline(id)
 
     luaInterface:setOperation(id, LWPolylineOperations(id))
 end
-
-function snapable_options(enabled)
-    gridSnapableOptions(enabled)
-end

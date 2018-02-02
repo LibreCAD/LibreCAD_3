@@ -151,7 +151,9 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     local Button = create_button("", ":/icons/snap_grid.svg")
     Button:setCheckable(true)
     quickAccessTab:addWidget(snapOptionGroup, Button, 0, 0, 1, 1)
-    luaInterface:luaConnect(Button, "toggled(bool)", snapable_options)
+    luaInterface:luaConnect(Button, "toggled(bool)", function(enabled)
+        getWindow(id):getSnapManager():setGridSnappable(enabled)
+    end)
 
     --
     -- MetaInfo

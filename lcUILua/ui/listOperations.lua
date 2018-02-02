@@ -19,5 +19,3 @@ require 'createActions.dimangularoperations'
 require 'createActions.dimdiametricoperations'
 require 'createActions.dimlinearoperations'
 require 'createActions.dimradialoperations'
-
-require 'optionActions.gridSnappable'
