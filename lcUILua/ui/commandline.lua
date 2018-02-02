@@ -11,10 +11,10 @@ end
 
 --Register a new command
 function add_command(name, callback)
+    commands[name] = callback
+
     for i, cliCommand in pairs(cliCommands) do
-        if(cliCommand:addCommand(name)) then
-            commands[name] = callback
-        else
+        if(not cliCommand:addCommand(name)) then
             print("Command " .. name .. " is already defined")
             break
         end
@@ -29,8 +29,8 @@ function cli_get_text(id, getText)
 end
 
 --Execute a command from command line
-function command(command)
-    commands[command:toStdString()]()
+function command(id, command)
+    commands[command:toStdString()](id)
 end
 
 --Store the point in memory when needed for relative coordinates
@@ -44,7 +44,7 @@ function add_commandline(mainWindow, id)
     mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
 
-    luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)
+    luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
 
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
         luaInterface:triggerEvent('point', {
@@ -76,27 +76,31 @@ function add_commandline(mainWindow, id)
         })
     end)
 
-    --Register every commands
-    add_command("LINE", function() run_basic_operation(id, LineOperations) end)
-    add_command("CIRCLE", function() run_basic_operation(id, CircleOperations) end)
-    add_command("ARC", function() run_basic_operation(id, ArcOperations) end)
-    add_command("ELLIPSE", function() run_basic_operation(id, EllipseOperations) end)
-    add_command("ARCELLIPSE", function() run_basic_operation(id, EllipseOperations, true) end)
-    add_command("DIMALIGNED", function() run_basic_operation(id, DimAlignedOperations) end)
-    add_command("DIMDIAMETRIC", function() run_basic_operation(id, DimDiametricOperations) end)
-    add_command("DIMLINEAR", function() run_basic_operation(id, DimLinearOperations) end)
-    add_command("DIMRADIAL", function() run_basic_operation(id, DimRadialOperations) end)
-    add_command("SPLINE", function() run_basic_operation(id, SplineOperations) end)
-    add_command("POLYLINE", function() create_lw_polyline(id) end)
-
-    add_command("MOVE", function() run_basic_operation(id, MoveOperation) end)
-    add_command("ROTATE", function() run_basic_operation(id, RotateOperation) end)
-    add_command("COPY", function() run_basic_operation(id, CopyOperation) end)
-    add_command("SCALE", function() run_basic_operation(id, ScaleOperation) end)
-    add_command("REMOVE", function() run_basic_operation(id, RemoveOperation) end)
-    add_command("TRIM", function() run_basic_operation(id, TrimOperation) end)
+    for name, cb in pairs(commands) do
+        cliCommand:addCommand(name)
+    end
 
     luaInterface:registerEvent('point', setLastPoint)
 
     return cliCommand
 end
+
+--Register every commands
+add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
+add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
+add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
+add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
+add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, true) end)
+add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
+add_command("DIMDIAMETRIC", function(id) run_basic_operation(id, DimDiametricOperations) end)
+add_command("DIMLINEAR", function(id) run_basic_operation(id, DimLinearOperations) end)
+add_command("DIMRADIAL", function(id) run_basic_operation(id, DimRadialOperations) end)
+add_command("SPLINE", function(id) run_basic_operation(id, SplineOperations) end)
+add_command("POLYLINE", function(id) create_lw_polyline(id) end)
+
+add_command("MOVE", function(id) run_basic_operation(id, MoveOperation) end)
+add_command("ROTATE", function(id) run_basic_operation(id, RotateOperation) end)
+add_command("COPY", function(id) run_basic_operation(id, CopyOperation) end)
+add_command("SCALE", function(id) run_basic_operation(id, ScaleOperation) end)
+add_command("REMOVE", function(id) run_basic_operation(id, RemoveOperation) end)
+add_command("TRIM", function(id) run_basic_operation(id, TrimOperation) end)
