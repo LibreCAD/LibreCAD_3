@@ -29,35 +29,13 @@ function cli_get_text(getText, id)
 end
 
 --Execute a command from command line
-function command(command, id)
+function command(command)
     commands[command:toStdString()]()
-end
-
---Send an event when coordinate is entered
-function coordinate(coordinate)
-    luaInterface:triggerEvent('point', coordinate)
-end
-
---Send an event when relative coordinate is entered and show real coordinate in command line
-function relativeCoordinate(relative)
-    local absolute = lastPoint:add(relative)
-    --message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z())
-    luaInterface:triggerEvent('point', absolute)
-end
-
---Send an event when a number is entered
-function number(number)
-    luaInterface:triggerEvent('number', number)
 end
 
 --Store the point in memory when needed for relative coordinates
 local function setLastPoint(point)
     lastPoint = point
-end
-
---Send an event when text is entered
-function text(text)
-    luaInterface:triggerEvent('text', text:toStdString())
 end
 
 --Create the command line and add it to the main window
@@ -67,10 +45,36 @@ function add_commandline(mainWindow, id)
     cliCommands[id] = cliCommand
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", command)
-    luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", coordinate)
-    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", relativeCoordinate)
-    luaInterface:luaConnect(cliCommand, "numberEntered(double)", number)
-    luaInterface:luaConnect(cliCommand, "textEntered(QString)", text)
+
+    luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
+        luaInterface:triggerEvent('point', {
+            position = coordinate,
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
+        local absolute = lastPoint:add(relative)
+        message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z(), id)
+        luaInterface:triggerEvent('point', {
+            position = absolute,
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
+        luaInterface:triggerEvent('number', {
+            number = number,
+            widget = mainWindow:centralWidget()
+        })
+    end)
+
+    luaInterface:luaConnect(cliCommand, "textEntered(QString)", function(text)
+        luaInterface:triggerEvent('text', {
+            text = text:toStdString(),
+            widget = mainWindow:centralWidget()
+        })
+    end)
 
     --Register every commands
     add_command("LINE", create_line)

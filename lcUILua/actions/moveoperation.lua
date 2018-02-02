@@ -13,7 +13,7 @@ setmetatable(MoveOperation, {
 function MoveOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = active_widget():selection()
+    self.selection = getWindow(id):selection()
 
     message(tostring(#self.selection) .. " items selected")
 
