@@ -18,20 +18,20 @@ function LWPolylineOperations:_init(id)
     self.lwVertexes = {}
     self.entity_id = ID():id()
 
-    message("Choose entity type")
+    message("Choose entity type", id)
 
     CreateOperations._init(self, id)
 end
 
-function LWPolylineOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function LWPolylineOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempLWPolyline(...)
+        self:createTempLWPolyline(data["position"])
     end
 end
 
@@ -53,8 +53,8 @@ end
 
 function LWPolylineOperations:getLWPolyline(vertexes)
     if(#vertexes > 1) then
-        local layer = active_layer()
-        local metaInfo = active_metaInfo()
+        local layer = active_layer(self.target_widget)
+        local metaInfo = active_metaInfo(self.target_widget)
         local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, metaInfo)
         lwp:setId(self.entity_id)
 
@@ -113,7 +113,7 @@ function LWPolylineOperations:createArc()
         self.lwVertexes[#self.lwVertexes] = LWVertex2D(vertex:location(), self.currentVertex_Bulge, vertex:startWidth(), vertex:endWidth())
     end
 
-    message("Give arc angle and coordinates")
+    message("Give arc angle and coordinates", self.target_widget)
 end
 
 function LWPolylineOperations:createLine()
@@ -124,5 +124,5 @@ function LWPolylineOperations:createLine()
         self.lwVertexes[#self.lwVertexes] = LWVertex2D(vertex:location(), 0, vertex:startWidth(), vertex:endWidth())
     end
 
-    message("Give line coordinates")
+    message("Give line coordinates", self.target_widget)
 end

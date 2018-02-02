@@ -23,21 +23,21 @@ function SplineOperations:_init(id)
 
     Operations._init(self, id)
 
-    message("Add a new points or enter degree")
+    message("Add a new points or enter degree", id)
 end
 
-function SplineOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function SplineOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point") then
-        self:newPoint(...)
+        self:newPoint(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempSpline(...)
+        self:createTempSpline(data["position"])
     elseif(eventName == "number") then
-        if(... >= 0 and ... <= 3) then
-            self.degree = ...
+        if(data["number"] >= 0 and data["number"] <= 3) then
+            self.degree = data["number"]
         end
     end
 end
@@ -51,8 +51,8 @@ function SplineOperations:getSpline(points, degree)
         return nil
     end
 
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, metaInfo)
 
     s:setId(self.entity_id)
@@ -82,11 +82,6 @@ function SplineOperations:close()
     if(not self.finished) then
         self:createSpline()
 
-        self:removeTempEntity()
-        self:unregisterEvents()
-
-        self.finished = true
-
-        luaInterface:triggerEvent('operationFinished')
+        CreateOperations.close(self)
     end
 end

@@ -34,10 +34,10 @@ end
 luaInterface:registerEvent('operationFinished', remove_operation_group)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
-function run_basic_operation(id, operation)
+function run_basic_operation(id, operation, ...)
     finish_operation(id)
     create_cancel_button(id)
-    luaInterface:setOperation(id, operation(id))
+    luaInterface:setOperation(id, operation(id, ...))
 end
 
 function create_lw_polyline(id)
@@ -45,6 +45,7 @@ function create_lw_polyline(id)
     create_cancel_button(id)
 
     if(hideUI ~= true) then
+        local quickAccessTab = get_tab(id, "Quick Access")
         local group = quickAccessTab:groupByName("Current operation")
 
         local lineButton = create_button("", ":/icons/linesnormal.png")

@@ -19,19 +19,19 @@ function EllipseOperations:_init(id, isArc)
     self.endAngle = nil
     self.entity_id = ID():id()
 
-    message("Click on center")
+    message("Click on center", id)
 
     CreateOperations._init(self, id)
 end
 
-function EllipseOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function EllipseOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempEllipse(...)
+        self:createTempEllipse(data["position"])
     end
 end
 
@@ -39,25 +39,25 @@ function EllipseOperations:newData(data)
     if(self.center == nil) then
         self.center = Operations:getCoordinate(data)
 
-        message("Click on major point")
+        message("Click on major point", self.target_widget)
     elseif(self.majorPoint == nil) then
         self.majorPoint = Operations:getCoordinate(data)
         if(self.majorPoint ~= nil) then
             self.majorPoint = self.majorPoint:sub(self.center)
         end
 
-        message("Give minor radius")
+        message("Give minor radius", self.target_widget)
     elseif(self.minorRadius == nil) then
         self.minorRadius = Operations:getDistance(self.center, data)
 
         if(not self.isArc) then
             self:createEllipse()
         else
-            message("Enter start angle")
+            message("Enter start angle", self.target_widget)
         end
     elseif(self.startAngle == nil) then
         self.startAngle = self.entity:getEllipseAngle(data);
-        message("Enter end angle")
+        message("Enter end angle", self.target_widget)
     elseif(self.endAngle == nil) then
         self.endAngle = self.entity:getEllipseAngle(data);
         self:createEllipse()
@@ -65,8 +65,8 @@ function EllipseOperations:newData(data)
 end
 
 function EllipseOperations:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer, metaInfo)
     e:setId(self.entity_id)
 

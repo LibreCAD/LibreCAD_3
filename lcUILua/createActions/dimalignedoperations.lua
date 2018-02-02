@@ -19,31 +19,31 @@ function DimAlignedOperations:_init(id)
     self.dimAligned_id = ID():id()
     self.dimLine = nil
 
-    message("Click on start point")
+    message("Click on start point", id)
 
     CreateOperations._init(self, id)
 end
 
 function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
     dim:setId(self.dimAligned_id)
 
     return dim
 end
 
-function DimAlignedOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function DimAlignedOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempDimAligned(...)
+        self:createTempDimAligned(data["position"])
     elseif(eventName == "text") then
-        self:setText(...)
+        self:setText(data["text"])
     end
 end
 
@@ -51,20 +51,20 @@ function DimAlignedOperations:newData(data)
     if(self.startPoint == nil) then
         self.startPoint = Operations:getCoordinate(data)
 
-        message("Click on end point")
+        message("Click on end point", self.target_widget)
     elseif(self.endPoint == nil) then
-        local metaInfo = active_metaInfo()
-        local layer = active_layer()
+        local metaInfo = active_metaInfo(self.target_widget)
+        local layer = active_layer(self.target_widget)
 
         self.endPoint = Operations:getCoordinate(data)
         self.dimLine = Line(self.startPoint, self.endPoint, layer, metaInfo)
 
-        message("Give dimension height")
+        message("Give dimension height", self.target_widget)
     elseif(self.middleOfText == nil) then
         self.middleOfText = Operations:getCoordinate(data)
 
-        message("Enter dimension text or leave it empty (<> for value)")
-        cli_get_text(true)
+        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        cli_get_text(self.target_widget, true)
     end
 end
 
@@ -75,7 +75,7 @@ function DimAlignedOperations:setText(text)
         self.text = text
     end
 
-    cli_get_text(false)
+    cli_get_text(self.target_widget, false)
     self:createDimAligned()
 end
 
@@ -105,7 +105,7 @@ function DimAlignedOperations:createTempDimAligned(point)
 end
 
 function DimAlignedOperations:createDimAligned()
-    CreateOperations:createEntity(self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text))
+    CreateOperations.createEntity(self, self:getDimAligned(self.startPoint, self.endPoint, self.middleOfText, self.text))
     CreateOperations.close(self)
 end
 

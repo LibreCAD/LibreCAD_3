@@ -73,7 +73,7 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
 
     local polylineButton = create_button("", ":/icons/polylines.svg")
     quickAccessTab:addWidget(creationGroup, polylineButton, 2, 1, 1, 1)
-    luaInterface:luaConnect(polylineButton, "pressed()", create_lw_polyline)
+    luaInterface:luaConnect(polylineButton, "pressed()", function() create_lw_polyline(id) end)
 
 
     --
@@ -86,7 +86,7 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
 
     local arcEllipseAction = create_action(ellipseMenu, "Arc Ellipse", ":/icons/ellipse_arc_axis.svg")
-    luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", create_arc_ellipse)
+    luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations, true) end)
 
     ellipseButton:setMenu(ellipseMenu)
     quickAccessTab:addWidget(creationGroup, ellipseButton, 1, 1, 1, 1)
@@ -97,23 +97,23 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
 
     local dimAligned = create_button("", ":/icons/dim_aligned.svg")
     quickAccessTab:addWidget(dimGroup, dimAligned, 0, 0, 1, 1)
-    luaInterface:luaConnect(dimAligned, "pressed()", create_dim_aligned)
+    luaInterface:luaConnect(dimAligned, "pressed()", function() run_basic_operation(id, DimAlignedOperations) end)
 
     local dimAngular = create_button("", ":/icons/dim_angular.svg")
     quickAccessTab:addWidget(dimGroup, dimAngular, 1, 0, 1, 1)
-    luaInterface:luaConnect(dimAngular, "pressed()", create_dim_angular)
+    luaInterface:luaConnect(dimAngular, "pressed()", function() run_basic_operation(id, DimAngularOperations) end)
 
     local dimDiametric = create_button("", ":/icons/dim_diametric.svg")
     quickAccessTab:addWidget(dimGroup, dimDiametric, 0, 1, 1, 1)
-    luaInterface:luaConnect(dimDiametric, "pressed()", create_dim_diametric)
+    luaInterface:luaConnect(dimDiametric, "pressed()", function() run_basic_operation(id, DimDiametricOperations) end)
 
     local dimLinear = create_button("", ":/icons/dim_linear.svg")
     quickAccessTab:addWidget(dimGroup, dimLinear, 1, 1, 1, 1)
-    luaInterface:luaConnect(dimLinear, "pressed()", create_dim_linear)
+    luaInterface:luaConnect(dimLinear, "pressed()", function() run_basic_operation(id, DimLinearOperations) end)
 
     local dimRadial = create_button("", ":/icons/dim_radial.svg")
     quickAccessTab:addWidget(dimGroup, dimRadial, 2, 0, 1, 1)
-    luaInterface:luaConnect(dimRadial, "pressed()", create_dim_radial)
+    luaInterface:luaConnect(dimRadial, "pressed()", function() run_basic_operation(id, DimRadialOperations) end)
 
     --
     -- Modify

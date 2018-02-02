@@ -22,7 +22,7 @@ function add_command(name, callback)
 end
 
 --Configure command line to return raw text
-function cli_get_text(getText, id)
+function cli_get_text(id, getText)
     if cliCommands[id] ~= nil then
         cliCommands[id]:returnText(getText)
     end

@@ -19,7 +19,7 @@ function ArcOperations:_init(widget)
 
     CreateOperations._init(self, widget)
 
-    message("Click on center")
+    message("Click on center", widget)
 end
 
 function ArcOperations:onEvent(eventName, event)
@@ -38,13 +38,13 @@ function ArcOperations:newData(point)
     if(self.center == nil) then
         self.center = point
 
-        message("Click on second point or enter the radius")
+        message("Click on second point or enter the radius", self.target_widget)
     elseif(self.radius == nil) then
         self.radius = Operations:getDistance(self.center, point)
-        message("Click on start point or enter the start angle")
+        message("Click on start point or enter the start angle", self.target_widget)
     elseif(self.beginAngle == nil) then
         self.beginAngle = Operations:getAngle(self.center, point)
-        message("Click on end point or enter the end angle")
+        message("Click on end point or enter the end angle", self.target_widget)
     else
         self.endAngle = Operations:getAngle(self.center, point)
         self:createArc()
@@ -52,8 +52,8 @@ function ArcOperations:newData(point)
 end
 
 function ArcOperations:getArc(center, radius, beginAngle, endAngle)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local a = Arc(center, radius, beginAngle, endAngle, false, layer, metaInfo)
     a:setId(self.entity_id)
 

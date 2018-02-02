@@ -18,31 +18,31 @@ function DimRadialOperations:_init(id)
 
     self.dimRadial_id = ID():id()
 
-    message("Click on first definition point")
+    message("Click on first definition point", id)
 
     CreateOperations._init(self, id)
 end
 
 function DimRadialOperations:getDimRadial(defPoint1, defPoint2, middleOfText, text)
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = active_layer(self.target_widget)
+    local metaInfo = active_metaInfo(self.target_widget)
     local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, metaInfo)
     dim:setId(self.dimRadial_id)
 
     return dim
 end
 
-function DimRadialOperations:onEvent(eventName, ...)
-    if(Operations.forMe(self) == false) then
+function DimRadialOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
         return
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(...)
+        self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-        self:createTempDimRadial(...)
+        self:createTempDimRadial(data["position"])
     elseif(eventName == "text") then
-        self:setText(...)
+        self:setText(data["text"])
     end
 end
 
@@ -50,16 +50,16 @@ function DimRadialOperations:newData(data)
     if(self.definitionPoint == nil) then
         self.definitionPoint = Operations:getCoordinate(data)
 
-        message("Click on second definition point")
+        message("Click on second definition point", self.target_widget)
     elseif(self.definitionPoint2 == nil) then
         self.definitionPoint2 = Operations:getCoordinate(data)
 
-        message("Click on text emplacement")
+        message("Click on text emplacement", self.target_widget)
     elseif(self.middleOfText == nil) then
         self.middleOfText = Operations:getCoordinate(data)
 
-        message("Enter dimension text or leave it empty (<> for value)")
-        cli_get_text(true)
+        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        cli_get_text(self.target_widget, true)
     end
 end
 
@@ -70,7 +70,7 @@ function DimRadialOperations:setText(text)
         self.text = text
     end
 
-    cli_get_text(false)
+    cli_get_text(self.target_widget, false)
     self:createDimRadial()
 end
 
@@ -99,7 +99,7 @@ function DimRadialOperations:createTempDimRadial(point)
 end
 
 function DimRadialOperations:createDimRadial()
-    CreateOperations:createEntity(self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text))
+    CreateOperations.createEntity(self, self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text))
     CreateOperations.close(self)
 end
 
