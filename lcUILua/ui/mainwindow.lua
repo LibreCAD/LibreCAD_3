@@ -80,10 +80,6 @@ local function create_menu(mainWindow, widget)
         widget:undoManager():redo()
     end)
 
-    luaInterface:luaConnect(lineAction, "triggered(bool)", create_line)
-    luaInterface:luaConnect(circleAction, "triggered(bool)", create_circle)
-    luaInterface:luaConnect(arcAction, "triggered(bool)", create_arc)
-
     luaInterface:luaConnect(luaScriptAction, "triggered(bool)", open_lua_script)
 end
 
