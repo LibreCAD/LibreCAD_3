@@ -112,7 +112,7 @@ namespace LCViewer {
          * @param occupies
          * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelection(double x, double y, double w, double h, bool occupies, bool addTo = false);
+        void makeSelection(double x, double y, double w, double h, bool occupies);
 
         /**
          * @brief makeSelectionDevice
@@ -124,7 +124,7 @@ namespace LCViewer {
          * @param occupies
          * @param addTo -- when set to true, we add it to the current selection
          */
-        void makeSelectionDevice(LcPainter& painter, unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo = false);
+        void makeSelectionDevice(LcPainter& painter, unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies);
 
         /**
         * @brief closeSelection
@@ -173,6 +173,13 @@ namespace LCViewer {
          * @param y
          */
         inline void device_to_user(double* x, double* y) const;
+
+        /**
+         * @brief Select the entity present on a given point
+         * @param x
+         * @param y
+         */
+        void selectPoint(double x, double y);
 
     private:
         void on_addEntityEvent(const lc::AddEntityEvent&);

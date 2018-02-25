@@ -394,7 +394,7 @@ lc::geo::Area DocumentCanvas::bounds() const {
     return _entityContainer.bounds();
 }
 
-void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool occupies, bool addTo) {
+void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool occupies) {
     if (_selectedArea != nullptr) {
         delete _selectedArea;
         _selectedArea = nullptr;
@@ -403,11 +403,6 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     _selectedArea = new lc::geo::Area(lc::geo::Coordinate(x, y), lc::geo::Coordinate(x + w, y + h));
     // std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
-
-    // Remove current selection
-    if (!addTo) {
-        removeSelection();
-    }
 
     _newSelection.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
         di->selected(false);
@@ -423,8 +418,6 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
         _newSelection = _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea);
     }
 
-
-
     _newSelection.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
         auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
@@ -437,7 +430,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     });
 }
 
-void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies, bool addTo) {
+void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies) {
     // Find mouse position in user space
     double dx = x;
     double dy = y;
@@ -449,7 +442,7 @@ void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, uns
     painter.device_to_user_distance(&dw, &dh);
 
     // Set that as the selection of items
-    makeSelection(dx, dy, dw, dh, occupies, addTo);
+    makeSelection(dx, dy, dw, dh, occupies);
 }
 
 void DocumentCanvas::closeSelection() {
@@ -608,4 +601,20 @@ lc::EntityContainer<lc::entity::CADEntity_SPtr> DocumentCanvas::selection() {
 void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
     _deviceWidth = width;
     _deviceHeight = height;
+}
+
+void DocumentCanvas::selectPoint(double x, double y) {
+    double zeroX = 0.;
+    double zeroY = 0.;
+    double w = 5;
+    double h = 5;
+    device_to_user(&zeroX, &zeroY);
+    device_to_user(&w, &h);
+    w = w - zeroX;
+
+    lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
+    auto entities = _entityContainer.entitiesWithinAndCrossingAreaFast(selectionArea);
+    entities.each<LCVDrawItem>([](LCVDrawItem_SPtr entity) {
+        entity->selected(!entity->selected());
+    });
 }

@@ -205,6 +205,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("y", &LCViewer::LCADViewer::y)
 			.addFunction("autoScale", &LCViewer::LCADViewer::autoScale)
 			.addFunction("setOperationActive", &LCViewer::LCADViewer::setOperationActive)
+			.addFunction("docCanvas", &LCViewer::LCADViewer::docCanvas)
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")
@@ -224,6 +225,7 @@ void addLCBindings(lua_State *L) {
 
 		.beginClass<LCViewer::DocumentCanvas>("DocumentCanvas")
 			.addFunction("autoScale", &LCViewer::DocumentCanvas::autoScale)
+			.addFunction("selectPoint", &LCViewer::DocumentCanvas::selectPoint)
 		.endClass()
 
 		.beginExtendClass<CliCommand, QDockWidget>("CliCommand")

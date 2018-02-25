@@ -176,7 +176,7 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
                 *_documentPainter,
                 std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
                 std::abs(startSelectPos.x() - event->pos().x()),
-                std::abs(startSelectPos.y() - event->pos().y()), occopies, _ctrlKeyActive);
+                std::abs(startSelectPos.y() - event->pos().y()), occopies);
 
             updateDocument();
         }
@@ -194,10 +194,6 @@ void LCADViewer::mousePressEvent(QMouseEvent *event) {
 
     if(!_operationActive) {
         _dragManager->onMousePress();
-    }
-
-    if (!_ctrlKeyActive) {
-        _docCanvas->removeSelection();
     }
 
     if(_dragManager->entityDragged()) {
@@ -305,4 +301,8 @@ void LCADViewer::updateBackground() {
 void LCADViewer::updateDocument() {
     _documentPainter->clear(1.0, 1.0, 1.0, 0.0);
     _docCanvas->render(*_documentPainter, VIEWER_DOCUMENT);
+}
+
+const std::shared_ptr<DocumentCanvas>& LCADViewer::docCanvas() const {
+    return _docCanvas;
 }

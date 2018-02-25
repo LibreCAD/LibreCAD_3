@@ -37,3 +37,7 @@ end
 function onMdiChildDestroyed(id)
     windows[id] = nil
 end
+
+luaInterface:registerEvent('point', function(e, data)
+    data["widget"]:viewer():docCanvas():selectPoint(data["position"]:x(), data["position"]:y())
+end)
