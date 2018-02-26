@@ -32,7 +32,7 @@ std::vector<double> values = {-90, -96.3402, -104.036, -113.199, -123.69,
     auto z = 0;
     auto bb = lc::geo::Bezier(p1,p2,p3);
     for(double i = 0.; i < 1.; i = i + 0.1) {
-        auto start = bb.DirectValueAt(i);
+        //auto start = bb.DirectValueAt(i);
         auto end = bb.normal(i);
         ASSERT_NEAR(atan2 (end.x(),end.y()) * 180 / PI, values.at(z), 1e-2);
         z++;

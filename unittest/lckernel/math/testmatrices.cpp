@@ -12,13 +12,13 @@ TEST(EIGEN, QUARTICFULL) {
     std::vector<double> z = {1080, -126, -123, 6, 3 };
     std::vector<double>res = {-4,3,-6,5};
     auto v = lc::Math::quarticSolverFull(z);
-    for(int i = 0; i < v.size(); i++) {
+    for(unsigned long i = 0; i < v.size(); i++) {
         ASSERT_NEAR(res[i], v[i], 1e-6);
     }
 
     std::vector<double> z2 = {2,-41,-42, 360};
     auto v2 = lc::Math::quarticSolver(z2);
-    for(int i = 0; i < v2.size(); i++) {
+    for(unsigned long i = 0; i < v2.size(); i++) {
         ASSERT_NEAR(res[i], v2[i], 1e-6);
     }
 }
@@ -29,7 +29,7 @@ TEST(Matrix, Move) {
     std::vector<int> y{ 1, 2, 3, -16, -35, 111 };
     ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
 
-    for (int i = 0; i < x.size(); ++i) {
+    for (unsigned long i = 0; i < x.size(); ++i) {
         EXPECT_EQ(y[i], x[i]) << "Vectors x and y differ at index " << i;
     }
 }
@@ -40,7 +40,7 @@ TEST(Matrix, Rotate) {
 
     ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length";
 
-    for (int i = 0; i < x.size(); ++i) {
+    for (unsigned long i = 0; i < x.size(); ++i) {
         ASSERT_NEAR(x[i], y[i], 1e-5) << "Vectors x and y differ at index " << i;
     }
 }
