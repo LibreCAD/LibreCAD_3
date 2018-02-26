@@ -175,7 +175,7 @@ cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
 cad/dochelpers/documentlist.h
 cad/interface/unmanageddraggable.h
-)
+        cad/interface/tangentable.h)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

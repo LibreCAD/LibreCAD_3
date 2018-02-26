@@ -143,7 +143,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(src
         ${src}
         rendering/renderingtest.cpp
-            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp)
+            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp lckernel/geometry/comparecoordinate.cpp lckernel/geometry/comparecoordinate.h)
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
