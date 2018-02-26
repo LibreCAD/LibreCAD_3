@@ -24,7 +24,7 @@ TEST(SelectionTest, NormalSelection) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 5, 10, true, false);
+	docCanvas->makeSelection(0, 0, 5, 10, true);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(1, docCanvas->selection().asVector().size());
@@ -54,7 +54,7 @@ TEST(SelectionTest, IntersectionSelection) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 5, 5, false, false);
+	docCanvas->makeSelection(0, 0, 5, 5, false);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(1, docCanvas->selection().asVector().size());
@@ -84,10 +84,10 @@ TEST(SelectionTest, AddToSelection) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 1, 1, false, false);
+	docCanvas->makeSelection(0, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	docCanvas->makeSelection(9, 0, 1, 1, false, true);
+	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(2, docCanvas->selection().asVector().size());
@@ -117,10 +117,10 @@ TEST(SelectionTest, Reselect) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 10, 1, false, false);
+	docCanvas->makeSelection(0, 0, 10, 1, false);
 	docCanvas->closeSelection();
 
-	docCanvas->makeSelection(9, 0, 1, 1, false, true);
+	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(1, docCanvas->selection().asVector().size());
@@ -150,13 +150,13 @@ TEST(SelectionTest, ClearSelection) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 1, 1, false, false);
+	docCanvas->makeSelection(0, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	docCanvas->makeSelection(9, 0, 1, 1, false, false);
+	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(1, docCanvas->selection().asVector().size());
+	EXPECT_EQ(2, docCanvas->selection().asVector().size());
 
 	unsigned int i = 0;
 
@@ -183,8 +183,8 @@ TEST(SelectionTest, Deselect) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 1, 1, false, false);
-	docCanvas->makeSelection(-1, -1, 0, 0, false, false);
+	docCanvas->makeSelection(0, 0, 1, 1, false);
+	docCanvas->makeSelection(-1, -1, 0, 0, false);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(0, docCanvas->selection().asVector().size());
@@ -214,11 +214,11 @@ TEST(SelectionTest, DeselectAddTo) {
 	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer));
 	builder->execute();
 
-	docCanvas->makeSelection(0, 0, 1, 1, false, false);
+	docCanvas->makeSelection(0, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	docCanvas->makeSelection(9, 0, 1, 1, false, true);
-	docCanvas->makeSelection(11, 0, 0, 0, false, true);
+	docCanvas->makeSelection(9, 0, 1, 1, false);
+	docCanvas->makeSelection(11, 0, 0, 0, false);
 	docCanvas->closeSelection();
 
 	EXPECT_EQ(1, docCanvas->selection().asVector().size());
