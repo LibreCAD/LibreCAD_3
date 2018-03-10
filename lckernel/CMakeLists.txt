@@ -176,7 +176,6 @@ cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
 cad/dochelpers/documentlist.h
 cad/interface/unmanageddraggable.h
-../lcUI/widgets/settings.h
 )
 
 # LOG4CXX
