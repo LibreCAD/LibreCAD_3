@@ -1,8 +1,9 @@
 #pragma once
 
 #include <assert.h>
+#include <../lcUI/widgets/settings.h>
 
-#define LCTOLERANCE 1.0e-10
+#define LCTOLERANCE settings::tolerance()
 #define LCARCTOLERANCE 1.0e-10
 #define BBHEURISTIC 1.0e-5
 #define BBHEURISTIC2 1.0e-3
@@ -27,6 +28,13 @@ T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
 
 
 namespace lc {
+    class defineVar
+    {
+        public:
+            static double lctolerance(){
+                return LCTOLERANCE;
+            }
+    };
 enum class Units {
     Inch,
     Foot,

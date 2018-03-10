@@ -76,6 +76,7 @@ cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
 cad/dochelpers/documentlist.cpp
+../lcUI/widgets/settings.cpp
         )
 
 # HEADER FILES
@@ -175,6 +176,7 @@ cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
 cad/dochelpers/documentlist.h
 cad/interface/unmanageddraggable.h
+../lcUI/widgets/settings.h
 )
 
 # LOG4CXX

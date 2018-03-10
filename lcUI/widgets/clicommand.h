@@ -54,6 +54,7 @@ class CliCommand : public QDockWidget {
          * Disables text parsing.
          */
 		void returnText(bool returnText);
+        double lctolerance = 1e-10;
 
 	public slots:
         /**

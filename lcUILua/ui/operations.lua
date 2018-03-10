@@ -40,6 +40,10 @@ function run_basic_operation(id, operation, ...)
     luaInterface:setOperation(id, operation(id, ...))
 end
 
+function lctolerVal(id, ... )
+    message(defineVar.lctolerance(),id)
+end
+
 function create_lw_polyline(id)
     finish_operation(id)
     create_cancel_button(id)

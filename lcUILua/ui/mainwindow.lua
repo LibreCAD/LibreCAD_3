@@ -56,6 +56,10 @@ local function open_lua_script()
     luaScript:show()
 end
 
+local  function changelcTolerance(id)
+    message("Enter desired value to change it",id)
+    return nil
+end
 
 --Create main window menu
 local function create_menu(mainWindow, widget)
@@ -67,6 +71,8 @@ local function create_menu(mainWindow, widget)
 
     local luaMenu = menuBar:addMenuStr(qt.QString("Lua"))
     local luaScriptAction = luaMenu:addActionStr(qt.QString("Run script"))
+    local settings = menuBar:addMenuStr(qt.QString("Settings Manager"))
+    local lcTolerance = settings:addActionStr(qt.QString("LCTOLERANCE"))
 
     luaInterface:luaConnect(mainWindow:findChild("actionNew"), "triggered(bool)", new_file)
     luaInterface:luaConnect(mainWindow:findChild("actionOpen"), "triggered(bool)", open_file)
@@ -81,6 +87,7 @@ local function create_menu(mainWindow, widget)
     end)
 
     luaInterface:luaConnect(luaScriptAction, "triggered(bool)", open_lua_script)
+    luaInterface:luaConnect(lcTolerance, "triggered(bool)", changelcTolerance)
 end
 
 --Create a new window

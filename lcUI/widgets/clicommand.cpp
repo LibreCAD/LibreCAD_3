@@ -1,5 +1,7 @@
 #include "clicommand.h"
 #include "ui_clicommand.h"
+#include <widgets/settings.h>
+
 
 CliCommand::CliCommand(QWidget* parent) :
     QDockWidget(parent),
@@ -48,6 +50,8 @@ void CliCommand::write(QString message) {
 void CliCommand::onReturnPressed() {
     auto text = ui->command->text();
     bool isNumber;
+    QStringList numb;
+    // settings ss;
 
     if(_returnText) {
         emit textEntered(text);
@@ -65,6 +69,14 @@ void CliCommand::onReturnPressed() {
         }
         else if (text.indexOf(";") != -1 || text.indexOf(",") != -1) {
             enterCoordinate(text);
+        }
+        else if(text.indexOf("=")==4) {
+            numb = text.split("=");
+            if(numb[0]=="lctr") {
+                lctolerance=numb[1].toFloat();
+                write(QString("LCTOLERANCE = %1").arg(lctolerance));
+                settings::changeVal(lctolerance);
+            }
         }
         else {
             enterCommand(text);
@@ -130,7 +142,7 @@ void CliCommand::enterCoordinate(QString coordinate) {
 
 void CliCommand::enterNumber(double number) {
     write(QString("Number: %1").arg(number));
-    emit numberEntered(number);
+    emit numberEntered(number); 
 }
 
 void CliCommand::onKeyPressed(QKeyEvent *event) {
