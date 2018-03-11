@@ -1,5 +1,9 @@
 #include "clicommand.h"
 #include "ui_clicommand.h"
+#include <cad/settings.h>
+#include <memory>
+#include <iterator>
+#include <unordered_map>
 
 CliCommand::CliCommand(QWidget* parent) :
     QDockWidget(parent),
@@ -48,6 +52,10 @@ void CliCommand::write(QString message) {
 void CliCommand::onReturnPressed() {
     auto text = ui->command->text();
     bool isNumber;
+    QStringList varFind;
+    QRegularExpression re("^([a-zA-Z]{1,10}+)=([0-9]{1,50}.[0-9]{1,50})|([0-9]{1,50})$");
+    QRegularExpressionMatch match = re.match(text, 0, QRegularExpression::PartialPreferCompleteMatch);
+    bool hasMatch = match.hasMatch();
 
     if(_returnText) {
         emit textEntered(text);
@@ -65,6 +73,21 @@ void CliCommand::onReturnPressed() {
         }
         else if (text.indexOf(";") != -1 || text.indexOf(",") != -1) {
             enterCoordinate(text);
+        }
+        else if(hasMatch) {
+            varFind = text.split("=");
+            Settings::inst = Settings::instance();
+            std::unordered_map<std::string, double>::iterator it1;
+
+            it1 = Settings::variable_map.find(varFind[0].toStdString());
+
+            if (it1 != Settings::variable_map.end()) {
+                write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
+                Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());    
+            }
+            else {
+                write(QString("No such variable."));
+            }
         }
         else {
             enterCommand(text);
@@ -87,9 +110,27 @@ void CliCommand::enterCommand(QString command) {
         emit commandEntered(completion);
     }
     else {
-        write("Command " + command + " not found");
-        ui->history->item(ui->history->count() - 1)->setForeground(Qt::red);
+        if(checkParam(command)) {
+            write(QString("Value of %1=%2").arg(command).arg(Settings::getVal(command.toStdString())));
+        }
+        else
+        {
+            write("Command " + command + " not found");
+            ui->history->item(ui->history->count() - 1)->setForeground(Qt::red);
+        }
     }
+}
+
+bool CliCommand::checkParam(QString command) {
+    Settings::inst = Settings::instance();
+    std::unordered_map<std::string, double>::iterator it;
+
+    it = Settings::variable_map.find(command.toStdString());
+
+    if (it != Settings::variable_map.end()) {
+        return true;
+    }
+    return false;
 }
 
 void CliCommand::enterCoordinate(QString coordinate) {
@@ -130,7 +171,7 @@ void CliCommand::enterCoordinate(QString coordinate) {
 
 void CliCommand::enterNumber(double number) {
     write(QString("Number: %1").arg(number));
-    emit numberEntered(number);
+    emit numberEntered(number); 
 }
 
 void CliCommand::onKeyPressed(QKeyEvent *event) {

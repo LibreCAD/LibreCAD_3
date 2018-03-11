@@ -1,8 +1,9 @@
 #pragma once
 
 #include <assert.h>
+#include <cad/settings.h>
 
-#define LCTOLERANCE 1.0e-10
+#define LCTOLERANCE Settings::getVal("LCTOLERANCE")
 #define LCARCTOLERANCE 1.0e-10
 #define BBHEURISTIC 1.0e-5
 #define BBHEURISTIC2 1.0e-3

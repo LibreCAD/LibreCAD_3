@@ -7,7 +7,7 @@
 #include <QStringListModel>
 
 #include <memory>
-
+#include <cad/settings.h>
 #include <cad/geometry/geocoordinate.h>
 
 namespace Ui {
@@ -78,6 +78,7 @@ class CliCommand : public QDockWidget {
 		void textEntered(QString text);
 
     private:
+        bool checkParam(QString command);
 		void enterCommand(QString command);
 		void enterCoordinate(QString coordinate);
 		void enterNumber(double number);
