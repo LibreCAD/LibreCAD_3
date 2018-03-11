@@ -1,13 +1,21 @@
 #pragma once
 
-namespace Ui {
-    class settings;
-}
+#include <memory>
+#include <unordered_map>
 
-class settings
+class Settings
 {
 	public:
-		static double tolerance();
+		Settings(){
+			Settings::variable_map["LCTOLERANCE"] = 1.0e-10;
+		};
 
-		static void changeVal(double val);
+
+		static double getVal(std::string variable);
+
+		static void setVal(std::string variable,double val);
+
+		static std::unordered_map<std::string, double> variable_map;
+
+		static void instance();
 };

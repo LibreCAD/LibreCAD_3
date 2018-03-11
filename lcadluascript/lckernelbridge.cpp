@@ -18,6 +18,7 @@
 #include <cad/operations/builder.h>
 #include <cad/primitive/insert.h>
 #include <cad/const.h>
+#include <../lcUI/widgets/settings.h>
 #include <primitive/customentity.h>
 #include "lclua.h"
 
@@ -697,8 +698,8 @@ void LCLua::importLCKernel() {
             .addFunction("pointId", &EntityCoordinate::pointId)
         .endClass()
 
-        .beginClass<lc::defineVar>("defineVar")
-            .addStaticFunction("lctolerance",&defineVar::lctolerance)
-        .endClass()
+        .beginClass<Settings>("Settings")
+            .addStaticFunction("getVal",&Settings::getVal)
+        .endClass()        
         ;
 }

@@ -51,7 +51,7 @@ void CliCommand::onReturnPressed() {
     auto text = ui->command->text();
     bool isNumber;
     QStringList numb;
-    // settings ss;
+    double lctolerance;
 
     if(_returnText) {
         emit textEntered(text);
@@ -75,7 +75,7 @@ void CliCommand::onReturnPressed() {
             if(numb[0]=="lctr") {
                 lctolerance=numb[1].toFloat();
                 write(QString("LCTOLERANCE = %1").arg(lctolerance));
-                settings::changeVal(lctolerance);
+                Settings::setVal("LCTOLERANCE",lctolerance);
             }
         }
         else {

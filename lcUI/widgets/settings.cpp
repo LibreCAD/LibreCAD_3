@@ -1,12 +1,25 @@
 #include "settings.h"
+#include <memory>
+#include <unordered_map>
 
-double lctolerancev=1.0e-10;
-void settings::changeVal(double val)
+Settings* inst = nullptr;
+
+std::unordered_map<std::string, double> Settings::variable_map;
+
+void Settings::setVal(std::string variable,double val)
 {
-	lctolerancev = val;
+	variable_map[variable] = val;
 }
 
-double settings::tolerance()
+double Settings::getVal(std::string variable)
 {
-	return lctolerancev;
+	Settings::instance();
+	return variable_map[variable];
+}
+
+void Settings::instance()
+{
+	if(inst==nullptr)
+		printf("works\n");
+		inst = new Settings();
 }

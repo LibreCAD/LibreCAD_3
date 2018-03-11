@@ -41,7 +41,7 @@ function run_basic_operation(id, operation, ...)
 end
 
 function lctolerVal(id, ... )
-    message(defineVar.lctolerance(),id)
+    message(Settings.getVal("LCTOLERANCE"),id)
 end
 
 function create_lw_polyline(id)
