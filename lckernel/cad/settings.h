@@ -3,6 +3,8 @@
 #include <memory>
 #include <unordered_map>
 
+class Settings;
+
 class Settings
 {
 	public:
@@ -10,6 +12,7 @@ class Settings
 			Settings::variable_map["LCTOLERANCE"] = 1.0e-10;
 		};
 
+		static Settings* inst;
 
 		static double getVal(std::string variable);
 
@@ -17,5 +20,5 @@ class Settings
 
 		static std::unordered_map<std::string, double> variable_map;
 
-		static void instance();
+		static Settings* instance();
 };

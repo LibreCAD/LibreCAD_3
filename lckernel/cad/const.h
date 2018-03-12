@@ -1,7 +1,7 @@
 #pragma once
 
 #include <assert.h>
-#include <../lcUI/widgets/settings.h>
+#include <cad/settings.h>
 
 #define LCTOLERANCE Settings::getVal("LCTOLERANCE")
 #define LCARCTOLERANCE 1.0e-10

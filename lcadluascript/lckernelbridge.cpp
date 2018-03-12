@@ -18,7 +18,7 @@
 #include <cad/operations/builder.h>
 #include <cad/primitive/insert.h>
 #include <cad/const.h>
-#include <../lcUI/widgets/settings.h>
+#include <cad/settings.h>
 #include <primitive/customentity.h>
 #include "lclua.h"
 
@@ -696,10 +696,6 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_ARGS(const geo::Coordinate&, int))
             .addFunction("coordinate", &EntityCoordinate::coordinate)
             .addFunction("pointId", &EntityCoordinate::pointId)
-        .endClass()
-
-        .beginClass<Settings>("Settings")
-            .addStaticFunction("getVal",&Settings::getVal)
-        .endClass()        
+        .endClass()       
         ;
 }

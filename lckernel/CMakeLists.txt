@@ -16,6 +16,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp
+cad/settings.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -76,13 +77,13 @@ cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
 cad/dochelpers/documentlist.cpp
-../lcUI/widgets/settings.cpp
         )
 
 # HEADER FILES
 set(lckernel_hdrs
 version.h
 cad/const.h
+cad/settings.h
 cad/base/id.h
 cad/base/cadentity.h
 cad/base/metainfo.h

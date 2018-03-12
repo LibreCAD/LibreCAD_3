@@ -2,8 +2,7 @@
 #include <memory>
 #include <unordered_map>
 
-Settings* inst = nullptr;
-
+Settings* Settings::inst = nullptr;
 std::unordered_map<std::string, double> Settings::variable_map;
 
 void Settings::setVal(std::string variable,double val)
@@ -13,13 +12,15 @@ void Settings::setVal(std::string variable,double val)
 
 double Settings::getVal(std::string variable)
 {
-	Settings::instance();
+	Settings::inst = Settings::instance();
+
 	return variable_map[variable];
 }
 
-void Settings::instance()
+Settings* Settings::instance()
 {
-	if(inst==nullptr)
-		printf("works\n");
-		inst = new Settings();
+	if(Settings::inst==nullptr)
+		Settings::inst = new Settings();
+
+	return Settings::inst;
 }
