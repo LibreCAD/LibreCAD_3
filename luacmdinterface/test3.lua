@@ -1,4 +1,4 @@
--- Demo to drawing and roations
+-- Demo to drawing and rotations
 layer=Layer("10", Color(1,0,0,1));
 al = AddLayer(active.document(), layer);
 al:execute();
