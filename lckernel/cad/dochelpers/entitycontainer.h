@@ -1,7 +1,9 @@
-    #pragma once
+#pragma once
 
 #include <memory>
 #include <limits>
+#include <string>
+#include <vector>
 #include <drawitems/lcvdrawitem.h>
 
 #include "cad/const.h"
@@ -19,7 +21,7 @@ namespace lc {
      * @brief The EntityContainer class
      * manages a set of entities. This call will allow to select (but not manipulate) entities.
      *
-     * Considerations: Make the underlaying entoties older configurable. At this moment a quad tree is used
+     * Considerations: Make the underlaying entities older configurable. At this moment a quad tree is used
      * but we could add a option to also support a simple map. When the never of entities are low
      * this might be a little fast, but marginally... A other option could be is to configure the quadtree
      * to set a large number of objects
@@ -37,7 +39,9 @@ namespace lc {
              * Usually you would retrieve a EntityContainer from the document
              */
             EntityContainer() {
-                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-500000., -500000.), geo::Coordinate(500000., 500000.)));
+                _tree = new QuadTree<CT>(geo::Area(geo::Coordinate(-500000., -500000.),
+                                                   geo::Coordinate(500000., 500000.)
+                ));
             }
 
             /**
@@ -67,7 +71,6 @@ namespace lc {
              * \param entity entity to be added to the document.
              */
             void insert(CT entity) {
-                //    _cadentities.insert(std::make_pair(entity->id(), entity));
                 _tree->insert(entity);
             }
 
@@ -78,8 +81,7 @@ namespace lc {
              * \param EntityContainer to be combined to the document.
              */
             void combine(const EntityContainer& entities) {
-                for (auto i : entities.asVector(std::numeric_limits< short>::max())) {
-                    //        _cadentities.insert(std::make_pair(i->id(), i));
+                for (auto i : entities.asVector(std::numeric_limits<short>::max())) {
                     _tree->insert(i);
                 }
             }
@@ -89,7 +91,6 @@ namespace lc {
              * \param id Entity ID of entity which is to be removed.
              */
             void remove(CT entity) {
-                //    _cadentities.erase(entity->id());
                 _tree->erase(entity);
             }
 
@@ -101,11 +102,6 @@ namespace lc {
              * @return
              */
             std::vector<CT> asVector(short maxLevel = std::numeric_limits<short>::max()) const {
-                /*    std::vector<CT> v;
-                    for (auto item : _cadentities) {
-                        v.push_back(item.second);
-                    } */
-
                 return _tree->retrieve(maxLevel);
             }
             /**
@@ -115,11 +111,6 @@ namespace lc {
              * @return
              */
             CT entityByID(ID_DATATYPE id) const {
-                /*
-                if (_cadentities.count(id) > 0) {
-                    return _cadentities.at(id);
-                } */
-
                 return _tree->entityByID(id);
             }
 
@@ -131,12 +122,6 @@ namespace lc {
              */
             EntityContainer entitiesByLayer(const Layer_CSPtr layer) const {
                 EntityContainer container;
-                /*  auto l = layer;
-                    for (auto i : _cadentities) {
-                        if (i.second->layer() == l) {
-                            container.insert(i.second);
-                        }
-                    }*/
 
                 for (auto i : asVector(std::numeric_limits<short>::max())) {
                     if (i->layer() == layer) {
@@ -151,6 +136,7 @@ namespace lc {
              * \brief entitiesByMetaType
              * Return all entities that contain's a specific metaInfo
              * \param metaTypeName
+             * @TODO: this does nothing
              * \return
              */
             EntityContainer entitiesByMetaType(const std::string& metaName) const {
@@ -173,7 +159,8 @@ namespace lc {
              * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
              * where we don't require  a QuadTree but just a linear array of entities tobe drawn
              */
-            EntityContainer entitiesFullWithinArea(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
+            EntityContainer entitiesFullWithinArea(const geo::Area& area,
+                                                   const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
@@ -193,7 +180,7 @@ namespace lc {
             geo::Area boundingBox() const {
                 geo::Area extends;
                 const std::vector<CT> entities = _tree->retrieve();
-                if (entities.size()>0) {
+                if (entities.size() > 0) {
                     extends = entities[0]->boundingBox();
                     for (const auto &i : entities) {
                         extends = extends.merge(i->boundingBox());
@@ -213,7 +200,9 @@ namespace lc {
              * TODO: Consider giving a container to drop entities into. This can be used for example during drawing
              * where we don't require  a QuadTree but just a linear array of entities tobe drawn
              */
-            EntityContainer entitiesWithinAndCrossingArea(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
+            EntityContainer
+            entitiesWithinAndCrossingArea(const geo::Area& area,
+                                          const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
                 std::vector<CT> entities = _tree->retrieve(area, maxLevel);
 
@@ -241,28 +230,28 @@ namespace lc {
 
                     auto &&v = area.top();
                     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v, *i.get());
-                    if (intersect.result().size() != 0) {
+                    if (!intersect.result().empty()) {
                         container.insert(i);
                         continue;
                     }
 
                     v = area.left();
                     visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
-                    if (intersect.result().size() != 0) {
+                    if (!intersect.result().empty()) {
                         container.insert(i);
                         continue;
                     }
 
                     v = area.bottom();
                     visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
-                    if (intersect.result().size() != 0) {
+                    if (!intersect.result().empty()) {
                         container.insert(i);
                         continue;
                     }
 
                     v = area.right();
                     visitorDispatcher<bool, GeoEntityVisitor>(intersect, v, *i.get());
-                    if (intersect.result().size() != 0) {
+                    if (!intersect.result().empty()) {
                         container.insert(i);
                         continue;
                     }
@@ -280,7 +269,9 @@ namespace lc {
              * @return
              *
              */
-            EntityContainer entitiesWithinAndCrossingAreaFast(const geo::Area& area, const short maxLevel = std::numeric_limits<short>::max()) const {
+            EntityContainer
+            entitiesWithinAndCrossingAreaFast(const geo::Area& area,
+                                              const short maxLevel = std::numeric_limits<short>::max()) const {
                 EntityContainer container;
 
                 std::vector<CT> &&entities = _tree->retrieve(area, maxLevel);
@@ -301,9 +292,11 @@ namespace lc {
              * \param distance maximum distance from this point where the function would consider adding it to a list
              * \return List of entities near this coordinate. THis includes entities where it's path is close to point
              */
-            std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point, double distance) const {
+            std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
+                                                                         double distance) const {
 
-                const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(),point.y())+distance/2., lc::geo::Coordinate(point.x(),point.y())+distance/2.);
+                const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y())+distance/2.,
+                                                lc::geo::Coordinate(point.x(),point.y())+distance/2.);
                 std::vector<CT> ent = _tree->retrieve(area);
 
                 // Now calculate for each entity if we are near the entities path
@@ -313,7 +306,7 @@ namespace lc {
 
                     //TODO: remove this when EntityContainer will support LCVDrawItem
                     auto drawable = std::dynamic_pointer_cast<const LCViewer::LCVDrawItem>(item);
-                    if(drawable) {
+                    if (drawable) {
                         entity = std::dynamic_pointer_cast<const lc::Snapable>(drawable->entity());
                     }
                     else {
@@ -328,29 +321,8 @@ namespace lc {
                     }
                 }
 
-                /*
-                entitiesWithinAndCrossingArea(area).template each< CT >([&](CT item) {
-                    std::cerr << "-";
-                    Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
-
-                    if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
-                        lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
-
-                        double cDistance = eCoordinate.distanceTo(point);
-                        if (cDistance < distance) {
-                            entities.push_back(lc::EntityDistance(item, eCoordinate, cDistance));
-                        }
-                    }
-                });*/
-
                 return entities;
             }
-
-            //Don't show underlaying implementation
-            /*
-            QuadTree<CT>* tree() {
-                return _tree;
-            }; */
 
             /**
              * @brief bound
@@ -389,7 +361,6 @@ namespace lc {
                 _tree->template each<const U>(func);
             }
         private:
-            //std::map<ID_DATATYPE, CT> _cadentities;
             QuadTree<CT>* _tree;
     };
 }

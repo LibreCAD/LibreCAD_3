@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <vector>
 
 #include "cad/const.h"
 
@@ -10,7 +11,6 @@
 #include "cad/operations/undoable.h"
 
 namespace lc {
-
     /**
      * UndoManagerImpl manages a stack of operations and allows for
      * undo or re-do operations that where done on a canvas
@@ -68,8 +68,6 @@ namespace lc {
 
         public:
             void on_CommitProcessEvent(const lc::CommitProcessEvent& event);
-
-
     };
 
     DECLARE_SHORT_SHARED_PTR(UndoManagerImpl)

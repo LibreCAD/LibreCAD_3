@@ -1,32 +1,22 @@
 #include "storagemanagerimpl.h"
 
-
-
-
-
 using namespace lc;
 
 StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 
-    // The below are just for testing, they need to be created when building the document so event's will get processed correctly
-
-    /*
-    _layers.insert(std::make_pair("0", std::make_shared<Layer>("0", LineWidth(1.0), Color(1., 1., 1.))));
-    _layers.insert(std::make_pair("1", std::make_shared<Layer>("1", LineWidth(1.0), Color(1., 1., 1.))));
-    _layers.insert(std::make_pair("2", std::make_shared<Layer>("2", LineWidth(1.0), Color(1., 1., 1.))));
-    _layers.insert(std::make_pair("3", std::make_shared<Layer>("3", LineWidth(1.0), Color(1., 1., 1.))));
-    _layers.insert(std::make_pair("4", std::make_shared<Layer>("4", LineWidth(1.0), Color(1., 1., 1.))));
-    _layers.insert(std::make_pair("5", std::make_shared<Layer>("5", LineWidth(1.0), Color(1., 1., 1.)))); */
 }
 
-void StorageManagerImpl::insertEntity(const entity::CADEntity_CSPtr entity) {
-    if(entity->block() != nullptr) {
+void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
+    if (entity->block() != nullptr) {
         auto it = _blocksEntities.find(entity->block()->name());
 
-        if(it == _blocksEntities.end()) {
+        if (it == _blocksEntities.end()) {
             EntityContainer<entity::CADEntity_CSPtr> ec;
             ec.insert(entity);
-            _blocksEntities.insert(std::pair<std::string, EntityContainer<entity::CADEntity_CSPtr>>(entity->block()->name(), ec));
+            _blocksEntities.insert(std::pair<std::string, EntityContainer<entity::CADEntity_CSPtr>>(
+                    entity->block()->name(),
+                    ec
+            ));
         }
         else {
             it->second.insert(entity);
@@ -37,7 +27,7 @@ void StorageManagerImpl::insertEntity(const entity::CADEntity_CSPtr entity) {
     }
 }
 
-void StorageManagerImpl::removeEntity(const entity::CADEntity_CSPtr entity) {
+void StorageManagerImpl::removeEntity(entity::CADEntity_CSPtr entity) {
     _entities.remove(entity);
 }
 
@@ -46,11 +36,11 @@ void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CAD
     // TODO add metadata types where they do not exists
 }
 
-entity::CADEntity_CSPtr StorageManagerImpl::entityByID(const ID_DATATYPE id) const {
+entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
     return _entities.entityByID(id);
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(const Layer_CSPtr layer) const {
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(Layer_CSPtr layer) const {
     return _entities.entitiesByLayer(layer);
 }
 
@@ -66,7 +56,7 @@ std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
     std::map<std::string, Layer_CSPtr> data;
     for (auto& iter : _documentMetaData) {
         Layer_CSPtr layer = std::dynamic_pointer_cast<const Layer>(iter.second);
-        if (layer!=nullptr) {
+        if (layer != nullptr) {
             data.emplace(std::make_pair(layer->name(), layer));
         }
     }
@@ -80,23 +70,23 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entityContainer() c
 
 void StorageManagerImpl::optimise() {
     _entities.optimise();
-    for(auto ec : _blocksEntities) {
+    for (auto ec : _blocksEntities) {
         ec.second.optimise();
     }
 }
 
 
-void StorageManagerImpl::addDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
+void StorageManagerImpl::addDocumentMetaType(DocumentMetaType_CSPtr dmt) {
     _documentMetaData.emplace(std::make_pair(dmt->id(), dmt));
 }
 
 
-void StorageManagerImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) {
+void StorageManagerImpl::removeDocumentMetaType(DocumentMetaType_CSPtr dmt) {
     _documentMetaData.erase(dmt->id());
 }
 
 
-void StorageManagerImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) {
+void StorageManagerImpl::replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) {
     if (oldDmt->id() == newDmt->id()) {
         _documentMetaData.erase(oldDmt->id());
         _documentMetaData.emplace(std::make_pair(newDmt->id(), newDmt));
@@ -105,11 +95,12 @@ void StorageManagerImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr ol
     }
 }
 
-std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive> StorageManagerImpl::allMetaTypes() const {
+std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive>
+StorageManagerImpl::allMetaTypes() const {
     return _documentMetaData;
 }
 
-DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string id) const {
+DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string& id) const {
     auto search = _documentMetaData.find(id);
     if (search != _documentMetaData.end()) {
         return search->second;
@@ -117,7 +108,7 @@ DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string
     return nullptr;
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(const Block_CSPtr block) const {
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(Block_CSPtr block) const {
     try {
         return _blocksEntities.at(block->name());
     }

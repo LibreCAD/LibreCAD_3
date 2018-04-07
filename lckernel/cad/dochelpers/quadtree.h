@@ -23,10 +23,6 @@ namespace lc {
      */
     template<typename E>
     class QuadTreeSub {
-        //static_assert(
-        //        std::is_base_of<CADEntity, E>::value,
-        //        "E must be a descendant of CADEntity"
-        //);
         public:
             QuadTreeSub(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) :
                 _level(level) ,
@@ -42,13 +38,22 @@ namespace lc {
 
 
             }
-            QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 10, 25) {}
-            QuadTreeSub(const QuadTreeSub& other) : QuadTreeSub(0, other.bounds(), other.maxLevels(), other.maxObjects()) {
+
+            QuadTreeSub(const geo::Area& bounds) : QuadTreeSub(0, bounds, 10, 25) {
+
+            }
+
+            QuadTreeSub(const QuadTreeSub& other) :
+                    QuadTreeSub(0, other.bounds(), other.maxLevels(), other.maxObjects()) {
                 for (auto i : other.retrieve()) {
                     insert(i);
                 }
             }
-            QuadTreeSub() : QuadTreeSub(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 10, 25) {}
+
+            QuadTreeSub() : QuadTreeSub(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 10, 25) {
+
+            }
+
             virtual ~QuadTreeSub() {
                 if (_nodes[0] != nullptr) {
                     delete _nodes[0];
@@ -73,8 +78,6 @@ namespace lc {
                     _nodes[2] = nullptr;
                     _nodes[3] = nullptr;
                 }
-
-                //                _objects.clear();
             }
 
             /**
@@ -101,7 +104,6 @@ namespace lc {
                 // loop over the current container and see if the entities fit at a lower level
                 // So each entity is only tried once
                 if (_nodes[0] == nullptr && _objects.size() >= _maxObjects && _level < _maxLevels) {
-
                     split();
                     // Split two level's deep to reduce the number of object iterations
                     // This will help mostly when adding lots of little objects that would fit in 1/8 of the quad
@@ -110,8 +112,6 @@ namespace lc {
                     _nodes[2]->split();
                     _nodes[3]->split();
 
-                    // std::cout << "size:" << _objects.size() << " level:" << _level << "\n";
-
                     for (auto it = _objects.begin() ; it != _objects.end();) {
                         auto sentityBoundingBox = (*it)->boundingBox();
                         short index = quadrantIndex(sentityBoundingBox);
@@ -119,7 +119,8 @@ namespace lc {
                         if (index != -1) {
                             _nodes[index]->insert(*it, sentityBoundingBox);
                             it = _objects.erase(it);
-                        } else {
+                        }
+                        else {
                             it++;
                         }
                     }
@@ -140,7 +141,6 @@ namespace lc {
              * @param entity
              */
             bool erase(const E entity) {
-
                 // Find a Quad Tree area where this item might be located
                 if (_nodes[0] != nullptr) {
                     short index = quadrantIndex(entity->boundingBox());
@@ -266,7 +266,7 @@ namespace lc {
                     _nodes[2]->walkQuad(func);
                     _nodes[3]->walkQuad(func);
                 }
-            };
+            }
 
             /**
              * Call a function for each entity within this node and it's sub nodes
@@ -280,11 +280,10 @@ namespace lc {
                 }
 
                 std::for_each(_objects.begin(), _objects.end(), [&](E item) {
-                    std::shared_ptr<  U> b = std::dynamic_pointer_cast<  U >(item);
-                    //std::shared_ptr<U> b = std::const_pointer_cast<U>(item);
+                    std::shared_ptr<U> b = std::dynamic_pointer_cast<  U >(item);
                     func(b);
                 });
-            };
+            }
 
             /**
              * @brief optimise
@@ -308,7 +307,8 @@ namespace lc {
                         _nodes[1] = nullptr;
                         _nodes[2] = nullptr;
                         _nodes[3] = nullptr;
-                    } else {
+                    }
+                    else {
                         return false;
                     }
                 }
@@ -379,23 +379,30 @@ namespace lc {
             */
             short quadrantIndex(const geo::Area& pRect) const {
 
-                bool topQuadrant = (pRect.minP().y() >= _horizontalMidpoint) && (pRect.maxP().y() < _bounds.maxP().y());
-                bool bottomQuadrant = (pRect.minP().y() > _bounds.minP().y()) && (pRect.maxP().y() <= _horizontalMidpoint);
+                bool topQuadrant = (pRect.minP().y() >= _horizontalMidpoint) &&
+                                   (pRect.maxP().y() < _bounds.maxP().y());
+                bool bottomQuadrant = (pRect.minP().y() > _bounds.minP().y()) &&
+                                      (pRect.maxP().y() <= _horizontalMidpoint);
 
-                if ((topQuadrant || bottomQuadrant) == false) {
+                if (!(topQuadrant || bottomQuadrant)) {
                     return -1;
                 }
 
-                bool leftQuadrant = (pRect.minP().x() > _bounds.minP().x()) && (pRect.maxP().x() <= _verticalMidpoint);
-                bool rightQuandrant = (pRect.minP().x() >= _verticalMidpoint) && (pRect.maxP().x() < _bounds.maxP().x());
+                bool leftQuadrant = (pRect.minP().x() > _bounds.minP().x()) &&
+                                    (pRect.maxP().x() <= _verticalMidpoint);
+                bool rightQuandrant = (pRect.minP().x() >= _verticalMidpoint) &&
+                                      (pRect.maxP().x() < _bounds.maxP().x());
 
-                if ((leftQuadrant || rightQuandrant) == false) {
+                if (!(leftQuadrant || rightQuandrant)) {
                     return -1;
-                } else if (topQuadrant && rightQuandrant) {
+                }
+                else if (topQuadrant && rightQuandrant) {
                     return 0;
-                } else if (topQuadrant && leftQuadrant) {
+                }
+                else if (topQuadrant && leftQuadrant) {
                     return 1;
-                } else if (bottomQuadrant && leftQuadrant) {
+                }
+                else if (bottomQuadrant && leftQuadrant) {
                     return 2;
                 }
 
@@ -409,8 +416,7 @@ namespace lc {
                 if (area.maxP().x() <= _bounds.minP().x() ||
                     area.minP().x() >= _bounds.maxP().x() ||
                     area.maxP().y() <= _bounds.minP().y() ||
-                    area.minP().y() >= _bounds.maxP().y()
-                   ) {
+                    area.minP().y() >= _bounds.maxP().y()) {
                     return false;
                 } else {
                     return true;
@@ -430,11 +436,41 @@ namespace lc {
                 if (_nodes[0] != nullptr) {
                     // // LOG4CXX_DEBUG(logger, "Split is called on an already split node, please fix!");
                 } else {
-                    _nodes[0] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x + subWidth, y + subHeight), geo::Coordinate(_bounds.maxP().x(), _bounds.maxP().y())), _maxLevels, _maxObjects);
-                    _nodes[1] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x, y + subHeight), geo::Coordinate(x + subWidth, _bounds.maxP().y())), _maxLevels, _maxObjects);
+                    _nodes[0] = new QuadTreeSub(
+                            _level + 1,
+                            geo::Area(geo::Coordinate(x + subWidth, y + subHeight),
+                                      geo::Coordinate(_bounds.maxP().x(), _bounds.maxP().y())
+                            ),
+                            _maxLevels,
+                            _maxObjects
+                    );
 
-                    _nodes[2] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x, y), geo::Coordinate(x + subWidth, y + subHeight)), _maxLevels, _maxObjects);
-                    _nodes[3] = new QuadTreeSub(_level + 1, geo::Area(geo::Coordinate(x + subWidth, y), geo::Coordinate(_bounds.maxP().x(), y + subHeight)), _maxLevels, _maxObjects);
+                    _nodes[1] = new QuadTreeSub(
+                            _level + 1,
+                            geo::Area(geo::Coordinate(x, y + subHeight),
+                                      geo::Coordinate(x + subWidth, _bounds.maxP().y())
+                            ),
+                            _maxLevels,
+                            _maxObjects
+                    );
+
+                    _nodes[2] = new QuadTreeSub(
+                            _level + 1,
+                            geo::Area(geo::Coordinate(x, y),
+                                      geo::Coordinate(x + subWidth, y + subHeight)
+                            ),
+                            _maxLevels,
+                            _maxObjects
+                    );
+
+                    _nodes[3] = new QuadTreeSub(
+                            _level + 1,
+                            geo::Area(geo::Coordinate(x + subWidth, y),
+                                      geo::Coordinate(_bounds.maxP().x(), y + subHeight)
+                            ),
+                            _maxLevels,
+                            _maxObjects
+                    );
                 }
 
             }
@@ -457,10 +493,12 @@ namespace lc {
      *
      * Considerations, speed vs memory consumption
      * The more level's are created, the more memory it consumes, but the faster the tree will be for smaller objects
-     * The more object's per level the less memory it uses, but the more possiblew object's it will return during retrieve
+     * The more object's per level the less memory it uses, but the more possiblew object's it will return during
+     * retrieve
      *
      * We could change std::vector<E> _objects; into a std::map to speed up deletion of items within the tree
-     * At this moment we need to walk over the tree to find the item's location, then delete it However, this will consume more memory
+     * At this moment we need to walk over the tree to find the item's location, then delete it However,
+     * this will consume more memory
      *
      * mutable std::map<ID_DATATYPE, E> *_cadentities; can be removed all together, but this will
      * slowdown testing the routine entityByID
@@ -468,10 +506,22 @@ namespace lc {
     template<typename E>
     class QuadTree : public QuadTreeSub<E> {
         public:
-            QuadTree(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) : QuadTreeSub<E>(level, pBounds, maxLevels, maxObjects) {}
-            QuadTree(const geo::Area& bounds) : QuadTreeSub<E>(bounds) {}
-            QuadTree(const QuadTree& other) : QuadTreeSub<E>(other), _cadentities(other._cadentities) {}
-            QuadTree() : QuadTreeSub<E>(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {}
+            QuadTree(int level, const geo::Area& pBounds, short maxLevels, short maxObjects) :
+                    QuadTreeSub<E>(level, pBounds, maxLevels, maxObjects) {
+
+            }
+
+            QuadTree(const geo::Area& bounds) : QuadTreeSub<E>(bounds) {
+
+            }
+
+            QuadTree(const QuadTree& other) : QuadTreeSub<E>(other), _cadentities(other._cadentities) {
+
+            }
+
+            QuadTree() : QuadTreeSub<E>(0, geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(1., 1.)), 8, 25) {
+
+            }
 
             /**
              * @brief clear
@@ -489,10 +539,10 @@ namespace lc {
              * @param entity
              */
             void insert(const E entity) {
-                //    // // LOG4CXX_DEBUG(logger, "level " << _level);
+                // LOG4CXX_DEBUG(logger, "level " << _level);
                 //Update cache
                 if (_cadentities.count(entity->id()) > 0) {
-                    // // LOG4CXX_DEBUG(logger, "This id was already added, please fix. It's not allowed to add the same ID twice");
+                    //LOG4CXX_DEBUG(logger, "This id was already added, please fix. It's not allowed to add the same ID twice");
                 }
 
                 _cadentities.insert(std::make_pair(entity->id(), entity));
@@ -530,7 +580,7 @@ namespace lc {
                 return QuadTreeSub<E>::erase(work);
             }
 
-            const E entityByID(const ID_DATATYPE id) const {
+            const E entityByID(ID_DATATYPE id) const {
                 if (_cadentities.count(id) > 0) {
                     return _cadentities.at(id);
                 }

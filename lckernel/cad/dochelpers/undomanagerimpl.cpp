@@ -7,11 +7,12 @@
 using namespace lc;
 
 
-UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) : _maximumUndoLevels(maximumUndoLevels) {}
+UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) : _maximumUndoLevels(maximumUndoLevels) {
+
+}
 
 
 void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
-
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable.get() != nullptr) {
@@ -24,7 +25,6 @@ void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
             _reDoables.pop();
             // Need to get a list of absolete entities, they are all entities that are created in the _reDoables list
             // document()->absolueteEntity(entity);
-
         }
 
         // Add undoable to stack
