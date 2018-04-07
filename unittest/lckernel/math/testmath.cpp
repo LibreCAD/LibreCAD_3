@@ -11,7 +11,12 @@ TEST(MathTest, getAngleDifferenceShort) {
     ASSERT_NEAR(0.1, lc::Math::getAngleDifferenceShort(0., 0.1, true), LCARCTOLERANCE);
     ASSERT_NEAR(M_PI, lc::Math::getAngleDifferenceShort(0., M_PI, true), LCARCTOLERANCE);
     ASSERT_NEAR(0., lc::Math::getAngleDifferenceShort(0., 2.*M_PI, true), LCARCTOLERANCE);
-    ASSERT_NEAR(-0.1, lc::Math::getAngleDifferenceShort(0., 0.1, false), LCARCTOLERANCE);
+    ASSERT_NEAR(2*M_PI - 0.1, lc::Math::getAngleDifferenceShort(0., 0.1, false), LCARCTOLERANCE);
+    ASSERT_NEAR(M_PI, lc::Math::getAngleDifferenceShort(0., 3*M_PI, true), LCARCTOLERANCE);
+    ASSERT_NEAR(M_PI, lc::Math::getAngleDifferenceShort(0., -M_PI, false), LCARCTOLERANCE);
+    ASSERT_NEAR(0.1, lc::Math::getAngleDifferenceShort(0.1, 0, false), LCARCTOLERANCE);
+    ASSERT_NEAR(0.1, lc::Math::getAngleDifferenceShort(0., -0.1, false), LCARCTOLERANCE);
+    ASSERT_NEAR(2*M_PI-0.1, lc::Math::getAngleDifferenceShort(0., -0.1, true), LCARCTOLERANCE);
 }
 
 TEST(MathTest, getAngleDifference) {

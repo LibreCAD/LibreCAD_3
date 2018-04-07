@@ -85,8 +85,7 @@ Ellipse Ellipse::georotate(const geo::Coordinate& rotation_center, const double 
                     minorRadius(), startAngle(), endAngle());
 }
 
-std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &coord) const
-{
+std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &coord) const {
     std::vector<Coordinate> pnp;
     pnp.push_back(this->startPoint());
     pnp.push_back(this->endPoint());
@@ -108,7 +107,7 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
     std::vector<double> ce(4,0.);
     std::vector<double> roots(0,0.);
 
-    if(a0 > LCTOLERANCE ) { // a != b , ellipse
+    if(a0 > LCTOLERANCE) { // a != b , ellipse
         ce[0]=-2.*twoax/twoa2b2;
         ce[1]= (twoax*twoax+twoby*twoby)/a0-1.;
         ce[2]= - ce[0];
@@ -121,7 +120,7 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         roots.push_back(-roots[0]);
     }
 
-    if(roots.size()==0) {
+    if(roots.size() == 0) {
         //this should not happen
         std::cout<<"(a= "<<a<<" b= "<<b<<" x= "<<x<<" y= "<<y<<" )\n";
         std::cout<<"finding minimum for ("<<x<<"-"<<a<<"*cos(t))^2+("<<y<<"-"<<b<<"*sin(t))^2\n";
@@ -148,12 +147,11 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
 }
 
 Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
-
     Coordinate res;
-    double minDist = DBL_MAX;
+    auto minDist = DBL_MAX;
     std::vector<Coordinate> potencialPoinst = this->findPotentialNearestPoints(coord);
 
-    for (auto verifiedPoint: potencialPoinst)
+    for (auto& verifiedPoint: potencialPoinst)
     {
         double d = verifiedPoint.distanceTo(coord);
         if (d<minDist)
@@ -167,7 +165,6 @@ Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
 }
 
 Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
-
     Coordinate res;
     double minDist = DBL_MAX;
     std::vector<Coordinate> potencialPoinst = this->findPotentialNearestPoints(coord);
@@ -188,44 +185,6 @@ Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
 
     return res;
 }
-
-
-/*
- * DEPRECATED, but keeping source for reference
-bool Ellipse::isCoordinateOnPath(const Coordinate& coord, double tolerance) const {
-    double t = fabs(tolerance);
-    double a = majorRadius();
-    double b = a * ratio();
-
-    Coordinate vp((coord - center()).rotate(-getAngle()));
-
-    if (a < LCTOLERANCE) {
-        //radius treated as zero
-        if (fabs(vp.x()) < LCTOLERANCE && fabs(vp.y()) < b) {
-            return true;
-        }
-
-        return false;
-    }
-
-    if (b < LCTOLERANCE) {
-        //radius treated as zero
-        if (fabs(vp.y()) < LCTOLERANCE && fabs(vp.x()) < a) {
-            return true;
-        }
-
-        return false;
-    }
-
-    auto cord = Coordinate(vp.scale(Coordinate(1. / a, 1. / b)));
-
-    if (fabs(cord.squared() - 1.) > t) {
-        return false;
-    }
-
-    return Math::isAngleBetween(cord.angle(), startAngle(), endAngle(), isReversed());
-}
- */
 
 double Ellipse::endAngle() const {
     return _endAngle;
