@@ -33,6 +33,8 @@ namespace lc {
              */
             StorageManagerImpl();
 
+            virtual ~StorageManagerImpl();
+
             /**
              * @brief insertEntity
              * \param entity::CADEntity_CSPtr

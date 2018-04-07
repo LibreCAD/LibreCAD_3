@@ -6,6 +6,10 @@ StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 
 }
 
+StorageManagerImpl::~StorageManagerImpl() {
+
+}
+
 void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
     if (entity->block() != nullptr) {
         auto it = _blocksEntities.find(entity->block()->name());

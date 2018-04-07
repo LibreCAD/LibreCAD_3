@@ -253,7 +253,7 @@ double Ellipse::ratio() const {
 }
 
 bool Ellipse::isArc() const {
-    return not Math::getAngleDifferenceShort(_startAngle, _endAngle, _isReversed) < LCARCTOLERANCE;
+    return Math::getAngleDifferenceShort(_startAngle, _endAngle, _isReversed) > LCARCTOLERANCE;
 }
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {

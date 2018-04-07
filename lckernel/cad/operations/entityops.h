@@ -19,6 +19,8 @@ namespace lc {
 
         class Base {
             public:
+                virtual ~Base();
+
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document>,
                     const std::vector<entity::CADEntity_CSPtr> entities,
@@ -48,6 +50,8 @@ namespace lc {
         class Loop : public Base {
             public:
                 Loop(const int numTimes);
+
+                virtual ~Loop();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document_SPtr document,
@@ -82,6 +86,8 @@ namespace lc {
         class Begin : public Base {
             public:
                 Begin();
+
+                virtual ~Begin();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -119,6 +125,8 @@ namespace lc {
             public:
                 Move(const geo::Coordinate& offset);
 
+                virtual ~Move();
+
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -152,6 +160,8 @@ namespace lc {
         class Copy : public Base {
             public:
                 Copy(const geo::Coordinate& offset);
+
+                virtual ~Copy();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -188,6 +198,8 @@ namespace lc {
             public:
                 Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
 
+                virtual ~Rotate();
+
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -205,6 +217,8 @@ namespace lc {
         class Scale : public Base {
             public:
                 Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
+
+                virtual ~Scale();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -243,6 +257,8 @@ namespace lc {
             public:
                 Push();
 
+                virtual ~Push();
+
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
@@ -272,6 +288,8 @@ namespace lc {
         class SelectByLayer : public Base {
             public:
                 SelectByLayer(const Layer_CSPtr layer);
+
+                virtual ~SelectByLayer();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -305,6 +323,8 @@ namespace lc {
         class Remove : public Base {
             public:
                 Remove();
+
+                virtual ~Remove();
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
