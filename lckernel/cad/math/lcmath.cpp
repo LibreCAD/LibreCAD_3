@@ -43,7 +43,12 @@ double Math::getAngleDifferenceShort(double a1, double a2, bool CCW) {
         std::swap(a1, a2);
     }
 
-    return correctAngle(a2 - a1);
+    auto angle = correctAngle(a2 - a1);
+    if(angle < 0) {
+        angle += 2*M_PI;
+    }
+
+    return angle;
 }
 
 double Math::getAngleDifference(double start, double end, bool CCW) {

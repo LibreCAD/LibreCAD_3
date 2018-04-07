@@ -2,6 +2,7 @@
 
 #include <cad/document/document.h>
 #include <unordered_set>
+#include <string>
 
 namespace lc {
     class DocumentList {

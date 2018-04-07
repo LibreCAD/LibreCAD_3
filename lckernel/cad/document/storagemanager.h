@@ -15,13 +15,13 @@ namespace lc {
     class Layer;
     class StorageManager {
         public:
-            virtual void insertEntity(const entity::CADEntity_CSPtr) = 0;
+            virtual void insertEntity(entity::CADEntity_CSPtr) = 0;
             virtual void insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>&) = 0;
-            virtual void removeEntity(const entity::CADEntity_CSPtr) = 0;
+            virtual void removeEntity(entity::CADEntity_CSPtr) = 0;
             virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(Layer_CSPtr layer) const = 0;
 
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr block) const = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) const = 0;
 
             /*!
              * \brief layer
@@ -55,20 +55,21 @@ namespace lc {
             *  \brief add a document meta type
             *  \param layer layer to be added.
             */
-            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
+            virtual void addDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
 
             /**
             *  \brief remove a document meta type from the document
             *  \param layer layer to be added.
             */
-            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr dmt) = 0;
+            virtual void removeDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
 
             /**
             *  \brief remove document meta type
             */
-            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr oldDmt, const DocumentMetaType_CSPtr newDmt) = 0;
+            virtual void replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) = 0;
 
-            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() const = 0;
+            virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive>
+            allMetaTypes() const = 0;
 
             /**
              * @brief optimise
@@ -106,7 +107,7 @@ namespace lc {
             };
 
         private:
-            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string id) const {
+            virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const {
                 return nullptr;
             }
     };

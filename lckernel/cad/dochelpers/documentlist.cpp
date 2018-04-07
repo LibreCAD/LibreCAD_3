@@ -27,7 +27,7 @@ Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& DocumentList::newWaiting
 std::unordered_set<entity::Insert_CSPtr> DocumentList::waitingCustomEntities(const std::string& pluginName) {
     std::unordered_set<entity::Insert_CSPtr> result;
 
-    for(auto document : _documents) {
+    for (auto document : _documents) {
         auto entities = document->waitingCustomEntities(pluginName);
         result.insert(entities.begin(), entities.end());
     }

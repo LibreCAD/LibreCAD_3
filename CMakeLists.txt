@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.6)
 project(LC)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
@@ -58,4 +59,21 @@ endif(WITH_LUACMDINTERFACE)
 
 if(WITH_UNITTESTS)
     add_subdirectory("unittest")
+endif()
+
+# clang-tidy
+find_file(
+        RUN_CLANG_TIDY_PY
+        NAMES "run-clang-tidy.py"
+        HINTS /usr/share/clang/
+        DOC "Path to clang-tidy executable"
+)
+
+if(RUN_CLANG_TIDY_PY)
+    message(STATUS "run-clang-tidy.py found: ${RUN_CLANG_TIDY_PY}")
+    set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-p" "${CMAKE_BINARY_DIR}")
+        message(${DO_CLANG_TIDY})
+    add_custom_target(stylecheck ${DO_CLANG_TIDY})
+else()
+    message(STATUS "run-clang-tidy.py executable not found.")
 endif()

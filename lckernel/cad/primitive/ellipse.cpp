@@ -110,7 +110,6 @@ CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate &axis1, const geo::Coordin
 }
 
 const geo::Area Ellipse::boundingBox() const {
-
     const std::vector<geo::Coordinate> points = findBoxPoints();
     double minX, minY, maxX, maxY;
 
@@ -157,7 +156,6 @@ CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo
 
 
 std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
-
     std::vector<lc::geo::Coordinate> resPoints;
     const double a = majorP().magnitude();
     const double b = this->minorRadius();
