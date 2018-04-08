@@ -8,6 +8,8 @@ namespace lc {
             public:
                 ArcBuilder();
 
+                virtual ~ArcBuilder();
+
                 const geo::Coordinate& center() const;
                 ArcBuilder* setCenter(const geo::Coordinate& center);
 

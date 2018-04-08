@@ -15,6 +15,10 @@ namespace lc {
                         _block(nullptr) {
                 }
 
+                virtual ~CADEntityBuilder() {
+
+                }
+
                 void copy(entity::CADEntity_CSPtr entity) {
                     _layer = entity->_layer;
                     _block = entity->_block;

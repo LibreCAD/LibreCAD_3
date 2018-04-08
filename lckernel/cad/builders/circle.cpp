@@ -5,6 +5,10 @@ lc::builder::CircleBuilder::CircleBuilder() {
 
 }
 
+lc::builder::CircleBuilder::~CircleBuilder() {
+
+}
+
 const lc::geo::Coordinate& lc::builder::CircleBuilder::center() const {
     return _center;
 }

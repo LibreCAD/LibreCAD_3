@@ -8,6 +8,10 @@ InsertBuilder::InsertBuilder() :
         _displayBlock(nullptr) {
 }
 
+InsertBuilder::~InsertBuilder() {
+
+}
+
 InsertBuilder* InsertBuilder::copy(entity::Insert_CSPtr insert) {
     CADEntityBuilder::copy(insert);
 

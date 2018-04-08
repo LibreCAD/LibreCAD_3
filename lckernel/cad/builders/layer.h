@@ -13,6 +13,8 @@ namespace lc {
             public:
                 LayerBuilder();
 
+                virtual ~LayerBuilder();
+
                 const std::string& name() const;
                 const MetaLineWidthByValue& lineWidth() const;
                 const Color& color() const;

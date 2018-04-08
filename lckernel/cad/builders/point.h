@@ -6,6 +6,8 @@ namespace lc {
     namespace builder {
         class PointBuilder : public CADEntityBuilder {
             public:
+                virtual ~PointBuilder();
+
                 const geo::Coordinate& coordinate() const;
                 PointBuilder* setCoordinate(const geo::Coordinate& coordinate);
 
