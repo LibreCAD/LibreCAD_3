@@ -263,8 +263,8 @@ std::vector<BB_CSPtr> Bezier::splitHalf() const {
 }
 
 BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
-    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
-    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+    //auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    //auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
 
 //    if(tx_ > 0. && tx_ < 1.0) {
 //        auto bez1 = DirectValueAt(tx_);
