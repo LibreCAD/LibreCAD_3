@@ -9,6 +9,8 @@ namespace lc {
             public:
                 CircleBuilder();
 
+                virtual ~CircleBuilder();
+
                 const geo::Coordinate& center() const;
                 CircleBuilder* setCenter(const geo::Coordinate& center);
 

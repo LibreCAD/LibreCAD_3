@@ -4,6 +4,10 @@
 using namespace lc;
 using namespace builder;
 
+PointBuilder::~PointBuilder() {
+
+}
+
 const geo::Coordinate& PointBuilder::coordinate() const {
     return _coordinate;
 }

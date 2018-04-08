@@ -14,6 +14,8 @@ namespace lc {
             public:
                 LinePatternBuilder();
 
+                virtual ~LinePatternBuilder();
+
                 const std::string& name() const;
                 const std::string& description() const;
                 const std::vector<double>& path() const;

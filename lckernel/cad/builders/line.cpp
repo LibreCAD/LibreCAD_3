@@ -8,6 +8,10 @@ LineBuilder::LineBuilder() :
         _end() {
 }
 
+LineBuilder::~LineBuilder() {
+
+}
+
 const lc::geo::Coordinate& LineBuilder::start() const {
     return _start;
 }

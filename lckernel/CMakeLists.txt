@@ -5,7 +5,9 @@ add_definitions("-Wall")
 
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_definitions(-std=c++14)
 

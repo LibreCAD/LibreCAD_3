@@ -9,6 +9,8 @@ namespace lc {
             public:
                 LineBuilder();
 
+                virtual ~LineBuilder();
+
                 /**
                  * @brief Get line start
                  * @return Coordinate
