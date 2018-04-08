@@ -242,7 +242,7 @@ Ellipse::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &con
         minorP = minorP.rotate(M_PI_2);
         minorP = minorP * this->minorRadius();
 
-        if (sin(this->getAngle()) != 0 && cos(this->getAngle() != 0)) {
+        if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) {
             //add Ellipse vertices
             tmp = center() + majorP();
             if (this->isAngleBetween(0))
