@@ -7,8 +7,8 @@ void Settings::setVal(const std::string& variable,double val) {
 	variable_map[variable] = val;
 }
 
-double Settings::getVal(const std::string& variable) {
-	Settings::inst = Settings::instance();
+double Settings::val(const std::string& variable) {
+	Settings::instance();
 
 	return variable_map[variable];
 }
@@ -19,4 +19,10 @@ Settings* Settings::instance() {
 	}
 
 	return inst;
+}
+
+bool Settings::exists(const std::string& variable) {
+    Settings::instance();
+
+    return variable_map.find(variable) != variable_map.end();
 }

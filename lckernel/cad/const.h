@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <cad/settings.h>
 
-#define LCTOLERANCE Settings::getVal("LCTOLERANCE")
+#define LCTOLERANCE Settings::val("LCTOLERANCE")
 #define LCARCTOLERANCE 1.0e-10
 #define BBHEURISTIC 1.0e-5
 #define BBHEURISTIC2 1.0e-3

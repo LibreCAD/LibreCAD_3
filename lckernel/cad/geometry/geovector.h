@@ -49,8 +49,12 @@ namespace lc {
                 inline const Coordinate nearestPointOnEntity(const Coordinate& coord) const {
                     const auto vpc = nearestPointOnPath(coord);
                     // Note, I could use Area for this but didn't want that dependency here
-                    const geo::Coordinate minP(Coordinate(std::min(_start.x()-LCTOLERANCE, _end.x()-LCTOLERANCE), std::min(_start.y()-LCTOLERANCE, _end.y()-LCTOLERANCE)));
-                    const geo::Coordinate maxP(Coordinate(std::max(_start.x()+LCTOLERANCE, _end.x()+LCTOLERANCE), std::max(_start.y()+LCTOLERANCE, _end.y()+LCTOLERANCE)));
+                    const geo::Coordinate minP(Coordinate(std::min(_start.x()- LCTOLERANCE, _end.x()- LCTOLERANCE), std::min(_start.y()-
+                                                                                                                           LCTOLERANCE, _end.y()-
+                                                                                                                                                   LCTOLERANCE)));
+                    const geo::Coordinate maxP(Coordinate(std::max(_start.x()+ LCTOLERANCE, _end.x()+ LCTOLERANCE), std::max(_start.y()+
+                                                                                                                           LCTOLERANCE, _end.y()+
+                                                                                                                                                   LCTOLERANCE)));
 
                     bool inArea = (vpc.x() >= minP.x() && vpc.x() <= maxP.x() && vpc.y() >= minP.y() && vpc.y() <= maxP.y());
                     if (inArea) {
