@@ -1,0 +1,1 @@
+Checks: 'clang-diagnostic-*,clang-analyzer-*,*,-clang-analyzer-security.FloatLoopCounter,-google-build-using-namespace, -llvm-include-order,-readability-redundant-member-init'

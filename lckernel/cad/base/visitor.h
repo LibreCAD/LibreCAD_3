@@ -159,7 +159,7 @@ namespace detail {
     template <typename IVisitor, typename C, typename T, typename...Ts>
     struct IVisitorImpl<IVisitor, C, T, Ts...> : IVisitorImpl<IVisitor, C, Ts...>
     {
-        virtual void visit(const T& t) override { C::visit(t); }
+        virtual void visit(const T& t) override { C::visit(t); } // NOLINT
     };
 
     template <typename IVisitor, typename C, typename T>

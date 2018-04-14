@@ -33,7 +33,7 @@ namespace lc {
             bool operator == (const ID& id) const {
                 return (id._id == _id);
             }
-            void setID(ID_DATATYPE _id);
+            void setID(ID_DATATYPE id);
             static std::atomic<ID_DATATYPE> __idCounter;
         private:
             ID_DATATYPE _id;
