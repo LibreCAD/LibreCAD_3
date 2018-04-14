@@ -14,9 +14,11 @@ class Settings
 
 		static Settings* inst;
 
-		static double getVal(const std::string& variable);
+		static double val(const std::string& variable);
 
 		static void setVal(const std::string& variable,double val);
+
+		static bool exists(const std::string& variable);
 
 		static Settings* instance();
 

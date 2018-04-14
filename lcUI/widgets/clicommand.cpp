@@ -79,9 +79,7 @@ void CliCommand::onReturnPressed() {
             Settings::inst = Settings::instance();
             std::unordered_map<std::string, double>::iterator it1;
 
-            it1 = Settings::variable_map.find(varFind[0].toStdString());
-
-            if (it1 != Settings::variable_map.end()) {
+            if(checkParam(varFind[0])) {
                 write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
                 Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());    
             }
@@ -111,7 +109,7 @@ void CliCommand::enterCommand(QString command) {
     }
     else {
         if(checkParam(command)) {
-            write(QString("Value of %1=%2").arg(command).arg(Settings::getVal(command.toStdString())));
+            write(QString("Value of %1=%2").arg(command).arg(Settings::val(command.toStdString())));
         }
         else
         {
@@ -122,15 +120,7 @@ void CliCommand::enterCommand(QString command) {
 }
 
 bool CliCommand::checkParam(QString command) {
-    Settings::inst = Settings::instance();
-    std::unordered_map<std::string, double>::iterator it;
-
-    it = Settings::variable_map.find(command.toStdString());
-
-    if (it != Settings::variable_map.end()) {
-        return true;
-    }
-    return false;
+    return Settings::exists(command.toStdString());
 }
 
 void CliCommand::enterCoordinate(QString coordinate) {
