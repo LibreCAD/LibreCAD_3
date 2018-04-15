@@ -1,41 +1,30 @@
 #include <cad/math/lcmath.h>
-#include <stdlib.h>
 #include "geoarc.h"
 
 using namespace lc;
 using namespace geo;
 
-Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle)
-        : Base(), _center(center), _radius(radius), _startAngle(Math::correctAngle(startAngle)), _endAngle(Math::correctAngle(endAngle)), _CCW(true) {
-    /*
-    if (startAngle<0.0 || startAngle>PI2 || startAngle<endAngle) {
-        throw "Invalid start angle";
-    }
-    if (endAngle<0.0 || endAngle> PI2) {
-        throw "Invalid end angle";
-    }
-    if (radius<0.0) {
-        throw "Invalid radius";
-    }*/
+Arc::Arc(Coordinate center, double radius, double startAngle, double endAngle, bool isCCW) :
+        Base(),
+        _center(std::move(center)),
+        _radius(radius),
+        _startAngle(Math::correctAngle(startAngle)),
+        _endAngle(Math::correctAngle(endAngle)),
+        _CCW(isCCW) {
 
-}
-
-Arc::Arc(const Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW)
-        : Base(), _center(center), _radius(radius), _startAngle(Math::correctAngle(startAngle)), _endAngle(Math::correctAngle(endAngle)), _CCW(isCCW) {
+    if (radius <= 0.0) {
+        throw std::runtime_error("Invalid radius");
+    }
 }
 
 Arc Arc::createArc3P(const Coordinate &p1, const Coordinate &p2, const Coordinate &p3) {
-
     geo::Coordinate vra = p2 - p1;
     geo::Coordinate vrb = p3 - p1;
     double ra2 = vra.squared() * 0.5;
     double rb2 = vrb.squared() * 0.5;
     double crossp = vra.x() * vrb.y() - vra.y() * vrb.x();
     if (std::abs(crossp) <= 0.0) {
-        // "Cannot create a arc with radius 0.0.");
-        // TODO add exception handling of some sort
-//        throw;
-        return Arc(geo::Coordinate(0., 0.), 0., 0., 0.);
+        throw std::runtime_error("Cannot create a arc with radius 0.0.");
     }
     crossp = 1. / crossp;
 
@@ -62,12 +51,13 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
     auto angle = p1.angleTo(p2);
 
     if (isCCW) {
-        angle-=M_PI/2.0;
-    } else {
-        angle+=M_PI/2.0;
+        angle -= M_PI/2.0;
+    }
+    else {
+        angle += M_PI/2.0;
     }
 
-    if (std::abs(delta)<M_PI) {
+    if (std::abs(delta) < M_PI) {
         h*=-1.0;
     }
 
@@ -95,6 +85,7 @@ const Coordinate Arc::center() const {
 Coordinate Arc::nearestPointOnPath(const Coordinate &coord) const {
     return center() + Coordinate((coord - center()).angle()) * radius();
 }
+
 Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
     const auto angle = (coord - center()).angle();
 
@@ -108,9 +99,10 @@ Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
     const auto ad1 = std::abs(angle - _startAngle);
     const auto ad2 = std::abs(angle - _endAngle);
 
-    if (ad1<=ad2) {
+    if (ad1 <= ad2) {
         return startP();
-    } else {
+    }
+    else {
         return endP();
     }
 }
@@ -118,7 +110,8 @@ Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
 double Arc::length() const {
     if (_startAngle > _endAngle) {
         return std::abs((2. * M_PI + endAngle() - startAngle()) * radius());
-    } else {
+    }
+    else {
         return std::abs((endAngle() - startAngle()) * radius());
     }
 }

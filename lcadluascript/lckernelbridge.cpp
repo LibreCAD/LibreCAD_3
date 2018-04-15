@@ -50,8 +50,9 @@ void LCLua::importLCKernel() {
 
         .beginExtendClass<Layer, MetaType>("Layer")
             .addConstructor(LUA_SP(Layer_SPtr), LUA_ARGS(
-                                const std::string,
-                                const Color))
+                                std::string,
+                                MetaLineWidthByValue,
+                                Color))
         .endClass()
 
         .beginExtendClass<DxfLinePattern, EntityMetaType>("DxfLinePattern")

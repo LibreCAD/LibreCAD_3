@@ -15,7 +15,7 @@ TEST(SelectionTest, NormalSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -45,7 +45,7 @@ TEST(SelectionTest, IntersectionSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -62,7 +62,7 @@ TEST(SelectionTest, IntersectionSelection) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -75,7 +75,7 @@ TEST(SelectionTest, AddToSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -95,7 +95,7 @@ TEST(SelectionTest, AddToSelection) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -108,7 +108,7 @@ TEST(SelectionTest, Reselect) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -128,7 +128,7 @@ TEST(SelectionTest, Reselect) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -141,7 +141,7 @@ TEST(SelectionTest, ClearSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -161,7 +161,7 @@ TEST(SelectionTest, ClearSelection) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -174,7 +174,7 @@ TEST(SelectionTest, Deselect) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -192,7 +192,7 @@ TEST(SelectionTest, Deselect) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});
@@ -205,7 +205,7 @@ TEST(SelectionTest, DeselectAddTo) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -226,7 +226,7 @@ TEST(SelectionTest, DeselectAddTo) {
 	unsigned int i = 0;
 
 	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
+		if(di->selected()) {
 			i++;
 		}
 	});

@@ -107,38 +107,38 @@ namespace lc {
                  * the given operations within the document
                  * \param operation
                  */
-            virtual void execute(operation::DocumentOperation_SPtr operation) = 0;
+            virtual void execute(const operation::DocumentOperation_SPtr& operation) = 0;
 
             /*!
              * \brief begins an operation
              * \param operation
              */
-            virtual void begin(operation::DocumentOperation_SPtr operation) = 0;
+            virtual void begin(const operation::DocumentOperation_SPtr& operation) = 0;
 
             /*!
                  * \brief commits an operation
                  * \param operation
                  */
-            virtual void commit(operation::DocumentOperation_SPtr operation) = 0;
+            virtual void commit(const operation::DocumentOperation_SPtr& operation) = 0;
 
 
             /*!
              * \brief operationStart Starts the operation.
              * \param operation
              */
-            virtual void operationStart(operation::DocumentOperation_SPtr operation);
+            virtual void operationStart(const operation::DocumentOperation_SPtr& operation);
 
             /*!
-                 * \brief operationFinnish Finishes the operation.
-                 * \param operation
-                 */
-            virtual void operationFinnish(operation::DocumentOperation_SPtr operation);
+             * \brief operationFinish Finishes the operation.
+             * \param operation
+             */
+            virtual void operationFinish(const operation::DocumentOperation_SPtr& operation);
 
             /*!
-                 * \brief operationProcess process the operation.
-                 * \param operation
-                 */
-            virtual void operationProcess(operation::DocumentOperation_SPtr operation);
+             * \brief operationProcess process the operation.
+             * \param operation
+             */
+            virtual void operationProcess(const operation::DocumentOperation_SPtr& operation);
 
         public:
             /*!
@@ -146,29 +146,29 @@ namespace lc {
              * \param layerName Name of layer to which entity is to be added
              * \param cadEntity Entity to be added
              */
-            virtual void insertEntity(entity::CADEntity_CSPtr cadEntity) = 0;
+            virtual void insertEntity(const entity::CADEntity_CSPtr& cadEntity) = 0;
             /*!
              * \brief removes an entity from the document.
              * \param id ID of the entity to be removed.
              */
-            virtual void removeEntity(entity::CADEntity_CSPtr entity) = 0;
+            virtual void removeEntity(const entity::CADEntity_CSPtr& entity) = 0;
 
             /**
             *  \brief add a new layer to the document
             *  \param layer layer to be added.
             */
-            virtual void addDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
+            virtual void addDocumentMetaType(const DocumentMetaType_CSPtr& dmt) = 0;
 
             /**
             *  \brief remove a layer from the document
             *  \param layer layer to be added.
             */
-            virtual void removeDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
+            virtual void removeDocumentMetaType(const DocumentMetaType_CSPtr& dmt) = 0;
 
             /**
             *  \brief remove a layer from the document
             */
-            virtual void replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) = 0;
+            virtual void replaceDocumentMetaType(const DocumentMetaType_CSPtr& oldDmt, DocumentMetaType_CSPtr newDmt) = 0;
 
             /*!
              * \brief findEntitiesByLayer
@@ -176,14 +176,14 @@ namespace lc {
              * \param layer
              * \return
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(Layer_CSPtr layer) = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr& layer) = 0;
 
             /**
              * @brief Search entities in a given block
              * @param block
              * @return EntityContainer
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr& block) = 0;
 
             /**
              * @brief entityContainer

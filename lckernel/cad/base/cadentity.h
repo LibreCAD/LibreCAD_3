@@ -33,11 +33,11 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
+            CADEntity(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr, Block_CSPtr block = nullptr);
 
-            CADEntity(CADEntity_CSPtr cadEntity, bool sameID);
+            CADEntity(const CADEntity_CSPtr& cadEntity, bool sameID);
 
-            CADEntity(CADEntity_CSPtr cadEntity);
+            CADEntity(const CADEntity_CSPtr& cadEntity);
 
             virtual ~CADEntity() = default;
 

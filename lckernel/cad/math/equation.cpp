@@ -15,7 +15,7 @@ Equation::Equation(Eigen::Matrix3d &mat) : matrix_(mat) {
 
 }
 
-Equation& Equation::operator = (const Equation qm) {
+Equation& Equation::operator = (const Equation& qm) {
     matrix_ = qm.Matrix();
     return *this;
 }

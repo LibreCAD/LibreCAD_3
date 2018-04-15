@@ -15,24 +15,24 @@ namespace lc {
     class DocumentImpl : public Document {
         public:
             DocumentImpl(StorageManager_SPtr storageManager);
-            virtual ~DocumentImpl();
+            virtual ~DocumentImpl() = default;
 
         public:
-            void insertEntity(entity::CADEntity_CSPtr cadEntity) override;
-            void removeEntity(entity::CADEntity_CSPtr entity) override;
+            void insertEntity(const entity::CADEntity_CSPtr& cadEntity) override;
+            void removeEntity(const entity::CADEntity_CSPtr& entity) override;
 
-            void addDocumentMetaType(DocumentMetaType_CSPtr dmt) override;
-            void removeDocumentMetaType(DocumentMetaType_CSPtr dmt) override;
-            void replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) override;
+            void addDocumentMetaType(const DocumentMetaType_CSPtr& dmt) override;
+            void removeDocumentMetaType(const DocumentMetaType_CSPtr& dmt) override;
+            void replaceDocumentMetaType(const DocumentMetaType_CSPtr& oldDmt, DocumentMetaType_CSPtr newDmt) override;
             std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive> allMetaTypes() override;
             /**
              * @brief entitiesByLayer
              * @param layer
              * @return
              */
-            EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(Layer_CSPtr layer) override;
+            EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr& layer) override;
 
-            EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) override;
+            EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr& block) override;
 
             EntityContainer<entity::CADEntity_CSPtr> entityContainer() override;
 
@@ -51,20 +51,18 @@ namespace lc {
              * \brief execute's a operation
              * \param operation
              */
-            void execute(operation::DocumentOperation_SPtr operation) override;
+            void execute(const operation::DocumentOperation_SPtr& operation) override;
 
             /*!
              * \brief begins operation
              * \param operation
              */
-            void begin(operation::DocumentOperation_SPtr operation) override;
+            void begin(const operation::DocumentOperation_SPtr& operation) override;
             /*!
              * \brief commits operation
              * \param operation
              */
-            void commit(operation::DocumentOperation_SPtr operation) override;
-
-            StorageManager_SPtr storageManager() const;
+            void commit(const operation::DocumentOperation_SPtr& operation) override;
 
         public:
             std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) override;

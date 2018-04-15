@@ -267,7 +267,7 @@ TEST(EntityBuilderTest, SelectByLayer) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
 
-	auto layer = std::make_shared<const lc::Layer>("NewLayer", lc::Color(0, 0, 0));
+	auto layer = std::make_shared<const lc::Layer>();
 
 	auto entityInsideLayer = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),

@@ -18,13 +18,13 @@ Document::~Document() {
     DocumentList::getInstance().removeDocument(this);
 }
 
-void Document::operationStart(operation::DocumentOperation_SPtr operation) {
+void Document::operationStart(const operation::DocumentOperation_SPtr& operation) {
     operation->start();
 }
-void Document::operationFinnish(operation::DocumentOperation_SPtr operation) {
+void Document::operationFinish(const operation::DocumentOperation_SPtr& operation) {
     operation->finnish();
 }
-void Document::operationProcess(operation::DocumentOperation_SPtr operation) {
+void Document::operationProcess(const operation::DocumentOperation_SPtr& operation) {
     operation->process();
 }
 Nano::Signal<void(const lc::BeginProcessEvent&)>& Document::beginProcessEvent() {

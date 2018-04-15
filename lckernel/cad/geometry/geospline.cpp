@@ -86,7 +86,7 @@ void Spline::populateCurve() {
 
         //Set control points
         std::vector<ts::rational> ts_controlPoints;
-        for (auto cp : _controlPoints) {
+        for (const auto& cp : _controlPoints) {
             ts_controlPoints.push_back(cp.x());
             ts_controlPoints.push_back(cp.y());
             ts_controlPoints.push_back(cp.z());
@@ -94,7 +94,7 @@ void Spline::populateCurve() {
 
         _splineCurve.setCtrlp(ts_controlPoints);
     }
-    catch (std::runtime_error e) {
+    catch (std::runtime_error& e) {
         _splineCurve = ts::BSpline();
     }
 }

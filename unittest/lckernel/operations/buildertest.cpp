@@ -10,7 +10,7 @@ TEST(BuilderTest, Process) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());
@@ -45,7 +45,7 @@ TEST(BuilderTest, Undo) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());
@@ -74,7 +74,7 @@ TEST(BuilderTest, Redo) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());

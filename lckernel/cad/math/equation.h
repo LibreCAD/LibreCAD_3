@@ -15,7 +15,7 @@ namespace lc {
         public:
             Equation();
 
-            Equation &operator=(const Equation qm);
+            Equation &operator=(const Equation& qm);
 
             Equation(Eigen::Matrix3d &mat);
 

@@ -33,7 +33,7 @@ namespace lc {
              */
             StorageManagerImpl();
 
-            virtual ~StorageManagerImpl();
+            virtual ~StorageManagerImpl() = default;
 
             /**
              * @brief insertEntity
