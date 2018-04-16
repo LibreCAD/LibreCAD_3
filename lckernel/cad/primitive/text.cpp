@@ -1,6 +1,4 @@
 #include "text.h"
-#include <algorithm>
-#include "cad/geometry/geoarea.h"
 
 
 using namespace lc;

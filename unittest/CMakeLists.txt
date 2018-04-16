@@ -46,6 +46,7 @@ lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
 lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
+lckernel/operations/layerops.cpp
 lckernel/dochelpers/documentlist.cpp
 )
 
@@ -143,7 +144,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(src
         ${src}
         rendering/renderingtest.cpp
-            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp lckernel/geometry/comparecoordinate.cpp lckernel/geometry/comparecoordinate.h)
+            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp lckernel/geometry/comparecoordinate.cpp lckernel/geometry/comparecoordinate.h lckernel/operations/layerops.cpp)
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")

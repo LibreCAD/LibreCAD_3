@@ -12,10 +12,10 @@ namespace lc {
         */
         class AddLayer : public DocumentOperation {
             public:
-                AddLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
+                AddLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) ;
 
-                virtual void undo() const;
-                virtual void redo() const;
+                void undo() const override;
+                void redo() const override;
 
             private:
 
@@ -31,15 +31,15 @@ namespace lc {
         */
         class RemoveLayer : public DocumentOperation {
             public:
-                RemoveLayer(std::shared_ptr<Document> document,  const Layer_CSPtr layer) ;
+                RemoveLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) ;
 
-                virtual void undo() const;
-                virtual void redo() const;
+                void undo() const override;
+                void redo() const override;
 
             private:
 
             protected:
-                virtual void processInternal();
+                void processInternal() override;
 
             private:
                 Layer_CSPtr _layer;
@@ -51,15 +51,15 @@ namespace lc {
         */
         class ReplaceLayer : public DocumentOperation {
             public:
-                ReplaceLayer(std::shared_ptr<Document> document, const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer) ;
+                ReplaceLayer(std::shared_ptr<Document> document, Layer_CSPtr oldLayer, Layer_CSPtr newLayer) ;
 
-                virtual void undo() const;
-                virtual void redo() const;
+                void undo() const override;
+                void redo() const override;
 
             private:
 
             protected:
-                virtual void processInternal();
+                void processInternal() override;
 
             private:
                 Layer_CSPtr _oldLayer;

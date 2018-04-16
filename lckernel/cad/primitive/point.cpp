@@ -1,9 +1,5 @@
 #include <memory>
 #include <cad/primitive/point.h>
-#include <cmath>
-
-#include <algorithm>
-#include "cad/geometry/geoarea.h"
 
 using namespace lc;
 using namespace entity;

@@ -332,9 +332,6 @@ namespace lc {
                     std::vector <entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
-
-            private:
-                Layer_CSPtr _layer;
         };
         DECLARE_SHORT_SHARED_PTR(Remove)
     }

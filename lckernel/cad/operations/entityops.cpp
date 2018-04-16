@@ -204,6 +204,7 @@ std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
 /** Remove                                                                                            ***/
 /********************************************************************************************************/
 Remove::Remove() : Base() {
+
 }
 
 std::vector<entity::CADEntity_CSPtr> Remove::process(
