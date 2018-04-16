@@ -11,45 +11,41 @@ using namespace operation;
 /********************************************************************************************************/
 /** AddLinePattern                                                                                          ***/
 /********************************************************************************************************/
-AddLinePattern::AddLinePattern(Document_SPtr document, const DxfLinePattern_CSPtr LinePattern) :
-        DocumentOperation(document, "AddLinePattern"),
-        _LinePattern(LinePattern) {
+AddLinePattern::AddLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern) :
+        DocumentOperation(std::move(document), "AddLinePattern"),
+        _linePattern(std::move(linePattern)) {
 }
 
 void AddLinePattern::processInternal() {
-    document()->addDocumentMetaType(_LinePattern);
+    document()->addDocumentMetaType(_linePattern);
 }
 
 void AddLinePattern::undo() const {
-    document()->removeDocumentMetaType(_LinePattern);
+    document()->removeDocumentMetaType(_linePattern);
 }
 
 void AddLinePattern::redo() const {
-    document()->addDocumentMetaType(_LinePattern);
+    document()->addDocumentMetaType(_linePattern);
 }
 
 /********************************************************************************************************/
 /** RemoveLinePattern                                                                                       ***/
 /********************************************************************************************************/
-RemoveLinePattern::RemoveLinePattern(Document_SPtr document, const DxfLinePattern_CSPtr LinePattern) :
-        DocumentOperation(document, "RemoveLinePattern"),
-        _LinePattern(LinePattern) {
+RemoveLinePattern::RemoveLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern) :
+        DocumentOperation(std::move(document), "RemoveLinePattern"),
+        _linePattern(std::move(linePattern)) {
 }
 
 void RemoveLinePattern::processInternal() {
-    document()->removeDocumentMetaType(_LinePattern);
+    document()->removeDocumentMetaType(_linePattern);
 }
 
 void RemoveLinePattern::undo() const {
-    document()->addDocumentMetaType(_LinePattern);
+    document()->addDocumentMetaType(_linePattern);
 }
 
 void RemoveLinePattern::redo() const {
-    for (auto i : _entities) {
-        document()->removeEntity(i);
-    }
-
-    document()->removeDocumentMetaType(_LinePattern);
+    document()->removeDocumentMetaType(_linePattern);
 }
 
 
@@ -57,11 +53,11 @@ void RemoveLinePattern::redo() const {
 /** ReplaceLinePattern                                                                                       ***/
 /********************************************************************************************************/
 ReplaceLinePattern::ReplaceLinePattern(Document_SPtr document,
-                                       const DxfLinePattern_CSPtr oldLinePattern,
-                                       const DxfLinePattern_CSPtr newLinePattern) :
-        DocumentOperation(document, "ReplaceLinePattern"),
-        _oldLinePattern(oldLinePattern),
-        _newLinePattern(newLinePattern) {
+                                       DxfLinePattern_CSPtr oldLinePattern,
+                                       DxfLinePattern_CSPtr newLinePattern) :
+        DocumentOperation(std::move(document), "ReplaceLinePattern"),
+        _oldLinePattern(std::move(oldLinePattern)),
+        _newLinePattern(std::move(newLinePattern)) {
 }
 
 void ReplaceLinePattern::processInternal() {

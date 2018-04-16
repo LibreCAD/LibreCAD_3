@@ -44,9 +44,9 @@ namespace lc {
                    double stanx, double stany, double stanz,
                    double etanx, double etany, double etanz,
                    double nx, double ny, double nz, splineflag flags,
-                   const Layer_CSPtr layer,
-                   const MetaInfo_CSPtr metaInfo = nullptr,
-                   const Block_CSPtr block = nullptr);
+                   Layer_CSPtr layer,
+                   MetaInfo_CSPtr metaInfo = nullptr,
+                   Block_CSPtr block = nullptr);
 
             Spline(const Spline_CSPtr other, bool sameID = false);
 

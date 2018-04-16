@@ -14,10 +14,10 @@ Spline::Spline(
         double etanx, double etany, double etanz,
         double nx, double ny, double nz,
         enum Spline::splineflag flags,
-        const Layer_CSPtr layer,
-        const MetaInfo_CSPtr metaInfo,
-        const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+        Layer_CSPtr layer,
+        MetaInfo_CSPtr metaInfo,
+        Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Spline(controlPoints,
                     knotPoints,
                     fitPoints,

@@ -14,10 +14,10 @@ DimAligned::DimAligned(geo::Coordinate const& definitionPoint,
                        std::string const& explicitValue,
                        geo::Coordinate const& definitionPoint2,
                        geo::Coordinate const& definitionPoint3,
-                       const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo,
-                       const Block_CSPtr block):
-    CADEntity(layer, metaInfo, block),
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo,
+                       Block_CSPtr block):
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
     _definitionPoint2(definitionPoint2),
     _definitionPoint3(definitionPoint3) {
@@ -36,9 +36,9 @@ DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
                                     geo::Coordinate const& p2,
                                     geo::Coordinate const& middleOfText,
                                     std::string const& explicitValue,
-                                    const Layer_CSPtr layer,
-                                    const MetaInfo_CSPtr metaInfo,
-                                    const Block_CSPtr block) {
+                                    Layer_CSPtr layer,
+                                    MetaInfo_CSPtr metaInfo,
+                                    Block_CSPtr block) {
     auto nearestPoint = geo::Vector(p1, p2).nearestPointOnPath(middleOfText);
     auto distance = nearestPoint.distanceTo(middleOfText);
 
@@ -61,9 +61,9 @@ DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
                                         explicitValue,
                                         p1,
                                         p2,
-                                        layer,
-                                        metaInfo,
-                                        block
+                                        std::move(layer),
+                                        std::move(metaInfo),
+                                        std::move(block)
     );
 }
 

@@ -32,14 +32,14 @@ namespace lc {
                       geo::Coordinate const &middleOfText,
                       TextConst::AttachmentPoint const &attachmentPoint,
                       double angle,
-                      double const lineSpacingFactor,
+                      double lineSpacingFactor,
                       TextConst::LineSpacingStyle const &lineSpacingStyle,
                       std::string const &explicitValue,
                       geo::Coordinate const &definitionPoint2,
-                      const double leader,
-                      const Layer_CSPtr layer,
-                      const MetaInfo_CSPtr metaInfo = nullptr,
-                      const Block_CSPtr block = nullptr
+                      double leader,
+                      Layer_CSPtr layer,
+                      MetaInfo_CSPtr metaInfo = nullptr,
+                      Block_CSPtr block = nullptr
             );
 
             /**
@@ -47,14 +47,14 @@ namespace lc {
             */
             DimRadial(geo::Coordinate const &definitionPoint,
                       TextConst::AttachmentPoint const &attachmentPoint,
-                      double const lineSpacingFactor,
+                      double lineSpacingFactor,
                       TextConst::LineSpacingStyle const &lineSpacingStyle,
                       std::string const &explicitValue,
                       geo::Coordinate const &definitionPoint2,
-                      const double leader,
-                      const Layer_CSPtr layer,
-                      const MetaInfo_CSPtr metaInfo = nullptr,
-                      const Block_CSPtr block = nullptr
+                      double leader,
+                      Layer_CSPtr layer,
+                      MetaInfo_CSPtr metaInfo = nullptr,
+                      Block_CSPtr block = nullptr
             );
 
             DimRadial(const DimRadial_CSPtr other, bool sameID = false);

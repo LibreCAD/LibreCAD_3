@@ -9,14 +9,14 @@ using namespace lc;
 using namespace entity;
 
 Point::Point(const double x, const double y,
-             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(x, y) {
 }
 
 Point::Point(geo::Coordinate const& coord,
-             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(coord) {
 }
 

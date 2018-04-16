@@ -359,25 +359,25 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
     //quarticSolver
     auto&& roots = quarticSolverFull(qy);
 
-    if (roots.size() == 0) { // no intersection found
+    if (roots.empty()) { // no intersection found
         return ret;
     }
 
     std::vector<double> ce(0, 0.);
 
-    for (size_t i0 = 0; i0 < roots.size(); i0++) {
+    for(double root : roots) {
         /*
           Collect[Eliminate[{ a*x^2 + b*x*y+c*y^2+d*x+e*y+f==0,g*x^2+h*x*y+i*y^2+j*x+k*y+l==0},x],y]
           */
         ce.resize(3);
         ce[0] = a;
-        ce[1] = b * roots[i0] + d;
-        ce[2] = c * roots[i0] * roots[i0] + e * roots[i0] + f;
+        ce[1] = b * root + d;
+        ce[2] = c * root * root + e * root + f;
 
         if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
             ce[0] = g;
-            ce[1] = h * roots[i0] + j;
-            ce[2] = i * roots[i0] * roots[i0] + k * roots[i0] + f;
+            ce[1] = h * root + j;
+            ce[2] = i * root * root + k * root + f;
         }
 
         if (std::abs(ce[0]) < 1e-75 && std::abs(ce[1]) < 1e-75) {
@@ -391,7 +391,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
             auto&& xRoots = quadraticSolver(ce2);
 
             for (size_t j0 = 0; j0 < xRoots.size(); j0++) {
-                geo::Coordinate vp(xRoots[j0], roots[i0]);
+                geo::Coordinate vp(xRoots[j0], root);
 
                 if (simultaneousQuadraticVerify(m, vp)) {
                     ret.push_back(vp);
@@ -401,7 +401,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
             continue;
         }
 
-        geo::Coordinate vp(-ce[2] / ce[1], roots[i0]);
+        geo::Coordinate vp(-ce[2] / ce[1], root);
 
         if (simultaneousQuadraticVerify(m, vp)) {
             ret.push_back(vp);
@@ -428,7 +428,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
              m[1][0], m[1][1];
         V << -m[0][2], -m[1][2];
         Eigen::Vector2d sn = M.colPivHouseholderQr().solve(V);
-        ret.push_back(geo::Coordinate(sn[0], sn[1]));
+        ret.emplace_back(geo::Coordinate(sn[0], sn[1]));
         return ret;
     }
 
@@ -464,12 +464,12 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
         roots = quadraticSolver(ce2);
     }
 
-    if (roots.size() == 0) {
+    if (roots.empty()) {
         return ret;
     }
 
-    for (size_t i = 0; i < roots.size(); i++) {
-        ret.push_back(geo::Coordinate(-(b * roots.at(i) + c) / a, roots.at(i)));
+    for (double root : roots) {
+        ret.emplace_back(geo::Coordinate(-(b * root + c) / a, root));
     }
 
     return ret;

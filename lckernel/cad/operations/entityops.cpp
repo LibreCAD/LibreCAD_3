@@ -16,21 +16,13 @@ std::vector<entity::CADEntity_CSPtr> Begin::process(
     const std::vector<entity::CADEntity_CSPtr> entitySet,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
-    const std::vector<Base_SPtr>) {
+    const std::vector<Base_SPtr> operationStack) {
     _entities.insert(_entities.end(), entitySet.begin(), entitySet.end());
     return entitySet;
 }
 
 std::vector<entity::CADEntity_CSPtr> Begin::getEntities() const {
     return _entities;
-}
-
-Begin::~Begin() {
-
-}
-
-Base::~Base() {
-
 }
 
 /********************************************************************************************************/
@@ -50,7 +42,7 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
     // Find the start
     std::vector<entity::CADEntity_CSPtr> _start;
 
-    for (auto base : _stack) {
+    for (const auto& base : _stack) {
         //TODO can we get rid of dynamic_cast??
         const lc::operation::Begin* begin = dynamic_cast<const lc::operation::Begin*>(base.get());
 
@@ -73,10 +65,6 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
     return entitySet2;
 }
 
-Loop::~Loop() {
-
-}
-
 /********************************************************************************************************/
 /** Move                                                                                              ***/
 /********************************************************************************************************/
@@ -91,16 +79,12 @@ std::vector<entity::CADEntity_CSPtr>  Move::process(
     const std::vector<Base_SPtr>) {
     std::vector<entity::CADEntity_CSPtr> newQueue;
 
-    for (auto entity : entitySet) {
+    for (const auto& entity : entitySet) {
         auto e = entity->move(_offset);
         newQueue.push_back(e);
     }
 
     return newQueue;
-}
-
-Move::~Move() {
-
 }
 
 /********************************************************************************************************/
@@ -117,17 +101,13 @@ std::vector<entity::CADEntity_CSPtr> Copy::process(
     const std::vector<Base_SPtr>) {
     std::vector<entity::CADEntity_CSPtr> newQueue;
 
-    for (auto entity : entitySet) {
+    for (const auto& entity : entitySet) {
         auto e = entity->copy(_offset);
         workingBuffer.push_back(entity);
         newQueue.push_back(e);
     }
 
     return newQueue;
-}
-
-Copy::~Copy() {
-
 }
 
 /********************************************************************************************************/
@@ -144,16 +124,12 @@ std::vector<entity::CADEntity_CSPtr> Scale::process(
     const std::vector<Base_SPtr>) {
     std::vector<entity::CADEntity_CSPtr> newQueue;
 
-    for (auto entity : entitySet) {
+    for (const auto& entity : entitySet) {
         auto e = entity->scale(_scale_center, _scale_factor);
         newQueue.push_back(e);
     }
 
     return newQueue;
-}
-
-Scale::~Scale() {
-
 }
 
 /********************************************************************************************************/
@@ -170,16 +146,12 @@ std::vector<entity::CADEntity_CSPtr> Rotate::process(
     const std::vector<Base_SPtr>) {
     std::vector<entity::CADEntity_CSPtr> newQueue;
 
-    for (auto entity : entitySet) {
+    for (const auto& entity : entitySet) {
         auto e = entity->rotate(_rotation_center, _rotation_angle);
         newQueue.push_back(e);
     }
 
     return newQueue;
-}
-
-Rotate::~Rotate() {
-
 }
 
 /********************************************************************************************************/
@@ -200,14 +172,10 @@ std::vector<entity::CADEntity_CSPtr> Push::process(
     return newQueue;
 }
 
-Push::~Push() {
-
-}
-
 /********************************************************************************************************/
 /** SelectByLayer                                                                                     ***/
 /********************************************************************************************************/
-SelectByLayer::SelectByLayer(const Layer_CSPtr layer) : Base(), _layer(layer) {
+SelectByLayer::SelectByLayer(const Layer_CSPtr& layer) : Base(), _layer(layer) {
 }
 
 std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
@@ -232,10 +200,6 @@ std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
     return e;
 }
 
-SelectByLayer::~SelectByLayer() {
-
-}
-
 /********************************************************************************************************/
 /** Remove                                                                                            ***/
 /********************************************************************************************************/
@@ -251,8 +215,4 @@ std::vector<entity::CADEntity_CSPtr> Remove::process(
     removals.insert(removals.end(), entitySet.begin(), entitySet.end());
     std::vector<entity::CADEntity_CSPtr> e;
     return e;
-}
-
-Remove::~Remove() {
-
 }

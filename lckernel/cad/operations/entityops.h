@@ -19,10 +19,10 @@ namespace lc {
 
         class Base {
             public:
-                virtual ~Base();
+                virtual ~Base() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document>,
+                    const std::shared_ptr<Document> document,
                     const std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -49,9 +49,9 @@ namespace lc {
         */
         class Loop : public Base {
             public:
-                Loop(const int numTimes);
+                Loop(int numTimes);
 
-                virtual ~Loop();
+                virtual ~Loop() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const Document_SPtr document,
@@ -87,7 +87,7 @@ namespace lc {
             public:
                 Begin();
 
-                virtual ~Begin();
+                virtual ~Begin() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -125,7 +125,7 @@ namespace lc {
             public:
                 Move(const geo::Coordinate& offset);
 
-                virtual ~Move();
+                virtual ~Move() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -161,7 +161,7 @@ namespace lc {
             public:
                 Copy(const geo::Coordinate& offset);
 
-                virtual ~Copy();
+                virtual ~Copy() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -196,9 +196,9 @@ namespace lc {
         */
         class Rotate : public Base {
             public:
-                Rotate(const geo::Coordinate& rotation_center, const double rotation_angle);
+                Rotate(const geo::Coordinate& rotation_center, double rotation_angle);
 
-                virtual ~Rotate();
+                virtual ~Rotate() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -218,7 +218,7 @@ namespace lc {
             public:
                 Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
 
-                virtual ~Scale();
+                virtual ~Scale() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -257,7 +257,7 @@ namespace lc {
             public:
                 Push();
 
-                virtual ~Push();
+                virtual ~Push() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -287,9 +287,9 @@ namespace lc {
         */
         class SelectByLayer : public Base {
             public:
-                SelectByLayer(const Layer_CSPtr layer);
+                SelectByLayer(const Layer_CSPtr& layer);
 
-                virtual ~SelectByLayer();
+                virtual ~SelectByLayer() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
@@ -324,7 +324,7 @@ namespace lc {
             public:
                 Remove();
 
-                virtual ~Remove();
+                virtual ~Remove() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,

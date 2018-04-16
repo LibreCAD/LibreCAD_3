@@ -28,16 +28,16 @@ namespace lc {
                       geo::Coordinate const &middleOfText,
                       TextConst::AttachmentPoint const &attachmentPoint,
                       double textAngle,
-                      double const lineSpacingFactor,
+                      double lineSpacingFactor,
                       TextConst::LineSpacingStyle const &lineSpacingStyle,
                       std::string const &explicitValue,
                       geo::Coordinate const &definitionPoint2,
                       geo::Coordinate const &definitionPoint3,
-                      const double angle,
-                      const double oblique,
-                      const Layer_CSPtr layer,
-                      const MetaInfo_CSPtr metaInfo = nullptr,
-                      const Block_CSPtr block = nullptr
+                      double angle,
+                      double oblique,
+                      Layer_CSPtr layer,
+                      MetaInfo_CSPtr metaInfo = nullptr,
+                      Block_CSPtr block = nullptr
             );
 
 
@@ -50,9 +50,9 @@ namespace lc {
                                           geo::Coordinate const &p2,
                                           geo::Coordinate const &middleOfText,
                                           std::string const &explicitValue,
-                                          const Layer_CSPtr layer,
-                                          const MetaInfo_CSPtr metaInfo = nullptr,
-                                          const Block_CSPtr block = nullptr
+                                          Layer_CSPtr layer,
+                                          MetaInfo_CSPtr metaInfo = nullptr,
+                                          Block_CSPtr block = nullptr
             );
 
         public:

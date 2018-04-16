@@ -102,9 +102,9 @@ namespace lc {
                        double tickness,
                        bool closed,
                        geo::Coordinate const &extrusionDirection,
-                       const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo = nullptr,
-                       const Block_CSPtr block = nullptr
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo = nullptr,
+                       Block_CSPtr block = nullptr
             );
 
             LWPolyline(const LWPolyline_CSPtr other, bool sameID = false);

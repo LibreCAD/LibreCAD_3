@@ -38,11 +38,11 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Coordinate &start,
-                 const geo::Coordinate &end,
-                 const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo = nullptr,
-                 const Block_CSPtr block = nullptr
+            Line(const geo::Coordinate& start,
+                 const geo::Coordinate& end,
+                 Layer_CSPtr layer,
+                 MetaInfo_CSPtr metaInfo = nullptr,
+                 Block_CSPtr block = nullptr
             );
 
             /*!
@@ -54,10 +54,10 @@ namespace lc {
              * \sa LineWidth
              * \sa MetaType
              */
-            Line(const geo::Vector &vector,
-                 const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo = nullptr,
-                 const Block_CSPtr block = nullptr);
+            Line(const geo::Vector& vector,
+                 Layer_CSPtr layer,
+                 MetaInfo_CSPtr metaInfo = nullptr,
+                 Block_CSPtr block = nullptr);
 
             Line(const Line_CSPtr other, bool sameID = false);
 

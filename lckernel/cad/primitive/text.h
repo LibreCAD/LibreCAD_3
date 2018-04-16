@@ -37,9 +37,9 @@ namespace lc {
                  const TextConst::DrawingDirection textgeneration,
                  const TextConst::HAlign halign,
                  const TextConst::VAlign valign,
-                 const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo = nullptr,
-                 const Block_CSPtr block = nullptr
+                 Layer_CSPtr layer,
+                 MetaInfo_CSPtr metaInfo = nullptr,
+                 Block_CSPtr block = nullptr
             );
 
             Text(const Text_CSPtr &other, bool sameID);

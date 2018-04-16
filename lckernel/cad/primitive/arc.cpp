@@ -4,13 +4,13 @@ using namespace lc;
 using namespace entity;
 
 Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW,
-         const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+         Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
-Arc::Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-    CADEntity(layer, metaInfo, block),
+Arc::Arc(const geo::Arc &a, Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     geo::Arc(a) {
 }
 

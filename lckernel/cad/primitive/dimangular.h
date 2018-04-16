@@ -29,16 +29,19 @@ namespace lc {
                        double const lineSpacingFactor,
                        TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
                        geo::Coordinate const &_defLine11, geo::Coordinate const &_defLine12,
-                       geo::Coordinate const &_defLine21, geo::Coordinate const &_defLine22, const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
+                       geo::Coordinate const &_defLine21, geo::Coordinate const &_defLine22,
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo = nullptr,
+                       Block_CSPtr block = nullptr);
 
 
             DimAngular(const DimAngular_CSPtr other, bool sameID = false);
 
             static DimAngular_SPtr dimAuto(geo::Coordinate const &center, geo::Coordinate const &p1,
                                            geo::Coordinate const &p2, std::string const &explicitValue,
-                                           const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr,
-                                           const Block_CSPtr block = nullptr);
+                                           Layer_CSPtr layer,
+                                           MetaInfo_CSPtr metaInfo = nullptr,
+                                           Block_CSPtr block = nullptr);
 
         public:
             /**

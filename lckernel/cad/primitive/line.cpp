@@ -8,18 +8,18 @@ using namespace entity;
 
 Line::Line(const geo::Coordinate& start,
            const geo::Coordinate& end,
-           const Layer_CSPtr layer,
-           const MetaInfo_CSPtr metaInfo,
-           const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+           Layer_CSPtr layer,
+           MetaInfo_CSPtr metaInfo,
+           Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Vector(start, end) {
 }
 
 Line::Line(const geo::Vector& vector,
-           const Layer_CSPtr layer,
-           const MetaInfo_CSPtr metaInfo,
-           const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+           Layer_CSPtr layer,
+           MetaInfo_CSPtr metaInfo,
+           Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Vector(vector) {
 }
 

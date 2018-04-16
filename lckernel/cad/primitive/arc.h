@@ -31,12 +31,12 @@ namespace lc {
              */
             Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
                 bool CCW,
-                const Layer_CSPtr layer,
-                const MetaInfo_CSPtr metaInfo = nullptr,
-                const Block_CSPtr block = nullptr
+                Layer_CSPtr layer,
+                MetaInfo_CSPtr metaInfo = nullptr,
+                Block_CSPtr block = nullptr
             );
 
-            Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block = nullptr);
+            Arc(const geo::Arc &a, Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block = nullptr);
 
             Arc(const Arc_CSPtr other, bool sameID = false);
 

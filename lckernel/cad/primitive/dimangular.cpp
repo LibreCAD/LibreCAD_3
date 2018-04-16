@@ -16,10 +16,10 @@ DimAngular::DimAngular(
     geo::Coordinate const& defLine12,
     geo::Coordinate const& defLine21,
     geo::Coordinate const& defLine22,
-    const Layer_CSPtr layer,
-    const MetaInfo_CSPtr metaInfo,
-    const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+    Layer_CSPtr layer,
+    MetaInfo_CSPtr metaInfo,
+    Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
         _defLine11(defLine11),
         _defLine12(defLine12),
@@ -43,9 +43,9 @@ DimAngular_SPtr DimAngular::dimAuto(
         geo::Coordinate const& p1,
         geo::Coordinate const& p2,
         std::string const& explicitValue,
-        const Layer_CSPtr layer,
-        const MetaInfo_CSPtr metaInfo,
-        const Block_CSPtr block) {
+        Layer_CSPtr layer,
+        MetaInfo_CSPtr metaInfo,
+        Block_CSPtr block) {
     geo::Coordinate middletext(p1.mid(p2));
 
     return std::make_shared<DimAngular>(center,
@@ -59,9 +59,9 @@ DimAngular_SPtr DimAngular::dimAuto(
                                         p1,
                                         center,
                                         p2,
-                                        layer,
-                                        metaInfo,
-                                        block
+                                        std::move(layer),
+                                        std::move(metaInfo),
+                                        std::move(block)
     );
 }
 

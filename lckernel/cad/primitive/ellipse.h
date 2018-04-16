@@ -44,9 +44,9 @@ namespace lc {
                     double startAngle,
                     double endAngle,
                     bool reversed,
-                    const Layer_CSPtr layer,
-                    const MetaInfo_CSPtr metaInfo = nullptr,
-                    const Block_CSPtr block = nullptr
+                    Layer_CSPtr layer,
+                    MetaInfo_CSPtr metaInfo = nullptr,
+                    Block_CSPtr block = nullptr
             );
 
             Ellipse(const Ellipse_CSPtr other, bool sameID = false);
