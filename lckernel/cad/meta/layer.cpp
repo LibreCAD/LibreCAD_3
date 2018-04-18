@@ -5,15 +5,15 @@
 using namespace lc;
 
 Layer::Layer(std::string name,
-             MetaLineWidthByValue lineWidth,
-             Color color,
+             const MetaLineWidthByValue& lineWidth,
+             const Color& color,
              DxfLinePatternByValue_CSPtr linepattern,
              bool frozen) :
         EntityMetaType(),
         DocumentMetaType(),
         _name(std::move(name)),
-        _lineWidth(std::move(lineWidth)),
-        _color(std::move(color)),
+        _lineWidth(lineWidth),
+        _color(color),
         _linepattern(std::move(linepattern)),
         _isFrozen(frozen) {
     assert(!StringHelper::isBlank(_name) && "Name cannot be blank");

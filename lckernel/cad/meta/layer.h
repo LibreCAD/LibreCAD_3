@@ -15,8 +15,8 @@ namespace lc {
 
         public:
             Layer(std::string name = "0",
-                  MetaLineWidthByValue lineWidth = MetaLineWidthByValue(1),
-                  Color color = Color(),
+                  const MetaLineWidthByValue& lineWidth = MetaLineWidthByValue(1),
+                  const Color& color = Color(),
                   DxfLinePatternByValue_CSPtr linepattern = nullptr,
                   bool frozen = false
             );

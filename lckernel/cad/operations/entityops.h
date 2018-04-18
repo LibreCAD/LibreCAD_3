@@ -123,7 +123,7 @@ namespace lc {
         */
         class Move : public Base {
             public:
-                Move(const geo::Coordinate& offset);
+                Move(geo::Coordinate offset);
 
                 virtual ~Move() = default;
 
@@ -159,20 +159,19 @@ namespace lc {
         */
         class Copy : public Base {
             public:
-                Copy(const geo::Coordinate& offset);
+                Copy(geo::Coordinate offset);
 
                 virtual ~Copy() = default;
 
-                virtual std::vector<entity::CADEntity_CSPtr> process(
+                std::vector<entity::CADEntity_CSPtr> process(
                     const std::shared_ptr<Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
-                    const std::vector<Base_SPtr> operationStack);
+                    const std::vector<Base_SPtr> operationStack) override;
 
             private:
-                geo::Coordinate
-                _offset;
+                geo::Coordinate _offset;
         };
         DECLARE_SHORT_SHARED_PTR(Copy)
 
@@ -196,7 +195,7 @@ namespace lc {
         */
         class Rotate : public Base {
             public:
-                Rotate(const geo::Coordinate& rotation_center, double rotation_angle);
+                Rotate(geo::Coordinate rotation_center, double rotation_angle);
 
                 virtual ~Rotate() = default;
 
@@ -208,7 +207,6 @@ namespace lc {
                     const std::vector<Base_SPtr> operationStack);
 
             private:
-
                 geo::Coordinate _rotation_center;
                 double _rotation_angle;
         };
@@ -216,7 +214,7 @@ namespace lc {
 
         class Scale : public Base {
             public:
-                Scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor);
+                Scale(geo::Coordinate scale_center, geo::Coordinate scale_factor);
 
                 virtual ~Scale() = default;
 
@@ -228,8 +226,8 @@ namespace lc {
                     const std::vector<Base_SPtr> operationStack);
 
             private:
-                geo::Coordinate
-                _scale_center, _scale_factor;
+                geo::Coordinate _scale_center;
+                geo::Coordinate _scale_factor;
         };
         DECLARE_SHORT_SHARED_PTR(Scale)
 
@@ -287,7 +285,7 @@ namespace lc {
         */
         class SelectByLayer : public Base {
             public:
-                SelectByLayer(const Layer_CSPtr& layer);
+                SelectByLayer(Layer_CSPtr layer);
 
                 virtual ~SelectByLayer() = default;
 
