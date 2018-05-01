@@ -35,7 +35,7 @@ namespace lc {
                        Block_CSPtr block = nullptr);
 
 
-            DimAngular(const DimAngular_CSPtr other, bool sameID = false);
+            DimAngular(const DimAngular_CSPtr& other, bool sameID = false);
 
             static DimAngular_SPtr dimAuto(geo::Coordinate const &center, geo::Coordinate const &p1,
                                            geo::Coordinate const &p2, std::string const &explicitValue,

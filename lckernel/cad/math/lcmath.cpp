@@ -390,8 +390,8 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverFull(const std
             ce2[1] = ce[2] / ce[0];
             auto&& xRoots = quadraticSolver(ce2);
 
-            for (size_t j0 = 0; j0 < xRoots.size(); j0++) {
-                geo::Coordinate vp(xRoots[j0], root);
+            for (auto xRoot : xRoots) {
+                geo::Coordinate vp(xRoot, root);
 
                 if (simultaneousQuadraticVerify(m, vp)) {
                     ret.push_back(vp);
@@ -507,20 +507,20 @@ bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& 
     double amax0 = std::abs(terms0[0]), amax1 = std::abs(terms0[6]);
     double sum0 = 0., sum1 = 0.;
 
-    for (int i = 0; i < 6; i++) {
-        if (amax0 < std::abs(terms0[i])) {
-            amax0 = std::abs(terms0[i]);
+    for (int index = 0; index < 6; index++) {
+        if (amax0 < std::abs(terms0[index])) {
+            amax0 = std::abs(terms0[index]);
         }
 
-        sum0 += terms0[i];
+        sum0 += terms0[index];
     }
 
-    for (int i = 6; i < 12; i++) {
-        if (amax1 < std::abs(terms0[i])) {
-            amax1 = std::abs(terms0[i]);
+    for (int index = 6; index < 12; index++) {
+        if (amax1 < std::abs(terms0[index])) {
+            amax1 = std::abs(terms0[index]);
         }
 
-        sum1 += terms0[i];
+        sum1 += terms0[index];
     }
 
     const double tols = 2.*sqrt(6.) * sqrt(DBL_EPSILON); //experimental tolerances to verify simultaneous quadratic

@@ -73,7 +73,7 @@ namespace lc {
              * @return CADEntity_CSPtr rotated entity
              */
             virtual CADEntity_CSPtr
-            rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
              * @brief scale, scales the entity

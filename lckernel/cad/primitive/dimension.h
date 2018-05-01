@@ -29,7 +29,7 @@ namespace lc {
              */
 
             Dimension(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint, double const textAngle,
+                      TextConst::AttachmentPoint const &attachmentPoint, double textAngle,
                       double lineSpacingFactor, TextConst::LineSpacingStyle const &lineSpacingStyle,
                       std::string const &explicitValue);
 
@@ -46,7 +46,7 @@ namespace lc {
                       double _angle);
 
 
-            Dimension(Dimension const &other);
+            Dimension(const Dimension& other);
 
         public:
             /**

@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace entity;
 
-Arc::Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle, bool isCCW,
+Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, bool isCCW,
          Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Arc(center, radius, startAngle, endAngle, isCCW) {
@@ -14,9 +14,9 @@ Arc::Arc(const geo::Arc &a, Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CS
     geo::Arc(a) {
 }
 
-Arc::Arc(const Arc_CSPtr other, bool sameID) : CADEntity(other, sameID),
-                                               geo::Arc(other->center(), other->radius(), other->startAngle(),
-                                                        other->endAngle(), other->CCW()) {
+Arc::Arc(const Arc_CSPtr& other, bool sameID) : CADEntity(other, sameID),
+                                                geo::Arc(other->center(), other->radius(), other->startAngle(),
+                                                         other->endAngle(), other->CCW()) {
 }
 
 Arc::Arc(const builder::ArcBuilder& builder) :
@@ -24,47 +24,47 @@ Arc::Arc(const builder::ArcBuilder& builder) :
     geo::Arc(builder.center(), builder.radius(), builder.startAngle(), builder.endAngle(), builder.isCCW()) {
 }
 
-std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
+std::vector<EntityCoordinate> Arc::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain &constrain,
                                               double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
-    if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         // Add center
-        lc::geo::Coordinate coord = center();
-        points.emplace_back(coord, 0);
+        lc::geo::Coordinate c = center();
+        points.emplace_back(c, 0);
         points.emplace_back(startP(), 1);
         points.emplace_back(endP(), 2);
 
         // Add 4 coordinates
         // Top Point
         if (geo::Arc::isAngleBetween(.5 * M_PI)) {
-            coord = center() + lc::geo::Coordinate(0., radius());
-            points.emplace_back(coord, 1);
+            c = center() + lc::geo::Coordinate(0., radius());
+            points.emplace_back(c, 1);
         }
         // Right Point
         if (geo::Arc::isAngleBetween(0)) {
-            coord = center() + lc::geo::Coordinate(radius(), 0.);
-            points.emplace_back(coord, 2);
+            c = center() + lc::geo::Coordinate(radius(), 0.);
+            points.emplace_back(c, 2);
         }
         // Left Point
         if (geo::Arc::isAngleBetween(M_PI)) {
-            coord = center() + lc::geo::Coordinate(-radius(), 0.);
-            points.emplace_back(coord, 3);
+            c = center() + lc::geo::Coordinate(-radius(), 0.);
+            points.emplace_back(c, 3);
         }
         // Bottom Point
         if (geo::Arc::isAngleBetween(-.5 * M_PI)) {
-            coord = center() + lc::geo::Coordinate(0., -radius());
-            points.emplace_back(coord, 4);
+            c = center() + lc::geo::Coordinate(0., -radius());
+            points.emplace_back(c, 4);
         }
     }
 
     // Any where on entity path
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
         geo::Coordinate npoe = nearestPointOnPath(coord);
         points.emplace_back(npoe, -1);
     }
 
     // Any where on entity
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
         geo::Coordinate npoe = nearestPointOnPath(coord);
         const double a = (npoe - center()).angle();
         if (isAngleBetween(a)) {

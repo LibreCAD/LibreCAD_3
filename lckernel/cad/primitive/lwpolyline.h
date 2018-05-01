@@ -83,7 +83,10 @@ namespace lc {
         /**
          * Lightweight polyline
          */
-        class LWPolyline : public std::enable_shared_from_this<LWPolyline>, public CADEntity, public Snapable, public Draggable {
+        class LWPolyline : public std::enable_shared_from_this<LWPolyline>,
+                           public CADEntity,
+                           public Snapable,
+                           public Draggable {
         public:
 
             /**
@@ -141,7 +144,8 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
-            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>> nearestPointOnPath2(const geo::Coordinate &coord) const;
+            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+            nearestPointOnPath2(const geo::Coordinate &coord) const;
 
         private:
             /**
@@ -159,33 +163,33 @@ namespace lc {
 
         public:
             /**
-        * @brief move, moves by an offset
-        * @param geo::Coordinate offset
-        * @return CADEntity_CSPtr moved entity
-        */
+             * @brief move, moves by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr moved entity
+             */
             virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
 
             /**
-        * @brief copy, copies by an offset
-        * @param geo::Coordinate offset
-        * @return CADEntity_CSPtr copied entity
-        */
+             * @brief copy, copies by an offset
+             * @param geo::Coordinate offset
+             * @return CADEntity_CSPtr copied entity
+             */
             virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
 
             /**
-        * @brief rotate, rotate operation
-        * @param geo::Coordinate rotation_center
-        * @param double rotation_angle
-        * @return CADEntity_CSPtr rotated entity
-        */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+             * @brief rotate, rotate operation
+             * @param geo::Coordinate rotation_center
+             * @param double rotation_angle
+             * @return CADEntity_CSPtr rotated entity
+             */
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
-        * @brief scale, scales the entity
-        * @param geo::Coordinate scale_center
-        * @param double scale_factor
-        * @return
-        */
+             * @brief scale, scales the entity
+             * @param geo::Coordinate scale_center
+             * @param double scale_factor
+             * @return
+             */
             virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                           const geo::Coordinate &scale_factor) const override;
 
@@ -195,12 +199,12 @@ namespace lc {
                 return NULL; // TODO: no return statement, not implemented in lwpolyline.cpp
             }
             /**
-        * @brief boundingBox of the entity
-        * @return geo::Area area
-        */
+             * @brief boundingBox of the entity
+             * @return geo::Area area
+             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             /**
              * Return a vector of entities for this polyline

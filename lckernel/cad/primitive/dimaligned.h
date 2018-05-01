@@ -13,7 +13,11 @@
 namespace lc {
     namespace entity {
 
-        class DimAligned : public std::enable_shared_from_this<DimAligned>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
+        class DimAligned : public std::enable_shared_from_this<DimAligned>,
+                           public CADEntity,
+                           public Dimension,
+                           virtual public Visitable,
+                           public Draggable {
         public:
 
 
@@ -33,7 +37,7 @@ namespace lc {
                        Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr, Block_CSPtr block = nullptr);
 
 
-            DimAligned(const DimAligned_CSPtr other, bool sameID = false);
+            DimAligned(const DimAligned_CSPtr& other, bool sameID = false);
 
             static DimAligned_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2,
                                            geo::Coordinate const &middleOfText, std::string const &explicitValue,
@@ -61,7 +65,7 @@ namespace lc {
             * @param double rotation_angle
             * @return CADEntity_CSPtr rotated entity
             */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
             * @brief scale, scales the entity

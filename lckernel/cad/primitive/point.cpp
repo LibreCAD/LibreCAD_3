@@ -4,7 +4,7 @@
 using namespace lc;
 using namespace entity;
 
-Point::Point(const double x, const double y,
+Point::Point(double x, double y,
              Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(x, y) {
@@ -16,7 +16,7 @@ Point::Point(geo::Coordinate const& coord,
         geo::Coordinate(coord) {
 }
 
-Point::Point(const Point_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
+Point::Point(const Point_CSPtr& other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
 }
 
 Point::Point(const builder::PointBuilder& builder) :

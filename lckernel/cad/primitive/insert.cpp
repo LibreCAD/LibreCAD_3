@@ -54,7 +54,7 @@ CADEntity_CSPtr Insert::copy(const geo::Coordinate& offset) const {
     return newEntity;
 }
 
-CADEntity_CSPtr Insert::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Insert::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
     //TODO
     return shared_from_this();
 }
@@ -77,9 +77,9 @@ CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo,
     auto builder = builder::InsertBuilder();
 
     builder.copy(shared_from_this());
-    builder.setLayer(layer);
-    builder.setMetaInfo(metaInfo);
-    builder.setBlock(block);
+    builder.setLayer(std::move(layer));
+    builder.setMetaInfo(std::move(metaInfo));
+    builder.setBlock(std::move(block));
 
     return builder.build();
 }

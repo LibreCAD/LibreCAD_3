@@ -16,7 +16,13 @@ DimDiametric::DimDiametric(geo::Coordinate const& definitionPoint,
                            MetaInfo_CSPtr metaInfo,
                            Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        Dimension(definitionPoint, middleOfText, attachmentPoint, angle, lineSpacingFactor, lineSpacingStyle, explicitValue),
+        Dimension(definitionPoint,
+                  middleOfText,
+                  attachmentPoint,
+                  angle,
+                  lineSpacingFactor,
+                  lineSpacingStyle,
+                  explicitValue),
         _leader(leader),
         _definitionPoint2(definitionPoint2) {
 
@@ -33,12 +39,18 @@ DimDiametric::DimDiametric(geo::Coordinate const& definitionPoint,
                            MetaInfo_CSPtr metaInfo,
                            Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        Dimension(definitionPoint, definitionPoint.mid(definitionPoint2), attachmentPoint, 0., lineSpacingFactor, lineSpacingStyle, explicitValue),
+        Dimension(definitionPoint,
+                  definitionPoint.mid(definitionPoint2),
+                  attachmentPoint,
+                  0.,
+                  lineSpacingFactor,
+                  lineSpacingStyle,
+                  explicitValue),
         _leader(leader),
         _definitionPoint2(definitionPoint2) {
 }
 
-DimDiametric::DimDiametric(const DimDiametric_CSPtr other, bool sameID) :
+DimDiametric::DimDiametric(const DimDiametric_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         Dimension(*other),
         _leader(other->_leader),
@@ -47,31 +59,79 @@ DimDiametric::DimDiametric(const DimDiametric_CSPtr other, bool sameID) :
 }
 
 CADEntity_CSPtr DimDiametric::move(const geo::Coordinate& offset) const {
-    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset, this->_leader, this->layer(), this->metaInfo());
+    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint() + offset,
+                                                          this->middleOfText() + offset,
+                                                          this->attachmentPoint(),
+                                                          this->textAngle(),
+                                                          this->lineSpacingFactor(),
+                                                          this->lineSpacingStyle(),
+                                                          this->explicitValue(),
+                                                          this->_definitionPoint2 + offset,
+                                                          this->_leader,
+                                                          this->layer(),
+                                                          this->metaInfo());
     newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
 CADEntity_CSPtr DimDiametric::copy(const geo::Coordinate& offset) const {
-    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset, this->_leader, this->layer(), this->metaInfo());
+    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint() + offset,
+                                                          this->middleOfText() + offset,
+                                                          this->attachmentPoint(),
+                                                          this->textAngle(),
+                                                          this->lineSpacingFactor(),
+                                                          this->lineSpacingStyle(),
+                                                          this->explicitValue(),
+                                                          this->_definitionPoint2 + offset,
+                                                          this->_leader,
+                                                          this->layer(),
+                                                          this->metaInfo());
     return newDimDiametric;
 }
 
 CADEntity_CSPtr DimDiametric::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint().rotate(rotation_center, rotation_angle),
-                                                          this->middleOfText().rotate(rotation_center, rotation_angle), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.rotate(rotation_center, rotation_angle), this->_leader, this->layer(), this->metaInfo());
+    auto newDimDiametric = std::make_shared<DimDiametric>(
+            this->definitionPoint().rotate(rotation_center, rotation_angle),
+            this->middleOfText().rotate(rotation_center, rotation_angle),
+            this->attachmentPoint(),
+            this->textAngle(),
+            this->lineSpacingFactor(),
+            this->lineSpacingStyle(),
+            this->explicitValue(),
+            this->_definitionPoint2.rotate(rotation_center, rotation_angle),
+            this->_leader,
+            this->layer(),
+            this->metaInfo());
     return newDimDiametric;
 }
 
 CADEntity_CSPtr DimDiametric::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint().scale(scale_center, scale_factor),
-                                                          this->middleOfText().scale(scale_center, scale_factor), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.scale(scale_center, scale_factor), this->_leader, this->layer(), this->metaInfo());
+                                                          this->middleOfText().scale(scale_center, scale_factor),
+                                                          this->attachmentPoint(),
+                                                          this->textAngle(),
+                                                          this->lineSpacingFactor(),
+                                                          this->lineSpacingStyle(),
+                                                          this->explicitValue(),
+                                                          this->_definitionPoint2.scale(scale_center, scale_factor),
+                                                          this->_leader,
+                                                          this->layer(),
+                                                          this->metaInfo());
     return newDimDiametric;
 }
 
 CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
     auto newDimDiametric = std::make_shared<DimDiametric>(this->definitionPoint().mirror(axis1, axis2),
-                                                          this->middleOfText().mirror(axis1, axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.mirror(axis1, axis2), this->_leader, this->layer(), this->metaInfo());
+                                                          this->middleOfText().mirror(axis1, axis2),
+                                                          this->attachmentPoint(),
+                                                          this->textAngle(),
+                                                          this->lineSpacingFactor(),
+                                                          this->lineSpacingStyle(),
+                                                          this->explicitValue(),
+                                                          this->_definitionPoint2.mirror(axis1, axis2),
+                                                          this->_leader,
+                                                          this->layer(),
+                                                          this->metaInfo());
     return newDimDiametric;
 }
 

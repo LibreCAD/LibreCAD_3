@@ -14,8 +14,10 @@
 namespace lc {
     namespace entity {
 
-        class Circle
-                : public std::enable_shared_from_this<Circle>, public CADEntity, public geo::Circle, public Snapable {
+        class Circle : public std::enable_shared_from_this<Circle>,
+                       public CADEntity,
+                       public geo::Circle,
+                       public Snapable {
         friend class builder::CircleBuilder;
 
         public:
@@ -32,7 +34,7 @@ namespace lc {
                    MetaInfo_CSPtr metaInfo = nullptr,
                    Block_CSPtr block = nullptr);
 
-            Circle(const Circle_CSPtr other, bool sameID = false);
+            Circle(const Circle_CSPtr& other, bool sameID = false);
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,

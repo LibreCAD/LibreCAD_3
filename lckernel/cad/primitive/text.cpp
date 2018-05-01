@@ -26,15 +26,16 @@ Text::Text(const geo::Coordinate& insertion_point,
         _halign(halign) {
 }
 
-Text::Text(const Text_CSPtr& other, bool sameID) : CADEntity(other, sameID),
-    _insertion_point(other->_insertion_point),
-    _text_value(other->_text_value),
-    _height(other->_height),
-    _angle(other->_angle),
-    _style(other->_style),
-    _textgeneration(other->_textgeneration),
-    _valign(other->_valign),
-    _halign(other->_halign) {
+Text::Text(const Text_CSPtr& other, bool sameID) :
+        CADEntity(other, sameID),
+        _insertion_point(other->_insertion_point),
+        _text_value(other->_text_value),
+        _height(other->_height),
+        _angle(other->_angle),
+        _style(other->_style),
+        _textgeneration(other->_textgeneration),
+        _valign(other->_valign),
+        _halign(other->_halign) {
 }
 
 CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
@@ -47,7 +48,8 @@ CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
                                           this->_halign,
                                           this->_valign,
                                           layer(),
-                                          metaInfo());
+                                          metaInfo()
+    );
     newText->setID(this->id());
     return newText;
 }
@@ -68,7 +70,7 @@ CADEntity_CSPtr Text::copy(const geo::Coordinate& offset) const {
     return newText;
 }
 
-CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
     auto newText = std::make_shared<Text>(
                        this->_insertion_point.rotate(rotation_center, rotation_angle),
                        this->_text_value,
@@ -133,7 +135,17 @@ std::map<unsigned int, lc::geo::Coordinate> Text::dragPoints() const {
 
 CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-        auto newEntity = std::make_shared<Text>(dragPoints.at(0), text_value(), height(), angle(), style(), textgeneration(), halign(), valign(), layer(), metaInfo());
+        auto newEntity = std::make_shared<Text>(dragPoints.at(0),
+                                                text_value(),
+                                                height(),
+                                                angle(),
+                                                style(),
+                                                textgeneration(),
+                                                halign(),
+                                                valign(),
+                                                layer(),
+                                                metaInfo()
+        );
         newEntity->setID(id());
         return newEntity;
     }

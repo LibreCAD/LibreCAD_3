@@ -63,25 +63,75 @@ DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
 
 
 CADEntity_CSPtr DimLinear::move(const geo::Coordinate& offset) const {
-    auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset,  this->_definitionPoint3 + offset, this->_angle, this->_oblique, this->layer(), this->metaInfo());
+    auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint() + offset,
+                                                    this->middleOfText() + offset,
+                                                    this->attachmentPoint(),
+                                                    this->textAngle(),
+                                                    this->lineSpacingFactor(),
+                                                    this->lineSpacingStyle(),
+                                                    this->explicitValue(),
+                                                    this->_definitionPoint2 + offset,
+                                                    this->_definitionPoint3 + offset,
+                                                    this->_angle,
+                                                    this->_oblique,
+                                                    this->layer(),
+                                                    this->metaInfo()
+    );
     newDimLinear->setID(this->id());
     return newDimLinear;
 }
 
 CADEntity_CSPtr DimLinear::copy(const geo::Coordinate& offset) const {
-    auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset, this->_definitionPoint3 + offset, this->_angle, this->_oblique, this->layer(), this->metaInfo());
+    auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint() + offset,
+                                                    this->middleOfText() + offset,
+                                                    this->attachmentPoint(),
+                                                    this->textAngle(),
+                                                    this->lineSpacingFactor(),
+                                                    this->lineSpacingStyle(),
+                                                    this->explicitValue(),
+                                                    this->_definitionPoint2 + offset,
+                                                    this->_definitionPoint3 + offset,
+                                                    this->_angle,
+                                                    this->_oblique,
+                                                    this->layer(),
+                                                    this->metaInfo()
+    );
     return newDimLinear;
 }
 
-CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
     auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint().rotate(rotation_center, rotation_angle),
-                                                    this->middleOfText().rotate(rotation_center, rotation_angle), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.rotate(rotation_center, rotation_angle), this->_definitionPoint3.rotate(rotation_center, rotation_angle), this->_angle, this->_oblique, this->layer(), this->metaInfo());
+                                                    this->middleOfText().rotate(rotation_center, rotation_angle),
+                                                    this->attachmentPoint(),
+                                                    this->textAngle(),
+                                                    this->lineSpacingFactor(),
+                                                    this->lineSpacingStyle(),
+                                                    this->explicitValue(),
+                                                    this->_definitionPoint2.rotate(rotation_center, rotation_angle),
+                                                    this->_definitionPoint3.rotate(rotation_center, rotation_angle),
+                                                    this->_angle,
+                                                    this->_oblique,
+                                                    this->layer(),
+                                                    this->metaInfo()
+    );
     return newDimLinear;
 }
 
 CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint().scale(scale_center, scale_factor),
-                                                    this->middleOfText().scale(scale_center, scale_factor), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.scale(scale_center, scale_factor), this->_definitionPoint3.scale(scale_center, scale_factor), this->_angle, this->_oblique, this->layer(), this->metaInfo());
+                                                    this->middleOfText().scale(scale_center, scale_factor),
+                                                    this->attachmentPoint(),
+                                                    this->textAngle(),
+                                                    this->lineSpacingFactor(),
+                                                    this->lineSpacingStyle(),
+                                                    this->explicitValue(),
+                                                    this->_definitionPoint2.scale(scale_center, scale_factor),
+                                                    this->_definitionPoint3.scale(scale_center, scale_factor),
+                                                    this->_angle,
+                                                    this->_oblique,
+                                                    this->layer(),
+                                                    this->metaInfo()
+    );
     return newDimLinear;
 }
 

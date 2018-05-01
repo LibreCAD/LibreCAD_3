@@ -11,11 +11,12 @@ Circle::Circle(const geo::Coordinate &center,
                Layer_CSPtr layer,
                MetaInfo_CSPtr metaInfo,
                Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)), geo::Circle(center, radius) {
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+        geo::Circle(center, radius) {
 }
 
 
-Circle::Circle(const Circle_CSPtr other, bool sameID) : CADEntity(other, sameID),
+Circle::Circle(const Circle_CSPtr& other, bool sameID) : CADEntity(other, sameID),
                                                         geo::Circle(other->center(), other->radius()) {
 }
 
@@ -28,7 +29,7 @@ std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, c
                                                  double minDistanceToSnap, int maxNumberOfSnapPoints) const {
 
     std::vector<EntityCoordinate> points;
-    if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         // Add center
         lc::geo::Coordinate coord = center();
         points.emplace_back(coord, 0);
@@ -47,8 +48,8 @@ std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, c
         points.emplace_back(coord, 4);
     }
 
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY ||
-        constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) ||
+        (bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
         geo::Coordinate npoe = nearestPointOnPath(coord);
         points.emplace_back(npoe, -1);
     }

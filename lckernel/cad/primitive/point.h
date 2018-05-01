@@ -36,10 +36,10 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            Point(const double x, const double y,
+            Point(double x, double y,
                   Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr, Block_CSPtr block = nullptr);
 
-            Point(const Point_CSPtr other, bool sameID = false);
+            Point(const Point_CSPtr& other, bool sameID = false);
 
         private:
             Point(const builder::PointBuilder& builder);

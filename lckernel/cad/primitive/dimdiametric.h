@@ -50,7 +50,7 @@ namespace lc {
                          Block_CSPtr block = nullptr
             );
 
-            DimDiametric(const DimDiametric_CSPtr other, bool sameID = false);
+            DimDiametric(const DimDiametric_CSPtr& other, bool sameID = false);
 
         public:
             /**

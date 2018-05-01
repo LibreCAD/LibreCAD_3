@@ -29,7 +29,7 @@ DimAngular::DimAngular(
 }
 
 
-DimAngular::DimAngular(const DimAngular_CSPtr other, bool sameID) :
+DimAngular::DimAngular(const DimAngular_CSPtr& other, bool sameID) :
     CADEntity(other, sameID),
     Dimension(*other),
     _defLine11(other->_defLine11),
