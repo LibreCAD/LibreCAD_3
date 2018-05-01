@@ -53,7 +53,7 @@ namespace lc {
                    MetaInfo_CSPtr metaInfo = nullptr,
                    Block_CSPtr block = nullptr);
 
-            Spline(const Spline_CSPtr other, bool sameID = false);
+            Spline(const Spline_CSPtr& other, bool sameID = false);
 
             std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
                                                      const SimpleSnapConstrain & constrain,

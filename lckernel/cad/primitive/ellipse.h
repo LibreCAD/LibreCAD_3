@@ -24,7 +24,10 @@ namespace lc {
          *
          * \date 2012-04-16
          */
-        class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse, public Snapable {
+        class Ellipse : public std::enable_shared_from_this<Ellipse>,
+                        public CADEntity,
+                        public geo::Ellipse,
+                        public Snapable {
         public:
             /**
              * @brief Create ellipse
@@ -49,7 +52,7 @@ namespace lc {
                     Block_CSPtr block = nullptr
             );
 
-            Ellipse(const Ellipse_CSPtr other, bool sameID = false);
+            Ellipse(const Ellipse_CSPtr& other, bool sameID = false);
 
         public:
             /**

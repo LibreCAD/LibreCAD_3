@@ -29,11 +29,11 @@ namespace lc {
             * @param Layer_CSPtr layer, Layer of the entity
             * @param metatypes metatypes of the cad entity
             */
-            Text(const geo::Coordinate &insertion_point,
-                 const std::string text_value,
-                 const double height,
-                 const double angle,
-                 const std::string style,
+            Text(geo::Coordinate insertion_point,
+                 std::string text_value,
+                 double height,
+                 double angle,
+                 std::string style,
                  const TextConst::DrawingDirection textgeneration,
                  const TextConst::HAlign halign,
                  const TextConst::VAlign valign,

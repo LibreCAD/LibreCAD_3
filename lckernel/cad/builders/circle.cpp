@@ -1,14 +1,6 @@
 #include "circle.h"
 #include <cad/primitive/circle.h>
 
-lc::builder::CircleBuilder::CircleBuilder() {
-
-}
-
-lc::builder::CircleBuilder::~CircleBuilder() {
-
-}
-
 const lc::geo::Coordinate& lc::builder::CircleBuilder::center() const {
     return _center;
 }

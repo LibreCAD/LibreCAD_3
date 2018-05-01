@@ -12,8 +12,7 @@ namespace lc {
         class LayerBuilder {
             public:
                 LayerBuilder();
-
-                virtual ~LayerBuilder();
+                virtual ~LayerBuilder() = default;
 
                 const std::string& name() const;
                 const MetaLineWidthByValue& lineWidth() const;

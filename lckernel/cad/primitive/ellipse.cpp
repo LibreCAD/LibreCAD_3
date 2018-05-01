@@ -19,7 +19,7 @@ Ellipse::Ellipse(const geo::Coordinate &center,
         geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle, reversed) {
 }
 
-Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) :
+Ellipse::Ellipse(const Ellipse_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         geo::Ellipse(other->center(),
                      other->majorP(),
@@ -137,8 +137,9 @@ const geo::Area Ellipse::boundingBox() const {
         }
     };
 
-    for (const auto& point : points)
+    for (const auto& point : points) {
         checkPoint(point);
+    }
 
     return geo::Area(geo::Coordinate(minX, minY),
                      geo::Coordinate(maxX, maxY));
@@ -217,8 +218,9 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
     }
 
     auto checkPoint = [&](geo::Coordinate cord) {
-        if (isAngleBetween(getEllipseAngle(cord)))
+        if (isAngleBetween(getEllipseAngle(cord))) {
             resPoints.push_back(cord);
+        }
     };
 
     checkPoint(c1);

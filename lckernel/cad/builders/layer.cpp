@@ -13,10 +13,6 @@ LayerBuilder::LayerBuilder() :
 
 }
 
-LayerBuilder::~LayerBuilder() {
-
-}
-
 const std::string& LayerBuilder::name() const {
     return _name;
 }

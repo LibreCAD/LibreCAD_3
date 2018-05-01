@@ -23,7 +23,7 @@ Line::Line(const geo::Vector& vector,
         geo::Vector(vector) {
 }
 
-Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID),
+Line::Line(const Line_CSPtr& other, bool sameID) : CADEntity(other, sameID),
                                                   geo::Vector(other->start(), other->end()) {
 }
 

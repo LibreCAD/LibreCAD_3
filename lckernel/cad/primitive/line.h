@@ -63,7 +63,7 @@ namespace lc {
                  MetaInfo_CSPtr metaInfo = nullptr,
                  Block_CSPtr block = nullptr);
 
-            Line(const Line_CSPtr other, bool sameID = false);
+            Line(const Line_CSPtr& other, bool sameID = false);
 
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
                                                              const SimpleSnapConstrain& constrain,

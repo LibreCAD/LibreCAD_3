@@ -10,10 +10,6 @@ LinePatternBuilder::LinePatternBuilder() :
     _description() {
 }
 
-LinePatternBuilder::~LinePatternBuilder() {
-
-}
-
 const std::string& LinePatternBuilder::name() const {
     return _name;
 }

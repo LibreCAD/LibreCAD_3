@@ -8,8 +8,7 @@ namespace lc {
         class InsertBuilder : public CADEntityBuilder {
             public:
                 InsertBuilder();
-
-                virtual ~InsertBuilder();
+                virtual ~InsertBuilder() = default;
 
                 InsertBuilder* copy(entity::Insert_CSPtr insert);
 

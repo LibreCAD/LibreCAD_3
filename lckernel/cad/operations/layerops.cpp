@@ -32,7 +32,7 @@ RemoveLayer::RemoveLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) 
         _layer(std::move(layer)) {
 
     if(_layer->name() == "0") {
-        throw "Layer 0 cannot be removed";
+        throw std::runtime_error("Layer 0 cannot be removed");
     }
 
 }

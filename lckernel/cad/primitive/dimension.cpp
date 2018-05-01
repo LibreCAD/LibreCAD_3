@@ -4,28 +4,28 @@
 using namespace lc;
 using namespace entity;
 
-Dimension::Dimension(geo::Coordinate const& definitionPoint,
-                     geo::Coordinate const& middleOfText,
-                     TextConst::AttachmentPoint const& attachmentPoint,
+Dimension::Dimension(geo::Coordinate definitionPoint,
+                     geo::Coordinate middleOfText,
+                     TextConst::AttachmentPoint attachmentPoint,
                      double textAngle,
                      double lineSpacingFactor,
-                     TextConst::LineSpacingStyle const& lineSpacingStyle,
-                     std::string const& explicitValue) :
-        _definitionPoint(definitionPoint),
-        _middleOfText(middleOfText),
+                     TextConst::LineSpacingStyle lineSpacingStyle,
+                     std::string explicitValue) :
+        _definitionPoint(std::move(definitionPoint)),
+        _middleOfText(std::move(middleOfText)),
         _attachmentPoint(attachmentPoint),
         _textAngle(textAngle),
         _lineSpacingFactor(lineSpacingFactor),
         _lineSpacingStyle(lineSpacingStyle),
-        _explicitValue(explicitValue) {
+        _explicitValue(std::move(explicitValue)) {
 }
 
-Dimension::Dimension(const geo::Coordinate& definitionPoint,
-                     const geo::Coordinate& middleOfText,
-                     const TextConst::AttachmentPoint attachmentPoint,
-                     const double textAngle) :
-        _definitionPoint(definitionPoint),
-        _middleOfText(middleOfText),
+Dimension::Dimension(geo::Coordinate definitionPoint,
+                     geo::Coordinate middleOfText,
+                     TextConst::AttachmentPoint attachmentPoint,
+                     double textAngle) :
+        _definitionPoint(std::move(definitionPoint)),
+        _middleOfText(std::move(middleOfText)),
         _attachmentPoint(attachmentPoint),
         _textAngle(textAngle),
         _lineSpacingFactor(1.),
@@ -33,7 +33,7 @@ Dimension::Dimension(const geo::Coordinate& definitionPoint,
         _explicitValue("<>")  {
 }
 
-Dimension::Dimension(Dimension const& other) :
+Dimension::Dimension(const Dimension& other) :
         _definitionPoint(other.definitionPoint()),
         _middleOfText(other._middleOfText),
         _attachmentPoint(other._attachmentPoint),

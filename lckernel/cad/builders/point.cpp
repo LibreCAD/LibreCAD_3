@@ -4,7 +4,8 @@
 using namespace lc;
 using namespace builder;
 
-PointBuilder::~PointBuilder() {
+PointBuilder::PointBuilder() :
+        _coordinate() {
 
 }
 

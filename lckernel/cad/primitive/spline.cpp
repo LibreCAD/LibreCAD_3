@@ -32,7 +32,7 @@ Spline::Spline(
 	calculateBoundingBox();
 }
 
-Spline::Spline(const Spline_CSPtr other, bool sameID) :
+Spline::Spline(const Spline_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         geo::Spline(
                 other->controlPoints(),
