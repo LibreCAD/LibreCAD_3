@@ -45,7 +45,7 @@ namespace lc {
              */
             Dimension(geo::Coordinate definitionPoint,
                       geo::Coordinate middleOfText,
-                      TextConst::AttachmentPoint attachementPoint,
+                      TextConst::AttachmentPoint attachmentPoint,
                       double textAngle);
 
 

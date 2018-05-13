@@ -10,7 +10,7 @@ namespace lc {
                 InsertBuilder();
                 virtual ~InsertBuilder() = default;
 
-                InsertBuilder* copy(entity::Insert_CSPtr insert);
+                InsertBuilder* copy(const entity::Insert_CSPtr& insert);
 
                 const Block_CSPtr& displayBlock() const;
                 InsertBuilder* setDisplayBlock(const Block_CSPtr& displayBlock);

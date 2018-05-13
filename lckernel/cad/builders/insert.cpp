@@ -8,7 +8,7 @@ InsertBuilder::InsertBuilder() :
         _displayBlock(nullptr) {
 }
 
-InsertBuilder* InsertBuilder::copy(entity::Insert_CSPtr insert) {
+InsertBuilder* InsertBuilder::copy(const entity::Insert_CSPtr& insert) {
     CADEntityBuilder::copy(insert);
 
     _displayBlock = insert->_displayBlock;
@@ -36,7 +36,7 @@ InsertBuilder* InsertBuilder::setDisplayBlock(const Block_CSPtr& displayBlock) {
 
 entity::Insert_CSPtr InsertBuilder::build() {
     if(!checkValues()) {
-        throw "Missing values";
+        throw std::runtime_error("Missing values");
     }
 
     return entity::Insert_CSPtr(new entity::Insert(*this));

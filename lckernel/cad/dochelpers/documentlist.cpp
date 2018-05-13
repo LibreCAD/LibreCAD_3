@@ -2,10 +2,6 @@
 
 using namespace lc;
 
-DocumentList::DocumentList() {
-
-}
-
 void DocumentList::addDocument(lc::Document* document) {
     _documents.insert(document);
     document->newWaitingCustomEntityEvent().connect<DocumentList, &DocumentList::onNewWaitingCustomEntity>(this);

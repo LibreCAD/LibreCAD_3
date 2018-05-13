@@ -1,6 +1,6 @@
 #include "settings.h"
 
-std::unordered_map<std::string, double> Settings::_variable_map = {
+std::unordered_map<std::string, double> Settings::_variable_map = { // NOLINT
     {"LCTOLERANCE", 1.0e-10}
 };
 

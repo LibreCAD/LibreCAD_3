@@ -73,7 +73,7 @@ const geo::Area Insert::boundingBox() const {
     return _boundingBox;
 }
 
-CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
     auto builder = builder::InsertBuilder();
 
     builder.copy(shared_from_this());

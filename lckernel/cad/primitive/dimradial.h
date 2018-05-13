@@ -28,14 +28,14 @@ namespace lc {
              * @param Layer_CSPtr layer
              * @param MetaTypes_CSPtr metaTypes
              */
-            DimRadial(geo::Coordinate const &definitionPoint,
-                      geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint,
+            DimRadial(geo::Coordinate definitionPoint,
+                      geo::Coordinate middleOfText,
+                      TextConst::AttachmentPoint attachmentPoint,
                       double angle,
                       double lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle,
-                      std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2,
+                      TextConst::LineSpacingStyle lineSpacingStyle,
+                      std::string explicitValue,
+                      geo::Coordinate definitionPoint2,
                       double leader,
                       Layer_CSPtr layer,
                       MetaInfo_CSPtr metaInfo = nullptr,
@@ -45,12 +45,12 @@ namespace lc {
             /**
              * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
             */
-            DimRadial(geo::Coordinate const &definitionPoint,
-                      TextConst::AttachmentPoint const &attachmentPoint,
+            DimRadial(const geo::Coordinate& definitionPoint,
+                      TextConst::AttachmentPoint attachmentPoint,
                       double lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle,
-                      std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2,
+                      TextConst::LineSpacingStyle lineSpacingStyle,
+                      std::string explicitValue,
+                      geo::Coordinate definitionPoint2,
                       double leader,
                       Layer_CSPtr layer,
                       MetaInfo_CSPtr metaInfo = nullptr,

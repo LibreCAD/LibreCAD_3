@@ -5,29 +5,29 @@
 using namespace lc;
 using namespace entity;
 
-DimAligned::DimAligned(geo::Coordinate const& definitionPoint,
-                       geo::Coordinate const& middleOfText,
-                       TextConst::AttachmentPoint const& attachmentPoint,
+DimAligned::DimAligned(geo::Coordinate definitionPoint,
+                       geo::Coordinate middleOfText,
+                       TextConst::AttachmentPoint attachmentPoint,
                        double textAngle,
-                       double const lineSpacingFactor,
-                       TextConst::LineSpacingStyle const& lineSpacingStyle,
-                       std::string const& explicitValue,
-                       geo::Coordinate const& definitionPoint2,
-                       geo::Coordinate const& definitionPoint3,
+                       double lineSpacingFactor,
+                       TextConst::LineSpacingStyle lineSpacingStyle,
+                       std::string explicitValue,
+                       geo::Coordinate definitionPoint2,
+                       geo::Coordinate definitionPoint3,
                        Layer_CSPtr layer,
                        MetaInfo_CSPtr metaInfo,
                        Block_CSPtr block):
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-    Dimension(definitionPoint,
+    Dimension(std::move(definitionPoint),
               middleOfText,
               attachmentPoint,
               textAngle,
               lineSpacingFactor,
               lineSpacingStyle,
-              explicitValue
+              std::move(explicitValue)
     ),
-    _definitionPoint2(definitionPoint2),
-    _definitionPoint3(definitionPoint3) {
+    _definitionPoint2(std::move(definitionPoint2)),
+    _definitionPoint3(std::move(definitionPoint3)) {
 
 }
 
@@ -39,10 +39,10 @@ DimAligned::DimAligned(const DimAligned_CSPtr& other, bool sameID) :
         _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
-                                    geo::Coordinate const& p2,
-                                    geo::Coordinate const& middleOfText,
-                                    std::string const& explicitValue,
+DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate p1,
+                                    geo::Coordinate p2,
+                                    geo::Coordinate middleOfText,
+                                    std::string explicitValue,
                                     Layer_CSPtr layer,
                                     MetaInfo_CSPtr metaInfo,
                                     Block_CSPtr block) {
@@ -59,15 +59,15 @@ DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
 
     geo::Coordinate p0 = p2.move(dir, distance);
 
-    return std::make_shared<DimAligned>(p0,
-                                        middleOfText,
+    return std::make_shared<DimAligned>(std::move(p0),
+                                        std::move(middleOfText),
                                         TextConst::AttachmentPoint::Top_center,
                                         0.,
                                         0.,
                                         TextConst::LineSpacingStyle::AtLeast,
-                                        explicitValue,
-                                        p1,
-                                        p2,
+                                        std::move(explicitValue),
+                                        std::move(p1),
+                                        std::move(p2),
                                         std::move(layer),
                                         std::move(metaInfo),
                                         std::move(block)

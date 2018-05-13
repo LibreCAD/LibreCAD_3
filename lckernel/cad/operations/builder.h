@@ -21,8 +21,8 @@ namespace lc {
                  */
                 void append(DocumentOperation_SPtr operation);
 
-                virtual void undo() const override;
-                virtual void redo() const override;
+                void undo() const override;
+                void redo() const override;
 
             protected:
                 virtual void processInternal() override;

@@ -3,31 +3,37 @@
 using namespace lc;
 using namespace entity;
 
-DimLinear::DimLinear(geo::Coordinate const& definitionPoint,
-                     geo::Coordinate const& middleOfText,
-                     TextConst::AttachmentPoint const& attachmentPoint,
+DimLinear::DimLinear(geo::Coordinate definitionPoint,
+                     geo::Coordinate middleOfText,
+                     TextConst::AttachmentPoint attachmentPoint,
                      double textAngle,
                      double lineSpacingFactor,
-                     TextConst::LineSpacingStyle const& lineSpacingStyle,
-                     std::string const& explicitValue,
-                     geo::Coordinate const& definitionPoint2,
-                     geo::Coordinate const& definitionPoint3,
+                     TextConst::LineSpacingStyle lineSpacingStyle,
+                     std::string explicitValue,
+                     geo::Coordinate definitionPoint2,
+                     geo::Coordinate definitionPoint3,
                      double angle,
                      double oblique,
                      Layer_CSPtr layer,
                      MetaInfo_CSPtr metaInfo,
                      Block_CSPtr block) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-    Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
+    Dimension(std::move(definitionPoint),
+              std::move(middleOfText),
+              attachmentPoint,
+              textAngle,
+              lineSpacingFactor,
+              lineSpacingStyle,
+              std::move(explicitValue)),
     _angle(angle),
     _oblique(oblique),
-    _definitionPoint2(definitionPoint2),
-    _definitionPoint3(definitionPoint3) {
+    _definitionPoint2(std::move(definitionPoint2)),
+    _definitionPoint3(std::move(definitionPoint3)) {
 
 }
 
 
-DimLinear::DimLinear(const DimLinear_CSPtr other, bool sameID) :
+DimLinear::DimLinear(const DimLinear_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         Dimension(*other),
         _angle(other->_angle),
@@ -39,7 +45,7 @@ DimLinear::DimLinear(const DimLinear_CSPtr other, bool sameID) :
 DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
                                   geo::Coordinate const& p2,
                                   geo::Coordinate const &middleOfText,
-                                  std::string const& explicitValue,
+                                  std::string explicitValue,
                                   Layer_CSPtr layer,
                                   MetaInfo_CSPtr metaInfo,
                                   Block_CSPtr block) {
@@ -49,7 +55,7 @@ DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
                                        0.,
                                        0.,
                                        TextConst::LineSpacingStyle::AtLeast,
-                                       explicitValue,
+                                       std::move(explicitValue),
                                        p1,
                                        p2,
                                        0.,

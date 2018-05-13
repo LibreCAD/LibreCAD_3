@@ -24,15 +24,15 @@ namespace lc {
              * @param double oblique
              * @param Layer_CSPtr layer
              */
-            DimLinear(geo::Coordinate const &definitionPoint,
-                      geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint,
+            DimLinear(geo::Coordinate definitionPoint,
+                      geo::Coordinate middleOfText,
+                      TextConst::AttachmentPoint attachmentPoint,
                       double textAngle,
                       double lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle,
-                      std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2,
-                      geo::Coordinate const &definitionPoint3,
+                      TextConst::LineSpacingStyle lineSpacingStyle,
+                      std::string explicitValue,
+                      geo::Coordinate definitionPoint2,
+                      geo::Coordinate definitionPoint3,
                       double angle,
                       double oblique,
                       Layer_CSPtr layer,
@@ -41,7 +41,7 @@ namespace lc {
             );
 
 
-            DimLinear(const DimLinear_CSPtr other, bool sameID = false);
+            DimLinear(const DimLinear_CSPtr& other, bool sameID = false);
 
             /**
              * Convenient function
@@ -49,7 +49,7 @@ namespace lc {
             static DimLinear_SPtr dimAuto(geo::Coordinate const &p1,
                                           geo::Coordinate const &p2,
                                           geo::Coordinate const &middleOfText,
-                                          std::string const &explicitValue,
+                                          std::string explicitValue,
                                           Layer_CSPtr layer,
                                           MetaInfo_CSPtr metaInfo = nullptr,
                                           Block_CSPtr block = nullptr

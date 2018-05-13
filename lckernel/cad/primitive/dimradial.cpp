@@ -3,38 +3,38 @@
 using namespace lc;
 using namespace entity;
 
-DimRadial::DimRadial(geo::Coordinate const& definitionPoint,
-                     geo::Coordinate const& middleOfText,
-                     TextConst::AttachmentPoint const& attachmentPoint,
+DimRadial::DimRadial(geo::Coordinate definitionPoint,
+                     geo::Coordinate middleOfText,
+                     TextConst::AttachmentPoint attachmentPoint,
                      double angle,
                      double lineSpacingFactor,
-                     TextConst::LineSpacingStyle const& lineSpacingStyle,
-                     std::string const& explicitValue,
-                     geo::Coordinate const& definitionPoint2,
+                     TextConst::LineSpacingStyle lineSpacingStyle,
+                     std::string explicitValue,
+                     geo::Coordinate definitionPoint2,
                      double leader,
                      Layer_CSPtr layer,
                      MetaInfo_CSPtr metaInfo,
                      Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        Dimension(definitionPoint,
-                  middleOfText,
+        Dimension(std::move(definitionPoint),
+                  std::move(middleOfText),
                   attachmentPoint,
                   angle,
                   lineSpacingFactor,
                   lineSpacingStyle,
-                  explicitValue
+                  std::move(explicitValue)
         ),
         _leader(leader),
-        _definitionPoint2(definitionPoint2) {
+        _definitionPoint2(std::move(definitionPoint2)) {
 
 }
 
-DimRadial::DimRadial(geo::Coordinate const& definitionPoint,
-                     TextConst::AttachmentPoint const& attachmentPoint,
+DimRadial::DimRadial(const geo::Coordinate& definitionPoint,
+                     TextConst::AttachmentPoint attachmentPoint,
                      double lineSpacingFactor,
-                     TextConst::LineSpacingStyle const& lineSpacingStyle,
-                     std::string const& explicitValue,
-                     geo::Coordinate const& definitionPoint2,
+                     TextConst::LineSpacingStyle lineSpacingStyle,
+                     std::string explicitValue,
+                     geo::Coordinate definitionPoint2,
                      double leader,
                      Layer_CSPtr layer,
                      MetaInfo_CSPtr metaInfo,
@@ -46,13 +46,13 @@ DimRadial::DimRadial(geo::Coordinate const& definitionPoint,
                   0.,
                   lineSpacingFactor,
                   lineSpacingStyle,
-                  explicitValue
+                  std::move(explicitValue)
         ),
         _leader(leader),
-        _definitionPoint2(definitionPoint2) {
+        _definitionPoint2(std::move(definitionPoint2)) {
 }
 
-DimRadial::DimRadial(const DimRadial_CSPtr other, bool sameID) :
+DimRadial::DimRadial(const DimRadial_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         Dimension(*other),
         _leader(other->_leader),

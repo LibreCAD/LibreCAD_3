@@ -29,19 +29,28 @@ namespace lc {
             * @param double oblique
             * @param Layer_CSPtr layer
             */
-            DimAligned(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                       TextConst::AttachmentPoint const &attachmentPoint, double textAngle,
+            DimAligned(geo::Coordinate definitionPoint,
+                       geo::Coordinate middleOfText,
+                       TextConst::AttachmentPoint attachmentPoint,
+                       double textAngle,
                        double const lineSpacingFactor,
-                       TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                       geo::Coordinate const &definitionPoint2, geo::Coordinate const &definitionPoint3,
-                       Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr, Block_CSPtr block = nullptr);
+                       TextConst::LineSpacingStyle lineSpacingStyle,
+                       std::string explicitValue,
+                       geo::Coordinate definitionPoint2,
+                       geo::Coordinate definitionPoint3,
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo = nullptr,
+                       Block_CSPtr block = nullptr);
 
 
             DimAligned(const DimAligned_CSPtr& other, bool sameID = false);
 
-            static DimAligned_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2,
-                                           geo::Coordinate const &middleOfText, std::string const &explicitValue,
-                                           Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr,
+            static DimAligned_SPtr dimAuto(geo::Coordinate p1,
+                                           geo::Coordinate p2,
+                                           geo::Coordinate middleOfText,
+                                           std::string explicitValue,
+                                           Layer_CSPtr layer,
+                                           MetaInfo_CSPtr metaInfo = nullptr,
                                            Block_CSPtr block = nullptr);
 
         public:
