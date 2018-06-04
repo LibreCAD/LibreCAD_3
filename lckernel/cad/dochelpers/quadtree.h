@@ -570,7 +570,7 @@ namespace lc {
              */
             bool erase(const E entity) {
                 if (_cadentities.count(entity->id()) == 0) {
-                    // // LOG4CXX_DEBUG(logger, "It's bad that we end up here, normally we should call erase on entoties we know that don't exists. ")
+                    // // LOG4CXX_DEBUG(logger, "It's bad that we end up here, normally we should call erase on entities we know that don't exists. ")
                     return false;
                 }
 
