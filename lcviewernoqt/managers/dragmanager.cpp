@@ -15,19 +15,22 @@ DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> 
 std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 	std::vector<lc::geo::Coordinate> dragPoints;
 
-	auto entities = _docCanvas->selection();
-	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
+    auto entities = _docCanvas->selectedDrawables();
+    if(entities.size() == 0) {
+        auto entitiesInSelection = _docCanvas->document()->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
+        entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+            entities.push_back(_docCanvas->getDrawable(entity));
+        });
 	}
 
-	entities.each<const LCVDrawItem>([&](LCVDrawItem_CSPtr drawable) {
+    for(auto drawable: entities) {
         if(!drawable) {
-            return;
+            continue;
         }
 
         auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
         if(!draggable) {
-            return;
+            continue;
         }
 
         auto entityDragPoints = draggable->dragPoints();
@@ -35,7 +38,7 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
         for(auto dragPoint : entityDragPoints) {
             dragPoints.push_back(dragPoint.second);
         }
-	});
+    };
 
 	return dragPoints;
 }
@@ -129,14 +132,15 @@ void DragManager::onMousePress() {
 	_entityBuilder = std::make_shared<lc::operation::EntityBuilder>(_docCanvas->document());
 	_builder->append(_entityBuilder);
 
-	auto entities = _docCanvas->selection();
-	if(entities.asVector().size() == 0) {
-		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
-	}
+    auto entities = _docCanvas->selectedDrawables();
+    if(entities.size() == 0) {
+        auto entitiesInSelection = _docCanvas->document()->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
+        entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+            entities.push_back(_docCanvas->getDrawable(entity));
+        });
+    }
 
-	auto entitiesNearCursor = entities.asVector();
-
-	for(auto entity : entitiesNearCursor) {
+    for(auto entity : entities) {
 		auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity);
 		if(!drawable) {
             continue;

@@ -20,7 +20,7 @@ namespace LCViewer {
      * For other objects (Cursor, ...) see files in drawables folder
      * LCVDrawItem is a child of CADEntity as it's the only way to store it in EntityContainer
      */
-    class LCVDrawItem : public lc::entity::CADEntity {
+    class LCVDrawItem {
         public:
             LCVDrawItem(lc::entity::CADEntity_CSPtr entity, bool selectable);
 
@@ -42,16 +42,6 @@ namespace LCViewer {
              * @return Entity
              */
             virtual lc::entity::CADEntity_CSPtr entity() const = 0;
-
-            //CADEntity functions
-            lc::entity::CADEntity_CSPtr move(const lc::geo::Coordinate& offset) const override;
-            lc::entity::CADEntity_CSPtr copy(const lc::geo::Coordinate& offset) const override;
-            lc::entity::CADEntity_CSPtr rotate(const lc::geo::Coordinate& rotation_center, const double rotation_angle) const override;
-            lc::entity::CADEntity_CSPtr scale(const lc::geo::Coordinate& scale_center, const lc::geo::Coordinate& scale_factor) const override;
-            lc::entity::CADEntity_CSPtr mirror(const lc::geo::Coordinate& axis1, const lc::geo::Coordinate& axis2) const override;const lc::geo::Area boundingBox() const override;
-            lc::entity::CADEntity_CSPtr
-            modify(lc::Layer_CSPtr layer, const lc::MetaInfo_CSPtr metaInfo, lc::Block_CSPtr block) const override;
-            void dispatch(lc::EntityDispatch& dispatch) const override;
 
         private:
             bool _selectable;
