@@ -22,10 +22,14 @@ EntityBuilder* EntityBuilder::appendOperation(Base_SPtr operation) {
 void EntityBuilder::processInternal() {
     processStack();
 
+    auto ec = document()->entityContainer();
+
     // Build a buffer with all entities we need to remove during a undo cycle
     for (auto entity : _workingBuffer) {
-        if (entity.get() != nullptr) {
-            _entitiesThatWhereUpdated.push_back(entity);
+        auto org = ec.entityByID(entity->id());
+
+        if (org.get() != nullptr) {
+            _entitiesThatWhereUpdated.push_back(org);
         }
     }
 
