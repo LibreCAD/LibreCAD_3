@@ -132,19 +132,15 @@ void DragManager::onMousePress() {
 	_entityBuilder = std::make_shared<lc::operation::EntityBuilder>(_docCanvas->document());
 	_builder->append(_entityBuilder);
 
-    auto entities = _docCanvas->selectedDrawables();
-    if(entities.size() == 0) {
+    std::vector<LCViewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
+    if(selectedDrawables.size() == 0) {
         auto entitiesInSelection = _docCanvas->document()->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
         entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
-            entities.push_back(_docCanvas->getDrawable(entity));
+            selectedDrawables.push_back(_docCanvas->getDrawable(entity));
         });
     }
 
-    for(auto entity : entities) {
-		auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity);
-		if(!drawable) {
-            continue;
-		}
+    for(auto drawable : selectedDrawables) {
 
 		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
 		if(draggable) {
@@ -160,7 +156,7 @@ void DragManager::onMousePress() {
 						unmanagedDraggable->onDragPointClick(_builder, point.first);
 					}
 					else {
-						_entityBuilder->appendEntity(drawable->entity());
+                        _entityBuilder->appendEntity(drawable->entity());
 					}
 
 					break;
