@@ -366,6 +366,7 @@ void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
     _document->entityContainer().optimise();
 }
 
+// This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto entity = event.entity();
 
@@ -377,7 +378,6 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
 
     if (drawable != nullptr) {
         auto drawableEntity = std::dynamic_pointer_cast<LCViewer::LCVDrawItem>(drawable);
-        _document->entityContainer().insert(drawableEntity->entity());
         _entityDrawItem.insert(std::make_pair(drawableEntity->entity(), drawableEntity));
     }
 }
