@@ -161,7 +161,7 @@ namespace LCViewer {
          * Get the current entity container,
          * do not store this as a reference, always call it
          */
-        const lc::EntityContainer<lc::entity::CADEntity_CSPtr>& entityContainer() const;
+        lc::EntityContainer<lc::entity::CADEntity_CSPtr>& entityContainer() const;
 
         /**
          * Return CADEntity as LCVDrawItem

@@ -391,7 +391,7 @@ std::shared_ptr<lc::Document> DocumentCanvas::document() const {
     return _document;
 }
 
-const lc::EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentCanvas::entityContainer() const {
+lc::EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentCanvas::entityContainer() const {
     return _document->entityContainer();
 }
 
