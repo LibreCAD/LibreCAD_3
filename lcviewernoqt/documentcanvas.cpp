@@ -606,7 +606,7 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(lc::entity::CADEntity_CSPtr entity) 
     return nullptr;
 }
 
-std::vector<LCViewer::LCVDrawItem_SPtr> DocumentCanvas::selectedDrawables() {
+std::vector<LCViewer::LCVDrawItem_SPtr>& DocumentCanvas::selectedDrawables() {
     return _selectedDrawables;
 }
 

@@ -139,7 +139,7 @@ namespace LCViewer {
 
         void removeSelection();
 
-        std::vector<LCViewer::LCVDrawItem_SPtr> selectedDrawables();
+        std::vector<LCViewer::LCVDrawItem_SPtr>& selectedDrawables();
         lc::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();
 
         /**
