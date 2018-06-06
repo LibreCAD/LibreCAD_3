@@ -222,8 +222,8 @@ LCViewer::TempEntities_SPtr CadMdiChild::tempEntities() {
     return _tempEntities;
 }
 
-std::vector<lc::entity::CADEntity_SPtr> CadMdiChild::selection() {
-    return viewer()->documentCanvas()->selection().asVector();
+std::vector<lc::entity::CADEntity_CSPtr> CadMdiChild::selection() {
+    return viewer()->documentCanvas()->selectedEntities().asVector();
 }
 
 lc::Layer_CSPtr CadMdiChild::activeLayer() const {

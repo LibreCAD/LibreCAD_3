@@ -99,7 +99,7 @@ class CadMdiChild : public QWidget {
 		 * Return a vector of selected entities.
 		 * This function was added for Lua which can't access EntityContainer functions
 		 */
-		std::vector<lc::entity::CADEntity_SPtr> selection();
+        std::vector<lc::entity::CADEntity_CSPtr> selection();
         void saveFile();
 
         /**

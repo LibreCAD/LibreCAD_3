@@ -150,7 +150,7 @@ StorageManager_SPtr DocumentImpl::storageManager() const {
 }
 
 
-EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entityContainer()  {
+EntityContainer<entity::CADEntity_CSPtr>& DocumentImpl::entityContainer()  {
     //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
 }

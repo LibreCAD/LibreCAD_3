@@ -34,7 +34,7 @@ namespace lc {
 
             EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) override;
 
-            EntityContainer<entity::CADEntity_CSPtr> entityContainer() override;
+            EntityContainer<entity::CADEntity_CSPtr> &entityContainer() override;
 
             std::map<std::string, Layer_CSPtr> allLayers() const override;
 

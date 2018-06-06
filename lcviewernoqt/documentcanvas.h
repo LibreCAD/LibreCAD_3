@@ -139,7 +139,8 @@ namespace LCViewer {
 
         void removeSelection();
 
-        lc::EntityContainer<lc::entity::CADEntity_SPtr> selection();
+        std::vector<LCViewer::LCVDrawItem_SPtr>& selectedDrawables();
+        lc::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();
 
         /**
          *
@@ -160,7 +161,7 @@ namespace LCViewer {
          * Get the current entity container,
          * do not store this as a reference, always call it
          */
-        const lc::EntityContainer<lc::entity::CADEntity_SPtr>& entityContainer() const;
+        lc::EntityContainer<lc::entity::CADEntity_CSPtr>& entityContainer() const;
 
         /**
          * Return CADEntity as LCVDrawItem
@@ -181,6 +182,8 @@ namespace LCViewer {
          */
         void selectPoint(double x, double y);
 
+        LCViewer::LCVDrawItem_SPtr getDrawable(lc::entity::CADEntity_CSPtr entity);
+
     private:
         void on_addEntityEvent(const lc::AddEntityEvent&);
         void on_removeEntityEvent(const lc::RemoveEntityEvent&);
@@ -197,8 +200,8 @@ namespace LCViewer {
         // Original document
         std::shared_ptr<lc::Document> _document;
 
-        // Local entity container
-        lc::EntityContainer<lc::entity::CADEntity_SPtr> _entityContainer;
+        // Map of cad entity to drawitem
+        std::map<lc::entity::CADEntity_CSPtr, LCViewer::LCVDrawItem_SPtr> _entityDrawItem;
 
         Nano::Signal<void(DrawEvent const & event)> _background;
         Nano::Signal<void(DrawEvent const & event)> _foreground;
@@ -221,8 +224,8 @@ namespace LCViewer {
         // Functor to draw a selected area, that's the green or read area...
         std::function<void(LcPainter&, lc::geo::Area, bool)> _selectedAreaPainter;
 
-        lc::EntityContainer<lc::entity::CADEntity_SPtr> _selectedEntities;
-        lc::EntityContainer<lc::entity::CADEntity_SPtr> _newSelection;
+        std::vector<LCViewer::LCVDrawItem_SPtr> _selectedDrawables;
+        std::vector<LCViewer::LCVDrawItem_SPtr> _newSelection;
 
         std::function<void(double*, double*)> _deviceToUser;
     };

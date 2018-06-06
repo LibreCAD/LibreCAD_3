@@ -92,7 +92,7 @@ namespace lc {
              * @brief returns entity Container
              * @return entityContainer<entity::CADEntity_CSPtr>
              */
-            lc::EntityContainer<entity::CADEntity_CSPtr> entityContainer() const override;
+            EntityContainer<entity::CADEntity_CSPtr> &entityContainer() override;
 
             /**
             *  \brief add a document meta type

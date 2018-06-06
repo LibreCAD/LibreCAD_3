@@ -68,7 +68,7 @@ std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
     return data;
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entityContainer() const {
+EntityContainer<entity::CADEntity_CSPtr> & StorageManagerImpl::entityContainer() {
     return _entities;
 }
 

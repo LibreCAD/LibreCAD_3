@@ -27,17 +27,17 @@ TEST(SelectionTest, NormalSelection) {
 	docCanvas->makeSelection(0, 0, 5, 10, true);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(1, docCanvas->selection().asVector().size());
+    EXPECT_EQ(1, docCanvas->selectedDrawables().size());
 
 	unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected()) {
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
 			i++;
 		}
 	});
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, IntersectionSelection) {
@@ -57,17 +57,17 @@ TEST(SelectionTest, IntersectionSelection) {
 	docCanvas->makeSelection(0, 0, 5, 5, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(1, docCanvas->selection().asVector().size());
+    EXPECT_EQ(1, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, AddToSelection) {
@@ -90,17 +90,17 @@ TEST(SelectionTest, AddToSelection) {
 	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(2, docCanvas->selection().asVector().size());
+    EXPECT_EQ(2, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, Reselect) {
@@ -123,17 +123,17 @@ TEST(SelectionTest, Reselect) {
 	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(1, docCanvas->selection().asVector().size());
+    EXPECT_EQ(1, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, ClearSelection) {
@@ -156,17 +156,17 @@ TEST(SelectionTest, ClearSelection) {
 	docCanvas->makeSelection(9, 0, 1, 1, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(2, docCanvas->selection().asVector().size());
+    EXPECT_EQ(2, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, Deselect) {
@@ -187,17 +187,17 @@ TEST(SelectionTest, Deselect) {
 	docCanvas->makeSelection(-1, -1, 0, 0, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(0, docCanvas->selection().asVector().size());
+    EXPECT_EQ(0, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
 
 TEST(SelectionTest, DeselectAddTo) {
@@ -221,15 +221,15 @@ TEST(SelectionTest, DeselectAddTo) {
 	docCanvas->makeSelection(11, 0, 0, 0, false);
 	docCanvas->closeSelection();
 
-	EXPECT_EQ(1, docCanvas->selection().asVector().size());
+    EXPECT_EQ(1, docCanvas->selectedDrawables().size());
 
-	unsigned int i = 0;
+    unsigned int i = 0;
 
-	docCanvas->entityContainer().each<LCViewer::LCVDrawItem>([&](LCViewer::LCVDrawItem_CSPtr di) {
-		if(di->selected() == true) {
-			i++;
-		}
-	});
+    docCanvas->entityContainer().each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr di) {
+        if(docCanvas->getDrawable(di)->selected()) {
+            i++;
+        }
+    });
 
-	EXPECT_TRUE(i == docCanvas->selection().asVector().size());
+    EXPECT_TRUE(i == docCanvas->selectedDrawables().size());
 }
