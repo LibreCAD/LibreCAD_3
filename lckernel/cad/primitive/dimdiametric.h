@@ -97,7 +97,7 @@ namespace lc {
 
             double leader() const;
 
-            geo::Coordinate definitionPoint2() const;  // Where definitionPoint is a edge, definitionPoint2 specifies the opposite ege. The mid point would be the center point.
+            geo::Coordinate definitionPoint2() const;  // Where definitionPoint is an edge, definitionPoint2 specifies the opposite edge. The mid point would be the center point.
 
         protected:
             const double _leader;
