@@ -76,8 +76,6 @@ void CliCommand::onReturnPressed() {
         }
         else if(hasMatch) {
             varFind = text.split("=");
-            Settings::inst = Settings::instance();
-            std::unordered_map<std::string, double>::iterator it1;
 
             if(checkParam(varFind[0])) {
                 write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));

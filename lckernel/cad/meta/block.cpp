@@ -1,8 +1,8 @@
 #include "block.h"
 
 lc::Block::Block(std::string name, lc::geo::Coordinate base) :
-        _name(name),
-        _base(base) {
+        _name(std::move(name)),
+        _base(std::move(base)) {
 }
 
 const std::string lc::Block::id() const {

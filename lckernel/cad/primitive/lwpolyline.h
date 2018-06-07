@@ -18,16 +18,19 @@ namespace lc {
         */
         class LWVertex2D {
         public:
-            LWVertex2D(geo::Coordinate const location, double const bulge = 0., double const startWidth = 0.,
-                       double const endWidth = 0.)
-                    : _location(location), _startWidth(startWidth), _endWidth(endWidth), _bulge(bulge) {
+            LWVertex2D(geo::Coordinate location, double bulge = 0., double startWidth = 0., double endWidth = 0.) :
+                _location(std::move(location)),
+                _startWidth(startWidth),
+                _endWidth(endWidth),
+                _bulge(bulge) {
+
             }
 
-            LWVertex2D(LWVertex2D const &other)
-                    : _location(other._location),
-                      _startWidth(other._startWidth),
-                      _endWidth(other._endWidth),
-                      _bulge(other._bulge) {
+            LWVertex2D(const LWVertex2D& other) :
+                    _location(other._location),
+                    _startWidth(other._startWidth),
+                    _endWidth(other._endWidth),
+                    _bulge(other._bulge) {
             }
 
             geo::Coordinate const location() const {
@@ -38,7 +41,7 @@ namespace lc {
                 return LWVertex2D(_location + offset);
             }
 
-            LWVertex2D const rotate(const geo::Coordinate &rotation_center, double rotation_angle) {
+            LWVertex2D const rotate(const geo::Coordinate& rotation_center, double rotation_angle) {
                 return LWVertex2D(_location.rotate(rotation_center, rotation_angle));
             }
 
@@ -47,8 +50,11 @@ namespace lc {
         */
             LWVertex2D const scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) {
                 if (scale_factor.x() == scale_factor.y()) {
-                    return LWVertex2D(_location.scale(scale_center, scale_factor), _bulge * scale_factor.x(),
-                                      _startWidth * scale_factor.x(), _endWidth * scale_factor.x());
+                    return LWVertex2D(_location.scale(scale_center, scale_factor),
+                                      _bulge * scale_factor.x(),
+                                      _startWidth * scale_factor.x(),
+                                      _endWidth * scale_factor.x()
+                    );
                 } else {
                     throw;
                 }
@@ -93,24 +99,24 @@ namespace lc {
              * LWPolyline Constructor
              * @param width of the vertex on each entity
              * @param elevation of the polyline
-             * @param tickness of the polyline
+             * @param thickness of the polyline
              * @param extrusionDirection of the polyline
              * @param vertex entries of the polyline
              * @param layer
              * @param metaInfo
              */
-            LWPolyline(const std::vector<LWVertex2D> &vertex,
+            LWPolyline(std::vector<LWVertex2D> vertex,
                        double width,
                        double elevation,
-                       double tickness,
+                       double thickness,
                        bool closed,
-                       geo::Coordinate const &extrusionDirection,
+                       geo::Coordinate extrusionDirection,
                        Layer_CSPtr layer,
                        MetaInfo_CSPtr metaInfo = nullptr,
                        Block_CSPtr block = nullptr
             );
 
-            LWPolyline(const LWPolyline_CSPtr other, bool sameID = false);
+            LWPolyline(LWPolyline_CSPtr other, bool sameID = false);
 
 
             double width() const {

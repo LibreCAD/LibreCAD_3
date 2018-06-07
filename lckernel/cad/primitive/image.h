@@ -20,12 +20,15 @@ namespace lc {
          * \author R. van Twisk
          * \date 2016-04-16
          */
-        class Image : public std::enable_shared_from_this<Image>, public CADEntity, public Snapable, virtual public Visitable  {
+        class Image : public std::enable_shared_from_this<Image>,
+                      public CADEntity,
+                      public Snapable,
+                      virtual public Visitable  {
             public:
-                Image(const std::string &name,
-                      const geo::Coordinate &base,
-                      const geo::Coordinate &uv,
-                      const geo::Coordinate &vv,
+                Image(std::string name,
+                      geo::Coordinate base,
+                      geo::Coordinate uv,
+                      geo::Coordinate vv,
                       double width,
                       double height,
                       double brightness,
@@ -43,8 +46,10 @@ namespace lc {
                  */
                 Image(const Image_CSPtr& other, bool sameID = false);
 
-                std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain,  double minDistanceToSnap,
-                                                                 int maxNumberOfSnapPoints) const override;
+                std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
+                                                         const SimpleSnapConstrain& constrain,
+                                                         double minDistanceToSnap,
+                                                         int maxNumberOfSnapPoints) const override;
 
                 geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
 
@@ -130,7 +135,9 @@ namespace lc {
                     return _fade;
                 }
 
-                void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+                void accept(GeoEntityVisitor &v) const override {
+                    v.visit(*this);
+                }
 
                 void dispatch(EntityDispatch &ed) const override {
                     ed.visit(shared_from_this());

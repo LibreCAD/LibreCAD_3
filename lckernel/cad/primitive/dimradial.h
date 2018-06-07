@@ -18,7 +18,11 @@ namespace lc {
         * DefinitionPoint2 holds the circle/arc edge
         * CenterText holds' the location of the text
         */
-        class DimRadial : public std::enable_shared_from_this<DimRadial>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
+        class DimRadial : public std::enable_shared_from_this<DimRadial>,
+                          public CADEntity,
+                          public Dimension,
+                          virtual public Visitable,
+                          public Draggable {
         public:
 
             /**
@@ -57,7 +61,7 @@ namespace lc {
                       Block_CSPtr block = nullptr
             );
 
-            DimRadial(const DimRadial_CSPtr other, bool sameID = false);
+            DimRadial(const DimRadial_CSPtr& other, bool sameID = false);
 
         public:
             /**
