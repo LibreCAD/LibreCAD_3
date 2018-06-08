@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace entity;
 
-Insert::Insert(Insert_CSPtr other, bool sameID) :
+Insert::Insert(const Insert_CSPtr& other, bool sameID) :
     CADEntity(other, sameID),
     _document(other->_document),
     _position(other->_position),
@@ -114,7 +114,7 @@ std::vector<lc::EntityCoordinate> entity::Insert::snapPoints(const geo::Coordina
                                                              int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
-    if (simpleSnapConstrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+    if ((bool) (simpleSnapConstrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         points.emplace_back(_position, 0);
     }
 

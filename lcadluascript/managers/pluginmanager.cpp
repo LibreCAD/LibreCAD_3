@@ -14,8 +14,8 @@ void lc::PluginManager::loadPlugins() {
     DIR* dir;
     struct dirent* ent;
 
-    if((dir = opendir(path)) != NULL) {
-        while((ent = readdir(dir)) != NULL) {
+    if((dir = opendir(path)) != nullptr) {
+        while((ent = readdir(dir)) != nullptr) {
             if(strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
                 continue;
             }
@@ -32,9 +32,9 @@ void lc::PluginManager::loadPlugins() {
 void lc::PluginManager::loadPlugin(const char* file) {
     auto state = LuaIntf::LuaState(_L);
     LuaIntf::Lua::setGlobal(state, "LC_interface", _interface);
-    int s = state.doFile(file);
+    bool s = state.doFile(file);
 
-    if (s != 0) {
+    if (s) {
         std::cout << lua_tostring(_L, -1) << std::endl;
         lua_pop(state, 1);
     }

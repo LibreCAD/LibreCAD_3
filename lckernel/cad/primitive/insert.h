@@ -13,7 +13,7 @@ namespace lc {
             friend class builder::InsertBuilder;
 
             public:
-                Insert(Insert_CSPtr other, bool sameID = false);
+                Insert(const Insert_CSPtr& other, bool sameID = false);
                 ~Insert();
 
                 const Block_CSPtr& displayBlock() const;
@@ -39,10 +39,12 @@ namespace lc {
                 std::map<unsigned int, geo::Coordinate> dragPoints() const override;
                 CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 
-                virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain& simpleSnapConstrain,
-                           double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
+                std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord,
+                                                         const SimpleSnapConstrain& simpleSnapConstrain,
+                                                         double minDistanceToSnap,
+                                                         int maxNumberOfSnapPoints) const override;
 
-                virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
+                geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
 
             protected:
                 Insert(const builder::InsertBuilder& builder);

@@ -13,7 +13,7 @@ static const luaL_Reg loadedlibs[] = {
         {LUA_TABLIBNAME, luaopen_table},
         {LUA_STRLIBNAME, luaopen_string},
         {LUA_MATHLIBNAME, luaopen_math},
-        {NULL, NULL}
+        {nullptr, nullptr}
 };
 
 LCLua::LCLua(lua_State* L) :
@@ -30,7 +30,7 @@ LCLua::LCLua(lua_State* L) :
 void LCLua::addLuaLibs() {
     const luaL_Reg *lib;
 
-    for (lib = loadedlibs; lib->func; lib++) {
+    for (lib = loadedlibs; lib->func != nullptr; lib++) {
         luaL_requiref(_L, lib->name, lib->func, 1);
         lua_pop(_L, 1);
     }
