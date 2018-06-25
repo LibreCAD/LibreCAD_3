@@ -11,7 +11,7 @@ namespace lc {
     namespace builder {
         class CustomEntityBuilder : public InsertBuilder {
             public:
-                CustomEntityBuilder();
+                CustomEntityBuilder() = default;
 
                 void setSnapFunction(LuaIntf::LuaRef snapFunction);
                 const LuaIntf::LuaRef& snapFunction() const;
