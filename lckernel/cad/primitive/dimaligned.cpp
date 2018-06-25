@@ -19,7 +19,7 @@ DimAligned::DimAligned(geo::Coordinate definitionPoint,
                        Block_CSPtr block):
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     Dimension(std::move(definitionPoint),
-              middleOfText,
+              std::move(middleOfText),
               attachmentPoint,
               textAngle,
               lineSpacingFactor,

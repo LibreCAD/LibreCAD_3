@@ -116,7 +116,7 @@ namespace lc {
                        Block_CSPtr block = nullptr
             );
 
-            LWPolyline(LWPolyline_CSPtr other, bool sameID = false);
+            LWPolyline(const LWPolyline_CSPtr& other, bool sameID = false);
 
 
             double width() const {

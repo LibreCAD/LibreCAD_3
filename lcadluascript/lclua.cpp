@@ -59,7 +59,7 @@ void LCLua::addLuaLibs() {
     }
 }
 
-void LCLua::setDocument(lc::Document_SPtr document) {
+void LCLua::setDocument(const lc::Document_SPtr& document) {
     LuaIntf::Lua::setGlobal(_L, "document", document);
 }
 
@@ -67,7 +67,7 @@ std::string LCLua::runString(const char* code) {
     std::string out;
 
     auto s = luaL_dostring(_L, code);
-    if (s != 0) {
+    if (s) {
         out.append(lua_tostring(_L, -1));
         lua_pop(_L, 1);
     }

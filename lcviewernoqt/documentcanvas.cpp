@@ -63,7 +63,8 @@ DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document, std::func
 
         if (occupies) {
             painter.source_rgba(.2, .2, 1.0, .6);
-        } else {
+        } 
+        else {
             painter.source_rgba(.2, 1.0, .2, .5);
         }
 
@@ -73,7 +74,8 @@ DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document, std::func
 
         if (occupies) {
             painter.source_rgba(.2, .2, 1., 0.9);
-        } else {
+        } 
+        else {
             painter.source_rgba(.2, 1.0, .2, 0.8);
         }
 

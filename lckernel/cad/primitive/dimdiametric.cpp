@@ -45,9 +45,9 @@ DimDiametric::DimDiametric(const geo::Coordinate& definitionPoint,
                   0.,
                   lineSpacingFactor,
                   lineSpacingStyle,
-                  explicitValue),
+                  std::move(explicitValue)),
         _leader(leader),
-        _definitionPoint2(definitionPoint2) {
+        _definitionPoint2(std::move(definitionPoint2)) {
 }
 
 DimDiametric::DimDiametric(const DimDiametric_CSPtr& other, bool sameID) :

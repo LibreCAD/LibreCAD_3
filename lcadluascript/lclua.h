@@ -27,7 +27,7 @@ namespace lc {
              */
             void addLuaLibs();
             void importLCKernel();
-            void setDocument(lc::Document_SPtr document);
+            void setDocument(const lc::Document_SPtr& document);
             std::string runString(const char* code);
 
             void setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*));

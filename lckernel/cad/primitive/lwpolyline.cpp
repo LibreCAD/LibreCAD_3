@@ -33,7 +33,7 @@ LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
 
 }
 
-LWPolyline::LWPolyline(LWPolyline_CSPtr other, bool sameID) :
+LWPolyline::LWPolyline(const LWPolyline_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         _vertex(other->_vertex),
         _width(other->_width),
