@@ -5,7 +5,7 @@
 
 using namespace LCViewer;
 
-LCVText::LCVText(const lc::entity::Text_CSPtr text) :
+LCVText::LCVText(const lc::entity::Text_CSPtr& text) :
         LCVDrawItem(text, true),
         _text(text) {
 }

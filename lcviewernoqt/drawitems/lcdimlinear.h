@@ -10,7 +10,7 @@ namespace LCViewer {
 
     class LCDimLinear : public LCVDrawItem, public LCDimension {
         public:
-            LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear);
+            LCDimLinear(const lc::entity::DimLinear_CSPtr& dimLinear);
 
             /**
             * @brief draw, Draws the DimLinear

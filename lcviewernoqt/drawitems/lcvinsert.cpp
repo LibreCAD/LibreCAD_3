@@ -2,7 +2,7 @@
 
 using namespace LCViewer;
 
-LCVInsert::LCVInsert(lc::entity::Insert_CSPtr insert) :
+LCVInsert::LCVInsert(lc::entity::Insert_CSPtr& insert) :
         LCVDrawItem(insert, true),
         _insert(insert) {
 

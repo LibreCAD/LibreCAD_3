@@ -22,7 +22,7 @@ namespace LCViewer {
      */
     class LCVDrawItem : public lc::entity::CADEntity {
         public:
-            LCVDrawItem(lc::entity::CADEntity_CSPtr entity, bool selectable);
+            LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable);
 
             /**
             * Draw function to draw the final object on a canvas

@@ -28,7 +28,7 @@ using namespace lc;
 
 
 void LCLua::importLCKernel() {
-    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&);
+    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&); //Clang bug fix
     LuaBinding(_L)
         .beginClass<Color>("Color")
             .addConstructor(LUA_ARGS(

@@ -10,7 +10,7 @@ namespace LCViewer {
 
     class LCDimRadial  : public LCVDrawItem, public LCDimension {
         public:
-            LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial);
+            LCDimRadial(const lc::entity::DimRadial_CSPtr& dimRadial);
 
             /**
             * @brief draw, Draws the DimRadial

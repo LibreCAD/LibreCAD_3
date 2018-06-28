@@ -6,7 +6,7 @@
 namespace LCViewer {
     class LCLWPolyline : public LCVDrawItem {
         public:
-            LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline);
+            LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline);
 
             /**
              * @brief draw, Draws the polyline

@@ -10,7 +10,7 @@ namespace LCViewer {
 
         class LCDimAligned : public LCVDrawItem, public LCDimension {
             public:
-                LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned);
+                LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned);
 
                 /**
                 * @brief draw, Draws the LCDimAligned

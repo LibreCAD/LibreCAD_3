@@ -9,7 +9,7 @@ namespace LCViewer {
 
     class LCVPoint : public LCVDrawItem  {
         public:
-            LCVPoint(const lc::entity::Point_CSPtr coordinate);
+            LCVPoint(const lc::entity::Point_CSPtr& coordinate);
             /**
              * @brief draw, Draws the point
              * @param LcPainter painter, surface to be painted

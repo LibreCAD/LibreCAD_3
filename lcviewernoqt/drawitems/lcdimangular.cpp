@@ -7,7 +7,7 @@
 
 using namespace LCViewer;
 
-LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) :
+LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular) :
         LCVDrawItem(dimAngular, true),
         _dimAngular(dimAngular) {
 }

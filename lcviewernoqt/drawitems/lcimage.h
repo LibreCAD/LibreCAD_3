@@ -9,7 +9,7 @@
 namespace LCViewer {
     class LCImage : public LCVDrawItem {
         public:
-            LCImage(const lc::entity::Image_CSPtr circle);
+            LCImage(const lc::entity::Image_CSPtr& circle);
 
             /**
              * @brief draw, Draw the Arc

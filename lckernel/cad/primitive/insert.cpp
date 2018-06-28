@@ -27,7 +27,7 @@ Insert::Insert(const builder::InsertBuilder& builder) :
     _document->removeEntityEvent().connect<Insert, &Insert::on_removeEntityEvent>(this);
 }
 
-Insert::Insert(const Insert_CSPtr&& other) {
+Insert::Insert(Insert_CSPtr&& other) {
     _document = std::move(other->_document);
     _position = std::move(other->_position);
     _displayBlock = std::move(other->_displayBlock);

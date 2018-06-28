@@ -9,7 +9,7 @@ namespace LCViewer {
 
     class LCVText : public LCVDrawItem {
         public:
-            LCVText(const lc::entity::Text_CSPtr text);
+            LCVText(const lc::entity::Text_CSPtr& text);
             /**
              * @brief draw, Drawing the text
              * @param LcPainter painter, surface to be painted

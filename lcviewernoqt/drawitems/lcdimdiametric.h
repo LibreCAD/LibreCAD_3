@@ -10,7 +10,7 @@ namespace LCViewer {
 
     class LCDimDiametric : public LCVDrawItem, public LCDimension {
         public:
-            LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric);
+            LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric);
 
             /**
             * @brief draw, Draws the DimDiametric

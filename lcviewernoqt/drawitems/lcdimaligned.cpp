@@ -6,7 +6,7 @@
 
 using namespace LCViewer;
 
-LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned) :
+LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned) :
         LCVDrawItem(dimAligned, true),
         _dimAligned(dimAligned) {
 }

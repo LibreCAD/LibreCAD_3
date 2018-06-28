@@ -10,7 +10,7 @@ namespace LCViewer {
 
         class LCDimAngular : public LCVDrawItem, public LCDimension {
             public:
-                LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular);
+                LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular);
 
                 /**
                 * @brief draw, Draws the DimAngular

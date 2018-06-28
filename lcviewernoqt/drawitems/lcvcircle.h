@@ -9,7 +9,7 @@ namespace LCViewer {
 
     class LCVCircle  : public LCVDrawItem {
         public:
-            LCVCircle(const lc::entity::Circle_CSPtr circle);
+            LCVCircle(const lc::entity::Circle_CSPtr& circle);
 
             /**
              * @brief draw, Draws the circle

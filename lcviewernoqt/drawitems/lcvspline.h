@@ -9,7 +9,7 @@ namespace LCViewer {
 
     class LCVSpline : public LCVDrawItem {
         public:
-            LCVSpline(const lc::entity::Spline_CSPtr Coordinate);
+            LCVSpline(const lc::entity::Spline_CSPtr& spline);
 
             /**
              * @brief draw, Draws the point

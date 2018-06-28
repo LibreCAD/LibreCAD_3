@@ -20,7 +20,7 @@ class Grid : public lc::Snapable {
          * convUnit unit to allow additional unit systems
          */
         Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines=12, double convUnit=1.);
-        virtual ~Grid();
+        virtual ~Grid() = default;
 
         virtual void draw(DrawEvent const & event) const;
 

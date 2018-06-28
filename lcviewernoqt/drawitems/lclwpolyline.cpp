@@ -4,7 +4,7 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
-LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr lwpolyline) :
+LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline) :
         LCVDrawItem(lwpolyline, true),
         _polyLine(lwpolyline) {
 

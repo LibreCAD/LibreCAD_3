@@ -13,7 +13,7 @@ namespace LCViewer {
              * @brief LCVEllipse
              * @param Ellipse_CSPtr ellipse
              */
-            LCVEllipse(const lc::entity::Ellipse_CSPtr ellipse);
+            LCVEllipse(const lc::entity::Ellipse_CSPtr& ellipse);
 
             /**
              * @brief draw, Drawing the ellipse

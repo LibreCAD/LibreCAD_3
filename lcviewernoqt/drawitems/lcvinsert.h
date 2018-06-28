@@ -10,7 +10,7 @@
 namespace LCViewer {
     class LCVInsert : public LCVDrawItem {
         public:
-            LCVInsert(lc::entity::Insert_CSPtr insert);
+            LCVInsert(lc::entity::Insert_CSPtr& insert);
             virtual ~LCVInsert();
 
             virtual void selected(bool selected) override;

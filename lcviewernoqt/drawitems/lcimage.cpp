@@ -5,7 +5,7 @@
 
 using namespace LCViewer;
 
-LCImage::LCImage(const lc::entity::Image_CSPtr image) : 
+LCImage::LCImage(const lc::entity::Image_CSPtr& image) :
         LCVDrawItem(image, true),
         _image(image) {
 }
