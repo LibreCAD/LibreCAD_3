@@ -14,8 +14,8 @@ LuaCustomEntity::LuaCustomEntity(const lc::builder::CustomEntityBuilder& builder
         _dragPointRelease(builder.dragPointsReleasedFunction()) {
 }
 
-LuaCustomEntity::LuaCustomEntity(Insert_CSPtr insert, LuaCustomEntity_CSPtr customEntity, bool sameID) :
-    CustomEntity(insert, sameID),
+LuaCustomEntity::LuaCustomEntity(Insert_CSPtr insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID) :
+    CustomEntity(std::move(insert), sameID),
     _snapPoints(customEntity->_snapPoints),
     _nearestPoint(customEntity->_nearestPoint),
     _dragPoints(customEntity->_dragPoints),
@@ -41,7 +41,7 @@ geo::Coordinate LuaCustomEntity::nearestPointOnPath(const geo::Coordinate& coord
     return nearestPointDupl.call<geo::Coordinate>(shared_from_this(), coord);
 }
 
-CADEntity_CSPtr LuaCustomEntity::modifyInsert(CADEntity_CSPtr insert) const {
+CADEntity_CSPtr LuaCustomEntity::modifyInsert(const CADEntity_CSPtr& insert) const {
     auto i = std::dynamic_pointer_cast<const Insert>(insert);
 
     if(!i) {

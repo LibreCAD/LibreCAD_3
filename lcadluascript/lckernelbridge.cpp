@@ -28,6 +28,7 @@ using namespace lc;
 
 
 void LCLua::importLCKernel() {
+    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&);
     LuaBinding(_L)
         .beginClass<Color>("Color")
             .addConstructor(LUA_ARGS(
@@ -554,7 +555,7 @@ void LCLua::importLCKernel() {
 
         .beginClass<builder::CADEntityBuilder>("CADEntityBuilder")
             .addFunction("layer", &builder::CADEntityBuilder::layer)
-            .addFunction("setLayer", &builder::CADEntityBuilder::setLayer)
+            .addFunction<CADEntityBuilder_setLayer>("setLayer", &builder::CADEntityBuilder::setLayer)
             .addFunction("metaInfo", &builder::CADEntityBuilder::metaInfo)
             .addFunction("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
             .addFunction("block", &builder::CADEntityBuilder::block)
