@@ -14,6 +14,7 @@ namespace lc {
 
             public:
                 Insert(const Insert_CSPtr& other, bool sameID = false);
+                Insert(const Insert_CSPtr&& other);
                 ~Insert();
 
                 const Block_CSPtr& displayBlock() const;
