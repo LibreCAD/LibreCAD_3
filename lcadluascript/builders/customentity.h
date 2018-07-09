@@ -23,7 +23,7 @@ namespace lc {
                 void setDragPointsFunction(const LuaIntf::LuaRef& dragPointsFunction);
 
                 const LuaIntf::LuaRef& newDragPointFunction() const;
-                void setNewDragPointFunction(const LuaIntf::LuaRef& newDragPointsFunction);
+                void setNewDragPointFunction(const LuaIntf::LuaRef& newDragPointFunction);
 
                 const LuaIntf::LuaRef& dragPointsClickedFunction() const;
                 void setDragPointsClickedFunction(const LuaIntf::LuaRef& dragPointsClickedFunction);

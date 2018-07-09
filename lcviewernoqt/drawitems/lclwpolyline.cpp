@@ -8,7 +8,7 @@ LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline) :
         LCVDrawItem(lwpolyline, true),
         _polyLine(lwpolyline) {
 
-    for(auto entity : _polyLine->asEntities()) {
+    for(const auto& entity : _polyLine->asEntities()) {
         _drawItems.push_back(DocumentCanvas::asDrawable(entity));
     }
 }

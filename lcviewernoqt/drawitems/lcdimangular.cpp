@@ -133,7 +133,9 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
 
     // Text
     lc::geo::Coordinate pText = center.move(((acStart + acEnd) / 2.), radius); // Position of text
-    if(angle > M_PI) pText = lc::geo::Coordinate(2. * center.x() - pText.x(), 2. * center.y() - pText.y()); // opposite text position for concave angles
+    if(angle > M_PI) {
+        pText = lc::geo::Coordinate(2. * center.x() - pText.x(), 2. * center.y() - pText.y());
+    } // opposite text position for concave angles
 
     this->drawText(value, (aEnd - aStart) / 2. + aStart + -0.5 * M_PI + _dimAngular->textAngle(), lc::TextConst::Top_center, pText, painter, options, rect);
 }

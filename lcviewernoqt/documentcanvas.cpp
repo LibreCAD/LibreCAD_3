@@ -33,13 +33,13 @@
 #include <cad/meta/metalinewidth.h>
 
 #include <cad/const.h>
-#include <math.h>
+#include <cmath>
 
 #include <typeinfo>
 
 using namespace LCViewer;
 
-DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document, std::function<void(double*, double*)> deviceToUser) :
+DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::Document>& document, std::function<void(double*, double*)> deviceToUser) :
         _document(document),
         _zoomMin(0.005),
         _zoomMax(200.0),
@@ -47,7 +47,7 @@ DocumentCanvas::DocumentCanvas(std::shared_ptr<lc::Document> document, std::func
         _deviceHeight(-1),
         _selectedArea(nullptr),
         _selectedAreaIntersects(false),
-        _deviceToUser(deviceToUser) {
+        _deviceToUser(std::move(deviceToUser)) {
 
 
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
@@ -116,7 +116,8 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
     painter.translate(move_x - pan_x, move_y - pan_y);
 }
 
-void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int deviceX, unsigned int deviceY) {
+void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int deviceX,
+                          unsigned int deviceY) {
     // Test for minimum and maximum zoom levels
     if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
@@ -225,7 +226,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
     }
 }
 
-double DocumentCanvas::drawWidth(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert) {
+double DocumentCanvas::drawWidth(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert) {
     auto entityLineWidth = entity->metaInfo<lc::MetaLineWidth>(lc::MetaLineWidthByValue::LCMETANAME());
     auto entityLineWidthByValue = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(entityLineWidth);
 
@@ -260,7 +261,7 @@ std::vector<double> DocumentCanvas::drawLinePattern(
     auto linePatternByValue = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(entityLinePattern);
     auto linePatternByBlock = std::dynamic_pointer_cast<const lc::DxfLinePatternByBlock>(entityLinePattern);
 
-    if (linePatternByValue != nullptr && linePatternByValue->lcPattern(width).size()>0) {
+    if (linePatternByValue != nullptr && !(linePatternByValue->lcPattern(width).empty())) {
         return linePatternByValue->lcPattern(width);
     }
     else if(linePatternByBlock != nullptr && insert != nullptr) {
@@ -273,14 +274,15 @@ std::vector<double> DocumentCanvas::drawLinePattern(
             return insert->layer()->linePattern()->lcPattern(width);
         }
     }
-    else if(layer->linePattern() != nullptr && layer->linePattern()->lcPattern(width).size() > 0) {
+    else if(layer->linePattern() != nullptr && !(layer->linePattern()->lcPattern(width).empty())) {
         return layer->linePattern()->lcPattern(width);
     }
 
     return std::vector<double>();
 }
 
-lc::Color DocumentCanvas::drawColor(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert, bool selected) {
+lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert,
+                                    bool selected) {
     LcDrawOptions lcDrawOptions;
 
     lc::MetaColor_CSPtr entityColor = entity->metaInfo<lc::MetaColor>(lc::MetaColor::LCMETANAME());
@@ -308,7 +310,8 @@ lc::Color DocumentCanvas::drawColor(lc::entity::CADEntity_CSPtr entity, lc::enti
     }
 }
 
-void DocumentCanvas::drawEntity(LcPainter& painter, LCVDrawItem_CSPtr entity, lc::entity::Insert_CSPtr insert) {
+void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& entity,
+                                const lc::entity::Insert_CSPtr& insert) {
     LcDrawOptions lcDrawOptions;
 
     double x = 0.;
@@ -486,7 +489,7 @@ Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::foreground ()  {
     return _foreground;
 }
 
-LCVDrawItem_SPtr DocumentCanvas::asDrawable(lc::entity::CADEntity_CSPtr entity) {
+LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& entity) {
     // Add a line
     const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
 
