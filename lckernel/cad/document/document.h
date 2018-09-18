@@ -190,7 +190,7 @@ namespace lc {
              * Return a copy of all entities within the document
              * @return
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr>& entityContainer() = 0;
 
 
             /**

@@ -49,7 +49,7 @@ namespace lc {
              * return a copy of all entities managed within the storage manager
              * \return
              */
-            virtual EntityContainer<entity::CADEntity_CSPtr> entityContainer() const = 0;
+            virtual EntityContainer<entity::CADEntity_CSPtr>& entityContainer() = 0;
 
             /**
             *  \brief add a document meta type

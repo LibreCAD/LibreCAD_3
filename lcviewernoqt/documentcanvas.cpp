@@ -159,7 +159,7 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
 }
 
 void DocumentCanvas::autoScale(LcPainter& painter) {
-    auto extends = _entityContainer.boundingBox();
+    auto extends = _document->entityContainer().boundingBox();
     extends = extends.increaseBy(std::min(extends.width(), extends.height()) * 0.1);
 
     setDisplayArea(painter, extends);
@@ -205,11 +205,16 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
 
-            auto visibleItems = _entityContainer.entitiesWithinAndCrossingAreaFast(visibleUserArea);
-
-            visibleItems.each<LCVDrawItem>([&](LCVDrawItem_CSPtr di) {
-                drawEntity(painter, di);
+            auto visibleEntities = _document->entityContainer().entitiesWithinAndCrossingAreaFast(visibleUserArea);
+            std::vector<LCViewer::LCVDrawItem_SPtr> visibleDrawables;
+            visibleEntities.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+                auto di = _entityDrawItem[entity];
+                visibleDrawables.push_back(di);
             });
+
+            for(auto di: visibleDrawables) {
+                drawEntity(painter, di);
+            };
             painter.line_width(1.);
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.);
@@ -312,7 +317,7 @@ lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, c
     }
 }
 
-void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& entity,
+void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                                 const lc::entity::Insert_CSPtr& insert) {
     LcDrawOptions lcDrawOptions;
 
@@ -324,7 +329,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& ent
     painter.device_to_user_distance(&w, &h);
     lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
 
-    auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(entity);
+    auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
     if(asInsert != nullptr) {
         asInsert->draw(shared_from_this(), painter);
         return;
@@ -332,7 +337,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& ent
 
     painter.save();
 
-	lc::entity::CADEntity_CSPtr ci = std::dynamic_pointer_cast<const lc::entity::CADEntity>(entity);
+    lc::entity::CADEntity_CSPtr ci = drawable->entity();
 
 
 	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
@@ -351,7 +356,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& ent
 
 	// Decide what color to render the entity into
 
-    auto color = drawColor(ci, insert, entity->selected());
+    auto color = drawColor(ci, insert, drawable->selected());
     painter.source_rgba(
             color.red(),
             color.green(),
@@ -359,15 +364,16 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& ent
             color.alpha() * alpha_compensation
     );
 
-	entity->draw(painter, lcDrawOptions, visibleUserArea);
+    drawable->draw(painter, lcDrawOptions, visibleUserArea);
 
 	painter.restore();	
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent& event) {
-    _entityContainer.optimise();
+    _document->entityContainer().optimise();
 }
 
+// This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto entity = event.entity();
 
@@ -378,27 +384,26 @@ void DocumentCanvas::on_addEntityEvent(const lc::AddEntityEvent& event) {
     auto drawable = asDrawable(event.entity());
 
     if (drawable != nullptr) {
-		auto drawableEntity = std::dynamic_pointer_cast<lc::entity::CADEntity>(drawable);
-        _entityContainer.insert(drawableEntity);
+        auto drawableEntity = std::dynamic_pointer_cast<LCViewer::LCVDrawItem>(drawable);
+        _entityDrawItem.insert(std::make_pair(drawableEntity->entity(), drawableEntity));
     }
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
-    auto i = _entityContainer.entityByID(event.entity()->id());
-
-    _entityContainer.remove(i);
+    _document->entityContainer().remove(event.entity());
+    _entityDrawItem.erase(event.entity());
 }
 
 std::shared_ptr<lc::Document> DocumentCanvas::document() const {
     return _document;
 }
 
-const lc::EntityContainer<lc::entity::CADEntity_SPtr>& DocumentCanvas::entityContainer() const {
-    return _entityContainer;
+lc::EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentCanvas::entityContainer() const {
+    return _document->entityContainer();
 }
 
 lc::geo::Area DocumentCanvas::bounds() const {
-    return _entityContainer.bounds();
+    return _document->entityContainer().bounds();
 }
 
 void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool occupies) {
@@ -411,26 +416,34 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     // std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
 
-    _newSelection.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+
+    for(auto di: _newSelection) {
         di->selected(false);
-    });
-
-    _selectedEntities.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
-        di->selected(true);
-    });
-
-    if (occupies) {
-        _newSelection = _entityContainer.entitiesFullWithinArea(*_selectedArea);
-    } else {
-        _newSelection = _entityContainer.entitiesWithinAndCrossingArea(*_selectedArea);
     }
 
-    _newSelection.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
-        // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
-        auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
+    for(auto di: _selectedDrawables) {
+        di->selected(true);
+    }
 
-        di->selected(!entity || !_selectedEntities.entityByID(entity->id()));
+    lc::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
+
+    if (occupies) {
+        entitiesInSelection = _document->entityContainer().entitiesFullWithinArea(*_selectedArea);
+    }
+    else {
+        entitiesInSelection = _document->entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
+    }
+    _newSelection.clear();
+    entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        auto di = _entityDrawItem[entity];
+        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
+        _newSelection.push_back(di);
+        di->selected(!entity || iter == _selectedDrawables.end());
     });
+}
+
+LCViewer::LCVDrawItem_SPtr DocumentCanvas::getDrawable(lc::entity::CADEntity_CSPtr entity) {
+    return _entityDrawItem[entity];
 }
 
 void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, unsigned int y, unsigned int w, unsigned int h, bool occupies) {
@@ -449,20 +462,19 @@ void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, uns
 }
 
 void DocumentCanvas::closeSelection() {
-    _newSelection.each<lc::entity::CADEntity>([&](lc::entity::CADEntity_SPtr entity) {
-        auto drawable = std::dynamic_pointer_cast<LCVDrawItem>(entity);
-
-        if(_selectedEntities.entityByID(entity->id()) != nullptr) {
-            _selectedEntities.remove(entity);
+    for(auto drawable: _newSelection) {
+        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
+        if(iter != _selectedDrawables.end()) {
             drawable->selected(false);
+            _selectedDrawables.erase(iter);
         }
         else {
-            _selectedEntities.insert(entity);
             drawable->selected(true);
+            _selectedDrawables.push_back(drawable);
         }
-    });
+    };
 
-    _newSelection = lc::EntityContainer<lc::entity::CADEntity_SPtr>();
+    _newSelection.clear();
 }
 
 void DocumentCanvas::removeSelectionArea() {
@@ -473,11 +485,11 @@ void DocumentCanvas::removeSelectionArea() {
 }
 
 void DocumentCanvas::removeSelection() {
-    _selectedEntities.each< LCVDrawItem >([](LCVDrawItem_SPtr di) {
+    for(auto di: _selectedDrawables) {
         di->selected(false);
-    });
+    };
 
-    _selectedEntities = lc::EntityContainer<lc::entity::CADEntity_SPtr>();
+    _selectedDrawables.clear();
 }
 
 Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::background ()  {
@@ -597,8 +609,16 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
     return nullptr;
 }
 
-lc::EntityContainer<lc::entity::CADEntity_SPtr> DocumentCanvas::selection() {
-    return _selectedEntities;
+std::vector<LCViewer::LCVDrawItem_SPtr>& DocumentCanvas::selectedDrawables() {
+    return _selectedDrawables;
+}
+
+lc::EntityContainer<lc::entity::CADEntity_CSPtr> DocumentCanvas::selectedEntities() {
+    lc::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
+    for(auto di: _selectedDrawables) {
+        entitiesInSelection.insert(di->entity());
+    }
+    return entitiesInSelection;
 }
 
 void DocumentCanvas::newDeviceSize(unsigned int width, unsigned int height) {
@@ -616,8 +636,8 @@ void DocumentCanvas::selectPoint(double x, double y) {
     w = w - zeroX;
 
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
-    auto entities = _entityContainer.entitiesWithinAndCrossingAreaFast(selectionArea);
-    entities.each<LCVDrawItem>([](LCVDrawItem_SPtr entity) {
-        entity->selected(!entity->selected());
+    auto entities = _document->entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
+    entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
+        _entityDrawItem[entity]->selected(!_entityDrawItem[entity]->selected());
     });
 }
