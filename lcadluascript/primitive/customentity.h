@@ -15,7 +15,7 @@ namespace lc {
                  * @param customEntity Custom entity to copy functions from
                  * @param insert Insert to copy data from, should be an instance of Insert
                  */
-                LuaCustomEntity(Insert_CSPtr insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID = false);
+                LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID = false);
 
                 std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord,
                                                          const SimpleSnapConstrain& simpleSnapConstrain,

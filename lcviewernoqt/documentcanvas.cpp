@@ -212,7 +212,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                 visibleDrawables.push_back(di);
             });
 
-            for(auto di: visibleDrawables) {
+            for(const auto& di: visibleDrawables) {
                 drawEntity(painter, di);
             };
             painter.line_width(1.);
@@ -417,11 +417,11 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     _selectedAreaIntersects = occupies;
 
 
-    for(auto di: _newSelection) {
+    for(const auto& di: _newSelection) {
         di->selected(false);
     }
 
-    for(auto di: _selectedDrawables) {
+    for(const auto& di: _selectedDrawables) {
         di->selected(true);
     }
 
@@ -442,7 +442,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     });
 }
 
-LCViewer::LCVDrawItem_SPtr DocumentCanvas::getDrawable(lc::entity::CADEntity_CSPtr entity) {
+LCViewer::LCVDrawItem_SPtr DocumentCanvas::getDrawable(const lc::entity::CADEntity_CSPtr& entity) {
     return _entityDrawItem[entity];
 }
 
@@ -462,7 +462,7 @@ void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, uns
 }
 
 void DocumentCanvas::closeSelection() {
-    for(auto drawable: _newSelection) {
+    for(const auto& drawable: _newSelection) {
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
         if(iter != _selectedDrawables.end()) {
             drawable->selected(false);
@@ -485,7 +485,7 @@ void DocumentCanvas::removeSelectionArea() {
 }
 
 void DocumentCanvas::removeSelection() {
-    for(auto di: _selectedDrawables) {
+    for(const auto& di: _selectedDrawables) {
         di->selected(false);
     };
 
@@ -615,7 +615,7 @@ std::vector<LCViewer::LCVDrawItem_SPtr>& DocumentCanvas::selectedDrawables() {
 
 lc::EntityContainer<lc::entity::CADEntity_CSPtr> DocumentCanvas::selectedEntities() {
     lc::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
-    for(auto di: _selectedDrawables) {
+    for(const auto& di: _selectedDrawables) {
         entitiesInSelection.insert(di->entity());
     }
     return entitiesInSelection;

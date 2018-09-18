@@ -14,8 +14,8 @@ LuaCustomEntity::LuaCustomEntity(const lc::builder::CustomEntityBuilder& builder
         _dragPointRelease(builder.dragPointsReleasedFunction()) {
 }
 
-LuaCustomEntity::LuaCustomEntity(Insert_CSPtr insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID) :
-    CustomEntity(std::move(insert), sameID),
+LuaCustomEntity::LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID) :
+    CustomEntity(insert, sameID),
     _snapPoints(customEntity->_snapPoints),
     _nearestPoint(customEntity->_nearestPoint),
     _dragPoints(customEntity->_dragPoints),

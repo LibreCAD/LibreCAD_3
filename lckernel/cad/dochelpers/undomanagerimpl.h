@@ -19,6 +19,7 @@ namespace lc {
     class UndoManagerImpl: public UndoManager {
         public:
             UndoManagerImpl(unsigned int maximumUndoLevels);
+            virtual ~UndoManagerImpl() = default;
 
             /*!
              * \brief redo an operation.

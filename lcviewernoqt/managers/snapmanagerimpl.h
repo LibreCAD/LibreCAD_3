@@ -26,7 +26,7 @@ class SnapManagerImpl : public SnapManager {
          * \sa lc::SnapManager
          */
         SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
-
+        virtual ~SnapManagerImpl() = default;
 
         virtual void setGridSnappable(bool enabled);
         virtual bool isGridSnappable() const;

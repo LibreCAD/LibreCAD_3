@@ -54,7 +54,7 @@ class CadMdiChild : public QWidget {
          * \brief Give function to call when window is destroyed
          * \param callback Lua function
          */
-        void setDestroyCallback(LuaIntf::LuaRef callback);
+        void setDestroyCallback(LuaIntf::LuaRef destroyCallback);
 
 		void keyPressEvent(QKeyEvent* event);
 

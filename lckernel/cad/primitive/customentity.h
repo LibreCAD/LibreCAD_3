@@ -8,7 +8,7 @@ namespace lc {
         class CustomEntity : public Insert, public UnmanagedDraggable {
             public:
                 CustomEntity(const builder::InsertBuilder& builder);
-                CustomEntity(Insert_CSPtr insert, bool sameID = false);
+                CustomEntity(const Insert_CSPtr& insert, bool sameID = false);
 
                 std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord,
                                                                  const SimpleSnapConstrain& simpleSnapConstrain,

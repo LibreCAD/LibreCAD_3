@@ -87,7 +87,6 @@ class LCADViewer : public QWidget {
         virtual void keyReleaseEvent(QKeyEvent* event);
         virtual void resizeEvent(QResizeEvent * event);
 
-    public:
     signals:
         void mouseMoveEvent();
         void mousePressEvent();

@@ -58,6 +58,9 @@ namespace lc {
 
             EntityContainer& operator = (const EntityContainer& ec) {
                 if (this != &ec) {
+                    if(_tree) {
+                        delete _tree;
+                    }
                     _tree = new QuadTree<CT>(*ec._tree);
                 }
 

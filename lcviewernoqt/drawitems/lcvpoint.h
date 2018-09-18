@@ -10,13 +10,15 @@ namespace LCViewer {
     class LCVPoint : public LCVDrawItem  {
         public:
             LCVPoint(const lc::entity::Point_CSPtr& coordinate);
+            virtual ~LCVPoint() = default;
+
             /**
              * @brief draw, Draws the point
              * @param LcPainter painter, surface to be painted
              * @param LcDrawOptions options
              * @param geo::Area rect
              */
-            virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

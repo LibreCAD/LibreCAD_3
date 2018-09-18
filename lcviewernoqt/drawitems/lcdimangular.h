@@ -11,6 +11,7 @@ namespace LCViewer {
         class LCDimAngular : public LCVDrawItem, public LCDimension {
             public:
                 LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular);
+                virtual ~LCDimAngular() = default;
 
                 /**
                 * @brief draw, Draws the DimAngular
@@ -18,7 +19,7 @@ namespace LCViewer {
                 * @param LcDrawOptions options
                 * @param geo::Area rect
                 */
-                virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+                void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
                 lc::entity::CADEntity_CSPtr entity() const override;
 

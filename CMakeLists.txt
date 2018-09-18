@@ -58,7 +58,9 @@ if(WITH_LUACMDINTERFACE)
 endif(WITH_LUACMDINTERFACE)
 
 if(WITH_UNITTESTS)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
     add_subdirectory("unittest")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
 # clang-tidy
@@ -71,8 +73,7 @@ find_file(
 
 if(RUN_CLANG_TIDY_PY)
     message(STATUS "run-clang-tidy.py found: ${RUN_CLANG_TIDY_PY}")
-    set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-p" "${CMAKE_BINARY_DIR}")
-        message(${DO_CLANG_TIDY})
+    set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-p" "${CMAKE_BINARY_DIR}" "-header-filter" '^\(?!${CMAKE_BINARY_DIR}\).*')
     add_custom_target(stylecheck ${DO_CLANG_TIDY})
 else()
     message(STATUS "run-clang-tidy.py executable not found.")

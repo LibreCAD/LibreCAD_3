@@ -46,7 +46,7 @@ namespace LCViewer {
          * @param entity LCVDrawItem_CSPtr
          * @param insert Insert entity if we are rendering a bloc
          */
-        void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& entity,
+        void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                         const lc::entity::Insert_CSPtr& insert = nullptr);
 
         /**
@@ -183,7 +183,7 @@ namespace LCViewer {
          */
         void selectPoint(double x, double y);
 
-        LCViewer::LCVDrawItem_SPtr getDrawable(lc::entity::CADEntity_CSPtr entity);
+        LCViewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
     private:
         void on_addEntityEvent(const lc::AddEntityEvent&);

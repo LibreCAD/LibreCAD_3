@@ -10,14 +10,15 @@ namespace LCViewer {
     class LCVText : public LCVDrawItem {
         public:
             LCVText(const lc::entity::Text_CSPtr& text);
+            virtual ~LCVText() = default;
+
             /**
              * @brief draw, Drawing the text
              * @param LcPainter painter, surface to be painted
              * @param LcDrawOptions options
              * @param geo::Area rect
              */
-
-            virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

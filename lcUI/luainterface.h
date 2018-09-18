@@ -48,7 +48,7 @@ class LuaInterface {
          */
 		bool luaConnect(
 			QObject* sender,
-			std::string signalName,
+			const std::string& signalName,
 			LuaIntf::LuaRef slot
 		);
 
@@ -60,9 +60,9 @@ class LuaInterface {
          * \param slotName Name of the slot with parameters
          */
 	    bool qtConnect(QObject* sender,
-					 std::string signalName,
+					 const std::string& signalName,
 					 QObject* receiver,
-					 std::string slotName);
+					 const std::string& slotName);
 
         /**
          * \brief Remove all connections that aren't valid anymore.
@@ -99,8 +99,8 @@ class LuaInterface {
         LuaIntf::LuaRef operation(unsigned int windowID);
         void setOperation(unsigned int windowID, LuaIntf::LuaRef);
 
-        void registerEvent(const std::string& event, LuaIntf::LuaRef callback);
-        void deleteEvent(const std::string& event, LuaIntf::LuaRef callback);
+        void registerEvent(const std::string& event, const LuaIntf::LuaRef& callback);
+        void deleteEvent(const std::string& event, const LuaIntf::LuaRef& callback);
         void triggerEvent(const std::string& event, LuaIntf::LuaRef args);
 
 	private:

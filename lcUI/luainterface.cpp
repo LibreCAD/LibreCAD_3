@@ -28,9 +28,9 @@ void LuaInterface::initLua() {
     LuaIntf::Lua::setGlobal(_L, "luaInterface", this);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
-    int s = _L.doFile(luaFile.toStdString().c_str());
+    bool s = _L.doFile(luaFile.toStdString().c_str());
 
-    if (s != 0) {
+    if (s) {
         std::cout << lua_tostring(_L, -1) << std::endl;
         lua_pop(_L, 1);
     }
@@ -40,7 +40,7 @@ void LuaInterface::initLua() {
 
 bool LuaInterface::luaConnect(
 	QObject* sender,
-	std::string signalName,
+	const std::string& signalName,
 	LuaIntf::LuaRef slot)
 {
 	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
@@ -52,7 +52,7 @@ bool LuaInterface::luaConnect(
 		auto lqo = std::make_shared<LuaQObject>(sender);
 		_luaQObjects.push_back(lqo);
 
-		auto connected = lqo->connect(signalId, slot);
+		auto connected = lqo->connect(signalId, std::move(slot));
 
 		cleanInvalidQObject();
 
@@ -83,7 +83,7 @@ void LuaInterface::cleanInvalidQObject() {
 					   _luaQObjects.end());
 }
 
-bool LuaInterface::qtConnect(QObject *sender, std::string signalName, QObject *receiver, std::string slotName) {
+bool LuaInterface::qtConnect(QObject *sender, const std::string& signalName, QObject *receiver, const std::string& slotName) {
 	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
 	if(signalId < 0) {
 		std::cout << "No such signal " << signalName << std::endl;
@@ -94,7 +94,7 @@ bool LuaInterface::qtConnect(QObject *sender, std::string signalName, QObject *r
 		std::cout << "No such slot " << slotName << std::endl;
 	}
 
-	return QMetaObject::connect(sender, signalId, receiver, slotId);
+	return QMetaObject::connect(sender, signalId, receiver, slotId) != nullptr;
 }
 
 void LuaInterface::hideUI(bool hidden) {
@@ -110,7 +110,7 @@ std::vector<std::string> LuaInterface::pluginList(const char* path) {
     QDir dir(path);
 
     auto list = dir.entryList(QDir::Filter::Dirs | QDir::Filter::NoDotAndDotDot);
-    for(auto dir : list) {
+    for(const auto& dir : list) {
         plugins.push_back(dir.toStdString());
     }
 
@@ -143,10 +143,10 @@ LuaIntf::LuaRef LuaInterface::operation(unsigned int windowID) {
 }
 
 void LuaInterface::setOperation(unsigned int windowID, LuaIntf::LuaRef operation) {
-    _operations[windowID] = operation;
+    _operations[windowID] = std::move(operation);
 }
 
-void LuaInterface::registerEvent(const std::string& event, LuaIntf::LuaRef callback) {
+void LuaInterface::registerEvent(const std::string& event, const LuaIntf::LuaRef& callback) {
     if(callback.isTable() && !callback.has("onEvent")) {
         return;
     }
@@ -154,7 +154,7 @@ void LuaInterface::registerEvent(const std::string& event, LuaIntf::LuaRef callb
     _events[event].push_back(callback);
 }
 
-void LuaInterface::deleteEvent(const std::string& event, LuaIntf::LuaRef callback) {
+void LuaInterface::deleteEvent(const std::string& event, const LuaIntf::LuaRef& callback) {
     auto it = std::find(_events[event].begin(), _events[event].end(), callback);
 
     if(it != _events[event].end()) {

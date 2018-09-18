@@ -10,6 +10,7 @@ namespace LCViewer {
     class LCVSpline : public LCVDrawItem {
         public:
             LCVSpline(const lc::entity::Spline_CSPtr& spline);
+            virtual ~LCVSpline() = default;
 
             /**
              * @brief draw, Draws the point
@@ -17,7 +18,7 @@ namespace LCViewer {
              * @param LcDrawOptions options
              * @param geo::Area rect
              */
-            virtual void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const override;
+            void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

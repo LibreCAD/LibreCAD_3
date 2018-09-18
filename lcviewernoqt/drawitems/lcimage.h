@@ -9,7 +9,8 @@
 namespace LCViewer {
     class LCImage : public LCVDrawItem {
         public:
-            LCImage(const lc::entity::Image_CSPtr& circle);
+            LCImage(const lc::entity::Image_CSPtr& image);
+            virtual ~LCImage() = default;
 
             /**
              * @brief draw, Draw the Arc
@@ -17,7 +18,7 @@ namespace LCViewer {
              * @param LcDrawOptions options
              * @param geo::Area rect
              */
-            virtual void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const override;
+            void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 
