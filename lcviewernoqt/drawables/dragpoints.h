@@ -11,7 +11,7 @@ namespace LCViewer {
      */
     class DragPoints {
         public:
-            DragPoints();
+            DragPoints() = default;
             /**
              * \brief Set the new list of points. Remove the old ones.
              * \param points Event containing the drag points.

@@ -28,7 +28,13 @@ using namespace lc;
 
 
 void LCLua::importLCKernel() {
-    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&); //Clang bug fix
+    //18-09-2018: Those declarations are used to fix the CLang bug
+    //            "candidate template ignored: couldn't infer template argument 'FN'"
+    //            GCC is not affected
+    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&);
+    using CADEntityBuilder_setMetaInfo = void (builder::CADEntityBuilder::*)(const MetaInfo_CSPtr&);
+    using CADEntityBuilder_setBlock = void (builder::CADEntityBuilder::*)(const Block_CSPtr&);
+
     LuaBinding(_L)
         .beginClass<Color>("Color")
             .addConstructor(LUA_ARGS(
@@ -557,9 +563,9 @@ void LCLua::importLCKernel() {
             .addFunction("layer", &builder::CADEntityBuilder::layer)
             .addFunction<CADEntityBuilder_setLayer>("setLayer", &builder::CADEntityBuilder::setLayer)
             .addFunction("metaInfo", &builder::CADEntityBuilder::metaInfo)
-            .addFunction("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
+            .addFunction<CADEntityBuilder_setMetaInfo>("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
             .addFunction("block", &builder::CADEntityBuilder::block)
-            .addFunction("setBlock", &builder::CADEntityBuilder::setBlock)
+            .addFunction<CADEntityBuilder_setBlock>("setBlock", &builder::CADEntityBuilder::setBlock)
             .addFunction("id", &builder::CADEntityBuilder::id)
             .addFunction("setID", &builder::CADEntityBuilder::setID)
             .addFunction("newID", &builder::CADEntityBuilder::newID)

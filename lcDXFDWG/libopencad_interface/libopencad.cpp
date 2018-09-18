@@ -46,7 +46,7 @@ lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& layer) {
     auto lw = lc::FileHelpers::intToLW(layer.getLineWeight());
     auto color = icolor.intToColor(layer.getColor())->color();
 
-    auto layer = std::make_shared<Layer>(layer.getName(), lw, color);
+    auto lcLayer = std::make_shared<Layer>(layer.getName(), lw, color);
 
     if(layer.getName() == "0") {
         _builder->append(std::make_shared<lc::operation::AddLayer>(_document, layer));
@@ -55,7 +55,7 @@ lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& layer) {
         _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer));
     }
 
-    return layer;
+    return lcLayer;
 }
 
 void lc::FileLibs::LibOpenCad::addGeometry(const lc::Layer_SPtr& layer, const CADGeometry* geometry) {

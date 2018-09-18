@@ -8,7 +8,7 @@ LCVInsert::LCVInsert(lc::entity::Insert_CSPtr& insert) :
 
     _offset = _insert->position() - _insert->displayBlock()->base();
 
-    for(auto entity : _insert->document()->entitiesByBlock(_insert->displayBlock()).asVector()) {
+    for(const auto& entity : _insert->document()->entitiesByBlock(_insert->displayBlock()).asVector()) {
         append(entity);
     }
 
@@ -21,7 +21,7 @@ LCVInsert::~LCVInsert() {
     _insert->document()->removeEntityEvent().disconnect<LCVInsert, &LCVInsert::on_removeEntityEvent>(this);
 }
 
-void LCVInsert::append(lc::entity::CADEntity_CSPtr entity) {
+void LCVInsert::append(const lc::entity::CADEntity_CSPtr& entity) {
     auto drawable = DocumentCanvas::asDrawable(entity->move(_offset));
 
     if(drawable == nullptr) {
@@ -38,7 +38,7 @@ void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOption
     }
 }
 
-void LCVInsert::draw(DocumentCanvas_SPtr docCanvas, LcPainter& painter) const {
+void LCVInsert::draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter) const {
     auto shared = _insert->shared_from_this();
 
     for(auto entity : _entities) {

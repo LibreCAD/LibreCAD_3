@@ -7,9 +7,12 @@
 
 using namespace LCViewer;
 
-SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) : _grid(
-        grid), _gridSnappable(false), _snapIntersections(false), _distanceToSnap(distanceToSnap), _view(view) {
-
+SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) :
+        _grid(std::move(grid)),
+        _gridSnappable(false),
+        _snapIntersections(false),
+        _distanceToSnap(distanceToSnap),
+        _view(std::move(view)) {
 
 }
 
@@ -60,7 +63,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 lc::Intersect intersect(lc::Intersect::OnEntity, LCTOLERANCE);
                 visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
 
-                if (intersect.result().size() > 0) {
+                if (!intersect.result().empty()) {
                     std::vector<lc::geo::Coordinate> coords = intersect.result();
                     std::sort(coords.begin(), coords.end(), lc::geo::CoordinateDistanceSort(location));
 
@@ -76,7 +79,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     }
 
     // Emit snappoint based on closest entity
-    if (entities.size() > 0) {
+    if (!entities.empty()) {
         // GO over all entities, first closest to the cursor gradually moving away
         for (auto &entity : entities) {
             lc::Snapable_CSPtr captr;
@@ -94,7 +97,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
                                                                          realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
-                if (sp.size() > 0) {
+                if (!sp.empty()) {
                     SnapPointEvent snapEvent(sp.at(0).coordinate());
                     _lastSnapEvent = snapEvent;
                     auto event = SnapPointEvent(sp.at(0).coordinate());
@@ -106,10 +109,10 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     }
 
     // If no entity was found to snap against, then snap to grid
-    if (_gridSnappable == true) {
+    if (_gridSnappable) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
                                                                      1);
-        if (points.size() > 0) {
+        if (!points.empty()) {
             auto event = SnapPointEvent(points.at(0).coordinate());
             _snapPointEvent(event);
             return;

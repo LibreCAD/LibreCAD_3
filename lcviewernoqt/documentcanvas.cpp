@@ -43,8 +43,8 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::Document>& document, st
         _document(document),
         _zoomMin(0.005),
         _zoomMax(200.0),
-        _deviceWidth(-1),
-        _deviceHeight(-1),
+        _deviceWidth(0),
+        _deviceHeight(0),
         _selectedArea(nullptr),
         _selectedAreaIntersects(false),
         _deviceToUser(std::move(deviceToUser)) {
@@ -116,8 +116,8 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
     painter.translate(move_x - pan_x, move_y - pan_y);
 }
 
-void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int deviceX,
-                          unsigned int deviceY) {
+void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
+                          unsigned int deviceCenterX, unsigned int deviceCenterY) {
     // Test for minimum and maximum zoom levels
     if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
@@ -125,15 +125,17 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, 
 
     // Find user location at the device location
     painter.save();
-    double userX = deviceX;
-    double userY = deviceY;
+    double userX = deviceCenterX;
+    double userY = deviceCenterY;
     painter.device_to_user(&userX, &userY);
     painter.restore();
 
-    zoom(painter, factor, relativezoom, userX, userY, deviceX, deviceY);
+    zoom(painter, factor, relativezoom, userX, userY, deviceCenterX, deviceCenterY);
 }
 
-void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, double userCenterX, double userCenterY, unsigned int deviceX, unsigned int deviceY) {
+void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
+                          double userCenterX, double userCenterY,
+                          unsigned int deviceCenterX, unsigned int deviceCenterY) {
     if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
     }
@@ -144,8 +146,8 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom, 
 
     // Calculate reference device offset at device location
     painter.save();
-    double refX = deviceX;
-    double refY = deviceY;
+    double refX = deviceCenterX;
+    double refY = deviceCenterY;
     painter.reset_transformations();
     painter.scale(factor);
     painter.device_to_user(&refX, &refY);
@@ -168,8 +170,8 @@ void DocumentCanvas::setDisplayArea(LcPainter& painter, const lc::geo::Area& are
     this->zoom(painter, zoom, false,
                area.width() / 2 + area.minP().x(),
                area.height() / 2. + area.minP().y(),
-               _deviceWidth / 2.,
-               _deviceHeight / 2.
+               (unsigned int) (_deviceWidth / 2.),
+               (unsigned int) (_deviceHeight / 2.)
     );
 }
 
@@ -251,8 +253,8 @@ double DocumentCanvas::drawWidth(const lc::entity::CADEntity_CSPtr& entity, cons
 }
 
 std::vector<double> DocumentCanvas::drawLinePattern(
-        lc::entity::CADEntity_CSPtr entity,
-        lc::entity::Insert_CSPtr insert,
+        const lc::entity::CADEntity_CSPtr& entity,
+        const lc::entity::Insert_CSPtr& insert,
         double width) {
 
     auto layer = entity->layer();
@@ -362,7 +364,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& ent
 	painter.restore();	
 }
 
-void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent&) {
+void DocumentCanvas::on_commitProcessEvent(const lc::CommitProcessEvent& event) {
     _entityContainer.optimise();
 }
 
@@ -426,12 +428,8 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     _newSelection.each< LCVDrawItem >([&](LCVDrawItem_SPtr di) {
         // std::cerr<< __FILE__ << " : " << __FUNCTION__ << " : " << __LINE__ << " " << typeid(*di).name() << std::endl;
         auto entity = std::dynamic_pointer_cast<lc::entity::CADEntity>(di);
-        if(entity && _selectedEntities.entityByID(entity->id()) != nullptr) {
-            di->selected(false);
-        }
-        else {
-            di->selected(true);
-        }
+
+        di->selected(!entity || !_selectedEntities.entityByID(entity->id()));
     });
 }
 
@@ -491,21 +489,21 @@ Nano::Signal<void(DrawEvent const & event)> & DocumentCanvas::foreground ()  {
 
 LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& entity) {
     // Add a line
-    const auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+    auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
 
     if (line != nullptr) {
         return std::make_shared<LCVLine>(line);
     }
 
     // Add a circle
-    const auto circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
+    auto circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
 
     if (circle != nullptr) {
         return std::make_shared<LCVCircle>(circle);
     }
 
     // Add a Arc
-    const auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+    auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
 
     if (arc != nullptr) {
         return std::make_shared<LCVArc>(arc);
@@ -513,84 +511,84 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
 
     // Add Ellipse
-    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
 
     if (ellipse != nullptr) {
         return std::make_shared<LCVEllipse>(ellipse);
     }
 
     // Add Text
-    const auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
+    auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
 
     if (text != nullptr) {
         return std::make_shared<LCVText>(text);
     }
 
     // Add 'Point' or 'Coordinate'
-    const auto coord = std::dynamic_pointer_cast<const lc::entity::Point>(entity);
+    auto coord = std::dynamic_pointer_cast<const lc::entity::Point>(entity);
 
     if (coord != nullptr) {
         return std::make_shared<LCVPoint>(coord);
     }
 
     // Add 'DimRadial'
-    const auto dimRadial = std::dynamic_pointer_cast<const lc::entity::DimRadial>(entity);
+    auto dimRadial = std::dynamic_pointer_cast<const lc::entity::DimRadial>(entity);
 
     if (dimRadial != nullptr) {
         return std::make_shared<LCDimRadial>(dimRadial);
     }
 
     // Add 'DimDiametric'
-    const auto dimDiametric = std::dynamic_pointer_cast<const lc::entity::DimDiametric>(entity);
+    auto dimDiametric = std::dynamic_pointer_cast<const lc::entity::DimDiametric>(entity);
 
     if (dimDiametric != nullptr) {
         return std::make_shared<LCDimDiametric>(dimDiametric);
     }
 
     // Add 'DimLinear'
-    const auto dimLinear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity);
+    auto dimLinear = std::dynamic_pointer_cast<const lc::entity::DimLinear>(entity);
 
     if (dimLinear != nullptr) {
         return std::make_shared<LCDimLinear>(dimLinear);
     }
 
     // Add 'DimAligned'
-    const auto dimAligned = std::dynamic_pointer_cast<const lc::entity::DimAligned>(entity);
+    auto dimAligned = std::dynamic_pointer_cast<const lc::entity::DimAligned>(entity);
 
     if (dimAligned != nullptr) {
         return std::make_shared<LCDimAligned>(dimAligned);
     }
 
     // Add 'DimAngular'
-    const auto dimAngular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity);
+    auto dimAngular = std::dynamic_pointer_cast<const lc::entity::DimAngular>(entity);
 
     if (dimAngular != nullptr) {
         return std::make_shared<LCDimAngular>(dimAngular);
     }
 
     // Add 'LWPolyline'
-    const auto lwPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+    auto lwPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
 
     if (lwPolyline != nullptr) {
         return std::make_shared<LCLWPolyline>(lwPolyline);
     }
 
     // Add 'Spline'
-    const auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+    auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
 
     if (spline != nullptr) {
         return std::make_shared<LCVSpline>(spline);
     }
 
     // Add 'Image'
-    const auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+    auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
 
     if (image != nullptr) {
         return std::make_shared<LCImage>(image);
     }
 
     // Add 'Insert'
-    const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+    auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
 
     if (insert != nullptr) {
         return std::make_shared<LCVInsert>(insert);

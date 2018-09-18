@@ -186,7 +186,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
     }
 
     auto lp = _document->linePatternByName(data.lineType);
-    bool isFrozen = (bool) data.flags & 1;
+    auto isFrozen = (bool) (data.flags & 1u);
 
     auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
     // If a layer starts with a * it's a special layer we don't process yet
@@ -412,7 +412,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
         points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
     }
 
-    auto isCLosed = data.flags&0x01;
+    auto isCLosed = data.flags & 0x01u;
     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
             points,
             data.width,

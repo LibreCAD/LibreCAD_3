@@ -5,9 +5,9 @@ using namespace LCViewer;
 
 DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, TempEntities_SPtr tempEntities, unsigned int size) :
 	_size(size),
-	_docCanvas(docCanvas),
-	_cursor(cursor),
-	_tempEntities(tempEntities),
+	_docCanvas(std::move(docCanvas)),
+	_cursor(std::move(cursor)),
+	_tempEntities(std::move(tempEntities)),
 	_entityDragged(false)
 {}
 
@@ -16,7 +16,7 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 	std::vector<lc::geo::Coordinate> dragPoints;
 
 	auto entities = _docCanvas->selection();
-	if(entities.asVector().size() == 0) {
+	if(entities.asVector().empty()) {
 		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
 	}
 
@@ -67,7 +67,7 @@ std::vector<lc::geo::Coordinate> DragManager::selectedEntitiesDragPoints() {
 void DragManager::moveEntities() {
 	auto entities = _selectedEntities.asVector();
 
-	for (auto entity : entities) {
+	for (const auto& entity : entities) {
 		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(entity);
 
 		auto unmanaged = std::dynamic_pointer_cast<const lc::UnmanagedDraggable>(entity);
@@ -130,13 +130,13 @@ void DragManager::onMousePress() {
 	_builder->append(_entityBuilder);
 
 	auto entities = _docCanvas->selection();
-	if(entities.asVector().size() == 0) {
+	if(entities.asVector().empty()) {
 		entities = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
 	}
 
 	auto entitiesNearCursor = entities.asVector();
 
-	for(auto entity : entitiesNearCursor) {
+	for(const auto& entity : entitiesNearCursor) {
 		auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity);
 		if(!drawable) {
             continue;
@@ -165,7 +165,7 @@ void DragManager::onMousePress() {
 		}
 	}
 
-	_entityDragged = _selectedEntities.asVector().size() != 0;
+	_entityDragged = !_selectedEntities.asVector().empty();
 
 	_entityBuilder->appendOperation(std::make_shared<lc::operation::Push>());
 	_entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
@@ -178,7 +178,7 @@ void DragManager::onMouseRelease() {
 		_builder->undo(); //Re-insert original entities which are already deleted
 
 		auto entities = _selectedEntities.asVector();
-		for(auto entity : entities) {
+		for(const auto& entity : entities) {
 			auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::UnmanagedDraggable>(entity);
 			if(unmanagedDraggable) {
 				unmanagedDraggable->onDragPointRelease(_builder);

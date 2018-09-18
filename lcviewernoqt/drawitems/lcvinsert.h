@@ -13,15 +13,15 @@ namespace LCViewer {
             LCVInsert(lc::entity::Insert_CSPtr& insert);
             virtual ~LCVInsert();
 
-            virtual void selected(bool selected) override;
+            void selected(bool selected) override;
 
             void draw(LcPainter& _painter, const LcDrawOptions& options, const lc::geo::Area& updateRect) const override;
-            void draw(DocumentCanvas_SPtr docCanvas, LcPainter& painter) const;
+            void draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter) const;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 
         private:
-            void append(lc::entity::CADEntity_CSPtr entity);
+            void append(const lc::entity::CADEntity_CSPtr& entity);
 
             void on_addEntityEvent(const lc::AddEntityEvent&);
             void on_removeEntityEvent(const lc::RemoveEntityEvent&);

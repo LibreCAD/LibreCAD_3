@@ -70,7 +70,7 @@ namespace LCViewer {
          * @param centerX
          * @param centerY
          */
-        void zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int centerX, unsigned int centerY);
+        void zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int deviceCenterX, unsigned int deviceCenterY);
 
         /**
          * @brief zoom
@@ -189,8 +189,8 @@ namespace LCViewer {
 
         double drawWidth(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert);
         std::vector<double> drawLinePattern(
-                lc::entity::CADEntity_CSPtr entity,
-                lc::entity::Insert_CSPtr insert,
+                const lc::entity::CADEntity_CSPtr& entity,
+                const lc::entity::Insert_CSPtr& insert,
                 double width
         );
         lc::Color drawColor(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert,
