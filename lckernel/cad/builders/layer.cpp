@@ -72,5 +72,5 @@ Layer_CSPtr LayerBuilder::build() {
 }
 
 bool LayerBuilder::checkValues() {
-    return _name.empty();
+    return !_name.empty();
 }

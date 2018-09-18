@@ -49,10 +49,10 @@ lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& layer) {
     auto lcLayer = std::make_shared<Layer>(layer.getName(), lw, color);
 
     if(layer.getName() == "0") {
-        _builder->append(std::make_shared<lc::operation::AddLayer>(_document, layer));
+        _builder->append(std::make_shared<lc::operation::AddLayer>(_document, lcLayer));
     }
     else {
-        _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer));
+        _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), lcLayer));
     }
 
     return lcLayer;
