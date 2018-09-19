@@ -31,7 +31,7 @@ class LuaQObject : public QObject {
          * \param slot Lua function
          * \return true if connected, false if an error happened
          */
-		bool connect(int signalId, LuaIntf::LuaRef slot);
+		bool connect(int signalId, const LuaIntf::LuaRef& slot);
 
         /**
          * \brief Add signal parameter
@@ -40,7 +40,7 @@ class LuaQObject : public QObject {
          * \param arg Pointer to arg
          * Push a signal parameter to Lua stack
          */
-		void pushArg(LuaIntf::LuaState s, int const type, void const* arg);
+		void pushArg(LuaIntf::LuaState s, int type, void const* arg);
 
         /**
          * \brief Get object name.
@@ -59,14 +59,14 @@ class LuaQObject : public QObject {
          * \param name Children name
          * \return Pointer to QObject
          */
-		QObject* findChild(std::string name);
+		QObject* findChild(const std::string& name);
         /**
          * \brief Find children by name
          * \param object Pointer to QObject
          * \param name Children name
          * \return Pointer to QObject
          */
-		static QObject* findChild(QObject* object, std::string name);
+		static QObject* findChild(QObject* object, const std::string& name);
 
         /**
          * \brief Return object validity
@@ -79,7 +79,7 @@ class LuaQObject : public QObject {
          * This function is called when a slot of this object is called.
          * It gets the arguments and call the Lua function
          */
-		int qt_metacall(QMetaObject::Call c, int id, void **a);
+		int qt_metacall(QMetaObject::Call c, int id, void **a) override;
 
 	private:
 		QObject* _object;

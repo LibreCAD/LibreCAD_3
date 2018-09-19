@@ -56,7 +56,7 @@ namespace lc {
                  * \param color New selected color
                  * This set the current selected item to Custom with the new color
                  */
-                void setColor(lc::Color color);
+                void setColor(const lc::Color& color);
 
             public slots:
                 /**
@@ -64,7 +64,7 @@ namespace lc {
                  * \param layer New selected layer
                  * This updates "ByLayer" color preview.
                  */
-                void onLayerChanged(lc::Layer_CSPtr layer);
+                void onLayerChanged(const lc::Layer_CSPtr& layer);
 
             private slots:
                 void onActivated(const QString& text);

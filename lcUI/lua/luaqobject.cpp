@@ -2,6 +2,8 @@
 
 LuaQObject::LuaQObject(QObject* object):
 	_object(object),
+	_signalId(-1),
+	_slotId(-1),
 	_valid(false)
 {
 	//Connect QObject destroyed() signal
@@ -10,15 +12,15 @@ LuaQObject::LuaQObject(QObject* object):
 }
 
 LuaQObject::~LuaQObject() {
-	_object = 0;
+	_object = nullptr;
 }
 
-bool LuaQObject::connect(int signalId, LuaIntf::LuaRef slot) {
+bool LuaQObject::connect(int signalId, const LuaIntf::LuaRef& slot) {
 	_signalId = signalId;
 	if(slot.isFunction()) {
 		_slotId = 1;
 		
-		if(QMetaObject::connect(_object, signalId, this, this->metaObject()->methodCount() + _slotId)) {
+		if(QMetaObject::connect(_object, signalId, this, this->metaObject()->methodCount() + _slotId) != nullptr) {
 			_slotFunction = slot;
 			_valid = true;
 		}
@@ -44,7 +46,7 @@ int LuaQObject::qt_metacall(QMetaObject::Call c, int id, void **a)
 			unsigned int i = 0;
 
 			_slotFunction.pushToStack();
-			for (auto parameter : parameters) {
+			for (const auto& parameter : parameters) {
 				i++;
 				pushArg(s, QMetaType::type(parameter.constData()), a[i]);
 			}
@@ -64,14 +66,14 @@ std::string LuaQObject::objectName(QObject* object) {
 
 
 std::string LuaQObject::objectName() {
-	if(_object) {
+	if(_object != nullptr) {
 		return objectName(_object);
 	}
 
 	return "null";
 }
 
-QObject* LuaQObject::findChild(QObject* object, std::string name) {
+QObject* LuaQObject::findChild(QObject* object, const std::string& name) {
 	for(auto child : object->children()) {
 		if(objectName(child) == name) {
 			return child;
@@ -80,15 +82,15 @@ QObject* LuaQObject::findChild(QObject* object, std::string name) {
 
 	std::cout << "Child " << name << " not found." << std::endl;
 
-	return 0;
+	return nullptr;
 }
 
-QObject* LuaQObject::findChild(std::string name) {
-	if(_object) {
+QObject* LuaQObject::findChild(const std::string& name) {
+	if(_object != nullptr) {
 		return findChild(_object, name);
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void LuaQObject::pushArg(LuaIntf::LuaState s, int const type, void const* arg) {
