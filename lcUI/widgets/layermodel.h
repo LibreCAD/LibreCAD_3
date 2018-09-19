@@ -23,7 +23,7 @@ class LayerModel : public QAbstractTableModel {
          * \brief Create widget
          * \param parent Pointer to parent object
          */
-        LayerModel(QObject* parent = 0);
+        LayerModel(QObject* parent = nullptr);
 
         /**
          * \brief Update the list of layers.
@@ -43,17 +43,17 @@ class LayerModel : public QAbstractTableModel {
          * @param layer
          * @return Index of layer
          */
-        unsigned int indexOf(lc::Layer_CSPtr layer);
+        unsigned int indexOf(const lc::Layer_CSPtr& layer);
 
         /**
          * \brief Get number of layers
          * \return Number of layers
          */
-        int rowCount(const QModelIndex& parent = QModelIndex()) const;
-        int columnCount(const QModelIndex& parent = QModelIndex()) const;
-        QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-        Qt::ItemFlags flags(const QModelIndex &index) const;
-        bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+        int rowCount(const QModelIndex& parent) const override;
+        int columnCount(const QModelIndex& parent) const override;
+        QVariant data(const QModelIndex& index, int role) const override;
+        Qt::ItemFlags flags(const QModelIndex &index) const override;
+        bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
     signals:
         /**

@@ -6,7 +6,7 @@ using namespace operation;
 
 DocumentOperation::DocumentOperation(Document_SPtr document, const std::string& description) :
     Undoable(description),
-    _document(document) {
+    _document(std::move(document)) {
 }
 
 std::shared_ptr<Document> DocumentOperation::document() const {

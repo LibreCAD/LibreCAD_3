@@ -12,27 +12,15 @@ namespace lc {
 
         class Arc  : public Base, virtual public Visitable {
             public:
-
                 /**
                  * Create a new Arc
                  * center center location
-                 * radius radius of the arc
-                 * startAngle, will be corrected to 0..2*PI
-                 * endAngle, will be corrected to 0..2*PI
-                 *
-                 * Arc will always be setup such that startAngle will increase or decrease to endAngle
-                 * So it's perfectly possible to have a startAngle > endAngle
-                 */
-                Arc(const Coordinate& center, double radius, double startAngle, double endAngle);
-                /**
-                 * Create a new Arc
-                 * center center location
-                 * radius radius of the arc
+                 * radius radius of the arc, must be positive
                  * startAngle, will be corrected to 0..2*PI
                  * endAngle, will be corrected to 0..2*PI
                  * CCW, setup arc to be drawn ClockWise or counter clockwise
                  */
-                Arc(const Coordinate& center, double radius, double startAngle, double endAngle, bool CCW);
+                Arc(Coordinate center, double radius, double startAngle, double endAngle, bool isCCW = true);
 
                 static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
                 static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);

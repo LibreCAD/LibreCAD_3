@@ -12,16 +12,20 @@ Ellipse::Ellipse(const geo::Coordinate &center,
                  double startAngle,
                  double endAngle,
                  bool reversed,
-                 const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo,
-                 const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+                 Layer_CSPtr layer,
+                 MetaInfo_CSPtr metaInfo,
+                 Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle, reversed) {
 }
 
-Ellipse::Ellipse(const Ellipse_CSPtr other, bool sameID) :
+Ellipse::Ellipse(const Ellipse_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
-        geo::Ellipse(other->center(), other->majorP(), other->minorRadius(), other->startAngle(), other->endAngle(),
+        geo::Ellipse(other->center(),
+                     other->majorP(),
+                     other->minorRadius(),
+                     other->startAngle(),
+                     other->endAngle(),
                      other->isReversed()) {
 }
 
@@ -51,7 +55,7 @@ CADEntity_CSPtr Ellipse::copy(const geo::Coordinate &offset) const {
     return newEllipse;
 }
 
-CADEntity_CSPtr Ellipse::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Ellipse::rotate(const geo::Coordinate &rotation_center, double rotation_angle) const {
     auto rotated = this->georotate(rotation_center, rotation_angle);
     auto newEllipse = std::make_shared<Ellipse>(rotated.center(),
                                                 rotated.majorP(),
@@ -119,18 +123,23 @@ const geo::Area Ellipse::boundingBox() const {
     maxY = points[0].y();
 
     const auto checkPoint = [&](const geo::Coordinate& point) {
-        if (point.x() < minX)
+        if (point.x() < minX) {
             minX = point.x();
-        if (point.x() > maxX)
+        }
+        if (point.x() > maxX) {
             maxX = point.x();
-        if (point.y() < minY)
+        }
+        if (point.y() < minY) {
             minY = point.y();
-        if (point.y() > maxY)
+        }
+        if (point.y() > maxY) {
             maxY = point.y();
+        }
     };
 
-    for (const auto& point : points)
+    for (const auto& point : points) {
         checkPoint(point);
+    }
 
     return geo::Area(geo::Coordinate(minX, minY),
                      geo::Coordinate(maxX, maxY));
@@ -209,8 +218,9 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
     }
 
     auto checkPoint = [&](geo::Coordinate cord) {
-        if (isAngleBetween(getEllipseAngle(cord)))
+        if (isAngleBetween(getEllipseAngle(cord))) {
             resPoints.push_back(cord);
+        }
     };
 
     checkPoint(c1);
@@ -222,21 +232,23 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
 }
 
 
-std::vector<EntityCoordinate>
-Ellipse::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain, double minDistanceToSnap,
-                    int maxNumberOfSnapPoints) const {
+std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
+                                                  const SimpleSnapConstrain &constrain,
+                                                  double minDistanceToSnap,
+                                                  int maxNumberOfSnapPoints) const {
 
     std::vector<EntityCoordinate> resPoints;
     int ind = 0;
 
-    if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         geo::Coordinate tmp;
 
         resPoints.emplace_back(this->center(), ind++);
 
         auto points = this->findBoxPoints();
-        for (auto p: points)
+        for (auto p : points) {
             resPoints.emplace_back(p, ind++);
+        }
 
         geo::Coordinate minorP(this->majorP().angle());
         minorP = minorP.rotate(M_PI_2);
@@ -245,31 +257,35 @@ Ellipse::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &con
         if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) {
             //add Ellipse vertices
             tmp = center() + majorP();
-            if (this->isAngleBetween(0))
+            if (this->isAngleBetween(0)) {
                 resPoints.emplace_back(tmp, ind++);
+            }
 
             tmp = center() - majorP();
-            if (this->isAngleBetween(M_PI))
+            if (this->isAngleBetween(M_PI)) {
                 resPoints.emplace_back(tmp, ind++);
+            }
 
             tmp = center() + minorP;
-            if (this->isAngleBetween(M_PI_2))
+            if (this->isAngleBetween(M_PI_2)) {
                 resPoints.emplace_back(tmp, ind++);
+            }
 
             tmp = center() - minorP;
-            if (this->isAngleBetween(-M_PI_2))
+            if (this->isAngleBetween(-M_PI_2)) {
                 resPoints.emplace_back(tmp, ind++);
+            }
         }
     }
 
     // Any where on entity path
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
         geo::Coordinate nearestPoint = this->nearestPointOnPath(coord);
         resPoints.emplace_back(nearestPoint, ind++);
     }
 
     // Any where on entity
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
         geo::Coordinate nearestPoint = nearestPointOnEntity(coord);
         resPoints.emplace_back(nearestPoint, ind++);
     }

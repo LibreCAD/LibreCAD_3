@@ -8,7 +8,13 @@
 
 using namespace LCViewer;
 
-Cursor::Cursor(int cursorSize, std::shared_ptr<DocumentCanvas> view, const lc::Color& xAxisColor, const lc::Color& yAxisColor) : _xAxisColor(xAxisColor), _yAxisColor(yAxisColor), _cursorSize(cursorSize) {
+Cursor::Cursor(int cursorSize,
+               const std::shared_ptr<DocumentCanvas>& view,
+               const lc::Color& xAxisColor,
+               const lc::Color& yAxisColor) :
+        _xAxisColor(xAxisColor),
+        _yAxisColor(yAxisColor),
+        _cursorSize(cursorSize) {
 /*
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_Draw_Event(const DrawEvent&)));
@@ -35,7 +41,7 @@ void Cursor::onDraw(DrawEvent const & event) const {
     double x=0, y=0;
 
     // If we had a snao point, move the mouse to that area
-    if (_lastSnapEvent.status() == true) {
+    if (_lastSnapEvent.status()) {
         x = _lastSnapEvent.snapPoint().x();
         y = _lastSnapEvent.snapPoint().y();
     } else {
@@ -79,5 +85,5 @@ Nano::Signal<void(const LocationEvent&)>& Cursor::locationEvents() {
 }
 
 lc::geo::Coordinate Cursor::position() const {
-	return lc::geo::Coordinate(_lastSnapEvent.snapPoint().x(), _lastSnapEvent.snapPoint().y());
+	return { _lastSnapEvent.snapPoint().x(), _lastSnapEvent.snapPoint().y() };
 }

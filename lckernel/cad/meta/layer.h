@@ -14,18 +14,13 @@ namespace lc {
         friend class builder::LayerBuilder;
 
         public:
-            Layer();
-            Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color);
-            Layer(const std::string name,
-                  const MetaLineWidthByValue lineWidth,
-                  const Color color,
-                  DxfLinePatternByValue_CSPtr linepattern,
-                  const bool frozen
+            Layer(std::string name = "0",
+                  const MetaLineWidthByValue& lineWidth = MetaLineWidthByValue(1),
+                  const Color& color = Color(),
+                  DxfLinePatternByValue_CSPtr linepattern = nullptr,
+                  bool frozen = false
             );
 
-            // Change this to meta data?
-            Layer(const std::string name, const Color color);
-            Layer(const std::string name, const MetaLineWidthByValue lineWidth);
             virtual ~Layer() = default;
 
             virtual const std::string id() const {

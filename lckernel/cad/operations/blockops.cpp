@@ -3,9 +3,9 @@
 using namespace lc;
 using namespace operation;
 
-AddBlock::AddBlock(const Document_SPtr& document, const Block_CSPtr& block) :
+AddBlock::AddBlock(const Document_SPtr& document, Block_CSPtr block) :
     DocumentOperation(document, "AddBlock"),
-    _block(block) {
+    _block(std::move(block)) {
 
 }
 
@@ -22,9 +22,9 @@ void AddBlock::processInternal() {
 }
 
 
-RemoveBlock::RemoveBlock(const Document_SPtr& document, const Block_CSPtr& block) :
+RemoveBlock::RemoveBlock(const Document_SPtr& document, Block_CSPtr block) :
     DocumentOperation(document, "RemoveBlock"),
-    _block(block){
+    _block(std::move(block)) {
 
 }
 
@@ -41,10 +41,10 @@ void RemoveBlock::processInternal() {
 }
 
 
-ReplaceBlock::ReplaceBlock(const Document_SPtr& document, const Block_CSPtr& oldBlock, const Block_CSPtr& newBlock) :
+ReplaceBlock::ReplaceBlock(const Document_SPtr& document, Block_CSPtr oldBlock, Block_CSPtr newBlock) :
     DocumentOperation(document, "ReplaceBlock"),
-    _oldBlock(oldBlock),
-    _newBlock(newBlock) {
+    _oldBlock(std::move(oldBlock)),
+    _newBlock(std::move(newBlock)) {
 
 }
 
@@ -61,7 +61,7 @@ void ReplaceBlock::redo() const {
 void ReplaceBlock::processInternal() {
     auto entities = document()->entitiesByBlock(_oldBlock).asVector();
 
-    for(auto entity : entities) {
+    for(const auto& entity : entities) {
         document()->removeEntity(entity);
         document()->insertEntity(entity->modify(
                 entity->layer(),

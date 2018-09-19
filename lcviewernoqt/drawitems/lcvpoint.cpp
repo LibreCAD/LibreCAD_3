@@ -3,7 +3,7 @@
 #include "../lcdrawoptions.h"
 using namespace LCViewer;
 
-LCVPoint::LCVPoint(const lc::entity::Point_CSPtr coordinate) :
+LCVPoint::LCVPoint(const lc::entity::Point_CSPtr& coordinate) :
         LCVDrawItem(coordinate, true),
         _point(coordinate) {
 }

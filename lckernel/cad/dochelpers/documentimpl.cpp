@@ -8,15 +8,13 @@
 
 using namespace lc;
 
-DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) : Document() , _storageManager(storageManager) {
-    _storageManager->addDocumentMetaType(std::make_shared<Layer>("0", Color(255, 255, 255)));
+DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
+        Document() ,
+        _storageManager(std::move(storageManager)) {
+    _storageManager->addDocumentMetaType(std::make_shared<Layer>("0", MetaLineWidthByValue(1.0), Color(255, 255, 255)));
 }
 
-DocumentImpl::~DocumentImpl() {
-    // LOG4CXX_DEBUG(logger, "DocumentImpl removed");
-}
-
-void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
+void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
     {
         std::lock_guard<std::mutex> lck(_documentMutex);
         begin(operation);
@@ -28,25 +26,25 @@ void DocumentImpl::execute(operation::DocumentOperation_SPtr operation) {
 
     auto tmp = _newWaitingCustomEntities;
     _newWaitingCustomEntities.clear();
-    for (auto insert : tmp) {
+    for (const auto& insert : tmp) {
         NewWaitingCustomEntityEvent customEntityEvent(insert);
         newWaitingCustomEntityEvent()(customEntityEvent);
     }
 }
 
-void DocumentImpl::begin(operation::DocumentOperation_SPtr operation) {
+void DocumentImpl::begin(const operation::DocumentOperation_SPtr& operation) {
     this->operationStart(operation);
     BeginProcessEvent event;
     beginProcessEvent()(event);
 }
 
-void DocumentImpl::commit(operation::DocumentOperation_SPtr operation) {
+void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
     _storageManager->optimise();
     CommitProcessEvent event(operation);
     commitProcessEvent()(event);
 }
 
-void DocumentImpl::insertEntity(entity::CADEntity_CSPtr cadEntity) {
+void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
         removeEntity(cadEntity);
     }
@@ -66,7 +64,7 @@ void DocumentImpl::insertEntity(entity::CADEntity_CSPtr cadEntity) {
     }
 }
 
-void DocumentImpl::removeEntity(entity::CADEntity_CSPtr entity) {
+void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
     if (insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const CustomEntityStorage>(insert->displayBlock());
@@ -84,7 +82,7 @@ void DocumentImpl::removeEntity(entity::CADEntity_CSPtr entity) {
 
 
 
-void DocumentImpl::addDocumentMetaType(DocumentMetaType_CSPtr dmt) {
+void DocumentImpl::addDocumentMetaType(const DocumentMetaType_CSPtr& dmt) {
     _storageManager->addDocumentMetaType(dmt);
 
     auto layer = std::dynamic_pointer_cast<const Layer>(dmt);
@@ -99,7 +97,7 @@ void DocumentImpl::addDocumentMetaType(DocumentMetaType_CSPtr dmt) {
         addLinePatternEvent()(event);
     }
 }
-void DocumentImpl::removeDocumentMetaType(DocumentMetaType_CSPtr dmt) {
+void DocumentImpl::removeDocumentMetaType(const DocumentMetaType_CSPtr& dmt) {
     _storageManager->removeDocumentMetaType(dmt);
     auto layer = std::dynamic_pointer_cast<const Layer>(dmt);
     if (layer != nullptr) {
@@ -113,7 +111,7 @@ void DocumentImpl::removeDocumentMetaType(DocumentMetaType_CSPtr dmt) {
         removeLinePatternEvent()(event);
     }
 }
-void DocumentImpl::replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) {
+void DocumentImpl::replaceDocumentMetaType(const DocumentMetaType_CSPtr& oldDmt, DocumentMetaType_CSPtr newDmt) {
     _storageManager->replaceDocumentMetaType(oldDmt, newDmt);
     auto oldLayer = std::dynamic_pointer_cast<const Layer>(oldDmt);
     if (oldLayer != nullptr) {
@@ -140,17 +138,12 @@ std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsenseti
     return _storageManager->allMetaTypes();
 }
 
-EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(Layer_CSPtr layer) {
+EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const Layer_CSPtr& layer) {
     std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);
 }
 
-StorageManager_SPtr DocumentImpl::storageManager() const {
-    return _storageManager;
-}
-
-
-EntityContainer<entity::CADEntity_CSPtr>& DocumentImpl::entityContainer()  {
+EntityContainer<entity::CADEntity_CSPtr>& DocumentImpl::entityContainer() {
     //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
 }
@@ -175,7 +168,7 @@ std::vector<DxfLinePatternByValue_CSPtr> DocumentImpl::linePatterns() const {
     return _storageManager->metaTypes<const DxfLinePatternByValue>();
 }
 
-EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(Block_CSPtr block) {
+EntityContainer<entity::CADEntity_CSPtr> DocumentImpl::entitiesByBlock(const Block_CSPtr& block) {
     return _storageManager->entitiesByBlock(block);
 }
 

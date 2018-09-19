@@ -13,9 +13,12 @@ std::string DxfLinePattern::description() const {
     return "";
 }
 
-DxfLinePatternByValue::DxfLinePatternByValue(const std::string &name, const std::string &description, const std::vector<double> &path, const double length) :
-        _name(name), _description(description), _path(path), _length(length) {
-    assert(!StringHelper::isBlank(name) > 0 && "Name of DxfLinePatternByValue must be given");
+DxfLinePatternByValue::DxfLinePatternByValue(std::string name, std::string description, std::vector<double> path, const double length) :
+        _name(std::move(name)),
+        _description(std::move(description)),
+        _path(std::move(path)),
+        _length(length) {
+    assert(!StringHelper::isBlank(_name) > 0 && "Name of DxfLinePatternByValue must be given");
     // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }
 
@@ -27,11 +30,11 @@ DxfLinePatternByValue::DxfLinePatternByValue(const builder::LinePatternBuilder& 
 
 }
 
-double DxfLinePatternByValue::calculatePathLength(const std::vector<double> &_path) {
-    return std::fabs(std::accumulate(_path.begin(), _path.end(), 0.));
+double DxfLinePatternByValue::calculatePathLength(const std::vector<double>& path) {
+    return std::fabs(std::accumulate(path.begin(), path.end(), 0.));
 }
 
-std::vector<double> DxfLinePatternByValue::generatePattern(const std::vector<double> &dxfPattern, const double length, const double lineWidth) const {
+std::vector<double> DxfLinePatternByValue::generatePattern(const std::vector<double> &dxfPattern, double length, double lineWidth) const {
     // DXF Linestyle Pattern is as follows
     // Parameters pattern – is a list of float values, elements > 0 are solid line segments, elements < 0 are gaps and elements = 0 are points. pattern[0] = total pattern length in drawing units
     // w need to generate them as follows:
@@ -42,7 +45,7 @@ std::vector<double> DxfLinePatternByValue::generatePattern(const std::vector<dou
     //};
     std::vector<double> dxfPat;
 
-    if (dxfPattern.size() == 0) {
+    if (dxfPattern.empty()) {
         return dxfPat;
     }
 
@@ -81,8 +84,8 @@ std::vector<double> DxfLinePatternByValue::generatePattern(const std::vector<dou
 
     // Set length for this pattern
     double mul = length / last;
-    for (unsigned int i = 0; i < dxfPat.size(); i++) {
-        dxfPat[i] = dxfPat[i] * mul;
+    for (auto& part : dxfPat) {
+        part = part * mul;
     }
 
     return dxfPat;

@@ -28,10 +28,13 @@ namespace lc {
              * @param explicitValue given value
              */
 
-            Dimension(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint, double const textAngle,
-                      double lineSpacingFactor, TextConst::LineSpacingStyle const &lineSpacingStyle,
-                      std::string const &explicitValue);
+            Dimension(geo::Coordinate definitionPoint,
+                      geo::Coordinate middleOfText,
+                      TextConst::AttachmentPoint attachmentPoint,
+                      double textAngle,
+                      double lineSpacingFactor,
+                      TextConst::LineSpacingStyle lineSpacingStyle,
+                      std::string explicitValue);
 
             /**
              * @brief Dimension
@@ -40,13 +43,13 @@ namespace lc {
              * @param attachmentPoint Where the text is located in reference to the text location
              * @param angle Angle of obliqueness
              */
-            Dimension(geo::Coordinate const &_definitionPoint,
-                      geo::Coordinate const &_middleOfText,
-                      TextConst::AttachmentPoint _attachPt,
-                      double _angle);
+            Dimension(geo::Coordinate definitionPoint,
+                      geo::Coordinate middleOfText,
+                      TextConst::AttachmentPoint attachmentPoint,
+                      double textAngle);
 
 
-            Dimension(Dimension const &other);
+            Dimension(const Dimension& other);
 
         public:
             /**

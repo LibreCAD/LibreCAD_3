@@ -31,13 +31,13 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     return realsize;
 }
 
-std::string loadFile(std::string url) {
+std::string loadFile(const std::string& url) {
     CURL* curl;
     CURLcode res;
 
     curl = curl_easy_init();
 
-    if (curl) {
+    if (curl != nullptr) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         /* example.com is redirected, so we tell libcurl to follow redirection */
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -61,11 +61,12 @@ std::string loadFile(std::string url) {
     }
 }
 
-std::ofstream ofile;
-cairo_status_t write_func (void * closure, const unsigned char *data, unsigned int length) {
+std::ofstream* ofile;
+cairo_status_t write_func (void* closure, const unsigned char* data, unsigned int length) {
 
-    if (ofile.is_open())
-        ofile.write((const char *)data, length);
+    if (ofile->is_open()) {
+        ofile->write((const char*) data, length);
+    }
 
     return CAIRO_STATUS_SUCCESS;
 }
@@ -88,7 +89,7 @@ static FILE* openFileDialog(bool isOpening, const char* description, const char*
 int main(int argc, char** argv) {
     int width = DEFAULT_IMAGE_WIDTH;
     int height = DEFAULT_IMAGE_HEIGHT;
-    std::string fIn = "";
+    std::string fIn;
     std::string fOut = DEFAULT_OUT_FILENAME;
     std::string fType;
 
@@ -114,12 +115,12 @@ int main(int argc, char** argv) {
         std::cerr << "Height must be > 0" << std::endl;
     }
 
-    if (vm.count("help")) {
+    if (vm.count("help") != 0u) {
         std::cout << desc << "\n";
         return 1;
     }
 
-    if (fIn.size() == 0) {
+    if (fIn.empty()) {
         std::cerr << "Input filename cannot be empty" << std::endl;
         std::cout << desc << "\n";
         return 1;
@@ -138,22 +139,25 @@ int main(int argc, char** argv) {
     /* try to guess from file extension the output type */
     if (fType.empty()) {
         fType = boost::filesystem::extension(fOut);
-        fType = fType.substr(fType.find_first_of(".") + 1);
+        fType = fType.substr(fType.find_first_of('.') + 1);
     }
 
     std::transform(fType.begin(), fType.end(), fType.begin(), ::tolower);
-    ofile.open(fOut);
+    ofile = new std::ofstream;
+    ofile->open(fOut);
 
     using namespace CairoPainter;
 
     LcPainter* lcPainter = nullptr;
-    if (fType == "pdf")
+    if (fType == "pdf") {
         lcPainter = new LcCairoPainter<backend::PDF>(width, height, &write_func);
-    else if (fType == "svg")
+    }
+    else if (fType == "svg") {
         lcPainter = new LcCairoPainter<backend::SVG>(width, height, &write_func);
-        // cairo can print any surface to PNG
-    else
+    }
+    else {
         lcPainter = new LcCairoPainter<backend::SVG>(width, height, nullptr);
+    }
 
     // Set device width/height
     _canvas->newDeviceSize(width, height);
@@ -172,14 +176,15 @@ int main(int argc, char** argv) {
 
     std::string luaCode = loadFile(fIn);
 
-    if (luaCode.size() != 0) {
+    if (!luaCode.empty()) {
         std::string out = lcLua.runString(luaCode.c_str());
 
-        if (out.size() > 0) {
+        if (!out.empty()) {
             std::cerr << out << std::endl;
             return 2;
         }
-    } else {
+    }
+    else {
         std::cerr << "No lua code was loaded" << std::endl;
         return 1;
     }
@@ -189,12 +194,14 @@ int main(int argc, char** argv) {
     _canvas->render(*lcPainter, VIEWER_DOCUMENT);
     _canvas->render(*lcPainter, VIEWER_FOREGROUND);
 
-    if (fType == "png" || (fType != "pdf" && fType != "svg"))
-        static_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(fOut);
-    ofile.close();
+    if (fType == "png" || (fType != "pdf" && fType != "svg")) {
+        dynamic_cast<LcCairoPainter<CairoPainter::backend::Image>*>(lcPainter)->writePNG(fOut);
+    }
+    ofile->close();
 
     lc::LuaCustomEntityManager::getInstance().removePlugins();
 
     delete lcPainter;
+    delete ofile;
     return 0;
 }

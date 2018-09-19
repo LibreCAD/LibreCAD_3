@@ -13,7 +13,7 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
 
     setMaximumHeight(32);
 
-    setDocument(document);
+    setDocument(std::move(document));
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
 }
@@ -42,7 +42,7 @@ void LinePatternSelect::setDocument(lc::Document_SPtr document) {
         _document->replaceLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_replaceLinePatternEvent>(this);
     }
 
-    _document = document;
+    _document = std::move(document);
 
     if(_document != nullptr) {
         _document->addLinePatternEvent().connect<LinePatternSelect, &LinePatternSelect::on_addLinePatternEvent>(this);
@@ -78,7 +78,7 @@ lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
 QIcon LinePatternSelect::generateQIcon(lc::DxfLinePatternByValue_CSPtr linePattern) {
     QPixmap pixmap(qIconSize);
 
-    LinePatternPainter painter(&pixmap, linePattern);
+    LinePatternPainter painter(&pixmap, std::move(linePattern));
     painter.drawLinePattern();
 
     return QIcon(pixmap);
@@ -123,7 +123,7 @@ void LinePatternSelect::createEntries() {
         }
 
         auto linePatterns = _document->linePatterns();
-        for (auto linePattern : linePatterns) {
+        for (const auto& linePattern : linePatterns) {
             auto lp = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePattern);
 
             if(lp == nullptr) {
@@ -152,7 +152,7 @@ void LinePatternSelect::on_replaceLinePatternEvent(const lc::ReplaceLinePatternE
     setCurrentText(event.newLinePattern()->name().c_str());
 }
 
-void LinePatternSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+void LinePatternSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {

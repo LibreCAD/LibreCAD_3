@@ -26,6 +26,8 @@
 #include "cad/geometry/geovector.h"
 #include <vector>
 
+//TODO: operator() parameters should be inverted automatically
+
 namespace lc {
 
     /**
@@ -51,103 +53,103 @@ namespace lc {
 
         Intersect(Method method, double tolerance);
 
-        bool operator()(const lc::geo::Vector &, const lc::geo::Vector &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Point &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Line &);
-        bool operator()(const lc::geo::Vector &, const lc::geo::Circle &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Arc &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Ellipse &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Spline &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::geo::Vector &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::geo::Vector& v1, const lc::geo::Vector& v2);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Point& p);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Line& l);
+        bool operator()(const lc::geo::Vector& v, const lc::geo::Circle& c);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Arc& a);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Ellipse& e);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Spline& s);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::geo::Vector& v, const lc::entity::Image& i){return false;};
+
+        //TODO: is Line intersection required ? (use geo::Vector)
+        bool operator()(const lc::entity::Line& l, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::Line& l, const lc::entity::Point& p);
+        bool operator()(const lc::entity::Line& l1, const lc::entity::Line& l2);
+        bool operator()(const lc::entity::Line& l, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::Line& l, const lc::entity::Arc& a);
+        bool operator()(const lc::entity::Line& l, const lc::entity::Ellipse& e);
+        bool operator()(const lc::entity::Line& l, const lc::entity::Spline& s);
+        bool operator()(const lc::entity::Line& l, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::entity::Line& l, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::Line &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Point &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Line &);
-        bool operator()(const lc::entity::Line &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::Line &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::Line &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::Point& p, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::Point& p1, const lc::entity::Point& p2);
+        bool operator()(const lc::entity::Point& p, const lc::entity::Line& l);
+        bool operator()(const lc::entity::Point& p, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::Point& p, const lc::entity::Arc& a);
+        bool operator()(const lc::entity::Point& p, const lc::entity::Ellipse& e);
+        bool operator()(const lc::entity::Point& p, const lc::entity::Spline& s);
+        bool operator()(const lc::entity::Point& p, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::entity::Point& p, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::Point &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Point &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Line &);
-        bool operator()(const lc::entity::Point &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::Point &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::Point &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::geo::Circle& c, const lc::geo::Vector& v);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Point& p);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Line& l);
+        bool operator()(const lc::geo::Circle& c1, const lc::geo::Circle& c2);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Arc& arc);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Ellipse& e);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Spline& s);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::geo::Circle& c, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::geo::Circle &, const lc::geo::Vector &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Point &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Line &);
-        bool operator()(const lc::geo::Circle &, const lc::geo::Circle &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Arc &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Ellipse &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Spline &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::geo::Circle &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::Arc& a, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::Point& p);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::Line& l);
+        bool operator()(const lc::entity::Arc& a, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::Arc& a1, const lc::entity::Arc& a2);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::Ellipse& e);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::Spline& s);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::entity::Arc& a, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::Arc &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Point &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Line &);
-        bool operator()(const lc::entity::Arc &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::Arc &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::Ellipse& e, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::Point& p);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::Line& l);
+        bool operator()(const lc::entity::Ellipse& e, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::Arc& a);
+        bool operator()(const lc::entity::Ellipse& e1, const lc::entity::Ellipse& e2);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::Spline& s);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::entity::Ellipse& e, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::Ellipse &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Point &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Line &);
-        bool operator()(const lc::entity::Ellipse &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::Ellipse &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::Spline& s, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::Point& p);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::Line& l);
+        bool operator()(const lc::entity::Spline& s, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::Arc& a);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::Ellipse& e);
+        bool operator()(const lc::entity::Spline& s1, const lc::entity::Spline& s2);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::LWPolyline& lwp);
+        bool operator()(const lc::entity::Spline& s, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::Spline &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Point &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Line &);
-        bool operator()(const lc::entity::Spline &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::Spline &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::geo::Vector& v);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Point& p);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Line& l);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::geo::Circle& c);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Arc& a);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Ellipse& e);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Spline& s);
+        bool operator()(const lc::entity::LWPolyline& lwp1, const lc::entity::LWPolyline& lwp2);
+        bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Image& i){return false;};
 
 
-        bool operator()(const lc::entity::LWPolyline &, const lc::geo::Vector &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Point &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Line &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::geo::Circle &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Arc &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Ellipse &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Spline &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::LWPolyline &);
-        bool operator()(const lc::entity::LWPolyline &, const lc::entity::Image &){return false;};
-
-
-        bool operator()(const lc::entity::Image &, const lc::geo::Vector &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Point &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Line &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::geo::Circle &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Arc &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Ellipse &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Spline &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::LWPolyline &){return false;};
-        bool operator()(const lc::entity::Image &, const lc::entity::Image &){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::geo::Vector& v){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::Point& p){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::Line& l){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::geo::Circle& c){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::Arc& a){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::Ellipse& e){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::Spline& s){return false;};
+        bool operator()(const lc::entity::Image& i, const lc::entity::LWPolyline& lwp){return false;};
+        bool operator()(const lc::entity::Image& i1, const lc::entity::Image& i2){return false;};
 
         bool operator()(const lc::Visitable &s1, const lc::Visitable &s2) {
             // If we end up here we found a un-supported intersection
@@ -168,9 +170,9 @@ namespace lc {
         std::vector<geo::Coordinate> result() const;
 
     private:
-        void geovisit(const geo::Vector &, const geo::Vector &);
-        void geovisit(const geo::Vector &, const geo::Arc &);
-        void geovisit(const geo::Arc &, const geo::Arc &);
+        void geovisit(const geo::Vector& v1, const geo::Vector& v2);
+        void geovisit(const geo::Vector& v, const geo::Arc& arc);
+        void geovisit(const geo::Arc& arc1, const geo::Arc& arc2);
     private:
         std::vector<geo::Coordinate> _intersectionPoints;
         const Method _method;

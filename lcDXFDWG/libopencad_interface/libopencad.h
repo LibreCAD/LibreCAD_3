@@ -23,7 +23,7 @@ namespace lc {
 
             private:
                 Layer_SPtr addLayer(const CADLayer& layer);
-                void addGeometry(lc::Layer_SPtr layer, const CADGeometry* geometry);
+                void addGeometry(const lc::Layer_SPtr& layer, const CADGeometry* geometry);
 
                 void addArc(lc::Layer_SPtr layer, const CADArc* arc);
                 void addLine(lc::Layer_SPtr layer, const CADLine* line);

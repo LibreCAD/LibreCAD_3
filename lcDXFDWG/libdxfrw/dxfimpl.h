@@ -95,22 +95,22 @@ class DXFimpl : public DRW_Interface {
         virtual void writeDimstyles() override { }
         virtual void writeAppId() override;
 
-        void getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity);
-        void writeEntity(lc::entity::CADEntity_CSPtr e);
-        void writePoint(const lc::entity::Point_CSPtr p);
-        void writeLine(const lc::entity::Line_CSPtr l);
-        void writeCircle(const lc::entity::Circle_CSPtr c);
-        void writeArc(const lc::entity::Arc_CSPtr a);
-        void writeEllipse(const lc::entity::Ellipse_CSPtr s);
-        void writeSpline(const lc::entity::Spline_CSPtr s);
-        void writeDimension(const lc::entity::Dimension_CSPtr d);
-        void writeLWPolyline(const lc::entity::LWPolyline_CSPtr p);
-        void writeImage(const lc::entity::Image_CSPtr i);
-        void writeText(const lc::entity::Text_CSPtr t);
-        void writeInsert(const lc::entity::Insert_CSPtr i);
+        void getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity);
+        void writeEntity(const lc::entity::CADEntity_CSPtr& entity);
+        void writePoint(const lc::entity::Point_CSPtr& p);
+        void writeLine(const lc::entity::Line_CSPtr& l);
+        void writeCircle(const lc::entity::Circle_CSPtr& c);
+        void writeArc(const lc::entity::Arc_CSPtr& a);
+        void writeEllipse(const lc::entity::Ellipse_CSPtr& s);
+        void writeSpline(const lc::entity::Spline_CSPtr& s);
+        void writeDimension(const lc::entity::Dimension_CSPtr& d);
+        void writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p);
+        void writeImage(const lc::entity::Image_CSPtr& i);
+        void writeText(const lc::entity::Text_CSPtr& t);
+        void writeInsert(const lc::entity::Insert_CSPtr& i);
 
-        void writeLayer(const std::shared_ptr<const lc::Layer> layer);
-        void writeBlock(const lc::Block_CSPtr block);
+        void writeLayer(const std::shared_ptr<const lc::Layer>& layer);
+        void writeBlock(const lc::Block_CSPtr& block);
 
         // UTILITIES FUNCTIONS
         lc::AngleFormat numberToAngleFormat(int num);
@@ -156,7 +156,7 @@ class DXFimpl : public DRW_Interface {
 
         dxfRW* dxfW;
 
-        lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const&) const;
+        lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
         /**
         * Convert from a DRW_Coord to a geo::Coordinate
         */

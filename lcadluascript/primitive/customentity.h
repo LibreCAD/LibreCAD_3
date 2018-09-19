@@ -15,27 +15,27 @@ namespace lc {
                  * @param customEntity Custom entity to copy functions from
                  * @param insert Insert to copy data from, should be an instance of Insert
                  */
-                LuaCustomEntity(Insert_CSPtr insert, LuaCustomEntity_CSPtr customEntity, bool sameID = false);
+                LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID = false);
 
-                virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord,
-                                                                 const SimpleSnapConstrain& simpleSnapConstrain,
-                                                                 double minDistanceToSnap,
-                                                                 int maxNumberOfSnapPoints) const override;
+                std::vector<EntityCoordinate> snapPoints(const geo::Coordinate& coord,
+                                                         const SimpleSnapConstrain& simpleSnapConstrain,
+                                                         double minDistanceToSnap,
+                                                         int maxNumberOfSnapPoints) const override;
 
-                virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
+                geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const override;
 
                 std::map<unsigned int, geo::Coordinate> dragPoints() const override;
                 void setDragPoint(lc::geo::Coordinate position) const override;
                 void onDragPointClick(lc::operation::Builder_SPtr builder, unsigned int point) const override;
                 void onDragPointRelease(lc::operation::Builder_SPtr builder) const override;
 
-                CADEntity_CSPtr modifyInsert(CADEntity_CSPtr insert) const;
+                CADEntity_CSPtr modifyInsert(const CADEntity_CSPtr& insert) const;
                 CADEntity_CSPtr move(const geo::Coordinate& offset) const override;
                 CADEntity_CSPtr copy(const geo::Coordinate& offset) const override;
-                CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const override;
+                CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, double rotation_angle) const override;
                 CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const override;
                 CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override;
-                CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+                CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             private:
                 LuaIntf::LuaRef _snapPoints;

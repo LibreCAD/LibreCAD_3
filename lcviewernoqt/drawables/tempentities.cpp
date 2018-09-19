@@ -2,15 +2,16 @@
 
 using namespace LCViewer;
 
-TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) : _docCanvas(docCanvas) {
+TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) :
+		_docCanvas(std::move(docCanvas)) {
 }
 
 void TempEntities::addEntity(lc::entity::CADEntity_CSPtr entity) {
-    _entities.insert(entity);
+    _entities.insert(std::move(entity));
 }
 
 void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
-	_entities.remove(entity);
+	_entities.remove(std::move(entity));
 }
 
 void TempEntities::onDraw(DrawEvent const &event) {

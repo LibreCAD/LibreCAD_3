@@ -19,7 +19,7 @@ namespace lc {
          */
         class AddLinePattern : public DocumentOperation {
         public:
-            AddLinePattern(Document_SPtr document, const DxfLinePattern_CSPtr LinePattern);
+            AddLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern);
 
             virtual void undo() const;
             virtual void redo() const;
@@ -28,7 +28,7 @@ namespace lc {
             virtual void processInternal();
 
         private:
-            DxfLinePattern_CSPtr _LinePattern;
+            DxfLinePattern_CSPtr _linePattern;
         };
 
         /**
@@ -36,7 +36,7 @@ namespace lc {
          */
         class RemoveLinePattern : public DocumentOperation {
         public:
-            RemoveLinePattern(Document_SPtr document, const DxfLinePattern_CSPtr LinePattern);
+            RemoveLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern);
 
             virtual void undo() const;
             virtual void redo() const;
@@ -45,8 +45,7 @@ namespace lc {
             virtual void processInternal();
 
         private:
-            DxfLinePattern_CSPtr _LinePattern;
-            std::vector<entity::CADEntity_CSPtr> _entities;
+            DxfLinePattern_CSPtr _linePattern;
         };
 
         /**
@@ -55,8 +54,8 @@ namespace lc {
         class ReplaceLinePattern : public DocumentOperation {
         public:
             ReplaceLinePattern(Document_SPtr document,
-                               const DxfLinePattern_CSPtr oldLinePattern,
-                               const DxfLinePattern_CSPtr newLinePattern
+                               DxfLinePattern_CSPtr oldLinePattern,
+                               DxfLinePattern_CSPtr newLinePattern
             );
 
             virtual void undo() const;

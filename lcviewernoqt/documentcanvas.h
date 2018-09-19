@@ -30,7 +30,7 @@ namespace LCViewer {
 
     class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
         public:
-            DocumentCanvas(std::shared_ptr<lc::Document> document, std::function<void(double*, double*)> deviceToUser = [](double*, double*){});
+            DocumentCanvas(const std::shared_ptr<lc::Document>& document, std::function<void(double*, double*)> deviceToUser = [](double*, double*){});
             virtual ~DocumentCanvas();
 
         /**
@@ -46,7 +46,8 @@ namespace LCViewer {
          * @param entity LCVDrawItem_CSPtr
          * @param insert Insert entity if we are rendering a bloc
          */
-        void drawEntity(LcPainter& painter, LCVDrawItem_CSPtr entity, lc::entity::Insert_CSPtr insert = nullptr);
+        void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
+                        const lc::entity::Insert_CSPtr& insert = nullptr);
 
         /**
          * @brief autoScale
@@ -66,8 +67,8 @@ namespace LCViewer {
          * @brief zoom
          * into a specific area
          * @param factor
-         * @param deviceCenterX
-         * @param deviceCenterY
+         * @param centerX
+         * @param centerY
          */
         void zoom(LcPainter& painter, double factor, bool relativezoom, unsigned int deviceCenterX, unsigned int deviceCenterY);
 
@@ -166,7 +167,7 @@ namespace LCViewer {
         /**
          * Return CADEntity as LCVDrawItem
          */
-        static LCVDrawItem_SPtr asDrawable(lc::entity::CADEntity_CSPtr entity);
+        static LCVDrawItem_SPtr asDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
         /**
          * @brief Convert device coordinate to user coordinate
@@ -182,20 +183,21 @@ namespace LCViewer {
          */
         void selectPoint(double x, double y);
 
-        LCViewer::LCVDrawItem_SPtr getDrawable(lc::entity::CADEntity_CSPtr entity);
+        LCViewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
     private:
         void on_addEntityEvent(const lc::AddEntityEvent&);
         void on_removeEntityEvent(const lc::RemoveEntityEvent&);
         void on_commitProcessEvent(const lc::CommitProcessEvent&);
 
-        double drawWidth(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert);
+        double drawWidth(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert);
         std::vector<double> drawLinePattern(
-                lc::entity::CADEntity_CSPtr entity,
-                lc::entity::Insert_CSPtr insert,
+                const lc::entity::CADEntity_CSPtr& entity,
+                const lc::entity::Insert_CSPtr& insert,
                 double width
         );
-        lc::Color drawColor(lc::entity::CADEntity_CSPtr entity, lc::entity::Insert_CSPtr insert, bool selected);
+        lc::Color drawColor(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert,
+                            bool selected);
 
         // Original document
         std::shared_ptr<lc::Document> _document;

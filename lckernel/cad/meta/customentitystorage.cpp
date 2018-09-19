@@ -4,14 +4,14 @@ using namespace lc;
 
 //TODO: get a real ID
 
-CustomEntityStorage::CustomEntityStorage(const std::string& pluginName,
-                                         const std::string& entityName,
-                                         const geo::Coordinate& base,
-                                         const std::map<std::string, std::string> params) :
-    Block("LC_" + std::to_string(rand()), base),
-    _pluginName(pluginName),
-    _entityName(entityName),
-    _params(params) {
+CustomEntityStorage::CustomEntityStorage(std::string pluginName,
+                                         std::string entityName,
+                                         geo::Coordinate base,
+                                         std::map<std::string, std::string> params) :
+    Block("LC_" + std::to_string(rand()), std::move(base)), // NOLINT
+    _pluginName(std::move(pluginName)),
+    _entityName(std::move(entityName)),
+    _params(std::move(params)) {
 
 }
 

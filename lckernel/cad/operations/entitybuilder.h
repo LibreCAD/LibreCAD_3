@@ -11,7 +11,6 @@ namespace lc {
     DECLARE_SHORT_SHARED_PTR(Document)
 
     namespace operation {
-
         class EntityBuilder: public DocumentOperation {
                 friend class lc::operation::Base;
 
@@ -20,7 +19,7 @@ namespace lc {
                  * @brief Builder constructor
                  * @param document to apply operations
                  */
-                EntityBuilder(Document_SPtr document);
+                explicit EntityBuilder(const Document_SPtr& document);
 
                 /**
                  * @brief append entity to the stack

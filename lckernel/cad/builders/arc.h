@@ -6,9 +6,8 @@ namespace lc {
     namespace builder {
         class ArcBuilder : public CADEntityBuilder {
             public:
-                ArcBuilder();
-
-                virtual ~ArcBuilder();
+                ArcBuilder() = default;
+                virtual ~ArcBuilder() = default;
 
                 const geo::Coordinate& center() const;
                 ArcBuilder* setCenter(const geo::Coordinate& center);

@@ -4,19 +4,25 @@
 using namespace lc;
 using namespace  entity;
 
-CADEntity::CADEntity(const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
+CADEntity::CADEntity(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
         ID(),
-        _layer(layer),
-        _metaInfo(metaInfo),
-        _block(block) {
+        _layer(std::move(layer)),
+        _metaInfo(std::move(metaInfo)),
+        _block(std::move(block)) {
 }
 
-CADEntity::CADEntity(CADEntity_CSPtr cadEntity) : ID(), _layer(cadEntity->_layer), _metaInfo(cadEntity->_metaInfo),
-    _block(cadEntity->_block) {
+CADEntity::CADEntity(const CADEntity_CSPtr& cadEntity) :
+        ID(),
+        _layer(cadEntity->_layer),
+        _metaInfo(cadEntity->_metaInfo),
+        _block(cadEntity->_block) {
 }
 
-CADEntity::CADEntity(CADEntity_CSPtr cadEntity, bool sameID)
-    : ID(sameID ? cadEntity->id() : 0), _layer(cadEntity->_layer), _metaInfo(cadEntity->_metaInfo), _block(cadEntity->_block) {
+CADEntity::CADEntity(const CADEntity_CSPtr& cadEntity, bool sameID) :
+        ID(sameID ? cadEntity->id() : 0),
+        _layer(cadEntity->_layer),
+        _metaInfo(cadEntity->_metaInfo),
+        _block(cadEntity->_block) {
 }
 
 CADEntity::CADEntity(const lc::builder::CADEntityBuilder& builder) :

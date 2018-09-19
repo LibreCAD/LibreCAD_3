@@ -6,7 +6,7 @@
 
 using namespace LCViewer;
 
-LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr dimRadial) : 
+LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr& dimRadial) :
         LCVDrawItem(dimRadial, true),
         _dimRadial(dimRadial) {
 }

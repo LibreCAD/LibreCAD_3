@@ -13,10 +13,6 @@ LayerBuilder::LayerBuilder() :
 
 }
 
-LayerBuilder::~LayerBuilder() {
-
-}
-
 const std::string& LayerBuilder::name() const {
     return _name;
 }
@@ -69,12 +65,12 @@ LayerBuilder* LayerBuilder::setIsFrozen(bool isFrozen) {
 
 Layer_CSPtr LayerBuilder::build() {
     if(!checkValues()) {
-        throw "Missing values";
+        throw std::runtime_error("Missing values");
     }
 
     return Layer_CSPtr(new Layer(*this));
 }
 
 bool LayerBuilder::checkValues() {
-    return _name != "";
+    return !_name.empty();
 }

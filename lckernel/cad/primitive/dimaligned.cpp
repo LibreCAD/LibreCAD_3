@@ -5,40 +5,47 @@
 using namespace lc;
 using namespace entity;
 
-DimAligned::DimAligned(geo::Coordinate const& definitionPoint,
-                       geo::Coordinate const& middleOfText,
-                       TextConst::AttachmentPoint const& attachmentPoint,
+DimAligned::DimAligned(geo::Coordinate definitionPoint,
+                       geo::Coordinate middleOfText,
+                       TextConst::AttachmentPoint attachmentPoint,
                        double textAngle,
-                       double const lineSpacingFactor,
-                       TextConst::LineSpacingStyle const& lineSpacingStyle,
-                       std::string const& explicitValue,
-                       geo::Coordinate const& definitionPoint2,
-                       geo::Coordinate const& definitionPoint3,
-                       const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo,
-                       const Block_CSPtr block):
-    CADEntity(layer, metaInfo, block),
-    Dimension(definitionPoint, middleOfText, attachmentPoint, textAngle, lineSpacingFactor, lineSpacingStyle, explicitValue),
-    _definitionPoint2(definitionPoint2),
-    _definitionPoint3(definitionPoint3) {
+                       double lineSpacingFactor,
+                       TextConst::LineSpacingStyle lineSpacingStyle,
+                       std::string explicitValue,
+                       geo::Coordinate definitionPoint2,
+                       geo::Coordinate definitionPoint3,
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo,
+                       Block_CSPtr block):
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    Dimension(std::move(definitionPoint),
+              std::move(middleOfText),
+              attachmentPoint,
+              textAngle,
+              lineSpacingFactor,
+              lineSpacingStyle,
+              std::move(explicitValue)
+    ),
+    _definitionPoint2(std::move(definitionPoint2)),
+    _definitionPoint3(std::move(definitionPoint3)) {
 
 }
 
 
-DimAligned::DimAligned(const DimAligned_CSPtr other, bool sameID) :
+DimAligned::DimAligned(const DimAligned_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         Dimension(*other),
         _definitionPoint2(other->_definitionPoint2),
         _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
-                                    geo::Coordinate const& p2,
-                                    geo::Coordinate const& middleOfText,
-                                    std::string const& explicitValue,
-                                    const Layer_CSPtr layer,
-                                    const MetaInfo_CSPtr metaInfo,
-                                    const Block_CSPtr block) {
+DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate p1,
+                                    geo::Coordinate p2,
+                                    geo::Coordinate middleOfText,
+                                    std::string explicitValue,
+                                    Layer_CSPtr layer,
+                                    MetaInfo_CSPtr metaInfo,
+                                    Block_CSPtr block) {
     auto nearestPoint = geo::Vector(p1, p2).nearestPointOnPath(middleOfText);
     auto distance = nearestPoint.distanceTo(middleOfText);
 
@@ -52,43 +59,85 @@ DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate const& p1,
 
     geo::Coordinate p0 = p2.move(dir, distance);
 
-    return std::make_shared<DimAligned>(p0,
-                                        middleOfText,
+    return std::make_shared<DimAligned>(std::move(p0),
+                                        std::move(middleOfText),
                                         TextConst::AttachmentPoint::Top_center,
                                         0.,
                                         0.,
                                         TextConst::LineSpacingStyle::AtLeast,
-                                        explicitValue,
-                                        p1,
-                                        p2,
-                                        layer,
-                                        metaInfo,
-                                        block
+                                        std::move(explicitValue),
+                                        std::move(p1),
+                                        std::move(p2),
+                                        std::move(layer),
+                                        std::move(metaInfo),
+                                        std::move(block)
     );
 }
 
 
 
 CADEntity_CSPtr DimAligned::move(const geo::Coordinate& offset) const {
-    auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset,  this->_definitionPoint3 + offset,  this->layer(), this->metaInfo());
+    auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint() + offset,
+                                                      this->middleOfText() + offset,
+                                                      this->attachmentPoint(),
+                                                      this->textAngle(),
+                                                      this->lineSpacingFactor(),
+                                                      this->lineSpacingStyle(),
+                                                      this->explicitValue(),
+                                                      this->_definitionPoint2 + offset,
+                                                      this->_definitionPoint3 + offset,
+                                                      this->layer(),
+                                                      this->metaInfo()
+    );
     newDimAligned->setID(this->id());
     return newDimAligned;
 }
 
 CADEntity_CSPtr DimAligned::copy(const geo::Coordinate& offset) const {
-    auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint() + offset, this->middleOfText() + offset, this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(),  this->_definitionPoint2 + offset, this->_definitionPoint3 + offset,  this->layer(), this->metaInfo());
+    auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint() + offset,
+                                                      this->middleOfText() + offset,
+                                                      this->attachmentPoint(),
+                                                      this->textAngle(),
+                                                      this->lineSpacingFactor(),
+                                                      this->lineSpacingStyle(),
+                                                      this->explicitValue(),
+                                                      this->_definitionPoint2 + offset,
+                                                      this->_definitionPoint3 + offset,
+                                                      this->layer(),
+                                                      this->metaInfo()
+    );
     return newDimAligned;
 }
 
-CADEntity_CSPtr DimAligned::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr DimAligned::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
     auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint().rotate(rotation_center, rotation_angle),
-                                                      this->middleOfText().rotate(rotation_center, rotation_angle), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.rotate(rotation_center, rotation_angle), this->_definitionPoint3.rotate(rotation_center, rotation_angle),  this->layer(), this->metaInfo());
+                                                      this->middleOfText().rotate(rotation_center, rotation_angle),
+                                                      this->attachmentPoint(),
+                                                      this->textAngle(),
+                                                      this->lineSpacingFactor(),
+                                                      this->lineSpacingStyle(),
+                                                      this->explicitValue(),
+                                                      this->_definitionPoint2.rotate(rotation_center, rotation_angle),
+                                                      this->_definitionPoint3.rotate(rotation_center, rotation_angle),
+                                                      this->layer(),
+                                                      this->metaInfo()
+    );
     return newDimAligned;
 }
 
 CADEntity_CSPtr DimAligned::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint().scale(scale_center, scale_factor),
-                                                      this->middleOfText().scale(scale_center, scale_factor), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.scale(scale_center, scale_factor), this->_definitionPoint3.scale(scale_center, scale_factor),  this->layer(), this->metaInfo());
+                                                      this->middleOfText().scale(scale_center, scale_factor),
+                                                      this->attachmentPoint(),
+                                                      this->textAngle(),
+                                                      this->lineSpacingFactor(),
+                                                      this->lineSpacingStyle(),
+                                                      this->explicitValue(),
+                                                      this->_definitionPoint2.scale(scale_center, scale_factor),
+                                                      this->_definitionPoint3.scale(scale_center, scale_factor),
+                                                      this->layer(),
+                                                      this->metaInfo()
+    );
     return newDimAligned;
 }
 
@@ -96,7 +145,17 @@ CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
                     const geo::Coordinate& axis2) const {
 
     auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint().mirror(axis1, axis2),
-                                                      this->middleOfText().mirror(axis1, axis2), this->attachmentPoint(), this->textAngle(), this->lineSpacingFactor(), this->lineSpacingStyle(), this->explicitValue(), this->_definitionPoint2.mirror(axis1, axis2), this->_definitionPoint3.mirror(axis1, axis2),  this->layer(), this->metaInfo());
+                                                      this->middleOfText().mirror(axis1, axis2),
+                                                      this->attachmentPoint(),
+                                                      this->textAngle(),
+                                                      this->lineSpacingFactor(),
+                                                      this->lineSpacingStyle(),
+                                                      this->explicitValue(),
+                                                      this->_definitionPoint2.mirror(axis1, axis2),
+                                                      this->_definitionPoint3.mirror(axis1, axis2),
+                                                      this->layer(),
+                                                      this->metaInfo()
+    );
     return newDimAligned;
 }
 

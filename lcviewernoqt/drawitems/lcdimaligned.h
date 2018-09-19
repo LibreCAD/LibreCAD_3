@@ -10,7 +10,8 @@ namespace LCViewer {
 
         class LCDimAligned : public LCVDrawItem, public LCDimension {
             public:
-                LCDimAligned(const lc::entity::DimAligned_CSPtr dimAligned);
+                LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned);
+                virtual ~LCDimAligned() = default;
 
                 /**
                 * @brief draw, Draws the LCDimAligned
@@ -18,7 +19,7 @@ namespace LCViewer {
                 * @param LcDrawOptions options
                 * @param geo::Area rect
                 */
-                virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+                void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
                 lc::entity::CADEntity_CSPtr entity() const override;
 

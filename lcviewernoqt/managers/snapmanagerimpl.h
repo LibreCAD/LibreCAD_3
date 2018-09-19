@@ -5,7 +5,6 @@
 #include "../events/LocationEvent.h"
 #include <cad/interface/snapconstrain.h>
 
-
 /*!
  * \brief Implements the SnapManager interface
  */
@@ -27,22 +26,21 @@ class SnapManagerImpl : public SnapManager {
          * \sa lc::SnapManager
          */
         SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap);
+        virtual ~SnapManagerImpl() = default;
 
+        virtual void setGridSnappable(bool enabled);
+        virtual bool isGridSnappable() const;
+        virtual void snapIntersections(bool enabled);
+        virtual bool snapIntersections() const;
 
-    virtual void setGridSnappable(bool enabled);
-    virtual bool isGridSnappable() const;
-    virtual void snapIntersections(bool enabled);
-    virtual bool snapIntersections() const;
-
-    public:
         virtual void setDeviceLocation(int x, int y);
 
 
         lc::SimpleSnapConstrain snapConstrain() const;
 
-        void snapConstrain(const lc::SimpleSnapConstrain & _snapConstrain);
+        void snapConstrain(const lc::SimpleSnapConstrain & snapConstrain);
 
-    virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents();
+        virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents();
     private:
 
         // Grid is snapable
@@ -76,4 +74,3 @@ class SnapManagerImpl : public SnapManager {
 
 DECLARE_SHORT_SHARED_PTR(SnapManagerImpl)
 }
-// SNAPMANAGERIMPL_H

@@ -165,7 +165,7 @@ namespace detail {
     template <typename IVisitor, typename C, typename T>
     struct IVisitorImpl<IVisitor, C, T> : IVisitor, C
     {
-        virtual void visit(const T& t) override { C::visit(t); }
+        virtual void visit(const T& t) override { C::visit(t); } // NOLINT
     };
 
 // helper to expand child type to IVisitorImpl
@@ -202,7 +202,7 @@ namespace detail {
                 // when given arg is concrete type, reinterpret_cast is required.
                 // TODO: build a smaller table with only possible value to avoid that
 //                return f(static_cast<typename std::tuple_element<Is, RetTuple>::type>(std::get<Is>(arg))...);
-                return f(reinterpret_cast<typename std::tuple_element<Is, RetTuple>::type>(std::get<Is>(arg))...);
+                return f(reinterpret_cast<typename std::tuple_element<Is, RetTuple>::type>(std::get<Is>(arg))...); // NOLINT
             }
         };
 

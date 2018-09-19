@@ -1,19 +1,19 @@
 #include "linepatternpainter.h"
 
-LinePatternPainter::LinePatternPainter(QPaintDevice *device, lc::DxfLinePatternByValue_CSPtr linePattern, int width) :
+LinePatternPainter::LinePatternPainter(QPaintDevice* device, lc::DxfLinePatternByValue_CSPtr linePattern, int width) :
     _device(device),
-    _linePattern(linePattern),
+    _linePattern(std::move(linePattern)),
     _width(width) {
 }
 
 LinePatternPainter::LinePatternPainter(QPaintDevice *device, double width, lc::DxfLinePatternByValue_CSPtr linePattern)  :
     _device(device),
-    _linePattern(linePattern),
-    _width(width) {
+    _linePattern(std::move(linePattern)),
+    _width((int) width) {
 }
 
 void LinePatternPainter::drawLinePattern() {
-    if(_device == NULL) {
+    if(_device == nullptr) {
         return;
     }
 

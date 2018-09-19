@@ -21,36 +21,36 @@ namespace lc {
             * @param Layer_CSPtr layer
             * @param MetaTypes_CSPtr metaTypes
             */
-            DimDiametric(geo::Coordinate const &definitionPoint,
-                         geo::Coordinate const &middleOfText,
-                         TextConst::AttachmentPoint const &attachmentPoint,
+            DimDiametric(geo::Coordinate definitionPoint,
+                         geo::Coordinate middleOfText,
+                         TextConst::AttachmentPoint attachmentPoint,
                          double angle,
-                         double const lineSpacingFactor,
-                         TextConst::LineSpacingStyle const &lineSpacingStyle,
-                         std::string const &explicitValue,
-                         geo::Coordinate const &definitionPoint2,
-                         const double leader,
-                         const Layer_CSPtr layer,
-                         const MetaInfo_CSPtr metaInfo = nullptr,
-                         const Block_CSPtr block = nullptr
+                         double lineSpacingFactor,
+                         TextConst::LineSpacingStyle lineSpacingStyle,
+                         std::string explicitValue,
+                         geo::Coordinate definitionPoint2,
+                         double leader,
+                         Layer_CSPtr layer,
+                         MetaInfo_CSPtr metaInfo = nullptr,
+                         Block_CSPtr block = nullptr
             );
 
             /**
             * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
             */
-            DimDiametric(geo::Coordinate const &definitionPoint,
-                         TextConst::AttachmentPoint const &attachmentPoint,
-                         double const lineSpacingFactor,
-                         TextConst::LineSpacingStyle const &lineSpacingStyle,
-                         std::string const &explicitValue,
-                         geo::Coordinate const &definitionPoint2,
-                         const double leader,
-                         const Layer_CSPtr layer,
-                         const MetaInfo_CSPtr metaInfo = nullptr,
-                         const Block_CSPtr block = nullptr
+            DimDiametric(const geo::Coordinate& definitionPoint,
+                         TextConst::AttachmentPoint attachmentPoint,
+                         double lineSpacingFactor,
+                         TextConst::LineSpacingStyle lineSpacingStyle,
+                         std::string explicitValue,
+                         geo::Coordinate definitionPoint2,
+                         double leader,
+                         Layer_CSPtr layer,
+                         MetaInfo_CSPtr metaInfo = nullptr,
+                         Block_CSPtr block = nullptr
             );
 
-            DimDiametric(const DimDiametric_CSPtr other, bool sameID = false);
+            DimDiametric(const DimDiametric_CSPtr& other, bool sameID = false);
 
         public:
             /**

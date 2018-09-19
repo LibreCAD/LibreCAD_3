@@ -21,13 +21,15 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
 
 std::vector<lc::geo::Coordinate> Intersection::LineQuad(const Equation& l1,
                                                         const Equation& q1) {
-    auto &&tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
-    std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c)  { return std::move(c.flipXY()); });
+    auto&& tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
+    std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c) {
+        return c.flipXY();
+    });
+
     return tcoords;
 }
 
-std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
-                                                        const Equation& l2) {
+std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1, const Equation& l2) {
     const auto &m1 = l1.Matrix();
     const auto &m2 = l2.Matrix();
 
@@ -48,9 +50,7 @@ std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1,
 }
 
 
-std::vector<geo::Coordinate> Intersection::bezierLine(
-        geo::BB_CSPtr B, const geo::Vector& V) {
-
+std::vector<geo::Coordinate> Intersection::bezierLine(const geo::BB_CSPtr& B, const geo::Vector& V) {
     std::vector<geo::Coordinate> ret;
     std::vector<double> roots;
 
@@ -66,7 +66,8 @@ std::vector<geo::Coordinate> Intersection::bezierLine(
         auto coeff = cps[0].y()/t2;
 
         roots = lc::Math::quadraticSolver({t1, coeff});
-    } else {
+    }
+    else {
         auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
         auto rotate_angle = -ml.Angle1();
         auto cps = B->move(-V.start())->rotate(ml.start(), rotate_angle)->getCP();
@@ -78,7 +79,7 @@ std::vector<geo::Coordinate> Intersection::bezierLine(
 
         roots = lc::Math::cubicSolver({t2, t1, coeff});
     }
-    for(const auto &root : roots) {
+    for(const auto& root : roots) {
         if(root > 0 && root < 1) {
             ret.push_back(B->DirectValueAt(root));
         }
@@ -88,9 +89,7 @@ std::vector<geo::Coordinate> Intersection::bezierLine(
 }
 
 
-std::vector<geo::Coordinate> Intersection::bezierCircle(
-        geo::BB_CSPtr B, const geo::Circle& C) {
-
+std::vector<geo::Coordinate> Intersection::bezierCircle(const geo::BB_CSPtr& B, const geo::Circle& C) {
     std::vector<geo::Coordinate> ret;
 
     // ((x0 (1-t)^2+ x1 (2 t - 2 t^2) + x2 t^2) - xC)^2 + ((y0 (1-t)^2+ y1 (2 t - 2 t^2) + y2 t^2) - yC)^2 = r2
@@ -137,8 +136,7 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(
 }
 
 
-std::vector<geo::Coordinate> Intersection::bezierArc(
-        geo::BB_CSPtr B, const geo::Arc& A) {
+std::vector<geo::Coordinate> Intersection::bezierArc(const geo::BB_CSPtr& B, const geo::Arc& A) {
 
     // BezierCircle Intersection
 
@@ -156,8 +154,7 @@ std::vector<geo::Coordinate> Intersection::bezierArc(
 }
 
 
-std::vector<geo::Coordinate> Intersection::bezierEllipse(
-        geo::BB_CSPtr B, const geo::Ellipse& E) {
+std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B, const geo::Ellipse& E) {
     std::vector<double> roots;
     std::vector<geo::Coordinate> arc_ret, ret;
 
@@ -214,14 +211,13 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::bezierBezier(
-        geo::BB_CSPtr B1, geo::BB_CSPtr B2) {
+std::vector<geo::Coordinate> Intersection::bezierBezier(const geo::BB_CSPtr& B1, const geo::BB_CSPtr& B2) {
     std::vector<geo::Coordinate> ret;
     bezBez(B1,B2, ret);
     return ret;
 }
 
-void Intersection::bezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::vector<geo::Coordinate>&ret) {
+void Intersection::bezBez(const geo::BB_CSPtr& B1,const geo::BB_CSPtr& B2, std::vector<geo::Coordinate>&ret) {
     auto bb1 = B1->boundingBox();
     auto bb2 = B2->boundingBox();
 
@@ -242,7 +238,9 @@ void Intersection::bezBez(const geo::BB_CSPtr B1,const geo::BB_CSPtr B2, std::ve
     bezBez(b1split[1], b2split[1], ret);
 }
 
-std::vector<geo::Coordinate> Intersection::bezCircleIntersect(lc::geo::BB_CSPtr bez, const geo::Coordinate &ec, double rx, double ry) {
+std::vector<geo::Coordinate> Intersection::bezCircleIntersect(const lc::geo::BB_CSPtr& bez,
+                                                              const geo::Coordinate &ec,
+                                                              double rx, double ry) {
     std::vector<geo::Coordinate> results;
     auto coords = bez->getCP();
     auto p1 = coords.at(0);
@@ -299,18 +297,17 @@ std::vector<geo::Coordinate> Intersection::bezCircleIntersect(lc::geo::BB_CSPtr 
     return results;
 }
 
-std::vector<geo::Coordinate> Intersection::splineLine(geo::Spline B, const geo::Vector& V) {
+std::vector<geo::Coordinate> Intersection::splineLine(const geo::Spline& B, const geo::Vector& V) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B.beziers();
-    for(const auto bezier : beziers) {
+    for(const auto& bezier : beziers) {
         auto vecret = bezierLine(bezier, V);
-        std::cout << vecret.size() << std::endl;
         ret.insert(ret.end(), vecret.begin(), vecret.end());
     }
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::splineCircle(geo::Spline B, const geo::Circle& C) {
+std::vector<geo::Coordinate> Intersection::splineCircle(const geo::Spline& B, const geo::Circle& C) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B.beziers();
     for(const auto & bezier : beziers) {
@@ -320,7 +317,7 @@ std::vector<geo::Coordinate> Intersection::splineCircle(geo::Spline B, const geo
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::splineArc(geo::Spline B, const geo::Arc& A) {
+std::vector<geo::Coordinate> Intersection::splineArc(const geo::Spline& B, const geo::Arc& A) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B.beziers();
     for(const auto & bezier : beziers) {
@@ -330,7 +327,7 @@ std::vector<geo::Coordinate> Intersection::splineArc(geo::Spline B, const geo::A
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::splineEllipse(geo::Spline B, const geo::Ellipse& E) {
+std::vector<geo::Coordinate> Intersection::splineEllipse(const geo::Spline& B, const geo::Ellipse& E) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B.beziers();
     for(const auto & bezier : beziers) {
@@ -340,7 +337,7 @@ std::vector<geo::Coordinate> Intersection::splineEllipse(geo::Spline B, const ge
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::splineSpline(geo::Spline B1, geo::Spline B2) {
+std::vector<geo::Coordinate> Intersection::splineSpline(const geo::Spline& B1, const geo::Spline& B2) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B1.beziers();
     auto beziers2 = B2.beziers();
@@ -353,7 +350,7 @@ std::vector<geo::Coordinate> Intersection::splineSpline(geo::Spline B1, geo::Spl
     return ret;
 }
 
-std::vector<geo::Coordinate> Intersection::splineBezier(geo::Spline B1, geo::BB_CSPtr B2) {
+std::vector<geo::Coordinate> Intersection::splineBezier(const geo::Spline& B1, const geo::BB_CSPtr& B2) {
     std::vector<geo::Coordinate> ret;
     auto beziers = B1.beziers();
     for(const auto & bezier : beziers) {

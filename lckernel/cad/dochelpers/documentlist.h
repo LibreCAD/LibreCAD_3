@@ -26,7 +26,7 @@ namespace lc {
             std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName);
 
         private:
-            DocumentList();
+            DocumentList() = default;
 
             void addDocument(Document* document);
             void removeDocument(Document* document);

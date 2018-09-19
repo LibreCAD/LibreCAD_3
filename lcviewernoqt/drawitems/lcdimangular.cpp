@@ -7,7 +7,7 @@
 
 using namespace LCViewer;
 
-LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr dimAngular) :
+LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular) :
         LCVDrawItem(dimAngular, true),
         _dimAngular(dimAngular) {
 }
@@ -29,7 +29,7 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
 
     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v1, v2);
 
-    if (intersect.result().size() == 0) {
+    if (intersect.result().empty()) {
         // if no intersectionpoint we cannot draw a Angular dimension,
         // I guess this could happen in rare conditions
         // We should properly validate the dimension when the object is created?
@@ -53,13 +53,15 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
     // Take the point as far as way from center so we get accurate angles, and else because sometimes some point's may be right on center
     if (center.distanceTo(dl11) < center.distanceTo(dl12)) {
         aStart = center.angleTo(dl12);
-    } else {
+    }
+    else {
         aStart = center.angleTo(dl11);
     }
 
     if (center.distanceTo(dl21) < center.distanceTo(dl22)) {
         aEnd = center.angleTo(dl22);
-    } else {
+    }
+    else {
         aEnd = center.angleTo(dl21);
     }
 
@@ -78,15 +80,18 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
         aStart = aEnd - M_PI;
         aEnd = t;
         outSide = true;
-    } else if (textAngle >= aStart && textAngle <= aEnd) {
+    }
+    else if (textAngle >= aStart && textAngle <= aEnd) {
         // This is not a bug, we are good here
         outSide = false;
-    } else if (textAngle >= aEnd && textAngle <= (aStart + M_PI)) {
+    }
+    else if (textAngle >= aEnd && textAngle <= (aStart + M_PI)) {
         double const t = aStart;
         aStart = aEnd;
         aEnd = t + M_PI;
         outSide = true;
-    } else {
+    }
+    else {
         aEnd = aEnd + M_PI;
         aStart = aStart + M_PI;
         outSide = false;
@@ -123,8 +128,8 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
         painter.move_to(po2.x(), po2.y());
         painter.line_to(p2.x(), p2.y());
         painter.stroke();
-
-    } else {
+    }
+    else {
         painter.move_to(p1.x(), p1.y());
         painter.line_to(center.x(), center.y());
         painter.line_to(p2.x(), p2.y());
@@ -133,7 +138,9 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
 
     // Text
     lc::geo::Coordinate pText = center.move(((acStart + acEnd) / 2.), radius); // Position of text
-    if(angle > M_PI) pText = lc::geo::Coordinate(2. * center.x() - pText.x(), 2. * center.y() - pText.y()); // opposite text position for concave angles
+    if(angle > M_PI) {
+        pText = lc::geo::Coordinate(2. * center.x() - pText.x(), 2. * center.y() - pText.y());
+    } // opposite text position for concave angles
 
     this->drawText(value, (aEnd - aStart) / 2. + aStart + -0.5 * M_PI + _dimAngular->textAngle(), lc::TextConst::Top_center, pText, painter, options, rect);
 }

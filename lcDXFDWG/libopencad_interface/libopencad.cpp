@@ -5,8 +5,8 @@
 #include <cad/operations/layerops.h>
 
 lc::FileLibs::LibOpenCad::LibOpenCad(lc::Document_SPtr document, lc::operation::Builder_SPtr builder) :
-    _document(document),
-    _builder(builder),
+    _document(std::move(document)),
+    _builder(std::move(builder)),
     _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)) {
 
 }
@@ -40,25 +40,25 @@ void lc::FileLibs::LibOpenCad::save(const std::string& file) {
 
 }
 
-lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& data) {
+lc::Layer_SPtr lc::FileLibs::LibOpenCad::addLayer(const CADLayer& layer) {
     lc::iColor icolor;
 
-    auto lw = lc::FileHelpers::intToLW(data.getLineWeight());
-    auto color = icolor.intToColor(data.getColor())->color();
+    auto lw = lc::FileHelpers::intToLW(layer.getLineWeight());
+    auto color = icolor.intToColor(layer.getColor())->color();
 
-    auto layer = std::make_shared<Layer>(data.getName(), lw, color);
+    auto lcLayer = std::make_shared<Layer>(layer.getName(), lw, color);
 
-    if(data.getName() == "0") {
-        _builder->append(std::make_shared<lc::operation::AddLayer>(_document, layer));
+    if(layer.getName() == "0") {
+        _builder->append(std::make_shared<lc::operation::AddLayer>(_document, lcLayer));
     }
     else {
-        _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer));
+        _builder->append(std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), lcLayer));
     }
 
-    return layer;
+    return lcLayer;
 }
 
-void lc::FileLibs::LibOpenCad::addGeometry(lc::Layer_SPtr layer, const CADGeometry* geometry) {
+void lc::FileLibs::LibOpenCad::addGeometry(const lc::Layer_SPtr& layer, const CADGeometry* geometry) {
     switch(geometry->getType()) {
         case CADGeometry::ARC:
             addArc(layer, (CADArc*) geometry);
@@ -138,7 +138,7 @@ void lc::FileLibs::LibOpenCad::addLWPolyline(lc::Layer_SPtr layer, const CADLWPo
 
     size_t count = lwPolyline->getVertexCount();
     for(size_t i = 0; i < count; i++) {
-        auto vertex = lwPolyline->getVertex(i);
+        const auto& vertex = lwPolyline->getVertex(i);
         lcVertices.emplace_back(
                 lc::geo::Coordinate(vertex.getX(), vertex.getY(), vertex.getZ())
         );
@@ -170,5 +170,5 @@ lc::MetaInfo_SPtr lc::FileLibs::LibOpenCad::metaInfo(const CADGeometry* geometry
 }
 
 lc::geo::Coordinate lc::FileLibs::LibOpenCad::toLcPostiton(const CADVector& position) {
-    return lc::geo::Coordinate(position.getX(), position.getY(), position.getZ());
+    return {position.getX(), position.getY(), position.getZ()};
 }

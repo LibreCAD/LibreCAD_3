@@ -6,15 +6,15 @@ ToolbarTab::ToolbarTab(QWidget *parent) :
 		ui(new Ui::ToolbarTab) {
 	ui->setupUi(this);
 
-	if(ui->container->layout() == 0) {
+	if(ui->container->layout() == nullptr) {
 		_layout = new QHBoxLayout();
 		ui->container->setLayout(_layout);
 	}
 	else {
 		_layout = dynamic_cast<QHBoxLayout*>(ui->container->layout());
 
-		if(!_layout) {
-			throw "Wrong layout for ToolbarTab container";
+		if(_layout == nullptr) {
+			throw std::runtime_error("Wrong layout for ToolbarTab container");
 		}
 	}
 }
@@ -43,7 +43,7 @@ void ToolbarTab::addWidget(QGroupBox *groupBox, QWidget *widget, int x, int y, i
 
 	auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
 
-    if(gridLayout) {
+    if(gridLayout != nullptr) {
         gridLayout->addWidget(widget, y, x, h, w);
     }
     else {
@@ -57,7 +57,7 @@ QGroupBox* ToolbarTab::groupByName(const char* groupName) {
 	for (int i = 0; i < nbGroups; i++) {
 		auto groupBox = dynamic_cast<QGroupBox*>(_layout->itemAt(i)->widget());
 
-		if (groupBox && groupBox->title() == groupName) {
+		if (groupBox != nullptr && groupBox->title() == groupName) {
 			return groupBox;
 		}
 	}
@@ -71,7 +71,7 @@ QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonTex
 	for (int i = 0; i < nbButtons; i++) {
 		auto button = dynamic_cast<QPushButton*>(groupBox->layout()->itemAt(i)->widget());
 
-		if(button && button->text() == buttonText) {
+		if(button != nullptr && button->text() == buttonText) {
 			return button;
 		}
 	}
@@ -80,15 +80,9 @@ QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonTex
 }
 
 void ToolbarTab::removeGroup(QGroupBox *group) {
-	if(group == nullptr) {
-		return;
-	}
-
 	delete group;
 }
 
 void ToolbarTab::removeButton(QPushButton *button) {
-	if(button != nullptr) {
-		delete button;
-	}
+	delete button;
 }

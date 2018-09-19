@@ -11,16 +11,16 @@ LayerModel::LayerModel(QObject *parent) :
 void LayerModel::setLayers(std::vector<lc::Layer_CSPtr> layers) {
     beginResetModel();
 
-    _layers = layers;
+    _layers = std::move(layers);
 
     endResetModel();
 }
 
-int LayerModel::rowCount(const QModelIndex&) const {
+int LayerModel::rowCount(const QModelIndex& parent) const {
     return _layers.size();
 }
 
-int LayerModel::columnCount(const QModelIndex&) const {
+int LayerModel::columnCount(const QModelIndex& parent) const {
     return LAST;
 }
 
@@ -44,6 +44,8 @@ QVariant LayerModel::data(const QModelIndex& index, int role) const {
                     return _lockedIcon;
                 }
                 return _unlockedIcon;
+            default:
+                break;
         }
     }
 
@@ -59,7 +61,7 @@ Qt::ItemFlags LayerModel::flags(const QModelIndex& index) const {
 }
 
 
-bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int) {
+bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int role) {
     if(!index.isValid()) {
         return false;
     }
@@ -77,7 +79,7 @@ lc::Layer_CSPtr LayerModel::layerAt(int row) {
     }
 }
 
-unsigned int LayerModel::indexOf(lc::Layer_CSPtr layer) {
+unsigned int LayerModel::indexOf(const lc::Layer_CSPtr& layer) {
     for(unsigned int i = 0; i < _layers.size(); i++) {
         if(_layers[i] == layer) {
             return i;

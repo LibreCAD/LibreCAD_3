@@ -8,7 +8,7 @@ LinePatternManager::LinePatternManager(lc::Document_SPtr document, QWidget* pare
 
     ui->setupUi(this);
 
-    setDocument(document);
+    setDocument(std::move(document));
 
     ui->lpView->setModel(_model);
     ui->lpView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -29,7 +29,7 @@ void LinePatternManager::setDocument(lc::Document_SPtr document) {
         _document->replaceLinePatternEvent().disconnect<LinePatternManager, &LinePatternManager::on_replaceLinePatternEvent>(this);
     }
 
-    _document = document;
+    _document = std::move(document);
 
     if(_document != nullptr) {
         _document->addLinePatternEvent().connect<LinePatternManager, &LinePatternManager::on_addLinePatternEvent>(this);
@@ -79,14 +79,14 @@ void LinePatternManager::updateModel() {
     _model->setLinePatterns(_document->linePatterns());
 }
 
-void LinePatternManager::on_addLinePatternEvent(const lc::AddLinePatternEvent &) {
+void LinePatternManager::on_addLinePatternEvent(const lc::AddLinePatternEvent& event) {
     updateModel();
 }
 
-void LinePatternManager::on_removeLinePatternEvent(const lc::RemoveLinePatternEvent &) {
+void LinePatternManager::on_removeLinePatternEvent(const lc::RemoveLinePatternEvent& event) {
     updateModel();
 }
 
-void LinePatternManager::on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent &) {
+void LinePatternManager::on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent& event) {
     updateModel();
 }

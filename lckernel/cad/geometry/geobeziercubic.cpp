@@ -3,24 +3,29 @@
 using namespace lc;
 using namespace geo;
 
-CubicBezier::CubicBezier(const Coordinate& point_a, const Coordinate& point_b, const Coordinate& point_c, const Coordinate& point_d)
-    : _pointA(point_a), _pointB(point_b), _pointC(point_c), _pointD(point_d) {
+CubicBezier::CubicBezier(Coordinate point_a, Coordinate point_b, Coordinate point_c, Coordinate point_d) :
+        _pointA(std::move(point_a)),
+        _pointB(std::move(point_b)),
+        _pointC(std::move(point_c)),
+        _pointD(std::move(point_d)) {
 }
 
 CubicBezier::CubicBezier(const CubicBezier &bez) :
-    _pointA(bez._pointA), _pointB(bez._pointB),
-    _pointC(bez._pointC), _pointD(bez._pointD) {
+    _pointA(bez._pointA),
+    _pointB(bez._pointB),
+    _pointC(bez._pointC),
+    _pointD(bez._pointD) {
+
 }
 
 const Area CubicBezier::boundingBox() const {
-
     auto v1 =(_pointB - _pointA)*3;
     auto v2 = (_pointC - _pointB)*3;
     auto v3 = (_pointD - _pointC)*3;
 
     auto a = v1 - (v2*2) + v3;
     auto b = (v2 - v1)*2;
-    auto c = v1;
+    const auto& c = v1;
 
     std::vector<double> x_roots = lc::Math::quadraticSolver({b.x()/a.x(), c.x()/a.x()});
     std::vector<double> y_roots = lc::Math::quadraticSolver({b.y()/a.y(), b.y()/a.y()});
@@ -154,11 +159,13 @@ const lc::geo::Coordinate CubicBezier::returnCasesForNearestPoint(
 }
 
 Coordinate CubicBezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
-    if(points.size() == 1) return points.front();
+    if(points.size() == 1) {
+        return points.front();
+    }
     else {
-        int size_ = points.size();
+        unsigned long size = points.size();
         std::vector<Coordinate> new_vec;
-        for(int i = 1; i < size_; i++) {
+        for(unsigned long i = 1; i < size; i++) {
             new_vec.push_back(points[i-1] * (1.0-t) + points[i] * t);
         }
         return CasteljauAt(new_vec, t);
@@ -178,7 +185,7 @@ Coordinate CubicBezier::DirectValueAt(double t) const {
 const std::vector<Coordinate> CubicBezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC, _pointD };
     std::vector<Coordinate> ret;
-    for(auto i = 0.; i < 1.0; i+=precession) {
+    for(auto i = 0.; i < 1.0; i += precession) {
         ret.push_back(CasteljauAt(v, i));
     }
     return ret;
@@ -248,7 +255,7 @@ std::vector<BB_CSPtr> CubicBezier::splitHalf() const {
 }
 
 BB_CSPtr CubicBezier::offset(const geo::Coordinate& offset) const {
-    return NULL; // TODO: no return statement
+    return nullptr; // TODO: no return statement
 }
 
 BB_CSPtr CubicBezier::splitAtT(double t) const {

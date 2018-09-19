@@ -10,13 +10,13 @@ namespace lc {
         public:
             /**
                  * @brief isAngleBetween, checks if angle is between
-                 * @param a, angle
-                 * @param a1, angle1
-                 * @param a2, angle2
-                 * @param bool, CCW Counter Clickwise Check
+                 * @param angle, angle
+                 * @param start, angle1
+                 * @param end, angle2
+                 * @param CCW Counter Clickwise Check
                  * @return bool
                  */
-            static bool isAngleBetween(double a,
+            static bool isAngleBetween(double angle,
                                        double start, double end,
                                        bool CCW);
 
@@ -38,12 +38,12 @@ namespace lc {
 
             /**
              * @brief getAngleDifference, Angle difference between 2 angles
-             * @param double a1, angle 1
-             * @param double a2, angle 2
-             * @param bool, CCW Counter Clickwise Check
+             * @param start angle 1
+             * @param end angle 2
+             * @param CCW Counter Clickwise Check
              * @return double angle difference
              */
-            static double getAngleDifference(double a1, double a2, bool CCW) ;
+            static double getAngleDifference(double start, double end, bool CCW) ;
 
             /**
              * @brief quadraticSolver, Quadratic equations solver

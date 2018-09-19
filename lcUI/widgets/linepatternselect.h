@@ -69,7 +69,7 @@ namespace lc {
                  * \param layer New selected layer
                  * This function update the "ByLayer" preview
                  */
-                void onLayerChanged(lc::Layer_CSPtr layer);
+                void onLayerChanged(const lc::Layer_CSPtr& layer);
 
             private slots:
 

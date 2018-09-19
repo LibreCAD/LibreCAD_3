@@ -15,7 +15,7 @@ TEST(SelectionTest, NormalSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -45,7 +45,7 @@ TEST(SelectionTest, IntersectionSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -75,7 +75,7 @@ TEST(SelectionTest, AddToSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -108,7 +108,7 @@ TEST(SelectionTest, Reselect) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -141,7 +141,7 @@ TEST(SelectionTest, ClearSelection) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -174,7 +174,7 @@ TEST(SelectionTest, Deselect) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -205,7 +205,7 @@ TEST(SelectionTest, DeselectAddTo) {
 	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
 	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>("0", lc::Color(1., 1., 1., 1.));
+	auto layer = std::make_shared<lc::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 

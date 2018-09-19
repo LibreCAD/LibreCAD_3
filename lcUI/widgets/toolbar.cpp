@@ -6,7 +6,7 @@ Toolbar::Toolbar(QWidget *parent) :
 	ui(new Ui::Toolbar) {
 
 	ui->setupUi(this);
-	setTitleBarWidget(0);
+	setTitleBarWidget(nullptr);
 	setWidget(ui->tabWidget);
 }
 

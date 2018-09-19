@@ -4,16 +4,16 @@ using namespace lc;
 using namespace operation;
 
 Builder::Builder(Document_SPtr document, const std::string& description) :
-    DocumentOperation(document, description) {
+    DocumentOperation(std::move(document), description) {
 
 }
 
 void Builder::append(DocumentOperation_SPtr operation) {
     if(operation->document() != document()) {
-        throw "Operation should have the same document";
+        throw std::runtime_error("Operation should have the same document");
     }
 
-    _operations.push_back(operation);
+    _operations.push_back(std::move(operation));
 }
 
 void Builder::undo() const {
@@ -23,13 +23,13 @@ void Builder::undo() const {
 }
 
 void Builder::redo() const {
-    for(auto operation : _operations) {
+    for(const auto& operation : _operations) {
         operation->redo();
     }
 }
 
 void Builder::processInternal() {
-    for(auto operation : _operations) {
+    for(const auto& operation : _operations) {
         operation->processInternal();
     }
 }

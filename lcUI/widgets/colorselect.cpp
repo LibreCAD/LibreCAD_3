@@ -23,7 +23,7 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
 
     insertSeparator(count());
 
-    for(auto color : QColor::colorNames()){
+    for(const auto& color : QColor::colorNames()){
         QPixmap pixmap(qIconSize);
         pixmap.fill(color);
         addItem(QIcon(pixmap), color);
@@ -31,7 +31,7 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
 
-    setMetaInfoManager(metaInfoManager);
+    setMetaInfoManager(std::move(metaInfoManager));
 }
 
 void ColorSelect::onActivated(const QString& text) {
@@ -62,7 +62,7 @@ void ColorSelect::on_customColorChanged(const QColor &color) {
     updateMetaInfoManager();
 }
 
-void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+void ColorSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {
@@ -75,7 +75,7 @@ void ColorSelect::onLayerChanged(lc::Layer_CSPtr layer) {
     }
 }
 
-void ColorSelect::setColor(lc::Color color) {
+void ColorSelect::setColor(const lc::Color& color) {
     QColor qColor(color.redI(), color.greenI(), color.blueI(), color.alphaI());
     setCurrentText(CUSTOM);
 
@@ -84,17 +84,17 @@ void ColorSelect::setColor(lc::Color color) {
 }
 
 void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {
-    _metaInfoManager = metaInfoManager;
+    _metaInfoManager = std::move(metaInfoManager);
 
-    if(metaInfoManager != nullptr) {
-        if(metaInfoManager->color() == nullptr) {
+    if(_metaInfoManager != nullptr) {
+        if(_metaInfoManager->color() == nullptr) {
             setCurrentText(BY_LAYER);
         }
-        else if(std::dynamic_pointer_cast<const lc::MetaColorByBlock>(metaInfoManager->color())) {
+        else if(std::dynamic_pointer_cast<const lc::MetaColorByBlock>(_metaInfoManager->color())) {
             setCurrentText(BY_BLOCK);
         }
         else {
-            auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(metaInfoManager->color());
+            auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(_metaInfoManager->color());
             if(colorByValue != nullptr) {
                 setColor(colorByValue->color());
             }
@@ -123,7 +123,7 @@ lc::MetaColor_CSPtr ColorSelect::metaColor() {
 
 lc::Color ColorSelect::color() {
     if(currentText() == BY_LAYER || currentText() == BY_BLOCK) {
-        throw "Color can't be returned if ByLayer or ByBlock is selected.";
+        throw std::runtime_error("Color can't be returned if ByLayer or ByBlock is selected.");
     }
 
     QColor color;
@@ -136,7 +136,7 @@ lc::Color ColorSelect::color() {
     }
 
     if(!color.isValid()) {
-        throw "The selected color is invalid.";
+        throw std::runtime_error("The selected color is invalid.");
     }
 
     return lc::Color(color.red(), color.green(), color.blue(), color.alpha());

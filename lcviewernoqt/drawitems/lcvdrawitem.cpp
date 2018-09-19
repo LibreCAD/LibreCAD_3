@@ -1,7 +1,7 @@
 #include "lcvdrawitem.h"
 using namespace LCViewer;
 
-LCVDrawItem::LCVDrawItem(lc::entity::CADEntity_CSPtr entity, bool selectable) :
+LCVDrawItem::LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable) :
         _selectable(selectable),
         _selected(false) {
 

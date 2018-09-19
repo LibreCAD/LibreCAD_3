@@ -13,7 +13,7 @@ typedef struct _cairo cairo_t;
 class GradientBackground {
     public:
         GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
-        ~GradientBackground();
+        ~GradientBackground() = default;
 
         void draw(DrawEvent const & event) const;
     private:

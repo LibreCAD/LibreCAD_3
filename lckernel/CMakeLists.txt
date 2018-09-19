@@ -108,8 +108,7 @@ cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/events/replacelinepatternevent.h
-cad/functions/ftrim.h
-cad/functions/intersect.h
+        cad/functions/intersect.h
 cad/geometry/geobase.h
 cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h
