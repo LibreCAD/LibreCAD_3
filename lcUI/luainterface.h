@@ -49,7 +49,7 @@ class LuaInterface {
 		bool luaConnect(
 			QObject* sender,
 			const std::string& signalName,
-			LuaIntf::LuaRef slot
+			const LuaIntf::LuaRef& slot
 		);
 
         /**

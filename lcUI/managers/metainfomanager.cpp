@@ -26,7 +26,7 @@ MetaInfo_SPtr MetaInfoManager::addMetaType(MetaInfo_SPtr metaInfo, EntityMetaTyp
             metaInfo = MetaInfo::create();
         }
 
-        metaInfo->add(metaType);
+        metaInfo->add(std::move(metaType));
     }
 
     return metaInfo;

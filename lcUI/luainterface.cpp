@@ -41,7 +41,7 @@ void LuaInterface::initLua() {
 bool LuaInterface::luaConnect(
 	QObject* sender,
 	const std::string& signalName,
-	LuaIntf::LuaRef slot)
+	const LuaIntf::LuaRef& slot)
 {
 	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
 	
@@ -52,7 +52,7 @@ bool LuaInterface::luaConnect(
 		auto lqo = std::make_shared<LuaQObject>(sender);
 		_luaQObjects.push_back(lqo);
 
-		auto connected = lqo->connect(signalId, std::move(slot));
+		auto connected = lqo->connect(signalId, slot);
 
 		cleanInvalidQObject();
 

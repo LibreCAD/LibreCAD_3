@@ -28,14 +28,14 @@ class LinePatternPathPart : public QWidget {
          * \brief Create empty model
          * \param parent Pointer to parent widget
          */
-        LinePatternPathPart(QWidget* parent = 0);
+        LinePatternPathPart(QWidget* parent = nullptr);
 
         /**
          * \brief Create model pre-filled with value
          * \param value DXF size
          * \param parent Pointer to parent widget
          */
-        LinePatternPathPart(double value, QWidget* parent = 0);
+        LinePatternPathPart(double value, QWidget* parent = nullptr);
 
         /**
          * \brief Return type (plain, space or dot)

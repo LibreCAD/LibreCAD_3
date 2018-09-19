@@ -2,27 +2,27 @@
 #include "ui_addlinepatterndialog.h"
 
 AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, QWidget *parent) :
-    AddLinePatternDialog(document, nullptr, parent) {
+    AddLinePatternDialog(std::move(document), nullptr, parent) {
 }
 
 AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddLinePatternDialog),
-    _document(document),
-    _oldLinePattern(linePattern) {
+    _document(std::move(document)),
+    _oldLinePattern(std::move(linePattern)) {
 
     ui->setupUi(this);
 
-    _layout = static_cast<QVBoxLayout*>(ui->pathList->layout());
-    if(!_layout) {
-        throw "Unable to cast AddLinePatternDialog pathList layout to QVBoxLayout";
+    _layout = dynamic_cast<QVBoxLayout*>(ui->pathList->layout());
+    if(_layout == nullptr) {
+        throw std::runtime_error("Unable to cast AddLinePatternDialog pathList layout to QVBoxLayout");
     }
 
-    if(linePattern != nullptr) {
-        ui->name->setText(linePattern->name().c_str());
-        ui->description->setText(linePattern->description().c_str());
+    if(_oldLinePattern != nullptr) {
+        ui->name->setText(_oldLinePattern->name().c_str());
+        ui->description->setText(_oldLinePattern->description().c_str());
 
-        for (auto value : linePattern->path()) {
+        for (auto value : _oldLinePattern->path()) {
             auto pathPart = new LinePatternPathPart(value, this);
             connect(pathPart, &LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
 

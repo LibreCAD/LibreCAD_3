@@ -3,37 +3,37 @@
 #include "ui_addlayerdialog.h"
 
 AddLayerDialog::AddLayerDialog(lc::Document_SPtr document, QWidget* parent) :
-    AddLayerDialog(nullptr, document, parent) {
+    AddLayerDialog(nullptr, std::move(document), parent) {
 }
 
 AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr document, QWidget *parent) :
         QDialog(parent),
         ui(new Ui::AddLayerDialog),
-        _oldLayer(oldLayer) {
+        _oldLayer(std::move(oldLayer)) {
 
     ui->setupUi(this);
 
-    linePatternSelect = new lc::ui::LinePatternSelect(document, this, false, false);
+    linePatternSelect = new lc::ui::LinePatternSelect(std::move(document), this, false, false);
     lineWidthSelect = new lc::ui::LineWidthSelect(nullptr, this, false, false);
     colorSelect = new lc::ui::ColorSelect(nullptr, this, false, false);
 
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
-    if(layout) {
+    if(layout != nullptr) {
         layout->setWidget(1, QFormLayout::FieldRole, colorSelect);
         layout->setWidget(2, QFormLayout::FieldRole, lineWidthSelect);
         layout->setWidget(3, QFormLayout::FieldRole, linePatternSelect);
     }
 
-    if(oldLayer != nullptr) {
-        ui->name->setText(oldLayer->name().c_str());
-        if(oldLayer->linePattern() != nullptr) {
-            linePatternSelect->setCurrentText(oldLayer->linePattern()->name().c_str());
+    if(_oldLayer != nullptr) {
+        ui->name->setText(_oldLayer->name().c_str());
+        if(_oldLayer->linePattern() != nullptr) {
+            linePatternSelect->setCurrentText(_oldLayer->linePattern()->name().c_str());
         }
-        lineWidthSelect->setWidth(std::make_shared<lc::MetaLineWidthByValue>(oldLayer->lineWidth()));
-        colorSelect->setColor(oldLayer->color());
+        lineWidthSelect->setWidth(std::make_shared<lc::MetaLineWidthByValue>(_oldLayer->lineWidth()));
+        colorSelect->setColor(_oldLayer->color());
 
-        if(oldLayer->linePattern() != nullptr) {
-            int linePatternIndex = linePatternSelect->findText(oldLayer->linePattern()->name().c_str());
+        if(_oldLayer->linePattern() != nullptr) {
+            int linePatternIndex = linePatternSelect->findText(_oldLayer->linePattern()->name().c_str());
 
             if (linePatternIndex != -1) {
                 linePatternSelect->setCurrentIndex(linePatternIndex);

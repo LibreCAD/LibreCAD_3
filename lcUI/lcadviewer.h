@@ -103,7 +103,7 @@ class LCADViewer : public QWidget {
         void updateBackground();
         void updateDocument();
 
-        void on_commitProcessEvent(const lc::CommitProcessEvent&);
+        void on_commitProcessEvent(const lc::CommitProcessEvent& event);
 
         /* for panning */
         bool _altKeyActive;

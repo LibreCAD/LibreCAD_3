@@ -2,8 +2,8 @@
 
 LuaQObject::LuaQObject(QObject* object):
 	_object(object),
-	_signalId(-1),
 	_slotId(-1),
+	_signalId(-1),
 	_valid(false)
 {
 	//Connect QObject destroyed() signal
@@ -93,7 +93,7 @@ QObject* LuaQObject::findChild(const std::string& name) {
 	return nullptr;
 }
 
-void LuaQObject::pushArg(LuaIntf::LuaState s, int const type, void const* arg) {
+void LuaQObject::pushArg(const LuaIntf::LuaState& s, int const type, void const* arg) {
 	if(type == qRegisterMetaType<lc::geo::Coordinate>()) {
 		s.push(*(lc::geo::Coordinate*) arg);
 		return;
@@ -143,7 +143,7 @@ void LuaQObject::pushArg(LuaIntf::LuaState s, int const type, void const* arg) {
 			s.push(*(float *) arg);
 			break;
 		case QMetaType::QString:
-			s.push(reinterpret_cast<const QString *>(arg));
+			s.push(static_cast<const QString *>(arg));
 			break;
 		default:
 			s.push(nullptr);

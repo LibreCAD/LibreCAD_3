@@ -40,7 +40,7 @@ class LuaQObject : public QObject {
          * \param arg Pointer to arg
          * Push a signal parameter to Lua stack
          */
-		void pushArg(LuaIntf::LuaState s, int type, void const* arg);
+		void pushArg(const LuaIntf::LuaState& s, int type, void const* arg);
 
         /**
          * \brief Get object name.
