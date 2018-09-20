@@ -68,7 +68,7 @@ find_file(
         RUN_CLANG_TIDY_PY
         NAMES
         run-clang-tidy.py
-        run-clang-tidy-3.9.py
+        run-clang-tidy-4.0.py
         HINTS
         /usr/share/clang/
         /usr/bin
