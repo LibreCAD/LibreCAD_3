@@ -14,7 +14,8 @@ Cursor::Cursor(int cursorSize,
                const lc::Color& yAxisColor) :
         _xAxisColor(xAxisColor),
         _yAxisColor(yAxisColor),
-        _cursorSize(cursorSize) {
+        _cursorSize(cursorSize),
+        _locationEvent() {
 /*
     connect(graphicsView, SIGNAL(drawEvent(const DrawEvent&)),
             this, SLOT(on_Draw_Event(const DrawEvent&)));

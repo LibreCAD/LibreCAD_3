@@ -24,7 +24,7 @@ namespace lc {
             * @param Layer_CSPtr layer
             * @param MetaTypes_CSPtr metaTypes
             */
-            Point(geo::Coordinate const &coord,
+            Point(geo::Coordinate coord,
                   Layer_CSPtr layer,
                   MetaInfo_CSPtr metaInfo = nullptr,
                   Block_CSPtr block = nullptr);

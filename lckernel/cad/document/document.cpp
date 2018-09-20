@@ -10,7 +10,19 @@
 
 using namespace lc;
 
-Document::Document() {
+Document::Document():
+        _beginProcessEvent(),
+        _commitProcessEvent(),
+        _addEntityEvent(),
+        _replaceEntityEvent(),
+        _removeEntityEvent(),
+        _addLayerEvent(),
+        _replaceLayerEvent(),
+        _removeLayerEvent(),
+        _addLinePatternEvent(),
+        _replaceLinePatternEvent(),
+        _removeLinePatternEvent(),
+        _newWaitingCustomEntityEvent() {
     DocumentList::getInstance().addDocument(this);
 }
 
