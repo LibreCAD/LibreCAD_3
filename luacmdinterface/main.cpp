@@ -24,10 +24,10 @@ static char const* const DEFAULT_OUT_FILENAME = "out.png";
 static const int DEFAULT_IMAGE_WIDTH = 400;
 static const int DEFAULT_IMAGE_HEIGHT = 400;
 
-static std::string readBuffer;
+static std::string* readBuffer;
 static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     size_t realsize = size * nmemb;
-    readBuffer.append((char*) contents, realsize);
+    readBuffer->append((char*) contents, realsize);
     return realsize;
 }
 
@@ -55,7 +55,7 @@ std::string loadFile(const std::string& url) {
 
         /* always cleanup */
         curl_easy_cleanup(curl);
-        return readBuffer;
+        return *readBuffer;
     } else {
         return "";
     }
@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
     std::string fIn;
     std::string fOut = DEFAULT_OUT_FILENAME;
     std::string fType;
+    readBuffer = new std::string;
 
     // Read CMD options
     po::options_description desc("Allowed options");
@@ -203,5 +204,6 @@ int main(int argc, char** argv) {
 
     delete lcPainter;
     delete ofile;
+    delete readBuffer;
     return 0;
 }

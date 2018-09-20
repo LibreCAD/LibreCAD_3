@@ -8,7 +8,7 @@ LuaQObject::LuaQObject(QObject* object):
 {
 	//Connect QObject destroyed() signal
 	const int destroySignalId = _object->metaObject()->indexOfSignal("destroyed()");
-	QMetaObject::connect(_object, destroySignalId, this, metaObject()->methodCount());
+	QMetaObject::connect(_object, destroySignalId, this, metaObject()->methodCount()); //NOLINT
 }
 
 LuaQObject::~LuaQObject() {
