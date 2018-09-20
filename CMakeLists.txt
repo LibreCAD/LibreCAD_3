@@ -66,8 +66,12 @@ endif()
 # clang-tidy
 find_file(
         RUN_CLANG_TIDY_PY
-        NAMES "run-clang-tidy.py"
-        HINTS /usr/share/clang/
+        NAMES
+        run-clang-tidy.py
+        run-clang-tidy-3.9.py
+        HINTS
+        /usr/share/clang/
+        /usr/bin
         DOC "Path to clang-tidy executable"
 )
 
