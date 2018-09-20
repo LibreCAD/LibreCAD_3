@@ -59,7 +59,16 @@ script:
   - cmake ..
   - make -j2
   - ./unittest/lcunittest
-  - make stylecheck
+  - make stylecheck > stylecheck.out
+  - |
+    if [[ -n $(grep "warning: " stylecheck.out) ]] || [[ -n $(grep "error: " stylecheck.out) ]]; then
+      echo "Style checks failed"
+      echo ""
+      cat stylecheck.out
+      exit 1;
+    else
+      echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
+    fi
 
 notifications:
   irc:
