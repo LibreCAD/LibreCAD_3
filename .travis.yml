@@ -26,6 +26,8 @@ matrix:
             - libgdk-pixbuf2.0-dev
             - gcc-4.9
             - g++-4.9
+            - clang-4.0
+            - clang-tidy-4.0
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
@@ -57,10 +59,14 @@ script:
   - cmake ..
   - make -j2
   - ./unittest/lcunittest
+  - make stylecheck
 
 notifications:
   irc:
     channels:
       - "chat.freenode.net#librecad"
+    template:
+      - "%{repository_slug} (%{commit}) : %{commit_message} %{result}"
+      - "Build details: %{build_url}"
     on_success: always
     on_failure: always
