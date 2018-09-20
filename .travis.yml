@@ -26,8 +26,8 @@ matrix:
             - libgdk-pixbuf2.0-dev
             - gcc-4.9
             - g++-4.9
-            - clang-4.0
-            - clang-tidy-4.0
+            - clang-3.9
+            - clang-tidy-3.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
