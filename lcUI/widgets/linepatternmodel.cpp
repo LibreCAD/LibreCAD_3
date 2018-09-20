@@ -7,20 +7,20 @@ LinePatternModel::LinePatternModel(QObject *parent) :
 void LinePatternModel::setLinePatterns(std::vector<lc::DxfLinePatternByValue_CSPtr> linePatterns) {
     beginResetModel();
 
-    _linePatterns = linePatterns;
+    _linePatterns = std::move(linePatterns);
 
     endResetModel();
 }
 
-lc::DxfLinePattern_CSPtr LinePatternModel::linePatternAt(const int index) const {
+lc::DxfLinePattern_CSPtr LinePatternModel::linePatternAt(unsigned long index) const {
     return _linePatterns.at(index);
 }
 
-int LinePatternModel::rowCount(const QModelIndex&) const {
-    return _linePatterns.size();
+int LinePatternModel::rowCount(const QModelIndex& parent) const {
+    return (int) _linePatterns.size();
 }
 
-int LinePatternModel::columnCount(const QModelIndex&) const {
+int LinePatternModel::columnCount(const QModelIndex& parent) const {
     return LAST;
 }
 
@@ -55,6 +55,9 @@ QVariant LinePatternModel::data(const QModelIndex &index, int role) const {
 
             case DESCRIPTION:
                 return linePattern->description().c_str();
+
+            default:
+                break;
         }
     }
 
@@ -73,6 +76,9 @@ QVariant LinePatternModel::headerData(int section, Qt::Orientation orientation, 
 
                 case DESCRIPTION:
                     return "Description";
+
+                default:
+                    break;
             }
         }
     }

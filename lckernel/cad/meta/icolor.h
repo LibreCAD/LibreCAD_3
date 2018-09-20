@@ -28,7 +28,7 @@ namespace lc {
             }
 
             /**
-            * Convert a a color to a DXF integer
+            * Convert a color to a DXF integer
             * Use this function if you want to know if a color does exists in DXF and what it's int value is
             */
             int colorToInt(const lc::Color& col) const {

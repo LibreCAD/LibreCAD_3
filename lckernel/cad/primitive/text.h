@@ -29,22 +29,21 @@ namespace lc {
             * @param Layer_CSPtr layer, Layer of the entity
             * @param metatypes metatypes of the cad entity
             */
-            Text(const geo::Coordinate &insertion_point,
-                 const std::string text_value,
-                 const double height,
-                 const double angle,
-                 const std::string style,
+            Text(geo::Coordinate insertion_point,
+                 std::string text_value,
+                 double height,
+                 double angle,
+                 std::string style,
                  const TextConst::DrawingDirection textgeneration,
                  const TextConst::HAlign halign,
                  const TextConst::VAlign valign,
-                 const Layer_CSPtr layer,
-                 const MetaInfo_CSPtr metaInfo = nullptr,
-                 const Block_CSPtr block = nullptr
+                 Layer_CSPtr layer,
+                 MetaInfo_CSPtr metaInfo = nullptr,
+                 Block_CSPtr block = nullptr
             );
 
             Text(const Text_CSPtr &other, bool sameID);
 
-        public:
             const geo::Coordinate _insertion_point;
             const std::string _text_value;
             const double _height;
@@ -53,7 +52,6 @@ namespace lc {
             const TextConst::DrawingDirection _textgeneration;
             const TextConst::VAlign _valign;
             const TextConst::HAlign _halign;
-        public:
 
             geo::Coordinate insertion_point() const {
                 return _insertion_point;
@@ -87,20 +85,19 @@ namespace lc {
                 return _height;
             }
 
-        public:
             /**
             * @brief move, moves by an offset
             * @param geo::Coordinate offset
             * @return CADEntity_CSPtr moved entity
             */
-            virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
+            CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
 
             /**
             * @brief copy, copies line by an offset
             * @param geo::Coordinate offset
             * @return CADEntity_CSPtr copied entity
             */
-            virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
+            CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
 
             /**
             * @brief rotate, rotate operation
@@ -108,7 +105,7 @@ namespace lc {
             * @param double rotation_angle
             * @return CADEntity_CSPtr rotated entity
             */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
             * @brief scale, scales the entity
@@ -116,11 +113,10 @@ namespace lc {
             * @param double scale_factor
             * @return
             */
-            virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
-                                          const geo::Coordinate &scale_factor) const override;
+            CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
+                                  const geo::Coordinate &scale_factor) const override;
 
-            virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                    const geo::Coordinate& axis2) const override {
+            CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override {
                 return NULL; // TODO: no return statement, not implemented in lwpolyline.cpp
             }
 
@@ -128,20 +124,20 @@ namespace lc {
             * @brief boundingBox of the entity
             * @return geo::Area area
             */
-            virtual const geo::Area boundingBox() const override;
+            const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
         public:
-            virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+            void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
-            virtual void dispatch(EntityDispatch &ed) const override {
+            void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
 
         public:
-            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
-            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+            std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };
 
         DECLARE_SHORT_SHARED_PTR(Text)

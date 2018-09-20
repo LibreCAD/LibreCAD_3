@@ -24,21 +24,33 @@ namespace lc {
             * @param double oblique
             * @param Layer_CSPtr layer
             */
-            DimAngular(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                       TextConst::AttachmentPoint const &attachmentPoint, double textAngle,
-                       double const lineSpacingFactor,
-                       TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                       geo::Coordinate const &_defLine11, geo::Coordinate const &_defLine12,
-                       geo::Coordinate const &_defLine21, geo::Coordinate const &_defLine22, const Layer_CSPtr layer,
-                       const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
+            DimAngular(geo::Coordinate definitionPoint,
+                       geo::Coordinate middleOfText,
+                       TextConst::AttachmentPoint attachmentPoint,
+                       double textAngle,
+                       double lineSpacingFactor,
+                       TextConst::LineSpacingStyle lineSpacingStyle,
+                       std::string explicitValue,
+                       geo::Coordinate defLine11,
+                       geo::Coordinate defLine12,
+                       geo::Coordinate defLine21,
+                       geo::Coordinate defLine22,
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo = nullptr,
+                       Block_CSPtr block = nullptr);
 
 
-            DimAngular(const DimAngular_CSPtr other, bool sameID = false);
+            DimAngular(const DimAngular_CSPtr& other, bool sameID = false);
 
-            static DimAngular_SPtr dimAuto(geo::Coordinate const &center, geo::Coordinate const &p1,
-                                           geo::Coordinate const &p2, std::string const &explicitValue,
-                                           const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr,
-                                           const Block_CSPtr block = nullptr);
+            static DimAngular_SPtr dimAuto(
+                const geo::Coordinate& center,
+                geo::Coordinate p1,
+                geo::Coordinate p2,
+                std::string explicitValue,
+                Layer_CSPtr layer,
+                MetaInfo_CSPtr metaInfo = nullptr,
+                Block_CSPtr block = nullptr
+            );
 
         public:
             /**
@@ -61,7 +73,7 @@ namespace lc {
             * @param double rotation_angle
             * @return CADEntity_CSPtr rotated entity
             */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
             * @brief scale, scales the entity
@@ -81,7 +93,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             geo::Coordinate defLine11() const;
 
@@ -97,13 +109,14 @@ namespace lc {
             const geo::Coordinate _defLine21;
             const geo::Coordinate _defLine22;
         public:
-            virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
+            virtual void accept(GeoEntityVisitor &v) const override {
+                v.visit(*this);
+            }
 
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
 
-        public:
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
         };

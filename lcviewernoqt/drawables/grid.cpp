@@ -6,10 +6,12 @@
 using namespace LCViewer;
 
 Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :
-       _majorColor(major), _minorColor(minor), _minimumGridSpacing(minimumGridSpacing), _numMinorLines(numMinorLines), _convUnit(convUnit) {
-}
-
-Grid::~Grid() {
+       _majorColor(major),
+       _minorColor(minor),
+       _minimumGridSpacing(minimumGridSpacing),
+       _numMinorLines(numMinorLines),
+       _convUnit(convUnit),
+       _lastGridSize(1) {
 }
 
 void Grid::draw(DrawEvent const & event) const {
@@ -122,8 +124,7 @@ void Grid::draw(DrawEvent const & event) const {
 std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& coord,  const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
     std::vector<lc::EntityCoordinate> points;
 
-    if (constrain.constrain() & lc::SimpleSnapConstrain::LOGICAL) {
-
+    if ((constrain.constrain() & lc::SimpleSnapConstrain::LOGICAL) != 0) {
         double mx = coord.x() * 1.0 * (1/_convUnit);
         double my = coord.y() * 1.0 * (1/_convUnit);
         double gs = this->_lastGridSize * 1.0 * (1/_convUnit);
@@ -143,7 +144,7 @@ std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& co
             y = (my + gs / 2 * (1/_convUnit)) - fmod(my + gs / 2 * (1/_convUnit), gs);
         }
 
-        points.push_back(lc::EntityCoordinate(lc::geo::Coordinate(x, y), 0));
+        points.emplace_back(lc::geo::Coordinate(x, y), 0);
     }
 
     return points;
@@ -151,5 +152,5 @@ std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& co
 
 
 lc::geo::Coordinate Grid::nearestPointOnPath(const lc::geo::Coordinate& coord) const {
-    throw "nearestPointOnPath not available for grid";
+    throw std::runtime_error("nearestPointOnPath not available for grid");
 }

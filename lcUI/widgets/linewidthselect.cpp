@@ -46,7 +46,7 @@ LineWidthSelect::LineWidthSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, Q
 
     createEntries();
 
-    setMetaInfoManager(metaInfoManager);
+    setMetaInfoManager(std::move(metaInfoManager));
 
     connect(this, SIGNAL(activated(const QString&)), this, SLOT(onActivated(const QString&)));
 }
@@ -62,7 +62,7 @@ void LineWidthSelect::createEntries() {
     }
 }
 
-void LineWidthSelect::onLayerChanged(lc::Layer_CSPtr layer) {
+void LineWidthSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {
@@ -76,7 +76,7 @@ void LineWidthSelect::onLayerChanged(lc::Layer_CSPtr layer) {
     }
 }
 
-void LineWidthSelect::setWidth(lc::MetaLineWidth_CSPtr lineWidth) {
+void LineWidthSelect::setWidth(const lc::MetaLineWidth_CSPtr& lineWidth) {
     if(lineWidth == nullptr) {
         setCurrentText(BY_LAYER);
         updateMetaInfoManager();
@@ -105,10 +105,10 @@ void LineWidthSelect::setWidth(lc::MetaLineWidth_CSPtr lineWidth) {
 }
 
 void LineWidthSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {
-    _metaInfoManager = metaInfoManager;
+    _metaInfoManager = std::move(metaInfoManager);
 
-    if(metaInfoManager != nullptr && metaInfoManager->lineWidth() != nullptr) {
-        setWidth(metaInfoManager->lineWidth());
+    if(_metaInfoManager != nullptr && _metaInfoManager->lineWidth() != nullptr) {
+        setWidth(_metaInfoManager->lineWidth());
     }
 }
 

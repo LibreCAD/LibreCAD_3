@@ -4,53 +4,19 @@
 
 using namespace lc;
 
-Layer::Layer() {
-}
-
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth, const Color color) :
-        EntityMetaType(),
-        DocumentMetaType(),
-        _name(name),
-        _lineWidth(lineWidth),
-        _color(color),
-        _linepattern(nullptr),
-        _isFrozen(false) {
-    assert(!StringHelper::isBlank(name) && "Name cannot be blank");
-}
-
-Layer::Layer(const std::string name,
-             const MetaLineWidthByValue lineWidth,
-             const Color color,
+Layer::Layer(std::string name,
+             const MetaLineWidthByValue& lineWidth,
+             const Color& color,
              DxfLinePatternByValue_CSPtr linepattern,
-             const bool frozen) :
+             bool frozen) :
         EntityMetaType(),
         DocumentMetaType(),
-        _name(name),
+        _name(std::move(name)),
         _lineWidth(lineWidth),
         _color(color),
-        _linepattern(linepattern),
+        _linepattern(std::move(linepattern)),
         _isFrozen(frozen) {
-    assert(!StringHelper::isBlank(name) && "Name cannot be blank");
-}
-
-Layer::Layer(const std::string name, const MetaLineWidthByValue lineWidth) :
-        EntityMetaType(),
-        DocumentMetaType(),
-        _name(name),
-        _lineWidth(lineWidth),
-        _linepattern(nullptr),
-        _isFrozen(false) {
-    assert(!StringHelper::isBlank(name) && "Name cannot be blank");
-}
-
-Layer::Layer(const std::string name, const Color color) :
-        EntityMetaType(),
-        DocumentMetaType(),
-        _name(name),
-        _color(color),
-        _linepattern(nullptr),
-        _isFrozen(false) {
-    assert(!StringHelper::isBlank(name) && "Name cannot be blank"); // Name must be set
+    assert(!StringHelper::isBlank(_name) && "Name cannot be blank");
 }
 
 Layer::Layer(const builder::LayerBuilder& builder) :

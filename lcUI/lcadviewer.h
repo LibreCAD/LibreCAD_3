@@ -87,7 +87,6 @@ class LCADViewer : public QWidget {
         virtual void keyReleaseEvent(QKeyEvent* event);
         virtual void resizeEvent(QResizeEvent * event);
 
-    public:
     signals:
         void mouseMoveEvent();
         void mousePressEvent();
@@ -104,7 +103,7 @@ class LCADViewer : public QWidget {
         void updateBackground();
         void updateDocument();
 
-        void on_commitProcessEvent(const lc::CommitProcessEvent&);
+        void on_commitProcessEvent(const lc::CommitProcessEvent& event);
 
         /* for panning */
         bool _altKeyActive;

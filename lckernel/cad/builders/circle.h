@@ -7,7 +7,8 @@ namespace lc {
     namespace builder {
         class CircleBuilder : public CADEntityBuilder {
             public:
-                CircleBuilder();
+                CircleBuilder() = default;
+                virtual ~CircleBuilder() = default;
 
                 const geo::Coordinate& center() const;
                 CircleBuilder* setCenter(const geo::Coordinate& center);

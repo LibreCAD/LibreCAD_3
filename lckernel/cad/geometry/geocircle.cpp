@@ -4,9 +4,12 @@
 using namespace lc;
 using namespace geo;
 
-Circle::Circle(const Coordinate& center, double radius) : Base(), _center(center), _radius(radius) {
+Circle::Circle(Coordinate center, double radius) :
+        Base(),
+        _center(std::move(center)),
+        _radius(radius) {
     if (radius < 0.0) {
-        throw "Invalid radius";
+        throw std::runtime_error("Invalid radius");
     }
 
 }

@@ -29,16 +29,16 @@ namespace lc {
              * @param Layer_CSPtr layer, layer of entity
              * @param MetaTypes metaTypes
              */
-            Arc(const geo::Coordinate &center, double radius, double startAngle, double endAngle,
-                bool CCW,
-                const Layer_CSPtr layer,
-                const MetaInfo_CSPtr metaInfo = nullptr,
-                const Block_CSPtr block = nullptr
+            Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle,
+                bool isCCW,
+                Layer_CSPtr layer,
+                MetaInfo_CSPtr metaInfo = nullptr,
+                Block_CSPtr block = nullptr
             );
 
-            Arc(const geo::Arc &a, const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block = nullptr);
+            Arc(const geo::Arc &a, Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block = nullptr);
 
-            Arc(const Arc_CSPtr other, bool sameID = false);
+            Arc(const Arc_CSPtr& other, bool sameID = false);
 
         public:
 

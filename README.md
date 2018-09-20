@@ -1,4 +1,4 @@
-LibreCAD_3
+LibreCAD_3 ![Build status](https://api.travis-ci.org/LibreCAD/LibreCAD_3.svg?branch=master)
 ==========
 
 LibreCAD 3 development (GSoC 2014)

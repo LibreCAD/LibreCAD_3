@@ -31,9 +31,10 @@
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
         _document(document), 
-        _builder(builder),
+        _builder(std::move(builder)),
         _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)),
-        _currentBlock(nullptr) {
+        _currentBlock(nullptr),
+        dxfW(nullptr) {
     _builder->append(_entityBuilder);
 }
 
@@ -47,8 +48,8 @@ inline int DXFimpl::widthToInt(double wid) const {
     return -1;
 }
 
-void DXFimpl::setBlock(const int _blockHandle) {
-    std::cout << "setBlock " << _blockHandle << "\n";
+void DXFimpl::setBlock(const int handle) {
+    std::cout << "setBlock " << handle << "\n";
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
@@ -61,7 +62,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
     std::string appName;
 
     while(it != appData.end()) {
-        if(it->size() > 0) {
+        if(!it->empty()) {
             appName = *(it->begin()->content.s);
 
             if(appName == APP_NAME) {
@@ -185,7 +186,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
     }
 
     auto lp = _document->linePatternByName(data.lineType);
-    bool isFrozen = data.flags & 1;
+    auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
     auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
     // If a layer starts with a * it's a special layer we don't process yet
@@ -193,7 +194,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
         _builder->append(al);
     }
-    else if (data.name.length()>0 && data.name.compare(0,1,"*")) {
+    else if (data.name.length() > 0 && (data.name.compare(0,1,"*") != 0)) {
         auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
         _builder->append(al);
     }
@@ -407,11 +408,11 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
     std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
 
     std::vector<lc::entity::LWVertex2D> points;
-    for (auto i : data.vertlist) {
+    for (const auto& i : data.vertlist) {
         points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
     }
 
-    auto isCLosed = data.flags&0x01;
+    auto isCLosed = (unsigned int) data.flags & 0x01u;
     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
             points,
             data.width,
@@ -492,12 +493,13 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 }
 
 lc::geo::Coordinate DXFimpl::coord(DRW_Coord const& coord) const {
-    return lc::geo::Coordinate(coord.x, coord.y, coord.z);
+    return { coord.x, coord.y, coord.z };
 }
 
 std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordList) const {
     std::vector<lc::geo::Coordinate> coords;
-    for (const DRW_Coord *ptr : coordList) {
+    coords.reserve(coordList.size());
+    for (const DRW_Coord* ptr : coordList) {
         coords.emplace_back(ptr->x,ptr->y, ptr->z);
     }
     return coords;
@@ -517,7 +519,7 @@ void DXFimpl::addImage(const DRW_Image *data) {
 }
 
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
-    for( auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
+    for(auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
         if (image->ref == data->handle) {
             auto layer = _document->layerByName(image->layer);
             if (layer == nullptr) {
@@ -565,12 +567,12 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
 
 void DXFimpl::writeLayers() {
     auto layers = _document->allLayers();
-    for(const auto &layer: layers) {
+    for(const auto& layer: layers) {
         writeLayer(layer.second);
     }
 }
 
-void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer> layer) {
+void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer>& layer) {
     DRW_Layer lay;
     lc::iColor icol_inst;
 
@@ -635,7 +637,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::File::Type type) {
     return success;
 }
 
-void DXFimpl::writePoint(const lc::entity::Point_CSPtr p) {
+void DXFimpl::writePoint(const lc::entity::Point_CSPtr& p) {
     DRW_Point point;
     getEntityAttributes(&point, p);
     point.basePoint.x = p->x();
@@ -643,7 +645,7 @@ void DXFimpl::writePoint(const lc::entity::Point_CSPtr p) {
     dxfW->writePoint(&point);
 }
 
-void DXFimpl::writeLine(const lc::entity::Line_CSPtr l) {
+void DXFimpl::writeLine(const lc::entity::Line_CSPtr& l) {
     DRW_Line line;
     getEntityAttributes(&line, l);
     line.basePoint.x = l->start().x();
@@ -653,7 +655,7 @@ void DXFimpl::writeLine(const lc::entity::Line_CSPtr l) {
     dxfW->writeLine(&line);
 }
 
-void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr c) {
+void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr& c) {
     DRW_Circle circle;
     getEntityAttributes(&circle, c);
     circle.basePoint.x = c->center().x();
@@ -662,7 +664,7 @@ void DXFimpl::writeCircle(const lc::entity::Circle_CSPtr c) {
     dxfW->writeCircle(&circle);
 }
 
-void DXFimpl::writeArc(const lc::entity::Arc_CSPtr a) {
+void DXFimpl::writeArc(const lc::entity::Arc_CSPtr& a) {
     DRW_Arc arc;
     getEntityAttributes(&arc, a);
     arc.basePoint.x = a->center().x();
@@ -678,7 +680,7 @@ void DXFimpl::writeArc(const lc::entity::Arc_CSPtr a) {
     dxfW->writeArc(&arc);
 }
 
-void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
+void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr& s) {
     DRW_Ellipse el;
     getEntityAttributes(&el, s);
     el.basePoint.x = s->center().x();
@@ -696,7 +698,7 @@ void DXFimpl::writeEllipse(const lc::entity::Ellipse_CSPtr s) {
     dxfW->writeEllipse(&el);
 }
 
-void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
+void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr& s) {
     DRW_Spline sp;
 
     getEntityAttributes(&sp, s);
@@ -707,11 +709,11 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
     sp.tgStart = DRW_Coord(s->startTanX(), s->startTanY(), s->startTanZ());
     sp.degree = s->degree();
 
-    for(const auto & cp : s->controlPoints()) {
+    for(const auto& cp : s->controlPoints()) {
         sp.controllist.push_back(new DRW_Coord(cp.x(), cp.y(), cp.z()));
     }
 
-    for(const auto & fp : s->fitPoints()) {
+    for(const auto& fp : s->fitPoints()) {
         sp.fitlist.push_back(new DRW_Coord(fp.x(), fp.y(), fp.z()));
     }
 
@@ -723,7 +725,7 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr s) {
     dxfW->writeSpline(&sp);
 }
 
-void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr i) {
+void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr& i) {
     DRW_Insert insert;
     getEntityAttributes(&insert, i);
 
@@ -735,7 +737,7 @@ void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr i) {
     dxfW->writeInsert(&insert);
 }
 
-void DXFimpl::getEntityAttributes(DRW_Entity *ent, lc::entity::CADEntity_CSPtr entity) {
+void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity) {
     auto layer_  = entity->layer();
 
     auto lpByValue = entity->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
@@ -1054,24 +1056,24 @@ void DXFimpl::writeAppId(){
     dxfW->writeAppId(&ai);
 }
 
-void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr d) {
+void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr& d) {
 
 }
 
-void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr p) {
+void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
 
 }
 
-void DXFimpl::writeImage(const lc::entity::Image_CSPtr i) {
+void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
 
 }
 
-void DXFimpl::writeText(const lc::entity::Text_CSPtr t) {
+void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
 
 }
 
 void DXFimpl::writeEntities(){
-    for(const auto e :_document->entityContainer().asVector()) {
+    for(const auto& e :_document->entityContainer().asVector()) {
         if(e->block() != nullptr) {
             continue;
         }
@@ -1080,56 +1082,50 @@ void DXFimpl::writeEntities(){
     }
 }
 
-void DXFimpl::writeEntity(lc::entity::CADEntity_CSPtr entity) {
-    const auto Line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
-    if (Line != nullptr) {
-        writeLine(Line);
+void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
+    auto line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+    if (line != nullptr) {
+        writeLine(line);
         return;
     }
 
-    const auto Circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
-    if (Circle != nullptr) {
-        writeCircle(Circle);
+    auto circle = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
+    if (circle != nullptr) {
+        writeCircle(circle);
         return;
     }
 
-    const auto Arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
-    if (Arc != nullptr) {
-        writeArc(Arc);
+    auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(entity);
+    if (arc != nullptr) {
+        writeArc(arc);
         return;
     }
 
-    const auto Ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
-    if (Ellipse != nullptr) {
-        writeEllipse(Ellipse);
+    auto image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
+    if (image != nullptr) {
+        writeImage(image);
         return;
     }
 
-    const auto Image = std::dynamic_pointer_cast<const lc::entity::Image>(entity);
-    if (Image != nullptr) {
-        writeImage(Image);
+    auto lwPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
+    if (lwPolyline != nullptr) {
+        writeLWPolyline(lwPolyline);
         return;
     }
 
-    const auto LWPolyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity);
-    if (LWPolyline != nullptr) {
-        writeLWPolyline(LWPolyline);
+    auto text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
+    if (text != nullptr) {
+        writeText(text);
         return;
     }
 
-    const auto Text = std::dynamic_pointer_cast<const lc::entity::Text>(entity);
-    if (Text != nullptr) {
-        writeText(Text);
-        return;
-    }
-
-    const auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
+    auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(entity);
     if (ellipse != nullptr) {
         writeEllipse(ellipse);
         return;
     }
 
-    const auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
+    auto insert = std::dynamic_pointer_cast<const lc::entity::Insert>(entity);
     if (insert != nullptr) {
          writeInsert(insert);
          return;
@@ -1137,18 +1133,18 @@ void DXFimpl::writeEntity(lc::entity::CADEntity_CSPtr entity) {
 }
 
 void DXFimpl::writeBlockRecords() {
-    for(auto block : _document->blocks()) {
+    for(const auto& block : _document->blocks()) {
         dxfW->writeBlockRecord(block->name());
     }
 }
 
 void DXFimpl::writeBlocks() {
-    for(auto block : _document->blocks()) {
+    for(const auto& block : _document->blocks()) {
         writeBlock(block);
     }
 }
 
-void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
+void DXFimpl::writeBlock(const lc::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
@@ -1164,7 +1160,7 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
             DRW_Variant(ENTITY_NAME_CODE, customEntity->entityName()),
         });
 
-        for(auto data : customEntity->params()) {
+        for(const auto& data : customEntity->params()) {
             list.emplace_back(DRW_Variant(470, data.first));
             list.emplace_back(DRW_Variant(471, data.second));
         }
@@ -1174,7 +1170,7 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr block) {
 
     dxfW->writeBlock(&drwBlock);
 
-    for(auto entity : _document->entitiesByBlock(block).asVector()) {
+    for(const auto& entity : _document->entitiesByBlock(block).asVector()) {
         writeEntity(entity);
     }
 }

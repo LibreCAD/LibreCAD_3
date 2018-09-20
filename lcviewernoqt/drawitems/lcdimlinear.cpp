@@ -6,7 +6,7 @@
 
 using namespace LCViewer;
 
-LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear) :
+LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr& dimLinear) :
         LCVDrawItem(dimLinear, true),
         _dimLinear(dimLinear) {
 }

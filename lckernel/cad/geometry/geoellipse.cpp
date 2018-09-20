@@ -1,15 +1,14 @@
 #include "geoellipse.h"
 
-#include "math.h"
-#include <cad/math/lcmath.h>
+#include "cmath"
 
 
 using namespace lc;
 using namespace geo;
 
-Ellipse::Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed) :
-    _center(center),
-    _majorP(majorP),
+Ellipse::Ellipse(Coordinate center, Coordinate majorP, double minorRadius, double startAngle, double endAngle, bool reversed) :
+    _center(std::move(center)),
+    _majorP(std::move(majorP)),
     _minorRadius(minorRadius),
     _startAngle(startAngle),
     _endAngle(endAngle),
@@ -79,9 +78,9 @@ Ellipse Ellipse::geoscale(const Coordinate& center, const Coordinate &factor) co
                                                     isArc() ? this->getEllipseAngle(endPoint) : 2.*M_PI);
 }
 
-Ellipse Ellipse::georotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
-    return Ellipse(center().rotate(rotation_center, rotation_angle),
-                    majorP().rotate(rotation_center, rotation_angle),
+Ellipse Ellipse::georotate(const geo::Coordinate& center, const double rotation_angle) const {
+    return Ellipse(_center.rotate(center, rotation_angle),
+                    majorP().rotate(center, rotation_angle),
                     minorRadius(), startAngle(), endAngle());
 }
 
@@ -114,13 +113,14 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         ce[3]= -twoax*twoax/a0;
         //std::cout<<"1::find cosine, variable c, solve(c^4 +("<<ce[0]<<")*c^3+("<<ce[1]<<")*c^2+("<<ce[2]<<")*c+("<<ce[3]<<")=0,c)\n";
         roots=Math::quarticSolver(ce);
-    } else {//a=b, quadratic equation for circle
+    }
+    else {//a=b, quadratic equation for circle
         a0=twoby/twoax;
         roots.push_back(sqrt(1./(1.+a0*a0)));
         roots.push_back(-roots[0]);
     }
 
-    if(roots.size() == 0) {
+    if(roots.empty()) {
         //this should not happen
         std::cout<<"(a= "<<a<<" b= "<<b<<" x= "<<x<<" y= "<<y<<" )\n";
         std::cout<<"finding minimum for ("<<x<<"-"<<a<<"*cos(t))^2+("<<y<<"-"<<b<<"*sin(t))^2\n";
@@ -131,11 +131,13 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
     }
 
 
-    for(size_t i=0; i<roots.size(); i++) {
-        double const s=twoby*roots[i]/(twoax-twoa2b2*roots[i]); //sine
-        double const d2=twoa2b2+(twoax-2.*roots[i]*twoa2b2)*roots[i]+twoby*s;
-        if (d2<0) continue; // fartherest
-        Coordinate t(a*roots[i], b*s);
+    for(double root : roots) {
+        double const s=twoby*root/(twoax-twoa2b2*root); //sine
+        double const d2=twoa2b2+(twoax-2.*root*twoa2b2)*root+twoby*s;
+        if (d2<0) {
+            continue;
+        } // fartherest
+        Coordinate t(a*root, b*s);
         //double d=(t-trcoord).magnitude();
         //double angle = atan2(roots[i],s);
         // std::cout<<i<<" Find Point: cos= "<<roots[i]<<" sin= "<<s<<" angle= "<<angle<<" ds2= "<<d<<" d="<<d2<<std::endl;
@@ -143,6 +145,7 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         t = t + _center;
         pnp.push_back(t);
     }
+
     return pnp;
 }
 
@@ -154,8 +157,7 @@ Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
     for (auto& verifiedPoint: potencialPoinst)
     {
         double d = verifiedPoint.distanceTo(coord);
-        if (d<minDist)
-        {
+        if (d < minDist) {
             minDist = verifiedPoint.distanceTo(coord);
             res = verifiedPoint;
         }
@@ -167,16 +169,12 @@ Coordinate Ellipse::nearestPointOnPath(const Coordinate& coord) const {
 Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
     Coordinate res;
     double minDist = DBL_MAX;
-    std::vector<Coordinate> potencialPoinst = this->findPotentialNearestPoints(coord);
+    std::vector<Coordinate> potentialPoints = this->findPotentialNearestPoints(coord);
 
-
-    for (auto verifiedPoint: potencialPoinst)
-    {
-        if (this->isAngleBetween(verifiedPoint.angle()))
-        {
+    for (const auto& verifiedPoint: potentialPoints) {
+        if (this->isAngleBetween(verifiedPoint.angle())) {
             double d = verifiedPoint.distanceTo(coord);
-            if (d<minDist)
-            {
+            if (d < minDist) {
                 minDist = verifiedPoint.distanceTo(coord);
                 res = verifiedPoint;
             }

@@ -64,7 +64,7 @@ class LinePatternManager : public QDialog {
         lc::Document_SPtr _document;
         LinePatternModel* _model;
 
-        void on_addLinePatternEvent(const lc::AddLinePatternEvent&);
-        void on_removeLinePatternEvent(const lc::RemoveLinePatternEvent&);
-        void on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent&);
+        void on_addLinePatternEvent(const lc::AddLinePatternEvent& event);
+        void on_removeLinePatternEvent(const lc::RemoveLinePatternEvent& event);
+        void on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent& event);
 };

@@ -24,24 +24,24 @@ namespace lc {
              * @param double oblique
              * @param Layer_CSPtr layer
              */
-            DimLinear(geo::Coordinate const &definitionPoint,
-                      geo::Coordinate const &middleOfText,
-                      TextConst::AttachmentPoint const &attachmentPoint,
+            DimLinear(geo::Coordinate definitionPoint,
+                      geo::Coordinate middleOfText,
+                      TextConst::AttachmentPoint attachmentPoint,
                       double textAngle,
-                      double const lineSpacingFactor,
-                      TextConst::LineSpacingStyle const &lineSpacingStyle,
-                      std::string const &explicitValue,
-                      geo::Coordinate const &definitionPoint2,
-                      geo::Coordinate const &definitionPoint3,
-                      const double angle,
-                      const double oblique,
-                      const Layer_CSPtr layer,
-                      const MetaInfo_CSPtr metaInfo = nullptr,
-                      const Block_CSPtr block = nullptr
+                      double lineSpacingFactor,
+                      TextConst::LineSpacingStyle lineSpacingStyle,
+                      std::string explicitValue,
+                      geo::Coordinate definitionPoint2,
+                      geo::Coordinate definitionPoint3,
+                      double angle,
+                      double oblique,
+                      Layer_CSPtr layer,
+                      MetaInfo_CSPtr metaInfo = nullptr,
+                      Block_CSPtr block = nullptr
             );
 
 
-            DimLinear(const DimLinear_CSPtr other, bool sameID = false);
+            DimLinear(const DimLinear_CSPtr& other, bool sameID = false);
 
             /**
              * Convenient function
@@ -49,10 +49,10 @@ namespace lc {
             static DimLinear_SPtr dimAuto(geo::Coordinate const &p1,
                                           geo::Coordinate const &p2,
                                           geo::Coordinate const &middleOfText,
-                                          std::string const &explicitValue,
-                                          const Layer_CSPtr layer,
-                                          const MetaInfo_CSPtr metaInfo = nullptr,
-                                          const Block_CSPtr block = nullptr
+                                          std::string explicitValue,
+                                          Layer_CSPtr layer,
+                                          MetaInfo_CSPtr metaInfo = nullptr,
+                                          Block_CSPtr block = nullptr
             );
 
         public:
@@ -76,7 +76,7 @@ namespace lc {
              * @param double rotation_angle
              * @return CADEntity_CSPtr rotated entity
              */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
              * @brief scale, scales the entity

@@ -25,7 +25,7 @@ namespace lc {
                 return "_LINEPATTERN";
             }
 
-            virtual const std::string id() const override {
+            const std::string id() const override {
                 return DxfLinePattern::LCMETANAME() + "_" + name();
             }
 
@@ -35,14 +35,16 @@ namespace lc {
     class DxfLinePatternByValue : public DxfLinePattern {
         friend class builder::LinePatternBuilder;
         public:
-            DxfLinePatternByValue() {}
-            DxfLinePatternByValue(const std::string &_name, const std::string &_description, const std::vector<double> &_path, const double length);
+            DxfLinePatternByValue(std::string name = "0",
+                                  std::string description = "",
+                                  std::vector<double> path = {},
+                                  double length = 0);
             virtual ~DxfLinePatternByValue() = default;
 
             /**
              * Calculates the total length of a path
              */
-            static double calculatePathLength(const std::vector<double> &_path);
+            static double calculatePathLength(const std::vector<double>& path);
 
             const std::string name() const override;
             std::string description() const override;
@@ -57,7 +59,7 @@ namespace lc {
              * \return New line pattern
              * Generate a new pattern compatible with LibreCAD from a DXF pattern.
              */
-        std::vector<double> generatePattern(const std::vector<double> & dxfPattern, const double length, const double lineWidth) const;
+        std::vector<double> generatePattern(const std::vector<double>& dxfPattern, double length, double lineWidth) const;
 
         /**
          * \brief Get cached LibreCAD compatible pattern
@@ -83,7 +85,7 @@ namespace lc {
 
     class DxfLinePatternByBlock : public DxfLinePattern {
         public:
-            virtual const std::string name() const override;
+            const std::string name() const override;
     };
 
     DECLARE_SHORT_SHARED_PTR(DxfLinePattern)

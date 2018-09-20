@@ -18,7 +18,7 @@ LuaScript::~LuaScript() {
 
 void LuaScript::on_luaRun_clicked() {
 	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
-        CadMdiChild* mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
+        auto mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
 
 		auto luaState = LuaIntf::LuaState::newState();
 		auto lcLua = lc::LCLua(luaState);
@@ -35,7 +35,7 @@ void LuaScript::on_luaRun_clicked() {
 
 void LuaScript::on_open_clicked() {
 	auto fileName = QFileDialog::getOpenFileName(
-		0,
+		nullptr,
 		tr("Open File"),
 		QString(),
 		tr("Lua (*.lua)")
@@ -55,7 +55,7 @@ void LuaScript::on_open_clicked() {
 
 void LuaScript::on_save_clicked() {
 	auto fileName = QFileDialog::getSaveFileName(
-		0,
+		nullptr,
 		tr("Save File"),
 		QString(),
 		tr("Lua (*.lua)")

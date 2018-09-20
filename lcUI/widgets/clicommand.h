@@ -33,20 +33,20 @@ class CliCommand : public QDockWidget {
         /**
          * \brief Add a new command
          */
-		bool addCommand(std::string name);
+		bool addCommand(const std::string& name);
 
         /**
          * \brief Write a message in the logs
          * \param message QString
          */
-		void write(QString message);
+		void write(const QString& message);
 
         /**
          * \brief Write text in input.
          * \param text QString
          * It's only used in unit tests for the moment. Maybe that can be moved to a new test class.
          */
-		void setText(QString text);
+		void setText(const QString& text);
 
         /**
          * \brief Return raw text to Lua.
@@ -78,8 +78,8 @@ class CliCommand : public QDockWidget {
 		void textEntered(QString text);
 
     private:
-        bool checkParam(QString command);
-		void enterCommand(QString command);
+        bool checkParam(const QString& command);
+		void enterCommand(const QString& command);
 		void enterCoordinate(QString coordinate);
 		void enterNumber(double number);
 

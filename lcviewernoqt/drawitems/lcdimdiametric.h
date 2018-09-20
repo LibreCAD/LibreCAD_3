@@ -10,7 +10,8 @@ namespace LCViewer {
 
     class LCDimDiametric : public LCVDrawItem, public LCDimension {
         public:
-            LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric);
+            LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric);
+            virtual ~LCDimDiametric() = default;
 
             /**
             * @brief draw, Draws the DimDiametric
@@ -18,7 +19,7 @@ namespace LCViewer {
             * @param LcDrawOptions options
             * @param geo::Area rect
             */
-            virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

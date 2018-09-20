@@ -6,7 +6,7 @@
 
 using namespace LCViewer;
 
-LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr dimDiametric) : 
+LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric) :
         LCVDrawItem(dimDiametric, true),
         _dimDiametric(dimDiametric) {
 }

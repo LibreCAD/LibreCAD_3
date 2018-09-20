@@ -3,8 +3,10 @@
 using namespace lc;
 using namespace geo;
 
-Bezier::Bezier(const Coordinate& point_a, const Coordinate& point_b, const Coordinate& point_c)
-    : _pointA(point_a), _pointB(point_b), _pointC(point_c) {
+Bezier::Bezier(Coordinate point_a, Coordinate point_b, Coordinate point_c) :
+        _pointA(std::move(point_a)),
+        _pointB(std::move(point_b)),
+        _pointC(std::move(point_c)) {
 }
 
 Bezier::Bezier(const Bezier &bez) :
@@ -143,11 +145,13 @@ const lc::geo::Coordinate Bezier::returnCasesForNearestPoint(
 }
 
 Coordinate Bezier::CasteljauAt(std::vector<Coordinate> points, double t) const {
-    if(points.size() == 1) return points.front();
+    if(points.size() == 1) {
+        return points.front();
+    }
     else {
-        int size_ = points.size();
+        size_t size = points.size();
         std::vector<Coordinate> new_vec;
-        for(int i = 1; i < size_; i++) {
+        for(size_t i = 1; i < size; i++) {
             new_vec.push_back(points[i-1] * (1.0-t) + points[i] * t);
         }
         return CasteljauAt(new_vec, t);
@@ -165,7 +169,7 @@ Coordinate Bezier::DirectValueAt(double t) const {
 const std::vector<Coordinate> Bezier::Curve(double precession) {
     std::vector<Coordinate> v = { _pointA, _pointB, _pointC };
     std::vector<Coordinate> ret;
-    for(auto i = 0.; i < 1.; i+=precession) {
+    for(auto i = 0.; i < 1.; i += precession) {
         ret.push_back(CasteljauAt(v, i));
     }
     return ret;
@@ -263,8 +267,8 @@ std::vector<BB_CSPtr> Bezier::splitHalf() const {
 }
 
 BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
-    auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
-    auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
+    //auto tx_ = (_pointA.x() - _pointB.x())/(_pointA.x() - (_pointB.x()*2.0) + _pointC.x());
+    //auto ty_ = (_pointA.y() - _pointB.y())/(_pointA.y() - (_pointB.y()*2.0) + _pointC.y());
 
 //    if(tx_ > 0. && tx_ < 1.0) {
 //        auto bez1 = DirectValueAt(tx_);
@@ -278,7 +282,7 @@ BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
 //        y_.push_back(bez2.y());
 //    }
 
-    return NULL; // TODO: no return statement
+    return nullptr; // TODO: no return statement
 }
 
 BB_CSPtr Bezier::splitAtT(double t) const {

@@ -47,7 +47,7 @@ namespace lc {
                  * \param width New LineWidth
                  * Does nothing if the width is not present in the values.
                  */
-                void setWidth(lc::MetaLineWidth_CSPtr lineWidth);
+                void setWidth(const lc::MetaLineWidth_CSPtr& lineWidth);
 
             public slots:
                 /**
@@ -55,7 +55,7 @@ namespace lc {
                  * \param layer New selected layer
                  * This function update the "ByLayer" preview
                  */
-                void onLayerChanged(lc::Layer_CSPtr layer);
+                void onLayerChanged(const lc::Layer_CSPtr& layer);
 
             private slots:
                 void onActivated(const QString& text);

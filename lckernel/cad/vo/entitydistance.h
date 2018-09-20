@@ -14,7 +14,7 @@ namespace lc {
           * EntityDistance constructor
           * @param CADEntity_CSPtr Entity in question
           * @param geo::Coordinate Coordinate on the entities path
-          * @param unsigned int ID number that identitifes the the coordinate
+          * @param unsigned int ID number that identitifes the coordinate
           *
           */
         EntityDistance(entity::CADEntity_CSPtr cadEntity, const geo::Coordinate &coordinate) : _cadEntity(cadEntity),

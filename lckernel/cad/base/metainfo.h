@@ -13,7 +13,7 @@ namespace lc {
     class MetaInfo : public std::enable_shared_from_this<MetaInfo>, public std::unordered_map<std::string, EntityMetaType_CSPtr> {
         public:
             // COnvenience function to add a MetaType to the MetaInfo map
-            std::shared_ptr<MetaInfo> add(EntityMetaType_CSPtr mi);
+            std::shared_ptr<MetaInfo> add(EntityMetaType_CSPtr mt);
             std::shared_ptr<MetaInfo> addDxfLinePattern(DxfLinePattern_CSPtr lp);
 
             // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);

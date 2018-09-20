@@ -1,4 +1,4 @@
-#include "math.h"
+#include "cmath"
 
 #include "cadmdichild.h"
 
@@ -16,6 +16,7 @@ using namespace LCViewer;
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
+    _id(0),
     _activeLayer(nullptr) {
 
     if (this->objectName().isEmpty()) {
@@ -24,7 +25,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 
     this->resize(1078, 736);
 
-    QGridLayout* gridLayout = new QGridLayout(this);
+    auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
@@ -126,7 +127,7 @@ bool CadMdiChild::openFile() {
     auto ext = fileInfo.suffix().toStdString();
     auto availableLibraries = lc::File::getAvailableLibrariesForFormat(ext);
 
-    if(availableLibraries.size() > 0) {
+    if(!availableLibraries.empty()) {
         //TODO: if more than once, ask which one to choose
         newDocument();
         lc::File::open(_document, file.toStdString(), availableLibraries.begin()->first);
@@ -146,7 +147,7 @@ void CadMdiChild::saveFile() {
     lc::File::Type type;
     auto availableTypes = lc::File::getAvailableFileTypes();
 
-    if(availableTypes.size() == 0) {
+    if(availableTypes.empty()) {
         QMessageBox::critical(nullptr, "Save error", "No library available for file saving.");
         return;
     }
@@ -178,7 +179,7 @@ void CadMdiChild::saveFile() {
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {
-    QMenu* menu = new QMenu;
+    auto menu = new QMenu;
     menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
     menu->exec(_viewer->mapToGlobal(pos));
 }
@@ -210,7 +211,7 @@ void CadMdiChild::setId(unsigned int id) {
 }
 
 void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
-	_destroyCallback = destroyCallback;
+	_destroyCallback = std::move(destroyCallback);
 }
 
 void CadMdiChild::keyPressEvent(QKeyEvent *event) {
@@ -222,8 +223,8 @@ LCViewer::TempEntities_SPtr CadMdiChild::tempEntities() {
     return _tempEntities;
 }
 
-std::vector<lc::entity::CADEntity_SPtr> CadMdiChild::selection() {
-    return viewer()->documentCanvas()->selection().asVector();
+std::vector<lc::entity::CADEntity_CSPtr> CadMdiChild::selection() {
+    return viewer()->documentCanvas()->selectedEntities().asVector();
 }
 
 lc::Layer_CSPtr CadMdiChild::activeLayer() const {

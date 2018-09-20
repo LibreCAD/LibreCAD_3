@@ -71,6 +71,6 @@ void LinePatternPathPart::onTypeChanged(const QString &value) {
     emit update();
 }
 
-void LinePatternPathPart::onValueChanged(double) {
+void LinePatternPathPart::onValueChanged(double value) {
     emit update();
 }

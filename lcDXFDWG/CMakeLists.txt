@@ -62,7 +62,9 @@ if(WITH_LIBOPENCAD)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libopencad/lib")
     link_directories("${CMAKE_CURRENT_BINARY_DIR}/libopencad/lib")
 
+    set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
     add_subdirectory("libopencad")
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
     set(OPENCAD_LIB opencad)
 endif()

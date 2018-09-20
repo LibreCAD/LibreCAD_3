@@ -4,7 +4,7 @@
 
 using namespace LCViewer;
 
-LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr spline) :
+LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr& spline) :
         LCVDrawItem(spline, true),
         _spline(spline) {
 }

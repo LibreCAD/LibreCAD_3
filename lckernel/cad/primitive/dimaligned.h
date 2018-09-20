@@ -13,7 +13,11 @@
 namespace lc {
     namespace entity {
 
-        class DimAligned : public std::enable_shared_from_this<DimAligned>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
+        class DimAligned : public std::enable_shared_from_this<DimAligned>,
+                           public CADEntity,
+                           public Dimension,
+                           virtual public Visitable,
+                           public Draggable {
         public:
 
 
@@ -25,20 +29,29 @@ namespace lc {
             * @param double oblique
             * @param Layer_CSPtr layer
             */
-            DimAligned(geo::Coordinate const &definitionPoint, geo::Coordinate const &middleOfText,
-                       TextConst::AttachmentPoint const &attachmentPoint, double textAngle,
+            DimAligned(geo::Coordinate definitionPoint,
+                       geo::Coordinate middleOfText,
+                       TextConst::AttachmentPoint attachmentPoint,
+                       double textAngle,
                        double const lineSpacingFactor,
-                       TextConst::LineSpacingStyle const &lineSpacingStyle, std::string const &explicitValue,
-                       geo::Coordinate const &definitionPoint2, geo::Coordinate const &definitionPoint3,
-                       const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr, const Block_CSPtr block = nullptr);
+                       TextConst::LineSpacingStyle lineSpacingStyle,
+                       std::string explicitValue,
+                       geo::Coordinate definitionPoint2,
+                       geo::Coordinate definitionPoint3,
+                       Layer_CSPtr layer,
+                       MetaInfo_CSPtr metaInfo = nullptr,
+                       Block_CSPtr block = nullptr);
 
 
-            DimAligned(const DimAligned_CSPtr other, bool sameID = false);
+            DimAligned(const DimAligned_CSPtr& other, bool sameID = false);
 
-            static DimAligned_SPtr dimAuto(geo::Coordinate const &p1, geo::Coordinate const &p2,
-                                           geo::Coordinate const &middleOfText, std::string const &explicitValue,
-                                           const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo = nullptr,
-                                           const Block_CSPtr block = nullptr);
+            static DimAligned_SPtr dimAuto(geo::Coordinate p1,
+                                           geo::Coordinate p2,
+                                           geo::Coordinate middleOfText,
+                                           std::string explicitValue,
+                                           Layer_CSPtr layer,
+                                           MetaInfo_CSPtr metaInfo = nullptr,
+                                           Block_CSPtr block = nullptr);
 
         public:
             /**
@@ -61,7 +74,7 @@ namespace lc {
             * @param double rotation_angle
             * @return CADEntity_CSPtr rotated entity
             */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
             * @brief scale, scales the entity

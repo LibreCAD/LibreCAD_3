@@ -3,9 +3,6 @@
 
 using namespace lc::builder;
 
-ArcBuilder::ArcBuilder() {
-}
-
 const lc::geo::Coordinate& ArcBuilder::center() const {
     return _center;
 }

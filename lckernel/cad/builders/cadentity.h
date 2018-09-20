@@ -15,6 +15,8 @@ namespace lc {
                         _block(nullptr) {
                 }
 
+                virtual ~CADEntityBuilder() = default;
+
                 void copy(entity::CADEntity_CSPtr entity) {
                     _layer = entity->_layer;
                     _block = entity->_block;
@@ -39,6 +41,15 @@ namespace lc {
                 }
 
                 /**
+                 * @brief Set the layer
+                 * @param layer New layer
+                 */
+                void setLayer(Layer_CSPtr&& layer) {
+                    _layer = layer;
+                    layer = nullptr;
+                }
+
+                /**
                  * @brief Get MetaInfo
                  * @return MetaInfo
                  */
@@ -55,6 +66,15 @@ namespace lc {
                 }
 
                 /**
+                 * @brief Set MetaInfo
+                 * @param metaInfo new MetaInfo
+                 */
+                void setMetaInfo(MetaInfo_CSPtr&& metaInfo) {
+                    _metaInfo = metaInfo;
+                    metaInfo = nullptr;
+                }
+
+                /**
                  * @brief Get block
                  * @return Block
                  */
@@ -68,6 +88,15 @@ namespace lc {
                  */
                 void setBlock(const Block_CSPtr& block) {
                         _block = block;
+                }
+
+                /**
+                 * @brief Set the Block
+                 * @param block Block
+                 */
+                void setBlock(Block_CSPtr&& block) {
+                    _block = block;
+                    block = nullptr;
                 }
 
                 /**

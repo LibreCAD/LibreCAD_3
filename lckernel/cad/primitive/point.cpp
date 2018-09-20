@@ -1,26 +1,22 @@
 #include <memory>
 #include <cad/primitive/point.h>
-#include <cmath>
-
-#include <algorithm>
-#include "cad/geometry/geoarea.h"
 
 using namespace lc;
 using namespace entity;
 
-Point::Point(const double x, const double y,
-             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+Point::Point(double x, double y,
+             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(x, y) {
 }
 
-Point::Point(geo::Coordinate const& coord,
-             const Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
-        geo::Coordinate(coord) {
+Point::Point(geo::Coordinate coord,
+             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+        geo::Coordinate(std::move(coord)) {
 }
 
-Point::Point(const Point_CSPtr other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
+Point::Point(const Point_CSPtr& other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
 }
 
 Point::Point(const builder::PointBuilder& builder) :

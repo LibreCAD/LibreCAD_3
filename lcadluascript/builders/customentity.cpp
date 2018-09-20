@@ -4,17 +4,13 @@
 using namespace lc;
 using namespace builder;
 
-CustomEntityBuilder::CustomEntityBuilder() {
-
-}
-
 void CustomEntityBuilder::setSnapFunction(LuaIntf::LuaRef snapFunction) {
-    _snapFunction = snapFunction;
+    _snapFunction = std::move(snapFunction);
 }
 
 entity::LuaCustomEntity_CSPtr CustomEntityBuilder::build() {
     if(!checkValues()) {
-        throw "Missing or invalid values";
+        throw std::runtime_error("Missing or invalid values");
     }
 
     return entity::LuaCustomEntity_CSPtr(new entity::LuaCustomEntity(*this));
@@ -54,8 +50,8 @@ const LuaIntf::LuaRef& CustomEntityBuilder::newDragPointFunction() const {
     return _newDragPointFunction;
 }
 
-void CustomEntityBuilder::setNewDragPointFunction(const LuaIntf::LuaRef& setDragPointFunction) {
-    _newDragPointFunction = setDragPointFunction;
+void CustomEntityBuilder::setNewDragPointFunction(const LuaIntf::LuaRef& newDragPointFunction) {
+    _newDragPointFunction = newDragPointFunction;
 }
 
 const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsClickedFunction() const {

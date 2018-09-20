@@ -14,6 +14,6 @@ int main(int argc, char* argv[]) {
 
     LuaInterface li;
     li.initLua();
-    
-    return a.exec();
+
+    return QApplication::exec();
 }

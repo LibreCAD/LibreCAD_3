@@ -8,6 +8,7 @@ namespace lc {
         class LineBuilder : public CADEntityBuilder {
             public:
                 LineBuilder();
+                virtual ~LineBuilder() = default;
 
                 /**
                  * @brief Get line start

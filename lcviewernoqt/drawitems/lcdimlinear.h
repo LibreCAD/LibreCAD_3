@@ -10,7 +10,8 @@ namespace LCViewer {
 
     class LCDimLinear : public LCVDrawItem, public LCDimension {
         public:
-            LCDimLinear(const lc::entity::DimLinear_CSPtr dimLinear);
+            LCDimLinear(const lc::entity::DimLinear_CSPtr& dimLinear);
+            virtual ~LCDimLinear() = default;
 
             /**
             * @brief draw, Draws the DimLinear
@@ -18,7 +19,7 @@ namespace LCViewer {
             * @param LcDrawOptions options
             * @param geo::Area rect
             */
-            virtual void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
 
             lc::entity::CADEntity_CSPtr entity() const override;
 

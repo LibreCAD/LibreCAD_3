@@ -17,7 +17,7 @@ namespace lc {
                 /**
                  * Create a new CUBIC Bezier
                  */
-                CubicBezier(const Coordinate& point_a, const Coordinate& point_b, const Coordinate& point_c, const Coordinate& point_d);
+                CubicBezier(Coordinate point_a, Coordinate point_b, Coordinate point_c, Coordinate point_d);
 
                 CubicBezier(const CubicBezier &bez);
 

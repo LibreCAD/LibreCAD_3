@@ -15,7 +15,7 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -77,7 +77,7 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -137,7 +137,7 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
 std::vector<Line_CSPtr> entitytest::LineRotate() {
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -187,7 +187,7 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
 std::vector<Line_CSPtr> entitytest::LineScale() {
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -238,7 +238,7 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -288,7 +288,7 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -339,7 +339,7 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -392,7 +392,7 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 std::vector<Circle_CSPtr> entitytest::CircleScale() {
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -446,7 +446,7 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -492,7 +492,7 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -538,7 +538,7 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -588,7 +588,7 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -639,7 +639,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -686,7 +686,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -733,7 +733,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 
@@ -784,7 +784,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
 
     auto _storageManager = std::make_shared<StorageManagerImpl>();
     auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>("0", Color(1., 1., 1., 1.));
+    auto layer = std::make_shared<Layer>();
     auto al = std::make_shared<operation::AddLayer>(_document, layer);
     al->execute();
 

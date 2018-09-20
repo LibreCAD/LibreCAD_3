@@ -10,7 +10,7 @@ TEST(BuilderTest, Process) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());
@@ -29,8 +29,9 @@ TEST(BuilderTest, Process) {
     EXPECT_EQ(1, document->blocks().size());
     EXPECT_EQ(block, *document->blocks().begin());
 
-    EXPECT_EQ(2, document->allLayers().size());
-    auto it = document->allLayers().begin();
+    auto layers = document->allLayers();
+    EXPECT_EQ(2, layers.size());
+    auto it = layers.begin();
     auto layer1 = it->second;
     it++;
     auto layer2 = it->second;
@@ -45,7 +46,7 @@ TEST(BuilderTest, Undo) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());
@@ -74,7 +75,7 @@ TEST(BuilderTest, Redo) {
     auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
-    auto layer = std::make_shared<lc::Layer>();
+    auto layer = std::make_shared<lc::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
     auto block = std::make_shared<lc::Block>("Block", lc::geo::Coordinate());
@@ -95,8 +96,9 @@ TEST(BuilderTest, Redo) {
     EXPECT_EQ(1, document->blocks().size());
     EXPECT_EQ(block, *document->blocks().begin());
 
-    EXPECT_EQ(2, document->allLayers().size());
-    auto it = document->allLayers().begin();
+    auto layers = document->allLayers();
+    EXPECT_EQ(2, layers.size());
+    auto it = layers.begin();
     auto layer1 = it->second;
     it++;
     auto layer2 = it->second;

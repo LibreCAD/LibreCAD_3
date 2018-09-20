@@ -8,13 +8,13 @@ namespace lc {
     namespace operation {
         class AddBlock : public DocumentOperation {
             public:
-                AddBlock(const Document_SPtr& document, const Block_CSPtr& block);
+                AddBlock(const Document_SPtr& document, Block_CSPtr block);
 
-                virtual void undo() const override;
-                virtual void redo() const override;
+                void undo() const override;
+                void redo() const override;
 
             protected:
-                virtual void processInternal() override;
+                void processInternal() override;
 
             private:
                 Block_CSPtr _block;
@@ -22,13 +22,13 @@ namespace lc {
 
         class RemoveBlock : public DocumentOperation {
             public:
-                RemoveBlock(const Document_SPtr& document, const Block_CSPtr& block);
+                RemoveBlock(const Document_SPtr& document, Block_CSPtr block);
 
-                virtual void undo() const override;
-                virtual void redo() const override;
+                void undo() const override;
+                void redo() const override;
 
             protected:
-                virtual void processInternal() override;
+                void processInternal() override;
 
             private:
                 Block_CSPtr _block;
@@ -36,13 +36,13 @@ namespace lc {
 
         class ReplaceBlock : public DocumentOperation {
             public:
-                ReplaceBlock(const Document_SPtr& document, const Block_CSPtr& oldBlock, const Block_CSPtr& newBlock);
+                ReplaceBlock(const Document_SPtr& document, Block_CSPtr oldBlock, Block_CSPtr newBlock);
 
-                virtual void undo() const override;
-                virtual void redo() const override;
+                void undo() const override;
+                void redo() const override;
 
             protected:
-                virtual void processInternal() override;
+                void processInternal() override;
 
             private:
                 Block_CSPtr _oldBlock;

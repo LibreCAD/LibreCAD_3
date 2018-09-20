@@ -12,7 +12,10 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _scale(1.0),
     _zoomMin(0.05),
     _zoomMax(20.0),
-    _scaleLineWidth(false) {
+    _scaleLineWidth(false),
+    _backgroundPainter(nullptr),
+    _documentPainter(nullptr),
+    _foregroundPainter(nullptr) {
 
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -42,26 +45,24 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
 }
 
 void LCADViewer::setSnapManager(std::shared_ptr<SnapManager> snapmanager) {
-    _snapManager = snapmanager;
+    _snapManager = std::move(snapmanager);
 }
 
 void LCADViewer::setDragManager(DragManager_SPtr dragManager) {
-    _dragManager = dragManager;
+    _dragManager = std::move(dragManager);
 }
 
 
-void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent &) {
+void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent& event) {
     updateDocument();
     update();
 }
-
-
 
 /**
   * Handle key pressing and release to add additional states to this view
   *
   */
-void LCADViewer::keyPressEvent(QKeyEvent *event) {
+void LCADViewer::keyPressEvent(QKeyEvent* event) {
 
     QWidget::keyPressEvent(event);
 
@@ -79,11 +80,14 @@ void LCADViewer::keyPressEvent(QKeyEvent *event) {
         case Qt::Key_Control:
             _ctrlKeyActive = true;
             break;
+
+        default:
+            break;
     }
 
 }
 
-void LCADViewer::keyReleaseEvent(QKeyEvent *event) {
+void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
     QWidget::keyReleaseEvent(event);
 
     switch (event->key()) {
@@ -205,6 +209,9 @@ void LCADViewer::mousePressEvent(QMouseEvent *event) {
             _mouseScrollKeyActive = true;
         }
             break;
+
+        default:
+            break;
     }
 
     emit mousePressEvent();
@@ -246,7 +253,7 @@ std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
 void LCADViewer::setOperationActive(bool operationActive) {
     _operationActive = operationActive;
 
-    if(operationActive == false) {
+    if(!operationActive) {
         documentCanvas()->removeSelection();
     }
 }

@@ -24,7 +24,10 @@ namespace lc {
          *
          * \date 2012-04-16
          */
-        class Ellipse : public std::enable_shared_from_this<Ellipse>, public CADEntity, public geo::Ellipse, public Snapable {
+        class Ellipse : public std::enable_shared_from_this<Ellipse>,
+                        public CADEntity,
+                        public geo::Ellipse,
+                        public Snapable {
         public:
             /**
              * @brief Create ellipse
@@ -44,12 +47,12 @@ namespace lc {
                     double startAngle,
                     double endAngle,
                     bool reversed,
-                    const Layer_CSPtr layer,
-                    const MetaInfo_CSPtr metaInfo = nullptr,
-                    const Block_CSPtr block = nullptr
+                    Layer_CSPtr layer,
+                    MetaInfo_CSPtr metaInfo = nullptr,
+                    Block_CSPtr block = nullptr
             );
 
-            Ellipse(const Ellipse_CSPtr other, bool sameID = false);
+            Ellipse(const Ellipse_CSPtr& other, bool sameID = false);
 
         public:
             /**
@@ -73,7 +76,7 @@ namespace lc {
              * @return CADEntity_CSPtr rotated entity
              */
             virtual CADEntity_CSPtr
-            rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
              * @brief scale, scales the entity

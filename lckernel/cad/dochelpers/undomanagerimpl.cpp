@@ -15,7 +15,7 @@ UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) : _maximumUndoL
 void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
-    if (undoable.get() != nullptr) {
+    if (undoable != nullptr) {
         // // LOG4CXX_DEBUG(logger, "Process: " + undoable->text());
 
         // Check if Redo is possible, if so we might need to purge objects from memory

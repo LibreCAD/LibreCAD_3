@@ -26,6 +26,8 @@ matrix:
             - libgdk-pixbuf2.0-dev
             - gcc-4.9
             - g++-4.9
+            - clang-3.9
+            - clang-tidy-3.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
@@ -57,10 +59,23 @@ script:
   - cmake ..
   - make -j2
   - ./unittest/lcunittest
+  - make stylecheck > stylecheck.out
+  - |
+    if [[ -n $(grep "warning: " stylecheck.out) ]] || [[ -n $(grep "error: " stylecheck.out) ]]; then
+      echo "Style checks failed"
+      echo ""
+      cat stylecheck.out
+      exit 1;
+    else
+      echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
+    fi
 
 notifications:
   irc:
     channels:
       - "chat.freenode.net#librecad"
+    template:
+      - "%{repository_slug} (%{commit}) : %{commit_message} %{result}"
+      - "Build details: %{build_url}"
     on_success: always
     on_failure: always

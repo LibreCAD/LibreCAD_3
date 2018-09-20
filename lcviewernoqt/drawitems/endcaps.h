@@ -28,7 +28,7 @@ class EndCaps {
          * @brief addCap, Adds an arrowhead
          * @param typ Type of arrowhead
          */
-        void addCap(unsigned int typ, std::function<void(LcPainter&, double startX, double startY, double endX, double endY, double size)>);
+        void addCap(unsigned int type, std::function<void(LcPainter&, double startX, double startY, double endX, double endY, double size)>);
 
         /**
          * @brief render, Render the arrow head

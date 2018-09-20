@@ -1,26 +1,17 @@
 #include "settings.h"
-#include <memory>
-#include <unordered_map>
 
-Settings* Settings::inst = nullptr;
-std::unordered_map<std::string, double> Settings::variable_map;
+std::unordered_map<std::string, double> Settings::_variable_map = { // NOLINT
+    {"LCTOLERANCE", 1.0e-10}
+};
 
-void Settings::setVal(std::string variable,double val)
-{
-	variable_map[variable] = val;
+void Settings::setVal(const std::string& variable,double val) {
+	_variable_map[variable] = val;
 }
 
-double Settings::getVal(std::string variable)
-{
-	Settings::inst = Settings::instance();
-
-	return variable_map[variable];
+double Settings::val(const std::string& variable) {
+	return _variable_map[variable];
 }
 
-Settings* Settings::instance()
-{
-	if(Settings::inst==nullptr)
-		Settings::inst = new Settings();
-
-	return Settings::inst;
+bool Settings::exists(const std::string& variable) {
+    return _variable_map.find(variable) != _variable_map.end();
 }

@@ -13,7 +13,7 @@ static const luaL_Reg loadedlibs[] = {
         {LUA_TABLIBNAME, luaopen_table},
         {LUA_STRLIBNAME, luaopen_string},
         {LUA_MATHLIBNAME, luaopen_math},
-        {NULL, NULL}
+        {nullptr, nullptr}
 };
 
 LCLua::LCLua(lua_State* L) :
@@ -30,7 +30,7 @@ LCLua::LCLua(lua_State* L) :
 void LCLua::addLuaLibs() {
     const luaL_Reg *lib;
 
-    for (lib = loadedlibs; lib->func; lib++) {
+    for (lib = loadedlibs; lib->func != nullptr; lib++) {
         luaL_requiref(_L, lib->name, lib->func, 1);
         lua_pop(_L, 1);
     }
@@ -59,7 +59,7 @@ void LCLua::addLuaLibs() {
     }
 }
 
-void LCLua::setDocument(lc::Document_SPtr document) {
+void LCLua::setDocument(const lc::Document_SPtr& document) {
     LuaIntf::Lua::setGlobal(_L, "document", document);
 }
 
@@ -67,7 +67,7 @@ std::string LCLua::runString(const char* code) {
     std::string out;
 
     auto s = luaL_dostring(_L, code);
-    if (s != 0) {
+    if (s) {
         out.append(lua_tostring(_L, -1));
         lua_pop(_L, 1);
     }

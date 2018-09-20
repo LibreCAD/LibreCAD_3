@@ -12,6 +12,7 @@ namespace lc {
         class LayerBuilder {
             public:
                 LayerBuilder();
+                virtual ~LayerBuilder() = default;
 
                 const std::string& name() const;
                 const MetaLineWidthByValue& lineWidth() const;
@@ -22,7 +23,7 @@ namespace lc {
                 LayerBuilder* setName(const std::string& name);
                 LayerBuilder* setLineWidth(const MetaLineWidthByValue& lineWidth);
                 LayerBuilder* setColor(const Color& color);
-                LayerBuilder* setLinePattern(const DxfLinePatternByValue_CSPtr& linepattern);
+                LayerBuilder* setLinePattern(const DxfLinePatternByValue_CSPtr& linePattern);
                 LayerBuilder* setIsFrozen(bool isFrozen);
 
                 Layer_CSPtr build();

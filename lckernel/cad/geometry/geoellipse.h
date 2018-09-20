@@ -22,7 +22,7 @@ namespace lc {
                  * @param endAngle
                  * @param reversed
                  */
-                Ellipse(const Coordinate& center, const Coordinate& majorP, double minorRadius, double startAngle, double endAngle, bool reversed = false);
+                Ellipse(Coordinate center, Coordinate majorP, double minorRadius, double startAngle, double endAngle, bool reversed = false);
                 /**
                  * @brief center, Returns Center point of Ellipse
                  * @return geo::Coordinate center

@@ -17,7 +17,7 @@ namespace lc {
                 /**
                  * Create a new Bezier
                  */
-                Bezier(const Coordinate& point_a, const Coordinate& point_b, const Coordinate& point_c);
+                Bezier(Coordinate point_a, Coordinate point_b, Coordinate point_c);
 
                 Bezier(const Bezier &bez);
 

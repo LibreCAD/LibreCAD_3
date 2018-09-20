@@ -13,6 +13,7 @@ namespace lc {
         class LinePatternBuilder {
             public:
                 LinePatternBuilder();
+                virtual ~LinePatternBuilder() = default;
 
                 const std::string& name() const;
                 const std::string& description() const;

@@ -5,7 +5,9 @@ add_definitions("-Wall")
 
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
+set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_definitions(-std=c++14)
 
@@ -106,8 +108,7 @@ cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/events/replacelinepatternevent.h
-cad/functions/ftrim.h
-cad/functions/intersect.h
+        cad/functions/intersect.h
 cad/geometry/geobase.h
 cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h

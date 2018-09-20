@@ -8,22 +8,23 @@ using namespace entity;
 
 Line::Line(const geo::Coordinate& start,
            const geo::Coordinate& end,
-           const Layer_CSPtr layer,
-           const MetaInfo_CSPtr metaInfo,
-           const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+           Layer_CSPtr layer,
+           MetaInfo_CSPtr metaInfo,
+           Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Vector(start, end) {
 }
 
 Line::Line(const geo::Vector& vector,
-           const Layer_CSPtr layer,
-           const MetaInfo_CSPtr metaInfo,
-           const Block_CSPtr block) :
-        CADEntity(layer, metaInfo, block),
+           Layer_CSPtr layer,
+           MetaInfo_CSPtr metaInfo,
+           Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Vector(vector) {
 }
 
-Line::Line(const Line_CSPtr other, bool sameID) : CADEntity(other, sameID), geo::Vector(other->start(), other->end()) {
+Line::Line(const Line_CSPtr& other, bool sameID) : CADEntity(other, sameID),
+                                                  geo::Vector(other->start(), other->end()) {
 }
 
 Line::Line(const builder::LineBuilder& builder) :
@@ -31,10 +32,13 @@ Line::Line(const builder::LineBuilder& builder) :
     geo::Vector(builder.start(), builder.end()) {
 }
 
-std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord,
+                                               const SimpleSnapConstrain & constrain,
+                                               double minDistanceToSnap,
+                                               int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
-    if (constrain.constrain() & SimpleSnapConstrain::LOGICAL) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
         points.emplace_back(start(), 0);
         points.emplace_back(end(), 1);
         points.emplace_back(end().mid(start()), 1);
@@ -42,11 +46,11 @@ std::vector<EntityCoordinate> Line::snapPoints(const geo::Coordinate& coord, con
 
 
     const geo::Coordinate npoe = nearestPointOnPath(coord);
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
         points.emplace_back(npoe, 2);
     }
 
-    if (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) {
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY)) {
         if (this->nearestPointOnEntity(coord).distanceTo(coord)<minDistanceToSnap) {
             points.emplace_back(npoe, 3);
         }
@@ -81,7 +85,7 @@ CADEntity_CSPtr Line::copy(const geo::Coordinate& offset) const {
     return newLine;
 }
 
-CADEntity_CSPtr Line::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
+CADEntity_CSPtr Line::rotate(const geo::Coordinate& rotation_center, double rotation_angle) const {
     auto newLine = std::make_shared<Line>(this->start().rotate(rotation_center, rotation_angle),
                                           this->end().rotate(rotation_center, rotation_angle),
                                           layer(),

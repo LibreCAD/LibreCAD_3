@@ -30,7 +30,7 @@ CliCommand::~CliCommand() {
     delete ui;
 }
 
-bool CliCommand::addCommand(std::string name) {
+bool CliCommand::addCommand(const std::string& name) {
     if(_commands->stringList().indexOf(name.c_str()) == -1) {
         auto newList = _commands->stringList();
         newList << QString(name.c_str());
@@ -42,7 +42,7 @@ bool CliCommand::addCommand(std::string name) {
     }
 }
 
-void CliCommand::write(QString message) {
+void CliCommand::write(const QString& message) {
     ui->history->addItem(message);
     if(ui->history->count() > _historySize) {
         delete ui->history->takeItem(0);
@@ -76,12 +76,8 @@ void CliCommand::onReturnPressed() {
         }
         else if(hasMatch) {
             varFind = text.split("=");
-            Settings::inst = Settings::instance();
-            std::unordered_map<std::string, double>::iterator it1;
 
-            it1 = Settings::variable_map.find(varFind[0].toStdString());
-
-            if (it1 != Settings::variable_map.end()) {
+            if(checkParam(varFind[0])) {
                 write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
                 Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());    
             }
@@ -102,7 +98,7 @@ void CliCommand::keyPressEvent(QKeyEvent *event) {
     onKeyPressed(event);
 }
 
-void CliCommand::enterCommand(QString command) {
+void CliCommand::enterCommand(const QString& command) {
     auto completion = _completer->currentCompletion();
 
     if(command.compare(completion, Qt::CaseInsensitive) == 0) {
@@ -111,7 +107,7 @@ void CliCommand::enterCommand(QString command) {
     }
     else {
         if(checkParam(command)) {
-            write(QString("Value of %1=%2").arg(command).arg(Settings::getVal(command.toStdString())));
+            write(QString("Value of %1=%2").arg(command).arg(Settings::val(command.toStdString())));
         }
         else
         {
@@ -121,16 +117,8 @@ void CliCommand::enterCommand(QString command) {
     }
 }
 
-bool CliCommand::checkParam(QString command) {
-    Settings::inst = Settings::instance();
-    std::unordered_map<std::string, double>::iterator it;
-
-    it = Settings::variable_map.find(command.toStdString());
-
-    if (it != Settings::variable_map.end()) {
-        return true;
-    }
-    return false;
+bool CliCommand::checkParam(const QString& command) {
+    return Settings::exists(command.toStdString());
 }
 
 void CliCommand::enterCoordinate(QString coordinate) {
@@ -201,7 +189,7 @@ void CliCommand::onKeyPressed(QKeyEvent *event) {
     }
 }
 
-void CliCommand::setText(QString text) {
+void CliCommand::setText(const QString& text) {
     ui->command->setText(text);
 }
 

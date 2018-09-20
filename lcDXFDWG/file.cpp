@@ -27,7 +27,7 @@ void File::open(lc::Document_SPtr document, const std::string& path, File::Libra
 
 void File::save(lc::Document_SPtr document, const std::string& path, File::Type type) {
     if(type >= LIBDXFRW_DXF_R12 && type <= LIBDXFRW_DXB_R2013) {
-        DXFimpl* F = new DXFimpl(document);
+        DXFimpl* F = new DXFimpl(std::move(document));
         F->writeDXF(path, type);
     }
 }

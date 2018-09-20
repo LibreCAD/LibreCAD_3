@@ -54,7 +54,7 @@ class CadMdiChild : public QWidget {
          * \brief Give function to call when window is destroyed
          * \param callback Lua function
          */
-        void setDestroyCallback(LuaIntf::LuaRef callback);
+        void setDestroyCallback(LuaIntf::LuaRef destroyCallback);
 
 		void keyPressEvent(QKeyEvent* event);
 
@@ -99,7 +99,7 @@ class CadMdiChild : public QWidget {
 		 * Return a vector of selected entities.
 		 * This function was added for Lua which can't access EntityContainer functions
 		 */
-		std::vector<lc::entity::CADEntity_SPtr> selection();
+        std::vector<lc::entity::CADEntity_CSPtr> selection();
         void saveFile();
 
         /**

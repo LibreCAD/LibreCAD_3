@@ -15,8 +15,11 @@ namespace LCViewer {
          * to draw events.+
          *
          */
-        Cursor(int cursorSize, std::shared_ptr<DocumentCanvas>, const lc::Color &xAxisColor,
-               const lc::Color &yAxisColor);
+        Cursor(int cursorSize,
+               const std::shared_ptr<DocumentCanvas>& view,
+               const lc::Color &xAxisColor,
+               const lc::Color &yAxisColor
+        );
 
     public:
         void onDraw(DrawEvent const & event) const;
