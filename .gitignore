@@ -20,3 +20,4 @@ unittest/rendering/res/*.out
 
 # macOS
 .DS_Store
+.vscode
