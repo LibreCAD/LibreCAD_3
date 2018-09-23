@@ -7,3 +7,6 @@
 [submodule "lcDXFDWG/libopencad"]
 	path = lcDXFDWG/libopencad
 	url = https://github.com/sandyre/libopencad.git
+[submodule "third_party/kaguya"]
+	path = third_party/kaguya
+	url = https://github.com/satoren/kaguya.git
