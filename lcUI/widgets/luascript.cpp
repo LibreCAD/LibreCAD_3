@@ -4,9 +4,9 @@
 #include <lclua.h>
 #include <luainterface.h>
 
-LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
+LuaScript::LuaScript(CadMdiChild* mdiChild, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
-    _mdiArea(mdiArea),
+	_mdiChild(mdiChild),
 	_cliCommand(cliCommand) {
     ui->setupUi(this);
 }
@@ -17,20 +17,16 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
-        auto mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
+	auto luaState = LuaIntf::LuaState::newState();
+	auto lcLua = lc::LCLua(luaState);
+	lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
+	lcLua.addLuaLibs();
+	lcLua.importLCKernel();
+	lcLua.setDocument(_mdiChild->document());
 
-		auto luaState = LuaIntf::LuaState::newState();
-		auto lcLua = lc::LCLua(luaState);
-		lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
-		lcLua.addLuaLibs();
-		lcLua.importLCKernel();
-        lcLua.setDocument(mdiChild->document());
+	auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
 
-        auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
-
-		_cliCommand->write(QString::fromStdString(out));
-	}
+	_cliCommand->write(QString::fromStdString(out));
 }
 
 void LuaScript::on_open_clicked() {

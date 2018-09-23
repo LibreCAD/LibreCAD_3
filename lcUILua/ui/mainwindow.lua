@@ -51,8 +51,8 @@ function active_metaInfo()
 end
 
 --Create dialog to enter Lua script
-local function open_lua_script()
-    local luaScript = lc.LuaScript(mdiArea, cliCommand)
+local function open_lua_script(widget, commandLine)
+    local luaScript = lc.LuaScript(widget, commandLine)
     luaScript:show()
 end
 
@@ -62,7 +62,7 @@ local  function changelcTolerance(id)
 end
 
 --Create main window menu
-local function create_menu(mainWindow, widget)
+local function create_menu(mainWindow, widget, commandLine)
     local menuBar = mainWindow:menuBar()
     local drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
     local lineAction = drawMenu:addActionStr(qt.QString("Line"))
@@ -86,7 +86,9 @@ local function create_menu(mainWindow, widget)
         widget:undoManager():redo()
     end)
 
-    luaInterface:luaConnect(luaScriptAction, "triggered(bool)", open_lua_script)
+    luaInterface:luaConnect(luaScriptAction, "triggered(bool)", function()
+        open_lua_script(widget, commandLine)
+    end)
     luaInterface:luaConnect(lcTolerance, "triggered(bool)", changelcTolerance)
 end
 
@@ -96,8 +98,6 @@ function create_new_window(widget)
     mainWindow:setWindowTitle(qt.QObject.tr("LibreCAD"));
     mainWindow:setUnifiedTitleAndToolBarOnMac(true);
     mainWindow:setCentralWidget(widget)
-
-    create_menu(mainWindow, widget)
 
     local layers = lc.Layers()
     layers:setMdiChild(widget)
@@ -118,6 +118,7 @@ function create_new_window(widget)
     add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSelect)
     addCadMdiChild(widget, id, commandLine)
 
+    create_menu(mainWindow, widget, commandLine)
 
     if(hideUI ~= true) then
         mainWindow:showMaximized()

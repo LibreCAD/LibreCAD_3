@@ -17,7 +17,7 @@ namespace Ui {
  * This widget runs the code on the selected window in CadMdiChild and display the output in the command line.
  */
 class LuaScript : public QWidget {
-        Q_OBJECT
+    Q_OBJECT
 
     public:
 		/**
@@ -25,7 +25,7 @@ class LuaScript : public QWidget {
 		 * \param mdiArea Pointer to QMdiArea
 		 * \param cliCommand Pointer to CliCommand
 		 */
-        explicit LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand);
+        explicit LuaScript(CadMdiChild* mdiChild, CliCommand* cliCommand);
         virtual ~LuaScript();
 
     private slots:
@@ -46,6 +46,6 @@ class LuaScript : public QWidget {
 
     private:
         Ui::LuaScript* ui;
-        QMdiArea* _mdiArea;
+		CadMdiChild* _mdiChild;
 		CliCommand* _cliCommand;
 };

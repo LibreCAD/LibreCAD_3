@@ -220,7 +220,7 @@ void addLCBindings(lua_State *L) {
 		.endClass()
 		
 		.beginExtendClass<LuaScript, QDockWidget>("LuaScript")
-			.addConstructor(LUA_ARGS(QMdiArea*, CliCommand*))
+			.addConstructor(LUA_ARGS(CadMdiChild*, CliCommand*))
 		.endClass()
 
 		.beginClass<LCViewer::DocumentCanvas>("DocumentCanvas")
