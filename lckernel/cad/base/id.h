@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include "cad/const.h"
 
 
 #define ID_DATATYPE unsigned long

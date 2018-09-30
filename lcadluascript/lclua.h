@@ -33,7 +33,7 @@ namespace lc {
             void setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*));
 
             static FILE* openFile(const char* path, const char* mode);
-            static std::string read(FILE* file, const size_t len);
+            static std::string read(FILE* file, size_t len);
             static void write(FILE* file, const char* content);
 
         private:

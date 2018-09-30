@@ -2,6 +2,7 @@
 #include "lclua.h"
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
+#include <kaguya/kaguya.hpp>
 
 using namespace lc;
 using namespace LuaIntf;
@@ -60,7 +61,8 @@ void LCLua::addLuaLibs() {
 }
 
 void LCLua::setDocument(const lc::Document_SPtr& document) {
-    LuaIntf::Lua::setGlobal(_L, "document", document);
+    kaguya::State state(_L);
+    state["document"] = document;
 }
 
 std::string LCLua::runString(const char* code) {
@@ -81,7 +83,7 @@ FILE* LCLua::openFile(const char* path, const char* mode) {
     return fopen(path, mode);
 }
 
-std::string LCLua::read(FILE* file, const size_t len) {
+std::string LCLua::read(FILE* file, size_t len) {
     char buf[len + 1];
 
     size_t n = fread(buf, sizeof(char), len, file);
