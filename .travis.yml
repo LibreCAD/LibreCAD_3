@@ -57,7 +57,7 @@ script:
   - cd ../..
   - mkdir -p build
   - cd build
-  - cmake ..
+  - cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py ..
   - make -j2
   - ./unittest/lcunittest
   - make stylecheck > stylecheck.out
