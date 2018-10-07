@@ -4,7 +4,7 @@
 
 class SetupIni {
     public:
-        SetupIni(QString iniFile);
+        SetupIni(const QString& iniFile);
         ~SetupIni() = default;
 
         QString getFilePath();
