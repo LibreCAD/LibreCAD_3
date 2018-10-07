@@ -30,7 +30,7 @@ QString SetupIni::getFilePath() {
     return iniFilePath;
 }
 
-SetupIni::SetupIni(QString iniFile) {
+SetupIni::SetupIni(const QString& iniFile) {
     //set file/path and key_group
     iniFilePath = QDir::homePath() + iniFile;
 
