@@ -79,6 +79,11 @@ if(RUN_CLANG_TIDY_PY)
     set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-p" "${CMAKE_BINARY_DIR}" "-header-filter" '^\(?!${CMAKE_BINARY_DIR}\)${CMAKE_SOURCE_DIR}/.*')
     add_custom_target(stylecheck ${DO_CLANG_TIDY})
 
+    if(CHECKS_SOURCE_BRANCH)
+        message(STATUS "Checks source branch : ${CHECKS_SOURCE_BRANCH}")
+        add_custom_target(diffstylecheck COMMAND bash -c \"git diff --name-only --diff-filter=AM HEAD...${CHECKS_SOURCE_BRANCH} | grep cpp$ | xargs ${DO_CLANG_TIDY}\") 
+    endif()
+
     file(WRITE "${CMAKE_BINARY_DIR}/.clang-tidy" "Checks: '-*,llvm-twine-local'")
 
 else()
