@@ -57,7 +57,7 @@ script:
   - cd ../..
   - mkdir -p build
   - cd build
-  - cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py -DCHECKS_SOURCE_BRANCH=${TRAVIS_BRANCH} ..
+  - cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py -DCHECKS_SOURCE_BRANCH=$TRAVIS_BRANCH ..
   - make -j2
   - |
     if [[ $TRAVIS_TEST_RESULT != 0 ]]; then
@@ -66,7 +66,14 @@ script:
       exit 1;
     fi
   - ./unittest/lcunittest
-  - make stylecheck > stylecheck.out
+  - |
+    if [[ $TRAVIS_EVENT_TYPE == "pull_request" ]]; then
+      echo "Doing partial style check"
+      make diffstylecheck > stylecheck.out
+    else 
+      make stylecheck > stylecheck.out
+    fi
+
   - |
     if [[ -n $(grep "warning: " stylecheck.out) ]] || [[ -n $(grep "error: " stylecheck.out) ]]; then
       echo "Style checks failed"
