@@ -81,7 +81,7 @@ if(RUN_CLANG_TIDY_PY)
 
     if(CHECKS_SOURCE_BRANCH)
         message(STATUS "Checks source branch : ${CHECKS_SOURCE_BRANCH}")
-        add_custom_target(diffstylecheck COMMAND bash -c \"echo Diff from ${CHECKS_SOURCE_BRANCH} && git diff --name-only --diff-filter=AM HEAD...${CHECKS_SOURCE_BRANCH}\") 
+        add_custom_target(diffstylecheck COMMAND bash -c \"echo Diff from ${CHECKS_SOURCE_BRANCH} && git diff --name-only --diff-filter=AM master...${CHECKS_SOURCE_BRANCH}\") 
     endif()
 
     file(WRITE "${CMAKE_BINARY_DIR}/.clang-tidy" "Checks: '-*,llvm-twine-local'")
