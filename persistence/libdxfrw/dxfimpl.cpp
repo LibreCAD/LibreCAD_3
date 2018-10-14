@@ -29,6 +29,8 @@
 #include <cad/operations/blockops.h>
 #include <cad/meta/customentitystorage.h>
 
+using namespace lc::persistence;
+
 DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
         _document(document), 
         _builder(std::move(builder)),

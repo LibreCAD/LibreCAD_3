@@ -8,7 +8,7 @@
 #include <cad/operations/builder.h>
 
 namespace lc {
-    namespace FileLibs {
+    namespace persistence {
         class LibOpenCad {
             public:
                 LibOpenCad(Document_SPtr document, lc::operation::Builder_SPtr builder = nullptr);

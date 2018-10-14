@@ -1,6 +1,8 @@
 #include "helpers.h"
 
-lc::MetaLineWidthByValue lc::FileHelpers::intToLW(int lw) {
+using namespace lc::persistence;
+
+lc::MetaLineWidthByValue FileHelpers::intToLW(int lw) {
     switch(lw) {
         default:
         case 0:
