@@ -4,17 +4,16 @@
 #include <memory>
 #include <unordered_map>
 
-class Settings;
+namespace lc {
+	class Settings {
+		public:
+			static double val(const std::string& variable);
 
-class Settings
-{
-	public:
-		static double val(const std::string& variable);
+			static void setVal(const std::string& variable, double val);
 
-		static void setVal(const std::string& variable,double val);
+			static bool exists(const std::string& variable);
 
-		static bool exists(const std::string& variable);
-
-	private:
-		static std::unordered_map<std::string, double> _variable_map;
-};
+		private:
+			static std::unordered_map<std::string, double> _variable_map;
+	};
+}

@@ -3,7 +3,7 @@
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
 
-using namespace lc;
+using namespace lc::lua;
 using namespace LuaIntf;
 
 static const luaL_Reg loadedlibs[] = {

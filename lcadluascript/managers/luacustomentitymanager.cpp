@@ -4,17 +4,19 @@
 #include <cad/primitive/insert.h>
 #include "luacustomentitymanager.h"
 
-lc::LuaCustomEntityManager::LuaCustomEntityManager() {
+using namespace lc::lua;
+
+LuaCustomEntityManager::LuaCustomEntityManager() {
     DocumentList::getInstance().newWaitingCustomEntityEvent().connect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }
 
-lc::LuaCustomEntityManager::~LuaCustomEntityManager() {
+LuaCustomEntityManager::~LuaCustomEntityManager() {
     _plugins.clear();
     DocumentList::getInstance().newWaitingCustomEntityEvent().disconnect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }
 
 
-void lc::LuaCustomEntityManager::onNewWaitingEntity(const lc::NewWaitingCustomEntityEvent& event) {
+void LuaCustomEntityManager::onNewWaitingEntity(const lc::NewWaitingCustomEntityEvent& event) {
     auto block = event.insert()->displayBlock();
 
     auto ces = std::static_pointer_cast<const lc::CustomEntityStorage>(block);
@@ -30,7 +32,7 @@ void lc::LuaCustomEntityManager::onNewWaitingEntity(const lc::NewWaitingCustomEn
     it->second(event.insert());
 }
 
-void lc::LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction) {
+void LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction) {
     if(!onNewWaitingEntityFunction.isValid() || !onNewWaitingEntityFunction.isFunction()) {
         return;
     }
@@ -42,6 +44,6 @@ void lc::LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf
     }
 }
 
-void lc::LuaCustomEntityManager::removePlugins() {
+void LuaCustomEntityManager::removePlugins() {
     _plugins.clear();
 }

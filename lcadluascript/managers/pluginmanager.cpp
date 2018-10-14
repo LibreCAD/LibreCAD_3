@@ -2,13 +2,15 @@
 #include "lclua.h"
 #include <dirent.h>
 
-lc::PluginManager::PluginManager(lua_State* l, const char* interface) :
+using namespace lc::lua;
+
+PluginManager::PluginManager(lua_State* l, const char* interface) :
     _L(l),
     _interface(interface) {
 
 }
 
-void lc::PluginManager::loadPlugins() {
+void PluginManager::loadPlugins() {
     const char* path = "../lcUILua/plugins/"; //TODO: get path
 
     DIR* dir;
@@ -29,7 +31,7 @@ void lc::PluginManager::loadPlugins() {
     }
 }
 
-void lc::PluginManager::loadPlugin(const char* file) {
+void PluginManager::loadPlugin(const char* file) {
     auto state = LuaIntf::LuaState(_L);
     LuaIntf::Lua::setGlobal(state, "LC_interface", _interface);
     bool s = state.doFile(file);

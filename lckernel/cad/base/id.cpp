@@ -1,6 +1,6 @@
 #include "id.h"
 
-using namespace lc;
+using namespace lc::entity;
 
 std::atomic<ID_DATATYPE> ID::__idCounter(1);
 
@@ -10,7 +10,8 @@ ID::ID() {
 ID::ID(ID_DATATYPE id) {
     if (id == 0) {
         _id = ++ID::__idCounter;
-    } else {
+    }
+    else {
         _id = id;
     }
 }

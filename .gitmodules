@@ -4,6 +4,6 @@
 [submodule "lckernel/nano-signal-slot"]
 	path = lckernel/nano-signal-slot
 	url = https://github.com/feragon/nano-signal-slot
-[submodule "lcDXFDWG/libopencad"]
-	path = lcDXFDWG/libopencad
+[submodule "persistence/libopencad"]
+	path = persistence/libopencad
 	url = https://github.com/sandyre/libopencad.git

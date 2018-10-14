@@ -23,9 +23,7 @@
 #include "lclua.h"
 
 using namespace LuaIntf;
-using namespace lc;
-
-
+using namespace lc::lua;
 
 void LCLua::importLCKernel() {
     //18-09-2018: Those declarations are used to fix the CLang bug

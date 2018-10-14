@@ -2,7 +2,7 @@
 #include "libdxfrw/dxfimpl.h"
 #include "libopencad_interface/libopencad.h"
 
-using namespace lc;
+using namespace lc::persistence;
 
 void File::open(lc::Document_SPtr document, const std::string& path, File::Library library) {
     auto builder = std::make_shared<operation::Builder>(document, "Open file");
@@ -16,7 +16,7 @@ void File::open(lc::Document_SPtr document, const std::string& path, File::Libra
         }
 
         case LIBOPENCAD: {
-            lc::FileLibs::LibOpenCad opencad(document, builder);
+            lc::persistence::LibOpenCad opencad(document, builder);
             opencad.open(path);
             break;
         }
