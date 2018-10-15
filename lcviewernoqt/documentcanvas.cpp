@@ -1,7 +1,7 @@
 #include "documentcanvas.h"
 #include <cad/meta/metacolor.h>
-#include <cad/document/document.h>
-#include <cad/dochelpers/quadtree.h>
+#include <cad/storage/document.h>
+#include <cad/storage/quadtree.h>
 #include <cad/geometry/geoarea.h>
 #include <cad/primitive/line.h>
 #include <cad/primitive/circle.h>
@@ -37,7 +37,7 @@
 
 #include <typeinfo>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::Document>& document, std::function<void(double*, double*)> deviceToUser) :
         _document(document),

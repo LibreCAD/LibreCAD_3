@@ -1,6 +1,6 @@
 #include "clicommand.h"
 #include "ui_clicommand.h"
-#include <cad/settings.h>
+#include <cad/storage/settings.h>
 #include <memory>
 #include <iterator>
 #include <unordered_map>

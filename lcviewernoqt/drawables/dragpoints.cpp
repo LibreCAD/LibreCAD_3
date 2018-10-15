@@ -1,13 +1,13 @@
 #include "dragpoints.h"
 
-using namespace LCViewer;
+using namespace lc::viewer::drawable;
 
-void DragPoints::setPoints(DragPointsEvent const &points) {
+void DragPoints::setPoints(event::DragPointsEvent const &points) {
 	_points = points.dragPoints();
 	_size = points.size();
 }
 
-void DragPoints::onDraw(DrawEvent const &event) const {
+void DragPoints::onDraw(event::DrawEvent const &event) const {
 	double x = _size;
 	double y = _size;
 

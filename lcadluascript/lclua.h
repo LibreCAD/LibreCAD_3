@@ -7,7 +7,7 @@ extern "C" {
 }
 
 #include "lua-intf/LuaIntf/LuaIntf.h"
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 
 namespace LuaIntf {
     LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)

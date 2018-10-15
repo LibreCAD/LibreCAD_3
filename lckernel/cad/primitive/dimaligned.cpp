@@ -15,8 +15,8 @@ DimAligned::DimAligned(geo::Coordinate definitionPoint,
                        geo::Coordinate definitionPoint2,
                        geo::Coordinate definitionPoint3,
                        Layer_CSPtr layer,
-                       MetaInfo_CSPtr metaInfo,
-                       Block_CSPtr block):
+                       meta::MetaInfo_CSPtr metaInfo,
+                       meta::Block_CSPtr block):
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     Dimension(std::move(definitionPoint),
               std::move(middleOfText),
@@ -44,8 +44,8 @@ DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate p1,
                                     geo::Coordinate middleOfText,
                                     std::string explicitValue,
                                     Layer_CSPtr layer,
-                                    MetaInfo_CSPtr metaInfo,
-                                    Block_CSPtr block) {
+                                    meta::MetaInfo_CSPtr metaInfo,
+                                    meta::Block_CSPtr block) {
     auto nearestPoint = geo::Vector(p1, p2).nearestPointOnPath(middleOfText);
     auto distance = nearestPoint.distanceTo(middleOfText);
 
@@ -164,7 +164,7 @@ const geo::Area DimAligned::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr DimAligned::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimAligned = std::make_shared<DimAligned>(
                              this->definitionPoint(),
                              this->middleOfText(),

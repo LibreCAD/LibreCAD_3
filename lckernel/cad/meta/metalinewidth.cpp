@@ -1,7 +1,7 @@
 #include "metalinewidth.h"
 #include <cassert>
 
-using namespace lc;
+using namespace lc::meta;
 
 const std::string MetaLineWidth::LCMETANAME() {
     return "_LINEWIDTH";

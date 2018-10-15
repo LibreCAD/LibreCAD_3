@@ -4,10 +4,10 @@
 #include "cad/operations/undoable.h"
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
-using namespace lc;
+using namespace lc::storage;
 
-
-UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) : _maximumUndoLevels(maximumUndoLevels) {
+UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) :
+        _maximumUndoLevels(maximumUndoLevels) {
 
 }
 

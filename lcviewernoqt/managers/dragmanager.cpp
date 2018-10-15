@@ -1,7 +1,7 @@
 #include <cad/interface/unmanageddraggable.h>
 #include "dragmanager.h"
 
-using namespace LCViewer;
+using namespace lc::viewer::manager;
 
 DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, TempEntities_SPtr tempEntities, unsigned int size) :
 	_size(size),
@@ -71,9 +71,9 @@ void DragManager::moveEntities() {
 	auto entities = _selectedEntities.asVector();
 
 	for (const auto& entity : entities) {
-		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(entity);
+		auto draggable = std::dynamic_pointer_cast<const lc::entity::Draggable>(entity);
 
-		auto unmanaged = std::dynamic_pointer_cast<const lc::UnmanagedDraggable>(entity);
+		auto unmanaged = std::dynamic_pointer_cast<const lc::entity::UnmanagedDraggable>(entity);
         if(unmanaged) {
             unmanaged->setDragPoint(_cursor->position());
             continue;
@@ -141,7 +141,7 @@ void DragManager::onMousePress() {
     }
 
     for(const auto& drawable : selectedDrawables) {
-		auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
+		auto draggable = std::dynamic_pointer_cast<const lc::entity::Draggable>(drawable->entity());
 		if(draggable) {
 			auto entityDragPoints = draggable->dragPoints();
 
@@ -150,7 +150,7 @@ void DragManager::onMousePress() {
 					_selectedEntities.insert(drawable->entity());
 					_selectedPoint = point.second;
 
-					auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::UnmanagedDraggable>(draggable);
+					auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::entity::UnmanagedDraggable>(draggable);
 					if(unmanagedDraggable) {
 						unmanagedDraggable->onDragPointClick(_builder, point.first);
 					}
@@ -178,7 +178,7 @@ void DragManager::onMouseRelease() {
 
 		auto entities = _selectedEntities.asVector();
 		for(const auto& entity : entities) {
-			auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::UnmanagedDraggable>(entity);
+			auto unmanagedDraggable = std::dynamic_pointer_cast<const lc::entity::UnmanagedDraggable>(entity);
 			if(unmanagedDraggable) {
 				unmanagedDraggable->onDragPointRelease(_builder);
 			}

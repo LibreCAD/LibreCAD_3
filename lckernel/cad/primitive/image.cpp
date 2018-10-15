@@ -18,8 +18,8 @@ Image::Image(std::string name,
              double contrast,
              double fade,
              Layer_CSPtr layer,
-             MetaInfo_CSPtr metaInfo,
-             Block_CSPtr block) :
+             meta::MetaInfo_CSPtr metaInfo,
+             meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         _name(std::move(name)),
         _base(std::move(base)),
@@ -161,7 +161,7 @@ const geo::Area Image::boundingBox() const {
     return area;
 }
 
-CADEntity_CSPtr Image::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr Image::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newImage = std::make_shared<Image>(
             _name,
             _base,

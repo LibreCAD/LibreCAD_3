@@ -5,28 +5,33 @@
 #include "../documentcanvas.h"
 #include "../events/dragpointsevent.h"
 
-namespace LCViewer {
-    /**
-     * \brief Class which draw boxes around the points that can be dragged.
-     */
-    class DragPoints {
-        public:
-            DragPoints() = default;
+namespace lc {
+    namespace viewer {
+        namespace drawable {
             /**
-             * \brief Set the new list of points. Remove the old ones.
-             * \param points Event containing the drag points.
+             * \brief Class which draw boxes around the points that can be dragged.
              */
-            void setPoints(DragPointsEvent const & points);
+            class DragPoints {
+                public:
+                    DragPoints() = default;
 
-            /**
-             * \brief Draw the drag points.
-             */
-            void onDraw(DrawEvent const & event) const;
+                    /**
+                     * \brief Set the new list of points. Remove the old ones.
+                     * \param points Event containing the drag points.
+                     */
+                    void setPoints(event::DragPointsEvent const& points);
 
-        private:
-            std::vector<lc::geo::Coordinate> _points;
-            int _size;
-    };
+                    /**
+                     * \brief Draw the drag points.
+                     */
+                    void onDraw(event::DrawEvent const& event) const;
 
-    DECLARE_SHORT_SHARED_PTR(DragPoints)
+                private:
+                    std::vector<lc::geo::Coordinate> _points;
+                    int _size;
+            };
+
+            DECLARE_SHORT_SHARED_PTR(DragPoints)
+        }
+    }
 }

@@ -1,13 +1,14 @@
 #include "documentlist.h"
 
 using namespace lc;
+using namespace lc::storage;
 
-void DocumentList::addDocument(lc::Document* document) {
+void DocumentList::addDocument(Document* document) {
     _documents.insert(document);
     document->newWaitingCustomEntityEvent().connect<DocumentList, &DocumentList::onNewWaitingCustomEntity>(this);
 }
 
-void DocumentList::removeDocument(lc::Document* document) {
+void DocumentList::removeDocument(Document* document) {
     document->newWaitingCustomEntityEvent().disconnect<DocumentList, &DocumentList::onNewWaitingCustomEntity>(this);
     _documents.erase(document);
 }

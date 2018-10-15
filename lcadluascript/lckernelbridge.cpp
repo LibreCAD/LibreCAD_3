@@ -6,7 +6,7 @@
 #include <cad/base/metainfo.h>
 #include <cad/geometry/geocoordinate.h>
 #include <cad/geometry/geovector.h>
-#include <cad/document/undomanager.h>
+#include <cad/storage/undomanager.h>
 #include <cad/dochelpers/documentimpl.h>
 #include <cad/dochelpers/undomanagerimpl.h>
 #include <cad/dochelpers/storagemanagerimpl.h>
@@ -18,7 +18,7 @@
 #include <cad/operations/builder.h>
 #include <cad/primitive/insert.h>
 #include <cad/const.h>
-#include <cad/settings.h>
+#include <cad/storage/settings.h>
 #include <primitive/customentity.h>
 #include "lclua.h"
 

@@ -1,5 +1,5 @@
 #include "entitybuilder.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
 using namespace lc;
 using namespace operation;

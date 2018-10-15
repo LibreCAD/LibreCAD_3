@@ -1,4 +1,4 @@
-#include <cad/functions/intersect.h>
+#include <cad/math/intersect.h>
 #include "geocircle.h"
 
 using namespace lc;

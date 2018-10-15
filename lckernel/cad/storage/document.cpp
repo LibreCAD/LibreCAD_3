@@ -8,7 +8,7 @@
 #include "cad/events/removeentityevent.h"
 #include "cad/events/replaceentityevent.h"
 
-using namespace lc;
+using namespace lc::storage;
 
 Document::Document():
         _beginProcessEvent(),

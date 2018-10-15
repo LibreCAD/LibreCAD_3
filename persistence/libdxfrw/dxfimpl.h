@@ -7,8 +7,8 @@
 #include "../file.h"
 #include "../generic/helpers.h"
 
-#include <cad/document/document.h>
-#include <cad/document/storagemanager.h>
+#include <cad/storage/document.h>
+#include <cad/storage/storagemanager.h>
 #include <cad/meta/icolor.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/base/visitor.h>

@@ -1,13 +1,15 @@
 #include "intersect.h"
 #include "cad/math/intersectionhandler.h"
 
-using namespace lc;
+using namespace lc::maths;
 
 
-Intersect::Intersect(Method method, double tolerance) : _method(method), _tolerance(tolerance) {
+Intersect::Intersect(Method method, double tolerance) :
+        _method(method),
+        _tolerance(tolerance) {
 }
 
-std::vector<geo::Coordinate> Intersect::result() const {
+std::vector<lc::geo::Coordinate> Intersect::result() const {
     return _intersectionPoints;
 }
 

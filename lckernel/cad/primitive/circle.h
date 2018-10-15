@@ -31,8 +31,8 @@ namespace lc {
             Circle(const geo::Coordinate &center,
                    double radius,
                    Layer_CSPtr layer,
-                   MetaInfo_CSPtr metaInfo = nullptr,
-                   Block_CSPtr block = nullptr);
+                   meta::MetaInfo_CSPtr metaInfo = nullptr,
+                   meta::Block_CSPtr block = nullptr);
 
             Circle(const Circle_CSPtr& other, bool sameID = false);
 
@@ -84,7 +84,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

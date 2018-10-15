@@ -19,8 +19,8 @@ LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
                        bool closed,
                        geo::Coordinate extrusionDirection,
                        Layer_CSPtr layer,
-                       MetaInfo_CSPtr metaInfo,
-                       Block_CSPtr block) :
+                       meta::MetaInfo_CSPtr metaInfo,
+                       meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         _vertex(std::move(vertex)),
         _width(width),
@@ -138,7 +138,7 @@ const geo::Area LWPolyline::boundingBox() const {
     return area;
 }
 
-CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr LWPolyline::modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<LWPolyline>(
             _vertex,
             _width,

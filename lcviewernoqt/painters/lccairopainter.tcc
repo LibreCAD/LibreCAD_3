@@ -27,7 +27,7 @@ namespace CairoPainter {
     };
 }
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 
 /**
@@ -41,131 +41,131 @@ using namespace LCViewer;
  *
  */
 class CairoStore {
-private:
-    template<class T>
-    struct Cairo_surface_store {
-        Cairo_surface_store(const std::string &_name, T _surface) : name(_name), surface(_surface) { }
+    private:
+        template<class T>
+        struct Cairo_surface_store {
+            Cairo_surface_store(const std::string& _name, T _surface) : name(_name), surface(_surface) {}
 
-        const std::string name;
-        const T surface;
-    };
+            const std::string name;
+            const T surface;
+        };
 
-public:
-    CairoStore() : _patternMapNum(0), _imageMapNum(0) {
-        _create_image_map = getImageMap();
-    }
-
-    virtual ~CairoStore() {
-        for (auto &item : _patternMap) {
-            cairo_pattern_destroy(item.second);
+    public:
+        CairoStore() : _patternMapNum(0), _imageMapNum(0) {
+            _create_image_map = getImageMap();
         }
 
-        for (auto &item : _imageMap) {
-            cairo_surface_destroy(item.second.surface);
-        }
-    }
+        virtual ~CairoStore() {
+            for (auto& item : _patternMap) {
+                cairo_pattern_destroy(item.second);
+            }
 
-    /**
-     * Create a map of image surfaces from filenames
-     * TODO: Add more images types like jpg, bmp etc...
-     */
-    static std::map<std::string, std::function<cairo_surface_t *(const std::string &)>> getImageMap() {
-        std::map<std::string, std::function<cairo_surface_t *(const std::string &)>> create_image_map;
-        create_image_map.insert(std::make_pair("png", [](std::string f) { return cairo_image_surface_create_from_png(f.c_str()); }));
-        return create_image_map;
-    }
-
-
-    /**
-     * Load image into a cairo surface
-     * return's -1 if the surface wasn't loaded
-     * TODO: Optimise Ensure we only load a image once
-     */
-    const long image_create(const std::string &file) {
-        std::lock_guard<std::mutex> lck(_imageMapMutex);
-
-        // test if we have this image already loaded
-        for (auto i : _imageMap) {
-            if (i.second.name == file) {
-                return i.first;
+            for (auto& item : _imageMap) {
+                cairo_surface_destroy(item.second.surface);
             }
         }
 
-        // TODO: Support load files from URL
-        GError* gdkError = NULL;
-        GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(file.c_str(), &gdkError);
-
-        if(!pixbuf) {
-            std::cout << gdkError->message << std::endl;
-            g_error_free(gdkError);
-
-            return -1;
+        /**
+         * Create a map of image surfaces from filenames
+         * TODO: Add more images types like jpg, bmp etc...
+         */
+        static std::map<std::string, std::function<cairo_surface_t*(const std::string&)>> getImageMap() {
+            std::map<std::string, std::function<cairo_surface_t*(const std::string&)>> create_image_map;
+            create_image_map.insert(
+                    std::make_pair("png", [](std::string f) {return cairo_image_surface_create_from_png(f.c_str());}));
+            return create_image_map;
         }
-        else {
-            cairo_surface_t* image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-                                                                        gdk_pixbuf_get_width(pixbuf),
-                                                                        gdk_pixbuf_get_height(pixbuf)
-            );
 
-            cairo_t* context = cairo_create(image_surface);
-            gdk_cairo_set_source_pixbuf(context, pixbuf, 0, 0);
-            cairo_paint(context);
 
-            _imageMapNum++;
-            _imageMap.emplace(_imageMapNum, Cairo_surface_store<cairo_surface_t *>(file, image_surface));
+        /**
+         * Load image into a cairo surface
+         * return's -1 if the surface wasn't loaded
+         * TODO: Optimise Ensure we only load a image once
+         */
+        const long image_create(const std::string& file) {
+            std::lock_guard<std::mutex> lck(_imageMapMutex);
 
-            cairo_destroy(context);
-            g_object_unref(pixbuf);
-            return _imageMapNum;
-        }
-    };
+            // test if we have this image already loaded
+            for (auto i : _imageMap) {
+                if (i.second.name == file) {
+                    return i.first;
+                }
+            }
 
-    void image_destroy(long image) {
-        std::lock_guard<std::mutex> lck(_imageMapMutex);
-        auto iLoc = _imageMap.find(image);
-        if (iLoc != _imageMap.end()) {
-            cairo_surface_destroy(_imageMap.at(image).surface);
-            _imageMap.erase(iLoc);
+            // TODO: Support load files from URL
+            GError* gdkError = NULL;
+            GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(file.c_str(), &gdkError);
+
+            if (!pixbuf) {
+                std::cout << gdkError->message << std::endl;
+                g_error_free(gdkError);
+
+                return -1;
+            } else {
+                cairo_surface_t* image_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                                            gdk_pixbuf_get_width(pixbuf),
+                                                                            gdk_pixbuf_get_height(pixbuf)
+                );
+
+                cairo_t* context = cairo_create(image_surface);
+                gdk_cairo_set_source_pixbuf(context, pixbuf, 0, 0);
+                cairo_paint(context);
+
+                _imageMapNum++;
+                _imageMap.emplace(_imageMapNum, Cairo_surface_store<cairo_surface_t*>(file, image_surface));
+
+                cairo_destroy(context);
+                g_object_unref(pixbuf);
+                return _imageMapNum;
+            }
         };
-    }
 
-    const long pattern_create_linear(double x1, double y1, double x2, double y2) {
-        std::lock_guard<std::mutex> lck(_patternMapMutex);
-        _patternMap[++_patternMapNum] = cairo_pattern_create_linear(x1, -y1, x2, -y2);
-        return _patternMapNum;
-    }
+        void image_destroy(long image) {
+            std::lock_guard<std::mutex> lck(_imageMapMutex);
+            auto iLoc = _imageMap.find(image);
+            if (iLoc != _imageMap.end()) {
+                cairo_surface_destroy(_imageMap.at(image).surface);
+                _imageMap.erase(iLoc);
+            };
+        }
 
-    void pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a) {
-        cairo_pattern_add_color_stop_rgba(_patternMap.at(pat), offset, r, g, b, a);
-    }
+        const long pattern_create_linear(double x1, double y1, double x2, double y2) {
+            std::lock_guard<std::mutex> lck(_patternMapMutex);
+            _patternMap[++_patternMapNum] = cairo_pattern_create_linear(x1, -y1, x2, -y2);
+            return _patternMapNum;
+        }
 
-    void pattern_destroy(long pat) {
-        std::lock_guard<std::mutex> lck(_patternMapMutex);
-        cairo_pattern_destroy(_patternMap[pat]);
-        _patternMap.erase(pat);
-    }
+        void pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a) {
+            cairo_pattern_add_color_stop_rgba(_patternMap.at(pat), offset, r, g, b, a);
+        }
 
-    cairo_pattern_t *pattern(long pat) {
-        return _patternMap.at(pat);
-    }
+        void pattern_destroy(long pat) {
+            std::lock_guard<std::mutex> lck(_patternMapMutex);
+            cairo_pattern_destroy(_patternMap[pat]);
+            _patternMap.erase(pat);
+        }
 
-    cairo_surface_t *image(long pat) {
-        return _imageMap.at(pat).surface;
-    }
+        cairo_pattern_t* pattern(long pat) {
+            return _patternMap.at(pat);
+        }
 
-private:
-    // List of functions to create image map's from different file types
-    std::map<std::string, std::function<cairo_surface_t *(const std::string &)>> _create_image_map;
+        cairo_surface_t* image(long pat) {
+            return _imageMap.at(pat).surface;
+        }
 
-    // List of patterns
-    std::map<long, cairo_pattern_t *> _patternMap;
-    long _patternMapNum;
-    std::mutex _patternMapMutex;
+    private:
+        // List of tools to create image map's from different file types
+        std::map<std::string, std::function<cairo_surface_t*(const std::string&)>> _create_image_map;
 
-    // List of images
-    std::map<long, Cairo_surface_store<cairo_surface_t *>> _imageMap;
-    long _imageMapNum;
-    std::mutex _imageMapMutex;
+        // List of patterns
+        std::map<long, cairo_pattern_t*> _patternMap;
+        long _patternMapNum;
+        std::mutex _patternMapMutex;
+
+        // List of images
+        std::map<long, Cairo_surface_store<cairo_surface_t*>> _imageMap;
+        long _imageMapNum;
+        std::mutex _imageMapMutex;
 };
 
 // Store to store long living dataset that are time consuming to generate

@@ -3,7 +3,8 @@
 #include "../painters/lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
-using namespace LCViewer;
+
+using namespace lc::viewer::drawable;
 
 Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :
        _majorColor(major),
@@ -14,7 +15,7 @@ Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& mino
        _lastGridSize(1) {
 }
 
-void Grid::draw(DrawEvent const & event) const {
+void Grid::draw(event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
 

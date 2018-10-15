@@ -4,7 +4,7 @@
 #include "../events/snappointevent.h"
 #include "../managers/snapmanager.h"
 #include <string>
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 
 using namespace LCViewer;
 

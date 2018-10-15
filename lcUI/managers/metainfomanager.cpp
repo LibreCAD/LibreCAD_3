@@ -10,8 +10,8 @@ MetaInfoManager::MetaInfoManager() :
 
 }
 
-MetaInfo_CSPtr MetaInfoManager::metaInfo() {
-    MetaInfo_SPtr metaInfo = nullptr;
+meta::MetaInfo_CSPtr MetaInfoManager::metaInfo() {
+    meta::MetaInfo_SPtr metaInfo = nullptr;
 
     metaInfo = addMetaType(metaInfo, _linePattern);
     metaInfo = addMetaType(metaInfo, _lineWidth);
@@ -20,10 +20,10 @@ MetaInfo_CSPtr MetaInfoManager::metaInfo() {
     return metaInfo;
 }
 
-MetaInfo_SPtr MetaInfoManager::addMetaType(MetaInfo_SPtr metaInfo, EntityMetaType_CSPtr metaType) {
+meta::MetaInfo_SPtr MetaInfoManager::addMetaType(meta::MetaInfo_SPtr metaInfo, meta::EntityMetaType_CSPtr metaType) {
     if(metaType != nullptr) {
         if(metaInfo == nullptr) {
-            metaInfo = MetaInfo::create();
+            metaInfo = meta::MetaInfo::create();
         }
 
         metaInfo->add(std::move(metaType));
@@ -32,26 +32,26 @@ MetaInfo_SPtr MetaInfoManager::addMetaType(MetaInfo_SPtr metaInfo, EntityMetaTyp
     return metaInfo;
 }
 
-DxfLinePattern_CSPtr MetaInfoManager::linePattern() const {
+meta::DxfLinePattern_CSPtr MetaInfoManager::linePattern() const {
     return _linePattern;
 }
 
-MetaColor_CSPtr MetaInfoManager::color() const {
+meta::MetaColor_CSPtr MetaInfoManager::color() const {
     return _color;
 }
 
-MetaLineWidth_CSPtr MetaInfoManager::lineWidth() const {
+meta::MetaLineWidth_CSPtr MetaInfoManager::lineWidth() const {
     return _lineWidth;
 }
 
-void MetaInfoManager::setLinePattern(const DxfLinePattern_CSPtr& linePattern) {
+void MetaInfoManager::setLinePattern(const meta::DxfLinePattern_CSPtr& linePattern) {
     _linePattern = linePattern;
 }
 
-void MetaInfoManager::setColor(const MetaColor_CSPtr& color) {
+void MetaInfoManager::setColor(const meta::MetaColor_CSPtr& color) {
     _color = color;
 }
 
-void MetaInfoManager::setLineWidth(const MetaLineWidth_CSPtr& lineWidth) {
+void MetaInfoManager::setLineWidth(const meta::MetaLineWidth_CSPtr& lineWidth) {
     _lineWidth = lineWidth;
 }

@@ -33,7 +33,7 @@ drawables/lccursor.cpp
 painters/createpainter.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
-managers/EventManager.cpp
+        managers/eventmanager.cpp
 managers/dragmanager.cpp
 drawitems/lcimage.cpp
 drawables/dragpoints.cpp
@@ -76,7 +76,7 @@ painters/lccairopainter.tcc
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h
-managers/EventManager.h
+        managers/eventmanager.h
 managers/dragmanager.h
 events/LocationEvent.h
 drawitems/lcimage.h

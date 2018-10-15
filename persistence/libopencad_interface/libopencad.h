@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/meta/layer.h>
 

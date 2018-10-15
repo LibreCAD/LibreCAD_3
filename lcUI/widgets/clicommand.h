@@ -7,7 +7,7 @@
 #include <QStringListModel>
 
 #include <memory>
-#include <cad/settings.h>
+#include <cad/storage/settings.h>
 #include <cad/geometry/geocoordinate.h>
 
 namespace Ui {

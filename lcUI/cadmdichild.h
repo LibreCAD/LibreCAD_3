@@ -5,10 +5,10 @@
 #include <QKeyEvent>
 #include <lcadviewer.h>
 #include "cad/meta/color.h"
-#include <cad/document/storagemanager.h>
+#include <cad/storage/storagemanager.h>
 
-#include "cad/document/document.h"
-#include "cad/document/undomanager.h"
+#include "cad/storage/document.h"
+#include "cad/storage/undomanager.h"
 #include <drawables/lccursor.h>
 #include <managers/snapmanager.h>
 #include <drawables/gradientbackground.h>

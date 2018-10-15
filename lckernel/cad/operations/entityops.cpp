@@ -1,7 +1,7 @@
 #include "entityops.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
-#include "cad/document/storagemanager.h"
+#include "cad/storage/storagemanager.h"
 using namespace lc;
 using namespace lc::operation;
 

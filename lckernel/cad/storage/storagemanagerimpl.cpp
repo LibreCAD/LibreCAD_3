@@ -1,6 +1,7 @@
 #include "storagemanagerimpl.h"
 
 using namespace lc;
+using namespace lc::storage;
 
 StorageManagerImpl::StorageManagerImpl() : StorageManager() {
 

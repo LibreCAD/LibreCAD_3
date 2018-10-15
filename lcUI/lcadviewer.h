@@ -2,7 +2,7 @@
 #include <map>
 #include <QWidget>
 
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 #include "cad/dochelpers/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"
 

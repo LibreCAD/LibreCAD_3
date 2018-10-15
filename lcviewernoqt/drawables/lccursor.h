@@ -2,7 +2,7 @@
 
 #include <memory>
 #include "../managers/snapmanager.h"
-#include "../managers/EventManager.h"
+#include "managers/eventmanager.h"
 #include "../documentcanvas.h"
 
 

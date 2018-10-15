@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cad/const.h"
-#include "cad/document/storagemanager.h"
+#include "cad/storage/storagemanager.h"
 #include "undoable.h"
 
 namespace lc {

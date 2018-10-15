@@ -1,7 +1,7 @@
 #include "cad/math/intersectionhandler.h"
+
 using namespace lc;
 using namespace maths;
-#include <iostream>
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
                                                     const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;

@@ -36,8 +36,8 @@ namespace lc {
                        geo::Coordinate defLine21,
                        geo::Coordinate defLine22,
                        Layer_CSPtr layer,
-                       MetaInfo_CSPtr metaInfo = nullptr,
-                       Block_CSPtr block = nullptr);
+                       meta::MetaInfo_CSPtr metaInfo = nullptr,
+                       meta::Block_CSPtr block = nullptr);
 
 
             DimAngular(const DimAngular_CSPtr& other, bool sameID = false);
@@ -48,7 +48,7 @@ namespace lc {
                 geo::Coordinate p2,
                 std::string explicitValue,
                 Layer_CSPtr layer,
-                MetaInfo_CSPtr metaInfo = nullptr,
+                meta::MetaInfo_CSPtr metaInfo = nullptr,
                 Block_CSPtr block = nullptr
             );
 
@@ -93,7 +93,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
 
             geo::Coordinate defLine11() const;
 

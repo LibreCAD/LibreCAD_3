@@ -32,7 +32,7 @@ Insert::~Insert() {
     document()->removeEntityEvent().disconnect<Insert, &Insert::on_removeEntityEvent>(this);
 }
 
-const Block_CSPtr& Insert::displayBlock() const {
+const meta::Block_CSPtr& Insert::displayBlock() const {
     return _displayBlock;
 }
 
@@ -73,7 +73,7 @@ const geo::Area Insert::boundingBox() const {
     return _boundingBox;
 }
 
-CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto builder = builder::InsertBuilder();
 
     builder.copy(shared_from_this());
@@ -150,13 +150,13 @@ void Insert::calculateBoundingBox() {
     }
 }
 
-void Insert::on_addEntityEvent(const lc::AddEntityEvent& event) {
+void Insert::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     if(event.entity()->block() == _displayBlock) {
         calculateBoundingBox();
     }
 }
 
-void Insert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
+void Insert::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
     if(event.entity()->block() == _displayBlock) {
         calculateBoundingBox();
     }

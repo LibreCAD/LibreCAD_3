@@ -1,4 +1,4 @@
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 #include "lclua.h"
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
@@ -35,7 +35,7 @@ void LCLua::addLuaLibs() {
         lua_pop(_L, 1);
     }
 
-    //Add others non-LC functions
+    //Add others non-LC tools
     LuaBinding(_L)
         .addFunction("microtime", &lua_microtime)
         .addFunction("openFile", &openFile)

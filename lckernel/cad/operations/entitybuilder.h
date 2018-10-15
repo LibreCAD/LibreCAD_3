@@ -4,7 +4,7 @@
 #include "documentoperation.h"
 #include "undoable.h"
 #include <vector>
-#include "cad/document/storagemanager.h"
+#include "cad/storage/storagemanager.h"
 
 namespace lc {
     class Document;

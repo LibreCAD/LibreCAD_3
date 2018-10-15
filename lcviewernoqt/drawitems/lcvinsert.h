@@ -2,7 +2,7 @@
 
 #include <cad/primitive/insert.h>
 #include <cad/dochelpers/entitycontainer.h>
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 #include <unordered_set>
 #include "lcvdrawitem.h"
 #include "../documentcanvas.h"

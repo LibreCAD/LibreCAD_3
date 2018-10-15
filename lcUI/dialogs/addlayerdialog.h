@@ -1,5 +1,5 @@
 #pragma once
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 
 #include <QDialog>
 #include <QColorDialog>

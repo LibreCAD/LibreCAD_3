@@ -5,13 +5,13 @@ using namespace lc;
 using namespace entity;
 
 Point::Point(double x, double y,
-             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+             Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(x, y) {
 }
 
 Point::Point(geo::Coordinate coord,
-             Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+             Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Coordinate(std::move(coord)) {
 }
@@ -60,7 +60,7 @@ const geo::Area Point::boundingBox() const {
     return geo::Area(geo::Coordinate(this->x(), this->y()), 0., 0.);
 }
 
-CADEntity_CSPtr Point::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr Point::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Point>(this->x(), this->y(),
                                              layer,
                                              metaInfo,

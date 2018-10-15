@@ -1,5 +1,7 @@
 #include "settings.h"
 
+using namespace lc::storage;
+
 std::unordered_map<std::string, double> Settings::_variable_map = { // NOLINT
     {"LCTOLERANCE", 1.0e-10}
 };

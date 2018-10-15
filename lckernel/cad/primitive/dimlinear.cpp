@@ -15,8 +15,8 @@ DimLinear::DimLinear(geo::Coordinate definitionPoint,
                      double angle,
                      double oblique,
                      Layer_CSPtr layer,
-                     MetaInfo_CSPtr metaInfo,
-                     Block_CSPtr block) :
+                     meta::MetaInfo_CSPtr metaInfo,
+                     meta::Block_CSPtr block) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     Dimension(std::move(definitionPoint),
               std::move(middleOfText),
@@ -47,8 +47,8 @@ DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
                                   geo::Coordinate const &middleOfText,
                                   std::string explicitValue,
                                   Layer_CSPtr layer,
-                                  MetaInfo_CSPtr metaInfo,
-                                  Block_CSPtr block) {
+                                  meta::MetaInfo_CSPtr metaInfo,
+                                  meta::Block_CSPtr block) {
     return std::make_shared<DimLinear>(p1,
                                        middleOfText,
                                        TextConst::AttachmentPoint::Middle_center,
@@ -146,7 +146,7 @@ const geo::Area DimLinear::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimLinear::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr DimLinear::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimLinear = std::make_shared<DimLinear>(
                             this->definitionPoint(),
                             this->middleOfText(),

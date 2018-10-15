@@ -13,22 +13,22 @@
  *
  * \sa lc::SnapManagerImpl
  */
-namespace LCViewer {
-class LocationEvent;
+namespace lc {
+    namespace viewer {
+        namespace event {
+            class LocationEvent;
+        }
+        namespace manager {
+            class SnapManager {
+                public:
+                    virtual void setDeviceLocation(int x, int y) = 0;
 
-class SnapManager  {
-    public:
+                public:
+                    virtual Nano::Signal<void(const event::SnapPointEvent&)>& snapPointEvents() = 0;
+            };
 
-    virtual void setDeviceLocation(int x, int y) = 0;
+            DECLARE_SHORT_SHARED_PTR(SnapManager)
 
-
-public:
-    virtual Nano::Signal<void(const SnapPointEvent&)> & snapPointEvents() = 0;
-
-};
-DECLARE_SHORT_SHARED_PTR(SnapManager)
-
+        }
+    }
 }
-
-
-// SNAPMANAGER_H

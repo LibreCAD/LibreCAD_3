@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 #include "documentoperation.h"
 #include "undoable.h"
 

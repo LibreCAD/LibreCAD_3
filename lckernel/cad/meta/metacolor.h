@@ -7,104 +7,109 @@
 #include <cmath>
 
 namespace lc {
-    /**
-    * Represents a MetaColor
-    */
-    class MetaColor : public EntityMetaType {
-        protected:
-            MetaColor() : EntityMetaType() {
+    namespace meta {
+        /**
+        * Represents a MetaColor
+        */
+        class MetaColor : public EntityMetaType {
+            protected:
+                MetaColor() : EntityMetaType() {
 
-            }
+                }
 
-        public:
-            virtual const std::string metaTypeID() const override {
-                return LCMETANAME();
-            }
-            static const std::string LCMETANAME() {
-                return "_COLOR";
-            }
-    };
+            public:
+                virtual const std::string metaTypeID() const override {
+                    return LCMETANAME();
+                }
 
-    class MetaColorByValue : public MetaColor {
-        public:
+                static const std::string LCMETANAME() {
+                    return "_COLOR";
+                }
+        };
 
-            MetaColorByValue() : MetaColor(), _color(1., 1., 1., 1.) {
-            }
+        class MetaColorByValue : public MetaColor {
+            public:
 
-            MetaColorByValue(const MetaColorByValue& other) : MetaColor(), _color(other.color()) {
-            }
+                MetaColorByValue() : MetaColor(), _color(1., 1., 1., 1.) {
+                }
 
-            MetaColorByValue(const Color& other) : MetaColor(), _color(other) {
-            }
+                MetaColorByValue(const MetaColorByValue& other) : MetaColor(), _color(other.color()) {
+                }
 
-            MetaColorByValue(double r, double g, double b, double a = 1.) : MetaColor(), _color(r, g, b, a) {
-            }
+                MetaColorByValue(const Color& other) : MetaColor(), _color(other) {
+                }
 
-            virtual ~MetaColorByValue() = default;
+                MetaColorByValue(double r, double g, double b, double a = 1.) : MetaColor(), _color(r, g, b, a) {
+                }
 
-            virtual const std::string id() const override {
-                // TODO create proper ID
-                return LCMETANAME() + "_" + std::to_string(red()) + "_" +  std::to_string(green()) + "_" +  std::to_string(blue());
-            }
+                virtual ~MetaColorByValue() = default;
 
-            Color color() const {
-                return _color;
-            }
+                virtual const std::string id() const override {
+                    // TODO create proper ID
+                    return LCMETANAME() + "_" + std::to_string(red()) + "_" + std::to_string(green()) + "_" +
+                           std::to_string(blue());
+                }
 
-            inline double red() const {
-                return _color.red();
-            }
+                Color color() const {
+                    return _color;
+                }
 
-            inline double green() const {
-                return _color.green();
-            }
+                inline double red() const {
+                    return _color.red();
+                }
 
-            inline double blue() const {
-                return _color.blue();
-            }
+                inline double green() const {
+                    return _color.green();
+                }
 
-            inline double alpha() const {
-                return _color.alpha();
-            }
+                inline double blue() const {
+                    return _color.blue();
+                }
 
-            inline unsigned char redI() const {
-                return _color.redI();
-            }
+                inline double alpha() const {
+                    return _color.alpha();
+                }
 
-            inline unsigned char greenI() const {
-                return _color.greenI();
-            }
+                inline unsigned char redI() const {
+                    return _color.redI();
+                }
 
-            inline unsigned char blueI() const {
-                return _color.blueI();
-            }
+                inline unsigned char greenI() const {
+                    return _color.greenI();
+                }
 
-            inline unsigned char alphaI() const {
-                return _color.alphaI();
-            }
+                inline unsigned char blueI() const {
+                    return _color.blueI();
+                }
 
-        private:
-            Color _color;
+                inline unsigned char alphaI() const {
+                    return _color.alphaI();
+                }
 
-            friend std::ostream& operator<<(std::ostream& os, const MetaColorByValue& metaColor) {
-                os << "MetaColorByValue(red=" << metaColor.red() << " green=" << metaColor.green() << " blue=" << metaColor.blue() << " alpha" << metaColor.alpha() << ")";
-                return os;
-            }
-    };
+            private:
+                Color _color;
 
-    class MetaColorByBlock : public MetaColor {
-        public:
-            MetaColorByBlock() {
+                friend std::ostream& operator<<(std::ostream& os, const MetaColorByValue& metaColor) {
+                    os << "MetaColorByValue(red=" << metaColor.red() << " green=" << metaColor.green() << " blue="
+                       << metaColor.blue() << " alpha" << metaColor.alpha() << ")";
+                    return os;
+                }
+        };
 
-            }
+        class MetaColorByBlock : public MetaColor {
+            public:
+                MetaColorByBlock() {
 
-            virtual const std::string id() const override {
-                return LCMETANAME() + "_BYBLOCK";
-            }
-    };
+                }
 
-    DECLARE_SHORT_SHARED_PTR(MetaColor)
-    DECLARE_SHORT_SHARED_PTR(MetaColorByValue)
-    DECLARE_SHORT_SHARED_PTR(MetaColorByBlock)
+                virtual const std::string id() const override {
+                    return LCMETANAME() + "_BYBLOCK";
+                }
+        };
+
+        DECLARE_SHORT_SHARED_PTR(MetaColor)
+        DECLARE_SHORT_SHARED_PTR(MetaColorByValue)
+        DECLARE_SHORT_SHARED_PTR(MetaColorByBlock)
+    }
 }
 

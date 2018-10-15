@@ -1,6 +1,6 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/base/visitor.h>
-#include <cad/functions/intersect.h>
+#include <cad/math/intersect.h>
 #include <gtest/gtest.h>
 
 //

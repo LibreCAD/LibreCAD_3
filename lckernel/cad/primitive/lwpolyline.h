@@ -112,8 +112,8 @@ namespace lc {
                        bool closed,
                        geo::Coordinate extrusionDirection,
                        Layer_CSPtr layer,
-                       MetaInfo_CSPtr metaInfo = nullptr,
-                       Block_CSPtr block = nullptr
+                       meta::MetaInfo_CSPtr metaInfo = nullptr,
+                       meta::Block_CSPtr block = nullptr
             );
 
             LWPolyline(const LWPolyline_CSPtr& other, bool sameID = false);
@@ -210,7 +210,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             /**
              * Return a vector of entities for this polyline

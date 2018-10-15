@@ -50,8 +50,8 @@ namespace lc {
                    double etanx, double etany, double etanz,
                    double nx, double ny, double nz, splineflag flags,
                    Layer_CSPtr layer,
-                   MetaInfo_CSPtr metaInfo = nullptr,
-                   Block_CSPtr block = nullptr);
+                   meta::MetaInfo_CSPtr metaInfo = nullptr,
+                   meta::Block_CSPtr block = nullptr);
 
             Spline(const Spline_CSPtr& other, bool sameID = false);
 
@@ -101,7 +101,7 @@ namespace lc {
              */
             const geo::Area boundingBox() const override;
 
-            CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            CADEntity_CSPtr modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 

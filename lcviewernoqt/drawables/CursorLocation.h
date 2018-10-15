@@ -4,20 +4,24 @@
 #pragma once
 
 #include <cad/meta/color.h>
-#include "../managers/EventManager.h"
+#include "managers/eventmanager.h"
 #include <memory>
 
-namespace LCViewer {
-class CursorLocation {
-public:
-    CursorLocation(int textSize, std::shared_ptr<EventManager> const &, lc::Color& color);
+namespace lc {
+    namespace viewer {
+        namespace drawable {
+            class CursorLocation {
+                public:
+                    CursorLocation(int textSize, std::shared_ptr<manager::EventManager> const&, lc::Color& color);
 
-    void on_locationEvent(const LocationEvent&) const;
+                    void on_locationEvent(const event::LocationEvent&) const;
 
-private:
-    int _textSize;
-    lc::Color _color;
+                private:
+                    int _textSize;
+                    lc::Color _color;
 
-};
+            };
+        }
+    }
 
 }

@@ -3,7 +3,7 @@
 #include "lcdimangular.h"
 #include "endcaps.h"
 #include "cad/functions/string_helper.h"
-#include "cad/functions/intersect.h"
+#include "cad/math/intersect.h"
 
 using namespace LCViewer;
 
