@@ -14,19 +14,19 @@ namespace lc {
                 * \brief Remove Line Pattern Event
                 * \param DxfLinePatternByValue_CSPtr Linepattern to be removed.
                 */
-                RemoveLinePatternEvent(const DxfLinePatternByValue_CSPtr linePattern) : _linePattern(linePattern) {
+                RemoveLinePatternEvent(const meta::DxfLinePatternByValue_CSPtr linePattern) : _linePattern(linePattern) {
                 }
 
                 /*!
                  * \brief Return linePattern data
                  * \return LinePattern
                  */
-                const DxfLinePatternByValue_CSPtr linePattern() const {
+                const meta::DxfLinePatternByValue_CSPtr linePattern() const {
                     return _linePattern;
                 }
 
             private:
-                const DxfLinePatternByValue_CSPtr _linePattern;
+                const meta::DxfLinePatternByValue_CSPtr _linePattern;
         };
     }
 }

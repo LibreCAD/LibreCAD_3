@@ -31,12 +31,12 @@ namespace lc {
              */
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle,
                 bool isCCW,
-                Layer_CSPtr layer,
+                meta::Layer_CSPtr layer,
                 meta::MetaInfo_CSPtr metaInfo = nullptr,
                 meta::Block_CSPtr block = nullptr
             );
 
-            Arc(const geo::Arc &a, Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block = nullptr);
+            Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block = nullptr);
 
             Arc(const Arc_CSPtr& other, bool sameID = false);
 
@@ -82,7 +82,7 @@ namespace lc {
          */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
         public:
             virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain & constrain, double minDistanceToSnap,

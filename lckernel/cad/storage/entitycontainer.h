@@ -7,7 +7,7 @@
 
 #include "cad/const.h"
 #include "cad/base/id.h"
-#include "cad/dochelpers/quadtree.h"
+#include "cad/storage/quadtree.h"
 
 #include "cad/vo/entitydistance.h"
 #include "cad/math/intersect.h"
@@ -125,7 +125,7 @@ namespace lc {
                  * \param layer
                  * \return
                  */
-                EntityContainer entitiesByLayer(const Layer_CSPtr layer) const {
+                EntityContainer entitiesByLayer(const meta::Layer_CSPtr layer) const {
                     EntityContainer container;
 
                     for (auto i : asVector(std::numeric_limits<short>::max())) {
@@ -230,7 +230,7 @@ namespace lc {
                         }
 
                         // Path to area intersection testing
-                        lc::Intersect intersect(Intersect::OnEntity, 10e-4);
+                        lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, 10e-4);
 
                         auto&& v = area.top();
                         visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, v, *i.get());
@@ -306,7 +306,7 @@ namespace lc {
                     // Now calculate for each entity if we are near the entities path
                     std::vector<lc::EntityDistance> entities;
                     for (auto item : ent) {
-                        Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::Snapable>(item);
+                        lc::entity::Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::entity::Snapable>(item);
 
                         if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
                             lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);

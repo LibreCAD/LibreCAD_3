@@ -24,14 +24,14 @@ namespace lc {
 
                 void removeEntity(const entity::CADEntity_CSPtr& entity) override;
 
-                void addDocumentMetaType(const DocumentMetaType_CSPtr& dmt) override;
+                void addDocumentMetaType(const meta::DocumentMetaType_CSPtr& dmt) override;
 
-                void removeDocumentMetaType(const DocumentMetaType_CSPtr& dmt) override;
+                void removeDocumentMetaType(const meta::DocumentMetaType_CSPtr& dmt) override;
 
                 void
-                replaceDocumentMetaType(const DocumentMetaType_CSPtr& oldDmt, DocumentMetaType_CSPtr newDmt) override;
+                replaceDocumentMetaType(const meta::DocumentMetaType_CSPtr& oldDmt, meta::DocumentMetaType_CSPtr newDmt) override;
 
-                std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive>
+                std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive>
                 allMetaTypes() override;
 
                 /**
@@ -39,22 +39,22 @@ namespace lc {
                  * @param layer
                  * @return
                  */
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr& layer) override;
+                EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr& layer) override;
 
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const Block_CSPtr& block) override;
+                EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(const meta::Block_CSPtr& block) override;
 
                 EntityContainer<entity::CADEntity_CSPtr>& entityContainer() override;
 
-                std::map<std::string, Layer_CSPtr> allLayers() const override;
+                std::map<std::string, meta::Layer_CSPtr> allLayers() const override;
 
-                Layer_CSPtr layerByName(const std::string& layerName) const override;
+                meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
-                DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
+                meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
                 /**
                  * @brief return all line patterns
                  */
-                std::vector<DxfLinePatternByValue_CSPtr> linePatterns() const override;
+                std::vector<meta::DxfLinePatternByValue_CSPtr> linePatterns() const override;
 
             protected:
                 /*!
@@ -78,7 +78,7 @@ namespace lc {
             public:
                 std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) override;
 
-                std::vector<Block_CSPtr> blocks() const override;
+                std::vector<lc::meta::Block_CSPtr> blocks() const override;
 
             private:
                 std::mutex _documentMutex;

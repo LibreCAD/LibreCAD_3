@@ -13,7 +13,7 @@
 
 #include "cad/events/replaceentityevent.h"
 #include "cad/meta/dxflinepattern.h"
-#include "cad/functions/string_helper.h"
+#include "cad/tools/string_helper.h"
 #include <map>
 #include <utility>
 #include <string>
@@ -67,27 +67,27 @@ namespace lc {
                  * @return EntityContainer<entity::CADEntity_CSPtr> entities on layer
                  * @Deprecated use entityContainer()->entitiesByLayer()
                  */
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const Layer_CSPtr layer) const override;
+                EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr layer) const override;
 
                 /**
                  * @brief returns layer By Name
                  * @param layerName
                  * @return Layer_CSPtr layer
                  */
-                Layer_CSPtr layerByName(const std::string& layerName) const override;
+                meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
                 /**
                  * @brief returns line pattern By Name
                  * @param string& linePatternName
                  * @return DxfLinePattern_CSPtr layer
                  */
-                DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
+                meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
                 /**
                  * @brief return all Layers
                  * @return map<string, Layer_CSPtr>
                  */
-                std::map<std::string, Layer_CSPtr> allLayers() const override;
+                std::map<std::string, meta::Layer_CSPtr> allLayers() const override;
 
                 /**
                  * @brief returns entity Container
@@ -99,23 +99,22 @@ namespace lc {
                 *  \brief add a document meta type
                 *  \param layer layer to be added.
                 */
-                void addDocumentMetaType(DocumentMetaType_CSPtr dmt) override;
+                void addDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) override;
 
                 /**
                 *  \brief remove a document meta type from the document
                 *  \param layer layer to be added.
                 */
-                void removeDocumentMetaType(DocumentMetaType_CSPtr dmt) override;
+                void removeDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) override;
 
                 /**
                 *  \brief remove document meta type
                 */
-                void replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) override;
+                void replaceDocumentMetaType(meta::DocumentMetaType_CSPtr oldDmt, meta::DocumentMetaType_CSPtr newDmt) override;
 
-                std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive>
-                allMetaTypes() const override;
+                std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive> allMetaTypes() const override;
 
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) const override;
+                EntityContainer<entity::CADEntity_CSPtr> entitiesByBlock(meta::Block_CSPtr block) const override;
 
                 /**
                  * @brief optimise the quadtree
@@ -123,10 +122,10 @@ namespace lc {
                 void optimise() override;
 
             private:
-                DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const override;
+                meta::DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const override;
 
                 EntityContainer <entity::CADEntity_CSPtr> _entities;
-                std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive> _documentMetaData;
+                std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensetive> _documentMetaData;
                 std::map<std::string, EntityContainer<entity::CADEntity_CSPtr>> _blocksEntities;
         };
     }

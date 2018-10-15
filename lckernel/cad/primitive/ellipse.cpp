@@ -12,7 +12,7 @@ Ellipse::Ellipse(const geo::Coordinate &center,
                  double startAngle,
                  double endAngle,
                  bool reversed,
-                 Layer_CSPtr layer,
+                 meta::Layer_CSPtr layer,
                  meta::MetaInfo_CSPtr metaInfo,
                  meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -145,7 +145,7 @@ const geo::Area Ellipse::boundingBox() const {
                      geo::Coordinate(maxX, maxY));
 }
 
-CADEntity_CSPtr Ellipse::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Ellipse::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Ellipse>(
             this->center(),
             this->majorP(),

@@ -8,7 +8,7 @@ namespace lc {
     namespace operation {
         class AddBlock : public DocumentOperation {
             public:
-                AddBlock(const Document_SPtr& document, Block_CSPtr block);
+                AddBlock(const storage::Document_SPtr& document, meta::Block_CSPtr block);
 
                 void undo() const override;
                 void redo() const override;
@@ -17,12 +17,12 @@ namespace lc {
                 void processInternal() override;
 
             private:
-                Block_CSPtr _block;
+                meta::Block_CSPtr _block;
         };
 
         class RemoveBlock : public DocumentOperation {
             public:
-                RemoveBlock(const Document_SPtr& document, Block_CSPtr block);
+                RemoveBlock(const storage::Document_SPtr& document, meta::Block_CSPtr block);
 
                 void undo() const override;
                 void redo() const override;
@@ -31,12 +31,12 @@ namespace lc {
                 void processInternal() override;
 
             private:
-                Block_CSPtr _block;
+                meta::Block_CSPtr _block;
         };
 
         class ReplaceBlock : public DocumentOperation {
             public:
-                ReplaceBlock(const Document_SPtr& document, Block_CSPtr oldBlock, Block_CSPtr newBlock);
+                ReplaceBlock(const storage::Document_SPtr& document, meta::Block_CSPtr oldBlock, meta::Block_CSPtr newBlock);
 
                 void undo() const override;
                 void redo() const override;
@@ -45,8 +45,8 @@ namespace lc {
                 void processInternal() override;
 
             private:
-                Block_CSPtr _oldBlock;
-                Block_CSPtr _newBlock;
+                meta::Block_CSPtr _oldBlock;
+                meta::Block_CSPtr _newBlock;
         };
     }
 }

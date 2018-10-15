@@ -25,7 +25,7 @@ namespace lc {
                 /**
                  * @brief Event called when an unmanaged entity is added to a document
                  */
-                Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& newWaitingCustomEntityEvent();
+                Nano::Signal<void(const event::NewWaitingCustomEntityEvent&)>& newWaitingCustomEntityEvent();
 
                 std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName);
 
@@ -36,10 +36,10 @@ namespace lc {
 
                 void removeDocument(Document* document);
 
-                void onNewWaitingCustomEntity(const NewWaitingCustomEntityEvent& event);
+                void onNewWaitingCustomEntity(const event::NewWaitingCustomEntityEvent& event);
 
                 std::unordered_set<Document*> _documents;
-                Nano::Signal<void(const lc::NewWaitingCustomEntityEvent&)> _newWaitingCustomEntityEvent;
+                Nano::Signal<void(const lc::event::NewWaitingCustomEntityEvent&)> _newWaitingCustomEntityEvent;
         };
     }
 }

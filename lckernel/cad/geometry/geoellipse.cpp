@@ -112,7 +112,7 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         ce[2]= - ce[0];
         ce[3]= -twoax*twoax/a0;
         //std::cout<<"1::find cosine, variable c, solve(c^4 +("<<ce[0]<<")*c^3+("<<ce[1]<<")*c^2+("<<ce[2]<<")*c+("<<ce[3]<<")=0,c)\n";
-        roots=Math::quarticSolver(ce);
+        roots = maths::Math::quarticSolver(ce);
     }
     else {//a=b, quadratic equation for circle
         a0=twoby/twoax;
@@ -210,7 +210,7 @@ double Ellipse::ratio() const {
 }
 
 bool Ellipse::isArc() const {
-    return Math::getAngleDifferenceShort(_startAngle, _endAngle, _isReversed) > LCARCTOLERANCE;
+    return maths::Math::getAngleDifferenceShort(_startAngle, _endAngle, _isReversed) > LCARCTOLERANCE;
 }
 
 double Ellipse::getEllipseAngle(const Coordinate& coord) const {

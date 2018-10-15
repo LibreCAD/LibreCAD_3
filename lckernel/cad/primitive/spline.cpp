@@ -14,7 +14,7 @@ Spline::Spline(
         double etanx, double etany, double etanz,
         double nx, double ny, double nz,
         enum Spline::splineflag flags,
-        Layer_CSPtr layer,
+        meta::Layer_CSPtr layer,
         meta::MetaInfo_CSPtr metaInfo,
         meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -221,7 +221,7 @@ const geo::Area Spline::boundingBox() const {
     return this->_boundingBox;
 }
 
-CADEntity_CSPtr Spline::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Spline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newSpline = std::make_shared<Spline>(
             controlPoints(),
             knotPoints(),

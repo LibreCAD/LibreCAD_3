@@ -8,7 +8,7 @@ using namespace entity;
 
 Circle::Circle(const geo::Coordinate &center,
                double radius,
-               Layer_CSPtr layer,
+               meta::Layer_CSPtr layer,
                meta::MetaInfo_CSPtr metaInfo,
                meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -102,7 +102,7 @@ const geo::Area Circle::boundingBox() const {
                      geo::Coordinate(center().x() + radius(), center().y() + radius()));
 }
 
-CADEntity_CSPtr Circle::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, metaInfo, block);
     newEntity->setID(this->id());
     return newEntity;

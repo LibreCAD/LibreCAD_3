@@ -12,7 +12,7 @@ UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) :
 }
 
 
-void UndoManagerImpl::on_CommitProcessEvent(const CommitProcessEvent& event) {
+void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& event) {
     operation::Undoable_SPtr undoable = std::dynamic_pointer_cast<operation::Undoable>(event.operation());
 
     if (undoable != nullptr) {

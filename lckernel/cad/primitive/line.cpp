@@ -8,7 +8,7 @@ using namespace entity;
 
 Line::Line(const geo::Coordinate& start,
            const geo::Coordinate& end,
-           Layer_CSPtr layer,
+           meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -16,7 +16,7 @@ Line::Line(const geo::Coordinate& start,
 }
 
 Line::Line(const geo::Vector& vector,
-           Layer_CSPtr layer,
+           meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -120,7 +120,7 @@ const geo::Area Line::boundingBox() const {
     return geo::Area(start(), end());
 }
 
-CADEntity_CSPtr Line::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Line::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Line>(
             this->start(),
             this->end(),

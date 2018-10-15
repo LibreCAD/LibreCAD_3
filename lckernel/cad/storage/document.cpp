@@ -1,4 +1,4 @@
-#include <cad/dochelpers/documentlist.h>
+#include <cad/storage/documentlist.h>
 #include "document.h"
 #include "cad/operations/documentoperation.h"
 
@@ -23,11 +23,11 @@ Document::Document():
         _replaceLinePatternEvent(),
         _removeLinePatternEvent(),
         _newWaitingCustomEntityEvent() {
-    DocumentList::getInstance().addDocument(this);
+    storage::DocumentList::getInstance().addDocument(this);
 }
 
 Document::~Document() {
-    DocumentList::getInstance().removeDocument(this);
+    storage::DocumentList::getInstance().removeDocument(this);
 }
 
 void Document::operationStart(const operation::DocumentOperation_SPtr& operation) {
@@ -39,50 +39,50 @@ void Document::operationFinish(const operation::DocumentOperation_SPtr& operatio
 void Document::operationProcess(const operation::DocumentOperation_SPtr& operation) {
     operation->process();
 }
-Nano::Signal<void(const lc::BeginProcessEvent&)>& Document::beginProcessEvent() {
+Nano::Signal<void(const lc::event::BeginProcessEvent&)>& Document::beginProcessEvent() {
     return _beginProcessEvent;
 }
 
-Nano::Signal<void(const lc::CommitProcessEvent&)>& Document::commitProcessEvent() {
+Nano::Signal<void(const lc::event::CommitProcessEvent&)>& Document::commitProcessEvent() {
     return _commitProcessEvent;
 }
 
-Nano::Signal<void(const lc::AddEntityEvent&)>& Document::addEntityEvent() {
+Nano::Signal<void(const lc::event::AddEntityEvent&)>& Document::addEntityEvent() {
     return this->_addEntityEvent;
 }
 
-Nano::Signal<void(const lc::ReplaceEntityEvent&)>& Document::replaceEntityEvent() {
+Nano::Signal<void(const lc::event::ReplaceEntityEvent&)>& Document::replaceEntityEvent() {
     return this->_replaceEntityEvent;
 }
 
-Nano::Signal<void(const lc::RemoveEntityEvent&)>& Document::removeEntityEvent() {
+Nano::Signal<void(const lc::event::RemoveEntityEvent&)>& Document::removeEntityEvent() {
     return this->_removeEntityEvent;
 }
 
-Nano::Signal<void(const lc::RemoveLayerEvent&)>& Document::removeLayerEvent() {
+Nano::Signal<void(const lc::event::RemoveLayerEvent&)>& Document::removeLayerEvent() {
     return this->_removeLayerEvent;
 }
 
-Nano::Signal<void(const lc::AddLayerEvent&)>& Document::addLayerEvent() {
+Nano::Signal<void(const lc::event::AddLayerEvent&)>& Document::addLayerEvent() {
     return this->_addLayerEvent;
 }
 
-Nano::Signal<void(const lc::ReplaceLayerEvent&)>& Document::replaceLayerEvent() {
+Nano::Signal<void(const lc::event::ReplaceLayerEvent&)>& Document::replaceLayerEvent() {
     return this->_replaceLayerEvent;
 }
 
-Nano::Signal<void(const lc::RemoveLinePatternEvent&)>& Document::removeLinePatternEvent() {
+Nano::Signal<void(const lc::event::RemoveLinePatternEvent&)>& Document::removeLinePatternEvent() {
     return this->_removeLinePatternEvent;
 }
 
-Nano::Signal<void(const lc::AddLinePatternEvent&)>& Document::addLinePatternEvent() {
+Nano::Signal<void(const lc::event::AddLinePatternEvent&)>& Document::addLinePatternEvent() {
     return this->_addLinePatternEvent;
 }
 
-Nano::Signal<void(const lc::ReplaceLinePatternEvent&)>& Document::replaceLinePatternEvent() {
+Nano::Signal<void(const lc::event::ReplaceLinePatternEvent&)>& Document::replaceLinePatternEvent() {
     return this->_replaceLinePatternEvent;
 }
 
-Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& Document::newWaitingCustomEntityEvent() {
+Nano::Signal<void(const lc::event::NewWaitingCustomEntityEvent&)>& Document::newWaitingCustomEntityEvent() {
     return _newWaitingCustomEntityEvent;
 }

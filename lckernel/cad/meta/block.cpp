@@ -1,18 +1,20 @@
 #include "block.h"
 
-lc::Block::Block(std::string name, lc::geo::Coordinate base) :
+using namespace lc::meta;
+
+Block::Block(std::string name, lc::geo::Coordinate base) :
         _name(std::move(name)),
         _base(std::move(base)) {
 }
 
-const std::string lc::Block::id() const {
+const std::string Block::id() const {
     return BLOCK_ID_PREFIX "_" + _name;
 }
 
-const std::string lc::Block::name() const {
+const std::string Block::name() const {
     return _name;
 }
 
-const lc::geo::Coordinate& lc::Block::base() const {
+const lc::geo::Coordinate& Block::base() const {
     return _base;
 }

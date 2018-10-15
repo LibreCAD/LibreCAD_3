@@ -34,7 +34,7 @@ namespace lc {
                       double brightness,
                       double contrast,
                       double fade,
-                      Layer_CSPtr layer,
+                      meta::Layer_CSPtr layer,
                       meta::MetaInfo_CSPtr metaInfo = nullptr,
                       meta::Block_CSPtr block = nullptr
                 );
@@ -94,7 +94,7 @@ namespace lc {
                  */
                 const geo::Area boundingBox() const override;
 
-                CADEntity_CSPtr modify(Layer_CSPtr layer,
+                CADEntity_CSPtr modify(meta::Layer_CSPtr layer,
                                        const meta::MetaInfo_CSPtr metaInfo,
                                        meta::Block_CSPtr block) const override;
 

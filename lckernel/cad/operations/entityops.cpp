@@ -12,7 +12,7 @@ Begin::Begin() :  Base() {
 }
 
 std::vector<entity::CADEntity_CSPtr> Begin::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -33,7 +33,7 @@ Loop::Loop(const int numTimes) :  Base(), _numTimes(numTimes) {
 }
 
 std::vector<entity::CADEntity_CSPtr> Loop::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -75,7 +75,7 @@ Move::Move(geo::Coordinate offset) :
 }
 
 std::vector<entity::CADEntity_CSPtr>  Move::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -99,7 +99,7 @@ Copy::Copy(geo::Coordinate offset) :
 }
 
 std::vector<entity::CADEntity_CSPtr> Copy::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -125,7 +125,7 @@ Scale::Scale(geo::Coordinate scale_center, geo::Coordinate scale_factor) :
 }
 
 std::vector<entity::CADEntity_CSPtr> Scale::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -150,7 +150,7 @@ Rotate::Rotate(geo::Coordinate rotation_center, const double rotation_angle) :
 }
 
 std::vector<entity::CADEntity_CSPtr> Rotate::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -172,7 +172,7 @@ Push::Push() : Base() {
 }
 
 std::vector<entity::CADEntity_CSPtr> Push::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -186,13 +186,13 @@ std::vector<entity::CADEntity_CSPtr> Push::process(
 /********************************************************************************************************/
 /** SelectByLayer                                                                                     ***/
 /********************************************************************************************************/
-SelectByLayer::SelectByLayer(Layer_CSPtr layer) :
+SelectByLayer::SelectByLayer(meta::Layer_CSPtr layer) :
         Base(),
         _layer(std::move(layer)) {
 }
 
 std::vector<entity::CADEntity_CSPtr> SelectByLayer::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -221,7 +221,7 @@ Remove::Remove() : Base() {
 }
 
 std::vector<entity::CADEntity_CSPtr> Remove::process(
-    const std::shared_ptr<Document> document,
+    const std::shared_ptr<storage::Document> document,
     const std::vector<entity::CADEntity_CSPtr> entities,
     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
     std::vector<entity::CADEntity_CSPtr>& removals,

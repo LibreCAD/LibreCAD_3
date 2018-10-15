@@ -604,7 +604,7 @@ IntersectMany::IntersectMany(std::vector<entity::CADEntity_CSPtr> entities, Inte
 
 }
 
-std::vector<geo::Coordinate> IntersectMany::result() const {
+std::vector<lc::geo::Coordinate> IntersectMany::result() const {
     Intersect intersect(_method, _tolerance);
     if (_entities.size() > 1) {
         for (size_t outer = 0; outer < (_entities.size() - 1); outer++) {
@@ -630,7 +630,7 @@ IntersectAgainstOthers::IntersectAgainstOthers(std::vector<entity::CADEntity_CSP
         _tolerance(tolerance) {
 }
 
-std::vector<geo::Coordinate> IntersectAgainstOthers::result() const {
+std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
     Intersect intersect(_method, _tolerance);
     /*FIXME unused
     for (auto &other : _others) {

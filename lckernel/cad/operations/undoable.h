@@ -4,7 +4,10 @@
 #include "cad/const.h"
 #include <memory>
 namespace lc {
-    class Document;
+    namespace storage {
+        class Document;
+    }
+
     namespace operation {
 
         /**

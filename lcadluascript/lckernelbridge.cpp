@@ -7,9 +7,9 @@
 #include <cad/geometry/geocoordinate.h>
 #include <cad/geometry/geovector.h>
 #include <cad/storage/undomanager.h>
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/undomanagerimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/undomanagerimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 #include <cad/operations/entityops.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/layerops.h>
@@ -29,9 +29,9 @@ void LCLua::importLCKernel() {
     //18-09-2018: Those declarations are used to fix the CLang bug
     //            "candidate template ignored: couldn't infer template argument 'FN'"
     //            GCC is not affected
-    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const Layer_CSPtr&);
-    using CADEntityBuilder_setMetaInfo = void (builder::CADEntityBuilder::*)(const MetaInfo_CSPtr&);
-    using CADEntityBuilder_setBlock = void (builder::CADEntityBuilder::*)(const Block_CSPtr&);
+    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const meta::Layer_CSPtr&);
+    using CADEntityBuilder_setMetaInfo = void (builder::CADEntityBuilder::*)(const meta::MetaInfo_CSPtr&);
+    using CADEntityBuilder_setBlock = void (builder::CADEntityBuilder::*)(const meta::Block_CSPtr&);
 
     LuaBinding(_L)
         .beginClass<Color>("Color")
@@ -44,61 +44,60 @@ void LCLua::importLCKernel() {
             )
         .endClass()
 
-        .beginClass<MetaType>("MetaType")
+        .beginClass<meta::MetaType>("MetaType")
         .endClass()
 
-        .beginExtendClass<EntityMetaType, MetaType>("EntityMetaType")
+        .beginExtendClass<meta::EntityMetaType, meta::MetaType>("EntityMetaType")
         .endClass()
 
-        .beginExtendClass<DocumentMetaType, MetaType>("DocumentMetaType")
+        .beginExtendClass<meta::DocumentMetaType, meta::MetaType>("meta::DocumentMetaType")
         .endClass()
 
-        .beginExtendClass<Layer, MetaType>("Layer")
-            .addConstructor(LUA_SP(Layer_SPtr), LUA_ARGS(
+        .beginExtendClass<Layer, meta::MetaType>("Layer")
+            .addConstructor(LUA_SP(meta::Layer_SPtr), LUA_ARGS(
                                 std::string,
-                                MetaLineWidthByValue,
+                                meta::MetaLineWidthByValue,
                                 Color))
         .endClass()
 
-        .beginExtendClass<DxfLinePattern, EntityMetaType>("DxfLinePattern")
+        .beginExtendClass<meta::DxfLinePattern, meta::EntityMetaType>("meta::DxfLinePattern")
         .endClass()
 
-        .beginExtendClass<DxfLinePatternByValue, DxfLinePattern>("DxfLinePatternByValue")
-            .addConstructor(LUA_SP(DxfLinePatternByValue_SPtr), LUA_ARGS(const std::string&,
+        .beginExtendClass<meta::DxfLinePatternByValue, meta::DxfLinePattern>("meta::DxfLinePatternByValue")
+            .addConstructor(LUA_SP(meta::DxfLinePatternByValue_SPtr), LUA_ARGS(const std::string&,
                                                                    const std::string&,
                                                                    const std::vector<double>&,
                                                                    const double)
             )
         .endClass()
 
-        .beginExtendClass<DxfLinePatternByBlock, DxfLinePattern>("DxfLinePatternByBlock")
-            .addConstructor(LUA_SP(DxfLinePatternByBlock_SPtr), LUA_ARGS())
+        .beginExtendClass<meta::DxfLinePatternByBlock, meta::DxfLinePattern>("meta::DxfLinePatternByBlock")
+            .addConstructor(LUA_SP(meta::DxfLinePatternByBlock_SPtr), LUA_ARGS())
         .endClass()
 
-        .beginExtendClass<MetaColorByValue, DocumentMetaType>("DocumentMetaColor")
-           .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<meta::MetaColorByValue, meta::DocumentMetaType>("DocumentMetaColor")
+           .addConstructor(LUA_SP(meta::MetaColorByValue_SPtr), LUA_ARGS(const Color))
         .endClass()
 
-        .beginExtendClass<MetaColorByValue, EntityMetaType>("EntityMetaColor")
-          .addConstructor(LUA_SP(MetaColorByValue_SPtr), LUA_ARGS(const Color))
+        .beginExtendClass<meta::MetaColorByValue, meta::EntityMetaType>("EntityMetaColor")
+          .addConstructor(LUA_SP(meta::MetaColorByValue_SPtr), LUA_ARGS(const Color))
         .endClass()
 
-        .beginExtendClass<MetaLineWidthByBlock, MetaType>("MetaLineWidthByBlock")
-         .addConstructor(LUA_SP(MetaLineWidthByBlock_SPtr), LUA_ARGS())
+        .beginExtendClass<meta::MetaLineWidthByBlock, meta::MetaType>("meta::MetaLineWidthByBlock")
+         .addConstructor(LUA_SP(meta::MetaLineWidthByBlock_SPtr), LUA_ARGS())
         .endClass()
 
-        .beginExtendClass<MetaLineWidthByValue, DocumentMetaType>("DocumentLineWidthByValue")
-         .addConstructor(LUA_SP(MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
+        .beginExtendClass<meta::MetaLineWidthByValue, meta::DocumentMetaType>("DocumentLineWidthByValue")
+         .addConstructor(LUA_SP(meta::MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
         .endClass()
 
-        .beginExtendClass<MetaLineWidthByValue, EntityMetaType>("EntityLineWidthByValue")
-          .addConstructor(LUA_SP(MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
+        .beginExtendClass<meta::MetaLineWidthByValue, meta::EntityMetaType>("EntityLineWidthByValue")
+          .addConstructor(LUA_SP(meta::MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
         .endClass()
 
-        .beginClass<MetaInfo>("MetaInfo")
-            .addConstructor(LUA_SP(MetaInfo_SPtr), LUA_ARGS())
-            .addFunction("add", &MetaInfo::add)
-            .addFunction("addDxfLinePattern", &MetaInfo::addDxfLinePattern)
+        .beginClass<meta::MetaInfo>("MetaInfo")
+            .addConstructor(LUA_SP(meta::MetaInfo_SPtr), LUA_ARGS())
+            .addFunction("add", &meta::MetaInfo::add)
         .endClass()
 
         .beginClass<geo::Coordinate>("Coord")
@@ -144,57 +143,57 @@ void LCLua::importLCKernel() {
                                 const geo::Coordinate & end))
         .endClass()
 
-        .beginClass<Document>("Document")
-            .addFunction("layerByName", &Document::layerByName)
-            .addFunction("entitiesByLayer", &Document::entitiesByLayer)
-            .addFunction("waitingCustomEntities", &Document::waitingCustomEntities)
-            .addFunction("entitiesByBlock", &Document::entitiesByBlock)
+        .beginClass<storage::Document>("Document")
+            .addFunction("layerByName", &storage::Document::layerByName)
+            .addFunction("entitiesByLayer", &storage::Document::entitiesByLayer)
+            .addFunction("waitingCustomEntities", &storage::Document::waitingCustomEntities)
+            .addFunction("entitiesByBlock", &storage::Document::entitiesByBlock)
         .endClass()
 
-        .beginExtendClass<DocumentImpl, Document>("DocumentImpl")
+        .beginExtendClass<storage::DocumentImpl, Document>("DocumentImpl")
         .endClass()
 
-        .beginClass<UndoManager>("UndoManager")
-            .addFunction("canRedo", &UndoManager::canRedo)
-            .addFunction("canUndo", &UndoManager::canUndo)
-            .addFunction("redo", &UndoManager::redo)
-            .addFunction("removeUndoables", &UndoManager::removeUndoables)
-            .addFunction("undo", &UndoManager::undo)
+        .beginClass<storage::UndoManager>("UndoManager")
+            .addFunction("canRedo", &storage::UndoManager::canRedo)
+            .addFunction("canUndo", &storage::UndoManager::canUndo)
+            .addFunction("redo", &storage::UndoManager::redo)
+            .addFunction("removeUndoables", &storage::UndoManager::removeUndoables)
+            .addFunction("undo", &storage::UndoManager::undo)
         .endClass()
 
-        .beginExtendClass<UndoManagerImpl, UndoManager>("UndoManagerImpl")
+        .beginExtendClass<storage::UndoManagerImpl, storage::UndoManager>("UndoManagerImpl")
         .endClass()
 
-        .beginClass<EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
-            .addFunction("asVector", &EntityContainer<lc::entity::CADEntity_CSPtr>::asVector, LUA_ARGS(
+        .beginClass<storage::EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
+            .addFunction("asVector", &storage::EntityContainer<lc::entity::CADEntity_CSPtr>::asVector, LUA_ARGS(
                     LuaIntf::_opt<short>
             ))
         .endClass()
 
-        .beginClass<StorageManager>("StorageManager")
+        .beginClass<storage::StorageManager>("StorageManager")
         .endClass()
 
-        .beginExtendClass<StorageManagerImpl, StorageManager>("StorageManagerImpl")
-            .addConstructor(LUA_SP(std::shared_ptr<StorageManagerImpl>), LUA_ARGS())
+        .beginExtendClass<storage::StorageManagerImpl, storage::StorageManager>("StorageManagerImpl")
+            .addConstructor(LUA_SP(std::shared_ptr<storage::StorageManagerImpl>), LUA_ARGS())
         .endClass()
 
         .beginClass<Visitable>("Visitable")
         .endClass()
 
-        .beginClass<Snapable>("Snapable")
-            .addFunction("snapPoints", &Snapable::snapPoints)
-            .addFunction("nearestPointOnPath", &Snapable::nearestPointOnPath)
-            .addStaticFunction("remove_ifDistanceGreaterThen", &Snapable::remove_ifDistanceGreaterThen)
-            .addStaticFunction("snapPointsCleanup", &Snapable::snapPointsCleanup)
+        .beginClass<entity::Snapable>("Snapable")
+            .addFunction("snapPoints", &entity::Snapable::snapPoints)
+            .addFunction("nearestPointOnPath", &entity::Snapable::nearestPointOnPath)
+            .addStaticFunction("remove_ifDistanceGreaterThen", &entity::Snapable::remove_ifDistanceGreaterThen)
+            .addStaticFunction("snapPointsCleanup", &entity::Snapable::snapPointsCleanup)
         .endClass()
 
-        .beginClass<ID>("ID")
+        .beginClass<entity::ID>("ID")
             .addConstructor(LUA_ARGS(_opt<ID_DATATYPE>))
-            .addFunction("id", &ID::id)
-            .addFunction("setId", &ID::setID)
+            .addFunction("id", &entity::ID::id)
+            .addFunction("setId", &entity::ID::setID)
         .endClass()
 
-        .beginExtendClass<entity::CADEntity, ID>("CADEntity")
+        .beginExtendClass<entity::CADEntity, entity::ID>("CADEntity")
             .addFunction("move", &entity::CADEntity::move)
             .addFunction("rotate", &entity::CADEntity::rotate)
             .addFunction("copy", &entity::CADEntity::copy)
@@ -215,9 +214,9 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
                        const geo::Coordinate & start,
                        const geo::Coordinate & end,
-                       const Layer_CSPtr,
-                       LuaIntf::_opt<const MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const Block_CSPtr>
+                       const meta::Layer_CSPtr,
+                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const meta::Block_CSPtr>
             ))
             .addProperty("entityType", [](entity::Line*) {
                 return "line";
@@ -232,9 +231,9 @@ void LCLua::importLCKernel() {
             .addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
                        const geo::Coordinate & center,
                        double radius,
-                       const Layer_CSPtr,
-                       LuaIntf::_opt<const MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const Block_CSPtr>
+                       const meta::Layer_CSPtr,
+                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const meta::Block_CSPtr>
             ))
             .addProperty("entityType", [](entity::Circle*) {
                 return "circle";
@@ -252,9 +251,9 @@ void LCLua::importLCKernel() {
                        const double startAngle,
                        const double endAngle,
                        bool CCW,
-                       const Layer_CSPtr layer,
-                       LuaIntf::_opt<const MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const Block_CSPtr>
+                       const meta::Layer_CSPtr layer,
+                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const meta::Block_CSPtr>
             ))
 
             .addFunction("nearestPointOnEntity", &geo::Arc::nearestPointOnEntity)
@@ -280,9 +279,9 @@ void LCLua::importLCKernel() {
                        double startAngle,
                        double endAngle,
                        bool reversed,
-                       const Layer_CSPtr layer,
-                       LuaIntf::_opt<const MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const Block_CSPtr>
+                       const meta::Layer_CSPtr layer,
+                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                       LuaIntf::_opt<const meta::Block_CSPtr>
             ))
 
             .addFunction("getEllipseAngle", &entity::Ellipse::getEllipseAngle)
@@ -306,9 +305,9 @@ void LCLua::importLCKernel() {
                 const std::string&,
                 const geo::Coordinate&,
                 const double,
-                const Layer_CSPtr,
-                LuaIntf::_opt<const MetaInfo_CSPtr>,
-                LuaIntf::_opt<const Block_CSPtr>
+                const meta::Layer_CSPtr,
+                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -321,9 +320,9 @@ void LCLua::importLCKernel() {
                 const std::string&,
                 const geo::Coordinate&,
                 const double,
-                const Layer_CSPtr,
-                LuaIntf::_opt<const MetaInfo_CSPtr>,
-                LuaIntf::_opt<const Block_CSPtr>
+                const meta::Layer_CSPtr,
+                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -333,9 +332,9 @@ void LCLua::importLCKernel() {
                     geo::Coordinate const&,
                     geo::Coordinate const&,
                     std::string const&,
-                    const Layer_CSPtr,
-                    LuaIntf::_opt<const MetaInfo_CSPtr>,
-                    LuaIntf::_opt<const Block_CSPtr>
+                    const meta::Layer_CSPtr,
+                    LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                    LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -345,9 +344,9 @@ void LCLua::importLCKernel() {
                 geo::Coordinate const&,
                 geo::Coordinate const&,
                 std::string const&,
-                const Layer_CSPtr,
-                LuaIntf::_opt<const MetaInfo_CSPtr>,
-                LuaIntf::_opt<const Block_CSPtr>
+                const meta::Layer_CSPtr,
+                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -357,9 +356,9 @@ void LCLua::importLCKernel() {
                 geo::Coordinate const&,
                 geo::Coordinate const&,
                 std::string const&,
-                const Layer_CSPtr,
-                LuaIntf::_opt<const MetaInfo_CSPtr>,
-                LuaIntf::_opt<const Block_CSPtr>
+                const meta::Layer_CSPtr,
+                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -381,9 +380,9 @@ void LCLua::importLCKernel() {
                 double,
                 double,
                 geo::Spline::splineflag,
-                const Layer_CSPtr,
-                LuaIntf::_opt<const MetaInfo_CSPtr>,
-                LuaIntf::_opt<const Block_CSPtr>
+                const meta::Layer_CSPtr,
+                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                LuaIntf::_opt<const meta::Block_CSPtr>
             ))
         .endClass()
 
@@ -404,9 +403,9 @@ void LCLua::importLCKernel() {
                     double,
                     bool,
                     const geo::Coordinate,
-                    const Layer_CSPtr,
-                    LuaIntf::_opt<const MetaInfo_CSPtr>,
-                    LuaIntf::_opt<const Block_CSPtr>
+                    const meta::Layer_CSPtr,
+                    LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
+                    LuaIntf::_opt<const meta::Block_CSPtr>
             ))
             .addFunction("width", &lc::entity::LWPolyline::width)
             .addFunction("elevation", &lc::entity::LWPolyline::elevation)
@@ -477,7 +476,7 @@ void LCLua::importLCKernel() {
         .endClass()
 
         .beginExtendClass<operation::SelectByLayer, operation::Base>("SelectByLayer")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::SelectByLayer>), LUA_ARGS(const Layer_CSPtr))
+            .addConstructor(LUA_SP(std::shared_ptr<operation::SelectByLayer>), LUA_ARGS(const meta::Layer_CSPtr))
         .endClass()
 
         .beginExtendClass<operation::Rotate, operation::Base>("Rotate")
@@ -494,26 +493,26 @@ void LCLua::importLCKernel() {
         .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(
                     std::shared_ptr<lc::Document> doc,
-                    const Layer_CSPtr
+                    const meta::Layer_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::RemoveLayer, operation::DocumentOperation>("RemoveLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveLayer>), LUA_ARGS(
                     std::shared_ptr<lc::Document> doc,
-                    const Layer_CSPtr
+                    const meta::Layer_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::ReplaceLayer, operation::DocumentOperation>("ReplaceLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceLayer>), LUA_ARGS(
                     std::shared_ptr<lc::Document> doc,
-                    const Layer_CSPtr,
-                    const Layer_CSPtr
+                    const meta::Layer_CSPtr,
+                    const meta::Layer_CSPtr
             ))
         .endClass()
 
-        .beginExtendClass<Block, DocumentMetaType>("Block")
+        .beginExtendClass<Block, meta::DocumentMetaType>("Block")
             .addConstructor(LUA_SP(Block_SPtr), LUA_ARGS(
                 std::string,
                 geo::Coordinate
@@ -538,22 +537,22 @@ void LCLua::importLCKernel() {
         .beginExtendClass<operation::AddBlock, operation::DocumentOperation>("AddBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddBlock>), LUA_ARGS(
                     std::shared_ptr<lc::Document>,
-                    const Block_CSPtr
+                    const meta::Block_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::RemoveBlock, operation::DocumentOperation>("RemoveBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveBlock>), LUA_ARGS(
                     std::shared_ptr<lc::Document>,
-                    const Block_CSPtr
+                    const meta::Block_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::ReplaceBlock, operation::DocumentOperation>("ReplaceBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceBlock>), LUA_ARGS(
                     std::shared_ptr<lc::Document>,
-                    const Block_CSPtr,
-                    const Block_CSPtr
+                    const meta::Block_CSPtr,
+                    const meta::Block_CSPtr
             ))
         .endClass()
 

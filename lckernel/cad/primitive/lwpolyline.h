@@ -111,7 +111,7 @@ namespace lc {
                        double thickness,
                        bool closed,
                        geo::Coordinate extrusionDirection,
-                       Layer_CSPtr layer,
+                       meta::Layer_CSPtr layer,
                        meta::MetaInfo_CSPtr metaInfo = nullptr,
                        meta::Block_CSPtr block = nullptr
             );
@@ -210,7 +210,7 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             /**
              * Return a vector of entities for this polyline

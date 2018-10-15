@@ -14,19 +14,19 @@ namespace lc {
                  * \brief Construct an Add Line Pattern Event
                  * \param DxfLinePatternByValue_CSPtr Linepattern to be added.
                  */
-                AddLinePatternEvent(const DxfLinePatternByValue_CSPtr linePattern) : _linePattern(linePattern) {
+                AddLinePatternEvent(const meta::DxfLinePatternByValue_CSPtr linePattern) : _linePattern(linePattern) {
                 }
 
                 /*!
                  * \brief Returns the line pattern.
                  * \return DxfLinePatternByValue_CSPtr linePattern.
                  */
-                const DxfLinePatternByValue_CSPtr linePattern() const {
+                const meta::DxfLinePatternByValue_CSPtr linePattern() const {
                     return _linePattern;
                 }
 
             private:
-                const DxfLinePatternByValue_CSPtr _linePattern;
+                const meta::DxfLinePatternByValue_CSPtr _linePattern;
         };
     }
 }

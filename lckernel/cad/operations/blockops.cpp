@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace operation;
 
-AddBlock::AddBlock(const Document_SPtr& document, Block_CSPtr block) :
+AddBlock::AddBlock(const storage::Document_SPtr& document, meta::Block_CSPtr block) :
     DocumentOperation(document, "AddBlock"),
     _block(std::move(block)) {
 
@@ -22,7 +22,7 @@ void AddBlock::processInternal() {
 }
 
 
-RemoveBlock::RemoveBlock(const Document_SPtr& document, Block_CSPtr block) :
+RemoveBlock::RemoveBlock(const storage::Document_SPtr& document, meta::Block_CSPtr block) :
     DocumentOperation(document, "RemoveBlock"),
     _block(std::move(block)) {
 
@@ -41,7 +41,7 @@ void RemoveBlock::processInternal() {
 }
 
 
-ReplaceBlock::ReplaceBlock(const Document_SPtr& document, Block_CSPtr oldBlock, Block_CSPtr newBlock) :
+ReplaceBlock::ReplaceBlock(const storage::Document_SPtr& document, meta::Block_CSPtr oldBlock, meta::Block_CSPtr newBlock) :
     DocumentOperation(document, "ReplaceBlock"),
     _oldBlock(std::move(oldBlock)),
     _newBlock(std::move(newBlock)) {

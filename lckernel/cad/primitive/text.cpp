@@ -12,7 +12,7 @@ Text::Text(geo::Coordinate insertion_point,
            const TextConst::DrawingDirection textgeneration,
            const TextConst::HAlign halign,
            const TextConst::VAlign valign,
-           Layer_CSPtr layer,
+           meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
@@ -106,7 +106,7 @@ const geo::Area Text::boundingBox() const {
     return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
 }
 
-CADEntity_CSPtr Text::modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newText = std::make_shared<Text>(
                        this->_insertion_point,
                        this->_text_value,

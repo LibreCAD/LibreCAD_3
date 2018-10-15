@@ -4,7 +4,7 @@
 using namespace lc;
 using namespace operation;
 
-EntityBuilder::EntityBuilder(const std::shared_ptr<Document>& document) :
+EntityBuilder::EntityBuilder(const std::shared_ptr<storage::Document>& document) :
         DocumentOperation(document, "EntityBuilder") {
 }
 

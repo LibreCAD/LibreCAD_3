@@ -3,8 +3,8 @@
 #include "cad/base/id.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
-#include "cad/dochelpers/entitycontainer.h"
-#include <cad/functions/string_helper.h>
+#include "cad/storage/entitycontainer.h"
+#include <cad/tools/string_helper.h>
 #include <map>
 #include <cad/meta/dxflinepattern.h>
 
@@ -23,9 +23,9 @@ namespace lc {
 
                 virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
 
-                virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByLayer(Layer_CSPtr layer) const = 0;
+                virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByLayer(meta::Layer_CSPtr layer) const = 0;
 
-                virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByBlock(Block_CSPtr block) const = 0;
+                virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByBlock(meta::Block_CSPtr block) const = 0;
 
                 /*!
                  * \brief layer
@@ -33,7 +33,7 @@ namespace lc {
                  * \param layerName
                  * \return
                  */
-                virtual Layer_CSPtr layerByName(const std::string& layerName) const = 0;
+                virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
                 /*!
                  * \brief DxfLinePattern
@@ -41,13 +41,13 @@ namespace lc {
                  * \param linePatternName
                  * \return
                  */
-                virtual DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
+                virtual meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const = 0;
 
                 /*!
                  * \brief Returns all the layers present in the document.
                  * \return Hash Layername, Layer
                  */
-                virtual std::map<std::string, Layer_CSPtr> allLayers() const = 0;
+                virtual std::map<std::string, meta::Layer_CSPtr> allLayers() const = 0;
 
                 /*!
                  * \brief entityContainer
@@ -60,20 +60,20 @@ namespace lc {
                 *  \brief add a document meta type
                 *  \param layer layer to be added.
                 */
-                virtual void addDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
+                virtual void addDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) = 0;
 
                 /**
                 *  \brief remove a document meta type from the document
                 *  \param layer layer to be added.
                 */
-                virtual void removeDocumentMetaType(DocumentMetaType_CSPtr dmt) = 0;
+                virtual void removeDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) = 0;
 
                 /**
                 *  \brief remove document meta type
                 */
-                virtual void replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) = 0;
+                virtual void replaceDocumentMetaType(meta::DocumentMetaType_CSPtr oldDmt, meta::DocumentMetaType_CSPtr newDmt) = 0;
 
-                virtual std::map<std::string, DocumentMetaType_CSPtr, lc::StringHelper::cmpCaseInsensetive>
+                virtual std::map<std::string, meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive>
                 allMetaTypes() const = 0;
 
                 /**
@@ -112,7 +112,7 @@ namespace lc {
                 };
 
             private:
-                virtual DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const {
+                virtual meta::DocumentMetaType_CSPtr _metaDataTypeByName(const std::string& id) const {
                     return nullptr;
                 }
         };

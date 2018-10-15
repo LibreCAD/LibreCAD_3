@@ -8,8 +8,8 @@ Arc::Arc(Coordinate center, double radius, double startAngle, double endAngle, b
         Base(),
         _center(std::move(center)),
         _radius(radius),
-        _startAngle(Math::correctAngle(startAngle)),
-        _endAngle(Math::correctAngle(endAngle)),
+        _startAngle(maths::Math::correctAngle(startAngle)),
+        _endAngle(maths::Math::correctAngle(endAngle)),
         _CCW(isCCW) {
 
     if (radius <= 0.0) {
@@ -138,27 +138,27 @@ Area Arc::boundingBox() const {
     const double p2 = 1.0 * M_PI;
     const double p3 = 1.5 * M_PI;
 
-    if ((Math::isAngleBetween(p0, startAngle, endAngle, _CCW))) {
+    if ((maths::Math::isAngleBetween(p0, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x() + _radius, _center.y()));
     }
-    if ((Math::isAngleBetween(p1, startAngle, endAngle, _CCW))) {
+    if ((maths::Math::isAngleBetween(p1, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x(), _center.y() + _radius));
     }
-    if ((Math::isAngleBetween(p2, startAngle, endAngle, _CCW))) {
+    if ((maths::Math::isAngleBetween(p2, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x() - _radius, _center.y()));
     }
-    if ((Math::isAngleBetween(p3, startAngle, endAngle, _CCW))) {
+    if ((maths::Math::isAngleBetween(p3, startAngle, endAngle, _CCW))) {
         area = area.merge(Coordinate(_center.x(), _center.y() - _radius));
     }
     return area;
 }
 
 bool Arc::isAngleBetween(double angle) const {
-    return Math::isAngleBetween(angle, _startAngle, _endAngle, _CCW);
+    return maths::Math::isAngleBetween(angle, _startAngle, _endAngle, _CCW);
 }
 
 double Arc::angle() const {
-    return Math::correctAngle(std::abs(_endAngle - _startAngle));
+    return maths::Math::correctAngle(std::abs(_endAngle - _startAngle));
 }
 
 double Arc::bulge() const {

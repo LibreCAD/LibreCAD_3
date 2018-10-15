@@ -11,7 +11,7 @@ namespace lc {
                 /**
                 * @brief Remove Layer Event
                 */
-                ReplaceLayerEvent(const Layer_CSPtr oldLayer, const Layer_CSPtr newLayer)
+                ReplaceLayerEvent(const meta::Layer_CSPtr oldLayer, const meta::Layer_CSPtr newLayer)
                         : _oldLayer(oldLayer), _newLayer(newLayer) {
                 }
 
@@ -19,17 +19,17 @@ namespace lc {
                  * \brief Return layer data
                  * \return Layer
                  */
-                Layer_CSPtr oldLayer() const {
+                meta::Layer_CSPtr oldLayer() const {
                     return _oldLayer;
                 }
 
-                Layer_CSPtr newLayer() const {
+                meta::Layer_CSPtr newLayer() const {
                     return _newLayer;
                 }
 
             private:
-                const Layer_CSPtr _oldLayer;
-                const Layer_CSPtr _newLayer;
+                const meta::Layer_CSPtr _oldLayer;
+                const meta::Layer_CSPtr _newLayer;
         };
     }
 }

@@ -41,22 +41,22 @@ entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
     return _entities.entityByID(id);
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(Layer_CSPtr layer) const {
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(meta::Layer_CSPtr layer) const {
     return _entities.entitiesByLayer(layer);
 }
 
-Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
-    return metaDataTypeByName<Layer>(layerName);
+meta::Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
+    return metaDataTypeByName<meta::Layer>(layerName);
 }
 
-DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
-    return metaDataTypeByName<DxfLinePatternByValue>(linePatternName);
+meta::DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
+    return metaDataTypeByName<meta::DxfLinePatternByValue>(linePatternName);
 }
 
-std::map<std::string, Layer_CSPtr> StorageManagerImpl::allLayers() const {
-    std::map<std::string, Layer_CSPtr> data;
+std::map<std::string, meta::Layer_CSPtr> StorageManagerImpl::allLayers() const {
+    std::map<std::string, meta::Layer_CSPtr> data;
     for (auto& iter : _documentMetaData) {
-        Layer_CSPtr layer = std::dynamic_pointer_cast<const Layer>(iter.second);
+        meta::Layer_CSPtr layer = std::dynamic_pointer_cast<const meta::Layer>(iter.second);
         if (layer != nullptr) {
             data.emplace(std::make_pair(layer->name(), layer));
         }
@@ -77,17 +77,17 @@ void StorageManagerImpl::optimise() {
 }
 
 
-void StorageManagerImpl::addDocumentMetaType(DocumentMetaType_CSPtr dmt) {
+void StorageManagerImpl::addDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) {
     _documentMetaData.emplace(std::make_pair(dmt->id(), dmt));
 }
 
 
-void StorageManagerImpl::removeDocumentMetaType(DocumentMetaType_CSPtr dmt) {
+void StorageManagerImpl::removeDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) {
     _documentMetaData.erase(dmt->id());
 }
 
 
-void StorageManagerImpl::replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, DocumentMetaType_CSPtr newDmt) {
+void StorageManagerImpl::replaceDocumentMetaType(meta::DocumentMetaType_CSPtr oldDmt, meta::DocumentMetaType_CSPtr newDmt) {
     if (oldDmt->id() == newDmt->id()) {
         _documentMetaData.erase(oldDmt->id());
         _documentMetaData.emplace(std::make_pair(newDmt->id(), newDmt));
@@ -96,12 +96,12 @@ void StorageManagerImpl::replaceDocumentMetaType(DocumentMetaType_CSPtr oldDmt, 
     }
 }
 
-std::map<std::string, DocumentMetaType_CSPtr, StringHelper::cmpCaseInsensetive>
+std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensetive>
 StorageManagerImpl::allMetaTypes() const {
     return _documentMetaData;
 }
 
-DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string& id) const {
+meta::DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string& id) const {
     auto search = _documentMetaData.find(id);
     if (search != _documentMetaData.end()) {
         return search->second;
@@ -109,7 +109,7 @@ DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::string
     return nullptr;
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(Block_CSPtr block) const {
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(meta::Block_CSPtr block) const {
     try {
         return _blocksEntities.at(block->name());
     }

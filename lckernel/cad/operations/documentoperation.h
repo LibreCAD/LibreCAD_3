@@ -5,10 +5,13 @@
 #include "undoable.h"
 
 namespace lc {
-    class Document;
-    DECLARE_SHORT_SHARED_PTR(Document)
+    namespace storage {
+        class Document;
 
-    class StorageManager;
+        DECLARE_SHORT_SHARED_PTR(Document)
+
+        class StorageManager;
+    }
 
     namespace operation {
 
@@ -21,12 +24,12 @@ namespace lc {
          * @param document
          */
         class DocumentOperation : public Undoable, public std::enable_shared_from_this<operation::DocumentOperation> {
-            friend class lc::Document;
+            friend class lc::storage::Document;
             friend class Builder;
 
             public:
-                DocumentOperation(Document_SPtr document, const std::string& description);
-                Document_SPtr document() const;
+                DocumentOperation(storage::Document_SPtr document, const std::string& description);
+                storage::Document_SPtr document() const;
 
                 /*!
                  * \brief execute this operation
@@ -52,7 +55,7 @@ namespace lc {
                  */
                 virtual void finnish() const {};
 
-                Document_SPtr _document;
+                storage::Document_SPtr _document;
             protected:
                 /**
                  * This function gets called when an operation starts and when the document is locked for you

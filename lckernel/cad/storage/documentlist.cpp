@@ -13,11 +13,11 @@ void DocumentList::removeDocument(Document* document) {
     _documents.erase(document);
 }
 
-void DocumentList::onNewWaitingCustomEntity(const NewWaitingCustomEntityEvent& event) {
+void DocumentList::onNewWaitingCustomEntity(const event::NewWaitingCustomEntityEvent& event) {
     _newWaitingCustomEntityEvent(event);
 }
 
-Nano::Signal<void(const NewWaitingCustomEntityEvent&)>& DocumentList::newWaitingCustomEntityEvent() {
+Nano::Signal<void(const event::NewWaitingCustomEntityEvent&)>& DocumentList::newWaitingCustomEntityEvent() {
     return _newWaitingCustomEntityEvent;
 }
 

@@ -72,7 +72,7 @@ namespace lc {
                 const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
 
             public:
-                void on_CommitProcessEvent(const lc::CommitProcessEvent& event);
+                void on_CommitProcessEvent(const lc::event::CommitProcessEvent& event);
         };
 
         DECLARE_SHORT_SHARED_PTR(UndoManagerImpl)

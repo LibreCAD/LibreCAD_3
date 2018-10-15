@@ -73,7 +73,7 @@ const geo::Area Insert::boundingBox() const {
     return _boundingBox;
 }
 
-CADEntity_CSPtr Insert::modify(Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
+CADEntity_CSPtr Insert::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto builder = builder::InsertBuilder();
 
     builder.copy(shared_from_this());
@@ -126,7 +126,7 @@ geo::Coordinate Insert::nearestPointOnPath(const geo::Coordinate& coord) const {
     return _position;
 }
 
-const Document_SPtr& Insert::document() const {
+const storage::Document_SPtr& Insert::document() const {
     return _document;
 }
 

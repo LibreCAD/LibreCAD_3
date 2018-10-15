@@ -18,7 +18,7 @@ namespace lc {
 
                 const meta::Block_CSPtr& displayBlock() const;
                 const geo::Coordinate& position() const;
-                const Document_SPtr& document() const;
+                const storage::Document_SPtr& document() const;
 
                 CADEntity_CSPtr move(const geo::Coordinate& offset) const override;
                 CADEntity_CSPtr copy(const geo::Coordinate& offset) const override;
@@ -28,7 +28,7 @@ namespace lc {
                                       const geo::Coordinate& scale_factor) const override;
                 CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
                                        const geo::Coordinate& axis2) const override;
-                CADEntity_CSPtr modify(Layer_CSPtr layer,
+                CADEntity_CSPtr modify(meta::Layer_CSPtr layer,
                                        meta::MetaInfo_CSPtr metaInfo,
                                        meta::Block_CSPtr block) const override;
 
@@ -55,7 +55,7 @@ namespace lc {
                 void on_addEntityEvent(const lc::event::AddEntityEvent&);
                 void on_removeEntityEvent(const lc::event::RemoveEntityEvent&);
 
-                Document_SPtr _document;
+                storage::Document_SPtr _document;
                 geo::Coordinate _position;
                 meta::Block_CSPtr _displayBlock;
                 geo::Area _boundingBox;

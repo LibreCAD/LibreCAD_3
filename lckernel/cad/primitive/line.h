@@ -44,7 +44,7 @@ namespace lc {
              */
             Line(const geo::Coordinate& start,
                  const geo::Coordinate& end,
-                 Layer_CSPtr layer,
+                 meta::Layer_CSPtr layer,
                  meta::MetaInfo_CSPtr metaInfo = nullptr,
                  meta::Block_CSPtr block = nullptr
             );
@@ -59,7 +59,7 @@ namespace lc {
              * \sa MetaType
              */
             Line(const geo::Vector& vector,
-                 Layer_CSPtr layer,
+                 meta::Layer_CSPtr layer,
                  meta::MetaInfo_CSPtr metaInfo = nullptr,
                  meta::Block_CSPtr block = nullptr);
 
@@ -115,7 +115,8 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo,
+                                           meta::Block_CSPtr block) const override;
 
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
