@@ -9,6 +9,7 @@
 
 #include <cad/storage/document.h>
 #include <cad/storage/storagemanager.h>
+
 #include <cad/meta/icolor.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/base/visitor.h>
