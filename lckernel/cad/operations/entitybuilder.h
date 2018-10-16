@@ -4,11 +4,13 @@
 #include "documentoperation.h"
 #include "undoable.h"
 #include <vector>
-#include "cad/document/storagemanager.h"
+#include "cad/storage/storagemanager.h"
 
 namespace lc {
-    class Document;
-    DECLARE_SHORT_SHARED_PTR(Document)
+    namespace storage {
+        class Document;
+        DECLARE_SHORT_SHARED_PTR(Document)
+    }
 
     namespace operation {
         class EntityBuilder: public DocumentOperation {
@@ -19,7 +21,7 @@ namespace lc {
                  * @brief Builder constructor
                  * @param document to apply operations
                  */
-                explicit EntityBuilder(const Document_SPtr& document);
+                explicit EntityBuilder(const storage::Document_SPtr& document);
 
                 /**
                  * @brief append entity to the stack

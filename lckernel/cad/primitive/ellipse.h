@@ -47,9 +47,9 @@ namespace lc {
                     double startAngle,
                     double endAngle,
                     bool reversed,
-                    Layer_CSPtr layer,
-                    MetaInfo_CSPtr metaInfo = nullptr,
-                    Block_CSPtr block = nullptr
+                    meta::Layer_CSPtr layer,
+                    meta::MetaInfo_CSPtr metaInfo = nullptr,
+                    meta::Block_CSPtr block = nullptr
             );
 
             Ellipse(const Ellipse_CSPtr& other, bool sameID = false);
@@ -98,7 +98,7 @@ namespace lc {
             virtual const geo::Area boundingBox() const override;
 
             virtual CADEntity_CSPtr
-            modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
         public:
 

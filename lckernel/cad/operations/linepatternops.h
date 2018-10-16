@@ -10,63 +10,65 @@
 #include "documentoperation.h"
 
 namespace lc {
-    class Document;
-    DECLARE_SHORT_SHARED_PTR(Document)
+    namespace storage {
+        class Document;
+        DECLARE_SHORT_SHARED_PTR(Document)
+    }
 
     namespace operation {
         /**
          * This class can be used to add LinePatterns from the document
          */
         class AddLinePattern : public DocumentOperation {
-        public:
-            AddLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern);
+            public:
+                AddLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern);
 
-            virtual void undo() const;
-            virtual void redo() const;
+                virtual void undo() const;
+                virtual void redo() const;
 
-        protected:
-            virtual void processInternal();
+            protected:
+                virtual void processInternal();
 
-        private:
-            DxfLinePattern_CSPtr _linePattern;
+            private:
+                meta::DxfLinePattern_CSPtr _linePattern;
         };
 
         /**
          * Remove DxfLinePattern from document
          */
         class RemoveLinePattern : public DocumentOperation {
-        public:
-            RemoveLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern);
+            public:
+                RemoveLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern);
 
-            virtual void undo() const;
-            virtual void redo() const;
+                virtual void undo() const;
+                virtual void redo() const;
 
-        protected:
-            virtual void processInternal();
+            protected:
+                virtual void processInternal();
 
-        private:
-            DxfLinePattern_CSPtr _linePattern;
+            private:
+                meta::DxfLinePattern_CSPtr _linePattern;
         };
 
         /**
          * Replace DxfLinePattern in document
          */
         class ReplaceLinePattern : public DocumentOperation {
-        public:
-            ReplaceLinePattern(Document_SPtr document,
-                               DxfLinePattern_CSPtr oldLinePattern,
-                               DxfLinePattern_CSPtr newLinePattern
-            );
+            public:
+                ReplaceLinePattern(storage::Document_SPtr document,
+                                   meta::DxfLinePattern_CSPtr oldLinePattern,
+                                   meta::DxfLinePattern_CSPtr newLinePattern
+                );
 
-            virtual void undo() const;
-            virtual void redo() const;
+                virtual void undo() const;
+                virtual void redo() const;
 
-        protected:
-            virtual void processInternal();
+            protected:
+                virtual void processInternal();
 
-        private:
-            DxfLinePattern_CSPtr _oldLinePattern;
-            DxfLinePattern_CSPtr _newLinePattern;
+            private:
+                meta::DxfLinePattern_CSPtr _oldLinePattern;
+                meta::DxfLinePattern_CSPtr _newLinePattern;
         };
     }
 }

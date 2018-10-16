@@ -1,6 +1,8 @@
 #include "toolbar.h"
 #include "ui_toolbar.h"
 
+using namespace lc::ui::widgets;
+
 Toolbar::Toolbar(QWidget *parent) :
 	QDockWidget(parent),
 	ui(new Ui::Toolbar) {

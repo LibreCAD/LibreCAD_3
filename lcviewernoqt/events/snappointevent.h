@@ -7,27 +7,33 @@
   *
   */
 
-namespace LCViewer {
-class SnapPointEvent {
-    public:
-        SnapPointEvent(const lc::geo::Coordinate& snapPoint) : _snapPoint(snapPoint), _snapped(true) {
+namespace lc {
+    namespace viewer {
+        namespace event {
+            class SnapPointEvent {
+                public:
+                    SnapPointEvent(const lc::geo::Coordinate& snapPoint) :
+                            _snapPoint(snapPoint),
+                            _snapped(true) {
+                    }
+
+
+                    SnapPointEvent() :
+                            _snapped(false) {
+                    }
+
+                    lc::geo::Coordinate snapPoint() const {
+                        return _snapPoint;
+                    }
+
+                    bool status() const {
+                        return _snapped;
+                    }
+
+                private:
+                    lc::geo::Coordinate _snapPoint;
+                    bool _snapped;
+            };
         }
-
-
-
-    SnapPointEvent() : _snapped(false) {
-        }
-
-        lc::geo::Coordinate snapPoint() const {
-            return _snapPoint;
-        }
-
-        bool status() const {
-            return _snapped;
-        }
-
-    private:
-        lc::geo::Coordinate _snapPoint;
-        bool _snapped;
-};
+    }
 }

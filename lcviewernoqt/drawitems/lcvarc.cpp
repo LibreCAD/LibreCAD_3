@@ -2,7 +2,7 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCVArc::LCVArc(const lc::entity::Arc_CSPtr& arc) :
         LCVDrawItem(arc, true),

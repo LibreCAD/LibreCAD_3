@@ -11,7 +11,7 @@ option(WITH_LIBOPENCAD "Use libopencad" ON)
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
 
-option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
+option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
@@ -39,11 +39,11 @@ add_subdirectory("lckernel")
 add_subdirectory("lcUILua")
 add_subdirectory("lcadluascript")
 
-if(WITH_LCDXFDWG)
-    add_subdirectory("lcDXFDWG")
-    add_definitions(-DUSE_lcDXFDWG=1)
+if(WITH_PERSISTENCE)
+    add_subdirectory("persistence")
+    add_definitions(-DUSE_PERSISTENCE=1)
 else()
-    add_definitions(-DUSE_lcDXFDWG=0)
+    add_definitions(-DUSE_PERSISTENCE=0)
 endif()
 
 add_subdirectory("lcviewernoqt")

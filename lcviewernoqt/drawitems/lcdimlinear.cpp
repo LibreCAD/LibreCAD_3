@@ -2,9 +2,9 @@
 #include "../lcdrawoptions.h"
 #include "lcdimlinear.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr& dimLinear) :
         LCVDrawItem(dimLinear, true),
@@ -41,7 +41,7 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
     }
 
     // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(
+    std::string value = lc::tools::StringHelper::dim_value(
             _dimLinear->explicitValue(),
             options.linearFormat(),
             isHorizontal ? std::abs(dx) : std::abs(dy)

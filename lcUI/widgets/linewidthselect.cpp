@@ -2,7 +2,7 @@
 #include "linewidthselect.h"
 
 using namespace lc;
-using namespace ui;
+using namespace lc::ui::widgets;
 
 LineWidthSelect::LineWidthSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget* parent, bool showByLayer, bool showByBlock) :
     QComboBox(parent) {
@@ -62,7 +62,7 @@ void LineWidthSelect::createEntries() {
     }
 }
 
-void LineWidthSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
+void LineWidthSelect::onLayerChanged(const lc::meta::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {
@@ -76,14 +76,14 @@ void LineWidthSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
     }
 }
 
-void LineWidthSelect::setWidth(const lc::MetaLineWidth_CSPtr& lineWidth) {
+void LineWidthSelect::setWidth(const lc::meta::MetaLineWidth_CSPtr& lineWidth) {
     if(lineWidth == nullptr) {
         setCurrentText(BY_LAYER);
         updateMetaInfoManager();
         return;
     }
 
-    auto byValue = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidth);
+    auto byValue = std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByValue>(lineWidth);
     if(byValue != nullptr) {
         for (auto v : values) {
             if (v.second == byValue->width()) {
@@ -96,7 +96,7 @@ void LineWidthSelect::setWidth(const lc::MetaLineWidth_CSPtr& lineWidth) {
         return;
     }
 
-    auto byBlock = std::dynamic_pointer_cast<const lc::MetaLineWidthByBlock>(lineWidth);
+    auto byBlock = std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByBlock>(lineWidth);
     if(byBlock != nullptr) {
         setCurrentText(BY_BLOCK);
         updateMetaInfoManager();
@@ -123,29 +123,29 @@ void LineWidthSelect::updateMetaInfoManager() {
     }
 
     if(currentText() == BY_BLOCK) {
-        _metaInfoManager->setLineWidth(std::make_shared<const lc::MetaLineWidthByBlock>());
+        _metaInfoManager->setLineWidth(std::make_shared<const lc::meta::MetaLineWidthByBlock>());
         return;
     }
 
     try {
-        _metaInfoManager->setLineWidth(std::make_shared<lc::MetaLineWidthByValue>(values.at(currentText())));
+        _metaInfoManager->setLineWidth(std::make_shared<lc::meta::MetaLineWidthByValue>(values.at(currentText())));
     }
     catch (std::out_of_range& e) {
         _metaInfoManager->setLineWidth(nullptr);
     }
 }
 
-lc::MetaLineWidth_CSPtr LineWidthSelect::lineWidth() {
+lc::meta::MetaLineWidth_CSPtr LineWidthSelect::lineWidth() {
     if(currentText() == BY_LAYER) {
         return nullptr;
     }
 
     if(currentText() == BY_BLOCK) {
-        return std::make_shared<const lc::MetaLineWidthByBlock>();
+        return std::make_shared<const lc::meta::MetaLineWidthByBlock>();
     }
 
     try {
-        return std::make_shared<lc::MetaLineWidthByValue>(values.at(currentText()));
+        return std::make_shared<lc::meta::MetaLineWidthByValue>(values.at(currentText()));
     }
     catch (std::out_of_range& e) {
         return nullptr;

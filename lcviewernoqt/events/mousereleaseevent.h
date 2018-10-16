@@ -7,25 +7,34 @@
   * Event that gets dispatched each time the mouse is moved.
   */
 
-namespace LCViewer {
-class LcPainter;
-class MouseReleaseEvent  {
-    public:
-        MouseReleaseEvent() {
-        }
-        MouseReleaseEvent(const lc::geo::Coordinate& mousePosition, std::vector<lc::EntityDistance> entities) : _mousePosition(mousePosition), _entities(entities) {
-        }
+namespace lc {
+    namespace viewer {
+        class LcPainter;
 
-        lc::geo::Coordinate  mousePosition() const {
-            return _mousePosition;
-        }
+        namespace event {
+            class MouseReleaseEvent {
+                public:
+                    MouseReleaseEvent() {
+                    }
 
-        std::vector<lc::EntityDistance> entities() const {
-            return _entities;
-        }
+                    MouseReleaseEvent(const lc::geo::Coordinate& mousePosition,
+                                      std::vector<lc::EntityDistance> entities) :
+                            _mousePosition(mousePosition),
+                            _entities(entities) {
+                    }
 
-    private:
-        lc::geo::Coordinate _mousePosition;
-        std::vector<lc::EntityDistance> _entities;
-};
+                    lc::geo::Coordinate mousePosition() const {
+                        return _mousePosition;
+                    }
+
+                    std::vector<lc::EntityDistance> entities() const {
+                        return _entities;
+                    }
+
+                private:
+                    lc::geo::Coordinate _mousePosition;
+                    std::vector<lc::EntityDistance> _entities;
+            };
+        }
+    }
 }

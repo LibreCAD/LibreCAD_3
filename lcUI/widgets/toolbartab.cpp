@@ -1,6 +1,8 @@
 #include "toolbartab.h"
 #include "ui_toolbartab.h"
 
+using namespace lc::ui::widgets;
+
 ToolbarTab::ToolbarTab(QWidget *parent) :
 		QWidget(parent),
 		ui(new Ui::ToolbarTab) {

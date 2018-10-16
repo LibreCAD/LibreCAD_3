@@ -32,7 +32,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo = nullptr, Block_CSPtr block = nullptr);
+            CADEntity(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
 
             CADEntity(const CADEntity_CSPtr& cadEntity, bool sameID);
 
@@ -94,14 +94,15 @@ namespace lc {
             * Return a new entity with the same ID bit with possible modified metainfo and/pr layer information
             * #return new entity with same ID
             */
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const = 0;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo,
+                                           meta::Block_CSPtr block) const = 0;
 
             /*!
              * \brief layer
              * return the layer this entity is placed on
              * \return Layer_CSPtr
              */
-            Layer_CSPtr layer() const;
+            meta::Layer_CSPtr layer() const;
 
             /**
             * Retrieve meta information back from this entity
@@ -119,7 +120,7 @@ namespace lc {
                 return nullptr;
             }
 
-            MetaInfo_CSPtr metaInfo() const {
+                meta::MetaInfo_CSPtr metaInfo() const {
                 return _metaInfo;
             }
 
@@ -133,15 +134,15 @@ namespace lc {
              * @brief Return the current entity block
              * @return Entity block or nullptr if not defined
              */
-            Block_CSPtr block() const;
+            meta::Block_CSPtr block() const;
 
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);
 
         private:
-            Layer_CSPtr _layer;
-            MetaInfo_CSPtr _metaInfo;
-            Block_CSPtr _block;
+            meta::Layer_CSPtr _layer;
+            meta::MetaInfo_CSPtr _metaInfo;
+            meta::Block_CSPtr _block;
         };
 
         DECLARE_SHORT_SHARED_PTR(CADEntity)

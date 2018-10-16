@@ -3,23 +3,26 @@
 #include "lcvdrawitem.h"
 #include <cad/primitive/arc.h>
 
-namespace LCViewer {
-    class LCVArc: public LCVDrawItem {
-        public:
-            LCVArc(const lc::entity::Arc_CSPtr& arc);
-            virtual ~LCVArc() = default;
+namespace lc {
+    namespace viewer {
+        class LCVArc : public LCVDrawItem {
+            public:
+                LCVArc(const lc::entity::Arc_CSPtr& arc);
 
-            /**
-             * @brief draw, Draw the Arc
-             * @param LcPainter painter, surface to be painted
-             * @param LcDrawOptions options
-             * @param geo::Area rect
-             */
-            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+                virtual ~LCVArc() = default;
 
-            lc::entity::CADEntity_CSPtr entity() const override;
+                /**
+                 * @brief draw, Draw the Arc
+                 * @param LcPainter painter, surface to be painted
+                 * @param LcDrawOptions options
+                 * @param geo::Area rect
+                 */
+                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
 
-        private:
-            lc::entity::Arc_CSPtr _arc;
-    };
+                lc::entity::CADEntity_CSPtr entity() const override;
+
+            private:
+                lc::entity::Arc_CSPtr _arc;
+        };
+    }
 }

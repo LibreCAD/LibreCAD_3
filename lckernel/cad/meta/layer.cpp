@@ -1,8 +1,8 @@
 #include "layer.h"
-#include "cad/functions/string_helper.h"
+#include "cad/tools/string_helper.h"
 #include <cassert>
 
-using namespace lc;
+using namespace lc::meta;
 
 Layer::Layer(std::string name,
              const MetaLineWidthByValue& lineWidth,
@@ -16,7 +16,7 @@ Layer::Layer(std::string name,
         _color(color),
         _linepattern(std::move(linepattern)),
         _isFrozen(frozen) {
-    assert(!StringHelper::isBlank(_name) && "Name cannot be blank");
+    assert(!tools::StringHelper::isBlank(_name) && "Name cannot be blank");
 }
 
 Layer::Layer(const builder::LayerBuilder& builder) :
@@ -29,7 +29,7 @@ Layer::Layer(const builder::LayerBuilder& builder) :
     _isFrozen(builder.isFrozen()) {
 }
 
-Color Layer::color() const {
+lc::Color Layer::color() const {
     return _color;
 }
 MetaLineWidthByValue Layer::lineWidth() const {

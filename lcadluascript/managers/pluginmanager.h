@@ -9,19 +9,21 @@ extern "C" {
 #include <map>
 
 namespace lc {
-    class PluginManager {
-        public:
-            PluginManager(lua_State* l, const char* interface);
+    namespace lua {
+        class PluginManager {
+            public:
+                PluginManager(lua_State* l, const char* interface);
 
-            /**
-             * @brief Load the Lua plugins
-             */
-            void loadPlugins();
+                /**
+                 * @brief Load the Lua plugins
+                 */
+                void loadPlugins();
 
-        private:
-            void loadPlugin(const char* file);
+            private:
+                void loadPlugin(const char* file);
 
-            lua_State* _L;
-            const char* _interface;
-    };
+                lua_State* _L;
+                const char* _interface;
+        };
+    }
 }

@@ -3,11 +3,11 @@
 #include <cad/primitive/circle.h>
 #include <cad/base/visitor.h>
 #include <cad/base/cadentity.h>
-#include <cad/functions/intersect.h>
+#include <cad/math/intersect.h>
 
-using namespace LCViewer;
+using namespace lc::viewer::manager;
 
-SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::Snapable_CSPtr grid, double distanceToSnap) :
+SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_CSPtr grid, double distanceToSnap) :
         _grid(std::move(grid)),
         _gridSnappable(false),
         _snapIntersections(false),
@@ -60,7 +60,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 lc::entity::CADEntity_CSPtr i1 = entities.at(a).entity();
                 lc::entity::CADEntity_CSPtr i2 = entities.at(b).entity();
 
-                lc::Intersect intersect(lc::Intersect::OnEntity, LCTOLERANCE);
+                lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, LCTOLERANCE);
                 visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
 
                 if (!intersect.result().empty()) {
@@ -69,7 +69,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
 
                     lc::geo::Coordinate sp = coords.at(0);
                     if ((location - sp).magnitude() < realDistanceForPixels) {
-                        auto event = SnapPointEvent(sp);
+                        auto event = event::SnapPointEvent(sp);
                         _snapPointEvent(event);
                         return;
                     }
@@ -82,14 +82,14 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     if (!entities.empty()) {
         // GO over all entities, first closest to the cursor gradually moving away
         for (auto &entity : entities) {
-            lc::Snapable_CSPtr captr;
+            lc::entity::Snapable_CSPtr captr;
 
             auto drawable = std::dynamic_pointer_cast<const LCVDrawItem>(entity.entity());
             if(drawable) {
-                captr = std::dynamic_pointer_cast<const lc::Snapable>(drawable->entity());
+                captr = std::dynamic_pointer_cast<const lc::entity::Snapable>(drawable->entity());
             }
             else {
-                captr = std::dynamic_pointer_cast<const lc::Snapable>(entity.entity());
+                captr = std::dynamic_pointer_cast<const lc::entity::Snapable>(entity.entity());
             }
 
             if (captr) {
@@ -98,9 +98,9 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                                                                          realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
                 if (!sp.empty()) {
-                    SnapPointEvent snapEvent(sp.at(0).coordinate());
+                    event::SnapPointEvent snapEvent(sp.at(0).coordinate());
                     _lastSnapEvent = snapEvent;
-                    auto event = SnapPointEvent(sp.at(0).coordinate());
+                    auto event = event::SnapPointEvent(sp.at(0).coordinate());
                     _snapPointEvent(event);
                     return;
                 }
@@ -113,14 +113,14 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
                                                                      1);
         if (!points.empty()) {
-            auto event = SnapPointEvent(points.at(0).coordinate());
+            auto event = event::SnapPointEvent(points.at(0).coordinate());
             _snapPointEvent(event);
             return;
         }
     }
 
 	//If no snap points found show cursor at mouse pos
-	_snapPointEvent(SnapPointEvent(location));
+	_snapPointEvent(event::SnapPointEvent(location));
 
     // FIXME: Currently sending a snapEvent so the cursor gets updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
@@ -148,7 +148,7 @@ bool SnapManagerImpl::snapIntersections() const {
 }
 
 
-Nano::Signal<void(const SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
+Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;
 }
 

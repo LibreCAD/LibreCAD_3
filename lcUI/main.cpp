@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     //log4cxx::xml::DOMConfigurator::configure("Log4cxxConfig.xml");
 
-    LuaInterface li;
+    lc::ui::LuaInterface li;
     li.initLua();
 
     return QApplication::exec();

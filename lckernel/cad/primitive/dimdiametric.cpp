@@ -12,9 +12,9 @@ DimDiametric::DimDiametric(geo::Coordinate definitionPoint,
                            std::string explicitValue,
                            geo::Coordinate definitionPoint2,
                            double leader,
-                           Layer_CSPtr layer,
-                           MetaInfo_CSPtr metaInfo,
-                           Block_CSPtr block) :
+                           meta::Layer_CSPtr layer,
+                           meta::MetaInfo_CSPtr metaInfo,
+                           meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(std::move(definitionPoint),
                   std::move(middleOfText),
@@ -35,9 +35,9 @@ DimDiametric::DimDiametric(const geo::Coordinate& definitionPoint,
                            std::string explicitValue,
                            geo::Coordinate definitionPoint2,
                            double leader,
-                           Layer_CSPtr layer,
-                           MetaInfo_CSPtr metaInfo,
-                           Block_CSPtr block) :
+                           meta::Layer_CSPtr layer,
+                           meta::MetaInfo_CSPtr metaInfo,
+                           meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(definitionPoint,
                   definitionPoint.mid(definitionPoint2),
@@ -140,7 +140,7 @@ const geo::Area DimDiametric::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimDiametric::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr DimDiametric::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimDiametric = std::make_shared<DimDiametric>(
                                this->definitionPoint(),
                                this->middleOfText(),

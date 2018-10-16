@@ -44,12 +44,12 @@ bool LinePatternBuilder::checkValues() {
     return !_name.empty();
 }
 
-DxfLinePatternByValue_CSPtr LinePatternBuilder::build() {
+meta::DxfLinePatternByValue_CSPtr LinePatternBuilder::build() {
     if(!checkValues()) {
         throw std::runtime_error("Missing values");
     }
 
-    return DxfLinePatternByValue_CSPtr(new DxfLinePatternByValue(*this));
+    return meta::DxfLinePatternByValue_CSPtr(new meta::DxfLinePatternByValue(*this));
 }
 
 LinePatternBuilder* LinePatternBuilder::addElement(double element) {

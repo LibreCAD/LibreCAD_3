@@ -1,7 +1,7 @@
 #include "cad/math/intersectionhandler.h"
+
 using namespace lc;
 using namespace maths;
-#include <iostream>
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
                                                     const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;
@@ -65,7 +65,7 @@ std::vector<geo::Coordinate> Intersection::bezierLine(const geo::BB_CSPtr& B, co
         auto t1 = 2*(cps[1].y() - cps[0].y())/t2;
         auto coeff = cps[0].y()/t2;
 
-        roots = lc::Math::quadraticSolver({t1, coeff});
+        roots = lc::maths::Math::quadraticSolver({t1, coeff});
     }
     else {
         auto ml = geo::Vector(V.start() - V.start(), V.end() - V.start());
@@ -77,7 +77,7 @@ std::vector<geo::Coordinate> Intersection::bezierLine(const geo::BB_CSPtr& B, co
         auto t1 = (-3*cps[0].y() +3*cps[1].y())/t3;
         auto coeff = cps[0].y()/t3;
 
-        roots = lc::Math::cubicSolver({t2, t1, coeff});
+        roots = lc::maths::Math::cubicSolver({t2, t1, coeff});
     }
     for(const auto& root : roots) {
         if(root > 0 && root < 1) {
@@ -121,7 +121,7 @@ std::vector<geo::Coordinate> Intersection::bezierCircle(const geo::BB_CSPtr& B, 
         auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
         auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
 
-        roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
+        roots = lc::maths::Math::quarticSolver({t3, t2, t1, coeff});
 
         for(const auto &root : roots) {
             if(root > 0 && root < 1) {
@@ -189,7 +189,7 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B,
         auto t1 = ((4*e - 4*f)*h + 4*e*f - 4*e*e + (4*a - 4*b)*d + 4*a*b -4*a*a)/t4;
         auto coeff = (-r*r + h*h -2 *e*h + e*e + d*d - 2*a*d + a*a)/t4;
 
-        roots = lc::Math::quarticSolver({t3, t2, t1, coeff});
+        roots = lc::maths::Math::quarticSolver({t3, t2, t1, coeff});
 
     } else {
         // TODO CUBIC BEZIER/ELLIPSE INTERSECTION
@@ -269,7 +269,7 @@ std::vector<geo::Coordinate> Intersection::bezCircleIntersect(const lc::geo::BB_
 
     auto rxrx  = rx*rx;
     auto ryry  = ry*ry;
-    auto roots = lc::Math::sexticSolver({
+    auto roots = lc::maths::Math::sexticSolver({
             c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
 
             2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),

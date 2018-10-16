@@ -27,7 +27,7 @@ class LayersTest : public Layers {
             QTest::mouseClick(viewport, Qt::LeftButton, NULL, QPoint(xPos, yPos));
         }
 
-        void addLayer(lc::Layer_CSPtr layer) {
+        void addLayer(lc::meta::Layer_CSPtr layer) {
             createLayer(layer);
         }
 

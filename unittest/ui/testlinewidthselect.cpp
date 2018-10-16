@@ -5,8 +5,8 @@
 
 TEST(LineWidthSelectTest, Selection) {
     QApplication app(argc, argv);
-    lc::ui::LineWidthSelect lineWidthSelect(nullptr, 0, false, false);
-    lc::ui::LineWidthSelect lineWidthSelect_ByBlock_ByLayer(nullptr, 0, true, true);
+    lc::ui::widgets::LineWidthSelect lineWidthSelect(nullptr, 0, false, false);
+    lc::ui::widgets::LineWidthSelect lineWidthSelect_ByBlock_ByLayer(nullptr, 0, true, true);
 
     /*
      * Test number of entries
@@ -18,6 +18,6 @@ TEST(LineWidthSelectTest, Selection) {
      * Test custom width
      */
     auto width = 0.13;
-    lineWidthSelect.setWidth(std::make_shared<lc::MetaLineWidthByValue>(width));
-    EXPECT_EQ(width, std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect.lineWidth())->width());
+    lineWidthSelect.setWidth(std::make_shared<lc::meta::MetaLineWidthByValue>(width));
+    EXPECT_EQ(width, std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByValue>(lineWidthSelect.lineWidth())->width());
 }

@@ -5,8 +5,8 @@
 
 TEST(ColorSelectTest, Selection) {
     QApplication app(argc, argv);
-    lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
-    lc::ui::ColorSelect colorSelect_ByBlock_ByLayer(nullptr, 0, true, true);
+    lc::ui::widgets::ColorSelect colorSelect(nullptr, 0, false, false);
+    lc::ui::widgets::ColorSelect colorSelect_ByBlock_ByLayer(nullptr, 0, true, true);
     auto nbColors = QColor::colorNames().size();
 
     /*
@@ -19,10 +19,10 @@ TEST(ColorSelectTest, Selection) {
      * Check color selection
      */
     auto lcColor = lc::Color(255, 0, 0, 255);
-    auto lcMetaColor = lc::MetaColorByValue(lcColor);
+    auto lcMetaColor = lc::meta::MetaColorByValue(lcColor);
     colorSelect.setCurrentText("red");
 
-    auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(colorSelect.metaColor());
+    auto colorByValue = std::dynamic_pointer_cast<const lc::meta::MetaColorByValue>(colorSelect.metaColor());
 
     EXPECT_TRUE(
             lcColor.red() == colorSelect.color().red() &&
@@ -38,13 +38,13 @@ TEST(ColorSelectTest, Selection) {
 
 TEST(ColorSelectTest, CustomColor) {
     QApplication app(argc, argv);
-    lc::ui::ColorSelect colorSelect(nullptr, 0, false, false);
+    lc::ui::widgets::ColorSelect colorSelect(nullptr, 0, false, false);
     lc::Color lcColor(1, 2, 3, 4);
-    lc::MetaColorByValue lcMetaColor(lcColor);
+    lc::meta::MetaColorByValue lcMetaColor(lcColor);
 
     colorSelect.setColor(lcColor);
 
-    auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(colorSelect.metaColor());
+    auto colorByValue = std::dynamic_pointer_cast<const lc::meta::MetaColorByValue>(colorSelect.metaColor());
 
     EXPECT_TRUE(
             lcColor.red() == colorSelect.color().red() &&

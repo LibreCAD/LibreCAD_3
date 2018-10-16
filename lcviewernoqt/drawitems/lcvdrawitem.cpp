@@ -1,5 +1,6 @@
 #include "lcvdrawitem.h"
-using namespace LCViewer;
+
+using namespace lc::viewer;
 
 LCVDrawItem::LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable) :
         _selectable(selectable),

@@ -1,5 +1,5 @@
 #include "layerops.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
 using namespace lc;
 using namespace operation;
@@ -7,7 +7,7 @@ using namespace operation;
 /********************************************************************************************************/
 /** AddLayer                                                                                          ***/
 /********************************************************************************************************/
-AddLayer::AddLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) :
+AddLayer::AddLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) :
         DocumentOperation(std::move(document), "AddLayer"),
         _layer(std::move(layer)) {
 }
@@ -27,7 +27,7 @@ void AddLayer::redo() const {
 /********************************************************************************************************/
 /** RemoveLayer                                                                                       ***/
 /********************************************************************************************************/
-RemoveLayer::RemoveLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) :
+RemoveLayer::RemoveLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) :
         DocumentOperation(std::move(document), "RemoveLayer"),
         _layer(std::move(layer)) {
 
@@ -68,7 +68,7 @@ void RemoveLayer::redo() const {
 /********************************************************************************************************/
 /** ReplaceLayer                                                                                       ***/
 /********************************************************************************************************/
-ReplaceLayer::ReplaceLayer(std::shared_ptr<Document> document, Layer_CSPtr oldLayer, Layer_CSPtr newLayer) :
+ReplaceLayer::ReplaceLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr oldLayer, meta::Layer_CSPtr newLayer) :
         DocumentOperation(std::move(document), "ReplaceLayer"),
         _oldLayer(std::move(oldLayer)),
         _newLayer(std::move(newLayer)) {

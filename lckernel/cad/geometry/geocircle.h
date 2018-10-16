@@ -9,7 +9,7 @@
 namespace lc {
     namespace geo {
         // TODO: Should Circle be a arc with a start angle of 0 and a stop angle of 2PI ?
-        class Circle : public Base, virtual public Visitable, public Tangentable {
+        class Circle : public Base, virtual public Visitable, public entity::Tangentable {
             public:
                 Circle(Coordinate center, double radius);
 

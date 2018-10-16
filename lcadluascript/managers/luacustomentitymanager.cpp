@@ -1,23 +1,25 @@
 #include <cad/events/newwaitingcustomentityevent.h>
-#include <cad/dochelpers/documentlist.h>
+#include <cad/storage/documentlist.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/primitive/insert.h>
 #include "luacustomentitymanager.h"
 
-lc::LuaCustomEntityManager::LuaCustomEntityManager() {
-    DocumentList::getInstance().newWaitingCustomEntityEvent().connect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
+using namespace lc::lua;
+
+LuaCustomEntityManager::LuaCustomEntityManager() {
+    storage::DocumentList::getInstance().newWaitingCustomEntityEvent().connect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }
 
-lc::LuaCustomEntityManager::~LuaCustomEntityManager() {
+LuaCustomEntityManager::~LuaCustomEntityManager() {
     _plugins.clear();
-    DocumentList::getInstance().newWaitingCustomEntityEvent().disconnect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
+    storage::DocumentList::getInstance().newWaitingCustomEntityEvent().disconnect<LuaCustomEntityManager, &LuaCustomEntityManager::onNewWaitingEntity>(this);
 }
 
 
-void lc::LuaCustomEntityManager::onNewWaitingEntity(const lc::NewWaitingCustomEntityEvent& event) {
+void LuaCustomEntityManager::onNewWaitingEntity(const lc::event::NewWaitingCustomEntityEvent& event) {
     auto block = event.insert()->displayBlock();
 
-    auto ces = std::static_pointer_cast<const lc::CustomEntityStorage>(block);
+    auto ces = std::static_pointer_cast<const lc::meta::CustomEntityStorage>(block);
     if(!ces) {
         return;
     }
@@ -30,18 +32,18 @@ void lc::LuaCustomEntityManager::onNewWaitingEntity(const lc::NewWaitingCustomEn
     it->second(event.insert());
 }
 
-void lc::LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction) {
+void LuaCustomEntityManager::registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction) {
     if(!onNewWaitingEntityFunction.isValid() || !onNewWaitingEntityFunction.isFunction()) {
         return;
     }
 
     _plugins[name] = onNewWaitingEntityFunction;
 
-    for(auto entity : DocumentList::getInstance().waitingCustomEntities(name)) {
+    for(auto entity : storage::DocumentList::getInstance().waitingCustomEntities(name)) {
         onNewWaitingEntityFunction(entity);
     }
 }
 
-void lc::LuaCustomEntityManager::removePlugins() {
+void LuaCustomEntityManager::removePlugins() {
     _plugins.clear();
 }

@@ -12,9 +12,9 @@ DimRadial::DimRadial(geo::Coordinate definitionPoint,
                      std::string explicitValue,
                      geo::Coordinate definitionPoint2,
                      double leader,
-                     Layer_CSPtr layer,
-                     MetaInfo_CSPtr metaInfo,
-                     Block_CSPtr block) :
+                     meta::Layer_CSPtr layer,
+                     meta::MetaInfo_CSPtr metaInfo,
+                     meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(std::move(definitionPoint),
                   std::move(middleOfText),
@@ -36,9 +36,9 @@ DimRadial::DimRadial(const geo::Coordinate& definitionPoint,
                      std::string explicitValue,
                      geo::Coordinate definitionPoint2,
                      double leader,
-                     Layer_CSPtr layer,
-                     MetaInfo_CSPtr metaInfo,
-                     Block_CSPtr block):
+                     meta::Layer_CSPtr layer,
+                     meta::MetaInfo_CSPtr metaInfo,
+                     meta::Block_CSPtr block):
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(definitionPoint,
                   definitionPoint.mid(definitionPoint2),
@@ -146,7 +146,7 @@ const geo::Area DimRadial::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimRadial::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr DimRadial::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimRadial = std::make_shared<DimRadial>(
                             this->definitionPoint(),
                             this->middleOfText(),

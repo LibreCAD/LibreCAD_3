@@ -1,9 +1,9 @@
 #include "linepatternselect.h"
 
 using namespace lc;
-using namespace ui;
+using namespace lc::ui::widgets;
 
-LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent, bool showByLayer, bool showByBlock) :
+LinePatternSelect::LinePatternSelect(lc::storage::Document_SPtr document, QWidget *parent, bool showByLayer, bool showByBlock) :
     QComboBox(parent),
     _showByLayer(showByLayer),
     _showByBlock(showByBlock) {
@@ -19,7 +19,7 @@ LinePatternSelect::LinePatternSelect(lc::Document_SPtr document, QWidget *parent
 }
 
 LinePatternSelect::LinePatternSelect(CadMdiChild* mdiChild, QWidget* parent, bool showByLayer, bool showByBlock) :
-    LinePatternSelect((lc::Document_SPtr) nullptr, parent, showByLayer, showByBlock) {
+    LinePatternSelect((lc::storage::Document_SPtr) nullptr, parent, showByLayer, showByBlock) {
 
     setMdiChild(mdiChild);
 }
@@ -35,7 +35,7 @@ void LinePatternSelect::setMdiChild(CadMdiChild* mdiChild) {
     }
 }
 
-void LinePatternSelect::setDocument(lc::Document_SPtr document) {
+void LinePatternSelect::setDocument(lc::storage::Document_SPtr document) {
     if(_document != nullptr) {
         _document->addLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_addLinePatternEvent>(this);
         _document->removeLinePatternEvent().disconnect<LinePatternSelect, &LinePatternSelect::on_removeLinePatternEvent>(this);
@@ -53,17 +53,17 @@ void LinePatternSelect::setDocument(lc::Document_SPtr document) {
     createEntries();
 }
 
-lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
+lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     if(currentText() == BY_LAYER) {
         return nullptr;
     }
 
     if(currentText() == BY_BLOCK) {
-        return std::make_shared<const lc::DxfLinePatternByBlock>();
+        return std::make_shared<const lc::meta::DxfLinePatternByBlock>();
     }
 
     auto linePatterns = _document->linePatterns();
-    auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::DxfLinePattern_CSPtr& item) {
+    auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::meta::DxfLinePattern_CSPtr& item) {
         return item->name() == currentText().toStdString();
     });
 
@@ -75,7 +75,7 @@ lc::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     }
 }
 
-QIcon LinePatternSelect::generateQIcon(lc::DxfLinePatternByValue_CSPtr linePattern) {
+QIcon LinePatternSelect::generateQIcon(lc::meta::DxfLinePatternByValue_CSPtr linePattern) {
     QPixmap pixmap(qIconSize);
 
     LinePatternPainter painter(&pixmap, std::move(linePattern));
@@ -86,7 +86,7 @@ QIcon LinePatternSelect::generateQIcon(lc::DxfLinePatternByValue_CSPtr linePatte
 
 void LinePatternSelect::onActivated(const QString& text) {
     if(text.toStdString() == NEW_LP) {
-        auto dialog = new AddLinePatternDialog(_document, this);
+        auto dialog = new dialog::AddLinePatternDialog(_document, this);
         dialog->show();
 
         if(_showByLayer) {
@@ -94,7 +94,7 @@ void LinePatternSelect::onActivated(const QString& text) {
         }
     }
     else if(text == MANAGE_LP) {
-        auto dialog = new LinePatternManager(_document, this);
+        auto dialog = new dialog::LinePatternManager(_document, this);
         dialog->show();
 
         if(_showByLayer) {
@@ -124,7 +124,7 @@ void LinePatternSelect::createEntries() {
 
         auto linePatterns = _document->linePatterns();
         for (const auto& linePattern : linePatterns) {
-            auto lp = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePattern);
+            auto lp = std::dynamic_pointer_cast<const lc::meta::DxfLinePatternByValue>(linePattern);
 
             if(lp == nullptr) {
                 continue;
@@ -136,23 +136,23 @@ void LinePatternSelect::createEntries() {
     }
 }
 
-void LinePatternSelect::on_addLinePatternEvent(const lc::AddLinePatternEvent& event) {
+void LinePatternSelect::on_addLinePatternEvent(const lc::event::AddLinePatternEvent& event) {
     createEntries();
 
     setCurrentText(event.linePattern()->name().c_str());
 }
 
-void LinePatternSelect::on_removeLinePatternEvent(const lc::RemoveLinePatternEvent& event) {
+void LinePatternSelect::on_removeLinePatternEvent(const lc::event::RemoveLinePatternEvent& event) {
     createEntries();
 }
 
-void LinePatternSelect::on_replaceLinePatternEvent(const lc::ReplaceLinePatternEvent& event) {
+void LinePatternSelect::on_replaceLinePatternEvent(const lc::event::ReplaceLinePatternEvent& event) {
     createEntries();
 
     setCurrentText(event.newLinePattern()->name().c_str());
 }
 
-void LinePatternSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
+void LinePatternSelect::onLayerChanged(const lc::meta::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {

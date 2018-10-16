@@ -4,6 +4,8 @@
 #include <lclua.h>
 #include <luainterface.h>
 
+using namespace lc::ui::widgets;
+
 LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
     _mdiArea(mdiArea),
@@ -18,10 +20,10 @@ LuaScript::~LuaScript() {
 
 void LuaScript::on_luaRun_clicked() {
 	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
-        auto mdiChild = qobject_cast<CadMdiChild*>(activeSubWindow->widget());
+        auto mdiChild = qobject_cast<lc::ui::CadMdiChild*>(activeSubWindow->widget());
 
 		auto luaState = LuaIntf::LuaState::newState();
-		auto lcLua = lc::LCLua(luaState);
+		auto lcLua = lc::lua::LCLua(luaState);
 		lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
 		lcLua.addLuaLibs();
 		lcLua.importLCKernel();

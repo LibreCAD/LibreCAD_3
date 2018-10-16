@@ -16,9 +16,9 @@ DimAngular::DimAngular(
     geo::Coordinate defLine12,
     geo::Coordinate defLine21,
     geo::Coordinate defLine22,
-    Layer_CSPtr layer,
-    MetaInfo_CSPtr metaInfo,
-    Block_CSPtr block) :
+    meta::Layer_CSPtr layer,
+    meta::MetaInfo_CSPtr metaInfo,
+    meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         Dimension(std::move(definitionPoint),
                   std::move(middleOfText),
@@ -50,9 +50,9 @@ DimAngular_SPtr DimAngular::dimAuto(
         geo::Coordinate p1,
         geo::Coordinate p2,
         std::string explicitValue,
-        Layer_CSPtr layer,
-        MetaInfo_CSPtr metaInfo,
-        Block_CSPtr block) {
+        meta::Layer_CSPtr layer,
+        meta::MetaInfo_CSPtr metaInfo,
+        meta::Block_CSPtr block) {
     geo::Coordinate middletext(p1.mid(p2));
 
     return std::make_shared<DimAngular>(center,
@@ -174,7 +174,7 @@ const geo::Area DimAngular::boundingBox() const {
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 
-CADEntity_CSPtr DimAngular::modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimAngular = std::make_shared<DimAngular>(
         definitionPoint(),
         middleOfText(),

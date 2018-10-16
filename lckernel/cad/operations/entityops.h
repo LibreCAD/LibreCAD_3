@@ -6,8 +6,10 @@
 #include <cad/base/cadentity.h>
 
 namespace lc {
-    class Document;
-    DECLARE_SHORT_SHARED_PTR(Document)
+    namespace storage {
+        class Document;
+        DECLARE_SHORT_SHARED_PTR(Document)
+    }
 
     namespace operation {
         /**
@@ -22,7 +24,7 @@ namespace lc {
                 virtual ~Base() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     const std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -54,7 +56,7 @@ namespace lc {
                 virtual ~Loop() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const Document_SPtr document,
+                    const storage::Document_SPtr document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -90,7 +92,7 @@ namespace lc {
                 virtual ~Begin() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -128,7 +130,7 @@ namespace lc {
                 virtual ~Move() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -164,7 +166,7 @@ namespace lc {
                 virtual ~Copy() = default;
 
                 std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -200,7 +202,7 @@ namespace lc {
                 virtual ~Rotate() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -219,7 +221,7 @@ namespace lc {
                 virtual ~Scale() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -258,7 +260,7 @@ namespace lc {
                 virtual ~Push() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector<entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
@@ -285,19 +287,19 @@ namespace lc {
         */
         class SelectByLayer : public Base {
             public:
-                SelectByLayer(Layer_CSPtr layer);
+                SelectByLayer(meta::Layer_CSPtr layer);
 
                 virtual ~SelectByLayer() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector <entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,
                     const std::vector<Base_SPtr> operationStack);
 
             private:
-                Layer_CSPtr _layer;
+                meta::Layer_CSPtr _layer;
         };
         DECLARE_SHORT_SHARED_PTR(SelectByLayer)
 
@@ -325,7 +327,7 @@ namespace lc {
                 virtual ~Remove() = default;
 
                 virtual std::vector<entity::CADEntity_CSPtr> process(
-                    const std::shared_ptr<Document> document,
+                    const std::shared_ptr<storage::Document> document,
                     std::vector<entity::CADEntity_CSPtr> entities,
                     std::vector <entity::CADEntity_CSPtr>& workingBuffer,
                     std::vector<entity::CADEntity_CSPtr>& removals,

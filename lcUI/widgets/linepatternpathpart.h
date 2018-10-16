@@ -12,49 +12,60 @@ namespace Ui {
     class LinePatternPathPart;
 }
 
-/**
- * \brief Model used to construct line pattern path
- */
-class LinePatternPathPart : public QWidget {
-    Q_OBJECT
+namespace lc {
+    namespace ui {
+        namespace widgets {
+            /**
+             * \brief Model used to construct line pattern path
+             */
+            class LinePatternPathPart : public QWidget {
+                Q_OBJECT
 
-    public:
-        enum PathType {
-            PATH_PLAIN,
-            PATH_SPACE,
-            PATH_DOT
-        };
-        /**
-         * \brief Create empty model
-         * \param parent Pointer to parent widget
-         */
-        LinePatternPathPart(QWidget* parent = nullptr);
+                public:
+                    enum PathType {
+                        PATH_PLAIN,
+                        PATH_SPACE,
+                        PATH_DOT
+                    };
 
-        /**
-         * \brief Create model pre-filled with value
-         * \param value DXF size
-         * \param parent Pointer to parent widget
-         */
-        LinePatternPathPart(double value, QWidget* parent = nullptr);
+                    /**
+                     * \brief Create empty model
+                     * \param parent Pointer to parent widget
+                     */
+                    LinePatternPathPart(QWidget* parent = nullptr);
 
-        /**
-         * \brief Return type (plain, space or dot)
-         * \return PATH_PLAIN, PATH_SPACE or PATH_DOT
-         */
-        PathType type();
-        /**
-         * \brief Return length
-         * \return length (always positive)
-         */
-        double value();
+                    /**
+                     * \brief Create model pre-filled with value
+                     * \param value DXF size
+                     * \param parent Pointer to parent widget
+                     */
+                    LinePatternPathPart(double value, QWidget* parent = nullptr);
 
-    signals:
-        void update();
+                    /**
+                     * \brief Return type (plain, space or dot)
+                     * \return PATH_PLAIN, PATH_SPACE or PATH_DOT
+                     */
+                    PathType type();
 
-    private slots:
-        void onTypeChanged(const QString& value);
-        void onValueChanged(double value);
+                    /**
+                     * \brief Return length
+                     * \return length (always positive)
+                     */
+                    double value();
 
-    private:
-        Ui::LinePatternPathPart* ui;
-};
+                signals:
+
+                    void update();
+
+                private slots:
+
+                    void onTypeChanged(const QString& value);
+
+                    void onValueChanged(double value);
+
+                private:
+                    Ui::LinePatternPathPart* ui;
+            };
+        }
+    }
+}

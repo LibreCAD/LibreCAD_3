@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "documentcanvas.h"
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 
 #include <cad/operations/entitybuilder.h>
 #include <cad/operations/documentoperation.h>
@@ -11,11 +11,11 @@
 #include "drawitems/lcvdrawitem.h"
 
 TEST(SelectionTest, NormalSelection) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -41,11 +41,11 @@ TEST(SelectionTest, NormalSelection) {
 }
 
 TEST(SelectionTest, IntersectionSelection) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -71,11 +71,11 @@ TEST(SelectionTest, IntersectionSelection) {
 }
 
 TEST(SelectionTest, AddToSelection) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -104,11 +104,11 @@ TEST(SelectionTest, AddToSelection) {
 }
 
 TEST(SelectionTest, Reselect) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -137,11 +137,11 @@ TEST(SelectionTest, Reselect) {
 }
 
 TEST(SelectionTest, ClearSelection) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -170,11 +170,11 @@ TEST(SelectionTest, ClearSelection) {
 }
 
 TEST(SelectionTest, Deselect) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 
@@ -201,11 +201,11 @@ TEST(SelectionTest, Deselect) {
 }
 
 TEST(SelectionTest, DeselectAddTo) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
-	auto docCanvas = std::make_shared<LCViewer::DocumentCanvas>(document);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
+	auto docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document);
 
-	auto layer = std::make_shared<lc::Layer>();
+	auto layer = std::make_shared<lc::meta::Layer>();
 	std::shared_ptr<lc::operation::AddLayer> al = std::make_shared<lc::operation::AddLayer>(document, layer);
 	al->execute();
 

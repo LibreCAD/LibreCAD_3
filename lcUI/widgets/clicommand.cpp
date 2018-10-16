@@ -1,17 +1,18 @@
 #include "clicommand.h"
 #include "ui_clicommand.h"
-#include <cad/settings.h>
+#include <cad/storage/settings.h>
 #include <memory>
 #include <iterator>
 #include <unordered_map>
+
+using namespace lc::ui::widgets;
 
 CliCommand::CliCommand(QWidget* parent) :
     QDockWidget(parent),
     ui(new Ui::CliCommand),
     _returnText(false),
     _historySize(10),
-    _historyIndex(-1)
-{
+    _historyIndex(-1) {
     ui->setupUi(this);
 
     connect(ui->command, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
@@ -79,7 +80,7 @@ void CliCommand::onReturnPressed() {
 
             if(checkParam(varFind[0])) {
                 write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
-                Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());    
+                lc::storage::Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());
             }
             else {
                 write(QString("No such variable."));
@@ -107,7 +108,7 @@ void CliCommand::enterCommand(const QString& command) {
     }
     else {
         if(checkParam(command)) {
-            write(QString("Value of %1=%2").arg(command).arg(Settings::val(command.toStdString())));
+            write(QString("Value of %1=%2").arg(command).arg(lc::storage::Settings::val(command.toStdString())));
         }
         else
         {
@@ -118,7 +119,7 @@ void CliCommand::enterCommand(const QString& command) {
 }
 
 bool CliCommand::checkParam(const QString& command) {
-    return Settings::exists(command.toStdString());
+    return lc::storage::Settings::exists(command.toStdString());
 }
 
 void CliCommand::enterCoordinate(QString coordinate) {

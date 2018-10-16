@@ -6,8 +6,8 @@
 #endif
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 #include <documentcanvas.h>
 #include <painters/lccairopainter.tcc>
 #include <file.h>
@@ -39,22 +39,22 @@ void resetConfig(int* imageWidth, int* imageHeight, int* x, int* y, int* w, int*
 
 void render(const std::string& dxf, const std::string& output, unsigned int imageWidth, unsigned int imageHeight,
             int x, int y, int w, int h) {
-    auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-    auto _document = std::make_shared<lc::DocumentImpl>(_storageManager);
-    auto _canvas = std::make_shared<LCViewer::DocumentCanvas>(_document);
+    auto _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
+    auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document);
 
     // Add backround
-    auto _gradientBackground = std::make_shared<GradientBackground>(
+    auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(
             lc::Color(0x00, 0x00, 0x00),
             lc::Color(0x00, 0x00, 0x00)
     );
-    _canvas->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());
 
     LcPainter* lcPainter = new LcCairoPainter<CairoPainter::backend::SVG>(imageWidth, imageHeight, nullptr);;
 
     _canvas->newDeviceSize(imageWidth, imageHeight);
 
-    lc::File::open(_document, dxf, lc::File::LIBDXFRW);
+    lc::persistence::File::open(_document, dxf, lc::persistence::File::LIBDXFRW);
 
     _canvas->setDisplayArea(*lcPainter, lc::geo::Area(lc::geo::Coordinate(x, y), w, h));
     _canvas->render(*lcPainter, VIEWER_BACKGROUND);

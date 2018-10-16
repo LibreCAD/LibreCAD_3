@@ -18,17 +18,17 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp
-cad/settings.cpp
+        cad/storage/settings.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
-cad/dochelpers/documentimpl.cpp
-cad/dochelpers/entitycontainer.cpp
-cad/dochelpers/quadtree.cpp
-cad/dochelpers/storagemanagerimpl.cpp
-cad/dochelpers/undomanagerimpl.cpp
-cad/document/document.cpp
-cad/functions/intersect.cpp
+        cad/storage/documentimpl.cpp
+        cad/storage/entitycontainer.cpp
+        cad/storage/quadtree.cpp
+        cad/storage/storagemanagerimpl.cpp
+        cad/storage/undomanagerimpl.cpp
+        cad/storage/document.cpp
+        cad/math/intersect.cpp
 cad/geometry/geoarc.cpp
 cad/geometry/geocircle.cpp
 cad/geometry/geocoordinate.cpp
@@ -78,25 +78,25 @@ cad/operations/blockops.cpp
 cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
-cad/dochelpers/documentlist.cpp
+        cad/storage/documentlist.cpp
         )
 
 # HEADER FILES
 set(lckernel_hdrs
 version.h
 cad/const.h
-cad/settings.h
+        cad/storage/settings.h
 cad/base/id.h
 cad/base/cadentity.h
 cad/base/metainfo.h
-cad/dochelpers/documentimpl.h
-cad/dochelpers/entitycontainer.h
-cad/dochelpers/quadtree.h
-cad/dochelpers/storagemanagerimpl.h
-cad/dochelpers/undomanagerimpl.h
-cad/document/document.h
-cad/document/storagemanager.h
-cad/document/undomanager.h
+        cad/storage/documentimpl.h
+        cad/storage/entitycontainer.h
+        cad/storage/quadtree.h
+        cad/storage/storagemanagerimpl.h
+        cad/storage/undomanagerimpl.h
+        cad/storage/document.h
+        cad/storage/storagemanager.h
+        cad/storage/undomanager.h
 cad/events/addentityevent.h
 cad/events/addlayerevent.h
 cad/events/addlinepatternevent.h
@@ -108,7 +108,7 @@ cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/events/replacelinepatternevent.h
-        cad/functions/intersect.h
+        cad/math/intersect.h
 cad/geometry/geobase.h
 cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h
@@ -156,7 +156,7 @@ cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
-cad/functions/string_helper.h
+        cad/tools/string_helper.h
 cad/primitive/image.h
 cad/math/helpermethods.h
 version.h
@@ -176,7 +176,7 @@ cad/operations/builder.h
 cad/base/visitor.h
 cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
-cad/dochelpers/documentlist.h
+        cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
         cad/interface/tangentable.h)
 

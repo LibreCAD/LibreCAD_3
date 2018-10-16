@@ -1,6 +1,6 @@
 #include "tempentities.h"
 
-using namespace LCViewer;
+using namespace lc::viewer::drawable;
 
 TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) :
 		_docCanvas(std::move(docCanvas)) {
@@ -14,7 +14,7 @@ void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
 	_entities.remove(std::move(entity));
 }
 
-void TempEntities::onDraw(DrawEvent const &event) {
+void TempEntities::onDraw(event::DrawEvent const &event) {
     _entities.each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr entity) {
         _docCanvas->drawEntity(event.painter(), _docCanvas->asDrawable(entity));
 	});

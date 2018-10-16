@@ -25,7 +25,7 @@ namespace lc {
                 CADEntity_CSPtr rotate(const geo::Coordinate& rotation_center, double rotation_angle) const override = 0;
                 CADEntity_CSPtr scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const override = 0;
                 CADEntity_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const override = 0;
-                CADEntity_CSPtr modify(Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override = 0;
+                CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override = 0;
         };
     }
 }
