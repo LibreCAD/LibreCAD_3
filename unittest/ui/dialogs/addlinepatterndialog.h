@@ -7,11 +7,11 @@
 
 class AddLinePatternDialogTest : AddLinePatternDialog {
     public:
-        AddLinePatternDialogTest(lc::Document_SPtr document, QWidget* parent = 0) :
+        AddLinePatternDialogTest(lc::storage::Document_SPtr document, QWidget* parent = 0) :
                 AddLinePatternDialog(document, parent) {
         }
 
-        AddLinePatternDialogTest(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0) :
+        AddLinePatternDialogTest(lc::storage::Document_SPtr document, lc::meta::DxfLinePatternByValue_CSPtr linePattern, QWidget* parent = 0) :
                 AddLinePatternDialog(document, linePattern, parent) {
         }
 
@@ -28,22 +28,22 @@ class AddLinePatternDialogTest : AddLinePatternDialog {
             int nbValues = _layout->count() - 1;
 
             for(int i = 0; i < nbValues; i++) {
-                auto pathPart = static_cast<LinePatternPathPart *>(_layout->itemAt(i)->widget());
+                auto pathPart = static_cast<lc::ui::widgets::LinePatternPathPart *>(_layout->itemAt(i)->widget());
 
                 if (!pathPart) {
                     continue;
                 }
 
                 switch (pathPart->type()) {
-                    case LinePatternPathPart::PATH_SPACE:
+                    case lc::ui::widgets::LinePatternPathPart::PATH_SPACE:
                         path.push_back(-pathPart->value());
                         break;
 
-                    case LinePatternPathPart::PATH_PLAIN:
+                    case lc::ui::widgets::LinePatternPathPart::PATH_PLAIN:
                         path.push_back(pathPart->value());
                         break;
 
-                    case LinePatternPathPart::PATH_DOT:
+                    case lc::ui::widgets::LinePatternPathPart::PATH_DOT:
                         path.push_back(0);
                         break;
                 }

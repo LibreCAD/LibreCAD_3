@@ -10,7 +10,7 @@ TEST(LayersTest, Creation) {
     mdiChild->newDocument();
 
     auto layers = new LayersTest(mdiChild);
-    auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    auto layer = std::make_shared<const lc::meta::Layer>("Name", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     /*
      * Creation when document exists
@@ -39,7 +39,7 @@ TEST(LayersTest, Selection) {
     mdiChild->newDocument();
 
     auto layers = new LayersTest(mdiChild);
-    auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    auto layer = std::make_shared<const lc::meta::Layer>("Name", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     /*
      * Select layer
@@ -65,7 +65,7 @@ TEST(LayersTest, Edition) {
     mdiChild->newDocument();
 
     auto layers = new LayersTest(mdiChild);
-    auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    auto layer = std::make_shared<const lc::meta::Layer>("Name", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     layers->addLayer(layer);
     ASSERT_EQ(2, layers->nbLayers()) << "Layer was not added to document";
@@ -95,7 +95,7 @@ TEST(LayersTest, Remove) {
     mdiChild->newDocument();
 
     auto layers = new LayersTest(mdiChild);
-    auto layer = std::make_shared<const lc::Layer>("Name", lc::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    auto layer = std::make_shared<const lc::meta::Layer>("Name", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
 
     layers->addLayer(layer);
     ASSERT_EQ(2, layers->nbLayers()) << "Layer was not added to document";
@@ -116,8 +116,8 @@ TEST(LayersTest, EditionDialog) {
 
     auto width = 0.13;
     auto color = lc::Color(1, 2, 3, 4);
-    auto linePattern = std::make_shared<const lc::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
-    auto layer = std::make_shared<const lc::Layer>("Layer", lc::MetaLineWidthByValue(width), color, linePattern, false);
+    auto linePattern = std::make_shared<const lc::meta::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto layer = std::make_shared<const lc::meta::Layer>("Layer", lc::meta::MetaLineWidthByValue(width), color, linePattern, false);
 
     auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern);
     operation->execute();

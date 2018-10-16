@@ -109,9 +109,9 @@ function create_new_window(widget)
     local lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
     local colorSelect = lc.ColorSelect(mainWindow, true, true)
 
-    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", linePatternSelect, "onLayerChanged(lc::Layer_CSPtr)")
-    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", lineWidthSelect, "onLayerChanged(lc::Layer_CSPtr)")
-    luaInterface:connect(layers, "layerChanged(lc::Layer_CSPtr)", colorSelect, "onLayerChanged(lc::Layer_CSPtr)")
+    luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", linePatternSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
+    luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", lineWidthSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
+    luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", colorSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
 
     local id = nextTableId(windows)
     local commandLine = add_commandline(mainWindow, id)

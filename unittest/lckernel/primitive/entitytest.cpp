@@ -6,6 +6,8 @@
 
 using namespace lc;
 using namespace entity;
+using namespace storage;
+using namespace meta;
 
 entitytest::entitytest() {
 

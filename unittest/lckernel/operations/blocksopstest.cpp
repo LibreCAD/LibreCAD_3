@@ -5,6 +5,8 @@
 #include <cad/operations/blockops.h>
 
 using namespace lc;
+using namespace storage;
+using namespace meta;
 
 TEST(BlockOps, AddBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());

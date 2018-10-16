@@ -11,13 +11,13 @@ using namespace std;
 TEST(EIGEN, QUARTICFULL) {
     std::vector<double> z = {1080, -126, -123, 6, 3 };
     std::vector<double>res = {-4,3,-6,5};
-    auto v = lc::Math::quarticSolverFull(z);
+    auto v = lc::maths::Math::quarticSolverFull(z);
     for(unsigned long i = 0; i < v.size(); i++) {
         ASSERT_NEAR(res[i], v[i], 1e-6);
     }
 
     std::vector<double> z2 = {2,-41,-42, 360};
-    auto v2 = lc::Math::quarticSolver(z2);
+    auto v2 = lc::maths::Math::quarticSolver(z2);
     for(unsigned long i = 0; i < v2.size(); i++) {
         ASSERT_NEAR(res[i], v2[i], 1e-6);
     }

@@ -197,7 +197,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("selection", &CadMdiChild::selection)
 			.addFunction("newDocument", &CadMdiChild::newDocument)
 			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
-			.addFunction("drawable::TempEntities", &CadMdiChild::tempEntities)
+			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("viewer", &CadMdiChild::viewer)
 			.addFunction("activeLayer", &CadMdiChild::activeLayer)
@@ -250,7 +250,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("tabByName", &widgets::Toolbar::tabByName)
 		.endClass()
 
-		.beginExtendClass<widgets::ToolbarTab, QDockWidget>("widgets::ToolbarTab")
+		.beginExtendClass<widgets::ToolbarTab, QDockWidget>("ToolbarTab")
 			.addFactory([]() {
 				return new widgets::ToolbarTab();
 			})
@@ -272,7 +272,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("removeGroup", &widgets::ToolbarTab::removeGroup)
 		.endClass()
 
-		.beginClass<drawable::TempEntities>("drawable::TempEntities")
+		.beginClass<drawable::TempEntities>("TempEntities")
 			.addFunction("addEntity", &drawable::TempEntities::addEntity)
 			.addFunction("removeEntity", &drawable::TempEntities::removeEntity)
 		.endClass()

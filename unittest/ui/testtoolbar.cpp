@@ -8,6 +8,8 @@
 static int argc = 0;
 static char** argv = NULL;
 
+using namespace lc::ui::widgets;
+
 TEST(ToolbarTest, TabOperations) {
 	QApplication app(argc, argv);
 	Toolbar toolbar;

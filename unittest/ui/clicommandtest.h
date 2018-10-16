@@ -2,6 +2,8 @@
 
 #include <widgets/clicommand.h>
 
+using namespace lc::ui::widgets;
+
 class CliCommandTest : public CliCommand {
 	public:
 		CliCommandTest() : CliCommand() {}

@@ -1,13 +1,16 @@
 #pragma once
 
 #include <luainterface.h>
-#include <cad/dochelpers/documentimpl.h>
+#include <cad/storage/documentimpl.h>
 #include <QApplication>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 
 static int argc = 0;
 static char** argv = NULL;
 
+using namespace lc;
+using namespace ui;
+
 LuaInterface* startLC();
-lc::Document_SPtr createDocument();
+storage::Document_SPtr createDocument();
 CadMdiChild* getMdiChild(lua_State* L);
