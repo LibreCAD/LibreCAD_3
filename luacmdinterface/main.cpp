@@ -1,14 +1,14 @@
 #include <lclua.h>
 
-#include <cad/dochelpers/documentimpl.h>
+#include <cad/storage/documentimpl.h>
 #include <fstream>
 
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 #include <cad/operations/entitybuilder.h>
 #include <documentcanvas.h>
 #include <painters/lccairopainter.tcc>
 #include <drawables/gradientbackground.h>
-#include <cad/dochelpers/undomanagerimpl.h>
+#include <cad/storage/undomanagerimpl.h>
 #include <curl/curl.h>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -18,7 +18,7 @@
 
 namespace po = boost::program_options;
 
-using LcPainter = LCViewer::LcPainter;
+using LcPainter = lc::viewer::LcPainter;
 
 static char const* const DEFAULT_OUT_FILENAME = "out.png";
 static const int DEFAULT_IMAGE_WIDTH = 400;
@@ -128,14 +128,14 @@ int main(int argc, char** argv) {
     }
 
     // Create Librecad document
-    auto _storageManager = std::make_shared<lc::StorageManagerImpl>();
-    auto _document = std::make_shared<lc::DocumentImpl>(_storageManager);
+    auto _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+    auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
     auto _canvas = std::make_shared<DocumentCanvas>(_document);
 
     // Add backround
-    auto _gradientBackground = std::make_shared<GradientBackground>(lc::Color(0x90, 0x90, 0x90),
+    auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(lc::Color(0x90, 0x90, 0x90),
                                                                     lc::Color(0x00, 0x00, 0x00));
-    _canvas->background().connect<GradientBackground, &GradientBackground::draw>(_gradientBackground.get());
+    _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());
 
     /* try to guess from file extension the output type */
     if (fType.empty()) {
@@ -166,10 +166,10 @@ int main(int argc, char** argv) {
     // Render Lua Code
     auto luaState = LuaIntf::LuaState::newState();
 
-    lc::PluginManager pluginManager(luaState, "cli");
+    lc::lua::PluginManager pluginManager(luaState, "cli");
     pluginManager.loadPlugins();
 
-    auto lcLua = lc::LCLua(luaState);
+    auto lcLua = lc::lua::LCLua(luaState);
     lcLua.setF_openFileDialog(&openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
     }
     ofile->close();
 
-    lc::LuaCustomEntityManager::getInstance().removePlugins();
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 
     delete lcPainter;
     delete ofile;
