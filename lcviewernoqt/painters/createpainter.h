@@ -9,6 +9,6 @@
  */
 namespace lc {
     namespace viewer {
-        LCViewer::LcPainter* createCairoImagePainter(unsigned char* data, const unsigned int width, const unsigned int height);
+        LcPainter* createCairoImagePainter(unsigned char* data, const unsigned int width, const unsigned int height);
     }
 }

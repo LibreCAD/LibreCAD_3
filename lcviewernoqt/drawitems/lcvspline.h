@@ -3,26 +3,30 @@
 #include "lcvdrawitem.h"
 #include "cad/primitive/spline.h"
 
-namespace LCViewer {
-    class LcDrawOptions;
-    class LcPainter;
+namespace lc {
+    namespace viewer {
+        class LcDrawOptions;
 
-    class LCVSpline : public LCVDrawItem {
-        public:
-            LCVSpline(const lc::entity::Spline_CSPtr& spline);
-            virtual ~LCVSpline() = default;
+        class LcPainter;
 
-            /**
-             * @brief draw, Draws the point
-             * @param LcPainter painter, surface to be painted
-             * @param LcDrawOptions options
-             * @param geo::Area rect
-             */
-            void draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const override;
+        class LCVSpline : public LCVDrawItem {
+            public:
+                LCVSpline(const lc::entity::Spline_CSPtr& spline);
 
-            lc::entity::CADEntity_CSPtr entity() const override;
+                virtual ~LCVSpline() = default;
 
-        private:
-            lc::entity::Spline_CSPtr _spline;
-    };
+                /**
+                 * @brief draw, Draws the point
+                 * @param LcPainter painter, surface to be painted
+                 * @param LcDrawOptions options
+                 * @param geo::Area rect
+                 */
+                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+
+                lc::entity::CADEntity_CSPtr entity() const override;
+
+            private:
+                lc::entity::Spline_CSPtr _spline;
+        };
+    }
 }

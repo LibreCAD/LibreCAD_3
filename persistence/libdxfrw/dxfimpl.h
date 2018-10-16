@@ -38,9 +38,9 @@ namespace lc {
         class DXFimpl : public DRW_Interface {
             public:
 
-                DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder);
+                DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder);
 
-                DXFimpl(std::shared_ptr<lc::Document> document) : _document(document) {}
+                DXFimpl(std::shared_ptr<lc::storage::Document> document) : _document(document) {}
 
                 // READ FUNCTIONALITY
                 virtual void addHeader(const DRW_Header* data) override {}
@@ -125,7 +125,7 @@ namespace lc {
 
 
                 // WRITE FUNCTIONALITY
-                bool writeDXF(const std::string& filename, lc::File::Type type);
+                bool writeDXF(const std::string& filename, lc::persistence::File::Type type);
 
                 virtual void writeHeader(DRW_Header& data) override {}
 
@@ -173,9 +173,9 @@ namespace lc {
 
                 void writeInsert(const lc::entity::Insert_CSPtr& i);
 
-                void writeLayer(const std::shared_ptr<const lc::Layer>& layer);
+                void writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer);
 
-                void writeBlock(const lc::Block_CSPtr& block);
+                void writeBlock(const lc::meta::Block_CSPtr& block);
 
                 // UTILITIES FUNCTIONS
                 lc::AngleFormat numberToAngleFormat(int num);
@@ -191,7 +191,7 @@ namespace lc {
                 template<typename T>
                 std::shared_ptr<const T> getLcLineWidth(DRW_LW_Conv::lineWidth lw) const {
                     std::shared_ptr<const T> mlw = nullptr;
-                    lc::MetaType_CSPtr tmp = nullptr;
+                    lc::meta::MetaType_CSPtr tmp = nullptr;
                     switch (lw) {
                         case DRW_LW_Conv::lineWidth::widthDefault:
                             // By layer is always the default
@@ -200,21 +200,21 @@ namespace lc {
                             // By layer is always the default
                             break;
                         case DRW_LW_Conv::lineWidth::widthByBlock:
-                            tmp = std::make_shared<lc::MetaLineWidthByBlock>();
+                            tmp = std::make_shared<lc::meta::MetaLineWidthByBlock>();
                             mlw = std::dynamic_pointer_cast<const T>(tmp);
                         default:
                             if (lw >= DRW_LW_Conv::lineWidth::width00 && lw <= DRW_LW_Conv::lineWidth::width23) {
-                                mlw = std::make_shared<lc::MetaLineWidthByValue>(lc::FileHelpers::intToLW(lw).width());
+                                mlw = std::make_shared<lc::meta::MetaLineWidthByValue>(lc::persistence::FileHelpers::intToLW(lw).width());
                             }
                     }
 
                     return mlw;
                 }
 
-                std::shared_ptr<lc::Document> _document;
+                std::shared_ptr<lc::storage::Document> _document;
                 lc::operation::Builder_SPtr _builder;
                 lc::operation::EntityBuilder_SPtr _entityBuilder;
-                lc::Block_SPtr _currentBlock;
+                lc::meta::Block_SPtr _currentBlock;
 
             private:
                 /**
@@ -225,7 +225,7 @@ namespace lc {
 
                 dxfRW* dxfW;
 
-                lc::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
+                lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
                 /**
                 * Convert from a DRW_Coord to a geo::Coordinate
@@ -238,7 +238,7 @@ namespace lc {
                 lc::iColor icol;
 
                 std::vector<DRW_Image> imageMapCache;
-                std::map<std::string, lc::Block_CSPtr> _blocks;
+                std::map<std::string, lc::meta::Block_CSPtr> _blocks;
         };
     }
 }

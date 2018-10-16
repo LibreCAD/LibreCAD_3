@@ -113,7 +113,7 @@ set(SEPARATE_BUILD OFF)
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
-    include_directories("${CMAKE_SOURCE_DIR}/../lcDXFDWG")
+    include_directories("${CMAKE_SOURCE_DIR}/../persistence")
     include_directories("${CMAKE_SOURCE_DIR}/../lcviewernoqt")
     include_directories("${CMAKE_SOURCE_DIR}/../lcviewerqt")
     include_directories("${CMAKE_SOURCE_DIR}/../lcadluascript")
@@ -121,7 +121,7 @@ if (SEPARATE_BUILD STREQUAL "ON")
 else() 
     include_directories("${CMAKE_SOURCE_DIR}/lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/third_party")
-    include_directories("${CMAKE_SOURCE_DIR}/lcDXFDWG")
+    include_directories("${CMAKE_SOURCE_DIR}/persistence")
     include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
     include_directories("${CMAKE_SOURCE_DIR}/lcviewerqt")
     include_directories("${CMAKE_SOURCE_DIR}/lcadluascript")
@@ -133,7 +133,7 @@ link_directories(${PANGO_LIBRARY_DIRS})
 set(EXTRA_LIBS
         lcluascript
         lcviewernoqt
-        lcdxfdwg
+        persistence
         lckernel
         ${LUA_LIBRARIES}
         Qt5::Core

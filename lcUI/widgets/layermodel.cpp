@@ -1,5 +1,7 @@
 #include "layermodel.h"
 
+using namespace lc::ui::widgets;
+
 LayerModel::LayerModel(QObject *parent) :
     QAbstractTableModel(parent) {
 
@@ -8,7 +10,7 @@ LayerModel::LayerModel(QObject *parent) :
     _unlockedIcon = QIcon(":/icons/unlocked.svg");
 }
 
-void LayerModel::setLayers(std::vector<lc::Layer_CSPtr> layers) {
+void LayerModel::setLayers(std::vector<lc::meta::Layer_CSPtr> layers) {
     beginResetModel();
 
     _layers = std::move(layers);
@@ -70,7 +72,7 @@ bool LayerModel::setData(const QModelIndex& index, const QVariant& value, int ro
     return true;
 }
 
-lc::Layer_CSPtr LayerModel::layerAt(int row) {
+lc::meta::Layer_CSPtr LayerModel::layerAt(int row) {
     try {
         return _layers.at(row);
     }
@@ -79,7 +81,7 @@ lc::Layer_CSPtr LayerModel::layerAt(int row) {
     }
 }
 
-unsigned int LayerModel::indexOf(const lc::Layer_CSPtr& layer) {
+unsigned int LayerModel::indexOf(const lc::meta::Layer_CSPtr& layer) {
     for(unsigned int i = 0; i < _layers.size(); i++) {
         if(_layers[i] == layer) {
             return i;

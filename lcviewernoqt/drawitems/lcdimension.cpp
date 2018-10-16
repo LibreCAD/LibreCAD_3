@@ -3,11 +3,11 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 #include <cad/math/lcmath.h>
 #include <cad/const.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 void LCDimension::drawText(std::string const& value,
                            double angle,

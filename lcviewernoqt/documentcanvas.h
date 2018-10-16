@@ -31,7 +31,7 @@ namespace lc {
 
         class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
             public:
-                DocumentCanvas(const std::shared_ptr<lc::Document>& document,
+                DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document,
                                std::function<void(double*, double*)> deviceToUser = [](double*, double*) {});
 
                 virtual ~DocumentCanvas();
@@ -146,7 +146,7 @@ namespace lc {
 
                 void removeSelection();
 
-                std::vector<LCViewer::LCVDrawItem_SPtr>& selectedDrawables();
+                std::vector<lc::viewer::LCVDrawItem_SPtr>& selectedDrawables();
 
                 lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();
 
@@ -155,13 +155,13 @@ namespace lc {
                  */
                 void setPositionDevice(int x, int y);
 
-                Nano::Signal<void(DrawEvent const& drawEvent)>& background();
-                Nano::Signal<void(DrawEvent const& drawEvent)>& foreground();
+                Nano::Signal<void(event::DrawEvent const& drawEvent)>& background();
+                Nano::Signal<void(event::DrawEvent const& drawEvent)>& foreground();
 
                 /**
                  * Return the underlaying document
                  */
-                std::shared_ptr<lc::Document> document() const;
+                std::shared_ptr<lc::storage::Document> document() const;
 
                 /**
                  * Get the current entity container,
@@ -172,7 +172,7 @@ namespace lc {
                 /**
                  * Return CADEntity as LCVDrawItem
                  */
-                static DrawItem_SPtr asDrawable(const lc::entity::CADEntity_CSPtr& entity);
+                static LCVDrawItem_SPtr asDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
                 /**
                  * @brief Convert device coordinate to user coordinate
@@ -188,7 +188,7 @@ namespace lc {
                  */
                 void selectPoint(double x, double y);
 
-                LCViewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
+                lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
             private:
                 void on_addEntityEvent(const lc::event::AddEntityEvent&);
@@ -210,13 +210,13 @@ namespace lc {
                                     bool selected);
 
                 // Original document
-                std::shared_ptr<lc::Document> _document;
+                std::shared_ptr<lc::storage::Document> _document;
 
                 // Map of cad entity to drawitem
-                std::map<lc::entity::CADEntity_CSPtr, LCViewer::LCVDrawItem_SPtr> _entityDrawItem;
+                std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
 
-                Nano::Signal< void(DrawEvent const& event)> _background;
-                Nano::Signal< void(DrawEvent const& event)> _foreground;
+                Nano::Signal<void(event::DrawEvent const& event)> _background;
+                Nano::Signal<void(event::DrawEvent const& event)> _foreground;
 
                 // Maximum and minimum allowed scale factors
                 double _zoomMin;
@@ -234,10 +234,10 @@ namespace lc {
                 bool _selectedAreaIntersects;
 
                 // Functor to draw a selected area, that's the green or read area...
-                std::function<void(LcPainter& , lc::geo::Area, bool)> _selectedAreaPainter;
+                std::function<void(lc::viewer::LcPainter& , lc::geo::Area, bool)> _selectedAreaPainter;
 
-                std::vector<LCViewer::LCVDrawItem_SPtr> _selectedDrawables;
-                std::vector<LCViewer::LCVDrawItem_SPtr> _newSelection;
+                std::vector<lc::viewer::LCVDrawItem_SPtr> _selectedDrawables;
+                std::vector<lc::viewer::LCVDrawItem_SPtr> _newSelection;
 
                 std::function<void(double*, double*)> _deviceToUser;
         };

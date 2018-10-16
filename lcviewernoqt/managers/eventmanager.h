@@ -20,10 +20,10 @@ namespace lc {
                 public:
                     void location(const lc::geo::Coordinate &);
 
-                    Nano::Signal<void(const LocationEvent&)>& locationEvents();
+                    Nano::Signal<void(const event::LocationEvent&)>& locationEvents();
 
                 private:
-                    Nano::Signal<void(const LocationEvent&)>  _locationEvents;
+                    Nano::Signal<void(const event::LocationEvent&)>  _locationEvents;
             };
         }
     }

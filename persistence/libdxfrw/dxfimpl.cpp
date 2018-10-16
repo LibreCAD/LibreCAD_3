@@ -23,7 +23,7 @@
 #include <cad/meta/metacolor.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/meta/dxflinepattern.h>
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 #include <cad/meta/block.h>
 #include <cad/primitive/insert.h>
 #include <cad/operations/blockops.h>
@@ -31,7 +31,7 @@
 
 using namespace lc::persistence;
 
-DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_SPtr builder) : 
+DXFimpl::DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder) :
         _document(document), 
         _builder(std::move(builder)),
         _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)),
@@ -42,7 +42,7 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::Document> document, lc::operation::Builder_
 
 inline int DXFimpl::widthToInt(double wid) const {
     for (int i = 0; i < 24; i++) {
-        if (lc::FileHelpers::intToLW(i).width() == wid) {
+        if (lc::persistence::FileHelpers::intToLW(i).width() == wid) {
             return i;
         }
     }
@@ -101,15 +101,15 @@ void DXFimpl::addBlock(const DRW_Block& data) {
             it2++;
         }
 
-        _currentBlock = std::make_shared<lc::CustomEntityStorage>(pluginName, entityName, base, params);
+        _currentBlock = std::make_shared<lc::meta::CustomEntityStorage>(pluginName, entityName, base, params);
     }
 
     if(_currentBlock == nullptr) {
-        _currentBlock = std::make_shared<lc::Block>(data.name, base);
+        _currentBlock = std::make_shared<lc::meta::Block>(data.name, base);
     }
     _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
-    _blocks.insert(std::pair<std::string, lc::Block_CSPtr>(data.name, _currentBlock));
+    _blocks.insert(std::pair<std::string, lc::meta::Block_CSPtr>(data.name, _currentBlock));
 }
 
 void DXFimpl::endBlock() {
@@ -156,7 +156,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
 
     auto secPoint = coord(data.secPoint);
@@ -181,16 +181,16 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         col = icol.intToColor(255);
     }
 
-    auto lw = getLcLineWidth<lc::MetaLineWidthByValue>(data.lWeight);
+    auto lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(data.lWeight);
 
     if (lw == nullptr) {
-        lw = getLcLineWidth<lc::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
+        lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
     }
 
     auto lp = _document->linePatternByName(data.lineType);
     auto isFrozen = (bool) ((unsigned int) data.flags & 1u);
 
-    auto layer = std::make_shared<lc::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
+    auto layer = std::make_shared<lc::meta::Layer>(data.name, lw->width(), col->color(), lp, isFrozen);
     // If a layer starts with a * it's a special layer we don't process yet
     if(data.name == "0") {
         auto al = std::make_shared<lc::operation::ReplaceLayer>(_document, _document->layerByName("0"), layer);
@@ -207,7 +207,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
 
     // http://discourse.mcneel.com/t/creating-on-nurbscurve-from-control-points-and-knot-vector/12928/3
     auto knotList = data->knotslist;
@@ -238,7 +238,7 @@ void DXFimpl::addText(const DRW_Text& data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
                                                      data.text, data.height,
                                                      data.angle, data.style,
@@ -258,7 +258,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
                                                        layer,
                                                        mf,
@@ -273,7 +273,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAligned = std::make_shared<lc::entity::DimAligned>(
             coord(data->getDefPoint()),
             coord(data->getTextPoint()),
@@ -297,7 +297,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimLinear = std::make_shared<lc::entity::DimLinear>(
             coord(data->getDefPoint()),
             coord(data->getTextPoint()),
@@ -323,7 +323,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto  lcDimRadial = std::make_shared<lc::entity::DimRadial>(
              coord(data->getCenterPoint()),
              coord(data->getTextPoint()),
@@ -347,7 +347,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimDiametric = std::make_shared<lc::entity::DimDiametric>(
              coord(data->getDiameter1Point()),
              coord(data->getTextPoint()),
@@ -371,7 +371,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAngular = std::make_shared<lc::entity::DimAngular>(
              coord(data->getDefPoint()),
              coord(data->getTextPoint()),
@@ -407,7 +407,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
     if (layer==nullptr) {
         return;
     }
-    std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(data);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
     std::vector<lc::entity::LWVertex2D> points;
     for (const auto& i : data.vertlist) {
@@ -442,23 +442,23 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
 }
 
 
-lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
-    std::shared_ptr<lc::MetaInfo> mf = nullptr;
+lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
+    std::shared_ptr<lc::meta::MetaInfo> mf = nullptr;
 
     // Try to find a entities meta line weight
-    auto lw = getLcLineWidth<lc::MetaLineWidth>(data.lWeight);
+    auto lw = getLcLineWidth<lc::meta::MetaLineWidth>(data.lWeight);
     if (lw != nullptr) {
         if (mf == nullptr) {
-            mf = lc::MetaInfo::create();
+            mf = lc::meta::MetaInfo::create();
         }
 
         mf->add(lw);
     }
 
     // Try to find a entities meta color
-    lc::MetaColor_CSPtr col;
+    lc::meta::MetaColor_CSPtr col;
     if(data.color == BYBLOCK_COLOR) {
-        col = std::make_shared<const lc::MetaColorByBlock>();
+        col = std::make_shared<const lc::meta::MetaColorByBlock>();
     }
     else {
         col = icol.intToColor(data.color);
@@ -466,7 +466,7 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     if (col != nullptr) {
         if (mf == nullptr) {
-            mf = lc::MetaInfo::create();
+            mf = lc::meta::MetaInfo::create();
         }
 
         mf->add(col);
@@ -474,17 +474,17 @@ lc::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
 
     // Most likely a lot of entities within a drawing will be 'BYLAYER' and with the CONTINUOUS linetype.
     // These are the default's for LibreCAD
-    lc::DxfLinePattern_CSPtr linePattern = nullptr;
+    lc::meta::DxfLinePattern_CSPtr linePattern = nullptr;
     if(data.lineType == LTYPE_BYBLOCK) {
-        linePattern = std::make_shared<lc::DxfLinePatternByBlock>();
+        linePattern = std::make_shared<lc::meta::DxfLinePatternByBlock>();
     }
-    else if (!(lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
+    else if (!(lc::tools::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_BYLAYER) || lc::tools::StringHelper::cmpCaseInsensetive()(data.lineType, SKIP_CONTINUOUS))) {
         linePattern = _document->linePatternByName(data.lineType);
     }
 
     if(linePattern != nullptr) {
         if (mf == nullptr) {
-            mf = lc::MetaInfo::create();
+            mf = lc::meta::MetaInfo::create();
         }
 
         mf->add(linePattern);
@@ -508,7 +508,7 @@ std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordL
 }
 
 void DXFimpl::addLType(const DRW_LType& data) {
-    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
+    std::make_shared<lc::operation::AddLinePattern>(_document, std::make_shared<lc::meta::DxfLinePatternByValue>(data.name, data.desc, data.path, data.length))->execute();
 }
 
 /**
@@ -528,7 +528,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                 return;
             }
 
-            std::shared_ptr<lc::MetaInfo> mf = getMetaInfo(*image);
+            std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*image);
             const lc::geo::Coordinate base(coord(image->basePoint));
             const lc::geo::Coordinate uv(coord(image->secPoint));
             const lc::geo::Coordinate vv(coord(image->vVector));
@@ -574,7 +574,7 @@ void DXFimpl::writeLayers() {
     }
 }
 
-void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer>& layer) {
+void DXFimpl::writeLayer(const std::shared_ptr<const lc::meta::Layer>& layer) {
     DRW_Layer lay;
     lc::iColor icol_inst;
 
@@ -591,39 +591,39 @@ void DXFimpl::writeLayer(const std::shared_ptr<const lc::Layer>& layer) {
     dxfW->writeLayer(&lay);
 }
 
-bool DXFimpl::writeDXF(const std::string& filename, lc::File::Type type) {
+bool DXFimpl::writeDXF(const std::string& filename, lc::persistence::File::Type type) {
     dxfW = new dxfRW(filename.c_str());
 
     //Default setting
     DRW::Version exportVersion;
 
     switch(type) {
-        case lc::File::LIBDXFRW_DXF_R12:
-        case lc::File::LIBDXFRW_DXB_R12:
+        case lc::persistence::File::LIBDXFRW_DXF_R12:
+        case lc::persistence::File::LIBDXFRW_DXB_R12:
             exportVersion = DRW::AC1009;
             break;
-        case lc::File::LIBDXFRW_DXF_R14:
-        case lc::File::LIBDXFRW_DXB_R14:
+        case lc::persistence::File::LIBDXFRW_DXF_R14:
+        case lc::persistence::File::LIBDXFRW_DXB_R14:
             exportVersion = DRW::AC1014;
             break;
-        case lc::File::LIBDXFRW_DXF_R2000:
-        case lc::File::LIBDXFRW_DXB_R2000:
+        case lc::persistence::File::LIBDXFRW_DXF_R2000:
+        case lc::persistence::File::LIBDXFRW_DXB_R2000:
             exportVersion = DRW::AC1015;
             break;
-        case lc::File::LIBDXFRW_DXF_R2004:
-        case lc::File::LIBDXFRW_DXB_R2004:
+        case lc::persistence::File::LIBDXFRW_DXF_R2004:
+        case lc::persistence::File::LIBDXFRW_DXB_R2004:
             exportVersion = DRW::AC1018;
             break;
-        case lc::File::LIBDXFRW_DXF_R2007:
-        case lc::File::LIBDXFRW_DXB_R2007:
+        case lc::persistence::File::LIBDXFRW_DXF_R2007:
+        case lc::persistence::File::LIBDXFRW_DXB_R2007:
             exportVersion = DRW::AC1021;
             break;
-        case lc::File::LIBDXFRW_DXF_R2010:
-        case lc::File::LIBDXFRW_DXB_R2010:
+        case lc::persistence::File::LIBDXFRW_DXF_R2010:
+        case lc::persistence::File::LIBDXFRW_DXB_R2010:
             exportVersion = DRW::AC1024;
             break;
-        case lc::File::LIBDXFRW_DXF_R2013:
-        case lc::File::LIBDXFRW_DXB_R2013:
+        case lc::persistence::File::LIBDXFRW_DXF_R2013:
+        case lc::persistence::File::LIBDXFRW_DXB_R2013:
             exportVersion = DRW::AC1027;
             break;
         default:
@@ -631,7 +631,7 @@ bool DXFimpl::writeDXF(const std::string& filename, lc::File::Type type) {
         break;
     }
 
-    bool isBinary = type >= lc::File::LIBDXFRW_DXB_R12 && type < lc::File::LIBDXFRW_DXB_R2013;
+    bool isBinary = type >= lc::persistence::File::LIBDXFRW_DXB_R12 && type < lc::persistence::File::LIBDXFRW_DXB_R2013;
 
     bool success = dxfW->write(this, exportVersion, isBinary);
     delete dxfW;
@@ -742,14 +742,14 @@ void DXFimpl::writeInsert(const lc::entity::Insert_CSPtr& i) {
 void DXFimpl::getEntityAttributes(DRW_Entity* ent, const lc::entity::CADEntity_CSPtr& entity) {
     auto layer_  = entity->layer();
 
-    auto lpByValue = entity->metaInfo<lc::DxfLinePatternByValue>(lc::DxfLinePattern::LCMETANAME());
-    auto lpByBlock = entity->metaInfo<lc::DxfLinePatternByBlock>(lc::DxfLinePattern::LCMETANAME());
+    auto lpByValue = entity->metaInfo<lc::meta::DxfLinePatternByValue>(lc::meta::DxfLinePattern::LCMETANAME());
+    auto lpByBlock = entity->metaInfo<lc::meta::DxfLinePatternByBlock>(lc::meta::DxfLinePattern::LCMETANAME());
 
-    auto metaWidthByValue = entity->metaInfo<lc::MetaLineWidthByValue>(lc::MetaLineWidth::LCMETANAME());
-    auto metaWidthByBlock = entity->metaInfo<lc::MetaLineWidthByBlock>(lc::MetaLineWidth::LCMETANAME());
+    auto metaWidthByValue = entity->metaInfo<lc::meta::MetaLineWidthByValue>(lc::meta::MetaLineWidth::LCMETANAME());
+    auto metaWidthByBlock = entity->metaInfo<lc::meta::MetaLineWidthByBlock>(lc::meta::MetaLineWidth::LCMETANAME());
 
-    auto metaColorByBlock = entity->metaInfo<lc::MetaColorByBlock>(lc::MetaColor::LCMETANAME());
-    auto metaColorByValue = entity->metaInfo<lc::MetaColorByValue>(lc::MetaColor::LCMETANAME());
+    auto metaColorByBlock = entity->metaInfo<lc::meta::MetaColorByBlock>(lc::meta::MetaColor::LCMETANAME());
+    auto metaColorByValue = entity->metaInfo<lc::meta::MetaColorByValue>(lc::meta::MetaColor::LCMETANAME());
 
     ent->layer = layer_->name();
 
@@ -1146,7 +1146,7 @@ void DXFimpl::writeBlocks() {
     }
 }
 
-void DXFimpl::writeBlock(const lc::Block_CSPtr& block) {
+void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
     DRW_Block drwBlock;
 
     drwBlock.name = block->name();
@@ -1154,7 +1154,7 @@ void DXFimpl::writeBlock(const lc::Block_CSPtr& block) {
     drwBlock.basePoint.y = block->base().y();
     drwBlock.basePoint.z = block->base().z();
 
-    auto customEntity = std::dynamic_pointer_cast<const lc::CustomEntityStorage>(block);
+    auto customEntity = std::dynamic_pointer_cast<const lc::meta::CustomEntityStorage>(block);
     if(customEntity) {
         auto list = std::list<DRW_Variant>({
             DRW_Variant(APP_NAME_CODE, APP_NAME),

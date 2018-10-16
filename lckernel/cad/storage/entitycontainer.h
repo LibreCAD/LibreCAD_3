@@ -15,7 +15,9 @@
 #include "cad/primitive/line.h"
 
 namespace lc {
-    class Layer;
+    namespace meta {
+        class Layer;
+    }
 
     namespace storage {
         /**

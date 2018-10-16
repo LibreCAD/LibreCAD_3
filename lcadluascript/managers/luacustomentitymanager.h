@@ -34,7 +34,7 @@ namespace lc {
             private:
                 LuaCustomEntityManager();
 
-                void onNewWaitingEntity(const lc::NewWaitingCustomEntityEvent& event);
+                void onNewWaitingEntity(const lc::event::NewWaitingCustomEntityEvent& event);
 
                 std::map<std::string, LuaIntf::LuaRef> _plugins;
         };

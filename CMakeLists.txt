@@ -11,7 +11,7 @@ option(WITH_LIBOPENCAD "Use libopencad" ON)
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
 
-option(WITH_LCDXFDWG "Build dxf/dwg support" ON)
+option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")

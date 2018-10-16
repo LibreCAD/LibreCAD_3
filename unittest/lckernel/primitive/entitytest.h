@@ -11,9 +11,9 @@
 #include <cad/primitive/ellipse.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/interface/metatype.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
-#include <cad/dochelpers/undomanagerimpl.h>
-#include <cad/dochelpers/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
+#include <cad/storage/undomanagerimpl.h>
+#include <cad/storage/documentimpl.h>
 #include <cad/operations/documentoperation.h>
 #include <cad/storage/storagemanager.h>
 #include <cad/operations/entitybuilder.h>

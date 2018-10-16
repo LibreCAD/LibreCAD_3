@@ -11,11 +11,12 @@
 
 namespace lc {
     namespace viewer {
-        namespace manager {
+        namespace event {
             class MouseMoveEvent;
-
             class SnapPointEvent;
+        }
 
+        namespace manager {
             class SnapManagerImpl : public SnapManager {
                 public:
                     /*!
@@ -47,7 +48,7 @@ namespace lc {
 
                     void snapConstrain(const lc::SimpleSnapConstrain& snapConstrain);
 
-                    virtual Nano::Signal<void(const SnapPointEvent&)>& snapPointEvents();
+                    virtual Nano::Signal<void(const event::SnapPointEvent&)>& snapPointEvents();
 
                 private:
 
@@ -72,7 +73,7 @@ namespace lc {
                     event::SnapPointEvent _lastSnapEvent;
 
                     // Snap Point Event
-                    Nano::Signal<void(const SnapPointEvent&)> _snapPointEvent;
+                    Nano::Signal<void(const lc::viewer::event::SnapPointEvent&)> _snapPointEvent;
 
                     DocumentCanvas_SPtr _view;
 

@@ -1,22 +1,22 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
-PROJECT(LCDWGDXF)
+PROJECT(persistence)
 ADD_DEFINITIONS(-std=c++14)
 ADD_DEFINITIONS("-Wall")
 #ADD_DEFINITIONS("-Wno-missing-braces")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-message("***** LibreCAD lcDXFDWG *****")
+message("***** LibreCAD persistence *****")
 
 # HEADER FILES
-set(lcdxfdwg_srcs
+set(persistence_srcs
         libdxfrw/dxfimpl.cpp
         file.cpp
         libopencad_interface/libopencad.cpp
         generic/helpers.cpp
 )
 
-set(lcdxfdwg_hdrs
+set(persistence_hdrs
         libdxfrw/dxfimpl.h
         file.h
         libopencad_interface/libopencad.h
@@ -38,9 +38,9 @@ link_directories(${LOG4CXX_LIBRARY_DIRS})
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
-    include_directories( SYSTEM ${EIGEN3_INCLUDE_DIR})
+    include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 else ()
-    include_directories( ${EIGEN3_INCLUDE_DIR})
+    include_directories(${EIGEN3_INCLUDE_DIR})
 endif ()
 
 # BUILDING CONFIG
@@ -76,9 +76,9 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #  message(STATUS "dir='${dir}'")
 #endforeach()
 
-add_library(lcdxfdwg SHARED ${lcdxfdwg_srcs} ${lcdxfdwg_hdrs})
-target_link_libraries(lcdxfdwg lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
+target_link_libraries(persistence lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
-install(TARGETS lcdxfdwg DESTINATION lib)
-install(FILES ${lcdxfdwg_hdrs} DESTINATION include)
+install(TARGETS persistence DESTINATION lib)
+install(FILES ${persistence_hdrs} DESTINATION include)

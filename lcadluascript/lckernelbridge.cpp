@@ -53,7 +53,7 @@ void LCLua::importLCKernel() {
         .beginExtendClass<meta::DocumentMetaType, meta::MetaType>("meta::DocumentMetaType")
         .endClass()
 
-        .beginExtendClass<Layer, meta::MetaType>("Layer")
+        .beginExtendClass<meta::Layer, meta::MetaType>("Layer")
             .addConstructor(LUA_SP(meta::Layer_SPtr), LUA_ARGS(
                                 std::string,
                                 meta::MetaLineWidthByValue,
@@ -150,7 +150,7 @@ void LCLua::importLCKernel() {
             .addFunction("entitiesByBlock", &storage::Document::entitiesByBlock)
         .endClass()
 
-        .beginExtendClass<storage::DocumentImpl, Document>("DocumentImpl")
+        .beginExtendClass<storage::DocumentImpl, storage::Document>("DocumentImpl")
         .endClass()
 
         .beginClass<storage::UndoManager>("UndoManager")
@@ -420,7 +420,7 @@ void LCLua::importLCKernel() {
 
         .beginExtendClass<operation::Builder, operation::DocumentOperation>("Builder")
             .addConstructor(LUA_SP(operation::Builder_SPtr), LUA_ARGS(
-                    std::shared_ptr<lc::Document>,
+                    std::shared_ptr<lc::storage::Document>,
                     const std::string&
             ))
             .addFunction("append", &operation::Builder::append)
@@ -428,21 +428,21 @@ void LCLua::importLCKernel() {
 
         .beginExtendClass<operation::EntityBuilder, operation::DocumentOperation>("EntityBuilder")
             .addConstructor(LUA_SP(operation::EntityBuilder_SPtr), LUA_ARGS(
-                    std::shared_ptr<lc::Document>
+                    std::shared_ptr<lc::storage::Document>
             ))
             .addFunction("appendEntity", &operation::EntityBuilder::appendEntity)
             .addFunction("appendOperation", &operation::EntityBuilder::appendOperation)
             .addFunction("processStack", &operation::EntityBuilder::processStack)
         .endClass()
 
-        .beginClass<lc::IntersectMany>("IntersectMany")
+        .beginClass<lc::maths::IntersectMany>("IntersectMany")
             .addConstructor(LUA_ARGS(
                                     std::vector<lc::entity::CADEntity_CSPtr>,
-                                    _opt<lc::Intersect::Method>,
+                                    _opt<lc::maths::Intersect::Method>,
                                     _opt<double>
                             )
             )
-            .addFunction("result", &lc::IntersectMany::result)
+            .addFunction("result", &lc::maths::IntersectMany::result)
         .endClass()
 
         .beginClass<operation::Base>("Base")
@@ -492,65 +492,65 @@ void LCLua::importLCKernel() {
 
         .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::Document> doc,
+                    std::shared_ptr<lc::storage::Document> doc,
                     const meta::Layer_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::RemoveLayer, operation::DocumentOperation>("RemoveLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::Document> doc,
+                    std::shared_ptr<lc::storage::Document> doc,
                     const meta::Layer_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::ReplaceLayer, operation::DocumentOperation>("ReplaceLayer")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::Document> doc,
+                    std::shared_ptr<lc::storage::Document> doc,
                     const meta::Layer_CSPtr,
                     const meta::Layer_CSPtr
             ))
         .endClass()
 
-        .beginExtendClass<Block, meta::DocumentMetaType>("Block")
-            .addConstructor(LUA_SP(Block_SPtr), LUA_ARGS(
+        .beginExtendClass<meta::Block, meta::DocumentMetaType>("Block")
+            .addConstructor(LUA_SP(meta::Block_SPtr), LUA_ARGS(
                 std::string,
                 geo::Coordinate
             ))
-            .addFunction("base", &Block::base)
+            .addFunction("base", &meta::Block::base)
         .endClass()
 
-        .beginExtendClass<CustomEntityStorage, Block>("CustomEntityStorage")
-            .addConstructor(LUA_SP(CustomEntityStorage_SPtr), LUA_ARGS(
+        .beginExtendClass<meta::CustomEntityStorage, meta::Block>("CustomEntityStorage")
+            .addConstructor(LUA_SP(meta::CustomEntityStorage_SPtr), LUA_ARGS(
                 const std::string&,
                 const std::string&,
                 const geo::Coordinate&,
                 LuaIntf::_opt<const std::map<std::string, std::string>&>
             ))
 
-            .addFunction("pluginName", &CustomEntityStorage::pluginName)
-            .addFunction("entityName", &CustomEntityStorage::entityName)
-            .addFunction("param", &CustomEntityStorage::param)
-            .addFunction("setParam", &CustomEntityStorage::setParam)
+            .addFunction("pluginName", &meta::CustomEntityStorage::pluginName)
+            .addFunction("entityName", &meta::CustomEntityStorage::entityName)
+            .addFunction("param", &meta::CustomEntityStorage::param)
+            .addFunction("setParam", &meta::CustomEntityStorage::setParam)
         .endClass()
 
         .beginExtendClass<operation::AddBlock, operation::DocumentOperation>("AddBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::Document>,
+                    std::shared_ptr<lc::storage::Document>,
                     const meta::Block_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::RemoveBlock, operation::DocumentOperation>("RemoveBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::Document>,
+                    std::shared_ptr<lc::storage::Document>,
                     const meta::Block_CSPtr
             ))
         .endClass()
 
         .beginExtendClass<operation::ReplaceBlock, operation::DocumentOperation>("ReplaceBlock")
             .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::Document>,
+                    std::shared_ptr<lc::storage::Document>,
                     const meta::Block_CSPtr,
                     const meta::Block_CSPtr
             ))

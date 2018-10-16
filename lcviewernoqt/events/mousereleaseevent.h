@@ -9,9 +9,9 @@
 
 namespace lc {
     namespace viewer {
-        namespace event {
-            class LcPainter;
+        class LcPainter;
 
+        namespace event {
             class MouseReleaseEvent {
                 public:
                     MouseReleaseEvent() {

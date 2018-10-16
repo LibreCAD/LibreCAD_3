@@ -1,6 +1,6 @@
 #include "lcvinsert.h"
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCVInsert::LCVInsert(lc::entity::Insert_CSPtr& insert) :
         LCVDrawItem(insert, true),
@@ -31,7 +31,7 @@ void LCVInsert::append(const lc::entity::CADEntity_CSPtr& entity) {
     _entities.insert(std::make_pair(entity->id(), drawable));
 }
 
-void LCVInsert::draw(LCViewer::LcPainter& _painter, const LCViewer::LcDrawOptions& options,
+void LCVInsert::draw(lc::viewer::LcPainter& _painter, const lc::viewer::LcDrawOptions& options,
                                const lc::geo::Area& updateRect) const {
     for(auto entity : _entities) {
         entity.second->draw(_painter, options, updateRect);
@@ -46,7 +46,7 @@ void LCVInsert::draw(const DocumentCanvas_SPtr& docCanvas, LcPainter& painter) c
     }
 }
 
-void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
+void LCVInsert::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
     _entities.erase(entity->id());
 
@@ -55,7 +55,7 @@ void LCVInsert::on_addEntityEvent(const lc::AddEntityEvent& event) {
     }
 }
 
-void LCVInsert::on_removeEntityEvent(const lc::RemoveEntityEvent& event) {
+void LCVInsert::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
     auto entity = event.entity();
 
     if(!entity->block() || entity->id() == _insert->id()) {

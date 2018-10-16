@@ -2,10 +2,10 @@
 #include "../lcdrawoptions.h"
 #include "lcdimangular.h"
 #include "endcaps.h"
-#include "cad/functions/string_helper.h"
+#include "cad/tools/string_helper.h"
 #include "cad/math/intersect.h"
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular) :
         LCVDrawItem(dimAngular, true),
@@ -21,7 +21,7 @@ LCDimAngular::LCDimAngular(const lc::entity::DimAngular_CSPtr& dimAngular) :
 */
 void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     // Calculate intersection point
-    lc::Intersect intersect(lc::Intersect::OnPath, 10e-4);
+    lc::maths::Intersect intersect(lc::maths::Intersect::OnPath, 10e-4);
 
     auto v1 = lc::geo::Vector(_dimAngular->defLine11(), _dimAngular->defLine12());
     auto v2 = lc::geo::Vector(_dimAngular->defLine21(), _dimAngular->defLine22());
@@ -100,7 +100,7 @@ void LCDimAngular::draw(LcPainter& painter, const LcDrawOptions &options, const 
 
     double const angle = std::abs(aEnd - aStart);
     // Decide to show the explecit value or the measured value
-    std::string value = lc::StringHelper::dim_value(_dimAngular->explicitValue(), options.angleFormat(), (angle / (2.*M_PI)) * 360.);
+    std::string value = lc::tools::StringHelper::dim_value(_dimAngular->explicitValue(), options.angleFormat(), (angle / (2.*M_PI)) * 360.);
 
     // Draw the arc
     painter.arc(center.x(), center.y(), radius, aStart, aEnd);

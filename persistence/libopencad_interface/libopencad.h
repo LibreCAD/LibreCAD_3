@@ -11,7 +11,7 @@ namespace lc {
     namespace persistence {
         class LibOpenCad {
             public:
-                LibOpenCad(Document_SPtr document, lc::operation::Builder_SPtr builder = nullptr);
+                LibOpenCad(storage::Document_SPtr document, lc::operation::Builder_SPtr builder = nullptr);
 
                 /**
                  * Open a file with libopencad
@@ -22,19 +22,19 @@ namespace lc {
                 void save(const std::string& file);
 
             private:
-                Layer_SPtr addLayer(const CADLayer& layer);
-                void addGeometry(const lc::Layer_SPtr& layer, const CADGeometry* geometry);
+                meta::Layer_SPtr addLayer(const CADLayer& layer);
+                void addGeometry(const lc::meta::Layer_SPtr& layer, const CADGeometry* geometry);
 
-                void addArc(lc::Layer_SPtr layer, const CADArc* arc);
-                void addLine(lc::Layer_SPtr layer, const CADLine* line);
-                void addCircle(lc::Layer_SPtr layer, const CADCircle* circle);
-                void addEllipse(lc::Layer_SPtr layer, const CADEllipse* ellipse);
-                void addLWPolyline(lc::Layer_SPtr layer, const CADLWPolyline* lwPolyline);
+                void addArc(lc::meta::Layer_SPtr layer, const CADArc* arc);
+                void addLine(lc::meta::Layer_SPtr layer, const CADLine* line);
+                void addCircle(lc::meta::Layer_SPtr layer, const CADCircle* circle);
+                void addEllipse(lc::meta::Layer_SPtr layer, const CADEllipse* ellipse);
+                void addLWPolyline(lc::meta::Layer_SPtr layer, const CADLWPolyline* lwPolyline);
 
-                MetaInfo_SPtr metaInfo(const CADGeometry* geometry);
+                meta::MetaInfo_SPtr metaInfo(const CADGeometry* geometry);
                 geo::Coordinate toLcPostiton(const CADVector& position);
 
-                Document_SPtr _document;
+                storage::Document_SPtr _document;
                 operation::Builder_SPtr _builder;
                 operation::EntityBuilder_SPtr _entityBuilder;
         };

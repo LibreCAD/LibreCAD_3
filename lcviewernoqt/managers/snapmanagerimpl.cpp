@@ -148,7 +148,7 @@ bool SnapManagerImpl::snapIntersections() const {
 }
 
 
-Nano::Signal<void(const SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
+Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;
 }
 

@@ -30,9 +30,9 @@ namespace lc {
                     LIBOPENCAD,
                 };
 
-                static void open(lc::Document_SPtr document, const std::string& path, Library library);
+                static void open(lc::storage::Document_SPtr document, const std::string& path, Library library);
 
-                static void save(lc::Document_SPtr document, const std::string& path, Type type);
+                static void save(lc::storage::Document_SPtr document, const std::string& path, Type type);
 
                 static std::map<Type, std::string> getAvailableFileTypes();
 

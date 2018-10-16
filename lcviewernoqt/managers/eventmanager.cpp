@@ -8,10 +8,10 @@
 using namespace lc::viewer::manager;
 
 void EventManager::location(const lc::geo::Coordinate &coordinate) {
-   LocationEvent event(coordinate);
+   event::LocationEvent event(coordinate);
     _locationEvents(event);
 }
 
-Nano::Signal<void(const LocationEvent&)>& eventmanager::locationEvents() {
+Nano::Signal<void(const lc::viewer::event::LocationEvent&)>& EventManager::locationEvents() {
     return _locationEvents;
 }

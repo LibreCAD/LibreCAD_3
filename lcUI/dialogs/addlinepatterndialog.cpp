@@ -1,11 +1,13 @@
 #include "addlinepatterndialog.h"
 #include "ui_addlinepatterndialog.h"
 
-AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, QWidget *parent) :
+using namespace lc::ui::dialog;
+
+AddLinePatternDialog::AddLinePatternDialog(lc::storage::Document_SPtr document, QWidget *parent) :
     AddLinePatternDialog(std::move(document), nullptr, parent) {
 }
 
-AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLinePatternByValue_CSPtr linePattern, QWidget *parent) :
+AddLinePatternDialog::AddLinePatternDialog(lc::storage::Document_SPtr document, lc::meta::DxfLinePatternByValue_CSPtr linePattern, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddLinePatternDialog),
     _document(std::move(document)),
@@ -23,8 +25,8 @@ AddLinePatternDialog::AddLinePatternDialog(lc::Document_SPtr document, lc::DxfLi
         ui->description->setText(_oldLinePattern->description().c_str());
 
         for (auto value : _oldLinePattern->path()) {
-            auto pathPart = new LinePatternPathPart(value, this);
-            connect(pathPart, &LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
+            auto pathPart = new widgets::LinePatternPathPart(value, this);
+            connect(pathPart, &widgets::LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
 
             _layout->insertWidget(_layout->count() - 1, pathPart);
         }
@@ -46,30 +48,30 @@ void AddLinePatternDialog::generatePreview() {
     std::vector<double> path;
     double length = 0.0;
 
-    auto parts = findChildren<LinePatternPathPart*>();
+    auto parts = findChildren<widgets::LinePatternPathPart*>();
 
     for(auto part : parts) {
         auto type = part->type();
         auto value = part->value();
 
         switch(type) {
-            case LinePatternPathPart::PATH_DOT:
+            case widgets::LinePatternPathPart::PATH_DOT:
                 path.push_back(0);
                 break;
 
-            case LinePatternPathPart::PATH_PLAIN:
+            case widgets::LinePatternPathPart::PATH_PLAIN:
                 path.push_back(value);
                 length += value;
                 break;
 
-            case LinePatternPathPart::PATH_SPACE:
+            case widgets::LinePatternPathPart::PATH_SPACE:
                 path.push_back(-value);
                 length += value;
                 break;
         }
     }
 
-    _linePattern = std::make_shared<lc::DxfLinePatternByValue>(
+    _linePattern = std::make_shared<lc::meta::DxfLinePatternByValue>(
             name,
             ui->description->text().toStdString(),
             path,
@@ -77,7 +79,7 @@ void AddLinePatternDialog::generatePreview() {
 
     QPixmap previewPixmap(ui->preview->frameSize());
 
-    LinePatternPainter painter(&previewPixmap, _linePattern);
+    widgets::LinePatternPainter painter(&previewPixmap, _linePattern);
     painter.drawLinePattern();
 
     ui->preview->setPixmap(previewPixmap);
@@ -85,8 +87,8 @@ void AddLinePatternDialog::generatePreview() {
 
 
 void AddLinePatternDialog::on_newValueButton_pressed() {
-    auto pathPart = new LinePatternPathPart(this);
-    connect(pathPart, &LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
+    auto pathPart = new widgets::LinePatternPathPart(this);
+    connect(pathPart, &widgets::LinePatternPathPart::update, this, &AddLinePatternDialog::generatePreview);
 
     _layout->insertWidget(_layout->count() - 1, pathPart);
 }

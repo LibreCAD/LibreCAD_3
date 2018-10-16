@@ -59,7 +59,7 @@ void LCLua::addLuaLibs() {
     }
 }
 
-void LCLua::setDocument(const lc::Document_SPtr& document) {
+void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
     LuaIntf::Lua::setGlobal(_L, "document", document);
 }
 

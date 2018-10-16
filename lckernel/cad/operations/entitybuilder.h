@@ -7,8 +7,10 @@
 #include "cad/storage/storagemanager.h"
 
 namespace lc {
-    class Document;
-    DECLARE_SHORT_SHARED_PTR(Document)
+    namespace storage {
+        class Document;
+        DECLARE_SHORT_SHARED_PTR(Document)
+    }
 
     namespace operation {
         class EntityBuilder: public DocumentOperation {

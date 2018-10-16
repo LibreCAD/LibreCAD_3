@@ -5,7 +5,7 @@
 namespace lc {
     namespace persistence {
         namespace FileHelpers {
-            lc::MetaLineWidthByValue intToLW(int lw);
+            lc::meta::MetaLineWidthByValue intToLW(int lw);
         }
     }
 }

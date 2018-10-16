@@ -1,7 +1,8 @@
 #include "lcvellipse.h"
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
-using namespace LCViewer;
+
+using namespace lc::viewer;
 
 LCVEllipse::LCVEllipse(const lc::entity::Ellipse_CSPtr& ellipse) :
         LCVDrawItem(ellipse, true),

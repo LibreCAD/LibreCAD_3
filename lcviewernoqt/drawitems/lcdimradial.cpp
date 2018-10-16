@@ -2,9 +2,9 @@
 #include "../lcdrawoptions.h"
 #include "lcdimradial.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr& dimRadial) :
         LCVDrawItem(dimRadial, true),
@@ -26,7 +26,7 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
     // FIXME this should not be fixed
     const double capSize = 2.;
     
-    std::string value = lc::StringHelper::dim_value(_dimRadial->explicitValue(), options.radialFormat(), radiusCircle);
+    std::string value = lc::tools::StringHelper::dim_value(_dimRadial->explicitValue(), options.radialFormat(), radiusCircle);
     
     /* get text size  */
     painter.save();

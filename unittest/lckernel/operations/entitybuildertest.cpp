@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/primitive/line.h>
 
 TEST(EntityBuilderTest, Append) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
 
@@ -14,7 +14,7 @@ TEST(EntityBuilderTest, Append) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 
 	builder->appendEntity(entity);
@@ -26,8 +26,8 @@ TEST(EntityBuilderTest, Append) {
 }
 
 TEST(EntityBuilderTest, Remove) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
 
@@ -35,7 +35,7 @@ TEST(EntityBuilderTest, Remove) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 
 	builder->appendEntity(entity);
@@ -51,8 +51,8 @@ TEST(EntityBuilderTest, Remove) {
 }
 
 TEST(EntityBuilderTest, UndoRedo) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -60,7 +60,7 @@ TEST(EntityBuilderTest, UndoRedo) {
 	auto line1 = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto line2 = line1->move(lc::geo::Coordinate());
 
@@ -117,8 +117,8 @@ TEST(EntityBuilderTest, UndoRedo) {
 }
 
 TEST(EntityBuilderTest, Move) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -126,7 +126,7 @@ TEST(EntityBuilderTest, Move) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -145,8 +145,8 @@ TEST(EntityBuilderTest, Move) {
 }
 
 TEST(EntityBuilderTest, Copy) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -154,7 +154,7 @@ TEST(EntityBuilderTest, Copy) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -175,8 +175,8 @@ TEST(EntityBuilderTest, Copy) {
 }
 
 TEST(EntityBuilderTest, Rotate) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -184,7 +184,7 @@ TEST(EntityBuilderTest, Rotate) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto center = entity->start();
 	const double angle = 1;
@@ -204,8 +204,8 @@ TEST(EntityBuilderTest, Rotate) {
 }
 
 TEST(EntityBuilderTest, Scale) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -213,7 +213,7 @@ TEST(EntityBuilderTest, Scale) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto center = entity->start();
 	auto factor = lc::geo::Coordinate(2, 2);
@@ -233,8 +233,8 @@ TEST(EntityBuilderTest, Scale) {
 }
 
 TEST(EntityBuilderTest, Repeat) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	std::shared_ptr<lc::operation::EntityBuilder> builder;
 
 	EXPECT_EQ(0, document->entityContainer().asVector().size()) << "Document is not empty after creation";
@@ -242,7 +242,7 @@ TEST(EntityBuilderTest, Repeat) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -263,11 +263,11 @@ TEST(EntityBuilderTest, Repeat) {
 }
 
 TEST(EntityBuilderTest, SelectByLayer) {
-	auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-	auto document = std::make_shared<lc::DocumentImpl>(storageManager);
+	auto storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+	auto document = std::make_shared<lc::storage::DocumentImpl>(storageManager);
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
 
-	auto layer = std::make_shared<const lc::Layer>();
+	auto layer = std::make_shared<const lc::meta::Layer>();
 
 	auto entityInsideLayer = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
@@ -278,7 +278,7 @@ TEST(EntityBuilderTest, SelectByLayer) {
 	auto entityOutsideLayer = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::Layer>()
+			std::make_shared<const lc::meta::Layer>()
 	);
 
 	auto offset = lc::geo::Coordinate(100, 100);

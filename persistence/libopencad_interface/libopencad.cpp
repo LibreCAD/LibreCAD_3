@@ -4,7 +4,7 @@
 #include <cad/meta/icolor.h>
 #include <cad/operations/layerops.h>
 
-lc::persistence::LibOpenCad::LibOpenCad(lc::Document_SPtr document, lc::operation::Builder_SPtr builder) :
+lc::persistence::LibOpenCad::LibOpenCad(lc::storage::Document_SPtr document, lc::operation::Builder_SPtr builder) :
     _document(std::move(document)),
     _builder(std::move(builder)),
     _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)) {
@@ -40,13 +40,13 @@ void lc::persistence::LibOpenCad::save(const std::string& file) {
 
 }
 
-lc::Layer_SPtr lc::persistence::LibOpenCad::addLayer(const CADLayer& layer) {
+lc::meta::Layer_SPtr lc::persistence::LibOpenCad::addLayer(const CADLayer& layer) {
     lc::iColor icolor;
 
-    auto lw = lc::FileHelpers::intToLW(layer.getLineWeight());
+    auto lw = lc::persistence::FileHelpers::intToLW(layer.getLineWeight());
     auto color = icolor.intToColor(layer.getColor())->color();
 
-    auto lcLayer = std::make_shared<Layer>(layer.getName(), lw, color);
+    auto lcLayer = std::make_shared<meta::Layer>(layer.getName(), lw, color);
 
     if(layer.getName() == "0") {
         _builder->append(std::make_shared<lc::operation::AddLayer>(_document, lcLayer));
@@ -58,7 +58,7 @@ lc::Layer_SPtr lc::persistence::LibOpenCad::addLayer(const CADLayer& layer) {
     return lcLayer;
 }
 
-void lc::persistence::LibOpenCad::addGeometry(const lc::Layer_SPtr& layer, const CADGeometry* geometry) {
+void lc::persistence::LibOpenCad::addGeometry(const lc::meta::Layer_SPtr& layer, const CADGeometry* geometry) {
     switch(geometry->getType()) {
         case CADGeometry::ARC:
             addArc(layer, (CADArc*) geometry);
@@ -86,7 +86,7 @@ void lc::persistence::LibOpenCad::addGeometry(const lc::Layer_SPtr& layer, const
     }
 }
 
-void lc::persistence::LibOpenCad::addArc(lc::Layer_SPtr layer, const CADArc* arc) {
+void lc::persistence::LibOpenCad::addArc(lc::meta::Layer_SPtr layer, const CADArc* arc) {
     auto position = arc->getPosition();
 
     auto lcArc = std::make_shared<lc::entity::Arc>(
@@ -96,7 +96,7 @@ void lc::persistence::LibOpenCad::addArc(lc::Layer_SPtr layer, const CADArc* arc
     _entityBuilder->appendEntity(lcArc);
 }
 
-void lc::persistence::LibOpenCad::addLine(lc::Layer_SPtr layer, const CADLine* line) {
+void lc::persistence::LibOpenCad::addLine(lc::meta::Layer_SPtr layer, const CADLine* line) {
     auto lcLine = std::make_shared<lc::entity::Line>(
             toLcPostiton(line->getStart().getPosition()),
             toLcPostiton(line->getEnd().getPosition()),
@@ -107,7 +107,7 @@ void lc::persistence::LibOpenCad::addLine(lc::Layer_SPtr layer, const CADLine* l
     _entityBuilder->appendEntity(lcLine);
 }
 
-void lc::persistence::LibOpenCad::addCircle(lc::Layer_SPtr layer, const CADCircle* circle) {
+void lc::persistence::LibOpenCad::addCircle(lc::meta::Layer_SPtr layer, const CADCircle* circle) {
     auto lcCircle = std::make_shared<lc::entity::Circle>(
             toLcPostiton(circle->getPosition()),
             circle->getRadius(),
@@ -118,7 +118,7 @@ void lc::persistence::LibOpenCad::addCircle(lc::Layer_SPtr layer, const CADCircl
     _entityBuilder->appendEntity(lcCircle);
 }
 
-void lc::persistence::LibOpenCad::addEllipse(lc::Layer_SPtr layer, const CADEllipse* ellipse) {
+void lc::persistence::LibOpenCad::addEllipse(lc::meta::Layer_SPtr layer, const CADEllipse* ellipse) {
     auto lcEllipse = std::make_shared<lc::entity::Ellipse>(
             toLcPostiton(ellipse->getPosition()),
             toLcPostiton(ellipse->getSMAxis()),
@@ -133,7 +133,7 @@ void lc::persistence::LibOpenCad::addEllipse(lc::Layer_SPtr layer, const CADElli
     _entityBuilder->appendEntity(lcEllipse);
 }
 
-void lc::persistence::LibOpenCad::addLWPolyline(lc::Layer_SPtr layer, const CADLWPolyline* lwPolyline) {
+void lc::persistence::LibOpenCad::addLWPolyline(lc::meta::Layer_SPtr layer, const CADLWPolyline* lwPolyline) {
     auto lcVertices = std::vector<lc::entity::LWVertex2D>();
 
     size_t count = lwPolyline->getVertexCount();
@@ -158,13 +158,13 @@ void lc::persistence::LibOpenCad::addLWPolyline(lc::Layer_SPtr layer, const CADL
     _entityBuilder->appendEntity(lcLWPolyline);
 }
 
-lc::MetaInfo_SPtr lc::persistence::LibOpenCad::metaInfo(const CADGeometry* geometry) {
-    auto metaInfo = MetaInfo::create();
+lc::meta::MetaInfo_SPtr lc::persistence::LibOpenCad::metaInfo(const CADGeometry* geometry) {
+    auto metaInfo = meta::MetaInfo::create();
 
     auto color = geometry->getColor();
-    metaInfo->add(std::make_shared<lc::MetaColorByValue>(lc::Color(color.R, color.G, color.B)));
+    metaInfo->add(std::make_shared<lc::meta::MetaColorByValue>(lc::Color(color.R, color.G, color.B)));
 
-    metaInfo->add(std::make_shared<lc::MetaLineWidthByValue>(geometry->getThickness()));
+    metaInfo->add(std::make_shared<lc::meta::MetaLineWidthByValue>(geometry->getThickness()));
 
     return metaInfo;
 }

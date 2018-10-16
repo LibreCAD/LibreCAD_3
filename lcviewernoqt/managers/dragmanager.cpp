@@ -3,7 +3,7 @@
 
 using namespace lc::viewer::manager;
 
-DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor, TempEntities_SPtr tempEntities, unsigned int size) :
+DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<drawable::Cursor> cursor, drawable::TempEntities_SPtr tempEntities, unsigned int size) :
 	_size(size),
 	_docCanvas(std::move(docCanvas)),
 	_cursor(std::move(cursor)),
@@ -28,7 +28,7 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
             continue;
         }
 
-        auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable->entity());
+        auto draggable = std::dynamic_pointer_cast<const lc::entity::Draggable>(drawable->entity());
         if(!draggable) {
             continue;
         }
@@ -52,7 +52,7 @@ std::vector<lc::geo::Coordinate> DragManager::selectedEntitiesDragPoints() {
             return;
         }
 
-        auto draggable = std::dynamic_pointer_cast<const lc::Draggable>(drawable);
+        auto draggable = std::dynamic_pointer_cast<const lc::entity::Draggable>(drawable);
         if(!draggable) {
             return;
         }
@@ -124,7 +124,7 @@ void DragManager::onMouseMove() {
 		dragPoints = selectedEntitiesDragPoints();
 	}
 
-	_dragPointsEvent(DragPointsEvent(dragPoints, _size));
+	_dragPointsEvent(lc::viewer::event::DragPointsEvent(dragPoints, _size));
 }
 
 void DragManager::onMousePress() {
@@ -132,7 +132,7 @@ void DragManager::onMousePress() {
 	_entityBuilder = std::make_shared<lc::operation::EntityBuilder>(_docCanvas->document());
 	_builder->append(_entityBuilder);
 
-    std::vector<LCViewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
+    std::vector<lc::viewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
     if(selectedDrawables.empty()) {
         auto entitiesInSelection = _docCanvas->document()->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
         entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
@@ -200,6 +200,6 @@ bool DragManager::entityDragged() {
 }
 
 
-Nano::Signal<void(const DragPointsEvent&)>& DragManager::dragPointsEvent() {
+Nano::Signal<void(const lc::viewer::event::DragPointsEvent&)>& DragManager::dragPointsEvent() {
 	return _dragPointsEvent;
 }

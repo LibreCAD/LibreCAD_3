@@ -1,7 +1,7 @@
 #include "colorselect.h"
 
 using namespace lc;
-using namespace ui;
+using namespace lc::ui::widgets;
 
 ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *parent, bool showByLayer, bool showByBlock) :
     QComboBox(parent) {
@@ -62,7 +62,7 @@ void ColorSelect::on_customColorChanged(const QColor &color) {
     updateMetaInfoManager();
 }
 
-void ColorSelect::onLayerChanged(const lc::Layer_CSPtr& layer) {
+void ColorSelect::onLayerChanged(const lc::meta::Layer_CSPtr& layer) {
     auto index = findText(BY_LAYER);
 
     if(index != -1) {
@@ -90,11 +90,11 @@ void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManage
         if(_metaInfoManager->color() == nullptr) {
             setCurrentText(BY_LAYER);
         }
-        else if(std::dynamic_pointer_cast<const lc::MetaColorByBlock>(_metaInfoManager->color())) {
+        else if(std::dynamic_pointer_cast<const lc::meta::MetaColorByBlock>(_metaInfoManager->color())) {
             setCurrentText(BY_BLOCK);
         }
         else {
-            auto colorByValue = std::dynamic_pointer_cast<const lc::MetaColorByValue>(_metaInfoManager->color());
+            auto colorByValue = std::dynamic_pointer_cast<const lc::meta::MetaColorByValue>(_metaInfoManager->color());
             if(colorByValue != nullptr) {
                 setColor(colorByValue->color());
             }
@@ -110,15 +110,15 @@ void ColorSelect::updateMetaInfoManager() {
     _metaInfoManager->setColor(metaColor());
 }
 
-lc::MetaColor_CSPtr ColorSelect::metaColor() {
+lc::meta::MetaColor_CSPtr ColorSelect::metaColor() {
     if(currentText() == BY_LAYER) {
         return nullptr;
     }
     if(currentText() == BY_BLOCK) {
-        return std::make_shared<lc::MetaColorByBlock>();
+        return std::make_shared<lc::meta::MetaColorByBlock>();
     }
 
-    return std::make_shared<const lc::MetaColorByValue>(color());
+    return std::make_shared<const lc::meta::MetaColorByValue>(color());
 }
 
 lc::Color ColorSelect::color() {

@@ -30,7 +30,7 @@ namespace lc {
 
                 void importLCKernel();
 
-                void setDocument(const lc::Document_SPtr& document);
+                void setDocument(const lc::storage::Document_SPtr& document);
 
                 std::string runString(const char* code);
 

@@ -71,7 +71,7 @@ CADEntity_CSPtr LuaCustomEntity::mirror(const geo::Coordinate& axis1, const geo:
     return modifyInsert(Insert::mirror(axis1, axis2));
 }
 
-CADEntity_CSPtr LuaCustomEntity::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr LuaCustomEntity::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     return modifyInsert(Insert::modify(layer, metaInfo, block));
 }
 

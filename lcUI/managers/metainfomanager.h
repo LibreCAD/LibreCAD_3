@@ -7,10 +7,16 @@
 
 namespace lc {
     namespace ui {
+        namespace widgets {
+            class LinePatternSelect;
+            class LineWidthSelect;
+            class ColorSelect;
+        }
+
         class MetaInfoManager {
-            friend class LinePatternSelect;
-            friend class LineWidthSelect;
-            friend class ColorSelect;
+            friend class widgets::LinePatternSelect;
+            friend class widgets::LineWidthSelect;
+            friend class widgets::ColorSelect;
 
             public:
                 MetaInfoManager();
@@ -32,7 +38,7 @@ namespace lc {
                  * @param metaType MetaType to add (or nullptr)
                  * @return MetaInfo, needed if a new MetaInfo was generated
                  */
-                meta::MetaInfo_CSPtr addMetaType(meta::MetaInfo_CSPtr metaInfo, meta::EntityMetaType_CSPtr metaType);
+                meta::MetaInfo_SPtr addMetaType(meta::MetaInfo_SPtr metaInfo, meta::EntityMetaType_CSPtr metaType);
 
                 void setLinePattern(const meta::DxfLinePattern_CSPtr& linePattern);
                 void setColor(const meta::MetaColor_CSPtr& color);

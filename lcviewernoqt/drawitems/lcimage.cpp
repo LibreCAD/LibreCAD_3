@@ -3,7 +3,7 @@
 #include "../lcdrawoptions.h"
 #include <cad/math/helpermethods.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCImage::LCImage(const lc::entity::Image_CSPtr& image) :
         LCVDrawItem(image, true),
@@ -30,7 +30,7 @@ void LCImage::draw(LcPainter &painter, const LcDrawOptions &options, const lc::g
 
         // Apply Transform
         std::vector<lc::geo::Coordinate> c2 =
-                lc::HelperMethods::transform2d<lc::geo::Coordinate>(
+                lc::maths::HelperMethods::transform2d<lc::geo::Coordinate>(
                         c,
                         _image->uv().x(), _image->uv().y(),
                         _image->vv().x(), _image->vv().y(),

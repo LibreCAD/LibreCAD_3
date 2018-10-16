@@ -2,7 +2,7 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCVSpline::LCVSpline(const lc::entity::Spline_CSPtr& spline) :
         LCVDrawItem(spline, true),

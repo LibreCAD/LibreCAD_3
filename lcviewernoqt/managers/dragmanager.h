@@ -21,8 +21,6 @@ namespace lc {
              * \brief Checks if drag points are near the cursor and allow to modify the entities.
              */
             class DragManager {
-                friend class lc::Document;
-
                 public:
                     /**
                      * \brief Create manager
@@ -31,8 +29,8 @@ namespace lc {
                      * \param tempEntities Pointer to temp entity container
                      * \param size Box size around the points
                      */
-                    DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<Cursor> cursor,
-                                TempEntities_SPtr tempEntities, unsigned int size);
+                    DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<drawable::Cursor> cursor,
+                                drawable::TempEntities_SPtr tempEntities, unsigned int size);
 
                     /**
                      * \brief Called each time the mouse move.
@@ -59,7 +57,7 @@ namespace lc {
                      */
                     bool entityDragged();
 
-                    Nano::Signal<void(const DragPointsEvent&)>& dragPointsEvent();
+                    Nano::Signal<void(const lc::viewer::event::DragPointsEvent&)>& dragPointsEvent();
 
                 private:
                     unsigned int _size;
@@ -72,8 +70,8 @@ namespace lc {
                     void moveEntities();
 
                     DocumentCanvas_SPtr _docCanvas;
-                    std::shared_ptr<Cursor> _cursor;
-                    TempEntities_SPtr _tempEntities;
+                    std::shared_ptr<drawable::Cursor> _cursor;
+                    drawable::TempEntities_SPtr _tempEntities;
 
                     bool _entityDragged;
 
@@ -83,7 +81,7 @@ namespace lc {
                     lc::geo::Coordinate _selectedPoint;
                     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> _selectedEntities;
 
-                    Nano::Signal<void( const DragPointsEvent&)> _dragPointsEvent;
+                    Nano::Signal<void(const lc::viewer::event::DragPointsEvent&)> _dragPointsEvent;
             };
 
             DECLARE_SHORT_SHARED_PTR(DragManager)
