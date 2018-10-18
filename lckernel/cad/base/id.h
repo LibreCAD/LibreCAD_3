@@ -11,30 +11,35 @@
   *
   */
 namespace lc {
-    class ID {
-        public:
+    namespace entity {
+        class ID {
+            public:
 
-            /*!
-             * \brief Default constructor, provides a new unique ID to each entity
-             * \sa lc::entity::CADEntity
-             */
-            ID();
-            ID(ID_DATATYPE);
+                /*!
+                 * \brief Default constructor, provides a new unique ID to each entity
+                 * \sa lc::entity::CADEntity
+                 */
+                ID();
 
-            virtual ~ID() = default;
+                ID(ID_DATATYPE);
 
-            /*!
-             * \brief returns the ID of the entity
-             * \return ID
-             */
-            ID_DATATYPE id() const ;
+                virtual ~ID() = default;
 
-            bool operator == (const ID& id) const {
-                return (id._id == _id);
-            }
-            void setID(ID_DATATYPE id);
-            static std::atomic<ID_DATATYPE> __idCounter;
-        private:
-            ID_DATATYPE _id;
-    };
+                /*!
+                 * \brief returns the ID of the entity
+                 * \return ID
+                 */
+                ID_DATATYPE id() const;
+
+                bool operator==(const ID& id) const {
+                    return (id._id == _id);
+                }
+
+                void setID(ID_DATATYPE id);
+
+                static std::atomic<ID_DATATYPE> __idCounter;
+            private:
+                ID_DATATYPE _id;
+        };
+    }
 }

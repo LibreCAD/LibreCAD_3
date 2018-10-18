@@ -2,7 +2,8 @@
 #include <cmath>
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
-using namespace LCViewer;
+
+using namespace lc::viewer;
 
 EndCaps::EndCaps() {
 

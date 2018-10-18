@@ -9,9 +9,9 @@ LuaInterface* startLC() {
     return luaInterface;
 }
 
-lc::Document_SPtr createDocument() {
-    auto storageManager = std::make_shared<lc::StorageManagerImpl>();
-    return std::make_shared<lc::DocumentImpl>(storageManager);
+storage::Document_SPtr createDocument() {
+    auto storageManager = std::make_shared<storage::StorageManagerImpl>();
+    return std::make_shared<storage::DocumentImpl>(storageManager);
 };
 
 CadMdiChild* getMdiChild(lua_State* L) {

@@ -2,20 +2,22 @@
 #include "addlayerdialog.h"
 #include "ui_addlayerdialog.h"
 
-AddLayerDialog::AddLayerDialog(lc::Document_SPtr document, QWidget* parent) :
+using namespace lc::ui::dialog;
+
+AddLayerDialog::AddLayerDialog(lc::storage::Document_SPtr document, QWidget* parent) :
     AddLayerDialog(nullptr, std::move(document), parent) {
 }
 
-AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr document, QWidget *parent) :
+AddLayerDialog::AddLayerDialog(lc::meta::Layer_CSPtr oldLayer, lc::storage::Document_SPtr document, QWidget* parent) :
         QDialog(parent),
         ui(new Ui::AddLayerDialog),
         _oldLayer(std::move(oldLayer)) {
 
     ui->setupUi(this);
 
-    linePatternSelect = new lc::ui::LinePatternSelect(std::move(document), this, false, false);
-    lineWidthSelect = new lc::ui::LineWidthSelect(nullptr, this, false, false);
-    colorSelect = new lc::ui::ColorSelect(nullptr, this, false, false);
+    linePatternSelect = new lc::ui::widgets::LinePatternSelect(std::move(document), this, false, false);
+    lineWidthSelect = new lc::ui::widgets::LineWidthSelect(nullptr, this, false, false);
+    colorSelect = new lc::ui::widgets::ColorSelect(nullptr, this, false, false);
 
     auto layout = dynamic_cast<QFormLayout*>(this->layout());
     if(layout != nullptr) {
@@ -29,7 +31,7 @@ AddLayerDialog::AddLayerDialog(lc::Layer_CSPtr oldLayer, lc::Document_SPtr docum
         if(_oldLayer->linePattern() != nullptr) {
             linePatternSelect->setCurrentText(_oldLayer->linePattern()->name().c_str());
         }
-        lineWidthSelect->setWidth(std::make_shared<lc::MetaLineWidthByValue>(_oldLayer->lineWidth()));
+        lineWidthSelect->setWidth(std::make_shared<lc::meta::MetaLineWidthByValue>(_oldLayer->lineWidth()));
         colorSelect->setColor(_oldLayer->color());
 
         if(_oldLayer->linePattern() != nullptr) {
@@ -52,23 +54,23 @@ void AddLayerDialog::accept() {
         return;
     }
 
-    auto linePattern = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePatternSelect->linePattern());
-    lc::Layer_CSPtr layer;
+    auto linePattern = std::dynamic_pointer_cast<const lc::meta::DxfLinePatternByValue>(linePatternSelect->linePattern());
+    lc::meta::Layer_CSPtr layer;
 
-    auto lineWidth = std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect->lineWidth());
+    auto lineWidth = std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByValue>(lineWidthSelect->lineWidth());
     if(lineWidth == nullptr) {
         return;
     }
 
     if(linePattern == nullptr) {
-        layer = std::make_shared<const lc::Layer>(
+        layer = std::make_shared<const lc::meta::Layer>(
                 ui->name->text().toStdString(),
                 *lineWidth,
                 colorSelect->color()
         );
     }
     else {
-        layer = std::make_shared<const lc::Layer>(
+        layer = std::make_shared<const lc::meta::Layer>(
                 ui->name->text().toStdString(),
                 *lineWidth,
                 colorSelect->color(),

@@ -3,24 +3,27 @@
 #include "lcvdrawitem.h"
 #include <cad/primitive/lwpolyline.h>
 
-namespace LCViewer {
-    class LCLWPolyline : public LCVDrawItem {
-        public:
-            LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline);
-            virtual ~LCLWPolyline() = default;
+namespace lc {
+    namespace viewer {
+        class LCLWPolyline : public LCVDrawItem {
+            public:
+                LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline);
 
-            /**
-             * @brief draw, Draws the polyline
-             * @param LcPainter painter, surface to be painted
-             * @param LcDrawOptions options
-             * @param geo::Area rect
-             */
-            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+                virtual ~LCLWPolyline() = default;
 
-            lc::entity::CADEntity_CSPtr entity() const override;
+                /**
+                 * @brief draw, Draws the polyline
+                 * @param LcPainter painter, surface to be painted
+                 * @param LcDrawOptions options
+                 * @param geo::Area rect
+                 */
+                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
 
-        private:
-            lc::entity::LWPolyline_CSPtr _polyLine;
-            std::vector<LCVDrawItem_CSPtr> _drawItems;
-    };
+                lc::entity::CADEntity_CSPtr entity() const override;
+
+            private:
+                lc::entity::LWPolyline_CSPtr _polyLine;
+                std::vector<LCVDrawItem_CSPtr> _drawItems;
+        };
+    }
 }

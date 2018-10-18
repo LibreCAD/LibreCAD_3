@@ -6,8 +6,8 @@
 #include <unsupported/Eigen/Polynomials>
 #include <iostream>
 
-using namespace lc;
-using namespace geo;
+using namespace lc::maths;
+using namespace lc::geo;
 
 /**
  * Tests if angle a is between a1 and a2. a, a1 and a2 must be in the

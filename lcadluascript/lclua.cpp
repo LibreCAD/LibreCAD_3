@@ -1,10 +1,10 @@
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 #include "lclua.h"
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
 #include <kaguya/kaguya.hpp>
 
-using namespace lc;
+using namespace lc::lua;
 using namespace LuaIntf;
 
 static const luaL_Reg loadedlibs[] = {
@@ -36,7 +36,7 @@ void LCLua::addLuaLibs() {
         lua_pop(_L, 1);
     }
 
-    //Add others non-LC functions
+    //Add others non-LC tools
     LuaBinding(_L)
         .addFunction("microtime", &lua_microtime)
         .addFunction("openFile", &openFile)
@@ -60,7 +60,7 @@ void LCLua::addLuaLibs() {
     }
 }
 
-void LCLua::setDocument(const lc::Document_SPtr& document) {
+void LCLua::setDocument(const lc::storage::Document_SPtr& document) {
     kaguya::State state(_L);
     state["document"] = document;
 }

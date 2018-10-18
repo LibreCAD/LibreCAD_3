@@ -4,11 +4,11 @@
 
 class AddLayerDialogTest : public AddLayerDialog {
     public:
-        AddLayerDialogTest(lc::Document_SPtr document, QWidget* parent = 0) :
+        AddLayerDialogTest(lc::storage::Document_SPtr document, QWidget* parent = 0) :
                 AddLayerDialog(document, parent) {
         }
 
-        AddLayerDialogTest(lc::Layer_CSPtr oldLayer, lc::Document_SPtr document, QWidget* parent = 0) :
+        AddLayerDialogTest(lc::meta::Layer_CSPtr oldLayer, lc::storage::Document_SPtr document, QWidget* parent = 0) :
                 AddLayerDialog(oldLayer, document, parent) {
         }
 
@@ -24,7 +24,7 @@ class AddLayerDialogTest : public AddLayerDialog {
         };
 
         double lineWidthValue() {
-            return std::dynamic_pointer_cast<const lc::MetaLineWidthByValue>(lineWidthSelect->lineWidth())->width();
+            return std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByValue>(lineWidthSelect->lineWidth())->width();
         };
 
         lc::Color color() {

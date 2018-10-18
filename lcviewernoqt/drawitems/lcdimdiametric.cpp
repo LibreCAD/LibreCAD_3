@@ -2,9 +2,9 @@
 #include "../lcdrawoptions.h"
 #include "lcdimdiametric.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric) :
         LCVDrawItem(dimDiametric, true),
@@ -22,7 +22,7 @@ void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, cons
     // FIXME this should not be fixed
     const double capSize = 2.;
 
-    auto value = lc::StringHelper::dim_value(
+    auto value = lc::tools::StringHelper::dim_value(
             _dimDiametric->explicitValue(),
             options.diametricFormat(),
             diameterCircle

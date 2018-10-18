@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
-#include <cad/dochelpers/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
 #include <cad/operations/layerops.h>
 #include <cad/operations/entitybuilder.h>
 
 TEST(LayerOps, ReplaceLayer) {
-    auto document = std::make_shared<lc::DocumentImpl>(std::make_shared<lc::StorageManagerImpl>());
+    auto document = std::make_shared<lc::storage::DocumentImpl>(std::make_shared<lc::storage::StorageManagerImpl>());
 
-    auto layer = std::make_shared<lc::Layer>("1");
-    auto layer2 = std::make_shared<lc::Layer>("2");
+    auto layer = std::make_shared<lc::meta::Layer>("1");
+    auto layer2 = std::make_shared<lc::meta::Layer>("2");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
     addLayer->execute();
 

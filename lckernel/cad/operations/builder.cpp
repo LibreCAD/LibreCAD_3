@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace operation;
 
-Builder::Builder(Document_SPtr document, const std::string& description) :
+Builder::Builder(storage::Document_SPtr document, const std::string& description) :
     DocumentOperation(std::move(document), description) {
 
 }

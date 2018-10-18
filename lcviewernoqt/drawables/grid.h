@@ -9,36 +9,44 @@
   *
   */
 
-namespace LCViewer {
-class Grid : public lc::Snapable {
-    public:
-        /*
-         * minimumGridSpacing set's the minimum number of pixels for a grid
-         * major color for major lines
-         * minor color for minor lines
-         * numMinorLiners Use the number of minor lines between major, 12 can be used for 12 incihes in foot
-         * convUnit unit to allow additional unit systems
-         */
-        Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines=12, double convUnit=1.);
-        virtual ~Grid() = default;
+namespace lc {
+    namespace viewer {
+        namespace drawable {
+            class Grid : public lc::entity::Snapable {
+                public:
+                    /*
+                     * minimumGridSpacing set's the minimum number of pixels for a grid
+                     * major color for major lines
+                     * minor color for minor lines
+                     * numMinorLiners Use the number of minor lines between major, 12 can be used for 12 incihes in foot
+                     * convUnit unit to allow additional unit systems
+                     */
+                    Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines = 12,
+                         double convUnit = 1.);
 
-        virtual void draw(DrawEvent const & event) const;
+                    virtual ~Grid() = default;
 
-        virtual std::vector<lc::EntityCoordinate> snapPoints(const lc::geo::Coordinate& coord, const lc::SimpleSnapConstrain & constrain, double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
+                    virtual void draw(event::DrawEvent const& event) const;
 
-        virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
+                    virtual std::vector<lc::EntityCoordinate>
+                    snapPoints(const lc::geo::Coordinate& coord, const lc::SimpleSnapConstrain& constrain,
+                               double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
 
-    private:
-        double gridSize();
+                    virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
 
-        const lc::Color _majorColor;
-        const lc::Color _minorColor;
-        const int _minimumGridSpacing;
+                private:
+                    double gridSize();
 
-        int _numMinorLines;
-        double _convUnit;
+                    const lc::Color _majorColor;
+                    const lc::Color _minorColor;
+                    const int _minimumGridSpacing;
 
-    // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
-        mutable double _lastGridSize;
-};
+                    int _numMinorLines;
+                    double _convUnit;
+
+                    // Not sure if ut belongs here, on the other hand we didn't want to pass the view and rect into snapPoints
+                    mutable double _lastGridSize;
+            };
+        }
+    }
 }

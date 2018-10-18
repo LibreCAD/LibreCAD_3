@@ -4,9 +4,11 @@
 #include <lclua.h>
 #include <luainterface.h>
 
-LuaScript::LuaScript(CadMdiChild* mdiChild, CliCommand* cliCommand) :
+using namespace lc::ui::widgets;
+
+LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
-	_mdiChild(mdiChild),
+	_mdiArea(mdiArea),
 	_cliCommand(cliCommand) {
     ui->setupUi(this);
 }
@@ -17,16 +19,16 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-	auto luaState = LuaIntf::LuaState::newState();
-	auto lcLua = lc::LCLua(luaState);
-	lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
-	lcLua.addLuaLibs();
-	lcLua.importLCKernel();
-	lcLua.setDocument(_mdiChild->document());
+	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
+        auto mdiChild = qobject_cast<lc::ui::CadMdiChild*>(activeSubWindow->widget());
 
-	auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
-
-	_cliCommand->write(QString::fromStdString(out));
+        auto luaState = LuaIntf::LuaState::newState();
+        auto lcLua = lc::lua::LCLua(luaState);
+        lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
+        lcLua.addLuaLibs();
+        lcLua.importLCKernel();
+        lcLua.setDocument(mdiChild->document());
+    }
 }
 
 void LuaScript::on_open_clicked() {

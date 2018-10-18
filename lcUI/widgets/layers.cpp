@@ -3,6 +3,8 @@
 #include "layers.h"
 #include "ui_layers.h"
 
+using namespace lc::ui::widgets;
+
 Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::Layers),
@@ -51,10 +53,10 @@ void Layers::on_newButton_clicked() {
         return;
     }
 
-    auto dialog = new AddLayerDialog(_mdiChild->document(), this);
+    auto dialog = new dialog::AddLayerDialog(_mdiChild->document(), this);
     dialog->show();
 
-    connect(dialog, &AddLayerDialog::newLayer, this, &Layers::createLayer);
+    connect(dialog, &dialog::AddLayerDialog::newLayer, this, &Layers::createLayer);
 }
 
 void Layers::on_deleteButton_clicked() {
@@ -78,14 +80,14 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
                 break;
 
             case LayerModel::EDIT:
-                auto dialog = new AddLayerDialog(layer, _mdiChild->document(), this);
+                auto dialog = new dialog::AddLayerDialog(layer, _mdiChild->document(), this);
                 dialog->show();
 
-                connect(dialog, &AddLayerDialog::editLayer, this, &Layers::replaceLayer);
+                connect(dialog, &dialog::AddLayerDialog::editLayer, this, &Layers::replaceLayer);
                 return;
         }
 
-        auto newLayer = std::make_shared<const lc::Layer>(
+        auto newLayer = std::make_shared<const lc::meta::Layer>(
                 layer->name(),
                 layer->lineWidth(),
                 layer->color(),
@@ -97,12 +99,12 @@ void Layers::on_layerList_clicked(const QModelIndex& index) {
     }
 }
 
-void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {
+void Layers::changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& name) {
     if(name.empty()) {
         return;
     }
 
-    auto newLayer = std::make_shared<const lc::Layer>(
+    auto newLayer = std::make_shared<const lc::meta::Layer>(
         name,
         layer->lineWidth(),
         layer->color(),
@@ -113,14 +115,14 @@ void Layers::changeLayerName(lc::Layer_CSPtr& layer, const std::string& name) {
     replaceLayer(layer, newLayer);
 }
 
-void Layers::createLayer(lc::Layer_CSPtr layer) {
+void Layers::createLayer(lc::meta::Layer_CSPtr layer) {
     if(_mdiChild != nullptr) {
         auto operation = std::make_shared<lc::operation::AddLayer>(_mdiChild->document(), layer);
         operation->execute();
     }
 }
 
-void Layers::deleteLayer(lc::Layer_CSPtr layer) {
+void Layers::deleteLayer(lc::meta::Layer_CSPtr layer) {
     if(_mdiChild != nullptr) {
         try {
             auto operation = std::make_shared<lc::operation::RemoveLayer>(_mdiChild->document(), layer);
@@ -132,7 +134,7 @@ void Layers::deleteLayer(lc::Layer_CSPtr layer) {
     }
 }
 
-void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
+void Layers::replaceLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer) {
     if(_mdiChild != nullptr) {
         auto operation = std::make_shared<lc::operation::ReplaceLayer>(_mdiChild->document(), oldLayer, newLayer);
         operation->execute();
@@ -140,7 +142,7 @@ void Layers::replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer) {
 }
 
 void Layers::updateLayerList() {
-    std::vector<lc::Layer_CSPtr> layersVector;
+    std::vector<lc::meta::Layer_CSPtr> layersVector;
 
     if (_mdiChild != nullptr) {
         auto layersMap = _mdiChild->document()->allLayers();
@@ -160,13 +162,13 @@ void Layers::updateLayerList() {
     }
 }
 
-void Layers::on_addLayerEvent(const lc::AddLayerEvent& event) {
+void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
     _mdiChild->setActiveLayer(event.layer());
 
     updateLayerList();
 }
 
-void Layers::on_removeLayerEvent(const lc::RemoveLayerEvent& event) {
+void Layers::on_removeLayerEvent(const lc::event::RemoveLayerEvent& event) {
     if(_mdiChild->activeLayer() == event.layer()) {
         _mdiChild->setActiveLayer(_mdiChild->document()->layerByName("0"));
     }
@@ -174,7 +176,7 @@ void Layers::on_removeLayerEvent(const lc::RemoveLayerEvent& event) {
     updateLayerList();
 }
 
-void Layers::on_replaceLayerEvent(const lc::ReplaceLayerEvent& event) {
+void Layers::on_replaceLayerEvent(const lc::event::ReplaceLayerEvent& event) {
     if(_mdiChild->activeLayer() == event.oldLayer()) {
         _mdiChild->setActiveLayer(event.newLayer());
     }

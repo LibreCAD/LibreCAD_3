@@ -4,26 +4,30 @@
 #include "lcdimension.h"
 #include <cad/primitive/dimdiametric.h>
 
-namespace LCViewer {
-    class LcDrawOptions;
-    class LcPainter;
+namespace lc {
+    namespace viewer {
+        class LcDrawOptions;
 
-    class LCDimDiametric : public LCVDrawItem, public LCDimension {
-        public:
-            LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric);
-            virtual ~LCDimDiametric() = default;
+        class LcPainter;
 
-            /**
-            * @brief draw, Draws the DimDiametric
-            * @param LcPainter painter, surface to be painted
-            * @param LcDrawOptions options
-            * @param geo::Area rect
-            */
-            void draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const override;
+        class LCDimDiametric : public LCVDrawItem, public LCDimension {
+            public:
+                LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametric);
 
-            lc::entity::CADEntity_CSPtr entity() const override;
+                virtual ~LCDimDiametric() = default;
 
-        private:
-            lc::entity::DimDiametric_CSPtr _dimDiametric;
-    };
+                /**
+                * @brief draw, Draws the DimDiametric
+                * @param LcPainter painter, surface to be painted
+                * @param LcDrawOptions options
+                * @param geo::Area rect
+                */
+                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+
+                lc::entity::CADEntity_CSPtr entity() const override;
+
+            private:
+                lc::entity::DimDiametric_CSPtr _dimDiametric;
+        };
+    }
 }

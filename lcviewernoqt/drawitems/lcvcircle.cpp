@@ -2,7 +2,7 @@
 #include "../painters/lcpainter.h"
 #include "../lcdrawoptions.h"
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCVCircle::LCVCircle(const lc::entity::Circle_CSPtr& circle) :
         LCVDrawItem(circle, true),

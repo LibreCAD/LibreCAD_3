@@ -35,9 +35,9 @@ namespace lc {
                       geo::Coordinate definitionPoint3,
                       double angle,
                       double oblique,
-                      Layer_CSPtr layer,
-                      MetaInfo_CSPtr metaInfo = nullptr,
-                      Block_CSPtr block = nullptr
+                      meta::Layer_CSPtr layer,
+                      meta::MetaInfo_CSPtr metaInfo = nullptr,
+                      meta::Block_CSPtr block = nullptr
             );
 
 
@@ -50,9 +50,9 @@ namespace lc {
                                           geo::Coordinate const &p2,
                                           geo::Coordinate const &middleOfText,
                                           std::string explicitValue,
-                                          Layer_CSPtr layer,
-                                          MetaInfo_CSPtr metaInfo = nullptr,
-                                          Block_CSPtr block = nullptr
+                                          meta::Layer_CSPtr layer,
+                                          meta::MetaInfo_CSPtr metaInfo = nullptr,
+                                          meta::Block_CSPtr block = nullptr
             );
 
         public:
@@ -97,7 +97,8 @@ namespace lc {
              */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo,
+                                           meta::Block_CSPtr block) const override;
 
             // Oblique angle http://www.cad-notes.com/autocad-isometric-text-and-dimension/
             double oblique() const;

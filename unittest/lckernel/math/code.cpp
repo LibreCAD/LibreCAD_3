@@ -6,12 +6,14 @@
 
 using namespace lc;
 using namespace entity;
+using namespace maths;
+using namespace meta;
 
 std::vector<double> test::quad(double x, double c) {
     std::vector<double>data(2, 0.);
     data[0] = x;
     data[1] = c;
-    return lc::Math::quadraticSolver(data);
+    return Math::quadraticSolver(data);
 }
 
 std::vector<double> test::cubic(double x2, double x, double c) {
@@ -19,7 +21,7 @@ std::vector<double> test::cubic(double x2, double x, double c) {
     data[0] = x2;
     data[1] = x;
     data[2] = c;
-    return lc::Math::cubicSolver(data);
+    return Math::cubicSolver(data);
 }
 
 std::vector<double> test::quartic(double x3, double x2, double x, double c) {
@@ -28,7 +30,7 @@ std::vector<double> test::quartic(double x3, double x2, double x, double c) {
     data[1] = x2;
     data[2] = x;
     data[3] = c;
-    return lc::Math::quarticSolver(data);
+    return Math::quarticSolver(data);
 }
 
 std::vector<geo::Coordinate> test::intr(Line& line, Circle& circle) {

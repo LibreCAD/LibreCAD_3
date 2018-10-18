@@ -9,60 +9,66 @@
 #include <iostream>
 
 namespace lc {
-    class MetaLineWidth : public EntityMetaType {
-        public:
-            static const std::string LCMETANAME();
+    namespace meta {
+        class MetaLineWidth : public EntityMetaType {
+            public:
+                static const std::string LCMETANAME();
 
-            virtual const std::string id() const override;
+                virtual const std::string id() const override;
 
-        private:
-            friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
-                os << "MetaLineWidth()";
-                return os;
-            }
-    };
+            private:
+                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
+                    os << "MetaLineWidth()";
+                    return os;
+                }
+        };
 
-    class MetaLineWidthByBlock : public MetaLineWidth {
-        public:
-            MetaLineWidthByBlock();
-            virtual ~MetaLineWidthByBlock() = default;
+        class MetaLineWidthByBlock : public MetaLineWidth {
+            public:
+                MetaLineWidthByBlock();
 
-            virtual const std::string metaTypeID() const override;
+                virtual ~MetaLineWidthByBlock() = default;
 
-        private:
-            friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByBlock& lineWidth) {
-                os << "MetaLineWidthByBlock()";
-                return os;
-            }
-    };
+                virtual const std::string metaTypeID() const override;
 
-    class MetaLineWidthByValue : public MetaLineWidth, public DocumentMetaType {
-        public:
+            private:
+                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByBlock& lineWidth) {
+                    os << "MetaLineWidthByBlock()";
+                    return os;
+                }
+        };
 
-            MetaLineWidthByValue();
-            MetaLineWidthByValue(const double width);
-            virtual ~MetaLineWidthByValue() = default;
-            double width() const;
+        class MetaLineWidthByValue : public MetaLineWidth, public DocumentMetaType {
+            public:
 
-            virtual const std::string metaTypeID() const override;
+                MetaLineWidthByValue();
 
-            virtual const std::string id () const override {
-                return MetaLineWidthByValue::LCMETANAME() + "_" + std::to_string(_width);
-            }
+                MetaLineWidthByValue(const double width);
 
-            const std::string name() const override;
+                virtual ~MetaLineWidthByValue() = default;
 
-        private:
-            double _width;
+                double width() const;
 
-        private:
-            friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByValue& lineWidth) {
-                os << "MetaLineWidthByValue(width=" <<  lineWidth.width() << ")";
-                return os;
-            }
-    };
+                virtual const std::string metaTypeID() const override;
 
-    DECLARE_SHORT_SHARED_PTR(MetaLineWidth)
-    DECLARE_SHORT_SHARED_PTR(MetaLineWidthByBlock)
-    DECLARE_SHORT_SHARED_PTR(MetaLineWidthByValue)
+                virtual const std::string id() const override {
+                    return MetaLineWidthByValue::LCMETANAME() + "_" + std::to_string(_width);
+                }
+
+                const std::string name() const override;
+
+            private:
+                double _width;
+
+            private:
+                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByValue& lineWidth) {
+                    os << "MetaLineWidthByValue(width=" << lineWidth.width() << ")";
+                    return os;
+                }
+        };
+
+        DECLARE_SHORT_SHARED_PTR(MetaLineWidth)
+        DECLARE_SHORT_SHARED_PTR(MetaLineWidthByBlock)
+        DECLARE_SHORT_SHARED_PTR(MetaLineWidthByValue)
+    }
 }

@@ -4,12 +4,12 @@ using namespace lc;
 using namespace entity;
 
 Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, bool isCCW,
-         Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+         meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
-Arc::Arc(const geo::Arc &a, Layer_CSPtr layer, MetaInfo_CSPtr metaInfo, Block_CSPtr block) :
+Arc::Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
     CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     geo::Arc(a) {
 }
@@ -125,8 +125,8 @@ CADEntity_CSPtr Arc::mirror(const geo::Coordinate &axis1, const geo::Coordinate 
 
     auto newArc = std::make_shared<Arc>(this->center().mirror(axis1,axis2),
                                         this->radius(),
-                                        lc::Math::correctAngle(a - this->startAngle()),
-                                        lc::Math::correctAngle(a - this->endAngle()),
+                                        lc::maths::Math::correctAngle(a - this->startAngle()),
+                                        lc::maths::Math::correctAngle(a - this->endAngle()),
                                         !this->CCW(), layer());
     newArc->setID(this->id());
     return newArc;
@@ -137,7 +137,7 @@ const geo::Area Arc::boundingBox() const {
     return geo::Arc::boundingBox();
 }
 
-CADEntity_CSPtr Arc::modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const {
+CADEntity_CSPtr Arc::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), this->endAngle(),
                                         this->CCW(), layer, metaInfo, block);
     newArc->setID(this->id());

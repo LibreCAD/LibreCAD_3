@@ -28,7 +28,7 @@ namespace lc {
                  * @brief Get layer
                  * @return Layer
                  */
-                const Layer_CSPtr& layer() const {
+                const meta::Layer_CSPtr& layer() const {
                         return _layer;
                 }
 
@@ -36,7 +36,7 @@ namespace lc {
                  * @brief Set the layer
                  * @param layer New layer
                  */
-                void setLayer(const Layer_CSPtr& layer) {
+                void setLayer(const meta::Layer_CSPtr& layer) {
                         _layer = layer;
                 }
 
@@ -44,7 +44,7 @@ namespace lc {
                  * @brief Set the layer
                  * @param layer New layer
                  */
-                void setLayer(Layer_CSPtr&& layer) {
+                void setLayer(meta::Layer_CSPtr&& layer) {
                     _layer = layer;
                     layer = nullptr;
                 }
@@ -53,7 +53,7 @@ namespace lc {
                  * @brief Get MetaInfo
                  * @return MetaInfo
                  */
-                const MetaInfo_CSPtr& metaInfo() const {
+                const meta::MetaInfo_CSPtr& metaInfo() const {
                         return _metaInfo;
                 }
 
@@ -61,7 +61,7 @@ namespace lc {
                  * @brief Set MetaInfo
                  * @param metaInfo new MetaInfo
                  */
-                void setMetaInfo(const MetaInfo_CSPtr& metaInfo) {
+                void setMetaInfo(const meta::MetaInfo_CSPtr& metaInfo) {
                         _metaInfo = metaInfo;
                 }
 
@@ -69,7 +69,7 @@ namespace lc {
                  * @brief Set MetaInfo
                  * @param metaInfo new MetaInfo
                  */
-                void setMetaInfo(MetaInfo_CSPtr&& metaInfo) {
+                void setMetaInfo(meta::MetaInfo_CSPtr&& metaInfo) {
                     _metaInfo = metaInfo;
                     metaInfo = nullptr;
                 }
@@ -78,7 +78,7 @@ namespace lc {
                  * @brief Get block
                  * @return Block
                  */
-                const Block_CSPtr& block() const {
+                const meta::Block_CSPtr& block() const {
                         return _block;
                 }
 
@@ -86,7 +86,7 @@ namespace lc {
                  * @brief Set the Block
                  * @param block Block
                  */
-                void setBlock(const Block_CSPtr& block) {
+                void setBlock(const meta::Block_CSPtr& block) {
                         _block = block;
                 }
 
@@ -94,7 +94,7 @@ namespace lc {
                  * @brief Set the Block
                  * @param block Block
                  */
-                void setBlock(Block_CSPtr&& block) {
+                void setBlock(meta::Block_CSPtr&& block) {
                     _block = block;
                     block = nullptr;
                 }
@@ -119,7 +119,7 @@ namespace lc {
                  * @brief Generate new ID for the entity
                  */
                 void newID() {
-                    _id = ID();
+                    _id = entity::ID();
                 }
 
                 virtual bool checkValues() {
@@ -127,10 +127,10 @@ namespace lc {
                 }
 
             private:
-                Layer_CSPtr _layer;
-                MetaInfo_CSPtr _metaInfo;
-                Block_CSPtr _block;
-                ID _id;
+                meta::Layer_CSPtr _layer;
+                meta::MetaInfo_CSPtr _metaInfo;
+                meta::Block_CSPtr _block;
+                entity::ID _id;
         };
     }
 }

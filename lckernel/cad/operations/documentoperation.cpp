@@ -1,15 +1,15 @@
 #include "documentoperation.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
 using namespace lc;
 using namespace operation;
 
-DocumentOperation::DocumentOperation(Document_SPtr document, const std::string& description) :
+DocumentOperation::DocumentOperation(storage::Document_SPtr document, const std::string& description) :
     Undoable(description),
     _document(std::move(document)) {
 }
 
-std::shared_ptr<Document> DocumentOperation::document() const {
+storage::Document_SPtr DocumentOperation::document() const {
     return _document;
 }
 

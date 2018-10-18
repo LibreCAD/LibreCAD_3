@@ -3,7 +3,7 @@
 //
 
 #include "linepatternops.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
 using namespace lc;
 using namespace operation;
@@ -11,7 +11,7 @@ using namespace operation;
 /********************************************************************************************************/
 /** AddLinePattern                                                                                          ***/
 /********************************************************************************************************/
-AddLinePattern::AddLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern) :
+AddLinePattern::AddLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern) :
         DocumentOperation(std::move(document), "AddLinePattern"),
         _linePattern(std::move(linePattern)) {
 }
@@ -31,7 +31,7 @@ void AddLinePattern::redo() const {
 /********************************************************************************************************/
 /** RemoveLinePattern                                                                                       ***/
 /********************************************************************************************************/
-RemoveLinePattern::RemoveLinePattern(Document_SPtr document, DxfLinePattern_CSPtr linePattern) :
+RemoveLinePattern::RemoveLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern) :
         DocumentOperation(std::move(document), "RemoveLinePattern"),
         _linePattern(std::move(linePattern)) {
 }
@@ -52,9 +52,9 @@ void RemoveLinePattern::redo() const {
 /********************************************************************************************************/
 /** ReplaceLinePattern                                                                                       ***/
 /********************************************************************************************************/
-ReplaceLinePattern::ReplaceLinePattern(Document_SPtr document,
-                                       DxfLinePattern_CSPtr oldLinePattern,
-                                       DxfLinePattern_CSPtr newLinePattern) :
+ReplaceLinePattern::ReplaceLinePattern(storage::Document_SPtr document,
+                                       meta::DxfLinePattern_CSPtr oldLinePattern,
+                                       meta::DxfLinePattern_CSPtr newLinePattern) :
         DocumentOperation(std::move(document), "ReplaceLinePattern"),
         _oldLinePattern(std::move(oldLinePattern)),
         _newLinePattern(std::move(newLinePattern)) {

@@ -5,8 +5,10 @@
 #include <cad/meta/dxflinepattern.h>
 
 namespace lc {
-    class Layer;
-    DECLARE_SHORT_SHARED_PTR(Layer)
+    namespace meta {
+        class Layer;
+        DECLARE_SHORT_SHARED_PTR(Layer)
+    }
 
     namespace builder {
         class LayerBuilder {
@@ -15,26 +17,26 @@ namespace lc {
                 virtual ~LayerBuilder() = default;
 
                 const std::string& name() const;
-                const MetaLineWidthByValue& lineWidth() const;
+                const meta::MetaLineWidthByValue& lineWidth() const;
                 const Color& color() const;
-                DxfLinePatternByValue_CSPtr linePattern() const;
+                meta::DxfLinePatternByValue_CSPtr linePattern() const;
                 bool isFrozen() const;
 
                 LayerBuilder* setName(const std::string& name);
-                LayerBuilder* setLineWidth(const MetaLineWidthByValue& lineWidth);
+                LayerBuilder* setLineWidth(const meta::MetaLineWidthByValue& lineWidth);
                 LayerBuilder* setColor(const Color& color);
-                LayerBuilder* setLinePattern(const DxfLinePatternByValue_CSPtr& linePattern);
+                LayerBuilder* setLinePattern(const meta::DxfLinePatternByValue_CSPtr& linePattern);
                 LayerBuilder* setIsFrozen(bool isFrozen);
 
-                Layer_CSPtr build();
+                meta::Layer_CSPtr build();
 
             private:
                 bool checkValues();
 
                 std::string _name;
-                MetaLineWidthByValue _lineWidth;
+                meta::MetaLineWidthByValue _lineWidth;
                 Color _color;
-                lc::DxfLinePatternByValue_CSPtr _linePattern;
+                meta::DxfLinePatternByValue_CSPtr _linePattern;
                 bool _isFrozen;
         };
     }

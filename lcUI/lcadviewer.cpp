@@ -2,7 +2,7 @@
 #include <QtGui>
 #include <QVBoxLayout>
 
-using namespace LCViewer;
+using namespace lc::ui;
 
 LCADViewer::LCADViewer(QWidget *parent) :
     QWidget(parent),
@@ -30,13 +30,13 @@ LCADViewer::~LCADViewer() {
 }
 
 
-void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
+void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document) {
     int width = size().width();
     int height = size().height();
 
     createPainters(width, height);
 
-    _docCanvas = std::make_shared<DocumentCanvas>(document, [this](double* x, double* y) {
+    _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
         _documentPainter->device_to_user(x, y);
     });
 
@@ -44,16 +44,16 @@ void LCADViewer::setDocument(std::shared_ptr<lc::Document> document) {
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
 }
 
-void LCADViewer::setSnapManager(std::shared_ptr<SnapManager> snapmanager) {
+void LCADViewer::setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager) {
     _snapManager = std::move(snapmanager);
 }
 
-void LCADViewer::setDragManager(DragManager_SPtr dragManager) {
+void LCADViewer::setDragManager(lc::viewer::manager::DragManager_SPtr dragManager) {
     _dragManager = std::move(dragManager);
 }
 
 
-void LCADViewer::on_commitProcessEvent(const lc::CommitProcessEvent& event) {
+void LCADViewer::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
     updateDocument();
     update();
 }
@@ -246,7 +246,7 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
     update();
 }
 
-std::shared_ptr<DocumentCanvas> LCADViewer::documentCanvas() const {
+std::shared_ptr<lc::viewer::DocumentCanvas> LCADViewer::documentCanvas() const {
     return _docCanvas;
 }
 
@@ -266,7 +266,7 @@ void LCADViewer::paintEvent(QPaintEvent *p) {
     QPainter painter(this);
 
     _foregroundPainter->clear(1.0, 1.0, 1.0, 0.0);
-    _docCanvas->render(*_foregroundPainter, VIEWER_FOREGROUND);
+    _docCanvas->render(*_foregroundPainter, lc::viewer::VIEWER_FOREGROUND);
 
     painter.drawImage(QPoint(0, 0), *imagemaps.at(_backgroundPainter));
     painter.drawImage(QPoint(0, 0), *imagemaps.at(_documentPainter));
@@ -279,15 +279,15 @@ void LCADViewer::createPainters(unsigned int width, unsigned int height) {
     QImage *m_image;
 
     m_image = new QImage(width, height, QImage::Format_ARGB32);
-    _backgroundPainter = createCairoImagePainter(m_image->bits(), width, height);
+    _backgroundPainter = lc::viewer::createCairoImagePainter(m_image->bits(), width, height);
     imagemaps.insert(std::make_pair(_backgroundPainter, m_image));
 
     m_image = new QImage(width, height, QImage::Format_ARGB32);
-    _documentPainter = createCairoImagePainter(m_image->bits(), width, height);
+    _documentPainter = lc::viewer::createCairoImagePainter(m_image->bits(), width, height);
     imagemaps.insert(std::make_pair(_documentPainter, m_image));
 
     m_image = new QImage(width, height, QImage::Format_ARGB32);
-    _foregroundPainter = createCairoImagePainter(m_image->bits(), width, height);
+    _foregroundPainter = lc::viewer::createCairoImagePainter(m_image->bits(), width, height);
     imagemaps.insert(std::make_pair(_foregroundPainter, m_image));
 }
 
@@ -302,14 +302,14 @@ void LCADViewer::deletePainters() {
 
 void LCADViewer::updateBackground() {
     _backgroundPainter->clear(1.0, 1.0, 1.0, 0.0);
-    _docCanvas->render(*_backgroundPainter, VIEWER_BACKGROUND);
+    _docCanvas->render(*_backgroundPainter, lc::viewer::VIEWER_BACKGROUND);
 }
 
 void LCADViewer::updateDocument() {
     _documentPainter->clear(1.0, 1.0, 1.0, 0.0);
-    _docCanvas->render(*_documentPainter, VIEWER_DOCUMENT);
+    _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_DOCUMENT);
 }
 
-const std::shared_ptr<DocumentCanvas>& LCADViewer::docCanvas() const {
+const std::shared_ptr<lc::viewer::DocumentCanvas>& LCADViewer::docCanvas() const {
     return _docCanvas;
 }

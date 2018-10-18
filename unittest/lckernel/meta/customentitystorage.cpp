@@ -3,6 +3,7 @@
 #include <cad/meta/customentitystorage.h>
 
 using namespace lc;
+using namespace meta;
 
 TEST(CustomEntityStorageTest, Creation) {
     auto plugin = "Plugin Name";

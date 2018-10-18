@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+using namespace lc::ui::widgets;
+
 LinePatternPathPart::LinePatternPathPart(QWidget* parent) :
     LinePatternPathPart(1, parent) {
 }

@@ -1,10 +1,12 @@
 #include "linepatternmodel.h"
 
+using namespace lc::ui::widgets;
+
 LinePatternModel::LinePatternModel(QObject *parent) :
     QAbstractTableModel(parent) {
 }
 
-void LinePatternModel::setLinePatterns(std::vector<lc::DxfLinePatternByValue_CSPtr> linePatterns) {
+void LinePatternModel::setLinePatterns(std::vector<lc::meta::DxfLinePatternByValue_CSPtr> linePatterns) {
     beginResetModel();
 
     _linePatterns = std::move(linePatterns);
@@ -12,7 +14,7 @@ void LinePatternModel::setLinePatterns(std::vector<lc::DxfLinePatternByValue_CSP
     endResetModel();
 }
 
-lc::DxfLinePattern_CSPtr LinePatternModel::linePatternAt(unsigned long index) const {
+lc::meta::DxfLinePattern_CSPtr LinePatternModel::linePatternAt(unsigned long index) const {
     return _linePatterns.at(index);
 }
 
@@ -34,7 +36,7 @@ QVariant LinePatternModel::data(const QModelIndex &index, int role) const {
     if(role == Qt::DecorationRole && index.column() == PREVIEW) {
         QPixmap pixmap(PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
-        auto linePatternByValue = std::dynamic_pointer_cast<const lc::DxfLinePatternByValue>(linePattern);
+        auto linePatternByValue = std::dynamic_pointer_cast<const lc::meta::DxfLinePatternByValue>(linePattern);
 
         if(linePatternByValue != nullptr) {
             auto painter = LinePatternPainter(&pixmap, linePatternByValue);

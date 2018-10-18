@@ -10,7 +10,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
+            - llvm-toolchain-trusty-6.0
           packages:
             - qtbase5-dev
             - qttools5-dev
@@ -27,8 +27,8 @@ matrix:
             - libgdk-pixbuf2.0-dev
             - gcc-4.9
             - g++-4.9
-            - clang-4.0
-            - clang-tidy-4.0
+            - clang-6.0
+            - clang-tidy-6.0
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
@@ -57,19 +57,35 @@ script:
   - cd ../..
   - mkdir -p build
   - cd build
-  - cmake ..
+  - cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py -DCHECKS_SOURCE_BRANCH=${TRAVIS_BRANCH} ..
   - make -j2
+  - |
+    if [[ $TRAVIS_TEST_RESULT != 0 ]]; then
+      echo "Compilation failed"
+      cat stylecheck.out
+      exit 1;
+    fi
+
   - ./unittest/lcunittest
-  - make stylecheck > stylecheck.out
+
+  - |
+    if [[ $TRAVIS_EVENT_TYPE == "pull_request" ]]; then
+      echo "Doing partial style check"
+      make diffstylecheck > stylecheck.out
+    else 
+      make stylecheck > stylecheck.out
+    fi
+
   - |
     if [[ -n $(grep "warning: " stylecheck.out) ]] || [[ -n $(grep "error: " stylecheck.out) ]]; then
       echo "Style checks failed"
       echo ""
-      cat stylecheck.out
       exit 1;
     else
       echo -e "\033[1;32m\xE2\x9C\x93 passed:\033[0m $1";
     fi
+
+  - cat stylecheck.out
 
 notifications:
   irc:

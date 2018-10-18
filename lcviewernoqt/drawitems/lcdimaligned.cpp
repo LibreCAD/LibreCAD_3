@@ -2,9 +2,9 @@
 #include "../lcdrawoptions.h"
 #include "lcdimaligned.h"
 #include "endcaps.h"
-#include <cad/functions/string_helper.h>
+#include <cad/tools/string_helper.h>
 
-using namespace LCViewer;
+using namespace lc::viewer;
 
 LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned) :
         LCVDrawItem(dimAligned, true),
@@ -15,7 +15,7 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
     const double capSize = 10.;
 
     // Decide to show the explicit value or the measured value
-    std::string value = lc::StringHelper::dim_value(
+    std::string value = lc::tools::StringHelper::dim_value(
             _dimAligned->explicitValue(),
             options.alignedFormat(),
             _dimAligned->definitionPoint3().distanceTo(_dimAligned->definitionPoint2())

@@ -1,14 +1,16 @@
 #include <gtest/gtest.h>
 
-#include <cad/dochelpers/documentimpl.h>
-#include <cad/dochelpers/storagemanagerimpl.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
 #include <cad/operations/blockops.h>
 
 using namespace lc;
+using namespace storage;
+using namespace meta;
 
 TEST(BlockOps, AddBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
-    auto block = std::make_shared<Block>("Name", geo::Coordinate());
+    auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
     auto op = std::make_shared<operation::AddBlock>(document, block);
 
     auto blocks = document->blocks();
@@ -31,7 +33,7 @@ TEST(BlockOps, AddBlock) {
 
 TEST(BlockOps, RemoveBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
-    auto block = std::make_shared<Block>("Name", geo::Coordinate());
+    auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
 
     auto addOp = std::make_shared<operation::AddBlock>(document, block);
     auto remOp = std::make_shared<operation::RemoveBlock>(document, block);
@@ -55,8 +57,8 @@ TEST(BlockOps, RemoveBlock) {
 
 TEST(BlockOps, ReplaceBlock) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
-    auto block = std::make_shared<Block>("Name", geo::Coordinate());
-    auto block2 = std::make_shared<Block>("Name 2", geo::Coordinate());
+    auto block = std::make_shared<lc::meta::Block>("Name", geo::Coordinate());
+    auto block2 = std::make_shared<lc::meta::Block>("Name 2", geo::Coordinate());
 
     auto addOp = std::make_shared<operation::AddBlock>(document, block);
     auto repOp = std::make_shared<operation::ReplaceBlock>(document, block, block2);

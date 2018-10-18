@@ -2,6 +2,7 @@
 #include "color.h"
 #include "metacolor.h"
 
+//TODO: move this to persistence
 namespace lc {
 
     /**
@@ -15,11 +16,11 @@ namespace lc {
         public:
             iColor();
 
-            virtual ~iColor() {}
+            virtual ~iColor() = default;
 
             // Given a specific DXF color ID return a MetaCOlor shared pointer
             // Codes <0 and > 255 will return nullptr
-            std::shared_ptr<lc::MetaColorByValue> intToColor(int code) const {
+            std::shared_ptr<lc::meta::MetaColorByValue> intToColor(int code) const {
                 if (code < 0 || code > 255) {
                     return nullptr;
                 }
@@ -46,7 +47,7 @@ namespace lc {
             * This is useful when a DXF that was imported needs to be exported
             * with the same DXF color ID's.
             */
-            inline int colorToInt(std::shared_ptr<const lc::MetaColorByValue>& col) const {
+            inline int colorToInt(std::shared_ptr<const lc::meta::MetaColorByValue>& col) const {
                 for (int i = 0; i < 256; i++) {
                     if (_intToCol[i] == col) {
                         return i;
@@ -57,7 +58,7 @@ namespace lc {
             }
 
         public:
-            lc::MetaColorByValue_SPtr _intToCol[256];
+            lc::meta::MetaColorByValue_SPtr _intToCol[256];
     };
 
 

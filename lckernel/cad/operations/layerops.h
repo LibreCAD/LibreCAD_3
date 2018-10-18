@@ -5,14 +5,16 @@
 #include "documentoperation.h"
 
 namespace lc {
-    class Document;
+    namespace storage {
+        class Document;
+    }
     namespace operation {
         /**
         * This class can be used to add or remove layers from the document
         */
         class AddLayer : public DocumentOperation {
             public:
-                AddLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) ;
+                AddLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) ;
 
                 void undo() const override;
                 void redo() const override;
@@ -23,7 +25,7 @@ namespace lc {
                 virtual void processInternal();
 
             private:
-                Layer_CSPtr _layer;
+                meta::Layer_CSPtr _layer;
         };
 
         /**
@@ -31,7 +33,7 @@ namespace lc {
         */
         class RemoveLayer : public DocumentOperation {
             public:
-                RemoveLayer(std::shared_ptr<Document> document, Layer_CSPtr layer) ;
+                RemoveLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) ;
 
                 void undo() const override;
                 void redo() const override;
@@ -42,7 +44,7 @@ namespace lc {
                 void processInternal() override;
 
             private:
-                Layer_CSPtr _layer;
+                meta::Layer_CSPtr _layer;
                 std::vector<entity::CADEntity_CSPtr> _entities;
         };
 
@@ -51,7 +53,7 @@ namespace lc {
         */
         class ReplaceLayer : public DocumentOperation {
             public:
-                ReplaceLayer(std::shared_ptr<Document> document, Layer_CSPtr oldLayer, Layer_CSPtr newLayer) ;
+                ReplaceLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr oldLayer, meta::Layer_CSPtr newLayer) ;
 
                 void undo() const override;
                 void redo() const override;
@@ -62,8 +64,8 @@ namespace lc {
                 void processInternal() override;
 
             private:
-                Layer_CSPtr _oldLayer;
-                Layer_CSPtr _newLayer;
+                meta::Layer_CSPtr _oldLayer;
+                meta::Layer_CSPtr _newLayer;
         };
     }
 }

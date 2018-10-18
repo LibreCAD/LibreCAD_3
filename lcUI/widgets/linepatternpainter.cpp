@@ -1,12 +1,14 @@
 #include "linepatternpainter.h"
 
-LinePatternPainter::LinePatternPainter(QPaintDevice* device, lc::DxfLinePatternByValue_CSPtr linePattern, int width) :
+using namespace lc::ui::widgets;
+
+LinePatternPainter::LinePatternPainter(QPaintDevice* device, lc::meta::DxfLinePatternByValue_CSPtr linePattern, int width) :
     _device(device),
     _linePattern(std::move(linePattern)),
     _width(width) {
 }
 
-LinePatternPainter::LinePatternPainter(QPaintDevice *device, double width, lc::DxfLinePatternByValue_CSPtr linePattern)  :
+LinePatternPainter::LinePatternPainter(QPaintDevice *device, double width, lc::meta::DxfLinePatternByValue_CSPtr linePattern)  :
     _device(device),
     _linePattern(std::move(linePattern)),
     _width((int) width) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 
 #include <QDockWidget>
 #include <QVBoxLayout>
@@ -16,51 +16,67 @@ namespace Ui {
     class Layers;
 }
 
-/**
- * \brief Widget which shows a list of layers
- */
-class Layers : public QDockWidget {
-    Q_OBJECT
+namespace lc {
+    namespace ui {
+        namespace widgets {
+            /**
+             * \brief Widget which shows a list of layers
+             */
+            class Layers : public QDockWidget {
+                Q_OBJECT
 
-    public:
-        /**
-         * \brief Create widget
-         */
-        Layers(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0);
-        ~Layers();
+                public:
+                    /**
+                     * \brief Create widget
+                     */
+                    Layers(CadMdiChild* mdiChild = nullptr, QWidget* parent = 0);
 
-        /**
-         * \brief Set new document.
-         * \param document New document
-         * Update the layer list.
-         */
-        void setMdiChild(CadMdiChild* mdiChild = nullptr);
+                    ~Layers();
 
-    signals:
-        void layerChanged(lc::Layer_CSPtr layer);
+                    /**
+                     * \brief Set new document.
+                     * \param document New document
+                     * Update the layer list.
+                     */
+                    void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
-    private slots:
-        void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
-        void on_newButton_clicked();
-        void on_deleteButton_clicked();
-        void on_layerList_clicked(const QModelIndex& index);
+                signals:
 
-        void changeLayerName(lc::Layer_CSPtr& layer, const std::string& name);
+                    void layerChanged(lc::meta::Layer_CSPtr layer);
 
-    protected:
-        Ui::Layers* ui;
-        LayerModel* model;
+                private slots:
 
-        void createLayer(lc::Layer_CSPtr layer);
-        void deleteLayer(lc::Layer_CSPtr layer);
-        void replaceLayer(lc::Layer_CSPtr oldLayer, lc::Layer_CSPtr newLayer);
+                    void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
-    private:
-        CadMdiChild* _mdiChild;
+                    void on_newButton_clicked();
 
-        void updateLayerList();
+                    void on_deleteButton_clicked();
 
-        void on_addLayerEvent(const lc::AddLayerEvent&);
-        void on_removeLayerEvent(const lc::RemoveLayerEvent&);
-        void on_replaceLayerEvent(const lc::ReplaceLayerEvent&);
-};
+                    void on_layerList_clicked(const QModelIndex& index);
+
+                    void changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& name);
+
+                protected:
+                    Ui::Layers* ui;
+                    LayerModel* model;
+
+                    void createLayer(lc::meta::Layer_CSPtr layer);
+
+                    void deleteLayer(lc::meta::Layer_CSPtr layer);
+
+                    void replaceLayer(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+
+                private:
+                    CadMdiChild* _mdiChild;
+
+                    void updateLayerList();
+
+                    void on_addLayerEvent(const lc::event::AddLayerEvent&);
+
+                    void on_removeLayerEvent(const lc::event::RemoveLayerEvent&);
+
+                    void on_replaceLayerEvent(const lc::event::ReplaceLayerEvent&);
+            };
+        }
+    }
+}

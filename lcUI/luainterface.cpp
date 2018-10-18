@@ -2,6 +2,8 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
+using namespace lc::ui;
+
 LuaInterface::LuaInterface() :
     _L(LuaIntf::LuaState::newState()),
 	_pluginManager(_L, "gui") {
@@ -12,13 +14,13 @@ LuaInterface::~LuaInterface() {
     _operations.clear();
     _events.clear();
 
-    lc::LuaCustomEntityManager::getInstance().removePlugins();
+    lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 
 	_L.close();
 }
 
 void LuaInterface::initLua() {
-	auto lcLua = lc::LCLua(_L);
+	auto lcLua = lc::lua::LCLua(_L);
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
 	lcLua.importLCKernel();

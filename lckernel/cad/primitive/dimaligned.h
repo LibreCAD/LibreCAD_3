@@ -38,9 +38,9 @@ namespace lc {
                        std::string explicitValue,
                        geo::Coordinate definitionPoint2,
                        geo::Coordinate definitionPoint3,
-                       Layer_CSPtr layer,
-                       MetaInfo_CSPtr metaInfo = nullptr,
-                       Block_CSPtr block = nullptr);
+                       meta::Layer_CSPtr layer,
+                       meta::MetaInfo_CSPtr metaInfo = nullptr,
+                       meta::Block_CSPtr block = nullptr);
 
 
             DimAligned(const DimAligned_CSPtr& other, bool sameID = false);
@@ -49,9 +49,9 @@ namespace lc {
                                            geo::Coordinate p2,
                                            geo::Coordinate middleOfText,
                                            std::string explicitValue,
-                                           Layer_CSPtr layer,
-                                           MetaInfo_CSPtr metaInfo = nullptr,
-                                           Block_CSPtr block = nullptr);
+                                           meta::Layer_CSPtr layer,
+                                           meta::MetaInfo_CSPtr metaInfo = nullptr,
+                                           meta::Block_CSPtr block = nullptr);
 
         public:
             /**
@@ -94,7 +94,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(Layer_CSPtr layer, const MetaInfo_CSPtr metaInfo, Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             // Where p2 specifies the first point of the dimension, p3 specifies that second point of the dimension
             // defPoint specifies where the dimension is specified and notates the horizontal/vertical 'line' between the two points

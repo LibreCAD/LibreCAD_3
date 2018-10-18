@@ -1,10 +1,10 @@
 #include "entitybuilder.h"
-#include "cad/document/document.h"
+#include "cad/storage/document.h"
 
 using namespace lc;
 using namespace operation;
 
-EntityBuilder::EntityBuilder(const std::shared_ptr<Document>& document) :
+EntityBuilder::EntityBuilder(const std::shared_ptr<storage::Document>& document) :
         DocumentOperation(document, "EntityBuilder") {
 }
 

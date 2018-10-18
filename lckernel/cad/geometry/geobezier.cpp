@@ -114,7 +114,7 @@ std::vector<double> Bezier::nearestPointTValue(const lc::geo::Coordinate &coord)
     auto c = (2 * (Ax * Ax + Ay * Ay) + pos.x() * Bx + pos.y() * By) / a;
     auto d = (pos.x() * Ax + pos.y() * Ay) / a;
 
-    return lc::Math::cubicSolver({b, c, d});
+    return lc::maths::Math::cubicSolver({b, c, d});
 }
 
 

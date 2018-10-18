@@ -1,15 +1,11 @@
 #include "gradientbackground.h"
 
-#include <cairo.h>
-#include "../painters/lcpainter.h"
-#include "cad/geometry/geoarea.h"
-#include "cad/meta/color.h"
-using namespace LCViewer;
+using namespace lc::viewer::drawable;
 
 GradientBackground::GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {
 }
 
-void GradientBackground::draw(DrawEvent const & event) const {
+void GradientBackground::draw(event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
     unsigned long patId = painter.pattern_create_linear(0.0,  updateRect.minP().y(),  0.0, updateRect.maxP().y());

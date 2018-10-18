@@ -24,11 +24,11 @@ bool InsertBuilder::checkValues() {
            _document != nullptr;
 }
 
-const Block_CSPtr& InsertBuilder::displayBlock() const {
+const meta::Block_CSPtr& InsertBuilder::displayBlock() const {
     return _displayBlock;
 }
 
-InsertBuilder* InsertBuilder::setDisplayBlock(const Block_CSPtr& displayBlock) {
+InsertBuilder* InsertBuilder::setDisplayBlock(const meta::Block_CSPtr& displayBlock) {
     _displayBlock = displayBlock;
 
     return this;
@@ -52,11 +52,11 @@ InsertBuilder* InsertBuilder::setCoordinate(const geo::Coordinate& coordinate) {
     return this;
 }
 
-const Document_SPtr& InsertBuilder::document() const {
+const storage::Document_SPtr& InsertBuilder::document() const {
     return _document;
 }
 
-InsertBuilder* InsertBuilder::setDocument(const Document_SPtr& document) {
+InsertBuilder* InsertBuilder::setDocument(const storage::Document_SPtr& document) {
     _document = document;
 
     return this;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cad/document/document.h>
+#include <cad/storage/document.h>
 #include <vector>
 #include "documentoperation.h"
 #include "undoable.h"
@@ -12,7 +12,7 @@ namespace lc {
          */
         class Builder : public DocumentOperation {
             public:
-                Builder(Document_SPtr document, const std::string& description);
+                Builder(storage::Document_SPtr document, const std::string& description);
 
                 /**
                  * @brief Add an operation to the Builder
