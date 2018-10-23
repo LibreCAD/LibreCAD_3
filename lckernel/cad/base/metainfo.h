@@ -8,9 +8,9 @@
 namespace lc {
     namespace meta {
         /**
-         * Containe to hold meta data for a entity
+         * Container to hold meta data for an entity
          */
-        // TODO: Container to store meta information on a entity
+        // TODO: Container to store meta information on an entity
         class MetaInfo
                 : public std::enable_shared_from_this<MetaInfo>,
                   public std::unordered_map<std::string, EntityMetaType_CSPtr> {

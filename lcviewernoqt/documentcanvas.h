@@ -17,7 +17,7 @@
 #include <cad/storage/document.h>
 
 // Minimum linewidth we render, below this the lines might start to look 'jagged'
-// We migth want to consider at lower linewidth to simply reduce alpha to get a similar effect of smaller line?
+// We might want to consider at lower linewidth to simply reduce alpha to get a similar effect of smaller line?
 static const double MINIMUM_READER_LINEWIDTH = 1.0;
 
 namespace lc {
