@@ -43,7 +43,7 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
     auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document);
 
-    // Add backround
+    // Add background
     auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(
             lc::Color(0x00, 0x00, 0x00),
             lc::Color(0x00, 0x00, 0x00)

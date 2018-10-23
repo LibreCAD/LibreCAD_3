@@ -1179,7 +1179,7 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
 
 
 /*****************************************
- * EXTRA Utilites
+ * EXTRA Utilities
  *****************************************/
 lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
 
