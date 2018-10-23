@@ -37,6 +37,12 @@ else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
 
+#boost log
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+
 #Lua
 find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})

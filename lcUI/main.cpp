@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QtCore/QDebug>
 #include <QtWidgets/QStyleFactory>
-#include <log4cxx/xml/domconfigurator.h>
+#include <boost/log/trivial.hpp>
 #include <QSettings>
 
 int main(int argc, char* argv[]) {
@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     QApplication::setStyle(QStyleFactory::create(style.getStyle()));
 
-    //log4cxx::xml::DOMConfigurator::configure("Log4cxxConfig.xml");
+    BOOST_LOG_TRIVIAL(warning) << "A warning severity message";
 
     lc::ui::LuaInterface li;
     li.initLua();

@@ -7,11 +7,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 message("***** Lua command line interface *****")
 
-# LOG4CXX
-find_package(Log4CXX REQUIRED)
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-link_directories(${LOG4CXX_LIBRARY_DIRS})
-
 # Cairo
 find_package(Cairo REQUIRED)
 include_directories(${CAIRO_INCLUDE_DIRS})
@@ -36,7 +31,9 @@ endif ()
 
 # Boost
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+#boost log
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 message("Boost lib ${Boost_INCLUDE_DIRS}")
@@ -89,8 +86,8 @@ target_link_libraries(luacmdinterface
         ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES}
         ${Boost_LIBRARIES}
         ${CURL_LIBRARIES}
-        ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES}
+        ${APR_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
-        ${LUA_LIBRARIES}
+        ${LUA_LIBRARIES} ${Boost_LIBRARIES}
         lcluascript lckernel lcluascript lcviewernoqt
 )

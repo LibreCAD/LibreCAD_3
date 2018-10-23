@@ -115,6 +115,12 @@ include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
 find_package(GDK REQUIRED)
 include_directories(${GDK_INCLUDE_DIRS})
 
+#boost log
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
