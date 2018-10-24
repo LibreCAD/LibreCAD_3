@@ -4,8 +4,8 @@
 #include <QApplication>
 #include <QtCore/QDebug>
 #include <QtWidgets/QStyleFactory>
-#include <log4cxx/xml/domconfigurator.h>
 #include <QSettings>
+#include "cad/logger.h"
 
 int main(int argc, char* argv[]) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     QApplication::setStyle(QStyleFactory::create(style.getStyle()));
 
-    //log4cxx::xml::DOMConfigurator::configure("Log4cxxConfig.xml");
+    //LOG << "Hello";
 
     lc::ui::LuaInterface li;
     li.initLua();

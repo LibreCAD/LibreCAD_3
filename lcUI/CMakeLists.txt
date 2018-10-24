@@ -96,10 +96,13 @@ else()
     include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
-# LOG4CXX
-find_package(Log4CXX 1.10 REQUIRED)
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-link_directories(${LOG4CXX_LIBRARY_DIRS})
+# Boost logging
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
+FIND_PACKAGE ( Threads )
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 #Lua
 find_package(Lua 5.2 REQUIRED)
@@ -140,7 +143,6 @@ set(EXTRA_LIBS
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
-        ${LOG4CXX_LIBRARIES}
         ${APR_LIBRARIES})
 
 #Create library for unit tests
@@ -150,4 +152,4 @@ if(WITH_UNITTESTS)
 endif(WITH_UNITTESTS)
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-target_link_libraries(librecad ${EXTRA_LIBS})
+target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})

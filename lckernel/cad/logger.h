@@ -1,9 +1,12 @@
 #pragma once
 
-#include "log4cxx/logger.h"
-#include "log4cxx/basicconfigurator.h"
-#include "log4cxx/helpers/exception.h"
+#include <boost/log/trivial.hpp>
+#include <boost/log/utility/setup.hpp>
 
-namespace lc {
-    const log4cxx::LoggerPtr logger = log4cxx::Logger::getRootLogger();
-}
+#define LOG_TRACE BOOST_LOG_TRIVIAL(trace)
+#define LOG_DEBUG BOOST_LOG_TRIVIAL(debug)
+#define LOG_INFO BOOST_LOG_TRIVIAL(info)
+#define LOG_WARNING BOOST_LOG_TRIVIAL(warning)
+#define LOG_ERROR BOOST_LOG_TRIVIAL(error)
+#define LOG_FATAL BOOST_LOG_TRIVIAL(fatal)
+#define LOG LOG_DEBUG
