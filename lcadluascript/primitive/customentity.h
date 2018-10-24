@@ -3,6 +3,7 @@
 #include "../builders/customentity.h"
 #include <cad/primitive/customentity.h>
 #include <cad/interface/snapable.h>
+#include <kaguya/kaguya.hpp>
 
 namespace lc {
     namespace entity {
@@ -38,12 +39,12 @@ namespace lc {
                 CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             private:
-                LuaIntf::LuaRef _snapPoints;
-                LuaIntf::LuaRef _nearestPoint;
-                LuaIntf::LuaRef _dragPoints;
-                LuaIntf::LuaRef _newDragPoint;
-                LuaIntf::LuaRef _dragPointClick;
-                LuaIntf::LuaRef _dragPointRelease;
+                kaguya::LuaRef _snapPoints;
+                kaguya::LuaRef _nearestPoint;
+                kaguya::LuaRef _dragPoints;
+                kaguya::LuaRef _newDragPoint;
+                kaguya::LuaRef _dragPointClick;
+                kaguya::LuaRef _dragPointRelease;
         };
 
         DECLARE_SHORT_SHARED_PTR(LuaCustomEntity)

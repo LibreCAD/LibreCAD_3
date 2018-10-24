@@ -25,7 +25,14 @@ namespace lc {
                 static Arc createArc3P(const Coordinate& p1, const Coordinate& p2, const Coordinate& p3);
                 static Arc createArcBulge(const Coordinate& p1, const Coordinate& p2, const double bulge);
 
-                Arc(const Arc &c) : _center(c._center), _radius(c._radius), _startAngle(c._startAngle), _endAngle(c._endAngle), _CCW(c._CCW) {}
+                Arc(const Arc &c) :
+                    _center(c._center),
+                    _radius(c._radius),
+                    _startAngle(c._startAngle),
+                    _endAngle(c._endAngle),
+                    _CCW(c._CCW) {
+                }
+
                 Arc(Arc &&c) noexcept {
                     std::swap(_center, c._center);
                     std::swap(_radius, c._radius);

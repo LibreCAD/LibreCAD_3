@@ -211,24 +211,5 @@ namespace lc {
                 const Intersect::Method _method;
                 const double _tolerance;
         };
-
-        /**
-          * @brief calculate intersection points of many entities but beal out asap when a intersection point was found
-          * @note Can we make this into a general template ???
-          * @sa Intersect
-          */
-        class HasIntersectAgainstOthers {
-            public:
-                HasIntersectAgainstOthers(std::vector<entity::CADEntity_CSPtr>, std::vector<entity::CADEntity_CSPtr>,
-                                          Intersect::Method, double tolerance);
-
-                bool result() const;
-
-            private:
-                std::vector<entity::CADEntity_CSPtr> _entities;
-                std::vector<entity::CADEntity_CSPtr> _others;
-                const Intersect::Method _method;
-                const double _tolerance;
-        };
     }
 }

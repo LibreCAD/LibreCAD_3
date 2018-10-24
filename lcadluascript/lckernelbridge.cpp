@@ -21,686 +21,1178 @@
 #include <cad/storage/settings.h>
 #include <primitive/customentity.h>
 #include "lclua.h"
+#include <kaguya/kaguya.hpp>
+#include <cad/operations/linepatternops.h>
 
-using namespace LuaIntf;
 using namespace lc::lua;
 
 void LCLua::importLCKernel() {
-    //18-09-2018: Those declarations are used to fix the CLang bug
-    //            "candidate template ignored: couldn't infer template argument 'FN'"
-    //            GCC is not affected
-    using CADEntityBuilder_setLayer = void (builder::CADEntityBuilder::*)(const meta::Layer_CSPtr&);
-    using CADEntityBuilder_setMetaInfo = void (builder::CADEntityBuilder::*)(const meta::MetaInfo_CSPtr&);
-    using CADEntityBuilder_setBlock = void (builder::CADEntityBuilder::*)(const meta::Block_CSPtr&);
+    kaguya::State state(_L);
+    state["lc.Color"].setClass(kaguya::UserdataMetatable<lc::Color>()
+                                       .setConstructors<lc::Color(), lc::Color(int, int, int, int), lc::Color(double, double, double, double), lc::Color(const lc::Color &)>()
+            .addFunction("alpha", &lc::Color::alpha)
+            .addFunction("alphaI", &lc::Color::alphaI)
+            .addFunction("blue", &lc::Color::blue)
+            .addFunction("blueI", &lc::Color::blueI)
+            .addFunction("green", &lc::Color::green)
+            .addFunction("greenI", &lc::Color::greenI)
+            .addFunction("red", &lc::Color::red)
+            .addFunction("redI", &lc::Color::redI)
+    );
 
-    LuaBinding(_L)
-        .beginClass<Color>("Color")
-            .addConstructor(LUA_ARGS(
-                                double r,
-                                double g,
-                                double b,
-                                double a
-                            )
-            )
-        .endClass()
+    state["lc.EntityCoordinate"].setClass(kaguya::UserdataMetatable<lc::EntityCoordinate>()
+                                                  .setConstructors<lc::EntityCoordinate(const geo::Coordinate &, int), lc::EntityCoordinate(const lc::EntityCoordinate &)>()
+            .addFunction("coordinate", &lc::EntityCoordinate::coordinate)
+            .addFunction("pointId", &lc::EntityCoordinate::pointId)
+    );
 
-        .beginClass<meta::MetaType>("MetaType")
-        .endClass()
+    state["lc.EntityDispatch"].setClass(kaguya::UserdataMetatable<lc::EntityDispatch>()
+                                                .addOverloadedFunctions("visit", static_cast<void(lc::EntityDispatch::*)(entity::Line_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Point_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Circle_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Arc_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Ellipse_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Text_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Spline_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::DimAligned_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::DimAngular_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::DimDiametric_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::DimLinear_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::DimRadial_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::LWPolyline_CSPtr)>(&lc::EntityDispatch::visit), static_cast<void(lc::EntityDispatch::*)(entity::Image_CSPtr)>(&lc::EntityDispatch::visit))
+    );
 
-        .beginExtendClass<meta::EntityMetaType, meta::MetaType>("EntityMetaType")
-        .endClass()
+    state["lc.EntityDistance"].setClass(kaguya::UserdataMetatable<lc::EntityDistance>()
+                                                .setConstructors<lc::EntityDistance(entity::CADEntity_CSPtr, const geo::Coordinate &)>()
+            .addFunction("coordinate", &lc::EntityDistance::coordinate)
+            .addFunction("entity", &lc::EntityDistance::entity)
+    );
 
-        .beginExtendClass<meta::DocumentMetaType, meta::MetaType>("meta::DocumentMetaType")
-        .endClass()
+    state["lc.SimpleSnapConstrain"].setClass(kaguya::UserdataMetatable<lc::SimpleSnapConstrain>()
+                                                     .setConstructors<lc::SimpleSnapConstrain(), lc::SimpleSnapConstrain(uint16_t, int, double)>()
+                                                     .addFunction("angle", &lc::SimpleSnapConstrain::angle)
+                                                     .addFunction("constrain", &lc::SimpleSnapConstrain::constrain)
+                                                     .addFunction("disableConstrain", &lc::SimpleSnapConstrain::disableConstrain)
+                                                     .addFunction("divisions", &lc::SimpleSnapConstrain::divisions)
+                                                     .addFunction("enableConstrain", &lc::SimpleSnapConstrain::enableConstrain)
+                                                     .addFunction("hasConstrain", &lc::SimpleSnapConstrain::hasConstrain)
+                                                     .addFunction("setAngle", &lc::SimpleSnapConstrain::setAngle)
+                                                     .addFunction("setDivisions", &lc::SimpleSnapConstrain::setDivisions)
+    );
 
-        .beginExtendClass<meta::Layer, meta::MetaType>("Layer")
-            .addConstructor(LUA_SP(meta::Layer_SPtr), LUA_ARGS(
-                                std::string,
-                                meta::MetaLineWidthByValue,
-                                Color))
-        .endClass()
+    state["lc.Visitable"].setClass(kaguya::UserdataMetatable<lc::Visitable>()
+                                           .addFunction("accept", &lc::Visitable::accept)
+    );
 
-        .beginExtendClass<meta::DxfLinePattern, meta::EntityMetaType>("meta::DxfLinePattern")
-        .endClass()
+    state["lc.builder.ArcBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::ArcBuilder, lc::builder::CADEntityBuilder>()
+                                                    .setConstructors<lc::builder::ArcBuilder()>()
+                                                    .addFunction("build", &lc::builder::ArcBuilder::build)
+                                                    .addFunction("center", &lc::builder::ArcBuilder::center)
+                                                    .addFunction("endAngle", &lc::builder::ArcBuilder::endAngle)
+                                                    .addFunction("isCCW", &lc::builder::ArcBuilder::isCCW)
+                                                    .addFunction("radius", &lc::builder::ArcBuilder::radius)
+                                                    .addFunction("setCenter", &lc::builder::ArcBuilder::setCenter)
+                                                    .addFunction("setEndAngle", &lc::builder::ArcBuilder::setEndAngle)
+                                                    .addFunction("setIsCCW", &lc::builder::ArcBuilder::setIsCCW)
+                                                    .addFunction("setRadius", &lc::builder::ArcBuilder::setRadius)
+                                                    .addFunction("setStartAngle", &lc::builder::ArcBuilder::setStartAngle)
+                                                    .addFunction("startAngle", &lc::builder::ArcBuilder::startAngle)
+    );
 
-        .beginExtendClass<meta::DxfLinePatternByValue, meta::DxfLinePattern>("meta::DxfLinePatternByValue")
-            .addConstructor(LUA_SP(meta::DxfLinePatternByValue_SPtr), LUA_ARGS(const std::string&,
-                                                                   const std::string&,
-                                                                   const std::vector<double>&,
-                                                                   const double)
-            )
-        .endClass()
+    state["lc.builder.CADEntityBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::CADEntityBuilder>()
+                                                          .setConstructors<lc::builder::CADEntityBuilder()>()
+                                                          .addFunction("block", &lc::builder::CADEntityBuilder::block)
+                                                          .addFunction("checkValues", &lc::builder::CADEntityBuilder::checkValues)
+                                                          .addFunction("copy", &lc::builder::CADEntityBuilder::copy)
+                                                          .addFunction("id", &lc::builder::CADEntityBuilder::id)
+                                                          .addFunction("layer", &lc::builder::CADEntityBuilder::layer)
+                                                          .addFunction("metaInfo", &lc::builder::CADEntityBuilder::metaInfo)
+                                                          .addFunction("newID", &lc::builder::CADEntityBuilder::newID)
+                                                          .addOverloadedFunctions("setBlock", static_cast<void(lc::builder::CADEntityBuilder::*)(const meta::Block_CSPtr &)>(&lc::builder::CADEntityBuilder::setBlock))
+                                                          .addFunction("setID", &lc::builder::CADEntityBuilder::setID)
+                                                          .addOverloadedFunctions("setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer))
+                                                          .addOverloadedFunctions("setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo))
+    );
 
-        .beginExtendClass<meta::DxfLinePatternByBlock, meta::DxfLinePattern>("meta::DxfLinePatternByBlock")
-            .addConstructor(LUA_SP(meta::DxfLinePatternByBlock_SPtr), LUA_ARGS())
-        .endClass()
+    state["lc.builder.CircleBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::CircleBuilder, lc::builder::CADEntityBuilder>()
+                                                       .setConstructors<lc::builder::CircleBuilder()>()
+                                                       .addFunction("build", &lc::builder::CircleBuilder::build)
+                                                       .addFunction("center", &lc::builder::CircleBuilder::center)
+                                                       .addFunction("radius", &lc::builder::CircleBuilder::radius)
+                                                       .addFunction("setCenter", &lc::builder::CircleBuilder::setCenter)
+                                                       .addFunction("setRadius", &lc::builder::CircleBuilder::setRadius)
+    );
 
-        .beginExtendClass<meta::MetaColorByValue, meta::DocumentMetaType>("DocumentMetaColor")
-           .addConstructor(LUA_SP(meta::MetaColorByValue_SPtr), LUA_ARGS(const Color))
-        .endClass()
+    state["lc.builder.InsertBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::InsertBuilder, lc::builder::CADEntityBuilder>()
+                                                       .setConstructors<lc::builder::InsertBuilder()>()
+                                                       .addFunction("build", &lc::builder::InsertBuilder::build)
+                                                       .addFunction("checkValues", &lc::builder::InsertBuilder::checkValues)
+                                                       .addFunction("coordinate", &lc::builder::InsertBuilder::coordinate)
+                                                       .addFunction("copy", &lc::builder::InsertBuilder::copy)
+                                                       .addFunction("displayBlock", &lc::builder::InsertBuilder::displayBlock)
+                                                       .addFunction("document", &lc::builder::InsertBuilder::document)
+                                                       .addFunction("setCoordinate", &lc::builder::InsertBuilder::setCoordinate)
+                                                       .addFunction("setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock)
+                                                       .addFunction("setDocument", &lc::builder::InsertBuilder::setDocument)
+    );
 
-        .beginExtendClass<meta::MetaColorByValue, meta::EntityMetaType>("EntityMetaColor")
-          .addConstructor(LUA_SP(meta::MetaColorByValue_SPtr), LUA_ARGS(const Color))
-        .endClass()
+    state["lc.builder.LayerBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LayerBuilder>()
+                                                      .setConstructors<lc::builder::LayerBuilder()>()
+                                                      .addFunction("build", &lc::builder::LayerBuilder::build)
+                                                      .addFunction("color", &lc::builder::LayerBuilder::color)
+                                                      .addFunction("isFrozen", &lc::builder::LayerBuilder::isFrozen)
+                                                      .addFunction("linePattern", &lc::builder::LayerBuilder::linePattern)
+                                                      .addFunction("lineWidth", &lc::builder::LayerBuilder::lineWidth)
+                                                      .addFunction("name", &lc::builder::LayerBuilder::name)
+                                                      .addFunction("setColor", &lc::builder::LayerBuilder::setColor)
+                                                      .addFunction("setIsFrozen", &lc::builder::LayerBuilder::setIsFrozen)
+                                                      .addFunction("setLinePattern", &lc::builder::LayerBuilder::setLinePattern)
+                                                      .addFunction("setLineWidth", &lc::builder::LayerBuilder::setLineWidth)
+                                                      .addFunction("setName", &lc::builder::LayerBuilder::setName)
+    );
 
-        .beginExtendClass<meta::MetaLineWidthByBlock, meta::MetaType>("meta::MetaLineWidthByBlock")
-         .addConstructor(LUA_SP(meta::MetaLineWidthByBlock_SPtr), LUA_ARGS())
-        .endClass()
+    state["lc.builder.LineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LineBuilder, lc::builder::CADEntityBuilder>()
+                                                     .setConstructors<lc::builder::LineBuilder()>()
+                                                     .addFunction("build", &lc::builder::LineBuilder::build)
+                                                     .addFunction("end", &lc::builder::LineBuilder::end)
+                                                     .addFunction("setEnd", &lc::builder::LineBuilder::setEnd)
+                                                     .addFunction("setStart", &lc::builder::LineBuilder::setStart)
+                                                     .addFunction("start", &lc::builder::LineBuilder::start)
+    );
 
-        .beginExtendClass<meta::MetaLineWidthByValue, meta::DocumentMetaType>("DocumentLineWidthByValue")
-         .addConstructor(LUA_SP(meta::MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
-        .endClass()
+    state["lc.builder.LinePatternBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LinePatternBuilder>()
+                                                            .setConstructors<lc::builder::LinePatternBuilder()>()
+                                                            .addFunction("addElement", &lc::builder::LinePatternBuilder::addElement)
+                                                            .addFunction("build", &lc::builder::LinePatternBuilder::build)
+                                                            .addFunction("checkValues", &lc::builder::LinePatternBuilder::checkValues)
+                                                            .addFunction("description", &lc::builder::LinePatternBuilder::description)
+                                                            .addFunction("name", &lc::builder::LinePatternBuilder::name)
+                                                            .addFunction("path", &lc::builder::LinePatternBuilder::path)
+                                                            .addFunction("setDescription", &lc::builder::LinePatternBuilder::setDescription)
+                                                            .addFunction("setName", &lc::builder::LinePatternBuilder::setName)
+                                                            .addFunction("setPath", &lc::builder::LinePatternBuilder::setPath)
+    );
 
-        .beginExtendClass<meta::MetaLineWidthByValue, meta::EntityMetaType>("EntityLineWidthByValue")
-          .addConstructor(LUA_SP(meta::MetaLineWidthByValue_SPtr), LUA_ARGS(const double))
-        .endClass()
+    state["lc.builder.PointBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::PointBuilder, lc::builder::CADEntityBuilder>()
+                                                      .setConstructors<lc::builder::PointBuilder()>()
+                                                      .addFunction("build", &lc::builder::PointBuilder::build)
+                                                      .addFunction("coordinate", &lc::builder::PointBuilder::coordinate)
+                                                      .addFunction("setCoordinate", &lc::builder::PointBuilder::setCoordinate)
+    );
 
-        .beginClass<meta::MetaInfo>("MetaInfo")
-            .addConstructor(LUA_SP(meta::MetaInfo_SPtr), LUA_ARGS())
-            .addFunction("add", &meta::MetaInfo::add)
-        .endClass()
+    state["lc.entity.Arc"].setClass(kaguya::UserdataMetatable<lc::entity::Arc, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable>>()
+                                            .setConstructors<lc::entity::Arc(const geo::Coordinate &, double, double, double, bool, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Arc(const geo::Arc &, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Arc(const lc::entity::Arc_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Arc::accept)
+            .addFunction("boundingBox", &lc::entity::Arc::boundingBox)
+            .addFunction("copy", &lc::entity::Arc::copy)
+            .addFunction("dispatch", &lc::entity::Arc::dispatch)
+            .addFunction("dragPoints", &lc::entity::Arc::dragPoints)
+            .addFunction("mirror", &lc::entity::Arc::mirror)
+            .addFunction("modify", &lc::entity::Arc::modify)
+            .addFunction("move", &lc::entity::Arc::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Arc::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Arc::rotate)
+            .addFunction("scale", &lc::entity::Arc::scale)
+            .addFunction("setDragPoints", &lc::entity::Arc::setDragPoints)
+            .addFunction("snapPoints", &lc::entity::Arc::snapPoints)
+    );
 
-        .beginClass<geo::Coordinate>("Coord")
-            .addConstructor(LUA_ARGS(
-                                double x,
-                                double y))
-            .addFunction("x", &geo::Coordinate::x)
-            .addFunction("y", &geo::Coordinate::y)
-            .addFunction("z", &geo::Coordinate::z)
-        .endClass()
+    state["lc.entity.CADEntity"].setClass(kaguya::UserdataMetatable<lc::entity::CADEntity, kaguya::MultipleBase<lc::entity::ID, lc::Visitable>>()
+                                                  .addFunction("accept", &lc::entity::CADEntity::accept)
+                                                  .addFunction("block", &lc::entity::CADEntity::block)
+                                                  .addFunction("boundingBox", &lc::entity::CADEntity::boundingBox)
+                                                  .addFunction("copy", &lc::entity::CADEntity::copy)
+                                                  .addFunction("dispatch", &lc::entity::CADEntity::dispatch)
+                                                  .addFunction("layer", &lc::entity::CADEntity::layer)
+                                                  .addFunction("metaInfo", &lc::entity::CADEntity::metaInfo<lc::meta::EntityMetaType>)
+                                                  .addFunction("mirror", &lc::entity::CADEntity::mirror)
+                                                  .addFunction("modify", &lc::entity::CADEntity::modify)
+                                                  .addFunction("move", &lc::entity::CADEntity::move)
+                                                  .addFunction("rotate", &lc::entity::CADEntity::rotate)
+                                                  .addFunction("scale", &lc::entity::CADEntity::scale)
+    );
 
-        .beginClass<geo::Coordinate>("Coordinate")
-            .addConstructor(LUA_ARGS(
-                                _opt<double> x,
-                                _opt<double> y,
-                                _opt<double> z))
-            .addStaticFunction("_fromAngle", [](const double angle) {
-                return geo::Coordinate(angle);
-            })
+    state["lc.entity.Circle"].setClass(kaguya::UserdataMetatable<lc::entity::Circle, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable>>()
+                                               .setConstructors<lc::entity::Circle(const geo::Coordinate &, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Circle(const lc::entity::Circle_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Circle::accept)
+            .addFunction("boundingBox", &lc::entity::Circle::boundingBox)
+            .addFunction("copy", &lc::entity::Circle::copy)
+            .addFunction("dispatch", &lc::entity::Circle::dispatch)
+            .addFunction("mirror", &lc::entity::Circle::mirror)
+            .addFunction("modify", &lc::entity::Circle::modify)
+            .addFunction("move", &lc::entity::Circle::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Circle::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Circle::rotate)
+            .addFunction("scale", &lc::entity::Circle::scale)
+            .addFunction("snapPoints", &lc::entity::Circle::snapPoints)
+    );
 
-            .addFunction("x", &geo::Coordinate::x)
-            .addFunction("y", &geo::Coordinate::y)
-            .addFunction("z", &geo::Coordinate::z)
-            .addFunction("angleTo", &geo::Coordinate::angleTo)
-            .addFunction("distanceTo", &geo::Coordinate::distanceTo)
+    state["lc.entity.CustomEntity"].setClass(kaguya::UserdataMetatable<lc::entity::CustomEntity, kaguya::MultipleBase<lc::entity::Insert, lc::entity::UnmanagedDraggable>>()
+                                                     .addFunction("copy", &lc::entity::CustomEntity::copy)
+                                                     .addFunction("dragPoints", &lc::entity::CustomEntity::dragPoints)
+                                                     .addFunction("mirror", &lc::entity::CustomEntity::mirror)
+                                                     .addFunction("modify", &lc::entity::CustomEntity::modify)
+                                                     .addFunction("move", &lc::entity::CustomEntity::move)
+                                                     .addFunction("nearestPointOnPath", &lc::entity::CustomEntity::nearestPointOnPath)
+                                                     .addFunction("rotate", &lc::entity::CustomEntity::rotate)
+                                                     .addFunction("scale", &lc::entity::CustomEntity::scale)
+                                                     .addFunction("setDragPoints", &lc::entity::CustomEntity::setDragPoints)
+                                                     .addFunction("snapPoints", &lc::entity::CustomEntity::snapPoints)
+    );
 
-            .addFunction("add", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
-                return *c1 + c2;
-            })
+    state["lc.entity.DimAligned"].setClass(kaguya::UserdataMetatable<lc::entity::DimAligned, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+                                                   .setConstructors<lc::entity::DimAligned(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, const double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, geo::Coordinate, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimAligned(const lc::entity::DimAligned_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::DimAligned::accept)
+            .addFunction("boundingBox", &lc::entity::DimAligned::boundingBox)
+            .addFunction("copy", &lc::entity::DimAligned::copy)
+            .addFunction("definitionPoint2", &lc::entity::DimAligned::definitionPoint2)
+            .addFunction("definitionPoint3", &lc::entity::DimAligned::definitionPoint3)
+            .addStaticFunction("dimAuto", &lc::entity::DimAligned::dimAuto)
+            .addFunction("dispatch", &lc::entity::DimAligned::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimAligned::dragPoints)
+            .addFunction("mirror", &lc::entity::DimAligned::mirror)
+            .addFunction("modify", &lc::entity::DimAligned::modify)
+            .addFunction("move", &lc::entity::DimAligned::move)
+            .addFunction("rotate", &lc::entity::DimAligned::rotate)
+            .addFunction("scale", &lc::entity::DimAligned::scale)
+            .addFunction("setDragPoints", &lc::entity::DimAligned::setDragPoints)
+    );
 
-            .addFunction("sub", [](const geo::Coordinate* c1, const geo::Coordinate c2) {
-                return *c1 - c2;
-            })
+    state["lc.entity.DimAngular"].setClass(kaguya::UserdataMetatable<lc::entity::DimAngular, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+                                                   .setConstructors<lc::entity::DimAngular(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, geo::Coordinate, geo::Coordinate, geo::Coordinate, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimAngular(const lc::entity::DimAngular_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::DimAngular::accept)
+            .addFunction("boundingBox", &lc::entity::DimAngular::boundingBox)
+            .addFunction("copy", &lc::entity::DimAngular::copy)
+            .addFunction("defLine11", &lc::entity::DimAngular::defLine11)
+            .addFunction("defLine12", &lc::entity::DimAngular::defLine12)
+            .addFunction("defLine21", &lc::entity::DimAngular::defLine21)
+            .addFunction("defLine22", &lc::entity::DimAngular::defLine22)
+            .addStaticFunction("dimAuto", &lc::entity::DimAngular::dimAuto)
+            .addFunction("dispatch", &lc::entity::DimAngular::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimAngular::dragPoints)
+            .addFunction("mirror", &lc::entity::DimAngular::mirror)
+            .addFunction("modify", &lc::entity::DimAngular::modify)
+            .addFunction("move", &lc::entity::DimAngular::move)
+            .addFunction("rotate", &lc::entity::DimAngular::rotate)
+            .addFunction("scale", &lc::entity::DimAngular::scale)
+            .addFunction("setDragPoints", &lc::entity::DimAngular::setDragPoints)
+    );
 
-            .addFunction("mulDouble", [](const geo::Coordinate* c1, const double s) {
-                return *c1 * s;
-            })
-        .endClass()
+    state["lc.entity.DimDiametric"].setClass(kaguya::UserdataMetatable<lc::entity::DimDiametric, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+                                                     .setConstructors<lc::entity::DimDiametric(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimDiametric(const geo::Coordinate &, TextConst::AttachmentPoint, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimDiametric(const lc::entity::DimDiametric_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::DimDiametric::accept)
+            .addFunction("boundingBox", &lc::entity::DimDiametric::boundingBox)
+            .addFunction("copy", &lc::entity::DimDiametric::copy)
+            .addFunction("definitionPoint2", &lc::entity::DimDiametric::definitionPoint2)
+            .addFunction("dispatch", &lc::entity::DimDiametric::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimDiametric::dragPoints)
+            .addFunction("leader", &lc::entity::DimDiametric::leader)
+            .addFunction("mirror", &lc::entity::DimDiametric::mirror)
+            .addFunction("modify", &lc::entity::DimDiametric::modify)
+            .addFunction("move", &lc::entity::DimDiametric::move)
+            .addFunction("rotate", &lc::entity::DimDiametric::rotate)
+            .addFunction("scale", &lc::entity::DimDiametric::scale)
+            .addFunction("setDragPoints", &lc::entity::DimDiametric::setDragPoints)
+    );
 
-        .beginClass<geo::Vector>("Vector")
-            .addConstructor(LUA_SP(std::shared_ptr<const geo::Vector>), LUA_ARGS(
-                                const geo::Coordinate & start,
-                                const geo::Coordinate & end))
-        .endClass()
+    state["lc.entity.DimLinear"].setClass(kaguya::UserdataMetatable<lc::entity::DimLinear, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+                                                  .setConstructors<lc::entity::DimLinear(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, geo::Coordinate, double, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimLinear(const lc::entity::DimLinear_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::DimLinear::accept)
+            .addFunction("angle", &lc::entity::DimLinear::angle)
+            .addFunction("boundingBox", &lc::entity::DimLinear::boundingBox)
+            .addFunction("copy", &lc::entity::DimLinear::copy)
+            .addFunction("definitionPoint2", &lc::entity::DimLinear::definitionPoint2)
+            .addFunction("definitionPoint3", &lc::entity::DimLinear::definitionPoint3)
+            .addStaticFunction("dimAuto", &lc::entity::DimLinear::dimAuto)
+            .addFunction("dispatch", &lc::entity::DimLinear::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimLinear::dragPoints)
+            .addFunction("mirror", &lc::entity::DimLinear::mirror)
+            .addFunction("modify", &lc::entity::DimLinear::modify)
+            .addFunction("move", &lc::entity::DimLinear::move)
+            .addFunction("oblique", &lc::entity::DimLinear::oblique)
+            .addFunction("rotate", &lc::entity::DimLinear::rotate)
+            .addFunction("scale", &lc::entity::DimLinear::scale)
+            .addFunction("setDragPoints", &lc::entity::DimLinear::setDragPoints)
+    );
 
-        .beginClass<storage::Document>("Document")
-            .addFunction("layerByName", &storage::Document::layerByName)
-            .addFunction("entitiesByLayer", &storage::Document::entitiesByLayer)
-            .addFunction("waitingCustomEntities", &storage::Document::waitingCustomEntities)
-            .addFunction("entitiesByBlock", &storage::Document::entitiesByBlock)
-        .endClass()
+    state["lc.entity.DimRadial"].setClass(kaguya::UserdataMetatable<lc::entity::DimRadial, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
+                                                  .setConstructors<lc::entity::DimRadial(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimRadial(const geo::Coordinate &, TextConst::AttachmentPoint, double, TextConst::LineSpacingStyle, std::string, geo::Coordinate, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::DimRadial(const lc::entity::DimRadial_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::DimRadial::accept)
+            .addFunction("boundingBox", &lc::entity::DimRadial::boundingBox)
+            .addFunction("copy", &lc::entity::DimRadial::copy)
+            .addFunction("definitionPoint2", &lc::entity::DimRadial::definitionPoint2)
+            .addFunction("dispatch", &lc::entity::DimRadial::dispatch)
+            .addFunction("dragPoints", &lc::entity::DimRadial::dragPoints)
+            .addFunction("leader", &lc::entity::DimRadial::leader)
+            .addFunction("mirror", &lc::entity::DimRadial::mirror)
+            .addFunction("modify", &lc::entity::DimRadial::modify)
+            .addFunction("move", &lc::entity::DimRadial::move)
+            .addFunction("rotate", &lc::entity::DimRadial::rotate)
+            .addFunction("scale", &lc::entity::DimRadial::scale)
+            .addFunction("setDragPoints", &lc::entity::DimRadial::setDragPoints)
+    );
 
-        .beginExtendClass<storage::DocumentImpl, storage::Document>("DocumentImpl")
-        .endClass()
+    state["lc.entity.Dimension"].setClass(kaguya::UserdataMetatable<lc::entity::Dimension>()
+                                                  .setConstructors<lc::entity::Dimension(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double, double, TextConst::LineSpacingStyle, std::string), lc::entity::Dimension(geo::Coordinate, geo::Coordinate, TextConst::AttachmentPoint, double), lc::entity::Dimension(const lc::entity::Dimension &)>()
+            .addFunction("attachmentPoint", &lc::entity::Dimension::attachmentPoint)
+            .addFunction("definitionPoint", &lc::entity::Dimension::definitionPoint)
+            .addFunction("explicitValue", &lc::entity::Dimension::explicitValue)
+            .addFunction("lineSpacingFactor", &lc::entity::Dimension::lineSpacingFactor)
+            .addFunction("lineSpacingStyle", &lc::entity::Dimension::lineSpacingStyle)
+            .addFunction("middleOfText", &lc::entity::Dimension::middleOfText)
+            .addFunction("textAngle", &lc::entity::Dimension::textAngle)
+    );
 
-        .beginClass<storage::UndoManager>("UndoManager")
-            .addFunction("canRedo", &storage::UndoManager::canRedo)
-            .addFunction("canUndo", &storage::UndoManager::canUndo)
-            .addFunction("redo", &storage::UndoManager::redo)
-            .addFunction("removeUndoables", &storage::UndoManager::removeUndoables)
-            .addFunction("undo", &storage::UndoManager::undo)
-        .endClass()
+    state["lc.entity.Draggable"].setClass(kaguya::UserdataMetatable<lc::entity::Draggable>()
+                                                  .addFunction("dragPoints", &lc::entity::Draggable::dragPoints)
+                                                  .addFunction("setDragPoints", &lc::entity::Draggable::setDragPoints)
+    );
 
-        .beginExtendClass<storage::UndoManagerImpl, storage::UndoManager>("UndoManagerImpl")
-        .endClass()
+    state["lc.entity.Ellipse"].setClass(kaguya::UserdataMetatable<lc::entity::Ellipse, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Ellipse, lc::entity::Snapable>>()
+                                                .setConstructors<lc::entity::Ellipse(const geo::Coordinate &, const geo::Coordinate &, double, double, double, bool, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Ellipse(const lc::entity::Ellipse_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Ellipse::accept)
+            .addFunction("boundingBox", &lc::entity::Ellipse::boundingBox)
+            .addFunction("copy", &lc::entity::Ellipse::copy)
+            .addFunction("dispatch", &lc::entity::Ellipse::dispatch)
+            .addFunction("findBoxPoints", &lc::entity::Ellipse::findBoxPoints)
+            .addFunction("mirror", &lc::entity::Ellipse::mirror)
+            .addFunction("modify", &lc::entity::Ellipse::modify)
+            .addFunction("move", &lc::entity::Ellipse::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Ellipse::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Ellipse::rotate)
+            .addFunction("scale", &lc::entity::Ellipse::scale)
+            .addFunction("snapPoints", &lc::entity::Ellipse::snapPoints)
+    );
 
-        .beginClass<storage::EntityContainer<lc::entity::CADEntity_CSPtr>>("EntityContainer")
-            .addFunction("asVector", &storage::EntityContainer<lc::entity::CADEntity_CSPtr>::asVector, LUA_ARGS(
-                    LuaIntf::_opt<short>
-            ))
-        .endClass()
+    state["lc.entity.ID"].setClass(kaguya::UserdataMetatable<lc::entity::ID>()
+                                           .setConstructors<lc::entity::ID(), lc::entity::ID(unsigned long)>()
+                                           .addFunction("id", &lc::entity::ID::id)
+                                           .addFunction("setID", &lc::entity::ID::setID)
+    );
 
-        .beginClass<storage::StorageManager>("StorageManager")
-        .endClass()
+    state["lc.entity.Image"].setClass(kaguya::UserdataMetatable<lc::entity::Image, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::Visitable>>()
+                                              .setConstructors<lc::entity::Image(std::string, geo::Coordinate, geo::Coordinate, geo::Coordinate, double, double, double, double, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Image(const lc::entity::Image_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Image::accept)
+            .addFunction("base", &lc::entity::Image::base)
+            .addFunction("boundingBox", &lc::entity::Image::boundingBox)
+            .addFunction("brightness", &lc::entity::Image::brightness)
+            .addFunction("contrast", &lc::entity::Image::contrast)
+            .addFunction("copy", &lc::entity::Image::copy)
+            .addFunction("dispatch", &lc::entity::Image::dispatch)
+            .addFunction("fade", &lc::entity::Image::fade)
+            .addFunction("height", &lc::entity::Image::height)
+            .addFunction("mirror", &lc::entity::Image::mirror)
+            .addFunction("modify", &lc::entity::Image::modify)
+            .addFunction("move", &lc::entity::Image::move)
+            .addFunction("name", &lc::entity::Image::name)
+            .addFunction("nearestPointOnPath", &lc::entity::Image::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Image::rotate)
+            .addFunction("scale", &lc::entity::Image::scale)
+            .addFunction("snapPoints", &lc::entity::Image::snapPoints)
+            .addFunction("uv", &lc::entity::Image::uv)
+            .addFunction("vv", &lc::entity::Image::vv)
+            .addFunction("width", &lc::entity::Image::width)
+    );
 
-        .beginExtendClass<storage::StorageManagerImpl, storage::StorageManager>("StorageManagerImpl")
-            .addConstructor(LUA_SP(std::shared_ptr<storage::StorageManagerImpl>), LUA_ARGS())
-        .endClass()
+    state["lc.entity.Insert"].setClass(kaguya::UserdataMetatable<lc::entity::Insert, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>>()
+                                               .setConstructors<lc::entity::Insert(const lc::entity::Insert_CSPtr &, bool)>()
+            .addFunction("boundingBox", &lc::entity::Insert::boundingBox)
+            .addFunction("copy", &lc::entity::Insert::copy)
+            .addFunction("dispatch", &lc::entity::Insert::dispatch)
+            .addFunction("displayBlock", &lc::entity::Insert::displayBlock)
+            .addFunction("document", &lc::entity::Insert::document)
+            .addFunction("dragPoints", &lc::entity::Insert::dragPoints)
+            .addFunction("mirror", &lc::entity::Insert::mirror)
+            .addFunction("modify", &lc::entity::Insert::modify)
+            .addFunction("move", &lc::entity::Insert::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Insert::nearestPointOnPath)
+            .addFunction("position", &lc::entity::Insert::position)
+            .addFunction("rotate", &lc::entity::Insert::rotate)
+            .addFunction("scale", &lc::entity::Insert::scale)
+            .addFunction("setDragPoints", &lc::entity::Insert::setDragPoints)
+            .addFunction("snapPoints", &lc::entity::Insert::snapPoints)
+    );
 
-        .beginClass<Visitable>("Visitable")
-        .endClass()
-
-        .beginClass<entity::Snapable>("Snapable")
-            .addFunction("snapPoints", &entity::Snapable::snapPoints)
-            .addFunction("nearestPointOnPath", &entity::Snapable::nearestPointOnPath)
-            .addStaticFunction("remove_ifDistanceGreaterThen", &entity::Snapable::remove_ifDistanceGreaterThen)
-            .addStaticFunction("snapPointsCleanup", &entity::Snapable::snapPointsCleanup)
-        .endClass()
-
-        .beginClass<entity::ID>("ID")
-            .addConstructor(LUA_ARGS(_opt<ID_DATATYPE>))
-            .addFunction("id", &entity::ID::id)
-            .addFunction("setId", &entity::ID::setID)
-        .endClass()
-
-        .beginExtendClass<entity::CADEntity, entity::ID>("CADEntity")
-            .addFunction("move", &entity::CADEntity::move)
-            .addFunction("rotate", &entity::CADEntity::rotate)
-            .addFunction("copy", &entity::CADEntity::copy)
-            .addFunction("scale", &entity::CADEntity::scale)
-            .addFunction("mirror", &entity::CADEntity::mirror)
-
-            .addFunction("layer", &entity::CADEntity::layer)
-            .addFunction("metaInfo", [](const entity::CADEntity* ce) {
-                return ce->metaInfo();
-            })
-
-            .addProperty("entityType", [](entity::CADEntity*) {
-                return "unknown";
-            })
-        .endClass()
-
-        .beginExtendClass<entity::Line, entity::CADEntity>("Line")
-            .addConstructor(LUA_SP(entity::Line_SPtr), LUA_ARGS(
-                       const geo::Coordinate & start,
-                       const geo::Coordinate & end,
-                       const meta::Layer_CSPtr,
-                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-            .addProperty("entityType", [](entity::Line*) {
-                return "line";
-            })
-            .addFunction("nearestPointOnEntity", &entity::Line::nearestPointOnEntity)
-            .addFunction("nearestPointOnPath", &entity::Line::nearestPointOnPath)
-            .addFunction("start", &geo::Vector::start)
-            .addFunction("finish", &geo::Vector::end) //"end" will make Lua crash
-        .endClass()
-
-        .beginExtendClass<entity::Circle, entity::CADEntity>("Circle")
-            .addConstructor(LUA_SP(entity::Circle_SPtr), LUA_ARGS(
-                       const geo::Coordinate & center,
-                       double radius,
-                       const meta::Layer_CSPtr,
-                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-            .addProperty("entityType", [](entity::Circle*) {
-                return "circle";
-            })
-            .addFunction("nearestPointOnEntity", &geo::Circle::nearestPointOnEntity)
-            .addFunction("nearestPointOnPath", &geo::Circle::nearestPointOnPath)
-            .addFunction("center", &entity::Circle::center)
-            .addFunction("radius", &entity::Circle::radius)
-        .endClass()
-
-        .beginExtendClass<entity::Arc, entity::CADEntity>("Arc")
-            .addConstructor(LUA_SP(entity::Arc_SPtr), LUA_ARGS(
-                       const geo::Coordinate & center,
-                       double radius,
-                       const double startAngle,
-                       const double endAngle,
-                       bool CCW,
-                       const meta::Layer_CSPtr layer,
-                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-
-            .addFunction("nearestPointOnEntity", &geo::Arc::nearestPointOnEntity)
-            .addFunction("nearestPointOnPath", &geo::Arc::nearestPointOnPath)
-
-            .addFunction("angle", &geo::Arc::angle)
-            .addFunction("startAngle", &geo::Arc::startAngle)
-            .addFunction("endAngle", &geo::Arc::endAngle)
-            .addFunction("center", &entity::Arc::center)
-            .addFunction("radius", &entity::Arc::radius)
-            .addFunction("CCW", &geo::Arc::CCW)
-
-            .addProperty("entityType", [](entity::CADEntity*) {
-                return "arc";
-            })
-        .endClass()
-
-        .beginExtendClass<entity::Ellipse, entity::CADEntity>("Ellipse")
-            .addConstructor(LUA_SP(entity::Ellipse_SPtr), LUA_ARGS(
-                       const geo::Coordinate & center,
-                       const geo::Coordinate & majorP,
-                       double minorRadius,
-                       double startAngle,
-                       double endAngle,
-                       bool reversed,
-                       const meta::Layer_CSPtr layer,
-                       LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                       LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-
-            .addFunction("getEllipseAngle", &entity::Ellipse::getEllipseAngle)
-
-            .endClass()
-
-        .beginExtendClass<entity::Point, entity::CADEntity>("Point_")
-        .endClass()
-
-        .beginExtendClass<entity::Text, entity::CADEntity>("Text_")
-        .endClass()
-
-        .beginExtendClass<entity::DimRadial, entity::CADEntity>("DimRadial")
-            .addConstructor(LUA_SP(entity::DimRadial_SPtr), LUA_ARGS(
-                const geo::Coordinate&,
-                const geo::Coordinate&,
-                const TextConst::AttachmentPoint&,
-                double,
-                const double,
-                const TextConst::LineSpacingStyle&,
-                const std::string&,
-                const geo::Coordinate&,
-                const double,
-                const meta::Layer_CSPtr,
-                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginExtendClass<entity::DimDiametric, entity::CADEntity>("DimDiametric")
-            .addConstructor(LUA_SP(entity::DimDiametric_SPtr), LUA_ARGS(
-                const geo::Coordinate&,
-                const TextConst::AttachmentPoint&,
-                const double,
-                const TextConst::LineSpacingStyle&,
-                const std::string&,
-                const geo::Coordinate&,
-                const double,
-                const meta::Layer_CSPtr,
-                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginExtendClass<entity::DimLinear, entity::CADEntity>("DimLinear")
-            .addStaticFunction("dimAuto", &entity::DimLinear::dimAuto, LUA_ARGS(
-                    geo::Coordinate const&,
-                    geo::Coordinate const&,
-                    geo::Coordinate const&,
-                    std::string const&,
-                    const meta::Layer_CSPtr,
-                    LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                    LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginExtendClass<entity::DimAligned, entity::CADEntity>("DimAligned")
-            .addStaticFunction("dimAuto", &entity::DimAligned::dimAuto, LUA_ARGS(
-                geo::Coordinate const&,
-                geo::Coordinate const&,
-                geo::Coordinate const&,
-                std::string const&,
-                const meta::Layer_CSPtr,
-                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginExtendClass<entity::DimAngular, entity::CADEntity>("DimAngular")
-            .addStaticFunction("dimAuto", &entity::DimAngular::dimAuto, LUA_ARGS(
-                geo::Coordinate const&,
-                geo::Coordinate const&,
-                geo::Coordinate const&,
-                std::string const&,
-                const meta::Layer_CSPtr,
-                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginExtendClass<entity::Spline, entity::CADEntity>("Spline")
-            .addConstructor(LUA_SP(entity::Spline_SPtr), LUA_ARGS(
-                const std::vector<geo::Coordinate>,
-                const std::vector<double>,
-                const std::vector<geo::Coordinate>,
-                int,
-                bool,
-                double,
-                double,
-                double,
-                double,
-                double,
-                double,
-                double,
-                double,
-                double,
-                double,
-                geo::Spline::splineflag,
-                const meta::Layer_CSPtr,
-                LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-        .endClass()
-
-        .beginClass<entity::LWVertex2D>("LWVertex2D")
-            .addConstructor(LUA_ARGS(
-                                    const geo::Coordinate & pos, _opt<double>, _opt<double>, _opt<double>))
-                                    .addFunction("location", &lc::entity::LWVertex2D::location)
-                                    .addFunction("bulge", &lc::entity::LWVertex2D::bulge)
-                                    .addFunction("startWidth", &lc::entity::LWVertex2D::startWidth)
-                                    .addFunction("endWidth", &lc::entity::LWVertex2D::endWidth)
-        .endClass()
-
-        .beginExtendClass<entity::LWPolyline, entity::CADEntity>("LWPolyline")
-            .addConstructor(LUA_SP(entity::LWPolyline_SPtr), LUA_ARGS(
-                    const std::vector<entity::LWVertex2D>&,
-                    double,
-                    double,
-                    double,
-                    bool,
-                    const geo::Coordinate,
-                    const meta::Layer_CSPtr,
-                    LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
-                    LuaIntf::_opt<const meta::Block_CSPtr>
-            ))
-            .addFunction("width", &lc::entity::LWPolyline::width)
-            .addFunction("elevation", &lc::entity::LWPolyline::elevation)
-            .addFunction("tickness", &lc::entity::LWPolyline::tickness)
-            .addFunction("extrusionDirection", &lc::entity::LWPolyline::extrusionDirection)
+    state["lc.entity.LWPolyline"].setClass(kaguya::UserdataMetatable<lc::entity::LWPolyline, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Snapable, lc::entity::Draggable>>()
+                                                   .setConstructors<lc::entity::LWPolyline(std::vector<entity::LWVertex2D>, double, double, double, bool, geo::Coordinate, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::LWPolyline(const lc::entity::LWPolyline_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::LWPolyline::accept)
+            .addFunction("asEntities", &lc::entity::LWPolyline::asEntities)
+            .addFunction("boundingBox", &lc::entity::LWPolyline::boundingBox)
             .addFunction("closed", &lc::entity::LWPolyline::closed)
-        .endClass()
+            .addFunction("copy", &lc::entity::LWPolyline::copy)
+            .addFunction("dispatch", &lc::entity::LWPolyline::dispatch)
+            .addFunction("dragPoints", &lc::entity::LWPolyline::dragPoints)
+            .addFunction("elevation", &lc::entity::LWPolyline::elevation)
+            .addFunction("extrusionDirection", &lc::entity::LWPolyline::extrusionDirection)
+            .addFunction("mirror", &lc::entity::LWPolyline::mirror)
+            .addFunction("modify", &lc::entity::LWPolyline::modify)
+            .addFunction("move", &lc::entity::LWPolyline::move)
+            .addFunction("nearestPointOnPath", &lc::entity::LWPolyline::nearestPointOnPath)
+            .addFunction("nearestPointOnPath2", &lc::entity::LWPolyline::nearestPointOnPath2)
+            .addFunction("rotate", &lc::entity::LWPolyline::rotate)
+            .addFunction("scale", &lc::entity::LWPolyline::scale)
+            .addFunction("setDragPoints", &lc::entity::LWPolyline::setDragPoints)
+            .addFunction("snapPoints", &lc::entity::LWPolyline::snapPoints)
+            .addFunction("tickness", &lc::entity::LWPolyline::tickness)
+            .addFunction("vertex", &lc::entity::LWPolyline::vertex)
+            .addFunction("width", &lc::entity::LWPolyline::width)
+    );
 
-        .beginClass<operation::DocumentOperation>("DocumentOperation")
-            .addFunction("execute", &operation::DocumentOperation::execute)
-        .endClass()
+    state["lc.entity.LWVertex2D"].setClass(kaguya::UserdataMetatable<lc::entity::LWVertex2D>()
+                                                   .setConstructors<lc::entity::LWVertex2D(geo::Coordinate, double, double, double), lc::entity::LWVertex2D(const lc::entity::LWVertex2D &)>()
+            .addFunction("bulge", &lc::entity::LWVertex2D::bulge)
+            .addFunction("endWidth", &lc::entity::LWVertex2D::endWidth)
+            .addFunction("location", &lc::entity::LWVertex2D::location)
+            .addFunction("move", &lc::entity::LWVertex2D::move)
+            .addFunction("rotate", &lc::entity::LWVertex2D::rotate)
+            .addFunction("scale", &lc::entity::LWVertex2D::scale)
+            .addFunction("startWidth", &lc::entity::LWVertex2D::startWidth)
+    );
 
-        .beginExtendClass<operation::Builder, operation::DocumentOperation>("Builder")
-            .addConstructor(LUA_SP(operation::Builder_SPtr), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document>,
-                    const std::string&
-            ))
-            .addFunction("append", &operation::Builder::append)
-        .endClass()
+    state["lc.entity.Line"].setClass(kaguya::UserdataMetatable<lc::entity::Line, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable>>()
+                                             .setConstructors<lc::entity::Line(const geo::Coordinate &, const geo::Coordinate &, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Line(const geo::Vector &, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Line(const lc::entity::Line_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Line::accept)
+            .addFunction("boundingBox", &lc::entity::Line::boundingBox)
+            .addFunction("copy", &lc::entity::Line::copy)
+            .addFunction("dispatch", &lc::entity::Line::dispatch)
+            .addFunction("dragPoints", &lc::entity::Line::dragPoints)
+            .addFunction("mirror", &lc::entity::Line::mirror)
+            .addFunction("modify", &lc::entity::Line::modify)
+            .addFunction("move", &lc::entity::Line::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Line::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Line::rotate)
+            .addFunction("scale", &lc::entity::Line::scale)
+            .addFunction("setDragPoints", &lc::entity::Line::setDragPoints)
+            .addFunction("snapPoints", &lc::entity::Line::snapPoints)
+    );
 
-        .beginExtendClass<operation::EntityBuilder, operation::DocumentOperation>("EntityBuilder")
-            .addConstructor(LUA_SP(operation::EntityBuilder_SPtr), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document>
-            ))
-            .addFunction("appendEntity", &operation::EntityBuilder::appendEntity)
-            .addFunction("appendOperation", &operation::EntityBuilder::appendOperation)
-            .addFunction("processStack", &operation::EntityBuilder::processStack)
-        .endClass()
+    state["lc.entity.Point"].setClass(kaguya::UserdataMetatable<lc::entity::Point, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Coordinate, lc::Visitable>>()
+                                              .setConstructors<lc::entity::Point(geo::Coordinate, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Point(double, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Point(const lc::entity::Point_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Point::accept)
+            .addFunction("boundingBox", &lc::entity::Point::boundingBox)
+            .addFunction("copy", &lc::entity::Point::copy)
+            .addFunction("dispatch", &lc::entity::Point::dispatch)
+            .addFunction("mirror", &lc::entity::Point::mirror)
+            .addFunction("modify", &lc::entity::Point::modify)
+            .addFunction("move", &lc::entity::Point::move)
+            .addFunction("rotate", &lc::entity::Point::rotate)
+            .addFunction("scale", &lc::entity::Point::scale)
+    );
 
-        .beginClass<lc::maths::IntersectMany>("IntersectMany")
-            .addConstructor(LUA_ARGS(
-                                    std::vector<lc::entity::CADEntity_CSPtr>,
-                                    _opt<lc::maths::Intersect::Method>,
-                                    _opt<double>
-                            )
-            )
-            .addFunction("result", &lc::maths::IntersectMany::result)
-        .endClass()
+    state["lc.entity.Snapable"].setClass(kaguya::UserdataMetatable<lc::entity::Snapable>()
+                                                 .addFunction("nearestPointOnPath", &lc::entity::Snapable::nearestPointOnPath)
+                                                 .addStaticFunction("remove_ifDistanceGreaterThen", &lc::entity::Snapable::remove_ifDistanceGreaterThen)
+                                                 .addFunction("snapPoints", &lc::entity::Snapable::snapPoints)
+                                                 .addStaticFunction("snapPointsCleanup", &lc::entity::Snapable::snapPointsCleanup)
+    );
 
-        .beginClass<operation::Base>("Base")
-        .endClass()
+    state["lc.entity.Spline"].setClass(kaguya::UserdataMetatable<lc::entity::Spline, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Spline, lc::entity::Snapable, lc::Visitable, lc::entity::Draggable>>()
+                                               .setConstructors<lc::entity::Spline(const std::vector<geo::Coordinate> &, const std::vector<double> &, const std::vector<geo::Coordinate> &, int, bool, double, double, double, double, double, double, double, double, double, double, enum lc::geo::Spline::splineflag, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Spline(const lc::entity::Spline_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Spline::accept)
+            .addFunction("boundingBox", &lc::entity::Spline::boundingBox)
+            .addFunction("copy", &lc::entity::Spline::copy)
+            .addFunction("dispatch", &lc::entity::Spline::dispatch)
+            .addFunction("dragPoints", &lc::entity::Spline::dragPoints)
+            .addFunction("mirror", &lc::entity::Spline::mirror)
+            .addFunction("modify", &lc::entity::Spline::modify)
+            .addFunction("move", &lc::entity::Spline::move)
+            .addFunction("nearestPointOnPath", &lc::entity::Spline::nearestPointOnPath)
+            .addFunction("rotate", &lc::entity::Spline::rotate)
+            .addFunction("scale", &lc::entity::Spline::scale)
+            .addFunction("setDragPoints", &lc::entity::Spline::setDragPoints)
+            .addFunction("snapPoints", &lc::entity::Spline::snapPoints)
+    );
 
-        .beginExtendClass<operation::Move, operation::Base>("Move")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Move>), LUA_ARGS(const geo::Coordinate&))
-        .endClass()
+    state["lc.entity.Tangentable"].setClass(kaguya::UserdataMetatable<lc::entity::Tangentable>()
+                                                    .addFunction("lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity)
+    );
 
-        .beginExtendClass<operation::Begin, operation::Base>("Begin")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Begin>), LUA_ARGS())
-        .endClass()
+    state["lc.entity.Text"].setClass(kaguya::UserdataMetatable<lc::entity::Text, kaguya::MultipleBase<lc::entity::CADEntity, lc::Visitable, lc::entity::Draggable>>()
+                                             .setConstructors<lc::entity::Text(geo::Coordinate, std::string, double, double, std::string, const TextConst::DrawingDirection, const TextConst::HAlign, const TextConst::VAlign, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Text(const lc::entity::Text_CSPtr &, bool)>()
+            .addFunction("accept", &lc::entity::Text::accept)
+            .addFunction("angle", &lc::entity::Text::angle)
+            .addFunction("boundingBox", &lc::entity::Text::boundingBox)
+            .addFunction("copy", &lc::entity::Text::copy)
+            .addFunction("dispatch", &lc::entity::Text::dispatch)
+            .addFunction("dragPoints", &lc::entity::Text::dragPoints)
+            .addFunction("halign", &lc::entity::Text::halign)
+            .addFunction("height", &lc::entity::Text::height)
+            .addFunction("insertion_point", &lc::entity::Text::insertion_point)
+            .addFunction("mirror", &lc::entity::Text::mirror)
+            .addFunction("modify", &lc::entity::Text::modify)
+            .addFunction("move", &lc::entity::Text::move)
+            .addFunction("rotate", &lc::entity::Text::rotate)
+            .addFunction("scale", &lc::entity::Text::scale)
+            .addFunction("setDragPoints", &lc::entity::Text::setDragPoints)
+            .addFunction("style", &lc::entity::Text::style)
+            .addFunction("text_value", &lc::entity::Text::text_value)
+            .addFunction("textgeneration", &lc::entity::Text::textgeneration)
+            .addFunction("valign", &lc::entity::Text::valign)
+    );
 
-        .beginExtendClass<operation::Loop, operation::Base>("Loop")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Loop>), LUA_ARGS(const int))
-        .endClass()
+    state["lc.entity.UnmanagedDraggable"].setClass(kaguya::UserdataMetatable<lc::entity::UnmanagedDraggable>()
+                                                           .addFunction("onDragPointClick", &lc::entity::UnmanagedDraggable::onDragPointClick)
+                                                           .addFunction("onDragPointRelease", &lc::entity::UnmanagedDraggable::onDragPointRelease)
+                                                           .addFunction("setDragPoint", &lc::entity::UnmanagedDraggable::setDragPoint)
+    );
 
-        .beginExtendClass<operation::Copy, operation::Base>("Copy")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Copy>), LUA_ARGS(const geo::Coordinate&))
-        .endClass()
+    state["lc.event.AddEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddEntityEvent>()
+                                                      .setConstructors<lc::event::AddEntityEvent(entity::CADEntity_CSPtr)>()
+                                                      .addFunction("entity", &lc::event::AddEntityEvent::entity)
+    );
 
-        .beginExtendClass<operation::Scale, operation::Base>("Scale")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Scale>), LUA_ARGS(
-                    const geo::Coordinate&,
-                    const geo::Coordinate&
-            ))
-        .endClass()
+    state["lc.event.AddLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddLayerEvent>()
+                                                     .setConstructors<lc::event::AddLayerEvent(const meta::Layer_CSPtr)>()
+            .addFunction("layer", &lc::event::AddLayerEvent::layer)
+    );
 
-        .beginExtendClass<operation::Push, operation::Base>("Push")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Push>), LUA_ARGS())
-        .endClass()
+    state["lc.event.AddLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::AddLinePatternEvent>()
+                                                           .setConstructors<lc::event::AddLinePatternEvent(const meta::DxfLinePatternByValue_CSPtr)>()
+            .addFunction("linePattern", &lc::event::AddLinePatternEvent::linePattern)
+    );
 
-        .beginExtendClass<operation::SelectByLayer, operation::Base>("SelectByLayer")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::SelectByLayer>), LUA_ARGS(const meta::Layer_CSPtr))
-        .endClass()
+    state["lc.event.CommitProcessEvent"].setClass(kaguya::UserdataMetatable<lc::event::CommitProcessEvent>()
+                                                          .setConstructors<lc::event::CommitProcessEvent(operation::DocumentOperation_SPtr)>()
+                                                          .addFunction("operation", &lc::event::CommitProcessEvent::operation)
+    );
 
-        .beginExtendClass<operation::Rotate, operation::Base>("Rotate")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Rotate>), LUA_ARGS(
-                    const geo::Coordinate&,
-                    const double
-            ))
-        .endClass()
+    state["lc.event.NewWaitingCustomEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::NewWaitingCustomEntityEvent>()
+                                                                   .setConstructors<lc::event::NewWaitingCustomEntityEvent(const entity::Insert_CSPtr &)>()
+            .addFunction("insert", &lc::event::NewWaitingCustomEntityEvent::insert)
+    );
 
-        .beginExtendClass<operation::Remove, operation::Base>("Remove")
-            .addConstructor(LUA_SP(std::shared_ptr<operation::Remove>), LUA_ARGS())
-        .endClass()
+    state["lc.event.RemoveEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveEntityEvent>()
+                                                         .setConstructors<lc::event::RemoveEntityEvent(const entity::CADEntity_CSPtr)>()
+            .addFunction("entity", &lc::event::RemoveEntityEvent::entity)
+    );
 
-        .beginExtendClass<operation::AddLayer, operation::DocumentOperation>("AddLayer")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document> doc,
-                    const meta::Layer_CSPtr
-            ))
-        .endClass()
+    state["lc.event.RemoveLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveLayerEvent>()
+                                                        .setConstructors<lc::event::RemoveLayerEvent(const meta::Layer_CSPtr)>()
+            .addFunction("layer", &lc::event::RemoveLayerEvent::layer)
+    );
 
-        .beginExtendClass<operation::RemoveLayer, operation::DocumentOperation>("RemoveLayer")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document> doc,
-                    const meta::Layer_CSPtr
-            ))
-        .endClass()
+    state["lc.event.RemoveLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::RemoveLinePatternEvent>()
+                                                              .setConstructors<lc::event::RemoveLinePatternEvent(const meta::DxfLinePatternByValue_CSPtr)>()
+            .addFunction("linePattern", &lc::event::RemoveLinePatternEvent::linePattern)
+    );
 
-        .beginExtendClass<operation::ReplaceLayer, operation::DocumentOperation>("ReplaceLayer")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceLayer>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document> doc,
-                    const meta::Layer_CSPtr,
-                    const meta::Layer_CSPtr
-            ))
-        .endClass()
+    state["lc.event.ReplaceEntityEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceEntityEvent>()
+                                                          .setConstructors<lc::event::ReplaceEntityEvent(const entity::CADEntity_CSPtr)>()
+            .addFunction("entity", &lc::event::ReplaceEntityEvent::entity)
+    );
 
-        .beginExtendClass<meta::Block, meta::DocumentMetaType>("Block")
-            .addConstructor(LUA_SP(meta::Block_SPtr), LUA_ARGS(
-                std::string,
-                geo::Coordinate
-            ))
-            .addFunction("base", &meta::Block::base)
-        .endClass()
+    state["lc.event.ReplaceLayerEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceLayerEvent>()
+                                                         .setConstructors<lc::event::ReplaceLayerEvent(const meta::Layer_CSPtr, const meta::Layer_CSPtr)>()
+            .addFunction("newLayer", &lc::event::ReplaceLayerEvent::newLayer)
+            .addFunction("oldLayer", &lc::event::ReplaceLayerEvent::oldLayer)
+    );
 
-        .beginExtendClass<meta::CustomEntityStorage, meta::Block>("CustomEntityStorage")
-            .addConstructor(LUA_SP(meta::CustomEntityStorage_SPtr), LUA_ARGS(
-                const std::string&,
-                const std::string&,
-                const geo::Coordinate&,
-                LuaIntf::_opt<const std::map<std::string, std::string>&>
-            ))
+    state["lc.event.ReplaceLinePatternEvent"].setClass(kaguya::UserdataMetatable<lc::event::ReplaceLinePatternEvent>()
+                                                               .setConstructors<lc::event::ReplaceLinePatternEvent(const meta::DxfLinePatternByValue_CSPtr, const meta::DxfLinePatternByValue_CSPtr)>()
+            .addFunction("newLinePattern", &lc::event::ReplaceLinePatternEvent::newLinePattern)
+            .addFunction("oldLinePattern", &lc::event::ReplaceLinePatternEvent::oldLinePattern)
+    );
 
-            .addFunction("pluginName", &meta::CustomEntityStorage::pluginName)
-            .addFunction("entityName", &meta::CustomEntityStorage::entityName)
-            .addFunction("param", &meta::CustomEntityStorage::param)
-            .addFunction("setParam", &meta::CustomEntityStorage::setParam)
-        .endClass()
+    state["lc.geo.Arc"].setClass(kaguya::UserdataMetatable<lc::geo::Arc, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                         .setConstructors<lc::geo::Arc(lc::geo::Coordinate, double, double, double, bool), lc::geo::Arc(const lc::geo::Arc &)>()
+            .addFunction("CCW", &lc::geo::Arc::CCW)
+            .addFunction("accept", &lc::geo::Arc::accept)
+            .addFunction("angle", &lc::geo::Arc::angle)
+            .addFunction("boundingBox", &lc::geo::Arc::boundingBox)
+            .addFunction("bulge", &lc::geo::Arc::bulge)
+            .addFunction("center", &lc::geo::Arc::center)
+            .addStaticFunction("createArc3P", &lc::geo::Arc::createArc3P)
+            .addStaticFunction("createArcBulge", &lc::geo::Arc::createArcBulge)
+            .addFunction("endAngle", &lc::geo::Arc::endAngle)
+            .addFunction("endP", &lc::geo::Arc::endP)
+            .addFunction("equation", &lc::geo::Arc::equation)
+            .addFunction("isAngleBetween", &lc::geo::Arc::isAngleBetween)
+            .addFunction("length", &lc::geo::Arc::length)
+            .addFunction("nearestPointOnEntity", &lc::geo::Arc::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &lc::geo::Arc::nearestPointOnPath)
+            .addFunction("radius", &lc::geo::Arc::radius)
+            .addFunction("startAngle", &lc::geo::Arc::startAngle)
+            .addFunction("startP", &lc::geo::Arc::startP)
+    );
 
-        .beginExtendClass<operation::AddBlock, operation::DocumentOperation>("AddBlock")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::AddBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document>,
-                    const meta::Block_CSPtr
-            ))
-        .endClass()
+    state["lc.geo.Area"].setClass(kaguya::UserdataMetatable<lc::geo::Area, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                          .setConstructors<lc::geo::Area(const lc::geo::Coordinate &, const lc::geo::Coordinate &), lc::geo::Area(), lc::geo::Area(const lc::geo::Coordinate &, double, double)>()
+            .addFunction("accept", &lc::geo::Area::accept)
+            .addFunction("bottom", &lc::geo::Area::bottom)
+            .addFunction("height", &lc::geo::Area::height)
+            .addOverloadedFunctions("inArea", static_cast<bool(lc::geo::Area::*)(const lc::geo::Coordinate &, double) const>(&lc::geo::Area::inArea), static_cast<bool(lc::geo::Area::*)(const lc::geo::Area &) const>(&lc::geo::Area::inArea))
+            .addFunction("increaseBy", &lc::geo::Area::increaseBy)
+            .addFunction("intersection", &lc::geo::Area::intersection)
+            .addFunction("left", &lc::geo::Area::left)
+            .addFunction("maxP", &lc::geo::Area::maxP)
+            .addOverloadedFunctions("merge", static_cast<lc::geo::Area(lc::geo::Area::*)(const lc::geo::Area &) const>(&lc::geo::Area::merge), static_cast<lc::geo::Area(lc::geo::Area::*)(const lc::geo::Coordinate &) const>(&lc::geo::Area::merge))
+            .addFunction("minP", &lc::geo::Area::minP)
+            .addFunction("numCornersInside", &lc::geo::Area::numCornersInside)
+            .addFunction("overlaps", &lc::geo::Area::overlaps)
+            .addFunction("right", &lc::geo::Area::right)
+            .addFunction("top", &lc::geo::Area::top)
+            .addFunction("width", &lc::geo::Area::width)
+    );
 
-        .beginExtendClass<operation::RemoveBlock, operation::DocumentOperation>("RemoveBlock")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::RemoveBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document>,
-                    const meta::Block_CSPtr
-            ))
-        .endClass()
+    state["lc.geo.Base"].setClass(kaguya::UserdataMetatable<lc::geo::Base>()
+    );
 
-        .beginExtendClass<operation::ReplaceBlock, operation::DocumentOperation>("ReplaceBlock")
-            .addConstructor(LUA_SP(std::shared_ptr<lc::operation::ReplaceBlock>), LUA_ARGS(
-                    std::shared_ptr<lc::storage::Document>,
-                    const meta::Block_CSPtr,
-                    const meta::Block_CSPtr
-            ))
-        .endClass()
+    state["lc.geo.Bezier"].setClass(kaguya::UserdataMetatable<lc::geo::Bezier, lc::geo::BezierBase>()
+                                            .setConstructors<lc::geo::Bezier(lc::geo::Coordinate, lc::geo::Coordinate, lc::geo::Coordinate), lc::geo::Bezier(const lc::geo::Bezier &)>()
+            .addFunction("CasteljauAt", &lc::geo::Bezier::CasteljauAt)
+            .addFunction("Curve", &lc::geo::Bezier::Curve)
+            .addFunction("DirectValueAt", &lc::geo::Bezier::DirectValueAt)
+            .addFunction("boundingBox", &lc::geo::Bezier::boundingBox)
+            .addFunction("getCP", &lc::geo::Bezier::getCP)
+            .addFunction("length", &lc::geo::Bezier::length)
+            .addFunction("mirror", &lc::geo::Bezier::mirror)
+            .addFunction("move", &lc::geo::Bezier::move)
+            .addFunction("nearestPointOnEntity", &lc::geo::Bezier::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &lc::geo::Bezier::nearestPointOnPath)
+            .addFunction("normal", &lc::geo::Bezier::normal)
+            .addFunction("offset", &lc::geo::Bezier::offset)
+            .addFunction("rotate", &lc::geo::Bezier::rotate)
+            .addFunction("scale", &lc::geo::Bezier::scale)
+            .addFunction("splitAtT", &lc::geo::Bezier::splitAtT)
+            .addFunction("splitHalf", &lc::geo::Bezier::splitHalf)
+            .addFunction("tangent", &lc::geo::Bezier::tangent)
+    );
 
-        .beginClass<builder::CADEntityBuilder>("CADEntityBuilder")
-            .addFunction("layer", &builder::CADEntityBuilder::layer)
-            .addFunction<CADEntityBuilder_setLayer>("setLayer", &builder::CADEntityBuilder::setLayer)
-            .addFunction("metaInfo", &builder::CADEntityBuilder::metaInfo)
-            .addFunction<CADEntityBuilder_setMetaInfo>("setMetaInfo", &builder::CADEntityBuilder::setMetaInfo)
-            .addFunction("block", &builder::CADEntityBuilder::block)
-            .addFunction<CADEntityBuilder_setBlock>("setBlock", &builder::CADEntityBuilder::setBlock)
-            .addFunction("id", &builder::CADEntityBuilder::id)
-            .addFunction("setID", &builder::CADEntityBuilder::setID)
-            .addFunction("newID", &builder::CADEntityBuilder::newID)
-            .addFunction("checkValues", &builder::CADEntityBuilder::checkValues)
-        .endClass()
+    state["lc.geo.BezierBase"].setClass(kaguya::UserdataMetatable<lc::geo::BezierBase, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                                .addFunction("CasteljauAt", &lc::geo::BezierBase::CasteljauAt)
+                                                .addFunction("Curve", &lc::geo::BezierBase::Curve)
+                                                .addFunction("DirectValueAt", &lc::geo::BezierBase::DirectValueAt)
+                                                .addFunction("accept", &lc::geo::BezierBase::accept)
+                                                .addFunction("boundingBox", &lc::geo::BezierBase::boundingBox)
+                                                .addFunction("getCP", &lc::geo::BezierBase::getCP)
+                                                .addFunction("length", &lc::geo::BezierBase::length)
+                                                .addFunction("mirror", &lc::geo::BezierBase::mirror)
+                                                .addFunction("move", &lc::geo::BezierBase::move)
+                                                .addFunction("nearestPointOnEntity", &lc::geo::BezierBase::nearestPointOnEntity)
+                                                .addFunction("nearestPointOnPath", &lc::geo::BezierBase::nearestPointOnPath)
+                                                .addFunction("nearestPointTValue", &lc::geo::BezierBase::nearestPointTValue)
+                                                .addFunction("normal", &lc::geo::BezierBase::normal)
+                                                .addFunction("offset", &lc::geo::BezierBase::offset)
+                                                .addFunction("returnCasesForNearestPoint", &lc::geo::BezierBase::returnCasesForNearestPoint)
+                                                .addFunction("rotate", &lc::geo::BezierBase::rotate)
+                                                .addFunction("scale", &lc::geo::BezierBase::scale)
+                                                .addFunction("splitAtT", &lc::geo::BezierBase::splitAtT)
+                                                .addFunction("splitHalf", &lc::geo::BezierBase::splitHalf)
+                                                .addFunction("tangent", &lc::geo::BezierBase::tangent)
+    );
 
-        .beginExtendClass<builder::ArcBuilder, builder::CADEntityBuilder>("ArcBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("center", &builder::ArcBuilder::center)
-            .addFunction("setCenter", &builder::ArcBuilder::setCenter)
-            .addFunction("radius", &builder::ArcBuilder::radius)
-            .addFunction("setRadius", &builder::ArcBuilder::setRadius)
-            .addFunction("startAngle", &builder::ArcBuilder::startAngle)
-            .addFunction("setStartAngle", &builder::ArcBuilder::setStartAngle)
-            .addFunction("endAngle", &builder::ArcBuilder::endAngle)
-            .addFunction("setEndAngle", &builder::ArcBuilder::setEndAngle)
-            .addFunction("isCCW", &builder::ArcBuilder::isCCW)
-            .addFunction("setIsCCW", &builder::ArcBuilder::setIsCCW)
-            .addFunction("build", &builder::ArcBuilder::build)
-        .endClass()
+    state["lc.geo.Circle"].setClass(kaguya::UserdataMetatable<lc::geo::Circle, kaguya::MultipleBase<lc::geo::Base, lc::Visitable, lc::entity::Tangentable>>()
+                                            .setConstructors<lc::geo::Circle(lc::geo::Coordinate, double)>()
+                                            .addFunction("accept", &lc::geo::Circle::accept)
+                                            .addFunction("center", &lc::geo::Circle::center)
+                                            .addFunction("equation", &lc::geo::Circle::equation)
+                                            .addFunction("lineTangentPointsOnEntity", &lc::geo::Circle::lineTangentPointsOnEntity)
+                                            .addFunction("nearestPointOnEntity", &lc::geo::Circle::nearestPointOnEntity)
+                                            .addFunction("nearestPointOnPath", &lc::geo::Circle::nearestPointOnPath)
+                                            .addFunction("radius", &lc::geo::Circle::radius)
+    );
 
-        .beginExtendClass<builder::CircleBuilder, builder::CADEntityBuilder>("CircleBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("center", &builder::CircleBuilder::center)
-            .addFunction("setCenter", &builder::CircleBuilder::setCenter)
-            .addFunction("radius", &builder::CircleBuilder::radius)
-            .addFunction("setRadius", &builder::CircleBuilder::setRadius)
-            .addFunction("build", &builder::CircleBuilder::build)
-        .endClass()
+    state["lc.geo.Coordinate"].setClass(kaguya::UserdataMetatable<lc::geo::Coordinate>()
+                                                .setConstructors<lc::geo::Coordinate(), lc::geo::Coordinate(double, double, double), lc::geo::Coordinate(double, double), lc::geo::Coordinate(double), lc::geo::Coordinate(const lc::geo::Coordinate &)>()
+            .addFunction("angle", &lc::geo::Coordinate::angle)
+            .addFunction("angleBetween", &lc::geo::Coordinate::angleBetween)
+            .addFunction("angleTo", &lc::geo::Coordinate::angleTo)
+            .addFunction("distanceTo", &lc::geo::Coordinate::distanceTo)
+            .addOverloadedFunctions("dot", static_cast<double(lc::geo::Coordinate::*)(const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::dot), static_cast<double(lc::geo::Coordinate::*)(const lc::geo::Coordinate &, const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::dot))
+            .addFunction("flipXY", &lc::geo::Coordinate::flipXY)
+            .addFunction("magnitude", &lc::geo::Coordinate::magnitude)
+            .addFunction("mid", &lc::geo::Coordinate::mid)
+            .addFunction("mirror", &lc::geo::Coordinate::mirror)
+            .addFunction("move", &lc::geo::Coordinate::move)
+            .addFunction("moveTo", &lc::geo::Coordinate::moveTo)
+            .addOverloadedFunctions("norm", static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)() const>(&lc::geo::Coordinate::norm), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const double) const>(&lc::geo::Coordinate::norm))
+            .addOverloadedFunctions("rotate", static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::rotate), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const double &) const>(&lc::geo::Coordinate::rotate), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const geo::Coordinate &, const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::rotate), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const geo::Coordinate &, const double &) const>(&lc::geo::Coordinate::rotate))
+            .addFunction("rotateByArcLength", &lc::geo::Coordinate::rotateByArcLength)
+            .addOverloadedFunctions("scale", static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const double &) const>(&lc::geo::Coordinate::scale), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::scale), static_cast<lc::geo::Coordinate(lc::geo::Coordinate::*)(const lc::geo::Coordinate &, const lc::geo::Coordinate &) const>(&lc::geo::Coordinate::scale))
+            .addFunction("squared", &lc::geo::Coordinate::squared)
+            .addFunction("transform2d", &lc::geo::Coordinate::transform2d)
+            .addFunction("x", &lc::geo::Coordinate::x)
+            .addFunction("y", &lc::geo::Coordinate::y)
+            .addFunction("z", &lc::geo::Coordinate::z)
+    );
 
-        .beginExtendClass<builder::InsertBuilder, builder::CADEntityBuilder>("InsertBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("displayBlock", &builder::InsertBuilder::displayBlock)
-            .addFunction("setDisplayBlock", &builder::InsertBuilder::setDisplayBlock)
-            .addFunction("coordinate", &builder::InsertBuilder::coordinate)
-            .addFunction("setCoordinate", &builder::InsertBuilder::setCoordinate)
-            .addFunction("document", &builder::InsertBuilder::document)
-            .addFunction("setDocument", &builder::InsertBuilder::setDocument)
-            .addFunction("copy", &builder::InsertBuilder::copy)
-            .addFunction("build", &builder::InsertBuilder::build)
-        .endClass()
+    state["lc.geo.CubicBezier"].setClass(kaguya::UserdataMetatable<lc::geo::CubicBezier, lc::geo::BezierBase>()
+                                                 .setConstructors<lc::geo::CubicBezier(lc::geo::Coordinate, lc::geo::Coordinate, lc::geo::Coordinate, lc::geo::Coordinate), lc::geo::CubicBezier(const lc::geo::CubicBezier &)>()
+            .addFunction("CasteljauAt", &lc::geo::CubicBezier::CasteljauAt)
+            .addFunction("Curve", &lc::geo::CubicBezier::Curve)
+            .addFunction("DirectValueAt", &lc::geo::CubicBezier::DirectValueAt)
+            .addFunction("boundingBox", &lc::geo::CubicBezier::boundingBox)
+            .addFunction("getCP", &lc::geo::CubicBezier::getCP)
+            .addFunction("length", &lc::geo::CubicBezier::length)
+            .addFunction("mirror", &lc::geo::CubicBezier::mirror)
+            .addFunction("move", &lc::geo::CubicBezier::move)
+            .addFunction("nearestPointOnEntity", &lc::geo::CubicBezier::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &lc::geo::CubicBezier::nearestPointOnPath)
+            .addFunction("normal", &lc::geo::CubicBezier::normal)
+            .addFunction("offset", &lc::geo::CubicBezier::offset)
+            .addFunction("rotate", &lc::geo::CubicBezier::rotate)
+            .addFunction("scale", &lc::geo::CubicBezier::scale)
+            .addFunction("splitAtT", &lc::geo::CubicBezier::splitAtT)
+            .addFunction("splitHalf", &lc::geo::CubicBezier::splitHalf)
+            .addFunction("tangent", &lc::geo::CubicBezier::tangent)
+    );
 
-        .beginClass<builder::LayerBuilder>("LayerBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("name", &builder::LayerBuilder::name)
-            .addFunction("setName", &builder::LayerBuilder::setName)
-            .addFunction("lineWidth", &builder::LayerBuilder::lineWidth)
-            .addFunction("setLineWidth", &builder::LayerBuilder::setLineWidth)
-            .addFunction("color", &builder::LayerBuilder::color)
-            .addFunction("setColor", &builder::LayerBuilder::setColor)
-            .addFunction("linePattern", &builder::LayerBuilder::linePattern)
-            .addFunction("setLinePattern", &builder::LayerBuilder::setLinePattern)
-            .addFunction("isFrozen", &builder::LayerBuilder::isFrozen)
-            .addFunction("setIsFrozen", &builder::LayerBuilder::setIsFrozen)
-            .addFunction("build", &builder::LayerBuilder::build)
-        .endClass()
+    state["lc.geo.Ellipse"].setClass(kaguya::UserdataMetatable<lc::geo::Ellipse, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                             .setConstructors<lc::geo::Ellipse(lc::geo::Coordinate, lc::geo::Coordinate, double, double, double, bool)>()
+                                             .addFunction("accept", &lc::geo::Ellipse::accept)
+                                             .addFunction("center", &lc::geo::Ellipse::center)
+                                             .addFunction("endAngle", &lc::geo::Ellipse::endAngle)
+                                             .addFunction("endPoint", &lc::geo::Ellipse::endPoint)
+                                             .addFunction("equation", &lc::geo::Ellipse::equation)
+                                             .addFunction("findPotentialNearestPoints", &lc::geo::Ellipse::findPotentialNearestPoints)
+                                             .addFunction("georotate", &lc::geo::Ellipse::georotate)
+                                             .addFunction("geoscale", &lc::geo::Ellipse::geoscale)
+                                             .addFunction("getAngle", &lc::geo::Ellipse::getAngle)
+                                             .addFunction("getEllipseAngle", &lc::geo::Ellipse::getEllipseAngle)
+                                             .addFunction("getPoint", &lc::geo::Ellipse::getPoint)
+                                             .addFunction("isAngleBetween", &lc::geo::Ellipse::isAngleBetween)
+                                             .addFunction("isArc", &lc::geo::Ellipse::isArc)
+                                             .addFunction("isReversed", &lc::geo::Ellipse::isReversed)
+                                             .addFunction("majorP", &lc::geo::Ellipse::majorP)
+                                             .addFunction("majorRadius", &lc::geo::Ellipse::majorRadius)
+                                             .addFunction("minorRadius", &lc::geo::Ellipse::minorRadius)
+                                             .addFunction("nearestPointOnEntity", &lc::geo::Ellipse::nearestPointOnEntity)
+                                             .addFunction("nearestPointOnPath", &lc::geo::Ellipse::nearestPointOnPath)
+                                             .addFunction("ratio", &lc::geo::Ellipse::ratio)
+                                             .addFunction("startAngle", &lc::geo::Ellipse::startAngle)
+                                             .addFunction("startPoint", &lc::geo::Ellipse::startPoint)
+    );
 
-        .beginExtendClass<builder::LineBuilder, builder::CADEntityBuilder>("LineBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("start", &builder::LineBuilder::start)
-            .addFunction("setStart", &builder::LineBuilder::setStart)
-            .addFunction("end", &builder::LineBuilder::end)
-            .addFunction("setEnd", &builder::LineBuilder::setEnd)
-            .addFunction("build", &builder::LineBuilder::build)
-        .endClass()
+    state["lc.geo.Spline"].setClass(kaguya::UserdataMetatable<lc::geo::Spline, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                            .setConstructors<lc::geo::Spline(const std::vector<geo::Coordinate> &, const std::vector<double> &, const std::vector<geo::Coordinate> &, int, bool, double, double, double, double, double, double, double, double, double, double, enum lc::geo::Spline::splineflag)>()
+            .addFunction("accept", &lc::geo::Spline::accept)
+            .addFunction("beziers", &lc::geo::Spline::beziers)
+            .addFunction("closed", &lc::geo::Spline::closed)
+            .addFunction("controlPoints", &lc::geo::Spline::controlPoints)
+            .addFunction("degree", &lc::geo::Spline::degree)
+            .addFunction("endTanX", &lc::geo::Spline::endTanX)
+            .addFunction("endTanY", &lc::geo::Spline::endTanY)
+            .addFunction("endTanZ", &lc::geo::Spline::endTanZ)
+            .addFunction("fitPoints", &lc::geo::Spline::fitPoints)
+            .addFunction("fitTolerance", &lc::geo::Spline::fitTolerance)
+            .addFunction("flags", &lc::geo::Spline::flags)
+            .addFunction("generateBeziers", &lc::geo::Spline::generateBeziers)
+            .addFunction("knotPoints", &lc::geo::Spline::knotPoints)
+            .addFunction("nX", &lc::geo::Spline::nX)
+            .addFunction("nY", &lc::geo::Spline::nY)
+            .addFunction("nZ", &lc::geo::Spline::nZ)
+            .addFunction("nearestPointOnEntity", &lc::geo::Spline::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &lc::geo::Spline::nearestPointOnPath)
+            .addFunction("populateCurve", &lc::geo::Spline::populateCurve)
+            .addFunction("startTanX", &lc::geo::Spline::startTanX)
+            .addFunction("startTanY", &lc::geo::Spline::startTanY)
+            .addFunction("startTanZ", &lc::geo::Spline::startTanZ)
+            .addFunction("trimAtPoint", &lc::geo::Spline::trimAtPoint)
+    );
 
-        .beginClass<builder::LinePatternBuilder>("LinePatternBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("name", &builder::LinePatternBuilder::name)
-            .addFunction("setName", &builder::LinePatternBuilder::setName)
-            .addFunction("description", &builder::LinePatternBuilder::description)
-            .addFunction("setDescription", &builder::LinePatternBuilder::setDescription)
-            .addFunction("path", &builder::LinePatternBuilder::path)
-            .addFunction("setPath", &builder::LinePatternBuilder::setPath)
-            .addFunction("addElement", &builder::LinePatternBuilder::addElement)
-            .addFunction("checkValues", &builder::LinePatternBuilder::checkValues)
-            .addFunction("build", &builder::LinePatternBuilder::build)
-        .endClass()
+    state["lc.geo.Vector"].setClass(kaguya::UserdataMetatable<lc::geo::Vector, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
+                                            .setConstructors<lc::geo::Vector(const lc::geo::Coordinate &, const lc::geo::Coordinate &), lc::geo::Vector(const lc::geo::Vector &)>()
+            .addFunction("Angle1", &lc::geo::Vector::Angle1)
+            .addFunction("Angle2", &lc::geo::Vector::Angle2)
+            .addFunction("accept", &lc::geo::Vector::accept)
+            .addFunction("end", &lc::geo::Vector::end)
+            .addFunction("equation", &lc::geo::Vector::equation)
+            .addFunction("nearestPointOnEntity", &lc::geo::Vector::nearestPointOnEntity)
+            .addFunction("nearestPointOnPath", &lc::geo::Vector::nearestPointOnPath)
+            .addFunction("start", &lc::geo::Vector::start)
+    );
 
-        .beginExtendClass<builder::PointBuilder, builder::CADEntityBuilder>("PointBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("coordinate", &builder::PointBuilder::coordinate)
-            .addFunction("setCoordinate", &builder::PointBuilder::setCoordinate)
-            .addFunction("build", &builder::PointBuilder::build)
-        .endClass()
+    state["lc.maths.Equation"].setClass(kaguya::UserdataMetatable<lc::maths::Equation>()
+                                                .setConstructors<lc::maths::Equation(), lc::maths::Equation(Eigen::Matrix3d &), lc::maths::Equation(double, double, double, double, double, double), lc::maths::Equation(const std::vector<double> &)>()
+            .addFunction("Coefficients", &lc::maths::Equation::Coefficients)
+            .addFunction("Matrix", &lc::maths::Equation::Matrix)
+            .addFunction("flipXY", &lc::maths::Equation::flipXY)
+            .addFunction("move", &lc::maths::Equation::move)
+            .addOverloadedFunctions("rotate", static_cast<const lc::maths::Equation(lc::maths::Equation::*)(double) const>(&lc::maths::Equation::rotate), static_cast<const lc::maths::Equation(lc::maths::Equation::*)(const geo::Coordinate &, double) const>(&lc::maths::Equation::rotate))
+            .addStaticFunction("rotationMatrix", &lc::maths::Equation::rotationMatrix)
+            .addStaticFunction("translateMatrix", &lc::maths::Equation::translateMatrix)
+    );
 
-        .beginExtendClass<entity::Insert, entity::CADEntity>("Insert")
-            .addFunction("displayBlock", &entity::Insert::displayBlock)
-            .addFunction("position", &entity::Insert::position)
-            .addFunction("document", &entity::Insert::document)
-        .endClass()
+    state["lc.maths.IntersectAgainstOthers"].setClass(kaguya::UserdataMetatable<lc::maths::IntersectAgainstOthers>()
+                                                              .setConstructors<lc::maths::IntersectAgainstOthers(std::vector<entity::CADEntity_CSPtr>, std::vector<entity::CADEntity_CSPtr>, maths::Intersect::Method, double)>()
+                                                              .addFunction("result", &lc::maths::IntersectAgainstOthers::result)
+    );
 
-        .beginExtendClass<entity::CustomEntity, entity::Insert>("CustomEntity")
-        .endClass()
+    state["lc.maths.IntersectMany"].setClass(kaguya::UserdataMetatable<lc::maths::IntersectMany>()
+                                                     .setConstructors<lc::maths::IntersectMany(std::vector<entity::CADEntity_CSPtr>, maths::Intersect::Method, double)>()
+                                                     .addFunction("result", &lc::maths::IntersectMany::result)
+    );
 
-        .beginExtendClass<entity::LuaCustomEntity, entity::CustomEntity>("LuaCustomEntity")
-        .endClass()
+    state["lc.meta.Block"].setClass(kaguya::UserdataMetatable<lc::meta::Block, lc::meta::DocumentMetaType>()
+                                            .setConstructors<lc::meta::Block(std::string, geo::Coordinate)>()
+                                            .addFunction("base", &lc::meta::Block::base)
+                                            .addFunction("id", &lc::meta::Block::id)
+                                            .addFunction("name", &lc::meta::Block::name)
+    );
 
-        .beginExtendClass<builder::CustomEntityBuilder, builder::InsertBuilder>("CustomEntityBuilder")
-            .addConstructor(LUA_ARGS())
-            .addFunction("snapFunction", &builder::CustomEntityBuilder::snapFunction)
-            .addFunction("setSnapFunction", &builder::CustomEntityBuilder::setSnapFunction)
-            .addFunction("nearestPointFunction", &builder::CustomEntityBuilder::nearestPointFunction)
-            .addFunction("setNearestPointFunction", &builder::CustomEntityBuilder::setNearestPointFunction)
-            .addFunction("dragPointsFunction", &builder::CustomEntityBuilder::dragPointsFunction)
-            .addFunction("setDragPointsFunction", &builder::CustomEntityBuilder::setDragPointsFunction)
-            .addFunction("newDragPointFunction", &builder::CustomEntityBuilder::newDragPointFunction)
-            .addFunction("setNewDragPointFunction", &builder::CustomEntityBuilder::setNewDragPointFunction)
-            .addFunction("dragPointsClickedFunction", &builder::CustomEntityBuilder::dragPointsClickedFunction)
-            .addFunction("setDragPointsClickedFunction", &builder::CustomEntityBuilder::setDragPointsClickedFunction)
-            .addFunction("dragPointsReleasedFunction", &builder::CustomEntityBuilder::dragPointsReleasedFunction)
-            .addFunction("setDragPointsReleasedFunction", &builder::CustomEntityBuilder::setDragPointsReleasedFunction)
-            .addFunction("checkValues", &builder::CustomEntityBuilder::checkValues)
-            .addFunction("build", &builder::CustomEntityBuilder::build)
-        .endClass()
+    state["lc.meta.CustomEntityStorage"].setClass(kaguya::UserdataMetatable<lc::meta::CustomEntityStorage, lc::meta::Block>()
+                                                          .setConstructors<lc::meta::CustomEntityStorage(std::string, std::string, geo::Coordinate, std::map<std::string, std::string>)>()
+                                                          .addFunction("entityName", &lc::meta::CustomEntityStorage::entityName)
+                                                          .addFunction("param", &lc::meta::CustomEntityStorage::param)
+                                                          .addFunction("params", &lc::meta::CustomEntityStorage::params)
+                                                          .addFunction("pluginName", &lc::meta::CustomEntityStorage::pluginName)
+                                                          .addFunction("setParam", &lc::meta::CustomEntityStorage::setParam)
+    );
 
-        .beginClass<lc::SimpleSnapConstrain>("SimpleSnapConstrain")
-            .addConstant("NONE", SimpleSnapConstrain::NONE)
-            .addConstant("ON_ENTITY", SimpleSnapConstrain::ON_ENTITY)
-            .addConstant("ON_ENTITYPATH", SimpleSnapConstrain::ON_ENTITYPATH)
-            .addConstant("ENTITY_CENTER", SimpleSnapConstrain::ENTITY_CENTER)
-            .addConstant("LOGICAL", SimpleSnapConstrain::LOGICAL)
-            .addConstant("DIVIDED", SimpleSnapConstrain::DIVIDED)
+    state["lc.meta.DocumentMetaType"].setClass(kaguya::UserdataMetatable<lc::meta::DocumentMetaType, lc::meta::MetaType>()
+                                                       .addFunction("name", &lc::meta::DocumentMetaType::name)
+    );
 
-            .addFunction("constrain", &SimpleSnapConstrain::constrain)
-            .addFunction("divisions", &SimpleSnapConstrain::divisions)
-            .addFunction("angle", &SimpleSnapConstrain::angle)
-            .addFunction("setDivisions", &SimpleSnapConstrain::setDivisions)
-            .addFunction("setAngle", &SimpleSnapConstrain::setAngle)
-            .addFunction("enableConstrain", &SimpleSnapConstrain::enableConstrain)
-            .addFunction("disableConstrain", &SimpleSnapConstrain::disableConstrain)
-            .addFunction("hasConstrain", &SimpleSnapConstrain::hasConstrain)
-        .endClass()
+    state["lc.meta.DxfLinePattern"].setClass(kaguya::UserdataMetatable<lc::meta::DxfLinePattern, kaguya::MultipleBase<lc::meta::DocumentMetaType, lc::meta::EntityMetaType>>()
+                                                     .addStaticFunction("LCMETANAME", &lc::meta::DxfLinePattern::LCMETANAME)
+                                                     .addFunction("description", &lc::meta::DxfLinePattern::description)
+                                                     .addFunction("id", &lc::meta::DxfLinePattern::id)
+                                                     .addFunction("metaTypeID", &lc::meta::DxfLinePattern::metaTypeID)
+    );
 
-        .beginClass<EntityCoordinate>("EntityCoordinate")
-            .addConstructor(LUA_ARGS(const geo::Coordinate&, int))
-            .addFunction("coordinate", &EntityCoordinate::coordinate)
-            .addFunction("pointId", &EntityCoordinate::pointId)
-        .endClass()       
-        ;
+    state["lc.meta.DxfLinePatternByBlock"].setClass(kaguya::UserdataMetatable<lc::meta::DxfLinePatternByBlock, lc::meta::DxfLinePattern>()
+                                                            .addFunction("name", &lc::meta::DxfLinePatternByBlock::name)
+    );
+
+    state["lc.meta.DxfLinePatternByValue"].setClass(kaguya::UserdataMetatable<lc::meta::DxfLinePatternByValue, lc::meta::DxfLinePattern>()
+                                                            .setConstructors<lc::meta::DxfLinePatternByValue(std::string, std::string, std::vector<double>, double)>()
+                                                            .addStaticFunction("calculatePathLength", &lc::meta::DxfLinePatternByValue::calculatePathLength)
+                                                            .addFunction("description", &lc::meta::DxfLinePatternByValue::description)
+                                                            .addFunction("generatePattern", &lc::meta::DxfLinePatternByValue::generatePattern)
+                                                            .addFunction("lcPattern", &lc::meta::DxfLinePatternByValue::lcPattern)
+                                                            .addFunction("length", &lc::meta::DxfLinePatternByValue::length)
+                                                            .addFunction("name", &lc::meta::DxfLinePatternByValue::name)
+                                                            .addFunction("path", &lc::meta::DxfLinePatternByValue::path)
+    );
+
+    state["lc.meta.EntityMetaType"].setClass(kaguya::UserdataMetatable<lc::meta::EntityMetaType, lc::meta::MetaType>()
+                                                     .addFunction("metaTypeID", &lc::meta::EntityMetaType::metaTypeID)
+    );
+
+    state["lc.meta.Layer"].setClass(kaguya::UserdataMetatable<lc::meta::Layer, kaguya::MultipleBase<lc::meta::EntityMetaType, lc::meta::DocumentMetaType>>()
+                                            .setConstructors<lc::meta::Layer(std::string, const lc::meta::MetaLineWidthByValue &, const lc::Color &, lc::meta::DxfLinePatternByValue_CSPtr, bool)>()
+            .addStaticFunction("LCMETANAME", &lc::meta::Layer::LCMETANAME)
+            .addFunction("color", &lc::meta::Layer::color)
+            .addFunction("id", &lc::meta::Layer::id)
+            .addFunction("isFrozen", &lc::meta::Layer::isFrozen)
+            .addFunction("linePattern", &lc::meta::Layer::linePattern)
+            .addFunction("lineWidth", &lc::meta::Layer::lineWidth)
+            .addFunction("metaTypeID", &lc::meta::Layer::metaTypeID)
+            .addFunction("name", &lc::meta::Layer::name)
+    );
+
+    state["lc.meta.MetaColor"].setClass(kaguya::UserdataMetatable<lc::meta::MetaColor, lc::meta::EntityMetaType>()
+                                                .addStaticFunction("LCMETANAME", &lc::meta::MetaColor::LCMETANAME)
+                                                .addFunction("metaTypeID", &lc::meta::MetaColor::metaTypeID)
+    );
+
+    state["lc.meta.MetaColorByBlock"].setClass(kaguya::UserdataMetatable<lc::meta::MetaColorByBlock, lc::meta::MetaColor>()
+                                                       .setConstructors<lc::meta::MetaColorByBlock()>()
+                                                       .addFunction("id", &lc::meta::MetaColorByBlock::id)
+    );
+
+    state["lc.meta.MetaColorByValue"].setClass(kaguya::UserdataMetatable<lc::meta::MetaColorByValue, lc::meta::MetaColor>()
+                                                       .setConstructors<lc::meta::MetaColorByValue(), lc::meta::MetaColorByValue(const lc::meta::MetaColorByValue &), lc::meta::MetaColorByValue(const lc::Color &), lc::meta::MetaColorByValue(double, double, double, double)>()
+            .addFunction("alpha", &lc::meta::MetaColorByValue::alpha)
+            .addFunction("alphaI", &lc::meta::MetaColorByValue::alphaI)
+            .addFunction("blue", &lc::meta::MetaColorByValue::blue)
+            .addFunction("blueI", &lc::meta::MetaColorByValue::blueI)
+            .addFunction("color", &lc::meta::MetaColorByValue::color)
+            .addFunction("green", &lc::meta::MetaColorByValue::green)
+            .addFunction("greenI", &lc::meta::MetaColorByValue::greenI)
+            .addFunction("id", &lc::meta::MetaColorByValue::id)
+            .addFunction("red", &lc::meta::MetaColorByValue::red)
+            .addFunction("redI", &lc::meta::MetaColorByValue::redI)
+    );
+
+    state["lc.meta.MetaInfo"].setClass(kaguya::UserdataMetatable<lc::meta::MetaInfo>()
+                                               .addFunction("add", &lc::meta::MetaInfo::add)
+                                               .addStaticFunction("create", &lc::meta::MetaInfo::create)
+    );
+
+    state["lc.meta.MetaLineWidth"].setClass(kaguya::UserdataMetatable<lc::meta::MetaLineWidth, lc::meta::EntityMetaType>()
+                                                    .addStaticFunction("LCMETANAME", &lc::meta::MetaLineWidth::LCMETANAME)
+                                                    .addFunction("id", &lc::meta::MetaLineWidth::id)
+    );
+
+    state["lc.meta.MetaLineWidthByBlock"].setClass(kaguya::UserdataMetatable<lc::meta::MetaLineWidthByBlock, lc::meta::MetaLineWidth>()
+                                                           .setConstructors<lc::meta::MetaLineWidthByBlock()>()
+                                                           .addFunction("metaTypeID", &lc::meta::MetaLineWidthByBlock::metaTypeID)
+    );
+
+    state["lc.meta.MetaLineWidthByValue"].setClass(kaguya::UserdataMetatable<lc::meta::MetaLineWidthByValue, kaguya::MultipleBase<lc::meta::MetaLineWidth, lc::meta::DocumentMetaType>>()
+                                                           .setConstructors<lc::meta::MetaLineWidthByValue(), lc::meta::MetaLineWidthByValue(const double)>()
+            .addFunction("id", &lc::meta::MetaLineWidthByValue::id)
+            .addFunction("metaTypeID", &lc::meta::MetaLineWidthByValue::metaTypeID)
+            .addFunction("name", &lc::meta::MetaLineWidthByValue::name)
+            .addFunction("width", &lc::meta::MetaLineWidthByValue::width)
+    );
+
+    state["lc.meta.MetaType"].setClass(kaguya::UserdataMetatable<lc::meta::MetaType>()
+                                               .addFunction("id", &lc::meta::MetaType::id)
+    );
+
+    state["lc.operation.AddBlock"].setClass(kaguya::UserdataMetatable<lc::operation::AddBlock, lc::operation::DocumentOperation>()
+                                                    .setConstructors<lc::operation::AddBlock(const storage::Document_SPtr &, meta::Block_CSPtr)>()
+            .addFunction("redo", &lc::operation::AddBlock::redo)
+            .addFunction("undo", &lc::operation::AddBlock::undo)
+    );
+
+    state["lc.operation.AddLayer"].setClass(kaguya::UserdataMetatable<lc::operation::AddLayer, lc::operation::DocumentOperation>()
+                                                    .setConstructors<lc::operation::AddLayer(std::shared_ptr<storage::Document>, meta::Layer_CSPtr)>()
+                                                    .addFunction("redo", &lc::operation::AddLayer::redo)
+                                                    .addFunction("undo", &lc::operation::AddLayer::undo)
+    );
+
+    state["lc.operation.AddLinePattern"].setClass(kaguya::UserdataMetatable<lc::operation::AddLinePattern, lc::operation::DocumentOperation>()
+                                                          .setConstructors<lc::operation::AddLinePattern(storage::Document_SPtr, meta::DxfLinePattern_CSPtr)>()
+                                                          .addFunction("redo", &lc::operation::AddLinePattern::redo)
+                                                          .addFunction("undo", &lc::operation::AddLinePattern::undo)
+    );
+
+    state["lc.operation.Base"].setClass(kaguya::UserdataMetatable<lc::operation::Base>()
+                                                .addFunction("process", &lc::operation::Base::process)
+    );
+
+    state["lc.operation.Begin"].setClass(kaguya::UserdataMetatable<lc::operation::Begin, lc::operation::Base>()
+                                                 .setConstructors<lc::operation::Begin()>()
+                                                 .addFunction("getEntities", &lc::operation::Begin::getEntities)
+                                                 .addFunction("process", &lc::operation::Begin::process)
+    );
+
+    state["lc.operation.Builder"].setClass(kaguya::UserdataMetatable<lc::operation::Builder, lc::operation::DocumentOperation>()
+                                                   .setConstructors<lc::operation::Builder(storage::Document_SPtr, const std::string &)>()
+            .addFunction("append", &lc::operation::Builder::append)
+            .addFunction("redo", &lc::operation::Builder::redo)
+            .addFunction("undo", &lc::operation::Builder::undo)
+    );
+
+    state["lc.operation.Copy"].setClass(kaguya::UserdataMetatable<lc::operation::Copy, lc::operation::Base>()
+                                                .setConstructors<lc::operation::Copy(geo::Coordinate)>()
+                                                .addFunction("process", &lc::operation::Copy::process)
+    );
+
+    state["lc.operation.DocumentOperation"].setClass(kaguya::UserdataMetatable<lc::operation::DocumentOperation, lc::operation::Undoable>()
+                                                             .addFunction("document", &lc::operation::DocumentOperation::document)
+                                                             .addFunction("execute", &lc::operation::DocumentOperation::execute)
+    );
+
+    state["lc.operation.EntityBuilder"].setClass(kaguya::UserdataMetatable<lc::operation::EntityBuilder, lc::operation::DocumentOperation>()
+                                                         .setConstructors<lc::operation::EntityBuilder(const storage::Document_SPtr &)>()
+            .addFunction("appendEntity", &lc::operation::EntityBuilder::appendEntity)
+            .addFunction("appendOperation", &lc::operation::EntityBuilder::appendOperation)
+            .addFunction("processStack", &lc::operation::EntityBuilder::processStack)
+            .addFunction("redo", &lc::operation::EntityBuilder::redo)
+            .addFunction("undo", &lc::operation::EntityBuilder::undo)
+    );
+
+    state["lc.operation.Loop"].setClass(kaguya::UserdataMetatable<lc::operation::Loop, lc::operation::Base>()
+                                                .setConstructors<lc::operation::Loop(int)>()
+                                                .addFunction("process", &lc::operation::Loop::process)
+    );
+
+    state["lc.operation.Move"].setClass(kaguya::UserdataMetatable<lc::operation::Move, lc::operation::Base>()
+                                                .setConstructors<lc::operation::Move(geo::Coordinate)>()
+                                                .addFunction("process", &lc::operation::Move::process)
+    );
+
+    state["lc.operation.Push"].setClass(kaguya::UserdataMetatable<lc::operation::Push, lc::operation::Base>()
+                                                .setConstructors<lc::operation::Push()>()
+                                                .addFunction("process", &lc::operation::Push::process)
+    );
+
+    state["lc.operation.Remove"].setClass(kaguya::UserdataMetatable<lc::operation::Remove, lc::operation::Base>()
+                                                  .setConstructors<lc::operation::Remove()>()
+                                                  .addFunction("process", &lc::operation::Remove::process)
+    );
+
+    state["lc.operation.RemoveBlock"].setClass(kaguya::UserdataMetatable<lc::operation::RemoveBlock, lc::operation::DocumentOperation>()
+                                                       .setConstructors<lc::operation::RemoveBlock(const storage::Document_SPtr &, meta::Block_CSPtr)>()
+            .addFunction("redo", &lc::operation::RemoveBlock::redo)
+            .addFunction("undo", &lc::operation::RemoveBlock::undo)
+    );
+
+    state["lc.operation.RemoveLayer"].setClass(kaguya::UserdataMetatable<lc::operation::RemoveLayer, lc::operation::DocumentOperation>()
+                                                       .setConstructors<lc::operation::RemoveLayer(std::shared_ptr<storage::Document>, meta::Layer_CSPtr)>()
+                                                       .addFunction("redo", &lc::operation::RemoveLayer::redo)
+                                                       .addFunction("undo", &lc::operation::RemoveLayer::undo)
+    );
+
+    state["lc.operation.RemoveLinePattern"].setClass(kaguya::UserdataMetatable<lc::operation::RemoveLinePattern, lc::operation::DocumentOperation>()
+                                                             .setConstructors<lc::operation::RemoveLinePattern(storage::Document_SPtr, meta::DxfLinePattern_CSPtr)>()
+                                                             .addFunction("redo", &lc::operation::RemoveLinePattern::redo)
+                                                             .addFunction("undo", &lc::operation::RemoveLinePattern::undo)
+    );
+
+    state["lc.operation.ReplaceBlock"].setClass(kaguya::UserdataMetatable<lc::operation::ReplaceBlock, lc::operation::DocumentOperation>()
+                                                        .setConstructors<lc::operation::ReplaceBlock(const storage::Document_SPtr &, meta::Block_CSPtr, meta::Block_CSPtr)>()
+            .addFunction("redo", &lc::operation::ReplaceBlock::redo)
+            .addFunction("undo", &lc::operation::ReplaceBlock::undo)
+    );
+
+    state["lc.operation.ReplaceLayer"].setClass(kaguya::UserdataMetatable<lc::operation::ReplaceLayer, lc::operation::DocumentOperation>()
+                                                        .setConstructors<lc::operation::ReplaceLayer(std::shared_ptr<storage::Document>, meta::Layer_CSPtr, meta::Layer_CSPtr)>()
+                                                        .addFunction("redo", &lc::operation::ReplaceLayer::redo)
+                                                        .addFunction("undo", &lc::operation::ReplaceLayer::undo)
+    );
+
+    state["lc.operation.ReplaceLinePattern"].setClass(kaguya::UserdataMetatable<lc::operation::ReplaceLinePattern, lc::operation::DocumentOperation>()
+                                                              .setConstructors<lc::operation::ReplaceLinePattern(storage::Document_SPtr, meta::DxfLinePattern_CSPtr, meta::DxfLinePattern_CSPtr)>()
+                                                              .addFunction("redo", &lc::operation::ReplaceLinePattern::redo)
+                                                              .addFunction("undo", &lc::operation::ReplaceLinePattern::undo)
+    );
+
+    state["lc.operation.Rotate"].setClass(kaguya::UserdataMetatable<lc::operation::Rotate, lc::operation::Base>()
+                                                  .setConstructors<lc::operation::Rotate(geo::Coordinate, double)>()
+                                                  .addFunction("process", &lc::operation::Rotate::process)
+    );
+
+    state["lc.operation.Scale"].setClass(kaguya::UserdataMetatable<lc::operation::Scale, lc::operation::Base>()
+                                                 .setConstructors<lc::operation::Scale(geo::Coordinate, geo::Coordinate)>()
+                                                 .addFunction("process", &lc::operation::Scale::process)
+    );
+
+    state["lc.operation.SelectByLayer"].setClass(kaguya::UserdataMetatable<lc::operation::SelectByLayer, lc::operation::Base>()
+                                                         .setConstructors<lc::operation::SelectByLayer(meta::Layer_CSPtr)>()
+                                                         .addFunction("process", &lc::operation::SelectByLayer::process)
+    );
+
+    state["lc.operation.Undoable"].setClass(kaguya::UserdataMetatable<lc::operation::Undoable>()
+                                                    .addFunction("redo", &lc::operation::Undoable::redo)
+                                                    .addFunction("text", &lc::operation::Undoable::text)
+                                                    .addFunction("undo", &lc::operation::Undoable::undo)
+    );
+
+    state["lc.storage.Document"].setClass(kaguya::UserdataMetatable<lc::storage::Document>()
+                                                  .addFunction("addDocumentMetaType", &lc::storage::Document::addDocumentMetaType)
+                                                  .addFunction("allLayers", &lc::storage::Document::allLayers)
+                                                  .addFunction("allMetaTypes", &lc::storage::Document::allMetaTypes)
+                                                  .addFunction("blocks", &lc::storage::Document::blocks)
+                                                  .addFunction("entitiesByBlock", &lc::storage::Document::entitiesByBlock)
+                                                  .addFunction("entitiesByLayer", &lc::storage::Document::entitiesByLayer)
+                                                  .addFunction("entityContainer", &lc::storage::Document::entityContainer)
+                                                  .addFunction("insertEntity", &lc::storage::Document::insertEntity)
+                                                  .addFunction("layerByName", &lc::storage::Document::layerByName)
+                                                  .addFunction("linePatternByName", &lc::storage::Document::linePatternByName)
+                                                  .addFunction("linePatterns", &lc::storage::Document::linePatterns)
+                                                  .addFunction("removeDocumentMetaType", &lc::storage::Document::removeDocumentMetaType)
+                                                  .addFunction("removeEntity", &lc::storage::Document::removeEntity)
+                                                  .addFunction("replaceDocumentMetaType", &lc::storage::Document::replaceDocumentMetaType)
+                                                  .addFunction("waitingCustomEntities", &lc::storage::Document::waitingCustomEntities)
+    );
+
+    state["lc.storage.DocumentImpl"].setClass(kaguya::UserdataMetatable<lc::storage::DocumentImpl, lc::storage::Document>()
+                                                      .setConstructors<lc::storage::DocumentImpl(lc::storage::StorageManager_SPtr)>()
+                                                      .addFunction("addDocumentMetaType", &lc::storage::DocumentImpl::addDocumentMetaType)
+                                                      .addFunction("allLayers", &lc::storage::DocumentImpl::allLayers)
+                                                      .addFunction("allMetaTypes", &lc::storage::DocumentImpl::allMetaTypes)
+                                                      .addFunction("blocks", &lc::storage::DocumentImpl::blocks)
+                                                      .addFunction("entitiesByBlock", &lc::storage::DocumentImpl::entitiesByBlock)
+                                                      .addFunction("entitiesByLayer", &lc::storage::DocumentImpl::entitiesByLayer)
+                                                      .addFunction("entityContainer", &lc::storage::DocumentImpl::entityContainer)
+                                                      .addFunction("insertEntity", &lc::storage::DocumentImpl::insertEntity)
+                                                      .addFunction("layerByName", &lc::storage::DocumentImpl::layerByName)
+                                                      .addFunction("linePatternByName", &lc::storage::DocumentImpl::linePatternByName)
+                                                      .addFunction("linePatterns", &lc::storage::DocumentImpl::linePatterns)
+                                                      .addFunction("removeDocumentMetaType", &lc::storage::DocumentImpl::removeDocumentMetaType)
+                                                      .addFunction("removeEntity", &lc::storage::DocumentImpl::removeEntity)
+                                                      .addFunction("replaceDocumentMetaType", &lc::storage::DocumentImpl::replaceDocumentMetaType)
+                                                      .addFunction("waitingCustomEntities", &lc::storage::DocumentImpl::waitingCustomEntities)
+    );
+
+    state["lc.storage.EntityContainer"].setClass(kaguya::UserdataMetatable<lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>>()
+                                                         .setConstructors<lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>(), lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>(const storage::EntityContainer<lc::entity::CADEntity_CSPtr> &)>()
+            .addFunction("asVector", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::asVector)
+            .addFunction("boundingBox", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::boundingBox)
+            .addFunction("bounds", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::bounds)
+            .addFunction("combine", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::combine)
+            .addFunction("entitiesByLayer", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entitiesByLayer)
+            .addFunction("entitiesByMetaType", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entitiesByMetaType)
+            .addFunction("entitiesFullWithinArea", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entitiesFullWithinArea)
+            .addFunction("entitiesWithinAndCrossingArea", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entitiesWithinAndCrossingArea)
+            .addFunction("entitiesWithinAndCrossingAreaFast", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entitiesWithinAndCrossingAreaFast)
+            .addFunction("entityByID", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::entityByID)
+            .addFunction("getEntityPathsNearCoordinate", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::getEntityPathsNearCoordinate)
+            .addFunction("insert", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::insert)
+            .addFunction("optimise", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::optimise)
+            .addFunction("remove", &lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>::remove)
+    );
+
+    state["lc.storage.QuadTree"].setClass(kaguya::UserdataMetatable<lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>, lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>>()
+                                                  .setConstructors<
+                                                          lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>(int, const geo::Area &, short, short),
+                                                          lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>(const geo::Area &),
+                                                          lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>(const lc::storage::QuadTree<class std::shared_ptr<const class lc::entity::CADEntity> > &),
+                                                          lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>()>()
+            .addFunction("clear", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::clear)
+            .addFunction("entityByID", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::entityByID)
+            .addFunction("erase", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::erase)
+            .addFunction("insert", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::insert)
+            .addFunction("test", &lc::storage::QuadTree<lc::entity::CADEntity_CSPtr>::test)
+    );
+
+
+    state["lc.storage.QuadTreeSub"].setClass(kaguya::UserdataMetatable<lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>>()
+                                                     .setConstructors<
+                                                             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>(int, const geo::Area &, short, short),
+                                                             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>(const geo::Area &),
+                                                             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>(const storage::QuadTreeSub<lc::entity::CADEntity_CSPtr> &),
+                                                             lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>()>()
+            .addFunction("bounds", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::bounds)
+            .addFunction("clear", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::clear)
+            .addFunction("entityByID", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::entityByID)
+            .addFunction("erase", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::erase)
+            .addOverloadedFunctions("insert", static_cast<void(lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::*)(const lc::entity::CADEntity_CSPtr, const lc::geo::Area &)>(&lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::insert), static_cast<void(lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::*)(const lc::entity::CADEntity_CSPtr)>(&lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::insert))
+            .addFunction("level", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::level)
+            .addFunction("maxLevels", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::maxLevels)
+            .addFunction("maxObjects", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::maxObjects)
+            .addFunction("optimise", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::optimise)
+            .addOverloadedFunctions("retrieve", static_cast<std::vector<lc::entity::CADEntity_CSPtr>(lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::*)(const geo::Area &, const short) const>(&lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::retrieve), static_cast<std::vector<lc::entity::CADEntity_CSPtr>(lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::*)(const short) const>(&lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::retrieve))
+            .addFunction("size", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::size)
+            .addFunction("walkQuad", &lc::storage::QuadTreeSub<lc::entity::CADEntity_CSPtr>::walkQuad)
+    );
+
+    state["lc.storage.StorageManager"].setClass(kaguya::UserdataMetatable<lc::storage::StorageManager>()
+                                                        .addFunction("addDocumentMetaType", &lc::storage::StorageManager::addDocumentMetaType)
+                                                        .addFunction("allLayers", &lc::storage::StorageManager::allLayers)
+                                                        .addFunction("allMetaTypes", &lc::storage::StorageManager::allMetaTypes)
+                                                        .addFunction("entitiesByBlock", &lc::storage::StorageManager::entitiesByBlock)
+                                                        .addFunction("entitiesByLayer", &lc::storage::StorageManager::entitiesByLayer)
+                                                        .addFunction("entityByID", &lc::storage::StorageManager::entityByID)
+                                                        .addFunction("entityContainer", &lc::storage::StorageManager::entityContainer)
+                                                        .addFunction("insertEntity", &lc::storage::StorageManager::insertEntity)
+                                                        .addFunction("insertEntityContainer", &lc::storage::StorageManager::insertEntityContainer)
+                                                        .addFunction("layerByName", &lc::storage::StorageManager::layerByName)
+                                                        .addFunction("linePatternByName", &lc::storage::StorageManager::linePatternByName)
+                                                        .addFunction("optimise", &lc::storage::StorageManager::optimise)
+                                                        .addFunction("removeDocumentMetaType", &lc::storage::StorageManager::removeDocumentMetaType)
+                                                        .addFunction("removeEntity", &lc::storage::StorageManager::removeEntity)
+                                                        .addFunction("replaceDocumentMetaType", &lc::storage::StorageManager::replaceDocumentMetaType)
+    );
+
+    state["lc.storage.StorageManagerImpl"].setClass(kaguya::UserdataMetatable<lc::storage::StorageManagerImpl, lc::storage::StorageManager>()
+                                                            .setConstructors<lc::storage::StorageManagerImpl()>()
+                                                            .addFunction("addDocumentMetaType", &lc::storage::StorageManagerImpl::addDocumentMetaType)
+                                                            .addFunction("allLayers", &lc::storage::StorageManagerImpl::allLayers)
+                                                            .addFunction("allMetaTypes", &lc::storage::StorageManagerImpl::allMetaTypes)
+                                                            .addFunction("entitiesByBlock", &lc::storage::StorageManagerImpl::entitiesByBlock)
+                                                            .addFunction("entitiesByLayer", &lc::storage::StorageManagerImpl::entitiesByLayer)
+                                                            .addFunction("entityByID", &lc::storage::StorageManagerImpl::entityByID)
+                                                            .addFunction("entityContainer", &lc::storage::StorageManagerImpl::entityContainer)
+                                                            .addFunction("insertEntity", &lc::storage::StorageManagerImpl::insertEntity)
+                                                            .addFunction("insertEntityContainer", &lc::storage::StorageManagerImpl::insertEntityContainer)
+                                                            .addFunction("layerByName", &lc::storage::StorageManagerImpl::layerByName)
+                                                            .addFunction("linePatternByName", &lc::storage::StorageManagerImpl::linePatternByName)
+                                                            .addFunction("optimise", &lc::storage::StorageManagerImpl::optimise)
+                                                            .addFunction("removeDocumentMetaType", &lc::storage::StorageManagerImpl::removeDocumentMetaType)
+                                                            .addFunction("removeEntity", &lc::storage::StorageManagerImpl::removeEntity)
+                                                            .addFunction("replaceDocumentMetaType", &lc::storage::StorageManagerImpl::replaceDocumentMetaType)
+    );
+
+    state["lc.storage.UndoManager"].setClass(kaguya::UserdataMetatable<lc::storage::UndoManager>()
+                                                     .addFunction("canRedo", &lc::storage::UndoManager::canRedo)
+                                                     .addFunction("canUndo", &lc::storage::UndoManager::canUndo)
+                                                     .addFunction("redo", &lc::storage::UndoManager::redo)
+                                                     .addFunction("removeUndoables", &lc::storage::UndoManager::removeUndoables)
+                                                     .addFunction("undo", &lc::storage::UndoManager::undo)
+    );
+
+    state["lc.storage.UndoManagerImpl"].setClass(kaguya::UserdataMetatable<lc::storage::UndoManagerImpl, lc::storage::UndoManager>()
+                                                         .setConstructors<lc::storage::UndoManagerImpl(unsigned int)>()
+                                                         .addFunction("canRedo", &lc::storage::UndoManagerImpl::canRedo)
+                                                         .addFunction("canUndo", &lc::storage::UndoManagerImpl::canUndo)
+                                                         .addFunction("redo", &lc::storage::UndoManagerImpl::redo)
+                                                         .addFunction("removeUndoables", &lc::storage::UndoManagerImpl::removeUndoables)
+                                                         .addFunction("undo", &lc::storage::UndoManagerImpl::undo)
+    );
+
+
 }

@@ -5,7 +5,6 @@
 #include <kaguya/kaguya.hpp>
 
 using namespace lc::lua;
-using namespace LuaIntf;
 
 static const luaL_Reg loadedlibs[] = {
         {"_G", luaopen_base},
@@ -21,11 +20,10 @@ LCLua::LCLua(lua_State* L) :
     _L(L),
     _f_openFileDialog(nullptr) {
 
-    LuaBinding(L)
-    .beginClass<LuaCustomEntityManager>("LuaCustomEntityManager")
-        .addStaticFunction("getInstance", &LuaCustomEntityManager::getInstance)
-        .addFunction("registerPlugin", &LuaCustomEntityManager::registerPlugin)
-    .endClass();
+    kaguya::State s(_L);
+    s["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
+            LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
+    });
 }
 
 void LCLua::addLuaLibs() {
@@ -37,26 +35,26 @@ void LCLua::addLuaLibs() {
     }
 
     //Add others non-LC tools
-    LuaBinding(_L)
-        .addFunction("microtime", &lua_microtime)
-        .addFunction("openFile", &openFile)
+    kaguya::State s(_L);
+    s["microtime"].setFunction(&lua_microtime);
+    s["openFile"].setFunction(&openFile);
 
-        .beginClass<FILE>("FILE")
-            .addFunction("read", [](FILE* file, const size_t len) {
-                return read(file, len);
-            })
-            .addFunction("write", [](FILE* file, const char* content) {
-                return write(file, content);
-            })
-        .endClass();
+    s["FILE"].setClass(kaguya::UserdataMetatable<FILE>()
+        .addStaticFunction("read", [](FILE* file, const size_t len) {
+            return read(file, len);
+        })
+        .addStaticFunction("write", [](FILE* file, const char* content) {
+            return write(file, content);
+        })
+    );
 
     if(_f_openFileDialog == nullptr) {
-        LuaBinding(_L).addFunction("openFileDialog", []() {
+        s["openFileDialog"].setFunction([]() {
             return (FILE*) nullptr;
         });
     }
     else {
-        LuaBinding(_L).addFunction("openFileDialog", _f_openFileDialog);
+        s["openFileDialog"].setFunction(_f_openFileDialog);
     }
 }
 
