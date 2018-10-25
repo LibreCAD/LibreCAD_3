@@ -5,7 +5,7 @@
 #include <QtCore/QDebug>
 #include <QtWidgets/QStyleFactory>
 #include <QSettings>
-#include "cad/logger.h"
+#include "cad/logger/logger.h"
 
 int main(int argc, char* argv[]) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -19,7 +19,10 @@ int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     QApplication::setStyle(QStyleFactory::create(style.getStyle()));
 
-    //LOG << "Hello";
+    LOGGER;//Init logger
+	//src::severity_logger <severity_level> slg;
+	//BOOST_LOG(slg) << "Hello World!";	
+	//BOOST_LOG_SEV(slg,error) << "Error msg..";
 
     lc::ui::LuaInterface li;
     li.initLua();
