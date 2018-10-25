@@ -30,12 +30,10 @@ else ()
 endif ()
 
 # Boost
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
-message("Boost lib ${Boost_INCLUDE_DIRS}")
+set(BOOST_ALL_DYN_LINK ON)
+find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
 FIND_PACKAGE ( Threads REQUIRED )
+include_directories(${Boost_INCLUDE_DIRS})
 
 # GDK-Pixbuf
 find_package(GDK-Pixbuf REQUIRED)
@@ -84,8 +82,9 @@ target_link_libraries(luacmdinterface
         ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES}
         ${Boost_LIBRARIES}
         ${CURL_LIBRARIES}
-        ${Boost_LIBRARIES} ${APR_LIBRARIES}
+        ${APR_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
         ${LUA_LIBRARIES}
-        lcluascript lckernel lcluascript lcviewernoqt
+        lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES}
+
 )

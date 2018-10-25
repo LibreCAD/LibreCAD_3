@@ -79,7 +79,8 @@ cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
         cad/storage/documentlist.cpp
-        )
+cad/logger/logger.cpp
+)
 
 # HEADER FILES
 set(lckernel_hdrs
@@ -178,12 +179,12 @@ cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
         cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
-        cad/interface/tangentable.h)
+        cad/interface/tangentable.h
+cad/logger/logger.h)
 
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
