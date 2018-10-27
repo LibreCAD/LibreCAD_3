@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     QApplication::setStyle(QStyleFactory::create(style.getStyle()));
 
     LOGGER;//Init logger
-	//src::severity_logger <severity_level> slg;
+	//lc::log::lc_logger slg;
 	//BOOST_LOG(slg) << "Hello World!";	
 	//BOOST_LOG_SEV(slg,error) << "Error msg..";
 

@@ -15,6 +15,7 @@ enum severity_level {
 
 namespace lc {
     namespace log {
+        typedef src::severity_logger<severity_level> lc_logger;
         class Logger {
             public:
                 static Logger* Instance();
@@ -22,8 +23,8 @@ namespace lc {
                 void enableFileSink();
                 void enableConsoleSink();
                 Logger();
-                Logger(Logger const&);
-                Logger& operator=(Logger const&);
+                Logger(Logger const&){};
+                Logger& operator=(Logger const&){};
                 static Logger* instance;
         };
     }

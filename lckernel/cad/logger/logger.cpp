@@ -5,7 +5,11 @@
 
 #include <iostream>
 #include <fstream>
-#include <boost/core/null_deleter.hpp>
+#if BOOST_VERSION >= 106100
+	#include <boost/core/null_deleter.hpp>
+#else
+	#include <boost/utility/empty_deleter.hpp>
+#endif
 #include <boost/log/expressions.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -108,8 +112,6 @@ namespace lc {
             //Indicate start
             BOOST_LOG_FUNCTION();
         };
-        Logger::Logger(Logger const&) {};
-        Logger& Logger::operator=(Logger const&) {};
     }
 }
 lc::log::Logger* lc::log::Logger::instance = nullptr;
