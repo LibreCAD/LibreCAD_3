@@ -79,7 +79,8 @@ cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
         cad/storage/documentlist.cpp
-        )
+cad/logger/logger.cpp
+)
 
 # HEADER FILES
 set(lckernel_hdrs
@@ -178,12 +179,12 @@ cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
         cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
-        cad/interface/tangentable.h)
+        cad/interface/tangentable.h
+cad/logger/logger.h)
 
-# LOG4CXX
-find_package(Log4CXX 1.10 REQUIRED)
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-link_directories(${LOG4CXX_LIBRARY_DIRS})
+# Boost logging
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")
@@ -223,7 +224,7 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared)
+target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared)
 
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)

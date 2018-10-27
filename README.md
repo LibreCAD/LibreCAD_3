@@ -18,13 +18,12 @@ Required libraries
 2) Pango
 3) Qt 5
 4) git
-5) liblog4cxx
-6) Google test
-7) Eigen 3
-8) Lua >= 5.2
-9) Curl
-10) Boost
-11) LibDxfRW (see compilation instruction after)
+5) Google test
+6) Eigen 3
+7) Lua >= 5.2
+8) Curl
+9) Boost
+10) LibDxfRW (see compilation instruction after)
 
 LibDxfRW compilation
 ----------
@@ -97,7 +96,7 @@ Ubuntu/Mint
 ========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev liblog4cxx10-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
 ```
 
 You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
@@ -121,20 +120,6 @@ This is the only way to get LibreCAD running on Windows at the moment.
 
 ```
 pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest
-```
-
-#### Log4CXX:
-
-Use lastest code from repo : git://git.apache.org/log4cxx.git
-https://issues.apache.org/jira/browse/LOGCXX-463
-
-Put the source in /third_party/apache-log4cxx
-
-```
-./autogen.sh
-./configure
-make
-make install
 ```
 
 #### LibreCAD:
