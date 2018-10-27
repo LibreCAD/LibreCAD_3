@@ -8,7 +8,7 @@
 #if BOOST_VERSION >= 106100
 	#include <boost/core/null_deleter.hpp>
 #else
-	#include <boost/utility/empty_deleter.hpp>
+	#include <boost/log/utility/empty_deleter.hpp>
 #endif
 #include <boost/log/expressions.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -85,7 +85,13 @@ namespace lc {
             //Second sink.. brief ;; to file
             boost::shared_ptr<text_sink> pSink(new text_sink);
             text_sink::locked_backend_ptr pBackend = pSink->locked_backend();
-            boost::shared_ptr<std::ostream> pStream(&std::clog, boost::null_deleter());
+            boost::shared_ptr<std::ostream> pStream(&std::clog, 
+#if BOOST_VERSION >= 106100
+            	boost::null_deleter()
+#else
+            	logging::empty_deleter()
+#endif
+            	);
             pBackend->add_stream(pStream);
             logging::core::get()->add_sink(pSink);
             pSink->set_formatter(expr::stream
