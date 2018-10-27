@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <fstream>
-#if BOOST_VERSION >= 106100
+#if BOOST_VERSION >= 106100 //TODO fix version
 	#include <boost/core/null_deleter.hpp>
 #else
 	#include <boost/log/utility/empty_deleter.hpp>

@@ -23,8 +23,8 @@ namespace lc {
                 void enableFileSink();
                 void enableConsoleSink();
                 Logger();
-                Logger(Logger const&){};
-                Logger& operator=(Logger const&){};
+                Logger(Logger const&)=delete;
+                Logger& operator=(Logger const&)=delete;
                 static Logger* instance;
         };
     }
