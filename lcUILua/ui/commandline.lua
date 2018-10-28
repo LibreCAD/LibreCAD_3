@@ -1,6 +1,6 @@
 local commands = {}
 local cliCommands = {}
-local lastPoint = Coordinate(0,0)
+local lastPoint = lc.geo.Coordinate(0,0)
 
 --Write a message to the command line log
 function message(message, id)
