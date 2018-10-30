@@ -10,12 +10,10 @@ using namespace dialog;
 using namespace manager;
 using namespace drawable;
 
-namespace LuaIntf {
-    LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
-	LUA_USING_LIST_TYPE(std::vector)
-}
+void luaOpenQtBridge(lua_State *L) {
+	kaguya::State state(L);
+	state["qt"] = kaguya::NewTable();
 
-void luaOpenQtBridge(lua_State *L) {	
 	addQtBaseBindings(L);
 	addQtWindowBindings(L);
 	addQtLayoutBindings(L);
@@ -25,308 +23,258 @@ void luaOpenQtBridge(lua_State *L) {
 }
 
 void addQtBaseBindings(lua_State *L) {
-	LuaIntf::LuaBinding(L)
+	kaguya::State state(L);
 
-	.beginModule("qt")
-		.addFunction("loadUi", &LuaInterface::loadUiFile)
-		
-		.beginClass<QObject>("QObject")
-			.addConstructor(LUA_ARGS())
-			.addFunction("findChild", [](QObject* object, std::string name) {
-				return LuaQObject::findChild(object, name);
-			})
-			.addStaticFunction("tr", &QObject::tr, LUA_ARGS(const char*, LuaIntf::_opt<const char*>, LuaIntf::_opt<int>))
-		.endClass()
+	state["qt"]["loadUi"].setFunction([](const char* fileName) { return std::dynamic_pointer_cast<QMainWindow>(LuaInterface::loadUiFile(fileName)); }); //TODO: why ?
+	state["qt"]["QObject"].setClass(kaguya::UserdataMetatable<QObject>()
+		.setConstructors<QObject()>()
+		.addStaticFunction("findChild", [](QObject* object, std::string name) {
+			return LuaQObject::findChild(object, name);
+		})
+		.addStaticFunction("tr", [](const char* text) {
+		    return QObject::tr(text);
+		})
+	);
 
-		.beginExtendClass<QWidget, QObject>("QWidget")
-			.addConstructor(LUA_ARGS())
-			.addFunction("addAction", &QWidget::addAction)
-			.addFunction("setWindowTitle", &QWidget::setWindowTitle)
-			.addFunction("show", &QWidget::show)
-			.addFunction("showMaximized", &QWidget::showMaximized)
-		.endClass()
+	state["qt"]["QWidget"].setClass(kaguya::UserdataMetatable<QWidget, QObject>()
+		.setConstructors<QWidget()>()
+		.addFunction("addAction", &QWidget::addAction)
+		.addFunction("setWindowTitle", &QWidget::setWindowTitle)
+		.addFunction("show", &QWidget::show)
+		.addFunction("showMaximized", &QWidget::showMaximized)
+	);
 
-		.beginClass<QString>("QString")
-			.addConstructor(LUA_ARGS(const char*))
-			.addFunction("isEmpty", &QString::isEmpty)
-			.addFunction("toStdString", &QString::toStdString)
-		.endClass()
+	state["qt"]["QString"].setClass(kaguya::UserdataMetatable<QString>()
+	    .setConstructors<QString(const char*)>()
+		.addFunction("isEmpty", &QString::isEmpty)
+		.addFunction("toStdString", &QString::toStdString)
+	);
 
-		.beginExtendClass<QAction, QObject>("QAction")
-			.addConstructor(LUA_ARGS(LuaIntf::_opt<QObject*>))
-			.addFunction("setText", &QAction::setText)
-			.addFunction("setIcon", &QAction::setIcon)
-		.endClass()
+	state["qt"]["QAction"].setClass(kaguya::UserdataMetatable<QAction, QObject>()
+		.setConstructors<QAction(), QAction(QObject*)>()
+		.addFunction("setText", &QAction::setText)
+		.addFunction("setIcon", &QAction::setIcon)
+	);
 
-		.beginClass<QIcon>("QIcon")
-			.addConstructor(LUA_ARGS(QString))
-		.endClass()
+	state["qt"]["QIcon"].setClass(kaguya::UserdataMetatable<QIcon>()
+	    .setConstructors<QIcon(QString)>()
+	);
 
-		.beginClass<QSize>("QSize")
-			.addConstructor(LUA_ARGS(int, int))
-		.endClass()
-	.endModule();
+	state["qt"]["QSize"].setClass(kaguya::UserdataMetatable<QSize>()
+		.setConstructors<QSize(int, int)>()
+	);
 }
 
 void addQtWindowBindings(lua_State *L) {
-	LuaIntf::LuaBinding(L)
+	kaguya::State state(L);
 
-	.beginModule("qt")
-		.beginExtendClass<QMainWindow, QWidget>("QMainWindow")
-			.addConstructor(LUA_ARGS())
-			.addFunction("addDockWidget", static_cast<void (QMainWindow::*)(Qt::DockWidgetArea, QDockWidget *)>(&QMainWindow::addDockWidget))
-			.addFunction("menuBar", &QMainWindow::menuBar)
-			.addFunction("centralWidget", &QMainWindow::centralWidget)
-			.addFunction("setCentralWidget", &QMainWindow::setCentralWidget)
-			.addFunction("setUnifiedTitleAndToolBarOnMac", &QMainWindow::setUnifiedTitleAndToolBarOnMac)
-		.endClass()
+	state["qt"]["QMainWindow"].setClass(kaguya::UserdataMetatable<QMainWindow, QWidget>()
+		.setConstructors<QMainWindow()>()
+		.addFunction("addDockWidget", static_cast<void (QMainWindow::*)(Qt::DockWidgetArea, QDockWidget *)>(&QMainWindow::addDockWidget))
+		.addFunction("menuBar", &QMainWindow::menuBar)
+		.addFunction("centralWidget", &QMainWindow::centralWidget)
+		.addFunction("setCentralWidget", &QMainWindow::setCentralWidget)
+		.addFunction("setUnifiedTitleAndToolBarOnMac", &QMainWindow::setUnifiedTitleAndToolBarOnMac)
+	);
 
-		.beginExtendClass<QMenuBar, QWidget>("QMenuBar")
-			.addFunction("clear", &QMenuBar::clear)
-			.addFunction("addMenu", static_cast<QAction* (QMenuBar::*)(QMenu*)>(&QMenuBar::addMenu))
-			.addFunction("addMenuStr", static_cast<QMenu* (QMenuBar::*)(const QString&)>(&QMenuBar::addMenu))
-		.endClass()
+	state["qt"]["QMenuBar"].setClass(kaguya::UserdataMetatable<QMenuBar, QWidget>()
+        .addFunction("clear", &QMenuBar::clear)
+        .addFunction("addMenu", static_cast<QAction* (QMenuBar::*)(QMenu*)>(&QMenuBar::addMenu))
+        .addFunction("addMenuStr", static_cast<QMenu* (QMenuBar::*)(const QString&)>(&QMenuBar::addMenu))
+	);
 
-		.beginExtendClass<QMenu, QWidget>("QMenu")
-			.addFactory([]() {
-				return new QMenu();
-			})
-			.addFunction("setTitle", &QMenu::setTitle)
-			.addFunction("addActionStr", static_cast<QAction* (QMenu::*)(const QString&)>(&QMenu::addAction))
-		.endClass()
+	state["qt"]["QMenu"].setClass(kaguya::UserdataMetatable<QMenu, QWidget>()
+		.setConstructors<QMenu()>() //return new QMenu(); before
+	    .addFunction("setTitle", &QMenu::setTitle)
+	    .addFunction("addActionStr", static_cast<QAction* (QMenu::*)(const QString&)>(&QMenu::addAction))
+	);
 
-		.beginExtendClass<QFrame, QWidget>("QFrame")
-		.endClass()
+	state["qt"]["QFrame"].setClass(kaguya::UserdataMetatable<QFrame, QWidget>());
 
-		.beginExtendClass<QAbstractScrollArea, QFrame>("QAbstractScrollArea")
-			.addFunction("setHorizontalScrollBarPolicy", &QAbstractScrollArea::setHorizontalScrollBarPolicy)
-			.addFunction("setVerticalScrollBarPolicy", &QAbstractScrollArea::setVerticalScrollBarPolicy)
-		.endClass()
+	state["qt"]["QAbstractScrollArea"].setClass(kaguya::UserdataMetatable<QAbstractScrollArea, QFrame>()
+		.addFunction("setHorizontalScrollBarPolicy", &QAbstractScrollArea::setHorizontalScrollBarPolicy)
+		.addFunction("setVerticalScrollBarPolicy", &QAbstractScrollArea::setVerticalScrollBarPolicy)
+	);
 
-		.beginExtendClass<QMdiArea, QAbstractScrollArea>("QMdiArea")
-			.addFunction("activeSubWindow", &QMdiArea::activeSubWindow)
-			.addFunction("addSubWindow", [](QMdiArea* mdiArea, QWidget* subWindow) {
-				return mdiArea->addSubWindow(subWindow);
-			})
-			.addFunction("subWindowList", &QMdiArea::subWindowList)
-		.endClass()
+	state["qt"]["QMdiArea"].setClass(kaguya::UserdataMetatable<QMdiArea, QAbstractScrollArea>()
+		.addFunction("activeSubWindow", &QMdiArea::activeSubWindow)
+	    .addStaticFunction("addSubWindow", [](QMdiArea* mdiArea, QWidget* subWindow) {
+		    return mdiArea->addSubWindow(subWindow);
+	    })
+		.addFunction("subWindowList", &QMdiArea::subWindowList)
+	);
 
-		.beginExtendClass<QMdiSubWindow, QWidget>("QMdiSubWindow")
-			.addFunction("widget", &QMdiSubWindow::widget)
-		.endClass()
+	state["qt"]["QMdiSubWindow"].setClass(kaguya::UserdataMetatable<QMdiSubWindow, QWidget>()
+	    .addFunction("widget", &QMdiSubWindow::widget)
+	);
 
-		.beginExtendClass<QDialog, QWidget>("QDialog")
-		.endClass()
+	state["qt"]["QDialog"].setClass(kaguya::UserdataMetatable<QDialog, QWidget>());
 
-		.beginExtendClass<QFileDialog, QDialog>("QFileDialog")
-			.addStaticFunction("getOpenFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
-				return QFileDialog::getOpenFileName(parent, caption, dir, filter);
-			})
-			.addStaticFunction("getSaveFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
-				return QFileDialog::getSaveFileName(parent, caption, dir, filter);
-			})
-		.endClass()
+	state["qt"]["QFileDialog"].setClass(kaguya::UserdataMetatable<QFileDialog, QDialog>()
+		.addStaticFunction("getOpenFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
+			return QFileDialog::getOpenFileName(parent, caption, dir, filter);
+		})
+		.addStaticFunction("getSaveFileName", [](QWidget *parent, QString& caption, QString& dir, QString& filter) {
+			return QFileDialog::getSaveFileName(parent, caption, dir, filter);
+		})
+	);
 
-		.beginExtendClass<QDockWidget, QWidget>("QDockWidget")
-		.endClass()
-	.endModule();
+	state["qt"]["QDockWidget"].setClass(kaguya::UserdataMetatable<QDockWidget, QWidget>());
 }
 
 void addQtLayoutBindings(lua_State *L) {
-	LuaIntf::LuaBinding(L)
+	kaguya::State state(L);
 
-	.beginModule("qt")
-		.beginExtendClass<QLayout, QWidget>("QLayout")
-			.addFunction("addWidget", &QLayout::addWidget)
-			.addFunction("count", &QLayout::count)
-		.endClass()
+	state["qt"]["QLayout"].setClass(kaguya::UserdataMetatable<QLayout, QObject>()
+		.addFunction("addWidget", &QLayout::addWidget)
+		.addFunction("count", &QLayout::count)
+	);
 
-		.beginExtendClass<QBoxLayout, QLayout>("QBoxLayout")
-		.endClass()
+	state["qt"]["QBoxLayout"].setClass(kaguya::UserdataMetatable<QBoxLayout, QLayout>());
 
-		.beginExtendClass<QHBoxLayout, QBoxLayout>("QHBoxLayout")
-			.addConstructor(LUA_ARGS())
-		.endClass()
+	state["qt"]["QHBoxLayout"].setClass(kaguya::UserdataMetatable<QHBoxLayout, QBoxLayout>()
+		.setConstructors<QHBoxLayout()>()
+	);
 
-		.beginExtendClass<QVBoxLayout, QBoxLayout>("QVBoxLayout")
-			.addConstructor(LUA_ARGS())
-		.endClass()
+	state["qt"]["QVBoxLayout"].setClass(kaguya::UserdataMetatable<QVBoxLayout, QBoxLayout>()
+		.setConstructors<QVBoxLayout()>()
+	);
 
-		.beginExtendClass<QGroupBox, QWidget>("QGroupBox")
-		.endClass()
-	.endModule();
+	state["qt"]["QGroupBox"].setClass(kaguya::UserdataMetatable<QGroupBox, QWidget>());
+
 }
 
 void addQtWidgetsBindings(lua_State *L) {
-	LuaIntf::LuaBinding(L)
+	kaguya::State state(L);
 
-	.beginModule("qt")
-		.beginExtendClass<QAbstractButton, QWidget>("QAbstractButton")
-			.addFunction("setIcon", &QAbstractButton::setIcon)
-			.addFunction("setIconSize", &QAbstractButton::setIconSize)
-			.addFunction("setCheckable", &QAbstractButton::setCheckable)
-		.endClass()
+	state["qt"]["QAbstractButton"].setClass(kaguya::UserdataMetatable<QAbstractButton, QWidget>()
+		.addFunction("setIcon", &QAbstractButton::setIcon)
+		.addFunction("setIconSize", &QAbstractButton::setIconSize)
+		.addFunction("setCheckable", &QAbstractButton::setCheckable)
+	);
 
-        .beginExtendClass<QComboBox, QWidget>("QComboBox")
-        .endClass()
+	state["qt"]["QComboBox"].setClass(kaguya::UserdataMetatable<QComboBox, QWidget>());
 
-		.beginExtendClass<QPushButton, QAbstractButton>("QPushButton")
-			.addFactory([](QString name) {
-				return new QPushButton(name);
-			})
-			.addFunction("setFlat", &QPushButton::setFlat)
-			.addFunction("setMenu", &QPushButton::setMenu)
-		.endClass()
-	.endModule();
+	state["qt"]["QPushButton"].setClass(kaguya::UserdataMetatable<QPushButton, QAbstractButton>()
+		.setConstructors<QPushButton(QString)>() //return new QPushButton(name) before
+		.addFunction("setFlat", &QPushButton::setFlat)
+		.addFunction("setMenu", &QPushButton::setMenu)
+	);
+
 }
 
 void addLCBindings(lua_State *L) {
-	LuaIntf::LuaBinding(L)
+	kaguya::State state(L);
 
-	.beginModule("lc")
-		.beginExtendClass<CadMdiChild, QWidget>("CadMdiChild")
-			.addFactory([]() {
-				return new CadMdiChild;
-			})
-			.addFunction("getSnapManager", &CadMdiChild::getSnapManager)
-			.addFunction("cursor", &CadMdiChild::cursor)
-			.addFunction("document", &CadMdiChild::document)
-            .addFunction("saveFile", &CadMdiChild::saveFile)
-			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
-			.addFunction("openFile", &CadMdiChild::openFile)
-			.addFunction("selection", &CadMdiChild::selection)
-			.addFunction("newDocument", &CadMdiChild::newDocument)
-			.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
-			.addFunction("tempEntities", &CadMdiChild::tempEntities)
-			.addFunction("undoManager", &CadMdiChild::undoManager)
-			.addFunction("viewer", &CadMdiChild::viewer)
-			.addFunction("activeLayer", &CadMdiChild::activeLayer)
-			.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
-		.endClass()
+	state["lc"]["CadMdiChild"].setClass(kaguya::UserdataMetatable<CadMdiChild, QWidget>()
+		.setConstructors<CadMdiChild()>() //eturn new CadMdiChild before
+		.addFunction("getSnapManager", &CadMdiChild::getSnapManager)
+		.addFunction("cursor", &CadMdiChild::cursor)
+		.addFunction("document", &CadMdiChild::document)
+		.addFunction("saveFile", &CadMdiChild::saveFile)
+		.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
+		.addFunction("openFile", &CadMdiChild::openFile)
+		.addFunction("selection", &CadMdiChild::selection)
+		.addFunction("newDocument", &CadMdiChild::newDocument)
+		.addFunction("setDestroyCallback", &CadMdiChild::setDestroyCallback)
+		.addFunction("tempEntities", &CadMdiChild::tempEntities)
+		.addFunction("undoManager", &CadMdiChild::undoManager)
+		.addFunction("viewer", &CadMdiChild::viewer)
+		.addFunction("activeLayer", &CadMdiChild::activeLayer)
+		.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
+	);
 
-		.beginClass<drawable::Cursor>("Cursor")
-			.addFunction("position", &drawable::Cursor::position)
-		.endClass()
+	state["lc"]["Cursor"].setClass(kaguya::UserdataMetatable<drawable::Cursor>()
+	    .addFunction("position", &drawable::Cursor::position)
+	);
 
-		.beginExtendClass<LCADViewer, QWidget>("LCADViewer")
-			.addFunction("x", &LCADViewer::x)
-			.addFunction("y", &LCADViewer::y)
-			.addFunction("autoScale", &LCADViewer::autoScale)
-			.addFunction("setOperationActive", &LCADViewer::setOperationActive)
-			.addFunction("docCanvas", &LCADViewer::docCanvas)
-		.endClass()
-		
-		.beginClass<LuaInterface>("LuaInterface")
-			.addFunction("luaConnect", &LuaInterface::luaConnect)
-			.addFunction("connect", &LuaInterface::qtConnect)
-			.addFunction("pluginList", &LuaInterface::pluginList)
-			.addFunction("operation", &LuaInterface::operation)
-			.addFunction("setOperation", &LuaInterface::setOperation)
-			.addFunction("registerEvent", &LuaInterface::registerEvent)
-			.addFunction("deleteEvent", &LuaInterface::deleteEvent)
-			.addFunction("triggerEvent", &LuaInterface::triggerEvent)
-		.endClass()
+	state["lc"]["LCADViewer"].setClass(kaguya::UserdataMetatable<LCADViewer, QWidget>()
+	    .addFunction("autoScale", &LCADViewer::autoScale)
+	    .addFunction("setOperationActive", &LCADViewer::setOperationActive)
+	    .addFunction("docCanvas", &LCADViewer::docCanvas)
+	);
 
-		.beginExtendClass<widgets::LuaScript, QDockWidget>("LuaScript")
-			.addConstructor(LUA_ARGS(QMdiArea*, widgets::CliCommand*))
-		.endClass()
+	state["lc"]["LuaInterface"].setClass(kaguya::UserdataMetatable<LuaInterface>()
+	    .addFunction("luaConnect", &LuaInterface::luaConnect)
+	    .addFunction("connect", &LuaInterface::qtConnect)
+	    .addFunction("pluginList", &LuaInterface::pluginList)
+	    .addFunction("operation", &LuaInterface::operation)
+	    .addFunction("setOperation", &LuaInterface::setOperation)
+	    .addFunction("registerEvent", &LuaInterface::registerEvent)
+	    .addFunction("deleteEvent", &LuaInterface::deleteEvent)
+	    .addFunction("triggerEvent", &LuaInterface::triggerEvent)
+	);
 
-		.beginClass<DocumentCanvas>("DocumentCanvas")
-			.addFunction("autoScale", &DocumentCanvas::autoScale)
-			.addFunction("selectPoint", &DocumentCanvas::selectPoint)
-		.endClass()
+	state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript, QWidget>()
+	    .setConstructors<widgets::LuaScript(QMdiArea*, widgets::CliCommand*)>()
+	);
 
-		.beginExtendClass<widgets::CliCommand, QDockWidget>("CliCommand")
-			.addConstructor(LUA_SP(std::shared_ptr<widgets::CliCommand>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
-			.addFunction("addCommand", &widgets::CliCommand::addCommand)
-			.addFunction("write", &widgets::CliCommand::write, LUA_ARGS(const char*))
-			.addFunction("returnText", &widgets::CliCommand::returnText)
-		.endClass()
+	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
+	    .addFunction("autoScale", &DocumentCanvas::autoScale)
+		.addFunction("selectPoint", &DocumentCanvas::selectPoint)
+	);
 
-		.beginExtendClass<widgets::Toolbar, QDockWidget>("Toolbar")
-			.addConstructor(LUA_SP(std::shared_ptr<widgets::Toolbar>), LUA_ARGS(LuaIntf::_opt<QWidget*>))
-			.addFunction("addTab", &widgets::Toolbar::addTab)
-			.addFunction("removeTab", &widgets::Toolbar::removeTab)
-			.addFunction("tabByName", &widgets::Toolbar::tabByName)
-		.endClass()
+	state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand, QDockWidget>()
+	    .setConstructors<widgets::CliCommand(), widgets::CliCommand(QWidget*)>()
+	    .addFunction("addCommand", &widgets::CliCommand::addCommand)
+	    .addFunction("write", &widgets::CliCommand::write)
+	    .addFunction("returnText", &widgets::CliCommand::returnText)
+	);
 
-		.beginExtendClass<widgets::ToolbarTab, QDockWidget>("ToolbarTab")
-			.addFactory([]() {
-				return new widgets::ToolbarTab();
-			})
-			.addFunction("addButton", &widgets::ToolbarTab::addButton, LUA_ARGS(QGroupBox*,
-																			 const char*,
-																			 LuaIntf::_opt<int>,
-																			 LuaIntf::_opt<int>,
-																			 LuaIntf::_opt<int>,
-																			 LuaIntf::_opt<int>))
-            .addFunction("addWidget", &widgets::ToolbarTab::addWidget, LUA_ARGS(QGroupBox*,
-                                                                         QWidget*,
-                                                                         LuaIntf::_opt<int>,
-                                                                         LuaIntf::_opt<int>,
-                                                                         LuaIntf::_opt<int>,
-                                                                         LuaIntf::_opt<int>))
-			.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
-			.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
-			.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
-			.addFunction("removeGroup", &widgets::ToolbarTab::removeGroup)
-		.endClass()
+	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
+		.setConstructors<widgets::Toolbar(), widgets::Toolbar(QWidget*)>()
+		.addFunction("addTab", &widgets::Toolbar::addTab)
+		.addFunction("removeTab", &widgets::Toolbar::removeTab)
+		.addFunction("tabByName", &widgets::Toolbar::tabByName)
+	);
 
-		.beginClass<drawable::TempEntities>("TempEntities")
-			.addFunction("addEntity", &drawable::TempEntities::addEntity)
-			.addFunction("removeEntity", &drawable::TempEntities::removeEntity)
-		.endClass()
+	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
+		.setConstructors<widgets::ToolbarTab()>() //return new widgets::ToolbarTab()
+        .addFunction("addButton", &widgets::ToolbarTab::addButton)
+	    .addFunction("addWidget", &widgets::ToolbarTab::addWidget)
+		.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
+		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
+		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
+		.addFunction("removeGroup", &widgets::ToolbarTab::removeGroup)
+	);
 
-        .beginClass<lc::ui::MetaInfoManager>("MetaInfoManager")
-			.addFunction("metaInfo", &lc::ui::MetaInfoManager::metaInfo)
-        .endClass()
+	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()
+		.addFunction("addEntity", &drawable::TempEntities::addEntity)
+		.addFunction("removeEntity", &drawable::TempEntities::removeEntity)
+	);
 
-		.beginExtendClass<widgets::Layers, QDockWidget>("Layers")
-            .addFactory([]() {
-                return new widgets::Layers();
-            })
-			.addFunction("setMdiChild", &widgets::Layers::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
-		.endClass()
+	state["lc"]["MetaInfoManager"].setClass(kaguya::UserdataMetatable<lc::ui::MetaInfoManager>()
+        .addFunction("metaInfo", &lc::ui::MetaInfoManager::metaInfo)
+	);
 
-		.beginClass<manager::SnapManagerImpl>("SnapManager")
-			.addFunction("setGridSnappable", &manager::SnapManagerImpl::setGridSnappable)
-		.endClass()
+	state["lc"]["Layers"].setClass(kaguya::UserdataMetatable<widgets::Layers, QDockWidget>()
+	    .setConstructors<widgets::Layers()>() //return new widgets::Layers() before
+		.addFunction("setMdiChild", &widgets::Layers::setMdiChild)
+	);
 
-		.beginExtendClass<dialog::LinePatternManager, QDialog>("LinePatternManager")
-            .addFactory([](lc::storage::Document_SPtr document){
-                return new dialog::LinePatternManager(document);
-            })
-            .addFunction("setDocument", &dialog::LinePatternManager::setDocument)
-        .endClass()
+	state["lc"]["SnapManager"].setClass(kaguya::UserdataMetatable<manager::SnapManagerImpl>()
+	    .addFunction("setGridSnappable", &manager::SnapManagerImpl::setGridSnappable)
+	);
 
-        .beginExtendClass<lc::ui::widgets::LinePatternSelect, QComboBox>("LinePatternSelect")
-            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new lc::ui::widgets::LinePatternSelect(nullptr, parent, showByLayer, showByBlock);
-            })
-            .addFunction("setMdiChild", &lc::ui::widgets::LinePatternSelect::setMdiChild, LUA_ARGS(LuaIntf::_opt<CadMdiChild*>))
-        .endClass()
+	state["lc"]["LinePatternManager"].setClass(kaguya::UserdataMetatable<dialog::LinePatternManager, QDialog>()
+	    .setConstructors<dialog::LinePatternManager(lc::storage::Document_SPtr)>() //return new dialog::LinePatternManager(document) before
+	    .addFunction("setDocument", &dialog::LinePatternManager::setDocument)
+	);
 
-        .beginExtendClass<lc::ui::widgets::LineWidthSelect, QComboBox>("LineWidthSelect")
-            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new lc::ui::widgets::LineWidthSelect(nullptr, parent, showByLayer, showByBlock);
-            })
-            .addFunction("setMetaInfoManager",
-                         &lc::ui::widgets::LineWidthSelect::setMetaInfoManager,
-                         LUA_ARGS(LuaIntf::_opt<lc::ui::MetaInfoManager_SPtr>)
-            )
-        .endClass()
+	state["lc"]["LinePatternSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LinePatternSelect, QComboBox>()
+		.setConstructors<widgets::LinePatternSelect(storage::Document_SPtr, QWidget*, bool, bool)>() // return new lc::ui::widgets::LinePatternSelect(nullptr, parent, showByLayer, showByBlock) before
+		.addFunction("setMdiChild", &lc::ui::widgets::LinePatternSelect::setMdiChild)
+	);
 
-        .beginExtendClass<lc::ui::widgets::ColorSelect, QComboBox>("ColorSelect")
-            .addFactory([](QWidget* parent, bool showByLayer, bool showByBlock){
-                return new lc::ui::widgets::ColorSelect(nullptr, parent, showByLayer, showByBlock);
-            })
-            .addFunction("setMetaInfoManager",
-                         &lc::ui::widgets::ColorSelect::setMetaInfoManager,
-                         LUA_ARGS(LuaIntf::_opt<lc::ui::MetaInfoManager_SPtr>)
-            )
-        .endClass()
+	state["lc"]["LineWidthSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LineWidthSelect, QComboBox>()
+	    .setConstructors<widgets::LineWidthSelect(lc::ui::MetaInfoManager_SPtr, QWidget*, bool, bool)>() // eturn new lc::ui::widgets::LineWidthSelect(nullptr, parent, showByLayer, showByBlock) before
+		.addFunction("setMetaInfoManager", &lc::ui::widgets::LineWidthSelect::setMetaInfoManager)
+	);
 
-	.endModule();
+	state["lc"]["ColorSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::ColorSelect, QComboBox>()
+	    .setConstructors<widgets::ColorSelect(lc::ui::MetaInfoManager_SPtr, QWidget*, bool, bool)>()
+	    .addFunction("setMetaInfoManager", &lc::ui::widgets::ColorSelect::setMetaInfoManager)
+	);
 }
 
 

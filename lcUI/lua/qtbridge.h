@@ -6,7 +6,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "lua-intf/LuaIntf/LuaIntf.h"
+#include <kaguya/kaguya.hpp>
 
 #include <QObject>
 #include <QMetaObject>

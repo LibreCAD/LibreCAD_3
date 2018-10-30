@@ -204,14 +204,14 @@ std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
 	return _cursor;
 }
 
-unsigned int CadMdiChild::id() {
+unsigned int CadMdiChild::id() const {
 	return _id;
 }
 void CadMdiChild::setId(unsigned int id) {
 	_id = id;
 }
 
-void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
+void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {
 	_destroyCallback = std::move(destroyCallback);
 }
 

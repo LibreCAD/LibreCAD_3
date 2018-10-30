@@ -44,7 +44,7 @@ function active_metaInfo()
 
     local metaInfo = widget:metaInfoManager():metaInfo()
     if(metaInfo == nil) then
-        metaInfo = MetaInfo() -- nil != nullptr when calling a c++ function
+        metaInfo = lc.meta.MetaInfo() -- nil != nullptr when calling a c++ function
     end
 
     return metaInfo

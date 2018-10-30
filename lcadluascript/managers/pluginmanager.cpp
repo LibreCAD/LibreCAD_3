@@ -1,6 +1,7 @@
 #include "pluginmanager.h"
 #include "lclua.h"
 #include <dirent.h>
+#include <kaguya/kaguya.hpp>
 
 using namespace lc::lua;
 
@@ -32,12 +33,12 @@ void PluginManager::loadPlugins() {
 }
 
 void PluginManager::loadPlugin(const char* file) {
-    auto state = LuaIntf::LuaState(_L);
-    LuaIntf::Lua::setGlobal(state, "LC_interface", _interface);
-    bool s = state.doFile(file);
+    kaguya::State state(_L);
+    state["LC_interface"] = _interface;
+    bool s = state.dofile(file);
 
     if (s) {
         std::cout << lua_tostring(_L, -1) << std::endl;
-        lua_pop(state, 1);
+        lua_pop(state.state(), 1);
     }
 }

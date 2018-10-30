@@ -22,8 +22,8 @@ void LuaScript::on_luaRun_clicked() {
 	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
         auto mdiChild = qobject_cast<lc::ui::CadMdiChild*>(activeSubWindow->widget());
 
-        auto luaState = LuaIntf::LuaState::newState();
-        auto lcLua = lc::lua::LCLua(luaState);
+		kaguya::State luaState;
+        auto lcLua = lc::lua::LCLua(luaState.state());
         lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
         lcLua.addLuaLibs();
         lcLua.importLCKernel();
