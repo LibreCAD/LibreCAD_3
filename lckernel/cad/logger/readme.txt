@@ -10,8 +10,8 @@ Actually here in class there only init function that creates sinks. So to write 
 
 #include "cad/logger/logger.h"
 	lc::log::lc_logger slg;// it is simply boost::log::sources::severity_logger<severity_level>
-	BOOST_LOG(slg) << "Hello World!";//No changes in macro
-	BOOST_LOG_SEV(slg,error) << "Error msg..";//minimal
+	BOOST_LOG(slg) << "Hello World!";//No changes in macro	or, LOG
+	BOOST_LOG_SEV(slg,error) << "Error msg..";//minimal	or, LOGS
 
 Available severirities:
     normal

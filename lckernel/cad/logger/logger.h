@@ -30,3 +30,6 @@ namespace lc {
     }
 }
 #define LOGGER lc::log::Logger::Instance()
+
+#define LOG(X) BOOST_LOG(X)
+#define LOGS(X,Y) BOOST_LOG_SEV(X,Y)
