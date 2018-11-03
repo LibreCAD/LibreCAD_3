@@ -10,7 +10,7 @@ using namespace lc::viewer::manager;
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_CSPtr grid, double distanceToSnap) :
         _grid(std::move(grid)),
         _gridSnappable(false),
-        _snapIntersections(false),
+        _snapIntersections(true),
         _distanceToSnap(distanceToSnap),
         _view(std::move(view)) {
 
