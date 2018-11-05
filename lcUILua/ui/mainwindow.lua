@@ -103,11 +103,11 @@ function create_new_window(widget)
     layers:setMdiChild(widget)
     mainWindow:addDockWidget(2, layers)
 
-    local linePatternSelect = lc.LinePatternSelect(mainWindow, true, true)
+    local linePatternSelect = lc.LinePatternSelect(nil, mainWindow, true, true)
     linePatternSelect:setMdiChild(widget)
 
-    local lineWidthSelect = lc.LineWidthSelect(mainWindow, true, true)
-    local colorSelect = lc.ColorSelect(mainWindow, true, true)
+    local lineWidthSelect = lc.LineWidthSelect(nil, mainWindow, true, true)
+    local colorSelect = lc.ColorSelect(nil, mainWindow, true, true)
 
     luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", linePatternSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
     luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", lineWidthSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")

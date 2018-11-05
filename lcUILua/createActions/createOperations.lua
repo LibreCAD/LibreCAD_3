@@ -13,7 +13,7 @@ function CreateOperations:_init(id)
 end
 
 function CreateOperations:createEntity(entity)
-    local b = EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
     b:appendEntity(entity)
     b:execute()
 end

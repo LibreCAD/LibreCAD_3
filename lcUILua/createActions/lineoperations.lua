@@ -13,7 +13,6 @@ setmetatable(LineOperations, {
 function LineOperations:_init(id)
     self.lastPoint = nil
     self.length = nil
-    self.entity_id = ID():id()
     message("Click on first point", id)
 
     CreateOperations._init(self, id)
@@ -61,8 +60,6 @@ function LineOperations:createLine(p1, p2)
         p2 = p1:add(relativeCoordinate)
     end
 
-    local l = Line(p1, p2, layer, metaInfo)
-    l:setId(self.entity_id)
-
+    local l = lc.entity.Line(p1, p2, layer, metaInfo, nil)
     return l
 end

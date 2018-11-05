@@ -14,8 +14,6 @@ LuaInterface::~LuaInterface() {
     _events.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
-
-	_L.garbageCollect();
 }
 
 void LuaInterface::initLua() {
@@ -148,7 +146,7 @@ void LuaInterface::setOperation(unsigned int windowID, kaguya::LuaRef operation)
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
-    if(callback.type() == LUA_TTABLE && !callback["onEvent"].isNilref()) {
+    if(callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
         return;
     }
 

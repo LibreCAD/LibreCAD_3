@@ -33,7 +33,7 @@ void LuaCustomEntityManager::onNewWaitingEntity(const lc::event::NewWaitingCusto
 }
 
 void LuaCustomEntityManager::registerPlugin(const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
-    if(!onNewWaitingEntityFunction.type() == LUA_TFUNCTION) {
+    if(onNewWaitingEntityFunction.type() != LUA_TFUNCTION) {
         return;
     }
 

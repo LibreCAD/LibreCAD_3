@@ -3,7 +3,7 @@ toolbars = {}
 
 --Create a new QPushbutton with name and icon
 function create_button(name, icon)
-    local button = qt.QPushButton(qt.QString(name))
+    local button = qt.QPushButton(name)
     button:setFlat(true)
 
     if(icon ~= nil) then

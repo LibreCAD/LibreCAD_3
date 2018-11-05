@@ -25,7 +25,7 @@ void luaOpenQtBridge(lua_State *L) {
 void addQtBaseBindings(lua_State *L) {
 	kaguya::State state(L);
 
-	state["qt"]["loadUi"].setFunction([](const char* fileName) { return std::dynamic_pointer_cast<QMainWindow>(LuaInterface::loadUiFile(fileName)); }); //TODO: why ?
+	state["qt"]["loadUi"].setFunction([](const char* fileName) { return std::dynamic_pointer_cast<QMainWindow>(LuaInterface::loadUiFile(fileName)); });
 	state["qt"]["QObject"].setClass(kaguya::UserdataMetatable<QObject>()
 		.setConstructors<QObject()>()
 		.addStaticFunction("findChild", [](QObject* object, std::string name) {
@@ -156,7 +156,9 @@ void addQtWidgetsBindings(lua_State *L) {
 	state["qt"]["QComboBox"].setClass(kaguya::UserdataMetatable<QComboBox, QWidget>());
 
 	state["qt"]["QPushButton"].setClass(kaguya::UserdataMetatable<QPushButton, QAbstractButton>()
-		.setConstructors<QPushButton(QString)>() //return new QPushButton(name) before
+		.addStaticFunction("new", [](const char* name) {
+			return new QPushButton(name);
+		})
 		.addFunction("setFlat", &QPushButton::setFlat)
 		.addFunction("setMenu", &QPushButton::setMenu)
 	);
@@ -167,7 +169,9 @@ void addLCBindings(lua_State *L) {
 	kaguya::State state(L);
 
 	state["lc"]["CadMdiChild"].setClass(kaguya::UserdataMetatable<CadMdiChild, QWidget>()
-		.setConstructors<CadMdiChild()>() //eturn new CadMdiChild before
+		.addStaticFunction("new", []() {
+			return new CadMdiChild;
+		})
 		.addFunction("getSnapManager", &CadMdiChild::getSnapManager)
 		.addFunction("cursor", &CadMdiChild::cursor)
 		.addFunction("document", &CadMdiChild::document)
@@ -217,7 +221,9 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand, QDockWidget>()
 	    .setConstructors<widgets::CliCommand(), widgets::CliCommand(QWidget*)>()
 	    .addFunction("addCommand", &widgets::CliCommand::addCommand)
-	    .addFunction("write", &widgets::CliCommand::write)
+	    .addStaticFunction("write", [](widgets::CliCommand* cliCommand, const char* message) {
+	        cliCommand->write(message);
+	    })
 	    .addFunction("returnText", &widgets::CliCommand::returnText)
 	);
 
@@ -229,7 +235,9 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
-		.setConstructors<widgets::ToolbarTab()>() //return new widgets::ToolbarTab()
+        .addStaticFunction("new", []() {
+            return new ToolbarTab;
+        })
         .addFunction("addButton", &widgets::ToolbarTab::addButton)
 	    .addFunction("addWidget", &widgets::ToolbarTab::addWidget)
 		.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
@@ -257,22 +265,30 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["LinePatternManager"].setClass(kaguya::UserdataMetatable<dialog::LinePatternManager, QDialog>()
-	    .setConstructors<dialog::LinePatternManager(lc::storage::Document_SPtr)>() //return new dialog::LinePatternManager(document) before
+	    .addStaticFunction("new", [](lc::storage::Document_SPtr document) {
+ 		    return new dialog::LinePatternManager(document);
+        })
 	    .addFunction("setDocument", &dialog::LinePatternManager::setDocument)
 	);
 
 	state["lc"]["LinePatternSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LinePatternSelect, QComboBox>()
-		.setConstructors<widgets::LinePatternSelect(storage::Document_SPtr, QWidget*, bool, bool)>() // return new lc::ui::widgets::LinePatternSelect(nullptr, parent, showByLayer, showByBlock) before
+	    .addStaticFunction("new", [](lc::storage::Document_SPtr document, QWidget* parent, bool showByLayer, bool showByBlock) {
+	  	    return new widgets::LinePatternSelect(document, parent, showByLayer, showByBlock);
+	    })
 		.addFunction("setMdiChild", &lc::ui::widgets::LinePatternSelect::setMdiChild)
 	);
 
 	state["lc"]["LineWidthSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LineWidthSelect, QComboBox>()
-	    .setConstructors<widgets::LineWidthSelect(lc::ui::MetaInfoManager_SPtr, QWidget*, bool, bool)>() // eturn new lc::ui::widgets::LineWidthSelect(nullptr, parent, showByLayer, showByBlock) before
-		.addFunction("setMetaInfoManager", &lc::ui::widgets::LineWidthSelect::setMetaInfoManager)
+		.addStaticFunction("new", [](MetaInfoManager_SPtr metaInfoManager, QWidget* parent, bool showByLayer, bool showByBlock) {
+			return new widgets::LineWidthSelect(metaInfoManager, parent, showByLayer, showByBlock);
+		})
+	    .addFunction("setMetaInfoManager", &lc::ui::widgets::LineWidthSelect::setMetaInfoManager)
 	);
 
 	state["lc"]["ColorSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::ColorSelect, QComboBox>()
-	    .setConstructors<widgets::ColorSelect(lc::ui::MetaInfoManager_SPtr, QWidget*, bool, bool)>()
+		.addStaticFunction("new", [](MetaInfoManager_SPtr metaInfoManager, QWidget* parent, bool showByLayer, bool showByBlock) {
+			return new widgets::ColorSelect(metaInfoManager, parent, showByLayer, showByBlock);
+		})
 	    .addFunction("setMetaInfoManager", &lc::ui::widgets::ColorSelect::setMetaInfoManager)
 	);
 }
