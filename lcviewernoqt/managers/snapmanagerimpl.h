@@ -37,9 +37,13 @@ namespace lc {
 
                     virtual bool isGridSnappable() const;
 
-                    virtual void snapIntersections(bool enabled);
+                    virtual void setIntersectionsSnappable(bool enabled);
 
-                    virtual bool snapIntersections() const;
+                    virtual bool isIntersectionsSnappable() const;
+
+                    virtual void setMiddleSnappable(bool enabled);
+
+                    virtual bool isMiddleSnappable() const;
 
                     virtual void setDeviceLocation(int x, int y);
 
@@ -59,6 +63,9 @@ namespace lc {
                     bool _gridSnappable;
                     // TRUE when snapping to intersections are enabled
                     bool _snapIntersections;
+
+                    // TRUE when snapping to middle are enabled
+                    bool _snapMiddle;
 
                     // List of entities that are potential for snapping
                     std::vector<lc::entity::Snapable_CSPtr> _snapableEntities;

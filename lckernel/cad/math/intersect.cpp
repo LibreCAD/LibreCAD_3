@@ -24,11 +24,6 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Point& p)
     return false;
 }
 
-bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Line& l) {
-    geovisit(v, lc::geo::Vector(l.start(), l.end()));
-    return false;
-}
-
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Circle& c) {
     geovisit(v, lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI));
     return false;
@@ -77,67 +72,6 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::LWPolylin
     return false;
 }
 
-// Line
-bool Intersect::operator()(const lc::entity::Line& l, const lc::geo::Vector& v) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), v);
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::entity::Point& p) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l1, const lc::entity::Line& l2) {
-    geovisit(lc::geo::Vector(l1.start(), l1.end()), lc::geo::Vector(l2.start(), l2.end()));
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::geo::Circle& c) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI));
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::entity::Arc& a) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), a);
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::entity::Ellipse& e) {
-    // TODO Check if point's are on path
-    auto &&coords = maths::Intersection::LineQuad(l.equation(), e.equation());
-    if (!coords.empty()) {
-        std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
-    }
-    for (auto &i : coords) {
-        _intersectionPoints.push_back(i);
-    }
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::entity::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Line& l, const lc::entity::LWPolyline& lwp) {
-    auto &&list1 = lwp.asEntities();
-    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
-    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
-    // to use double dispatch can decide to use a specific implementation.
-    // Once added, we can get rid of the dynamic_pointer_casts and simply
-    // call entity1.visit(entity2);
-    for (auto &entity1 : list1) {
-        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
-            geovisit(l, *arc.get());
-        } else {
-            geovisit(l, *std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get());
-        }
-    }
-    return false;
-}
-
-
 // Point
 bool Intersect::operator()(const lc::entity::Point& p, const lc::geo::Vector& v) {
     std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
@@ -145,11 +79,6 @@ bool Intersect::operator()(const lc::entity::Point& p, const lc::geo::Vector& v)
 }
 
 bool Intersect::operator()(const lc::entity::Point& p1, const lc::entity::Point& p2) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::Point& p, const lc::entity::Line& l) {
     std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
     return false;
 }
@@ -187,11 +116,6 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Vector& v) {
 
 bool Intersect::operator()(const lc::geo::Circle& c, const lc::entity::Point& p) {
     (*this)(p, c);
-    return false;
-}
-
-bool Intersect::operator()(const lc::geo::Circle& c, const lc::entity::Line& l) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), lc::geo::Arc(c.center(), c.radius(), -M_PI, M_PI));
     return false;
 }
 
@@ -307,11 +231,6 @@ bool Intersect::operator()(const lc::entity::Arc& a, const lc::entity::Point& p)
     return false;
 }
 
-bool Intersect::operator()(const lc::entity::Arc& a, const lc::entity::Line& l) {
-    geovisit(lc::geo::Vector(l.start(), l.end()), a);
-    return false;
-}
-
 bool Intersect::operator()(const lc::entity::Arc& a, const lc::geo::Circle& c) {
     (*this)(c, a);
     return false;
@@ -368,11 +287,6 @@ bool Intersect::operator()(const lc::entity::Ellipse& e, const lc::entity::Point
     return false;
 }
 
-bool Intersect::operator()(const lc::entity::Ellipse& e, const lc::entity::Line& l) {
-    (*this)(l, e);
-    return false;
-}
-
 bool Intersect::operator()(const lc::entity::Ellipse& e, const lc::geo::Circle& c) {
     (*this)(c, e);
     return false;
@@ -416,11 +330,6 @@ bool Intersect::operator()(const lc::entity::Spline& s, const lc::entity::Point&
     return false;
 }
 
-bool Intersect::operator()(const lc::entity::Spline& s, const lc::entity::Line& l) {
-    (*this)(l, s);
-    return false;
-}
-
 bool Intersect::operator()(const lc::entity::Spline& s, const lc::geo::Circle& c) {
     (*this)(c, s);
     return false;
@@ -454,11 +363,6 @@ bool Intersect::operator()(const lc::entity::LWPolyline& lwp, const lc::geo::Vec
 
 bool Intersect::operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Point& p) {
     (*this)(p, lwp);
-    return false;
-}
-
-bool Intersect::operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Line& l) {
-    (*this)(l, lwp);
     return false;
 }
 

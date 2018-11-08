@@ -290,6 +290,8 @@ void addLCBindings(lua_State *L) {
 
 		.beginClass<manager::SnapManagerImpl>("SnapManager")
 			.addFunction("setGridSnappable", &manager::SnapManagerImpl::setGridSnappable)
+			.addFunction("setIntersectionSnappable", &manager::SnapManagerImpl::setIntersectionsSnappable)
+			.addFunction("setMiddleSnappable", &manager::SnapManagerImpl::setMiddleSnappable)
 		.endClass()
 
 		.beginExtendClass<dialog::LinePatternManager, QDialog>("LinePatternManager")

@@ -55,7 +55,6 @@ namespace lc {
 
                 bool operator()(const lc::geo::Vector& v1, const lc::geo::Vector& v2);
                 bool operator()(const lc::geo::Vector& v, const lc::entity::Point& p);
-                bool operator()(const lc::geo::Vector& v, const lc::entity::Line& l);
                 bool operator()(const lc::geo::Vector& v, const lc::geo::Circle& c);
                 bool operator()(const lc::geo::Vector& v, const lc::entity::Arc& a);
                 bool operator()(const lc::geo::Vector& v, const lc::entity::Ellipse& e);
@@ -63,20 +62,8 @@ namespace lc {
                 bool operator()(const lc::geo::Vector& v, const lc::entity::LWPolyline& lwp);
                 bool operator()(const lc::geo::Vector& v, const lc::entity::Image& i) {return false;};
 
-                //TODO: is Line intersection required ? (use geo::Vector)
-                bool operator()(const lc::entity::Line& l, const lc::geo::Vector& v);
-                bool operator()(const lc::entity::Line& l, const lc::entity::Point& p);
-                bool operator()(const lc::entity::Line& l1, const lc::entity::Line& l2);
-                bool operator()(const lc::entity::Line& l, const lc::geo::Circle& c);
-                bool operator()(const lc::entity::Line& l, const lc::entity::Arc& a);
-                bool operator()(const lc::entity::Line& l, const lc::entity::Ellipse& e);
-                bool operator()(const lc::entity::Line& l, const lc::entity::Spline& s);
-                bool operator()(const lc::entity::Line& l, const lc::entity::LWPolyline& lwp);
-                bool operator()(const lc::entity::Line& l, const lc::entity::Image& i) {return false;};
-
                 bool operator()(const lc::entity::Point& p, const lc::geo::Vector& v);
                 bool operator()(const lc::entity::Point& p1, const lc::entity::Point& p2);
-                bool operator()(const lc::entity::Point& p, const lc::entity::Line& l);
                 bool operator()(const lc::entity::Point& p, const lc::geo::Circle& c);
                 bool operator()(const lc::entity::Point& p, const lc::entity::Arc& a);
                 bool operator()(const lc::entity::Point& p, const lc::entity::Ellipse& e);
@@ -86,7 +73,6 @@ namespace lc {
 
                 bool operator()(const lc::geo::Circle& c, const lc::geo::Vector& v);
                 bool operator()(const lc::geo::Circle& c, const lc::entity::Point& p);
-                bool operator()(const lc::geo::Circle& c, const lc::entity::Line& l);
                 bool operator()(const lc::geo::Circle& c1, const lc::geo::Circle& c2);
                 bool operator()(const lc::geo::Circle& c, const lc::entity::Arc& arc);
                 bool operator()(const lc::geo::Circle& c, const lc::entity::Ellipse& e);
@@ -96,7 +82,6 @@ namespace lc {
 
                 bool operator()(const lc::entity::Arc& a, const lc::geo::Vector& v);
                 bool operator()(const lc::entity::Arc& a, const lc::entity::Point& p);
-                bool operator()(const lc::entity::Arc& a, const lc::entity::Line& l);
                 bool operator()(const lc::entity::Arc& a, const lc::geo::Circle& c);
                 bool operator()(const lc::entity::Arc& a1, const lc::entity::Arc& a2);
                 bool operator()(const lc::entity::Arc& a, const lc::entity::Ellipse& e);
@@ -106,7 +91,6 @@ namespace lc {
 
                 bool operator()(const lc::entity::Ellipse& e, const lc::geo::Vector& v);
                 bool operator()(const lc::entity::Ellipse& e, const lc::entity::Point& p);
-                bool operator()(const lc::entity::Ellipse& e, const lc::entity::Line& l);
                 bool operator()(const lc::entity::Ellipse& e, const lc::geo::Circle& c);
                 bool operator()(const lc::entity::Ellipse& e, const lc::entity::Arc& a);
                 bool operator()(const lc::entity::Ellipse& e1, const lc::entity::Ellipse& e2);
@@ -116,7 +100,6 @@ namespace lc {
 
                 bool operator()(const lc::entity::Spline& s, const lc::geo::Vector& v);
                 bool operator()(const lc::entity::Spline& s, const lc::entity::Point& p);
-                bool operator()(const lc::entity::Spline& s, const lc::entity::Line& l);
                 bool operator()(const lc::entity::Spline& s, const lc::geo::Circle& c);
                 bool operator()(const lc::entity::Spline& s, const lc::entity::Arc& a);
                 bool operator()(const lc::entity::Spline& s, const lc::entity::Ellipse& e);
@@ -126,7 +109,6 @@ namespace lc {
 
                 bool operator()(const lc::entity::LWPolyline& lwp, const lc::geo::Vector& v);
                 bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Point& p);
-                bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Line& l);
                 bool operator()(const lc::entity::LWPolyline& lwp, const lc::geo::Circle& c);
                 bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Arc& a);
                 bool operator()(const lc::entity::LWPolyline& lwp, const lc::entity::Ellipse& e);
@@ -136,7 +118,6 @@ namespace lc {
 
                 bool operator()(const lc::entity::Image& i, const lc::geo::Vector& v) {return false;};
                 bool operator()(const lc::entity::Image& i, const lc::entity::Point& p) {return false;};
-                bool operator()(const lc::entity::Image& i, const lc::entity::Line& l) {return false;};
                 bool operator()(const lc::entity::Image& i, const lc::geo::Circle& c) {return false;};
                 bool operator()(const lc::entity::Image& i, const lc::entity::Arc& a) {return false;};
                 bool operator()(const lc::entity::Image& i, const lc::entity::Ellipse& e) {return false;};
@@ -146,19 +127,19 @@ namespace lc {
 
                 bool operator()(const lc::Visitable& s1, const lc::Visitable& s2) {
                     // If we end up here we found a un-supported intersection
-                    // std::cout<<typeid(s1).name()<<"\t"<< quote(s1) <<" - ";
-                    // std::cout<<typeid(s2).name()<<"\t"<< quote(s2) <<"\n";
+                    std::cout<<typeid(s1).name()<<"\t"<<" - ";
+                    std::cout<<typeid(s2).name()<<"\t" <<"\n";
                     return false;
                 }
 
-                template<typename S>
-                bool operator()(const S& s1, const S& s2) {
+//                template<typename S>
+//                bool operator()(const S& s1, const S& s2) {
 //                s1.accept(printer);
-                    std::cout << " No operator found for this Intersection. \n";
+//                    std::cout << " No operator found for this Intersection. \n";
 //                s2.accept(printer);
-                    std::cout << std::endl;
-                    return true;
-                }
+//                    std::cout << std::endl;
+//                    return true;
+//                }
 
                 std::vector<geo::Coordinate> result() const;
 
