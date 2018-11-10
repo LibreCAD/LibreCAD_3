@@ -11,6 +11,7 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_
         _grid(std::move(grid)),
         _gridSnappable(false),
         _snapIntersections(false),
+        _snapMiddle(false),
         _distanceToSnap(distanceToSnap),
         _view(std::move(view)) {
 
@@ -79,7 +80,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     }
 
     // Emit snappoint based on closest entity
-    if (!entities.empty()) {
+    if (!entities.empty() && _snapMiddle) {
         // GO over all entities, first closest to the cursor gradually moving away
         for (auto &entity : entities) {
             lc::entity::Snapable_CSPtr captr;
@@ -139,14 +140,21 @@ bool SnapManagerImpl::isGridSnappable() const {
     return _gridSnappable;
 }
 
-void SnapManagerImpl::snapIntersections(bool enabled) {
+void SnapManagerImpl::setIntersectionsSnappable(bool enabled) {
     _snapIntersections = enabled;
 }
 
-bool SnapManagerImpl::snapIntersections() const {
+bool SnapManagerImpl::isIntersectionsSnappable() const {
     return _snapIntersections;
 }
 
+void SnapManagerImpl::setMiddleSnappable(bool enabled){
+    _snapMiddle = enabled;
+}
+
+bool SnapManagerImpl::isMiddleSnappable() const {
+    return _snapMiddle;
+}
 
 Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;

@@ -148,11 +148,25 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     -- Snap options
     --
     local snapOptionGroup = quickAccessTab:addGroup("Snap options")
-    local Button = create_button("", ":/icons/snap_grid.svg")
-    Button:setCheckable(true)
-    quickAccessTab:addWidget(snapOptionGroup, Button, 0, 0, 1, 1)
-    luaInterface:luaConnect(Button, "toggled(bool)", function(enabled)
+    local snapGridButton = create_button("", ":/icons/snap_grid.svg")
+    snapGridButton:setCheckable(true)
+    quickAccessTab:addWidget(snapOptionGroup, snapGridButton, 0, 0, 1, 1)
+    luaInterface:luaConnect(snapGridButton, "toggled(bool)", function(enabled)
         getWindow(id):getSnapManager():setGridSnappable(enabled)
+    end)
+
+    local snapIntersectionButton = create_button("", ":/icons/snap_intersection.svg")
+    snapIntersectionButton:setCheckable(true)
+    quickAccessTab:addWidget(snapOptionGroup, snapIntersectionButton, 0, 1, 1, 1)
+    luaInterface:luaConnect(snapIntersectionButton, "toggled(bool)", function(enabled)
+        getWindow(id):getSnapManager():setIntersectionSnappable(enabled)
+    end)
+
+    local snapMiddleButton = create_button("", ":/icons/snap_middle.svg")
+    snapMiddleButton:setCheckable(true)
+    quickAccessTab:addWidget(snapOptionGroup, snapMiddleButton, 1, 0, 1, 1)
+    luaInterface:luaConnect(snapMiddleButton, "toggled(bool)", function(enabled)
+        getWindow(id):getSnapManager():setMiddleSnappable(enabled)
     end)
 
     --
