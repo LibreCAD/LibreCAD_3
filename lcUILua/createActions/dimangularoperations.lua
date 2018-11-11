@@ -15,8 +15,6 @@ function DimAngularOperations:_init(id)
     self.firstPoint = nil
     self.secondPoint = nil
     self.text = nil
-
-    self.dimAngular_id = ID():id()
     self.dimLine = nil
 
     message("Click on center point", id)
@@ -27,8 +25,7 @@ end
 function DimAngularOperations:getDimAngular(centerPoint, firstPoint, secondPoint, text)
     local layer = active_layer(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, metaInfo)
-    dim:setId(self.dimAngular_id)
+    local dim = lc.entity.DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, metaInfo)
 
     return dim
 end
@@ -88,8 +85,8 @@ function DimAngularOperations:createTempDimAngular(point)
         secondPoint = point
     end
 
-    firstPoint = firstPoint or centerPoint:add(Coord(-1, 1))
-    secondPoint = secondPoint or centerPoint:add(Coord(1, 1))
+    firstPoint = firstPoint or centerPoint:add(lc.geo.Coordinate(-1, 1))
+    secondPoint = secondPoint or centerPoint:add(lc.geo.Coordinate(1, 1))
 
     self.entity = self:getDimAngular(centerPoint, firstPoint, secondPoint, "<>")
     CreateOperations.refreshTempEntity(self)

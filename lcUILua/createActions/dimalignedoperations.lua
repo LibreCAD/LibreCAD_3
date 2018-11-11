@@ -16,7 +16,6 @@ function DimAlignedOperations:_init(id)
     self.middleOfText = nil
     self.text = nil
 
-    self.dimAligned_id = ID():id()
     self.dimLine = nil
 
     message("Click on start point", id)
@@ -27,8 +26,7 @@ end
 function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
     local layer = active_layer(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
-    dim:setId(self.dimAligned_id)
+    local dim = lc.entity.DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
 
     return dim
 end
@@ -57,7 +55,7 @@ function DimAlignedOperations:newData(data)
         local layer = active_layer(self.target_widget)
 
         self.endPoint = Operations:getCoordinate(data)
-        self.dimLine = Line(self.startPoint, self.endPoint, layer, metaInfo)
+        self.dimLine = lc.entity.Line(self.startPoint, self.endPoint, layer, metaInfo)
 
         message("Give dimension height", self.target_widget)
     elseif(self.middleOfText == nil) then
@@ -90,14 +88,14 @@ function DimAlignedOperations:createTempDimAligned(point)
         endPoint = point
 
         if(startPoint:x() == endPoint:x() and startPoint:y() == endPoint:y()) then
-            endPoint = endPoint:add(Coord(0.001,0.001))
+            endPoint = endPoint:add(lc.geo.Coordinate(0.001,0.001))
         end
     elseif(middleOfText == nil) then
         middleOfText = point
     end
 
-    endPoint = endPoint or startPoint:add(Coord(10,0))
-    middleOfText = middleOfText or startPoint:add(Coord(5,10))
+    endPoint = endPoint or startPoint:add(lc.geo.Coordinate(10,0))
+    middleOfText = middleOfText or startPoint:add(lc.geo.Coordinate(5,10))
 
     self.entity = self:getDimAligned(startPoint, endPoint, middleOfText, "<>")
 

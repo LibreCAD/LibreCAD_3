@@ -424,7 +424,9 @@ void LCLua::importLCKernel() {
     );
 
     state["lc"]["entity"]["Arc"].setClass(kaguya::UserdataMetatable<lc::entity::Arc, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable>>()
-                                                  .setConstructors<lc::entity::Arc(const geo::Coordinate &, double, double, double, bool, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Arc(const geo::Arc &, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Arc(const lc::entity::Arc_CSPtr &, bool)>()
+            .addStaticFunction("new", [](const geo::Coordinate& center, double radius, double startAngle, double endAngle, bool isCCW, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metainfo, meta::Block_CSPtr block) {
+                return std::make_shared<const lc::entity::Arc>(center, radius, startAngle, endAngle, isCCW, layer, metainfo, block);
+            })
             .addFunction("accept", &lc::entity::Arc::accept)
             .addFunction("boundingBox", &lc::entity::Arc::boundingBox)
             .addFunction("copy", &lc::entity::Arc::copy)
@@ -445,14 +447,14 @@ void LCLua::importLCKernel() {
     );
 
     state["lc"]["geo"]["Circle"].setClass(kaguya::UserdataMetatable<lc::geo::Circle, kaguya::MultipleBase<lc::geo::Base, lc::Visitable, lc::entity::Tangentable>>()
-                                                  .setConstructors<lc::geo::Circle(lc::geo::Coordinate, double)>()
-                                                  .addFunction("accept", &lc::geo::Circle::accept)
-                                                  .addFunction("center", &lc::geo::Circle::center)
-                                                  .addFunction("equation", &lc::geo::Circle::equation)
-                                                  .addFunction("lineTangentPointsOnEntity", &lc::geo::Circle::lineTangentPointsOnEntity)
-                                                  .addFunction("nearestPointOnEntity", &lc::geo::Circle::nearestPointOnEntity)
-                                                  .addFunction("nearestPointOnPath", &lc::geo::Circle::nearestPointOnPath)
-                                                  .addFunction("radius", &lc::geo::Circle::radius)
+        .setConstructors<lc::geo::Circle(lc::geo::Coordinate, double)>()
+        .addFunction("accept", &lc::geo::Circle::accept)
+        .addFunction("center", &lc::geo::Circle::center)
+        .addFunction("equation", &lc::geo::Circle::equation)
+        .addFunction("lineTangentPointsOnEntity", &lc::geo::Circle::lineTangentPointsOnEntity)
+        .addFunction("nearestPointOnEntity", &lc::geo::Circle::nearestPointOnEntity)
+        .addFunction("nearestPointOnPath", &lc::geo::Circle::nearestPointOnPath)
+        .addFunction("radius", &lc::geo::Circle::radius)
     );
 
     state["lc"]["builder"]["CircleBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::CircleBuilder, lc::builder::CADEntityBuilder>()
@@ -465,8 +467,10 @@ void LCLua::importLCKernel() {
     );
 
     state["lc"]["entity"]["Circle"].setClass(kaguya::UserdataMetatable<lc::entity::Circle, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable>>()
-                                                     .setConstructors<lc::entity::Circle(const geo::Coordinate &, double, meta::Layer_CSPtr, meta::MetaInfo_CSPtr, meta::Block_CSPtr), lc::entity::Circle(const lc::entity::Circle_CSPtr &, bool)>()
-            .addFunction("accept", &lc::entity::Circle::accept)
+             .addStaticFunction("new", [](const geo::Coordinate& center, double radius, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metainfo, meta::Block_CSPtr block) {
+                 return std::make_shared<const lc::entity::Circle>(center, radius, layer, metainfo, block);
+             })
+             .addFunction("accept", &lc::entity::Circle::accept)
             .addFunction("boundingBox", &lc::entity::Circle::boundingBox)
             .addFunction("copy", &lc::entity::Circle::copy)
             .addFunction("dispatch", &lc::entity::Circle::dispatch)
