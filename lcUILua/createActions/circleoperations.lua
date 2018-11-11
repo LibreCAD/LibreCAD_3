@@ -12,7 +12,6 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init(id)
     self.center = nil
-    self.entity_id = lc.entity.ID():id()
 
     CreateOperations._init(self, id)
     message("Click on center", self.target_widget)
@@ -50,7 +49,6 @@ function CircleOperations:getCircle(center, radius)
     local layer = active_layer(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
     local c = lc.entity.Circle(center, radius, layer, metaInfo, nil)
-    c:setID(self.entity_id)
 
     return c
 end

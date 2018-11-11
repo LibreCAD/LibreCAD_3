@@ -12,16 +12,19 @@ namespace lc {
                 CADEntityBuilder() :
                         _layer(nullptr),
                         _metaInfo(nullptr),
-                        _block(nullptr) {
+                        _block(nullptr),
+                        _id(nullptr) {
                 }
 
-                virtual ~CADEntityBuilder() = default;
+                virtual ~CADEntityBuilder() {
+                    delete _id;
+                };
 
                 void copy(entity::CADEntity_CSPtr entity) {
                     _layer = entity->_layer;
                     _block = entity->_block;
                     _metaInfo = entity->_metaInfo;
-                    _id.setID(entity->id());
+                    _id = new entity::ID(entity->id());
                 }
 
                 /**
@@ -104,6 +107,10 @@ namespace lc {
                  * @return Entity ID
                  */
                 const ID_DATATYPE id() const {
+                    if(_id == nullptr) {
+                        _id = new entity::ID();
+                    }
+
                     return  _id.id();
                 }
 
@@ -112,25 +119,31 @@ namespace lc {
                  * @param id Entity ID
                  */
                 void setID(ID_DATATYPE id) {
-                    _id.setID(id);
+                    if(_id == nullptr) {
+                        _id = new entity::ID(id);
+                    }
+                    else {
+                        _id.setID(id);
+                    }
                 }
 
                 /**
                  * @brief Generate new ID for the entity
                  */
                 void newID() {
-                    _id = entity::ID();
+                    delete _id;
+                    _id = new entity::ID();
                 }
 
                 virtual bool checkValues() {
-                        return _layer != nullptr;
+                    return _layer != nullptr;
                 }
 
             private:
                 meta::Layer_CSPtr _layer;
                 meta::MetaInfo_CSPtr _metaInfo;
                 meta::Block_CSPtr _block;
-                entity::ID _id;
+                entity::ID* _id;
         };
     }
 }

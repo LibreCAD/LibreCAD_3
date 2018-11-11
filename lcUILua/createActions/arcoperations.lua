@@ -11,11 +11,8 @@ setmetatable(ArcOperations, {
 })
 
 function ArcOperations:_init(widget)
-    self.center = nil
-    self.radius = nil
-    self.beginAngle = nil
-    self.endAngle = nil
-    self.entity_id = ID():id()
+    self.builder = lc.builder.ArcBuilder()
+    self.step = 0
 
     CreateOperations._init(self, widget)
 
@@ -35,18 +32,21 @@ function ArcOperations:onEvent(eventName, event)
 end
 
 function ArcOperations:newData(point)
-    if(self.center == nil) then
-        self.center = point
+    if(self.step == 0) then
+        self.builder:setCenter(point)
 
         message("Click on second point or enter the radius", self.target_widget)
-    elseif(self.radius == nil) then
-        self.radius = Operations:getDistance(self.center, point)
+    elseif(self.step == 1) then
+        self.builder:setRadius(Operations:getDistance(self.center, point))
+
         message("Click on start point or enter the start angle", self.target_widget)
-    elseif(self.beginAngle == nil) then
-        self.beginAngle = Operations:getAngle(self.center, point)
+    elseif(self.step == 2) then
+        self.builder:setStartAngle(Operations:getAngle(self.center, point))
+
         message("Click on end point or enter the end angle", self.target_widget)
     else
-        self.endAngle = Operations:getAngle(self.center, point)
+        self.builder:setEndAngle(Operations:getAngle(self.center, point))
+
         self:createArc()
     end
 end
