@@ -67,7 +67,8 @@ function ArcOperations:createTempArc(point)
     local endAngle = self.endAngle
 
     if(center == nil) then
-        center = point
+    	-- The move event before defining center was causing crashes
+        return
     elseif(radius == nil) then
         radius = Operations:getDistance(center, point)
     elseif(beginAngle == nil) then
