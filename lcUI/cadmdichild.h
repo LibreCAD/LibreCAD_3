@@ -137,6 +137,7 @@ namespace lc {
             private:
                 std::string _filename;
                 unsigned int _id;
+		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
                 LuaIntf::LuaRef _destroyCallback;
 

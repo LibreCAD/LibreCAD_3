@@ -160,6 +160,7 @@ bool CadMdiChild::openFile() {
         newDocument();
         _filename = file.toStdString();
         lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
+        // @TODO: _fileType = something..
     }
     else {
         QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
@@ -171,7 +172,7 @@ bool CadMdiChild::openFile() {
 
 void CadMdiChild::saveFile(){
 	if (_filename == "")saveAsFile();
-	else lc::persistence::File::save(_document, _filename, lc::persistence::File::Type::LIBDXFRW_DXF_R12);// @TODO Needs to fix it later
+	else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
 }
 
 void CadMdiChild::saveAsFile() {
@@ -195,17 +196,21 @@ void CadMdiChild::saveAsFile() {
 
     auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
 
+    auto selectedType = selectedFilter.toStdString();
+    //Removing extension part
+    std::size_t fpos = selectedType.rfind("(*");
 
-// @TODO Needs to fix this code
-/*    auto selectedType = selectedFilter.toStdString();
+    selectedType = selectedType.substr(0,fpos);
 
     for(auto availableType : availableTypes) {
         if(selectedType == availableType.second) {
             type = availableType.first;
             break;
         }
-    }*/
-    type = lc::persistence::File::Type::LIBDXFRW_DXF_R12;
+    }
+
+    _fileType = type;
+
     //Add extension if not present
     auto fileInfo = QFileInfo(file);
     auto ext = fileInfo.suffix().toStdString();
