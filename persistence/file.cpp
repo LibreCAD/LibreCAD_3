@@ -1,7 +1,6 @@
 #include "file.h"
 #include "libdxfrw/dxfimpl.h"
 #include "libopencad_interface/libopencad.h"
-#include <boost/filesystem.hpp>//For extension
 
 using namespace lc::persistence;
 
