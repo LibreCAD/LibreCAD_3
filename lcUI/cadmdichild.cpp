@@ -120,7 +120,7 @@ bool CadMdiChild::openFile() {
     auto availableTypes = lc::persistence::File::getSupportedFileExtensions();
 
     if(availableTypes.empty()) {
-        QMessageBox::critical(nullptr, "Save error", "No library available for file opeaning.");
+        QMessageBox::critical(nullptr, "Save error", "No library available for file opening.");
         return false;
     }
 
