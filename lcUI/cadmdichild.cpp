@@ -158,7 +158,8 @@ bool CadMdiChild::openFile() {
     if(!availableLibraries.empty()) {
         //TODO: if more than once, ask which one to choose
         newDocument();
-        lc::persistence::File::open(_document, file.toStdString(), availableLibraries.begin()->first);
+        _filename = file.toStdString();
+        lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
     }
     else {
         QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
@@ -168,8 +169,12 @@ bool CadMdiChild::openFile() {
     return true;
 }
 
+void CadMdiChild::saveFile(){
+	if (_filename == "")saveAsFile();
+	else lc::persistence::File::save(_document, _filename, lc::persistence::File::Type::LIBDXFRW_DXF_R12);// @TODO Needs to fix it later
+}
 
-void CadMdiChild::saveFile() {
+void CadMdiChild::saveAsFile() {
     QString filterList;
     QString selectedFilter;
     lc::persistence::File::Type type;
@@ -181,34 +186,32 @@ void CadMdiChild::saveFile() {
     }
 
     auto it = availableTypes.begin();
-    type = it->first;
-    filterList = it->second.c_str();
+    filterList = (it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
     it++;
-
     while(it != availableTypes.end()) {
-        filterList += ";;";
-        filterList += it->second.c_str();
-
+	    filterList += (";;"+it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
         it++;
     }
 
     auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
 
-    auto selectedType = selectedFilter.toStdString();
+
+// @TODO Needs to fix this code
+/*    auto selectedType = selectedFilter.toStdString();
 
     for(auto availableType : availableTypes) {
         if(selectedType == availableType.second) {
             type = availableType.first;
             break;
         }
-    }
-
+    }*/
+    type = lc::persistence::File::Type::LIBDXFRW_DXF_R12;
     //Add extension if not present
     auto fileInfo = QFileInfo(file);
     auto ext = fileInfo.suffix().toStdString();
     if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
-
-    lc::persistence::File::save(_document, file.toStdString(), type);
+    _filename = file.toStdString();
+    lc::persistence::File::save(_document, _filename, type);
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {

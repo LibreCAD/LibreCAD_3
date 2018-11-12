@@ -192,6 +192,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("cursor", &CadMdiChild::cursor)
 			.addFunction("document", &CadMdiChild::document)
             .addFunction("saveFile", &CadMdiChild::saveFile)
+            .addFunction("saveAsFile", &CadMdiChild::saveAsFile)
 			.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 			.addFunction("openFile", &CadMdiChild::openFile)
 			.addFunction("selection", &CadMdiChild::selection)
@@ -201,6 +202,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("viewer", &CadMdiChild::viewer)
 			.addFunction("activeLayer", &CadMdiChild::activeLayer)
+			.addFunction("getFilename", &CadMdiChild::getFilename)
 			.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
 		.endClass()
 
