@@ -1,8 +1,24 @@
 #include "file.h"
 #include "libdxfrw/dxfimpl.h"
 #include "libopencad_interface/libopencad.h"
+#include <boost/filesystem.hpp>//For extension
 
 using namespace lc::persistence;
+
+std::string File::getExtensionForFileType(Type type){
+    std::string x;
+    if(type >= LIBDXFRW_DXF_R12 && type <= LIBDXFRW_DXB_R2013) {
+        x = "dxf"; 
+    }
+    return x;
+}
+
+std::map<std::string, std::string> File::getSupportedFileExtensions(){
+    std::map<std::string, std::string> types;
+    types.insert(std::pair<std::string, std::string>("dxf" ,"DXF files"));
+    types.insert(std::pair<std::string, std::string>("dwg" ,"DWG files"));
+    return types;
+}
 
 void File::open(lc::storage::Document_SPtr document, const std::string& path, File::Library library) {
     auto builder = std::make_shared<operation::Builder>(document, "Open file");

@@ -117,7 +117,34 @@ void CadMdiChild::newDocument() {
 
 
 bool CadMdiChild::openFile() {
-    auto file = QFileDialog::getOpenFileName();
+    auto availableTypes = lc::persistence::File::getSupportedFileExtensions();
+
+    if(availableTypes.empty()) {
+        QMessageBox::critical(nullptr, "Save error", "No library available for file opeaning.");
+        return false;
+    }
+
+    //Build format string
+    QString filterList="All Supported Formats(";
+    auto it = availableTypes.begin();
+    filterList += (" *."+it->first).c_str();
+    it++;
+    while(it != availableTypes.end()) {
+        filterList += (" *."+it->first).c_str();
+        it++;
+    }
+    filterList+=");;";
+
+    it = availableTypes.begin();
+    filterList += (it->second+"(*."+it->first+")").c_str();
+    it++;
+    while(it != availableTypes.end()) {
+	    filterList += (";;"+it->second+"(*."+it->first+")").c_str();
+        it++;
+    }
+    filterList+=";;All Files(*.*)";
+
+    auto file = QFileDialog::getOpenFileName(nullptr,"Open document",nullptr,filterList);
 
     if(file == "") {
         return false;
@@ -175,6 +202,11 @@ void CadMdiChild::saveFile() {
             break;
         }
     }
+
+    //Add extension if not present
+    auto fileInfo = QFileInfo(file);
+    auto ext = fileInfo.suffix().toStdString();
+    if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
 
     lc::persistence::File::save(_document, file.toStdString(), type);
 }
