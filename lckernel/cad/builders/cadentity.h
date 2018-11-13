@@ -106,12 +106,12 @@ namespace lc {
                  * @brief Get entity ID
                  * @return Entity ID
                  */
-                const ID_DATATYPE id() const {
+                ID_DATATYPE id() const {
                     if(_id == nullptr) {
                         _id = new entity::ID();
                     }
 
-                    return  _id.id();
+                    return  _id->id();
                 }
 
                 /**
@@ -123,7 +123,7 @@ namespace lc {
                         _id = new entity::ID(id);
                     }
                     else {
-                        _id.setID(id);
+                        _id->setID(id);
                     }
                 }
 
@@ -143,7 +143,7 @@ namespace lc {
                 meta::Layer_CSPtr _layer;
                 meta::MetaInfo_CSPtr _metaInfo;
                 meta::Block_CSPtr _block;
-                entity::ID* _id;
+                mutable entity::ID* _id;
         };
     }
 }

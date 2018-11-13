@@ -12,6 +12,9 @@ setmetatable(ArcOperations, {
 
 function ArcOperations:_init(widget)
     self.builder = lc.builder.ArcBuilder()
+    self.builder:setRadius(10)
+    self.builder:setStartAngle(0)
+    self.builder:setEndAngle(math.pi)
     self.step = 0
 
     CreateOperations._init(self, widget)
@@ -36,56 +39,48 @@ function ArcOperations:newData(point)
         self.builder:setCenter(point)
 
         message("Click on second point or enter the radius", self.target_widget)
+        self.step = self.step + 1
     elseif(self.step == 1) then
-        self.builder:setRadius(Operations:getDistance(self.center, point))
+        self.builder:setRadius(Operations:getDistance(self.builder:center(), point))
 
         message("Click on start point or enter the start angle", self.target_widget)
+        self.step = self.step + 1
     elseif(self.step == 2) then
-        self.builder:setStartAngle(Operations:getAngle(self.center, point))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), point))
 
         message("Click on end point or enter the end angle", self.target_widget)
+        self.step = self.step + 1
     else
-        self.builder:setEndAngle(Operations:getAngle(self.center, point))
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), point))
 
         self:createArc()
     end
 end
 
-function ArcOperations:getArc(center, radius, beginAngle, endAngle)
-    local layer = active_layer(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local a = Arc(center, radius, beginAngle, endAngle, false, layer, metaInfo)
-    a:setId(self.entity_id)
+function ArcOperations:getArc()
+    self.builder:setLayer(active_layer(self.target_widget))
+    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
 
-    return a
+    return self.builder:build()
 end
 
 function ArcOperations:createTempArc(point)
-    local center = self.center
-    local radius = self.radius
-    local beginAngle = self.beginAngle
-    local endAngle = self.endAngle
-
-    if(center == nil) then
-        center = point
-    elseif(radius == nil) then
-        radius = Operations:getDistance(center, point)
-    elseif(beginAngle == nil) then
-        beginAngle = Operations:getAngle(center, point)
-    elseif(endAngle == nil) then
-        endAngle = Operations:getAngle(center, point)
+    if(self.step == 0) then
+        self.builder:setCenter(point)
+    elseif(self.step == 1) then
+        self.builder:setRadius(Operations:getDistance(self.builder:center(), point))
+    elseif(self.step == 2) then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), point))
+    else
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), point))
     end
 
-    radius = radius or 0
-    beginAngle = beginAngle or 0
-    endAngle = endAngle or 0.5 * math.pi
-
-    self.entity = self:getArc(center, radius, beginAngle, endAngle)
+    self.entity = self:getArc()
     self:refreshTempEntity()
 end
 
 function ArcOperations:createArc()
-    local a = self:getArc(self.center, self.radius, self.beginAngle, self.endAngle)
+    local a = self:getArc()
     self:createEntity(a)
 
     CreateOperations.close(self)

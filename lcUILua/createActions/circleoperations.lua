@@ -11,7 +11,9 @@ setmetatable(CircleOperations, {
 })
 
 function CircleOperations:_init(id)
-    self.center = nil
+    self.builder = lc.builder.CircleBuilder()
+    self.builder:setRadius(10)
+    self.step = 0
 
     CreateOperations._init(self, id)
     message("Click on center", self.target_widget)
@@ -32,37 +34,33 @@ function CircleOperations:onEvent(eventName, data)
 end
 
 function CircleOperations:newPoint(point)
-    if(self.center == nil) then
-        self.center = point
+    if(self.step == 0) then
+        self.builder:setCenter(point)
 
         message("Click on second point or enter the radius", self.target_widget)
+        self.step = self.step + 1
     else
-        self:createCircle(point)
+        self.builder:setRadius(self.builder:center():distanceTo(point))
+        self:createCircle()
     end
 end
 
-function CircleOperations:getCircle(center, radius)
-    if(type(radius) == "userdata") then
-        radius = center:distanceTo(radius)
-    end
-
-    local layer = active_layer(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local c = lc.entity.Circle(center, radius, layer, metaInfo, nil)
-
-    return c
+function CircleOperations:getCircle()
+    self.builder:setLayer(active_layer(self.target_widget))
+    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
+    return self.builder:build()
 end
 
 function CircleOperations:createTempCircle(point)
-    if(self.center ~= nil) then
-        self.entity = self:getCircle(self.center, point)
+    if(self.step == 1) then
+        self.builder:setRadius(self.builder:center():distanceTo(point))
+        self.entity = self:getCircle()
         self:refreshTempEntity()
     end
 end
 
-function CircleOperations:createCircle(point)
-    local c = self:getCircle(self.center, point)
-    self:createEntity(c)
+function CircleOperations:createCircle()
+    self:createEntity(self:getCircle())
 
     CreateOperations.close(self)
 end
