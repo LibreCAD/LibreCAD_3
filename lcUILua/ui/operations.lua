@@ -28,6 +28,7 @@ local function create_cancel_button(id)
         local cancelButton = create_button("", ":/icons/quit.svg")
         quickAccessTab:addWidget(operationGroup, cancelButton, 0, 0, 1, 1)
         luaInterface:luaConnect(cancelButton, "pressed()", function() finish_operation(id) end)
+        luaInterface:luaConnect(getWindow(id), "escPressed()", function() finish_operation(id) end)
     end
 end
 

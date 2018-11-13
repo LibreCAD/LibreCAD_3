@@ -217,7 +217,9 @@ void CadMdiChild::setDestroyCallback(LuaIntf::LuaRef destroyCallback) {
 
 void CadMdiChild::keyPressEvent(QKeyEvent *event) {
     QWidget::keyPressEvent(event);
-    emit keyPressed(event);
+    //Trap key here
+    if(event->key()==Qt::Key_Escape) emit escPressed();
+    else emit keyPressed(event);
 }
 
 drawable::TempEntities_SPtr CadMdiChild::tempEntities() {
