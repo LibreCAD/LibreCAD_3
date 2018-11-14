@@ -69,8 +69,6 @@ namespace lc {
 
                 void keyPressed(QKeyEvent* event);
 		
-		void escPressed();
-
             public:
                 QWidget* view() const;
 
