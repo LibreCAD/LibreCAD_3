@@ -30,6 +30,16 @@ function addCadMdiChild(cadMdiChild, id, cliCommand)
         luaInterface:triggerEvent('mouseMove', {position = position, widget = cadMdiChild})
     end)
 
+    luaInterface:luaConnect(cadMdiChild:viewer(), "keyPressEvent(int)", function(key)
+        --Here int has ascii value
+        if (key==16777216) then
+            --If Escape key is pressed
+            finish_operation(id)
+        else
+            luaInterface:triggerEvent('keyPressed', {key = key, widget = cadMdiChild})
+        end
+    end)
+
     luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 end
 
