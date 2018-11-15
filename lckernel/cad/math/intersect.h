@@ -111,6 +111,7 @@ namespace lc {
 
                 bool operator()(const lc::Visitable& s1, const lc::Visitable& s2) {
                     // If we end up here we found a un-supported intersection .. like dimensions...
+		std::cout << "Undefined.." << std::endl;
                     return false;
                 }
                 //Do not use template for overload here..
@@ -122,7 +123,15 @@ namespace lc {
 
                 void geovisit(const geo::Vector& v, const geo::Arc& arc);
 
+                void geovisit(const geo::Vector& v, const geo::Ellipse& arc);
+
                 void geovisit(const geo::Arc& arc1, const geo::Arc& arc2);
+
+                void geovisit(const geo::Arc& arc1, const geo::Ellipse& arc2);
+
+                void geovisit(const geo::Ellipse& arc2, const geo::Arc& arc1);
+
+                void geovisit(const geo::Ellipse& arc1, const geo::Ellipse& arc2);
 
             private:
                 std::vector<geo::Coordinate> _intersectionPoints;

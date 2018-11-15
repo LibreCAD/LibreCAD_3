@@ -35,18 +35,8 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Arc& a) {
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Ellipse& e) {
-    // TODO Check if point's are on path
-
-    // TODO Check if the coords we get back are good
-    return false;
-    /*auto &&coords = maths::Intersection::LineQuad(v.equation(), e.equation());
-    if (!coords.empty()) {
-        std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
-    }
-    for (auto &i : coords) {
-        _intersectionPoints.push_back(i);
-    }
-    return false;*/
+	geovisit(v, e);
+	return false;
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Spline& s) {
@@ -128,14 +118,18 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::entity::Arc& arc)
     return false;
 }
 
-bool Intersect::operator()(const lc::geo::Circle& c, const lc::entity::Ellipse& e) {
-    // TODO: test if point is on path
-    auto &&coords = maths::Intersection::QuadQuad(c.equation(), e.equation());
-    if (!coords.empty()) {
-        std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
-    }
-    for (auto &i : coords) {
-        _intersectionPoints.push_back(i);
+bool Intersect::operator()(const lc::geo::Circle& c, const lc::entity::Ellipse& arc) {
+    auto &&coords = maths::Intersection::QuadQuad(c.equation(), arc.equation());
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    } else {
+        for (auto &point : coords) {
+            double a = (point - arc.center()).angle();
+            if (arc.isAngleBetween(a)) {
+                _intersectionPoints.push_back(point);
+            }
+        }
     }
     return false;
 }
@@ -218,14 +212,7 @@ bool Intersect::operator()(const lc::entity::Arc& a1, const lc::entity::Arc& a2)
 }
 
 bool Intersect::operator()(const lc::entity::Arc& a, const lc::entity::Ellipse& e) {
-    // TODO Check if point's are on path
-    auto &&coords = maths::Intersection::QuadQuad(a.equation(), e.equation());
-    if (!coords.empty()) {
-        std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
-    }
-    for (auto &i : coords) {
-        _intersectionPoints.push_back(i);
-    }
+    geovisit(a, e);
     return false;
 }
 
@@ -254,14 +241,7 @@ bool Intersect::operator()(const lc::entity::Arc& a, const lc::entity::LWPolylin
 
 // Ellipse
 bool Intersect::operator()(const lc::entity::Ellipse& e1, const lc::entity::Ellipse& e2) {
-    // TODO test if point's are on path for ellipse
-    auto &&coords = maths::Intersection::QuadQuad(e1.equation(), e2.equation());
-    if (!coords.empty()) {
-        std::cerr << __PRETTY_FUNCTION__ << " TODO Check if point's are on path" << std::endl;
-    }
-    for (auto &i : coords) {
-        _intersectionPoints.push_back(i);
-    }
+    geovisit(e1, e2);
     return false;
 }
 
@@ -270,9 +250,22 @@ bool Intersect::operator()(const lc::entity::Ellipse& e, const lc::entity::Splin
     return false;
 }
 
-bool Intersect::operator()(const lc::entity::Ellipse& e, const lc::entity::LWPolyline& lwp) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
-    return false;
+bool Intersect::operator()(const lc::entity::Ellipse& a, const lc::entity::LWPolyline& lwp) {
+    auto &list1 = lwp.asEntities();
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
+    // call entity1.visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(a, *arc.get());
+        }
+        else {
+            geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), a);
+        }
+    }
+    return false; //visit(l1, a1);
 }
 
 // Spline
@@ -378,6 +371,24 @@ void Intersect::geovisit(const geo::Vector& v, const geo::Arc& arc) {
     }
 }
 
+void Intersect::geovisit(const geo::Vector& v, const geo::Ellipse& arc) {
+    auto &&coords = maths::Intersection::LineQuad(v.equation(), arc.equation());
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+        for (auto &point : coords) {
+            double a = (point - arc.center()).angle();
+            if (arc.isAngleBetween(a) &&
+                v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+}
+
 void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
     auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
 
@@ -397,6 +408,62 @@ void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
     }
 }
 
+void Intersect::geovisit(const geo::Arc& arc1, const geo::Ellipse& arc2) {
+    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+        for (auto &point : coords) {
+            double a1 = (point - arc1.center()).angle();
+            double a2 = (point - arc2.center()).angle();
+            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW()) &&
+                arc2.isAngleBetween(a2)) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+}
+
+void Intersect::geovisit(const geo::Ellipse& arc2, const geo::Arc& arc1) {
+    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+        for (auto &point : coords) {
+            double a1 = (point - arc1.center()).angle();
+            double a2 = (point - arc2.center()).angle();
+            if (arc2.isAngleBetween(a2) &&
+                Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW())) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+}
+
+void Intersect::geovisit(const geo::Ellipse& arc1, const geo::Ellipse& arc2) {
+    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+        for (auto &point : coords) {
+            double a1 = (point - arc1.center()).angle();
+            double a2 = (point - arc2.center()).angle();
+            if (arc1.isAngleBetween(a1) &&
+                arc2.isAngleBetween(a2)) {
+                _intersectionPoints.push_back(point);
+            }
+        }
+    }
+}
 /***
  *    ~|~ _ _|_ _  _ _ _  __|_|\/| _  _
  *    _|_| | | (/_| _\(/_(_ | |  |(_|| |\/
