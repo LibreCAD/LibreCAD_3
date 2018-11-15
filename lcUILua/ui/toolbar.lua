@@ -169,6 +169,13 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
         getWindow(id):getSnapManager():setMiddleSnappable(enabled)
     end)
 
+    local snapEntityButton = create_button("", ":/icons/snap_entity.svg")
+    snapEntityButton:setCheckable(true)
+    quickAccessTab:addWidget(snapOptionGroup, snapEntityButton, 1, 1, 1, 1)
+    luaInterface:luaConnect(snapEntityButton, "toggled(bool)", function(enabled)
+        getWindow(id):getSnapManager():setEntitySnappable(enabled)
+    end)
+
     --
     -- MetaInfo
     --
