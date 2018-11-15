@@ -20,7 +20,7 @@ bool Intersect::operator()(const lc::geo::Vector& v1, const lc::geo::Vector& v2)
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::Point& p) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(v.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
@@ -64,32 +64,32 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::entity::LWPolylin
 
 // Point
 bool Intersect::operator()(const lc::entity::Point& p1, const lc::entity::Point& p2) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(p1.distanceTo(p2) < LCTOLERANCE) _intersectionPoints.push_back(p1);
     return false;
 }
 
 bool Intersect::operator()(const lc::entity::Point& p, const lc::geo::Circle& c) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(c.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
 bool Intersect::operator()(const lc::entity::Point& p, const lc::entity::Arc& a) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(a.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
 bool Intersect::operator()(const lc::entity::Point& p, const lc::entity::Ellipse& e) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(e.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
 bool Intersect::operator()(const lc::entity::Point& p, const lc::entity::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(s.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
 bool Intersect::operator()(const lc::entity::Point& p, const lc::entity::LWPolyline& lwp) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    if(lwp.nearestPointOnPath(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
     return false;
 }
 
