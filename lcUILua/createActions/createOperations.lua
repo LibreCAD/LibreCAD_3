@@ -4,12 +4,28 @@ setmetatable(CreateOperations, {
     __index = Operations
 })
 
-function CreateOperations:_init(id)
+function CreateOperations:_init(id, builder, step)
     Operations._init(self, id)
 
     self.prevEntity = nil
+    if(builder ~= nil) then
+        self.builder = builder()
+    end
+
+    self.step = step
+
     self:refreshTempEntity()
     self:registerEvents()
+end
+
+function CreateOperations:onEvent(eventName, data)
+    if(Operations.forMe(self, data) == false) then
+        return
+    end
+
+    if(self.step ~= nil) then
+        self[self.step](self.step, eventName, data)
+    end
 end
 
 function CreateOperations:createEntity(entity)

@@ -11,37 +11,32 @@ setmetatable(CircleOperations, {
 })
 
 function CircleOperations:_init(id)
-    self.builder = lc.builder.CircleBuilder()
-    self.builder:setRadius(10)
-    self.step = 0
+    CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
 
-    CreateOperations._init(self, id)
+    self.builder:setRadius(10)
+
     message("Click on center", self.target_widget)
 end
 
-function CircleOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
+function CircleOperations:enterCenter(eventName, data)
+    if(eventName == "point") then
+        self.builder:setCenter(point)
+        message("Click on second point or enter the radius", self.target_widget)
+
+        self.step = "enterRadius"
     end
 
-    if(eventName == "point") then
-        self:newPoint(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempCircle(data["position"])
-    elseif(eventName == "number") then
-        self:createCircle(data["number"])
-    end
+    --         elseif(eventName == "mouseMove") then
+    --              self:createTempCircle(data["position"])
 end
 
-function CircleOperations:newPoint(point)
-    if(self.step == 0) then
-        self.builder:setCenter(point)
-
-        message("Click on second point or enter the radius", self.target_widget)
-        self.step = self.step + 1
-    else
+function CircleOperations:enterRadius(eventName, data)
+    if(eventName == "point") then
         self.builder:setRadius(self.builder:center():distanceTo(point))
         self:createCircle()
+    elseif(eventName == "number") then
+        self:createEntity(self:build())
+        CreateOperations.close(self)
     end
 end
 
@@ -52,10 +47,4 @@ function CircleOperations:createTempCircle(point)
         self.entity = self:build()
         self:refreshTempEntity()
     end
-end
-
-function CircleOperations:createCircle()
-    self:createEntity(self:build())
-
-    CreateOperations.close(self)
 end
