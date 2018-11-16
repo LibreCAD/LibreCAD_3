@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
-#include "uitests.h"
 #include "widgets/layers.h"
+
+#include "uitests.h"
 
 #include "dialogs/addlayerdialog.h"
 

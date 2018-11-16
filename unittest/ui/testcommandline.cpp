@@ -4,10 +4,7 @@
 #include <gtest/gtest.h>
 #include "clicommandtest.h"
 
-static int argc = 0;
-static char** argv = NULL;
-
-Q_DECLARE_METATYPE(lc::geo::Coordinate)
+#include "uitests.h"
 
 TEST(CommandLine, CommandTest) {
 	QApplication app(argc, argv);

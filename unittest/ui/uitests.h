@@ -5,8 +5,8 @@
 #include <QApplication>
 #include <cad/storage/storagemanagerimpl.h>
 
-static int argc = 0;
-static char** argv = NULL;
+static int argc = 1;
+static char* argv[2] = {strdup("lcunittest"), NULL};
 
 using namespace lc;
 using namespace ui;

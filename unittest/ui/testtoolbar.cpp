@@ -4,9 +4,7 @@
 
 #include <widgets/toolbar.h>
 #include <widgets/toolbartab.h>
-
-static int argc = 0;
-static char** argv = NULL;
+#include "uitests.h"
 
 using namespace lc::ui::widgets;
 
