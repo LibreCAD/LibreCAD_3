@@ -370,8 +370,8 @@ void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
         for (auto &point : coords) {
             double a1 = (point - arc1.center()).angle();
             double a2 = (point - arc2.center()).angle();
-            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW()) &&
-                Math::isAngleBetween(a2, arc2.startAngle(), arc2.endAngle(), arc2.CCW())) {
+            if (arc1.isAngleBetween(a1) &&
+                arc2.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
