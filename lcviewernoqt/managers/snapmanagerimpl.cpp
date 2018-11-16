@@ -11,6 +11,7 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_
         _grid(std::move(grid)),
         _gridSnappable(false),
         _snapIntersections(false),
+        _snapEntity(false),
         _snapMiddle(false),
         _distanceToSnap(distanceToSnap),
         _view(std::move(view)) {
@@ -109,6 +110,14 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         }
     }
 
+    // If snap entity is on
+    if(!entities.empty() && _snapEntity){
+                auto i1 = std::dynamic_pointer_cast<const lc::entity::Snapable>(entities.at(0).entity());
+                auto event = event::SnapPointEvent(i1->nearestPointOnPath(location));
+                _snapPointEvent(event);
+                return;
+    }
+
     // If no entity was found to snap against, then snap to grid
     if (_gridSnappable) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
@@ -154,6 +163,14 @@ void SnapManagerImpl::setMiddleSnappable(bool enabled){
 
 bool SnapManagerImpl::isMiddleSnappable() const {
     return _snapMiddle;
+}
+
+void SnapManagerImpl::setEntitySnappable(bool enabled){
+    _snapEntity = enabled;
+}
+
+bool SnapManagerImpl::isEntitySnappable() const {
+    return _snapEntity;
 }
 
 Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
