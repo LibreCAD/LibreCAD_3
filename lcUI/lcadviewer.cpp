@@ -81,10 +81,14 @@ void LCADViewer::keyPressEvent(QKeyEvent* event) {
             _ctrlKeyActive = true;
             break;
 
+        case Qt::Key_Return:
+            //Change focus to command line
+            break;
+
         default:
+            emit keyPressEvent(event->key());
             break;
     }
-
 }
 
 void LCADViewer::keyReleaseEvent(QKeyEvent* event) {

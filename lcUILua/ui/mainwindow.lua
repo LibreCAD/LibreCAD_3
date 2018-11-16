@@ -81,6 +81,8 @@ local function create_menu(mainWindow, widget)
     end)
     luaInterface:luaConnect(mainWindow:findChild("actionSave_As"), "triggered(bool)", save_file)
 
+    luaInterface:connect(mainWindow:findChild("actionExit"), "triggered(bool)", mainWindow, "close()")
+
     luaInterface:luaConnect(mainWindow:findChild("actionUndo"), "triggered(bool)", function ()
         widget:undoManager():undo()
     end)

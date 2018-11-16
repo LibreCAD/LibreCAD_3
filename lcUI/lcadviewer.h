@@ -106,6 +106,8 @@ namespace lc {
 
                 void mouseReleaseEvent();
 
+                void keyPressEvent(int);
+
                 void drawEvent(const lc::viewer::event::DrawEvent&);
 
                 void selectedItemsEvent(const lc::viewer::event::SelectedItemsEvent&);

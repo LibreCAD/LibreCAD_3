@@ -68,7 +68,7 @@ namespace lc {
             signals:
 
                 void keyPressed(QKeyEvent* event);
-
+		
             public:
                 QWidget* view() const;
 
