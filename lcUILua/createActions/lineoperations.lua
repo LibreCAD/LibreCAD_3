@@ -11,7 +11,8 @@ setmetatable(LineOperations, {
 })
 
 function LineOperations:_init(id)
-    self.lastPoint = nil
+    self.builder = lc.builder.LineBuilder()
+    self.step = 0
     self.length = nil
     message("Click on first point", id)
 
@@ -28,38 +29,32 @@ function LineOperations:onEvent(eventName, data)
     elseif(eventName == "mouseMove") then
         self:createTempLine(data["position"])
     elseif(eventName == "number") then
-        self.length = data["number"]
+        self.length = data
     end
 end
 
 function LineOperations:newPoint(point)
-    if(self.lastPoint ~= nil) then
-        local l = self:createLine(self.lastPoint, point)
-        self:createEntity(l)
-        CreateOperations.close(self)
-    else
-        self.lastPoint = point
+    if(self.step == 0) then
+        self.builder:setStartPoint(point)
         message("Click on second point or enter line length")
+
+        self.step = self.step + 1
+    else
+        self:createEntity(self:build())
+        CreateOperations.close(self)
     end
+end
+
+function LineOperations:setEndPoint(point)
+    local angle = self.builder:endPoint():angleTo(p2)
+    local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
+    self.builder:setEndPoint(p1:add(relativeCoordinate))
 end
 
 function LineOperations:createTempLine(point)
-    if(self.lastPoint ~= nil) then
-        self.entity = self:createLine(self.lastPoint, point)
+    if(self.step ~= 0) then
+        self.builder:setEndPoint(point)
+        self.entity = self:build()
         self:refreshTempEntity()
     end
-end
-
-function LineOperations:createLine(p1, p2)
-    local layer = active_layer(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-
-    if(self.length ~= nil) then
-        local angle = p1:angleTo(p2)
-        local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
-        p2 = p1:add(relativeCoordinate)
-    end
-
-    local l = lc.entity.Line(p1, p2, layer, metaInfo, nil)
-    return l
 end

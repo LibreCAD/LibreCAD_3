@@ -57,13 +57,6 @@ function ArcOperations:newData(point)
     end
 end
 
-function ArcOperations:getArc()
-    self.builder:setLayer(active_layer(self.target_widget))
-    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
-
-    return self.builder:build()
-end
-
 function ArcOperations:createTempArc(point)
     if(self.step == 0) then
         self.builder:setCenter(point)
@@ -75,13 +68,12 @@ function ArcOperations:createTempArc(point)
         self.builder:setEndAngle(Operations:getAngle(self.builder:center(), point))
     end
 
-    self.entity = self:getArc()
+    self.entity = self:build()
     self:refreshTempEntity()
 end
 
 function ArcOperations:createArc()
-    local a = self:getArc()
-    self:createEntity(a)
+    self:createEntity(self:build())
 
     CreateOperations.close(self)
 end

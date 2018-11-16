@@ -45,22 +45,17 @@ function CircleOperations:newPoint(point)
     end
 end
 
-function CircleOperations:getCircle()
-    self.builder:setLayer(active_layer(self.target_widget))
-    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
-    return self.builder:build()
-end
 
 function CircleOperations:createTempCircle(point)
     if(self.step == 1) then
         self.builder:setRadius(self.builder:center():distanceTo(point))
-        self.entity = self:getCircle()
+        self.entity = self:build()
         self:refreshTempEntity()
     end
 end
 
 function CircleOperations:createCircle()
-    self:createEntity(self:getCircle())
+    self:createEntity(self:build())
 
     CreateOperations.close(self)
 end

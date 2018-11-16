@@ -636,10 +636,10 @@ void LCLua::importLCKernel() {
     state["lc"]["builder"]["LineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LineBuilder, lc::builder::CADEntityBuilder>()
         .setConstructors<lc::builder::LineBuilder()>()
         .addFunction("build", &lc::builder::LineBuilder::build)
-        .addFunction("end", &lc::builder::LineBuilder::end)
-        .addFunction("setEnd", &lc::builder::LineBuilder::setEnd)
-        .addFunction("setStart", &lc::builder::LineBuilder::setStart)
-        .addFunction("start", &lc::builder::LineBuilder::start)
+        .addFunction("endPoint", &lc::builder::LineBuilder::end)
+        .addFunction("setEndPoint", &lc::builder::LineBuilder::setEnd)
+        .addFunction("setStartPoint", &lc::builder::LineBuilder::setStart)
+        .addFunction("startPoint", &lc::builder::LineBuilder::start)
     );
 
     state["lc"]["entity"]["Line"].setClass(kaguya::UserdataMetatable<lc::entity::Line, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable>>()

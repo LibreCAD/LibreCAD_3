@@ -18,6 +18,13 @@ function CreateOperations:createEntity(entity)
     b:execute()
 end
 
+function CreateOperations:build()
+    self.builder:setLayer(active_layer(self.target_widget))
+    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
+
+    return self.builder:build()
+end
+
 function CreateOperations:refreshTempEntity()
 
     if (self.prevEntity ~= nil) then
