@@ -4,8 +4,7 @@
 
 #include <luainterface.h>
 
-static int argc = 0;
-static char** argv = NULL;
+#include "uitests.h"
 
 TEST(LuaUIOperationsTest, Move) {
 	QApplication app(argc, argv);
