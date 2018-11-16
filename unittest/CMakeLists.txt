@@ -39,6 +39,7 @@ lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
+lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
 lckernel/operations/layerops.cpp
