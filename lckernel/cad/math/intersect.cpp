@@ -80,7 +80,7 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Arc& arc) {
     } else {
         for (auto &point : coords) {
             double a = (point - arc.center()).angle();
-            if (Math::isAngleBetween(a, arc.startAngle(), arc.endAngle(), arc.CCW())) {
+            if (arc.isAngleBetween(a)) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -88,15 +88,15 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Arc& arc) {
     return false;
 }
 
-bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Ellipse& arc) {
-    auto &&coords = maths::Intersection::QuadQuad(c.equation(), arc.equation());
+bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Ellipse& ellipse) {
+    auto &&coords = maths::Intersection::QuadQuad(ellipse.equation(), ellipse.equation());
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
         _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
     } else {
         for (auto &point : coords) {
-            double a = (point - arc.center()).angle();
-            if (arc.isAngleBetween(a)) {
+            double a = (point - ellipse.center()).angle();
+            if (ellipse.isAngleBetween(a)) {
                 _intersectionPoints.push_back(point);
             }
         }
@@ -220,7 +220,7 @@ bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::geo::Spline& s) 
     return false;
 }
 
-bool Intersect::operator()(const lc::geo::Ellipse& a, const lc::entity::LWPolyline& lwp) {
+bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::entity::LWPolyline& lwp) {
     auto &list1 = lwp.asEntities();
     // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
     // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
@@ -229,10 +229,10 @@ bool Intersect::operator()(const lc::geo::Ellipse& a, const lc::entity::LWPolyli
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
-            geovisit(a, *arc.get());
+            geovisit(e, *arc.get());
         }
         else {
-            geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), a);
+            geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), e);
         }
     }
     return false; //visit(l1, a1);
@@ -341,8 +341,8 @@ void Intersect::geovisit(const geo::Vector& v, const geo::Arc& arc) {
     }
 }
 
-void Intersect::geovisit(const geo::Vector& v, const geo::Ellipse& arc) {
-    auto &&coords = maths::Intersection::LineQuad(v.equation(), arc.equation());
+void Intersect::geovisit(const geo::Vector& v, const geo::Ellipse& ellipse) {
+    auto &&coords = maths::Intersection::LineQuad(v.equation(), ellipse.equation());
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
@@ -350,8 +350,8 @@ void Intersect::geovisit(const geo::Vector& v, const geo::Ellipse& arc) {
     }
     else {
         for (auto &point : coords) {
-            double a = (point - arc.center()).angle();
-            if (arc.isAngleBetween(a) &&
+            double a = (point - ellipse.center()).angle();
+            if (ellipse.isAngleBetween(a) &&
                 v.nearestPointOnEntity(point).distanceTo(point) < LCTOLERANCE) {
                 _intersectionPoints.push_back(point);
             }
@@ -378,8 +378,8 @@ void Intersect::geovisit(const geo::Arc& arc1, const geo::Arc& arc2) {
     }
 }
 
-void Intersect::geovisit(const geo::Arc& arc1, const geo::Ellipse& arc2) {
-    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
+void Intersect::geovisit(const geo::Arc& arc, const geo::Ellipse& ellipse) {
+    auto &&coords = maths::Intersection::QuadQuad(arc.equation(), ellipse.equation());
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
@@ -387,18 +387,18 @@ void Intersect::geovisit(const geo::Arc& arc1, const geo::Ellipse& arc2) {
     }
     else {
         for (auto &point : coords) {
-            double a1 = (point - arc1.center()).angle();
-            double a2 = (point - arc2.center()).angle();
-            if (Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW()) &&
-                arc2.isAngleBetween(a2)) {
+            double a1 = (point - arc.center()).angle();
+            double a2 = (point - ellipse.center()).angle();
+            if (arc.isAngleBetween(a1) &&
+                ellipse.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
     }
 }
 
-void Intersect::geovisit(const geo::Ellipse& arc2, const geo::Arc& arc1) {
-    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
+void Intersect::geovisit(const geo::Ellipse& ellipse1, const geo::Ellipse& ellipse2) {
+    auto &&coords = maths::Intersection::QuadQuad(ellipse1.equation(), ellipse2.equation());
 
     if (_method == Method::OnPath) {
         _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
@@ -406,29 +406,10 @@ void Intersect::geovisit(const geo::Ellipse& arc2, const geo::Arc& arc1) {
     }
     else {
         for (auto &point : coords) {
-            double a1 = (point - arc1.center()).angle();
-            double a2 = (point - arc2.center()).angle();
-            if (arc2.isAngleBetween(a2) &&
-                Math::isAngleBetween(a1, arc1.startAngle(), arc1.endAngle(), arc1.CCW())) {
-                _intersectionPoints.push_back(point);
-            }
-        }
-    }
-}
-
-void Intersect::geovisit(const geo::Ellipse& arc1, const geo::Ellipse& arc2) {
-    auto &&coords = maths::Intersection::QuadQuad(arc1.equation(), arc2.equation());
-
-    if (_method == Method::OnPath) {
-        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
-        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
-    }
-    else {
-        for (auto &point : coords) {
-            double a1 = (point - arc1.center()).angle();
-            double a2 = (point - arc2.center()).angle();
-            if (arc1.isAngleBetween(a1) &&
-                arc2.isAngleBetween(a2)) {
+            double a1 = (point - ellipse1.center()).angle();
+            double a2 = (point - ellipse2.center()).angle();
+            if (ellipse1.isAngleBetween(a1) &&
+                ellipse2.isAngleBetween(a2)) {
                 _intersectionPoints.push_back(point);
             }
         }
