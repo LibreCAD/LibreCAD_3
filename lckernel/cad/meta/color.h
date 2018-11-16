@@ -30,6 +30,9 @@ namespace lc {
                 return *this;
             }
 
+            double absDiff2(const Color& other){
+                return ((_r-other._r)*(_r-other._r)+(_g-other._g)*(_g-other._g)+(_b-other._b)*(_b-other._b)+(_a-other._a)*(_a-other._a));
+            }
 
             bool operator==(lc::Color b) {
                 return _r == b._r && _b == b._b && _g == b._g && _a == b._a;
