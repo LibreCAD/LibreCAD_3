@@ -229,7 +229,7 @@ bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::entity::LWPolyli
     // call entity1.visit(entity2);
     for (auto &entity1 : list1) {
         if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
-            geovisit(e, *arc.get());
+            geovisit(*arc.get(), e);
         }
         else {
             geovisit(*std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get(), e);
