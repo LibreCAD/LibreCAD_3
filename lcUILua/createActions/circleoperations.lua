@@ -36,7 +36,6 @@ function CircleOperations:enterRadius(eventName, data)
     end
 
     if(eventName == "mouseMove") then
-        self:refreshTempEntity()
         return
     end
 

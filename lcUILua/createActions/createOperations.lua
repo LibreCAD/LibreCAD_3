@@ -14,7 +14,6 @@ function CreateOperations:_init(id, builder, step)
 
     self.step = step
 
-    self:refreshTempEntity()
     self:registerEvents()
 end
 
@@ -25,6 +24,10 @@ function CreateOperations:onEvent(eventName, data)
 
     if(self.step ~= nil) then
         self[self.step](self, eventName, data)
+    end
+
+    if(not self.finished) then
+        self:refreshTempEntity()
     end
 end
 

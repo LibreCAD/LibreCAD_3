@@ -11,69 +11,59 @@ setmetatable(ArcOperations, {
 })
 
 function ArcOperations:_init(widget)
-    self.builder = lc.builder.ArcBuilder()
+    CreateOperations._init(self, widget, lc.builder.ArcBuilder, "enterCenter")
     self.builder:setRadius(10)
     self.builder:setStartAngle(0)
     self.builder:setEndAngle(math.pi)
-    self.step = 0
-
-    CreateOperations._init(self, widget)
 
     message("Click on center", widget)
 end
 
-function ArcOperations:onEvent(eventName, event)
-    if(Operations.forMe(self, event) == false) then
-        return
+function ArcOperations:enterCenter(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setCenter(data["position"])
+    end
+
+    if(eventName == "point") then
+        message("Click on second point or enter the radius", self.target_widget)
+        self.step = "setRadius"
+    end
+end
+
+function ArcOperations:setRadius(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setRadius(Operations:getDistance(self.builder:center(), data["position"]))
+    elseif(eventName == "number") then
+        self.builder:setRadius(data["number"])
     end
 
     if(eventName == "point" or eventName == "number") then
-        self:newData(event["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempArc(event["position"])
-    end
-end
-
-function ArcOperations:newData(point)
-    if(self.step == 0) then
-        self.builder:setCenter(point)
-
-        message("Click on second point or enter the radius", self.target_widget)
-        self.step = self.step + 1
-    elseif(self.step == 1) then
-        self.builder:setRadius(Operations:getDistance(self.builder:center(), point))
-
         message("Click on start point or enter the start angle", self.target_widget)
-        self.step = self.step + 1
-    elseif(self.step == 2) then
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), point))
+        self.step = "setStartAngle"
+    end
+end
 
+function ArcOperations:setStartAngle(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), data["position"]))
+    elseif(eventName == "number") then
+        self.builder:setStartAngle(data["number"])
+    end
+
+    if(eventName == "point" or eventName == "number") then
         message("Click on end point or enter the end angle", self.target_widget)
-        self.step = self.step + 1
-    else
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), point))
-
-        self:createArc()
+        self.step = "setEndAngle"
     end
 end
 
-function ArcOperations:createTempArc(point)
-    if(self.step == 0) then
-        self.builder:setCenter(point)
-    elseif(self.step == 1) then
-        self.builder:setRadius(Operations:getDistance(self.builder:center(), point))
-    elseif(self.step == 2) then
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), point))
-    else
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), point))
+function ArcOperations:setEndAngle(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), data["position"]))
+    elseif(eventName == "number") then
+        self.builder:setEndAngle(data["number"])
     end
 
-    self.entity = self:build()
-    self:refreshTempEntity()
-end
-
-function ArcOperations:createArc()
-    self:createEntity(self:build())
-
-    CreateOperations.close(self)
+    if(eventName == "point" or eventName == "number") then
+        self:createEntity()
+    end
 end

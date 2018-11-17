@@ -45,9 +45,6 @@ function LineOperations:setSecondPoint(eventName, data)
     if(eventName == "point") then
         self:createEntity()
 
-    elseif(eventName == "mouseMove") then
-        self:refreshTempEntity()
-
     elseif(eventName == "number") then
         self.length = data["number"]
     end
