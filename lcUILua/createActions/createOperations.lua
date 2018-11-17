@@ -28,10 +28,12 @@ function CreateOperations:onEvent(eventName, data)
     end
 end
 
-function CreateOperations:createEntity(entity)
+function CreateOperations:createEntity()
     local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
-    b:appendEntity(entity)
+    b:appendEntity(self:build())
     b:execute()
+
+    self:close()
 end
 
 function CreateOperations:build()
@@ -42,10 +44,11 @@ function CreateOperations:build()
 end
 
 function CreateOperations:refreshTempEntity()
-
     if (self.prevEntity ~= nil) then
         getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
     end
+
+    self.entity = self:build()
 
     if (self.entity ~= nil) then
         getWindow(self.target_widget):tempEntities():addEntity(self.entity)

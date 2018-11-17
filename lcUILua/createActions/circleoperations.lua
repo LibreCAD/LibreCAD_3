@@ -32,15 +32,13 @@ function CircleOperations:enterRadius(eventName, data)
     if(eventName == "point" or eventName == "mouseMove") then
         self.builder:setRadius(self.builder:center():distanceTo(data["position"]))
     elseif(eventName == "number") then
-        self.builder:setRadius(data)
+        self.builder:setRadius(data["number"])
     end
 
     if(eventName == "mouseMove") then
-        self.entity = self:build()
         self:refreshTempEntity()
         return
     end
 
-    self:createEntity(self:build())
-    CreateOperations.close(self)
+    self:createEntity()
 end

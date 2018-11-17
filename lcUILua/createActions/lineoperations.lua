@@ -11,50 +11,44 @@ setmetatable(LineOperations, {
 })
 
 function LineOperations:_init(id)
-    self.builder = lc.builder.LineBuilder()
-    self.step = 0
-    self.length = nil
-    message("Click on first point", id)
+    CreateOperations._init(self, id, lc.builder.LineBuilder, "setFirstPoint")
 
-    CreateOperations._init(self, id)
+    self.length = nil
+
+    message("Click on first point", id)
 end
 
-function LineOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
+function LineOperations:setFirstPoint(eventName, data)
+    if(eventName == "point") then
+        self.builder:setStartPoint(data["position"])
+        message("Click on second point or enter line length", self.target_widget)
+
+        self.step = "setSecondPoint"
+    end
+end
+
+function LineOperations:getSecondPoint(mousePos)
+    if(self.length ~= nil) then
+       local angle = self.builder:startPoint():angleTo(mousePos)
+       local relativeCoordinate = lc.geo.Coordinate(angle):multiply(self.length)
+       return self.builder:startPoint():add(relativeCoordinate)
+    else
+        return mousePos
+    end
+end
+
+function LineOperations:setSecondPoint(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setEndPoint(self:getSecondPoint(data["position"]))
     end
 
     if(eventName == "point") then
-        self:newPoint(data["position"])
+        self:createEntity()
+
     elseif(eventName == "mouseMove") then
-        self:createTempLine(data["position"])
-    elseif(eventName == "number") then
-        self.length = data
-    end
-end
-
-function LineOperations:newPoint(point)
-    if(self.step == 0) then
-        self.builder:setStartPoint(point)
-        message("Click on second point or enter line length")
-
-        self.step = self.step + 1
-    else
-        self:createEntity(self:build())
-        CreateOperations.close(self)
-    end
-end
-
-function LineOperations:setEndPoint(point)
-    local angle = self.builder:endPoint():angleTo(p2)
-    local relativeCoordinate = Coordinate._fromAngle(angle):mulDouble(self.length)
-    self.builder:setEndPoint(p1:add(relativeCoordinate))
-end
-
-function LineOperations:createTempLine(point)
-    if(self.step ~= 0) then
-        self.builder:setEndPoint(point)
-        self.entity = self:build()
         self:refreshTempEntity()
+
+    elseif(eventName == "number") then
+        self.length = data["number"]
     end
 end

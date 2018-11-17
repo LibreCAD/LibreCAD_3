@@ -60,6 +60,12 @@ void LCLua::importLCKernel() {
         .addFunction("x", &lc::geo::Coordinate::x)
         .addFunction("y", &lc::geo::Coordinate::y)
         .addFunction("z", &lc::geo::Coordinate::z)
+        .addStaticFunction("multiply", [](lc::geo::Coordinate coordinate, double s) {
+            return coordinate * s;
+        })
+        .addStaticFunction("add", [](lc::geo::Coordinate coordinate, lc::geo::Coordinate o) {
+            return coordinate + o;
+        })
     );
 
     state["lc"]["Visitable"].setClass(kaguya::UserdataMetatable<lc::Visitable>()

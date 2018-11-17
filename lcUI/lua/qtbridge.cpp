@@ -176,6 +176,9 @@ void addLCBindings(lua_State *L) {
 		.addFunction("cursor", &CadMdiChild::cursor)
 		.addFunction("document", &CadMdiChild::document)
 		.addFunction("saveFile", &CadMdiChild::saveFile)
+		.addStaticFunction("getId", [](QWidget* widget) {
+		    return ((CadMdiChild*) widget)->id(); //TODO: kaguya doesn't automatically downcast
+		})
 		.addProperty("id", &CadMdiChild::id, &CadMdiChild::setId)
 		.addFunction("openFile", &CadMdiChild::openFile)
 		.addFunction("selection", &CadMdiChild::selection)
