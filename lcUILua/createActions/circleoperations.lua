@@ -20,31 +20,27 @@ end
 
 function CircleOperations:enterCenter(eventName, data)
     if(eventName == "point") then
-        self.builder:setCenter(point)
+        self.builder:setCenter(data["position"])
         message("Click on second point or enter the radius", self.target_widget)
 
         self.step = "enterRadius"
     end
 
-    --         elseif(eventName == "mouseMove") then
-    --              self:createTempCircle(data["position"])
 end
 
 function CircleOperations:enterRadius(eventName, data)
-    if(eventName == "point") then
-        self.builder:setRadius(self.builder:center():distanceTo(point))
-        self:createCircle()
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"]))
     elseif(eventName == "number") then
-        self:createEntity(self:build())
-        CreateOperations.close(self)
+        self.builder:setRadius(data)
     end
-end
 
-
-function CircleOperations:createTempCircle(point)
-    if(self.step == 1) then
-        self.builder:setRadius(self.builder:center():distanceTo(point))
+    if(eventName == "mouseMove") then
         self.entity = self:build()
         self:refreshTempEntity()
+        return
     end
+
+    self:createEntity(self:build())
+    CreateOperations.close(self)
 end

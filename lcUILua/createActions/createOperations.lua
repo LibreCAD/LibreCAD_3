@@ -24,7 +24,7 @@ function CreateOperations:onEvent(eventName, data)
     end
 
     if(self.step ~= nil) then
-        self[self.step](self.step, eventName, data)
+        self[self.step](self, eventName, data)
     end
 end
 
