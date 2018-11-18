@@ -66,6 +66,9 @@ void LCLua::importLCKernel() {
         .addStaticFunction("add", [](lc::geo::Coordinate coordinate, lc::geo::Coordinate o) {
             return coordinate + o;
         })
+        .addStaticFunction("sub", [](lc::geo::Coordinate coordinate, lc::geo::Coordinate o) {
+            return coordinate - o;
+        })
     );
 
     state["lc"]["Visitable"].setClass(kaguya::UserdataMetatable<lc::Visitable>()
@@ -599,6 +602,7 @@ void LCLua::importLCKernel() {
     );
 
     state["lc"]["builder"]["EllipseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::EllipseBuilder, lc::builder::CADEntityBuilder>()
+        .setConstructors<lc::builder::EllipseBuilder()>()
         .addFunction("build", &lc::builder::EllipseBuilder::build)
         .addFunction("center", &lc::builder::EllipseBuilder::center)
         .addFunction("endAngle", &lc::builder::EllipseBuilder::endAngle)
