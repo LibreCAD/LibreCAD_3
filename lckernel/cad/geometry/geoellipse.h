@@ -152,7 +152,7 @@ namespace lc {
                  */
                 const maths::Equation equation() const {
                     auto ce0 = _majorP.squared();
-                    auto ce2 = this->ratio() * this->ratio() * ce0;
+                    auto ce2 = _minorRadius*_minorRadius;
 
                     if (ce0 < LCTOLERANCE * LCTOLERANCE || ce2 < LCTOLERANCE * LCTOLERANCE) {
                         return maths::Equation();
