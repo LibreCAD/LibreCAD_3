@@ -214,6 +214,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("autoScale", &LCADViewer::autoScale)
 			.addFunction("setOperationActive", &LCADViewer::setOperationActive)
 			.addFunction("docCanvas", &LCADViewer::docCanvas)
+			.addFunction("update", &LCADViewer::updateHelper)
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")

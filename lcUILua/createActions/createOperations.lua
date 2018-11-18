@@ -29,12 +29,14 @@ function CreateOperations:refreshTempEntity()
     end
 
     self.prevEntity = self.entity
+    getWindow(self.target_widget):viewer():update()
 end
 
 function CreateOperations:removeTempEntity()
     if (self.prevEntity ~= nil) then
         getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
     end
+    getWindow(self.target_widget):viewer():update()
 end
 
 function CreateOperations:unregisterEvents()
