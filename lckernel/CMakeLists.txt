@@ -69,6 +69,7 @@ cad/meta/block.cpp
 cad/builders/line.cpp
 cad/builders/arc.cpp
 cad/builders/circle.cpp
+cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
@@ -85,18 +86,18 @@ cad/interface/snapconstrain.cpp
 set(lckernel_hdrs
 version.h
 cad/const.h
-        cad/storage/settings.h
+cad/storage/settings.h
 cad/base/id.h
 cad/base/cadentity.h
 cad/base/metainfo.h
-        cad/storage/documentimpl.h
-        cad/storage/entitycontainer.h
-        cad/storage/quadtree.h
-        cad/storage/storagemanagerimpl.h
-        cad/storage/undomanagerimpl.h
-        cad/storage/document.h
-        cad/storage/storagemanager.h
-        cad/storage/undomanager.h
+cad/storage/documentimpl.h
+cad/storage/entitycontainer.h
+cad/storage/quadtree.h
+cad/storage/storagemanagerimpl.h
+cad/storage/undomanagerimpl.h
+cad/storage/document.h
+cad/storage/storagemanager.h
+cad/storage/undomanager.h
 cad/events/addentityevent.h
 cad/events/addlayerevent.h
 cad/events/addlinepatternevent.h
@@ -108,7 +109,7 @@ cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/events/replacelinepatternevent.h
-        cad/math/intersect.h
+cad/math/intersect.h
 cad/geometry/geobase.h
 cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h
@@ -133,8 +134,8 @@ cad/meta/metacolor.h
 cad/meta/layer.h
 cad/meta/metalinewidth.h
 cad/meta/dxflinepattern.h
-        cad/operations/entitybuilder.h
-        cad/operations/entityops.h
+cad/operations/entitybuilder.h
+cad/operations/entityops.h
 cad/operations/documentoperation.h
 cad/operations/layerops.h
 cad/operations/undoable.h
@@ -156,7 +157,7 @@ cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
-        cad/tools/string_helper.h
+cad/tools/string_helper.h
 cad/primitive/image.h
 cad/math/helpermethods.h
 version.h
@@ -165,6 +166,7 @@ cad/builders/cadentity.h
 cad/builders/line.h
 cad/builders/arc.h
 cad/builders/circle.h
+cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/primitive/insert.h
 cad/builders/insert.h
@@ -176,9 +178,9 @@ cad/operations/builder.h
 cad/base/visitor.h
 cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
-        cad/storage/documentlist.h
+cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
-        cad/interface/tangentable.h)
+cad/interface/tangentable.h)
 
 # LOG4CXX
 find_package(Log4CXX 1.10 REQUIRED)

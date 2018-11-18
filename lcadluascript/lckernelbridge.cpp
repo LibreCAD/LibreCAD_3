@@ -598,6 +598,23 @@ void LCLua::importLCKernel() {
         .addFunction("setDragPoints", &lc::entity::DimRadial::setDragPoints)
     );
 
+    state["lc"]["builder"]["EllipseBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::EllipseBuilder, lc::builder::CADEntityBuilder>()
+        .addFunction("build", &lc::builder::EllipseBuilder::build)
+        .addFunction("center", &lc::builder::EllipseBuilder::center)
+        .addFunction("endAngle", &lc::builder::EllipseBuilder::endAngle)
+        .addFunction("isReversed", &lc::builder::EllipseBuilder::isReversed)
+        .addFunction("majorPoint", &lc::builder::EllipseBuilder::majorPoint)
+        .addFunction("minorRadius", &lc::builder::EllipseBuilder::minorRadius)
+        .addFunction("setCenter", &lc::builder::EllipseBuilder::setCenter)
+        .addFunction("setEndAngle", &lc::builder::EllipseBuilder::setEndAngle)
+        .addFunction("setIsReversed", &lc::builder::EllipseBuilder::setIsReversed)
+        .addFunction("setMajorPoint", &lc::builder::EllipseBuilder::setMajorPoint)
+        .addFunction("setMinorRadius", &lc::builder::EllipseBuilder::setMinorRadius)
+        .addFunction("setStartAngle", &lc::builder::EllipseBuilder::setStartAngle)
+        .addFunction("startAngle", &lc::builder::EllipseBuilder::startAngle)
+    );
+
+
     state["lc"]["geo"]["Ellipse"].setClass(kaguya::UserdataMetatable<lc::geo::Ellipse, kaguya::MultipleBase<lc::geo::Base, lc::Visitable>>()
         .setConstructors<lc::geo::Ellipse(lc::geo::Coordinate, lc::geo::Coordinate, double, double, double, bool)>()
         .addFunction("accept", &lc::geo::Ellipse::accept)
