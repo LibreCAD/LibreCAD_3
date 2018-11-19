@@ -52,6 +52,9 @@ void LCADViewer::setDragManager(lc::viewer::manager::DragManager_SPtr dragManage
     _dragManager = std::move(dragManager);
 }
 
+void LCADViewer::updateHelper(){
+	update();
+}
 
 void LCADViewer::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
     updateDocument();
