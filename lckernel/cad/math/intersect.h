@@ -30,12 +30,12 @@
 
 //SFINAE test to check nearestPointOnEntity
 template <typename T>
-class hasNearestPointOnEntity{
+class hasNearestPointOnPath{
 	private:
 		typedef int Yes;
 		typedef long No;
 
-		template <typename C> static Yes& test(decltype(&C::hasNearestPointOnEntity));
+		template <typename C> static Yes& test(decltype(&C::hasNearestPointOnPath));
 		template <typename C> static No& test(...);
 	public:
 		enum {value = sizeof(test<T>(0))==sizeof(Yes)};
@@ -68,13 +68,13 @@ namespace lc {
 
                 //if has nearestPointOnEntity
                 template <typename S>
-                typename std::enable_if<hasNearestPointOnEntity<S>::value,bool>::type operator()(const lc::geo::Coordinate& p, const S& v){
-                	if(v.nearestPointOnEntity(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
+                typename std::enable_if<hasNearestPointOnPath<S>::value,bool>::type operator()(const lc::geo::Coordinate& p, const S& v){
+                	if(v.nearestPointOnPath(p).distanceTo(p) < LCTOLERANCE) _intersectionPoints.push_back(p);
                 	return false;
                 };
                 //else
                 template <typename S>
-                typename std::enable_if<!hasNearestPointOnEntity<S>::value,bool>::type operator()(const lc::geo::Coordinate& p, const S& v){
+                typename std::enable_if<!hasNearestPointOnPath<S>::value,bool>::type operator()(const lc::geo::Coordinate& p, const S& v){
                 	return false;
                 }
 
