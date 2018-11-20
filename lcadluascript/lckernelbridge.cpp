@@ -484,6 +484,23 @@ void LCLua::importLCKernel() {
         .addFunction("snapPoints", &lc::entity::Circle::snapPoints)
     );
 
+    state["lc"]["builder"]["DimensionBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimensionBuilder, lc::builder::CADEntityBuilder>()
+        .addFunction("attachmentPoint", &lc::builder::DimensionBuilder::attachmentPoint)
+        .addFunction("definitionPoint", &lc::builder::DimensionBuilder::definitionPoint)
+        .addFunction("explicitValue", &lc::builder::DimensionBuilder::explicitValue)
+        .addFunction("lineSpacingFactor", &lc::builder::DimensionBuilder::lineSpacingFactor)
+        .addFunction("lineSpacingStyle", &lc::builder::DimensionBuilder::lineSpacingStyle)
+        .addFunction("middleOfText", &lc::builder::DimensionBuilder::middleOfText)
+        .addFunction("setAttachmentPoint", &lc::builder::DimensionBuilder::setAttachmentPoint)
+        .addFunction("setDefinitionPoint", &lc::builder::DimensionBuilder::setDefinitionPoint)
+        .addFunction("setExplicitValue", &lc::builder::DimensionBuilder::setExplicitValue)
+        .addFunction("setLineSpacingFactor", &lc::builder::DimensionBuilder::setLineSpacingFactor)
+        .addFunction("setLineSpacingStyle", &lc::builder::DimensionBuilder::setLineSpacingStyle)
+        .addFunction("setMiddleOfText", &lc::builder::DimensionBuilder::setMiddleOfText)
+        .addFunction("setTextAngle", &lc::builder::DimensionBuilder::setTextAngle)
+        .addFunction("textAngle", &lc::builder::DimensionBuilder::textAngle)
+    );
+
     state["lc"]["entity"]["Dimension"].setClass(kaguya::UserdataMetatable<lc::entity::Dimension>()
         .addFunction("attachmentPoint", &lc::entity::Dimension::attachmentPoint)
         .addFunction("definitionPoint", &lc::entity::Dimension::definitionPoint)
@@ -513,13 +530,23 @@ void LCLua::importLCKernel() {
         .addFunction("scale", &lc::entity::Point::scale)
     );
 
+
+    state["lc"]["builder"]["DimAlignedBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimAlignedBuilder, lc::builder::DimensionBuilder>()
+        .setConstructors<lc::builder::DimAlignedBuilder()>()
+        .addFunction("build", &lc::builder::DimAlignedBuilder::build)
+        .addFunction("definitionPoint2", &lc::builder::DimAlignedBuilder::definitionPoint2)
+        .addFunction("definitionPoint3", &lc::builder::DimAlignedBuilder::definitionPoint3)
+        .addFunction("dimAuto", &lc::builder::DimAlignedBuilder::dimAuto)
+        .addFunction("setDefinitionPoint2", &lc::builder::DimAlignedBuilder::setDefinitionPoint2)
+        .addFunction("setDefinitionPoint3", &lc::builder::DimAlignedBuilder::setDefinitionPoint3)
+    );
+
     state["lc"]["entity"]["DimAligned"].setClass(kaguya::UserdataMetatable<lc::entity::DimAligned, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
         .addFunction("accept", &lc::entity::DimAligned::accept)
         .addFunction("boundingBox", &lc::entity::DimAligned::boundingBox)
         .addFunction("copy", &lc::entity::DimAligned::copy)
         .addFunction("definitionPoint2", &lc::entity::DimAligned::definitionPoint2)
         .addFunction("definitionPoint3", &lc::entity::DimAligned::definitionPoint3)
-        .addStaticFunction("dimAuto", &lc::entity::DimAligned::dimAuto)
         .addFunction("dispatch", &lc::entity::DimAligned::dispatch)
         .addFunction("dragPoints", &lc::entity::DimAligned::dragPoints)
         .addFunction("mirror", &lc::entity::DimAligned::mirror)

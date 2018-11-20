@@ -22,13 +22,13 @@ version.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
-        cad/storage/documentimpl.cpp
-        cad/storage/entitycontainer.cpp
-        cad/storage/quadtree.cpp
-        cad/storage/storagemanagerimpl.cpp
-        cad/storage/undomanagerimpl.cpp
-        cad/storage/document.cpp
-        cad/math/intersect.cpp
+cad/storage/documentimpl.cpp
+cad/storage/entitycontainer.cpp
+cad/storage/quadtree.cpp
+cad/storage/storagemanagerimpl.cpp
+cad/storage/undomanagerimpl.cpp
+cad/storage/document.cpp
+cad/math/intersect.cpp
 cad/geometry/geoarc.cpp
 cad/geometry/geocircle.cpp
 cad/geometry/geocoordinate.cpp
@@ -43,8 +43,8 @@ cad/meta/layer.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
-        cad/operations/entitybuilder.cpp
-        cad/operations/entityops.cpp
+cad/operations/entitybuilder.cpp
+cad/operations/entityops.cpp
 cad/operations/documentoperation.cpp
 cad/operations/layerops.cpp
 cad/operations/linepatternops.cpp
@@ -69,6 +69,8 @@ cad/meta/block.cpp
 cad/builders/line.cpp
 cad/builders/arc.cpp
 cad/builders/circle.cpp
+cad/builders/dimaligned.cpp
+cad/builders/dimension.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
@@ -79,8 +81,8 @@ cad/operations/blockops.cpp
 cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
-        cad/storage/documentlist.cpp
-        )
+cad/storage/documentlist.cpp
+)
 
 # HEADER FILES
 set(lckernel_hdrs
@@ -166,6 +168,8 @@ cad/builders/cadentity.h
 cad/builders/line.h
 cad/builders/arc.h
 cad/builders/circle.h
+cad/builders/dimaligned.h
+cad/builders/dimension.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/primitive/insert.h
