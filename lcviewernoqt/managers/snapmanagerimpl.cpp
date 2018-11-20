@@ -11,10 +11,10 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_
         _grid(std::move(grid)),
         _gridSnappable(false),
         _snapIntersections(false),
-        _snapEntity(false),
-        _snapMiddle(false),
         _distanceToSnap(distanceToSnap),
-        _view(std::move(view)) {
+        _view(std::move(view)),
+        _snapConstrain(SimpleSnapConstrain(lc::SimpleSnapConstrain::NONE, 0, 0.))
+        {
 
 }
 
@@ -51,7 +51,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // person can 'pick' a entity onceand then it would stay in the list of entities to
     // consider for snapping. THis will mostly lickly be lines only
     std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
-                                                                                                  realDistanceForPixels);
+                                                                                                  realDistanceForPixels, _snapConstrain);
     std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
 
     // Emit Snappoint event if a entity intersects with a other entity
@@ -81,7 +81,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     }
 
     // Emit snappoint based on closest entity
-    if (!entities.empty() && _snapMiddle) {
+    if (!entities.empty()) {
         // GO over all entities, first closest to the cursor gradually moving away
         for (auto &entity : entities) {
             lc::entity::Snapable_CSPtr captr;
@@ -108,14 +108,6 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
                 }
             }
         }
-    }
-
-    // If snap entity is on
-    if(!entities.empty() && _snapEntity){
-                auto i1 = std::dynamic_pointer_cast<const lc::entity::Snapable>(entities.at(0).entity());
-                auto event = event::SnapPointEvent(i1->nearestPointOnPath(location));
-                _snapPointEvent(event);
-                return;
     }
 
     // If no entity was found to snap against, then snap to grid
@@ -158,19 +150,19 @@ bool SnapManagerImpl::isIntersectionsSnappable() const {
 }
 
 void SnapManagerImpl::setMiddleSnappable(bool enabled){
-    _snapMiddle = enabled;
-}
-
-bool SnapManagerImpl::isMiddleSnappable() const {
-    return _snapMiddle;
+	if(enabled){
+		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+	}else{
+		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+	}
 }
 
 void SnapManagerImpl::setEntitySnappable(bool enabled){
-    _snapEntity = enabled;
-}
-
-bool SnapManagerImpl::isEntitySnappable() const {
-    return _snapEntity;
+	if(enabled){
+		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+	}else{
+		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+	}
 }
 
 Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {

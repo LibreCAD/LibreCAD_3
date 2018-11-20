@@ -299,7 +299,7 @@ namespace lc {
                  * \return List of entities near this coordinate. THis includes entities where it's path is close to point
                  */
                 std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
-                                                                             double distance) const {
+                                                                             double distance, lc::SimpleSnapConstrain _snapConstrain) const {
 
                     const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y()) + distance / 2.,
                                                     lc::geo::Coordinate(point.x(), point.y()) + distance / 2.);
@@ -311,9 +311,13 @@ namespace lc {
                         lc::entity::Snapable_CSPtr entity = std::dynamic_pointer_cast<const lc::entity::Snapable>(item);
 
                         if (entity != nullptr) { // Not all entities might be snapable, so we only test if this is possible.
+                            //--- May need to be implemented in another function later
                             lc::geo::Coordinate eCoordinate = entity->nearestPointOnPath(point);
                             if (eCoordinate.distanceTo(point) < distance) {
                                 entities.emplace_back(item, eCoordinate);
+                            }else{//check if snapConstrain is set
+                                std::vector<lc::EntityCoordinate> points = entity->snapPoints(point, _snapConstrain, distance, 1);
+                                if(points.size())entities.emplace_back(item,points.at(0).coordinate());
                             }
                         }
                     }
