@@ -35,7 +35,7 @@ bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Ellipse& e) 
 }
 
 bool Intersect::operator()(const lc::geo::Vector& v, const lc::geo::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+	geovisit(s, v);
     return false;
 }
 
@@ -105,8 +105,8 @@ bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Ellipse& ell
 }
 
 bool Intersect::operator()(const lc::geo::Circle& c, const lc::geo::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
-    return false; //visit(c, s);
+	geovisit(s, c);
+    return false;
 }
 
 bool Intersect::operator()(const lc::geo::Circle&c, const lc::entity::LWPolyline& lwp) {
@@ -187,7 +187,7 @@ bool Intersect::operator()(const lc::geo::Arc& a, const lc::geo::Ellipse& e) {
 }
 
 bool Intersect::operator()(const lc::geo::Arc& a, const lc::geo::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+	geovisit(s, a);
     return false;
 }
 
@@ -216,7 +216,7 @@ bool Intersect::operator()(const lc::geo::Ellipse& e1, const lc::geo::Ellipse& e
 }
 
 bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::geo::Spline& s) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+	geovisit(s, e);
     return false;
 }
 
@@ -240,12 +240,26 @@ bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::entity::LWPolyli
 
 // Spline
 bool Intersect::operator()(const lc::geo::Spline& s1, const lc::geo::Spline& s2) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+	//geovisit(s1, s2);
+	//Causing crashes
     return false;
 }
 
 bool Intersect::operator()(const lc::geo::Spline& s, const lc::entity::LWPolyline& lwp) {
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+    auto &list1 = lwp.asEntities();
+    // Note: The dynamic_pointer_cast won't win a beauty contest, but the plan is to split
+    // the EntityVisitor into a GeoVisitor and EntityVisitor such that a application deciding
+    // to use double dispatch can decide to use a specific implementation.
+    // Once added, we can get rid of the dynamic_pointer_casts and simply
+    // call entity1.visit(entity2);
+    for (auto &entity1 : list1) {
+        if (auto arc = std::dynamic_pointer_cast<const lc::geo::Arc>(entity1)) {
+            geovisit(s, *arc.get());
+        }
+        else {
+            geovisit(s, *std::dynamic_pointer_cast<const lc::geo::Vector>(entity1).get());
+        }
+    }
     return false;
 }
 
@@ -415,6 +429,77 @@ void Intersect::geovisit(const geo::Ellipse& ellipse1, const geo::Ellipse& ellip
         }
     }
 }
+
+void Intersect::geovisit(const geo::Spline& S, const geo::Vector& V){
+	auto &&coords = maths::Intersection::splineLine(S,V);
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+    	for(auto &point : coords){
+    		_intersectionPoints.push_back(point);
+    	}
+    }
+}
+
+void Intersect::geovisit(const geo::Spline& S, const geo::Circle& C){
+	auto &&coords = maths::Intersection::splineCircle(S,C);
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+    	for(auto &point : coords){
+    		_intersectionPoints.push_back(point);
+    	}
+    }
+}
+
+void Intersect::geovisit(const geo::Spline& S, const geo::Arc& A){
+	auto &&coords = maths::Intersection::splineArc(S,A);
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+    	for(auto &point : coords){
+    		_intersectionPoints.push_back(point);
+    	}
+    }
+}
+
+void Intersect::geovisit(const geo::Spline& S, const geo::Ellipse& E){
+	auto &&coords = maths::Intersection::splineEllipse(S,E);
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+    	for(auto &point : coords){
+    		_intersectionPoints.push_back(point);
+    	}
+    }
+}
+
+void Intersect::geovisit(const geo::Spline& S1, const geo::Spline& S2){
+	auto &&coords = maths::Intersection::splineSpline(S1,S2);
+
+    if (_method == Method::OnPath) {
+        _intersectionPoints.reserve(_intersectionPoints.size() + coords.size());
+        _intersectionPoints.insert(coords.end(), coords.begin(), coords.end());
+    }
+    else {
+    	for(auto &point : coords){
+    		_intersectionPoints.push_back(point);
+    	}
+    }
+}
+
 /***
  *    ~|~ _ _|_ _  _ _ _  __|_|\/| _  _
  *    _|_| | | (/_| _\(/_(_ | |  |(_|| |\/

@@ -146,7 +146,8 @@ std::vector<geo::Coordinate> Intersection::bezierArc(const geo::BB_CSPtr& B, con
     const auto &points = bezierCircle(B, geo::Circle(A.center(), A.radius()));
 
     for(const auto & pt : points) {
-        if(A.isAngleBetween(pt.angle())) {
+        double a1 = (pt - A.center()).angle();
+        if(A.isAngleBetween(a1)) {
             ret.push_back(pt);
         }
     }
