@@ -37,10 +37,12 @@ namespace lc {
                      * \brief Draw all the entities
                      */
 					void onDraw(event::DrawEvent const& event);
+	                virtual Nano::Signal<void()>& requestUpdateEvent(){return _requestUpdateEvent;};
 
 				private:
 					DocumentCanvas_SPtr _docCanvas;
 					lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> _entities;
+					Nano::Signal<void()> _requestUpdateEvent;
 			};
 
 			using TempEntities_SPtr = std::shared_ptr<TempEntities>;

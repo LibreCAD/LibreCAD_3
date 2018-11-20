@@ -81,6 +81,8 @@ namespace lc {
 
                 const std::shared_ptr<lc::viewer::DocumentCanvas>& docCanvas() const;
 
+                void updateHelper();
+
             protected:
                 void paintEvent(QPaintEvent*);
 

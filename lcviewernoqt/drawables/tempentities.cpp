@@ -8,10 +8,12 @@ TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) :
 
 void TempEntities::addEntity(lc::entity::CADEntity_CSPtr entity) {
     _entities.insert(std::move(entity));
+    requestUpdateEvent()();
 }
 
 void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
 	_entities.remove(std::move(entity));
+    requestUpdateEvent()();
 }
 
 void TempEntities::onDraw(event::DrawEvent const &event) {

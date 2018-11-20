@@ -99,6 +99,7 @@ void CadMdiChild::newDocument() {
 
     _tempEntities = std::make_shared<drawable::TempEntities>(_viewer->documentCanvas());
     _viewer->documentCanvas()->foreground().connect<drawable::TempEntities, &drawable::TempEntities::onDraw>(_tempEntities.get());
+    _tempEntities->requestUpdateEvent().connect<ui::LCADViewer, &ui::LCADViewer::updateHelper>(*_viewer);
 
     //Drag manager
     _dragManager = std::make_shared<manager::DragManager>(_viewer->documentCanvas(), _cursor, _tempEntities, 10);
