@@ -129,7 +129,7 @@ namespace lc {
                 bool operator()(const lc::entity::LWPolyline& lwp1, const lc::entity::LWPolyline& lwp2);
 
                 bool operator()(const lc::Visitable& s1, const lc::Visitable& s2) {
-                	std::cout << "Undefined intersection betn:-" << typeid(s1).name() << "&" << typeid(s2).name() <<std::endl;
+                    std::cout << "Undefined intersection between " << typeid(s1).name() << " and " << typeid(s2).name() << std::endl;
                     return false;
                 }
 
