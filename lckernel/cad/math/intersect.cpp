@@ -240,7 +240,8 @@ bool Intersect::operator()(const lc::geo::Ellipse& e, const lc::entity::LWPolyli
 
 // Spline
 bool Intersect::operator()(const lc::geo::Spline& s1, const lc::geo::Spline& s2) {
-	geovisit(s1, s2);
+	//geovisit(s1, s2);
+	//Causing crashes
     return false;
 }
 
