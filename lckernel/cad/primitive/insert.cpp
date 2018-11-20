@@ -76,7 +76,10 @@ const geo::Area Insert::boundingBox() const {
 CADEntity_CSPtr Insert::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto builder = builder::InsertBuilder();
 
-    builder.copy(shared_from_this());
+    //TODO: a copy should be made, instead of setting every attribute manually
+    builder.setCoordinate(_position);
+    builder.setDisplayBlock(_displayBlock);
+    builder.setDocument(_document);
     builder.setLayer(std::move(layer));
     builder.setMetaInfo(std::move(metaInfo));
     builder.setBlock(std::move(block));

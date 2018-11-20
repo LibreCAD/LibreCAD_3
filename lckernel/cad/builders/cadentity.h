@@ -3,6 +3,9 @@
 #include <cad/base/cadentity.h>
 
 namespace lc {
+    /**
+     * @brief Contains builders made for creating entities
+     */
     namespace builder {
         class CADEntityBuilder {
             public:
@@ -19,13 +22,6 @@ namespace lc {
                 virtual ~CADEntityBuilder() {
                     delete _id;
                 };
-
-                void copy(entity::CADEntity_CSPtr entity) {
-                    _layer = entity->_layer;
-                    _block = entity->_block;
-                    _metaInfo = entity->_metaInfo;
-                    _id = new entity::ID(entity->id());
-                }
 
                 /**
                  * @brief Get layer
