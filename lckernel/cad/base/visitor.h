@@ -300,8 +300,8 @@ namespace lc {
 
     using GeoEntityVisitor = IVisitorTs<
             lc::Visitable,
-            geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse,
-            entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse,
+            geo::Vector, geo::Circle, geo::Arc, geo::Area, geo::Ellipse, geo::Spline,
+            entity::CADEntity, entity::Point, entity::Line, entity::Arc, entity::Circle, entity::Ellipse, entity::Spline,
             entity::LWPolyline, entity::Image
     >;
 

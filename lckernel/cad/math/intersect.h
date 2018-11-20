@@ -129,11 +129,9 @@ namespace lc {
                 bool operator()(const lc::entity::LWPolyline& lwp1, const lc::entity::LWPolyline& lwp2);
 
                 bool operator()(const lc::Visitable& s1, const lc::Visitable& s2) {
-                    // If we end up here we found a un-supported intersection .. like dimensions...
-		std::cout << "Undefined.." << std::endl;
+                	std::cout << "Undefined intersection betn:-" << typeid(s1).name() << "&" << typeid(s2).name() <<std::endl;
                     return false;
                 }
-                //Do not use template for overload here..
 
                 std::vector<geo::Coordinate> result() const;
 
