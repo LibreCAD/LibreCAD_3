@@ -148,6 +148,16 @@ namespace lc {
 
                 void geovisit(const geo::Ellipse& ellipse1, const geo::Ellipse& ellipse2);
 
+                void geovisit(const geo::Spline& S, const geo::Vector& V);
+
+                void geovisit(const geo::Spline& S, const geo::Circle& C);
+
+                void geovisit(const geo::Spline& S, const geo::Arc& E);
+
+                void geovisit(const geo::Spline& S, const geo::Ellipse& E);
+
+                void geovisit(const geo::Spline& S1, const geo::Spline& S2);
+
             private:
                 std::vector<geo::Coordinate> _intersectionPoints;
                 const Method _method;
