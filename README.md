@@ -28,7 +28,7 @@ Required libraries
 LibDxfRW compilation
 ----------
 ```
-git clone https://github.com/rvt/libdxfrw
+git clone https://github.com/LibreCAD/libdxfrw
 cd libdxfrw
 mkdir release
 cd release
