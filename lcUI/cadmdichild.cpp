@@ -160,8 +160,7 @@ bool CadMdiChild::openFile() {
         //TODO: if more than once, ask which one to choose
         newDocument();
         _filename = file.toStdString();
-        lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
-        // @TODO: _fileType = something..
+        _fileType = lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
     }
     else {
         QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
