@@ -25,6 +25,16 @@ function save_file(id)
     windows[id]:saveFile()
 end
 
+
+function save_as_file(id)
+    if(windows[id] == nil) then
+        return
+    end
+
+    windows[id]:saveAsFile()
+end
+
+
 --Return the selected layer
 function active_layer(id)
     if(windows[id] == nil) then
@@ -79,9 +89,12 @@ local function create_menu(mainWindow, widget)
     luaInterface:luaConnect(mainWindow:findChild("actionSave_2"), "triggered(bool)", function()
         save_file(widget.id)
     end)
-    luaInterface:luaConnect(mainWindow:findChild("actionSave_As"), "triggered(bool)", save_file)
 
     luaInterface:connect(mainWindow:findChild("actionExit"), "triggered(bool)", mainWindow, "close()")
+
+    luaInterface:luaConnect(mainWindow:findChild("actionSave_As"), "triggered(bool)", function()
+        save_as_file(widget.id)
+    end)
 
     luaInterface:luaConnect(mainWindow:findChild("actionUndo"), "triggered(bool)", function ()
         widget:undoManager():undo()

@@ -23,6 +23,7 @@ namespace lc {
                     LIBDXFRW_DXB_R2007,
                     LIBDXFRW_DXB_R2010,
                     LIBDXFRW_DXB_R2013,
+                    LIBOPENCAD_DWG
                 };
 
                 enum Library {
@@ -30,13 +31,17 @@ namespace lc {
                     LIBOPENCAD,
                 };
 
-                static void open(lc::storage::Document_SPtr document, const std::string& path, Library library);
+                static Type open(lc::storage::Document_SPtr document, const std::string& path, Library library);
 
                 static void save(lc::storage::Document_SPtr document, const std::string& path, Type type);
 
                 static std::map<Type, std::string> getAvailableFileTypes();
 
                 static std::map<Library, std::string> getAvailableLibrariesForFormat(std::string format);
+
+                static std::string getExtensionForFileType(Type);
+
+                static std::map<std::string, std::string> getSupportedFileExtensions();
         };
     }
 }
