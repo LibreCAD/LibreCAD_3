@@ -118,7 +118,34 @@ void CadMdiChild::newDocument() {
 
 
 bool CadMdiChild::openFile() {
-    auto file = QFileDialog::getOpenFileName();
+    auto availableTypes = lc::persistence::File::getSupportedFileExtensions();
+
+    if(availableTypes.empty()) {
+        QMessageBox::critical(nullptr, "Save error", "No library available for file opening.");
+        return false;
+    }
+
+    //Build format string
+    QString filterList="All Supported Formats(";
+    auto it = availableTypes.begin();
+    filterList += (" *."+it->first).c_str();
+    it++;
+    while(it != availableTypes.end()) {
+        filterList += (" *."+it->first).c_str();
+        it++;
+    }
+    filterList+=");;";
+
+    it = availableTypes.begin();
+    filterList += (it->second+"(*."+it->first+")").c_str();
+    it++;
+    while(it != availableTypes.end()) {
+	    filterList += (";;"+it->second+"(*."+it->first+")").c_str();
+        it++;
+    }
+    filterList+=";;All Files(*.*)";
+
+    auto file = QFileDialog::getOpenFileName(nullptr,"Open document",nullptr,filterList);
 
     if(file == "") {
         return false;
@@ -132,7 +159,9 @@ bool CadMdiChild::openFile() {
     if(!availableLibraries.empty()) {
         //TODO: if more than once, ask which one to choose
         newDocument();
-        lc::persistence::File::open(_document, file.toStdString(), availableLibraries.begin()->first);
+        _filename = file.toStdString();
+        lc::persistence::File::open(_document, _filename, availableLibraries.begin()->first);
+        // @TODO: _fileType = something..
     }
     else {
         QMessageBox::critical(nullptr, "Open error", "Unknown file extension ." + fileInfo.suffix());
@@ -142,8 +171,12 @@ bool CadMdiChild::openFile() {
     return true;
 }
 
+void CadMdiChild::saveFile(){
+	if (_filename == "")saveAsFile();
+	else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
+}
 
-void CadMdiChild::saveFile() {
+void CadMdiChild::saveAsFile() {
     QString filterList;
     QString selectedFilter;
     lc::persistence::File::Type type;
@@ -155,20 +188,20 @@ void CadMdiChild::saveFile() {
     }
 
     auto it = availableTypes.begin();
-    type = it->first;
-    filterList = it->second.c_str();
+    filterList = (it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
     it++;
-
     while(it != availableTypes.end()) {
-        filterList += ";;";
-        filterList += it->second.c_str();
-
+	    filterList += (";;"+it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
         it++;
     }
 
     auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
 
     auto selectedType = selectedFilter.toStdString();
+    //Removing extension part
+    std::size_t fpos = selectedType.rfind("(*");
+
+    selectedType = selectedType.substr(0,fpos);
 
     for(auto availableType : availableTypes) {
         if(selectedType == availableType.second) {
@@ -177,7 +210,14 @@ void CadMdiChild::saveFile() {
         }
     }
 
-    lc::persistence::File::save(_document, file.toStdString(), type);
+    _fileType = type;
+
+    //Add extension if not present
+    auto fileInfo = QFileInfo(file);
+    auto ext = fileInfo.suffix().toStdString();
+    if(ext=="")file+=("."+lc::persistence::File::getExtensionForFileType(type)).c_str();
+    _filename = file.toStdString();
+    lc::persistence::File::save(_document, _filename, type);
 }
 
 void CadMdiChild::ctxMenu(const QPoint& pos) {

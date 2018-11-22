@@ -113,6 +113,7 @@ namespace lc {
                 std::vector<lc::entity::CADEntity_CSPtr> selection();
 
                 void saveFile();
+                void saveAsFile();
 
                 /**
                  * \brief Get window ID
@@ -131,8 +132,12 @@ namespace lc {
 
                 const viewer::manager::SnapManagerImpl_SPtr& getSnapManager() const;
 
+		std::string getFilename() { return _filename; }
+
             private:
+                std::string _filename;
                 unsigned int _id;
+		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
                 LuaIntf::LuaRef _destroyCallback;
 

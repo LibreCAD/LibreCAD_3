@@ -37,6 +37,10 @@ namespace lc {
                 static std::map<Type, std::string> getAvailableFileTypes();
 
                 static std::map<Library, std::string> getAvailableLibrariesForFormat(std::string format);
+
+                static std::string getExtensionForFileType(Type);
+
+                static std::map<std::string, std::string> getSupportedFileExtensions();
         };
     }
 }
