@@ -43,6 +43,10 @@ LibreCAD compilation
 ```
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 
+git submodule init
+
+git submodule update --recursive --remote
+
 mkdir build
 cd build
 cmake .. (for a release you would use cmake -DCMAKE_BUILD_TYPE=Release ..)
