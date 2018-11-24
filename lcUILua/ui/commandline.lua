@@ -71,7 +71,7 @@ function add_commandline(mainWindow, id)
 
     luaInterface:luaConnect(cliCommand, "textEntered(QString)", function(text)
         luaInterface:triggerEvent('text', {
-            text = text:toStdString(),
+            text = qt.QString.toStdString(text),
             widget = mainWindow:centralWidget()
         })
     end)
