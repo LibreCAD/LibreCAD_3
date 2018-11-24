@@ -11,99 +11,62 @@ setmetatable(DimAngularOperations, {
 })
 
 function DimAngularOperations:_init(id)
+    CreateOperations._init(self, id, lc.builder.DimAngularBuilder, "enterCenterPoint")
+    self.builder:setExplicitValue("<>")
+
     self.centerPoint = nil
     self.firstPoint = nil
-    self.secondPoint = nil
-    self.text = nil
-    self.dimLine = nil
 
     message("Click on center point", id)
-
-    CreateOperations._init(self, id)
 end
 
-function DimAngularOperations:getDimAngular(centerPoint, firstPoint, secondPoint, text)
-    local layer = active_layer(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local dim = lc.entity.DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, metaInfo)
-
-    return dim
-end
-
-function DimAngularOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
-    if(eventName == "point" or eventName == "number") then
-        self:newData(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempDimAngular(data["position"])
-    elseif(eventName == "text") then
-        self:setText(data["text"])
-    end
-end
-
-function DimAngularOperations:newData(data)
-    if(self.centerPoint == nil) then
-        self.centerPoint = Operations:getCoordinate(data)
+function DimAngularOperations:enterCenterPoint(eventName, data)
+    if(eventName == "mouseMove") then
+        self.builder:dimAuto(data["position"],
+                             data["position"]:add(lc.geo.Coordinate(10, 10)),
+                             data["position"]:add(lc.geo.Coordinate(20, 10))
+        )
+    elseif(eventName == "point") then
+        self.centerPoint = data["position"]
+        self.step = "enterFirstPoint"
 
         message("Click on first point", self.target_widget)
-    elseif(self.firstPoint == nil) then
-        self.firstPoint = Operations:getCoordinate(data)
+    end
+end
+
+function DimAngularOperations:enterFirstPoint(eventName, data)
+    if(eventName == "mouseMove") then
+        self.builder:dimAuto(self.centerPoint,
+                             data["position"],
+                             data["position"]:add(lc.geo.Coordinate(10, 0))
+        )
+    elseif(eventName == "point") then
+        self.firstPoint = data["position"]
+        self.step = "enterSecondPoint"
 
         message("Click on second point", self.target_widget)
-    elseif(self.secondPoint == nil) then
-        self.secondPoint = Operations:getCoordinate(data)
+    end
+end
+
+function DimAngularOperations:enterSecondPoint(eventName, data)
+    if(eventName == "mouseMove") then
+        self.builder:dimAuto(self.centerPoint,
+                             self.firstPoint,
+                             data["position"]
+        )
+    elseif(eventName == "point") then
+        self.secondPoint = data["position"]
+        self.step = "enterText"
+
+        cli_get_text(self.target_widget, true)
 
         message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
-        cli_get_text(self.target_widget, true)
     end
 end
 
-function DimAngularOperations:setText(text)
-    if(text == "") then
-        self.text = "<>"
-    else
-        self.text = text
+function DimAngularOperations:enterText(eventName, data)
+    if(eventName == "text") then
+        self.builder:setExplicitValue(data["text"])
+        self:createEntity()
     end
-
-    cli_get_text(self.target_widget, false)
-    self:createDimAngular()
-end
-
-function DimAngularOperations:createTempDimAngular(point)
-    local centerPoint = self.centerPoint
-    local firstPoint = self.firstPoint
-    local secondPoint = self.secondPoint
-
-    if(centerPoint == nil) then
-        centerPoint = point
-    elseif(firstPoint == nil) then
-        firstPoint = point
-    elseif(secondPoint == nil) then
-        secondPoint = point
-    end
-
-    firstPoint = firstPoint or centerPoint:add(lc.geo.Coordinate(-1, 1))
-    secondPoint = secondPoint or centerPoint:add(lc.geo.Coordinate(1, 1))
-
-    self.entity = self:getDimAngular(centerPoint, firstPoint, secondPoint, "<>")
-    CreateOperations.refreshTempEntity(self)
-end
-
-function DimAngularOperations:createDimAngular()
-    CreateOperations.createEntity(self, self:getDimAngular(self.centerPoint, self.firstPoint, self.secondPoint, self.text))
-    CreateOperations.close(self)
-end
-
-function DimAngularOperations:close()
-    if(not self.finished) then
-        if(self.centerPoint ~= nil and self.firstPoint ~= nil and self.secondPoint ~= nil) then
-            self.text = "<>"
-            self:createDimAngular()
-        end
-    end
-
-    CreateOperations.close(self)
 end
