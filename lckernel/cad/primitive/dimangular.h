@@ -8,11 +8,13 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
+#include <cad/builders/dimangular.h>
 #include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
         class DimAngular : public std::enable_shared_from_this<DimAngular>, public CADEntity, public Dimension, virtual public Visitable, public Draggable  {
+        friend class lc::builder::DimAngularBuilder;
         public:
 
 
@@ -42,15 +44,8 @@ namespace lc {
 
             DimAngular(const DimAngular_CSPtr& other, bool sameID = false);
 
-            static DimAngular_SPtr dimAuto(
-                const geo::Coordinate& center,
-                geo::Coordinate p1,
-                geo::Coordinate p2,
-                std::string explicitValue,
-                meta::Layer_CSPtr layer,
-                meta::MetaInfo_CSPtr metaInfo = nullptr,
-                meta::Block_CSPtr block = nullptr
-            );
+        private:
+            DimAngular(const lc::builder::DimAngularBuilder& builder);
 
         public:
             /**

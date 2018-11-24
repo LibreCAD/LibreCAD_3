@@ -557,6 +557,21 @@ void LCLua::importLCKernel() {
         .addFunction("setDragPoints", &lc::entity::DimAligned::setDragPoints)
     );
 
+    state["lc"]["builder"]["DimAngularBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimAngularBuilder, lc::builder::DimensionBuilder>()
+        .setConstructors<lc::builder::DimAngularBuilder()>()
+        .addFunction("build", &lc::builder::DimAngularBuilder::build)
+        .addFunction("defLine11", &lc::builder::DimAngularBuilder::defLine11)
+        .addFunction("defLine12", &lc::builder::DimAngularBuilder::defLine12)
+        .addFunction("defLine21", &lc::builder::DimAngularBuilder::defLine21)
+        .addFunction("defLine22", &lc::builder::DimAngularBuilder::defLine22)
+        .addFunction("dimAuto", &lc::builder::DimAngularBuilder::dimAuto)
+        .addFunction("setDefLine11", &lc::builder::DimAngularBuilder::setDefLine11)
+        .addFunction("setDefLine12", &lc::builder::DimAngularBuilder::setDefLine12)
+        .addFunction("setDefLine21", &lc::builder::DimAngularBuilder::setDefLine21)
+        .addFunction("setDefLine22", &lc::builder::DimAngularBuilder::setDefLine22)
+    );
+
+
     state["lc"]["entity"]["DimAngular"].setClass(kaguya::UserdataMetatable<lc::entity::DimAngular, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
         .addFunction("accept", &lc::entity::DimAngular::accept)
         .addFunction("boundingBox", &lc::entity::DimAngular::boundingBox)
@@ -565,7 +580,6 @@ void LCLua::importLCKernel() {
         .addFunction("defLine12", &lc::entity::DimAngular::defLine12)
         .addFunction("defLine21", &lc::entity::DimAngular::defLine21)
         .addFunction("defLine22", &lc::entity::DimAngular::defLine22)
-        .addStaticFunction("dimAuto", &lc::entity::DimAngular::dimAuto)
         .addFunction("dispatch", &lc::entity::DimAngular::dispatch)
         .addFunction("dragPoints", &lc::entity::DimAngular::dragPoints)
         .addFunction("mirror", &lc::entity::DimAngular::mirror)

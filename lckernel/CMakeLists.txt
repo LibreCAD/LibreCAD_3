@@ -70,6 +70,7 @@ cad/builders/line.cpp
 cad/builders/arc.cpp
 cad/builders/circle.cpp
 cad/builders/dimaligned.cpp
+cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
@@ -169,6 +170,7 @@ cad/builders/line.h
 cad/builders/arc.h
 cad/builders/circle.h
 cad/builders/dimaligned.h
+cad/builders/dimangular.h
 cad/builders/dimension.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
