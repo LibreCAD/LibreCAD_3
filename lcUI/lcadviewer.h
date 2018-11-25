@@ -116,10 +116,6 @@ namespace lc {
 
             public slots:
 
-                void setVerticalOffset(int v);
-
-                void setHorizontalOffset(int v);
-
             private:
                 void createPainters(unsigned int width, unsigned int height);
 
