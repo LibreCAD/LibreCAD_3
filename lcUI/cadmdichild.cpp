@@ -31,17 +31,6 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->setVerticalSpacing(0);
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     gridLayout->setContentsMargins(0, 0, 0, 0);
-    horizontalScrollBar = new QScrollBar(this);
-    horizontalScrollBar->setObjectName(QStringLiteral("horizontalScrollBar"));
-    horizontalScrollBar->setOrientation(Qt::Horizontal);
-
-    gridLayout->addWidget(horizontalScrollBar, 1, 0, 1, 1);
-
-    verticalScrollBar = new QScrollBar(this);
-    verticalScrollBar->setObjectName(QStringLiteral("verticalScrollBar"));
-    verticalScrollBar->setOrientation(Qt::Vertical);
-
-    gridLayout->addWidget(verticalScrollBar, 0, 1, 1, 1);
 
     _viewer = new LCADViewer(this);
     _viewer->setObjectName(QStringLiteral("viewer"));
@@ -53,17 +42,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 
     gridLayout->addWidget(_viewer, 0, 0, 1, 1);
 
-    horizontalScrollBar->setMinimum(-1000);
-    horizontalScrollBar->setMaximum(1000);
-    verticalScrollBar->setMinimum(-1000);
-    verticalScrollBar->setMaximum(1000);
-
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
-
-    connect(horizontalScrollBar, SIGNAL(valueChanged(int)),
-            _viewer, SLOT(setHorizontalOffset(int)));
-    connect(verticalScrollBar, SIGNAL(valueChanged(int)),
-            _viewer, SLOT(setVerticalOffset(int)));
 }
 
 CadMdiChild::~CadMdiChild() {
