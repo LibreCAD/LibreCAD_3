@@ -36,11 +36,6 @@ void lc::builder::DimAlignedBuilder::dimAuto(lc::geo::Coordinate p2,
     _definitionPoint2 = p2;
     _definitionPoint3 = p3;
     _middleOfText = middleOfText;
-    _attachmentPoint = TextConst::AttachmentPoint::Top_center;
-    _textAngle = 0;
-    _lineSpacingFactor = 0;
-    _lineSpacingStyle = TextConst::LineSpacingStyle::AtLeast;
-    _explicitValue = "<>";
 }
 
 lc::entity::DimAligned_CSPtr lc::builder::DimAlignedBuilder::build() {

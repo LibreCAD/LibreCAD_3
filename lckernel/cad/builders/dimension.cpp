@@ -1,5 +1,13 @@
 #include "dimension.h"
 
+lc::builder::DimensionBuilder::DimensionBuilder() {
+    _attachmentPoint = TextConst::AttachmentPoint::Top_center;
+    _textAngle = 0;
+    _lineSpacingFactor = 0;
+    _lineSpacingStyle = TextConst::LineSpacingStyle::AtLeast;
+    _explicitValue = "<>";
+}
+
 const lc::geo::Coordinate& lc::builder::DimensionBuilder::definitionPoint() const {
     return _definitionPoint;
 }

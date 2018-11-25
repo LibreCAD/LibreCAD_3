@@ -12,7 +12,6 @@ setmetatable(DimAngularOperations, {
 
 function DimAngularOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.DimAngularBuilder, "enterCenterPoint")
-    self.builder:setExplicitValue("<>")
 
     self.centerPoint = nil
     self.firstPoint = nil

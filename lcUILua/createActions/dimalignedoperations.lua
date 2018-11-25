@@ -12,7 +12,6 @@ setmetatable(DimAlignedOperations, {
 
 function DimAlignedOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.DimAlignedBuilder, "enterFirstPoint")
-    self.builder:setExplicitValue("<>")
 
     self.firstPoint = nil
     self.secondPoint = nil

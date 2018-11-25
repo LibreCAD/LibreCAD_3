@@ -7,7 +7,7 @@ namespace lc {
     namespace builder {
         class DimensionBuilder : public CADEntityBuilder {
             protected:
-                DimensionBuilder() = default;
+                DimensionBuilder();
 
             public:
                 const geo::Coordinate& definitionPoint() const;

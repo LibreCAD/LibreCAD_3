@@ -6,7 +6,7 @@ namespace lc {
     namespace builder {
         class DimAngularBuilder : public DimensionBuilder {
             public:
-                DimAngularBuilder();
+                DimAngularBuilder() = default;
 
                 const geo::Coordinate& defLine11() const;
                 void setDefLine11(const geo::Coordinate& defLine11);

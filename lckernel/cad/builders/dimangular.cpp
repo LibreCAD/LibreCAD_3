@@ -1,10 +1,6 @@
 #include "dimangular.h"
 #include <cad/primitive/dimangular.h>
 
-lc::builder::DimAngularBuilder::DimAngularBuilder() {
-
-}
-
 const lc::geo::Coordinate& lc::builder::DimAngularBuilder::defLine11() const {
     return _defLine11;
 }
@@ -42,10 +38,6 @@ void lc::builder::DimAngularBuilder::dimAuto(const lc::geo::Coordinate& center,
                                              const lc::geo::Coordinate& p2) {
     _definitionPoint = center;
     _middleOfText = p1.mid(p2);
-    _attachmentPoint = TextConst::AttachmentPoint::Top_center;
-    _textAngle = 0;
-    _lineSpacingFactor = 0;
-    _lineSpacingStyle = TextConst::LineSpacingStyle::AtLeast;
     _defLine11 = center;
     _defLine12 = p1;
     _defLine21 = center;
