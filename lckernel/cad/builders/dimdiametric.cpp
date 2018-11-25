@@ -1,4 +1,5 @@
 #include "dimdiametric.h"
+#include <cad/primitive/dimdiametric.h>
 
 lc::builder::DimDiametricBuilder::DimDiametricBuilder() {
     _leader = 0;
@@ -21,5 +22,5 @@ void lc::builder::DimDiametricBuilder::setDefinitionPoint2(const lc::geo::Coordi
 }
 
 lc::entity::DimDiametric_CSPtr lc::builder::DimDiametricBuilder::build() {
-    return lc::entity::DimDiametric_CSPtr();
+    return lc::entity::DimDiametric_CSPtr(new lc::entity::DimDiametric(*this));
 }

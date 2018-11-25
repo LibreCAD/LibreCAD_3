@@ -11,96 +11,41 @@ setmetatable(DimDiametricOperations, {
 })
 
 function DimDiametricOperations:_init(id)
-    self.definitionPoint = nil
-    self.definitionPoint2 = nil
-    self.text = nil
-
-    self.dimDiametric_id = ID():id()
-
-    message("Click on first point", id)
-
-    CreateOperations._init(self, id)
+    CreateOperations._init(self, id, lc.builder.DimDiametricBuilder, "enterStartPoint")
+    message("Click on start point", id)
 end
 
-function DimDiametricOperations:getDimDiametric(defPoint1, defPoint2, text)
-    local layer = active_layer(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimDiametric(defPoint1, 5, 1, 1, text, defPoint2, 1, layer, metaInfo)
-    dim:setId(self.dimDiametric_id)
-
-    return dim
-end
-
-function DimDiametricOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
+function DimDiametricOperations:enterStartPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint(data["position"])
     end
 
-    if(eventName == "point" or eventName == "number") then
-        self:newData(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempDimDiametric(data["position"])
-    elseif(eventName == "text") then
-        self:setText(data["text"])
+    if(eventName == "mouseMove") then
+        self.builder:setDefinitionPoint2(data["position"]:add(lc.geo.Coordinate(10,0)))
+    elseif(eventName == "point") then
+        self.step = "enterEndPoint"
+
+        message("Click on end point", self.target_widget)
     end
 end
 
-function DimDiametricOperations:newData(data)
-    if(self.definitionPoint == nil) then
-        self.definitionPoint = Operations:getCoordinate(data)
+function DimDiametricOperations:enterEndPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint2(data["position"])
+    end
 
-        message("Click on second point", self.target_widget)
-    elseif(self.definitionPoint2 == nil) then
-        self.definitionPoint2 = Operations:getCoordinate(data)
+    if(eventName == "point") then
+        self.step = "enterText"
 
-        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
         cli_get_text(self.target_widget, true)
+
+        message("Enter dimension text (<> for value)", self.target_widget)
     end
 end
 
-function DimDiametricOperations:setText(text)
-    if(text == "") then
-        self.text = "<>"
-    else
-        self.text = text
+function DimDiametricOperations:enterText(eventName, data)
+    if(eventName == "text") then
+        self.builder:setExplicitValue(data["text"])
+        self:createEntity()
     end
-
-    cli_get_text(self.target_widget, false)
-    self:createDimDiametric()
-end
-
-function DimDiametricOperations:createTempDimDiametric(point)
-    local definitionPoint = self.definitionPoint
-    local definitionPoint2 = self.definitionPoint2
-
-    if(definitionPoint == nil) then
-        definitionPoint = point
-    elseif(definitionPoint2 == nil) then
-        definitionPoint2 = point
-
-        if(definitionPoint:x() == definitionPoint2:x() and definitionPoint:y() == definitionPoint2:y()) then
-            definitionPoint2 = definitionPoint2:add(Coord(0.001,0.001))
-        end
-    end
-
-    definitionPoint2 = definitionPoint2 or definitionPoint:add(Coord(10,0))
-
-    self.entity = self:getDimDiametric(definitionPoint, definitionPoint2, "<>")
-    CreateOperations.refreshTempEntity(self)
-end
-
-function DimDiametricOperations:createDimDiametric()
-    CreateOperations.createEntity(self, self:getDimDiametric(self.definitionPoint, self.definitionPoint2, self.text))
-    CreateOperations.close(self)
-end
-
-function DimDiametricOperations:close()
-    if(not self.finished) then
-        if(self.definitionPoint ~= nil and self.definitionPoint2 ~= nil) then
-            self.text = "<>"
-            self:createDimDiametric()
-        end
-    end
-
-    CreateOperations.close(self)
 end

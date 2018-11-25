@@ -590,6 +590,16 @@ void LCLua::importLCKernel() {
         .addFunction("setDragPoints", &lc::entity::DimAngular::setDragPoints)
     );
 
+    state["lc"]["builder"]["DimDiametricBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimDiametricBuilder, lc::builder::DimensionBuilder>()
+        .setConstructors<lc::builder::DimDiametricBuilder()>()
+        .addFunction("build", &lc::builder::DimDiametricBuilder::build)
+        .addFunction("definitionPoint2", &lc::builder::DimDiametricBuilder::definitionPoint2)
+        .addFunction("leader", &lc::builder::DimDiametricBuilder::leader)
+        .addFunction("setDefinitionPoint2", &lc::builder::DimDiametricBuilder::setDefinitionPoint2)
+        .addFunction("setLeader", &lc::builder::DimDiametricBuilder::setLeader)
+    );
+
+
     state["lc"]["entity"]["DimDiametric"].setClass(kaguya::UserdataMetatable<lc::entity::DimDiametric, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
         .addFunction("accept", &lc::entity::DimDiametric::accept)
         .addFunction("boundingBox", &lc::entity::DimDiametric::boundingBox)
