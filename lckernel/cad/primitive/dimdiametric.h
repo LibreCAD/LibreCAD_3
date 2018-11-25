@@ -9,10 +9,12 @@
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
 #include "cad/interface/draggable.h"
+#include <cad/builders/dimdiametric.h>
 
 namespace lc {
     namespace entity {
         class DimDiametric : public std::enable_shared_from_this<DimDiametric>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
+        friend class lc::builder::DimDiametricBuilder;
         public:
             /**
             * @brief DimDiametric
@@ -35,22 +37,10 @@ namespace lc {
                          meta::Block_CSPtr block = nullptr
             );
 
-            /**
-            * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
-            */
-            DimDiametric(const geo::Coordinate& definitionPoint,
-                         TextConst::AttachmentPoint attachmentPoint,
-                         double lineSpacingFactor,
-                         TextConst::LineSpacingStyle lineSpacingStyle,
-                         std::string explicitValue,
-                         geo::Coordinate definitionPoint2,
-                         double leader,
-                         meta::Layer_CSPtr layer,
-                         meta::MetaInfo_CSPtr metaInfo = nullptr,
-                         meta::Block_CSPtr block = nullptr
-            );
-
             DimDiametric(const DimDiametric_CSPtr& other, bool sameID = false);
+
+        private:
+            DimDiametric(const lc::builder::DimDiametricBuilder& builder);
 
         public:
             /**

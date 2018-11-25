@@ -72,6 +72,7 @@ cad/builders/circle.cpp
 cad/builders/dimaligned.cpp
 cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
+cad/builders/dimdiametric.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
@@ -172,6 +173,7 @@ cad/builders/circle.h
 cad/builders/dimaligned.h
 cad/builders/dimangular.h
 cad/builders/dimension.h
+cad/builders/dimdiametric.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/primitive/insert.h
