@@ -8,11 +8,13 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
+#include <cad/builders/dimlinear.h>
 #include "cad/interface/draggable.h"
 
 namespace lc {
     namespace entity {
         class DimLinear : public std::enable_shared_from_this<DimLinear>, public CADEntity, public Dimension, virtual public Visitable, public Draggable {
+        friend class lc::builder::DimLinearBuilder;
         public:
 
 
@@ -43,17 +45,8 @@ namespace lc {
 
             DimLinear(const DimLinear_CSPtr& other, bool sameID = false);
 
-            /**
-             * Convenient function
-            */
-            static DimLinear_SPtr dimAuto(geo::Coordinate const &p1,
-                                          geo::Coordinate const &p2,
-                                          geo::Coordinate const &middleOfText,
-                                          std::string explicitValue,
-                                          meta::Layer_CSPtr layer,
-                                          meta::MetaInfo_CSPtr metaInfo = nullptr,
-                                          meta::Block_CSPtr block = nullptr
-            );
+        private:
+            DimLinear(const lc::builder::DimLinearBuilder& builder);
 
         public:
             /**

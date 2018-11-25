@@ -616,6 +616,20 @@ void LCLua::importLCKernel() {
         .addFunction("setDragPoints", &lc::entity::DimDiametric::setDragPoints)
     );
 
+    state["lc"]["builder"]["DimLinearBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimLinearBuilder, lc::builder::DimensionBuilder>()
+        .setConstructors<lc::builder::DimLinearBuilder()>()
+        .addFunction("angle", &lc::builder::DimLinearBuilder::angle)
+        .addFunction("build", &lc::builder::DimLinearBuilder::build)
+        .addFunction("definitionPoint2", &lc::builder::DimLinearBuilder::definitionPoint2)
+        .addFunction("definitionPoint3", &lc::builder::DimLinearBuilder::definitionPoint3)
+        .addFunction("oblique", &lc::builder::DimLinearBuilder::oblique)
+        .addFunction("setAngle", &lc::builder::DimLinearBuilder::setAngle)
+        .addFunction("setDefinitionPoint2", &lc::builder::DimLinearBuilder::setDefinitionPoint2)
+        .addFunction("setDefinitionPoint3", &lc::builder::DimLinearBuilder::setDefinitionPoint3)
+        .addFunction("setOblique", &lc::builder::DimLinearBuilder::setOblique)
+    );
+
+
     state["lc"]["entity"]["DimLinear"].setClass(kaguya::UserdataMetatable<lc::entity::DimLinear, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
         .addFunction("accept", &lc::entity::DimLinear::accept)
         .addFunction("angle", &lc::entity::DimLinear::angle)
@@ -623,7 +637,6 @@ void LCLua::importLCKernel() {
         .addFunction("copy", &lc::entity::DimLinear::copy)
         .addFunction("definitionPoint2", &lc::entity::DimLinear::definitionPoint2)
         .addFunction("definitionPoint3", &lc::entity::DimLinear::definitionPoint3)
-        .addStaticFunction("dimAuto", &lc::entity::DimLinear::dimAuto)
         .addFunction("dispatch", &lc::entity::DimLinear::dispatch)
         .addFunction("dragPoints", &lc::entity::DimLinear::dragPoints)
         .addFunction("mirror", &lc::entity::DimLinear::mirror)

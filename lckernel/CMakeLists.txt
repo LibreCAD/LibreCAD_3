@@ -18,7 +18,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp
-        cad/storage/settings.cpp
+cad/storage/settings.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -73,6 +73,7 @@ cad/builders/dimaligned.cpp
 cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
 cad/builders/dimdiametric.cpp
+cad/builders/dimlinear.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
@@ -174,6 +175,7 @@ cad/builders/dimaligned.h
 cad/builders/dimangular.h
 cad/builders/dimension.h
 cad/builders/dimdiametric.h
+cad/builders/dimlinear.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/primitive/insert.h
