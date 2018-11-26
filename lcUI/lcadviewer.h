@@ -141,9 +141,6 @@ namespace lc {
                 double _scale;
                 double _zoomMin;
                 double _zoomMax;
-                int v_ = 0;
-                int h_ = 0;
-
 
                 // When set to true, the line width on screen will scale with the zoom factor
                 bool _scaleLineWidth;

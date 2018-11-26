@@ -156,13 +156,9 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
         	startSelectPos = event->pos();
 
 		    for(auto pair : imagemaps) {
-		        pair.first->translate(translateX, translateY);
+		        _docCanvas->pan(*pair.first, translateX, translateY);
 		    }
-
-		    v_ = v_ - translateY;
-		    h_ = h_ - translateX;//Save position of origin
-            //this->_docCanvas->pan(*_documentPainter, event->pos().x(), event->pos().y());
-
+            
             updateBackground();
             updateDocument();
             update();
