@@ -99,21 +99,15 @@ DocumentCanvas::~DocumentCanvas() {
 }
 
 /*
- * TODO: Code needs to be Tested.
+ * Taking pan as relative
  */
 
 void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
-    double pan_x=0.;
-    double pan_y=0.;
-    painter.getTranslate(&pan_x, &pan_y);
-
-    /* FIXME 100.0 should be dynamically calculated, depends on the drawing speed */
-    if (std::abs(pan_x-move_x) > 100.0 || std::abs(pan_y - move_y) > 100.0 || pan_x == 0.0 || pan_y == 0.0) {
-        pan_x = move_x;
-        pan_y = move_y;
-    }
-
-    painter.translate(move_x - pan_x, move_y - pan_y);
+	double tX = 0;
+	double tY = 0;
+	painter.device_to_user(&tX,&tY);
+	painter.device_to_user(&move_x,&move_y);
+    painter.translate(move_x-tX, -move_y+tY);
 }
 
 void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
