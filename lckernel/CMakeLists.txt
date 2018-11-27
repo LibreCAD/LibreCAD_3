@@ -74,6 +74,7 @@ cad/builders/dimangular.cpp
 cad/builders/dimension.cpp
 cad/builders/dimdiametric.cpp
 cad/builders/dimlinear.cpp
+cad/builders/dimradial.cpp
 cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
@@ -176,6 +177,7 @@ cad/builders/dimangular.h
 cad/builders/dimension.h
 cad/builders/dimdiametric.h
 cad/builders/dimlinear.h
+cad/builders/dimradial.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
 cad/primitive/insert.h

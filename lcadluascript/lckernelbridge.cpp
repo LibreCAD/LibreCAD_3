@@ -648,6 +648,17 @@ void LCLua::importLCKernel() {
         .addFunction("setDragPoints", &lc::entity::DimLinear::setDragPoints)
     );
 
+    state["lc"]["builder"]["DimRadialBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::DimRadialBuilder, lc::builder::DimensionBuilder>()
+        .setConstructors<lc::builder::DimRadialBuilder()>()
+        .addFunction("build", &lc::builder::DimRadialBuilder::build)
+        .addFunction("definitionPoint2", &lc::builder::DimRadialBuilder::definitionPoint2)
+        .addFunction("dimAuto", &lc::builder::DimRadialBuilder::dimAuto)
+        .addFunction("leader", &lc::builder::DimRadialBuilder::leader)
+        .addFunction("setDefinitionPoint2", &lc::builder::DimRadialBuilder::setDefinitionPoint2)
+        .addFunction("setLeader", &lc::builder::DimRadialBuilder::setLeader)
+    );
+
+
     state["lc"]["entity"]["DimRadial"].setClass(kaguya::UserdataMetatable<lc::entity::DimRadial, kaguya::MultipleBase<lc::entity::CADEntity, lc::entity::Dimension, lc::Visitable, lc::entity::Draggable>>()
         .addFunction("accept", &lc::entity::DimRadial::accept)
         .addFunction("boundingBox", &lc::entity::DimRadial::boundingBox)

@@ -9,6 +9,7 @@
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
 #include "cad/interface/draggable.h"
+#include <cad/builders/dimradial.h>
 
 namespace lc {
     namespace entity {
@@ -23,6 +24,7 @@ namespace lc {
                           public Dimension,
                           virtual public Visitable,
                           public Draggable {
+        friend class lc::builder::DimRadialBuilder;
         public:
 
             /**
@@ -46,20 +48,7 @@ namespace lc {
                       meta::Block_CSPtr block = nullptr
             );
 
-            /**
-             * Simplified version that set's the midpoint to the middle of the radius and angle to the angle of  definitionPoint and definitionPoint2
-            */
-            DimRadial(const geo::Coordinate& definitionPoint,
-                      TextConst::AttachmentPoint attachmentPoint,
-                      double lineSpacingFactor,
-                      TextConst::LineSpacingStyle lineSpacingStyle,
-                      std::string explicitValue,
-                      geo::Coordinate definitionPoint2,
-                      double leader,
-                      meta::Layer_CSPtr layer,
-                      meta::MetaInfo_CSPtr metaInfo = nullptr,
-                      meta::Block_CSPtr block = nullptr
-            );
+            DimRadial(const lc::builder::DimRadialBuilder& builder);
 
             DimRadial(const DimRadial_CSPtr& other, bool sameID = false);
 
