@@ -65,6 +65,7 @@ end
 
 function DimAngularOperations:enterText(eventName, data)
     if(eventName == "text") then
+        cli_get_text(self.target_widget, false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end
