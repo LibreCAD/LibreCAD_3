@@ -2,7 +2,6 @@
 
 #include "cadmdichild.h"
 
-#include "cad/storage/storagemanagerimpl.h"
 #include "cad/storage/documentimpl.h"
 
 #include <QMenu>
@@ -32,7 +31,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
-    _viewer = new LCADViewer(this);
+    _modelViewerImpl = new LCADModelViewerImpl(this);
+    _viewer = _modelViewerImpl->getViewer();
     _viewer->setObjectName(QStringLiteral("viewer"));
     _viewer->setGeometry(QRect(50, 30, 581, 401));
     _viewer->setAutoFillBackground(true);
@@ -53,44 +53,11 @@ CadMdiChild::~CadMdiChild() {
 
 
 void CadMdiChild::newDocument() {
-    // Entity manager add's/removes entities to layers
-    _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
-
     // Create a new document with required objects, all objects that are required needs to be passed into the constructor
-    _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
+    _document = std::make_shared<lc::storage::DocumentImpl>(storageManager());
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    _viewer->setDocument(_document);
-
-    _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
-    _viewer->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
-    _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
-    _viewer->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get());
-
-    // Snap manager
-    _snapManager = std::make_shared<manager::SnapManagerImpl>(_viewer->documentCanvas(),  _grid, 25.);
-    _viewer->setSnapManager(_snapManager);
-
-    // Add a cursor manager, Cursor will decide the ultimate position of clicked objects
-    _cursor = std::make_shared<drawable::Cursor>(40, _viewer->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    _viewer->documentCanvas()->foreground().connect<drawable::Cursor, &drawable::Cursor::onDraw>(_cursor.get());
-    _snapManager->snapPointEvents().connect<drawable::Cursor, &drawable::Cursor::onSnapPointEvent>(_cursor.get());
-
-    _tempEntities = std::make_shared<drawable::TempEntities>(_viewer->documentCanvas());
-    _viewer->documentCanvas()->foreground().connect<drawable::TempEntities, &drawable::TempEntities::onDraw>(_tempEntities.get());
-    _tempEntities->requestUpdateEvent().connect<ui::LCADViewer, &ui::LCADViewer::updateHelper>(*_viewer);
-
-    //Drag manager
-    _dragManager = std::make_shared<manager::DragManager>(_viewer->documentCanvas(), _cursor, _tempEntities, 10);
-    _viewer->setDragManager(_dragManager);
-
-    _dragPoints = std::make_shared<drawable::DragPoints>();
-    _dragManager->dragPointsEvent().connect<drawable::DragPoints, &drawable::DragPoints::setPoints>(_dragPoints.get());
-    _viewer->documentCanvas()->foreground().connect<drawable::DragPoints, &drawable::DragPoints::onDraw>(_dragPoints.get());
-
-    // Undo manager takes care that we can undo/redo entities within a document
-    _undoManager = std::make_shared<lc::storage::UndoManagerImpl>(10);
-    _document->commitProcessEvent().connect<lc::storage::UndoManagerImpl, &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
+    _modelViewerImpl->setDocument(_document);
 
     _activeLayer = _document->layerByName("0");
 }
@@ -205,22 +172,23 @@ void CadMdiChild::ctxMenu(const QPoint& pos) {
 }
 
 manager::SnapManager_SPtr  CadMdiChild::snapManager() const {
-    return  _snapManager;
+    return _modelViewerImpl->snapManager();
 }
 
 std::shared_ptr<lc::storage::Document> CadMdiChild::document() const {
-    return _document;
+    return _modelViewerImpl->document();
 }
 
 lc::storage::StorageManager_SPtr CadMdiChild::storageManager() const {
-    return _storageManager;
+    return _modelViewerImpl->storageManager();
 }
+
 lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {
-    return _undoManager;
+    return _modelViewerImpl->undoManager();
 }
 
 std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
-	return _cursor;
+	return _modelViewerImpl->cursor();
 }
 
 unsigned int CadMdiChild::id() {
@@ -240,7 +208,7 @@ void CadMdiChild::keyPressEvent(QKeyEvent *event) {
 }
 
 drawable::TempEntities_SPtr CadMdiChild::tempEntities() {
-    return _tempEntities;
+    return _modelViewerImpl->tempEntities();
 }
 
 std::vector<lc::entity::CADEntity_CSPtr> CadMdiChild::selection() {
@@ -259,6 +227,6 @@ lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
     return _metaInfoManager;
 }
 
-const manager::SnapManagerImpl_SPtr &CadMdiChild::getSnapManager() const {
-    return _snapManager;
+const manager::SnapManagerImpl_SPtr CadMdiChild::getSnapManager() const {
+    return _modelViewerImpl->snapManager();
 }

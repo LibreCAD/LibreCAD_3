@@ -3,21 +3,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
-#include <lcadviewer.h>
+#include <lcadModelViewer.h>
 #include "cad/meta/color.h"
 #include <cad/storage/storagemanager.h>
 
 #include "cad/storage/document.h"
 #include "cad/storage/undomanager.h"
 #include <drawables/lccursor.h>
-#include <managers/snapmanager.h>
-#include <drawables/gradientbackground.h>
-#include <drawables/grid.h>
-#include <drawables/dragpoints.h>
-#include <drawables/tempentities.h>
-
-#include <managers/snapmanagerimpl.h>
-#include "cad/storage/undomanagerimpl.h"
 
 #include <file.h>
 #include <managers/metainfomanager.h>
@@ -130,7 +122,7 @@ namespace lc {
                  */
                 void setId(unsigned int id);
 
-                const viewer::manager::SnapManagerImpl_SPtr& getSnapManager() const;
+                const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
 
 		std::string getFilename() { return _filename; }
 
@@ -142,17 +134,8 @@ namespace lc {
                 LuaIntf::LuaRef _destroyCallback;
 
                 std::shared_ptr<lc::storage::Document> _document;
-                storage::UndoManagerImpl_SPtr _undoManager;
 
-                std::shared_ptr<lc::viewer::drawable::Grid> _grid;
-                std::shared_ptr<lc::viewer::drawable::GradientBackground> _gradientBackground;
-                std::shared_ptr<lc::viewer::drawable::Cursor> _cursor;
-                viewer::manager::SnapManagerImpl_SPtr _snapManager;
-
-                viewer::manager::DragManager_SPtr _dragManager;
-                viewer::drawable::DragPoints_SPtr _dragPoints;
                 storage::StorageManager_SPtr _storageManager;
-                viewer::drawable::TempEntities_SPtr _tempEntities;
 
                 meta::Layer_CSPtr _activeLayer;
                 ui::MetaInfoManager_SPtr _metaInfoManager;
@@ -161,6 +144,7 @@ namespace lc {
                 QScrollBar* verticalScrollBar;
 
                 ui::LCADViewer* _viewer;
+                ui::LCADModelViewerImpl* _modelViewerImpl;
         };
     }
 }
