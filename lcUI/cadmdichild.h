@@ -3,7 +3,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
-#include <lcadModelViewer.h>
+#include <lcadModelViewerImpl.h>
 #include "cad/meta/color.h"
 #include <cad/storage/storagemanager.h>
 

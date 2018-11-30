@@ -27,6 +27,7 @@ cadmdichild.h
 const.h
 luainterface.h
 lcadviewer.h
+lcadModelViewerImpl.h
 lcadModelViewer.h
 widgets/clicommand.h
 widgets/luascript.h
@@ -54,6 +55,7 @@ cadmdichild.cpp
 main.cpp
 luainterface.cpp
 lcadviewer.cpp
+lcadModelViewerImpl.cpp
 lcadModelViewer.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
