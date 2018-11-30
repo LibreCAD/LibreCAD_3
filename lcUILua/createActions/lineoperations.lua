@@ -40,7 +40,7 @@ function LineOperations:newPoint(point)
         CreateOperations.close(self)
     else
         self.lastPoint = point
-        message("Click on second point or enter line length")
+        message("Click on second point or enter line length", self.target_widget)
     end
 end
 
