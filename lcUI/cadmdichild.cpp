@@ -32,15 +32,13 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
     _modelViewerImpl = new LCADModelViewerImpl(this);
-    _viewer = _modelViewerImpl->getViewer();
-    _viewer->setObjectName(QStringLiteral("viewer"));
-    _viewer->setGeometry(QRect(50, 30, 581, 401));
-    _viewer->setAutoFillBackground(true);
-    _viewer->setContextMenuPolicy(Qt::CustomContextMenu);
-    _viewer->setFocusPolicy(Qt::StrongFocus);
-    connect(_viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
+    _modelViewerImpl->setObjectName(QStringLiteral("viewer"));
+    _modelViewerImpl->setGeometry(QRect(50, 30, 581, 401));
+    _modelViewerImpl->setAutoFillBackground(true);
+    _modelViewerImpl->setContextMenuPolicy(Qt::CustomContextMenu);
+    _modelViewerImpl->setFocusPolicy(Qt::StrongFocus);
 
-    gridLayout->addWidget(_viewer, 0, 0, 1, 1);
+    gridLayout->addWidget(_modelViewerImpl, 0, 0, 1, 1);
 
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 }
@@ -168,7 +166,7 @@ void CadMdiChild::saveAsFile() {
 void CadMdiChild::ctxMenu(const QPoint& pos) {
     auto menu = new QMenu;
     menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
-    menu->exec(_viewer->mapToGlobal(pos));
+    menu->exec(_modelViewerImpl->mapToGlobal(pos));
 }
 
 manager::SnapManager_SPtr  CadMdiChild::snapManager() const {

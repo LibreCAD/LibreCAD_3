@@ -1,5 +1,4 @@
 #pragma once
-#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
@@ -72,7 +71,7 @@ namespace lc {
 
                 lc::storage::StorageManager_SPtr storageManager() const;
 
-                lc::ui::LCADViewer* viewer() const { return _viewer; }
+                lc::ui::LCADViewer* viewer() { return _modelViewerImpl->viewer(); }
 
                 std::shared_ptr<lc::viewer::drawable::Cursor> cursor() const;
 
@@ -140,10 +139,6 @@ namespace lc {
                 meta::Layer_CSPtr _activeLayer;
                 ui::MetaInfoManager_SPtr _metaInfoManager;
 
-                QScrollBar* horizontalScrollBar;
-                QScrollBar* verticalScrollBar;
-
-                ui::LCADViewer* _viewer;
                 ui::LCADModelViewerImpl* _modelViewerImpl;
         };
     }

@@ -1,11 +1,15 @@
+#pragma once
 #include "lcadModelViewer.h"
+#include <QDialog>
 
 //This class handles the model viewers, ie. encapsulates codes for easy UI
 // @TODO:
 // Now it acts as connecting layer but later it should be QFrame consisting of multiple model views seperated by splitter
+//Two consecutive models for now
 namespace lc {
     namespace ui {
-    	class LCADModelViewerImpl{
+    	class LCADModelViewerImpl: public QWidget{
+            Q_OBJECT
     	public:
     		LCADModelViewerImpl(QWidget* parent);
     		void setDocument(std::shared_ptr<lc::storage::Document> document);
@@ -17,10 +21,11 @@ namespace lc {
             viewer::drawable::TempEntities_SPtr tempEntities(){return _viewers[_activeView]->tempEntities();};
             viewer::manager::DragManager_SPtr dragManager(){return _viewers[_activeView]->dragManager();};
             storage::UndoManagerImpl_SPtr undoManager(){return _viewers[_activeView]->undoManager();};
+            QPoint mapToGlobal(const QPoint& P){return _viewers[_activeView]->mapToGlobal(P);};
+            lc::ui::LCADModelViewer* viewer() {return _viewers[_activeView];};
             void setActiveView(int x){_activeView=x;};
             int getActiveView(){return _activeView;};
     	private:
-    		QWidget* _parent;
     		std::shared_ptr<lc::storage::Document> _document;
     		std::vector<LCADModelViewer*> _viewers;//Store all viewers
             storage::StorageManager_SPtr _storageManager;
