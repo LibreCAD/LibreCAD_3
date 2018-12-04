@@ -13,7 +13,7 @@ namespace lc {
     	public:
     		LCADModelViewerImpl(QWidget* parent);
     		void setDocument(std::shared_ptr<lc::storage::Document> document);
-    		LCADViewer* getViewer();
+    		LCADModelViewer* getViewer();
     		std::shared_ptr<lc::storage::Document> document(){return _document;};
     		storage::StorageManager_SPtr storageManager(){return _storageManager;};
             viewer::manager::SnapManagerImpl_SPtr snapManager(){return _viewers[_activeView]->snapManager();};
@@ -23,13 +23,14 @@ namespace lc {
             storage::UndoManagerImpl_SPtr undoManager(){return _viewers[_activeView]->undoManager();};
             QPoint mapToGlobal(const QPoint& P){return _viewers[_activeView]->mapToGlobal(P);};
             lc::ui::LCADModelViewer* viewer() {return _viewers[_activeView];};
-            void setActiveView(int x){_activeView=x;};
             int getActiveView(){return _activeView;};
     	private:
     		std::shared_ptr<lc::storage::Document> _document;
     		std::vector<LCADModelViewer*> _viewers;//Store all viewers
             storage::StorageManager_SPtr _storageManager;
             int _activeView = 0;
+        public slots:
+            void setActive(int);
     	};
     }
 }
