@@ -9,7 +9,7 @@
 #include <file.h>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
-
+#include <QTabWidget>
 
 using namespace lc::ui;
 using namespace lc::viewer;
@@ -31,6 +31,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
+    auto tabW = new QTabWidget(this);
+
     _modelViewerImpl = new LCADModelViewerImpl(this);
     _modelViewerImpl->setObjectName(QStringLiteral("viewer"));
     _modelViewerImpl->setGeometry(QRect(50, 30, 581, 401));
@@ -38,7 +40,14 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     _modelViewerImpl->setContextMenuPolicy(Qt::CustomContextMenu);
     _modelViewerImpl->setFocusPolicy(Qt::StrongFocus);
 
-    gridLayout->addWidget(_modelViewerImpl, 0, 0, 1, 1);
+
+    gridLayout->addWidget(tabW, 0, 0, 1, 1);
+
+    tabW->addTab(_modelViewerImpl, tr("Model"));
+    auto paperViewer = new LCADPaperViewerImpl(this);
+    tabW->addTab(paperViewer, tr("Paper 1"));
+    paperViewer = new LCADPaperViewerImpl(this);
+    tabW->addTab(paperViewer, tr("Paper 2"));
 
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 }

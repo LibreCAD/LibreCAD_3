@@ -28,6 +28,7 @@ const.h
 luainterface.h
 lcadviewer.h
 lcadModelViewerImpl.h
+lcadPaperViewerImpl.h
 lcadModelViewer.h
 widgets/clicommand.h
 widgets/luascript.h
@@ -56,6 +57,7 @@ main.cpp
 luainterface.cpp
 lcadviewer.cpp
 lcadModelViewerImpl.cpp
+lcadPaperViewerImpl.cpp
 lcadModelViewer.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
