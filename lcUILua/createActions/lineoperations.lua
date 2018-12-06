@@ -46,6 +46,14 @@ function LineOperations:setSecondPoint(eventName, data)
         self:createEntity()
 
     elseif(eventName == "number") then
-        self.length = data["number"]
+        if(self.length ~= nil) then
+            local angle = math.rad(data["number"])
+            local relativeCoordinate = lc.geo.Coordinate(angle):multiply(self.length)
+            self.builder:setEndPoint(self.builder:startPoint():add(relativeCoordinate))
+            self:createEntity()
+        else
+            self.length = data["number"]
+            message("Click on second point or enter line angle", self.target_widget)
+        end
     end
 end
