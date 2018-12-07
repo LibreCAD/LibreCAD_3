@@ -80,6 +80,7 @@ cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
 cad/builders/linepattern.cpp
+cad/builders/spline.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
 cad/operations/builder.cpp
@@ -180,6 +181,7 @@ cad/builders/dimlinear.h
 cad/builders/dimradial.h
 cad/builders/ellipse.cpp
 cad/builders/point.h
+cad/builders/spline.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h

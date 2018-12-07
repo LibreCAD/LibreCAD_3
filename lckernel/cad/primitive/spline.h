@@ -10,6 +10,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
 #include "cad/interface/draggable.h"
+#include <cad/builders/spline.h>
 
 namespace lc {
     namespace entity {
@@ -54,6 +55,8 @@ namespace lc {
                    meta::Block_CSPtr block = nullptr);
 
             Spline(const Spline_CSPtr& other, bool sameID = false);
+
+            Spline(const lc::builder::SplineBuilder& builder);
 
             std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
                                                      const SimpleSnapConstrain & constrain,
