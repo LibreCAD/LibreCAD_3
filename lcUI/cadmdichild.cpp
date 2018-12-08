@@ -44,10 +44,11 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->addWidget(tabW, 0, 0, 1, 1);
 
     tabW->addTab(_modelViewerImpl, tr("Model"));
-    auto paperViewer = new LCADPaperViewerImpl(this);
-    tabW->addTab(paperViewer, tr("Paper 1"));
-    paperViewer = new LCADPaperViewerImpl(this);
-    tabW->addTab(paperViewer, tr("Paper 2"));
+    _paperViewers = new LCADPaperViewerImpl(this);
+    auto _paperViewer1 = _paperViewers->getViewer();
+    tabW->addTab(_paperViewer1, tr("Paper 1"));
+    auto _paperViewer2 = _paperViewers->getViewer();
+    tabW->addTab(_paperViewer2, tr("Paper 2"));
 
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 }
@@ -65,6 +66,7 @@ void CadMdiChild::newDocument() {
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     _modelViewerImpl->setDocument(_document);
+	_paperViewers->setDocument(_document);
 
     _activeLayer = _document->layerByName("0");
 }

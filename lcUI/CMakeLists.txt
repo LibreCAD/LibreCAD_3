@@ -30,6 +30,7 @@ lcadviewer.h
 lcadModelViewerImpl.h
 lcadPaperViewerImpl.h
 lcadModelViewer.h
+lcadPaperViewer.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -57,6 +58,7 @@ lcadviewer.cpp
 lcadModelViewerImpl.cpp
 lcadPaperViewerImpl.cpp
 lcadModelViewer.cpp
+lcadPaperViewer.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp

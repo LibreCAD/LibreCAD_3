@@ -36,7 +36,7 @@ LCADModelViewer* LCADModelViewerImpl::getViewer(){
     	viewer->setDocument(_document);
     }
     connect(viewer, SIGNAL(setActive(int)), this, SLOT(setActive(int)));
-    connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this->parent(), SLOT(ctxMenu(const QPoint&)));
+    //connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this->parent(), SLOT(ctxMenu(const QPoint&)));
     return viewer;
 }
 

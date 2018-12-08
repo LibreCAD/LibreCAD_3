@@ -141,6 +141,7 @@ namespace lc {
                 ui::MetaInfoManager_SPtr _metaInfoManager;
 
                 ui::LCADModelViewerImpl* _modelViewerImpl;
+                ui::LCADPaperViewerImpl* _paperViewers;
         };
     }
 }
