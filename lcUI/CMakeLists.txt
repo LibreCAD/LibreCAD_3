@@ -47,8 +47,6 @@ lua/luaqobject.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
-setupCAD/setupini.h
-setupCAD/itemStyle.h
         managers/metainfomanager.cpp managers/metainfomanager.h)
 
 set(UI_srcs
@@ -76,8 +74,6 @@ lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-setupCAD/setupini.cpp
-setupCAD/itemStyle.cpp
         managers/metainfomanager.cpp managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
