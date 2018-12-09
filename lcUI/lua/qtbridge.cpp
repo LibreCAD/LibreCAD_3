@@ -201,6 +201,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("tempEntities", &CadMdiChild::tempEntities)
 			.addFunction("undoManager", &CadMdiChild::undoManager)
 			.addFunction("viewer", &CadMdiChild::viewer)
+			.addFunction("viewerProxy", &CadMdiChild::viewerProxy)
 			.addFunction("activeLayer", &CadMdiChild::activeLayer)
 			.addFunction("getFilename", &CadMdiChild::getFilename)
 			.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
@@ -216,6 +217,10 @@ void addLCBindings(lua_State *L) {
 			.addFunction("autoScale", &LCADViewer::autoScale)
 			.addFunction("setOperationActive", &LCADViewer::setOperationActive)
 			.addFunction("docCanvas", &LCADViewer::docCanvas)
+		.endClass()
+
+		.beginExtendClass<LCADViewerProxy, QObject>("LCADViewerProxy")
+			
 		.endClass()
 		
 		.beginClass<LuaInterface>("LuaInterface")

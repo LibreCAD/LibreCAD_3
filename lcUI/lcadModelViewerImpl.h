@@ -29,6 +29,8 @@ namespace lc {
     		std::vector<LCADModelViewer*> _viewers;//Store all viewers
             storage::StorageManager_SPtr _storageManager;
             int _activeView = 0;
+        signals:
+            void setActiveView(LCADViewer*);
         public slots:
             void setActive(int);
     	};

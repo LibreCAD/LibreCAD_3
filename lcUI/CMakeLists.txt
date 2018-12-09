@@ -27,6 +27,7 @@ cadmdichild.h
 const.h
 luainterface.h
 lcadviewer.h
+lcadviewerProxy.h
 lcadModelViewerImpl.h
 lcadPaperViewerImpl.h
 lcadModelViewer.h
@@ -55,6 +56,7 @@ cadmdichild.cpp
 main.cpp
 luainterface.cpp
 lcadviewer.cpp
+lcadviewerProxy.cpp
 lcadModelViewerImpl.cpp
 lcadPaperViewerImpl.cpp
 lcadModelViewer.cpp

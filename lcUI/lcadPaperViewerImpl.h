@@ -29,6 +29,8 @@ namespace lc {
             storage::StorageManager_SPtr _storageManager;
             int _activeView = 0;
             QWidget* _parent;
+        signals:
+            void setActiveView(LCADViewer*);
         public slots:
             void setActive(int);
     	};
