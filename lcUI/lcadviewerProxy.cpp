@@ -51,8 +51,7 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
 }
 
 void LCADViewerProxy::setActive(LCADViewer* view){
-    //This is not working properly
-/*
+    if(view!=activeView) {
     disconnect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
     disconnect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
     disconnect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
@@ -62,5 +61,5 @@ void LCADViewerProxy::setActive(LCADViewer* view){
     connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
     connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
     connect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));
-    connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPress(int)));*/
+    connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPress(int)));}
 }
