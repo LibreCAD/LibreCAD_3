@@ -19,6 +19,7 @@ function addCadMdiChild(cadMdiChild, id, cliCommand)
 
     luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mousePressEvent()", function()
         local position = cadMdiChild:cursor():position()
+        print(position:x() .. " " .. position:y())
         luaInterface:triggerEvent('point', {position = position, widget = cadMdiChild})
     end)
 

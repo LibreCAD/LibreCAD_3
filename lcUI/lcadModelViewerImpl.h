@@ -8,7 +8,7 @@
 //Two consecutive models for now
 namespace lc {
     namespace ui {
-    	class LCADModelViewerImpl: public QWidget{
+    	class LCADModelViewerImpl: public QWidget {
             Q_OBJECT
     	public:
     		LCADModelViewerImpl(QWidget* parent);
