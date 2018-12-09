@@ -37,7 +37,7 @@ namespace lc {
             int _id;
             bool _isActive=false;//is Active
         private slots:
-            void onMousePressedEvent();
+            void onMouseMoveEvent();
         };
 	}
 }

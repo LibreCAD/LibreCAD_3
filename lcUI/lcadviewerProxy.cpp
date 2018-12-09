@@ -38,6 +38,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
 
     //Init connections now
+    _isModel = true;
     _activeView = _modelViewerImpl->viewer();
     connect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
     connect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));

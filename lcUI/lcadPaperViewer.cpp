@@ -7,7 +7,7 @@ LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),
     _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0xFF, 0xFF, 0xFF), lc::Color(0xEE, 0xEE, 0xEE));
     _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     _cursor = std::make_shared<drawable::Cursor>(40, this->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
-    connect(this, SIGNAL(mousePressEvent()) , this, SLOT(onMousePressedEvent()));
+    connect(this, SIGNAL(mouseMoveEvent()) , this, SLOT(onMouseMoveEvent()));
 }
 
 void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document){
@@ -40,6 +40,6 @@ void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
     document->commitProcessEvent().connect<lc::storage::UndoManagerImpl, &lc::storage::UndoManagerImpl::on_CommitProcessEvent>(_undoManager.get());
 }
 
-void LCADPaperViewer::onMousePressedEvent(){
+void LCADPaperViewer::onMouseMoveEvent(){
     emit setActive(_id);
 };
