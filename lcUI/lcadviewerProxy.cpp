@@ -34,8 +34,8 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     tabW->addTab(_paperViewer2, tr("Paper 2"));
 
     //Connections to receive active View
-    connect(_modelViewerImpl, SIGNAL(setActiveView(LCADViewer*)), this, SLOT(setActive(LCADViewer*)));
-    connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*)), this, SLOT(setActive(LCADViewer*)));
+    connect(_modelViewerImpl, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
+    connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
 
     //Init connections now
     _activeView = _modelViewerImpl->viewer();
@@ -50,8 +50,9 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
     _paperViewers->setDocument(document);
 }
 
-void LCADViewerProxy::setActive(LCADViewer* view){
+void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){
     if(view!=_activeView){
+        _isModel = isModel;
         disconnect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         disconnect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));
         disconnect(_activeView, SIGNAL(mouseReleaseEvent()), this, SIGNAL(mouseReleaseEvent()));

@@ -30,7 +30,7 @@ namespace lc {
             int _activeView = 0;
             QWidget* _parent;
         signals:
-            void setActiveView(LCADViewer*);
+            void setActiveView(LCADViewer*,bool);
         public slots:
             void setActive(int);
     	};

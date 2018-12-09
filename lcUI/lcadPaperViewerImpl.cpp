@@ -34,5 +34,5 @@ void LCADPaperViewerImpl::setActive(int v){
     _viewers[_activeView]->setFocused(false);
     _activeView=v;
     _viewers[_activeView]->setFocused(true);
-    emit setActiveView(_viewers[v]);
+    emit setActiveView(_viewers[v],false);
 };

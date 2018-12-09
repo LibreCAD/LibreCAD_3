@@ -30,7 +30,7 @@ namespace lc {
             storage::StorageManager_SPtr _storageManager;
             int _activeView = 0;
         signals:
-            void setActiveView(LCADViewer*);
+            void setActiveView(LCADViewer*,bool);
         public slots:
             void setActive(int);
     	};
