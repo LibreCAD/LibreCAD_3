@@ -15,15 +15,15 @@ namespace lc {
 
             class PaperBackground {
                 public:
-                    PaperBackground(const lc::Color& topColor, const lc::Color& bottomColor);
+                    PaperBackground(int width,int height);
 
                     ~PaperBackground() = default;
 
                     void draw(event::DrawEvent const& event) const;
 
                 private:
-                    const lc::Color _topColor;
-                    const lc::Color _bottomColor;
+                    const int _width;
+                    const int _height;
             };
         }
     }
