@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "lcadPaperViewer.h"
+#include "lcadpaperviewer.h"
 
 #include <QDialog>
 

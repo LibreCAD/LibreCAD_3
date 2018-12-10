@@ -2,7 +2,7 @@
 #include "lcadviewer.h"
 
 #include "cad/storage/storagemanagerimpl.h"
-#include <drawables/gradientbackground.h>
+#include <drawables/paperbackground.h>
 #include <drawables/grid.h>
 #include <managers/snapmanagerimpl.h>
 #include <drawables/lccursor.h>
@@ -26,7 +26,7 @@ namespace lc {
         signals:
             void setActive(int);
         private:
-   	        std::shared_ptr<lc::viewer::drawable::GradientBackground> _gradientBackground;
+   	        std::shared_ptr<lc::viewer::drawable::PaperBackground> _gradientBackground;
 	        std::shared_ptr<lc::viewer::drawable::Grid> _grid;
             viewer::manager::SnapManagerImpl_SPtr _snapManager;
             std::shared_ptr<lc::viewer::drawable::Cursor> _cursor;

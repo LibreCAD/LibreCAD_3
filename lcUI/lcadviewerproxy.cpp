@@ -1,4 +1,4 @@
-#include "lcadviewerProxy.h"
+#include "lcadviewerproxy.h"
 #include <QTabWidget>
 
 using namespace lc::ui;

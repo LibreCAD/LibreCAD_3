@@ -2,7 +2,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
-#include "lcadviewerProxy.h"
+#include "lcadviewerproxy.h"
 #include "cad/meta/color.h"
 #include <cad/storage/storagemanager.h>
 

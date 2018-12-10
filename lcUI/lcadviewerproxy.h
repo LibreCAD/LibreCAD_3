@@ -1,7 +1,7 @@
 #pragma once
 #include <QWidget>
-#include <lcadModelViewerImpl.h>
-#include <lcadPaperViewerImpl.h>
+#include <lcadmodelviewerimpl.h>
+#include <lcadpaperviewerimpl.h>
 #include "cad/storage/document.h"
 #include <cad/storage/storagemanager.h>
 

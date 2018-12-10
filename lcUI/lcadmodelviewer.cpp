@@ -1,4 +1,4 @@
-#include "lcadModelViewer.h"
+#include "lcadmodelviewer.h"
 
 using namespace lc::ui;
 using namespace lc::viewer;

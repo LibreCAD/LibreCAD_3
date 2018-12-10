@@ -1,4 +1,4 @@
-#include "lcadPaperViewerImpl.h"
+#include "lcadpaperviewerimpl.h"
 
 using namespace lc::ui;
 

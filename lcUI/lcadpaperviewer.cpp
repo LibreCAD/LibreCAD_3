@@ -1,10 +1,10 @@
-#include "lcadPaperViewer.h"
+#include "lcadpaperviewer.h"
 
 using namespace lc::ui;
 using namespace lc::viewer;
 
 LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id){
-    _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0xFF, 0xFF, 0xFF), lc::Color(0xEE, 0xEE, 0xEE));
+    _gradientBackground = std::make_shared<drawable::PaperBackground>(lc::Color(0xFF, 0xFF, 0xFF), lc::Color(0xEE, 0xEE, 0xEE));
     _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     _cursor = std::make_shared<drawable::Cursor>(40, this->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
     connect(this, SIGNAL(mouseMoveEvent()) , this, SLOT(onMouseMoveEvent()));
@@ -12,8 +12,8 @@ LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),
 
 void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document){
 	LCADViewer::setDocument(document);
-    this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
-    this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get());
+    this->documentCanvas()->background().connect<drawable::PaperBackground, &drawable::PaperBackground::draw>(_gradientBackground.get());
+//    this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get()); don't draw grid
 
     // Snap manager
     _snapManager = std::make_shared<manager::SnapManagerImpl>(this->documentCanvas(),  _grid, 25.);

@@ -1,4 +1,4 @@
-#include "lcadModelViewerImpl.h"
+#include "lcadmodelviewerimpl.h"
 #include <QVBoxLayout>
 #include <QSplitter>
 

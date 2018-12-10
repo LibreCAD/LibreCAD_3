@@ -1,5 +1,5 @@
 #pragma once
-#include "lcadModelViewer.h"
+#include "lcadmodelviewer.h"
 #include <QDialog>
 
 //This class handles the model viewers, ie. encapsulates codes for easy UI
