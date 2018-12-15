@@ -13,8 +13,8 @@ LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),
     connect(this, SIGNAL(mouseMoveEvent()) , this, SLOT(onMouseMoveEvent()));
 }
 
-void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document){
-	LCADViewer::setDocument(document);
+void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport){
+	LCADViewer::setDocument(document, viewport);
     this->documentCanvas()->background().connect<drawable::PaperBackground, &drawable::PaperBackground::draw>(_gradientBackground.get());
 //    this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get()); don't draw grid
 

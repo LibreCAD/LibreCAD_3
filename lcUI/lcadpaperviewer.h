@@ -16,7 +16,7 @@ namespace lc {
             Q_OBJECT
         public:
        		LCADPaperViewer(QWidget* parent,int id);
-       		void setDocument(std::shared_ptr<lc::storage::Document> document);
+       		void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport);
             viewer::manager::SnapManagerImpl_SPtr snapManager(){return _snapManager;};
             std::shared_ptr<lc::viewer::drawable::Cursor> cursor(){return _cursor;};              		
             viewer::drawable::TempEntities_SPtr tempEntities(){return _tempEntities;};

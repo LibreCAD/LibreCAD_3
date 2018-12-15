@@ -3,7 +3,7 @@
 #include <cad/interface/metatype.h>
 #include <cad/builders/viewport.h>
 
-#define VIEWPORT_ID_PREFIX "VIEWPORT"
+#define VIEWPORT_ID_PREFIX "_VIEWPORT"
 
 namespace lc {
     namespace meta {
@@ -22,7 +22,7 @@ namespace lc {
                 }
 
                 bool operator==(const Viewport& viewport){
-                    return _name==viewport._name;
+                    return (_name==viewport._name);
                 }
 
             private:

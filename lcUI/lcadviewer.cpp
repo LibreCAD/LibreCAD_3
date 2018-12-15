@@ -30,7 +30,7 @@ LCADViewer::~LCADViewer() {
 }
 
 
-void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document) {
+void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport) {
     int width = size().width();
     int height = size().height();
 
@@ -38,7 +38,7 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document) {
 
     _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
         _documentPainter->device_to_user(x, y);
-    });
+    }, viewport);
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);

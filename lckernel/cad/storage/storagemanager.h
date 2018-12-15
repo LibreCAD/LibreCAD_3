@@ -90,7 +90,6 @@ namespace lc {
 
                 template<typename T>
                 const std::shared_ptr<const T> metaDataTypeByName(const std::string& name) const {
-                    std::string n = T::LCMETANAME();
                     auto r = _metaDataTypeByName(T::LCMETANAME() + "_" + name);
                     // What do we do when we don't have a meta data set??
                     if (r != nullptr) {

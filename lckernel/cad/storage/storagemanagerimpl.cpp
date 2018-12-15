@@ -46,7 +46,7 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(met
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByViewport(meta::Viewport_CSPtr viewport) const {
-    return _entities.entitiesByViewport(viewport);
+	return _entities.entitiesByViewport(viewport);
 }
 
 meta::Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {

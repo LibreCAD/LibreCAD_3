@@ -95,7 +95,7 @@ void DocumentImpl::addDocumentMetaType(const lc::meta::DocumentMetaType_CSPtr& d
     }
 
 	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
-    if (layer != nullptr) {
+    if (viewport != nullptr) {
         event::AddViewportEvent event(viewport);
         addViewportEvent()(event);
     }
@@ -154,7 +154,6 @@ EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const
 }
 
 EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByViewport(const meta::Viewport_CSPtr& viewport) {
-    std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByViewport(viewport);
 }
 

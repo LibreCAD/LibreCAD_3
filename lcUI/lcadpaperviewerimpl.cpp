@@ -14,17 +14,11 @@ LCADPaperViewerImpl::LCADPaperViewerImpl(QWidget* parent):_document(nullptr),_pa
 
 void LCADPaperViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> document){
     _document = document;
-    for(auto _viewer : _viewers){
-    	_viewer->setDocument(document);
-    };
 }
 
 LCADPaperViewer* LCADPaperViewerImpl::getViewer(){
     auto viewer = new LCADPaperViewer(_parent,_viewers.size());
     _viewers.push_back(viewer);
-    if(_document){
-    	viewer->setDocument(_document);
-    }
     connect(viewer, SIGNAL(setActive(int)), this, SLOT(setActive(int)));
     //connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this->parent(), SLOT(ctxMenu(const QPoint&)));
     return viewer;

@@ -49,6 +49,7 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
     for(auto view: viewports){
         if(view.first!="MODEL"){
             auto x = _paperViewers->getViewer();
+            x->setDocument(document, view.second);
             _tabWidget->addTab(x,tr(view.first.c_str()));
         }
     }

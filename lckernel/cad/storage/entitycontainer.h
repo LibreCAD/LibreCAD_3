@@ -144,7 +144,7 @@ namespace lc {
                     EntityContainer container;
 
                     for (auto i : asVector(std::numeric_limits<short>::max())) {
-                        if (i->viewport() == viewport) {
+                        if (i->viewport().get() == viewport.get()) {
                             container.insert(i);
                         }
                     }
