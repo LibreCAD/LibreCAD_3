@@ -4,6 +4,10 @@
 #include <memory>
 #include <iterator>
 #include <unordered_map>
+#include <QTextDocument>
+#include <QPainter>
+#include <QScrollBar>
+#include <QMessageBox>
 
 using namespace lc::ui::widgets;
 
@@ -44,10 +48,8 @@ bool CliCommand::addCommand(const std::string& name) {
 }
 
 void CliCommand::write(const QString& message) {
-    ui->history->addItem(message);
-    if(ui->history->count() > _historySize) {
-        delete ui->history->takeItem(0);
-    }
+    ui->history->setHtml(ui->history->toHtml() + message);
+    ui->history->verticalScrollBar()->setValue(ui->history->verticalScrollBar()->maximum());
 }
 
 void CliCommand::onReturnPressed() {
@@ -113,7 +115,6 @@ void CliCommand::enterCommand(const QString& command) {
         else
         {
             write("Command " + command + " not found");
-            ui->history->item(ui->history->count() - 1)->setForeground(Qt::red);
         }
     }
 }
