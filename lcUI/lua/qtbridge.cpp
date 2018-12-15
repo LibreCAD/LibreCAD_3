@@ -203,6 +203,7 @@ void addLCBindings(lua_State *L) {
 			.addFunction("viewer", &CadMdiChild::viewer)
 			.addFunction("viewerProxy", &CadMdiChild::viewerProxy)
 			.addFunction("activeLayer", &CadMdiChild::activeLayer)
+			.addFunction("activeViewport", &CadMdiChild::activeViewport)
 			.addFunction("getFilename", &CadMdiChild::getFilename)
 			.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
 		.endClass()

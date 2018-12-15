@@ -17,10 +17,10 @@ void PaperBackground::draw(event::DrawEvent const & event) const {
     painter.pattern_destroy(patId);
 
     painter.source_rgb(0., 0., 0.);
-    painter.rectangle(-_width/2, -_height/2, _width/2, _height/2);
+    painter.rectangle(0, 0, _width, _height);
     painter.stroke();
 
     painter.source_rgb(1., 1., 1.);
-    painter.rectangle(-_width/2, -_height/2, _width/2, _height/2);
+    painter.rectangle(0, 0, _width, _height);
     painter.fill();
 }

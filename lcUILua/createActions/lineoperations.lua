@@ -54,6 +54,7 @@ end
 function LineOperations:createLine(p1, p2)
     local layer = active_layer(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
 
     if(self.length ~= nil) then
         local angle = p1:angleTo(p2)

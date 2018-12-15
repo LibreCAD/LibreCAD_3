@@ -1,5 +1,4 @@
 #include "lcadviewerproxy.h"
-#include <QTabWidget>
 
 using namespace lc::ui;
 
@@ -14,7 +13,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
-    auto tabW = new QTabWidget(this);
+    _tabWidget = new QTabWidget(this);
 
     _modelViewerImpl = new LCADModelViewerImpl(this);
     _modelViewerImpl->setObjectName(QStringLiteral("viewer"));
@@ -23,16 +22,11 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     _modelViewerImpl->setContextMenuPolicy(Qt::CustomContextMenu);
     _modelViewerImpl->setFocusPolicy(Qt::StrongFocus);
 
+    gridLayout->addWidget(_tabWidget, 0, 0, 1, 1);
 
-    gridLayout->addWidget(tabW, 0, 0, 1, 1);
-
-    tabW->addTab(_modelViewerImpl, tr("Model"));
+    _tabWidget->addTab(_modelViewerImpl, tr("Model"));
     _paperViewers = new LCADPaperViewerImpl(this);
-    auto _paperViewer1 = _paperViewers->getViewer();
-    tabW->addTab(_paperViewer1, tr("Paper 1"));
-    auto _paperViewer2 = _paperViewers->getViewer();
-    tabW->addTab(_paperViewer2, tr("Paper 2"));
-
+    
     //Connections to receive active View
     connect(_modelViewerImpl, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
     connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
@@ -49,6 +43,15 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
 void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
+    _viewport = document->viewportByName("MODEL");
+
+    auto viewports = document->allViewports();
+    for(auto view: viewports){
+        if(view.first!="MODEL"){
+            auto x = _paperViewers->getViewer();
+            _tabWidget->addTab(x,tr(view.first.c_str()));
+        }
+    }
 }
 
 void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){

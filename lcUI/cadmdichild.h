@@ -54,6 +54,8 @@ namespace lc {
 
                 LCADViewerProxy* viewerProxy() {return _viewerProxy;};
 
+                lc::meta::Viewport_CSPtr activeViewport() const{return _viewerProxy->activeViewport();};
+
             public slots:
 
                 void ctxMenu(const QPoint& pos);

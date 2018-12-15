@@ -12,6 +12,9 @@ DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
         Document() ,
         _storageManager(std::move(storageManager)) {
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
+    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("MODEL"));
+    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("Paper 1"));
+    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("Paper 2"));
 }
 
 void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
@@ -91,6 +94,13 @@ void DocumentImpl::addDocumentMetaType(const lc::meta::DocumentMetaType_CSPtr& d
         addLayerEvent()(event);
     }
 
+	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
+    if (layer != nullptr) {
+        event::AddViewportEvent event(viewport);
+        addViewportEvent()(event);
+    }
+
+
     auto linePattern = std::dynamic_pointer_cast<const meta::DxfLinePatternByValue>(dmt);
     if (linePattern != nullptr) {
         event::AddLinePatternEvent event(linePattern);
@@ -143,6 +153,11 @@ EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const
     return _storageManager->entitiesByLayer(layer);
 }
 
+EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByViewport(const meta::Viewport_CSPtr& viewport) {
+    std::lock_guard<std::mutex> lck(_documentMutex);
+    return _storageManager->entitiesByViewport(viewport);
+}
+
 EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentImpl::entityContainer() {
     //   std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entityContainer();
@@ -154,6 +169,14 @@ std::map<std::string, lc::meta::Layer_CSPtr> DocumentImpl::allLayers() const {
 
 lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
     return _storageManager->layerByName(layerName);
+}
+
+std::map<std::string, lc::meta::Viewport_CSPtr> DocumentImpl::allViewports() const {
+    return _storageManager->allViewports();
+}
+
+lc::meta::Viewport_CSPtr DocumentImpl::viewportByName(const std::string& viewportName) const {
+    return _storageManager->viewportByName(viewportName);
 }
 
 lc::meta::DxfLinePatternByValue_CSPtr DocumentImpl::linePatternByName(const std::string& linePatternName) const {

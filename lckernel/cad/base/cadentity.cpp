@@ -4,11 +4,12 @@
 using namespace lc;
 using namespace  entity;
 
-CADEntity::CADEntity(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
+CADEntity::CADEntity(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block, meta::Viewport_CSPtr viewport) :
         ID(),
         _layer(std::move(layer)),
         _metaInfo(std::move(metaInfo)),
-        _block(std::move(block)) {
+        _block(std::move(block)),
+        _viewport(std::move(viewport)) {
 }
 
 CADEntity::CADEntity(const CADEntity_CSPtr& cadEntity) :

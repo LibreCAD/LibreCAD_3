@@ -2,6 +2,7 @@
 #include <vector>
 #include <cad/interface/metatype.h>
 #include <cad/meta/layer.h>
+#include <cad/meta/viewport.h>
 #include <cad/meta/metacolor.h>
 #include <cad/base/metainfo.h>
 #include <cad/geometry/geocoordinate.h>
@@ -58,6 +59,11 @@ void LCLua::importLCKernel() {
                                 std::string,
                                 meta::MetaLineWidthByValue,
                                 Color))
+        .endClass()
+
+        .beginExtendClass<meta::Viewport, meta::MetaType>("Viewport")
+            .addConstructor(LUA_SP(meta::Viewport_SPtr), LUA_ARGS(
+                                std::string))
         .endClass()
 
         .beginExtendClass<meta::DxfLinePattern, meta::EntityMetaType>("meta::DxfLinePattern")

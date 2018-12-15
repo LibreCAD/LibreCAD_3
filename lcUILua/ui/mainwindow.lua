@@ -44,6 +44,16 @@ function active_layer(id)
     return windows[id]:activeLayer()
 end
 
+--Return the selected viewport
+function active_viewport(id)
+    if(windows[id] == nil) then
+        return nil
+    end
+
+    return windows[id]:activeViewport()
+end
+
+
 --Create MetaInfo containing every selected MetaTypes
 function active_metaInfo()
     local widget = windows[id]
