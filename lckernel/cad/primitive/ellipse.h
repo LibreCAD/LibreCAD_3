@@ -48,6 +48,7 @@ namespace lc {
                     double endAngle,
                     bool reversed,
                     meta::Layer_CSPtr layer,
+                    meta::Viewport_CSPtr viewport,
                     meta::MetaInfo_CSPtr metaInfo = nullptr,
                     meta::Block_CSPtr block = nullptr
             );

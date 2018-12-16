@@ -24,8 +24,9 @@ end
 
 function DimDiametricOperations:getDimDiametric(defPoint1, defPoint2, text)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimDiametric(defPoint1, 5, 1, 1, text, defPoint2, 1, layer, metaInfo)
+    local dim = DimDiametric(defPoint1, 5, 1, 1, text, defPoint2, 1, layer, viewport, metaInfo)
     dim:setId(self.dimDiametric_id)
 
     return dim

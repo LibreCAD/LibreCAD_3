@@ -48,8 +48,9 @@ function CircleOperations:getCircle(center, radius)
     end
 
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local c = Circle(center, radius, layer, metaInfo)
+    local c = Circle(center, radius, layer, viewport, metaInfo)
     c:setId(self.entity_id)
 
     return c

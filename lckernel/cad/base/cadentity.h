@@ -33,7 +33,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr, meta::Viewport_CSPtr viewport = nullptr);
+            CADEntity(meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
 
             CADEntity(const CADEntity_CSPtr& cadEntity, bool sameID);
 
@@ -144,9 +144,9 @@ namespace lc {
 
         private:
             meta::Layer_CSPtr _layer;
+            meta::Viewport_CSPtr _viewport;
             meta::MetaInfo_CSPtr _metaInfo;
             meta::Block_CSPtr _block;
-            meta::Viewport_CSPtr _viewport;
         };
 
         DECLARE_SHORT_SHARED_PTR(CADEntity)

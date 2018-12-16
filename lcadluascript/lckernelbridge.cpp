@@ -207,6 +207,7 @@ void LCLua::importLCKernel() {
             .addFunction("mirror", &entity::CADEntity::mirror)
 
             .addFunction("layer", &entity::CADEntity::layer)
+            .addFunction("viewport", &entity::CADEntity::viewport)
             .addFunction("metaInfo", [](const entity::CADEntity* ce) {
                 return ce->metaInfo();
             })
@@ -221,6 +222,7 @@ void LCLua::importLCKernel() {
                        const geo::Coordinate & start,
                        const geo::Coordinate & end,
                        const meta::Layer_CSPtr,
+                       const meta::Viewport_CSPtr,
                        LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                        LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -238,6 +240,7 @@ void LCLua::importLCKernel() {
                        const geo::Coordinate & center,
                        double radius,
                        const meta::Layer_CSPtr,
+                       const meta::Viewport_CSPtr,
                        LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                        LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -258,6 +261,7 @@ void LCLua::importLCKernel() {
                        const double endAngle,
                        bool CCW,
                        const meta::Layer_CSPtr layer,
+                       const meta::Viewport_CSPtr,
                        LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                        LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -286,6 +290,7 @@ void LCLua::importLCKernel() {
                        double endAngle,
                        bool reversed,
                        const meta::Layer_CSPtr layer,
+                       const meta::Viewport_CSPtr,
                        LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                        LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -312,6 +317,7 @@ void LCLua::importLCKernel() {
                 const geo::Coordinate&,
                 const double,
                 const meta::Layer_CSPtr,
+                const meta::Viewport_CSPtr,
                 LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                 LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -327,6 +333,7 @@ void LCLua::importLCKernel() {
                 const geo::Coordinate&,
                 const double,
                 const meta::Layer_CSPtr,
+                const meta::Viewport_CSPtr,
                 LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                 LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -339,6 +346,7 @@ void LCLua::importLCKernel() {
                     geo::Coordinate const&,
                     std::string const&,
                     const meta::Layer_CSPtr,
+                    const meta::Viewport_CSPtr,
                     LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                     LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -351,6 +359,7 @@ void LCLua::importLCKernel() {
                 geo::Coordinate const&,
                 std::string const&,
                 const meta::Layer_CSPtr,
+                const meta::Viewport_CSPtr,
                 LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                 LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -363,6 +372,7 @@ void LCLua::importLCKernel() {
                 geo::Coordinate const&,
                 std::string const&,
                 const meta::Layer_CSPtr,
+                const meta::Viewport_CSPtr,
                 LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                 LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -387,6 +397,7 @@ void LCLua::importLCKernel() {
                 double,
                 geo::Spline::splineflag,
                 const meta::Layer_CSPtr,
+                const meta::Viewport_CSPtr,
                 LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                 LuaIntf::_opt<const meta::Block_CSPtr>
             ))
@@ -410,6 +421,7 @@ void LCLua::importLCKernel() {
                     bool,
                     const geo::Coordinate,
                     const meta::Layer_CSPtr,
+                    const meta::Viewport_CSPtr,
                     LuaIntf::_opt<const meta::MetaInfo_CSPtr>,
                     LuaIntf::_opt<const meta::Block_CSPtr>
             ))

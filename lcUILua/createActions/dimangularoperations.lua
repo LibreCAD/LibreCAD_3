@@ -26,8 +26,9 @@ end
 
 function DimAngularOperations:getDimAngular(centerPoint, firstPoint, secondPoint, text)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, metaInfo)
+    local dim = DimAngular.dimAuto(centerPoint, firstPoint, secondPoint, text, layer, viewport, metaInfo)
     dim:setId(self.dimAngular_id)
 
     return dim

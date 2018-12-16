@@ -25,8 +25,9 @@ end
 
 function DimRadialOperations:getDimRadial(defPoint1, defPoint2, middleOfText, text)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, metaInfo)
+    local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, viewport, metaInfo)
     dim:setId(self.dimRadial_id)
 
     return dim

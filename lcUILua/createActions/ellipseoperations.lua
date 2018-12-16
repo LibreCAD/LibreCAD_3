@@ -66,8 +66,9 @@ end
 
 function EllipseOperations:getEllipse(center, majorPoint, minorRadius, startAngle, endAngle)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer, metaInfo)
+    local e = Ellipse(center, majorPoint, minorRadius, startAngle, endAngle, false, layer, viewport, metaInfo)
     e:setId(self.entity_id)
 
     return e
