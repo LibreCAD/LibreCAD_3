@@ -24,7 +24,7 @@ namespace lc {
             storage::UndoManagerImpl_SPtr undoManager(){return _isModel?_modelViewerImpl->undoManager():_paperViewers->undoManager();};
             QPoint mapToGlobal(const QPoint& P){return _activeView->mapToGlobal(P);};
             lc::ui::LCADViewer* viewer() {return _activeView;};
-            meta::Viewport_CSPtr activeViewport(){return _viewport;};
+            meta::Viewport_CSPtr activeViewport(){return _isModel?_viewport:_paperViewers->viewport();};
     	private:
             LCADViewer* _activeView;
         	LCADModelViewerImpl* _modelViewerImpl;
