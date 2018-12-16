@@ -38,6 +38,7 @@ DXFimpl::DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation:
         _currentBlock(nullptr),
         dxfW(nullptr) {
     _builder->append(_entityBuilder);
+    _currentViewport = document->viewportByName(DEFAULT_VIEWPORT);
 }
 
 inline int DXFimpl::widthToInt(double wid) const {
@@ -167,6 +168,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
                                                            data.endparam,
                                                            data.isccw,
                                                            layer,
+                                                           _currentViewport,
                                                            mf,
                                                            _currentBlock
     );
@@ -226,6 +228,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                                                          data->normalVec.x, data->normalVec.y, data->normalVec.z,
                                                          static_cast<lc::geo::Spline::splineflag>(data->flags),
                                                          layer,
+                                                         _currentViewport,
                                                          mf,
                                                          _currentBlock
     );
@@ -246,6 +249,7 @@ void DXFimpl::addText(const DRW_Text& data) {
                                                      lc::TextConst::HAlign(data.alignH),
                                                      lc::TextConst::VAlign(data.alignV),
                                                      layer,
+                                                     _currentViewport,
                                                      mf,
                                                      _currentBlock
     );
@@ -261,6 +265,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
                                                        layer,
+                                                       _currentViewport,
                                                        mf,
                                                        _currentBlock
     );
@@ -285,6 +290,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
             coord(data->getDef1Point()),
             coord(data->getDef2Point()),
             layer,
+            _currentViewport,
             mf,
             _currentBlock
     );
@@ -311,6 +317,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
             data->getAngle(),
             data->getOblique(),
             layer,
+            _currentViewport,
             mf,
             _currentBlock
     );
@@ -335,6 +342,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
              coord(data->getDiameterPoint()),
              data->getLeaderLength(),
              layer,
+             _currentViewport,
              mf,
              _currentBlock
     );
@@ -359,6 +367,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
              coord(data->getDiameter2Point()),
              data->getLeaderLength(),
              layer,
+             _currentViewport,
              mf,
              _currentBlock
     );
@@ -385,6 +394,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
              coord(data->getSecondLine1()),
              coord(data->getSecondLine2()),
              layer,
+             _currentViewport,
              mf,
              _currentBlock
     );
@@ -423,6 +433,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
             isCLosed,
             coord(data.extPoint),
             layer,
+            _currentViewport,
             mf,
             _currentBlock
     );
@@ -539,6 +550,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                     image->sizeu, image->sizev,
                     image->brightness, image->contrast, image->fade,
                     layer,
+                    _currentViewport,
                     mf,
                     _currentBlock
             );
