@@ -20,8 +20,8 @@ TEST(SelectionTest, NormalSelection) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 5, 10, true);
@@ -50,8 +50,8 @@ TEST(SelectionTest, IntersectionSelection) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 5, 5, false);
@@ -80,8 +80,8 @@ TEST(SelectionTest, AddToSelection) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false);
@@ -113,8 +113,8 @@ TEST(SelectionTest, Reselect) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 10, 1, false);
@@ -146,8 +146,8 @@ TEST(SelectionTest, ClearSelection) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false);
@@ -179,8 +179,8 @@ TEST(SelectionTest, Deselect) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false);
@@ -210,8 +210,8 @@ TEST(SelectionTest, DeselectAddTo) {
 	al->execute();
 
 	auto builder = std::make_shared<lc::operation::EntityBuilder>(document);
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, nullptr));
-	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, nullptr));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0,0), lc::geo::Coordinate(0, 10, 0), layer, document->viewportByName("MODEL")));
+	builder->appendEntity(std::make_shared<lc::entity::Line>(lc::geo::Coordinate(10,0,0), lc::geo::Coordinate(10, 10, 0), layer, document->viewportByName("MODEL")));
 	builder->execute();
 
 	docCanvas->makeSelection(0, 0, 1, 1, false);
