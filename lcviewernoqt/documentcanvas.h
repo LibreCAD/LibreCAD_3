@@ -191,6 +191,8 @@ namespace lc {
 
                 lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
+                meta::Viewport_CSPtr viewport(){return _viewport;};
+
             private:
                 void on_addEntityEvent(const lc::event::AddEntityEvent&);
 
