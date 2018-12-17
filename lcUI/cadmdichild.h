@@ -1,9 +1,8 @@
 #pragma once
-#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
-#include <lcadModelViewerImpl.h>
+#include "lcadviewerproxy.h"
 #include "cad/meta/color.h"
 #include <cad/storage/storagemanager.h>
 
@@ -53,6 +52,10 @@ namespace lc {
 
                 void keyPressEvent(QKeyEvent* event);
 
+                LCADViewerProxy* viewerProxy() {return _viewerProxy;};
+
+                lc::meta::Viewport_CSPtr activeViewport() const{return _viewerProxy->activeViewport();};
+
             public slots:
 
                 void ctxMenu(const QPoint& pos);
@@ -72,7 +75,7 @@ namespace lc {
 
                 lc::storage::StorageManager_SPtr storageManager() const;
 
-                lc::ui::LCADViewer* viewer() const { return _viewer; }
+                lc::ui::LCADViewer* viewer() { return _viewerProxy->viewer(); }
 
                 std::shared_ptr<lc::viewer::drawable::Cursor> cursor() const;
 
@@ -140,11 +143,7 @@ namespace lc {
                 meta::Layer_CSPtr _activeLayer;
                 ui::MetaInfoManager_SPtr _metaInfoManager;
 
-                QScrollBar* horizontalScrollBar;
-                QScrollBar* verticalScrollBar;
-
-                ui::LCADViewer* _viewer;
-                ui::LCADModelViewerImpl* _modelViewerImpl;
+                ui::LCADViewerProxy* _viewerProxy;
         };
     }
 }

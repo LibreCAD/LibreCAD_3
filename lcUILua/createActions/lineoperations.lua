@@ -53,7 +53,9 @@ end
 
 function LineOperations:createLine(p1, p2)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
 
     if(self.length ~= nil) then
         local angle = p1:angleTo(p2)
@@ -61,7 +63,7 @@ function LineOperations:createLine(p1, p2)
         p2 = p1:add(relativeCoordinate)
     end
 
-    local l = Line(p1, p2, layer, metaInfo)
+    local l = Line(p1, p2, layer, viewport, metaInfo)
     l:setId(self.entity_id)
 
     return l

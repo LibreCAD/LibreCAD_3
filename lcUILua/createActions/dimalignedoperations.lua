@@ -26,8 +26,9 @@ end
 
 function DimAlignedOperations:getDimAligned(startPoint, endPoint, middleOfText, text)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, metaInfo)
+    local dim = DimAligned.dimAuto(startPoint, endPoint, middleOfText, text, layer, viewport, metaInfo)
     dim:setId(self.dimAligned_id)
 
     return dim

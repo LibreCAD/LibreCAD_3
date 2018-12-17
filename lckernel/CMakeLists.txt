@@ -40,6 +40,7 @@ cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
+cad/meta/viewport.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
@@ -72,6 +73,7 @@ cad/builders/circle.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
+cad/builders/viewport.cpp
 cad/builders/linepattern.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
@@ -100,6 +102,7 @@ cad/base/metainfo.h
         cad/storage/undomanager.h
 cad/events/addentityevent.h
 cad/events/addlayerevent.h
+cad/events/addviewportevent.h
 cad/events/addlinepatternevent.h
 cad/events/beginprocessevent.h
 cad/events/commitprocessevent.h
@@ -129,6 +132,7 @@ cad/math/lcmath.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h
+cad/meta/viewport.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h
@@ -170,6 +174,7 @@ cad/builders/point.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
+cad/builders/viewport.h
 cad/builders/linepattern.h
 cad/meta/customentitystorage.h
 cad/operations/blockops.h

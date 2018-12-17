@@ -53,8 +53,9 @@ end
 
 function ArcOperations:getArc(center, radius, beginAngle, endAngle)
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local a = Arc(center, radius, beginAngle, endAngle, false, layer, metaInfo)
+    local a = Arc(center, radius, beginAngle, endAngle, false, layer, viewport, metaInfo)
     a:setId(self.entity_id)
 
     return a

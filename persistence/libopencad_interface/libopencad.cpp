@@ -8,7 +8,7 @@ lc::persistence::LibOpenCad::LibOpenCad(lc::storage::Document_SPtr document, lc:
     _document(std::move(document)),
     _builder(std::move(builder)),
     _entityBuilder(std::make_shared<lc::operation::EntityBuilder>(document)) {
-
+    _currentViewport = document->viewportByName(DEFAULT_VIEWPORT);
 }
 
 void lc::persistence::LibOpenCad::open(const std::string& file) {
@@ -91,7 +91,7 @@ void lc::persistence::LibOpenCad::addArc(lc::meta::Layer_SPtr layer, const CADAr
 
     auto lcArc = std::make_shared<lc::entity::Arc>(
             toLcPostiton(position), arc->getRadius(), arc->getStartingAngle(), arc->getEndingAngle(),
-            true, layer, metaInfo(arc));
+            true, layer, _currentViewport, metaInfo(arc));
 
     _entityBuilder->appendEntity(lcArc);
 }
@@ -101,6 +101,7 @@ void lc::persistence::LibOpenCad::addLine(lc::meta::Layer_SPtr layer, const CADL
             toLcPostiton(line->getStart().getPosition()),
             toLcPostiton(line->getEnd().getPosition()),
             layer,
+            _currentViewport,
             metaInfo(line)
     );
 
@@ -112,6 +113,7 @@ void lc::persistence::LibOpenCad::addCircle(lc::meta::Layer_SPtr layer, const CA
             toLcPostiton(circle->getPosition()),
             circle->getRadius(),
             layer,
+            _currentViewport,
             metaInfo(circle)
     );
 
@@ -127,6 +129,7 @@ void lc::persistence::LibOpenCad::addEllipse(lc::meta::Layer_SPtr layer, const C
             ellipse->getEndingAngle(),
             false,
             layer,
+            _currentViewport,
             metaInfo(ellipse)
     );
 
@@ -152,6 +155,7 @@ void lc::persistence::LibOpenCad::addLWPolyline(lc::meta::Layer_SPtr layer, cons
             lwPolyline->isClosed(),
             toLcPostiton(lwPolyline->getVectExtrusion()),
             layer,
+            _currentViewport,
             metaInfo(lwPolyline)
     );
 

@@ -54,8 +54,9 @@ end
 function LWPolylineOperations:getLWPolyline(vertexes)
     if(#vertexes > 1) then
         local layer = active_layer(self.target_widget)
+        local viewport = active_viewport(self.target_widget)
         local metaInfo = active_metaInfo(self.target_widget)
-        local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, metaInfo)
+        local lwp = LWPolyline(vertexes, 1, 1, 1, false, Coord(0,0), layer, viewport, metaInfo)
         lwp:setId(self.entity_id)
 
         return lwp

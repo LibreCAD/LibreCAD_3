@@ -10,7 +10,6 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
-
 using namespace lc::ui;
 using namespace lc::viewer;
 
@@ -31,17 +30,8 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->setObjectName(QStringLiteral("gridLayout"));
     gridLayout->setContentsMargins(0, 0, 0, 0);
 
-    _modelViewerImpl = new LCADModelViewerImpl(this);
-    _viewer = _modelViewerImpl->getViewer();
-    _viewer->setObjectName(QStringLiteral("viewer"));
-    _viewer->setGeometry(QRect(50, 30, 581, 401));
-    _viewer->setAutoFillBackground(true);
-    _viewer->setContextMenuPolicy(Qt::CustomContextMenu);
-    _viewer->setFocusPolicy(Qt::StrongFocus);
-    connect(_viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ctxMenu(const QPoint&)));
-
-    gridLayout->addWidget(_viewer, 0, 0, 1, 1);
-
+    _viewerProxy = new LCADViewerProxy(this);
+    gridLayout->addWidget(_viewerProxy, 0, 0, 1, 1);
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 }
 
@@ -57,7 +47,7 @@ void CadMdiChild::newDocument() {
     _document = std::make_shared<lc::storage::DocumentImpl>(storageManager());
 
     // Add the document to a LibreCAD Viewer system so we can visualize the document
-    _modelViewerImpl->setDocument(_document);
+    _viewerProxy->setDocument(_document);
 
     _activeLayer = _document->layerByName("0");
 }
@@ -168,27 +158,27 @@ void CadMdiChild::saveAsFile() {
 void CadMdiChild::ctxMenu(const QPoint& pos) {
     auto menu = new QMenu;
     menu->addAction(tr("Test Item"), this, SLOT(test_slot()));
-    menu->exec(_viewer->mapToGlobal(pos));
+    menu->exec(_viewerProxy->mapToGlobal(pos));
 }
 
 manager::SnapManager_SPtr  CadMdiChild::snapManager() const {
-    return _modelViewerImpl->snapManager();
+    return _viewerProxy->snapManager();
 }
 
 std::shared_ptr<lc::storage::Document> CadMdiChild::document() const {
-    return _modelViewerImpl->document();
+    return _viewerProxy->document();
 }
 
 lc::storage::StorageManager_SPtr CadMdiChild::storageManager() const {
-    return _modelViewerImpl->storageManager();
+    return _viewerProxy->storageManager();
 }
 
 lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {
-    return _modelViewerImpl->undoManager();
+    return _viewerProxy->undoManager();
 }
 
 std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
-	return _modelViewerImpl->cursor();
+	return _viewerProxy->cursor();
 }
 
 unsigned int CadMdiChild::id() {
@@ -208,7 +198,7 @@ void CadMdiChild::keyPressEvent(QKeyEvent *event) {
 }
 
 drawable::TempEntities_SPtr CadMdiChild::tempEntities() {
-    return _modelViewerImpl->tempEntities();
+    return _viewerProxy->tempEntities();
 }
 
 std::vector<lc::entity::CADEntity_CSPtr> CadMdiChild::selection() {
@@ -228,5 +218,5 @@ lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
 }
 
 const manager::SnapManagerImpl_SPtr CadMdiChild::getSnapManager() const {
-    return _modelViewerImpl->snapManager();
+    return _viewerProxy->snapManager();
 }

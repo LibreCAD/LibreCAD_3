@@ -41,7 +41,7 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
             int x, int y, int w, int h) {
     auto _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
     auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
-    auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document);
+    auto _canvas = std::make_shared<lc::viewer::DocumentCanvas>(_document, [](double* x, double* y){}, _document->viewportByName("MODEL"));//MODEL viewer
 
     // Add background
     auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(

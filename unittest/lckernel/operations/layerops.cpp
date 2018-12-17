@@ -12,7 +12,7 @@ TEST(LayerOps, ReplaceLayer) {
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
     addLayer->execute();
 
-    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer, nullptr);
     auto addLine = std::make_shared<lc::operation::EntityBuilder>(document);
     addLine->appendEntity(line);
     addLine->execute();

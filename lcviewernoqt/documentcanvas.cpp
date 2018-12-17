@@ -39,7 +39,7 @@
 
 using namespace lc::viewer;
 
-DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser) :
+DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Viewport_CSPtr viewport) :
         _document(document),
         _zoomMin(0.005),
         _zoomMax(200.0),
@@ -47,7 +47,13 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         _deviceHeight(0),
         _selectedArea(nullptr),
         _selectedAreaIntersects(false),
-        _deviceToUser(std::move(deviceToUser)) {
+        _deviceToUser(std::move(deviceToUser))
+{
+  	if(viewport==nullptr){
+   		_viewport = document->viewportByName("MODEL");
+   	}else{
+   		_viewport = viewport;
+   	}
 
 
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
@@ -198,8 +204,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
-
-            auto visibleEntities = _document->entityContainer().entitiesWithinAndCrossingAreaFast(visibleUserArea);
+            auto visibleEntities = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingAreaFast(visibleUserArea);
             std::vector<lc::viewer::LCVDrawItem_SPtr> visibleDrawables;
             visibleEntities.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
                 auto di = _entityDrawItem[entity];
@@ -422,10 +427,10 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
 
     if (occupies) {
-        entitiesInSelection = _document->entityContainer().entitiesFullWithinArea(*_selectedArea);
+        entitiesInSelection = _document->entitiesByViewport(_viewport).entitiesFullWithinArea(*_selectedArea);
     }
     else {
-        entitiesInSelection = _document->entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
+        entitiesInSelection = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingArea(*_selectedArea);
     }
     _newSelection.clear();
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
@@ -630,7 +635,7 @@ void DocumentCanvas::selectPoint(double x, double y) {
     w = w - zeroX;
 
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
-    auto entities = _document->entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
+    auto entities = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
         _entityDrawItem[entity]->selected(!_entityDrawItem[entity]->selected());
     });

@@ -52,8 +52,9 @@ function SplineOperations:getSpline(points, degree)
     end
 
     local layer = active_layer(self.target_widget)
+    local viewport = active_viewport(self.target_widget)
     local metaInfo = active_metaInfo(self.target_widget)
-    local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, metaInfo)
+    local s = Spline(points, {}, {}, degree, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, layer, viewport, metaInfo)
 
     s:setId(self.entity_id)
 

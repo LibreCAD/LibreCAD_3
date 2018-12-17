@@ -3,6 +3,7 @@
 #include "cad/base/id.h"
 #include "cad/base/cadentity.h"
 #include "cad/meta/layer.h"
+#include "cad/meta/viewport.h"
 #include "cad/storage/entitycontainer.h"
 #include <cad/tools/string_helper.h>
 #include <map>
@@ -24,6 +25,7 @@ namespace lc {
                 virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
 
                 virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByLayer(meta::Layer_CSPtr layer) const = 0;
+                virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByViewport(meta::Viewport_CSPtr viewport) const = 0;
 
                 virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByBlock(meta::Block_CSPtr block) const = 0;
 
@@ -34,6 +36,8 @@ namespace lc {
                  * \return
                  */
                 virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
+
+                virtual meta::Viewport_CSPtr viewportByName(const std::string& viewportName) const = 0;
 
                 /*!
                  * \brief DxfLinePattern
@@ -48,6 +52,7 @@ namespace lc {
                  * \return Hash Layername, Layer
                  */
                 virtual std::map<std::string, meta::Layer_CSPtr> allLayers() const = 0;
+                virtual std::map<std::string, meta::Viewport_CSPtr> allViewports() const = 0;
 
                 /*!
                  * \brief entityContainer
@@ -85,7 +90,6 @@ namespace lc {
 
                 template<typename T>
                 const std::shared_ptr<const T> metaDataTypeByName(const std::string& name) const {
-                    std::string n = T::LCMETANAME();
                     auto r = _metaDataTypeByName(T::LCMETANAME() + "_" + name);
                     // What do we do when we don't have a meta data set??
                     if (r != nullptr) {

@@ -36,6 +36,7 @@ namespace lc {
                        geo::Coordinate defLine21,
                        geo::Coordinate defLine22,
                        meta::Layer_CSPtr layer,
+                       meta::Viewport_CSPtr viewport,
                        meta::MetaInfo_CSPtr metaInfo = nullptr,
                        meta::Block_CSPtr block = nullptr);
 
@@ -48,6 +49,7 @@ namespace lc {
                 geo::Coordinate p2,
                 std::string explicitValue,
                 meta::Layer_CSPtr layer,
+                meta::Viewport_CSPtr viewport,
                 meta::MetaInfo_CSPtr metaInfo = nullptr,
                 meta::Block_CSPtr block = nullptr
             );

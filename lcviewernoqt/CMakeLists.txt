@@ -22,6 +22,7 @@ drawitems/lcvspline.cpp
 drawables/grid.cpp
 drawitems/endcaps.cpp
 drawables/gradientbackground.cpp
+drawables/paperbackground.cpp
 drawitems/lcdimension.cpp
 drawitems/lcdimradial.cpp
 drawitems/lcdimdiametric.cpp
@@ -57,6 +58,7 @@ drawitems/lcvspline.h
 drawables/grid.h
 drawitems/endcaps.h
 drawables/gradientbackground.h
+drawables/paperbackground.h
 drawitems/lcdimension.h
 drawitems/lcdimradial.h
 drawitems/lcdimdiametric.h
