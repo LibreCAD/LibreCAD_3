@@ -123,6 +123,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(_currentBlock);
     builder.setLayer(_document->layerByName(data.layer));
+    builder.setViewport(_currentViewport);
     builder.setStart(coord(data.basePoint));
     builder.setEnd(coord(data.secPoint));
 
@@ -134,6 +135,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 
     builder.setMetaInfo(getMetaInfo(data));
     builder.setLayer(_document->layerByName(data.layer));
+    builder.setViewport(_currentViewport);
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
     builder.setBlock(_currentBlock);
@@ -146,6 +148,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 
     builder.setMetaInfo(getMetaInfo(data));
     builder.setLayer(_document->layerByName(data.layer));
+    builder.setViewport(_currentViewport);
     builder.setBlock(_currentBlock);
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
