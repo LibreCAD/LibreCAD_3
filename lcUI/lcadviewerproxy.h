@@ -36,7 +36,7 @@ namespace lc {
             void mouseMoveEvent();
             void mousePressEvent();
             void mouseReleaseEvent();
-            void keyPress(int);
+            void keyPressEvent(int);
         public slots:
             void setActive(LCADViewer* view,bool isModel);
     	};
