@@ -30,7 +30,7 @@ end
 
 --Execute a command from command line
 function command(id, command)
-    commands[command:toStdString()](id)
+    commands[qt.QString.toStdString(command)](id)
 end
 
 --Store the point in memory when needed for relative coordinates
