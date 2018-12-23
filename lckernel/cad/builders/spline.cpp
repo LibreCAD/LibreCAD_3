@@ -2,9 +2,10 @@
 #include <cad/primitive/spline.h>
 
 lc::builder::SplineBuilder::SplineBuilder() {
-    _degree = 1;
+    _degree = 2;
     _closed = false;
     _fitTolerance = 0;
+    _flags = (lc::entity::Spline::splineflag) 0;
 }
 
 short lc::builder::SplineBuilder::degree() const {
@@ -55,8 +56,8 @@ void lc::builder::SplineBuilder::setNormalVector(const lc::geo::Coordinate& norm
     _normalVector = normalVector;
 }
 
-void lc::builder::SplineBuilder::addControlPoint(lc::geo::Coordinate controlPoint) {
-    _controlPoints.push_back(std::move(controlPoint));
+void lc::builder::SplineBuilder::addControlPoint(const lc::geo::Coordinate& controlPoint) {
+    _controlPoints.push_back(controlPoint);
 }
 
 void lc::builder::SplineBuilder::addKnotPoint(double knotPoint) {

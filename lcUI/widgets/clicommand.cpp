@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 using namespace lc::ui::widgets;
 

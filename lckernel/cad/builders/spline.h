@@ -29,7 +29,7 @@ namespace lc {
 
                 const std::vector<geo::Coordinate>& controlPoints() const;
                 void setControlPoints(const std::vector<geo::Coordinate>& controlPoints);
-                void addControlPoint(lc::geo::Coordinate controlPoint);
+                void addControlPoint(const lc::geo::Coordinate& controlPoint);
                 /**
                  * @brief Remove control point
                  * @param index Index of the element to remove, or negative to remove from the end
