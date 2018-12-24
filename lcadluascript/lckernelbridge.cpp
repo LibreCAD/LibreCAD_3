@@ -255,6 +255,9 @@ void LCLua::importLCKernel() {
     );
 
     state["lc"]["meta"]["MetaInfo"].setClass(kaguya::UserdataMetatable<lc::meta::MetaInfo>()
+         .addStaticFunction("new", []() {
+             return std::make_shared<lc::meta::MetaInfo>();
+         })
         .addFunction("add", &lc::meta::MetaInfo::add)
         .addStaticFunction("create", &lc::meta::MetaInfo::create)
     );

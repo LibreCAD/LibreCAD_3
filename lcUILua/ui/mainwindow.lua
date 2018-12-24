@@ -35,7 +35,7 @@ function active_layer(id)
 end
 
 --Create MetaInfo containing every selected MetaTypes
-function active_metaInfo()
+function active_metaInfo(id)
     local widget = windows[id]
 
     if(widget == nil) then
@@ -43,9 +43,11 @@ function active_metaInfo()
     end
 
     local metaInfo = widget:metaInfoManager():metaInfo()
+
     if(metaInfo == nil) then
         metaInfo = lc.meta.MetaInfo() -- nil != nullptr when calling a c++ function
     end
+
 
     return metaInfo
 end
@@ -103,11 +105,11 @@ function create_new_window(widget)
     layers:setMdiChild(widget)
     mainWindow:addDockWidget(2, layers)
 
-    local linePatternSelect = lc.LinePatternSelect(nil, mainWindow, true, true)
+    local linePatternSelect = lc.LinePatternSelect(widget:metaInfoManager(), mainWindow, true, true)
     linePatternSelect:setMdiChild(widget)
 
-    local lineWidthSelect = lc.LineWidthSelect(nil, mainWindow, true, true)
-    local colorSelect = lc.ColorSelect(nil, mainWindow, true, true)
+    local lineWidthSelect = lc.LineWidthSelect(widget:metaInfoManager(), mainWindow, true, true)
+    local colorSelect = lc.ColorSelect(widget:metaInfoManager(), mainWindow, true, true)
 
     luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", linePatternSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
     luaInterface:connect(layers, "layerChanged(lc::meta::Layer_CSPtr)", lineWidthSelect, "onLayerChanged(lc::meta::Layer_CSPtr)")
