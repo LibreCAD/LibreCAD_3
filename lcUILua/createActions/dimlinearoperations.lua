@@ -16,7 +16,17 @@ function DimLinearOperations:_init(id)
     message("Click on start point", id)
 end
 
+function DimLinearOperations:enterStartPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint2(data["position"])
+    end
 
+    if(eventName == "point") then
+        self.step = "enterEndPoint"
+
+        message("Click on end point", self.target_widget)
+    end
+end
 
 function DimLinearOperations:enterEndPoint(eventName, data)
     if(eventName == "mouseMove" or eventName == "point") then
