@@ -40,6 +40,14 @@ function SplineOperations:refreshTempEntity()
 end
 
 function SplineOperations:close()
-    self:createEntity()
-    CreateOperations.close(self)
+    if(self.tempPoint) then
+            self.builder:removeControlPoint(-1)
+            self.tempPoint = false
+    end
+
+    if(self.creatingSpline == nil) then
+        self.creatingSpline = true -- Used to prevent looping
+        self:createEntity()
+        CreateOperations.close(self)
+    end
 end
