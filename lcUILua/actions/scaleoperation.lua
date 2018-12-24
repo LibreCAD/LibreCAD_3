@@ -51,21 +51,21 @@ function ScaleOperation:newData(data)
 
         message("Enter scale factor or entity end", self.target_widget)
     elseif(type(data) == "number") then
-        self.factor = Coordinate(data, data, data)
+        self.factor = lc.geo.Coordinate(data, data, data)
 
         self:scale()
     end
 end
 
 function ScaleOperation:scale()
-    local b = EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
     end
 
-    b:appendOperation(Push())
-    b:appendOperation(Scale(self.origin, self.factor))
+    b:appendOperation(lc.operation.Push())
+    b:appendOperation(lc.operation.Scale(self.origin, self.factor))
     b:execute()
 
     self:close()

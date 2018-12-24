@@ -19,14 +19,14 @@ function RemoveOperation:_init(id)
 end
 
 function RemoveOperation:remove()
-    local b = EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
     end
 
-    b:appendOperation(Push())
-    b:appendOperation(Remove())
+    b:appendOperation(lc.operation.Push())
+    b:appendOperation(lc.operation.Remove())
     b:execute()
 
     message(tostring(#self.selection) .. " items removed", self.target_widget)

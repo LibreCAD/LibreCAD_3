@@ -1,3 +1,5 @@
+--TODO: may not work, it should be moved to C++
+
 TrimOperation = {}
 TrimOperation.__index = TrimOperation
 
@@ -65,7 +67,7 @@ function TrimOperation:newPoint(point)
 end
 
 function TrimOperation:getIntersectionPoints()
-    local intersect = IntersectMany({self.toTrim, self.limit})
+    local intersect = lc.maths.IntersectMany({self.toTrim, self.limit})
     self.intersectionPoints = intersect:result()
 
     if(#self.intersectionPoints == 0) then
@@ -78,11 +80,11 @@ function TrimOperation:getIntersectionPoints()
 end
 
 function TrimOperation:trim()
-    local b = EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
     b:appendEntity(self.toTrim)
 
-    b:appendOperation(Push())
-    b:appendOperation(Remove())
+    b:appendOperation(lc.operation.Push())
+    b:appendOperation(lc.operation.Remove())
     b:processStack()
 
     if(self.toTrim.entityType == "line") then
@@ -157,7 +159,7 @@ function TrimOperation:trim()
             end
         end
 
-        b:appendEntity(Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
+        b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
 
     elseif(self.toTrim.entityType == "arc") then
         local center = self.toTrim:center()
@@ -204,10 +206,10 @@ function TrimOperation:trim()
         end
 
         if(nextIntersectAngle ~= endAngle) then
-            b:appendEntity(Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
+            b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
         end
         if(previousIntersectAngle ~= startAngle) then
-            b:appendEntity(Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
+            b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
         end
     else
         message("Unsupported entity", self.target_widget)
