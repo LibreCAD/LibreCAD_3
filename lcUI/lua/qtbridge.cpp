@@ -27,7 +27,6 @@ void addQtBaseBindings(lua_State *L) {
 
 	state["qt"]["loadUi"].setFunction([](const char* fileName) { return std::dynamic_pointer_cast<QMainWindow>(LuaInterface::loadUiFile(fileName)); });
 	state["qt"]["QObject"].setClass(kaguya::UserdataMetatable<QObject>()
-		.setConstructors<QObject()>()
 		.addStaticFunction("findChild", [](QObject* object, std::string name) {
 			return LuaQObject::findChild(object, name);
 		})
@@ -37,7 +36,6 @@ void addQtBaseBindings(lua_State *L) {
 	);
 
 	state["qt"]["QWidget"].setClass(kaguya::UserdataMetatable<QWidget, QObject>()
-		.setConstructors<QWidget()>()
 		.addFunction("addAction", &QWidget::addAction)
 		.addFunction("setWindowTitle", &QWidget::setWindowTitle)
 		.addFunction("show", &QWidget::show)
@@ -51,7 +49,6 @@ void addQtBaseBindings(lua_State *L) {
 	);
 
 	state["qt"]["QAction"].setClass(kaguya::UserdataMetatable<QAction, QObject>()
-		.setConstructors<QAction(), QAction(QObject*)>()
 		.addFunction("setText", &QAction::setText)
 		.addFunction("setIcon", &QAction::setIcon)
 	);
