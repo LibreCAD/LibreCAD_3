@@ -17,9 +17,10 @@ DimLinear::DimLinear(geo::Coordinate definitionPoint,
                      double angle,
                      double oblique,
                      meta::Layer_CSPtr layer,
+                     meta::Viewport_CSPtr viewport,
                      meta::MetaInfo_CSPtr metaInfo,
                      meta::Block_CSPtr block) :
-    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
     Dimension(std::move(definitionPoint),
               std::move(middleOfText),
               attachmentPoint,
@@ -67,6 +68,7 @@ CADEntity_CSPtr DimLinear::move(const geo::Coordinate& offset) const {
                                                     this->_angle,
                                                     this->_oblique,
                                                     this->layer(),
+                                                    viewport(),
                                                     this->metaInfo()
     );
     newDimLinear->setID(this->id());
@@ -86,6 +88,7 @@ CADEntity_CSPtr DimLinear::copy(const geo::Coordinate& offset) const {
                                                     this->_angle,
                                                     this->_oblique,
                                                     this->layer(),
+                                                    viewport(),
                                                     this->metaInfo()
     );
     return newDimLinear;
@@ -104,6 +107,7 @@ CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, double
                                                     this->_angle,
                                                     this->_oblique,
                                                     this->layer(),
+                                                    viewport(),
                                                     this->metaInfo()
     );
     return newDimLinear;
@@ -122,6 +126,7 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
                                                     this->_angle,
                                                     this->_oblique,
                                                     this->layer(),
+                                                    viewport(),
                                                     this->metaInfo()
     );
     return newDimLinear;
@@ -146,6 +151,7 @@ CADEntity_CSPtr DimLinear::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr 
                             this->_angle,
                             this->_oblique,
                             layer,
+                            viewport(),
                             metaInfo,
                             block
     );
@@ -193,6 +199,7 @@ CADEntity_CSPtr DimLinear::setDragPoints(std::map<unsigned int, lc::geo::Coordin
                                                       angle(),
                                                       oblique(),
                                                       layer(),
+                                                      viewport(),
                                                       metaInfo());
         newEntity->setID(id());
         return newEntity;

@@ -23,7 +23,7 @@ void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& eve
         while (canRedo()) {
             operation::Undoable_SPtr undoable = _reDoables.top();
             _reDoables.pop();
-            // Need to get a list of absolete entities, they are all entities that are created in the _reDoables list
+            // Need to get a list of absolute entities, they are all entities that are created in the _reDoables list
             // document()->absolueteEntity(entity);
         }
 
@@ -32,7 +32,7 @@ void UndoManagerImpl::on_CommitProcessEvent(const event::CommitProcessEvent& eve
 
         // Remove old undoables
         if (_unDoables.size() > this->_maximumUndoLevels) {
-            // Need to get a list of absolete entities, they are all entities that are delete in the _unDoables list
+            // Need to get a list of absolute entities, they are all entities that are deleted in the _unDoables list
             // document()->absolueteEntity(entity);
             _unDoables.erase(_unDoables.begin(), _unDoables.begin() + 1);
         }

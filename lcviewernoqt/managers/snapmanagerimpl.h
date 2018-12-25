@@ -37,9 +37,13 @@ namespace lc {
 
                     virtual bool isGridSnappable() const;
 
-                    virtual void snapIntersections(bool enabled);
+                    virtual void setIntersectionsSnappable(bool enabled);
 
-                    virtual bool snapIntersections() const;
+                    virtual bool isIntersectionsSnappable() const;
+
+                    virtual void setMiddleSnappable(bool enabled);
+
+                    virtual void setEntitySnappable(bool enabled);
 
                     virtual void setDeviceLocation(int x, int y);
 

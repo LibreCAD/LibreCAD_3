@@ -12,7 +12,9 @@ SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_
         _gridSnappable(false),
         _snapIntersections(false),
         _distanceToSnap(distanceToSnap),
-        _view(std::move(view)) {
+        _view(std::move(view)),
+        _snapConstrain(SimpleSnapConstrain(lc::SimpleSnapConstrain::NONE, 0, 0.))
+        {
 
 }
 
@@ -49,7 +51,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // person can 'pick' a entity onceand then it would stay in the list of entities to
     // consider for snapping. THis will mostly lickly be lines only
     std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
-                                                                                                  realDistanceForPixels);
+                                                                                                  realDistanceForPixels, _snapConstrain);
     std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
 
     // Emit Snappoint event if a entity intersects with a other entity
@@ -139,14 +141,29 @@ bool SnapManagerImpl::isGridSnappable() const {
     return _gridSnappable;
 }
 
-void SnapManagerImpl::snapIntersections(bool enabled) {
+void SnapManagerImpl::setIntersectionsSnappable(bool enabled) {
     _snapIntersections = enabled;
 }
 
-bool SnapManagerImpl::snapIntersections() const {
+bool SnapManagerImpl::isIntersectionsSnappable() const {
     return _snapIntersections;
 }
 
+void SnapManagerImpl::setMiddleSnappable(bool enabled){
+	if(enabled){
+		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+	}else{
+		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+	}
+}
+
+void SnapManagerImpl::setEntitySnappable(bool enabled){
+	if(enabled){
+		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+	}else{
+		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+	}
+}
 
 Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {
     return _snapPointEvent;

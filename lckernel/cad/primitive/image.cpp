@@ -18,9 +18,10 @@ Image::Image(std::string name,
              double contrast,
              double fade,
              meta::Layer_CSPtr layer,
+             meta::Viewport_CSPtr viewport,
              meta::MetaInfo_CSPtr metaInfo,
              meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
         _name(std::move(name)),
         _base(std::move(base)),
         _uv(std::move(uv)),
@@ -102,6 +103,7 @@ CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
                                             _contrast,
                                             _fade,
                                             layer(),
+                                            viewport(),
                                             metaInfo()
     );
     newImage->setID(this->id());
@@ -119,6 +121,7 @@ CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
                                             _contrast,
                                             _fade,
                                             layer(),
+                                            viewport(),
                                             metaInfo()
     );
     return newImage;
@@ -173,6 +176,7 @@ CADEntity_CSPtr Image::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
             _contrast,
             _fade,
             layer,
+            viewport(),
             metaInfo,
             block
     );

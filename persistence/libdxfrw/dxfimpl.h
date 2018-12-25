@@ -29,6 +29,7 @@
 #define PLUGIN_NAME_CODE 410
 #define ENTITY_NAME_CODE 411
 #define APP_NAME "LibreCAD"
+#define DEFAULT_VIEWPORT "MODEL"
 
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
@@ -215,6 +216,7 @@ namespace lc {
                 lc::operation::Builder_SPtr _builder;
                 lc::operation::EntityBuilder_SPtr _entityBuilder;
                 lc::meta::Block_SPtr _currentBlock;
+                lc::meta::Viewport_CSPtr _currentViewport;
 
             private:
                 /**

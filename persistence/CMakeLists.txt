@@ -27,13 +27,10 @@ set(persistence_hdrs
 find_package(LibDxfrw REQUIRED)
 include_directories(${LIBDXFRW_INCLUDE_DIR})
 
-# LOG4CXX
-find_package(Log4CXX 1.10 REQUIRED)
-if(WINDOWS_MSYS2)
-    find_package(APR)
-endif()
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-link_directories(${LOG4CXX_LIBRARY_DIRS})
+# Boost logging
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -77,7 +74,7 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
-target_link_libraries(persistence lckernel ${LIBDXFRW_LIBRARY} ${LOG4CXX_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+target_link_libraries(persistence lckernel ${LIBDXFRW_LIBRARY} ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
 install(TARGETS persistence DESTINATION lib)

@@ -15,9 +15,10 @@
 #include <nano-signal-slot/nano_signal_slot.hpp>
 
 #include <cad/storage/document.h>
+#include <cad/meta/viewport.h>
 
 // Minimum linewidth we render, below this the lines might start to look 'jagged'
-// We migth want to consider at lower linewidth to simply reduce alpha to get a similar effect of smaller line?
+// We might want to consider at lower linewidth to simply reduce alpha to get a similar effect of smaller line?
 static const double MINIMUM_READER_LINEWIDTH = 1.0;
 
 namespace lc {
@@ -32,7 +33,7 @@ namespace lc {
         class DocumentCanvas : public std::enable_shared_from_this<DocumentCanvas> {
             public:
                 DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document,
-                               std::function<void(double*, double*)> deviceToUser = [](double*, double*) {});
+                               std::function<void(double*, double*)> deviceToUser = [](double* x,double* y){}, meta::Viewport_CSPtr viewport=nullptr);
 
                 virtual ~DocumentCanvas();
 
@@ -190,6 +191,8 @@ namespace lc {
 
                 lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
+                meta::Viewport_CSPtr viewport(){return _viewport;};
+
             private:
                 void on_addEntityEvent(const lc::event::AddEntityEvent&);
 
@@ -240,6 +243,8 @@ namespace lc {
                 std::vector<lc::viewer::LCVDrawItem_SPtr> _newSelection;
 
                 std::function<void(double*, double*)> _deviceToUser;
+
+                meta::Viewport_CSPtr _viewport;
         };
 
         void DocumentCanvas::device_to_user(double* x, double* y) const {

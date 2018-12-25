@@ -9,9 +9,10 @@ using namespace entity;
 Circle::Circle(const geo::Coordinate &center,
                double radius,
                meta::Layer_CSPtr layer,
+               meta::Viewport_CSPtr viewport,
                meta::MetaInfo_CSPtr metaInfo,
                meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
         geo::Circle(center, radius) {
 }
 
@@ -64,19 +65,19 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate &coord) const {
 }
 
 CADEntity_CSPtr Circle::move(const geo::Coordinate &offset) const {
-    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), metaInfo());
+    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), viewport(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::copy(const geo::Coordinate &offset) const {
-    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), metaInfo());
+    auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), viewport(), metaInfo());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     auto newCircle = std::make_shared<Circle>(this->center().rotate(rotation_center, rotation_angle), this->radius(),
-                                              layer(), metaInfo());
+                                              layer(), viewport(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
@@ -85,14 +86,14 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate &scale_center, const geo::Co
     // TODO return ellipse if scalefactor.x != scalefactor.y
 
     auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor),
-                                              this->radius() * fabs(scale_factor.x()), layer(), metaInfo());
+                                              this->radius() * fabs(scale_factor.x()), layer(), viewport(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::mirror(const geo::Coordinate &axis1, const geo::Coordinate &axis2) const {
     auto newCircle = std::make_shared<Circle>(this->center().mirror(axis1, axis2),
-                                              this->radius(), layer(), metaInfo());
+                                              this->radius(), layer(), viewport(), metaInfo());
     newCircle->setID(this->id());
     return newCircle;
 }
@@ -103,7 +104,7 @@ const geo::Area Circle::boundingBox() const {
 }
 
 CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
-    auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, metaInfo, block);
+    auto newEntity = std::make_shared<Circle>(this->center(), this->radius(), layer, viewport(), metaInfo, block);
     newEntity->setID(this->id());
     return newEntity;
 }

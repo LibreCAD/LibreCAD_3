@@ -176,6 +176,7 @@ void addLCBindings(lua_State *L) {
 		.addFunction("cursor", &CadMdiChild::cursor)
 		.addFunction("document", &CadMdiChild::document)
 		.addFunction("saveFile", &CadMdiChild::saveFile)
+		.addFunction("saveAsFile", &CadMdiChild::saveAsFile)
 		.addStaticFunction("getId", [](QWidget* widget) {
 		    return ((CadMdiChild*) widget)->id(); //TODO: kaguya doesn't automatically downcast
 		})
@@ -189,7 +190,12 @@ void addLCBindings(lua_State *L) {
 		.addFunction("viewer", &CadMdiChild::viewer)
 		.addFunction("activeLayer", &CadMdiChild::activeLayer)
 		.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
+		.addFunction("getFilename", &CadMdiChild::getFilename)
+		.addFunction("viewerProxy", &CadMdiChild::viewerProxy)
+		.addFunction("activeViewport", &CadMdiChild::activeViewport)
 	);
+
+    state["lc"]["LCADViewerProxy"].setClass(kaguya::UserdataMetatable<LCADViewerProxy, QObject>());
 
 	state["lc"]["Cursor"].setClass(kaguya::UserdataMetatable<drawable::Cursor>()
 	    .addFunction("position", &drawable::Cursor::position)
@@ -265,6 +271,9 @@ void addLCBindings(lua_State *L) {
 
 	state["lc"]["SnapManager"].setClass(kaguya::UserdataMetatable<manager::SnapManagerImpl>()
 	    .addFunction("setGridSnappable", &manager::SnapManagerImpl::setGridSnappable)
+	    .addFunction("setIntersectionSnappable", &manager::SnapManagerImpl::setIntersectionsSnappable)
+	    .addFunction("setMiddleSnappable", &manager::SnapManagerImpl::setMiddleSnappable)
+	    .addFunction("setEntitySnappable", &manager::SnapManagerImpl::setEntitySnappable)
 	);
 
 	state["lc"]["LinePatternManager"].setClass(kaguya::UserdataMetatable<dialog::LinePatternManager, QDialog>()

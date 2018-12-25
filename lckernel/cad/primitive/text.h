@@ -38,6 +38,7 @@ namespace lc {
                  const TextConst::HAlign halign,
                  const TextConst::VAlign valign,
                  meta::Layer_CSPtr layer,
+                 meta::Viewport_CSPtr viewport,
                  meta::MetaInfo_CSPtr metaInfo = nullptr,
                  meta::Block_CSPtr block = nullptr
             );

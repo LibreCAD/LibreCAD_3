@@ -69,7 +69,7 @@ Coordinate Spline::nearestPointOnPath(const Coordinate &coord) const {
     /* TODO implement
      * fix compiler warning
      */
-    return Coordinate();
+    return Coordinate(coord);//Force the intersection for now
 }
 Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
     /* TODO implement

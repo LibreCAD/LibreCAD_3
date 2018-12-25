@@ -33,6 +33,7 @@ namespace lc {
                          geo::Coordinate definitionPoint2,
                          double leader,
                          meta::Layer_CSPtr layer,
+                         meta::Viewport_CSPtr viewport,
                          meta::MetaInfo_CSPtr metaInfo = nullptr,
                          meta::Block_CSPtr block = nullptr
             );

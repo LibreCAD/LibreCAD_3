@@ -32,11 +32,12 @@ namespace lc {
             Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle,
                 bool isCCW,
                 meta::Layer_CSPtr layer,
+                meta::Viewport_CSPtr viewport,
                 meta::MetaInfo_CSPtr metaInfo = nullptr,
                 meta::Block_CSPtr block = nullptr
             );
 
-            Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block = nullptr);
+            Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block = nullptr);
 
             Arc(const Arc_CSPtr& other, bool sameID = false);
 

@@ -8,6 +8,7 @@
 #include "cad/interface/metatype.h"
 #include "cad/meta/layer.h"
 #include "cad/geometry/geoarea.h"
+#include "cad/meta/viewport.h"
 
 namespace lc {
     namespace builder {
@@ -32,7 +33,7 @@ namespace lc {
              * \sa lc::LineWidth
              * \sa lc::MetaType
              */
-            CADEntity(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
+            CADEntity(meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
 
             CADEntity(const CADEntity_CSPtr& cadEntity, bool sameID);
 
@@ -136,11 +137,14 @@ namespace lc {
              */
             meta::Block_CSPtr block() const;
 
+            meta::Viewport_CSPtr viewport() const{return _viewport;};
+
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);
 
         private:
             meta::Layer_CSPtr _layer;
+            meta::Viewport_CSPtr _viewport;
             meta::MetaInfo_CSPtr _metaInfo;
             meta::Block_CSPtr _block;
         };

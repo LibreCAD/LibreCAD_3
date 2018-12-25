@@ -65,7 +65,7 @@ namespace lc {
 
                 ~LCADViewer();
 
-                void setDocument(std::shared_ptr<lc::storage::Document> document);
+                void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport=nullptr);
 
                 void setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager);
 
@@ -80,6 +80,8 @@ namespace lc {
                 void setOperationActive(bool operationActive);
 
                 const std::shared_ptr<lc::viewer::DocumentCanvas>& docCanvas() const;
+
+                void updateHelper();
 
             protected:
                 void paintEvent(QPaintEvent*);
@@ -106,15 +108,13 @@ namespace lc {
 
                 void mouseReleaseEvent();
 
+                void keyPressEvent(int);
+
                 void drawEvent(const lc::viewer::event::DrawEvent&);
 
                 void selectedItemsEvent(const lc::viewer::event::SelectedItemsEvent&);
 
             public slots:
-
-                void setVerticalOffset(int v);
-
-                void setHorizontalOffset(int v);
 
             private:
                 void createPainters(unsigned int width, unsigned int height);
@@ -141,9 +141,6 @@ namespace lc {
                 double _scale;
                 double _zoomMin;
                 double _zoomMax;
-                int v_ = 0;
-                int h_ = 0;
-
 
                 // When set to true, the line width on screen will scale with the zoom factor
                 bool _scaleLineWidth;

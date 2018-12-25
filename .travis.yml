@@ -16,7 +16,6 @@ matrix:
             - qttools5-dev
             - liblua5.2-dev
             - libcairo2-dev
-            - liblog4cxx10-dev
             - libpango1.0-dev
             - libboost-all-dev
             - libqt5svg5-dev

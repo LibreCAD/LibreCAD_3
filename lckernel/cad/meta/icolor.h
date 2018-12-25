@@ -33,13 +33,22 @@ namespace lc {
             * Use this function if you want to know if a color does exists in DXF and what it's int value is
             */
             int colorToInt(const lc::Color& col) const {
+                int closestColor;
+                double diff=4.;//No. of colors
                 for (int i = 0; i < 256; i++) {
+                    auto tableColor = _intToCol[i]->color();
                     if (_intToCol[i]->color() == col) {
                         return i;
+                    }else{
+                        double newdiff = tableColor.absDiff2(col);
+                        if(newdiff < diff){
+                            diff=newdiff;
+                            closestColor=i;
+                        }
                     }
                 }
 
-                return -1;
+                return closestColor;
             }
 
             /**

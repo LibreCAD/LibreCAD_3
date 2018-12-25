@@ -30,7 +30,7 @@ LCADViewer::~LCADViewer() {
 }
 
 
-void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document) {
+void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport) {
     int width = size().width();
     int height = size().height();
 
@@ -38,7 +38,7 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document) {
 
     _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
         _documentPainter->device_to_user(x, y);
-    });
+    }, viewport);
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
@@ -52,6 +52,9 @@ void LCADViewer::setDragManager(lc::viewer::manager::DragManager_SPtr dragManage
     _dragManager = std::move(dragManager);
 }
 
+void LCADViewer::updateHelper(){
+	update();
+}
 
 void LCADViewer::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
     updateDocument();
@@ -81,10 +84,14 @@ void LCADViewer::keyPressEvent(QKeyEvent* event) {
             _ctrlKeyActive = true;
             break;
 
+        case Qt::Key_Return:
+            //Change focus to command line
+            break;
+
         default:
+            emit keyPressEvent(event->key());
             break;
     }
-
 }
 
 void LCADViewer::keyReleaseEvent(QKeyEvent* event) {
@@ -134,31 +141,6 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
-void LCADViewer::setVerticalOffset(int v) {
-    int val = v_ - v;
-    for(auto pair : imagemaps) {
-        pair.first->translate(0, val * 10);
-    }
-    v_ = v;
-
-    updateBackground();
-    updateDocument();
-    update();
-}
-
-void LCADViewer::setHorizontalOffset(int v) {
-    int val = h_ - v;
-    for(auto pair : imagemaps) {
-        pair.first->translate(val * 20, 0);
-    }
-    h_ = v;
-
-    updateBackground();
-    updateDocument();
-    update();
-}
-
-
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
@@ -168,10 +150,18 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     // Selection by area
     if (_altKeyActive || _mouseScrollKeyActive) {
         if (!startSelectPos.isNull()) {
-            this->_docCanvas->pan(*_documentPainter, event->pos().x(), event->pos().y());
 
+        	auto translateX = event->pos().x()-startSelectPos.x();
+        	auto translateY = event->pos().y()-startSelectPos.y();
+        	startSelectPos = event->pos();
+
+		    for(auto pair : imagemaps) {
+		        _docCanvas->pan(*pair.first, translateX, translateY);
+		    }
+            
             updateBackground();
             updateDocument();
+            update();
         }
     } else {
         if (!startSelectPos.isNull()) {

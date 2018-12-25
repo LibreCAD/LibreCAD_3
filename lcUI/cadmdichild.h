@@ -1,23 +1,14 @@
 #pragma once
-#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QKeyEvent>
-#include <lcadviewer.h>
+#include "lcadviewerproxy.h"
 #include "cad/meta/color.h"
 #include <cad/storage/storagemanager.h>
 
 #include "cad/storage/document.h"
 #include "cad/storage/undomanager.h"
 #include <drawables/lccursor.h>
-#include <managers/snapmanager.h>
-#include <drawables/gradientbackground.h>
-#include <drawables/grid.h>
-#include <drawables/dragpoints.h>
-#include <drawables/tempentities.h>
-
-#include <managers/snapmanagerimpl.h>
-#include "cad/storage/undomanagerimpl.h"
 
 #include <file.h>
 #include <managers/metainfomanager.h>
@@ -61,6 +52,10 @@ namespace lc {
 
                 void keyPressEvent(QKeyEvent* event);
 
+                LCADViewerProxy* viewerProxy() {return _viewerProxy;};
+
+                lc::meta::Viewport_CSPtr activeViewport() const{return _viewerProxy->activeViewport();};
+
             public slots:
 
                 void ctxMenu(const QPoint& pos);
@@ -68,7 +63,7 @@ namespace lc {
             signals:
 
                 void keyPressed(QKeyEvent* event);
-
+		
             public:
                 QWidget* view() const;
 
@@ -80,7 +75,7 @@ namespace lc {
 
                 lc::storage::StorageManager_SPtr storageManager() const;
 
-                lc::ui::LCADViewer* viewer() const { return _viewer; }
+                lc::ui::LCADViewer* viewer() { return _viewerProxy->viewer(); }
 
                 std::shared_ptr<lc::viewer::drawable::Cursor> cursor() const;
 
@@ -113,6 +108,7 @@ namespace lc {
                 std::vector<lc::entity::CADEntity_CSPtr> selection();
 
                 void saveFile();
+                void saveAsFile();
 
                 /**
                  * \brief Get window ID
@@ -129,33 +125,25 @@ namespace lc {
                  */
                 void setId(unsigned int id);
 
-                const viewer::manager::SnapManagerImpl_SPtr& getSnapManager() const;
+                const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
+
+		std::string getFilename() { return _filename; }
 
             private:
+                std::string _filename;
                 unsigned int _id;
+		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
                 kaguya::LuaRef _destroyCallback;
 
                 std::shared_ptr<lc::storage::Document> _document;
-                storage::UndoManagerImpl_SPtr _undoManager;
 
-                std::shared_ptr<lc::viewer::drawable::Grid> _grid;
-                std::shared_ptr<lc::viewer::drawable::GradientBackground> _gradientBackground;
-                std::shared_ptr<lc::viewer::drawable::Cursor> _cursor;
-                viewer::manager::SnapManagerImpl_SPtr _snapManager;
-
-                viewer::manager::DragManager_SPtr _dragManager;
-                viewer::drawable::DragPoints_SPtr _dragPoints;
                 storage::StorageManager_SPtr _storageManager;
-                viewer::drawable::TempEntities_SPtr _tempEntities;
 
                 meta::Layer_CSPtr _activeLayer;
                 ui::MetaInfoManager_SPtr _metaInfoManager;
 
-                QScrollBar* horizontalScrollBar;
-                QScrollBar* verticalScrollBar;
-
-                ui::LCADViewer* _viewer;
+                ui::LCADViewerProxy* _viewerProxy;
         };
     }
 }

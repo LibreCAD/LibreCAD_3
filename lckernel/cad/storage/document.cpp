@@ -17,6 +17,7 @@ Document::Document():
         _replaceEntityEvent(),
         _removeEntityEvent(),
         _addLayerEvent(),
+        _addViewportEvent(),
         _replaceLayerEvent(),
         _removeLayerEvent(),
         _addLinePatternEvent(),
@@ -65,6 +66,10 @@ Nano::Signal<void(const lc::event::RemoveLayerEvent&)>& Document::removeLayerEve
 
 Nano::Signal<void(const lc::event::AddLayerEvent&)>& Document::addLayerEvent() {
     return this->_addLayerEvent;
+}
+
+Nano::Signal<void(const lc::event::AddViewportEvent&)>& Document::addViewportEvent() {
+    return this->_addViewportEvent;
 }
 
 Nano::Signal<void(const lc::event::ReplaceLayerEvent&)>& Document::replaceLayerEvent() {

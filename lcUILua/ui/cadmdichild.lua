@@ -5,6 +5,7 @@ function getWindow(id)
 end
 
 -- Add a new CadMdiChild
+
 function addCadMdiChild(cadMdiChild, id, cliCommand)
     if(cadMdiChild == nil) then
         return
@@ -16,18 +17,28 @@ function addCadMdiChild(cadMdiChild, id, cliCommand)
     windows[id] = cadMdiChild
     cadMdiChild.id = id
 
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mousePressEvent()", function()
+    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mousePressEvent()", function()
         local position = cadMdiChild:cursor():position()
         luaInterface:triggerEvent('point', {position = position, widget = cadMdiChild})
     end)
 
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseReleaseEvent()", function()
+    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseReleaseEvent()", function()
         luaInterface:triggerEvent('selectionChanged', {widget = cadMdiChild})
     end)
 
-    luaInterface:luaConnect(cadMdiChild:viewer(), "mouseMoveEvent()", function()
+    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseMoveEvent()", function()
         local position = cadMdiChild:cursor():position()
         luaInterface:triggerEvent('mouseMove', {position = position, widget = cadMdiChild})
+    end)
+
+    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "keyPressEvent(int)", function(key)
+        --Here int has ascii value
+        if (key==16777216) then
+            --If Escape key is pressed
+            finish_operation(id)
+        else
+            luaInterface:triggerEvent('keyPressed', {key = key, widget = cadMdiChild})
+        end
     end)
 
     luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")

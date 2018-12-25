@@ -7,8 +7,8 @@
 // Created by R. van Twisk on 5/6/15.
 //
 TEST(IntersectTest, LineLine1) {
-    lc::entity::CADEntity_CSPtr i1=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0),  lc::geo::Coordinate(10,10), nullptr);
-    lc::entity::CADEntity_CSPtr i2=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,10), lc::geo::Coordinate(10,0), nullptr);
+    lc::entity::CADEntity_CSPtr i1=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0),  lc::geo::Coordinate(10,10), nullptr, nullptr);
+    lc::entity::CADEntity_CSPtr i2=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,10), lc::geo::Coordinate(10,0), nullptr, nullptr);
     lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, LCTOLERANCE);
     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
     lc::geo::Coordinate c = intersect.result().at(0);
@@ -24,8 +24,8 @@ TEST(IntersectTest, LineLine1) {
 }
 
 TEST(IntersectTest, LineLine2) {
-    lc::entity::CADEntity_CSPtr i1=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0),  lc::geo::Coordinate(10,10), nullptr);
-    lc::entity::CADEntity_CSPtr i2=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,50), lc::geo::Coordinate(50,0), nullptr);
+    lc::entity::CADEntity_CSPtr i1=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,0),  lc::geo::Coordinate(10,10), nullptr, nullptr);
+    lc::entity::CADEntity_CSPtr i2=std::make_shared<lc::entity::Line>(lc::geo::Coordinate(0,50), lc::geo::Coordinate(50,0), nullptr, nullptr);
     lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, LCTOLERANCE);
     visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *i1.get(), *i2.get());
     EXPECT_EQ(0, intersect.result().size());

@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
     auto _document = std::make_shared<lc::storage::DocumentImpl>(_storageManager);
     auto _canvas = std::make_shared<DocumentCanvas>(_document);
 
-    // Add backround
+    // Add background
     auto _gradientBackground = std::make_shared<lc::viewer::drawable::GradientBackground>(lc::Color(0x90, 0x90, 0x90),
                                                                     lc::Color(0x00, 0x00, 0x00));
     _canvas->background().connect<lc::viewer::drawable::GradientBackground, &lc::viewer::drawable::GradientBackground::draw>(_gradientBackground.get());

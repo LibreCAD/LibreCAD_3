@@ -45,8 +45,16 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(met
     return _entities.entitiesByLayer(layer);
 }
 
+EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByViewport(meta::Viewport_CSPtr viewport) const {
+	return _entities.entitiesByViewport(viewport);
+}
+
 meta::Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
     return metaDataTypeByName<meta::Layer>(layerName);
+}
+
+meta::Viewport_CSPtr StorageManagerImpl::viewportByName(const std::string& viewportName) const {
+    return metaDataTypeByName<meta::Viewport>(viewportName);
 }
 
 meta::DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
@@ -59,6 +67,18 @@ std::map<std::string, meta::Layer_CSPtr> StorageManagerImpl::allLayers() const {
         meta::Layer_CSPtr layer = std::dynamic_pointer_cast<const meta::Layer>(iter.second);
         if (layer != nullptr) {
             data.emplace(std::make_pair(layer->name(), layer));
+        }
+    }
+
+    return data;
+}
+
+std::map<std::string, meta::Viewport_CSPtr> StorageManagerImpl::allViewports() const {
+    std::map<std::string, meta::Viewport_CSPtr> data;
+    for (auto& iter : _documentMetaData) {
+        meta::Viewport_CSPtr viewport = std::dynamic_pointer_cast<const meta::Viewport>(iter.second);
+        if (viewport != nullptr) {
+            data.emplace(std::make_pair(viewport->name(), viewport));
         }
     }
 

@@ -14,7 +14,8 @@ TEST(EntityBuilderTest, Append) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 
 	builder->appendEntity(entity);
@@ -35,7 +36,8 @@ TEST(EntityBuilderTest, Remove) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 
 	builder->appendEntity(entity);
@@ -60,7 +62,8 @@ TEST(EntityBuilderTest, UndoRedo) {
 	auto line1 = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto line2 = line1->move(lc::geo::Coordinate());
 
@@ -126,7 +129,8 @@ TEST(EntityBuilderTest, Move) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -154,7 +158,8 @@ TEST(EntityBuilderTest, Copy) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -184,7 +189,8 @@ TEST(EntityBuilderTest, Rotate) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto center = entity->start();
 	const double angle = 1;
@@ -213,7 +219,8 @@ TEST(EntityBuilderTest, Scale) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto center = entity->start();
 	auto factor = lc::geo::Coordinate(2, 2);
@@ -242,7 +249,8 @@ TEST(EntityBuilderTest, Repeat) {
 	auto entity = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 	auto offset = lc::geo::Coordinate(100, 100);
 
@@ -272,13 +280,15 @@ TEST(EntityBuilderTest, SelectByLayer) {
 	auto entityInsideLayer = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			layer
+			layer,
+			nullptr
 	);
 
 	auto entityOutsideLayer = std::make_shared<lc::entity::Line>(
 			lc::geo::Coordinate(0, 0),
 			lc::geo::Coordinate(100, 100),
-			std::make_shared<const lc::meta::Layer>()
+			std::make_shared<const lc::meta::Layer>(),
+			nullptr
 	);
 
 	auto offset = lc::geo::Coordinate(100, 100);

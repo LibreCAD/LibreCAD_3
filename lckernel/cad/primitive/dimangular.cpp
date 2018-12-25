@@ -18,9 +18,10 @@ DimAngular::DimAngular(
     geo::Coordinate defLine21,
     geo::Coordinate defLine22,
     meta::Layer_CSPtr layer,
+    meta::Viewport_CSPtr viewport,
     meta::MetaInfo_CSPtr metaInfo,
     meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
         Dimension(std::move(definitionPoint),
                   std::move(middleOfText),
                   attachmentPoint,
@@ -71,6 +72,7 @@ CADEntity_CSPtr DimAngular::move(const geo::Coordinate& offset) const {
             _defLine21 + offset,
             _defLine22 + offset,
             layer(),
+            viewport(),
             metaInfo()
     );
     newDimAngular->setID(this->id());
@@ -91,6 +93,7 @@ CADEntity_CSPtr DimAngular::copy(const geo::Coordinate& offset) const {
             _defLine21 + offset,
             _defLine22 + offset,
             layer(),
+            viewport(),
             metaInfo()
     );
     return newDimAngular;
@@ -110,6 +113,7 @@ CADEntity_CSPtr DimAngular::rotate(const geo::Coordinate& rotation_center, const
             _defLine21.rotate(rotation_center, rotation_angle), 
             _defLine22.rotate(rotation_center, rotation_angle), 
             layer(), 
+            viewport(),
             metaInfo()
     );
     return newDimAngular;
@@ -129,6 +133,7 @@ CADEntity_CSPtr DimAngular::scale(const geo::Coordinate& scale_center, const geo
             _defLine21.scale(scale_center, scale_factor), 
             _defLine22.scale(scale_center, scale_factor), 
             layer(), 
+            viewport(),
             metaInfo()
     );
     return newDimAngular;
@@ -148,6 +153,7 @@ CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coor
             _defLine21.mirror(axis1,axis2), 
             _defLine22.mirror(axis1,axis2), 
             layer(), 
+            viewport(),
             metaInfo()
     );
     return newDimAngular;
@@ -172,6 +178,7 @@ CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr
         _defLine21,
         _defLine22,
         layer,
+        viewport(),
         metaInfo,
         block
     );
@@ -224,6 +231,7 @@ CADEntity_CSPtr DimAngular::setDragPoints(std::map<unsigned int, lc::geo::Coordi
             dragPoints.at(4),
             dragPoints.at(5),
             layer(),
+            viewport(),
             metaInfo()
         );
         newEntity->setID(id());

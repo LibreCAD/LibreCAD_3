@@ -9,11 +9,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#LOG4CXX
-find_package(Log4CXX REQUIRED)
-include_directories(${LOG4CXX_INCLUDE_DIRS})
-link_directories(${LOG4CXX_LIBRARY_DIRS})
-
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
@@ -44,6 +39,7 @@ lckernel/math/testmatrices.cpp
 lckernel/geometry/beziertest.cpp
 lcviewernoqt/testselection.cpp
 lckernel/meta/customentitystorage.cpp
+lckernel/meta/icolor.cpp
 lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
 lckernel/operations/layerops.cpp
@@ -127,7 +123,8 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
+    set(Boost_USE_STATIC_LIBS ON)
+    find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 
     set(EXTRA_LIBS
@@ -154,4 +151,4 @@ include_directories("${CMAKE_SOURCE_DIR}/persistence")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 add_executable(lcunittest ${src} ${hdrs})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${LOG4CXX_LIBRARIES})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
