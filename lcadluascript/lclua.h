@@ -6,15 +6,7 @@ extern "C" {
     #include "lauxlib.h"
 }
 
-#include "lua-intf/LuaIntf/LuaIntf.h"
 #include <cad/storage/document.h>
-
-namespace LuaIntf {
-    LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
-    LUA_USING_LIST_TYPE(std::vector)
-    LUA_USING_LIST_TYPE(std::unordered_set)
-    LUA_USING_MAP_TYPE(std::map)
-}
 
 namespace lc {
     namespace lua {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lclua.h>
+#include <kaguya/kaguya.hpp>
 
 namespace lc {
     namespace lua {
@@ -23,7 +24,7 @@ namespace lc {
                  * @param name Name of the plugin
                  * @param onNewWaitingEntityFunction Function called when there are entities which needs to be recreated by the plugin
                  */
-                void registerPlugin(const std::string& name, LuaIntf::LuaRef onNewWaitingEntityFunction);
+                void registerPlugin(const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction);
 
                 /**
                  * @brief Remove all registered plugins
@@ -36,7 +37,7 @@ namespace lc {
 
                 void onNewWaitingEntity(const lc::event::NewWaitingCustomEntityEvent& event);
 
-                std::map<std::string, LuaIntf::LuaRef> _plugins;
+                std::map<std::string, kaguya::LuaRef> _plugins;
         };
     }
 }

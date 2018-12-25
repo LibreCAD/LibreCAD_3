@@ -20,7 +20,7 @@ extern "C"
 #include <managers/pluginmanager.h>
 #include "lua/luaqobject.h"
 
-#include "lua-intf/LuaIntf/LuaIntf.h"
+#include <kaguya/kaguya.hpp>
 #include "lua/qtbridge.h"
 
 namespace lc {
@@ -52,7 +52,7 @@ namespace lc {
 				bool luaConnect(
 						QObject* sender,
 						const std::string& signalName,
-						const LuaIntf::LuaRef& slot
+						const kaguya::LuaRef& slot
 				);
 
 				/**
@@ -95,26 +95,26 @@ namespace lc {
                  * \brief Returns current Lua state.
                  * This is used for unit tests.
                  */
-				LuaIntf::LuaState luaState();
+				lua_State* luaState();
 
 				static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-				LuaIntf::LuaRef operation(unsigned int windowID);
+				kaguya::LuaRef operation(unsigned int windowID);
 
-				void setOperation(unsigned int windowID, LuaIntf::LuaRef);
+				void setOperation(unsigned int windowID, kaguya::LuaRef);
 
-				void registerEvent(const std::string& event, const LuaIntf::LuaRef& callback);
+				void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
 
-				void deleteEvent(const std::string& event, const LuaIntf::LuaRef& callback);
+				void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
-				void triggerEvent(const std::string& event, LuaIntf::LuaRef args);
+				void triggerEvent(const std::string& event, kaguya::LuaRef args);
 
 			private:
-				LuaIntf::LuaState _L;
+				kaguya::State _L;
 				std::vector<LuaQObject_SPtr> _luaQObjects;
 				lc::lua::PluginManager _pluginManager;
-				std::map<unsigned int, LuaIntf::LuaRef> _operations;
-				std::map<std::string, std::vector<LuaIntf::LuaRef>> _events;
+				std::map<unsigned int, kaguya::LuaRef> _operations;
+				std::map<std::string, std::vector<kaguya::LuaRef>> _events;
 		};
 	}
 }

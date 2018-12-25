@@ -20,7 +20,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "lua-intf/LuaIntf/LuaIntf.h"
+#include <kaguya/kaguya.hpp>
 
 namespace lc {
     namespace ui {
@@ -48,7 +48,7 @@ namespace lc {
                  * \brief Give function to call when window is destroyed
                  * \param callback Lua function
                  */
-                void setDestroyCallback(LuaIntf::LuaRef destroyCallback);
+                void setDestroyCallback(kaguya::LuaRef destroyCallback);
 
                 void keyPressEvent(QKeyEvent* event);
 
@@ -115,7 +115,7 @@ namespace lc {
                  * \return Window ID
                  * This is used by Lua to distinguish the different windows.
                  */
-                unsigned int id();
+                unsigned int id() const;
 
                 /**
                  * \brief Set window ID
@@ -134,7 +134,7 @@ namespace lc {
                 unsigned int _id;
 		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
-                LuaIntf::LuaRef _destroyCallback;
+                kaguya::LuaRef _destroyCallback;
 
                 std::shared_ptr<lc::storage::Document> _document;
 

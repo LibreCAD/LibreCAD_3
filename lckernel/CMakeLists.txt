@@ -18,17 +18,17 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp
-        cad/storage/settings.cpp
+cad/storage/settings.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
-        cad/storage/documentimpl.cpp
-        cad/storage/entitycontainer.cpp
-        cad/storage/quadtree.cpp
-        cad/storage/storagemanagerimpl.cpp
-        cad/storage/undomanagerimpl.cpp
-        cad/storage/document.cpp
-        cad/math/intersect.cpp
+cad/storage/documentimpl.cpp
+cad/storage/entitycontainer.cpp
+cad/storage/quadtree.cpp
+cad/storage/storagemanagerimpl.cpp
+cad/storage/undomanagerimpl.cpp
+cad/storage/document.cpp
+cad/math/intersect.cpp
 cad/geometry/geoarc.cpp
 cad/geometry/geocircle.cpp
 cad/geometry/geocoordinate.cpp
@@ -44,8 +44,8 @@ cad/meta/viewport.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
-        cad/operations/entitybuilder.cpp
-        cad/operations/entityops.cpp
+cad/operations/entitybuilder.cpp
+cad/operations/entityops.cpp
 cad/operations/documentoperation.cpp
 cad/operations/layerops.cpp
 cad/operations/linepatternops.cpp
@@ -70,17 +70,25 @@ cad/meta/block.cpp
 cad/builders/line.cpp
 cad/builders/arc.cpp
 cad/builders/circle.cpp
+cad/builders/dimaligned.cpp
+cad/builders/dimangular.cpp
+cad/builders/dimension.cpp
+cad/builders/dimdiametric.cpp
+cad/builders/dimlinear.cpp
+cad/builders/dimradial.cpp
+cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
 cad/builders/viewport.cpp
 cad/builders/linepattern.cpp
+cad/builders/spline.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
 cad/operations/builder.cpp
 cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
-        cad/storage/documentlist.cpp
+cad/storage/documentlist.cpp
 cad/logger/logger.cpp
 )
 
@@ -88,18 +96,18 @@ cad/logger/logger.cpp
 set(lckernel_hdrs
 version.h
 cad/const.h
-        cad/storage/settings.h
+cad/storage/settings.h
 cad/base/id.h
 cad/base/cadentity.h
 cad/base/metainfo.h
-        cad/storage/documentimpl.h
-        cad/storage/entitycontainer.h
-        cad/storage/quadtree.h
-        cad/storage/storagemanagerimpl.h
-        cad/storage/undomanagerimpl.h
-        cad/storage/document.h
-        cad/storage/storagemanager.h
-        cad/storage/undomanager.h
+cad/storage/documentimpl.h
+cad/storage/entitycontainer.h
+cad/storage/quadtree.h
+cad/storage/storagemanagerimpl.h
+cad/storage/undomanagerimpl.h
+cad/storage/document.h
+cad/storage/storagemanager.h
+cad/storage/undomanager.h
 cad/events/addentityevent.h
 cad/events/addlayerevent.h
 cad/events/addviewportevent.h
@@ -112,7 +120,7 @@ cad/events/removelinepatternevent.h
 cad/events/replaceentityevent.h
 cad/events/replacelayerevent.h
 cad/events/replacelinepatternevent.h
-        cad/math/intersect.h
+cad/math/intersect.h
 cad/geometry/geobase.h
 cad/geometry/geocoordinate.h
 cad/geometry/geoarc.h
@@ -138,8 +146,8 @@ cad/meta/metacolor.h
 cad/meta/layer.h
 cad/meta/metalinewidth.h
 cad/meta/dxflinepattern.h
-        cad/operations/entitybuilder.h
-        cad/operations/entityops.h
+cad/operations/entitybuilder.h
+cad/operations/entityops.h
 cad/operations/documentoperation.h
 cad/operations/layerops.h
 cad/operations/undoable.h
@@ -161,7 +169,7 @@ cad/primitive/dimlinear.h
 cad/primitive/dimaligned.h
 cad/primitive/dimangular.h
 cad/primitive/textconst.h
-        cad/tools/string_helper.h
+cad/tools/string_helper.h
 cad/primitive/image.h
 cad/math/helpermethods.h
 version.h
@@ -170,7 +178,15 @@ cad/builders/cadentity.h
 cad/builders/line.h
 cad/builders/arc.h
 cad/builders/circle.h
+cad/builders/dimaligned.h
+cad/builders/dimangular.h
+cad/builders/dimension.h
+cad/builders/dimdiametric.h
+cad/builders/dimlinear.h
+cad/builders/dimradial.h
+cad/builders/ellipse.cpp
 cad/builders/point.h
+cad/builders/spline.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
@@ -182,9 +198,9 @@ cad/operations/builder.h
 cad/base/visitor.h
 cad/primitive/customentity.h
 cad/events/newwaitingcustomentityevent.h
-        cad/storage/documentlist.h
+cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
-        cad/interface/tangentable.h
+cad/interface/tangentable.h
 cad/logger/logger.h)
 
 # Boost logging

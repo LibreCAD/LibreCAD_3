@@ -28,7 +28,11 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QListWidget" name="history"/>
+     <widget class="QTextEdit" name="history">
+      <property name="readOnly">
+        <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QLineEdit" name="command"/>

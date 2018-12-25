@@ -17,7 +17,7 @@ function Operations:_init(widget)
 end
 
 function Operations:forMe(event)
-	return event["widget"].id == self.target_widget
+	return lc.CadMdiChild.getId(event["widget"]) == self.target_widget
 end
 
 function Operations:getDistance(center, point)

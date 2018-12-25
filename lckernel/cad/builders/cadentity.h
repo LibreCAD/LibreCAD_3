@@ -3,6 +3,9 @@
 #include <cad/base/cadentity.h>
 
 namespace lc {
+    /**
+     * @brief Contains builders made for creating entities
+     */
     namespace builder {
         class CADEntityBuilder {
             public:
@@ -13,17 +16,20 @@ namespace lc {
                         _layer(nullptr),
                         _viewport(nullptr),
                         _metaInfo(nullptr),
-                        _block(nullptr) {
+                        _block(nullptr),
+                        _id(nullptr) {
                 }
 
-                virtual ~CADEntityBuilder() = default;
+                virtual ~CADEntityBuilder() {
+                    delete _id;
+                };
 
                 void copy(entity::CADEntity_CSPtr entity) {
                     _layer = entity->_layer;
                     _block = entity->_block;
                     _viewport = entity->_viewport;
                     _metaInfo = entity->_metaInfo;
-                    _id.setID(entity->id());
+                    _id->setID(entity->id());
                 }
 
                 /**
@@ -113,8 +119,12 @@ namespace lc {
                  * @brief Get entity ID
                  * @return Entity ID
                  */
-                const ID_DATATYPE id() const {
-                    return  _id.id();
+                ID_DATATYPE id() const {
+                    if(_id == nullptr) {
+                        _id = new entity::ID();
+                    }
+
+                    return  _id->id();
                 }
 
                 /**
@@ -122,18 +132,24 @@ namespace lc {
                  * @param id Entity ID
                  */
                 void setID(ID_DATATYPE id) {
-                    _id.setID(id);
+                    if(_id == nullptr) {
+                        _id = new entity::ID(id);
+                    }
+                    else {
+                        _id->setID(id);
+                    }
                 }
 
                 /**
                  * @brief Generate new ID for the entity
                  */
                 void newID() {
-                    _id = entity::ID();
+                    delete _id;
+                    _id = new entity::ID();
                 }
 
                 virtual bool checkValues() {
-                        return _layer != nullptr;
+                    return _layer != nullptr;
                 }
 
             private:
@@ -141,7 +157,7 @@ namespace lc {
                 meta::Viewport_CSPtr _viewport;
                 meta::MetaInfo_CSPtr _metaInfo;
                 meta::Block_CSPtr _block;
-                entity::ID _id;
+                mutable entity::ID* _id;
         };
     }
 }

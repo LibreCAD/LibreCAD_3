@@ -92,5 +92,5 @@ void LuaCustomEntity::onDragPointRelease(lc::operation::Builder_SPtr builder) co
 
 void LuaCustomEntity::setDragPoint(lc::geo::Coordinate position) const {
     auto newDragPointDupl = _newDragPoint;
-    return newDragPointDupl(shared_from_this(), position);
+    newDragPointDupl(shared_from_this(), position);
 }

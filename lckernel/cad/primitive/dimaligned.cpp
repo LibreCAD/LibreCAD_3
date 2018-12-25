@@ -1,5 +1,6 @@
 #include <map>
 #include "cad/primitive/dimaligned.h"
+#include "dimaligned.h"
 
 
 using namespace lc;
@@ -40,44 +41,13 @@ DimAligned::DimAligned(const DimAligned_CSPtr& other, bool sameID) :
         _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimAligned_SPtr DimAligned::dimAuto(geo::Coordinate p1,
-                                    geo::Coordinate p2,
-                                    geo::Coordinate middleOfText,
-                                    std::string explicitValue,
-                                    meta::Layer_CSPtr layer,
-                                    meta::Viewport_CSPtr viewport,
-                                    meta::MetaInfo_CSPtr metaInfo,
-                                    meta::Block_CSPtr block) {
-    auto nearestPoint = geo::Vector(p1, p2).nearestPointOnPath(middleOfText);
-    auto distance = nearestPoint.distanceTo(middleOfText);
+DimAligned::DimAligned(const lc::builder::DimAlignedBuilder& builder) :
+        CADEntity(builder),
+        Dimension(builder),
+        _definitionPoint2(builder.definitionPoint2()),
+        _definitionPoint3(builder.definitionPoint3()) {
 
-    geo::Coordinate dir;
-    if(((p2.x() - p1.x()) * (middleOfText.y() - p1.y()) - (p2.y() - p1.y()) * (middleOfText.x() - p1.x())) >= 0) {
-        dir = (p2 - p1).rotate(0.5 * M_PI);
-    }
-    else {
-        dir = (p2 - p1).rotate(-0.5 * M_PI);
-    }
-
-    geo::Coordinate p0 = p2.move(dir, distance);
-
-    return std::make_shared<DimAligned>(std::move(p0),
-                                        std::move(middleOfText),
-                                        TextConst::AttachmentPoint::Top_center,
-                                        0.,
-                                        0.,
-                                        TextConst::LineSpacingStyle::AtLeast,
-                                        std::move(explicitValue),
-                                        std::move(p1),
-                                        std::move(p2),
-                                        std::move(layer),
-                                        std::move(viewport),
-                                        std::move(metaInfo),
-                                        std::move(block)
-    );
 }
-
-
 
 CADEntity_CSPtr DimAligned::move(const geo::Coordinate& offset) const {
     auto newDimAligned = std::make_shared<DimAligned>(this->definitionPoint() + offset,

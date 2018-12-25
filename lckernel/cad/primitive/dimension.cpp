@@ -1,5 +1,7 @@
 #include "cad/math/lcmath.h"
 #include "cad/primitive/dimension.h"
+#include "dimension.h"
+
 
 using namespace lc;
 using namespace entity;
@@ -41,6 +43,17 @@ Dimension::Dimension(const Dimension& other) :
         _lineSpacingFactor(other._lineSpacingFactor),
         _lineSpacingStyle(other._lineSpacingStyle),
         _explicitValue(other._explicitValue) {
+
+}
+
+Dimension::Dimension(const builder::DimensionBuilder& builder) :
+    _definitionPoint(builder.definitionPoint()),
+    _middleOfText(builder.middleOfText()),
+    _attachmentPoint(builder.attachmentPoint()),
+    _textAngle(builder.textAngle()),
+    _lineSpacingFactor(builder.lineSpacingFactor()),
+    _lineSpacingStyle(builder.lineSpacingStyle()),
+    _explicitValue(builder.explicitValue()) {
 
 }
 

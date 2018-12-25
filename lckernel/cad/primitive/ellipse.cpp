@@ -2,6 +2,7 @@
 #include <cad/interface/snapconstrain.h>
 #include <cad/interface/snapable.h>
 #include "ellipse.h"
+#include <cad/builders/ellipse.h>
 
 using namespace lc;
 using namespace entity;
@@ -30,6 +31,17 @@ Ellipse::Ellipse(const Ellipse_CSPtr& other, bool sameID) :
                      other->isReversed()) {
 }
 
+Ellipse::Ellipse(const lc::builder::EllipseBuilder& builder) :
+        CADEntity(builder),
+        geo::Ellipse(builder.center(),
+                     builder.majorPoint(),
+                     builder.minorRadius(),
+                     builder.startAngle(),
+                     builder.endAngle(),
+                     builder.isReversed()
+        ) {
+
+}
 
 CADEntity_CSPtr Ellipse::move(const geo::Coordinate &offset) const {
     auto newellipse = std::make_shared<Ellipse>(this->center() + offset,

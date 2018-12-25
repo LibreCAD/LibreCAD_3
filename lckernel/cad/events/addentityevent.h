@@ -27,15 +27,6 @@ namespace lc {
                     return _cadEntity;
                 }
 
-                /*!
-                 * \brief Returns the entity.
-                 * \return CADEntity Entity.
-                 */
-                template<typename T>
-                const std::shared_ptr<const T> entity() const {
-                    return std::dynamic_pointer_cast<const T>(_cadEntity);
-                }
-
             private:
                 const entity::CADEntity_CSPtr _cadEntity;
         };

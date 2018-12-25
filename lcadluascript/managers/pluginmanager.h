@@ -5,7 +5,7 @@ extern "C" {
 #include "lualib.h"
 #include "lauxlib.h"
 }
-#include "lua-intf/LuaIntf/LuaIntf.h"
+
 #include <map>
 
 namespace lc {

@@ -164,12 +164,12 @@ int main(int argc, char** argv) {
     _canvas->newDeviceSize(width, height);
 
     // Render Lua Code
-    auto luaState = LuaIntf::LuaState::newState();
+    kaguya::State luaState;
 
-    lc::lua::PluginManager pluginManager(luaState, "cli");
+    lc::lua::PluginManager pluginManager(luaState.state(), "cli");
     pluginManager.loadPlugins();
 
-    auto lcLua = lc::lua::LCLua(luaState);
+    auto lcLua = lc::lua::LCLua(luaState.state());
     lcLua.setF_openFileDialog(&openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();

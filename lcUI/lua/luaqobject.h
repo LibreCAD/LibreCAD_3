@@ -10,7 +10,7 @@ extern "C"
 #include <QObject>
 #include <QMetaMethod>
 
-#include "lua-intf/LuaIntf/LuaIntf.h"
+#include <kaguya/kaguya.hpp>
 #include "lua/qtbridge.h"
 /**
  * \brief QObject wrapper for Lua
@@ -31,7 +31,7 @@ class LuaQObject : public QObject {
          * \param slot Lua function
          * \return true if connected, false if an error happened
          */
-		bool connect(int signalId, const LuaIntf::LuaRef& slot);
+		bool connect(int signalId, const kaguya::LuaRef& slot);
 
         /**
          * \brief Add signal parameter
@@ -40,7 +40,7 @@ class LuaQObject : public QObject {
          * \param arg Pointer to arg
          * Push a signal parameter to Lua stack
          */
-		void pushArg(const LuaIntf::LuaState& s, int type, void const* arg);
+		void pushArg(kaguya::State& s, int type, void const* arg);
 
         /**
          * \brief Get object name.
@@ -86,7 +86,7 @@ class LuaQObject : public QObject {
 
 		int _slotId;
 		int _signalId;
-		LuaIntf::LuaRef _slotFunction;
+		kaguya::LuaRef _slotFunction;
 
 		bool _valid;
 };

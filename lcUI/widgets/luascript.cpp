@@ -8,7 +8,7 @@ using namespace lc::ui::widgets;
 
 LuaScript::LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
-    _mdiArea(mdiArea),
+	_mdiArea(mdiArea),
 	_cliCommand(cliCommand) {
     ui->setupUi(this);
 }
@@ -22,17 +22,13 @@ void LuaScript::on_luaRun_clicked() {
 	if (QMdiSubWindow* activeSubWindow = _mdiArea->activeSubWindow()) {
         auto mdiChild = qobject_cast<lc::ui::CadMdiChild*>(activeSubWindow->widget());
 
-		auto luaState = LuaIntf::LuaState::newState();
-		auto lcLua = lc::lua::LCLua(luaState);
-		lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
-		lcLua.addLuaLibs();
-		lcLua.importLCKernel();
+		kaguya::State luaState;
+        auto lcLua = lc::lua::LCLua(luaState.state());
+        lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
+        lcLua.addLuaLibs();
+        lcLua.importLCKernel();
         lcLua.setDocument(mdiChild->document());
-
-        auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
-
-		_cliCommand->write(QString::fromStdString(out));
-	}
+    }
 }
 
 void LuaScript::on_open_clicked() {

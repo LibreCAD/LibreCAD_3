@@ -11,106 +11,53 @@ setmetatable(DimRadialOperations, {
 })
 
 function DimRadialOperations:_init(id)
-    self.definitionPoint = nil
-    self.definitionPoint2 = nil
-    self.middleOfText = nil
-    self.text = nil
-
-    self.dimRadial_id = ID():id()
+    CreateOperations._init(self, id, lc.builder.DimRadialBuilder, "enterStartPoint")
 
     message("Click on first definition point", id)
-
-    CreateOperations._init(self, id)
 end
 
-function DimRadialOperations:getDimRadial(defPoint1, defPoint2, middleOfText, text)
-    local layer = active_layer(self.target_widget)
-    local viewport = active_viewport(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimRadial(defPoint1, middleOfText, 5, 0, 1, 1, text, defPoint2, 1, layer, viewport, metaInfo)
-    dim:setId(self.dimRadial_id)
-
-    return dim
-end
-
-function DimRadialOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
+function DimRadialOperations:enterStartPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint(data["position"])
     end
 
-    if(eventName == "point" or eventName == "number") then
-        self:newData(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempDimRadial(data["position"])
-    elseif(eventName == "text") then
-        self:setText(data["text"])
+    if(eventName == "point") then
+        self.step = "enterEndPoint"
+
+        message("Click on end point", self.target_widget)
     end
 end
 
-function DimRadialOperations:newData(data)
-    if(self.definitionPoint == nil) then
-        self.definitionPoint = Operations:getCoordinate(data)
+function DimRadialOperations:enterEndPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint2(data["position"])
+    end
 
-        message("Click on second definition point", self.target_widget)
-    elseif(self.definitionPoint2 == nil) then
-        self.definitionPoint2 = Operations:getCoordinate(data)
+    if(eventName == "point") then
+        self.step = "enterMiddleOfText"
 
-        message("Click on text emplacement", self.target_widget)
-    elseif(self.middleOfText == nil) then
-        self.middleOfText = Operations:getCoordinate(data)
+        message("Click on text position", self.target_widget)
+    end
+end
 
-        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+function DimRadialOperations:enterMiddleOfText(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setMiddleOfText(data["position"])
+    end
+
+    if(eventName == "point") then
+        self.step = "enterText"
+
         cli_get_text(self.target_widget, true)
+
+        message("Enter dimension text (<> for value)", self.target_widget)
     end
 end
 
-function DimRadialOperations:setText(text)
-    if(text == "") then
-        self.text = "<>"
-    else
-        self.text = text
+function DimRadialOperations:enterText(eventName, data)
+    if(eventName == "text") then
+        cli_get_text(self.target_widget, false)
+        self.builder:setExplicitValue(data["text"])
+        self:createEntity()
     end
-
-    cli_get_text(self.target_widget, false)
-    self:createDimRadial()
-end
-
-function DimRadialOperations:createTempDimRadial(point)
-    local definitionPoint = self.definitionPoint
-    local definitionPoint2 = self.definitionPoint2
-    local middleOfText = self.middleOfText
-
-    if(definitionPoint == nil) then
-        definitionPoint = point
-    elseif(definitionPoint2 == nil) then
-        definitionPoint2 = point
-
-        if(definitionPoint:x() == definitionPoint2:x() and definitionPoint:y() == definitionPoint2:y()) then
-            definitionPoint2 = definitionPoint2:add(Coord(0.001,0.001))
-        end
-    elseif(middleOfText == nil) then
-        middleOfText = point
-    end
-
-    definitionPoint2 = definitionPoint2 or definitionPoint:add(Coord(10,0))
-    middleOfText = middleOfText or definitionPoint:add(Coord(5,10))
-
-    self.entity = self:getDimRadial(definitionPoint, definitionPoint2, middleOfText, "<>")
-    CreateOperations.refreshTempEntity(self)
-end
-
-function DimRadialOperations:createDimRadial()
-    CreateOperations.createEntity(self, self:getDimRadial(self.definitionPoint, self.definitionPoint2, self.middleOfText, self.text))
-    CreateOperations.close(self)
-end
-
-function DimRadialOperations:close()
-    if(not self.finished) then
-        if(self.definitionPoint ~= nil and self.definitionPoint2 ~= nil and self.middleOfText ~= nil) then
-            self.text = "<>"
-            self:createDimRadial()
-        end
-    end
-
-    CreateOperations.close(self)
 end

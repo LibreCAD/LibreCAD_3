@@ -11,103 +11,54 @@ setmetatable(DimLinearOperations, {
 })
 
 function DimLinearOperations:_init(id)
-    self.startPoint = nil
-    self.endPoint = nil
-    self.middleOfText = nil
-    self.text = nil
-
-    self.dimLinear_id = ID():id()
-    self.dimLine = nil
+    CreateOperations._init(self, id, lc.builder.DimLinearBuilder, "enterStartPoint")
 
     message("Click on start point", id)
-
-    CreateOperations._init(self, id)
 end
 
-function DimLinearOperations:getDimLinear(startPoint, endPoint, middleOfText, text)
-    local layer = active_layer(self.target_widget)
-    local viewport = active_viewport(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local dim = DimLinear.dimAuto(startPoint, endPoint, middleOfText, text, layer, viewport, metaInfo)
-    dim:setId(self.dimLinear_id)
-
-    return dim
-end
-
-function DimLinearOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
+function DimLinearOperations:enterStartPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint2(data["position"])
     end
 
-    if(eventName == "point" or eventName == "number") then
-        self:newData(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempDimLinear(data["position"])
-    elseif(eventName == "text") then
-        self:setText(data["text"])
-    end
-end
-
-function DimLinearOperations:newData(data)
-    if(self.startPoint == nil) then
-        self.startPoint = Operations:getCoordinate(data)
+    if(eventName == "point") then
+        self.step = "enterEndPoint"
 
         message("Click on end point", self.target_widget)
-    elseif(self.endPoint == nil) then
-        self.endPoint = Operations:getCoordinate(data)
+    end
+end
 
-        message("Give dimension height", self.target_widget)
-    elseif(self.middleOfText == nil) then
-        self.middleOfText = Operations:getCoordinate(data)
+function DimLinearOperations:enterEndPoint(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint3(data["position"])
+    end
 
-        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+    if(eventName == "point") then
+        self.step = "enterMiddleOfText"
+
+        message("Click on text position", self.target_widget)
+    end
+end
+
+function DimLinearOperations:enterMiddleOfText(eventName, data)
+    if(eventName == "mouseMove" or eventName == "point") then
+        self.builder:setDefinitionPoint(data["position"])
+        self.builder:setMiddleOfText(data["position"])
+    end
+
+    if(eventName == "point") then
+        self.step = "enterText"
+
         cli_get_text(self.target_widget, true)
+
+        message("Enter dimension text (<> for value)", self.target_widget)
     end
 end
 
-function DimLinearOperations:setText(text)
-    if(text == "") then
-        self.text = "<>"
-    else
-        self.text = text
+function DimLinearOperations:enterText(eventName, data)
+    if(eventName == "text") then
+        cli_get_text(self.target_widget, false)
+        self.builder:setExplicitValue(data["text"])
+        self:createEntity()
     end
-
-    cli_get_text(self.target_widget, false)
-    self:createDimLinear()
-end
-
-function DimLinearOperations:createTempDimLinear(point)
-    local startPoint = self.startPoint
-    local endPoint = self.endPoint
-    local middleOfText = self.middleOfText
-
-    if(startPoint == nil) then
-        startPoint = point
-    elseif(endPoint == nil) then
-        endPoint = point
-    elseif(middleOfText == nil) then
-        middleOfText = point
-    end
-
-    endPoint = endPoint or startPoint:add(Coord(10,0))
-    middleOfText = middleOfText or startPoint:add(Coord(5,10))
-
-    self.entity = self:getDimLinear(startPoint, endPoint, middleOfText, "<>")
-    CreateOperations.refreshTempEntity(self)
-end
-
-function DimLinearOperations:createDimLinear()
-    CreateOperations.createEntity(self, self:getDimLinear(self.startPoint, self.endPoint, self.middleOfText, self.text))
-    CreateOperations.close(self)
-end
-
-function DimLinearOperations:close()
-    if(not self.finished) then
-        if(self.startPoint ~= nil and self.endPoint ~= nil and self.middleOfText ~= nil) then
-            self.text = "<>"
-            self:createDimLinear()
-        end
-    end
-
-    CreateOperations.close(self)
 end

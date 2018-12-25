@@ -8,6 +8,7 @@
 #include "cad/vo/entitycoordinate.h"
 #include "cad/math/lcmath.h"
 #include <cad/primitive/point.h>
+#include <cad/builders/dimaligned.h>
 #include "cad/interface/draggable.h"
 
 namespace lc {
@@ -18,6 +19,7 @@ namespace lc {
                            public Dimension,
                            virtual public Visitable,
                            public Draggable {
+        friend class lc::builder::DimAlignedBuilder;
         public:
 
 
@@ -33,7 +35,7 @@ namespace lc {
                        geo::Coordinate middleOfText,
                        TextConst::AttachmentPoint attachmentPoint,
                        double textAngle,
-                       double const lineSpacingFactor,
+                       double lineSpacingFactor,
                        TextConst::LineSpacingStyle lineSpacingStyle,
                        std::string explicitValue,
                        geo::Coordinate definitionPoint2,
@@ -46,14 +48,8 @@ namespace lc {
 
             DimAligned(const DimAligned_CSPtr& other, bool sameID = false);
 
-            static DimAligned_SPtr dimAuto(geo::Coordinate p1,
-                                           geo::Coordinate p2,
-                                           geo::Coordinate middleOfText,
-                                           std::string explicitValue,
-                                           meta::Layer_CSPtr layer,
-                                           meta::Viewport_CSPtr viewport,
-                                           meta::MetaInfo_CSPtr metaInfo = nullptr,
-                                           meta::Block_CSPtr block = nullptr);
+        private:
+            DimAligned(const lc::builder::DimAlignedBuilder& builder);
 
         public:
             /**

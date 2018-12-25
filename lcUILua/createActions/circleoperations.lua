@@ -11,61 +11,61 @@ setmetatable(CircleOperations, {
 })
 
 function CircleOperations:_init(id)
-    self.center = nil
-    self.entity_id = ID():id()
+    CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
 
-    CreateOperations._init(self, id)
-    message("Click on center", self.target_widget)
+    self.builder:setRadius(10)
+    message("CIRCLE", self.target_widget)
+    message("Provide Center Point:", self.target_widget)
 end
 
-function CircleOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
+function CircleOperations:enterCenter(eventName, data)
     if(eventName == "point") then
-        self:newPoint(data["position"])
-    elseif(eventName == "mouseMove") then
-        self:createTempCircle(data["position"])
-    elseif(eventName == "number") then
-        self:createCircle(data["number"])
+        self.builder:setCenter(data["position"])
+        message("Options: <Radius> , Diameter", self.target_widget)
+        message("Provide Radius:", self.target_widget)
+        cli_get_text(self.target_widget, true)
+        self.step = "enterRadius"
     end
 end
 
-function CircleOperations:newPoint(point)
-    if(self.center == nil) then
-        self.center = point
-
-        message("Click on second point or enter the radius", self.target_widget)
-    else
-        self:createCircle(point)
+function CircleOperations:enterRadius(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"]))
+    elseif(eventName == "text") then
+        if (tonumber(data["text"]) == nil) then
+            if (string.lower(data["text"]) == "d" or string.lower(data["text"]) == "diameter") then
+                self.builder:setRadius(self.builder:radius() / 2)
+                message("Provide Diameter:", self.target_widget)
+                self.step = "enterDiameter"
+            else
+                message("Invalid input:" .. data["text"] ,self.target_widget)
+                message("Provide Radius:", self.target_widget)
+            end
+        else
+            message(data["text"],self.target_widget)
+            self.builder:setRadius(tonumber(data["text"]))
+            self:createEntity()
+        end
+    end
+    if(eventName == "point") then
+        self:createEntity()
     end
 end
 
-function CircleOperations:getCircle(center, radius)
-    if(type(radius) == "userdata") then
-        radius = center:distanceTo(radius)
+function CircleOperations:enterDiameter(eventName, data)
+    if(eventName == "point" or eventName == "mouseMove") then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"]) / 2)
+    elseif(eventName == "text") then
+        if (tonumber(data["text"]) == nil) then
+            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Provide Diameter:", self.target_widget)
+        else
+            message(data["text"],self.target_widget)
+            self.builder:setRadius(tonumber(data["text"])/2)
+            self:createEntity()
+        end
     end
-
-    local layer = active_layer(self.target_widget)
-    local viewport = active_viewport(self.target_widget)
-    local metaInfo = active_metaInfo(self.target_widget)
-    local c = Circle(center, radius, layer, viewport, metaInfo)
-    c:setId(self.entity_id)
-
-    return c
-end
-
-function CircleOperations:createTempCircle(point)
-    if(self.center ~= nil) then
-        self.entity = self:getCircle(self.center, point)
-        self:refreshTempEntity()
+    if(eventName == "point") then
+        self:createEntity()
     end
-end
-
-function CircleOperations:createCircle(point)
-    local c = self:getCircle(self.center, point)
-    self:createEntity(c)
-
-    CreateOperations.close(self)
 end

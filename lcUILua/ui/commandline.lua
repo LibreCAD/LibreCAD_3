@@ -1,6 +1,6 @@
 local commands = {}
 local cliCommands = {}
-local lastPoint = Coordinate(0,0)
+local lastPoint = lc.geo.Coordinate(0,0)
 
 --Write a message to the command line log
 function message(message, id)
@@ -30,7 +30,7 @@ end
 
 --Execute a command from command line
 function command(id, command)
-    commands[command:toStdString()](id)
+    commands[qt.QString.toStdString(command)](id)
 end
 
 --Store the point in memory when needed for relative coordinates
@@ -71,7 +71,7 @@ function add_commandline(mainWindow, id)
 
     luaInterface:luaConnect(cliCommand, "textEntered(QString)", function(text)
         luaInterface:triggerEvent('text', {
-            text = text:toStdString(),
+            text = qt.QString.toStdString(text),
             widget = mainWindow:centralWidget()
         })
     end)

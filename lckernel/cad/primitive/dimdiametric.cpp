@@ -1,4 +1,6 @@
 #include "cad/primitive/dimdiametric.h"
+#include "dimdiametric.h"
+
 
 using namespace lc;
 using namespace entity;
@@ -29,34 +31,20 @@ DimDiametric::DimDiametric(geo::Coordinate definitionPoint,
 
 }
 
-DimDiametric::DimDiametric(const geo::Coordinate& definitionPoint,
-                           TextConst::AttachmentPoint attachmentPoint,
-                           double lineSpacingFactor,
-                           TextConst::LineSpacingStyle lineSpacingStyle,
-                           std::string explicitValue,
-                           geo::Coordinate definitionPoint2,
-                           double leader,
-                           meta::Layer_CSPtr layer,
-                           meta::Viewport_CSPtr viewport,
-                           meta::MetaInfo_CSPtr metaInfo,
-                           meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
-        Dimension(definitionPoint,
-                  definitionPoint.mid(definitionPoint2),
-                  attachmentPoint,
-                  0.,
-                  lineSpacingFactor,
-                  lineSpacingStyle,
-                  std::move(explicitValue)),
-        _leader(leader),
-        _definitionPoint2(std::move(definitionPoint2)) {
-}
-
 DimDiametric::DimDiametric(const DimDiametric_CSPtr& other, bool sameID) :
         CADEntity(other, sameID),
         Dimension(*other),
         _leader(other->_leader),
         _definitionPoint2(other->definitionPoint2()) {
+
+}
+
+
+DimDiametric::DimDiametric(const lc::builder::DimDiametricBuilder& builder) :
+    CADEntity(builder),
+    Dimension(builder),
+    _leader(builder.leader()),
+    _definitionPoint2(builder.definitionPoint2()) {
 
 }
 

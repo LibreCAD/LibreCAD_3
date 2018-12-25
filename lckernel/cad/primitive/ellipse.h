@@ -10,6 +10,7 @@
 #include "cad/vo/entitycoordinate.h"
 
 #include <cad/meta/layer.h>
+#include <cad/builders/ellipse.h>
 
 namespace lc {
     namespace entity {
@@ -28,6 +29,7 @@ namespace lc {
                         public CADEntity,
                         public geo::Ellipse,
                         public Snapable {
+        friend class builder::EllipseBuilder;
         public:
             /**
              * @brief Create ellipse
@@ -54,6 +56,9 @@ namespace lc {
             );
 
             Ellipse(const Ellipse_CSPtr& other, bool sameID = false);
+
+        private:
+            Ellipse(const lc::builder::EllipseBuilder& builder);
 
         public:
             /**

@@ -1,4 +1,5 @@
 #include "cad/primitive/dimangular.h"
+#include "dimangular.h"
 
 
 using namespace lc;
@@ -46,33 +47,14 @@ DimAngular::DimAngular(const DimAngular_CSPtr& other, bool sameID) :
     _defLine22(other->_defLine22) {
 }
 
-DimAngular_SPtr DimAngular::dimAuto(
-        const geo::Coordinate& center,
-        geo::Coordinate p1,
-        geo::Coordinate p2,
-        std::string explicitValue,
-        meta::Layer_CSPtr layer,
-        meta::Viewport_CSPtr viewport,
-        meta::MetaInfo_CSPtr metaInfo,
-        meta::Block_CSPtr block) {
-    geo::Coordinate middletext(p1.mid(p2));
+DimAngular::DimAngular(const lc::builder::DimAngularBuilder& builder) :
+    CADEntity(builder),
+    Dimension(builder),
+    _defLine11(builder.defLine11()),
+    _defLine12(builder.defLine12()),
+    _defLine21(builder.defLine21()),
+    _defLine22(builder.defLine22()) {
 
-    return std::make_shared<DimAngular>(center,
-                                        std::move(middletext),
-                                        TextConst::AttachmentPoint::Top_center,
-                                        0.,
-                                        0.,
-                                        TextConst::LineSpacingStyle::AtLeast,
-                                        std::move(explicitValue),
-                                        center,
-                                        std::move(p1),
-                                        center,
-                                        std::move(p2),
-                                        std::move(layer),
-                                        std::move(viewport),
-                                        std::move(metaInfo),
-                                        std::move(block)
-    );
 }
 
 

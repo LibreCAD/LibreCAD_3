@@ -1,6 +1,8 @@
 #include "cad/primitive/spline.h"
 #include <algorithm>
 #include "cad/geometry/geoarea.h"
+#include "spline.h"
+
 
 using namespace lc;
 using namespace entity;
@@ -31,6 +33,27 @@ Spline::Spline(
                     flags
         ) {
 	calculateBoundingBox();
+}
+
+Spline::Spline(const lc::builder::SplineBuilder& builder) :
+    CADEntity(builder),
+    geo::Spline(builder.controlPoints(),
+            builder.knotPoints(),
+            builder.fitPoints(),
+            builder.degree(),
+            builder.closed(),
+            builder.fitTolerance(),
+            builder.startTangent().x(),
+            builder.startTangent().y(),
+            builder.startTangent().z(),
+            builder.endTangent().x(),
+            builder.endTangent().y(),
+            builder.endTangent().z(),
+            builder.normalVector().x(),
+            builder.normalVector().y(),
+            builder.normalVector().z(),
+            builder.flags()) {
+
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :

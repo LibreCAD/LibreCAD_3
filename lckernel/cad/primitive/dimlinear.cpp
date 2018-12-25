@@ -1,4 +1,6 @@
 #include "cad/primitive/dimlinear.h"
+#include "dimlinear.h"
+
 
 using namespace lc;
 using namespace entity;
@@ -43,33 +45,15 @@ DimLinear::DimLinear(const DimLinear_CSPtr& other, bool sameID) :
         _definitionPoint3(other->_definitionPoint3) {
 }
 
-DimLinear_SPtr DimLinear::dimAuto(geo::Coordinate const& p1,
-                                  geo::Coordinate const& p2,
-                                  geo::Coordinate const &middleOfText,
-                                  std::string explicitValue,
-                                  meta::Layer_CSPtr layer,
-                                  meta::Viewport_CSPtr viewport,
-                                  meta::MetaInfo_CSPtr metaInfo,
-                                  meta::Block_CSPtr block) {
-    return std::make_shared<DimLinear>(p1,
-                                       middleOfText,
-                                       TextConst::AttachmentPoint::Middle_center,
-                                       0.,
-                                       0.,
-                                       TextConst::LineSpacingStyle::AtLeast,
-                                       std::move(explicitValue),
-                                       p1,
-                                       p2,
-                                       0.,
-                                       0.,
-                                       std::move(layer),
-                                       std::move(viewport),
-                                       std::move(metaInfo),
-                                       std::move(block)
-    );
+DimLinear::DimLinear(const lc::builder::DimLinearBuilder& builder) :
+    CADEntity(builder),
+    Dimension(builder),
+    _angle(builder.angle()),
+    _oblique(builder.oblique()),
+    _definitionPoint2(builder.definitionPoint2()),
+    _definitionPoint3(builder.definitionPoint3()) {
+
 }
-
-
 
 CADEntity_CSPtr DimLinear::move(const geo::Coordinate& offset) const {
     auto newDimLinear = std::make_shared<DimLinear>(this->definitionPoint() + offset,

@@ -1,17 +1,15 @@
 #pragma once
 
+#include <cad/builders/dimension.h>
 #include "cad/geometry/geocoordinate.h"
 #include "cad/primitive/textconst.h"
 #include "cad/base/cadentity.h"
 
 namespace lc {
     namespace entity {
-
-
         /**
         * Base class for all dimensions
         * It takes in the values pretty much as given by the DXF reference
-        * TODO: Should we move some variables to the implementation of an actual Dimension like DimRadial and have all optional variables as part of the meta map?
         */
         class Dimension {
 
@@ -51,7 +49,11 @@ namespace lc {
 
             Dimension(const Dimension& other);
 
+        protected:
+            Dimension(const builder::DimensionBuilder& builder);
+
         public:
+            //TODO: re-enable those methods
             /**
              * @brief move, moves by an offset
              * @param geo::Coordinate offset
@@ -130,6 +132,3 @@ namespace lc {
         DECLARE_SHORT_SHARED_PTR(Dimension)
     }
 }
-
-// Dimension_H
-

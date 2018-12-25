@@ -1,10 +1,11 @@
 #include "customentity.h"
 #include "../primitive/customentity.h"
+#include "lua.h"
 
 using namespace lc;
 using namespace builder;
 
-void CustomEntityBuilder::setSnapFunction(LuaIntf::LuaRef snapFunction) {
+void CustomEntityBuilder::setSnapFunction(kaguya::LuaRef snapFunction) {
     _snapFunction = std::move(snapFunction);
 }
 
@@ -16,57 +17,57 @@ entity::LuaCustomEntity_CSPtr CustomEntityBuilder::build() {
     return entity::LuaCustomEntity_CSPtr(new entity::LuaCustomEntity(*this));
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::snapFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::snapFunction() const {
     return _snapFunction;
 }
 
 bool CustomEntityBuilder::checkValues() {
-    return InsertBuilder::checkValues() &&
-           _snapFunction.isValid() && _snapFunction.isFunction() &&
-           _nearestPointFunction.isValid() && _nearestPointFunction.isFunction() &&
-           _dragPointsFunction.isValid() && _dragPointsFunction.isFunction() &&
-           _newDragPointFunction.isValid() && _newDragPointFunction.isFunction() &&
-           _dragPointsClickedFunction.isValid() && _dragPointsClickedFunction.isFunction() &&
-           _dragPointsReleasedFunction.isValid() && _dragPointsReleasedFunction.isFunction();
+    return InsertBuilder::checkValues() && 
+           _snapFunction.type() == LUA_TFUNCTION &&
+           _nearestPointFunction.type() == LUA_TFUNCTION &&
+           _dragPointsFunction.type() == LUA_TFUNCTION &&
+           _newDragPointFunction.type() == LUA_TFUNCTION &&
+           _dragPointsClickedFunction.type() == LUA_TFUNCTION &&
+           _dragPointsReleasedFunction.type() == LUA_TFUNCTION;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::nearestPointFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::nearestPointFunction() const {
     return _nearestPointFunction;
 }
 
-void CustomEntityBuilder::setNearestPointFunction(const LuaIntf::LuaRef& nearestPointFunction) {
+void CustomEntityBuilder::setNearestPointFunction(const kaguya::LuaRef& nearestPointFunction) {
     _nearestPointFunction = nearestPointFunction;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::dragPointsFunction() const {
     return _dragPointsFunction;
 }
 
-void CustomEntityBuilder::setDragPointsFunction(const LuaIntf::LuaRef& dragPointsFunction) {
+void CustomEntityBuilder::setDragPointsFunction(const kaguya::LuaRef& dragPointsFunction) {
     _dragPointsFunction = dragPointsFunction;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::newDragPointFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::newDragPointFunction() const {
     return _newDragPointFunction;
 }
 
-void CustomEntityBuilder::setNewDragPointFunction(const LuaIntf::LuaRef& newDragPointFunction) {
+void CustomEntityBuilder::setNewDragPointFunction(const kaguya::LuaRef& newDragPointFunction) {
     _newDragPointFunction = newDragPointFunction;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsClickedFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::dragPointsClickedFunction() const {
     return _dragPointsClickedFunction;
 }
 
-void CustomEntityBuilder::setDragPointsClickedFunction(const LuaIntf::LuaRef& dragPointsClickedFunction) {
+void CustomEntityBuilder::setDragPointsClickedFunction(const kaguya::LuaRef& dragPointsClickedFunction) {
     _dragPointsClickedFunction = dragPointsClickedFunction;
 }
 
-const LuaIntf::LuaRef& CustomEntityBuilder::dragPointsReleasedFunction() const {
+const kaguya::LuaRef& CustomEntityBuilder::dragPointsReleasedFunction() const {
     return _dragPointsReleasedFunction;
 }
 
-void CustomEntityBuilder::setDragPointsReleasedFunction(const LuaIntf::LuaRef& dragPointsReleasedFunction) {
+void CustomEntityBuilder::setDragPointsReleasedFunction(const kaguya::LuaRef& dragPointsReleasedFunction) {
     _dragPointsReleasedFunction = dragPointsReleasedFunction;
 }
 

@@ -1,9 +1,9 @@
-[submodule "lcadluascript/lua-intf"]
-	path = lcadluascript/lua-intf
-	url = https://github.com/SteveKChiu/lua-intf
 [submodule "lckernel/nano-signal-slot"]
 	path = lckernel/nano-signal-slot
 	url = https://github.com/feragon/nano-signal-slot
 [submodule "persistence/libopencad"]
 	path = persistence/libopencad
 	url = https://github.com/sandyre/libopencad.git
+[submodule "third_party/kaguya"]
+	path = third_party/kaguya
+	url = https://github.com/satoren/kaguya.git

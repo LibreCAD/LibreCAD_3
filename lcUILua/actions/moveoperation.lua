@@ -50,14 +50,14 @@ function MoveOperation:newData(point)
         message("Give destination point", id)
     elseif(Operations:getCoordinate(point) ~= nil) then
         local offset = point:sub(self.origin)
-        local b = EntityBuilder(getWindow(self.target_widget):document())
+        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
 
         for k, entity in pairs(self.selection) do
             b:appendEntity(entity)
         end
 
-        b:appendOperation(Push())
-        b:appendOperation(Move(offset))
+        b:appendOperation(lc.operation.Push())
+        b:appendOperation(lc.operation.Move(offset))
         b:execute()
 
         self:close()

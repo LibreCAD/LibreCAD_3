@@ -15,13 +15,14 @@ storage::Document_SPtr createDocument() {
 };
 
 CadMdiChild* getMdiChild(lua_State* L) {
-    auto mdiArea = LuaIntf::Lua::getGlobal<QMdiArea*>(L, "mdiArea");
+    kaguya::State state(L);
+    auto windows = state["windows"];
 
-    if(mdiArea->subWindowList().count() == 0) {
-        LuaIntf::LuaRef(L, "new_file")();
+    if(windows.values().empty()) {
+        state["new_file"]();
     }
 
-    mdiArea->setActiveSubWindow(mdiArea->subWindowList().at(0));
+    CadMdiChild* mdiChild = windows[0];
 
-    return dynamic_cast<CadMdiChild*>(mdiArea->subWindowList().at(0)->widget());
+    return mdiChild;
 }
