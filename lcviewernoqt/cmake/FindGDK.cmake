@@ -26,6 +26,7 @@ find_path(GDK_INCLUDE_DIRS
 find_library(GDK_LIBRARIES
         NAMES
         gdk-3
+	gdk-3.dll
 
         PATHS
         /usr/lib
