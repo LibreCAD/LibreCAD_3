@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.6)
 project(LC)
+SET(CMAKE_C_FLAGS    "${CMAKE_C_FLAGS} -pthread")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
