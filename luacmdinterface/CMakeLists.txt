@@ -30,7 +30,6 @@ else ()
 endif ()
 
 # Boost
-set(BOOST_ALL_DYN_LINK ON)
 find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
 FIND_PACKAGE ( Threads REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
