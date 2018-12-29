@@ -6,6 +6,8 @@
 #include <string>
 #include <cad/tools/string_helper.h>
 
+using namespace lc;
+using namespace lc::viewer;
 using namespace lc::viewer::drawable;
 
 Cursor::Cursor(int cursorSize,

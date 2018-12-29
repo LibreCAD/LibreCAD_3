@@ -1,5 +1,6 @@
 #include "paperbackground.h"
 
+using namespace lc;
 using namespace lc::viewer::drawable;
 
 PaperBackground::PaperBackground(int width,int height) : _width(width), _height(height){

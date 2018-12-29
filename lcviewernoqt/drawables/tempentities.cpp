@@ -1,5 +1,7 @@
 #include "tempentities.h"
 
+using namespace lc;
+using namespace lc::viewer;
 using namespace lc::viewer::drawable;
 
 TempEntities::TempEntities(DocumentCanvas_SPtr docCanvas) :

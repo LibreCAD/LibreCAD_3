@@ -127,7 +127,7 @@ namespace lc {
             */
             const geo::Area boundingBox() const override;
 
-            CADEntity_CSPtr modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+            CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
         public:
             void accept(GeoEntityVisitor &v) const override { v.visit(*this); }

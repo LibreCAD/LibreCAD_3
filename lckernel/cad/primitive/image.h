@@ -96,7 +96,7 @@ namespace lc {
                 const geo::Area boundingBox() const override;
 
                 CADEntity_CSPtr modify(meta::Layer_CSPtr layer,
-                                       const meta::MetaInfo_CSPtr metaInfo,
+                                       meta::MetaInfo_CSPtr metaInfo,
                                        meta::Block_CSPtr block) const override;
 
                 const std::string& name() const {

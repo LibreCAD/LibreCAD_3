@@ -1,6 +1,7 @@
 #include "intersect.h"
 #include "cad/math/intersectionhandler.h"
 
+using namespace lc;
 using namespace lc::maths;
 
 
@@ -547,7 +548,15 @@ std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
         }
     }
     */
-    std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+#ifdef __GNUC__
+	std::cerr << __PRETTY_FUNCTION__ << " requires implementation" << std::endl;
+#elif _MSC_VER
+	std::cerr << __FUNCSIG__ << " requires implementation" << std::endl;
+#else
+	std::cerr << "Intersection function requires implementation" << std::endl;
+#endif // __GNUC__
+
+    
 
     return intersect.result();
 }

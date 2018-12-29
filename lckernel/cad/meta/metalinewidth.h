@@ -16,11 +16,12 @@ namespace lc {
 
                 virtual const std::string id() const override;
 
-            private:
-                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
-                    os << "MetaLineWidth()";
-                    return os;
-                }
+		    private:
+				friend std::ostream& operator<<(std::ostream& os, const MetaLineWidth& lineWidth) {
+					os << "MetaLineWidth(LCMETANAME=" << lineWidth.LCMETANAME() << ";"
+						              << ((const EntityMetaType&) lineWidth) << ")";
+					return os;
+				}
         };
 
         class MetaLineWidthByBlock : public MetaLineWidth {
@@ -30,12 +31,12 @@ namespace lc {
                 virtual ~MetaLineWidthByBlock() = default;
 
                 virtual const std::string metaTypeID() const override;
-
-            private:
-                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByBlock& lineWidth) {
-                    os << "MetaLineWidthByBlock()";
-                    return os;
-                }
+				
+		    private:
+				friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByBlock& lineWidthByBlock) {
+					os << "MetaLineWidthByBlock(" << ((const MetaLineWidth&) lineWidthByBlock) << ")";
+					return os;
+				}
         };
 
         class MetaLineWidthByValue : public MetaLineWidth, public DocumentMetaType {
@@ -60,11 +61,12 @@ namespace lc {
             private:
                 double _width;
 
-            private:
-                friend std::ostream& operator<<(std::ostream& os, const MetaLineWidthByValue& lineWidth) {
-                    os << "MetaLineWidthByValue(width=" << lineWidth.width() << ")";
-                    return os;
-                }
+				friend std::ostream& operator << (std::ostream& os, const MetaLineWidthByValue& lineWidthByValue) {
+					os << "MetaLineWidthByValue(" << ((const DocumentMetaType&) lineWidthByValue) << ";"
+			                                      << ((const MetaLineWidth&) lineWidthByValue) 
+						                          << "width=" << lineWidthByValue._width << ")";
+					return os;
+				}
         };
 
         DECLARE_SHORT_SHARED_PTR(MetaLineWidth)

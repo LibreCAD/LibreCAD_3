@@ -2,6 +2,7 @@
 #include <string>
 #include <functional>
 #include <regex>
+#include <cctype>
 
 namespace lc {
     namespace tools {
@@ -59,7 +60,7 @@ namespace lc {
                 struct cmpCaseInsensetive : std::binary_function<std::string, std::string, bool> {
                     // case-independent (ci) compare_less binary function
                     struct nocase_compare : public std::binary_function<unsigned char, unsigned char, bool> {
-                        bool operator()(const unsigned char& c1, const unsigned char& c2) const {
+                        bool operator()(unsigned char c1, unsigned char c2) const {
                             return std::tolower(c1) < std::tolower(c2);
                         }
                     };

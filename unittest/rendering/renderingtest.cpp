@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
 
+#ifdef _MSC_VER
+#include "dirent_msvc.h"
+#else
 #include <dirent.h>
+#endif
 #ifndef WIN32
     #include <sys/types.h>
 #endif

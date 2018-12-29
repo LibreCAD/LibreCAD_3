@@ -1,5 +1,6 @@
 #include "customentitystorage.h"
 
+using namespace lc;
 using namespace lc::meta;
 
 //TODO: get a real ID

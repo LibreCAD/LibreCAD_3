@@ -1,6 +1,8 @@
 #include <cad/interface/unmanageddraggable.h>
 #include "dragmanager.h"
 
+using namespace lc;
+using namespace lc::viewer;
 using namespace lc::viewer::manager;
 
 DragManager::DragManager(DocumentCanvas_SPtr docCanvas, std::shared_ptr<drawable::Cursor> cursor, drawable::TempEntities_SPtr tempEntities, unsigned int size) :

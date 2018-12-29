@@ -64,7 +64,7 @@ namespace lc {
             * @param double rotation_angle
             * @return CADEntity_CSPtr rotated entity
             */
-            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
+            virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
             /**
             * @brief scale, scales the entity
@@ -84,7 +84,7 @@ namespace lc {
             */
             virtual const geo::Area boundingBox() const override;
 
-            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+            virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
             double leader() const;
 

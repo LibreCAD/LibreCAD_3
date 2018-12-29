@@ -6,6 +6,7 @@
 #include <unsupported/Eigen/Polynomials>
 #include <iostream>
 
+using namespace lc;
 using namespace lc::maths;
 using namespace lc::geo;
 
@@ -481,7 +482,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
   *@v, a candidate to verify
   *@return true, for a valid solution
   **/
-bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& m, const geo::Coordinate& v) {
+bool Math::simultaneousQuadraticVerify(const std::vector<std::vector<double> >& m, const Coordinate& v) {
     const double& x = v.x();
     const double& y = v.y();
     const double x2 = x * x;

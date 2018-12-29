@@ -204,6 +204,9 @@ cad/interface/tangentable.h
 cad/logger/logger.h)
 
 # Boost logging
+ADD_DEFINITIONS("-DBOOST_ALL_DYN_LINK")
+ADD_DEFINITIONS("-DBOOST_ALL_NO_LIB")
+
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 

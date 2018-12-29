@@ -55,16 +55,16 @@ namespace lc {
             }
 
             inline unsigned char redI() const {
-                return std::round(_r * 255);
+                return (unsigned char) std::round(_r * 255);
             }
             inline unsigned char greenI() const {
-                return std::round(_g * 255);
+                return (unsigned char) std::round(_g * 255);
             }
             inline unsigned char blueI() const {
-                return std::round(_b * 255);
+                return (unsigned char) std::round(_b * 255);
             }
             inline unsigned char alphaI() const {
-                return std::round(_a * 255);
+                return (unsigned char) std::round(_a * 255);
             }
 
             friend std::ostream& operator<<(std::ostream& os, const Color& color) {

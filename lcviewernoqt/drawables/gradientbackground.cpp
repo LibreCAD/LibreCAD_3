@@ -1,5 +1,6 @@
 #include "gradientbackground.h"
 
+using namespace lc;
 using namespace lc::viewer::drawable;
 
 GradientBackground::GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {

@@ -1,6 +1,7 @@
 #include "linepatternselect.h"
 
 using namespace lc;
+using namespace lc::ui;
 using namespace lc::ui::widgets;
 
 LinePatternSelect::LinePatternSelect(lc::storage::Document_SPtr document, QWidget *parent, bool showByLayer, bool showByBlock) :

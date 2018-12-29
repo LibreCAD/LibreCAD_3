@@ -37,6 +37,7 @@
 
 #include <typeinfo>
 
+using namespace lc;
 using namespace lc::viewer;
 
 DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Viewport_CSPtr viewport) :

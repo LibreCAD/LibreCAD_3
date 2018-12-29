@@ -19,7 +19,7 @@ TEST(lc__entity__EllipseTest, boundingBox) {
     ASSERT_NEAR(res.maxP().y(), 40+21.213203435,0.00000001);
 
 
-    Ellipse el2(geo::Coordinate(0,0), geo::Coordinate(20,0), 10, 0, M_PI_4, false,nullptr,nullptr);
+    Ellipse el2(geo::Coordinate(0,0), geo::Coordinate(20,0), 10, 0, M_PI / 4, false,nullptr,nullptr);
     res = el2.boundingBox();
     ASSERT_TRUE(el2.isArc());
     ASSERT_NEAR(res.minP().x(), 14.14213562373, LCTOLERANCE);

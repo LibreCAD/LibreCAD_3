@@ -2,7 +2,7 @@
 #include <cad/builders/cadentity.h>
 
 using namespace lc;
-using namespace  entity;
+using namespace entity;
 
 CADEntity::CADEntity(meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
         ID(),

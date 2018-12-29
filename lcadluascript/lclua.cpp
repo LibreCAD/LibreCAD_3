@@ -82,12 +82,15 @@ FILE* LCLua::openFile(const char* path, const char* mode) {
 }
 
 std::string LCLua::read(FILE* file, size_t len) {
-    char buf[len + 1];
+	char* buf = new char[len + 1];
 
     size_t n = fread(buf, sizeof(char), len, file);
     buf[n] = '\0';
 
-    return std::string(buf);
+    auto bufferStr = std::string(buf);
+	delete buf;
+
+	return bufferStr;
 }
 
 void LCLua::write(FILE* file, const char* content) {
