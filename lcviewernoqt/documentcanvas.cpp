@@ -492,10 +492,10 @@ void DocumentCanvas::removeSelection() {
     _selectedDrawables.clear();
 }
 
-Nano::Signal<void(event::DrawEvent const & event)> & DocumentCanvas::background ()  {
+Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::background ()  {
     return _background;
 }
-Nano::Signal<void(event::DrawEvent const & event)> & DocumentCanvas::foreground ()  {
+Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::foreground ()  {
     return _foreground;
 }
 
