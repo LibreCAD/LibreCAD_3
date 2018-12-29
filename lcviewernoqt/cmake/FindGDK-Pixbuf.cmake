@@ -26,7 +26,6 @@ find_path(GDK-PIXBUF_INCLUDE_DIRS
 find_library(GDK-PIXBUF_LIBRARIES
         NAMES
         gdk_pixbuf-2.0
-	gdk_pixbuf-2.0.dll
 
         PATHS
         /usr/lib
