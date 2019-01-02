@@ -1,3 +1,4 @@
+#ifdef LIBOPENCAD_ENABLED
 #include "libopencad.h"
 
 #include "../generic/helpers.h"
@@ -176,3 +177,4 @@ lc::meta::MetaInfo_SPtr lc::persistence::LibOpenCad::metaInfo(const CADGeometry*
 lc::geo::Coordinate lc::persistence::LibOpenCad::toLcPostiton(const CADVector& position) {
     return {position.getX(), position.getY(), position.getZ()};
 }
+#endif
