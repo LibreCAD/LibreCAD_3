@@ -59,9 +59,13 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     quickAccessTab:addWidget(creationGroup, lineButton, 0, 0, 1, 1)
     luaInterface:luaConnect(lineButton, "pressed()", function() run_basic_operation(id, LineOperations) end)
 
-    local circleButton = create_button("", ":/icons/circle.svg")
-    quickAccessTab:addWidget(creationGroup, circleButton, 1, 0, 1, 1)
-    luaInterface:luaConnect(circleButton, "pressed()", function() run_basic_operation(id, CircleOperations) end)
+    local defaultCircleButton = create_button("", ":/icons/circle.svg")
+    quickAccessTab:addWidget(creationGroup, defaultCircleButton, 1, 0, 1, 1)
+    luaInterface:luaConnect(defaultCircleButton, "pressed()", function() run_basic_operation(id, CircleOperations) end)
+
+    local tpCircleButton = create_button("", ":/icons/circle.svg")
+    quickAccessTab:addWidget(creationGroup, tpCircleButton, 2, 2, 1, 1)
+    luaInterface:luaConnect(tpCircleButton, "pressed()", function() run_basic_operation(id, CircleOperations, "2p") end)
 
     local arcButton = create_button("", ":/icons/arc.svg")
     quickAccessTab:addWidget(creationGroup, arcButton, 0, 1, 1, 1)

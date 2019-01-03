@@ -5,14 +5,15 @@ setmetatable(CircleOperations, {
     __index = CreateOperations,
     __call = function (o, ...)
         local self = setmetatable({}, o)
-        self:_init(...)
+        CreateOperations._init(self, lc.builder.CircleBuilder, ...)
         return self
     end,
 })
 
-function CircleOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
-    cli_get_text(self.target_widget, true) -- This command prevents the user from entering cordinates in commandline. But at the same time it is needed for receiving text options from user. Alternate method need to be workedout.
+function CircleOperations:_init_default()
+    message("<b>Default circle constructor</b>", self.target_widget)
+    self.step = "enterCenter"
+    cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in commandline. But at the same time it is needed for receiving text options from user. Alternate method need to be workedout.
     self.builder:setRadius(10)
     self.firstpoint = nil
     self.secondpoint = nil
@@ -20,6 +21,10 @@ function CircleOperations:_init(id)
     message("<b>CIRCLE</b>", self.target_widget)
     message("Options: <u>2</u>P, <u>3</u>P, <u>T</u>TT, TT<u>R</u>", self.target_widget)
     message("Provide Center Point:", self.target_widget)
+end
+
+function CircleOperations:_init_2p()
+    message("<b>2P circle constructor</b>", self.target_widget)
 end
 
 function CircleOperations:enterCenter(eventName, data)

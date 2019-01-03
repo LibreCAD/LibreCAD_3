@@ -4,7 +4,7 @@ setmetatable(CreateOperations, {
     __index = Operations
 })
 
-function CreateOperations:_init(id, builder, step)
+function CreateOperations:_init(builder, id, options)
     Operations._init(self, id)
 
     self.prevEntity = nil
@@ -12,9 +12,17 @@ function CreateOperations:_init(id, builder, step)
         self.builder = builder()
     end
 
-    self.step = step
+    if(options == nil) then
+        self:_init_default()
+    elseif(self["_init_" .. tostring(options)]) then
+        self["_init_" .. tostring(options)](self)
+    end
 
     self:registerEvents()
+end
+
+function CreateOperations:_init_default()
+
 end
 
 function CreateOperations:onEvent(eventName, data)
