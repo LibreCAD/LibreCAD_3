@@ -123,20 +123,56 @@ This is the only way to get LibreCAD running on Windows at the moment.
 ### MSYS2
 
 ```
-pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest
+pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest git mingw-w64-x86_64-cmake mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-boost mingw-w64-x86_64-gdk-pixbuf2 mingw-w64-x86_64-gtk3 mingw-w64-x86_64-curl mingw-w64-x86_64-pkg-config
+
+cd ~
+git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
+```
+
+#### libdxfrw:
+```
+git clone https://github.com/LibreCAD/libdxfrw.git LibreCAD_3/third_party/libdxfrw
+cd ~/LibreCAD_3/third_party/libdxfrw
+mkdir build
+cd build
+/mingw64/bin/cmake \
+    -G "MSYS Makefiles" \
+    -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+    -DCMAKE_AR=/mingw64/bin/ar.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    ..
+
+mingw32-make
 ```
 
 #### LibreCAD:
 
 ```
+cd ~/LibreCAD_3
 mkdir build
 cd build
-cmake -DWINDOWS_MSYS2=ON ..
+
+/mingw64/bin/cmake \
+    -G "MSYS Makefiles" \
+    -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
+    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
+    -DCMAKE_AR=/mingw64/bin/ar.exe \
+    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
+    -DCMAKE_C_FLAGS=-Wa,-mbig-obj \
+    -DCMAKE_CXX_FLAGS=-Wa,-mbig-obj \
+    -DLIBDXFRW_PATH=~/LibreCAD_3/third_party/libdxfrw/build \
+    -DWITH_LIBOPENCAD=OFF \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_FIND_LIBRARY_SUFFIXES=".dll.a" \
+    ..
+
+
+mingw32-make
 ```
 
-Create symlinks for .so files with ```ln -s ../lc*/lib*.so```
+Add each filder containing .dll files (including /mingw64/bin) to %PATH%.
 
-Replace paths in build/lcUI/path.lua with Windows-style paths ```C:\msys64\…```
 
 Reading materials for feature usage
 =========
