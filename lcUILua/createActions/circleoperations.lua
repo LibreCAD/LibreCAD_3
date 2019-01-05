@@ -45,13 +45,11 @@ end
 
 function CircleOperations:_init_3t()
     message("<b>CIRCLE</b>", self.target_widget)
-    message("Provide First Point:", self.target_widget) 
     self.step = "CircleWith3Tans"
 end
 
 function CircleOperations:_init_2t()
     message("<b>CIRCLE</b>", self.target_widget)
-    message("Provide First Point:", self.target_widget) 
     self.step = "CircleWith2Tans"
 end
 
