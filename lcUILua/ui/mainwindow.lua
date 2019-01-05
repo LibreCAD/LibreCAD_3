@@ -96,11 +96,22 @@ local function create_menu(mainWindow, widget, commandLine)
     local settings = menuBar:addMenuStr(qt.QString("Settings Manager"))
     local lcTolerance = settings:addActionStr(qt.QString("LCTOLERANCE"))
 
+    --luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
+
     luaInterface:luaConnect(mainWindow:findChild("actionNew"), "triggered(bool)", new_file)
     luaInterface:luaConnect(mainWindow:findChild("actionOpen"), "triggered(bool)", open_file)
     luaInterface:luaConnect(mainWindow:findChild("actionSave_2"), "triggered(bool)", function()
         save_file(widget.id)
     end)
+    luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "cr") end)
+    luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "cd") end)
+
+    luaInterface:luaConnect(mainWindow:findChild("action2_Point_Circle"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "2p") end)
+    luaInterface:luaConnect(mainWindow:findChild("action3_Point_Circle_2"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "3p") end)
+    luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Radius"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "2t") end)
+    luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Tan"), "triggered(bool)", function() run_basic_operation(widget.id, CircleOperations, "3t") end)
+
+
 
     luaInterface:connect(mainWindow:findChild("actionExit"), "triggered(bool)", mainWindow, "close()")
 
