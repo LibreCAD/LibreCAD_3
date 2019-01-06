@@ -28,7 +28,7 @@ namespace lc {
                      * \param mdiArea Pointer to QMdiArea
                      * \param cliCommand Pointer to CliCommand
                      */
-					explicit LuaScript(QMdiArea* mdiArea, CliCommand* cliCommand);
+					explicit LuaScript(CadMdiChild* mdiArea, CliCommand* cliCommand);
 
 					virtual ~LuaScript();
 
@@ -51,7 +51,7 @@ namespace lc {
 
 				private:
 					Ui::LuaScript* ui;
-					QMdiArea* _mdiArea;
+					CadMdiChild* _mdiChild;
 					CliCommand* _cliCommand;
 			};
 		}

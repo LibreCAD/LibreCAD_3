@@ -216,7 +216,7 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript, QWidget>()
-	    .setConstructors<widgets::LuaScript(QMdiArea*, widgets::CliCommand*)>()
+	    .setConstructors<widgets::LuaScript(CadMdiChild*, widgets::CliCommand*)>()
 	);
 
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
