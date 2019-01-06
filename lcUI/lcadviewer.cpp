@@ -2,6 +2,7 @@
 #include <QtGui>
 #include <QVBoxLayout>
 
+using namespace lc;
 using namespace lc::ui;
 
 LCADViewer::LCADViewer(QWidget *parent) :

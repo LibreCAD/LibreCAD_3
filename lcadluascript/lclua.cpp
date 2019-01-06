@@ -3,6 +3,15 @@
 #include <utils/timer.h>
 #include <managers/luacustomentitymanager.h>
 #include <kaguya/kaguya.hpp>
+#include <bridge/lc.h>
+#include <bridge/lc_geo.h>
+#include <bridge/lc_meta.h>
+#include <bridge/lc_entity.h>
+#include <bridge/lc_builder.h>
+#include <bridge/lc_storage.h>
+#include <bridge/lc_maths.h>
+#include <bridge/lc_operation.h>
+#include <bridge/lc_event.h>
 
 using namespace lc::lua;
 
@@ -82,12 +91,15 @@ FILE* LCLua::openFile(const char* path, const char* mode) {
 }
 
 std::string LCLua::read(FILE* file, size_t len) {
-    char buf[len + 1];
+	char* buf = new char[len + 1];
 
     size_t n = fread(buf, sizeof(char), len, file);
     buf[n] = '\0';
 
-    return std::string(buf);
+    auto bufferStr = std::string(buf);
+	delete buf;
+
+	return bufferStr;
 }
 
 void LCLua::write(FILE* file, const char* content) {
@@ -96,4 +108,18 @@ void LCLua::write(FILE* file, const char* content) {
 
 void LCLua::setF_openFileDialog(FILE* (* f_openFileDialog)(bool, const char*, const char*)) {
     _f_openFileDialog = f_openFileDialog;
+}
+
+void LCLua::importLCKernel() {
+    kaguya::State state(_L);
+
+    import_lc_namespace(state);
+    import_lc_geo_namespace(state);
+    import_lc_meta_namespace(state);
+    import_lc_entity_namespace(state);
+    import_lc_builder_namespace(state);
+    import_lc_storage_namespace(state);
+    import_lc_maths_namespace(state);
+    import_lc_event_namespace(state);
+    import_lc_operation_namespace(state);
 }

@@ -1,5 +1,6 @@
 #include "lcadpaperviewer.h"
 
+using namespace lc;
 using namespace lc::ui;
 using namespace lc::viewer;
 

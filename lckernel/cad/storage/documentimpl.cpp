@@ -6,6 +6,7 @@
 #include <cad/primitive/insert.h>
 #include <cad/primitive/customentity.h>
 
+using namespace lc;
 using namespace lc::storage;
 
 DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :

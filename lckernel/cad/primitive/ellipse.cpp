@@ -270,7 +270,7 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
         }
 
         geo::Coordinate minorP(this->majorP().angle());
-        minorP = minorP.rotate(M_PI_2);
+        minorP = minorP.rotate(M_PI / 2);
         minorP = minorP * this->minorRadius();
 
         if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) {
@@ -286,12 +286,12 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
             }
 
             tmp = center() + minorP;
-            if (this->isAngleBetween(M_PI_2)) {
+            if (this->isAngleBetween(M_PI / 2)) {
                 resPoints.emplace_back(tmp, ind++);
             }
 
             tmp = center() - minorP;
-            if (this->isAngleBetween(-M_PI_2)) {
+            if (this->isAngleBetween(-M_PI / 2)) {
                 resPoints.emplace_back(tmp, ind++);
             }
         }

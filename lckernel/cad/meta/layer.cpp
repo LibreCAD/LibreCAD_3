@@ -2,6 +2,7 @@
 #include "cad/tools/string_helper.h"
 #include <cassert>
 
+using namespace lc;
 using namespace lc::meta;
 
 Layer::Layer(std::string name,

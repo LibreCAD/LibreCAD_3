@@ -64,6 +64,8 @@ if(WITH_LIBOPENCAD)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
     set(OPENCAD_LIB opencad)
+
+	add_definitions(-DLIBOPENCAD_ENABLED)
 endif()
 
 # DEBUGGING PATHS

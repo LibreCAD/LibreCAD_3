@@ -1,6 +1,8 @@
 #include "file.h"
 #include "libdxfrw/dxfimpl.h"
+#ifdef LIBOPENCAD_ENABLED
 #include "libopencad_interface/libopencad.h"
+#endif
 
 using namespace lc::persistence;
 
@@ -65,12 +67,14 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
             break;
         }
 
+#ifdef LIBOPENCAD_ENABLED
         case LIBOPENCAD: {
             lc::persistence::LibOpenCad opencad(document, builder);
             opencad.open(path);
             version = Type::LIBOPENCAD_DWG;
             break;
         }
+#endif
     }
 
     builder->execute();
@@ -114,7 +118,9 @@ std::map<File::Library, std::string> File::getAvailableLibrariesForFormat(std::s
         libraries.insert(std::pair<File::Library, std::string>(LIBDXFRW, "libdxfrw"));
     }
     if(format == "dwg") {
+#ifdef LIBOPENCAD_ENABLED
         libraries.insert(std::pair<File::Library, std::string>(LIBOPENCAD, "libopencad"));
+#endif
     }
 
     return libraries;

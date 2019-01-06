@@ -32,8 +32,8 @@
 template <typename T>
 class hasNearestPointOnEntity{
 	private:
-		typedef int Yes;
-		typedef long No;
+		typedef char Yes;
+		typedef double No;
 
 		template <typename C> static Yes& test(decltype(&C::hasNearestPointOnEntity));
 		template <typename C> static No& test(...);

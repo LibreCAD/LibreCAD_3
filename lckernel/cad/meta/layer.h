@@ -60,7 +60,7 @@ namespace lc {
                 bool _isFrozen;
 
                 friend std::ostream& operator<<(std::ostream& os, const Layer& layer) {
-                    os << "Layer(name" << layer.name() << " lineWidth=" << layer.lineWidth() << " color="
+                    os << "Layer(name=" << layer.name() << " lineWidth=" << layer.lineWidth() << " color="
                        << layer.color() << ")" << std::endl;
                     return os;
                 }

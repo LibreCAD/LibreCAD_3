@@ -3,6 +3,8 @@
 #include "layers.h"
 #include "ui_layers.h"
 
+using namespace lc;
+using namespace lc::ui;
 using namespace lc::ui::widgets;
 
 Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :

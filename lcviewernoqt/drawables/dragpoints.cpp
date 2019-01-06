@@ -1,5 +1,7 @@
 #include "dragpoints.h"
 
+using namespace lc;
+using namespace lc::viewer;
 using namespace lc::viewer::drawable;
 
 void DragPoints::setPoints(event::DragPointsEvent const &points) {

@@ -105,12 +105,9 @@ if(WITH_RENDERING_UNITTESTS)
     include_directories(${GDK_INCLUDE_DIRS})
 
     #GLib
-    find_package(GLib)
+    set(GLIB_FIND_COMPONENTS gobject)
+    find_package(GLib REQUIRED)
     include_directories(${GLib_INCLUDE_DIRS})
-
-    #GObject
-    find_package(GObject)
-    include_directories(${GOBJECT_INCLUDE_DIR})
 
     # Cairo
     find_package(Cairo 1.13 REQUIRED)
@@ -123,7 +120,6 @@ if(WITH_RENDERING_UNITTESTS)
 
     # Boost
     set(Boost_USE_MULTITHREADED ON)
-    set(Boost_USE_STATIC_LIBS ON)
     find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 
@@ -133,8 +129,8 @@ if(WITH_RENDERING_UNITTESTS)
         ${PANGO_LIBRARIES}
         ${GDK-PIXBUF_LIBRARIES}
         ${GDK_LIBRARIES}
-        ${GLib_LIBRARY}
-        ${GOBJECT_LIBRARIES}
+	${GLIB_GOBJECT_LIBRARIES}
+	${GLib_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 

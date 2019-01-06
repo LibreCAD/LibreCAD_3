@@ -7,6 +7,7 @@
 #include <numeric>
 #include "cad/tools/string_helper.h"
 
+using namespace lc;
 using namespace lc::meta;
 
 std::string DxfLinePattern::description() const {
@@ -18,7 +19,7 @@ DxfLinePatternByValue::DxfLinePatternByValue(std::string name, std::string descr
         _description(std::move(description)),
         _path(std::move(path)),
         _length(length) {
-    assert(!tools::StringHelper::isBlank(_name) > 0 && "Name of DxfLinePatternByValue must be given");
+    assert(!tools::StringHelper::isBlank(_name) && "Name of DxfLinePatternByValue must be given");
     // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }
 

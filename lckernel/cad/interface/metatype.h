@@ -29,8 +29,8 @@ namespace lc {
                 virtual const std::string id() const = 0;
 
             private:
-                friend std::ostream& operator<<(std::ostream& os, const MetaType& lineWidth) {
-                    os << "MetaType()" << std::endl;;
+                friend std::ostream& operator<<(std::ostream& os, const MetaType& metaType) {
+                    os << "MetaType(" << metaType.id() << ")" << std::endl;
                     return os;
                 }
 
@@ -48,8 +48,8 @@ namespace lc {
                 virtual const std::string name() const = 0;
 
             private:
-                friend std::ostream& operator<<(std::ostream& os, const DocumentMetaType& lineWidth) {
-                    os << "DocumentMetaType()" << std::endl;
+                friend std::ostream& operator<<(std::ostream& os, const DocumentMetaType& documentMetaType) {
+					os << "DocumentMetaType(" << ((const MetaType&) documentMetaType) << "; "<< documentMetaType.name() << ")" << std::endl;
                     return os;
                 }
         };
@@ -66,8 +66,8 @@ namespace lc {
                 virtual const std::string metaTypeID() const = 0;
 
             private:
-                friend std::ostream& operator<<(std::ostream& os, const EntityMetaType& lineWidth) {
-                    os << "EntityMetaType()" << std::endl;;
+                friend std::ostream& operator<<(std::ostream& os, const EntityMetaType& entityMetaType) {
+					os << "EntityMetaType(" << ((const MetaType&)entityMetaType) << "; " << entityMetaType.metaTypeID() << ")" << std::endl;;
                     return os;
                 }
         };

@@ -497,7 +497,7 @@ public:
      */
     void set_dash(const double *dashes, const int num_dashes, double offset, bool scaled) {
         if (scaled) {
-            double scaledDashes[num_dashes];
+            auto scaledDashes = new double[num_dashes];
             memcpy(&scaledDashes, dashes, num_dashes * sizeof(double));
 
             double _scale = scale();
@@ -507,6 +507,7 @@ public:
             }
 
             cairo_set_dash(_cr, scaledDashes, num_dashes, offset);
+			delete scaledDashes;
         } else {
             cairo_set_dash(_cr, dashes, num_dashes, offset);
         }

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef LIBOPENCAD_ENABLED
+
 #include <cad/storage/document.h>
 #include <cad/operations/entitybuilder.h>
 #include <cad/meta/layer.h>
@@ -43,3 +45,5 @@ namespace lc {
         };
     }
 }
+
+#endif

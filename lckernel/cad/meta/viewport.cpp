@@ -1,5 +1,6 @@
 #include "viewport.h"
 
+using namespace lc;
 using namespace lc::meta;
 
 Viewport::Viewport(std::string name) :

@@ -26,10 +26,10 @@ TEST(lc__geo__EllipseTest, getPoint) {
     ASSERT_NEAR(c3.distanceTo(Coordinate(-8.94427191,-8.94427191)), 0, 0.0000001);
     ASSERT_NEAR(c4.distanceTo(Coordinate(8.94427191,-8.94427191)), 0, 0.0000001);
 
-    Ellipse el2(Coordinate(0.,0.), Coordinate(20.,0).rotate(M_PI_4),10, 0, 0);
+    Ellipse el2(Coordinate(0.,0.), Coordinate(20.,0).rotate(M_PI / 4),10, 0, 0);
     a1 = el2.getEllipseAngle(Coordinate(0, 1));
     c1 = el2.getPoint(a1);
-    c2 = Coordinate(8.94427191,8.94427191).rotate(M_PI_4);
+    c2 = Coordinate(8.94427191,8.94427191).rotate(M_PI / 4);
     ASSERT_NEAR(c1.distanceTo(c2), 0, 0.0000001);
 }
 

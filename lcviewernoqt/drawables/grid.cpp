@@ -4,6 +4,7 @@
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
 
+using namespace lc;
 using namespace lc::viewer::drawable;
 
 Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :

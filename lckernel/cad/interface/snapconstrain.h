@@ -73,7 +73,7 @@ namespace lc {
         }
 
         bool hasConstrain(uint16_t constrain) const {
-            return (bool) (_constrain & constrain);
+            return (_constrain & constrain) != 0;
         }
 
 
