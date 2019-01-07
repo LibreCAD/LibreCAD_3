@@ -167,7 +167,13 @@ std::map<std::string, lc::meta::Layer_CSPtr> DocumentImpl::allLayers() const {
 }
 
 lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) const {
-    return _storageManager->layerByName(layerName);
+    auto x =  _storageManager->layerByName(layerName);
+    if (x==nullptr){
+    	//If layer not found create one
+    	x=std::make_shared<meta::Layer>(layerName, meta::MetaLineWidthByValue(1.0), Color(255, 255, 255));
+        _storageManager->addDocumentMetaType(x);
+    }
+    return x;
 }
 
 std::map<std::string, lc::meta::Viewport_CSPtr> DocumentImpl::allViewports() const {
