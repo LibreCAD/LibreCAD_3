@@ -417,7 +417,33 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
     _entityBuilder->appendEntity(lcLWPolyline);
 }
 
+//Handle polyline as lwpolyline
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
+    auto layer = _document->layerByName(data.layer);
+    std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
+
+    std::vector<lc::entity::LWVertex2D> points;
+    for (const auto& i : data.vertlist) {
+        points.emplace_back(lc::geo::Coordinate(i->basePoint.x, i->basePoint.y), i->bulge, i->stawidth, i->endwidth);
+    }
+
+    auto isCLosed = (unsigned int) data.flags & 0x01u;
+
+    auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
+            points,
+            0.0,
+            0.0,
+            0.0,
+            isCLosed,
+            coord(data.extPoint),
+            layer,
+            _currentViewport,
+            mf,
+            _currentBlock
+    );
+
+    _entityBuilder->appendEntity(lcLWPolyline);
+
 }
 
 void DXFimpl::addMText(const DRW_MText& data) {
