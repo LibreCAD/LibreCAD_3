@@ -107,8 +107,12 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
 }
 
 const geo::Area Text::boundingBox() const {
-    // TODO create bounding box for text
-    return geo::Area(geo::Coordinate(0., 0.), geo::Coordinate(0., 0.));
+    //TODO Fix this
+    // Rough bounding box
+    // Assume that the font has char max. width equal to height
+    // Assume single line
+    double width = this->_height * (this->_text_value).size() / 2;
+    return geo::Area(this->_insertion_point - geo::Coordinate(width, width), this->_insertion_point + geo::Coordinate(width, width));
 }
 
 CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
