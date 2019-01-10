@@ -70,7 +70,7 @@ namespace lc {
 
                 virtual void addLeader(const DRW_Leader* data) override {}
 
-                virtual void addViewport(const DRW_Viewport& data) override {}
+                virtual void addViewport(const DRW_Viewport& data) override;
 
                 virtual void linkImage(const DRW_ImageDef* data) override;
 
@@ -241,6 +241,7 @@ namespace lc {
 
                 std::vector<DRW_Image> imageMapCache;
                 std::map<std::string, lc::meta::Block_CSPtr> _blocks;
+                std::map<int, lc::meta::Block_CSPtr> _handleBlock;
         };
     }
 }
