@@ -20,7 +20,7 @@ TEST(BuilderTest, Process) {
     auto block = std::make_shared<Block>("Block", lc::geo::Coordinate());
     auto addBlock = std::make_shared<lc::operation::AddBlock>(document, block);
 
-    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer,  nullptr);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer);
     auto addLine = std::make_shared<lc::operation::EntityBuilder>(document);
     addLine->appendEntity(line);
 
@@ -56,7 +56,7 @@ TEST(BuilderTest, Undo) {
     auto block = std::make_shared<Block>("Block", lc::geo::Coordinate());
     auto addBlock = std::make_shared<lc::operation::AddBlock>(document, block);
 
-    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer, nullptr);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer);
     auto addLine = std::make_shared<lc::operation::EntityBuilder>(document);
     addLine->appendEntity(line);
 
@@ -85,7 +85,7 @@ TEST(BuilderTest, Redo) {
     auto block = std::make_shared<Block>("Block", lc::geo::Coordinate());
     auto addBlock = std::make_shared<lc::operation::AddBlock>(document, block);
 
-    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer, nullptr);
+    auto line = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), layer);
     auto addLine = std::make_shared<lc::operation::EntityBuilder>(document);
     addLine->appendEntity(line);
 

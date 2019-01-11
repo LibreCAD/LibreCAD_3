@@ -17,7 +17,7 @@ std::vector<lc::geo::Coordinate> DragManager::closeEntitiesDragPoints() {
 
     auto entities = _docCanvas->selectedDrawables();
     if(entities.empty()) {
-        auto entitiesInSelection = _docCanvas->document()->entitiesByViewport(_docCanvas->viewport()).entitiesWithinAndCrossingAreaFast(_toleranceArea);
+        auto entitiesInSelection = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
         entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
             entities.push_back(_docCanvas->getDrawable(entity));
         });
@@ -134,7 +134,7 @@ void DragManager::onMousePress() {
 
     std::vector<lc::viewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
     if(selectedDrawables.empty()) {
-        auto entitiesInSelection = _docCanvas->document()->entitiesByViewport(_docCanvas->viewport()).entitiesWithinAndCrossingAreaFast(_toleranceArea);
+        auto entitiesInSelection = _docCanvas->entityContainer().entitiesWithinAndCrossingAreaFast(_toleranceArea);
         entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
             selectedDrawables.push_back(_docCanvas->getDrawable(entity));
         });

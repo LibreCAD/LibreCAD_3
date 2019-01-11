@@ -2,7 +2,6 @@
 #include <vector>
 #include <cad/interface/metatype.h>
 #include <cad/meta/layer.h>
-#include <cad/meta/viewport.h>
 #include <cad/meta/metacolor.h>
 #include <cad/base/metainfo.h>
 #include <cad/geometry/geocoordinate.h>
@@ -216,9 +215,9 @@ void LCLua::importLCKernel() {
         .addFunction("name", &lc::meta::DocumentMetaType::name)
     );
 
-    state["lc"]["meta"]["DxfLinePattern"].setClass(kaguya::UserdataMetatable<lc::meta::Viewport, lc::meta::DocumentMetaType>()
+    state["lc"]["meta"]["DxfLinePattern"].setClass(kaguya::UserdataMetatable< lc::meta::DocumentMetaType>()
         .addStaticFunction("new", [](const std::string& name) {
-            return std::make_shared<const lc::meta::Viewport>(name);
+            return nullptr;//std::make_shared<const lc::meta::Viewport>(name);
         })
     );
 
@@ -376,7 +375,6 @@ void LCLua::importLCKernel() {
         .addFunction("move", &lc::entity::CADEntity::move)
         .addFunction("rotate", &lc::entity::CADEntity::rotate)
         .addFunction("scale", &lc::entity::CADEntity::scale)
-        .addFunction("viewport", &lc::entity::CADEntity::viewport)
     );
 
     state["lc"]["EntityDispatch"].setClass(kaguya::UserdataMetatable<lc::EntityDispatch>()
@@ -425,8 +423,6 @@ void LCLua::importLCKernel() {
         .addFunction("setID", &lc::builder::CADEntityBuilder::setID)
         .addOverloadedFunctions("setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer))
         .addOverloadedFunctions("setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo))
-        .addFunction("viewport", &lc::builder::CADEntityBuilder::viewport)
-        .addFunction("setViewport", &lc::builder::CADEntityBuilder::setViewport)
     );
 
     state["lc"]["builder"]["ArcBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::ArcBuilder, lc::builder::CADEntityBuilder>()

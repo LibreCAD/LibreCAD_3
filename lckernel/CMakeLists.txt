@@ -40,7 +40,6 @@ cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
-cad/meta/viewport.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
@@ -80,7 +79,6 @@ cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
-cad/builders/viewport.cpp
 cad/builders/linepattern.cpp
 cad/builders/spline.cpp
 cad/meta/customentitystorage.cpp
@@ -140,7 +138,6 @@ cad/math/lcmath.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h
-cad/meta/viewport.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h
@@ -190,7 +187,6 @@ cad/builders/spline.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
-cad/builders/viewport.h
 cad/builders/linepattern.h
 cad/meta/customentitystorage.h
 cad/operations/blockops.h

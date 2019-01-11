@@ -4,7 +4,6 @@
 #include <lcadpaperviewerimpl.h>
 #include "cad/storage/document.h"
 #include <cad/storage/storagemanager.h>
-#include <cad/meta/viewport.h>
 #include <QTabWidget>
 
 //This class manages the model impl and paper impl
@@ -24,13 +23,12 @@ namespace lc {
             storage::UndoManagerImpl_SPtr undoManager(){return _isModel?_modelViewerImpl->undoManager():_paperViewers->undoManager();};
             QPoint mapToGlobal(const QPoint& P){return _activeView->mapToGlobal(P);};
             lc::ui::LCADViewer* viewer() {return _activeView;};
-            meta::Viewport_CSPtr activeViewport(){return _isModel?_viewport:_paperViewers->viewport();};
+            meta::Block_CSPtr activeViewport(){return _isModel?nullptr:_paperViewers->viewport();};
     	private:
             LCADViewer* _activeView;
         	LCADModelViewerImpl* _modelViewerImpl;
         	LCADPaperViewerImpl* _paperViewers;
         	bool _isModel;//If selected viewer is model viewer
-            meta::Viewport_CSPtr _viewport;
             QTabWidget* _tabWidget;
        	signals:
             void mouseMoveEvent();

@@ -45,12 +45,12 @@ function active_layer(id)
 end
 
 --Return the selected viewport
-function active_viewport(id)
+function active_block(id)
     if(windows[id] == nil) then
         return nil
     end
 
-    return windows[id]:activeViewport()
+    return windows[id]:activeBlock()
 end
 
 

@@ -23,7 +23,7 @@ namespace lc {
             QPoint mapToGlobal(const QPoint& P){return _viewers[_activeView]->mapToGlobal(P);};
             lc::ui::LCADPaperViewer* viewer() {return _viewers[_activeView];};
             int getActiveView(){return _activeView;};
-            meta::Viewport_CSPtr viewport(){return _viewers[_activeView]->viewport();};
+            meta::Block_CSPtr viewport(){return _viewers[_activeView]->viewport();};
     	private:
     		std::shared_ptr<lc::storage::Document> _document;
     		std::vector<LCADPaperViewer*> _viewers;//Store all viewers

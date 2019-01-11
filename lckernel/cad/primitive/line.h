@@ -45,7 +45,6 @@ namespace lc {
             Line(const geo::Coordinate& start,
                  const geo::Coordinate& end,
                  meta::Layer_CSPtr layer,
-                 meta::Viewport_CSPtr viewport,
                  meta::MetaInfo_CSPtr metaInfo = nullptr,
                  meta::Block_CSPtr block = nullptr
             );
@@ -61,7 +60,6 @@ namespace lc {
              */
             Line(const geo::Vector& vector,
                  meta::Layer_CSPtr layer,
-                 meta::Viewport_CSPtr viewport,
                  meta::MetaInfo_CSPtr metaInfo = nullptr,
                  meta::Block_CSPtr block = nullptr);
 

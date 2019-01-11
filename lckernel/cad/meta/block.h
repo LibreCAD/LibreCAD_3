@@ -13,7 +13,7 @@ namespace lc {
     namespace meta {
         class Block : public DocumentMetaType {
             public:
-                Block(std::string name, geo::Coordinate base);
+                Block(std::string name, geo::Coordinate base=geo::Coordinate(0,0));
 
                 const std::string id() const override;
 

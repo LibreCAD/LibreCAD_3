@@ -14,7 +14,6 @@ namespace lc {
                  */
                 CADEntityBuilder() :
                         _layer(nullptr),
-                        _viewport(nullptr),
                         _metaInfo(nullptr),
                         _block(nullptr),
                         _id(nullptr) {
@@ -27,7 +26,6 @@ namespace lc {
                 void copy(entity::CADEntity_CSPtr entity) {
                     _layer = entity->_layer;
                     _block = entity->_block;
-                    _viewport = entity->_viewport;
                     _metaInfo = entity->_metaInfo;
                     _id->setID(entity->id());
                 }
@@ -40,20 +38,12 @@ namespace lc {
                         return _layer;
                 }
 
-                const meta::Viewport_CSPtr& viewport() const {
-                        return _viewport;
-                }
-
                 /**
                  * @brief Set the layer
                  * @param layer New layer
                  */
                 void setLayer(const meta::Layer_CSPtr& layer) {
                         _layer = layer;
-                }
-
-                void setViewport(const meta::Viewport_CSPtr& viewport){
-                    _viewport = viewport;
                 }
 
                 /**
@@ -154,7 +144,6 @@ namespace lc {
 
             private:
                 meta::Layer_CSPtr _layer;
-                meta::Viewport_CSPtr _viewport;
                 meta::MetaInfo_CSPtr _metaInfo;
                 meta::Block_CSPtr _block;
                 mutable entity::ID* _id;
