@@ -50,7 +50,7 @@ function active_block(id)
         return nil
     end
 
-    return windows[id]:activeBlock()
+    return windows[id]:activeViewport()
 end
 
 

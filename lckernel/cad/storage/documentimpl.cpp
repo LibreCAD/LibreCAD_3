@@ -149,7 +149,7 @@ std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper:
 }
 
 EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const meta::Layer_CSPtr& layer) {
-    std::lock_guard<std::mutex> lck(_documentMutex);
+//    std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);
 }
 

@@ -215,11 +215,11 @@ void LCLua::importLCKernel() {
         .addFunction("name", &lc::meta::DocumentMetaType::name)
     );
 
-    state["lc"]["meta"]["DxfLinePattern"].setClass(kaguya::UserdataMetatable< lc::meta::DocumentMetaType>()
+/*    state["lc"]["meta"]["DxfLinePattern"].setClass(kaguya::UserdataMetatable< lc::meta::DocumentMetaType>()
         .addStaticFunction("new", [](const std::string& name) {
             return nullptr;//std::make_shared<const lc::meta::Viewport>(name);
         })
-    );
+    );*/
 
     state["lc"]["meta"]["EntityMetaType"].setClass(kaguya::UserdataMetatable<lc::meta::EntityMetaType, lc::meta::MetaType>()
         .addFunction("metaTypeID", &lc::meta::EntityMetaType::metaTypeID)

@@ -366,7 +366,7 @@ void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& 
     entityContainer().optimise();
 }
 
-// This assumes that the entity has already been added to entityContainer()
+// This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
 

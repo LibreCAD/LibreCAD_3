@@ -42,7 +42,7 @@ end
 function CreateOperations:build()
     self.builder:setLayer(active_layer(self.target_widget))
     self.builder:setMetaInfo(active_metaInfo(self.target_widget))
-    self.builder:setViewport(active_viewport(self.target_widget))
+    self.builder:setBlock(active_block(self.target_widget))
 
     return self.builder:build()
 end
