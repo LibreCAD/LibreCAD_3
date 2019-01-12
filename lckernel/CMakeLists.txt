@@ -88,6 +88,8 @@ cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
 cad/storage/documentlist.cpp
 cad/logger/logger.cpp
+cad/base/cadobject.cpp
+cad/objects/layout.cpp
 )
 
 # HEADER FILES
@@ -197,7 +199,10 @@ cad/events/newwaitingcustomentityevent.h
 cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
 cad/interface/tangentable.h
-cad/logger/logger.h)
+cad/logger/logger.h
+cad/base/cadobject.h
+cad/objects/layout.h
+)
 
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)

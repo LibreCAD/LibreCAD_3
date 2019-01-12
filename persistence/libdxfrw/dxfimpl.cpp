@@ -61,6 +61,11 @@ void DXFimpl::addViewport(const DRW_Viewport& data){
 	
 }
 
+void DXFimpl::addVport(const DRW_Vport& data){
+	LOG(slg) << "addVport ";
+	
+}
+
 void DXFimpl::addBlock(const DRW_Block& data) {
 	LOG(slg) << "addBlock " << data.name;
 
@@ -439,7 +444,7 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
 
     std::vector<lc::entity::LWVertex2D> points;
     for (const auto& i : data.vertlist) {
-        points.emplace_back(lc::geo::Coordinate(i->basePoint.x, i->basePoint.y), i->bulge, i->stawidth, i->endwidth);
+        points.emplace_back(coord(i->basePoint), i->bulge, i->stawidth, i->endwidth);
     }
 
     auto isCLosed = (unsigned int) data.flags & 0x01u;

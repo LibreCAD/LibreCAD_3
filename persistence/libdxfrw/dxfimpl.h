@@ -48,7 +48,7 @@ namespace lc {
 
                 virtual void addDimStyle(const DRW_Dimstyle& data) override {}
 
-                virtual void addVport(const DRW_Vport& data) override {}
+                virtual void addVport(const DRW_Vport& data) override;
 
                 virtual void addTextStyle(const DRW_Textstyle& data) override {}
 
