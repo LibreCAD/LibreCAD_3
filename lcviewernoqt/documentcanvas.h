@@ -167,7 +167,7 @@ namespace lc {
                  * Get the current entity container,
                  * do not store this as a reference, always call it
                  */
-                lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>& entityContainer() const;
+                lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entityContainer() const;
 
                 /**
                  * Return CADEntity as LCVDrawItem

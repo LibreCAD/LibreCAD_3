@@ -7,7 +7,7 @@
 #include "dxflinepattern.h"
 #include "metalinewidth.h"
 
-#define BLOCK_ID_PREFIX "BLOCK"
+#define BLOCK_ID_PREFIX "_BLOCK"
 
 namespace lc {
     namespace meta {
@@ -20,6 +20,14 @@ namespace lc {
                 const std::string name() const override;
 
                 const geo::Coordinate& base() const;
+
+                virtual const std::string metaTypeID() const {
+                    return Block::LCMETANAME();
+                }
+
+                static const std::string LCMETANAME() {
+                    return BLOCK_ID_PREFIX;
+                }
 
             private:
                 std::string _name;

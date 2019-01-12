@@ -11,7 +11,7 @@ LCADModelViewer::LCADModelViewer(QWidget* parent,int id = 0):LCADViewer(parent),
 }
 
 void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> document){
-	LCADViewer::setDocument(document);
+	LCADViewer::setDocument(document,nullptr);
     this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
     this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get());
 

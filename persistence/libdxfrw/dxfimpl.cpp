@@ -137,7 +137,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
     lc::builder::LineBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
-    builder.setBlock(data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock);
+    builder.setBlock(getBlock(data));
     builder.setLayer(_document->layerByName(data.layer));
     builder.setStart(coord(data.basePoint));
     builder.setEnd(coord(data.secPoint));
@@ -154,7 +154,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
     builder.setLayer(_document->layerByName(data.layer));
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
-    builder.setBlock(data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock);
+    builder.setBlock(getBlock(data));
 
     _entityBuilder->appendEntity(builder.build());
 }
@@ -165,7 +165,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 
     builder.setMetaInfo(getMetaInfo(data));
     builder.setLayer(_document->layerByName(data.layer));
-    builder.setBlock(data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock);
+    builder.setBlock(getBlock(data));
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
     builder.setStartAngle(data.staangle);
@@ -189,7 +189,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
                                                            data.isccw,
                                                            layer,
                                                            mf,
-                                                           data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock
+                                                           getBlock(data)
     );
 
     _entityBuilder->appendEntity(lcEllipse);
@@ -247,7 +247,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
                                                          static_cast<lc::geo::Spline::splineflag>(data->flags),
                                                          layer,
                                                          mf,
-                                                         data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+                                                         getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcSpline);
@@ -265,7 +265,7 @@ void DXFimpl::addText(const DRW_Text& data) {
                                                      lc::TextConst::VAlign(data.alignV),
                                                      layer,
                                                      mf,
-                                                     data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock
+                                                     getBlock(data)
     );
 
     _entityBuilder->appendEntity(lcText);
@@ -278,7 +278,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
     auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
                                                        layer,
                                                        mf,
-                                                       data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock
+                                                       getBlock(data)
     );
 
     _entityBuilder->appendEntity(lcPoint);
@@ -300,7 +300,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
             coord(data->getDef2Point()),
             layer,
             mf,
-            data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+            getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcDimAligned);
@@ -324,7 +324,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
             data->getOblique(),
             layer,
             mf,
-            data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+            getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcDimLinear);
@@ -346,7 +346,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
              data->getLeaderLength(),
              layer,
              mf,
-             data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+             getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcDimRadial);
@@ -368,7 +368,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
              data->getLeaderLength(),
              layer,
              mf,
-             data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+             getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcDimDiametric);
@@ -392,7 +392,7 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
              coord(data->getSecondLine2()),
              layer,
              mf,
-             data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+             getBlock(*data)
     );
 
     _entityBuilder->appendEntity(lcDimAngular);
@@ -430,7 +430,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
             coord(data.extPoint),
             layer,
             mf,
-            data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock
+            getBlock(data)
     );
 
     _entityBuilder->appendEntity(lcLWPolyline);
@@ -458,7 +458,7 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
             coord(data.extPoint),
             layer,
             mf,
-            data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock
+            getBlock(data)
     );
 
     _entityBuilder->appendEntity(lcLWPolyline);
@@ -491,6 +491,21 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
 
 }
 
+lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
+	lc::meta::Block_CSPtr block;
+	auto x = _handleBlock.find(data.parentHandle);
+	if(x!=_handleBlock.end()){
+		block = data.parentHandle?x->second:_currentBlock;
+	}else{
+		block = _currentBlock;
+	}
+    if(block){
+    	if(block->name()==DEFAULT_VIEWPORT){
+    		return nullptr;
+    	}
+    }
+    return block;
+}
 
 lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     std::shared_ptr<lc::meta::MetaInfo> mf = nullptr;
@@ -566,7 +581,7 @@ void DXFimpl::addLType(const DRW_LType& data) {
  * so if we see missing images, it could be that we first get calls to linImage and then to addImage
  * if linkImage isn't called as last, we miss a image during import
  */
-void DXFimpl::addImage(const DRW_Image *data) {
+void DXFimpl::addImage(const DRW_Image* data) {
 	LOG(slg) << "addImage";
     imageMapCache.emplace_back(*data);
 }
@@ -589,7 +604,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
                     image->brightness, image->contrast, image->fade,
                     layer,
                     mf,
-                    data->parentHandle?_handleBlock[data->parentHandle]:_currentBlock
+                    getBlock(*image)
             );
             _entityBuilder->appendEntity(lcImage);
 
@@ -604,7 +619,7 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
 	LOG(slg) << "addInsert";
     lc::builder::InsertBuilder builder;
     builder.setMetaInfo(getMetaInfo(data));
-    builder.setBlock(data.parentHandle?_handleBlock[data.parentHandle]:_currentBlock);
+    builder.setBlock(getBlock(data));
     builder.setLayer(_document->layerByName(data.layer));
     builder.setCoordinate(coord(data.basePoint));
     builder.setDisplayBlock(_blocks[data.name]);

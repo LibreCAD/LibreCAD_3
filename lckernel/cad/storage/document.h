@@ -214,6 +214,11 @@ namespace lc {
                 virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
                 /**
+                 * @brief return a layer by it's name
+                 */
+                virtual meta::Block_CSPtr blockByName(const std::string& blockName) const = 0;
+
+                /**
                  * @brief return a line pattern by it's name
                  */
                 virtual meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const = 0;

@@ -76,6 +76,8 @@ namespace lc {
                  */
                 meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
+                meta::Block_CSPtr blockByName(const std::string& blockName) const override;
+
                 /**
                  * @brief returns line pattern By Name
                  * @param string& linePatternName
@@ -126,7 +128,7 @@ namespace lc {
 
                 EntityContainer <entity::CADEntity_CSPtr> _entities;
                 std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensetive> _documentMetaData;
-                std::map<std::string, EntityContainer<entity::CADEntity_CSPtr>> _blocksEntities;
+                std::map<std::string, EntityContainer<entity::CADEntity_CSPtr> > _blocksEntities;
         };
     }
 }

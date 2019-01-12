@@ -228,6 +228,8 @@ namespace lc {
 
                 lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
 
+                lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;
+
                 /**
                 * Convert from a DRW_Coord to a geo::Coordinate
                 */

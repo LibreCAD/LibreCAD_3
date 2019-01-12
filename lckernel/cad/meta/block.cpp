@@ -12,7 +12,7 @@ const std::string Block::id() const {
 }
 
 const std::string Block::name() const {
-    return _name;
+	return _name;
 }
 
 const lc::geo::Coordinate& Block::base() const {

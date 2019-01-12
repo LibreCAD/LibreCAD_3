@@ -35,6 +35,8 @@ namespace lc {
                  */
                 virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
+                virtual meta::Block_CSPtr blockByName(const std::string& blockName) const = 0;
+
                 /*!
                  * \brief DxfLinePattern
                  * Return a line pattern by name from the document

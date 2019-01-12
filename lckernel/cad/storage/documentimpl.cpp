@@ -12,9 +12,6 @@ DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
         Document() ,
         _storageManager(std::move(storageManager)) {
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
-//    _storageManager->addDocumentMetaType(std::make_shared<meta::Block>("*Model_Space"));
-//    _storageManager->addDocumentMetaType(std::make_shared<meta::Block>("*Paper_Space"));
-//    _storageManager->addDocumentMetaType(std::make_shared<meta::Block>("*Paper_Space0"));
 }
 
 void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
@@ -167,6 +164,19 @@ lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) co
     if (x==nullptr){
     	//If layer not found create one
     	x=std::make_shared<meta::Layer>(layerName, meta::MetaLineWidthByValue(1.0), Color(255, 255, 255));
+        _storageManager->addDocumentMetaType(x);
+    }
+    return x;
+}
+
+lc::meta::Block_CSPtr DocumentImpl::blockByName(const std::string& blockName) const {
+    if(blockName=="*Model_Space"){
+        return nullptr;
+    }
+    auto x =  _storageManager->blockByName(blockName);
+    if (x==nullptr){
+        //If block not found create one
+        x=std::make_shared<meta::Block>(blockName);
         _storageManager->addDocumentMetaType(x);
     }
     return x;

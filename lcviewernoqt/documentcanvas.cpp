@@ -391,8 +391,8 @@ std::shared_ptr<lc::storage::Document> DocumentCanvas::document() const {
     return _document;
 }
 
-lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentCanvas::entityContainer() const {
-    return _document->entityContainer();//@TODO: fix this
+lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> DocumentCanvas::entityContainer() const {
+    return _document->entitiesByBlock(_viewport);
 }
 
 lc::geo::Area DocumentCanvas::bounds() const {

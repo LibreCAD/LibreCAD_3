@@ -50,6 +50,9 @@ meta::Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) 
     return metaDataTypeByName<meta::Layer>(layerName);
 }
 
+meta::Block_CSPtr StorageManagerImpl::blockByName(const std::string& blockName) const {
+    return metaDataTypeByName<meta::Block>(blockName);
+}
 
 meta::DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
     return metaDataTypeByName<meta::DxfLinePatternByValue>(linePatternName);
@@ -111,10 +114,14 @@ meta::DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(meta::Block_CSPtr block) const {
-    try {
-        return _blocksEntities.at(block->name());
-    }
-    catch (std::out_of_range& e) {
-        return EntityContainer<entity::CADEntity_CSPtr>();
-    }
+    if(block){
+        try {
+            return _blocksEntities.at(block->name());
+        }
+        catch (std::out_of_range& e) {
+            return EntityContainer<entity::CADEntity_CSPtr>();
+        }
+    }else{
+        return _entities;
+    };
 }

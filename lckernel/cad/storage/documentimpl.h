@@ -49,6 +49,8 @@ namespace lc {
 
                 meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
+                meta::Block_CSPtr blockByName(const std::string& blockName) const override;
+
                 meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 
                 /**
