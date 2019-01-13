@@ -2,6 +2,7 @@
 #include "../generic/helpers.h"
 
 #include <cad/primitive/circle.h>
+#include <cad/primitive/hatch.h>
 #include <cad/primitive/arc.h>
 #include <cad/primitive/ellipse.h>
 #include <cad/primitive/text.h>
@@ -489,6 +490,13 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
 		LOG(slg) << "Looplist numedges" << x->numedges;           /*!< number of edges (if not a polyline), code 93 */
 	}
 
+    auto layer = _document->layerByName(data->layer);
+    auto mf = getMetaInfo(*data);
+    auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
+                                                           mf,
+                                                           getBlock(*data)
+    );
+    _entityBuilder->appendEntity(lcHatch);
 }
 
 lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {

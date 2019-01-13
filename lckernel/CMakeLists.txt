@@ -50,6 +50,7 @@ cad/operations/layerops.cpp
 cad/operations/linepatternops.cpp
 cad/primitive/arc.cpp
 cad/primitive/circle.cpp
+cad/primitive/hatch.cpp
 cad/primitive/point.cpp
 cad/primitive/ellipse.cpp
 cad/primitive/line.cpp
@@ -155,6 +156,7 @@ cad/vo/entitycoordinate.h
 cad/vo/entitydistance.h
 cad/primitive/arc.h
 cad/primitive/circle.h
+cad/primitive/hatch.h
 cad/primitive/point.h
 cad/primitive/ellipse.h
 cad/primitive/line.h

@@ -202,7 +202,9 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             std::vector<lc::viewer::LCVDrawItem_SPtr> visibleDrawables;
             visibleEntities.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
                 auto di = _entityDrawItem[entity];
-                visibleDrawables.push_back(di);
+                if(di){
+                    visibleDrawables.push_back(di);
+                }
             });
 
             for(const auto& di: visibleDrawables) {
@@ -369,10 +371,6 @@ void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& 
 // This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
-
-    if(entity->block() != nullptr) {
-        return;
-    }
 
     auto drawable = asDrawable(event.entity());
 
