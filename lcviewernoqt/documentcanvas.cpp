@@ -11,6 +11,7 @@
 #include <cad/primitive/insert.h>
 #include "lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
+#include "drawitems/lcvhatch.h"
 #include "drawitems/lcvarc.h"
 #include "drawitems/lcvdrawitem.h"
 #include "drawitems/lcvline.h"
@@ -371,13 +372,8 @@ void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& 
 // This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
-
-    auto drawable = asDrawable(event.entity());
-
-    if (drawable != nullptr) {
-        auto drawableEntity = std::dynamic_pointer_cast<lc::viewer::LCVDrawItem>(drawable);
-        _entityDrawItem.insert(std::make_pair(drawableEntity->entity(), drawableEntity));
-    }
+    auto drawable = asDrawable(entity);
+    _entityDrawItem.insert(std::make_pair(entity, drawable));
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
@@ -496,6 +492,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
     if (line != nullptr) {
         return std::make_shared<LCVLine>(line);
+    }
+
+    // Add a hatch
+    auto hatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity);
+
+    if (hatch != nullptr) {
+        return std::make_shared<LCVHatch>(hatch);
     }
 
     // Add a circle

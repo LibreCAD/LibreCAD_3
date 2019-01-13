@@ -13,7 +13,7 @@ namespace lc {
         class Hatch : public std::enable_shared_from_this<Hatch>,
                        public CADEntity{
         public:
-            Hatch(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block);
+            Hatch(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInf=nullptr, meta::Block_CSPtr block=nullptr);
 
             Hatch(const Hatch_CSPtr& other, bool sameID = false);
         public:

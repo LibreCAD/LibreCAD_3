@@ -496,7 +496,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                                            mf,
                                                            getBlock(*data)
     );
-    _entityBuilder->appendEntity(lcHatch);
+    _entityBuilder->appendEntity(lcHatch); // This is causing crash now
 }
 
 lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
