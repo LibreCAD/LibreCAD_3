@@ -474,29 +474,98 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
     // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
     // loopList seems to contain the same entities, why??
 	LOG(slg) << "addHatch ";
-	LOG(slg) << "Hatch pattern name " << data->name;
-	LOG(slg) << "Solid: " << data->solid;
-    LOG(slg) << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
-    LOG(slg) << "HATCH style " << data->hstyle;                /*!< hatch style, code 75 */
-    LOG(slg) << "Hatch pattern " <<data->hpattern;              /*!< hatch pattern type, code 76 */
-    LOG(slg) << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
-    LOG(slg) << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
-    LOG(slg) << "angle " << data->angle;              /*!< hatch pattern angle, code 52 */
-    LOG(slg) << "scale " << data->scale;              /*!< hatch pattern scale, code 41 */
-    LOG(slg) << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
-
-	for (auto x : data->looplist){
-		LOG(slg) << "Looplist type" << x->type;               /*!< boundary path type, code 92, polyline=2, default=0 */
-		LOG(slg) << "Looplist numedges" << x->numedges;           /*!< number of edges (if not a polyline), code 93 */
-	}
-
     auto layer = _document->layerByName(data->layer);
     auto mf = getMetaInfo(*data);
     auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
                                                            mf,
                                                            getBlock(*data)
     );
-    _entityBuilder->appendEntity(lcHatch); // This is causing crash now
+	lcHatch->setPatternName(data->name);
+	lcHatch->setSolid(data->solid);
+    LOG(slg) << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
+    lcHatch->setHatchStyle(data->hstyle);
+    lcHatch->setHatchPattern(data->hpattern);
+    LOG(slg) << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
+    LOG(slg) << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
+    lcHatch->setAngle(data->angle);
+    lcHatch->setScale(data->scale);
+    LOG(slg) << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
+    for (auto x : data->looplist){
+        auto m = std::make_shared<lc::entity::HatchLoop>();
+        for(auto k : x->objlist){
+            if(k->eType == DRW::ETYPE::LWPOLYLINE){
+                auto data = (DRW_LWPolyline*)k;
+                LOG(slg) << "Polyline";
+                std::vector<lc::entity::LWVertex2D> points;
+                for (const auto& i : data->vertlist) {
+                    points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
+                }
+                auto isCLosed = (unsigned int) data->flags & 0x01u;
+                auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
+                        points,
+                        data->width,
+                        data->elevation,
+                        data->thickness,
+                        isCLosed,
+                        coord(data->extPoint),
+                        nullptr
+                );
+                m->objList.push_back(lcLWPolyline);
+            }else if(k->eType == DRW::ETYPE::LINE){
+                auto data = (DRW_Line*)k;
+                lc::builder::LineBuilder builder;
+                builder.setStart(coord(data->basePoint));
+                builder.setEnd(coord(data->secPoint));
+                m->objList.push_back(builder.build());
+            }else if(k->eType == DRW::ETYPE::ARC){
+                auto data = (DRW_Arc*)k;
+                lc::builder::ArcBuilder builder;
+
+                builder.setCenter(coord(data->basePoint));
+                builder.setRadius(data->radious);
+                builder.setStartAngle(data->staangle);
+                builder.setEndAngle(data->endangle);
+                builder.setIsCCW((bool) data->isccw);
+                m->objList.push_back(builder.build());
+            }else if(k->eType == DRW::ETYPE::ELLIPSE){
+                auto data = (DRW_Ellipse*)k;
+                auto secPoint = coord(data->secPoint);
+                auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
+                                                                       secPoint,
+                                                                       secPoint.magnitude() * data->ratio,
+                                                                       data->staparam,
+                                                                       data->endparam,
+                                                                       data->isccw,
+                                                                       nullptr
+                );
+                m->objList.push_back(lcEllipse);
+            }else if(k->eType == DRW::ETYPE::SPLINE){
+                auto data = (DRW_Spline*)k;
+                auto knotList = data->knotslist;
+                if (knotList.size()>=2) {
+                    knotList.erase(knotList.begin());
+                    knotList.pop_back();
+                }
+                auto lcSpline = std::make_shared<lc::entity::Spline>(coords(data->controllist),
+                                                                     knotList,
+                                                                     coords(data->fitlist),
+                                                                     data->degree,
+                                                                     false,
+                                                                     data->tolfit,
+                                                                     data->tgStart.x, data->tgStart.y, data->tgStart.z,
+                                                                     data->tgEnd.x, data->tgEnd.y, data->tgEnd.z,
+                                                                     data->normalVec.x, data->normalVec.y, data->normalVec.z,
+                                                                     static_cast<lc::geo::Spline::splineflag>(data->flags),
+                                                                     layer,
+                                                                     mf,
+                                                                     getBlock(*data)
+                );
+                m->objList.push_back(lcSpline);
+            }
+        }
+        lcHatch->addLoop(m);
+    }
+    _entityBuilder->appendEntity(lcHatch);
 }
 
 lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {

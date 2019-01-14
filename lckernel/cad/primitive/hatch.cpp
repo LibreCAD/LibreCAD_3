@@ -54,3 +54,7 @@ CADEntity_CSPtr Hatch::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
     newHatch->setID(this->id());
     return newHatch;
 }
+
+void Hatch::addLoop(std::shared_ptr<HatchLoop> lp){
+    _loopList.push_back(lp);
+}

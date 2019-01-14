@@ -11,7 +11,7 @@ LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
 
 void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.circle(0, 0, 20);
-    painter.stroke();
+    painter.fill();
 }
 
 lc::entity::CADEntity_CSPtr LCVHatch::entity() const {
