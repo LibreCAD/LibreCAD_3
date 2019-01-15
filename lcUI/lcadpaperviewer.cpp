@@ -4,8 +4,8 @@ using namespace lc;
 using namespace lc::ui;
 using namespace lc::viewer;
 
-#define PAPER_WIDTH 3000
-#define PAPER_HEIGHT 2000
+#define PAPER_WIDTH 300
+#define PAPER_HEIGHT 200
 
 LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id){
     _gradientBackground = std::make_shared<drawable::PaperBackground>(PAPER_WIDTH, PAPER_HEIGHT);
@@ -14,7 +14,7 @@ LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),
     connect(this, SIGNAL(mouseMoveEvent()) , this, SLOT(onMouseMoveEvent()));
 }
 
-void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport){
+void LCADPaperViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport){
 	LCADViewer::setDocument(document, viewport);
     _viewport = viewport;
     this->documentCanvas()->background().connect<drawable::PaperBackground, &drawable::PaperBackground::draw>(_gradientBackground.get());

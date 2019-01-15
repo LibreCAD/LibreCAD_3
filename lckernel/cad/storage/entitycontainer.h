@@ -17,7 +17,6 @@
 namespace lc {
     namespace meta {
         class Layer;
-        class Viewport;
     }
 
     namespace storage {
@@ -140,11 +139,11 @@ namespace lc {
                     return container;
                 }
 
-                EntityContainer entitiesByViewport(const meta::Viewport_CSPtr viewport) const {
+                EntityContainer entitiesByBlock(const meta::Block_CSPtr block) const {
                     EntityContainer container;
 
                     for (auto i : asVector(std::numeric_limits<short>::max())) {
-                        if (i->viewport().get() == viewport.get()) {
+                        if (i->block().get() == block.get()) {
                             container.insert(i);
                         }
                     }

@@ -26,7 +26,6 @@ namespace lc {
             */
             Point(geo::Coordinate coord,
                   meta::Layer_CSPtr layer,
-                  meta::Viewport_CSPtr viewport,
                   meta::MetaInfo_CSPtr metaInfo = nullptr,
                   meta::Block_CSPtr block = nullptr);
 
@@ -38,7 +37,7 @@ namespace lc {
              * @param MetaTypes_CSPtr metaTypes
              */
             Point(double x, double y,
-                  meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
+                  meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo = nullptr, meta::Block_CSPtr block = nullptr);
 
             Point(const Point_CSPtr& other, bool sameID = false);
 

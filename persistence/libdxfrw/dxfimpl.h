@@ -29,7 +29,7 @@
 #define PLUGIN_NAME_CODE 410
 #define ENTITY_NAME_CODE 411
 #define APP_NAME "LibreCAD"
-#define DEFAULT_VIEWPORT "MODEL"
+#define DEFAULT_VIEWPORT "*Model_Space"
 
 static const char *const SKIP_BYLAYER = "BYLAYER";
 static const char *const SKIP_CONTINUOUS = "CONTINUOUS";
@@ -48,7 +48,7 @@ namespace lc {
 
                 virtual void addDimStyle(const DRW_Dimstyle& data) override {}
 
-                virtual void addVport(const DRW_Vport& data) override {}
+                virtual void addVport(const DRW_Vport& data) override;
 
                 virtual void addTextStyle(const DRW_Textstyle& data) override {}
 
@@ -70,7 +70,7 @@ namespace lc {
 
                 virtual void addLeader(const DRW_Leader* data) override {}
 
-                virtual void addViewport(const DRW_Viewport& data) override {}
+                virtual void addViewport(const DRW_Viewport& data) override;
 
                 virtual void linkImage(const DRW_ImageDef* data) override;
 
@@ -216,7 +216,6 @@ namespace lc {
                 lc::operation::Builder_SPtr _builder;
                 lc::operation::EntityBuilder_SPtr _entityBuilder;
                 lc::meta::Block_SPtr _currentBlock;
-                lc::meta::Viewport_CSPtr _currentViewport;
 
             private:
                 /**
@@ -228,6 +227,8 @@ namespace lc {
                 dxfRW* dxfW;
 
                 lc::meta::MetaInfo_SPtr getMetaInfo(DRW_Entity const& data) const;
+
+                lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;
 
                 /**
                 * Convert from a DRW_Coord to a geo::Coordinate
@@ -241,6 +242,7 @@ namespace lc {
 
                 std::vector<DRW_Image> imageMapCache;
                 std::map<std::string, lc::meta::Block_CSPtr> _blocks;
+                std::map<int, lc::meta::Block_CSPtr> _handleBlock;
         };
     }
 }

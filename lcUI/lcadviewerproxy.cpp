@@ -43,16 +43,17 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
 void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
-    _viewport = document->viewportByName("MODEL");
 
-    auto viewports = document->allViewports();
-    for(auto view: viewports){
-        if(view.first!="MODEL"){
-            auto x = _paperViewers->getViewer();
-            x->setDocument(document, view.second);
-            _tabWidget->addTab(x,tr(view.first.c_str()));
-        }
-    }
+    //For each block create viewport
+    auto view = document->blockByName("*Paper_Space");
+    auto x = _paperViewers->getViewer();
+    x->setDocument(document,view);
+    _tabWidget->addTab(x,"Paper 1");
+
+    view = document->blockByName("*Paper_Space0");
+    x = _paperViewers->getViewer();
+    x->setDocument(document,view);
+    _tabWidget->addTab(x,"Paper 2");
 }
 
 void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){

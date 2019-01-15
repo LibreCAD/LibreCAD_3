@@ -13,9 +13,6 @@ DocumentImpl::DocumentImpl(StorageManager_SPtr storageManager) :
         Document() ,
         _storageManager(std::move(storageManager)) {
     _storageManager->addDocumentMetaType(std::make_shared<meta::Layer>("0", meta::MetaLineWidthByValue(1.0), Color(255, 255, 255)));
-    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("MODEL"));
-    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("Paper 1"));
-    _storageManager->addDocumentMetaType(std::make_shared<meta::Viewport>("Paper 2"));
 }
 
 void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
@@ -95,12 +92,12 @@ void DocumentImpl::addDocumentMetaType(const lc::meta::DocumentMetaType_CSPtr& d
         addLayerEvent()(event);
     }
 
-	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
+/*	auto viewport = std::dynamic_pointer_cast<const meta::Viewport>(dmt);
     if (viewport != nullptr) {
         event::AddViewportEvent event(viewport);
         addViewportEvent()(event);
     }
-
+*/
 
     auto linePattern = std::dynamic_pointer_cast<const meta::DxfLinePatternByValue>(dmt);
     if (linePattern != nullptr) {
@@ -150,12 +147,8 @@ std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper:
 }
 
 EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByLayer(const meta::Layer_CSPtr& layer) {
-    std::lock_guard<std::mutex> lck(_documentMutex);
+//    std::lock_guard<std::mutex> lck(_documentMutex);
     return _storageManager->entitiesByLayer(layer);
-}
-
-EntityContainer<lc::entity::CADEntity_CSPtr> DocumentImpl::entitiesByViewport(const meta::Viewport_CSPtr& viewport) {
-    return _storageManager->entitiesByViewport(viewport);
 }
 
 EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentImpl::entityContainer() {
@@ -177,12 +170,17 @@ lc::meta::Layer_CSPtr DocumentImpl::layerByName(const std::string& layerName) co
     return x;
 }
 
-std::map<std::string, lc::meta::Viewport_CSPtr> DocumentImpl::allViewports() const {
-    return _storageManager->allViewports();
-}
-
-lc::meta::Viewport_CSPtr DocumentImpl::viewportByName(const std::string& viewportName) const {
-    return _storageManager->viewportByName(viewportName);
+lc::meta::Block_CSPtr DocumentImpl::blockByName(const std::string& blockName) const {
+    if(blockName=="*Model_Space"){
+        return nullptr;
+    }
+    auto x =  _storageManager->blockByName(blockName);
+    if (x==nullptr){
+        //If block not found create one
+        x=std::make_shared<meta::Block>(blockName);
+        _storageManager->addDocumentMetaType(x);
+    }
+    return x;
 }
 
 lc::meta::DxfLinePatternByValue_CSPtr DocumentImpl::linePatternByName(const std::string& linePatternName) const {

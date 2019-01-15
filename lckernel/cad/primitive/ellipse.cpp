@@ -14,10 +14,9 @@ Ellipse::Ellipse(const geo::Coordinate &center,
                  double endAngle,
                  bool reversed,
                  meta::Layer_CSPtr layer,
-                 meta::Viewport_CSPtr viewport,
                  meta::MetaInfo_CSPtr metaInfo,
                  meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Ellipse(center, majorP, minorRadius, startAngle, endAngle, reversed) {
 }
 
@@ -50,7 +49,6 @@ CADEntity_CSPtr Ellipse::move(const geo::Coordinate &offset) const {
                                                 this->startAngle(), this->endAngle(),
                                                 isReversed(),
                                                 layer(),
-                                                viewport(),
                                                 metaInfo(),
                                                 block());
     newellipse->setID(this->id());
@@ -64,7 +62,6 @@ CADEntity_CSPtr Ellipse::copy(const geo::Coordinate &offset) const {
                                                 this->startAngle(), this->endAngle(),
                                                 isReversed(),
                                                 layer(),
-                                                viewport(),
                                                 metaInfo(),
                                                 block());
     return newEllipse;
@@ -79,7 +76,6 @@ CADEntity_CSPtr Ellipse::rotate(const geo::Coordinate &rotation_center, double r
                                                 rotated.endAngle(),
                                                 isReversed(),
                                                 layer(),
-                                                viewport(),
                                                 metaInfo(),
                                                 block()
     );
@@ -96,7 +92,6 @@ CADEntity_CSPtr Ellipse::scale(const geo::Coordinate &scale_center, const geo::C
                                                 scaled.endAngle(),
                                                 isReversed(),
                                                 layer(),
-                                                viewport(),
                                                 metaInfo(),
                                                 block()
     );
@@ -122,7 +117,6 @@ CADEntity_CSPtr Ellipse::mirror(const geo::Coordinate &axis1, const geo::Coordin
                                                 getEllipseAngle(endP),
                                                 !isReversed(),
                                                 layer(),
-                                                viewport(),
                                                 metaInfo(),
                                                 block()
     );
@@ -172,7 +166,6 @@ CADEntity_CSPtr Ellipse::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr me
             this->endAngle(),
             this->isReversed(),
             layer,
-            viewport(),
             metaInfo,
             block
     );

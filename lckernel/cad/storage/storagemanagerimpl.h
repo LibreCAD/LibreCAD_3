@@ -68,7 +68,6 @@ namespace lc {
                  * @Deprecated use entityContainer()->entitiesByLayer()
                  */
                 EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr layer) const override;
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByViewport(const meta::Viewport_CSPtr viewport) const override;
 
                 /**
                  * @brief returns layer By Name
@@ -77,7 +76,7 @@ namespace lc {
                  */
                 meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
-                meta::Viewport_CSPtr viewportByName(const std::string& viewportName) const override;
+                meta::Block_CSPtr blockByName(const std::string& blockName) const override;
 
                 /**
                  * @brief returns line pattern By Name
@@ -91,8 +90,6 @@ namespace lc {
                  * @return map<string, Layer_CSPtr>
                  */
                 std::map<std::string, meta::Layer_CSPtr> allLayers() const override;
-
-                std::map<std::string, meta::Viewport_CSPtr> allViewports() const override;
 
                 /**
                  * @brief returns entity Container
@@ -131,7 +128,7 @@ namespace lc {
 
                 EntityContainer <entity::CADEntity_CSPtr> _entities;
                 std::map<std::string, meta::DocumentMetaType_CSPtr, tools::StringHelper::cmpCaseInsensetive> _documentMetaData;
-                std::map<std::string, EntityContainer<entity::CADEntity_CSPtr>> _blocksEntities;
+                std::map<std::string, EntityContainer<entity::CADEntity_CSPtr> > _blocksEntities;
         };
     }
 }

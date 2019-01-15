@@ -73,6 +73,9 @@ namespace lc {
 
         class Insert;
         DECLARE_SHORT_SHARED_PTR(Insert)
+
+        class Hatch;
+        DECLARE_SHORT_SHARED_PTR(Hatch)
     }
 }
 

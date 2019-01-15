@@ -16,14 +16,14 @@ namespace lc {
             Q_OBJECT
         public:
        		LCADPaperViewer(QWidget* parent,int id);
-       		void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport);
+       		void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport=nullptr);
             viewer::manager::SnapManagerImpl_SPtr snapManager(){return _snapManager;};
             std::shared_ptr<lc::viewer::drawable::Cursor> cursor(){return _cursor;};              		
             viewer::drawable::TempEntities_SPtr tempEntities(){return _tempEntities;};
             viewer::manager::DragManager_SPtr dragManager(){return _dragManager;};
             storage::UndoManagerImpl_SPtr undoManager(){return _undoManager;};
             void setFocused(bool v){_isActive=v;};
-            meta::Viewport_CSPtr viewport(){return _viewport;};
+            meta::Block_CSPtr viewport(){return _viewport;};
         signals:
             void setActive(int);
         private:
@@ -35,7 +35,7 @@ namespace lc {
             viewer::manager::DragManager_SPtr _dragManager;
             viewer::drawable::DragPoints_SPtr _dragPoints;
             storage::UndoManagerImpl_SPtr _undoManager;
-            meta::Viewport_CSPtr _viewport;
+            meta::Block_CSPtr _viewport;
             int _id;
             bool _isActive=false;//is Active
         private slots:

@@ -49,11 +49,7 @@ namespace lc {
 
                 meta::Layer_CSPtr layerByName(const std::string& layerName) const override;
 
-                EntityContainer<entity::CADEntity_CSPtr> entitiesByViewport(const meta::Viewport_CSPtr& viewport) override;
-
-                std::map<std::string, meta::Viewport_CSPtr> allViewports() const override;
-
-                meta::Viewport_CSPtr viewportByName(const std::string& viewportName) const override;
+                meta::Block_CSPtr blockByName(const std::string& blockName) const override;
 
                 meta::DxfLinePatternByValue_CSPtr linePatternByName(const std::string& linePatternName) const override;
 

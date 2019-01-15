@@ -8,7 +8,7 @@
 
 #include <opencad_api.h>
 #include <cad/operations/builder.h>
-#define DEFAULT_VIEWPORT "MODEL"
+#define DEFAULT_VIEWPORT "*Model_Space"
 
 
 namespace lc {
@@ -41,7 +41,6 @@ namespace lc {
                 storage::Document_SPtr _document;
                 operation::Builder_SPtr _builder;
                 operation::EntityBuilder_SPtr _entityBuilder;
-                lc::meta::Viewport_CSPtr _currentViewport;
         };
     }
 }

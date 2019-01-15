@@ -11,6 +11,7 @@
 #include <cad/primitive/insert.h>
 #include "lcdrawoptions.h"
 #include "drawitems/lcvcircle.h"
+#include "drawitems/lcvhatch.h"
 #include "drawitems/lcvarc.h"
 #include "drawitems/lcvdrawitem.h"
 #include "drawitems/lcvline.h"
@@ -40,7 +41,7 @@
 using namespace lc;
 using namespace lc::viewer;
 
-DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Viewport_CSPtr viewport) :
+DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& document, std::function<void(double*, double*)> deviceToUser, meta::Block_CSPtr viewport) :
         _document(document),
         _zoomMin(0.005),
         _zoomMax(200.0),
@@ -48,15 +49,9 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         _deviceHeight(0),
         _selectedArea(nullptr),
         _selectedAreaIntersects(false),
-        _deviceToUser(std::move(deviceToUser))
+        _deviceToUser(std::move(deviceToUser)),
+        _viewport(viewport)
 {
-  	if(viewport==nullptr){
-   		_viewport = document->viewportByName("MODEL");
-   	}else{
-   		_viewport = viewport;
-   	}
-
-
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
     document->removeEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_removeEntityEvent>(this);
     document->commitProcessEvent().connect<DocumentCanvas, &DocumentCanvas::on_commitProcessEvent>(this);
@@ -160,7 +155,7 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
 }
 
 void DocumentCanvas::autoScale(LcPainter& painter) {
-    auto extends = _document->entityContainer().boundingBox();
+    auto extends = entityContainer().boundingBox();
     extends = extends.increaseBy(std::min(extends.width(), extends.height()) * 0.1);
 
     setDisplayArea(painter, extends);
@@ -205,11 +200,13 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
-            auto visibleEntities = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingAreaFast(visibleUserArea);
+            auto visibleEntities = entityContainer().entitiesWithinAndCrossingAreaFast(visibleUserArea);
             std::vector<lc::viewer::LCVDrawItem_SPtr> visibleDrawables;
             visibleEntities.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
                 auto di = _entityDrawItem[entity];
-                visibleDrawables.push_back(di);
+                if(di){
+                    visibleDrawables.push_back(di);
+                }
             });
 
             for(const auto& di: visibleDrawables) {
@@ -370,27 +367,18 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
-    _document->entityContainer().optimise();
+    entityContainer().optimise();
 }
 
 // This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
-
-    if(entity->block() != nullptr) {
-        return;
-    }
-
-    auto drawable = asDrawable(event.entity());
-
-    if (drawable != nullptr) {
-        auto drawableEntity = std::dynamic_pointer_cast<lc::viewer::LCVDrawItem>(drawable);
-        _entityDrawItem.insert(std::make_pair(drawableEntity->entity(), drawableEntity));
-    }
+    auto drawable = asDrawable(entity);
+    _entityDrawItem.insert(std::make_pair(entity, drawable));
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
-    _document->entityContainer().remove(event.entity());
+    entityContainer().remove(event.entity());
     _entityDrawItem.erase(event.entity());
 }
 
@@ -398,12 +386,12 @@ std::shared_ptr<lc::storage::Document> DocumentCanvas::document() const {
     return _document;
 }
 
-lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr>& DocumentCanvas::entityContainer() const {
-    return _document->entityContainer();
+lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> DocumentCanvas::entityContainer() const {
+    return _document->entitiesByBlock(_viewport);
 }
 
 lc::geo::Area DocumentCanvas::bounds() const {
-    return _document->entityContainer().bounds();
+    return entityContainer().bounds();
 }
 
 void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool occupies) {
@@ -428,10 +416,10 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
 
     if (occupies) {
-        entitiesInSelection = _document->entitiesByViewport(_viewport).entitiesFullWithinArea(*_selectedArea);
+        entitiesInSelection = entityContainer().entitiesFullWithinArea(*_selectedArea);
     }
     else {
-        entitiesInSelection = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingArea(*_selectedArea);
+        entitiesInSelection = entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
     }
     _newSelection.clear();
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
@@ -505,6 +493,13 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
 
     if (line != nullptr) {
         return std::make_shared<LCVLine>(line);
+    }
+
+    // Add a hatch
+    auto hatch = std::dynamic_pointer_cast<const lc::entity::Hatch>(entity);
+
+    if (hatch != nullptr) {
+        return std::make_shared<LCVHatch>(hatch);
     }
 
     // Add a circle
@@ -636,7 +631,7 @@ void DocumentCanvas::selectPoint(double x, double y) {
     w = w - zeroX;
 
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
-    auto entities = _document->entitiesByViewport(_viewport).entitiesWithinAndCrossingAreaFast(selectionArea);
+    auto entities = entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
         _entityDrawItem[entity]->selected(!_entityDrawItem[entity]->selected());
     });

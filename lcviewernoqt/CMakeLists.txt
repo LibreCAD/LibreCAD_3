@@ -13,6 +13,7 @@ lcdrawoptions.cpp
 drawitems/lcvdrawitem.cpp
 drawitems/lcvarc.cpp
 drawitems/lcvcircle.cpp
+drawitems/lcvhatch.cpp
 drawitems/lcvpoint.cpp
 drawitems/lcvdrawitem.cpp
 drawitems/lcvellipse.cpp
@@ -49,6 +50,7 @@ lcdrawoptions.h
 drawitems/lcvdrawitem.h
 drawitems/lcvarc.h
 drawitems/lcvcircle.h
+drawitems/lcvhatch.h
 drawitems/lcvpoint.h
 drawitems/lcvdrawitem.h
 drawitems/lcvellipse.h

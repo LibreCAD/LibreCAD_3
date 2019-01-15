@@ -31,7 +31,7 @@ LCADViewer::~LCADViewer() {
 }
 
 
-void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport) {
+void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport) {
     int width = size().width();
     int height = size().height();
 

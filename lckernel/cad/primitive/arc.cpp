@@ -4,13 +4,13 @@ using namespace lc;
 using namespace entity;
 
 Arc::Arc(const geo::Coordinate& center, double radius, double startAngle, double endAngle, bool isCCW,
-         meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
+         meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
+        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
         geo::Arc(center, radius, startAngle, endAngle, isCCW) {
 }
 
-Arc::Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::Viewport_CSPtr viewport, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
-    CADEntity(std::move(layer), std::move(viewport), std::move(metaInfo), std::move(block)),
+Arc::Arc(const geo::Arc &a, meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
     geo::Arc(a) {
 }
 
@@ -92,21 +92,21 @@ geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
 
 CADEntity_CSPtr Arc::move(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer(), viewport());
+                                        this->CCW(), layer());
     newArc->setID(this->id());
     return newArc;
 }
 
 CADEntity_CSPtr Arc::copy(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer(), viewport());
+                                        this->CCW(), layer());
     return newArc;
 }
 
 CADEntity_CSPtr Arc::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     auto newArc = std::make_shared<Arc>(this->center().rotate(rotation_center, rotation_angle),
                                         this->radius(), this->startAngle() + rotation_angle,
-                                        this->endAngle() + rotation_angle, this->CCW(), layer(), viewport());
+                                        this->endAngle() + rotation_angle, this->CCW(), layer());
     newArc->setID(this->id());
     return newArc;
 }
@@ -114,7 +114,7 @@ CADEntity_CSPtr Arc::rotate(const geo::Coordinate &rotation_center, const double
 CADEntity_CSPtr Arc::scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) const {
     auto newArc = std::make_shared<Arc>(this->center().scale(scale_center, scale_factor),
                                         this->radius() * fabs(scale_factor.x()),
-                                        this->startAngle(), this->endAngle(), this->CCW(), layer(), viewport());
+                                        this->startAngle(), this->endAngle(), this->CCW(), layer());
     newArc->setID(this->id());
     return newArc;
 
@@ -127,7 +127,7 @@ CADEntity_CSPtr Arc::mirror(const geo::Coordinate &axis1, const geo::Coordinate 
                                         this->radius(),
                                         lc::maths::Math::correctAngle(a - this->startAngle()),
                                         lc::maths::Math::correctAngle(a - this->endAngle()),
-                                        !this->CCW(), layer(), viewport());
+                                        !this->CCW(), layer());
     newArc->setID(this->id());
     return newArc;
 
@@ -139,7 +139,7 @@ const geo::Area Arc::boundingBox() const {
 
 CADEntity_CSPtr Arc::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), this->endAngle(),
-                                        this->CCW(), layer, viewport(), metaInfo, block);
+                                        this->CCW(), layer, metaInfo, block);
     newArc->setID(this->id());
     return newArc;
 }
@@ -157,7 +157,7 @@ std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
 
 CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), viewport(), metaInfo());
+        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
         newEntity->setID(id());
         return newEntity;
     }

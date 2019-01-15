@@ -60,8 +60,6 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("setID", &lc::builder::CADEntityBuilder::setID)
         .addOverloadedFunctions("setLayer", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::Layer_CSPtr &)>(&lc::builder::CADEntityBuilder::setLayer))
         .addOverloadedFunctions("setMetaInfo", static_cast<void(lc::builder::CADEntityBuilder::*)(const lc::meta::MetaInfo_CSPtr &)>(&lc::builder::CADEntityBuilder::setMetaInfo))
-        .addFunction("viewport", &lc::builder::CADEntityBuilder::viewport)
-        .addFunction("setViewport", &lc::builder::CADEntityBuilder::setViewport)
     );
 
     state["lc"]["builder"]["ArcBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::ArcBuilder, lc::builder::CADEntityBuilder>()

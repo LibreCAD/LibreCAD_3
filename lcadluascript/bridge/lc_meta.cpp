@@ -1,5 +1,4 @@
 #include <cad/interface/metatype.h>
-#include <cad/meta/viewport.h>
 #include <cad/meta/block.h>
 #include <cad/meta/metalinewidth.h>
 #include <cad/base/metainfo.h>
@@ -16,12 +15,6 @@ void import_lc_meta_namespace(kaguya::State& state) {
 
     state["lc"]["meta"]["DocumentMetaType"].setClass(kaguya::UserdataMetatable<lc::meta::DocumentMetaType, lc::meta::MetaType>()
         .addFunction("name", &lc::meta::DocumentMetaType::name)
-    );
-
-    state["lc"]["meta"]["Viewport"].setClass(kaguya::UserdataMetatable<lc::meta::Viewport, lc::meta::DocumentMetaType>()
-        .addStaticFunction("new", [](const std::string& name) {
-            return std::make_shared<const lc::meta::Viewport>(name);
-        })
     );
 
     state["lc"]["meta"]["EntityMetaType"].setClass(kaguya::UserdataMetatable<lc::meta::EntityMetaType, lc::meta::MetaType>()

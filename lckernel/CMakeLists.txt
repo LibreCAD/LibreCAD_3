@@ -40,7 +40,6 @@ cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
 cad/meta/layer.cpp
-cad/meta/viewport.cpp
 cad/meta/icolor.cpp
 cad/meta/metalinewidth.cpp
 cad/meta/dxflinepattern.cpp
@@ -51,6 +50,7 @@ cad/operations/layerops.cpp
 cad/operations/linepatternops.cpp
 cad/primitive/arc.cpp
 cad/primitive/circle.cpp
+cad/primitive/hatch.cpp
 cad/primitive/point.cpp
 cad/primitive/ellipse.cpp
 cad/primitive/line.cpp
@@ -80,7 +80,6 @@ cad/builders/ellipse.cpp
 cad/builders/point.cpp
 cad/builders/insert.cpp
 cad/builders/layer.cpp
-cad/builders/viewport.cpp
 cad/builders/linepattern.cpp
 cad/builders/spline.cpp
 cad/meta/customentitystorage.cpp
@@ -90,6 +89,8 @@ cad/primitive/customentity.cpp
 cad/interface/snapconstrain.cpp
 cad/storage/documentlist.cpp
 cad/logger/logger.cpp
+cad/base/cadobject.cpp
+cad/objects/layout.cpp
 )
 
 # HEADER FILES
@@ -140,7 +141,6 @@ cad/math/lcmath.h
 cad/math/equation.h
 cad/math/intersectionhandler.h
 cad/meta/color.h
-cad/meta/viewport.h
 cad/meta/icolor.h
 cad/meta/metacolor.h
 cad/meta/layer.h
@@ -156,6 +156,7 @@ cad/vo/entitycoordinate.h
 cad/vo/entitydistance.h
 cad/primitive/arc.h
 cad/primitive/circle.h
+cad/primitive/hatch.h
 cad/primitive/point.h
 cad/primitive/ellipse.h
 cad/primitive/line.h
@@ -190,7 +191,6 @@ cad/builders/spline.h
 cad/primitive/insert.h
 cad/builders/insert.h
 cad/builders/layer.h
-cad/builders/viewport.h
 cad/builders/linepattern.h
 cad/meta/customentitystorage.h
 cad/operations/blockops.h
@@ -201,7 +201,10 @@ cad/events/newwaitingcustomentityevent.h
 cad/storage/documentlist.h
 cad/interface/unmanageddraggable.h
 cad/interface/tangentable.h
-cad/logger/logger.h)
+cad/logger/logger.h
+cad/base/cadobject.h
+cad/objects/layout.h
+)
 
 # Boost logging
 ADD_DEFINITIONS("-DBOOST_ALL_DYN_LINK")

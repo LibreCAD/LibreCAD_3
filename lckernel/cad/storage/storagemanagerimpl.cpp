@@ -45,16 +45,13 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByLayer(met
     return _entities.entitiesByLayer(layer);
 }
 
-EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByViewport(meta::Viewport_CSPtr viewport) const {
-	return _entities.entitiesByViewport(viewport);
-}
 
 meta::Layer_CSPtr StorageManagerImpl::layerByName(const std::string& layerName) const {
     return metaDataTypeByName<meta::Layer>(layerName);
 }
 
-meta::Viewport_CSPtr StorageManagerImpl::viewportByName(const std::string& viewportName) const {
-    return metaDataTypeByName<meta::Viewport>(viewportName);
+meta::Block_CSPtr StorageManagerImpl::blockByName(const std::string& blockName) const {
+    return metaDataTypeByName<meta::Block>(blockName);
 }
 
 meta::DxfLinePatternByValue_CSPtr StorageManagerImpl::linePatternByName(const std::string& linePatternName) const {
@@ -73,18 +70,6 @@ std::map<std::string, meta::Layer_CSPtr> StorageManagerImpl::allLayers() const {
     return data;
 }
 
-std::map<std::string, meta::Viewport_CSPtr> StorageManagerImpl::allViewports() const {
-    std::map<std::string, meta::Viewport_CSPtr> data;
-    for (auto& iter : _documentMetaData) {
-        meta::Viewport_CSPtr viewport = std::dynamic_pointer_cast<const meta::Viewport>(iter.second);
-        if (viewport != nullptr) {
-            data.emplace(std::make_pair(viewport->name(), viewport));
-        }
-    }
-
-    return data;
-}
-
 EntityContainer<entity::CADEntity_CSPtr> & StorageManagerImpl::entityContainer() {
     return _entities;
 }
@@ -95,7 +80,6 @@ void StorageManagerImpl::optimise() {
         ec.second.optimise();
     }
 }
-
 
 void StorageManagerImpl::addDocumentMetaType(meta::DocumentMetaType_CSPtr dmt) {
     _documentMetaData.emplace(std::make_pair(dmt->id(), dmt));
@@ -130,10 +114,14 @@ meta::DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(meta::Block_CSPtr block) const {
-    try {
-        return _blocksEntities.at(block->name());
-    }
-    catch (std::out_of_range& e) {
-        return EntityContainer<entity::CADEntity_CSPtr>();
-    }
+    if(block){
+        try {
+            return _blocksEntities.at(block->name());
+        }
+        catch (std::out_of_range& e) {
+            return EntityContainer<entity::CADEntity_CSPtr>();
+        }
+    }else{
+        return _entities;
+    };
 }

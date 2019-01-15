@@ -65,7 +65,7 @@ namespace lc {
 
                 ~LCADViewer();
 
-                void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Viewport_CSPtr viewport=nullptr);
+                void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport=nullptr);
 
                 void setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager);
 

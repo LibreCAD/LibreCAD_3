@@ -44,7 +44,6 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("move", &lc::entity::CADEntity::move)
         .addFunction("rotate", &lc::entity::CADEntity::rotate)
         .addFunction("scale", &lc::entity::CADEntity::scale)
-        .addFunction("viewport", &lc::entity::CADEntity::viewport)
     );
 
     state["lc"]["entity"]["Snapable"].setClass(kaguya::UserdataMetatable<lc::entity::Snapable>()

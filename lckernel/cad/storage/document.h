@@ -80,6 +80,7 @@ namespace lc {
                  * \brief Event to add a layer
                  */
                 virtual Nano::Signal<void(const lc::event::AddLayerEvent&)>& addLayerEvent();
+
                 virtual Nano::Signal<void(const lc::event::AddViewportEvent&)>& addViewportEvent();                
 
                 /*!
@@ -184,7 +185,7 @@ namespace lc {
                  * \return
                  */
                 virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByLayer(const meta::Layer_CSPtr& layer) = 0;
-                virtual EntityContainer<entity::CADEntity_CSPtr> entitiesByViewport(const meta::Viewport_CSPtr& viewport) = 0;
+                
                 /**
                  * @brief Search entities in a given block
                  * @param block
@@ -204,15 +205,18 @@ namespace lc {
                  * @brief Returns all layers
                  */
                 virtual std::map<std::string, meta::Layer_CSPtr> allLayers() const = 0;
-                virtual std::map<std::string, meta::Viewport_CSPtr> allViewports() const = 0;
-
+                
                 virtual std::map<std::string, lc::meta::DocumentMetaType_CSPtr, lc::tools::StringHelper::cmpCaseInsensetive> allMetaTypes() = 0;
 
                 /**
                  * @brief return a layer by it's name
                  */
                 virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
-                virtual meta::Viewport_CSPtr viewportByName(const std::string& viewportName) const = 0;
+
+                /**
+                 * @brief return a layer by it's name
+                 */
+                virtual meta::Block_CSPtr blockByName(const std::string& blockName) const = 0;
 
                 /**
                  * @brief return a line pattern by it's name
