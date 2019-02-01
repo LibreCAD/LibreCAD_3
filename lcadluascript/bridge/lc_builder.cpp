@@ -16,6 +16,8 @@
 #include "lc_builder.h"
 
 void import_lc_builder_namespace(kaguya::State& state) {
+    state["lc"]["builder"] = kaguya::NewTable();
+
     state["lc"]["builder"]["LinePatternBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LinePatternBuilder>()
         .setConstructors<lc::builder::LinePatternBuilder()>()
         .addFunction("addElement", &lc::builder::LinePatternBuilder::addElement)
