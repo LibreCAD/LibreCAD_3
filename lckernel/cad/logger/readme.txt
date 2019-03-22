@@ -2,7 +2,7 @@ First see example
 
 https:://github.com/boostorg/log/blob/develop/example/advanced_usage/main.cpp
 
-The boost::log is quite diffrent then expected so.
+The boost::log is quite different then expected so.
 
 It is in class so it can be updated or any feature can be added.(later like storing it in files or getting log over network)
 
@@ -13,7 +13,7 @@ Actually here in class there only init function that creates sinks. So to write 
 	BOOST_LOG(slg) << "Hello World!";//No changes in macro	or, LOG
 	BOOST_LOG_SEV(slg,error) << "Error msg..";//minimal	or, LOGS
 
-Available severirities:
+Available severities:
     normal
     notification <--- can be used to show notification if needed .. later
     warning

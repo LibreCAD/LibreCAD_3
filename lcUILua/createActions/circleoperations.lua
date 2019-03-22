@@ -12,7 +12,7 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
-    cli_get_text(self.target_widget, true) -- This command prevents the user from entering cordinates in commandline. But at the same time it is needed for receiving text options from user. Alternate method need to be workedout.
+    cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
     self.builder:setRadius(10)
     self.firstpoint = nil
     self.secondpoint = nil
