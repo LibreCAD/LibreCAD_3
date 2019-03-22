@@ -210,7 +210,7 @@ namespace lc {
 
                 /**
                  * @brief entitiesWithinAndCrossingArea
-                 * Find all entities within a selected area or where the path is crossing the area bounderies
+                 * Find all entities within a selected area or where the path is crossing the area boundaries
                  * @param area
                  * @return
                  *
@@ -308,10 +308,10 @@ namespace lc {
                  * \brief getEntityPathsNearCoordinate
                  * \param point point where to look for entities
                  * \param distance maximum distance from this point where the function would consider adding it to a list
-                 * \return List of entities near this coordinate. THis includes entities where it's path is close to point
+                 * \return List of entities near this coordinate. This includes entities where it's path is close to point
                  */
                 std::vector<lc::EntityDistance> getEntityPathsNearCoordinate(const lc::geo::Coordinate& point,
-                                                                             double distance, 
+                                                                             double distance,
                                                                              lc::SimpleSnapConstrain _snapConstrain) const {
 
                     const auto area = lc::geo::Area(lc::geo::Coordinate(point.x(), point.y()) + distance / 2.,

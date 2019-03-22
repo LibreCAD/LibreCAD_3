@@ -4,7 +4,7 @@
 
 //This class handles the model viewers, ie. encapsulates codes for easy UI
 // @TODO:
-// Now it acts as connecting layer but later it should be QFrame consisting of multiple model views seperated by splitter
+// Now it acts as connecting layer but later it should be QFrame consisting of multiple model views separated by splitter
 //Two consecutive models for now
 namespace lc {
     namespace ui {
