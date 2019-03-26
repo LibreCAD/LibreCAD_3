@@ -1,6 +1,5 @@
 #include "clicommand.h"
 #include "ui_clicommand.h"
-#include <cad/storage/settings.h>
 #include <memory>
 #include <iterator>
 #include <unordered_map>
@@ -82,8 +81,8 @@ void CliCommand::onReturnPressed() {
             varFind = text.split("=");
 
             if(checkParam(varFind[0])) {
-                write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
-                lc::storage::Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());
+                /*write(QString("Value of %1 = %2").arg(varFind[0]).arg(varFind[1].toFloat()));
+                lc::storage::Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());*/
             }
             else {
                 write(QString("No such variable."));
@@ -111,7 +110,7 @@ void CliCommand::enterCommand(const QString& command) {
     }
     else {
         if(checkParam(command)) {
-            write(QString("Value of %1=%2").arg(command).arg(lc::storage::Settings::val(command.toStdString())));
+            //write(QString("Value of %1=%2").arg(command).arg(lc::storage::Settings::val(command.toStdString())));
         }
         else
         {
@@ -121,7 +120,7 @@ void CliCommand::enterCommand(const QString& command) {
 }
 
 bool CliCommand::checkParam(const QString& command) {
-    return lc::storage::Settings::exists(command.toStdString());
+    return false;//lc::storage::Settings::exists(command.toStdString());
 }
 
 void CliCommand::enterCoordinate(QString coordinate) {
