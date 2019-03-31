@@ -37,7 +37,7 @@
 #include <cmath>
 
 #include <typeinfo>
-
+#include <QtDebug>
 using namespace lc;
 using namespace lc::viewer;
 
@@ -105,10 +105,11 @@ DocumentCanvas::~DocumentCanvas() {
  */
 
 void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
-	double tX = 0;
-	double tY = 0;
-	painter.device_to_user(&tX,&tY);
-	painter.device_to_user(&move_x,&move_y);
+    double tX = 0;
+    double tY = 0;
+    painter.device_to_user(&tX,&tY);
+    painter.device_to_user(&move_x,&move_y);
+    qDebug("documentcanvas PAN TX=%f TY=%f",move_x-tX,-move_y+tY);
     painter.translate(move_x-tX, -move_y+tY);
 }
 
@@ -118,11 +119,12 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     if ((_zoomMax <= painter.scale() && factor > 1.) || (_zoomMin >= painter.scale() && factor < 1.)) {
         return;
     }
-
+    
     // Find user location at the device location
     painter.save();
     double userX = deviceCenterX;
     double userY = deviceCenterY;
+    qDebug("Document canvas zoom1 factor=%f Ux=%f Uy=%f relative_zoom=%d",factor,userX,userY,relativezoom);
     painter.device_to_user(&userX, &userY);
     painter.restore();
 
@@ -139,19 +141,24 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     if (relativezoom) {
         factor = factor * painter.scale();
     }
+    
 
     // Calculate reference device offset at device location
     painter.save();
     double refX = deviceCenterX;
     double refY = deviceCenterY;
+
+     qDebug("Document canvas zoom2 factor=%f Ux=%f Uy=%f Rx=%f Ry=%f relative_zoom=%d",factor,userCenterX,userCenterY,refX,refY,relativezoom);
+   
     painter.reset_transformations();
     painter.scale(factor);
     painter.device_to_user(&refX, &refY);
     painter.restore();
 
     painter.reset_transformations();
-    painter.scale(factor);
+    painter.scale(factor);       
     painter.translate(refX - userCenterX,-refY + userCenterY);
+    
 }
 
 void DocumentCanvas::autoScale(LcPainter& painter) {
@@ -197,6 +204,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         case VIEWER_DOCUMENT: {
             // Draw Document
             // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
+
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
@@ -214,7 +222,12 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             };
             painter.line_width(1.);
             painter.source_rgb(1., 1., 1.);
-            painter.lineWidthCompensation(0.);
+            painter.lineWidthCompensation(0.);  
+            painter.clear(0.133,0.545,0.133); 
+           
+           
+            drawingpage(painter);
+
             break;
         }
 
@@ -337,8 +350,8 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
     lc::entity::CADEntity_CSPtr ci = drawable->entity();
 
 
-	// Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
-	double alpha_compensation = 0.9;
+    // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
+    double alpha_compensation = 0.9;
 
     // Decide on line width
     // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
@@ -351,7 +364,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
     auto path = drawLinePattern(ci, insert, width);
     painter.set_dash(&path[0], path.size(), 0., true);
 
-	// Decide what color to render the entity into
+    // Decide what color to render the entity into
 
     auto color = drawColor(ci, insert, drawable->selected());
     painter.source_rgba(
@@ -363,7 +376,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
 
     drawable->draw(painter, lcDrawOptions, visibleUserArea);
 
-	painter.restore();	
+    painter.restore();  
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {

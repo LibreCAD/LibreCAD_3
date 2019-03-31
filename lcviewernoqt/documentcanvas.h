@@ -3,7 +3,7 @@
 #include <functional>
 
 #include "painters/lcpainter.h"
-
+#include "painters/mydrawing.h"
 #include "cad/storage/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"
 #include "events/drawevent.h"

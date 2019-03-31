@@ -285,6 +285,7 @@ public:
 
     void line_to(double x, double y) {
         cairo_line_to(_cr, x, -y);
+       //std::cout<<"painter line"<<x<<","<<y<<std::endl;
     }
 
     void lineWidthCompensation(double lwc) {
@@ -330,6 +331,7 @@ public:
 
     void circle(double x, double y, double r) {
         cairo_arc(_cr, x, -y, r, 0, 2. * M_PI);
+        std::cout<<"painter Circle"<<x<<","<<y<<std::endl;
     }
 
     void ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra = 0) {
@@ -472,7 +474,14 @@ public:
     void fill() {
         cairo_fill(_cr);
     }
-
+    
+    //################################
+    void ReadyShaderProgram()    //###
+    {                            //###
+                                 //###
+    }                            //###
+    //################################
+    
     void point(double x, double y, double size, bool deviceCoords) {
         if (deviceCoords) {
             cairo_arc(_cr, x, -y, size / scale(), 0, 2. * M_PI);
@@ -507,7 +516,7 @@ public:
             }
 
             cairo_set_dash(_cr, scaledDashes, num_dashes, offset);
-			delete scaledDashes;
+            delete scaledDashes;
         } else {
             cairo_set_dash(_cr, dashes, num_dashes, offset);
         }

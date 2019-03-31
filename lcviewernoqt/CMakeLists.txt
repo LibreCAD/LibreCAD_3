@@ -5,6 +5,22 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
+find_package(Qt5Widgets)
+find_package(Qt5Core)
+find_package(Qt5Designer)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5UiTools REQUIRED)
+
+
+# OpenGL  classes---------------------
+    
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS")
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES")
+
+#-----------------------------------------
+
 message("***** LibreCAD lcviewernoqt *****")
 
 # SOURCE FILES
@@ -33,6 +49,8 @@ drawitems/lcdimangular.cpp
 drawitems/lclwpolyline.cpp
 drawables/lccursor.cpp
 painters/createpainter.cpp
+painters/openglpainter.cpp
+painters/mydrawing.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
         managers/eventmanager.cpp
@@ -42,6 +60,14 @@ drawables/dragpoints.cpp
 drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
+
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexbuffer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/indexbuffer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexarray.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gl_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/renderer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shader.cpp
+
 )
 
 # HEADER FILES
@@ -77,6 +103,8 @@ events/snappointevent.h
 painters/lcpainter.h
 painters/createpainter.h
 painters/lccairopainter.tcc
+painters/openglpainter.h
+painters/mydrawing.h
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h
@@ -89,7 +117,42 @@ events/dragpointsevent.h
 drawables/tempentities.h
 drawables/CursorLocation.h
 drawitems/lcvinsert.h
+
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbuffer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/indexbuffer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexarray.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbufferlayout.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/renderer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shader.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/debug.h
 )
+
+# --------------------temporary-------------------
+
+# OpenGL & GLEW library-------------------------
+
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+if(NOT ${OPENGL_FOUND})
+    message("OPENGL not found")
+endif()
+
+# include directories----------------------------
+
+include_directories(
+    ${GLEW_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    )
+
+message(${OPENGL_INCLUDE_DIR})
+
+
+ 
+#--------------------------------------------------
+
+
 
 find_package(PkgConfig)
 
@@ -134,4 +197,10 @@ else ()
 endif ()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel)
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
+Qt5::Core
+Qt5::Gui
+Qt5::Widgets
+Qt5::UiTools
+${OPENGL_LIBRARY}
+${GLEW_LIBRARY})

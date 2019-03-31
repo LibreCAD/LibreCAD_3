@@ -119,6 +119,29 @@ link_directories(${LUA_LIBRARY_DIRS})
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
+# --------------------temporary-------------------
+
+# OpenGL & GLEW library-------------------------
+
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+if(NOT ${OPENGL_FOUND})
+    message("OPENGL not found")
+endif()
+
+# include directories----------------------------
+
+include_directories(
+    ${GLEW_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR}
+    )
+
+message(${OPENGL_INCLUDE_DIR})
+#--------------------------------------------------
+
+
+
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
     include_directories("${CMAKE_SOURCE_DIR}/../third_party")
@@ -160,4 +183,6 @@ if(WITH_UNITTESTS)
 endif(WITH_UNITTESTS)
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
+${OPENGL_LIBRARY}
+${GLEW_LIBRARY})

@@ -1,6 +1,15 @@
 #pragma once
+#define GL_GLEXT_PROTOTYPES
+
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #include <map>
-#include <QWidget>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
+
+
 
 #include "cad/storage/document.h"
 #include "cad/storage/entitycontainer.h"
@@ -57,13 +66,16 @@ namespace lc {
             int scale;
         };
 
-        class LCADViewer : public QWidget {
+        class LCADViewer : public QOpenGLWidget
+        {
             Q_OBJECT
 
             public:
                 LCADViewer(QWidget* parent = 0);
 
                 ~LCADViewer();
+
+                
 
                 void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport=nullptr);
 
@@ -84,7 +96,8 @@ namespace lc {
                 void updateHelper();
 
             protected:
-                void paintEvent(QPaintEvent*);
+               // void paintEvent(QPaintEvent*);
+                 void paintGL();
 
                 virtual void mousePressEvent(QMouseEvent* event);
 
@@ -98,7 +111,8 @@ namespace lc {
 
                 virtual void keyReleaseEvent(QKeyEvent* event);
 
-                virtual void resizeEvent(QResizeEvent* event);
+               // virtual void resizeEvent(QResizeEvent* event);
+                 void resizeGL(int w, int h);
 
             signals:
 
@@ -117,6 +131,9 @@ namespace lc {
             public slots:
 
             private:
+
+                void initializeGL();
+
                 void createPainters(unsigned int width, unsigned int height);
 
                 void deletePainters();
@@ -126,6 +143,12 @@ namespace lc {
                 void updateDocument();
 
                 void on_commitProcessEvent(const lc::event::CommitProcessEvent& event);
+                
+                //################################
+                //just for checking opengl
+                void SAMPLE_OPENGL();               
+                //################################
+
 
                 /* for panning */
                 bool _altKeyActive;

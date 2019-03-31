@@ -17,6 +17,8 @@ namespace lc {
             public:
                 virtual ~LcPainter() = default;
 
+                virtual void ReadyShaderProgram() = 0;
+
                 virtual void new_path() = 0;
 
                 virtual void close_path() = 0;
@@ -116,6 +118,7 @@ namespace lc {
                 // We should consider returning a matrix?
                 virtual void getTranslate(double* x, double* y) = 0;
 
+               
         };
     }
 }

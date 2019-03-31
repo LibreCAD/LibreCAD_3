@@ -6,7 +6,9 @@ using namespace lc::ui;
 
 using namespace lc::ui;
 
-LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
+LCADViewerProxy::LCADViewerProxy(QWidget* parent=0)
+{
+    qDebug( "lcadviewerproxy--- Constructor()--- object= %u parent=%u",this,parent );
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
@@ -40,7 +42,9 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 }
 
-void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
+void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document)
+{
+    qDebug( "lcadviewerproxy---setDocument()--- object= %u",this );
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
 
@@ -54,6 +58,9 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
     x = _paperViewers->getViewer();
     x->setDocument(document,view);
     _tabWidget->addTab(x,"Paper 2");
+    
+
+    qDebug( "lcadviewerproxy---TABS DONE in setDocument()--- object= %u",this );
 }
 
 void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){

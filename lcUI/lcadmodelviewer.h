@@ -15,10 +15,10 @@ namespace lc {
         class LCADModelViewer : public LCADViewer {
             Q_OBJECT
         public:
-       		LCADModelViewer(QWidget* parent,int id);
-       		void setDocument(std::shared_ptr<lc::storage::Document> document);
+            LCADModelViewer(QWidget* parent,int id);
+            void setDocument(std::shared_ptr<lc::storage::Document> document);
             viewer::manager::SnapManagerImpl_SPtr snapManager(){return _snapManager;};
-            std::shared_ptr<lc::viewer::drawable::Cursor> cursor(){return _cursor;};              		
+            std::shared_ptr<lc::viewer::drawable::Cursor> cursor(){return _cursor;};                    
             viewer::drawable::TempEntities_SPtr tempEntities(){return _tempEntities;};
             viewer::manager::DragManager_SPtr dragManager(){return _dragManager;};
             storage::UndoManagerImpl_SPtr undoManager(){return _undoManager;};
@@ -26,8 +26,8 @@ namespace lc {
         signals:
             void setActive(int);
         private:
-   	        std::shared_ptr<lc::viewer::drawable::GradientBackground> _gradientBackground;
-	        std::shared_ptr<lc::viewer::drawable::Grid> _grid;
+            std::shared_ptr<lc::viewer::drawable::GradientBackground> _gradientBackground;
+            std::shared_ptr<lc::viewer::drawable::Grid> _grid;
             viewer::manager::SnapManagerImpl_SPtr _snapManager;
             std::shared_ptr<lc::viewer::drawable::Cursor> _cursor;
             viewer::drawable::TempEntities_SPtr _tempEntities;
@@ -39,5 +39,5 @@ namespace lc {
         private slots:
             void onMouseMoveEvent();
         };
-	}
+    }
 }
