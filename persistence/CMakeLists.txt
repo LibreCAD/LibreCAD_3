@@ -28,6 +28,8 @@ find_package(LibDxfrw REQUIRED)
 include_directories(${LIBDXFRW_INCLUDE_DIR})
 
 # Boost logging
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -76,7 +78,7 @@ get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTO
 #endforeach()
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
-target_link_libraries(persistence lckernel ${LIBDXFRW_LIBRARY} ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+target_link_libraries(persistence lckernel ${Boost_LIBRARIES} ${LIBDXFRW_LIBRARY} ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
 install(TARGETS persistence DESTINATION lib)

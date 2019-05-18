@@ -25,6 +25,7 @@ FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
 
+
 set(src
 main.cpp
 lckernel/primitive/entitytest.cpp
@@ -129,8 +130,8 @@ if(WITH_RENDERING_UNITTESTS)
         ${PANGO_LIBRARIES}
         ${GDK-PIXBUF_LIBRARIES}
         ${GDK_LIBRARIES}
-	${GLIB_GOBJECT_LIBRARIES}
-	${GLib_LIBRARIES}
+        ${GLIB_GOBJECT_LIBRARIES}
+        ${GLib_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 
