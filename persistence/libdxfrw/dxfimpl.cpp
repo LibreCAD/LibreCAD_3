@@ -493,7 +493,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
         auto m = std::make_shared<lc::entity::HatchLoop>();
         for(auto k : x->objlist){
             if(k->eType == DRW::ETYPE::LWPOLYLINE){
-                auto data = (DRW_LWPolyline*)k;
+                auto data = std::dynamic_pointer_cast<DRW_LWPolyline>(k);
                 LOG_WARNING << "Polyline";
                 std::vector<lc::entity::LWVertex2D> points;
                 for (const auto& i : data->vertlist) {
@@ -511,13 +511,13 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 );
                 m->objList.push_back(lcLWPolyline);
             }else if(k->eType == DRW::ETYPE::LINE){
-                auto data = (DRW_Line*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                 lc::builder::LineBuilder builder;
                 builder.setStart(coord(data->basePoint));
                 builder.setEnd(coord(data->secPoint));
                 m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ARC){
-                auto data = (DRW_Arc*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
                 lc::builder::ArcBuilder builder;
 
                 builder.setCenter(coord(data->basePoint));
@@ -527,7 +527,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 builder.setIsCCW((bool) data->isccw);
                 m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ELLIPSE){
-                auto data = (DRW_Ellipse*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                 auto secPoint = coord(data->secPoint);
                 auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
                                                                        secPoint,
@@ -539,7 +539,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 );
                 m->objList.push_back(lcEllipse);
             }else if(k->eType == DRW::ETYPE::SPLINE){
-                auto data = (DRW_Spline*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                 auto knotList = data->knotslist;
                 if (knotList.size()>=2) {
                     knotList.erase(knotList.begin());
@@ -639,10 +639,10 @@ lc::geo::Coordinate DXFimpl::coord(DRW_Coord const& coord) const {
     return { coord.x, coord.y, coord.z };
 }
 
-std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordList) const {
+std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<std::shared_ptr<DRW_Coord>> coordList) const {
     std::vector<lc::geo::Coordinate> coords;
     coords.reserve(coordList.size());
-    for (const DRW_Coord* ptr : coordList) {
+    for (const auto& ptr : coordList) {
         coords.emplace_back(ptr->x,ptr->y, ptr->z);
     }
     return coords;
@@ -853,11 +853,11 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr& s) {
     sp.degree = s->degree();
 
     for(const auto& cp : s->controlPoints()) {
-        sp.controllist.push_back(new DRW_Coord(cp.x(), cp.y(), cp.z()));
+        sp.controllist.push_back(std::make_shared<DRW_Coord>(cp.x(), cp.y(), cp.z()));
     }
 
     for(const auto& fp : s->fitPoints()) {
-        sp.fitlist.push_back(new DRW_Coord(fp.x(), fp.y(), fp.z()));
+        sp.fitlist.push_back(std::make_shared<DRW_Coord>(fp.x(), fp.y(), fp.z()));
     }
 
     sp.flags = s->flags();
