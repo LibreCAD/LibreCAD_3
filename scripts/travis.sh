@@ -13,7 +13,7 @@ make -j2
 cd ../..
 mkdir -p build
 cd build
-cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py -DCHECKS_SOURCE_BRANCH=${TRAVIS_BRANCH} ..
+cmake ..
 make -j2
 
 if [[ $TRAVIS_TEST_RESULT != 0 ]]; then
