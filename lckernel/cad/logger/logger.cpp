@@ -34,13 +34,13 @@ typedef sinks::synchronous_sink<sinks::text_ostream_backend> text_sink;
 
 template< typename CharT, typename TraitsT >
 inline std::basic_ostream< CharT, TraitsT >& operator<< (
-    std::basic_ostream< CharT, TraitsT >& strm, severity_level lvl) {
+    std::basic_ostream< CharT, TraitsT >& strm, lc::log::SeverityLevel lvl) {
     static const char* const str[] = {
-        "normal",
-        "notification",
-        "warning",
-        "error",
-        "critical"
+        "TRACE",
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
     };
 
     if (static_cast< std::size_t >(lvl) < (sizeof(str) / sizeof(*str))) {
@@ -71,7 +71,7 @@ namespace lc {
             pSink->set_formatter(expr::stream
                                  << expr::attr<unsigned int>("LineID")
                                  << "[" << expr::format_date_time<boost::posix_time::ptime>("TimeStamp", "%d.%m.%y %H.%M.%S.%f")
-                                 << "][" << expr::attr<severity_level>("Severity")
+                                 << "][" << expr::attr<SeverityLevel>("Severity")
                                  << "][" << expr::attr<boost::posix_time::time_duration>("Uptime")
                                  << "][" << expr::if_(expr::has_attr("Tag"))
                                  [
@@ -95,7 +95,7 @@ namespace lc {
             pBackend->add_stream(pStream);
             logging::core::get()->add_sink(pSink);
             pSink->set_formatter(expr::stream
-                                 << "[" << expr::attr<severity_level>("Severity")
+                                 << "[" << expr::attr<SeverityLevel>("Severity")
                                  << "]: " << expr::if_(expr::has_attr("Tag"))
                                  [
                                      expr::stream << "[" << expr::attr <std::string>("Tag") << "]"
@@ -103,9 +103,10 @@ namespace lc {
                                  << expr::smessage);
             //Add filter too
             pSink->set_filter(
-                expr::attr<severity_level>("Severity").or_default(normal) >= warning // warning or greater, or
+                expr::attr<SeverityLevel>("Severity").or_default(INFO) >= WARNING // warning or greater, or
                 || expr::begins_with(expr::attr<std::string>("Tag").or_default(std::string()), "IMPORTANT")); //specially tagged
         }
+
         Logger::Logger() {
             //Creating sinks
             enableFileSink();
@@ -117,7 +118,8 @@ namespace lc {
             logging::core::get()->add_thread_attribute("Scope", Scope);
             //Indicate start
             BOOST_LOG_FUNCTION();
-        };
+        }
     }
 }
+
 lc::log::Logger* lc::log::Logger::instance = nullptr;

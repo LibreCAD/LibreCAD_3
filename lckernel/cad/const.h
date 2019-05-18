@@ -1,9 +1,9 @@
 #pragma once
 
 #include <assert.h>
-#include <cad/storage/settings.h>
+#include <settings.h>
 
-#define LCTOLERANCE lc::storage::Settings::val("LCTOLERANCE")
+#define LCTOLERANCE (lc::kernel::settings.get(SETTINGS_LCTOLERANCE)->getDouble())
 #define LCARCTOLERANCE 1.0e-10
 #define BBHEURISTIC 1.0e-5
 #define BBHEURISTIC2 1.0e-3
