@@ -38,7 +38,7 @@ matrix:
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-testz
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
           packages:
             - qtbase5-dev
