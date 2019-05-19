@@ -30,8 +30,36 @@
 #include <cad/operations/blockops.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/logger/logger.h>
+#include <cad/tools/maphelper.h>
 
 using namespace lc::persistence;
+
+const std::map<int, lc::Units> DXFimpl::_dxfToLCUnits = {
+        {0, lc::Units::None},
+        {1, lc::Units::Inch},
+        {2, lc::Units::Foot},
+        {3, lc::Units::Mile},
+        {4, lc::Units::Millimeter},
+        {5, lc::Units::Centimeter},
+        {6, lc::Units::Meter},
+        {7, lc::Units::Kilometer},
+        {8, lc::Units::Microinch},
+        {9, lc::Units::Mil},
+        {10, lc::Units::Yard},
+        {11, lc::Units::Angstrom},
+        {12, lc::Units::Nanometer},
+        {13, lc::Units::Micron},
+        {14, lc::Units::Decimeter},
+        {15, lc::Units::Decameter},
+        {16, lc::Units::Hectometer},
+        {17, lc::Units::Gigameter},
+        {18, lc::Units::Astro},
+        {19, lc::Units::Lightyear},
+        {20, lc::Units::Parsec},
+};
+
+const std::map<lc::Units, int> DXFimpl::_lcUnitsToDXF = lc::tools::MapHelper::reverse(_dxfToLCUnits);
+
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder) :
         _document(document), 
@@ -58,12 +86,10 @@ void DXFimpl::setBlock(const int handle) {
 
 void DXFimpl::addViewport(const DRW_Viewport& data){
 	LOG_WARNING << "addViewport ";
-	
 }
 
 void DXFimpl::addVport(const DRW_Vport& data){
 	LOG_WARNING << "addVport ";
-	
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
@@ -400,14 +426,10 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
 	LOG_WARNING << "addDimAngular3P";
-    if (_currentBlock == nullptr) {
-    }
 }
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
 	LOG_WARNING << "addOrdinate";
-    if (_currentBlock == nullptr) {
-    }
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
@@ -462,7 +484,6 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
     );
 
     _entityBuilder->appendEntity(lcLWPolyline);
-
 }
 
 void DXFimpl::addMText(const DRW_MText& data) {
@@ -1200,19 +1221,15 @@ void DXFimpl::writeAppId(){
 }
 
 void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr& d) {
-
 }
 
 void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
-
 }
 
 void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
-
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
-
 }
 
 void DXFimpl::writeEntities(){
@@ -1384,74 +1401,12 @@ int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
  * converts a DXF units setting (e.g. INSUNITSs) to a units enum.
  */
 lc::Units DXFimpl::numberToUnit(int num) {
-    switch (num) {
-    default:
-    case  0:
-        return lc::Units::None;
-        break;
-    case  1:
-        return lc::Units::Inch;
-        break;
-    case  2:
-        return lc::Units::Foot;
-        break;
-    case  3:
-        return lc::Units::Mile;
-        break;
-    case  4:
-        return lc::Units::Millimeter;
-        break;
-    case  5:
-        return lc::Units::Centimeter;
-        break;
-    case  6:
-        return lc::Units::Meter;
-        break;
-    case  7:
-        return lc::Units::Kilometer;
-        break;
-    case  8:
-        return lc::Units::Microinch;
-        break;
-    case  9:
-        return lc::Units::Mil;
-        break;
-    case 10:
-        return lc::Units::Yard;
-        break;
-    case 11:
-        return lc::Units::Angstrom;
-        break;
-    case 12:
-        return lc::Units::Nanometer;
-        break;
-    case 13:
-        return lc::Units::Micron;
-        break;
-    case 14:
-        return lc::Units::Decimeter;
-        break;
-    case 15:
-        return lc::Units::Decameter;
-        break;
-    case 16:
-        return lc::Units::Hectometer;
-        break;
-    case 17:
-        return lc::Units::Gigameter;
-        break;
-    case 18:
-        return lc::Units::Astro;
-        break;
-    case 19:
-        return lc::Units::Lightyear;
-        break;
-    case 20:
-        return lc::Units::Parsec;
-        break;
+    try {
+        return _dxfToLCUnits.at(num);
     }
-
-    return lc::Units::None;
+    catch (std::out_of_range& e) {
+        return lc::Units::None;
+    }
 }
 
 
@@ -1460,72 +1415,10 @@ lc::Units DXFimpl::numberToUnit(int num) {
  * Converst a units enum into a DXF units number e.g. for INSUNITSs.
  */
 int DXFimpl::unitToNumber(lc::Units unit) {
-    switch (unit) {
-    default:
-    case lc::Units::None:
-        return  0;
-        break;
-    case lc::Units::Inch:
-        return  1;
-        break;
-    case lc::Units::Foot:
-        return  2;
-        break;
-    case lc::Units::Mile:
-        return  3;
-        break;
-    case lc::Units::Millimeter:
-        return  4;
-        break;
-    case lc::Units::Centimeter:
-        return  5;
-        break;
-    case lc::Units::Meter:
-        return  6;
-        break;
-    case lc::Units::Kilometer:
-        return  7;
-        break;
-    case lc::Units::Microinch:
-        return  8;
-        break;
-    case lc::Units::Mil:
-        return  9;
-        break;
-    case lc::Units::Yard:
-        return 10;
-        break;
-    case lc::Units::Angstrom:
-        return 11;
-        break;
-    case lc::Units::Nanometer:
-        return 12;
-        break;
-    case lc::Units::Micron:
-        return 13;
-        break;
-    case lc::Units::Decimeter:
-        return 14;
-        break;
-    case lc::Units::Decameter:
-        return 15;
-        break;
-    case lc::Units::Hectometer:
-        return 16;
-        break;
-    case lc::Units::Gigameter:
-        return 17;
-        break;
-    case lc::Units::Astro:
-        return 18;
-        break;
-    case lc::Units::Lightyear:
-        return 19;
-        break;
-    case lc::Units::Parsec:
-        return 20;
-        break;
+    try {
+        return _lcUnitsToDXF.at(unit);
     }
-
-    return 0;
+    catch (std::out_of_range& e) {
+        return 0;
+    }
 }

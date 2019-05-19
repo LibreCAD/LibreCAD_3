@@ -211,7 +211,9 @@ cad/interface/tangentable.h
 cad/logger/logger.h
 cad/base/cadobject.h
 cad/objects/layout.h
-settings.h)
+settings.h
+cad/tools/maphelper.h
+)
 
 # Boost logging
 add_definitions(-DBOOST_LOG_DYN_LINK)
