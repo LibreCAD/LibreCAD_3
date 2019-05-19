@@ -16,9 +16,6 @@ cd build
 cmake ..
 
 
-if make -j2 lcunittest; then
-  echo "Compilation failed"
-  exit 1;
-fi
+make -j2 lcunittest || { echo "Compilation failed"; exit 1;}
 
 ./unittest/lcunittest
