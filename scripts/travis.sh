@@ -16,6 +16,6 @@ cd build
 cmake ..
 
 
-make -j2 lcunittest || { echo "Compilation failed"; exit 1;}
+make -j2 lcunittest
 
 ./unittest/lcunittest
