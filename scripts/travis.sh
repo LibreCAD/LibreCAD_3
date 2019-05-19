@@ -14,9 +14,9 @@ cd ../..
 mkdir -p build
 cd build
 cmake ..
-make -j2 lcunittest
 
-if [[ $? != 0 ]]; then
+
+if make -j2 lcunittest; then
   echo "Compilation failed"
   exit 1;
 fi
