@@ -9,17 +9,19 @@ using namespace entity;
 using namespace storage;
 using namespace meta;
 
-entitytest::entitytest() {
+Document_SPtr generateDocument() {
+    auto storageManager = std::make_shared<StorageManagerImpl>();
+    auto document = std::make_shared<DocumentImpl>(storageManager);
+    auto layer = std::make_shared<Layer>();
+    auto al = std::make_shared<operation::AddLayer>(document, layer);
+    al->execute();
 
+    return document;
 }
 
 std::vector<Line_CSPtr> entitytest::LineMove() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto line = std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer, nullptr);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
@@ -67,7 +69,7 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
 
     std::vector<Line_CSPtr> lines;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         lines.push_back(std::dynamic_pointer_cast<const Line>(i));
     }
 
@@ -76,12 +78,8 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
 
 
 std::vector<Line_CSPtr> entitytest::LineCopy() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto line = std::make_shared<Line>(geo::Coordinate(0., 0.), geo::Coordinate(100., 100.), layer, nullptr);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
@@ -129,7 +127,7 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
 
     std::vector<Line_CSPtr> lines;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         lines.push_back(std::dynamic_pointer_cast<const Line>(i));
     }
 
@@ -137,11 +135,8 @@ std::vector<Line_CSPtr> entitytest::LineCopy() {
 }
 
 std::vector<Line_CSPtr> entitytest::LineRotate() {
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
@@ -179,7 +174,7 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
 
     std::vector<Line_CSPtr> lines;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         lines.push_back(std::dynamic_pointer_cast<const Line>(i));
     }
 
@@ -187,12 +182,9 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
 }
 
 std::vector<Line_CSPtr> entitytest::LineScale() {
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
-
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
+    
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(10.0, 10.0);
     geo::Coordinate _ratio1(5.0, 5.0);
@@ -229,7 +221,7 @@ std::vector<Line_CSPtr> entitytest::LineScale() {
 
     std::vector<Line_CSPtr> lines;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         lines.push_back(std::dynamic_pointer_cast<const Line>(i));
     }
 
@@ -237,13 +229,9 @@ std::vector<Line_CSPtr> entitytest::LineScale() {
 }
 
 std::vector<Circle_CSPtr> entitytest::CircleMove() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
-
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
+    
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(0.0, 0.0);
     builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer, nullptr));
@@ -279,7 +267,7 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
 
     std::vector<Circle_CSPtr> circles;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         circles.push_back(std::dynamic_pointer_cast<const Circle>(i));
     }
 
@@ -287,12 +275,8 @@ std::vector<Circle_CSPtr> entitytest::CircleMove() {
 }
 
 std::vector<Circle_CSPtr> entitytest::CircleCopy() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(0.0, 0.0);
@@ -330,7 +314,7 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
 
     std::vector<Circle_CSPtr> circles;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         circles.push_back(std::dynamic_pointer_cast<const Circle>(i));
     }
 
@@ -338,12 +322,8 @@ std::vector<Circle_CSPtr> entitytest::CircleCopy() {
 }
 
 std::vector<Circle_CSPtr> entitytest::CircleRotate() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
@@ -384,7 +364,7 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 
     std::vector<Circle_CSPtr> circles;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         circles.push_back(std::dynamic_pointer_cast<const Circle>(i));
     }
 
@@ -392,11 +372,8 @@ std::vector<Circle_CSPtr> entitytest::CircleRotate() {
 }
 
 std::vector<Circle_CSPtr> entitytest::CircleScale() {
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(0.0, 0.0);
@@ -437,7 +414,7 @@ std::vector<Circle_CSPtr> entitytest::CircleScale() {
 
     std::vector<Circle_CSPtr> circles;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         circles.push_back(std::dynamic_pointer_cast<const Circle>(i));
     }
 
@@ -445,12 +422,8 @@ std::vector<Circle_CSPtr> entitytest::CircleScale() {
 }
 
 std::vector<Arc_CSPtr> entitytest::ArcMove() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(20., 10.);
@@ -483,7 +456,7 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         arcs.push_back(std::dynamic_pointer_cast<const Arc>(i));
     }
 
@@ -491,12 +464,8 @@ std::vector<Arc_CSPtr> entitytest::ArcMove() {
 }
 
 std::vector<Arc_CSPtr> entitytest::ArcCopy() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(20., 10.);
@@ -529,7 +498,7 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         arcs.push_back(std::dynamic_pointer_cast<const Arc>(i));
     }
 
@@ -537,13 +506,9 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
 }
 
 std::vector<Arc_CSPtr> entitytest::ArcRotate() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
-
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
+    
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(9700., 555.);
     double angle1 = 15;
@@ -579,7 +544,7 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         arcs.push_back(std::dynamic_pointer_cast<const Arc>(i));
     }
 
@@ -587,12 +552,8 @@ std::vector<Arc_CSPtr> entitytest::ArcRotate() {
 }
 
 std::vector<Arc_CSPtr> entitytest::ArcScale() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(120., 150.);
@@ -629,7 +590,7 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Arc_CSPtr> arcs;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         arcs.push_back(std::dynamic_pointer_cast<const Arc>(i));
     }
 
@@ -638,12 +599,8 @@ std::vector<Arc_CSPtr> entitytest::ArcScale() {
 
 
 std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     geo::Coordinate _offset1(10., 10.);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
@@ -677,7 +634,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         ellipses.push_back(std::dynamic_pointer_cast<const Ellipse>(i));
     }
 
@@ -685,12 +642,8 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseMove() {
 }
 
 std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     geo::Coordinate _offset1(10., 10.);
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
@@ -724,7 +677,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         ellipses.push_back(std::dynamic_pointer_cast<const Ellipse>(i));
     }
 
@@ -732,12 +685,8 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseCopy() {
 }
 
 std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     geo::Coordinate _center1(10., 10.);
     double angle1 = 70;
@@ -775,7 +724,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         ellipses.push_back(std::dynamic_pointer_cast<const Ellipse>(i));
     }
 
@@ -783,12 +732,8 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseRotate() {
 }
 
 std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
-
-    auto _storageManager = std::make_shared<StorageManagerImpl>();
-    auto _document = std::make_shared<DocumentImpl>(_storageManager);
-    auto layer = std::make_shared<Layer>();
-    auto al = std::make_shared<operation::AddLayer>(_document, layer);
-    al->execute();
+    auto _document = generateDocument();
+    auto layer = _document->allLayers().begin()->second;
 
     geo::Coordinate _center1(100., 100.);
     geo::Coordinate _ratio1(11., 1.);
@@ -826,7 +771,7 @@ std::vector<Ellipse_CSPtr> entitytest::EllipseScale() {
     auto _entities = _document->entityContainer().asVector();
     std::vector<Ellipse_CSPtr> ellipses;
 
-    for (auto i : _entities) {
+    for (const auto& i : _entities) {
         ellipses.push_back(std::dynamic_pointer_cast<const Ellipse>(i));
     }
 

@@ -243,6 +243,9 @@ namespace lc {
                 std::vector<DRW_Image> imageMapCache;
                 std::map<std::string, lc::meta::Block_CSPtr> _blocks;
                 std::map<int, lc::meta::Block_CSPtr> _handleBlock;
+
+                const static std::map<int, lc::Units> _dxfToLCUnits;
+                const static std::map<lc::Units, int> _lcUnitsToDXF;
         };
     }
 }
