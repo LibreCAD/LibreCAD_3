@@ -13,13 +13,9 @@ make -j2
 cd ../..
 mkdir -p build
 cd build
-cmake -DRUN_CLANG_TIDY_PY=/usr/bin/run-clang-tidy-6.0.py -DCHECKS_SOURCE_BRANCH=${TRAVIS_BRANCH} ..
-make -j2
+cmake ..
 
-if [[ $TRAVIS_TEST_RESULT != 0 ]]; then
-  echo "Compilation failed"
-  cat stylecheck.out
-  exit 1;
-fi
+
+make -j2 lcunittest
 
 ./unittest/lcunittest

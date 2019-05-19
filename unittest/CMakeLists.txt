@@ -25,6 +25,14 @@ FIND_PACKAGE ( Threads REQUIRED )
 
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
 
+# Boost logging
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
+
 set(src
 main.cpp
 lckernel/primitive/entitytest.cpp
@@ -50,6 +58,7 @@ set(hdrs
 lckernel/primitive/entitytest.h
 lckernel/math/code.h
 )
+
 if(WITH_QT_UI)
     find_package(Qt5Widgets)
     find_package(Qt5Core)
@@ -129,8 +138,8 @@ if(WITH_RENDERING_UNITTESTS)
         ${PANGO_LIBRARIES}
         ${GDK-PIXBUF_LIBRARIES}
         ${GDK_LIBRARIES}
-	${GLIB_GOBJECT_LIBRARIES}
-	${GLib_LIBRARIES}
+        ${GLIB_GOBJECT_LIBRARIES}
+        ${GLib_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 
@@ -147,4 +156,4 @@ include_directories("${CMAKE_SOURCE_DIR}/persistence")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/kaguya/include")
 add_executable(lcunittest ${src} ${hdrs})
-target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(lcunittest lckernel lcviewernoqt gtest ${EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
