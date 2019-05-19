@@ -214,11 +214,12 @@ cad/objects/layout.h
 settings.h)
 
 # Boost logging
-ADD_DEFINITIONS("-DBOOST_ALL_DYN_LINK")
-ADD_DEFINITIONS("-DBOOST_ALL_NO_LIB")
-
+add_definitions(-DBOOST_LOG_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")

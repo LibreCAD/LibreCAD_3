@@ -10,7 +10,6 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
           packages:
             - qtbase5-dev
             - qttools5-dev
@@ -26,8 +25,6 @@ matrix:
             - libgdk-pixbuf2.0-dev
             - gcc-4.9
             - g++-4.9
-            - clang-6.0
-            - clang-tidy-6.0
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
