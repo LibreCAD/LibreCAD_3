@@ -76,7 +76,7 @@ find_file(
 
 if(RUN_CLANG_TIDY_PY)
     message(STATUS "run-clang-tidy.py found: ${RUN_CLANG_TIDY_PY}")
-    set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-p" "${CMAKE_BINARY_DIR}" "-header-filter" '^\(?!${CMAKE_BINARY_DIR}\)${CMAKE_SOURCE_DIR}/.*')
+    set(DO_CLANG_TIDY "${RUN_CLANG_TIDY_PY}" "-j2" "-p" "${CMAKE_BINARY_DIR}" "-header-filter" '^\(?!${CMAKE_BINARY_DIR}\)${CMAKE_SOURCE_DIR}/.*')
     add_custom_target(stylecheck ${DO_CLANG_TIDY})
 
     if(CHECKS_SOURCE_BRANCH)
