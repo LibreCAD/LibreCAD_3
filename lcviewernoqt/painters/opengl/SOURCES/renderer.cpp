@@ -1,6 +1,6 @@
 #include "renderer.h"
 #include "debug.h"
-
+#include <QtDebug>
 using namespace lc::viewer::opengl;
 
 void GLClearError()
@@ -26,7 +26,6 @@ Renderer::Renderer()
 	fill_mode=GL_LINE;
     render_mode=GL_LINES;
 
-    proj=glm::ortho(-1.0f,1.0f,-1.0f,1.0f,-1.0f,1.0f);
     view=glm::mat4(1.0f);
     scaling=glm::mat4(1.0f);
     model=scaling;
@@ -84,6 +83,22 @@ void Renderer::Set_MVP()
 	SH.Bind();
     SH.SetUniformMat4f("u_MVP",mvp);
     SH.UnBind();
+}
+
+void Renderer::Device_To_User(double* x, double* y)
+{
+	glm::vec4 temp=glm::vec4(*x,*y,0,1);
+	temp=glm::inverse(view*model) * temp;
+	*x=temp.x;
+	*y=temp.y;
+}
+
+void Renderer::User_To_Device(double* x, double* y)
+{
+	glm::vec4 temp=glm::vec4(*x,*y,0,1);
+	temp=glm::mat4(view*model) * temp;
+	*x=temp.x;
+	*y=temp.y;
 }
 
 //------------------------------------------

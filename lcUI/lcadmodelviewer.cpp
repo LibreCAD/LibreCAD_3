@@ -16,7 +16,7 @@ void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
     qDebug( "lcadmodelviewer--- setDocument()--- object= %u",this);
     
     LCADViewer::setDocument(document,nullptr);
-    this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
+  //  this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
     this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get());
 
     // Snap manager
@@ -28,7 +28,7 @@ void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
     _snapManager->snapPointEvents().connect<drawable::Cursor, &drawable::Cursor::onSnapPointEvent>(_cursor.get());
 
     _tempEntities = std::make_shared<drawable::TempEntities>(this->documentCanvas());
-    this->documentCanvas()->foreground().connect<drawable::TempEntities, &drawable::TempEntities::onDraw>(_tempEntities.get());
+  //  this->documentCanvas()->foreground().connect<drawable::TempEntities, &drawable::TempEntities::onDraw>(_tempEntities.get());
     _tempEntities->requestUpdateEvent().connect<ui::LCADViewer, &ui::LCADViewer::updateHelper>(*this);
 
     //Drag manager
@@ -37,7 +37,7 @@ void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
 
     _dragPoints = std::make_shared<drawable::DragPoints>();
     _dragManager->dragPointsEvent().connect<drawable::DragPoints, &drawable::DragPoints::setPoints>(_dragPoints.get());
-    this->documentCanvas()->foreground().connect<drawable::DragPoints, &drawable::DragPoints::onDraw>(_dragPoints.get());
+  //  this->documentCanvas()->foreground().connect<drawable::DragPoints, &drawable::DragPoints::onDraw>(_dragPoints.get());
 
     // Undo manager takes care that we can undo/redo entities within a document
     _undoManager = std::make_shared<lc::storage::UndoManagerImpl>(10);

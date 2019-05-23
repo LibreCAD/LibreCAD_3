@@ -81,6 +81,10 @@ public:
 
 	void Update_MVP();
 
+	void Device_To_User(double* x, double* y);
+
+	void User_To_Device(double* x, double* y);
+
 	//------------------------------
   
     bool Find_GL_Entity(unsigned int id);

@@ -177,7 +177,7 @@ void LCADViewer::resizeGL(int width, int height)
   
    deletePainters();
    createPainters(width, height);
-  //  _docCanvas->newDeviceSize(event->size().width(), event->size().height());
+    _docCanvas->newDeviceSize(width,height);
 
     updateBackground();
     updateDocument();
@@ -357,8 +357,10 @@ void LCADViewer::paintGL()
    //     return;
    // }
 
+    _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_BACKGROUND);
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_DOCUMENT);
-   // _documentPainter->SAMPLE_OPENGL(Ty);
+    _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_FOREGROUND);
+   
 
 }
 

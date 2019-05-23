@@ -189,13 +189,17 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         painter.device_to_user(&x, &y);
         painter.device_to_user_distance(&w, &h);
         visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+         qDebug("render drawEvent  x=%f y=%f w=%f h=%f",x,y,w,h);
+   
     }
+
 
     LcDrawOptions lcDrawOptions;
     event::DrawEvent drawEvent(painter, lcDrawOptions, visibleUserArea);
 
     switch(type) {
         case VIEWER_BACKGROUND: {
+            painter.clear(0.133,0.545,0.133); 
             painter.lineWidthCompensation(0.);
             _background(drawEvent);
             break;
@@ -220,10 +224,10 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             for(const auto& di: visibleDrawables) {
                 drawEntity(painter, di);
             };
-            painter.line_width(1.);
-            painter.source_rgb(1., 1., 1.);
-            painter.lineWidthCompensation(0.);  
-            painter.clear(0.133,0.545,0.133); 
+            //painter.line_width(1.);
+            //painter.source_rgb(1., 1., 1.);
+            //painter.lineWidthCompensation(0.);  
+            //painter.clear(0.133,0.545,0.133); 
            
            
             drawingpage(painter);
