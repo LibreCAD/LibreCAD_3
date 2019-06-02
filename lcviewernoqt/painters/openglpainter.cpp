@@ -162,7 +162,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                       pan_x +=(x);
                       pan_y -=(y);    // TODO: should be pan_y +=(y) temporary
-                      RND.Update_translate_mat(pan_x,pan_y);
+                      RND.Update_translate_mat(pan_x * scale_factor ,pan_y * scale_factor);
                       qDebug("OpenGL painter PanX=%f PanY=%f",pan_x,pan_y);
                  }
 
@@ -261,11 +261,11 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::reset_transformations()
                  {
-                     // pan_x =0.0f;
-                     // pan_y =0.0f;
-                      //scale_factor= 1.0f;
+                      pan_x =0.0f;
+                      pan_y =0.0f;
+                      scale_factor= 1.0f;
 
-                     // RND.Reset_Transformations();
+                      RND.Reset_Transformations();
 
                  }
 
