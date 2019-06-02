@@ -95,6 +95,15 @@ void Renderer::Update_translate_mat(float x,float y)
 	Update_MVP();
 }
 //TODO: update rotation_mat
+
+void Renderer::Reset_Transformations()
+{
+    scale_mat=glm::mat4(1.0f);
+    translate_mat=glm::mat4(1.0f);
+    model=scale_mat;
+    view=translate_mat;
+    Update_MVP();
+}
 //-----------------------
 
 void Renderer::Device_To_User(double* x, double* y)

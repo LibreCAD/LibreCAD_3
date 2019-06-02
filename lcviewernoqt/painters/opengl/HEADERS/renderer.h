@@ -90,6 +90,8 @@ public:
 
     void Update_rotation_mat();
 
+    void Reset_Transformations();
+
     //----------
 	void Device_To_User(double* x, double* y);
 
