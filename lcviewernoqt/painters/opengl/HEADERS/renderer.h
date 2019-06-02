@@ -51,8 +51,11 @@ private:
      glm::mat4 proj;                      //projection matrix
      glm::mat4 view;                      //view matrix for pan
      glm::mat4 model;                     //model matrix
-     glm::mat4 scaling;                   //scaling matrix for zoom
      glm::mat4 mvp;                       //model view projection
+
+     glm::mat4 scale_mat;                 //scaling matrix 
+     glm::mat4 translate_mat;             //translate matrix
+     glm::mat4 rotate_mat;                //rotate matrix           
 
 	// TODO: map of <id,gl_entity>
     
@@ -67,25 +70,36 @@ public:
 
 	void CreateShaderProgram();
 
-	//---------------------------
+	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
 	void Set_MVP();
 
 	void Update_projection(float l,float r,float b,float t);
 
-	void Update_view(float x,float y);
+	void Update_view();
 
 	void Update_model();
 
-	void Update_scaling(float scale);
-
 	void Update_MVP();
 
+	//-----------
+
+	void Update_scale_mat(float scale);
+
+	void Update_translate_mat(float x,float y);
+
+    void Update_rotation_mat();
+
+    //----------
 	void Device_To_User(double* x, double* y);
 
 	void User_To_Device(double* x, double* y);
 
-	//------------------------------
+	void Device_To_User_Distance(double* x, double* y);
+
+	void User_To_Device_Distance(double* x, double* y);
+
+	//------------------------------------------------------------------------
   
     bool Find_GL_Entity(unsigned int id);
 	

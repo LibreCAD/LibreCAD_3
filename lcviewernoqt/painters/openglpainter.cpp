@@ -15,18 +15,6 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
 
    device_width=(float)width;
    device_height=(float)height;
- /*
-   if (width >= height)
-   {
-     // aspect >= 1, set the height from -1 to 1, with larger width
-      RND.Update_projection(-1.0 * aspect, 1.0 * aspect, -1.0, 1.0);
-   } 
-   else 
-   {
-      // aspect < 1, set the width to -1 to 1, with larger height
-     RND.Update_projection(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect);
-   }
-   */
 
    RND.Update_projection(0, width, height, 0);
    
@@ -104,7 +92,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  void LcOpenGLPainter::scale(double s)
                  {
                      scale_factor= s;
-                     RND.Update_scaling(scale_factor);
+                     RND.Update_scale_mat(scale_factor);
                      qDebug("Opengl Painter Scale=%f",scale_factor);  
                  }
 
@@ -174,30 +162,30 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                       pan_x +=(x);
                       pan_y +=(y);
-                      RND.Update_view(pan_x,pan_y);
+                      RND.Update_translate_mat(pan_x,pan_y);
                       qDebug("OpenGL painter PanX=%f PanY=%f",pan_x,pan_y);
                  }
 
                  void LcOpenGLPainter::user_to_device(double* x, double* y)
                  {
-                    //*y = -*y;
+                    //*y=-*y;
                     RND.User_To_Device(x,y);
                  }
 
                  void LcOpenGLPainter::device_to_user(double* x, double* y)
                  {
                     RND.Device_To_User(x,y);
-                    //*y = -*y;
+                   // *y=-*y;
                  }
 
                  void LcOpenGLPainter::user_to_device_distance(double* dx, double* dy)
                  {
-
+                    RND.User_To_Device_Distance(dx,dy);
                  }
 
                  void LcOpenGLPainter::device_to_user_distance(double* dx, double* dy)
                  {
-
+                    RND.Device_To_User_Distance(dx,dy);
                  }
 
                  void LcOpenGLPainter::font_size(double size, bool deviceCoords)

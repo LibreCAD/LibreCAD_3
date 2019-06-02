@@ -189,7 +189,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         painter.device_to_user(&x, &y);
         painter.device_to_user_distance(&w, &h);
         visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
-         qDebug("render drawEvent  x=%f y=%f w=%f h=%f",x,y,w,h);
+       //  qDebug("render drawEvent  x=%f y=%f w=%f h=%f",x,y,w,h);
    
     }
 

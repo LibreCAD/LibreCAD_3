@@ -221,6 +221,18 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
+//=========================checking coordinate system=================
+    double tX = event->pos().x();
+    double tY = event->pos().y();
+qDebug("mouse device position=>   x=%f   y=%f",tX,tY);
+ _documentPainter->device_to_user(&tX,&tY);
+qDebug("device_to_user position=> x=%f   y=%f",tX,tY);
+   tX = event->pos().x();
+   tY = event->pos().y();
+_documentPainter->device_to_user_distance(&tX, &tY);
+qDebug("device_to_user_distance=> x=%f   y=%f",tX,tY);
+qDebug("-----------------------------------------------");
+//====================================================================
     _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
     _dragManager->onMouseMove();
 
@@ -229,11 +241,11 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     // Selection by area
     if (_altKeyActive || _mouseScrollKeyActive) {
         if (!startSelectPos.isNull()) {
-            qDebug("lcadviewer pan to px=%f py=%f",event->pos().x(),event->pos().y());
+            //qDebug("lcadviewer pan to px=%f py=%f",event->pos().x(),event->pos().y());
             auto translateX = event->pos().x()-startSelectPos.x();
             auto translateY = event->pos().y()-startSelectPos.y();
             startSelectPos = event->pos();
-            qDebug("lcadviewer PAN TX=%f TY=%f",translateX,translateY);
+            //qDebug("lcadviewer PAN TX=%f TY=%f",translateX,translateY);
             for(auto pair : imagemaps) {
                 _docCanvas->pan(*pair.first, translateX, translateY);
             }  

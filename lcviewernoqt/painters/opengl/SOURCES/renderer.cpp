@@ -26,9 +26,11 @@ Renderer::Renderer()
 	fill_mode=GL_LINE;
     render_mode=GL_LINES;
 
-    view=glm::mat4(1.0f);
-    scaling=glm::mat4(1.0f);
-    model=scaling;
+    scale_mat=glm::mat4(1.0f);
+    translate_mat=glm::mat4(1.0f);
+
+    view=translate_mat;
+    model=scale_mat;
 
     Update_MVP();
 
@@ -49,22 +51,15 @@ void Renderer::Update_projection(float l,float r,float b,float t)
     Update_MVP();
 }
 
-void Renderer::Update_view(float x,float y)
+void Renderer::Update_view()
 {
-	view=translate(glm::mat4(1.0f),glm::vec3(x,y,0.0));
-	Update_MVP();
-}
-
-void Renderer::Update_scaling(float scale_f)
-{
-	scaling=scale(glm::mat4(1.0f),glm::vec3(scale_f,scale_f,scale_f));	
-	model=scaling;
+	view=translate_mat;
 	Update_MVP();
 }
 
 void Renderer::Update_model()
 {
-	model=scaling;  //TEMP
+	model=scale_mat;  //TEMP
 	//TODO: update model further with gl_entity own translate and rotate also
 	// if no such : then model will remain = scaling only
 
@@ -84,11 +79,36 @@ void Renderer::Set_MVP()
     SH.SetUniformMat4f("u_MVP",mvp);
     SH.UnBind();
 }
+//------------------------
+
+void Renderer::Update_scale_mat(float scale_f)
+{
+	scale_mat=scale(glm::mat4(1.0f),glm::vec3(scale_f,scale_f,scale_f));	
+	model=scale_mat;
+	Update_MVP();
+}
+
+void Renderer::Update_translate_mat(float x,float y)
+{
+	translate_mat=translate(glm::mat4(1.0f),glm::vec3(x,y,0.0));
+	view=translate_mat;
+	Update_MVP();
+}
+//TODO: update rotation_mat
+//-----------------------
 
 void Renderer::Device_To_User(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::inverse(view*model) * temp;
+	temp=glm::inverse(translate_mat * scale_mat) * temp;
+	*x=temp.x;
+	*y=temp.y;
+}
+
+void Renderer::Device_To_User_Distance(double* x, double* y)
+{
+	glm::vec4 temp=glm::vec4(*x,*y,0,1);
+	temp=glm::inverse(scale_mat) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
@@ -96,7 +116,15 @@ void Renderer::Device_To_User(double* x, double* y)
 void Renderer::User_To_Device(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::mat4(view*model) * temp;
+	temp=glm::mat4(translate_mat * scale_mat) * temp;
+	*x=temp.x;
+	*y=temp.y;
+}
+
+void Renderer::User_To_Device_Distance(double* x, double* y)
+{
+	glm::vec4 temp=glm::vec4(*x,*y,0,1);
+	temp=glm::mat4(scale_mat) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
