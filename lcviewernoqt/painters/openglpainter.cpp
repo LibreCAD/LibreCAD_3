@@ -91,7 +91,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::scale(double s)
                  {
-                     scale_factor= s;
+                     scale_factor*= s;
                      RND.Update_scale_mat(scale_factor);
                      qDebug("Opengl Painter Scale=%f",scale_factor);  
                  }
@@ -118,8 +118,6 @@ void LcOpenGLPainter::ReadyShaderProgram()
                         {
                             angle=( ((float)i)/curve_points )*(2*PI);
                             RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
-
-                           //std::cout<<(x+r*cos(angle))<<","<<(y+r*sin(angle))<<std::endl; 
                         }
                         RND.Select_Render_Mode(GL_LINE_LOOP);
 
@@ -160,9 +158,9 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::translate(double x, double y)
                  {
-                      pan_x +=(x);
-                      pan_y -=(y);    // TODO: should be pan_y +=(y) temporary
-                      RND.Update_translate_mat(pan_x * scale_factor ,pan_y * scale_factor);
+                      pan_x +=(x* scale_factor);
+                      pan_y -=(y* scale_factor);    // TODO: should be pan_y +=(y) temporary
+                      RND.Update_translate_mat(pan_x  ,pan_y );
                       qDebug("OpenGL painter PanX=%f PanY=%f",pan_x,pan_y);
                  }
 
@@ -190,7 +188,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::font_size(double size, bool deviceCoords)
                  {
-
+                      font_size_value=size;
                  }
 
                  void LcOpenGLPainter::select_font_face(const char* text_val)
@@ -200,7 +198,14 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::text(const char* text_val)
                  {
-
+                     int c=0;
+                     while(text_val[c]!='\0')
+                     {
+                        rectangle(px,py,font_size_value,font_size_value);
+                        //TODO: Temporary rectangles..Later to render the glyphs
+                        c++;
+                        move_to(font_size_value*c,0.0f);
+                     }
                  }
 
                  TextExtends LcOpenGLPainter::text_extends(const char* text_val)
@@ -220,12 +225,17 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::save()
                  {
-
+                      RND.Save();
                  }
 
                  void LcOpenGLPainter::restore()
                  {
+                      RND.Restore();
 
+                      qDebug("panx=%f pany=%f",RND.Get_Translate_X(),RND.Get_Translate_Y());
+                      pan_x=RND.Get_Translate_X();
+                      pan_y=RND.Get_Translate_Y();
+                      scale_factor=RND.Get_Scale();
                  }
 
                  long LcOpenGLPainter::pattern_create_linear(double x1, double y1, double x2, double y2)

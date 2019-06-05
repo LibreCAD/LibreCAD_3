@@ -25,6 +25,8 @@ using namespace lc::viewer::opengl;
             int curve_points=1000;
             int p=0;
 
+            double font_size_value;
+
             
             Renderer RND;
 

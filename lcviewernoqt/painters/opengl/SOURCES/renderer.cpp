@@ -104,6 +104,22 @@ void Renderer::Reset_Transformations()
     view=translate_mat;
     Update_MVP();
 }
+
+double Renderer::Get_Scale()
+{
+	return scale_mat[0][0];
+}
+
+double Renderer::Get_Translate_X()
+{
+	return translate_mat[3][0];
+}
+
+double Renderer::Get_Translate_Y()
+{
+	return translate_mat[3][1];
+}    
+
 //-----------------------
 
 void Renderer::Device_To_User(double* x, double* y)
@@ -140,6 +156,31 @@ void Renderer::User_To_Device_Distance(double* x, double* y)
 
 //------------------------------------------
 
+void Renderer::Save()
+{
+	context_att current_context;
+	current_context.scale_mat     = this->scale_mat;
+	current_context.translate_mat = this->translate_mat;
+	current_context.rotate_mat  = this->rotate_mat;
+
+	context_stack.push(current_context);
+}
+
+void Renderer::Restore()
+{
+	context_att prev_context = context_stack.top();
+	this->scale_mat     = prev_context.scale_mat;
+	this->translate_mat = prev_context.translate_mat;
+	this->rotate_mat  = prev_context.rotate_mat;
+
+	context_stack.pop();
+
+	model=scale_mat;
+    view=translate_mat;
+    Update_MVP();
+}
+
+//------------------------------------------
 bool Renderer::Find_GL_Entity(unsigned int id)
 {
 	//TODO: find the gl_entity in map

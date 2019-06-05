@@ -125,11 +125,11 @@ void LCDimension::drawText(std::string const& value,
             break;
     }
 
-    painter.translate(textlocation.x(), -textlocation.y());
-    painter.rotate(-newAngle);
-    painter.translate(alignX, -alignY);
-    painter.move_to(0., 0.);
-    painter.text(value.c_str());
-    painter.stroke();
-    painter.restore();
+     painter.translate(textlocation.x(), -textlocation.y());
+     painter.rotate(-newAngle);
+     painter.translate(alignX, -alignY);
+     painter.move_to(0., 0.);
+     painter.text(value.c_str());
+     painter.stroke();
+     painter.restore();
 }

@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
+#include <stack>
 #include <vector>
 
 #include "gl_entity.h"
@@ -37,6 +37,15 @@ bool GLLogCall(const char* function,const char* file,int line);
 
 //--------------------------------------------------------------
 
+struct context_att
+{
+     glm::mat4 scale_mat;                 //scaling matrix 
+     glm::mat4 translate_mat;             //translate matrix
+     glm::mat4 rotate_mat;                //rotate matrix    
+};
+
+//--------------------------------------------------------------
+
 class Renderer
 {
 private:   
@@ -59,7 +68,8 @@ private:
 
 	// TODO: map of <id,gl_entity>
     
-
+    std::stack < context_att > context_stack;
+    
 	GL_Entity* current_gl_entity;
 
 public:
@@ -92,6 +102,12 @@ public:
 
     void Reset_Transformations();
 
+    double Get_Scale();
+
+    double Get_Translate_X();
+
+    double Get_Translate_Y();    
+
     //----------
 	void Device_To_User(double* x, double* y);
 
@@ -100,6 +116,12 @@ public:
 	void Device_To_User_Distance(double* x, double* y);
 
 	void User_To_Device_Distance(double* x, double* y);
+
+	//------------context handling
+
+	void Save();
+
+	void Restore();
 
 	//------------------------------------------------------------------------
   

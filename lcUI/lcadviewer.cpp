@@ -187,11 +187,11 @@ float Tx=0,Ty=0;
 void LCADViewer::wheelEvent(QWheelEvent *event) {
  
   QOpenGLWidget::makeCurrent();
-  qDebug("++++++++++++++++++++++++++_MOUSE_WHEEL_++++++++++++++++++++++++++");
-  QOpenGLContext *CC= QOpenGLContext::currentContext();
-  qDebug("Current context=%u",CC);
-  qDebug("This widget object=%u",this);
-  qDebug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+ // qDebug("++++++++++++++++++++++++++_MOUSE_WHEEL_++++++++++++++++++++++++++");
+ // QOpenGLContext *CC= QOpenGLContext::currentContext();
+ // qDebug("Current context=%u",CC);
+  //qDebug("This widget object=%u",this);
+  //qDebug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
     if (event->angleDelta().y() > 0) 
     {
         for(auto pair : imagemaps) 
@@ -222,7 +222,7 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 
 //=========================checking coordinate system=================
-    double tX = event->pos().x();
+/*    double tX = event->pos().x();
     double tY = event->pos().y();
 qDebug("mouse device position=>   x=%f   y=%f",tX,tY);
  _documentPainter->device_to_user(&tX,&tY);
@@ -232,6 +232,7 @@ qDebug("device_to_user position=> x=%f   y=%f",tX,tY);
 _documentPainter->device_to_user_distance(&tX, &tY);
 qDebug("device_to_user_distance=> x=%f   y=%f",tX,tY);
 qDebug("-----------------------------------------------");
+*/
 //====================================================================
     _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
     _dragManager->onMouseMove();
@@ -275,11 +276,11 @@ qDebug("-----------------------------------------------");
 void LCADViewer::mousePressEvent(QMouseEvent *event) 
 {
     QOpenGLWidget::makeCurrent();
-  qDebug("0000000000000000000_MOUSE_PRESS_0000000000000000000000000");
-  QOpenGLContext *CC= QOpenGLContext::currentContext();
-  qDebug("Current context=%u",CC);
-  qDebug("This widget object=%u",this);
-  qDebug("000000000000000000000000000000000000000000000000000000000");
+ // qDebug("0000000000000000000_MOUSE_PRESS_0000000000000000000000000");
+  //QOpenGLContext *CC= QOpenGLContext::currentContext();
+  //qDebug("Current context=%u",CC);
+  //qDebug("This widget object=%u",this);
+  //qDebug("000000000000000000000000000000000000000000000000000000000");
     QWidget::mousePressEvent(event);
 
     startSelectPos = event->pos();
