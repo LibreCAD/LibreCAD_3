@@ -46,6 +46,8 @@ struct context_att
 
 //--------------------------------------------------------------
 
+#define PI 3.14159265
+
 class Renderer
 {
 private:   
@@ -98,7 +100,7 @@ public:
 
 	void Update_translate_mat(float x,float y);
 
-    void Update_rotation_mat();
+    void Update_rotate_mat(float angle);
 
     void Reset_Transformations();
 

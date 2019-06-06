@@ -28,9 +28,10 @@ Renderer::Renderer()
 
     scale_mat=glm::mat4(1.0f);
     translate_mat=glm::mat4(1.0f);
+    rotate_mat=glm::mat4(1.0f);
 
     view=translate_mat;
-    model=scale_mat;
+    model=rotate_mat * scale_mat;
 
     Update_MVP();
 
@@ -59,7 +60,7 @@ void Renderer::Update_view()
 
 void Renderer::Update_model()
 {
-	model=scale_mat;  //TEMP
+	model=rotate_mat * scale_mat;  //TEMP
 	//TODO: update model further with gl_entity own translate and rotate also
 	// if no such : then model will remain = scaling only
 
@@ -83,24 +84,31 @@ void Renderer::Set_MVP()
 
 void Renderer::Update_scale_mat(float scale_f)
 {
-	scale_mat=scale(glm::mat4(1.0f),glm::vec3(scale_f,scale_f,scale_f));	
-	model=scale_mat;
+	scale_mat=glm::scale(glm::mat4(1.0f),glm::vec3(scale_f,scale_f,scale_f));	
+	model=rotate_mat * scale_mat;
 	Update_MVP();
 }
 
 void Renderer::Update_translate_mat(float x,float y)
 {
-	translate_mat=translate(glm::mat4(1.0f),glm::vec3(x,y,0.0));
+	translate_mat=glm::translate(glm::mat4(1.0f),glm::vec3(x,y,0.0));
 	view=translate_mat;
 	Update_MVP();
 }
-//TODO: update rotation_mat
 
+void Renderer::Update_rotate_mat(float angle)
+{
+	rotate_mat=glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f ,0.0f ,1.0f) );
+	model=rotate_mat * scale_mat;
+	qDebug("Renderer rotation update= %f",angle);
+	Update_MVP();
+}
 void Renderer::Reset_Transformations()
 {
     scale_mat=glm::mat4(1.0f);
     translate_mat=glm::mat4(1.0f);
-    model=scale_mat;
+    rotate_mat=glm::mat4(1.0f);
+    model=rotate_mat * scale_mat;
     view=translate_mat;
     Update_MVP();
 }

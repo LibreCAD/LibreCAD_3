@@ -98,7 +98,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::rotate(double r)
                  {
-
+                     RND.Update_rotate_mat(-r);
                  }
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)

@@ -6,7 +6,7 @@
 #include <cad/tools/string_helper.h>
 #include <cad/math/lcmath.h>
 #include <cad/const.h>
-
+#include <QtDebug>
 using namespace lc::viewer;
 
 void LCDimension::drawText(std::string const& value,
@@ -124,12 +124,20 @@ void LCDimension::drawText(std::string const& value,
             alignX = - te.width / 2.0;
             break;
     }
-
+qDebug("----------------------------------dimension text----------------------");
+      qDebug("---translate--- tX= %f to tY= %f ",textlocation.x(),-textlocation.y());
      painter.translate(textlocation.x(), -textlocation.y());
+
+     qDebug("---rotate--- angle= %f",-newAngle);
      painter.rotate(-newAngle);
+
+      qDebug("---translate--- tX= %f to tY= %f --- TE width=%f",alignX, -alignY, te.width);
      painter.translate(alignX, -alignY);
+
      painter.move_to(0., 0.);
      painter.text(value.c_str());
      painter.stroke();
      painter.restore();
+
+     qDebug("--------------------------------------------------------------------");
 }
