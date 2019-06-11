@@ -39,9 +39,7 @@ bool GLLogCall(const char* function,const char* file,int line);
 
 struct context_att
 {
-     glm::mat4 scale_mat;                 //scaling matrix 
-     glm::mat4 translate_mat;             //translate matrix
-     glm::mat4 rotate_mat;                //rotate matrix    
+     glm::mat4 ctm;                        //CTM
 };
 
 //--------------------------------------------------------------
@@ -64,9 +62,7 @@ private:
      glm::mat4 model;                     //model matrix
      glm::mat4 mvp;                       //model view projection
 
-     glm::mat4 scale_mat;                 //scaling matrix 
-     glm::mat4 translate_mat;             //translate matrix
-     glm::mat4 rotate_mat;                //rotate matrix           
+     glm::mat4 ctm;          
 
 	// TODO: map of <id,gl_entity>
     
@@ -96,11 +92,11 @@ public:
 
 	//-----------
 
-	void Update_scale_mat(float scale);
+	void Update_scale(float scale);
 
-	void Update_translate_mat(float x,float y);
+	void Update_translate(float x,float y);
 
-    void Update_rotate_mat(float angle);
+    void Update_rotate(float angle);
 
     void Reset_Transformations();
 

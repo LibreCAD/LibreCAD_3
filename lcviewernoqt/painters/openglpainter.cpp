@@ -86,19 +86,17 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  double LcOpenGLPainter::scale()
                  {
-                      return scale_factor;
+                      return RND.Get_Scale();
                  }
 
                  void LcOpenGLPainter::scale(double s)
                  {
-                     scale_factor*= s;
-                     RND.Update_scale_mat(scale_factor);
-                     qDebug("Opengl Painter Scale=%f",scale_factor);  
+                     RND.Update_scale(s);
                  }
 
                  void LcOpenGLPainter::rotate(double r)
                  {
-                     RND.Update_rotate_mat(-r);
+                     RND.Update_rotate(-r);
                  }
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
@@ -158,15 +156,12 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::translate(double x, double y)
                  {
-                      pan_x +=(x* scale_factor);
-                      pan_y -=(y* scale_factor);    // TODO: should be pan_y +=(y) temporary
-                      RND.Update_translate_mat(pan_x  ,pan_y );
-                      qDebug("OpenGL painter PanX=%f PanY=%f",pan_x,pan_y);
+                    RND.Update_translate(x,-y );
                  }
 
                  void LcOpenGLPainter::user_to_device(double* x, double* y)
                  {
-                    //*y=-*y;
+                   // *y=-*y;
                     RND.User_To_Device(x,y);
                  }
 
@@ -178,12 +173,14 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::user_to_device_distance(double* dx, double* dy)
                  {
+                   // *dy = -*dy;
                     RND.User_To_Device_Distance(dx,dy);
                  }
 
                  void LcOpenGLPainter::device_to_user_distance(double* dx, double* dy)
                  {
                     RND.Device_To_User_Distance(dx,dy);
+                    //*dy = -*dy;
                  }
 
                  void LcOpenGLPainter::font_size(double size, bool deviceCoords)
@@ -232,10 +229,6 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                       RND.Restore();
 
-                      qDebug("panx=%f pany=%f",RND.Get_Translate_X(),RND.Get_Translate_Y());
-                      pan_x=RND.Get_Translate_X();
-                      pan_y=RND.Get_Translate_Y();
-                      scale_factor=RND.Get_Scale();
                  }
 
                  long LcOpenGLPainter::pattern_create_linear(double x1, double y1, double x2, double y2)
@@ -271,9 +264,6 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::reset_transformations()
                  {
-                      pan_x =0.0f;
-                      pan_y =0.0f;
-                      scale_factor= 1.0f;
 
                       RND.Reset_Transformations();
 

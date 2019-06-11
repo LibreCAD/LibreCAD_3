@@ -26,12 +26,10 @@ Renderer::Renderer()
 	fill_mode=GL_LINE;
     render_mode=GL_LINES;
 
-    scale_mat=glm::mat4(1.0f);
-    translate_mat=glm::mat4(1.0f);
-    rotate_mat=glm::mat4(1.0f);
-
-    view=translate_mat;
-    model=rotate_mat * scale_mat;
+    ctm=glm::mat4(1.0f);
+    
+    view=ctm;
+    model=glm::mat4(1.0f);
 
     Update_MVP();
 
@@ -54,15 +52,15 @@ void Renderer::Update_projection(float l,float r,float b,float t)
 
 void Renderer::Update_view()
 {
-	view=translate_mat;
+	view=ctm;
 	Update_MVP();
 }
 
 void Renderer::Update_model()
-{
-	model=rotate_mat * scale_mat;  //TEMP
+{	  
 	//TODO: update model further with gl_entity own translate and rotate also
-	// if no such : then model will remain = scaling only
+	// if no such : then model will remain = Identity only
+    model=glm::mat4(1.0f);
 
 	Update_MVP();
 }
@@ -82,50 +80,48 @@ void Renderer::Set_MVP()
 }
 //------------------------
 
-void Renderer::Update_scale_mat(float scale_f)
+void Renderer::Update_scale(float scale_f)
 {
-	scale_mat=glm::scale(glm::mat4(1.0f),glm::vec3(scale_f,scale_f,scale_f));	
-	model=rotate_mat * scale_mat;
+	ctm=glm::scale(ctm,glm::vec3(scale_f,scale_f,scale_f));	
+	view=ctm;
 	Update_MVP();
 }
 
-void Renderer::Update_translate_mat(float x,float y)
+void Renderer::Update_translate(float x,float y)
 {
-	translate_mat=glm::translate(glm::mat4(1.0f),glm::vec3(x,y,0.0));
-	view=translate_mat;
+	ctm=glm::translate(ctm,glm::vec3(x,y,0.0));
+	view=ctm;
 	Update_MVP();
 }
 
-void Renderer::Update_rotate_mat(float angle)
+void Renderer::Update_rotate(float angle)
 {
-	rotate_mat=glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f ,0.0f ,1.0f) );
-	model=rotate_mat * scale_mat;
+	ctm=glm::rotate(ctm, angle, glm::vec3(0.0f ,0.0f ,1.0f) );
+	view=ctm;
 	qDebug("Renderer rotation update= %f",angle);
 	Update_MVP();
 }
 void Renderer::Reset_Transformations()
 {
-    scale_mat=glm::mat4(1.0f);
-    translate_mat=glm::mat4(1.0f);
-    rotate_mat=glm::mat4(1.0f);
-    model=rotate_mat * scale_mat;
-    view=translate_mat;
+    ctm=glm::mat4(1.0f);
+    model=glm::mat4(1.0f);
+    view=ctm;
     Update_MVP();
 }
 
 double Renderer::Get_Scale()
 {
-	return scale_mat[0][0];
+	return ctm[2][2];
 }
 
 double Renderer::Get_Translate_X()
 {
-	return translate_mat[3][0];
+	return ctm[3][0];
 }
 
 double Renderer::Get_Translate_Y()
 {
-	return translate_mat[3][1];
+	return ctm[3][1];
 }    
 
 //-----------------------
@@ -133,33 +129,39 @@ double Renderer::Get_Translate_Y()
 void Renderer::Device_To_User(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::inverse(translate_mat * scale_mat) * temp;
+	temp=glm::inverse(ctm) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
 
 void Renderer::Device_To_User_Distance(double* x, double* y)
 {
-	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::inverse(scale_mat) * temp;
-	*x=temp.x;
-	*y=temp.y;
+	glm::vec4 temp_vec=glm::vec4(*x,*y,0,1);
+	glm::mat4 temp_mat=ctm;
+	temp_mat[3][0]=0;
+	temp_mat[3][1]=0;
+	temp_vec=glm::inverse( temp_mat ) * temp_vec;
+	*x=temp_vec.x;
+	*y=temp_vec.y;
 }
 
 void Renderer::User_To_Device(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::mat4(translate_mat * scale_mat) * temp;
+	temp=glm::mat4(ctm) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
 
 void Renderer::User_To_Device_Distance(double* x, double* y)
 {
-	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::mat4(scale_mat) * temp;
-	*x=temp.x;
-	*y=temp.y;
+	glm::vec4 temp_vec=glm::vec4(*x,*y,0,1);
+	glm::mat4 temp_mat=ctm;
+	temp_mat[3][0]=0;
+	temp_mat[3][1]=0;
+	temp_vec=glm::inverse( temp_mat ) * temp_vec;
+	*x=temp_vec.x;
+	*y=temp_vec.y;
 }
 
 //------------------------------------------
@@ -167,24 +169,16 @@ void Renderer::User_To_Device_Distance(double* x, double* y)
 void Renderer::Save()
 {
 	context_att current_context;
-	current_context.scale_mat     = this->scale_mat;
-	current_context.translate_mat = this->translate_mat;
-	current_context.rotate_mat  = this->rotate_mat;
-
+	current_context.ctm = this->ctm;
 	context_stack.push(current_context);
 }
 
 void Renderer::Restore()
 {
 	context_att prev_context = context_stack.top();
-	this->scale_mat     = prev_context.scale_mat;
-	this->translate_mat = prev_context.translate_mat;
-	this->rotate_mat  = prev_context.rotate_mat;
-
+	this->ctm = prev_context.ctm;
 	context_stack.pop();
-
-	model=scale_mat;
-    view=translate_mat;
+    view=ctm;
     Update_MVP();
 }
 

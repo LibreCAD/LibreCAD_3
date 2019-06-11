@@ -17,9 +17,7 @@ using namespace lc::viewer::opengl;
          class LcOpenGLPainter : public LcPainter 
         {
             float px=0,py=0; //pen coordinates
-            double scale_factor=1.0f;
-            double pan_x=0.0f;
-            double pan_y=0.0f;
+          
             double device_width=0.0;
             double device_height=0.0;
             int curve_points=1000;
