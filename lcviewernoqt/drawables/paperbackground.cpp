@@ -24,4 +24,5 @@ void PaperBackground::draw(event::DrawEvent const & event) const {
     painter.source_rgb(1., 1., 1.);
     painter.rectangle(0, 0, _width, _height);
     painter.fill();
+    painter.stroke();
 }

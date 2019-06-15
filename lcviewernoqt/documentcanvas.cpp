@@ -230,7 +230,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             //painter.clear(0.133,0.545,0.133); 
            
            
-            drawingpage(painter);
+            //drawingpage(painter);
 
             break;
         }
