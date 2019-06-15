@@ -109,7 +109,7 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
     double tY = 0;
     painter.device_to_user(&tX,&tY);
     painter.device_to_user(&move_x,&move_y);
-    qDebug("documentcanvas PAN TX=%f TY=%f",move_x-tX,-move_y+tY);
+    //qDebug("documentcanvas PAN TX=%f TY=%f",move_x-tX,-move_y+tY);
     painter.translate(move_x-tX, -move_y+tY);
 }
 
@@ -124,7 +124,7 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     painter.save();
     double userX = deviceCenterX;
     double userY = deviceCenterY;
-    qDebug("Document canvas zoom1 factor=%f Ux=%f Uy=%f relative_zoom=%d",factor,userX,userY,relativezoom);
+   // qDebug("Document canvas zoom1 factor=%f Ux=%f Uy=%f relative_zoom=%d",factor,userX,userY,relativezoom);
     painter.device_to_user(&userX, &userY);
     painter.restore();
 
@@ -148,7 +148,7 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     double refX = deviceCenterX;
     double refY = deviceCenterY;
 
-     qDebug("Document canvas zoom2 factor=%f Ux=%f Uy=%f Rx=%f Ry=%f relative_zoom=%d",factor,userCenterX,userCenterY,refX,refY,relativezoom);
+     //qDebug("Document canvas zoom2 factor=%f Ux=%f Uy=%f Rx=%f Ry=%f relative_zoom=%d",factor,userCenterX,userCenterY,refX,refY,relativezoom);
    
     painter.reset_transformations();
     painter.scale(factor);
@@ -208,19 +208,22 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         case VIEWER_DOCUMENT: {
             // Draw Document
             // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
-
+            qDebug("---------------RENDER-----------------");
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
             auto visibleEntities = entityContainer().entitiesWithinAndCrossingAreaFast(visibleUserArea);
             std::vector<lc::viewer::LCVDrawItem_SPtr> visibleDrawables;
             visibleEntities.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
-                auto di = _entityDrawItem[entity];
+               // auto di = _entityDrawItem[entity];
+               auto di = _cachedEntites[entity->id()].second;   //TRYING
                 if(di){
+                     qDebug("----to render-- entity ID=%u",entity->id());
+                
                     visibleDrawables.push_back(di);
                 }
             });
-
+            qDebug("----------------------------------------");
             for(const auto& di: visibleDrawables) {
                 drawEntity(painter, di);
             };
@@ -230,7 +233,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
             //painter.clear(0.133,0.545,0.133); 
            
            
-            drawingpage(painter);
+           // drawingpage(painter);
 
             break;
         }
@@ -389,14 +392,104 @@ void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& 
 
 // This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
+
     auto entity = event.entity();
     auto drawable = asDrawable(entity);
-    _entityDrawItem.insert(std::make_pair(entity, drawable));
+
+     //_entityDrawItem.erase(event.entity()); // first erase 
+      _cachedEntites.erase((event.entity())->id());
+
+     std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> :: iterator itr;
+    for(itr=_entityDrawItem.begin();itr!=_entityDrawItem.end();itr++)
+    {
+                if(itr->first->id() == (event.entity())->id())
+                {
+                    _entityDrawItem.erase(itr);
+                    break;
+                }              
+    };
+   
+    _entityDrawItem.insert(std::make_pair(event.entity(), drawable));
+
+//============================
+    qDebug("     _____________________________________________|");
+    qDebug("     |----on_addEntityEvent-------------id=%u-----|",(event.entity())->id());
+    qDebug("     |____________________________________________|  %u",this);
+    qDebug("     | entity_container size= %d--------------",_entityDrawItem.size());
+   for(itr=_entityDrawItem.begin();itr!=_entityDrawItem.end();itr++)
+    {
+                qDebug("     | entity saved ID =  %u  add=%u",itr->first->id(),itr->first);
+               
+    };
+    qDebug("     |____________________________________________|");
+
+    
+//======================= for OPENGL
+
+  _cachedEntites.insert(make_pair( entity->id(), make_pair(event.entity(),drawable) ) );
+
+  qDebug("     _____________________________________________|");
+    qDebug("     |-OPENGL------on_addEntityEvent----id=%u-----|",(event.entity())->id());
+    qDebug("     |____________________________________________|  %u",this);
+    qDebug("     | cached_container size= %d--------------",_cachedEntites.size());
+    std::map< unsigned long , std::pair<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > :: iterator itr2;
+    for(itr2=_cachedEntites.begin();itr2!=_cachedEntites.end();itr2++)
+    {
+                qDebug("     | entity cached ID =  %u  entity=%u",itr2->first,itr2->second.first);
+                
+    };
+    qDebug("     |____________________________________________|");
+//======================= for OPENGL
+
+
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
-    entityContainer().remove(event.entity());
-    _entityDrawItem.erase(event.entity());
+    
+   // entityContainer().remove(event.entity());
+  //  _entityDrawItem.erase(event.entity());
+    _cachedEntites.erase((event.entity())->id());
+
+
+     std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> :: iterator itr;
+    for(itr=_entityDrawItem.begin();itr!=_entityDrawItem.end();itr++)
+    {
+                if(itr->first->id() == (event.entity())->id())
+                {
+                    _entityDrawItem.erase(itr);
+                    break;
+                }              
+    };
+
+    //============================
+    qDebug("     _____________________________________________|");
+    qDebug("     |--------on_removeEntityEvent------id=%u-----|",(event.entity())->id());
+    qDebug("     |____________________________________________|  %u",this);
+    qDebug("     | entity_container size= %d--------------",_entityDrawItem.size());
+   // std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> :: iterator itr;
+    for(itr=_entityDrawItem.begin();itr!=_entityDrawItem.end();itr++)
+    {
+                qDebug("     | entity saved ID =  %u  add=%u",itr->first->id(),itr->first);
+                
+    };
+    qDebug("     |____________________________________________|");
+//=======================
+
+    //======================= for OPENGL
+
+    qDebug("     _____________________________________________|");
+    qDebug("     |-OPENGL----on_removeEntityEvent----id=%u-----|",(event.entity())->id());
+    qDebug("     |____________________________________________|  %u",this);
+    qDebug("     | cached_container size= %d--------------",_cachedEntites.size());
+    std::map< unsigned long , std::pair<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > :: iterator itr2;
+    for(itr2=_cachedEntites.begin();itr2!=_cachedEntites.end();itr2++)
+    {
+                qDebug("     | entity cached ID =  %u  entity=%u",itr2->first,itr2->second.first);
+                
+    };
+    qDebug("     |____________________________________________|");
+//======================= for OPENGL
+
 }
 
 std::shared_ptr<lc::storage::Document> DocumentCanvas::document() const {

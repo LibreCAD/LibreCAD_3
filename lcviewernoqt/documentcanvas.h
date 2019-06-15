@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <utility>
 
 #include "painters/lcpainter.h"
 #include "painters/mydrawing.h"
@@ -216,6 +217,8 @@ namespace lc {
 
                 // Map of cad entity to drawitem
                 std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
+
+                std::map< unsigned long , std::pair <lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > _cachedEntites;
 
                 Nano::Signal<void(event::DrawEvent const& event)> _background;
                 Nano::Signal<void(event::DrawEvent const& event)> _foreground;

@@ -5,6 +5,7 @@
 #include "documentimpl.h"
 #include <cad/primitive/insert.h>
 #include <cad/primitive/customentity.h>
+#include <QtDebug>
 
 using namespace lc;
 using namespace lc::storage;
@@ -46,12 +47,14 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
+    qDebug("---------------insertEntity()------------Document");
     if (_storageManager->entityByID(cadEntity->id()) != nullptr) {
         removeEntity(cadEntity);
     }
 
     _storageManager->insertEntity(cadEntity);
     event::AddEntityEvent event(cadEntity);
+    qDebug("XXXXXXXXXXXXXXXX AddEntity XXXXXXXXXXX SIGNAL");
     addEntityEvent()(event);
 
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(cadEntity);
@@ -66,6 +69,7 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
+    qDebug("---------------removeEntity()------------Document");
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
     if (insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const meta::CustomEntityStorage>(insert->displayBlock());
@@ -73,9 +77,11 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
             _waitingCustomEntities[ces->pluginName()].erase(insert);
         }
     }
-
-    if (_storageManager->entityByID(entity->id()) != nullptr) {
+    
+    //if (_storageManager->entityByID(entity->id()) != nullptr) 
+    {
         _storageManager->removeEntity(entity);
+        qDebug("XXXXXXXXXXXXXXXX RemoveEntity XXXXXXXXXXX SIGNAL");
         event::RemoveEntityEvent event(entity);
         removeEntityEvent()(event);
     }
