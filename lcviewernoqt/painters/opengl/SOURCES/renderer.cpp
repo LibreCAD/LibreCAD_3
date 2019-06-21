@@ -283,7 +283,7 @@ void Renderer::Select_Color(float R,float G,float B,float A)
     
 void Renderer::Set_Default()
 {
-	fill_mode=GL_LINE;
+	  fill_mode=GL_LINE;
     render_mode=GL_LINES;
     Select_Line_Width(1);
     Clear_Data();
@@ -324,13 +324,17 @@ void Renderer::Draw()
 
 void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
 {
+   current_gl_entity->UnBind();
+    
    Save();
 	 Set_Default();
-	  current_gl_entity->UnBind();
+	 
    
    Select_Render_Mode( cached_entity->GetRenderMode() );
    Select_Fill( cached_entity->GetFillMode() );
    Update_model( cached_entity->GetModelMatrix() );
+
+   glPolygonMode(GL_FRONT_AND_BACK, cached_entity->GetFillMode());
 
    Set_MVP();
    SH.Bind();
@@ -339,10 +343,13 @@ void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
   
    qDebug("****************** RENDERER CACHED DRAW ******************");
 
-   qDebug("Render cached entity draw--- %u mode=%d",cached_entity,cached_entity->GetRenderMode());
-   
+   qDebug("Render cached entity draw--- %u render_mode=%d  fill_mode=%d",cached_entity,
+                                                                         cached_entity->GetRenderMode(),
+                                                                         cached_entity->GetFillMode());
+  
+
     //finally draw
-     glDrawElements(render_mode,
+     glDrawElements(cached_entity->GetRenderMode(),
      	            cached_entity->GetIndices(),
      	            GL_UNSIGNED_INT,
      	            0);

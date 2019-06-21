@@ -83,18 +83,23 @@ using namespace lc::viewer::opengl;
    	                           &indices[0]  , indices.size() );
 
         current_gl_entity->SetModelMatrix(model);
+
+         current_gl_entity->SetFillMode(fill_mode);
+         current_gl_entity->SetRenderMode(render_mode);
         
         
 	}
 
 	void Cacher::Select_Fill(GLenum fill)
 	{
-       current_gl_entity->SetFillMode(fill);
+        fill_mode=fill;
+      
 	}
 
 	void Cacher::Select_Render_Mode(GLenum mode)
 	{
-       current_gl_entity->SetRenderMode(mode);
+        render_mode=mode;
+       
 	}
 
     void Cacher::Select_Color(float R,float G,float B,float A)
@@ -134,6 +139,8 @@ using namespace lc::viewer::opengl;
     void Cacher::Set_Default()
     {
     	Clear_Data();
+        fill_mode=GL_LINE;
+        render_mode=GL_LINES;
 
         model=glm::mat4(1.0f);
     }

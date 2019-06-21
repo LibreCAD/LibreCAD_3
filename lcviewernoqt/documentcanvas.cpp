@@ -245,7 +245,10 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                   }
                 
                  else
-                 drawEntity(painter, di);
+                 {
+                    drawEntity(painter, di);
+                    cacheEntity((di->entity())->id(), di);
+                  }
             };
             //painter.line_width(1.);
             //painter.source_rgb(1., 1., 1.);
@@ -471,6 +474,8 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
 
 void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& drawable,
                                 const lc::entity::Insert_CSPtr& insert) {
+    
+    
     LcDrawOptions lcDrawOptions;
   qDebug("--cacheEntity--- painter got here %u",_painterPtr);
     double x = 0.;
@@ -541,6 +546,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
 
      //_entityDrawItem.erase(event.entity()); // first erase 
       _cachedEntites.erase((event.entity())->id());
+      (*_painterPtr).deleteEntityCached( (event.entity())->id() );
 
      std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> :: iterator itr;
     for(itr=_entityDrawItem.begin();itr!=_entityDrawItem.end();itr++)
@@ -586,7 +592,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
 
    //=====caching starts
     //MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-    cacheEntity(entity->id(), drawable);
+    //cacheEntity(entity->id(), drawable);
    //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 }
 
