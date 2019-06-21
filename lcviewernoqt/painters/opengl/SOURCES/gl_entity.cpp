@@ -4,7 +4,7 @@ using namespace lc::viewer::opengl;
 
 GL_Entity :: GL_Entity()
 {
-
+  _model=glm::mat4(1.0f);
 }
 
 GL_Entity::~GL_Entity()
@@ -59,6 +59,37 @@ void GL_Entity::ClearData()
 {
 
 }
+
+void GL_Entity::SetModelMatrix(glm::mat4 model)
+{
+   _model=model;
+}
+
+void GL_Entity::SetRenderMode(GLenum rendermode)
+{
+   _render_mode=rendermode;
+}
+
+void GL_Entity::SetFillMode(GLenum fillmode)
+{
+   _fill_mode=fillmode;
+}
+
+glm::mat4 GL_Entity::GetModelMatrix()
+{
+   return _model;
+}
+  
+GLenum GL_Entity::GetRenderMode()
+{
+   return _render_mode;
+}
+ 
+GLenum GL_Entity::GetFillMode()
+{
+   return _fill_mode;
+}
+
 
 void GL_Entity::Delete()
 {

@@ -1,5 +1,5 @@
 #include "dragpoints.h"
-
+#include <QtDebug>
 using namespace lc;
 using namespace lc::viewer;
 using namespace lc::viewer::drawable;
@@ -10,6 +10,7 @@ void DragPoints::setPoints(event::DragPointsEvent const &points) {
 }
 
 void DragPoints::onDraw(event::DrawEvent const &event) const {
+	qDebug( "DragPoints draw()");
 	double x = _size;
 	double y = _size;
 

@@ -14,7 +14,7 @@
 
 #include "gl_entity.h"
 #include "shader.h"
-
+#include "gl_pack.h"
 
 namespace lc
 {
@@ -86,7 +86,7 @@ public:
 
 	void Update_view();
 
-	void Update_model();
+	void Update_model(glm::mat4 _model);
 
 	void Update_MVP();
 
@@ -146,6 +146,12 @@ public:
     void Set_Default();
 
 	void Draw();
+
+	//-----------------------------rendering cached entities---------------
+
+    void Render_Cached_Entity(GL_Entity* entity);
+
+	void Render_Cached_Pack(GL_Pack* pack);
 
 
 };

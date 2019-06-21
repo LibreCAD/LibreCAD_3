@@ -66,6 +66,12 @@ void LCADViewer::initializeGL()
 
   }
 
+    int width = size().width();
+    int height = size().height();
+
+     deletePainters();     
+    createPainters(width, height);
+  
   
 }
 
@@ -76,10 +82,8 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
     int width = size().width();
     int height = size().height();
 
-          
-    createPainters(width, height);
-
-   
+     deletePainters();     
+     createPainters(width, height);
 
     _docCanvas = std::make_shared<lc::viewer::DocumentCanvas>(document, [this](double* x, double* y) {
         _documentPainter->device_to_user(x, y);
@@ -87,7 +91,10 @@ void LCADViewer::setDocument(std::shared_ptr<lc::storage::Document> document, me
 
     _document = document;
     _document->commitProcessEvent().connect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
-   
+ 
+    if(_docCanvas != nullptr)
+   _docCanvas->setPainter(_documentPainter);  //passing pointer to painter to doc canvas
+  
 }
 
 void LCADViewer::setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager) {
@@ -174,11 +181,11 @@ void LCADViewer::resizeEvent(QResizeEvent * event)
 
 void LCADViewer::resizeGL(int width, int height)
 {
-  
-   deletePainters();
-   createPainters(width, height);
-    _docCanvas->newDeviceSize(width,height);
+  qDebug("!!!!!!!!!!! resizeGL !!!!!!!!!! %u",this);
+ 
 
+    _docCanvas->newDeviceSize(width,height);
+    _documentPainter->new_device_size(width,height);
     updateBackground();
     updateDocument();
 }
@@ -369,7 +376,8 @@ void LCADViewer::paintGL()
   //  {
    //     return;
    // }
-
+qDebug("\n###########################################paintGL()################\n");
+     
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_BACKGROUND);
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_DOCUMENT);
     _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_FOREGROUND);
@@ -379,6 +387,7 @@ void LCADViewer::paintGL()
 
 void LCADViewer::createPainters(unsigned int width, unsigned int height) {
     QImage *m_image;
+qDebug("---createPainters() doccanvas--");
 
   //  m_image = new QImage(width, height, QImage::Format_ARGB32);
   //  _backgroundPainter = lc::viewer::createOpenGLPainter(m_image->bits(), width, height);
@@ -387,6 +396,9 @@ void LCADViewer::createPainters(unsigned int width, unsigned int height) {
     m_image = new QImage(width, height, QImage::Format_ARGB32);
     _documentPainter = lc::viewer::createOpenGLPainter(m_image->bits(), width, height);
     imagemaps.insert(std::make_pair(_documentPainter, m_image));
+
+   if(_docCanvas != nullptr)
+   _docCanvas->setPainter(_documentPainter);  //passing pointer to painter to doc canvas
 
  //   m_image = new QImage(width, height, QImage::Format_ARGB32);
  //   _foregroundPainter = lc::viewer::createOpenGLPainter(m_image->bits(), width, height);

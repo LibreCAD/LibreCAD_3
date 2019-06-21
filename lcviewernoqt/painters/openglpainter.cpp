@@ -1,14 +1,36 @@
 
 #include "openglpainter.h"
 #include <QtDebug>
-
+#include <cmath>
 #include <QOpenGLContext>
 
 
 LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height) 
 {      
    
-   if (height == 0) height = 1;                
+  new_device_size(width,height);
+
+   qDebug( "=======================Opengl_Painter_Created=============%u w=%d h=%d",this,width,height);
+    QOpenGLContext *CC= QOpenGLContext::currentContext();
+     if(CC!=0)
+    {
+      ReadyShaderProgram();
+    }
+
+    CHE=new LcCacherPainter();
+}
+
+void LcOpenGLPainter::ReadyShaderProgram()
+{
+     RND.CreateShaderProgram();
+    qDebug( "==RND.CreatingShader() call");
+}
+
+ void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)
+ {
+     if (height == 0) 
+        height = 1;     
+                   
    GLfloat aspect = (GLfloat)width / (GLfloat)height;
  
    glViewport(0, 0, width, height);
@@ -17,21 +39,10 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
    device_height=(float)height;
 
    RND.Update_projection(0, width, height, 0);
+   //RND.Reset_Transformations();   // optional
    
+ }
 
-   qDebug( "=======================Opengl_Painter_Created=============%u w=%d h=%d",this,width,height);
-    QOpenGLContext *CC= QOpenGLContext::currentContext();
-     if(CC!=0)
-    {
-      ReadyShaderProgram();
-    }
-}
-
-void LcOpenGLPainter::ReadyShaderProgram()
-{
-     RND.CreateShaderProgram();
-    qDebug( "==RND.CreatingShader() call");
-}
 
 
                  void LcOpenGLPainter::new_path()
@@ -101,12 +112,30 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
                  {
-
+                    float delta=(std::abs(end-start));
+                      float angle=0;
+                      long points=curve_points;
+                        for(int i=0;i<points;i++)
+                        {
+                            angle=( ((float)i)/points)*(delta) + (start);
+                            
+                            RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+                        }
+                        RND.Select_Render_Mode(GL_LINE_STRIP);
                  }
 
                  void LcOpenGLPainter::arcNegative(double x, double y, double r, double start, double end)
                  {
-
+                     float delta=(std::abs(end-start));
+                      float angle=0;
+                      long points=curve_points;
+                        for(int i=0;i<points;i++)
+                        {
+                            angle=start - ( ((float)i)/points)*(delta) ;
+                            
+                            RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+                        }
+                        RND.Select_Render_Mode(GL_LINE_STRIP);
                  }
 
                  void LcOpenGLPainter::circle(double x, double y, double r)
@@ -307,4 +336,37 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  void LcOpenGLPainter::getTranslate(double* x, double* y)
                  {
 
+                 }
+                 
+                 void LcOpenGLPainter::startcaching()
+                 {
+                     // NOTHING to DO.. (CachePainter Use this)
+                 }
+
+                 void LcOpenGLPainter::finishcaching(unsigned long id)
+                 {
+                     // NOTHING to DO.. (CachePainter Use this)
+                 }
+
+                 LcPainter* LcOpenGLPainter::getCacherpainter()
+                 {
+                    return CHE;
+                 }
+
+                 bool LcOpenGLPainter::isEntityCached(unsigned long id)
+                 {
+                    return CHE->isEntityCached(id);
+                 }
+
+                 void LcOpenGLPainter::renderEntityCached(unsigned long id)
+                 {
+                    LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(CHE);
+                    GL_Pack* _gl_pack=((*cp)._cacher).Get_Entity_Cached_Pack(id);
+                    qDebug(">>>gl_pack>>> %u size>> %d",_gl_pack,_gl_pack->Pack_Size());
+                    RND.Render_Cached_Pack(_gl_pack);
+                 }
+
+                 void LcOpenGLPainter::deleteEntityCached(unsigned long id)
+                 {
+                    CHE->deleteEntityCached(id);
                  }

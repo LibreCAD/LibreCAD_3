@@ -1,5 +1,5 @@
 #include "tempentities.h"
-
+#include <QtDebug>
 using namespace lc;
 using namespace lc::viewer;
 using namespace lc::viewer::drawable;
@@ -19,7 +19,9 @@ void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
 }
 
 void TempEntities::onDraw(event::DrawEvent const &event) {
+	qDebug( "tempentities draw() ");
     _entities.each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr entity) {
+    	qDebug("  entity ID=%u",entity->id());
         _docCanvas->drawEntity(event.painter(), _docCanvas->asDrawable(entity));
 	});
 }

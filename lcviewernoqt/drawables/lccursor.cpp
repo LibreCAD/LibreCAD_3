@@ -5,7 +5,7 @@
 #include "../managers/snapmanager.h"
 #include <string>
 #include <cad/tools/string_helper.h>
-
+#include <QtDebug>
 using namespace lc;
 using namespace lc::viewer;
 using namespace lc::viewer::drawable;
@@ -22,6 +22,7 @@ Cursor::Cursor(int cursorSize,
 }
 
 void Cursor::onDraw(event::DrawEvent const & event) const {
+    qDebug( "Cursor draw()");
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;
     event.painter().device_to_user(&zeroCornerX, &zeroCornerY);

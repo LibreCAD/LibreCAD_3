@@ -18,6 +18,29 @@ bool GLLogCall(const char* function,const char* file,int line)
 	return true;
 }
 
+GLenum glCheckError_(const char *file, int line)
+{
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR)
+    {
+        std::string error;
+        switch (errorCode)
+        {
+            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+            case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+            case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+        }
+        std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+    }
+    return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
+
+
 //---------------------------------------------------
 Renderer::Renderer()
 {
@@ -56,11 +79,11 @@ void Renderer::Update_view()
 	Update_MVP();
 }
 
-void Renderer::Update_model()
+void Renderer::Update_model(glm::mat4 _model)
 {	  
 	//TODO: update model further with gl_entity own translate and rotate also
 	// if no such : then model will remain = Identity only
-    model=glm::mat4(1.0f);
+    model=_model;
 
 	Update_MVP();
 }
@@ -72,7 +95,7 @@ void Renderer::Update_MVP()
 
 void Renderer::Set_MVP()
 {
-	Update_model();
+	Update_MVP();
 
 	SH.Bind();
     SH.SetUniformMat4f("u_MVP",mvp);
@@ -179,6 +202,7 @@ void Renderer::Restore()
 	this->ctm = prev_context.ctm;
 	context_stack.pop();
     view=ctm;
+    model=glm::mat4(1.0f);
     Update_MVP();
 }
 
@@ -291,7 +315,55 @@ void Renderer::Draw()
      	            GL_UNSIGNED_INT,
      	            0);
 
+     qDebug("+++++++++++++++++ RENDERER DIRECT DRAW +++++++++++++++++");
+
      //again set things to default for next entity
      Set_Default();
+
+}
+
+void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
+{
+   Save();
+	 Set_Default();
+	  current_gl_entity->UnBind();
+   
+   Select_Render_Mode( cached_entity->GetRenderMode() );
+   Select_Fill( cached_entity->GetFillMode() );
+   Update_model( cached_entity->GetModelMatrix() );
+
+   Set_MVP();
+   SH.Bind();
+
+   cached_entity->Bind();
+  
+   qDebug("****************** RENDERER CACHED DRAW ******************");
+
+   qDebug("Render cached entity draw--- %u mode=%d",cached_entity,cached_entity->GetRenderMode());
+   
+    //finally draw
+     glDrawElements(render_mode,
+     	            cached_entity->GetIndices(),
+     	            GL_UNSIGNED_INT,
+     	            0);
+
+    Restore();
+   
+}
+
+void Renderer::Render_Cached_Pack(GL_Pack* pack)
+{
+   qDebug("---In RENDERER------ render pack %u",pack);
+
+   int l=pack->Pack_Size();
+
+   GL_Entity* gl_entity_in_pack;
+
+   for(int i=0;i<l;i++)
+   {
+      gl_entity_in_pack=pack->Get_GL_Entity_At(i);
+      qDebug("----To render entity -- %u",gl_entity_in_pack);
+      Render_Cached_Entity(gl_entity_in_pack);
+   }
 
 }

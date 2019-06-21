@@ -52,6 +52,25 @@ namespace lc {
                  */
                 void drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
                                 const lc::entity::Insert_CSPtr& insert = nullptr);
+                
+                 /**
+                 * @brief drawCachedEntity
+                 * Draw entity without adding it to the current document
+                 * @param entity LCVDrawItem_CSPtr
+                 * @param insert Insert entity if we are rendering a bloc
+                 */
+                void drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
+                                const lc::entity::Insert_CSPtr& insert = nullptr);
+                
+                /**
+                 * @brief cacheEntity
+                 * Cache entity without actually rendering it
+                 * @param id unsigned long
+                 * @param entity LCVDrawItem_CSPtr
+                 * @param insert Insert entity if we are rendering a bloc
+                 */
+                void cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& drawable,
+                                const lc::entity::Insert_CSPtr& insert = nullptr);
 
                 /**
                  * @brief autoScale
@@ -189,6 +208,8 @@ namespace lc {
                  */
                 void selectPoint(double x, double y);
 
+                void setPainter(LcPainter* painter);
+
                 lc::viewer::LCVDrawItem_SPtr getDrawable(const lc::entity::CADEntity_CSPtr& entity);
 
                 meta::Block_CSPtr viewport(){return _viewport;};
@@ -217,9 +238,14 @@ namespace lc {
 
                 // Map of cad entity to drawitem
                 std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
-
+                
+                // map with key=id
                 std::map< unsigned long , std::pair <lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > _cachedEntites;
 
+                // Painter
+                lc::viewer::LcPainter* _painterPtr;
+
+                //Signals
                 Nano::Signal<void(event::DrawEvent const& event)> _background;
                 Nano::Signal<void(event::DrawEvent const& event)> _foreground;
 

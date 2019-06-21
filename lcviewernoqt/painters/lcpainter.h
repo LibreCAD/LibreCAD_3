@@ -19,6 +19,8 @@ namespace lc {
 
                 virtual void ReadyShaderProgram() = 0;
 
+                virtual void new_device_size(unsigned int width, unsigned int height) = 0;
+
                 virtual void new_path() = 0;
 
                 virtual void close_path() = 0;
@@ -117,6 +119,19 @@ namespace lc {
 
                 // We should consider returning a matrix?
                 virtual void getTranslate(double* x, double* y) = 0;
+
+                // functions for caching mechanism
+                virtual void startcaching() = 0;
+
+                virtual void finishcaching(unsigned long id) = 0;
+
+                virtual LcPainter* getCacherpainter() = 0;
+
+                virtual bool isEntityCached(unsigned long id) = 0;
+
+                virtual void renderEntityCached(unsigned long id) = 0;
+
+                virtual void deleteEntityCached(unsigned long id) = 0;
 
                
         };

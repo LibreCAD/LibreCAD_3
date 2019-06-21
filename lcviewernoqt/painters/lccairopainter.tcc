@@ -475,12 +475,57 @@ public:
         cairo_fill(_cr);
     }
     
-    //################################
-    void ReadyShaderProgram()    //###
-    {                            //###
-                                 //###
-    }                            //###
-    //################################
+   //##############################################################
+    //############# Blank Functions to compatible ##################
+    //#################### with OpenGL  ############################
+    //##############################################################
+    
+    void ReadyShaderProgram()  
+    {                            
+                                 
+    }                            
+
+    void new_device_size(unsigned int width, unsigned int height)
+    {
+    
+    }
+
+    void startcaching()
+    {
+
+    }
+
+    void finishcaching(unsigned long id)
+    {
+         
+    }
+
+    LcPainter* getCacherpainter()
+    {
+    
+    }
+
+    bool isEntityCached(unsigned long id)
+    {
+
+    }
+
+    void renderEntityCached(unsigned long id)
+    {
+
+    }
+
+    void deleteEntityCached(unsigned long id)
+    {
+                    
+    }
+
+
+   //##############################################################
+    //##############################################################
+    //##############################################################
+    //##############################################################
+    
     
     void point(double x, double y, double size, bool deviceCoords) {
         if (deviceCoords) {

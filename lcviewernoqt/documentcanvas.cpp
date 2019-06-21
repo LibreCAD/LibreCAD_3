@@ -50,6 +50,7 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         _selectedArea(nullptr),
         _selectedAreaIntersects(false),
         _deviceToUser(std::move(deviceToUser)),
+        _painterPtr(nullptr),
         _viewport(viewport)
 {
     document->addEntityEvent().connect<DocumentCanvas, &DocumentCanvas::on_addEntityEvent>(this);
@@ -87,6 +88,9 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
 
     };
 
+    qDebug("DocCanvas  Constructor %u",this);
+    
+
 }
 
 DocumentCanvas::~DocumentCanvas() {
@@ -98,6 +102,12 @@ DocumentCanvas::~DocumentCanvas() {
         delete _selectedArea;
         _selectedArea = nullptr;
     }
+}
+
+void DocumentCanvas::setPainter(LcPainter* painter)
+{  
+    qDebug("DocCanvas  SetPainter-- %u  with %u",_painterPtr,painter);
+    _painterPtr=painter;
 }
 
 /*
@@ -193,12 +203,15 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
    
     }
 
-
+   
     LcDrawOptions lcDrawOptions;
     event::DrawEvent drawEvent(painter, lcDrawOptions, visibleUserArea);
+   
 
     switch(type) {
         case VIEWER_BACKGROUND: {
+            qDebug("=========================RENDER VIEWER_BACKGROUND===================");
+            
             painter.clear(0.133,0.545,0.133); 
             painter.lineWidthCompensation(0.);
             _background(drawEvent);
@@ -208,7 +221,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         case VIEWER_DOCUMENT: {
             // Draw Document
             // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
-            qDebug("---------------RENDER-----------------");
+            qDebug("=========================RENDER VIEWER_DOCUMENT=====================");
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
@@ -218,14 +231,21 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                // auto di = _entityDrawItem[entity];
                auto di = _cachedEntites[entity->id()].second;   //TRYING
                 if(di){
-                     qDebug("----to render-- entity ID=%u",entity->id());
-                
+                     
                     visibleDrawables.push_back(di);
                 }
             });
             qDebug("----------------------------------------");
             for(const auto& di: visibleDrawables) {
-                drawEntity(painter, di);
+                qDebug("----to render-- entity ID=%u",(di->entity())->id());
+                
+                 if(painter.isEntityCached( (di->entity())->id() ) == true)
+                 {  qDebug("OOOO ALREADY CACHED OOOOO");
+                     drawCachedEntity(painter,di);
+                  }
+                
+                 else
+                 drawEntity(painter, di);
             };
             //painter.line_width(1.);
             //painter.source_rgb(1., 1., 1.);
@@ -240,6 +260,8 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         }
 
         case VIEWER_FOREGROUND: {
+            qDebug("========================RENDER VIEWER_FOREGROUND======================");
+            
             _foreground(drawEvent);
 
             // Draw selection rectangle
@@ -381,10 +403,130 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
             color.blue(),
             color.alpha() * alpha_compensation
     );
+     qDebug("        >>>>>> width=%f",std::max(width, MINIMUM_READER_LINEWIDTH));
+     qDebug("        >>>>>> color R=%f G=%f B=%f  A=%f",color.red(),color.green(),color.blue(),color.alpha() * alpha_compensation);
+    // qDebug("        >>>>>>  linepattern= %f %f",path[0],path.size());
 
+   
     drawable->draw(painter, lcDrawOptions, visibleUserArea);
 
     painter.restore();  
+}
+
+void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
+                                const lc::entity::Insert_CSPtr& insert) {
+    LcDrawOptions lcDrawOptions;
+
+    double x = 0.;
+    double y = 0.;
+    double w = _deviceWidth;
+    double h = _deviceHeight;
+    painter.device_to_user(&x, &y);
+    painter.device_to_user_distance(&w, &h);
+    lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+
+    auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
+    if(asInsert != nullptr) {
+        asInsert->draw(shared_from_this(), painter);
+        return;
+    }
+
+    painter.save();
+
+    lc::entity::CADEntity_CSPtr ci = drawable->entity();
+
+
+    // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
+    double alpha_compensation = 0.9;
+
+    // Decide on line width
+    // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+    // TODO: Find a better algo
+    double width = drawWidth(ci, insert) * 1.5;
+
+    // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+    painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+
+    auto path = drawLinePattern(ci, insert, width);
+    painter.set_dash(&path[0], path.size(), 0., true);
+
+    // Decide what color to render the entity into
+
+    auto color = drawColor(ci, insert, drawable->selected());
+    painter.source_rgba(
+            color.red(),
+            color.green(),
+            color.blue(),
+            color.alpha() * alpha_compensation
+    );
+     qDebug("        >>>>>> width=%f",std::max(width, MINIMUM_READER_LINEWIDTH));
+     qDebug("        >>>>>> color R=%f G=%f B=%f  A=%f",color.red(),color.green(),color.blue(),color.alpha() * alpha_compensation);
+    // qDebug("        >>>>>>  linepattern= %f %f",path[0],path.size());
+
+   
+    painter.renderEntityCached( (drawable->entity())->id() );
+
+    painter.restore();  
+}
+
+void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& drawable,
+                                const lc::entity::Insert_CSPtr& insert) {
+    LcDrawOptions lcDrawOptions;
+  qDebug("--cacheEntity--- painter got here %u",_painterPtr);
+    double x = 0.;
+    double y = 0.;
+    double w = _deviceWidth;
+    double h = _deviceHeight;
+    (*_painterPtr).device_to_user(&x, &y);
+    (*_painterPtr).device_to_user_distance(&w, &h);
+    lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+
+    auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
+    if(asInsert != nullptr) {
+        asInsert->draw(shared_from_this(), (*_painterPtr));
+        return;
+    }
+
+    //=======PICK the caching painter instance=============
+          LcPainter* cachepainter=(*_painterPtr).getCacherpainter();
+    //=====================================================
+    cachepainter->save();
+
+    lc::entity::CADEntity_CSPtr ci = drawable->entity();
+
+
+    // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
+    double alpha_compensation = 0.9;
+
+    // Decide on line width
+    // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
+    // TODO: Find a better algo
+    double width = drawWidth(ci, insert) * 1.5;
+
+    // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
+    cachepainter->line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
+
+    auto path = drawLinePattern(ci, insert, width);
+    cachepainter->set_dash(&path[0], path.size(), 0., true);
+
+    // Decide what color to render the entity into
+
+    auto color = drawColor(ci, insert, drawable->selected());
+    cachepainter->source_rgba(
+            color.red(),
+            color.green(),
+            color.blue(),
+            color.alpha() * alpha_compensation
+    );
+
+    //===========Here caching happens==============
+ qDebug(" XXXXXXXXXX CACHE ENTITY  XXXXXX ID=%u",id);
+    cachepainter->startcaching();
+    drawable->draw( (*cachepainter), lcDrawOptions, visibleUserArea);
+    cachepainter->finishcaching(id);
+    cachepainter->restore();  
+    //===============================================
+    
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
@@ -442,7 +584,10 @@ void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     qDebug("     |____________________________________________|");
 //======================= for OPENGL
 
-
+   //=====caching starts
+    //MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+    cacheEntity(entity->id(), drawable);
+   //WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
@@ -461,6 +606,8 @@ void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& ev
                     break;
                 }              
     };
+
+    (*_painterPtr).deleteEntityCached( (event.entity())->id() );  // Delete the cacahed pack
 
     //============================
     qDebug("     _____________________________________________|");

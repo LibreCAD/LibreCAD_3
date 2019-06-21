@@ -1,24 +1,23 @@
 #pragma once
 
 #include "lcpainter.h"
-#include "renderer.h"
+#include "gl_entity.h"
 #include "gl_pack.h"
 #include "cacher.h"
-#include "cacherpainter.h"
-#include <iostream>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <cad/geometry/geoarea.h>
 #include <map>
 #include <cad/meta/color.h>
 
-#include <QOpenGLWidget>
+
 using namespace lc::viewer;
 using namespace lc::viewer::opengl;
 
 #define PI 3.14159265
 
-         class LcOpenGLPainter : public LcPainter 
+         class LcCacherPainter : public LcPainter 
         {
             float px=0,py=0; //pen coordinates
           
@@ -28,17 +27,17 @@ using namespace lc::viewer::opengl;
             int p=0;
 
             double font_size_value;
+             
+             public:
+            Cacher _cacher;
+           
 
-            
-            Renderer RND;
-            LcPainter* CHE;
-
-            public:
-            LcOpenGLPainter(unsigned int width, unsigned int height);
-
-                 void new_device_size(unsigned int width, unsigned int height);
+                 
+                 LcCacherPainter();
 
                  void ReadyShaderProgram();
+
+                 void new_device_size(unsigned int width, unsigned int height);
 
                  void new_path();
 
@@ -130,7 +129,7 @@ using namespace lc::viewer::opengl;
 
                  void image(long image, double uvx, double vy, double vvx, double vvy, double x, double y);
 
-                 void disable_antialias();
+                void disable_antialias();
 
                  void enable_antialias();
 
