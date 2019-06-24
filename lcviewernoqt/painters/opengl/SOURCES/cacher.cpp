@@ -68,7 +68,7 @@ using namespace lc::viewer::opengl;
   
 	void Cacher::Add_Vertex(float x,float y,float z)
 	{
-        qDebug(")))) Cacher ---Vertex added --- ( %f  , %f  )",x,y);
+       // qDebug(")))) Cacher ---Vertex added --- ( %f  , %f  )",x,y);
         vertices.push_back(x);
 	    vertices.push_back(y);
 	    vertices.push_back(z);
@@ -126,7 +126,7 @@ using namespace lc::viewer::opengl;
 
     void Cacher::Push_Entity_In_Pack()
     {
-        qDebug("------Entity Pushed in Pack--- %u",current_gl_entity);
+       // qDebug("------Entity Pushed in Pack--- %u",current_gl_entity);
         current_gl_pack->Push_Entity_In_Pack( current_gl_entity );
     }
 
@@ -189,7 +189,7 @@ using namespace lc::viewer::opengl;
         std::map< unsigned long, GL_Pack* >::iterator it;
         
         it = gl_pack_map.find(id);
-        qDebug("SSSSSSS %u",it->second);
+      
         if (it != gl_pack_map.end())
           return (it->second);
         else
@@ -205,8 +205,7 @@ using namespace lc::viewer::opengl;
         if (it != gl_pack_map.end())
           gl_pack_map.erase(it);
 
-      qDebug("EEEEEEEEEEEEE pack deleted id=%u",id);
-    }
+      }
 
     void Cacher::Log_Cached_Packs()   //Temporary to debug
     {

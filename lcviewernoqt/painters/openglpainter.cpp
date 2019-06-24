@@ -362,7 +362,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                     LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(CHE);
                     GL_Pack* _gl_pack=((*cp)._cacher).Get_Entity_Cached_Pack(id);
-                    qDebug(">>>gl_pack>>> %u size>> %d",_gl_pack,_gl_pack->Pack_Size());
+                   // qDebug(">>>gl_pack>>> %u size>> %d",_gl_pack,_gl_pack->Pack_Size());
                     RND.Render_Cached_Pack(_gl_pack);
                  }
 

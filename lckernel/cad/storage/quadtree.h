@@ -546,7 +546,7 @@ namespace lc {
                     //Update cache
                     if (_cadentities.count(entity->id()) > 0) {
                         //LOG4CXX_DEBUG(logger, "This id was already added, please fix. It's not allowed to add the same ID twice");
-                        erase(entity);
+                        //erase(entity);
                     }
 
                     _cadentities.insert(std::make_pair(entity->id(), entity));

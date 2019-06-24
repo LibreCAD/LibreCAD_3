@@ -237,7 +237,7 @@ namespace lc {
                 std::shared_ptr<lc::storage::Document> _document;
 
                 // Map of cad entity to drawitem
-                std::map<lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
+                std::map<unsigned long, lc::viewer::LCVDrawItem_SPtr> _entityDrawItem;
                 
                 // map with key=id
                 std::map< unsigned long , std::pair <lc::entity::CADEntity_CSPtr, lc::viewer::LCVDrawItem_SPtr> > _cachedEntites;

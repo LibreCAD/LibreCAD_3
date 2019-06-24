@@ -341,12 +341,8 @@ void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
 
    cached_entity->Bind();
   
-   qDebug("****************** RENDERER CACHED DRAW ******************");
+  // qDebug("****************** RENDERER CACHED DRAW ******************");
 
-   qDebug("Render cached entity draw--- %u render_mode=%d  fill_mode=%d",cached_entity,
-                                                                         cached_entity->GetRenderMode(),
-                                                                         cached_entity->GetFillMode());
-  
 
     //finally draw
      glDrawElements(cached_entity->GetRenderMode(),
@@ -360,8 +356,7 @@ void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
 
 void Renderer::Render_Cached_Pack(GL_Pack* pack)
 {
-   qDebug("---In RENDERER------ render pack %u",pack);
-
+ 
    int l=pack->Pack_Size();
 
    GL_Entity* gl_entity_in_pack;
@@ -369,7 +364,6 @@ void Renderer::Render_Cached_Pack(GL_Pack* pack)
    for(int i=0;i<l;i++)
    {
       gl_entity_in_pack=pack->Get_GL_Entity_At(i);
-      qDebug("----To render entity -- %u",gl_entity_in_pack);
       Render_Cached_Entity(gl_entity_in_pack);
    }
 

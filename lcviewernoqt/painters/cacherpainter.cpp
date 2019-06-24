@@ -143,7 +143,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  void LcCacherPainter::stroke()
                  {
                      _cacher.Ready_For_Next_GL_Entity();
-                     qDebug("==============stroke()=================");
+                    // qDebug("==============stroke()=================");
                  }
 
                  void LcCacherPainter::source_rgb(double r, double g, double b)
@@ -309,7 +309,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                     qDebug("<<<<<<<<<<<<<<<<<<<caching FINISH>>>>>>>>>>>>>>>>> id=%u",id);
                      _cacher.Save_Entity_Pack(id);
 
-                     _cacher.Log_Cached_Packs();  // DEBUG
+                     //_cacher.Log_Cached_Packs();  // DEBUG
                  }
 
                  LcPainter* LcCacherPainter::getCacherpainter()
@@ -330,5 +330,5 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  void LcCacherPainter::deleteEntityCached(unsigned long id)
                  {
                     _cacher.Erase_Entity_Pack(id);
-                    _cacher.Log_Cached_Packs();  // DEBUG
+                    //_cacher.Log_Cached_Packs();  // DEBUG
                  }
