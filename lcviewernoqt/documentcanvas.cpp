@@ -85,12 +85,14 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         painter.set_dash(dashes, 4, 0, true);
         painter.stroke();
         painter.restore();
-
     };
+<<<<<<< HEAD
 
     qDebug("DocCanvas  Constructor %u",this);
     
 
+=======
+>>>>>>> 9bea68b19194679861e127f26092c99026a26383
 }
 
 DocumentCanvas::~DocumentCanvas() {
@@ -280,7 +282,6 @@ double DocumentCanvas::drawWidth(const lc::entity::CADEntity_CSPtr& entity, cons
     }
     else if(insert != nullptr &&
             std::dynamic_pointer_cast<const lc::meta::MetaLineWidthByBlock>(entityLineWidth) != nullptr) {
-
         auto insertLW = insert->metaInfo<lc::meta::MetaLineWidthByValue>(lc::meta::MetaLineWidth::LCMETANAME());
 
         if(insertLW != nullptr) {
@@ -299,7 +300,6 @@ std::vector<double> DocumentCanvas::drawLinePattern(
         const lc::entity::CADEntity_CSPtr& entity,
         const lc::entity::Insert_CSPtr& insert,
         double width) {
-
     auto layer = entity->layer();
 
     lc::meta::DxfLinePattern_CSPtr entityLinePattern = entity->metaInfo<lc::meta::DxfLinePattern>(lc::meta::DxfLinePattern::LCMETANAME());

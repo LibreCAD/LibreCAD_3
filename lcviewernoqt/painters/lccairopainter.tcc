@@ -552,7 +552,7 @@ public:
     void set_dash(const double *dashes, const int num_dashes, double offset, bool scaled) {
         if (scaled) {
             auto scaledDashes = new double[num_dashes];
-            memcpy(&scaledDashes, dashes, num_dashes * sizeof(double));
+            memcpy(scaledDashes, dashes, num_dashes * sizeof(double));
 
             double _scale = scale();
 
