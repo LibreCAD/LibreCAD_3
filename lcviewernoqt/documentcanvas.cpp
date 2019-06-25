@@ -86,13 +86,10 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         painter.stroke();
         painter.restore();
     };
-<<<<<<< HEAD
+
 
     qDebug("DocCanvas  Constructor %u",this);
     
-
-=======
->>>>>>> 9bea68b19194679861e127f26092c99026a26383
 }
 
 DocumentCanvas::~DocumentCanvas() {
