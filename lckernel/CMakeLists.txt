@@ -28,10 +28,12 @@ find_package(Qt5UiTools REQUIRED)
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp
-cad/storage/settings.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
+cad/storage/settings/modulesettings.cpp
+cad/storage/settings/doublesettingvalue.cpp
+cad/storage/settings/stringsettingvalue.cpp
 cad/storage/documentimpl.cpp
 cad/storage/entitycontainer.cpp
 cad/storage/quadtree.cpp
@@ -101,16 +103,21 @@ cad/storage/documentlist.cpp
 cad/logger/logger.cpp
 cad/base/cadobject.cpp
 cad/objects/layout.cpp
-)
+        settings.cpp)
 
 # HEADER FILES
 set(lckernel_hdrs
 version.h
 cad/const.h
-cad/storage/settings.h
 cad/base/id.h
 cad/base/cadentity.h
 cad/base/metainfo.h
+cad/storage/settings/modulesettings.h
+cad/storage/settings/doublesettingvalue.h
+cad/storage/settings/settingtypeexception.h
+cad/storage/settings/isettingvalue.h
+cad/storage/settings/unknownsettingexception.h
+cad/storage/settings/stringsettingvalue.h
 cad/storage/documentimpl.h
 cad/storage/entitycontainer.h
 cad/storage/quadtree.h
@@ -214,14 +221,17 @@ cad/interface/tangentable.h
 cad/logger/logger.h
 cad/base/cadobject.h
 cad/objects/layout.h
+settings.h
+cad/tools/maphelper.h
 )
 
 # Boost logging
-ADD_DEFINITIONS("-DBOOST_ALL_DYN_LINK")
-ADD_DEFINITIONS("-DBOOST_ALL_NO_LIB")
-
+add_definitions(-DBOOST_LOG_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
 include_directories("${CMAKE_SOURCE_DIR}/lcviewernoqt")

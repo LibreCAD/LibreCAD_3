@@ -22,7 +22,7 @@
 
 class entitytest {
     public:
-        entitytest();
+        entitytest() = default;
 
         std::vector<lc::entity::Line_CSPtr> LineMove();
         std::vector<lc::entity::Line_CSPtr> LineCopy();

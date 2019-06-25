@@ -235,7 +235,7 @@ namespace lc {
                 */
                 lc::geo::Coordinate coord(DRW_Coord const& coord) const;
 
-                std::vector<lc::geo::Coordinate> coords(std::vector<DRW_Coord*> coordList) const;
+                std::vector<lc::geo::Coordinate> coords(std::vector<std::shared_ptr<DRW_Coord>> coordList) const;
 
             private:
                 lc::iColor icol;
@@ -243,6 +243,9 @@ namespace lc {
                 std::vector<DRW_Image> imageMapCache;
                 std::map<std::string, lc::meta::Block_CSPtr> _blocks;
                 std::map<int, lc::meta::Block_CSPtr> _handleBlock;
+
+                const static std::map<int, lc::Units> _dxfToLCUnits;
+                const static std::map<lc::Units, int> _lcUnitsToDXF;
         };
     }
 }

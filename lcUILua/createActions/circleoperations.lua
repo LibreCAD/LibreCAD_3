@@ -33,13 +33,13 @@ function CircleOperations:enterCenter(eventName, data)
             message("Provide Diameter Start Point:",self.target_widget)
             self.step = "CircleWith2Points"
         elseif ((data["text"]) == "3" or string.lower(data["text"]) == "3p") then
-            message("Provide Frist Point:",self.target_widget)
+            message("Provide First Point:",self.target_widget)
             self.step = "CircleWith3Points"
         elseif (string.lower(data["text"]) == "t" or string.lower(data["text"]) == "ttt") then
-            message("Provide Frist Tangent:",self.target_widget)
+            message("Provide First Tangent:",self.target_widget)
             self.step = "CircleWith3Tans"
         elseif (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "ttr") then
-            message("Provide Frist Tangent:",self.target_widget)
+            message("Provide First Tangent:",self.target_widget)
             self.step = "CircleWith2Tans"
         end
     end
@@ -120,11 +120,11 @@ function CircleOperations:CircleWith3Points(eventName, data)
 end
 
 function CircleOperations:CircleWith3Tans(eventName, data)
-    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
+    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selecting of objects starts working this function can be coded.
 end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
-    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
+    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selecting of objects starts working this function can be coded.
 end
 
 function CircleOperations:Circumcenter(Point1,Point2,Point3)

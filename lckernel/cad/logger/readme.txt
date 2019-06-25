@@ -9,7 +9,7 @@ It is in class so it can be updated or any feature can be added.(later like stor
 Actually here in class there only init function that creates sinks. So to write log first create logger source and start writing log.
 
 #include "cad/logger/logger.h"
-	lc::log::lc_logger slg;// it is simply boost::log::sources::severity_logger<severity_level>
+	lc::log::lc_logger slg;// it is simply boost::log::sources::severity_logger<SeverityLevel>
 	BOOST_LOG(slg) << "Hello World!";//No changes in macro	or, LOG
 	BOOST_LOG_SEV(slg,error) << "Error msg..";//minimal	or, LOGS
 

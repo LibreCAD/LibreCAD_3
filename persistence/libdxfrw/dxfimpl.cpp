@@ -30,9 +30,36 @@
 #include <cad/operations/blockops.h>
 #include <cad/meta/customentitystorage.h>
 #include <cad/logger/logger.h>
-lc::log::lc_logger slg;
+#include <cad/tools/maphelper.h>
 
 using namespace lc::persistence;
+
+const std::map<int, lc::Units> DXFimpl::_dxfToLCUnits = {
+        {0, lc::Units::None},
+        {1, lc::Units::Inch},
+        {2, lc::Units::Foot},
+        {3, lc::Units::Mile},
+        {4, lc::Units::Millimeter},
+        {5, lc::Units::Centimeter},
+        {6, lc::Units::Meter},
+        {7, lc::Units::Kilometer},
+        {8, lc::Units::Microinch},
+        {9, lc::Units::Mil},
+        {10, lc::Units::Yard},
+        {11, lc::Units::Angstrom},
+        {12, lc::Units::Nanometer},
+        {13, lc::Units::Micron},
+        {14, lc::Units::Decimeter},
+        {15, lc::Units::Decameter},
+        {16, lc::Units::Hectometer},
+        {17, lc::Units::Gigameter},
+        {18, lc::Units::Astro},
+        {19, lc::Units::Lightyear},
+        {20, lc::Units::Parsec},
+};
+
+const std::map<lc::Units, int> DXFimpl::_lcUnitsToDXF = lc::tools::MapHelper::reverse(_dxfToLCUnits);
+
 
 DXFimpl::DXFimpl(std::shared_ptr<lc::storage::Document> document, lc::operation::Builder_SPtr builder) :
         _document(document), 
@@ -54,21 +81,19 @@ inline int DXFimpl::widthToInt(double wid) const {
 }
 
 void DXFimpl::setBlock(const int handle) {
-    std::cout << "setBlock " << handle << "\n";
+    LOG_WARNING << "setBlock " << handle;
 }
 
 void DXFimpl::addViewport(const DRW_Viewport& data){
-	LOG(slg) << "addViewport ";
-	
+	LOG_WARNING << "addViewport ";
 }
 
 void DXFimpl::addVport(const DRW_Vport& data){
-	LOG(slg) << "addVport ";
-	
+	LOG_WARNING << "addVport ";
 }
 
 void DXFimpl::addBlock(const DRW_Block& data) {
-	LOG(slg) << "addBlock " << data.name;
+	LOG_WARNING << "addBlock " << data.name;
 
     _currentBlock = nullptr;
 
@@ -129,12 +154,12 @@ void DXFimpl::addBlock(const DRW_Block& data) {
 }
 
 void DXFimpl::endBlock() {
-	LOG(slg) << "endBlock";
+	LOG_WARNING << "endBlock";
     _currentBlock = nullptr;
 }
 
 void DXFimpl::addLine(const DRW_Line& data) {
-	LOG(slg) << "addLine";
+	LOG_WARNING << "addLine";
     lc::builder::LineBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
@@ -143,12 +168,12 @@ void DXFimpl::addLine(const DRW_Line& data) {
     builder.setStart(coord(data.basePoint));
     builder.setEnd(coord(data.secPoint));
 
-    LOG(slg) << "Block:" << builder.block();
+    LOG_WARNING << "Block:" << builder.block();
     _entityBuilder->appendEntity(builder.build());
 }
 
 void DXFimpl::addCircle(const DRW_Circle& data) {
-	LOG(slg) << "addCircle";
+	LOG_WARNING << "addCircle";
     lc::builder::CircleBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
@@ -161,7 +186,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
 }
 
 void DXFimpl::addArc(const DRW_Arc& data) {
-	LOG(slg) << "addArc";
+	LOG_WARNING << "addArc";
     lc::builder::ArcBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
@@ -177,7 +202,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 }
 
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
-	LOG(slg) << "addEllipse";
+	LOG_WARNING << "addEllipse";
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto layer = _document->layerByName(data.layer);
 
@@ -197,7 +222,7 @@ void DXFimpl::addEllipse(const DRW_Ellipse& data) {
 }
 
 void DXFimpl::addLayer(const DRW_Layer& data) {
-	LOG(slg) << "addLayer " << data.name;
+	LOG_WARNING << "addLayer " << data.name;
     auto col = icol.intToColor(data.color);
 
     if (col == nullptr) {
@@ -226,7 +251,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
 }
 
 void DXFimpl::addSpline(const DRW_Spline* data) {
-	LOG(slg) << "addSpline";
+	LOG_WARNING << "addSpline";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
 
@@ -255,7 +280,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
 }
 
 void DXFimpl::addText(const DRW_Text& data) {
-	LOG(slg) << "addText";
+	LOG_WARNING << "addText";
     auto layer = _document->layerByName(data.layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
@@ -273,7 +298,7 @@ void DXFimpl::addText(const DRW_Text& data) {
 }
 
 void DXFimpl::addPoint(const DRW_Point& data) {
-	LOG(slg) << "addPoint";
+	LOG_WARNING << "addPoint";
     auto layer = _document->layerByName(data.layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
@@ -286,7 +311,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 }
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
-	LOG(slg) << "addDimAlign";
+	LOG_WARNING << "addDimAlign";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAligned = std::make_shared<lc::entity::DimAligned>(
@@ -308,7 +333,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
 }
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
-	LOG(slg) << "addDimLinear";
+	LOG_WARNING << "addDimLinear";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimLinear = std::make_shared<lc::entity::DimLinear>(
@@ -332,7 +357,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
 }
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
-	LOG(slg) << "addDimRadial";
+	LOG_WARNING << "addDimRadial";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto  lcDimRadial = std::make_shared<lc::entity::DimRadial>(
@@ -354,7 +379,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
 }
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
-	LOG(slg) << "addDimDiametric";
+	LOG_WARNING << "addDimDiametric";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimDiametric = std::make_shared<lc::entity::DimDiametric>(
@@ -376,7 +401,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
 }
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
-	LOG(slg) << "addDimAngular";
+	LOG_WARNING << "addDimAngular";
     auto layer = _document->layerByName(data->layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAngular = std::make_shared<lc::entity::DimAngular>(
@@ -400,19 +425,15 @@ void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
 }
 
 void DXFimpl::addDimAngular3P(const DRW_DimAngular3p* data) {
-	LOG(slg) << "addDimAngular3P";
-    if (_currentBlock == nullptr) {
-    }
+	LOG_WARNING << "addDimAngular3P";
 }
 
 void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
-	LOG(slg) << "addOrdinate";
-    if (_currentBlock == nullptr) {
-    }
+	LOG_WARNING << "addOrdinate";
 }
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
-	LOG(slg) << "addLWPolyline";
+	LOG_WARNING << "addLWPolyline";
     auto layer = _document->layerByName(data.layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
@@ -439,7 +460,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
 
 //Handle polyline as lwpolyline
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
-	LOG(slg) << "addPolyline";
+	LOG_WARNING << "addPolyline";
     auto layer = _document->layerByName(data.layer);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
@@ -463,17 +484,16 @@ void DXFimpl::addPolyline(const DRW_Polyline& data) {
     );
 
     _entityBuilder->appendEntity(lcLWPolyline);
-
 }
 
 void DXFimpl::addMText(const DRW_MText& data) {
-	LOG(slg) << "addMText";
+	LOG_WARNING << "addMText";
 }
 
 void DXFimpl::addHatch(const DRW_Hatch* data) {
     // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
     // loopList seems to contain the same entities, why??
-	LOG(slg) << "addHatch ";
+	LOG_WARNING << "addHatch ";
     auto layer = _document->layerByName(data->layer);
     auto mf = getMetaInfo(*data);
     auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
@@ -482,20 +502,20 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
     );
 	lcHatch->setPatternName(data->name);
 	lcHatch->setSolid(data->solid);
-    LOG(slg) << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
+    LOG_WARNING << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
     lcHatch->setHatchStyle(data->hstyle);
     lcHatch->setHatchPattern(data->hpattern);
-    LOG(slg) << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
-    LOG(slg) << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
+    LOG_WARNING << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
+    LOG_WARNING << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
     lcHatch->setAngle(data->angle);
     lcHatch->setScale(data->scale);
-    LOG(slg) << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
+    LOG_WARNING << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
     for (auto x : data->looplist){
         auto m = std::make_shared<lc::entity::HatchLoop>();
         for(auto k : x->objlist){
             if(k->eType == DRW::ETYPE::LWPOLYLINE){
-                auto data = (DRW_LWPolyline*)k;
-                LOG(slg) << "Polyline";
+                auto data = std::dynamic_pointer_cast<DRW_LWPolyline>(k);
+                LOG_WARNING << "Polyline";
                 std::vector<lc::entity::LWVertex2D> points;
                 for (const auto& i : data->vertlist) {
                     points.emplace_back(lc::geo::Coordinate(i->x, i->y), i->bulge, i->stawidth, i->endwidth);
@@ -512,13 +532,13 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 );
                 m->objList.push_back(lcLWPolyline);
             }else if(k->eType == DRW::ETYPE::LINE){
-                auto data = (DRW_Line*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                 lc::builder::LineBuilder builder;
                 builder.setStart(coord(data->basePoint));
                 builder.setEnd(coord(data->secPoint));
                 m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ARC){
-                auto data = (DRW_Arc*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
                 lc::builder::ArcBuilder builder;
 
                 builder.setCenter(coord(data->basePoint));
@@ -528,7 +548,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 builder.setIsCCW((bool) data->isccw);
                 m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ELLIPSE){
-                auto data = (DRW_Ellipse*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                 auto secPoint = coord(data->secPoint);
                 auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data->basePoint),
                                                                        secPoint,
@@ -540,7 +560,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 );
                 m->objList.push_back(lcEllipse);
             }else if(k->eType == DRW::ETYPE::SPLINE){
-                auto data = (DRW_Spline*)k;
+                auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                 auto knotList = data->knotslist;
                 if (knotList.size()>=2) {
                     knotList.erase(knotList.begin());
@@ -640,10 +660,10 @@ lc::geo::Coordinate DXFimpl::coord(DRW_Coord const& coord) const {
     return { coord.x, coord.y, coord.z };
 }
 
-std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<DRW_Coord *> coordList) const {
+std::vector<lc::geo::Coordinate> DXFimpl::coords(std::vector<std::shared_ptr<DRW_Coord>> coordList) const {
     std::vector<lc::geo::Coordinate> coords;
     coords.reserve(coordList.size());
-    for (const DRW_Coord* ptr : coordList) {
+    for (const auto& ptr : coordList) {
         coords.emplace_back(ptr->x,ptr->y, ptr->z);
     }
     return coords;
@@ -659,12 +679,12 @@ void DXFimpl::addLType(const DRW_LType& data) {
  * if linkImage isn't called as last, we miss a image during import
  */
 void DXFimpl::addImage(const DRW_Image* data) {
-	LOG(slg) << "addImage";
+	LOG_WARNING << "addImage";
     imageMapCache.emplace_back(*data);
 }
 
 void DXFimpl::linkImage(const DRW_ImageDef *data) {
-	LOG(slg) << "linkImage";
+	LOG_WARNING << "linkImage";
     for(auto image = imageMapCache.cbegin(); image != imageMapCache.cend() /* not hoisted */; /* no increment */ ) {
         if (image->ref == data->handle) {
             auto layer = _document->layerByName(image->layer);
@@ -693,7 +713,7 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 }
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
-	LOG(slg) << "addInsert";
+	LOG_WARNING << "addInsert";
     lc::builder::InsertBuilder builder;
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(getBlock(data));
@@ -854,11 +874,11 @@ void DXFimpl::writeSpline(const lc::entity::Spline_CSPtr& s) {
     sp.degree = s->degree();
 
     for(const auto& cp : s->controlPoints()) {
-        sp.controllist.push_back(new DRW_Coord(cp.x(), cp.y(), cp.z()));
+        sp.controllist.push_back(std::make_shared<DRW_Coord>(cp.x(), cp.y(), cp.z()));
     }
 
     for(const auto& fp : s->fitPoints()) {
-        sp.fitlist.push_back(new DRW_Coord(fp.x(), fp.y(), fp.z()));
+        sp.fitlist.push_back(std::make_shared<DRW_Coord>(fp.x(), fp.y(), fp.z()));
     }
 
     sp.flags = s->flags();
@@ -1201,19 +1221,15 @@ void DXFimpl::writeAppId(){
 }
 
 void DXFimpl::writeDimension(const lc::entity::Dimension_CSPtr& d) {
-
 }
 
 void DXFimpl::writeLWPolyline(const lc::entity::LWPolyline_CSPtr& p) {
-
 }
 
 void DXFimpl::writeImage(const lc::entity::Image_CSPtr& i) {
-
 }
 
 void DXFimpl::writeText(const lc::entity::Text_CSPtr& t) {
-
 }
 
 void DXFimpl::writeEntities(){
@@ -1385,74 +1401,12 @@ int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
  * converts a DXF units setting (e.g. INSUNITSs) to a units enum.
  */
 lc::Units DXFimpl::numberToUnit(int num) {
-    switch (num) {
-    default:
-    case  0:
-        return lc::Units::None;
-        break;
-    case  1:
-        return lc::Units::Inch;
-        break;
-    case  2:
-        return lc::Units::Foot;
-        break;
-    case  3:
-        return lc::Units::Mile;
-        break;
-    case  4:
-        return lc::Units::Millimeter;
-        break;
-    case  5:
-        return lc::Units::Centimeter;
-        break;
-    case  6:
-        return lc::Units::Meter;
-        break;
-    case  7:
-        return lc::Units::Kilometer;
-        break;
-    case  8:
-        return lc::Units::Microinch;
-        break;
-    case  9:
-        return lc::Units::Mil;
-        break;
-    case 10:
-        return lc::Units::Yard;
-        break;
-    case 11:
-        return lc::Units::Angstrom;
-        break;
-    case 12:
-        return lc::Units::Nanometer;
-        break;
-    case 13:
-        return lc::Units::Micron;
-        break;
-    case 14:
-        return lc::Units::Decimeter;
-        break;
-    case 15:
-        return lc::Units::Decameter;
-        break;
-    case 16:
-        return lc::Units::Hectometer;
-        break;
-    case 17:
-        return lc::Units::Gigameter;
-        break;
-    case 18:
-        return lc::Units::Astro;
-        break;
-    case 19:
-        return lc::Units::Lightyear;
-        break;
-    case 20:
-        return lc::Units::Parsec;
-        break;
+    try {
+        return _dxfToLCUnits.at(num);
     }
-
-    return lc::Units::None;
+    catch (std::out_of_range& e) {
+        return lc::Units::None;
+    }
 }
 
 
@@ -1461,72 +1415,10 @@ lc::Units DXFimpl::numberToUnit(int num) {
  * Converst a units enum into a DXF units number e.g. for INSUNITSs.
  */
 int DXFimpl::unitToNumber(lc::Units unit) {
-    switch (unit) {
-    default:
-    case lc::Units::None:
-        return  0;
-        break;
-    case lc::Units::Inch:
-        return  1;
-        break;
-    case lc::Units::Foot:
-        return  2;
-        break;
-    case lc::Units::Mile:
-        return  3;
-        break;
-    case lc::Units::Millimeter:
-        return  4;
-        break;
-    case lc::Units::Centimeter:
-        return  5;
-        break;
-    case lc::Units::Meter:
-        return  6;
-        break;
-    case lc::Units::Kilometer:
-        return  7;
-        break;
-    case lc::Units::Microinch:
-        return  8;
-        break;
-    case lc::Units::Mil:
-        return  9;
-        break;
-    case lc::Units::Yard:
-        return 10;
-        break;
-    case lc::Units::Angstrom:
-        return 11;
-        break;
-    case lc::Units::Nanometer:
-        return 12;
-        break;
-    case lc::Units::Micron:
-        return 13;
-        break;
-    case lc::Units::Decimeter:
-        return 14;
-        break;
-    case lc::Units::Decameter:
-        return 15;
-        break;
-    case lc::Units::Hectometer:
-        return 16;
-        break;
-    case lc::Units::Gigameter:
-        return 17;
-        break;
-    case lc::Units::Astro:
-        return 18;
-        break;
-    case lc::Units::Lightyear:
-        return 19;
-        break;
-    case lc::Units::Parsec:
-        return 20;
-        break;
+    try {
+        return _lcUnitsToDXF.at(unit);
     }
-
-    return 0;
+    catch (std::out_of_range& e) {
+        return 0;
+    }
 }
