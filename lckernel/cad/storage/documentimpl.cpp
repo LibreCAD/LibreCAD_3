@@ -48,10 +48,10 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
     qDebug("\n\n\n\n---------------insertEntity()------------Document");
-    if (_storageManager->entityByID(cadEntity->id()) != nullptr)
-     {
+    //if (_storageManager->entityByID(cadEntity->id()) != nullptr)
+    // {
         removeEntity(cadEntity);
-    }
+    //}
 
     _storageManager->insertEntity(cadEntity);
     event::AddEntityEvent event(cadEntity);
