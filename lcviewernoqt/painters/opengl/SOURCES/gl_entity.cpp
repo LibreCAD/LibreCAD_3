@@ -53,11 +53,6 @@ void GL_Entity::UnBind()
     IBO.UnBind();
 }
 
-unsigned int GL_Entity::GetIndices()
-{
-	return IBO.GetCount();
-}
-
 void GL_Entity::ClearData()
 {
 

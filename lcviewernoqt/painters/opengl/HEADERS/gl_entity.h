@@ -42,7 +42,6 @@ public:
 	void LoadData(float* vertices,int size,unsigned int* indices,int count);
 	void ClearData();
     
-    unsigned int GetIndices();
 	void Bind();
 	void UnBind();
     
