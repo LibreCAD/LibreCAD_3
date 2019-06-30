@@ -42,6 +42,7 @@ public:
     void Gen(const std::string& filepath);
 	void Bind() const;
 	void UnBind() const;
+	unsigned int GetID() const;
 
 	//set uniforms
 	void SetUniform4f(const std::string& name,float v0,float v1,float v2,float v3);

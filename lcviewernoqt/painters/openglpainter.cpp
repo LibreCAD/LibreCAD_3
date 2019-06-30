@@ -10,20 +10,28 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
    
   new_device_size(width,height);
 
+   CHE=new LcCacherPainter();
+
    qDebug( "=======================Opengl_Painter_Created=============%u w=%d h=%d",this,width,height);
     QOpenGLContext *CC= QOpenGLContext::currentContext();
      if(CC!=0)
     {
       ReadyShaderProgram();
+      RND.Add_New_GL_Entity();
     }
 
-    CHE=new LcCacherPainter();
+   
 }
 
 void LcOpenGLPainter::ReadyShaderProgram()
 {
+     LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(CHE);
+     RND.Set_Cacher_Ref(&(((*cp)._cacher)));
+
      RND.CreateShaderProgram();
-    qDebug( "==RND.CreatingShader() call");
+     qDebug( "==RND.CreatingShader() call");
+
+    
 }
 
  void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)
@@ -170,7 +178,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::stroke()
                  {
-                      RND.Draw();
+                      RND.Render();
                  }
 
                  void LcOpenGLPainter::source_rgb(double r, double g, double b)

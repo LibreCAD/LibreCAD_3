@@ -11,6 +11,7 @@
 #include "indexbuffer.h"
 #include "vertexarray.h"
 #include "vertexbufferlayout.h"
+#include "shader.h"
 
 
 namespace lc
@@ -32,8 +33,9 @@ private:
 
 	GLenum _render_mode;                   //mode for render
     GLenum _fill_mode;                     //mode for filling
+    float _linewidth;                      //linewidth
     
-
+    Shader* _basic_shader;
 public:
 	GL_Entity();
 	~GL_Entity();
@@ -43,16 +45,18 @@ public:
     unsigned int GetIndices();
 	void Bind();
 	void UnBind();
-
+    
+    void SetShader(Shader* shader);
 	void SetModelMatrix(glm::mat4 model);
 	void SetRenderMode(GLenum rendermode);
 	void SetFillMode(GLenum fillmode);
+	void SetLineWidth(float width);
+	void SetColor(float R,float G,float B,float A);
 
-	glm::mat4 GetModelMatrix();
-	GLenum GetRenderMode();
-	GLenum GetFillMode();
-
+	
 	void Delete();
+
+	void Draw(glm::mat4 proj,glm::mat4 view);
 };
 
 

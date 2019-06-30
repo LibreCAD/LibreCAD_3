@@ -29,6 +29,11 @@ void Shader::Gen(const std::string& filepath)
     Bind();
 }
 
+unsigned int Shader::GetID() const
+{
+	return m_RendererID;
+}
+
 
 ShaderProgramSource Shader:: ParseShader(const std::string& filepath)
 {

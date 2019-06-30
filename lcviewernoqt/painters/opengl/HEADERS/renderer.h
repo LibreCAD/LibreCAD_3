@@ -15,6 +15,7 @@
 #include "gl_entity.h"
 #include "shader.h"
 #include "gl_pack.h"
+#include "cacher.h"
 
 namespace lc
 {
@@ -52,23 +53,20 @@ private:
     std::vector<float> vertices;          // for vertex data
     std::vector<unsigned int> indices;    //for indices data
 
-	GLenum render_mode;                   //mode for render
-    GLenum fill_mode;                     //mode for filling
     
-     Shader SH;                           //Shader
+     Shader basic_shader;                           //Shader
+     Shader gradient_shader;                        //Shader color vertex (gradient)
 
      glm::mat4 proj;                      //projection matrix
      glm::mat4 view;                      //view matrix for pan
-     glm::mat4 model;                     //model matrix
-     glm::mat4 mvp;                       //model view projection
-
      glm::mat4 ctm;          
 
-	// TODO: map of <id,gl_entity>
-    
+	
     std::stack < context_att > context_stack;
     
-	GL_Entity* current_gl_entity;
+	GL_Entity* current_gl_entity = NULL;
+
+	Cacher* CH_Ptr;
 
 public:
 
@@ -78,17 +76,13 @@ public:
 
 	void CreateShaderProgram();
 
-	//---------------------------For Matrix/ Vectors/ Coordinate-----------
+	void Set_Cacher_Ref(Cacher* ch);
 
-	void Set_MVP();
+	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
 	void Update_projection(float l,float r,float b,float t);
 
 	void Update_view();
-
-	void Update_model(glm::mat4 _model);
-
-	void Update_MVP();
 
 	//-----------
 
@@ -142,10 +136,10 @@ public:
     void Select_Color(float R,float G,float B,float A);
 
     void Select_Line_Width(float width);
-    
-    void Set_Default();
 
-	void Draw();
+    //----------------------------render direct entity------------------
+
+	void Render();
 
 	//-----------------------------rendering cached entities---------------
 

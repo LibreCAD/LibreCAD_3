@@ -16,6 +16,7 @@
 
 #include "gl_entity.h"
 #include "gl_pack.h"
+#include "shader.h"
 
 namespace lc
 {
@@ -42,6 +43,10 @@ private:
 	GL_Entity* current_gl_entity;
 	GL_Pack* current_gl_pack;
 
+    Shader* basic_shader;
+    Shader* gradient_shader;
+    Shader* text_shader;
+
 	std::map < unsigned long, GL_Pack* > gl_pack_map;
 
 public:
@@ -49,6 +54,8 @@ public:
 	Cacher();
 
 	~Cacher();
+
+    void Set_Shader_Ref(Shader* basic, Shader* gradient, Shader* text);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 

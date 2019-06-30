@@ -20,6 +20,16 @@ using namespace lc::viewer::opengl;
 
 	}
 
+    void Cacher::Set_Shader_Ref(Shader* basic, Shader* gradient, Shader* text)
+    {
+        basic_shader=basic;
+        gradient_shader=gradient;
+        text_shader=text;
+
+        qDebug("in cacher SH1 id=%u   SH2 id=%u",basic_shader->GetID(), gradient_shader->GetID());
+
+    }
+
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
 	void Cacher::Update_model()
@@ -86,7 +96,7 @@ using namespace lc::viewer::opengl;
 
          current_gl_entity->SetFillMode(fill_mode);
          current_gl_entity->SetRenderMode(render_mode);
-        
+         
         
 	}
 
@@ -122,6 +132,7 @@ using namespace lc::viewer::opengl;
     void Cacher::Set_New_GL_Entity()
     {
         current_gl_entity = new GL_Entity();
+        current_gl_entity->SetShader(basic_shader);
     }
 
     void Cacher::Push_Entity_In_Pack()
