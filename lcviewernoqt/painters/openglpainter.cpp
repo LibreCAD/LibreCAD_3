@@ -17,7 +17,7 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
      if(CC!=0)
     {
       ReadyShaderProgram();
-      RND.Add_New_GL_Entity();
+      RND.Add_New_Shape_Entity();
     }
 
    

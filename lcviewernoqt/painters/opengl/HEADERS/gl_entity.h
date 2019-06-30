@@ -7,10 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
-#include "vertexarray.h"
-#include "vertexbufferlayout.h"
+
 #include "shader.h"
 
 
@@ -24,38 +21,26 @@ namespace lc
 
 class GL_Entity
 {
-private:   
-	VertexArray VAO;
-	VertexBuffer VBO;
-	IndexBuffer IBO;                       // GPU Buffer Objects (vertex data)
 
-	glm::mat4 _model;                      // model matrix
-
-	GLenum _render_mode;                   //mode for render
-    GLenum _fill_mode;                     //mode for filling
-    float _linewidth;                      //linewidth
-    
-    Shader* _basic_shader;
 public:
-	GL_Entity();
-	~GL_Entity();
-	void LoadData(float* vertices,int size,unsigned int* indices,int count);
-	void ClearData();
+	virtual ~GL_Entity() = default;
+	virtual void LoadData(float* vertices,int size,unsigned int* indices,int count) = 0;
+	virtual void ClearData() = 0;
     
-	void Bind();
-	void UnBind();
+	virtual void Bind() = 0;
+	virtual void UnBind() = 0;
     
-    void SetShader(Shader* shader);
-	void SetModelMatrix(glm::mat4 model);
-	void SetRenderMode(GLenum rendermode);
-	void SetFillMode(GLenum fillmode);
-	void SetLineWidth(float width);
-	void SetColor(float R,float G,float B,float A);
+    virtual void SetShader(Shader* shader) = 0;
+	virtual void SetModelMatrix(glm::mat4 model) = 0;
+	virtual void SetRenderMode(GLenum rendermode) = 0;
+	virtual void SetFillMode(GLenum fillmode) = 0;
+	virtual void SetLineWidth(float width) = 0;
+	virtual void SetColor(float R,float G,float B,float A) = 0;
 
 	
-	void Delete();
+	virtual void Delete() = 0;
 
-	void Draw(glm::mat4 proj,glm::mat4 view);
+	virtual void Draw(glm::mat4 proj,glm::mat4 view) = 0;
 };
 
 

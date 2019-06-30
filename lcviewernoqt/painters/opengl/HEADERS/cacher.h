@@ -14,6 +14,7 @@
 #include <iterator> 
 #include <map> 
 
+#include "shape_entity.h"
 #include "gl_entity.h"
 #include "gl_pack.h"
 #include "shader.h"

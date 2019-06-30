@@ -189,12 +189,12 @@ void Renderer::Restore()
 
 //------------------------------------------
 
-void Renderer::Add_New_GL_Entity()
+void Renderer::Add_New_Shape_Entity()
 {
 	if(current_gl_entity!=NULL)
 	current_gl_entity->Delete();
 
-	current_gl_entity = new GL_Entity();
+	current_gl_entity = new Shape_Entity();
   current_gl_entity->SetShader(&basic_shader);
 }
 
@@ -253,7 +253,7 @@ void Renderer::Render()
       Clear_Data();
       
       //Adding a new entity( Shape_entity )
-      Add_New_GL_Entity();
+      Add_New_Shape_Entity();
     
 }
 

@@ -1,8 +1,8 @@
-#include "gl_entity.h"
+#include "shape_entity.h"
 
 using namespace lc::viewer::opengl;
 
-GL_Entity :: GL_Entity()
+Shape_Entity :: Shape_Entity()
 {
     _fill_mode=GL_LINE;
     _render_mode=GL_LINES;
@@ -10,12 +10,12 @@ GL_Entity :: GL_Entity()
     _model=glm::mat4(1.0f);
 }
 
-GL_Entity::~GL_Entity()
+Shape_Entity::~Shape_Entity()
 {
 	
 }
 
-void GL_Entity::LoadData(float* vertices,int size,unsigned int* indices,int count)
+void Shape_Entity::LoadData(float* vertices,int size,unsigned int* indices,int count)
 {
 
  //--------VAO-----------
@@ -36,7 +36,7 @@ void GL_Entity::LoadData(float* vertices,int size,unsigned int* indices,int coun
 
 }
 
-void GL_Entity::Bind()
+void Shape_Entity::Bind()
 {
 	//---------bind--------------
 	VBO.Bind();
@@ -45,7 +45,7 @@ void GL_Entity::Bind()
    
 }
 
-void GL_Entity::UnBind()
+void Shape_Entity::UnBind()
 {
 	//---------unbind--------------
     VBO.UnBind();
@@ -53,38 +53,38 @@ void GL_Entity::UnBind()
     IBO.UnBind();
 }
 
-void GL_Entity::ClearData()
+void Shape_Entity::ClearData()
 {
 
 }
 
-void GL_Entity::SetShader(Shader* shader)
+void Shape_Entity::SetShader(Shader* shader)
 {
    _basic_shader=shader;
 }
 
-void GL_Entity::SetModelMatrix(glm::mat4 model)
+void Shape_Entity::SetModelMatrix(glm::mat4 model)
 {
    _model=model;
 }
 
-void GL_Entity::SetRenderMode(GLenum rendermode)
+void Shape_Entity::SetRenderMode(GLenum rendermode)
 {
    _render_mode=rendermode;
 }
 
-void GL_Entity::SetFillMode(GLenum fillmode)
+void Shape_Entity::SetFillMode(GLenum fillmode)
 {
    _fill_mode=fillmode;
 }
 
-void GL_Entity::SetLineWidth(float width)
+void Shape_Entity::SetLineWidth(float width)
 {
     _linewidth=width;
 }
 
 
-void GL_Entity::SetColor(float R,float G,float B,float A)
+void Shape_Entity::SetColor(float R,float G,float B,float A)
 {
   _basic_shader->Bind();
   _basic_shader->SetUniform4f("u_Color",R,G,B,A);
@@ -92,18 +92,18 @@ void GL_Entity::SetColor(float R,float G,float B,float A)
 }
 
 
-void GL_Entity::Delete()
+void Shape_Entity::Delete()
 {
   
   VBO.~VertexBuffer();
   IBO.~IndexBuffer();
   VAO.~VertexArray();
 
-  this->~GL_Entity();
+  this->~Shape_Entity();
 }
 
 
-void GL_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
+void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
 {
     //Set the Fill Mode
     glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);

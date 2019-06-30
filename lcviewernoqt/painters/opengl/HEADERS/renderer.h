@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "gl_entity.h"
+#include "shape_entity.h"
 #include "shader.h"
 #include "gl_pack.h"
 #include "cacher.h"
@@ -121,7 +122,7 @@ public:
 	
 	void Use_GL_Entity(unsigned int id);
 
-    void Add_New_GL_Entity();
+    void Add_New_Shape_Entity();
 
 	void Add_Vertex(float x,float y,float z=0.0f);
 	

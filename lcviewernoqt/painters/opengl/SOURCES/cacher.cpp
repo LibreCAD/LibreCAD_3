@@ -131,7 +131,7 @@ using namespace lc::viewer::opengl;
 
     void Cacher::Set_New_GL_Entity()
     {
-        current_gl_entity = new GL_Entity();
+        current_gl_entity = new Shape_Entity();
         current_gl_entity->SetShader(basic_shader);
     }
 
