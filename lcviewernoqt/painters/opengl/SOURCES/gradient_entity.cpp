@@ -1,4 +1,5 @@
 #include "gradient_entity.h"
+#include <cmath>
 #include <QtDebug>
 using namespace lc::viewer::opengl;
 
@@ -99,6 +100,9 @@ void Gradient_Entity::SetColor(float R,float G,float B,float A)
 void Gradient_Entity::AddLinearGradient(float x0,float y0,float x1,float y1)
 {
    pattern = new Linear_Pattern();
+   (pattern->begin) = glm::vec2(x0,y0);
+   (pattern->end) = glm::vec2(x1,y1);
+
 }
 
 void Gradient_Entity::AddGradientColorPoint(float R,float G,float B,float A)
@@ -108,30 +112,36 @@ void Gradient_Entity::AddGradientColorPoint(float R,float G,float B,float A)
 
 void Gradient_Entity::ApplyGradient(float* vertices,int count)
 {
-     
-   for(int i=0;i<count;i++)
-   {  qDebug("vertex-- %f , %f , %f",vertices[3*i],vertices[3*i+1],vertices[3*i+2]);
-      color_vertex_data.push_back( vertices[3*i]);    // X
-      color_vertex_data.push_back( vertices[3*i+1]);  // Y
-      color_vertex_data.push_back( vertices[3*i+2]);  // Z
+     glm::vec2 Vg= (pattern->end) - (pattern->begin);   // gradient line vector
 
-     if(i<2)
-     {  qDebug("TOP--");
-      color_vertex_data.push_back( ((pattern->color_points)[0]).x );    // R
-      color_vertex_data.push_back( ((pattern->color_points)[0]).y );    // G
-      color_vertex_data.push_back( ((pattern->color_points)[0]).z );    // B
-      color_vertex_data.push_back( ((pattern->color_points)[0]).w );    // A
+     float len = glm::length(Vg);                       // length of gradient line vector
+     float ratio_R = (((pattern->color_points)[1]).r - ((pattern->color_points)[0]).r)/len;
+     float ratio_G = (((pattern->color_points)[1]).g - ((pattern->color_points)[0]).g)/len;
+     float ratio_B = (((pattern->color_points)[1]).b - ((pattern->color_points)[0]).b)/len;
+     float ratio_A = (((pattern->color_points)[1]).a - ((pattern->color_points)[0]).a)/len;
+
+     float d;           // length of scalar projection of point vector to Vg vector
+
+     glm::vec2 Vp;     // vector for each current point
+
+      for(int i=0;i<count;i++)
+     {  
+        color_vertex_data.push_back( vertices[3*i]);    // X
+        color_vertex_data.push_back( vertices[3*i+1]);  // Y
+        color_vertex_data.push_back( vertices[3*i+2]);  // Z
+
+        Vp=glm::vec2( vertices[3*i] - (pattern->begin).x , vertices[3*i+1] - (pattern->begin).y);  //  Current point vector (P-Begin)
+        
+        float dot_prod=glm::dot( Vg , Vp );              // dot product
+
+        d=abs(dot_prod/len);                                  // final distance of projection of point on Vg
+
+      
+        color_vertex_data.push_back( ((pattern->color_points)[0]).r + d * ratio_R );    // R
+        color_vertex_data.push_back( ((pattern->color_points)[0]).g + d * ratio_G );    // G
+        color_vertex_data.push_back( ((pattern->color_points)[0]).b + d * ratio_B );    // B
+        color_vertex_data.push_back( ((pattern->color_points)[0]).a + d * ratio_A );    // A
      }
-
-      else
-      {  qDebug("BOTTOM--");
-      color_vertex_data.push_back( ((pattern->color_points)[1]).x );    // R
-      color_vertex_data.push_back( ((pattern->color_points)[1]).y );    // G
-      color_vertex_data.push_back( ((pattern->color_points)[1]).z );    // B
-      color_vertex_data.push_back( ((pattern->color_points)[1]).w );    // A
-     }
-
-   }
 
 }
 

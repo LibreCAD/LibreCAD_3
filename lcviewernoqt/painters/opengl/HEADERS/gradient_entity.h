@@ -27,7 +27,6 @@ struct Linear_Pattern
 {
    glm::vec2 begin;
    glm::vec2 end;
-
    std::vector < glm::vec4 > color_points;
 };
 
