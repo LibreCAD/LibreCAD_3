@@ -270,12 +270,13 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  long LcOpenGLPainter::pattern_create_linear(double x1, double y1, double x2, double y2)
                  {
-
+                      RND.Add_New_Gradient_Entity();
+                      RND.Add_Linear_Gradient(x1,y1,x2,y2);
                  }
 
                  void LcOpenGLPainter::pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a)
                  {
-
+                      RND.Add_Gradient_Color_Point(r,g,b,a);
                  }
 
                  void LcOpenGLPainter::set_pattern_source(long pat)

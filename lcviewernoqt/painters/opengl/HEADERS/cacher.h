@@ -15,6 +15,7 @@
 #include <map> 
 
 #include "shape_entity.h"
+#include "gradient_entity.h"
 #include "gl_entity.h"
 #include "gl_pack.h"
 #include "shader.h"
@@ -92,11 +93,19 @@ public:
 
     void Select_Line_Width(float width);
 
+    //----------------------------gradient------------------------------
+
+    void Add_Linear_Gradient(float x0,float y0,float x1,float y1);
+
+    void Add_Gradient_Color_Point(float R,float G,float B,float A);
+
     //--------------------------gl_entity / gl_pack / reset manipulations------------
     
     void Set_New_GL_Pack();
 
-    void Set_New_GL_Entity();
+    void Set_New_Shape_Entity();
+
+    void Set_New_Gradient_Entity();
 
     void Push_Entity_In_Pack();
 

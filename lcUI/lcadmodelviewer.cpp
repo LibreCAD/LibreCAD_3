@@ -16,7 +16,7 @@ void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> documen
     qDebug( "lcadmodelviewer--- setDocument()--- object= %u",this);
     
     LCADViewer::setDocument(document,nullptr);
-  //  this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
+    this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());
     this->documentCanvas()->background().connect<drawable::Grid, &drawable::Grid::draw>(_grid.get());
 
     // Snap manager

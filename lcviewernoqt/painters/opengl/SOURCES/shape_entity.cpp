@@ -1,5 +1,5 @@
 #include "shape_entity.h"
-
+#include <QtDebug>
 using namespace lc::viewer::opengl;
 
 Shape_Entity :: Shape_Entity()
@@ -17,7 +17,7 @@ Shape_Entity::~Shape_Entity()
 
 void Shape_Entity::LoadData(float* vertices,int size,unsigned int* indices,int count)
 {
-
+  
  //--------VAO-----------
   VAO.Gen();
 
@@ -89,6 +89,21 @@ void Shape_Entity::SetColor(float R,float G,float B,float A)
   _basic_shader->Bind();
   _basic_shader->SetUniform4f("u_Color",R,G,B,A);
   _basic_shader->UnBind();
+}
+
+void Shape_Entity::AddLinearGradient(float x0,float y0,float x1,float y1)
+{
+   // NO Need (Used by Gradient_Entity)
+}
+
+void Shape_Entity::AddGradientColorPoint(float R,float G,float B,float A)
+{
+   // NO Need (Used by Gradient_Entity)
+}
+
+void Shape_Entity::ApplyGradient(float* vertices,int size)
+{
+   // NO Need (Used by Gradient_Entity)
 }
 
 

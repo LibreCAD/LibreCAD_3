@@ -37,6 +37,10 @@ public:
 	virtual void SetLineWidth(float width) = 0;
 	virtual void SetColor(float R,float G,float B,float A) = 0;
 
+    virtual void AddLinearGradient(float x0,float y0,float x1,float y1) = 0;
+	virtual void AddGradientColorPoint(float R,float G,float B,float A) = 0;
+	virtual void ApplyGradient(float* vertices,int size) = 0;
+
 	
 	virtual void Delete() = 0;
 

@@ -66,6 +66,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/indexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexarray.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shape_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gradient_entity.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gl_pack.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/cacher.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/renderer.cpp
@@ -128,6 +129,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexarray.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbufferlayout.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_entity.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shape_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gradient_entity.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_pack.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/cacher.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/renderer.h

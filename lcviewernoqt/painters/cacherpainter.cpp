@@ -224,12 +224,13 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  long LcCacherPainter::pattern_create_linear(double x1, double y1, double x2, double y2)
                  {
-
+                     _cacher.Set_New_Gradient_Entity();
+                     _cacher.Add_Linear_Gradient(x1,y1,x2,y2);
                  }
 
                  void LcCacherPainter::pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a)
                  {
-
+                     _cacher.Add_Gradient_Color_Point(r,g,b,a);
                  }
 
                  void LcCacherPainter::set_pattern_source(long pat)

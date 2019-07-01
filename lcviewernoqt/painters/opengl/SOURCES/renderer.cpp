@@ -191,12 +191,29 @@ void Renderer::Restore()
 
 void Renderer::Add_New_Shape_Entity()
 {
+  //Clear data in buffer(CPU)
+      Clear_Data();
+
 	if(current_gl_entity!=NULL)
 	current_gl_entity->Delete();
 
 	current_gl_entity = new Shape_Entity();
   current_gl_entity->SetShader(&basic_shader);
 }
+
+void Renderer::Add_New_Gradient_Entity()
+{
+  //Clear data in buffer(CPU)
+      Clear_Data();
+
+  if(current_gl_entity!=NULL)
+  current_gl_entity->Delete();
+
+  current_gl_entity = new Gradient_Entity();
+  current_gl_entity->SetShader(&gradient_shader);
+}
+
+//-------------------------------------------
 
 void Renderer::Add_Vertex(float x,float y,float z)
 {
@@ -240,6 +257,20 @@ void Renderer::Select_Color(float R,float G,float B,float A)
 {
     current_gl_entity->SetColor(R,G,B,A);
 }
+
+//---------------------gradient------------------------
+
+void Renderer::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
+{
+    current_gl_entity->AddLinearGradient(x0,y0,x1,y1);
+}
+
+void Renderer::Add_Gradient_Color_Point(float R,float G,float B,float A)
+{
+    current_gl_entity->AddGradientColorPoint(R,G,B,A);
+}
+
+//----------------------------------------------------------
       
 void Renderer::Render()
 {
@@ -248,9 +279,6 @@ void Renderer::Render()
       
       // Send the proj & view matrix needed to draw
       current_gl_entity->Draw(proj,view);
-      
-      //Clear data in buffer(CPU)
-      Clear_Data();
       
       //Adding a new entity( Shape_entity )
       Add_New_Shape_Entity();

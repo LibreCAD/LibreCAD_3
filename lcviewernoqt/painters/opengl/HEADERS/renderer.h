@@ -14,6 +14,7 @@
 
 #include "gl_entity.h"
 #include "shape_entity.h"
+#include "gradient_entity.h"
 #include "shader.h"
 #include "gl_pack.h"
 #include "cacher.h"
@@ -124,6 +125,8 @@ public:
 
     void Add_New_Shape_Entity();
 
+    void Add_New_Gradient_Entity();
+
 	void Add_Vertex(float x,float y,float z=0.0f);
 	
 	void Clear_Data();
@@ -137,6 +140,12 @@ public:
     void Select_Color(float R,float G,float B,float A);
 
     void Select_Line_Width(float width);
+
+    //---------------------------gradient----------------------------
+
+    void Add_Linear_Gradient(float x0,float y0,float x1,float y1);
+
+    void Add_Gradient_Color_Point(float R,float G,float B,float A);
 
     //----------------------------render direct entity------------------
 

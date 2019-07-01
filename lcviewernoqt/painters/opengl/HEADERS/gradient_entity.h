@@ -1,5 +1,5 @@
-#ifndef SHAPE_ENTITY_H
-#define SHAPE_ENTITY_H
+#ifndef GRADIENT_ENTITY_H
+#define GRADIENT_ENTITY_H
 #include <GL/glew.h>  
 #include <GL/gl.h>
 
@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 #include "vertexarray.h"
@@ -22,8 +23,15 @@ namespace lc
 		namespace opengl
 		{
 
+struct Linear_Pattern
+{
+   glm::vec2 begin;
+   glm::vec2 end;
 
-class Shape_Entity : public GL_Entity
+   std::vector < glm::vec4 > color_points;
+};
+
+class Gradient_Entity : public GL_Entity
 {
 private:   
 	VertexArray VAO;
@@ -36,10 +44,12 @@ private:
     GLenum _fill_mode;                     //mode for filling
     float _linewidth;                      //linewidth
     
-    Shader* _basic_shader;
+    Linear_Pattern* pattern;
+    std::vector<float> color_vertex_data;
+    Shader* _gradient_shader;
 public:
-	Shape_Entity();
-	~Shape_Entity();
+	Gradient_Entity();
+	~Gradient_Entity();
 	void LoadData(float* vertices,int size,unsigned int* indices,int count);
 	void ClearData();
     
@@ -53,11 +63,10 @@ public:
 	void SetLineWidth(float width);
 	void SetColor(float R,float G,float B,float A);
 
-    void AddLinearGradient(float x0,float y0,float x1,float y1);
+	void AddLinearGradient(float x0,float y0,float x1,float y1);
 	void AddGradientColorPoint(float R,float G,float B,float A);
 	void ApplyGradient(float* vertices,int size);
 
-	
 	void Delete();
 
 	void Draw(glm::mat4 proj,glm::mat4 view);

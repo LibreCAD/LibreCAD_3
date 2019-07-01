@@ -122,6 +122,19 @@ using namespace lc::viewer::opengl;
        // Till now dont need to be cached
     }
 
+    //--------------------------gradient--------------------------------
+
+    void Cacher::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
+    {
+        current_gl_entity->AddLinearGradient(x0,y0,x1,y1);
+    }
+
+    void Cacher::Add_Gradient_Color_Point(float R,float G,float B,float A)
+    {
+        current_gl_entity->AddGradientColorPoint(R,G,B,A);
+    }
+
+
     //--------------------------gl_entity / gl_pack / reset manipulations------------
     
     void Cacher::Set_New_GL_Pack()
@@ -129,15 +142,20 @@ using namespace lc::viewer::opengl;
         current_gl_pack = new GL_Pack();
     }
 
-    void Cacher::Set_New_GL_Entity()
+    void Cacher::Set_New_Shape_Entity()
     {
         current_gl_entity = new Shape_Entity();
         current_gl_entity->SetShader(basic_shader);
     }
 
+    void Cacher::Set_New_Gradient_Entity()
+    {
+        current_gl_entity = new Shape_Entity();
+        current_gl_entity->SetShader(gradient_shader);
+    }
+
     void Cacher::Push_Entity_In_Pack()
     {
-       // qDebug("------Entity Pushed in Pack--- %u",current_gl_entity);
         current_gl_pack->Push_Entity_In_Pack( current_gl_entity );
     }
 
@@ -161,14 +179,14 @@ using namespace lc::viewer::opengl;
     	Add_Data_To_GL_Entity();
     	Push_Entity_In_Pack();
     	Set_Default();
-    	Set_New_GL_Entity();
+    	Set_New_Shape_Entity();
     }
 
     void Cacher::Ready_Fresh_GL_Pack()
     {
     	Set_Default();
     	Set_New_GL_Pack();
-    	Set_New_GL_Entity();
+    	Set_New_Shape_Entity();
     }
 
 
