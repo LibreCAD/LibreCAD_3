@@ -218,7 +218,7 @@ void Renderer::Add_New_Gradient_Entity()
 void Renderer::Add_Vertex(float x,float y,float z)
 {
 	vertices.push_back(x);
-	vertices.push_back(y);
+	vertices.push_back(-y);   //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
 	vertices.push_back(z);
 
   unsigned int l=(unsigned int)(indices.size());
@@ -262,7 +262,7 @@ void Renderer::Select_Color(float R,float G,float B,float A)
 
 void Renderer::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
 {
-    current_gl_entity->AddLinearGradient(x0,y0,x1,y1);
+    current_gl_entity->AddLinearGradient(x0,-y0,x1,-y1);   // !!! BEWARE !!!
 }
 
 void Renderer::Add_Gradient_Color_Point(float R,float G,float B,float A)

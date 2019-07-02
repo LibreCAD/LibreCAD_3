@@ -244,7 +244,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                  {
                     drawEntity(painter, di);
                     cacheEntity((di->entity())->id(), di);
-                  }
+                 }
             };
             //painter.line_width(1.);
             //painter.source_rgb(1., 1., 1.);

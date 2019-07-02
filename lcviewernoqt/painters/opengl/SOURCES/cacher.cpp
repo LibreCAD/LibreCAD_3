@@ -78,9 +78,8 @@ using namespace lc::viewer::opengl;
   
 	void Cacher::Add_Vertex(float x,float y,float z)
 	{
-       // qDebug(")))) Cacher ---Vertex added --- ( %f  , %f  )",x,y);
         vertices.push_back(x);
-	    vertices.push_back(y);
+	    vertices.push_back(-y);    //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
 	    vertices.push_back(z);
 
         unsigned int l=(unsigned int)(indices.size());
@@ -126,7 +125,7 @@ using namespace lc::viewer::opengl;
 
     void Cacher::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
     {
-        current_gl_entity->AddLinearGradient(x0,y0,x1,y1);
+        current_gl_entity->AddLinearGradient(x0,-y0,x1,-y1);   //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
     }
 
     void Cacher::Add_Gradient_Color_Point(float R,float G,float B,float A)

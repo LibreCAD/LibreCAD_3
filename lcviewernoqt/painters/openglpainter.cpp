@@ -46,7 +46,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
    device_width=(float)width;
    device_height=(float)height;
 
-   RND.Update_projection(0, width, height, 0);
+   RND.Update_projection(0, device_width, device_height,0);
    //RND.Reset_Transformations();   // optional
    
  }
@@ -115,7 +115,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::rotate(double r)
                  {
-                     RND.Update_rotate(-r);
+                     RND.Update_rotate(r);
                  }
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
@@ -193,31 +193,31 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::translate(double x, double y)
                  {
-                    RND.Update_translate(x,-y );
+                    RND.Update_translate(x,y );
                  }
 
                  void LcOpenGLPainter::user_to_device(double* x, double* y)
                  {
-                   // *y=-*y;
+                    *y=-*y;
                     RND.User_To_Device(x,y);
                  }
 
                  void LcOpenGLPainter::device_to_user(double* x, double* y)
                  {
                     RND.Device_To_User(x,y);
-                   // *y=-*y;
+                    *y=-*y;
                  }
 
                  void LcOpenGLPainter::user_to_device_distance(double* dx, double* dy)
                  {
-                   // *dy = -*dy;
+                    *dy = -*dy;
                     RND.User_To_Device_Distance(dx,dy);
                  }
 
                  void LcOpenGLPainter::device_to_user_distance(double* dx, double* dy)
                  {
                     RND.Device_To_User_Distance(dx,dy);
-                    //*dy = -*dy;
+                    *dy = -*dy;
                  }
 
                  void LcOpenGLPainter::font_size(double size, bool deviceCoords)
