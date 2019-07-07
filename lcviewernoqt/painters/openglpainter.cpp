@@ -272,6 +272,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                       RND.Add_New_Gradient_Entity();
                       RND.Add_Linear_Gradient(x1,y1,x2,y2);
+                      return 0;
                  }
 
                  void LcOpenGLPainter::pattern_add_color_stop_rgba(long pat, double offset, double r, double g, double b, double a)

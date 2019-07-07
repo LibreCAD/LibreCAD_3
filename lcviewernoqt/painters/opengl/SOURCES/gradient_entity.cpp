@@ -92,9 +92,7 @@ void Gradient_Entity::SetLineWidth(float width)
 
 void Gradient_Entity::SetColor(float R,float G,float B,float A)
 {
-  _gradient_shader->Bind();
-  _gradient_shader->SetUniform4f("u_Color",R,G,B,A);
-  _gradient_shader->UnBind();
+  // NOTHING
 }
 
 void Gradient_Entity::AddLinearGradient(float x0,float y0,float x1,float y1)
