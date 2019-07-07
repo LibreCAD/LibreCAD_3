@@ -60,10 +60,10 @@ void Renderer::CreateShaderProgram()
 {
   DebugMessage("generating Shader");
   
-  basic_shader.Gen("/home/krixz/LC_3/LC3_forked/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/basic_shader.shader");
+  basic_shader.Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/basic_shader.shader");
   basic_shader.UnBind();
 
-  gradient_shader.Gen("/home/krixz/LC_3/LC3_forked/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
+  gradient_shader.Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
   gradient_shader.UnBind();
 
 

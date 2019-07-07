@@ -178,6 +178,6 @@ void Gradient_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
                     IBO.GetCount(),
                     GL_UNSIGNED_INT,
                     0 );
-
+   
    
 }
