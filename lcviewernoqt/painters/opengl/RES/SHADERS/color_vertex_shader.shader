@@ -2,7 +2,7 @@
 
 #version 130
 in vec3 pos;
-in vec4 col;
+in vec3 col;
 
 out vec3 eachcol;
 
@@ -19,9 +19,9 @@ void main()
 #version 130
 
 out vec4 u_Color;
-in vec4 eachcol;
+in vec3 eachcol;
 
 void main() 
 {
-    u_Color = eachcol;
+    u_Color = vec4(eachcol,1.0);
 } 
