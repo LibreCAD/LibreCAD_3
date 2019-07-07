@@ -2,9 +2,9 @@
 
 #version 130
 in vec3 pos;
-in vec3 col;
+in vec4 col;
 
-out vec3 eachcol;
+out vec4 eachcol;
 
 uniform mat4 u_MVP;
 
@@ -19,9 +19,9 @@ void main()
 #version 130
 
 out vec4 u_Color;
-in vec3 eachcol;
+in vec4 eachcol;
 
 void main() 
 {
-    u_Color = vec4(eachcol,1.0);
+    u_Color = eachcol;
 } 
