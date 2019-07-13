@@ -195,7 +195,7 @@ void Renderer::Add_New_Shape_Entity()
       Clear_Data();
 
 	if(current_gl_entity!=NULL)
-	current_gl_entity->Delete();
+	delete current_gl_entity;
 
 	current_gl_entity = new Shape_Entity();
   current_gl_entity->SetShader(&basic_shader);
@@ -207,7 +207,7 @@ void Renderer::Add_New_Gradient_Entity()
       Clear_Data();
 
   if(current_gl_entity!=NULL)
-  current_gl_entity->Delete();
+  delete current_gl_entity;
 
   current_gl_entity = new Gradient_Entity();
   current_gl_entity->SetShader(&gradient_shader);
