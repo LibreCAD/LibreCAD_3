@@ -1,17 +1,18 @@
 #shader vertex
 
-#version 130
-in vec3 pos;
-
+#version 330 core
+layout (location = 0) in vec3 pos; 
 uniform mat4 u_MVP;
-void main() 
-{
-   gl_Position = u_MVP *vec4(pos, 1);
-} 
 
+void main()
+{
+    gl_Position = u_MVP *vec4(pos, 1.0); 
+}
+
+//-------------------------------------------
 #shader fragment
 
-#version 130
+#version 330 core
 
 uniform vec4 u_Color;
 

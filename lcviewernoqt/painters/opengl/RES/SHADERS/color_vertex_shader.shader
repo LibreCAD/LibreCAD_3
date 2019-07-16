@@ -1,8 +1,8 @@
 #shader vertex
 
-#version 130
-in vec3 pos;
-in vec4 col;
+#version 330 core
+layout (location = 0) in vec3 pos; 
+layout (location = 1) in vec4 col;
 
 out vec4 eachcol;
 
@@ -16,7 +16,7 @@ void main()
 
 #shader fragment
 
-#version 130
+#version 330 core
 
 out vec4 u_Color;
 in vec4 eachcol;
