@@ -18,10 +18,10 @@ void main()
 
 #version 330 core
 
-out vec4 u_Color;
+out vec4 out_Color;
 in vec4 eachcol;
 
 void main() 
 {
-    u_Color = eachcol;
+    out_Color = eachcol;
 } 
