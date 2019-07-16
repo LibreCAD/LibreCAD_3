@@ -167,11 +167,12 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  { 
                         move_to(x1,y1);
                         RND.Add_Vertex(px,py);
+                        RND.Add_Vertex(px,py+h);
                         RND.Add_Vertex(px+w,py);
                         RND.Add_Vertex(px+w,py+h);
-                        RND.Add_Vertex(px,py+h);
+                        
 
-                        RND.Select_Render_Mode(GL_QUADS);
+                        RND.Select_Render_Mode(GL_TRIANGLE_STRIP);
 
                         // pen coordinates remains same
                  }
@@ -293,7 +294,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  void LcOpenGLPainter::fill()
                  {
                       RND.Select_Fill(GL_FILL);
-                      RND.Select_Render_Mode(GL_POLYGON);
+                      RND.Select_Render_Mode(GL_TRIANGLE_STRIP);
                  }
 
                  void LcOpenGLPainter::point(double x, double y, double size, bool deviceCoords)

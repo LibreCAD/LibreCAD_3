@@ -4,6 +4,7 @@
 #include <iostream>
 #include <QtDebug>
 #include <QOpenGLContext>
+#include <QSurfaceFormat>
 
 using namespace lc;
 using namespace lc::ui;
@@ -37,9 +38,77 @@ LCADViewer::LCADViewer(QWidget *parent) :
     this->_ctrlKeyActive = false;
     setCursor(Qt::BlankCursor);
 
+   QSurfaceFormat format;
+    format.setMajorVersion(4);
+    format.setMinorVersion(6);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setOption(QSurfaceFormat::DebugContext);
+    setFormat(format);
 }
 
-LCADViewer::~LCADViewer() {
+void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
+{
+    qCritical() << "OpenGL log:\n";
+  QString error;
+
+  // Format based on severity
+  switch (msg.severity())
+  {
+  case QOpenGLDebugMessage::NotificationSeverity:
+    error += "--";
+    break;
+  case QOpenGLDebugMessage::HighSeverity:
+    error += "!!";
+    break;
+  case QOpenGLDebugMessage::MediumSeverity:
+    error += "!~";
+    break;
+  case QOpenGLDebugMessage::LowSeverity:
+    error += "~~";
+    break;
+  }
+
+  error += " (";
+
+  // Format based on source
+#define CASE(c) case QOpenGLDebugMessage::c: error += #c; break
+  switch (msg.source())
+  {
+    CASE(APISource);
+    CASE(WindowSystemSource);
+    CASE(ShaderCompilerSource);
+    CASE(ThirdPartySource);
+    CASE(ApplicationSource);
+    CASE(OtherSource);
+    CASE(InvalidSource);
+  }
+#undef CASE
+
+  error += " : ";
+
+  // Format based on type
+#define CASE(c) case QOpenGLDebugMessage::c: error += #c; break
+  switch (msg.type())
+  {
+    CASE(ErrorType);
+    CASE(DeprecatedBehaviorType);
+    CASE(UndefinedBehaviorType);
+    CASE(PortabilityType);
+    CASE(PerformanceType);
+    CASE(OtherType);
+    CASE(MarkerType);
+    CASE(GroupPushType);
+    CASE(GroupPopType);
+  }
+#undef CASE
+
+  error += ")";
+  qCritical() << qPrintable(error) << "\n" << qPrintable(msg.message()) << "\n";
+
+}
+
+LCADViewer::~LCADViewer() 
+{
     deletePainters();
 
     _document->commitProcessEvent().disconnect<LCADViewer, &LCADViewer::on_commitProcessEvent>(this);
@@ -53,6 +122,12 @@ void LCADViewer::initializeGL()
   qDebug("Generated context=%u",CC);
   qDebug("This widget object=%u",this);
   qDebug("###########################################################");
+  
+  QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
+    logger->initialize();
+
+    connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
+    logger->startLogging();
 
   if(CC!=0)
   {

@@ -73,6 +73,9 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
 
         painter.rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
         painter.fill();
+        painter.stroke();
+
+        
         painter.rectangle(area.minP().x(), area.minP().y(), area.width(), area.height());
 
         if (occupies) {

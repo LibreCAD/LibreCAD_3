@@ -30,6 +30,8 @@
 
 #include "painters/createpainter.h"
 
+#include <QOpenGLDebugMessage>
+
 namespace lc {
     namespace ui {
         struct MouseEvent {
@@ -129,6 +131,8 @@ namespace lc {
                 void selectedItemsEvent(const lc::viewer::event::SelectedItemsEvent&);
 
             public slots:
+
+                void messageLogged(const QOpenGLDebugMessage &msg);
 
             private:
 
