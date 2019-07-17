@@ -135,7 +135,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                        _cacher.Add_Vertex(px+w,py+h);
                        _cacher.Add_Vertex(px,py+h);
 
-                       _cacher.Select_Render_Mode(GL_QUADS);
+                       _cacher.Select_Render_Mode(GL_LINE_LOOP);
 
                         // pen coordinates remains same
                  }
@@ -246,7 +246,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  void LcCacherPainter::fill()
                  {
                      _cacher.Select_Fill(GL_FILL);
-                     _cacher.Select_Render_Mode(GL_POLYGON);
+                     _cacher.Select_Render_Mode(GL_TRIANGLE_FAN);
                  }
 
                  void LcCacherPainter::point(double x, double y, double size, bool deviceCoords)

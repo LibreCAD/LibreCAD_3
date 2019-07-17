@@ -167,12 +167,12 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  { 
                         move_to(x1,y1);
                         RND.Add_Vertex(px,py);
-                        RND.Add_Vertex(px,py+h);
                         RND.Add_Vertex(px+w,py);
                         RND.Add_Vertex(px+w,py+h);
+                        RND.Add_Vertex(px,py+h);
                         
 
-                        RND.Select_Render_Mode(GL_TRIANGLE_STRIP);
+                        RND.Select_Render_Mode(GL_LINE_LOOP);
 
                         // pen coordinates remains same
                  }
@@ -238,7 +238,9 @@ void LcOpenGLPainter::ReadyShaderProgram()
                      {
                         rectangle(px,py,font_size_value,font_size_value);
                         //TODO: Temporary rectangles..Later to render the glyphs
+                        stroke();
                         c++;
+
                         move_to(font_size_value*c,0.0f);
                      }
                  }
@@ -294,7 +296,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  void LcOpenGLPainter::fill()
                  {
                       RND.Select_Fill(GL_FILL);
-                      RND.Select_Render_Mode(GL_TRIANGLE_STRIP);
+                      RND.Select_Render_Mode(GL_TRIANGLE_FAN);
                  }
 
                  void LcOpenGLPainter::point(double x, double y, double size, bool deviceCoords)
