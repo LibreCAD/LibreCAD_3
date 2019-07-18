@@ -26,3 +26,15 @@ void GL_Pack::Push_Entity_In_Pack( GL_Entity* glentity )
 {
 	_gl_entities.push_back( glentity );
 }
+
+void GL_Pack::Free_GPU_Pack()
+{
+	std::vector< GL_Entity* >::iterator it;
+
+	for(it=_gl_entities.begin();it!=_gl_entities.end();it++)
+	{
+		(*it)->FreeGPU();
+		delete (*it);
+	}
+
+}

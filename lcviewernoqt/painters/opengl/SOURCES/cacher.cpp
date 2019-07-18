@@ -231,7 +231,10 @@ using namespace lc::viewer::opengl;
         it = gl_pack_map.find(id);
         
         if (it != gl_pack_map.end())
-          gl_pack_map.erase(it);
+         { 
+            (it->second)->Free_GPU_Pack();
+            gl_pack_map.erase(it);
+         }
 
       }
 

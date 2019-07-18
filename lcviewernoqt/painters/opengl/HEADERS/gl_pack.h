@@ -32,6 +32,8 @@ class GL_Pack
 
     void Push_Entity_In_Pack( GL_Entity* glentity);
 
+    void Free_GPU_Pack();
+
 };
 
 
