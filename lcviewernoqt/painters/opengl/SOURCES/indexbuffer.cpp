@@ -10,7 +10,7 @@ IndexBuffer::IndexBuffer()
 
 IndexBuffer::~IndexBuffer()
 {
-   glDeleteBuffers(1,&m_RendererID);
+   
 }
 
 void IndexBuffer::Gen(const unsigned int* data,unsigned int count)
@@ -30,4 +30,10 @@ void IndexBuffer::Bind() const
 void IndexBuffer::UnBind() const
 {
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);  
+}
+
+void IndexBuffer::FreeGPU() const
+{
+   UnBind();
+   glDeleteBuffers(1,&m_RendererID);
 }

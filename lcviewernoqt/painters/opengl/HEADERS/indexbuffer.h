@@ -24,6 +24,7 @@ public:
     void Gen(const unsigned int* data,unsigned int count);
 	void Bind() const;
 	void UnBind() const;
+	void FreeGPU() const;
 	inline unsigned int GetCount() const { return m_Count; }
 
 };

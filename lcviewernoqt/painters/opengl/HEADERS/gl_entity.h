@@ -42,7 +42,7 @@ public:
 	virtual void ApplyGradient(float* vertices,int size) = 0;
 
 	
-	virtual void Delete() = 0;
+	virtual void FreeGPU() = 0;
 
 	virtual void Draw(glm::mat4 proj,glm::mat4 view) = 0;
 };

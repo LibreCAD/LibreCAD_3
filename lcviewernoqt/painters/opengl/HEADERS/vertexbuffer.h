@@ -24,6 +24,7 @@ public:
     void Gen(const void* data,unsigned int size);
 	void Bind() const;
 	void UnBind() const;
+	void FreeGPU() const;
 
 };
 

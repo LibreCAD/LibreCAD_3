@@ -66,7 +66,7 @@ public:
 	void AddGradientColorPoint(float R,float G,float B,float A);
 	void ApplyGradient(float* vertices,int size);
 
-	void Delete();
+	void FreeGPU();
 
 	void Draw(glm::mat4 proj,glm::mat4 view);
 };

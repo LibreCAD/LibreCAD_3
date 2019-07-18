@@ -279,6 +279,9 @@ void Renderer::Render()
       
       // Send the proj & view matrix needed to draw
       current_gl_entity->Draw(proj,view);
+
+      //Free the GPU memory
+      current_gl_entity->FreeGPU();
       
       //Adding a new entity( Shape_entity )
       Add_New_Shape_Entity();

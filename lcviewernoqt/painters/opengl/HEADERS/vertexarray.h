@@ -26,7 +26,7 @@ public:
     void Gen();
 	void Bind() const;
 	void UnBind() const;
-
+    void FreeGPU() const;
 	void AddBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout);
 
 };

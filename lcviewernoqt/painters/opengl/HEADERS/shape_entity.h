@@ -58,7 +58,7 @@ public:
 	void ApplyGradient(float* vertices,int size);
 
 	
-	void Delete();
+	void FreeGPU();
 
 	void Draw(glm::mat4 proj,glm::mat4 view);
 };

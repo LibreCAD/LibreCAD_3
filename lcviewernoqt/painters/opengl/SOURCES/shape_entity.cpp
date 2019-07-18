@@ -107,15 +107,14 @@ void Shape_Entity::ApplyGradient(float* vertices,int size)
 }
 
 
-void Shape_Entity::Delete()
+void Shape_Entity::FreeGPU()
 {
   
-  VBO.~VertexBuffer();
-  IBO.~IndexBuffer();
-  VAO.~VertexArray();
-
-  this->~Shape_Entity();
+  VBO.FreeGPU();
+  IBO.FreeGPU();
+  VAO.FreeGPU();
 }
+
 
 
 void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)

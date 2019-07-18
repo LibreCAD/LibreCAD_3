@@ -144,14 +144,12 @@ void Gradient_Entity::ApplyGradient(float* vertices,int count)
 }
 
 
-void Gradient_Entity::Delete()
+void Gradient_Entity::FreeGPU()
 {
   
-  VBO.~VertexBuffer();
-  IBO.~IndexBuffer();
-  VAO.~VertexArray();
-
-  this->~Gradient_Entity();
+  VBO.FreeGPU();
+  IBO.FreeGPU();
+  VAO.FreeGPU();
 }
 
 

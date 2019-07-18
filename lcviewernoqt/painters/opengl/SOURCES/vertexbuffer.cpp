@@ -10,7 +10,7 @@ VertexBuffer::VertexBuffer()
 
 VertexBuffer::~VertexBuffer()
 {
-   glDeleteBuffers(1,&m_RendererID);
+   
 }
 
 void VertexBuffer::Gen(const void* data,unsigned int size)
@@ -28,4 +28,10 @@ void VertexBuffer::Bind() const
 void VertexBuffer::UnBind() const
 {
    glBindBuffer(GL_ARRAY_BUFFER,0);  
+}
+
+void VertexBuffer::FreeGPU() const
+{
+   UnBind();
+   glDeleteBuffers(1,&m_RendererID);
 }

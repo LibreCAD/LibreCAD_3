@@ -12,8 +12,7 @@ VertexArray::VertexArray()
 
 VertexArray::~VertexArray()
 {
-    glDeleteVertexArrays(1,&m_RendererID);	
-
+    
 }
 
 void VertexArray::Gen()
@@ -49,4 +48,10 @@ void VertexArray::Bind() const
 void VertexArray::UnBind() const
 {
 	glBindVertexArray(0);
+}
+
+void VertexArray::FreeGPU() const
+{
+   UnBind();
+   glDeleteVertexArrays(1,&m_RendererID); 
 }
