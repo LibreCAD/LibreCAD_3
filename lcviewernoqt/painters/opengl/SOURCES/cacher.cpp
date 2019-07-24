@@ -20,14 +20,9 @@ using namespace lc::viewer::opengl;
 
 	}
 
-    void Cacher::Set_Shader_Ref(Shader* basic, Shader* gradient, Shader* text)
+    void Cacher::Set_Shader_Book(struct Shaders_book book)
     {
-        basic_shader=basic;
-        gradient_shader=gradient;
-        text_shader=text;
-
-        qDebug("in cacher SH1 id=%u   SH2 id=%u",basic_shader->GetID(), gradient_shader->GetID());
-
+        shaders=book;
     }
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
@@ -144,13 +139,13 @@ using namespace lc::viewer::opengl;
     void Cacher::Set_New_Shape_Entity()
     {
         current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetShader(basic_shader);
+        current_gl_entity->SetShader(shaders.basic_shader);
     }
 
     void Cacher::Set_New_Gradient_Entity()
     {
         current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetShader(gradient_shader);
+        current_gl_entity->SetShader(shaders.gradient_shader);
     }
 
     void Cacher::Push_Entity_In_Pack()

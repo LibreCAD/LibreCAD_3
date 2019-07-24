@@ -168,11 +168,15 @@ void LcOpenGLPainter::ReadyShaderProgram()
                         move_to(x1,y1);
                         RND.Add_Vertex(px,py);
                         RND.Add_Vertex(px+w,py);
+                        RND.Add_Vertex(px+w,py);
+                        RND.Add_Vertex(px+w,py+h);
                         RND.Add_Vertex(px+w,py+h);
                         RND.Add_Vertex(px,py+h);
+                        RND.Add_Vertex(px,py+h);
+                        RND.Add_Vertex(px,py);
                         
 
-                        RND.Select_Render_Mode(GL_LINE_LOOP);
+                        RND.Select_Render_Mode(GL_LINES);
 
                         // pen coordinates remains same
                  }

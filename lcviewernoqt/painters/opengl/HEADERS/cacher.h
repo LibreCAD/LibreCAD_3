@@ -45,9 +45,7 @@ private:
 	GL_Entity* current_gl_entity;
 	GL_Pack* current_gl_pack;
 
-    Shader* basic_shader;
-    Shader* gradient_shader;
-    Shader* text_shader;
+    Shaders_book shaders;
 
 	std::map < unsigned long, GL_Pack* > gl_pack_map;
 
@@ -57,7 +55,7 @@ public:
 
 	~Cacher();
 
-    void Set_Shader_Ref(Shader* basic, Shader* gradient, Shader* text);
+    void Set_Shader_Book(struct Shaders_book book);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 

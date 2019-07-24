@@ -59,15 +59,18 @@ Renderer::~Renderer()
 void Renderer::CreateShaderProgram()
 {
   DebugMessage("generating Shader");
-  
-  basic_shader.Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/basic_shader.shader");
-  basic_shader.UnBind();
-
-  gradient_shader.Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
-  gradient_shader.UnBind();
 
 
-  CH_Ptr->Set_Shader_Ref(&basic_shader , &gradient_shader , NULL);
+  shaders.basic_shader = new Shader();
+  shaders.basic_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/basic_shader.shader");
+  shaders.basic_shader->UnBind();
+
+  shaders.gradient_shader = new Shader();
+  shaders.gradient_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
+  shaders.gradient_shader->UnBind();
+
+
+  CH_Ptr->Set_Shader_Book(shaders);
 }
 
 void Renderer::Set_Cacher_Ref(Cacher* ch)
@@ -198,7 +201,7 @@ void Renderer::Add_New_Shape_Entity()
 	delete current_gl_entity;
 
 	current_gl_entity = new Shape_Entity();
-  current_gl_entity->SetShader(&basic_shader);
+  current_gl_entity->SetShader(shaders.basic_shader);
 }
 
 void Renderer::Add_New_Gradient_Entity()
@@ -210,7 +213,7 @@ void Renderer::Add_New_Gradient_Entity()
   delete current_gl_entity;
 
   current_gl_entity = new Gradient_Entity();
-  current_gl_entity->SetShader(&gradient_shader);
+  current_gl_entity->SetShader(shaders.gradient_shader);
 }
 
 //-------------------------------------------

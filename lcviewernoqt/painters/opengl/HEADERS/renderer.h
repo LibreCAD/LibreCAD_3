@@ -45,6 +45,8 @@ struct context_att
      glm::mat4 ctm;                        //CTM
 };
 
+
+
 //--------------------------------------------------------------
 
 #define PI 3.14159265
@@ -54,11 +56,9 @@ class Renderer
 private:   
     std::vector<float> vertices;          // for vertex data
     std::vector<unsigned int> indices;    //for indices data
-
     
-     Shader basic_shader;                           //Shader
-     Shader gradient_shader;                        //Shader color vertex (gradient)
-
+    Shaders_book shaders;
+    
      glm::mat4 proj;                      //projection matrix
      glm::mat4 view;                      //view matrix for pan
      glm::mat4 ctm;          
@@ -111,13 +111,25 @@ public:
 
 	void User_To_Device_Distance(double* x, double* y);
 
-	//------------context handling
+	//------------context handling-------------------------------------
 
 	void Save();
 
 	void Restore();
 
-	//------------------------------------------------------------------------
+	//---------------Functions manipulating vertex data(raw)----------------------
+
+	void Add_Vertex(float x,float y,float z=0.0f);
+	
+	void Add_Padding();
+
+	void Jump();
+
+	void Clear_Data();
+
+	void Close_Loop();
+
+	//---------------Functions manipulating entities---------------------------------------------------------
   
     bool Find_GL_Entity(unsigned int id);
 	
@@ -126,10 +138,6 @@ public:
     void Add_New_Shape_Entity();
 
     void Add_New_Gradient_Entity();
-
-	void Add_Vertex(float x,float y,float z=0.0f);
-	
-	void Clear_Data();
 
 	void Add_Data_To_GL_Entity();
 
@@ -141,7 +149,7 @@ public:
 
     void Select_Line_Width(float width);
 
-    //---------------------------gradient----------------------------
+    //--------------------------for gradient entity----------------------------
 
     void Add_Linear_Gradient(float x0,float y0,float x1,float y1);
 

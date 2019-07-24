@@ -170,10 +170,11 @@ void Gradient_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     this->Bind();
 
     //finally draw
-     glDrawElements( _render_mode,
+   /*  glDrawElements( _render_mode,
                     IBO.GetCount(),
                     GL_UNSIGNED_INT,
                     0 );
-   
+                    */
+   glDrawArrays(_render_mode,0,IBO.GetCount());
    
 }

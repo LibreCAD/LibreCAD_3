@@ -23,6 +23,7 @@ namespace lc
 		namespace opengl
 		{
 
+
 struct ShaderProgramSource
 {
 	std::string VertexSource;
@@ -58,10 +59,19 @@ private:
     unsigned int CreateShaderProgram(float R,float G,float B,float A);
 };
 
+struct Shaders_book
+{
+   Shader* basic_shader      = NULL;
+   Shader* gradient_shader   = NULL;
+   Shader* thickline_shader  = NULL;
+   Shader* linepattern_shader= NULL;
+   Shader* text_shader       = NULL;
 
-}
+};
 
-}
+   }
+
+ }
 
 }
 
