@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <vector>
 
 #include "shader.h"
 
@@ -24,7 +25,7 @@ class GL_Entity
 
 public:
 	virtual ~GL_Entity() = default;
-	virtual void LoadData(float* vertices,int size,unsigned int* indices,int count) = 0;
+	virtual void LoadData(float* vertices,int size,std::vector<int> &jumps) = 0;
 	virtual void ClearData() = 0;
     
 	virtual void Bind() = 0;

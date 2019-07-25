@@ -27,7 +27,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::close_path()
                  {
-                       _cacher.Select_Render_Mode(GL_LINE_LOOP);
+                       _cacher.Close_Loop();
                  }
 
                  void LcCacherPainter::new_sub_path()
@@ -47,15 +47,13 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::move_to(double x, double y)
                  {
-                      px=x; py=y;
+                      _cacher.Jump();
+                      _cacher.Add_Vertex(x,y);
                  }
 
                  void LcCacherPainter::line_to(double x, double y)
                  {
-                    _cacher.Add_Vertex(px,py);   // line from pen(x,y) ----P(x,y)
-                    _cacher.Add_Vertex(x,y);
-                     _cacher.Select_Render_Mode(GL_LINE_STRIP);
-                     move_to(x,y);            // setting new
+                      _cacher.Add_Vertex(x,y);
                  }
 
                  void LcCacherPainter::lineWidthCompensation(double lwc) // When set, we add this to the current linewidth, perhaps we should find a better method
@@ -64,7 +62,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  }
                  void LcCacherPainter::line_width(double lineWidth)
                  {
-                     
+                     _cacher.Select_Line_Width(lineWidth);
                  }
 
                  double LcCacherPainter::scale()
@@ -84,41 +82,49 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::arc(double x, double y, double r, double start, double end)
                  {
+                      _cacher.Jump();
+                    
                       float delta=(std::abs(end-start));
                       float angle=0;
                       long points=curve_points;
+                        
                         for(int i=0;i<points;i++)
                         {
                             angle=( ((float)i)/points)*(delta) + (start);
                             
                             _cacher.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        _cacher.Select_Render_Mode(GL_LINE_STRIP);
+
                  }
 
                  void LcCacherPainter::arcNegative(double x, double y, double r, double start, double end)
                  {
-                       float delta=(std::abs(end-start));
-                      float angle=0;
-                      long points=curve_points;
+                       _cacher.Jump();
+
+                        float delta=(std::abs(end-start));
+                        float angle=0;
+                        long points=curve_points;
+
                         for(int i=0;i<points;i++)
                         {
                             angle=start - ( ((float)i)/points)*(delta) ;
                             
                             _cacher.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        _cacher.Select_Render_Mode(GL_LINE_STRIP);
                  }
 
                  void LcCacherPainter::circle(double x, double y, double r)
                  {
-                      float angle=0;
+                      _cacher.Jump();
+
+                        float angle=0;
                         for(int i=0;i<curve_points;i++)
                         {
                             angle=( ((float)i)/curve_points )*(2*PI);
                             _cacher.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        _cacher.Select_Render_Mode(GL_LINE_LOOP);
+
+                        _cacher.Close_Loop();
 
                  }
 
@@ -129,21 +135,20 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::rectangle(double x1, double y1, double w, double h)
                  { 
-                       move_to(x1,y1);
-                       _cacher.Add_Vertex(px,py);
-                       _cacher.Add_Vertex(px+w,py);
-                       _cacher.Add_Vertex(px+w,py+h);
-                       _cacher.Add_Vertex(px,py+h);
-
-                       _cacher.Select_Render_Mode(GL_LINE_LOOP);
-
-                        // pen coordinates remains same
+                        _cacher.Jump();
+                        
+                        _cacher.Add_Vertex(x1,y1);
+                        _cacher.Add_Vertex(x1+w,y1);
+                        _cacher.Add_Vertex(x1+w,y1+h);
+                        _cacher.Add_Vertex(x1,y1+h);
+                        
+                        _cacher.Close_Loop();
                  }
 
                  void LcCacherPainter::stroke()
                  {
                      _cacher.Ready_For_Next_GL_Entity();
-                    // qDebug("==============stroke()=================");
+                    
                  }
 
                  void LcCacherPainter::source_rgb(double r, double g, double b)

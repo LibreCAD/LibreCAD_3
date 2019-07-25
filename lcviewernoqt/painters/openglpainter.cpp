@@ -60,7 +60,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::close_path()
                  {
-                       RND.Select_Render_Mode(GL_LINE_LOOP);
+                       RND.Close_Loop();
                  }
 
                  void LcOpenGLPainter::new_sub_path()
@@ -82,16 +82,13 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::move_to(double x, double y)
                  {
-                         px=x; py=y;
+                        RND.Jump();
+                        RND.Add_Vertex(x,y);
                  }
 
                  void LcOpenGLPainter::line_to(double x, double y)
                  {
-                        RND.Add_Vertex(px,py);   // line from pen(x,y) ----P(x,y)
                         RND.Add_Vertex(x,y);
-
-                        move_to(x,y);            // setting new
-
                  }
 
                  void LcOpenGLPainter::lineWidthCompensation(double lwc) // When set, we add this to the current linewidth, perhaps we should find a better method
@@ -120,42 +117,51 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
                  {
-                    float delta=(std::abs(end-start));
+                    RND.Jump();
+                    
+                      float delta=(std::abs(end-start));
                       float angle=0;
                       long points=curve_points;
+                        
                         for(int i=0;i<points;i++)
                         {
                             angle=( ((float)i)/points)*(delta) + (start);
                             
                             RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        RND.Select_Render_Mode(GL_LINE_STRIP);
+
                  }
 
                  void LcOpenGLPainter::arcNegative(double x, double y, double r, double start, double end)
                  {
-                     float delta=(std::abs(end-start));
-                      float angle=0;
-                      long points=curve_points;
+                        RND.Jump();
+
+                        float delta=(std::abs(end-start));
+                        float angle=0;
+                        long points=curve_points;
+
                         for(int i=0;i<points;i++)
                         {
                             angle=start - ( ((float)i)/points)*(delta) ;
                             
                             RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        RND.Select_Render_Mode(GL_LINE_STRIP);
+                        
                  }
 
                  void LcOpenGLPainter::circle(double x, double y, double r)
                  {
+                        RND.Jump();
+
                         float angle=0;
                         for(int i=0;i<curve_points;i++)
                         {
                             angle=( ((float)i)/curve_points )*(2*PI);
                             RND.Add_Vertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
-                        RND.Select_Render_Mode(GL_LINE_LOOP);
 
+                        RND.Close_Loop();
+                       
                  }
 
                  void LcOpenGLPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra)
@@ -165,20 +171,14 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::rectangle(double x1, double y1, double w, double h)
                  { 
-                        move_to(x1,y1);
-                        RND.Add_Vertex(px,py);
-                        RND.Add_Vertex(px+w,py);
-                        RND.Add_Vertex(px+w,py);
-                        RND.Add_Vertex(px+w,py+h);
-                        RND.Add_Vertex(px+w,py+h);
-                        RND.Add_Vertex(px,py+h);
-                        RND.Add_Vertex(px,py+h);
-                        RND.Add_Vertex(px,py);
+                        RND.Jump();
                         
-
-                        RND.Select_Render_Mode(GL_LINES);
-
-                        // pen coordinates remains same
+                        RND.Add_Vertex(x1,y1);
+                        RND.Add_Vertex(x1+w,y1);
+                        RND.Add_Vertex(x1+w,y1+h);
+                        RND.Add_Vertex(x1,y1+h);
+                        
+                        RND.Close_Loop();
                  }
 
                  void LcOpenGLPainter::stroke()
@@ -198,7 +198,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::translate(double x, double y)
                  {
-                    RND.Update_translate(x,y );
+                      RND.Update_translate(x,y);
                  }
 
                  void LcOpenGLPainter::user_to_device(double* x, double* y)
@@ -237,15 +237,14 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::text(const char* text_val)
                  {
-                     int c=0;
+                     int c=0;  float tx;
                      while(text_val[c]!='\0')
                      {
-                        rectangle(px,py,font_size_value,font_size_value);
+                        tx=font_size_value*c;
+                        rectangle(tx,0.0f,font_size_value,font_size_value);
                         //TODO: Temporary rectangles..Later to render the glyphs
                         stroke();
                         c++;
-
-                        move_to(font_size_value*c,0.0f);
                      }
                  }
 

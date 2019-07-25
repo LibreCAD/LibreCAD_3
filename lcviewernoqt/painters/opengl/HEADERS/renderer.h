@@ -54,9 +54,14 @@ struct context_att
 class Renderer
 {
 private:   
-    std::vector<float> vertices;          // for vertex data
-    std::vector<unsigned int> indices;    //for indices data
+    std::vector< glm::vec3 > vertex_data;       // for vertex data
+    std::vector<int> jumps;
+    std::vector< glm::vec3 > current_vertices;  // for current shape(continous)
     
+    float path_distance;                  //distance(scalar) from start point to current
+    bool closed=false;
+
+
     Shaders_book shaders;
     
      glm::mat4 proj;                      //projection matrix
@@ -69,7 +74,7 @@ private:
 	GL_Entity* current_gl_entity = NULL;
 
 	Cacher* CH_Ptr;
-
+	
 public:
 
 	Renderer();
@@ -121,7 +126,7 @@ public:
 
 	void Add_Vertex(float x,float y,float z=0.0f);
 	
-	void Add_Padding();
+	void Append_Vertex_Data();
 
 	void Jump();
 

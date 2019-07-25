@@ -28,19 +28,20 @@ class Shape_Entity : public GL_Entity
 private:   
 	VertexArray VAO;
 	VertexBuffer VBO;
-	IndexBuffer IBO;                       // GPU Buffer Objects (vertex data)
-
+	
 	glm::mat4 _model;                      // model matrix
 
 	GLenum _render_mode;                   //mode for render
     GLenum _fill_mode;                     //mode for filling
     float _linewidth;                      //linewidth
+
+    std::vector<int> _jumps;
     
     Shader* _basic_shader;
 public:
 	Shape_Entity();
 	~Shape_Entity();
-	void LoadData(float* vertices,int size,unsigned int* indices,int count);
+	void LoadData(float* vertices,int size,std::vector<int> &jumps);
 	void ClearData();
     
 	void Bind();

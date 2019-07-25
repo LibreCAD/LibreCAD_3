@@ -6,7 +6,7 @@ using namespace lc::viewer::opengl;
      Cacher::Cacher()
      {
      	fill_mode=GL_LINE;
-        render_mode=GL_LINES;
+        render_mode=GL_LINE_STRIP_ADJACENCY;
 
         model=glm::mat4(1.0f);
 
@@ -71,21 +71,67 @@ using namespace lc::viewer::opengl;
 
 	//------------------------------------for properties ( painter calls)------------------------------------
   
-	void Cacher::Add_Vertex(float x,float y,float z)
-	{
-        vertices.push_back(x);
-	    vertices.push_back(-y);    //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
-	    vertices.push_back(z);
+	//###########################################################################
+void Cacher::Add_Vertex(float x,float y,float z)
+{
+  //Compute D.. (D=0 if current_vertices=empty) 
+  //              else D= distance(this.xy-current_vertices.xy)
+  current_vertices.push_back( glm::vec3(x,-y,z) );
+}
 
-        unsigned int l=(unsigned int)(indices.size());
-	    indices.push_back((l));
-	}
-	
+void Cacher::Append_Vertex_Data()
+{
+ if(current_vertices.size()>1)
+ {
+  if(closed==false)
+  {
+     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
+     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
+     vertex_data.push_back( *(current_vertices.rbegin()+1) );    // 2nd Last
+
+     jumps.push_back(current_vertices.size()+2);
+  }
+
+  else
+  {
+     vertex_data.push_back( *(current_vertices.rbegin()) );  // last
+     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
+     vertex_data.push_back( *(current_vertices.begin())  );    // 1st
+     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
+
+     jumps.push_back(current_vertices.size()+3);
+  }
+ }
+   current_vertices.clear();
+}
+
+void Cacher::Jump()
+{
+    Append_Vertex_Data();
+    closed=false;
+}
+
+
+void Cacher::Close_Loop()
+{
+  closed=true;
+}
+
+void Cacher::Clear_Data()
+{
+  closed=false;
+  vertex_data.clear();
+    current_vertices.clear();
+    jumps.clear();
+}
+
+
+	//---------------------------------------------------------------
 	void Cacher::Add_Data_To_GL_Entity()
 	{
-        current_gl_entity->LoadData(&vertices[0] , vertices.size()*sizeof(float) , 
-   	                           &indices[0]  , indices.size() );
+       Append_Vertex_Data();
 
+        current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(3*sizeof(float)) , jumps );
         current_gl_entity->SetModelMatrix(model);
 
          current_gl_entity->SetFillMode(fill_mode);
@@ -153,17 +199,11 @@ using namespace lc::viewer::opengl;
         current_gl_pack->Push_Entity_In_Pack( current_gl_entity );
     }
 
-    void Cacher::Clear_Data()
-    {
-       vertices.clear();
-	   indices.clear();
-    }
-
     void Cacher::Set_Default()
     {
     	Clear_Data();
         fill_mode=GL_LINE;
-        render_mode=GL_LINES;
+        render_mode=GL_LINE_STRIP_ADJACENCY;
 
         model=glm::mat4(1.0f);
     }

@@ -5,7 +5,7 @@ using namespace lc::viewer::opengl;
 Shape_Entity :: Shape_Entity()
 {
     _fill_mode=GL_LINE;
-    _render_mode=GL_LINES;
+    _render_mode=GL_LINE_STRIP_ADJACENCY;
     _linewidth=1.0f;
     _model=glm::mat4(1.0f);
 }
@@ -15,7 +15,7 @@ Shape_Entity::~Shape_Entity()
 	
 }
 
-void Shape_Entity::LoadData(float* vertices,int size,unsigned int* indices,int count)
+void Shape_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
 {
   
  //--------VAO-----------
@@ -25,7 +25,8 @@ void Shape_Entity::LoadData(float* vertices,int size,unsigned int* indices,int c
   VBO.Gen(vertices , size);
 
  //---------IB---------
-  IBO.Gen(indices, count );
+  //IBO.Gen(indices, count );
+  _jumps=jumps;
   
  //--------layout--------                  TODO: Here the layout is fixed (only for x,y,z coord)
   VertexBufferLayout layout;              // To be flexible with color, Texture
@@ -40,8 +41,7 @@ void Shape_Entity::Bind()
 {
 	//---------bind--------------
 	VBO.Bind();
-    VAO.Bind();
-    IBO.Bind();
+  VAO.Bind();
    
 }
 
@@ -50,7 +50,6 @@ void Shape_Entity::UnBind()
 	//---------unbind--------------
     VBO.UnBind();
     VAO.UnBind();
-    IBO.UnBind();
 }
 
 void Shape_Entity::ClearData()
@@ -111,7 +110,6 @@ void Shape_Entity::FreeGPU()
 {
   
   VBO.FreeGPU();
-  IBO.FreeGPU();
   VAO.FreeGPU();
 }
 
@@ -134,13 +132,15 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     this->Bind();
 
     //finally draw
-    /* glDrawElements( _render_mode,
-                    IBO.GetCount(),
-                    GL_UNSIGNED_INT,
-                    0 );
-                    */
-    glDrawArrays(_render_mode,0,IBO.GetCount());
-                    
+   
+    std::vector<int> :: iterator it;
+    int l=0;
+    for(it=_jumps.begin();it!=_jumps.end();it++)
+    {
+      glDrawArrays(_render_mode,l,*(it));
+      l+=*(it);
+
+    }          
 
    
 }

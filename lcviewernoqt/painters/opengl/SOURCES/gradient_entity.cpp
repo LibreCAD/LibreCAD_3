@@ -5,7 +5,7 @@ using namespace lc::viewer::opengl;
 
 Gradient_Entity :: Gradient_Entity()
 {
-    _fill_mode=GL_LINE;
+    _fill_mode=GL_LINE_STRIP_ADJACENCY;
     _render_mode=GL_LINES;
     _linewidth=1.0f;
     _model=glm::mat4(1.0f);
@@ -16,12 +16,13 @@ Gradient_Entity::~Gradient_Entity()
 	
 }
 
-void Gradient_Entity::LoadData(float* vertices,int size,unsigned int* indices,int count)
+void Gradient_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
 {
-  
+  int count=size/(3*sizeof(float));
   ApplyGradient(vertices,count);
   float* colored_vertices=&color_vertex_data[0];
   int new_size=color_vertex_data.size()*sizeof(float); 
+  _jumps=jumps;
 
  //--------VAO-----------
   VAO.Gen();
@@ -29,9 +30,6 @@ void Gradient_Entity::LoadData(float* vertices,int size,unsigned int* indices,in
  //--------VBO ------	
   VBO.Gen(colored_vertices , new_size);
 
- //---------IB---------
-  IBO.Gen(indices, count );
-  
  //--------layout--------                 
   VertexBufferLayout layout;              // To be flexible with color,
   layout.Push<float>(3);                  // (x,y,z)
@@ -47,8 +45,6 @@ void Gradient_Entity::Bind()
 	//---------bind--------------
 	  VBO.Bind();
     VAO.Bind();
-    IBO.Bind();
-   
 }
 
 void Gradient_Entity::UnBind()
@@ -56,7 +52,6 @@ void Gradient_Entity::UnBind()
 	//---------unbind--------------
     VBO.UnBind();
     VAO.UnBind();
-    IBO.UnBind();
 }
 
 void Gradient_Entity::ClearData()
@@ -146,9 +141,7 @@ void Gradient_Entity::ApplyGradient(float* vertices,int count)
 
 void Gradient_Entity::FreeGPU()
 {
-  
   VBO.FreeGPU();
-  IBO.FreeGPU();
   VAO.FreeGPU();
 }
 
@@ -170,11 +163,14 @@ void Gradient_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     this->Bind();
 
     //finally draw
-   /*  glDrawElements( _render_mode,
-                    IBO.GetCount(),
-                    GL_UNSIGNED_INT,
-                    0 );
-                    */
-   glDrawArrays(_render_mode,0,IBO.GetCount());
+ 
+    std::vector<int> :: iterator it;
+    int l=0;
+    for(it=_jumps.begin();it!=_jumps.end();it++)
+    {
+      glDrawArrays(_render_mode,l,*(it));
+      l+=*(it);
+    }          
+          
    
 }

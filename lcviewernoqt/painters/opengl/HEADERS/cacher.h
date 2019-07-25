@@ -33,8 +33,12 @@ namespace lc
 class Cacher
 {
 private:   
-    std::vector<float> vertices;          // for vertex data
-    std::vector<unsigned int> indices;    //for indices data
+    std::vector< glm::vec3 > vertex_data;       // for vertex data
+    std::vector<int> jumps;
+    std::vector< glm::vec3 > current_vertices;  // for current shape(continous)
+    
+    float path_distance;                  //distance(scalar) from start point to current
+    bool closed=false;
 
 	GLenum render_mode;                   //mode for render
     GLenum fill_mode;                     //mode for filling
@@ -77,10 +81,20 @@ public:
 
     double Get_Translate_Y();    
 
+    //---------------Functions manipulating vertex data(raw)----------------------
+
+    void Add_Vertex(float x,float y,float z=0.0f);
+    
+    void Append_Vertex_Data();
+
+    void Jump();
+
+    void Clear_Data();
+
+    void Close_Loop();
+
 	//------------------------------------for properties ( painter calls)------------------------------------
   
-	void Add_Vertex(float x,float y,float z=0.0f);
-	
 	void Add_Data_To_GL_Entity();
 
 	void Select_Fill(GLenum fill);
@@ -106,8 +120,6 @@ public:
     void Set_New_Gradient_Entity();
 
     void Push_Entity_In_Pack();
-
-    void Clear_Data();
 
     void Set_Default();
 
