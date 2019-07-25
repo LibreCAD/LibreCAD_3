@@ -12,17 +12,16 @@ setmetatable(LineOperations, {
 
 function LineOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.LineBuilder, "setFirstPoint")
-
     self.length = nil
-
-    message("Click on first point", id)
+    message("<b>LINE</b>", self.target_widget)
+    --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment", self.target_widget)  TODO: Multiple lines in single command.
+    message("Click on first point or enter coordinates:", self.target_widget)
 end
 
 function LineOperations:setFirstPoint(eventName, data)
     if(eventName == "point") then
         self.builder:setStartPoint(data["position"])
-        message("Click on second point or enter line length", self.target_widget)
-
+        message("Click on second point or enter coordinates or enter line length", self.target_widget)
         self.step = "setSecondPoint"
     end
 end
@@ -51,9 +50,10 @@ function LineOperations:setSecondPoint(eventName, data)
             local relativeCoordinate = lc.geo.Coordinate(angle):multiply(self.length)
             self.builder:setEndPoint(self.builder:startPoint():add(relativeCoordinate))
             self:createEntity()
+
         else
             self.length = data["number"]
-            message("Click on second point or enter line angle", self.target_widget)
+            message("Click on second point or enter coordinates or enter line angle", self.target_widget)
         end
     end
 end
