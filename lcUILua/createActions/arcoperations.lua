@@ -15,10 +15,10 @@ function ArcOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.ArcBuilder, "ArcWith3Points")
     cli_get_text(self.target_widget, true)
     self.builder:setRadius(10)
-    Arc_FirstPoint = nil
-    Arc_SecondPoint = nil
-    Arc_ThirdPoint = nil
-    Arc_Center = nil
+    self.Arc_FirstPoint = nil
+    self.Arc_SecondPoint = nil
+    self.Arc_ThirdPoint = nil
+    self.Arc_Center = nil
     message("<b>Arc</b>", self.target_widget)
     message("Options: <u>C</u>enter, or", self.target_widget)
     message("Provide Start Point:", self.target_widget)
