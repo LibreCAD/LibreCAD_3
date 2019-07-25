@@ -18,8 +18,43 @@ function CircleOperations:_init(id)
     self.secondpoint = nil
     self.thirdpoint = nil
     message("<b>CIRCLE</b>", self.target_widget)
-    message("Options: <u>2</u>P, <u>3</u>P, <u>T</u>TT, TT<u>R</u>", self.target_widget)
+    message("Options: <b><u>2</u>P</b>, <u>3</u>P, <u>T</u>TT, TT<u>R</u>", self.target_widget)
     message("Provide Center Point:", self.target_widget)
+end
+
+
+function CircleOperations:_init_cr()
+    message("<b>CIRCLE</b>", self.target_widget)
+    message("Provide Center Point:", self.target_widget)
+    self.step = "CircleWithCenterRadius"
+end
+
+function CircleOperations:_init_cd()
+    message("<b>CIRCLE</b>", self.target_widget)
+    message("Provide Center Point:", self.target_widget)
+    self.step = "CircleWithCenterDiameter"
+end
+
+function CircleOperations:_init_2p()
+    message("<b>CIRCLE</b>", self.target_widget)
+    message("Provide First Point:", self.target_widget)
+    self.step = "CircleWith2Points"
+end
+
+function CircleOperations:_init_3p()
+    message("<b>CIRCLE</b>", self.target_widget)
+    message("Provide First Point:", self.target_widget) 
+    self.step = "CircleWith3Points"
+end
+
+function CircleOperations:_init_3t()
+    message("<b>CIRCLE</b>", self.target_widget)
+    self.step = "CircleWith3Tans"
+end
+
+function CircleOperations:_init_2t()
+    message("<b>CIRCLE</b>", self.target_widget)
+    self.step = "CircleWith2Tans"
 end
 
 function CircleOperations:enterCenter(eventName, data)
@@ -33,13 +68,13 @@ function CircleOperations:enterCenter(eventName, data)
             message("Provide Diameter Start Point:",self.target_widget)
             self.step = "CircleWith2Points"
         elseif ((data["text"]) == "3" or string.lower(data["text"]) == "3p") then
-            message("Provide First Point:",self.target_widget)
+            message("Provide Frist Point:",self.target_widget)
             self.step = "CircleWith3Points"
         elseif (string.lower(data["text"]) == "t" or string.lower(data["text"]) == "ttt") then
-            message("Provide First Tangent:",self.target_widget)
+            message("Provide Frist Tangent:",self.target_widget)
             self.step = "CircleWith3Tans"
         elseif (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "ttr") then
-            message("Provide First Tangent:",self.target_widget)
+            message("Provide Frist Tangent:",self.target_widget)
             self.step = "CircleWith2Tans"
         end
     end
@@ -87,9 +122,42 @@ function CircleOperations:enterDiameter(eventName, data)
     end
 end
 
+function CircleOperations:CircleWithCenterRadius(eventName, data)
+    if (eventName == "point" and not self.centerPoint) then
+        self.centerPoint=data["position"]
+        self.builder:setCenter(data["position"])
+        message("Provide Radius:", self.target_widget)
+    elseif (eventName == "mouseMove" and self.centerPoint) then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"]))
+    elseif (eventName == "point" and self.centerPoint) then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"]))
+        self:createEntity()
+    elseif (eventName == "number" and self.centerPoint) then
+        self.builder:setRadius(data["number"])
+        self:createEntity()
+    end
+end
+
+function CircleOperations:CircleWithCenterDiameter(eventName, data)
+    if (eventName == "point" and not self.centerPoint) then
+        self.centerPoint=data["position"]
+        self.builder:setCenter(data["position"])
+        message("Provide Diameter:", self.target_widget)
+    elseif (eventName == "mouseMove" and self.centerPoint) then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"])/2)
+    elseif (eventName == "point" and self.centerPoint) then
+        self.builder:setRadius(self.builder:center():distanceTo(data["position"])/2)
+        self:createEntity()
+    elseif (eventName == "number" and self.centerPoint) then
+        self.builder:setRadius(data["number"]/2)
+        self:createEntity()
+    end
+end
+
 function CircleOperations:CircleWith2Points(eventName, data)
     if (eventName == "point" and not self.firstpoint) then
         self.firstpoint = data['position']
+        message("Provide Second Point:", self.target_widget)
     elseif (eventName == "mouseMove" and self.firstpoint) then
         self.builder:setCenter(self.firstpoint:mid(data["position"]))
         self.builder:setRadius(self.firstpoint:distanceTo(data["position"]) / 2)
@@ -97,7 +165,6 @@ function CircleOperations:CircleWith2Points(eventName, data)
         self.builder:setCenter(self.firstpoint:mid(data["position"]))
         self.builder:setRadius(self.firstpoint:distanceTo(data["position"]) / 2)
         self:createEntity()
-        self.firstpoint = nil
     end
 end
 
@@ -120,11 +187,13 @@ function CircleOperations:CircleWith3Points(eventName, data)
 end
 
 function CircleOperations:CircleWith3Tans(eventName, data)
-    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selecting of objects starts working this function can be coded.
+    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
+    finish_operation(self.target_widget)
 end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
-    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selecting of objects starts working this function can be coded.
+    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
+    finish_operation(self.target_widget)
 end
 
 function CircleOperations:Circumcenter(Point1,Point2,Point3)
