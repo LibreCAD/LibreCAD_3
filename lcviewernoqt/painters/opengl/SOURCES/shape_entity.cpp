@@ -24,8 +24,6 @@ void Shape_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
  //--------VBO ------	
   VBO.Gen(vertices , size);
 
- //---------IB---------
-  //IBO.Gen(indices, count );
   _jumps=jumps;
   
  //--------layout--------                  TODO: Here the layout is fixed (only for x,y,z coord)
