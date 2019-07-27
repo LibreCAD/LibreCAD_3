@@ -69,6 +69,9 @@ void Renderer::CreateShaderProgram()
   shaders.gradient_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
   shaders.gradient_shader->UnBind();
 
+  shaders.thickline_shader = new Shader();
+  shaders.thickline_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/thickline_shader.shader");
+  shaders.thickline_shader->UnBind();
 
   CH_Ptr->Set_Shader_Book(shaders);
 }
@@ -84,6 +87,14 @@ void Renderer::Set_Cacher_Ref(Cacher* ch)
 void Renderer::Update_projection(float l,float r,float b,float t)
 {
     proj=glm::ortho(l,r,b,t,-1.0f,1.0f);
+
+    if(shaders.thickline_shader!=NULL)
+    {
+      shaders.thickline_shader->Bind();
+      shaders.thickline_shader->SetUniform2f("WIN_SCALE",r,b);
+      shaders.thickline_shader->UnBind();
+    }
+    
 }
 
 void Renderer::Update_view()
@@ -222,7 +233,7 @@ void Renderer::Add_Vertex(float x,float y,float z)
 {
   //Compute D.. (D=0 if current_vertices=empty) 
   //              else D= distance(this.xy-current_vertices.xy)
-  current_vertices.push_back( glm::vec3(x,-y,z) );
+  current_vertices.push_back( glm::vec4(x,-y,z,0.0f) );
 }
 
 void Renderer::Append_Vertex_Data()
@@ -277,7 +288,7 @@ void Renderer::Add_Data_To_GL_Entity()
 {
     Append_Vertex_Data();
 
-   current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(3*sizeof(float)) , 
+   current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , 
    	                           jumps );
 }
 

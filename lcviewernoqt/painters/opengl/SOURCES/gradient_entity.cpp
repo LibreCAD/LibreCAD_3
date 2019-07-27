@@ -18,7 +18,7 @@ Gradient_Entity::~Gradient_Entity()
 
 void Gradient_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
 {
-  int count=size/(3*sizeof(float));
+  int count=size/(4*sizeof(float));
   ApplyGradient(vertices,count);
   float* colored_vertices=&color_vertex_data[0];
   int new_size=color_vertex_data.size()*sizeof(float); 
@@ -33,6 +33,7 @@ void Gradient_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
  //--------layout--------                 
   VertexBufferLayout layout;              // To be flexible with color,
   layout.Push<float>(3);                  // (x,y,z)
+  layout.Push<float>(1);                  // (d)
   layout.Push<float>(4);                  // (r,g,b,a)
 
  //--------attaching VB and (its)layout to VA---  
@@ -119,11 +120,12 @@ void Gradient_Entity::ApplyGradient(float* vertices,int count)
 
       for(int i=0;i<count;i++)
      {  
-        color_vertex_data.push_back( vertices[3*i]);    // X
-        color_vertex_data.push_back( vertices[3*i+1]);  // Y
-        color_vertex_data.push_back( vertices[3*i+2]);  // Z
+        color_vertex_data.push_back( vertices[4*i]);    // X
+        color_vertex_data.push_back( vertices[4*i+1]);  // Y
+        color_vertex_data.push_back( vertices[4*i+2]);  // Z
+        color_vertex_data.push_back( vertices[4*i+3]);  // d
 
-        Vp=glm::vec2( vertices[3*i] - (pattern->begin).x , vertices[3*i+1] - (pattern->begin).y);  //  Current point vector (P-Begin)
+        Vp=glm::vec2( vertices[4*i] - (pattern->begin).x , vertices[4*i+1] - (pattern->begin).y);  //  Current point vector (P-Begin)
         
         float dot_prod=glm::dot( Vg , Vp );              // dot product
 

@@ -26,9 +26,10 @@ void Shape_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
 
   _jumps=jumps;
   
- //--------layout--------                  TODO: Here the layout is fixed (only for x,y,z coord)
-  VertexBufferLayout layout;              // To be flexible with color, Texture
-  layout.Push<float>(3);
+ //--------layout--------                 
+  VertexBufferLayout layout;           
+  layout.Push<float>(3);      // (x,y,z)         
+  layout.Push<float>(1);      // (d)
 
  //--------attaching VB and (its)layout to VA---  
   VAO.AddBuffer(VBO,layout);
@@ -116,7 +117,7 @@ void Shape_Entity::FreeGPU()
 void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
 {
     //Set the Fill Mode
-    glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);
+    
 
     //Set the Width
    // glLineWidth(_linewidth);
@@ -135,7 +136,12 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     int l=0;
     for(it=_jumps.begin();it!=_jumps.end();it++)
     {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
       glDrawArrays(_render_mode,l,*(it));
+
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      glDrawArrays(_render_mode,l,*(it));
+
       l+=*(it);
 
     }          

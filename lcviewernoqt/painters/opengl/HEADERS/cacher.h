@@ -33,9 +33,9 @@ namespace lc
 class Cacher
 {
 private:   
-    std::vector< glm::vec3 > vertex_data;       // for vertex data
+    std::vector< glm::vec4 > vertex_data;       // for vertex data
     std::vector<int> jumps;
-    std::vector< glm::vec3 > current_vertices;  // for current shape(continous)
+    std::vector< glm::vec4 > current_vertices;  // for current shape(continous)
     
     float path_distance;                  //distance(scalar) from start point to current
     bool closed=false;

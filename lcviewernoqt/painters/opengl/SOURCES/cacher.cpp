@@ -76,7 +76,7 @@ void Cacher::Add_Vertex(float x,float y,float z)
 {
   //Compute D.. (D=0 if current_vertices=empty) 
   //              else D= distance(this.xy-current_vertices.xy)
-  current_vertices.push_back( glm::vec3(x,-y,z) );
+  current_vertices.push_back( glm::vec4(x,-y,z,0.0f) );
 }
 
 void Cacher::Append_Vertex_Data()
@@ -131,7 +131,7 @@ void Cacher::Clear_Data()
 	{
        Append_Vertex_Data();
 
-        current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(3*sizeof(float)) , jumps );
+        current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
         current_gl_entity->SetModelMatrix(model);
 
          current_gl_entity->SetFillMode(fill_mode);
