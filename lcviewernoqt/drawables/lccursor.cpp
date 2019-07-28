@@ -44,7 +44,7 @@ void Cursor::onDraw(event::DrawEvent const & event) const {
 //        x = event.mousePosition().x();
 //        y = event.mousePosition().y();
     }
-   // event.painter().stroke();
+  
     event.painter().save();
     event.painter().disable_antialias();
 
