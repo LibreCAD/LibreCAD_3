@@ -104,12 +104,13 @@ gl_Position = vec4(  2.0f*(p2 - length_b * miter_b) / WIN_SCALE, 0.0, 1.0 );
 
 #version 330 core
 
+out vec4 out_Color;
 uniform vec4 u_Color;
 
 void main() 
 { 
 
-   gl_FragColor = u_Color;
+   out_Color = u_Color;
  
    
 } 
