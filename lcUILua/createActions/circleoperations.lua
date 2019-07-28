@@ -12,13 +12,15 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init(id)
     CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
-    cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
+    --cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
+    cli_command_active(self.target_widget, true)
+
     self.builder:setRadius(10)
     self.firstpoint = nil
     self.secondpoint = nil
     self.thirdpoint = nil
     message("<b>CIRCLE</b>", self.target_widget)
-    message("Options: <b><u>2</u>P</b>, <u>3</u>P, <u>T</u>TT, TT<u>R</u>", self.target_widget)
+    message("Options: <b><u>2P</u>oint</b>, <u>3P</u>oint, <u>T</u>TT, TT<u>R</u>", self.target_widget)
     message("Provide Center Point:", self.target_widget)
 end
 
@@ -64,10 +66,10 @@ function CircleOperations:enterCenter(eventName, data)
         message("Provide Radius:", self.target_widget)
         self.step = "enterRadius"
     elseif(eventName == "text") then
-        if ((data["text"]) == "2" or string.lower(data["text"]) == "2p") then
+        if ((data["text"]) == "2p" or string.lower(data["text"]) == "2point") then
             message("Provide Diameter Start Point:",self.target_widget)
             self.step = "CircleWith2Points"
-        elseif ((data["text"]) == "3" or string.lower(data["text"]) == "3p") then
+        elseif ((data["text"]) == "3p" or string.lower(data["text"]) == "3point") then
             message("Provide Frist Point:",self.target_widget)
             self.step = "CircleWith3Points"
         elseif (string.lower(data["text"]) == "t" or string.lower(data["text"]) == "ttt") then
