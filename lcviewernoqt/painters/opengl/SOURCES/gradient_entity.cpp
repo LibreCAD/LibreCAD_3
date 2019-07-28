@@ -5,8 +5,8 @@ using namespace lc::viewer::opengl;
 
 Gradient_Entity :: Gradient_Entity()
 {
-    _fill_mode=GL_LINE_STRIP_ADJACENCY;
-    _render_mode=GL_LINES;
+    _fill_mode=GL_FILL;
+    _render_mode=GL_TRIANGLE_FAN;
     _linewidth=1.0f;
     _model=glm::mat4(1.0f);
 }
@@ -16,7 +16,7 @@ Gradient_Entity::~Gradient_Entity()
 	
 }
 
-void Gradient_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
+void Gradient_Entity::LoadVertexData(float* vertices,int size,std::vector<int> &jumps)
 {
   int count=size/(4*sizeof(float));
   ApplyGradient(vertices,count);
@@ -55,14 +55,9 @@ void Gradient_Entity::UnBind()
     VAO.UnBind();
 }
 
-void Gradient_Entity::ClearData()
+void Gradient_Entity::SetType(Shaders_book& shaders)
 {
-
-}
-
-void Gradient_Entity::SetShader(Shader* shader)
-{
-   _gradient_shader=shader;
+     _gradient_shader=shaders.gradient_shader;
 }
 
 void Gradient_Entity::SetModelMatrix(glm::mat4 model)
@@ -70,14 +65,10 @@ void Gradient_Entity::SetModelMatrix(glm::mat4 model)
    _model=model;
 }
 
-void Gradient_Entity::SetRenderMode(GLenum rendermode)
-{
-   _render_mode=rendermode;
-}
 
-void Gradient_Entity::SetFillMode(GLenum fillmode)
+void Gradient_Entity::SetFillMode(bool fill)
 {
-   _fill_mode=fillmode;
+   //No need (gradient entity is always filled till now) ( can be changed later ;) )
 }
 
 void Gradient_Entity::SetLineWidth(float width)

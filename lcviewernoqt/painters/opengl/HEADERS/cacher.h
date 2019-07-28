@@ -39,12 +39,13 @@ private:
     
     float path_distance;                  //distance(scalar) from start point to current
     bool closed=false;
-
-	GLenum render_mode;                   //mode for render
-    GLenum fill_mode;                     //mode for filling
-    
+    //--------------------------------------------
+	 
     glm::mat4 model;                     //model matrix
-   
+
+    float line_width;
+    bool fill=false;
+    //--------------------------------------------
    
 	GL_Entity* current_gl_entity;
 	GL_Pack* current_gl_pack;
@@ -59,7 +60,7 @@ public:
 
 	~Cacher();
 
-    void Set_Shader_Book(struct Shaders_book book);
+    void Set_Shader_Book(struct Shaders_book& book);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
@@ -95,11 +96,9 @@ public:
 
 	//------------------------------------for properties ( painter calls)------------------------------------
   
-	void Add_Data_To_GL_Entity();
+	void Add_Data_To_GL_Entity();                      
 
-	void Select_Fill(GLenum fill);
-
-	void Select_Render_Mode(GLenum mode);
+	void Select_Fill();
 
     void Select_Color(float R,float G,float B,float A);
 

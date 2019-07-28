@@ -19,22 +19,24 @@ namespace lc
 		namespace opengl
 		{
 
+enum Entity_Type{
+        BASIC=0,FILL=1,THICK=2,PATTERN=3,GRADIENT=4,TEXT=5
+    };
 
 class GL_Entity
 {
 
 public:
 	virtual ~GL_Entity() = default;
-	virtual void LoadData(float* vertices,int size,std::vector<int> &jumps) = 0;
-	virtual void ClearData() = 0;
-    
+	virtual void LoadVertexData(float* vertices,int size,std::vector<int> &jumps) = 0;
+	
 	virtual void Bind() = 0;
 	virtual void UnBind() = 0;
     
-    virtual void SetShader(Shader* shader) = 0;
+    virtual void SetType(Shaders_book& shaders) = 0;
 	virtual void SetModelMatrix(glm::mat4 model) = 0;
-	virtual void SetRenderMode(GLenum rendermode) = 0;
-	virtual void SetFillMode(GLenum fillmode) = 0;
+	
+	virtual void SetFillMode(bool fill) = 0;
 	virtual void SetLineWidth(float width) = 0;
 	virtual void SetColor(float R,float G,float B,float A) = 0;
 

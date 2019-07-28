@@ -5,9 +5,7 @@ using namespace lc::viewer::opengl;
 
      Cacher::Cacher()
      {
-     	fill_mode=GL_LINE;
-        render_mode=GL_LINE_STRIP_ADJACENCY;
-
+     	
         model=glm::mat4(1.0f);
 
         Ready_Fresh_GL_Pack();
@@ -20,7 +18,7 @@ using namespace lc::viewer::opengl;
 
 	}
 
-    void Cacher::Set_Shader_Book(struct Shaders_book book)
+    void Cacher::Set_Shader_Book(struct Shaders_book& book)
     {
         shaders=book;
     }
@@ -120,6 +118,7 @@ void Cacher::Close_Loop()
 void Cacher::Clear_Data()
 {
   closed=false;
+  fill=false;
   vertex_data.clear();
     current_vertices.clear();
     jumps.clear();
@@ -131,25 +130,17 @@ void Cacher::Clear_Data()
 	{
        Append_Vertex_Data();
 
-        current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
+        current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
         current_gl_entity->SetModelMatrix(model);
+        current_gl_entity->SetLineWidth(line_width);
+        current_gl_entity->SetFillMode(fill);
+        current_gl_entity->SetType(shaders);
 
-         current_gl_entity->SetFillMode(fill_mode);
-         current_gl_entity->SetRenderMode(render_mode);
-         
-        
 	}
 
-	void Cacher::Select_Fill(GLenum fill)
+	void Cacher::Select_Fill()
 	{
-        fill_mode=fill;
-      
-	}
-
-	void Cacher::Select_Render_Mode(GLenum mode)
-	{
-        render_mode=mode;
-       
+        fill=true;  
 	}
 
     void Cacher::Select_Color(float R,float G,float B,float A)
@@ -159,7 +150,8 @@ void Cacher::Clear_Data()
 
     void Cacher::Select_Line_Width(float width)
     {
-       // Till now dont need to be cached
+       line_width=width;
+       
     }
 
     //--------------------------gradient--------------------------------
@@ -185,13 +177,13 @@ void Cacher::Clear_Data()
     void Cacher::Set_New_Shape_Entity()
     {
         current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetShader(shaders.basic_shader);
+        current_gl_entity->SetType(shaders);
     }
 
     void Cacher::Set_New_Gradient_Entity()
     {
         current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetShader(shaders.gradient_shader);
+        current_gl_entity->SetType(shaders);
     }
 
     void Cacher::Push_Entity_In_Pack()
@@ -202,9 +194,7 @@ void Cacher::Clear_Data()
     void Cacher::Set_Default()
     {
     	Clear_Data();
-        fill_mode=GL_LINE;
-        render_mode=GL_LINE_STRIP_ADJACENCY;
-
+       
         model=glm::mat4(1.0f);
     }
 

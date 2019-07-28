@@ -61,6 +61,8 @@ private:
     float path_distance;                  //distance(scalar) from start point to current
     bool closed=false;
 
+    float line_width;
+    bool fill=false;
 
     Shaders_book shaders;
     
@@ -146,9 +148,7 @@ public:
 
 	void Add_Data_To_GL_Entity();
 
-	void Select_Fill(GLenum fill);
-
-	void Select_Render_Mode(GLenum mode);
+	void Select_Fill();
 
     void Select_Color(float R,float G,float B,float A);
 

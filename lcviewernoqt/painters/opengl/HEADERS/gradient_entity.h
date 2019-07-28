@@ -30,6 +30,8 @@ struct Linear_Pattern
    std::vector < glm::vec4 > color_points;
 };
 
+
+
 class Gradient_Entity : public GL_Entity
 {
 private:   
@@ -51,16 +53,15 @@ private:
 public:
 	Gradient_Entity();
 	~Gradient_Entity();
-	void LoadData(float* vertices,int size,std::vector<int> &jumps);
-	void ClearData();
-    
+	void LoadVertexData(float* vertices,int size,std::vector<int> &jumps);
+	
 	void Bind();
 	void UnBind();
     
-    void SetShader(Shader* shader);
+    void SetType(Shaders_book& shaders);
 	void SetModelMatrix(glm::mat4 model);
-	void SetRenderMode(GLenum rendermode);
-	void SetFillMode(GLenum fillmode);
+	
+	void SetFillMode(bool fill);
 	void SetLineWidth(float width);
 	void SetColor(float R,float G,float B,float A);
 

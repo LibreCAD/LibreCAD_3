@@ -117,6 +117,7 @@ void Grid::draw(event::DrawEvent const & event) const {
     event.painter().source_rgba(1., 0., 0., 1.);
     event.painter().stroke();
 
+    
     event.painter().move_to(0., -originSize);
     event.painter().line_to(0., originSize);
     event.painter().source_rgba(0., 1., 0., 1.);

@@ -207,7 +207,6 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
    
     LcDrawOptions lcDrawOptions;
     event::DrawEvent drawEvent(painter, lcDrawOptions, visibleUserArea);
-   
 
     switch(type) {
         case VIEWER_BACKGROUND: {
@@ -249,12 +248,9 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                     cacheEntity((di->entity())->id(), di);
                  }
             };
-            //painter.line_width(1.);
-            //painter.source_rgb(1., 1., 1.);
-            //painter.lineWidthCompensation(0.);  
-            //painter.clear(0.133,0.545,0.133); 
-           
-           
+            painter.line_width(1.);
+            painter.source_rgb(1., 1., 1.);
+            painter.lineWidthCompensation(0.); 
             break;
         }
 
@@ -434,17 +430,6 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
     // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
     double alpha_compensation = 0.9;
 
-    // Decide on line width
-    // We multiply for now by 3 to ensure that 1mm lines will still appear thicker on screen
-    // TODO: Find a better algo
-    double width = drawWidth(ci, insert) * 1.5;
-
-    // Is this correct? May be we should decide on a different minimum width then 0.1, because may be on some devices 0.11 isn't visible?
-    painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
-
-    auto path = drawLinePattern(ci, insert, width);
-    painter.set_dash(&path[0], path.size(), 0., true);
-
     // Decide what color to render the entity into
 
     auto color = drawColor(ci, insert, drawable->selected());
@@ -484,6 +469,7 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     //=======PICK the caching painter instance=============
           LcPainter* cachepainter=(*_painterPtr).getCacherpainter();
     //=====================================================
+     cachepainter->startcaching();
     cachepainter->save();
 
     lc::entity::CADEntity_CSPtr ci = drawable->entity();
@@ -515,7 +501,7 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
 
     //===========Here caching happens==============
  //qDebug(" XXXXXXXXXX CACHE ENTITY  XXXXXX ID=%u",id);
-    cachepainter->startcaching();
+   
     drawable->draw( (*cachepainter), lcDrawOptions, visibleUserArea);
     cachepainter->finishcaching(id);
     cachepainter->restore();  

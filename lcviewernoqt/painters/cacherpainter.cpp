@@ -250,8 +250,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::fill()
                  {
-                     _cacher.Select_Fill(GL_FILL);
-                     _cacher.Select_Render_Mode(GL_TRIANGLE_FAN);
+                     _cacher.Select_Fill();
                  }
 
                  void LcCacherPainter::point(double x, double y, double size, bool deviceCoords)

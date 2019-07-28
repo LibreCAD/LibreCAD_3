@@ -25,32 +25,41 @@ namespace lc
 
 class Shape_Entity : public GL_Entity
 {
+
 private:   
-	VertexArray VAO;
+	VertexArray VAO;                       //GPU Buffers
 	VertexBuffer VBO;
 	
+	std::vector<int> _jumps;               //vector to store jumps
+
 	glm::mat4 _model;                      // model matrix
 
 	GLenum _render_mode;                   //mode for render
     GLenum _fill_mode;                     //mode for filling
-    float _linewidth;                      //linewidth
 
-    std::vector<int> _jumps;
+    float _linewidth;                      //linewidth
     
-    Shader* _basic_shader;
+    float* _dashes;                        //to store dash gap
+    float _sum_dashes;                     //total sum of dash-gap
+    
+    
+    Shader* _shader;                 //Shader to be used
+
+    Entity_Type _type;                     // Type of entity ( basic/filled/thick/pattern)
+
 public:
+	
 	Shape_Entity();
 	~Shape_Entity();
-	void LoadData(float* vertices,int size,std::vector<int> &jumps);
-	void ClearData();
-    
+	void LoadVertexData(float* vertices,int size,std::vector<int> &jumps);
+	
 	void Bind();
 	void UnBind();
     
-    void SetShader(Shader* shader);
+    void SetType(Shaders_book& shaders);
 	void SetModelMatrix(glm::mat4 model);
-	void SetRenderMode(GLenum rendermode);
-	void SetFillMode(GLenum fillmode);
+	
+	void SetFillMode(bool fill);
 	void SetLineWidth(float width);
 	void SetColor(float R,float G,float B,float A);
 

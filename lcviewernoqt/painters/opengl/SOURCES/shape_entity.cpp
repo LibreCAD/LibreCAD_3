@@ -6,8 +6,17 @@ Shape_Entity :: Shape_Entity()
 {
     _fill_mode=GL_LINE;
     _render_mode=GL_LINE_STRIP_ADJACENCY;
-    _linewidth=1.0f;
+    
     _model=glm::mat4(1.0f);
+
+    _linewidth=1.0f;
+    _dashes=NULL;                     
+    _sum_dashes=0.0f;                
+    
+    _type=Entity_Type::BASIC;  
+    _shader=NULL;          
+
+      
 }
 
 Shape_Entity::~Shape_Entity()
@@ -15,7 +24,7 @@ Shape_Entity::~Shape_Entity()
 	
 }
 
-void Shape_Entity::LoadData(float* vertices,int size,std::vector<int> &jumps)
+void Shape_Entity::LoadVertexData(float* vertices,int size,std::vector<int> &jumps)
 {
   
  //--------VAO-----------
@@ -51,14 +60,28 @@ void Shape_Entity::UnBind()
     VAO.UnBind();
 }
 
-void Shape_Entity::ClearData()
+void Shape_Entity::SetType(Shaders_book& shaders)
 {
+    if( _type == Entity_Type::BASIC )         // By default
+    {
+      _shader=shaders.basic_shader;
+      _fill_mode=GL_LINE;
+      _render_mode=GL_LINE_STRIP_ADJACENCY;
+    }
 
-}
+  else if( _type == Entity_Type::FILL )         // Filled shape
+   {
+     _shader=shaders.basic_shader;
+     _fill_mode=GL_FILL;
+     _render_mode=GL_TRIANGLE_FAN;
+   }
 
-void Shape_Entity::SetShader(Shader* shader)
-{
-   _basic_shader=shader;
+  else if( _type == Entity_Type::THICK )         // Thickline
+   {
+     _shader=shaders.thickline_shader;
+     _fill_mode=GL_FILL;
+     _render_mode=GL_LINE_STRIP_ADJACENCY;
+   }
 }
 
 void Shape_Entity::SetModelMatrix(glm::mat4 model)
@@ -66,27 +89,28 @@ void Shape_Entity::SetModelMatrix(glm::mat4 model)
    _model=model;
 }
 
-void Shape_Entity::SetRenderMode(GLenum rendermode)
-{
-   _render_mode=rendermode;
-}
 
-void Shape_Entity::SetFillMode(GLenum fillmode)
+void Shape_Entity::SetFillMode(bool fill)
 {
-   _fill_mode=fillmode;
+  if(fill==true)
+   _type = Entity_Type::FILL;      // Will set the type to FILL
 }
 
 void Shape_Entity::SetLineWidth(float width)
 {
     _linewidth=width;
+    
+    if(width>1.0f)
+     {
+       _type = Entity_Type::THICK;   // if width>1 change type to THICK
+     } 
+
 }
 
 
 void Shape_Entity::SetColor(float R,float G,float B,float A)
 {
-  _basic_shader->Bind();
-  _basic_shader->SetUniform4f("u_Color",R,G,B,A);
-  _basic_shader->UnBind();
+ 
 }
 
 void Shape_Entity::AddLinearGradient(float x0,float y0,float x1,float y1)
@@ -117,15 +141,18 @@ void Shape_Entity::FreeGPU()
 void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
 {
     //Set the Fill Mode
-    
+    glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);
+      
 
-    //Set the Width
-   // glLineWidth(_linewidth);
-    
+    _shader->Bind();
+   
     //compute the MVP matrix ( received -V ,-P  .. already have -M)
     glm::mat4 mvp=_proj * _view * _model;
-    _basic_shader->Bind();
-    _basic_shader->SetUniformMat4f("u_MVP",mvp);
+   
+    _shader->SetUniformMat4f("u_MVP",mvp);  // Set MVP
+
+     if( _type == Entity_Type::THICK )      //Set the Width (if it is THICK)
+    _shader->SetUniform1f("u_W",_linewidth);
   
     // Bind this Entity
     this->Bind();
@@ -136,10 +163,6 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     int l=0;
     for(it=_jumps.begin();it!=_jumps.end();it++)
     {
-      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-      glDrawArrays(_render_mode,l,*(it));
-
-      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       glDrawArrays(_render_mode,l,*(it));
 
       l+=*(it);

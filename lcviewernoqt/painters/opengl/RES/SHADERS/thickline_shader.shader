@@ -34,7 +34,7 @@ vec2 screen_space(vec4 vertex)
 
 void main(void)
 {
- float THICKNESS=(u_W-1.0f)/2.0f;
+ float THICKNESS=(u_W)/2.0f;
    
   // get the four vertices passed to the shader:
   vec2 p0 = screen_space(gl_in[0].gl_Position );   // start of previous segment

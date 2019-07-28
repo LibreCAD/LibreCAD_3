@@ -298,8 +298,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::fill()
                  {
-                      RND.Select_Fill(GL_FILL);
-                      RND.Select_Render_Mode(GL_TRIANGLE_FAN);
+                      RND.Select_Fill();
                  }
 
                  void LcOpenGLPainter::point(double x, double y, double size, bool deviceCoords)

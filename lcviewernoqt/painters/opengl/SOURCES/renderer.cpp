@@ -212,7 +212,7 @@ void Renderer::Add_New_Shape_Entity()
 	delete current_gl_entity;
 
 	current_gl_entity = new Shape_Entity();
-  current_gl_entity->SetShader(shaders.basic_shader);
+  current_gl_entity->SetType(shaders);
 }
 
 void Renderer::Add_New_Gradient_Entity()
@@ -224,7 +224,7 @@ void Renderer::Add_New_Gradient_Entity()
   delete current_gl_entity;
 
   current_gl_entity = new Gradient_Entity();
-  current_gl_entity->SetShader(shaders.gradient_shader);
+  current_gl_entity->SetType(shaders);
 }
 
 //-------------------------------------------
@@ -277,6 +277,7 @@ void Renderer::Close_Loop()
 void Renderer::Clear_Data()
 {
   closed=false;
+  fill=false;
   vertex_data.clear();
 	current_vertices.clear();
 	jumps.clear();
@@ -288,28 +289,34 @@ void Renderer::Add_Data_To_GL_Entity()
 {
     Append_Vertex_Data();
 
-   current_gl_entity->LoadData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , 
-   	                           jumps );
+   current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
+   current_gl_entity->SetLineWidth(line_width);
+   current_gl_entity->SetFillMode(fill);
+   current_gl_entity->SetType(shaders);
+
 }
 
-void Renderer::Select_Fill(GLenum fill)
+void Renderer::Select_Fill()
 {
-	 current_gl_entity->SetFillMode(fill);
-}
-
-void Renderer::Select_Render_Mode(GLenum mode)
-{
-   current_gl_entity->SetRenderMode(mode);
+  fill=true;
 }
 
 void Renderer::Select_Line_Width(float width)
 {
-	 current_gl_entity->SetLineWidth(width);
+   line_width=width;
+	
 }
 
 void Renderer::Select_Color(float R,float G,float B,float A)
 {
-    current_gl_entity->SetColor(R,G,B,A);
+
+  shaders.basic_shader->Bind();
+  shaders.basic_shader->SetUniform4f("u_Color",R,G,B,A);
+  shaders.basic_shader->UnBind();
+
+  shaders.thickline_shader->Bind();
+  shaders.thickline_shader->SetUniform4f("u_Color",R,G,B,A);
+  shaders.thickline_shader->UnBind();
 }
 
 //---------------------gradient------------------------
