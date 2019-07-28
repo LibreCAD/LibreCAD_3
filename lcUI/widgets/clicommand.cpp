@@ -91,7 +91,7 @@ void CliCommand::onReturnPressed() {
         }
         else {
             /* Check for command status and nested command like 'zoom or 'pan which can run in between some other active command.*/
-            if ((_commandActive) && (text.at(0) != "'")) {
+            if ((_commandActive) && (text.indexOf("'") != 0)) {
                 emit textEntered(text);
             }
             else {
