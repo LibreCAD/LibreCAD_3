@@ -58,6 +58,12 @@ namespace lc {
                      */
                     void returnText(bool returnText);
 
+                    /**
+                     * \brief Command is on or off.
+                     * \param commandActive true when command is on, false when command is over
+                     */
+                    void commandActive(bool commandActive);
+
                 public slots:
 
                     /**
@@ -99,6 +105,7 @@ namespace lc {
                     std::shared_ptr<QCompleter> _completer;
                     std::shared_ptr<QStringListModel> _commands;
                     bool _returnText;
+                    bool _commandActive;
 
                     QStringList _history;
                     int _historySize;

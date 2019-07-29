@@ -21,6 +21,13 @@ function add_command(name, callback)
     end
 end
 
+--Coomand line command On/OFF
+function cli_command_active(id, status)
+    if cliCommands[id] ~= nil then
+        cliCommands[id]:commandActive(status)
+    end
+end
+
 --Configure command line to return raw text
 function cli_get_text(id, getText)
     if cliCommands[id] ~= nil then
