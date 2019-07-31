@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include "debug.h"
+
 #include <QtDebug>
 using namespace lc::viewer::opengl;
 
@@ -73,6 +74,10 @@ void Renderer::CreateShaderProgram()
   shaders.thickline_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/thickline_shader.shader");
   shaders.thickline_shader->UnBind();
 
+  shaders.linepattern_shader = new Shader();
+  shaders.linepattern_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/dash_pattern_shader.shader");
+  shaders.linepattern_shader->UnBind();
+
   CH_Ptr->Set_Shader_Book(shaders);
 }
 
@@ -86,6 +91,7 @@ void Renderer::Set_Cacher_Ref(Cacher* ch)
 
 void Renderer::Update_projection(float l,float r,float b,float t)
 {
+    projB=glm::ortho(-r/2,r/2,b/2,-b/2,-1.0f,1.0f);
     proj=glm::ortho(l,r,b,t,-1.0f,1.0f);
 
     if(shaders.thickline_shader!=NULL)
@@ -93,6 +99,13 @@ void Renderer::Update_projection(float l,float r,float b,float t)
       shaders.thickline_shader->Bind();
       shaders.thickline_shader->SetUniform2f("WIN_SCALE",r,b);
       shaders.thickline_shader->UnBind();
+    }
+
+    if(shaders.linepattern_shader!=NULL)
+    {
+      shaders.linepattern_shader->Bind();
+      shaders.linepattern_shader->SetUniform2f("WIN_SCALE",r,b);
+      shaders.linepattern_shader->UnBind();
     }
     
 }
@@ -108,6 +121,7 @@ void Renderer::Update_scale(float scale_f)
 {
 	ctm=glm::scale(ctm,glm::vec3(scale_f,scale_f,scale_f));	
 	view=ctm;
+
 }
 
 void Renderer::Update_translate(float x,float y)
@@ -190,6 +204,7 @@ void Renderer::Save()
 	context_att current_context;
 	current_context.ctm = this->ctm;
 	context_stack.push(current_context);
+
 }
 
 void Renderer::Restore()
@@ -233,7 +248,17 @@ void Renderer::Add_Vertex(float x,float y,float z)
 {
   //Compute D.. (D=0 if current_vertices=empty) 
   //              else D= distance(this.xy-current_vertices.xy)
-  current_vertices.push_back( glm::vec4(x,-y,z,0.0f) );
+  if(current_vertices.size()==0)
+    path_distance=0.0f;
+  else
+  {
+     glm::vec2 P=glm::vec2( (*(current_vertices.rbegin())) );
+     glm::vec2 Q=glm::vec2( x , -y);
+     float d=glm::length(P-Q);
+     path_distance+=d;
+  }
+  //qDebug("i=%d ( X=%f Y=%f ) dis=%f",current_vertices.size(),x,-y,path_distance);
+  current_vertices.push_back( glm::vec4(x,-y,z,path_distance) );
 }
 
 void Renderer::Append_Vertex_Data()
@@ -266,6 +291,7 @@ void Renderer::Jump()
 {
     Append_Vertex_Data();
     closed=false;
+    path_distance=0.0f;
 }
 
 
@@ -278,6 +304,7 @@ void Renderer::Clear_Data()
 {
   closed=false;
   fill=false;
+  path_distance=0.0f;
   vertex_data.clear();
 	current_vertices.clear();
 	jumps.clear();
@@ -290,9 +317,11 @@ void Renderer::Add_Data_To_GL_Entity()
     Append_Vertex_Data();
 
    current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
-   current_gl_entity->SetLineWidth(line_width);
-   current_gl_entity->SetFillMode(fill);
-   current_gl_entity->SetType(shaders);
+   
+    current_gl_entity->SetLineWidth(line_width);        // ALERT:
+    current_gl_entity->SetDashes(dashes,dashes_size);   // THIS Order
+    current_gl_entity->SetFillMode(fill);               // Is Fixed!!!
+    current_gl_entity->SetType(shaders);
 
 }
 
@@ -307,6 +336,12 @@ void Renderer::Select_Line_Width(float width)
 	
 }
 
+void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled)
+{
+   //TODO: to copy dashes
+   dashes_size=num_dashes;
+}
+
 void Renderer::Select_Color(float R,float G,float B,float A)
 {
 
@@ -317,6 +352,10 @@ void Renderer::Select_Color(float R,float G,float B,float A)
   shaders.thickline_shader->Bind();
   shaders.thickline_shader->SetUniform4f("u_Color",R,G,B,A);
   shaders.thickline_shader->UnBind();
+
+  shaders.linepattern_shader->Bind();
+  shaders.linepattern_shader->SetUniform4f("u_Color",R,G,B,A);
+  shaders.linepattern_shader->UnBind();
 }
 
 //---------------------gradient------------------------
@@ -339,7 +378,7 @@ void Renderer::Render()
       Add_Data_To_GL_Entity();
       
       // Send the proj & view matrix needed to draw
-      current_gl_entity->Draw(proj,view);
+      current_gl_entity->Draw(proj,projB,view);
 
       //Free the GPU memory
       current_gl_entity->FreeGPU();
@@ -356,7 +395,7 @@ void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
     
      Save();
 	 
-       cached_entity->Draw(proj,view);
+       cached_entity->Draw(proj,projB,view);
  
      Restore();
    

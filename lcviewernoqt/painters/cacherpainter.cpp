@@ -270,7 +270,12 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::set_dash(const double* dashes, const int num_dashes, double offset, bool scaled)
                  {
+                    _cacher.Select_Dashes(dashes,num_dashes,offset,scaled);
+                 }
 
+                 void LcCacherPainter::dash_destroy()
+                 {
+                    _cacher.Select_Dashes(NULL,0,0,false);
                  }
 
                  long LcCacherPainter::image_create(const std::string& file)

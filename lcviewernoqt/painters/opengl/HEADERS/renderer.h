@@ -62,11 +62,13 @@ private:
     bool closed=false;
 
     float line_width;
+    double *dashes; int dashes_size;
     bool fill=false;
 
     Shaders_book shaders;
     
      glm::mat4 proj;                      //projection matrix
+     glm::mat4 projB;
      glm::mat4 view;                      //view matrix for pan
      glm::mat4 ctm;          
 
@@ -153,6 +155,8 @@ public:
     void Select_Color(float R,float G,float B,float A);
 
     void Select_Line_Width(float width);
+
+    void Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled);
 
     //--------------------------for gradient entity----------------------------
 

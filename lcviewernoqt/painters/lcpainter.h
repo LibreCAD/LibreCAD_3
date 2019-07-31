@@ -105,7 +105,9 @@ namespace lc {
 
                 //        virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) = 0;
                 virtual void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) = 0;
-
+                
+                virtual void dash_destroy() = 0;
+                
                 virtual long image_create(const std::string& file) = 0;
 
                 virtual void image_destroy(long image) = 0;

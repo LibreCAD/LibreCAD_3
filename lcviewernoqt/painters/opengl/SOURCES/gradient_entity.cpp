@@ -76,6 +76,10 @@ void Gradient_Entity::SetLineWidth(float width)
     _linewidth=width;
 }
 
+void Gradient_Entity::SetDashes(const double* dashes, const int num_dashes)
+{
+  
+}
 
 void Gradient_Entity::SetColor(float R,float G,float B,float A)
 {
@@ -139,7 +143,7 @@ void Gradient_Entity::FreeGPU()
 }
 
 
-void Gradient_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
+void Gradient_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
     //Set the Fill Mode
     glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);

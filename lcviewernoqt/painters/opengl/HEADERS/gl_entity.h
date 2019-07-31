@@ -38,6 +38,7 @@ public:
 	
 	virtual void SetFillMode(bool fill) = 0;
 	virtual void SetLineWidth(float width) = 0;
+	virtual void SetDashes(const double* dashes, const int num_dashes) = 0;
 	virtual void SetColor(float R,float G,float B,float A) = 0;
 
     virtual void AddLinearGradient(float x0,float y0,float x1,float y1) = 0;
@@ -47,7 +48,7 @@ public:
 	
 	virtual void FreeGPU() = 0;
 
-	virtual void Draw(glm::mat4 proj,glm::mat4 view) = 0;
+	virtual void Draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) = 0;
 };
 
 

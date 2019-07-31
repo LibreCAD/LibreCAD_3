@@ -122,6 +122,8 @@ using namespace lc::viewer::opengl;
                  unsigned char* data();
 
                  void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled);
+                 
+                 void dash_destroy();
 
                  long image_create(const std::string& file);
 

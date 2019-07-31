@@ -39,7 +39,8 @@ private:
 
     float _linewidth;                      //linewidth
     
-    float* _dashes;                        //to store dash gap
+    std::vector<float> _dashes;             //to store dash gap
+    int _dashes_size;
     float _sum_dashes;                     //total sum of dash-gap
     
     
@@ -61,6 +62,7 @@ public:
 	
 	void SetFillMode(bool fill);
 	void SetLineWidth(float width);
+	void SetDashes(const double* dashes, const int num_dashes);
 	void SetColor(float R,float G,float B,float A);
 
     void AddLinearGradient(float x0,float y0,float x1,float y1);
@@ -70,7 +72,7 @@ public:
 	
 	void FreeGPU();
 
-	void Draw(glm::mat4 proj,glm::mat4 view);
+	void Draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
 };
 
 

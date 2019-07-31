@@ -10,8 +10,9 @@ Shape_Entity :: Shape_Entity()
     _model=glm::mat4(1.0f);
 
     _linewidth=1.0f;
-    _dashes=NULL;                     
-    _sum_dashes=0.0f;                
+                     
+    _sum_dashes=0.0f;  
+    _dashes_size=0;              
     
     _type=Entity_Type::BASIC;  
     _shader=NULL;          
@@ -67,6 +68,7 @@ void Shape_Entity::SetType(Shaders_book& shaders)
       _shader=shaders.basic_shader;
       _fill_mode=GL_LINE;
       _render_mode=GL_LINE_STRIP_ADJACENCY;
+      qDebug("--basic");
     }
 
   else if( _type == Entity_Type::FILL )         // Filled shape
@@ -74,6 +76,7 @@ void Shape_Entity::SetType(Shaders_book& shaders)
      _shader=shaders.basic_shader;
      _fill_mode=GL_FILL;
      _render_mode=GL_TRIANGLE_FAN;
+     qDebug("--filled");
    }
 
   else if( _type == Entity_Type::THICK )         // Thickline
@@ -81,6 +84,15 @@ void Shape_Entity::SetType(Shaders_book& shaders)
      _shader=shaders.thickline_shader;
      _fill_mode=GL_FILL;
      _render_mode=GL_LINE_STRIP_ADJACENCY;
+     qDebug("--thick");
+   }
+
+    else if( _type == Entity_Type::PATTERN )         // Pattern
+   {
+     _shader=shaders.linepattern_shader;
+     _fill_mode=GL_FILL;
+     _render_mode=GL_LINE_STRIP_ADJACENCY;
+     qDebug("--dashed");
    }
 }
 
@@ -105,6 +117,15 @@ void Shape_Entity::SetLineWidth(float width)
        _type = Entity_Type::THICK;   // if width>1 change type to THICK
      } 
 
+}
+
+void Shape_Entity::SetDashes(const double* dashes, const int num_dashes)
+{
+   if(num_dashes>0)
+   {
+      //TODO: copy dashes
+      _type = Entity_Type::PATTERN; 
+   }
 }
 
 
@@ -138,12 +159,11 @@ void Shape_Entity::FreeGPU()
 
 
 
-void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
+void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
     //Set the Fill Mode
     glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);
-      
-
+  
     _shader->Bind();
    
     //compute the MVP matrix ( received -V ,-P  .. already have -M)
@@ -151,8 +171,36 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
    
     _shader->SetUniformMat4f("u_MVP",mvp);  // Set MVP
 
+    //----------------------------------------------------------
+
      if( _type == Entity_Type::THICK )      //Set the Width (if it is THICK)
-    _shader->SetUniform1f("u_W",_linewidth);
+     {
+       _shader->SetUniform1f("u_W",_linewidth);
+     }
+
+
+    if(_type == Entity_Type::PATTERN )      // Set Width,projB,Dashes (If it is PATTERN)
+    {
+      _shader->SetUniform1f("u_W",_linewidth);
+
+      _view[3][0]=0;
+      _view[3][1]=0;  //neglect translations
+
+       glm::mat4 scale=glm::scale(glm::mat4(1.0f),glm::vec3(_view[2][2],_view[2][2],_view[2][2]));
+
+       _shader->SetUniformMat4f("u_X", (projB*scale) );  // Set u_X
+
+       float d[]={10.0f,10.0f,20.0f,20.0f};
+       float S=0;
+       for(int i=0;i<4;i++)
+         S+=d[i];
+
+      // SET the dashes
+      _shader->SetUniform1fv("dashes",4,&d[0]);
+      _shader->SetUniform1i("dashes_size",4);
+      _shader->SetUniform1f("dashes_sum",S);
+    
+    }
   
     // Bind this Entity
     this->Bind();
@@ -162,11 +210,9 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 _view)
     std::vector<int> :: iterator it;
     int l=0;
     for(it=_jumps.begin();it!=_jumps.end();it++)
-    {
+    {  
       glDrawArrays(_render_mode,l,*(it));
-
       l+=*(it);
-
     }          
 
    

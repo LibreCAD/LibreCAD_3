@@ -44,6 +44,7 @@ private:
     glm::mat4 model;                     //model matrix
 
     float line_width;
+    double *dashes; int dashes_size;
     bool fill=false;
     //--------------------------------------------
    
@@ -103,6 +104,9 @@ public:
     void Select_Color(float R,float G,float B,float A);
 
     void Select_Line_Width(float width);
+
+    void Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled);
+
 
     //----------------------------gradient------------------------------
 

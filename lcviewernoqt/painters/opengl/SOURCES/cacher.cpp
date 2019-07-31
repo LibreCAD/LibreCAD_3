@@ -74,7 +74,17 @@ void Cacher::Add_Vertex(float x,float y,float z)
 {
   //Compute D.. (D=0 if current_vertices=empty) 
   //              else D= distance(this.xy-current_vertices.xy)
-  current_vertices.push_back( glm::vec4(x,-y,z,0.0f) );
+  if(current_vertices.size()==0)
+    path_distance=0.0f;
+  else
+  {
+     glm::vec2 P=glm::vec2( (*(current_vertices.rbegin())) );
+     glm::vec2 Q=glm::vec2( x , -y);
+     float d=glm::length(P-Q);
+     path_distance+=d;
+  }
+  
+  current_vertices.push_back( glm::vec4(x,-y,z,path_distance) );
 }
 
 void Cacher::Append_Vertex_Data()
@@ -107,6 +117,7 @@ void Cacher::Jump()
 {
     Append_Vertex_Data();
     closed=false;
+    path_distance=0.0f;
 }
 
 
@@ -119,6 +130,7 @@ void Cacher::Clear_Data()
 {
   closed=false;
   fill=false;
+  path_distance=0.0f;
   vertex_data.clear();
     current_vertices.clear();
     jumps.clear();
@@ -131,9 +143,11 @@ void Cacher::Clear_Data()
        Append_Vertex_Data();
 
         current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
-        current_gl_entity->SetModelMatrix(model);
-        current_gl_entity->SetLineWidth(line_width);
-        current_gl_entity->SetFillMode(fill);
+        current_gl_entity->SetModelMatrix(model);          
+        
+        current_gl_entity->SetLineWidth(line_width);        // ALERT:
+        current_gl_entity->SetDashes(dashes,dashes_size);   // THIS Order
+        current_gl_entity->SetFillMode(fill);               // Is Fixed!!!
         current_gl_entity->SetType(shaders);
 
 	}
@@ -152,6 +166,12 @@ void Cacher::Clear_Data()
     {
        line_width=width;
        
+    }
+
+    void Cacher::Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled)
+    {
+        //TODO: to copy dashes
+        dashes_size=num_dashes;
     }
 
     //--------------------------gradient--------------------------------

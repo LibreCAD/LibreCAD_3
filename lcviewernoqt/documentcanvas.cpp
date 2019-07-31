@@ -62,7 +62,7 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         double dashes[] = {10.0, 3.0, 3.0, 3.0};
         painter.save();
         painter.disable_antialias();
-        painter.line_width(1.0);
+        painter.line_width(2.0);
 
         if (occupies) {
             painter.source_rgba(.2, .2, 1.0, .6);
@@ -84,9 +84,10 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         else {
             painter.source_rgba(.2, 1.0, .2, 0.8);
         }
-
+         painter.source_rgba(1, 1, 1, 1);
         painter.set_dash(dashes, 4, 0, true);
         painter.stroke();
+        painter.dash_destroy();
         painter.restore();
     };
 
@@ -401,7 +402,8 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
    
     drawable->draw(painter, lcDrawOptions, visibleUserArea);
 
-    painter.restore();  
+    painter.restore();
+    painter.dash_destroy();  
 }
 
 void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPtr& drawable,
@@ -505,6 +507,7 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     drawable->draw( (*cachepainter), lcDrawOptions, visibleUserArea);
     cachepainter->finishcaching(id);
     cachepainter->restore();  
+    cachepainter->dash_destroy();
     //===============================================
     
 }

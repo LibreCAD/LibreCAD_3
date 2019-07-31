@@ -320,7 +320,12 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::set_dash(const double* dashes, const int num_dashes, double offset, bool scaled)
                  {
+                      RND.Select_Dashes(dashes,num_dashes,offset,scaled);
+                 }
 
+                 void LcOpenGLPainter::dash_destroy()
+                 {
+                      RND.Select_Dashes(NULL,0,0,false);
                  }
 
                  long LcOpenGLPainter::image_create(const std::string& file)
