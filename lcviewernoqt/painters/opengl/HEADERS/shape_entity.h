@@ -40,7 +40,7 @@ private:
     float _linewidth;                      //linewidth
     
     std::vector<float> _dashes;             //to store dash gap
-    int _dashes_size;
+    int _dashes_size=0;
     float _sum_dashes;                     //total sum of dash-gap
     
     

@@ -122,7 +122,8 @@ void Shape_Entity::SetLineWidth(float width)
 void Shape_Entity::SetDashes(const double* dashes, const int num_dashes)
 {
    if(num_dashes>0)
-   {
+   {  
+      _dashes_size=num_dashes;
       //TODO: copy dashes
       _type = Entity_Type::PATTERN; 
    }
