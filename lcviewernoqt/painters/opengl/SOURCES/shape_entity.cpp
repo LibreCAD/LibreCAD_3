@@ -11,7 +11,7 @@ Shape_Entity :: Shape_Entity()
 
     _linewidth=1.0f;
                      
-    _sum_dashes=0.0f;  
+    _dashes_sum=0.0f;  
     _dashes_size=0;              
     
     _type=Entity_Type::BASIC;  
@@ -119,12 +119,14 @@ void Shape_Entity::SetLineWidth(float width)
 
 }
 
-void Shape_Entity::SetDashes(const double* dashes, const int num_dashes)
+void Shape_Entity::SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes)
 {
    if(num_dashes>0)
    {  
       _dashes_size=num_dashes;
-      //TODO: copy dashes
+      _dashes_sum=sum_dashes;
+      _dashes=dashes;
+     
       _type = Entity_Type::PATTERN; 
    }
 }
@@ -191,15 +193,10 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 
        _shader->SetUniformMat4f("u_X", (projB*scale) );  // Set u_X
 
-       float d[]={10.0f,10.0f,20.0f,20.0f};
-       float S=0;
-       for(int i=0;i<4;i++)
-         S+=d[i];
-
       // SET the dashes
-      _shader->SetUniform1fv("dashes",4,&d[0]);
-      _shader->SetUniform1i("dashes_size",4);
-      _shader->SetUniform1f("dashes_sum",S);
+      _shader->SetUniform1fv("dashes",_dashes_size,&_dashes[0]);
+      _shader->SetUniform1i("dashes_size",_dashes_size);
+      _shader->SetUniform1f("dashes_sum",_dashes_sum);
     
     }
   

@@ -13,6 +13,7 @@
 #include <utility>
 #include <iterator> 
 #include <map> 
+#include <cmath>
 
 #include "shape_entity.h"
 #include "gradient_entity.h"
@@ -44,7 +45,7 @@ private:
     glm::mat4 model;                     //model matrix
 
     float line_width;
-    double *dashes; int dashes_size;
+    std::vector<float> dashes_data; float dashes_sum; int dashes_size;
     bool fill=false;
     //--------------------------------------------
    

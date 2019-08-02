@@ -11,6 +11,7 @@
 
 #include <stack>
 #include <vector>
+#include <cmath>
 
 #include "gl_entity.h"
 #include "shape_entity.h"
@@ -62,7 +63,7 @@ private:
     bool closed=false;
 
     float line_width;
-    double *dashes; int dashes_size;
+    std::vector<float> dashes_data; float dashes_sum; int dashes_size;
     bool fill=false;
 
     Shaders_book shaders;

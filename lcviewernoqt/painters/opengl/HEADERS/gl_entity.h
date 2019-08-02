@@ -38,7 +38,7 @@ public:
 	
 	virtual void SetFillMode(bool fill) = 0;
 	virtual void SetLineWidth(float width) = 0;
-	virtual void SetDashes(const double* dashes, const int num_dashes) = 0;
+	virtual void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) = 0;
 	virtual void SetColor(float R,float G,float B,float A) = 0;
 
     virtual void AddLinearGradient(float x0,float y0,float x1,float y1) = 0;

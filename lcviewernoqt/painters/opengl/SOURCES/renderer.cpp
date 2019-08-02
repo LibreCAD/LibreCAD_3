@@ -318,9 +318,9 @@ void Renderer::Add_Data_To_GL_Entity()
 
    current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
    
-    current_gl_entity->SetLineWidth(line_width);        // ALERT:
-    current_gl_entity->SetDashes(dashes,dashes_size);   // THIS Order
-    current_gl_entity->SetFillMode(fill);               // Is Fixed!!!
+    current_gl_entity->SetLineWidth(line_width);                        // ALERT:
+    current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
+    current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
     current_gl_entity->SetType(shaders);
 
 }
@@ -338,8 +338,35 @@ void Renderer::Select_Line_Width(float width)
 
 void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled)
 {
-   //TODO: to copy dashes
-   dashes_size=num_dashes;
+  
+   if(num_dashes==0)
+   {
+     dashes_size=0;
+     dashes_sum=0;
+     dashes_data.clear();
+   }
+
+   else
+   { 
+     int r;  float d;
+       if(num_dashes%2==0)
+       r=1;
+       else
+       r=2;
+       
+        while(r--)
+        { 
+            dashes_size+=num_dashes;   
+            for(int i=0;i<num_dashes;i++)
+            {
+              d=(float)(floor(dashes[i]+1));
+              dashes_sum+=d;
+              dashes_data.push_back(d);
+            }
+        }
+
+    }
+
 }
 
 void Renderer::Select_Color(float R,float G,float B,float A)

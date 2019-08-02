@@ -76,7 +76,7 @@ void Gradient_Entity::SetLineWidth(float width)
     _linewidth=width;
 }
 
-void Gradient_Entity::SetDashes(const double* dashes, const int num_dashes)
+void Gradient_Entity::SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes)
 {
   
 }

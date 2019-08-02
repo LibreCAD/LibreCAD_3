@@ -63,7 +63,7 @@ public:
 	
 	void SetFillMode(bool fill);
 	void SetLineWidth(float width);
-	void SetDashes(const double* dashes, const int num_dashes);
+	void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
 	void SetColor(float R,float G,float B,float A);
 
 	void AddLinearGradient(float x0,float y0,float x1,float y1);

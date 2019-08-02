@@ -41,7 +41,7 @@ private:
     
     std::vector<float> _dashes;             //to store dash gap
     int _dashes_size=0;
-    float _sum_dashes;                     //total sum of dash-gap
+    float _dashes_sum;                     //total sum of dash-gap
     
     
     Shader* _shader;                 //Shader to be used
@@ -62,7 +62,7 @@ public:
 	
 	void SetFillMode(bool fill);
 	void SetLineWidth(float width);
-	void SetDashes(const double* dashes, const int num_dashes);
+	void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
 	void SetColor(float R,float G,float B,float A);
 
     void AddLinearGradient(float x0,float y0,float x1,float y1);
