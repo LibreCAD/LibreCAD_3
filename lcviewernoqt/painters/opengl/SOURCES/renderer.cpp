@@ -79,6 +79,9 @@ void Renderer::CreateShaderProgram()
   shaders.linepattern_shader->UnBind();
 
   CH_Ptr->Set_Shader_Book(shaders);
+
+    glEnable(GL_BLEND);  
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
 }
 
 void Renderer::Set_Cacher_Ref(Cacher* ch)
@@ -265,24 +268,33 @@ void Renderer::Append_Vertex_Data()
 {
  if(current_vertices.size()>1)
  {
-  if(closed==false)
+  if(fill==true)
   {
+     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
+     jumps.push_back(current_vertices.size());
+  }
+
+  else
+  {
+    if(closed==false)
+    {
      vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
      vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
      vertex_data.push_back( *(current_vertices.rbegin()+1) );    // 2nd Last
 
      jumps.push_back(current_vertices.size()+2);
-  }
+    }
 
-  else
-  {
+    else
+    {
      vertex_data.push_back( *(current_vertices.rbegin()) );  // last
      vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
      vertex_data.push_back( *(current_vertices.begin())  );    // 1st
      vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
 
      jumps.push_back(current_vertices.size()+3);
-  }
+    }
+   }
  }
    current_vertices.clear();
 }

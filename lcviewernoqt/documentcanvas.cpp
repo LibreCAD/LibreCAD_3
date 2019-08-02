@@ -84,7 +84,7 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         else {
             painter.source_rgba(.2, 1.0, .2, 0.8);
         }
-         painter.source_rgba(1, 1, 1, 1);
+         
         painter.set_dash(dashes, 4, 0, true);
         painter.stroke();
         painter.dash_destroy();
