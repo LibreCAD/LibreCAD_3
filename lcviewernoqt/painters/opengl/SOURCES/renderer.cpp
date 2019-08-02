@@ -46,7 +46,8 @@ GLenum glCheckError_(const char *file, int line)
 Renderer::Renderer()
 {
 	DebugMessage("Constructor Renderer");	
-   
+   dashes_sum=0; 
+   dashes_size=0;
    ctm=glm::mat4(1.0f);   
     view=ctm;
       
@@ -352,7 +353,7 @@ void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double 
 {
   
    if(num_dashes==0)
-   {
+   { 
      dashes_size=0;
      dashes_sum=0;
      dashes_data.clear();

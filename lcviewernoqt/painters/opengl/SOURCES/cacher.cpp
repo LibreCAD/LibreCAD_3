@@ -5,7 +5,8 @@ using namespace lc::viewer::opengl;
 
      Cacher::Cacher()
      {
-     	
+     	  dashes_sum=0; 
+        dashes_size=0;
         model=glm::mat4(1.0f);
 
         Ready_Fresh_GL_Pack();

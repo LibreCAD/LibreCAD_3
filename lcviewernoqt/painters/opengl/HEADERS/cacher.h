@@ -45,7 +45,7 @@ private:
     glm::mat4 model;                     //model matrix
 
     float line_width;
-    std::vector<float> dashes_data; float dashes_sum; int dashes_size;
+    std::vector<float> dashes_data; float dashes_sum=0; int dashes_size=0;
     bool fill=false;
     //--------------------------------------------
    
