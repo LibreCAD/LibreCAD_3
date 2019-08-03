@@ -37,6 +37,8 @@ AddLinePatternDialog::AddLinePatternDialog(lc::storage::Document_SPtr document, 
         connect(editButton, &QPushButton::pressed, this, &AddLinePatternDialog::onEditButtonPressed);
         ui->buttonLayout->addWidget(editButton);
     }
+
+    generatePreview();
 }
 
 void AddLinePatternDialog::generatePreview() {
