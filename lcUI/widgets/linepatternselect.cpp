@@ -141,6 +141,10 @@ void LinePatternSelect::on_addLinePatternEvent(const lc::event::AddLinePatternEv
     createEntries();
 
     setCurrentText(event.linePattern()->name().c_str());
+
+    if(_metaInfoManager != nullptr) {
+        _metaInfoManager->setLinePattern(linePattern());
+    }
 }
 
 void LinePatternSelect::on_removeLinePatternEvent(const lc::event::RemoveLinePatternEvent& event) {
