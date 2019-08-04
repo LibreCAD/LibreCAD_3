@@ -15,6 +15,7 @@ CliCommand::CliCommand(QWidget* parent) :
     QDockWidget(parent),
     ui(new Ui::CliCommand),
     _returnText(false),
+    _commandActive(false),
     _historySize(10),
     _historyIndex(-1) {
     ui->setupUi(this);
@@ -89,7 +90,13 @@ void CliCommand::onReturnPressed() {
             }
         }
         else {
-            enterCommand(text);
+            /* Check for command status and nested command like 'zoom or 'pan which can run in between some other active command.*/
+            if ((_commandActive) && (text.indexOf("'") != 0)) {
+                emit textEntered(text);
+            }
+            else {
+                enterCommand(text); 
+            }
         }
     }
 
@@ -197,4 +204,8 @@ void CliCommand::setText(const QString& text) {
 
 void CliCommand::returnText(bool returnText) {
     _returnText = returnText;
+}
+
+void CliCommand::commandActive(bool commandActive) {
+    _commandActive = commandActive;
 }

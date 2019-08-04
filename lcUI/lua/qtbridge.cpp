@@ -231,6 +231,7 @@ void addLCBindings(lua_State *L) {
 	        cliCommand->write(message);
 	    })
 	    .addFunction("returnText", &widgets::CliCommand::returnText)
+	    .addFunction("commandActive", &widgets::CliCommand::commandActive)
 	);
 
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
