@@ -33,25 +33,25 @@ function ArcOperations:ArcWith3Points(eventName, data)
             message("Invalid input:" .. data["text"] ,self.target_widget)
             message("Provide Radius:", self.target_widget)
         end
-    elseif (eventName == "point" and not Arc_FirstPoint) then
-        Arc_FirstPoint = data['position']
-        message("Provide Through Point:",self.target_widget)
-    elseif(eventName == "point" and Arc_FirstPoint and not Arc_SecondPoint) then
-        message("Provide End Point:",self.target_widget)
-        Arc_SecondPoint = data['position']
-    elseif(eventName == "mouseMove" and Arc_FirstPoint and Arc_SecondPoint and  not Arc_ThirdPoint) then
-        self.builder:setIsCCW(self:CheckCCW(Arc_FirstPoint,Arc_SecondPoint,data["position"]))
-        self.builder:setCenter(self:Circumcenter(Arc_FirstPoint,Arc_SecondPoint,data['position']))
+    elseif (eventName == "point" and not self.Arc_FirstPoint) then
+        self.Arc_FirstPoint = data['position']
+        message("Provide Through Point:", self.target_widget)
+    elseif(eventName == "point" and self.Arc_FirstPoint and not self.Arc_SecondPoint) then
+        message("Provide End Point:", self.target_widget)
+        self.Arc_SecondPoint = data['position']
+    elseif(eventName == "mouseMove" and self.Arc_FirstPoint and self.Arc_SecondPoint and not self.Arc_ThirdPoint) then
+        self.builder:setIsCCW(self:CheckCCW(self.Arc_FirstPoint, self.Arc_SecondPoint, data["position"]))
+        self.builder:setCenter(self:Circumcenter(self.Arc_FirstPoint, self.Arc_SecondPoint, data['position']))
         self.builder:setRadius(self.builder:center():distanceTo(data['position']))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), Arc_FirstPoint))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
         self.builder:setEndAngle(Operations:getAngle(self.builder:center(), data["position"]))
 
-    elseif(eventName == "point" and Arc_FirstPoint and Arc_SecondPoint and  not Arc_ThirdPoint) then
-        Arc_ThirdPoint = data['position']
-        self.builder:setIsCCW(self:CheckCCW(Arc_FirstPoint,Arc_SecondPoint,Arc_ThirdPoint))
-        self.builder:setCenter(self:Circumcenter(Arc_FirstPoint,Arc_SecondPoint,Arc_ThirdPoint))
-        self.builder:setRadius(self.builder:center():distanceTo(Arc_ThirdPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), Arc_FirstPoint))
+    elseif(eventName == "point" and self.Arc_FirstPoint and self.Arc_SecondPoint and not self.Arc_ThirdPoint) then
+        self.Arc_ThirdPoint = data['position']
+        self.builder:setIsCCW(self:CheckCCW(self.Arc_FirstPoint, self.Arc_SecondPoint, self.Arc_ThirdPoint))
+        self.builder:setCenter(self:Circumcenter(self.Arc_FirstPoint, self.Arc_SecondPoint, self.Arc_ThirdPoint))
+        self.builder:setRadius(self.builder:center():distanceTo(self.Arc_ThirdPoint))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
         self.builder:setEndAngle(Operations:getAngle(self.builder:center(), data["position"]))
         self:createEntity()
     end
@@ -60,19 +60,19 @@ end
 
 
 function ArcOperations:ArcWithCSE(eventName, data) -- Create Arc with Center Start and End Points.
-    if(eventName == "point" and not Arc_Center ) then
-        Arc_Center = data["position"]
+    if(eventName == "point" and not self.Arc_Center) then
+        self.Arc_Center = data["position"]
         self.builder:setCenter(data["position"])
         message("Provide Start Point:", self.target_widget)
-    elseif(eventName == "point" and  Arc_Center and not Arc_FirstPoint ) then
-        Arc_FirstPoint = data["position"]
+    elseif(eventName == "point" and self.Arc_Center and not self.Arc_FirstPoint) then
+        self.Arc_FirstPoint = data["position"]
         self.builder:setRadius(Operations:getDistance(self.builder:center(), data["position"]))
         message("Provide End Point:", self.target_widget)
-    elseif(eventName == "mouseMove" and  Arc_Center and Arc_FirstPoint and not Arc_ThirdPoint) then
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), Arc_FirstPoint))
+    elseif(eventName == "mouseMove" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_ThirdPoint) then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
         self.builder:setEndAngle(Operations:getAngle(self.builder:center(), data["position"]))
-    elseif(eventName == "point" and  Arc_Center and Arc_FirstPoint and not Arc_ThirdPoint) then
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), Arc_FirstPoint))
+    elseif(eventName == "point" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_ThirdPoint) then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
         self.builder:setEndAngle(Operations:getAngle(self.builder:center(), data["position"]))
         self:createEntity()
     end
