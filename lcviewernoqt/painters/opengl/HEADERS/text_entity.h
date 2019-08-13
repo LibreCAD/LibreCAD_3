@@ -30,6 +30,7 @@ private:
     std::string _text;
     Shader* _shader;                       //Shader to be used
     glm::mat4 _model;                      // model matrix
+    bool _no_magnify;
     GL_Font* _font=NULL;
     
 public:
@@ -56,7 +57,7 @@ public:
     
 
     void SetFont(Font_Book& fonts,const std::string& style);
-	void AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified);
+	void AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain);
 
 	
 	void FreeGPU();

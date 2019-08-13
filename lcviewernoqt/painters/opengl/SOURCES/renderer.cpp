@@ -234,9 +234,6 @@ void Renderer::Restore()
 
 void Renderer::Add_New_Shape_Entity()
 {
-  //Clear data in buffer(CPU)
-      Clear_Data();
-
 	if(current_gl_entity!=NULL)
 	delete current_gl_entity;
 
@@ -246,9 +243,6 @@ void Renderer::Add_New_Shape_Entity()
 
 void Renderer::Add_New_Gradient_Entity()
 {
-  //Clear data in buffer(CPU)
-      Clear_Data();
-
   if(current_gl_entity!=NULL)
   delete current_gl_entity;
 
@@ -258,9 +252,6 @@ void Renderer::Add_New_Gradient_Entity()
 
 void Renderer::Add_New_Text_Entity()
 {
-  //Clear data in buffer(CPU)
-      Clear_Data();
-
   if(current_gl_entity!=NULL)
   delete current_gl_entity;
 
@@ -318,7 +309,14 @@ void Renderer::Append_Vertex_Data()
     }
    }
  }
-   current_vertices.clear();
+
+ else if(current_vertices.size()==1)
+ {
+    vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
+     jumps.push_back(current_vertices.size());
+ }
+
+  current_vertices.clear();
 }
 
 void Renderer::Jump()
@@ -357,6 +355,7 @@ void Renderer::Add_Data_To_GL_Entity()
     current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
     current_gl_entity->SetType(shaders);
     current_gl_entity->SetFont(fonts,"arial");
+    current_gl_entity->AddTextData(vertex_data[0], "kartik", 0, false);
 }
 
 void Renderer::Select_Fill()
@@ -443,18 +442,12 @@ void Renderer::Render()
 
       //Free the GPU memory
       current_gl_entity->FreeGPU();
-
-     //  FB.Pick_Font("arial")->RenderText("123456789",proj,view,glm::mat4(1.0f),shaders.text_shader);
       
-     // FB.Pick_Font("arial")->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZ",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,100,0)),shaders.text_shader);
-      
-     // FB.Pick_Font("cac_champagne")->RenderText("abcdefghijklmnopqrstuvwxyz",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,200,0)),shaders.text_shader);
-
-     // FB.Pick_Font("cack_champagne")->RenderText("`~!@#$%^&*()_-+={[}]|;:'<,.>?/",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,300,0)),shaders.text_shader);
+      //Clear data in buffer(CPU)
+      Clear_Data();
 
       //Adding a new entity( Shape_entity )
-      Add_New_Shape_Entity();
-    
+      Add_New_Shape_Entity();    
 }
 
 void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)

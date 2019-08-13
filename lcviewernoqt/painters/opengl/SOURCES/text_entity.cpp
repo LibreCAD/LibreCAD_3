@@ -4,7 +4,8 @@ using namespace lc::viewer::opengl;
 
 Text_Entity :: Text_Entity()
 {
-    _shader=NULL;   
+    _shader=NULL;  
+    _no_magnify=false; 
     _model=glm::mat4(1.0f); 
     _text="LibreCAD 3.0";      
 }
@@ -83,9 +84,10 @@ void Text_Entity::SetFont(Font_Book& fonts,const std::string& style)
    _font= fonts.Pick_Font(style);  //default
 }
 
-void Text_Entity::AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified)
-{
-   // NO Need (Used by Text_Entity)
+void Text_Entity::AddTextData(glm::vec4 pos , const char* text_val , float font_size, bool retain)
+{   
+    _no_magnify=retain;
+    _model=glm::translate( _model,glm::vec3(pos.x,pos.y,pos.z));
 }
 
 
@@ -98,12 +100,16 @@ void Text_Entity::FreeGPU()
 void Text_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
     //Set the Fill Mode
-   // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  
-    //if not magnified
-   // _view=glm::scale(_view,glm::vec3(1.0f/_view[2][2],1.0f/_view[2][2],1.0f/_view[2][2]) );
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    
+    //making a temp model matrix 
+    glm::mat4 temp_model=_model;
+
+    // If not magnified
+    if(_no_magnify)
+    temp_model=glm::scale(temp_model,glm::vec3(1.0f/_view[2][2],1.0f/_view[2][2],1.0f/_view[2][2]) );
 
    //Finally Render Text
-    _font->RenderText( _text, _proj, _view, _model,_shader);
+    _font->RenderText( _text, _proj, _view, temp_model,_shader);
    
 }

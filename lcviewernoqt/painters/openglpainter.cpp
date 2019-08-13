@@ -47,7 +47,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
    device_height=(float)height;
 
    RND.Update_projection(0, device_width, device_height,0);
-   //RND.Reset_Transformations();   // optional
+   
    
  }
 

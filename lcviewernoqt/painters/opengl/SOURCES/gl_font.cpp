@@ -32,7 +32,7 @@ bool GL_Font::ReadyTTF(const std::string& path)
       qDebug("ERROR::FREETYPE: Failed to load font");  
   }
 
-   FT_Set_Pixel_Sizes(face, 0,128);  
+   FT_Set_Pixel_Sizes(face, 64,64);  
 
 
   float xpos,ypos,w,h;

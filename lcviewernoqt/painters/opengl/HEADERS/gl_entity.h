@@ -49,7 +49,7 @@ public:
     
 
     virtual void SetFont(Font_Book& fonts,const std::string& style) = 0;
-	virtual void AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified) = 0;
+	virtual void AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain) = 0;
 
 	
 	virtual void FreeGPU() = 0;

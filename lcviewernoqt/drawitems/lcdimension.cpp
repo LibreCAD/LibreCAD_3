@@ -124,8 +124,8 @@ void LCDimension::drawText(std::string const& value,
             alignX = - te.width / 2.0;
             break;
     }
-qDebug("----------------------------------dimension text----------------------");
-      qDebug("---translate--- tX= %f to tY= %f ",textlocation.x(),-textlocation.y());
+     qDebug("----------------------------------dimension text----------------------");
+     qDebug("---translate--- tX= %f to tY= %f ",textlocation.x(),-textlocation.y());
      painter.translate(textlocation.x(), -textlocation.y());
 
      qDebug("---rotate--- angle= %f",-newAngle);

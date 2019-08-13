@@ -125,7 +125,14 @@ void Cacher::Append_Vertex_Data()
     }
   }
  }
-   current_vertices.clear();
+
+ else if(current_vertices.size()==1)
+ {
+    vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
+     jumps.push_back(current_vertices.size());
+ }
+
+ current_vertices.clear();
 }
 
 void Cacher::Jump()
@@ -165,6 +172,7 @@ void Cacher::Clear_Data()
         current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
         current_gl_entity->SetType(shaders);
         current_gl_entity->SetFont(fonts,"arial");
+        current_gl_entity->AddTextData(vertex_data[0], "kartik", 0, false);
 
 	}
 
