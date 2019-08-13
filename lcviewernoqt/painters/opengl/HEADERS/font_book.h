@@ -1,0 +1,35 @@
+#ifndef GL_FONT_BOOK_H
+#define GL_FONT_BOOK_H
+#include "gl_font.h"
+#include <map>
+
+namespace lc
+{
+  namespace viewer
+  {
+    namespace opengl
+    {
+
+class Font_Book
+{
+   private:
+  
+  
+  std::map<const std::string, GL_Font* > _font_map;
+  GL_Font* _default_font=NULL;
+ public:
+   	Font_Book();
+   ~Font_Book();
+    bool Create_Default_TTF_Font(const std::string& name,const std::string& ttf_path);
+    bool Create_TTF_Font(const std::string& name,const std::string& ttf_path);
+    bool Create_MSDF_Font(const std::string& name,const std::string& msdf_path,const std::string& csv_path);
+    GL_Font* Pick_Font(const std::string& font_style);
+};
+
+   }
+
+  }
+
+ } 
+
+#endif // GL_FONT_H

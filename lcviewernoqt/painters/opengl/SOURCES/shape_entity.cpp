@@ -178,7 +178,7 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 
      if( _type == Entity_Type::THICK )      //Set the Width (if it is THICK)
      {
-       _shader->SetUniform1f("u_W",_linewidth);
+       _shader->SetUniform1f("u_W",_linewidth);  // If width is magnified.. _linewidth*_view[2][2]
      }
 
 

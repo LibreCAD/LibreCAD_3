@@ -19,6 +19,8 @@
 #include "shader.h"
 #include "gl_pack.h"
 #include "cacher.h"
+#include "gl_font.h"
+#include "font_book.h"
 
 namespace lc
 {
@@ -75,6 +77,8 @@ private:
 
 	
     std::stack < context_att > context_stack;
+
+    Font_Book FB;
     
 	GL_Entity* current_gl_entity = NULL;
 

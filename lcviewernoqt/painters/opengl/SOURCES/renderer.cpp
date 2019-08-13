@@ -50,7 +50,6 @@ Renderer::Renderer()
    dashes_size=0;
    ctm=glm::mat4(1.0f);   
     view=ctm;
-      
 }
 
 Renderer::~Renderer()
@@ -79,10 +78,21 @@ void Renderer::CreateShaderProgram()
   shaders.linepattern_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/dash_pattern_shader.shader");
   shaders.linepattern_shader->UnBind();
 
+  shaders.text_shader = new Shader();
+  shaders.text_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/text_shader.shader");
+  shaders.text_shader->UnBind();
+
   CH_Ptr->Set_Shader_Book(shaders);
 
-    glEnable(GL_BLEND);  
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);  
+  FB.Create_Default_TTF_Font("arial","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/arial.ttf");
+  FB.Create_TTF_Font("cac_champagne","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/cac_champagne.ttf");
+   
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_TEXTURE_2D);
+     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
 }
 
 void Renderer::Set_Cacher_Ref(Cacher* ch)
@@ -422,7 +432,15 @@ void Renderer::Render()
 
       //Free the GPU memory
       current_gl_entity->FreeGPU();
+
+      FB.Pick_Font("arial")->RenderText("123456789",proj,view,glm::mat4(1.0f),shaders.text_shader);
       
+     FB.Pick_Font("arial")->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZ",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,100,0)),shaders.text_shader);
+      
+     FB.Pick_Font("cac_champagne")->RenderText("abcdefghijklmnopqrstuvwxyz",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,200,0)),shaders.text_shader);
+
+     FB.Pick_Font("cack_champagne")->RenderText("`~!@#$%^&*()_-+={[}]|;:'<,.>?/",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,300,0)),shaders.text_shader);
+
       //Adding a new entity( Shape_entity )
       Add_New_Shape_Entity();
     
