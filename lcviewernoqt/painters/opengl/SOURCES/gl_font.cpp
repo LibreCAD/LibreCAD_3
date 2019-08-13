@@ -146,6 +146,8 @@ bool GL_Font::ReadyTTF(const std::string& path)
 
 void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat4 model,Shader* text_shader)
 {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     std::map<GLchar, Character>::iterator it;
     
     text_shader->Bind();

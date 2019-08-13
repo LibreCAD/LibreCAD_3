@@ -152,6 +152,17 @@ void Shape_Entity::ApplyGradient(float* vertices,int size)
    // NO Need (Used by Gradient_Entity)
 }
 
+void Shape_Entity::SetFont(Font_Book& fonts,const std::string& style)
+{
+   // NO Need (Used by Tex_Entity)
+}
+
+void Shape_Entity::AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified)
+{
+   // NO Need (Used by Text_Entity)
+}
+
+
 
 void Shape_Entity::FreeGPU()
 {

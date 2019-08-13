@@ -16,6 +16,7 @@
 #include "gl_entity.h"
 #include "shape_entity.h"
 #include "gradient_entity.h"
+#include "text_entity.h"
 #include "shader.h"
 #include "gl_pack.h"
 #include "cacher.h"
@@ -78,7 +79,7 @@ private:
 	
     std::stack < context_att > context_stack;
 
-    Font_Book FB;
+    Font_Book fonts;
     
 	GL_Entity* current_gl_entity = NULL;
 
@@ -152,6 +153,8 @@ public:
     void Add_New_Shape_Entity();
 
     void Add_New_Gradient_Entity();
+    
+    void Add_New_Text_Entity();
 
 	void Add_Data_To_GL_Entity();
 

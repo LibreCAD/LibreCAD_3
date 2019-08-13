@@ -77,7 +77,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::rotate(double r)
                  {
-                     _cacher.Update_rotate(-r);
+                     _cacher.Update_rotate(r);
                  }
 
                  void LcCacherPainter::arc(double x, double y, double r, double start, double end)
@@ -163,7 +163,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::translate(double x, double y)
                  {
-                      _cacher.Update_translate(x,-y );
+                      _cacher.Update_translate(x,y );
                  }
 
                  void LcCacherPainter::user_to_device(double* x, double* y)
@@ -198,7 +198,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::text(const char* text_val)
                  {
-                    
+                    _cacher.Set_New_Text_Entity();
                  }
 
                  TextExtends LcCacherPainter::text_extends(const char* text_val)
@@ -208,7 +208,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::quadratic_curve_to(double x1, double y1, double x2, double y2)
                  {
-
+                      
                  }
 
                  void LcCacherPainter::curve_to(double x1, double y1, double x2, double y2, double x3, double y3)

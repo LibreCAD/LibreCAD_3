@@ -17,9 +17,12 @@
 
 #include "shape_entity.h"
 #include "gradient_entity.h"
+#include "text_entity.h"
 #include "gl_entity.h"
 #include "gl_pack.h"
 #include "shader.h"
+#include "font_book.h"
+#include "gl_font.h"
 
 namespace lc
 {
@@ -53,6 +56,7 @@ private:
 	GL_Pack* current_gl_pack;
 
     Shaders_book shaders;
+    Font_Book fonts;
 
 	std::map < unsigned long, GL_Pack* > gl_pack_map;
 
@@ -63,6 +67,8 @@ public:
 	~Cacher();
 
     void Set_Shader_Book(struct Shaders_book& book);
+
+    void Set_Font_Book(Font_Book& book);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
@@ -122,6 +128,8 @@ public:
     void Set_New_Shape_Entity();
 
     void Set_New_Gradient_Entity();
+
+    void Set_New_Text_Entity();
 
     void Push_Entity_In_Pack();
 

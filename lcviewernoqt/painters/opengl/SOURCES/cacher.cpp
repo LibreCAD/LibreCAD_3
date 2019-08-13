@@ -24,6 +24,11 @@ using namespace lc::viewer::opengl;
         shaders=book;
     }
 
+    void Cacher::Set_Font_Book(Font_Book& book)
+    {
+        fonts=book;
+    }
+
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
 	void Cacher::Update_model()
@@ -159,6 +164,7 @@ void Cacher::Clear_Data()
         current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
         current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
         current_gl_entity->SetType(shaders);
+        current_gl_entity->SetFont(fonts,"arial");
 
 	}
 
@@ -238,6 +244,12 @@ void Cacher::Clear_Data()
     void Cacher::Set_New_Gradient_Entity()
     {
         current_gl_entity = new Shape_Entity();
+        current_gl_entity->SetType(shaders);
+    }
+
+    void Cacher::Set_New_Text_Entity()
+    {
+        current_gl_entity = new Text_Entity();
         current_gl_entity->SetType(shaders);
     }
 

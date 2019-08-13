@@ -84,9 +84,11 @@ void Renderer::CreateShaderProgram()
 
   CH_Ptr->Set_Shader_Book(shaders);
 
-  FB.Create_Default_TTF_Font("arial","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/arial.ttf");
-  FB.Create_TTF_Font("cac_champagne","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/cac_champagne.ttf");
+  fonts.Create_Default_TTF_Font("arial","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/arial.ttf");
+  fonts.Create_TTF_Font("cac_champagne","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/cac_champagne.ttf");
    
+  CH_Ptr->Set_Font_Book(fonts); 
+
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_TEXTURE_2D);
      glEnable(GL_CULL_FACE);
@@ -256,6 +258,18 @@ void Renderer::Add_New_Gradient_Entity()
   current_gl_entity->SetType(shaders);
 }
 
+void Renderer::Add_New_Text_Entity()
+{
+  //Clear data in buffer(CPU)
+      Clear_Data();
+
+  if(current_gl_entity!=NULL)
+  delete current_gl_entity;
+
+  current_gl_entity = new Text_Entity();
+  current_gl_entity->SetType(shaders);
+}
+
 //-------------------------------------------
 //###########################################################################
 void Renderer::Add_Vertex(float x,float y,float z)
@@ -271,7 +285,6 @@ void Renderer::Add_Vertex(float x,float y,float z)
      float d=glm::length(P-Q);
      path_distance+=d;
   }
-  //qDebug("i=%d ( X=%f Y=%f ) dis=%f",current_vertices.size(),x,-y,path_distance);
   current_vertices.push_back( glm::vec4(x,-y,z,path_distance) );
 }
 
@@ -345,7 +358,7 @@ void Renderer::Add_Data_To_GL_Entity()
     current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
     current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
     current_gl_entity->SetType(shaders);
-
+    current_gl_entity->SetFont(fonts,"arial");
 }
 
 void Renderer::Select_Fill()
@@ -433,13 +446,13 @@ void Renderer::Render()
       //Free the GPU memory
       current_gl_entity->FreeGPU();
 
-      FB.Pick_Font("arial")->RenderText("123456789",proj,view,glm::mat4(1.0f),shaders.text_shader);
+     //  FB.Pick_Font("arial")->RenderText("123456789",proj,view,glm::mat4(1.0f),shaders.text_shader);
       
-     FB.Pick_Font("arial")->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZ",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,100,0)),shaders.text_shader);
+     // FB.Pick_Font("arial")->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZ",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,100,0)),shaders.text_shader);
       
-     FB.Pick_Font("cac_champagne")->RenderText("abcdefghijklmnopqrstuvwxyz",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,200,0)),shaders.text_shader);
+     // FB.Pick_Font("cac_champagne")->RenderText("abcdefghijklmnopqrstuvwxyz",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,200,0)),shaders.text_shader);
 
-     FB.Pick_Font("cack_champagne")->RenderText("`~!@#$%^&*()_-+={[}]|;:'<,.>?/",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,300,0)),shaders.text_shader);
+     // FB.Pick_Font("cack_champagne")->RenderText("`~!@#$%^&*()_-+={[}]|;:'<,.>?/",proj,view,glm::translate(glm::mat4(1.0f),glm::vec3(0,300,0)),shaders.text_shader);
 
       //Adding a new entity( Shape_entity )
       Add_New_Shape_Entity();

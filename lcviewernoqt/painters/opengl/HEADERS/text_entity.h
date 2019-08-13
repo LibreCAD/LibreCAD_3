@@ -1,5 +1,5 @@
-#ifndef GRADIENT_ENTITY_H
-#define GRADIENT_ENTITY_H
+#ifndef TEXT_ENTITY_H
+#define TEXT_ENTITY_H
 #include <GL/glew.h>  
 #include <GL/gl.h>
 
@@ -7,13 +7,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <vector>
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
-#include "vertexarray.h"
-#include "vertexbufferlayout.h"
 #include "shader.h"
 #include "gl_entity.h"
+#include "gl_font.h"
+#include "font_book.h"
 
 
 namespace lc
@@ -23,36 +20,22 @@ namespace lc
 		namespace opengl
 		{
 
-struct Linear_Pattern
+
+class Text_Entity : public GL_Entity
 {
-   glm::vec2 begin;
-   glm::vec2 end;
-   std::vector < glm::vec4 > color_points;
-};
 
-
-
-class Gradient_Entity : public GL_Entity
-{
 private:   
-	VertexArray VAO;
-	VertexBuffer VBO;                       // GPU Buffer Objects (vertex data)
-                    
-
-	glm::mat4 _model;                      // model matrix
-
-	GLenum _render_mode;                   //mode for render
-    GLenum _fill_mode;                     //mode for filling
-    float _linewidth;                      //linewidth
+	
+    float px=0.0f,py=0.0f;
+    std::string _text;
+    Shader* _shader;                       //Shader to be used
+    glm::mat4 _model;                      // model matrix
+    GL_Font* _font=NULL;
     
-    std::vector<int> _jumps;
-    
-    Linear_Pattern* pattern;
-    std::vector<float> color_vertex_data;
-    Shader* _gradient_shader;
 public:
-	Gradient_Entity();
-	~Gradient_Entity();
+	
+	Text_Entity();
+	~Text_Entity();
 	void LoadVertexData(float* vertices,int size,std::vector<int> &jumps);
 	
 	void Bind();
@@ -65,14 +48,17 @@ public:
 	void SetLineWidth(float width);
 	void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
 	void SetColor(float R,float G,float B,float A);
+    
 
-	void AddLinearGradient(float x0,float y0,float x1,float y1);
+    void AddLinearGradient(float x0,float y0,float x1,float y1);
 	void AddGradientColorPoint(float R,float G,float B,float A);
 	void ApplyGradient(float* vertices,int size);
     
+
     void SetFont(Font_Book& fonts,const std::string& style);
 	void AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified);
 
+	
 	void FreeGPU();
 
 	void Draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
@@ -85,4 +71,4 @@ public:
 
 }
 
-#endif // SHAPE_ENTITY_H
+#endif // TEXT_ENTITY_H

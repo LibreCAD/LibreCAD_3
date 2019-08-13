@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "shader.h"
+#include "gl_font.h"
+#include "font_book.h"
 
 
 namespace lc
@@ -44,6 +46,10 @@ public:
     virtual void AddLinearGradient(float x0,float y0,float x1,float y1) = 0;
 	virtual void AddGradientColorPoint(float R,float G,float B,float A) = 0;
 	virtual void ApplyGradient(float* vertices,int size) = 0;
+    
+
+    virtual void SetFont(Font_Book& fonts,const std::string& style) = 0;
+	virtual void AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified) = 0;
 
 	
 	virtual void FreeGPU() = 0;

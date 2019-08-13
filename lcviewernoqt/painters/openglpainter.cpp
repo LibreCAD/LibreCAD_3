@@ -237,15 +237,7 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::text(const char* text_val)
                  {
-                     int c=0;  float tx;
-                     while(text_val[c]!='\0')
-                     {
-                        tx=font_size_value*c;
-                        rectangle(tx,0.0f,font_size_value,font_size_value);
-                        //TODO: Temporary rectangles..Later to render the glyphs
-                        stroke();
-                        c++;
-                     }
+                     RND.Add_New_Text_Entity();
                  }
 
                  TextExtends LcOpenGLPainter::text_extends(const char* text_val)

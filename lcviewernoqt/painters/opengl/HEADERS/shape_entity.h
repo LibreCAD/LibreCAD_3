@@ -68,6 +68,9 @@ public:
     void AddLinearGradient(float x0,float y0,float x1,float y1);
 	void AddGradientColorPoint(float R,float G,float B,float A);
 	void ApplyGradient(float* vertices,int size);
+    
+    void SetFont(Font_Book& fonts,const std::string& style);
+	void AddTextData(float pen_x,float pen_y, const char* text_val , float font_size, bool is_magnified);
 
 	
 	void FreeGPU();
