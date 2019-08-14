@@ -71,7 +71,7 @@ public:
 	void ApplyGradient(float* vertices,int size);
     
     void SetFont(Font_Book& fonts,const std::string& style);
-	void AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain);
+	void AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
 
 	void FreeGPU();
 

@@ -157,7 +157,7 @@ void Shape_Entity::SetFont(Font_Book& fonts,const std::string& style)
    // NO Need (Used by Tex_Entity)
 }
 
-void Shape_Entity::AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain)
+void Shape_Entity::AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain)
 {
    // NO Need (Used by Text_Entity)
 }
@@ -189,13 +189,16 @@ void Shape_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 
      if( _type == Entity_Type::THICK )      //Set the Width (if it is THICK)
      {
-       _shader->SetUniform1f("u_W",_linewidth);  // If width is magnified.. _linewidth*_view[2][2]
+      _shader->SetUniform1f("u_W",_linewidth);      
+      // _shader->SetUniform1f("u_W",std::max(_linewidth,_linewidth*_view[2][2] ) );  // If width is magnified.. 
      }
 
 
     if(_type == Entity_Type::PATTERN )      // Set Width,projB,Dashes (If it is PATTERN)
     {
       _shader->SetUniform1f("u_W",_linewidth);
+      //_shader->SetUniform1f("u_W",std::max(_linewidth,_linewidth*_view[2][2] ) );  // If width is magnified.. 
+    
 
       _view[3][0]=0;
       _view[3][1]=0;  //neglect translations

@@ -227,17 +227,18 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::font_size(double size, bool deviceCoords)
                  {
-                      font_size_value=size;
+                      RND.Select_Font_Size(size,deviceCoords);
                  }
 
                  void LcOpenGLPainter::select_font_face(const char* text_val)
                  {
-
+                      RND.Select_Font_Face(text_val);
                  }
 
                  void LcOpenGLPainter::text(const char* text_val)
                  {
                      RND.Add_New_Text_Entity();
+                     RND.Select_Font_Value(text_val);
                  }
 
                  TextExtends LcOpenGLPainter::text_extends(const char* text_val)

@@ -76,14 +76,14 @@ bool GL_Font::ReadyTTF(const std::string& path)
 
      glGenerateMipmap(GL_TEXTURE_2D);
 
-     qDebug("%d [ %c ] = %d , %d , %d , %d , %d , %d",c,c,
+    /* qDebug("%d [ %c ] = %d , %d , %d , %d , %d , %d",c,c,
                                                   face->glyph->bitmap.width,
                                                   face->glyph->bitmap.rows,
                                                   face->glyph->bitmap_left, 
                                                   face->glyph->bitmap_top,
                                                   face->glyph->advance.x,
                                                   face->glyph->advance.y);
-      
+      */
       //Now saving coordinate data for the glypph
 
        xpos =    (float)(face->glyph->bitmap_left);
@@ -151,15 +151,10 @@ void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
     std::map<GLchar, Character>::iterator it;
     
     text_shader->Bind();
-    text_shader->SetUniform4f("u_Color",1,1,0,1);
     text_shader->SetUniform1i("u_Texture",0);  // same slot of texture (optional)
 
     glActiveTexture(GL_TEXTURE0);
    
-   //if no magnification is required
-   // view=glm::scale(view,glm::vec3(1.0f/view[2][2],1.0f/view[2][2],1.0f/view[2][2]) );
-    
-
     // Iterate through all characters
     std::string::const_iterator c;
     for (c = text.begin(); c != text.end(); c++)
@@ -197,7 +192,7 @@ void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
         
     }
 
-    
+    text_shader->UnBind();
    
     
 }

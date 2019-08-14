@@ -7,7 +7,6 @@ Text_Entity :: Text_Entity()
     _shader=NULL;  
     _no_magnify=false; 
     _model=glm::mat4(1.0f); 
-    _text="LibreCAD 3.0";      
 }
 
 Text_Entity::~Text_Entity()
@@ -84,10 +83,14 @@ void Text_Entity::SetFont(Font_Book& fonts,const std::string& style)
    _font= fonts.Pick_Font(style);  //default
 }
 
-void Text_Entity::AddTextData(glm::vec4 pos , const char* text_val , float font_size, bool retain)
+void Text_Entity::AddTextData(glm::vec4 pos , std::string text_val , float font_size, bool retain)
 {   
+    _text=text_val;
     _no_magnify=retain;
-    _model=glm::translate( _model,glm::vec3(pos.x,pos.y,pos.z));
+
+    _model=glm::translate( _model,glm::vec3(pos.x,pos.y,pos.z));  // First Translate at pos
+
+    _model=glm::scale( _model,glm::vec3(font_size/64,font_size/64,font_size/64) );   // Scale according to font height
 }
 
 

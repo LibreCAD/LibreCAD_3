@@ -37,20 +37,30 @@ namespace lc
 class Cacher
 {
 private:   
+    //----------------------------------FOR VERTEX DATA------------
     std::vector< glm::vec4 > vertex_data;       // for vertex data
     std::vector<int> jumps;
     std::vector< glm::vec4 > current_vertices;  // for current shape(continous)
     
     float path_distance;                  //distance(scalar) from start point to current
     bool closed=false;
-    //--------------------------------------------
-	 
-    glm::mat4 model;                     //model matrix
-
+    
+    //------------------------------------FOR DASH DATA--------------
     float line_width;
     std::vector<float> dashes_data; float dashes_sum=0; int dashes_size=0;
     bool fill=false;
-    //--------------------------------------------
+    
+
+    //--------------------------------------FOR TEXT DATA-----------------
+
+    std::string text_value;
+    std::string font_style;
+    float text_height;
+    bool no_text_magnify;
+
+    //--------------------------------------------------------------
+
+    glm::mat4 model;                     //model matrix
    
 	GL_Entity* current_gl_entity;
 	GL_Pack* current_gl_pack;
@@ -114,6 +124,12 @@ public:
 
     void Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled);
 
+    
+    void Select_Font_Size(float size, bool deviceCoords);
+
+    void Select_Font_Face(const char* text_style);
+
+    void Select_Font_Value(const char* text_val);
 
     //----------------------------gradient------------------------------
 

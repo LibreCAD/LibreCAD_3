@@ -26,7 +26,6 @@ class Text_Entity : public GL_Entity
 
 private:   
 	
-    float px=0.0f,py=0.0f;
     std::string _text;
     Shader* _shader;                       //Shader to be used
     glm::mat4 _model;                      // model matrix
@@ -57,7 +56,7 @@ public:
     
 
     void SetFont(Font_Book& fonts,const std::string& style);
-	void AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain);
+	void AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
 
 	
 	void FreeGPU();

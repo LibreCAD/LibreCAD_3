@@ -140,7 +140,7 @@ void Gradient_Entity::SetFont(Font_Book& fonts,const std::string& style)
    // NO Need (Used by Tex_Entity)
 }
 
-void Gradient_Entity::AddTextData(glm::vec4 pos, const char* text_val , float font_size, bool retain)
+void Gradient_Entity::AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain)
 {
    // NO Need (Used by Text_Entity)
 }

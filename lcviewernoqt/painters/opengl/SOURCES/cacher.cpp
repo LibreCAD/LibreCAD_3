@@ -154,8 +154,9 @@ void Cacher::Clear_Data()
   fill=false;
   path_distance=0.0f;
   vertex_data.clear();
-    current_vertices.clear();
-    jumps.clear();
+  current_vertices.clear();
+  jumps.clear();
+
 }
 
 
@@ -171,9 +172,9 @@ void Cacher::Clear_Data()
         current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
         current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
         current_gl_entity->SetType(shaders);
-        current_gl_entity->SetFont(fonts,"arial");
-        current_gl_entity->AddTextData(vertex_data[0], "kartik", 0, false);
-
+        current_gl_entity->SetFont(fonts,font_style);
+        current_gl_entity->AddTextData(vertex_data[0], text_value, text_height, no_text_magnify);
+        
 	}
 
 	void Cacher::Select_Fill()
@@ -223,6 +224,23 @@ void Cacher::Clear_Data()
          }
     }
 
+    void Cacher::Select_Font_Size(float size, bool deviceCoords)
+    {
+        text_height=size;
+        no_text_magnify=deviceCoords;
+    }
+
+    void Cacher::Select_Font_Face(const char* text_style)
+    {
+        font_style=text_style;
+    }
+
+    void Cacher::Select_Font_Value(const char* text_val)
+    {
+        text_value=text_val;
+    }
+
+
     //--------------------------gradient--------------------------------
 
     void Cacher::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
@@ -271,6 +289,11 @@ void Cacher::Clear_Data()
     	Clear_Data();
        
         model=glm::mat4(1.0f);
+
+         font_style="arial";
+         text_value=" ";
+         text_height=12;
+         no_text_magnify=false;
     }
 
     void Cacher::Ready_For_Next_GL_Entity()

@@ -188,17 +188,19 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::font_size(double size, bool deviceCoords)
                  {
-                      
+                      _cacher.Select_Font_Size(size,deviceCoords);
                  }
 
                  void LcCacherPainter::select_font_face(const char* text_val)
                  {
-
+                      _cacher.Select_Font_Face(text_val);
                  }
 
                  void LcCacherPainter::text(const char* text_val)
                  {
-                    _cacher.Set_New_Text_Entity();
+                     _cacher.Set_New_Text_Entity();
+                     _cacher.Select_Font_Value(text_val);
+                    
                  }
 
                  TextExtends LcCacherPainter::text_extends(const char* text_val)

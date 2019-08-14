@@ -340,6 +340,7 @@ void Renderer::Clear_Data()
   vertex_data.clear();
 	current_vertices.clear();
 	jumps.clear();
+  
 }
 
 //----------------------------------------------------
@@ -354,8 +355,8 @@ void Renderer::Add_Data_To_GL_Entity()
     current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
     current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
     current_gl_entity->SetType(shaders);
-    current_gl_entity->SetFont(fonts,"arial");
-    current_gl_entity->AddTextData(vertex_data[0], "kartik", 0, false);
+    current_gl_entity->SetFont(fonts,font_style);
+    current_gl_entity->AddTextData(vertex_data[0], text_value, text_height, no_text_magnify);
 }
 
 void Renderer::Select_Fill()
@@ -416,7 +417,29 @@ void Renderer::Select_Color(float R,float G,float B,float A)
   shaders.linepattern_shader->Bind();
   shaders.linepattern_shader->SetUniform4f("u_Color",R,G,B,A);
   shaders.linepattern_shader->UnBind();
+
+  shaders.text_shader->Bind();
+  shaders.text_shader->SetUniform4f("u_Color",R,G,B,A);
+  shaders.text_shader->UnBind();
 }
+
+
+void Renderer::Select_Font_Size(float size, bool deviceCoords)
+{
+   text_height=size;
+   no_text_magnify=deviceCoords;
+}
+
+void Renderer::Select_Font_Face(const char* text_style)
+{
+   font_style=text_style;
+}
+
+void Renderer::Select_Font_Value(const char* text_val)
+{
+   text_value=text_val;
+}
+
 
 //---------------------gradient------------------------
 
@@ -431,7 +454,16 @@ void Renderer::Add_Gradient_Color_Point(float R,float G,float B,float A)
 }
 
 //----------------------------------------------------------
-      
+void Renderer::Set_Default()
+{
+      Clear_Data();
+     
+      font_style="arial";
+      text_value=" ";
+      text_height=12;
+      no_text_magnify=false;
+}
+
 void Renderer::Render()
 {
       //load data to current entity
@@ -444,7 +476,7 @@ void Renderer::Render()
       current_gl_entity->FreeGPU();
       
       //Clear data in buffer(CPU)
-      Clear_Data();
+      Set_Default();
 
       //Adding a new entity( Shape_entity )
       Add_New_Shape_Entity();    
