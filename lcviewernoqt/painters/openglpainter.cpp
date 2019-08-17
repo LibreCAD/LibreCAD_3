@@ -82,13 +82,16 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::move_to(double x, double y)
                  {
+
                         RND.Jump();
                         RND.Add_Vertex(x,y);
+                        pen_x=x;  pen_y=y;
                  }
 
                  void LcOpenGLPainter::line_to(double x, double y)
                  {
                         RND.Add_Vertex(x,y);
+                        pen_x=x;  pen_y=y;
                  }
 
                  void LcOpenGLPainter::lineWidthCompensation(double lwc) // When set, we add this to the current linewidth, perhaps we should find a better method
@@ -248,12 +251,38 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::quadratic_curve_to(double x1, double y1, double x2, double y2)
                  {
+                     double x0=pen_x; double y0=pen_y;
 
+                     long points=curve_points;
+                     float Px,Py,t; 
+
+                    for(int i=0;i<=points;i++)
+                    {
+                        t=((float)(i)/(float)(curve_points));
+                        Px=(1-t)*(1-t)*x0 + 2*t*(1-t)*x1 + t*t*x2;
+                        Py=(1-t)*(1-t)*y0 + 2*t*(1-t)*y1 + t*t*y2;
+                        RND.Add_Vertex(Px,Py);
+                    }
+
+                    pen_x=Px; pen_y=Py;
                  }
 
                  void LcOpenGLPainter::curve_to(double x1, double y1, double x2, double y2, double x3, double y3)
                  {
+                    double x0=pen_x; double y0=pen_y;
 
+                     long points=curve_points;
+                     float Px,Py,t; 
+
+                    for(int i=0;i<=points;i++)
+                    {
+                        t=((float)(i)/(float)(curve_points));
+                        Px=(1-t)*(1-t)*(1-t)*x0 + 3*t*(1-t)*(1-t)*x1  + 3*t*t*(1-t)*x2 + t*t*t*x3;
+                        Py=(1-t)*(1-t)*(1-t)*y0 + 3*t*(1-t)*(1-t)*y1  + 3*t*t*(1-t)*y2 + t*t*t*y3;
+                        RND.Add_Vertex(Px,Py);
+                    }
+
+                     pen_x=Px; pen_y=Py;
                  }
 
                  void LcOpenGLPainter::save()

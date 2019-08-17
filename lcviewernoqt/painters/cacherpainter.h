@@ -19,7 +19,7 @@ using namespace lc::viewer::opengl;
 
          class LcCacherPainter : public LcPainter 
         {
-            float px=0,py=0; //pen coordinates
+            float pen_x=0,pen_y=0; //pen coordinates
           
             double device_width=0.0;
             double device_height=0.0;
