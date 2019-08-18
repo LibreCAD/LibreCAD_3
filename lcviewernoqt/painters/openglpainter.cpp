@@ -169,6 +169,48 @@ void LcOpenGLPainter::ReadyShaderProgram()
 
                  void LcOpenGLPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra)
                  {
+                       RND.Jump();
+
+                      
+                        float SA= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
+                        float EA= atan( (rx/ry)* tan(ea) );
+
+                        if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
+                         SA+=PI;
+
+                        else if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
+                         SA+=2*PI;   
+
+                         if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
+                         EA+=PI;
+
+                        else if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
+                         EA+=2*PI;   
+
+
+                        float delta=(std::abs(EA-SA));
+                           if(ea==sa)                           // 360 full
+                            delta=2*PI;
+
+                        float A=0;
+                        long points=curve_points;
+                        float tx,ty,Tx,Ty;
+                        
+                        for(int i=0;i<=points;i++)
+                        {
+                            A=( ((float)i)/points)*(delta) + (SA);
+                           
+                            tx=rx*cos(A);                       // parametric equation
+                            ty=ry*sin(A);
+                            
+                            Tx=(tx*cos(ra) - ty*sin(ra)) + cx;  // first rotate then shift origin
+                            Ty=(tx*sin(ra) + ty*cos(ra)) + cy;
+
+                            RND.Add_Vertex( Tx , Ty );
+                            
+                        }
+
+
 
                  }
 
