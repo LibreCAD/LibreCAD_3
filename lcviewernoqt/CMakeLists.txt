@@ -18,6 +18,7 @@ find_package(Qt5UiTools REQUIRED)
     
     include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS")
     include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES")
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/RES")
 
 #-----------------------------------------
 
@@ -74,6 +75,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/font_book.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/cacher.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/renderer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shader.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.cpp
 
 )
 
@@ -141,6 +143,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/cacher.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/renderer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shader.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/debug.h
+${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.h
 )
 
 # --------------------temporary-------------------
@@ -163,6 +166,13 @@ include_directories(
 
 message(${OPENGL_INCLUDE_DIR})
 
+# creating res.cpp for path of opengl resources
+
+add_custom_command(
+        PRE_BUILD
+        OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.cpp
+        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
+)
 
  
 #--------------------------------------------------

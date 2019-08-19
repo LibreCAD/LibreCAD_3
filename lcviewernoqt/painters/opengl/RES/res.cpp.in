@@ -1,0 +1,17 @@
+#include "res.h"
+
+namespace lc
+{
+	namespace viewer
+	{
+		namespace opengl
+		{
+
+           const char* SHADER_PATH = "${SHADER_PATH}";
+           const char* FONT_PATH = "${FONT_PATH}";
+
+        }
+
+    }
+
+} 

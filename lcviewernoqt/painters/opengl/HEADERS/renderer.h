@@ -22,6 +22,7 @@
 #include "cacher.h"
 #include "gl_font.h"
 #include "font_book.h"
+#include "res.h"
 
 namespace lc
 {
@@ -89,6 +90,10 @@ private:
 	
     std::stack < context_att > context_stack;
     
+    //--------------------------------------------------------
+
+    std::string shader_path;
+    std::string font_path;
     Shaders_book shaders;
 
     Font_Book fonts;

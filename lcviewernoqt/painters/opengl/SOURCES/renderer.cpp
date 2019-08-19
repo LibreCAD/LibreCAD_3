@@ -48,8 +48,15 @@ Renderer::Renderer()
 	DebugMessage("Constructor Renderer");	
    dashes_sum=0; 
    dashes_size=0;
+   
    ctm=glm::mat4(1.0f);   
-    view=ctm;
+   view=ctm;
+
+   shader_path=SHADER_PATH;
+   font_path=FONT_PATH;
+    
+   DebugMessage(shader_path);
+   DebugMessage(font_path);
 }
 
 Renderer::~Renderer()
@@ -63,29 +70,29 @@ void Renderer::CreateShaderProgram()
 
 
   shaders.basic_shader = new Shader();
-  shaders.basic_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/basic_shader.shader");
+  shaders.basic_shader->Gen(shader_path+"basic_shader.shader");
   shaders.basic_shader->UnBind();
 
   shaders.gradient_shader = new Shader();
-  shaders.gradient_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/color_vertex_shader.shader");
+  shaders.gradient_shader->Gen(shader_path+"color_vertex_shader.shader");
   shaders.gradient_shader->UnBind();
 
   shaders.thickline_shader = new Shader();
-  shaders.thickline_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/thickline_shader.shader");
+  shaders.thickline_shader->Gen(shader_path+"thickline_shader.shader");
   shaders.thickline_shader->UnBind();
 
   shaders.linepattern_shader = new Shader();
-  shaders.linepattern_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/dash_pattern_shader.shader");
+  shaders.linepattern_shader->Gen(shader_path+"dash_pattern_shader.shader");
   shaders.linepattern_shader->UnBind();
 
   shaders.text_shader = new Shader();
-  shaders.text_shader->Gen("/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/SHADERS/text_shader.shader");
+  shaders.text_shader->Gen(shader_path+"text_shader.shader");
   shaders.text_shader->UnBind();
 
   CH_Ptr->Set_Shader_Book(shaders);
 
-  fonts.Create_Default_TTF_Font("arial","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/arial.ttf");
-  fonts.Create_TTF_Font("cac_champagne","/home/krixz/LC_PURE/GSoC/LibreCAD_3/lcviewernoqt/painters/opengl/RES/FONTS/TTF/cac_champagne.ttf");
+  fonts.Create_Default_TTF_Font("arial",font_path+"arial.ttf");
+  fonts.Create_TTF_Font("cac_champagne",font_path+"cac_champagne.ttf");
    
   CH_Ptr->Set_Font_Book(fonts); 
 
