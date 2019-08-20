@@ -1,7 +1,6 @@
 #pragma once
 
 #include "lcpainter.h"
-#include "gl_entity.h"
 #include "gl_pack.h"
 #include "cacher.h"
 
@@ -16,23 +15,15 @@ using namespace lc::viewer;
 using namespace lc::viewer::opengl;
 
 #define PI 3.14159265
+#define CURVE_POINTS 1000
 
          class LcCacherPainter : public LcPainter 
         {
-            float pen_x=0,pen_y=0; //pen coordinates
-          
-            double device_width=0.0;
-            double device_height=0.0;
-            int curve_points=1000;
-            int p=0;
-
-            double font_size_value;
-             
+            float _pen_x=0,_pen_y=0; //pen coordinates
+         
              public:
-            Cacher _cacher;
+                 Cacher _cacher;
            
-
-                 
                  LcCacherPainter();
 
                  void ReadyShaderProgram();

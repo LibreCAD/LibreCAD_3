@@ -12,7 +12,7 @@ GL_Font::~GL_Font()
   
 }
 
-bool GL_Font::ReadyTTF(const std::string& path)
+bool GL_Font::readyTTF(const std::string& path)
 {
   const char* font_path= path.c_str();
 
@@ -144,14 +144,14 @@ bool GL_Font::ReadyTTF(const std::string& path)
 }
 
 
-void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat4 model,Shader* text_shader)
+void GL_Font::renderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat4 model,Shader* text_shader)
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     std::map<GLchar, Character>::iterator it;
     
-    text_shader->Bind();
-    text_shader->SetUniform1i("u_Texture",0);  // same slot of texture (optional)
+    text_shader->bind();
+    text_shader->setUniform1i("u_Texture",0);  // same slot of texture (optional)
 
     glActiveTexture(GL_TEXTURE0);
    
@@ -168,16 +168,16 @@ void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
         //compute the MVP matrix ( received -V ,-P  .. already have -M)
         glm::mat4 mvp=proj * view * model;
    
-       text_shader->SetUniformMat4f("u_MVP",mvp);  // Set MVP
+       text_shader->setUniformMat4f("u_MVP",mvp);  // Set MVP
 
         // Render glyph texture over quad
-        glBindTexture(GL_TEXTURE_2D, ((it->second)).TextureID);
+        glBindTexture(GL_TEXTURE_2D, ((it->second)).textureID);
         
         // Bind the VBO memory
-        glBindBuffer(GL_ARRAY_BUFFER, ((it->second)).VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, ((it->second)).vbo);
         
         // Bind the VAO memory
-        glBindVertexArray(((it->second)).VAO);
+        glBindVertexArray(((it->second)).vao);
 
         // Finally Render
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -188,11 +188,11 @@ void GL_Font::RenderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
         glBindTexture(GL_TEXTURE_2D, 0);
         
         // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        model=glm::translate(model,glm::vec3( ( (it->second).Advance_x >> 6 ),0.0,0.0));
+        model=glm::translate(model,glm::vec3( ( (it->second).advance_x >> 6 ),0.0,0.0));
         
     }
 
-    text_shader->UnBind();
+    text_shader->unbind();
    
     
 }

@@ -1,17 +1,7 @@
 #ifndef TEXT_ENTITY_H
 #define TEXT_ENTITY_H
-#include <GL/glew.h>  
-#include <GL/gl.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include "shader.h"
 #include "gl_entity.h"
-#include "gl_font.h"
-#include "font_book.h"
-
 
 namespace lc
 {
@@ -36,32 +26,32 @@ public:
 	
 	Text_Entity();
 	~Text_Entity();
-	void LoadVertexData(float* vertices,int size,std::vector<int> &jumps);
+	void loadVertexData(float* vertices,int size,std::vector<int> &jumps);
 	
-	void Bind();
-	void UnBind();
+	void bind();
+	void unbind();
     
-    void SetType(Shaders_book& shaders);
-	void SetModelMatrix(glm::mat4 model);
+    void setType(Shaders_book& shaders);
+	void setModelMatrix(glm::mat4 model);
 	
-	void SetFillMode(bool fill);
-	void SetLineWidth(float width);
-	void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
-	void SetColor(float R,float G,float B,float A);
-    
-
-    void AddLinearGradient(float x0,float y0,float x1,float y1);
-	void AddGradientColorPoint(float R,float G,float B,float A);
-	void ApplyGradient(float* vertices,int size);
+	void setFillMode(bool fill);
+	void setLineWidth(float width);
+	void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
+	void setColor(float R,float G,float B,float A);
     
 
-    void SetFont(Font_Book& fonts,const std::string& style);
-	void AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
+    void addLinearGradient(float x0,float y0,float x1,float y1);
+	void addGradientColorPoint(float R,float G,float B,float A);
+	void applyGradient(float* vertices,int size);
+    
+
+    void setFont(Font_Book& fonts,const std::string& style);
+	void addTextData(glm::vec4 pos, std::string textval , float font_size, bool retain);
 
 	
-	void FreeGPU();
+	void freeGPU();
 
-	void Draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
+	void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
 };
 
 

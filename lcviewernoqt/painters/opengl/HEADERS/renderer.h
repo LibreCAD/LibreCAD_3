@@ -60,47 +60,47 @@ class Renderer
 {
 private: 
     //-------------------------------------FOR VERTEX DATA-----------------  
-    std::vector< glm::vec4 > vertex_data;       // for vertex data
-    std::vector<int> jumps;
-    std::vector< glm::vec4 > current_vertices;  // for current shape(continous)
+    std::vector< glm::vec4 > _vertex_data;       // for vertex data
+    std::vector<int> _jumps;
+    std::vector< glm::vec4 > _current_vertices;  // for current shape(continous)
     
-    float path_distance;                  //distance(scalar) from start point to current
-    bool closed=false;
-    bool fill=false;
+    float _path_distance;                  //distance(scalar) from start point to current
+    bool _closed=false;
+    bool _fill=false;
 
     //--------------------------------------FOR DASH DATA---------------
-    float line_width;
-    std::vector<float> dashes_data; float dashes_sum=0; int dashes_size=0;
+    float _line_width;
+    std::vector<float> _dashes_data; float _dashes_sum=0; int _dashes_size=0;
    
     //--------------------------------------FOR TEXT DATA-----------------
 
-    std::string text_value;
-    std::string font_style;
-    float text_height;
-    bool no_text_magnify;
+    std::string _text_value;
+    std::string _font_style;
+    float _text_height;
+    bool _no_text_magnify;
 
     //---------------------------------------------------------------------------
     
     
-     glm::mat4 proj;                      //projection matrix
-     glm::mat4 projB;
-     glm::mat4 view;                      //view matrix for pan
-     glm::mat4 ctm;          
+     glm::mat4 _proj;                      //projection matrix
+     glm::mat4 _projB;                     //projectionB for seamless line pattern
+     glm::mat4 _view;                      //view matrix for pan
+     glm::mat4 _ctm;          
 
 	
-    std::stack < context_att > context_stack;
+    std::stack < context_att > _context_stack;
     
     //--------------------------------------------------------
 
-    std::string shader_path;
-    std::string font_path;
-    Shaders_book shaders;
+    std::string _shader_path;
+    std::string _font_path;
+    Shaders_book _shaders;
 
-    Font_Book fonts;
+    Font_Book _fonts;
     
-	GL_Entity* current_gl_entity = NULL;
+	GL_Entity* _current_gl_entity = NULL;
 
-	Cacher* CH_Ptr;
+	Cacher* _cacherPtr;
 	
 public:
 
@@ -108,105 +108,105 @@ public:
 
 	~Renderer();
 
-	void CreateShaderProgram();
+	void createResources();
 
-	void Set_Cacher_Ref(Cacher* ch);
+	void setCacherRef(Cacher* ch);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
-	void Update_projection(float l,float r,float b,float t);
+	void updateProjection(float l,float r,float b,float t);
 
-	void Update_view();
+	void updateView();
 
 	//-----------
 
-	void Update_scale(float scale);
+	void updateScale(float scale);
 
-	void Update_translate(float x,float y);
+	void updateTranslate(float x,float y);
 
-    void Update_rotate(float angle);
+    void updateRotate(float angle);
 
-    void Reset_Transformations();
+    void resetTransformations();
 
-    double Get_Scale();
+    double getScale();
 
-    double Get_Translate_X();
+    double getTranslateX();
 
-    double Get_Translate_Y();    
+    double getTranslateY();    
 
     //----------
-	void Device_To_User(double* x, double* y);
+	void deviceToUser(double* x, double* y);
 
-	void User_To_Device(double* x, double* y);
+	void userToDevice(double* x, double* y);
 
-	void Device_To_User_Distance(double* x, double* y);
+	void deviceToUserDistance(double* x, double* y);
 
-	void User_To_Device_Distance(double* x, double* y);
+	void userToDeviceDistance(double* x, double* y);
 
 	//------------context handling-------------------------------------
 
-	void Save();
+	void save();
 
-	void Restore();
+	void restore();
 
 	//---------------Functions manipulating vertex data(raw)----------------------
 
-	void Add_Vertex(float x,float y,float z=0.0f);
+	void addVertex(float x,float y,float z=0.0f);
 	
-	void Append_Vertex_Data();
+	void appendVertexData();
 
-	void Jump();
+	void jump();
 
-	void Clear_Data();
+	void clearData();
 
-	void Close_Loop();
+	void closeLoop();
 
 	//---------------Functions manipulating entities---------------------------------------------------------
   
-    bool Find_GL_Entity(unsigned int id);
+    bool findEntity(unsigned int id);
 	
-	void Use_GL_Entity(unsigned int id);
+	void useEntity(unsigned int id);
 
-    void Add_New_Shape_Entity();
+    void addNewShapeEntity();
 
-    void Add_New_Gradient_Entity();
+    void addNewGradientEntity();
     
-    void Add_New_Text_Entity();
+    void addNewTextEntity();
 
-	void Add_Data_To_GL_Entity();
+	void addDataToCurrentEntity();
     
     //---------------Functions to select attributes of entities------------
-	void Select_Fill();
+	void selectFill();
 
-    void Select_Color(float R,float G,float B,float A);
+    void selectColor(float R,float G,float B,float A);
 
-    void Select_Line_Width(float width);
+    void selectLineWidth(float width);
 
-    void Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled);
+    void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
 
-    void Select_Font_Size(float size, bool deviceCoords);
+    void selectFontSize(float size, bool deviceCoords);
 
-    void Select_Font_Face(const char* text_style);
+    void selectFontFace(const char* text_style);
 
-    void Select_Font_Value(const char* text_val);
+    void selectFontValue(const char* text_val);
 
     //--------------------------for gradient entity----------------------------
 
-    void Add_Linear_Gradient(float x0,float y0,float x1,float y1);
+    void addLinearGradient(float x0,float y0,float x1,float y1);
 
-    void Add_Gradient_Color_Point(float R,float G,float B,float A);
+    void addGradientColorPoint(float R,float G,float B,float A);
 
     //----------------------------render direct entity------------------
 
-	void Render();
+	void render();
 
-	void Set_Default();
+	void setDefault();
 
 	//-----------------------------rendering cached entities---------------
 
-    void Render_Cached_Entity(GL_Entity* entity);
+    void renderCachedEntity(GL_Entity* entity);
 
-	void Render_Cached_Pack(GL_Pack* pack);
+	void renderCachedPack(GL_Pack* pack);
 
 
 };

@@ -26,13 +26,13 @@ class GL_Pack
 
 	//-------------------------------------
     
-    int Pack_Size();
+    int packSize();
 
-    GL_Entity* Get_GL_Entity_At(int i);
+    GL_Entity* getEntityAt(int i);
 
-    void Push_Entity_In_Pack( GL_Entity* glentity);
+    void pushEntityInPack( GL_Entity* glentity);
 
-    void Free_GPU_Pack();
+    void freePackGPU();
 
 };
 

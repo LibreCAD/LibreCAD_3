@@ -38,37 +38,37 @@ class Cacher
 {
 private:   
     //----------------------------------FOR VERTEX DATA------------
-    std::vector< glm::vec4 > vertex_data;       // for vertex data
-    std::vector<int> jumps;
-    std::vector< glm::vec4 > current_vertices;  // for current shape(continous)
+    std::vector< glm::vec4 > _vertex_data;       // for vertex data
+    std::vector<int> _jumps;
+    std::vector< glm::vec4 > _current_vertices;  // for current shape(continous)
     
-    float path_distance;                  //distance(scalar) from start point to current
-    bool closed=false;
+    float _path_distance;                  //distance(scalar) from start point to current
+    bool _closed=false;
     
     //------------------------------------FOR DASH DATA--------------
-    float line_width;
-    std::vector<float> dashes_data; float dashes_sum=0; int dashes_size=0;
-    bool fill=false;
+    float _line_width;
+    std::vector<float> _dashes_data; float _dashes_sum=0; int _dashes_size=0;
+    bool _fill=false;
     
 
     //--------------------------------------FOR TEXT DATA-----------------
 
-    std::string text_value;
-    std::string font_style;
-    float text_height;
-    bool no_text_magnify;
+    std::string _text_value;
+    std::string _font_style;
+    float _text_height;
+    bool _no_text_magnify;
 
     //--------------------------------------------------------------
 
-    glm::mat4 model;                     //model matrix
+    glm::mat4 _model;                     //model matrix
    
-	GL_Entity* current_gl_entity;
-	GL_Pack* current_gl_pack;
+	GL_Entity* _current_gl_entity;
+	GL_Pack* _current_gl_pack;
 
-    Shaders_book shaders;
-    Font_Book fonts;
+    Shaders_book _shaders;
+    Font_Book _fonts;
 
-	std::map < unsigned long, GL_Pack* > gl_pack_map;
+	std::map < unsigned long, GL_Pack* > _gl_pack_map;
 
 public:
 
@@ -76,98 +76,98 @@ public:
 
 	~Cacher();
 
-    void Set_Shader_Book(struct Shaders_book& book);
+    void setShaderBook(struct Shaders_book& book);
 
-    void Set_Font_Book(Font_Book& book);
+    void setFontBook(Font_Book& book);
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
-	void Update_model();
+	void updateModel();
 
 	//-----------
 
-	void Update_scale(float scale);
+	void updateScale(float scale);
 
-	void Update_translate(float x,float y);
+	void updateTranslate(float x,float y);
 
-    void Update_rotate(float angle);
+    void updateRotate(float angle);
 
-    void Reset_Transformations();
+    void resetTransformations();
 
-    double Get_Scale();
+    double getScale();
 
-    double Get_Translate_X();
+    double getTranslateX();
 
-    double Get_Translate_Y();    
+    double getTranslateY();    
 
     //---------------Functions manipulating vertex data(raw)----------------------
 
-    void Add_Vertex(float x,float y,float z=0.0f);
+    void addVertex(float x,float y,float z=0.0f);
     
-    void Append_Vertex_Data();
+    void appendVertexData();
 
-    void Jump();
+    void jump();
 
-    void Clear_Data();
+    void clearData();
 
-    void Close_Loop();
+    void closeLoop();
 
 	//------------------------------------for properties ( painter calls)------------------------------------
   
-	void Add_Data_To_GL_Entity();                      
+	void addDataToCurrentEntity();                      
 
-	void Select_Fill();
+	void selectFill();
 
-    void Select_Color(float R,float G,float B,float A);
+    void selectColor(float R,float G,float B,float A);
 
-    void Select_Line_Width(float width);
+    void selectLineWidth(float width);
 
-    void Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled);
+    void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
 
     
-    void Select_Font_Size(float size, bool deviceCoords);
+    void selectFontSize(float size, bool deviceCoords);
 
-    void Select_Font_Face(const char* text_style);
+    void selectFontFace(const char* text_style);
 
-    void Select_Font_Value(const char* text_val);
+    void selectFontValue(const char* text_val);
 
     //----------------------------gradient------------------------------
 
-    void Add_Linear_Gradient(float x0,float y0,float x1,float y1);
+    void addLinearGradient(float x0,float y0,float x1,float y1);
 
-    void Add_Gradient_Color_Point(float R,float G,float B,float A);
+    void addGradientColorPoint(float R,float G,float B,float A);
 
     //--------------------------gl_entity / gl_pack / reset manipulations------------
     
-    void Set_New_GL_Pack();
+    void setNewPack();
 
-    void Set_New_Shape_Entity();
+    void setNewShapeEntity();
 
-    void Set_New_Gradient_Entity();
+    void setNewGradientEntity();
 
-    void Set_New_Text_Entity();
+    void setNewTextEntity();
 
-    void Push_Entity_In_Pack();
+    void pushEntityInPack();
 
-    void Set_Default();
+    void setDefault();
 
-    void Ready_For_Next_GL_Entity();
+    void readyForNextEntity();
 
-    void Ready_Fresh_GL_Pack();
+    void readyFreshPack();
 
     //--------------------------------caching query/insert/delete------------
 
-    void Save_Entity_Pack(unsigned long id);
+    void savePack(unsigned long id);
 
-    bool Is_Entity_Cached_Pack(unsigned long id);
+    bool isPackCached(unsigned long id);
 
-    GL_Pack* Get_Entity_Cached_Pack(unsigned long id);
+    GL_Pack* getCachedPack(unsigned long id);
 
-    void Erase_Entity_Pack(unsigned long id);
+    void erasePack(unsigned long id);
 
     //-------debug------
 
-    void Log_Cached_Packs(); 
+    void logCachedPacks(); 
 
 };
 

@@ -11,40 +11,40 @@ Shader::Shader()
 Shader::~Shader()
 {
 	DebugMessage("Destructor Shader");
-   glDeleteProgram(m_RendererID);
+    glDeleteProgram(_shader_id);
 }
 
-void Shader::Gen(const std::string& filepath)
+void Shader::gen(const std::string& filepath)
 {
-	m_RendererID=0;
-	m_FilePath=filepath;
+	_shader_id=0;
+	_file_path=filepath;
 
-	ShaderProgramSource source=ParseShader(m_FilePath);
+	ShaderProgramSource source=parseShader(_file_path);
 
 	unsigned int vertexshaderID=0;
 	unsigned int geometryshaderID=0;
 	unsigned int fragmentshaderID=0;
 	  
 
-	vertexshaderID=compileShaders(source.VertexSource,GL_VERTEX_SHADER);
+	vertexshaderID=compileShaders(source.vertexSource,GL_VERTEX_SHADER);
 	
-	if(has_geometry)
-	geometryshaderID=compileShaders(source.GeometrySource,GL_GEOMETRY_SHADER);
+	if(_has_geometry)
+	geometryshaderID=compileShaders(source.geometrySource,GL_GEOMETRY_SHADER);
 	
-	fragmentshaderID=compileShaders(source.FragmentSource,GL_FRAGMENT_SHADER);
+	fragmentshaderID=compileShaders(source.fragmentSource,GL_FRAGMENT_SHADER);
 	  
-	m_RendererID= linkProgram(vertexshaderID,geometryshaderID,fragmentshaderID);
+	_shader_id= linkProgram(vertexshaderID,geometryshaderID,fragmentshaderID);
 
-    Bind();
+    bind();
 }
 
-unsigned int Shader::GetID() const
+unsigned int Shader::getID() const
 {
-	return m_RendererID;
+	return _shader_id;
 }
 
 
-ShaderProgramSource Shader:: ParseShader(const std::string& filepath)
+ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 {
 	std::ifstream stream(filepath);
 
@@ -65,7 +65,7 @@ ShaderProgramSource Shader:: ParseShader(const std::string& filepath)
 			else if(line.find("geometry")!=std::string::npos)
 	        {
 	           	  type=ShaderType::GEOMETRY;
-	           	  has_geometry=true;
+	           	  _has_geometry=true;
 	        }
 			else if(line.find("fragment")!=std::string::npos)
 	           type=ShaderType::FRAGMENT;
@@ -138,7 +138,7 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 	if(vertexShaderID!=0)
 	glAttachShader(programID,vertexShaderID);
     
-    if(geometryShaderID!=0 && has_geometry)
+    if(geometryShaderID!=0 && _has_geometry)
 	glAttachShader(programID,geometryShaderID);
 
     if(fragmentShaderID!=0)
@@ -169,49 +169,49 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 }
 
 
-void Shader::Bind() const
+void Shader::bind() const
 {
-   glUseProgram(m_RendererID);
+   glUseProgram(_shader_id);
 }
 
-void Shader::UnBind() const
+void Shader::unbind() const
 {
    glUseProgram(0);
 }
 
-void Shader::SetUniform4f(const std::string& name,float v0,float v1,float v2,float v3)
+void Shader::setUniform4f(const std::string& name,float v0,float v1,float v2,float v3)
 {
-   glUniform4f( GetUniformLocation(name) , v0,v1,v2,v3 );
+   glUniform4f( getUniformLocation(name) , v0,v1,v2,v3 );
 }
 
-void Shader::SetUniform2f(const std::string& name,float v0,float v1)
+void Shader::setUniform2f(const std::string& name,float v0,float v1)
 {
-   glUniform2f( GetUniformLocation(name) , v0,v1);
+   glUniform2f( getUniformLocation(name) , v0,v1);
 }
 
-void Shader::SetUniform1i(const std::string& name,int value)
+void Shader::setUniform1i(const std::string& name,int value)
 {
-   glUniform1i( GetUniformLocation(name) , value );
+   glUniform1i( getUniformLocation(name) , value );
 }
 
-void Shader::SetUniformMat4f(const std::string& name,const glm::mat4& matrix)
+void Shader::setUniformMat4f(const std::string& name,const glm::mat4& matrix)
 {
-	glUniformMatrix4fv( GetUniformLocation(name) ,1,GL_FALSE,&matrix[0][0]);
+	glUniformMatrix4fv( getUniformLocation(name) ,1,GL_FALSE,&matrix[0][0]);
 }
 
-void Shader::SetUniform1f(const std::string& name, float value)
+void Shader::setUniform1f(const std::string& name, float value)
 {
-	glUniform1f( GetUniformLocation(name) , value );
+	glUniform1f( getUniformLocation(name) , value );
 }
 
-void Shader::SetUniform1fv(const std::string& name,int count, const float *value )
+void Shader::setUniform1fv(const std::string& name,int count, const float *value )
 {
-	glUniform1fv( GetUniformLocation(name) , count , value );
+	glUniform1fv( getUniformLocation(name) , count , value );
 }
 
-int Shader:: GetUniformLocation(const std::string& name)
+int Shader:: getUniformLocation(const std::string& name)
 {
-   int location=glGetUniformLocation(m_RendererID,name.c_str());
+   int location=glGetUniformLocation(_shader_id,name.c_str());
    
    //qDebug(" -- Location = %d",location);
    if(location==-1)

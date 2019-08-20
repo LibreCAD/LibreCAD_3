@@ -3,7 +3,6 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include <GL/glew.h> 
-#include <GL/glut.h>  
 #include <GL/gl.h>
 #include <iostream>
 #include <string>
@@ -26,42 +25,41 @@ namespace lc
 
 struct ShaderProgramSource
 {
-	std::string VertexSource;
-	std::string GeometrySource;
-	std::string FragmentSource;
+	std::string vertexSource;
+	std::string geometrySource;
+	std::string fragmentSource;
 };
 
 class Shader
 {
 
 private:
-	std::string m_FilePath;
-	unsigned int m_RendererID;
-	bool has_geometry=false;
+	std::string _file_path;
+	unsigned int _shader_id;
+	bool _has_geometry=false;
 	
 public:
 	Shader();
 	~Shader();
-    void Gen(const std::string& filepath);
-	void Bind() const;
-	void UnBind() const;
-	unsigned int GetID() const;
+    void gen(const std::string& filepath);
+	void bind() const;
+	void unbind() const;
+	unsigned int getID() const;
 
 	//set uniforms
-	void SetUniform4f(const std::string& name,float v0,float v1,float v2,float v3);
-    void SetUniform1i(const std::string& name,int value);
-    void SetUniformMat4f(const std::string& name,const glm::mat4& matrix);
-    void SetUniform1f(const std::string& name, float value);
-    void SetUniform1fv(const std::string& name,int count,const float *value);
-    void SetUniform2f(const std::string& name,float v0,float v1);
+	void setUniform4f(const std::string& name,float v0,float v1,float v2,float v3);
+    void setUniform1i(const std::string& name,int value);
+    void setUniformMat4f(const std::string& name,const glm::mat4& matrix);
+    void setUniform1f(const std::string& name, float value);
+    void setUniform1fv(const std::string& name,int count,const float *value);
+    void setUniform2f(const std::string& name,float v0,float v1);
 
 private:
-	int GetUniformLocation(const std::string& name);
+	int getUniformLocation(const std::string& name);
     
     unsigned int compileShaders(std::string shader, GLenum type);
-    ShaderProgramSource ParseShader(const std::string& filepath);
+    ShaderProgramSource parseShader(const std::string& filepath);
     unsigned int linkProgram(unsigned int vertexShaderID,unsigned int geometryShaderID, unsigned int fragmentShaderID);
-    unsigned int CreateShaderProgram(float R,float G,float B,float A);
 };
 
 struct Shaders_book

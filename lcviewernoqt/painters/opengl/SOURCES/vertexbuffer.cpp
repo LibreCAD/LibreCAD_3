@@ -1,6 +1,4 @@
 #include "vertexbuffer.h"
-#include "renderer.h"
-
 using namespace lc::viewer::opengl;
 
 VertexBuffer::VertexBuffer()
@@ -13,25 +11,25 @@ VertexBuffer::~VertexBuffer()
    
 }
 
-void VertexBuffer::Gen(const void* data,unsigned int size)
+void VertexBuffer::gen(const void* data,unsigned int size)
 {	
-   glGenBuffers(1,&m_RendererID);
-   glBindBuffer(GL_ARRAY_BUFFER,m_RendererID);
+   glGenBuffers(1,&_vb_id);
+   glBindBuffer(GL_ARRAY_BUFFER,_vb_id);
    glBufferData(GL_ARRAY_BUFFER, size, data , GL_STATIC_DRAW);
 }
 
-void VertexBuffer::Bind() const
+void VertexBuffer::bind() const
 {
-   glBindBuffer(GL_ARRAY_BUFFER,m_RendererID);  
+   glBindBuffer(GL_ARRAY_BUFFER,_vb_id);  
 }
 
-void VertexBuffer::UnBind() const
+void VertexBuffer::unbind() const
 {
    glBindBuffer(GL_ARRAY_BUFFER,0);  
 }
 
-void VertexBuffer::FreeGPU() const
+void VertexBuffer::freeGPU() const
 {
-   UnBind();
-   glDeleteBuffers(1,&m_RendererID);
+   unbind();
+   glDeleteBuffers(1,&_vb_id);
 }

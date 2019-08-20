@@ -24,10 +24,10 @@ namespace lc
 
   struct Character 
   {
-    GLuint     TextureID;  // ID handle of the glyph texture
-    GLuint     VBO;        //VertexBuffer
-    GLuint     VAO;        //Vertex Array
-    int        Advance_x;  // Offset to advance to next glyph
+    GLuint     textureID;  // ID handle of the glyph texture
+    GLuint     vbo;        //VertexBuffer
+    GLuint     vao;        //Vertex Array
+    int        advance_x;  // Offset to advance to next glyph
   };
 
 class GL_Font
@@ -41,8 +41,8 @@ class GL_Font
    	GL_Font();
    ~GL_Font();
    
-   bool ReadyTTF(const std::string& path);
-   void RenderText(std::string text, 
+   bool readyTTF(const std::string& path);
+   void renderText(std::string text, 
                    glm::mat4 proj,
                    glm::mat4 view,
                    glm::mat4 model,

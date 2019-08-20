@@ -1,6 +1,4 @@
 #include "indexbuffer.h"
-#include "renderer.h"
-
 using namespace lc::viewer::opengl;
 
 IndexBuffer::IndexBuffer()

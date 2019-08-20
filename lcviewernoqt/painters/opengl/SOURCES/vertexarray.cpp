@@ -1,7 +1,4 @@
 #include "vertexarray.h"
-#include "renderer.h"
-
-#include <iostream>
 
 using namespace lc::viewer::opengl;
 
@@ -15,17 +12,17 @@ VertexArray::~VertexArray()
     
 }
 
-void VertexArray::Gen()
+void VertexArray::gen()
 {
-	glGenVertexArrays(1,&m_RendererID);	
-	glBindVertexArray(m_RendererID);
+	glGenVertexArrays(1,&_va_id);	
+	glBindVertexArray(_va_id);
 }
 
-void VertexArray::AddBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout)
+void VertexArray::addBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout)
 {
-   vb.Bind();  //  layout of this vb (vertex buffer) (binding it for being sure its is the vb)
+   vb.bind();  //  layout of this vb (vertex buffer) (binding it for being sure its is the vb)
    
-   const auto& elements =layout.GetElements();
+   const auto& elements =layout.getElements();
    
    unsigned int offset=0;
 
@@ -33,25 +30,25 @@ void VertexArray::AddBuffer(const VertexBuffer& vb,const VertexBufferLayout& lay
    {
    	  const auto& element=elements[i];
    	  
-	glVertexAttribPointer(i,element.count,element.type,element.normalized,layout.GetStride(), (const void*)offset);
+	glVertexAttribPointer(i,element.count,element.type,element.normalized,layout.getStride(), (const void*)offset);
 	glEnableVertexAttribArray(i);
 
-	offset+=element.count * VertexBufferElement::GetSizeOfType(element.type);
+	offset+=element.count * VertexBufferElement::getSizeOfType(element.type);
 
    }
 }
 
-void VertexArray::Bind() const
+void VertexArray::bind() const
 {
-   glBindVertexArray(m_RendererID);
+   glBindVertexArray(_va_id);
 }
-void VertexArray::UnBind() const
+void VertexArray::unbind() const
 {
 	glBindVertexArray(0);
 }
 
-void VertexArray::FreeGPU() const
+void VertexArray::freeGPU() const
 {
-   UnBind();
-   glDeleteVertexArrays(1,&m_RendererID); 
+   unbind();
+   glDeleteVertexArrays(1,&_va_id); 
 }

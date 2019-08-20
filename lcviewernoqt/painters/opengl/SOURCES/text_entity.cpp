@@ -14,78 +14,78 @@ Text_Entity::~Text_Entity()
 	
 }
 
-void Text_Entity::LoadVertexData(float* vertices,int size,std::vector<int> &jumps)
+void Text_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
 {
   
  //---Nothing
 
 }
 
-void Text_Entity::Bind()
+void Text_Entity::bind()
 {
 	
 }
 
-void Text_Entity::UnBind()
+void Text_Entity::unbind()
 {
 	
 }
 
-void Text_Entity::SetType(Shaders_book& shaders)
+void Text_Entity::setType(Shaders_book& shaders)
 {
   _shader=shaders.text_shader;   
 }
 
-void Text_Entity::SetModelMatrix(glm::mat4 model)
+void Text_Entity::setModelMatrix(glm::mat4 model)
 {
    _model=model;
 }
 
 
-void Text_Entity::SetFillMode(bool fill)
+void Text_Entity::setFillMode(bool fill)
 {
    // NO Need (Used by Shape_Entity)
 }
 
-void Text_Entity::SetLineWidth(float width)
+void Text_Entity::setLineWidth(float width)
 {
    // NO Need (Used by Shape_Entity)
 }
 
-void Text_Entity::SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes)
+void Text_Entity::setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes)
 {
    // NO Need (Used by Shape_Entity)
 }
 
 
-void Text_Entity::SetColor(float R,float G,float B,float A)
+void Text_Entity::setColor(float R,float G,float B,float A)
 {
  
 }
 
-void Text_Entity::AddLinearGradient(float x0,float y0,float x1,float y1)
+void Text_Entity::addLinearGradient(float x0,float y0,float x1,float y1)
 {
    // NO Need (Used by Gradient_Entity)
 }
 
-void Text_Entity::AddGradientColorPoint(float R,float G,float B,float A)
+void Text_Entity::addGradientColorPoint(float R,float G,float B,float A)
 {
    // NO Need (Used by Gradient_Entity)
 }
 
-void Text_Entity::ApplyGradient(float* vertices,int size)
+void Text_Entity::applyGradient(float* vertices,int size)
 {
    // NO Need (Used by Gradient_Entity)
 }
 
-void Text_Entity::SetFont(Font_Book& fonts,const std::string& style)
+void Text_Entity::setFont(Font_Book& fonts,const std::string& style)
 {
-   _font= fonts.Pick_Font(style);  //default
+   _font= fonts.pickFont(style);  //default
 }
 
-void Text_Entity::AddTextData(glm::vec4 pos , std::string text_val , float font_size, bool retain)
+void Text_Entity::addTextData(glm::vec4 pos , std::string textval , float font_size, bool retain)
 {   
-    _text=text_val;
+    _text=textval;
     _no_magnify=retain;
 
     _model=glm::translate( _model,glm::vec3(pos.x,pos.y,pos.z));  // First Translate at pos
@@ -94,13 +94,13 @@ void Text_Entity::AddTextData(glm::vec4 pos , std::string text_val , float font_
 }
 
 
-void Text_Entity::FreeGPU()
+void Text_Entity::freeGPU()
 {
   
 }
 
 
-void Text_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
+void Text_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
     //Set the Fill Mode
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -113,6 +113,6 @@ void Text_Entity::Draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
     temp_model=glm::scale(temp_model,glm::vec3(1.0f/_view[2][2],1.0f/_view[2][2],1.0f/_view[2][2]) );
 
    //Finally Render Text
-    _font->RenderText( _text, _proj, _view, temp_model,_shader);
+    _font->renderText( _text, _proj, _view, temp_model,_shader);
    
 }

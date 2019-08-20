@@ -17,22 +17,17 @@ using namespace lc::viewer;
 using namespace lc::viewer::opengl;
 
 #define PI 3.14159265
-#define VERYSMALL  (1.0E-150)
+#define CURVE_POINTS 1000
 
          class LcOpenGLPainter : public LcPainter 
         {
-            float pen_x=0,pen_y=0; //pen coordinates
+            float _pen_x=0,_pen_y=0; //pen coordinates
           
-            double device_width=0.0;
-            double device_height=0.0;
-            int curve_points=1000;
-            int p=0;
-
-            double font_size_value;
-
+            double _device_width=0.0;
+            double _device_height=0.0;
             
-            Renderer RND;
-            LcPainter* CHE;
+            Renderer _renderer;
+            LcPainter* _cacher_painter;
 
             public:
             LcOpenGLPainter(unsigned int width, unsigned int height);

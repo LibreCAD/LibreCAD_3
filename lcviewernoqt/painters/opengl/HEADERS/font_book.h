@@ -20,10 +20,9 @@ class Font_Book
  public:
    	Font_Book();
    ~Font_Book();
-    bool Create_Default_TTF_Font(const std::string& name,const std::string& ttf_path);
-    bool Create_TTF_Font(const std::string& name,const std::string& ttf_path);
-    bool Create_MSDF_Font(const std::string& name,const std::string& msdf_path,const std::string& csv_path);
-    GL_Font* Pick_Font(const std::string& font_style);
+    bool createDefaultFont(const std::string& name,const std::string& ttf_path);
+    bool createFont(const std::string& name,const std::string& ttf_path);
+    GL_Font* pickFont(const std::string& font_style);
 };
 
    }
@@ -32,4 +31,4 @@ class Font_Book
 
  } 
 
-#endif // GL_FONT_H
+#endif // FONT_BOOK_H

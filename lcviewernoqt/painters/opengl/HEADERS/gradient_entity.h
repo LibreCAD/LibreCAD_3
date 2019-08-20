@@ -1,18 +1,6 @@
 #ifndef GRADIENT_ENTITY_H
 #define GRADIENT_ENTITY_H
-#include <GL/glew.h>  
-#include <GL/gl.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <vector>
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
-#include "vertexarray.h"
-#include "vertexbufferlayout.h"
-#include "shader.h"
 #include "gl_entity.h"
 
 
@@ -35,8 +23,8 @@ struct Linear_Pattern
 class Gradient_Entity : public GL_Entity
 {
 private:   
-	VertexArray VAO;
-	VertexBuffer VBO;                       // GPU Buffer Objects (vertex data)
+	VertexArray _vao;
+	VertexBuffer _vbo;                       // GPU Buffer Objects (vertex data)
                     
 
 	glm::mat4 _model;                      // model matrix
@@ -47,35 +35,35 @@ private:
     
     std::vector<int> _jumps;
     
-    Linear_Pattern* pattern;
-    std::vector<float> color_vertex_data;
+    Linear_Pattern* _pattern;
+    std::vector<float> _color_vertex_data;
     Shader* _gradient_shader;
 public:
 	Gradient_Entity();
 	~Gradient_Entity();
-	void LoadVertexData(float* vertices,int size,std::vector<int> &jumps);
+	void loadVertexData(float* vertices,int size,std::vector<int> &jumps);
 	
-	void Bind();
-	void UnBind();
+	void bind();
+	void unbind();
     
-    void SetType(Shaders_book& shaders);
-	void SetModelMatrix(glm::mat4 model);
+    void setType(Shaders_book& shaders);
+	void setModelMatrix(glm::mat4 model);
 	
-	void SetFillMode(bool fill);
-	void SetLineWidth(float width);
-	void SetDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
-	void SetColor(float R,float G,float B,float A);
+	void setFillMode(bool fill);
+	void setLineWidth(float width);
+	void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
+	void setColor(float R,float G,float B,float A);
 
-	void AddLinearGradient(float x0,float y0,float x1,float y1);
-	void AddGradientColorPoint(float R,float G,float B,float A);
-	void ApplyGradient(float* vertices,int size);
+	void addLinearGradient(float x0,float y0,float x1,float y1);
+	void addGradientColorPoint(float R,float G,float B,float A);
+	void applyGradient(float* vertices,int size);
     
-    void SetFont(Font_Book& fonts,const std::string& style);
-	void AddTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
+    void setFont(Font_Book& fonts,const std::string& style);
+	void addTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
 
-	void FreeGPU();
+	void freeGPU();
 
-	void Draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
+	void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
 };
 
 

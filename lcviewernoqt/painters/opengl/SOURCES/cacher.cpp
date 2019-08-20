@@ -3,203 +3,203 @@
 #include <QtDebug>
 using namespace lc::viewer::opengl;
 
-     Cacher::Cacher()
-     {
-     	  dashes_sum=0; 
-        dashes_size=0;
-        model=glm::mat4(1.0f);
+  Cacher::Cacher()
+  {
+     	  _dashes_sum=0; 
+        _dashes_size=0;
+        _model=glm::mat4(1.0f);
 
-        Ready_Fresh_GL_Pack();
+        readyFreshPack();
 
      	DebugMessage("Constructor cacher");
-     }
+  }
 
 	Cacher::~Cacher()
 	{
 
 	}
 
-    void Cacher::Set_Shader_Book(struct Shaders_book& book)
-    {
-        shaders=book;
-    }
+  void Cacher::setShaderBook(struct Shaders_book& book)
+  {
+        _shaders=book;
+  }
 
-    void Cacher::Set_Font_Book(Font_Book& book)
-    {
-        fonts=book;
-    }
+  void Cacher::setFontBook(Font_Book& book)
+  {
+        _fonts=book;
+  }
 
 	//---------------------------For Matrix/ Vectors/ Coordinate-----------
 
-	void Cacher::Update_model()
+	void Cacher::updateModel()
 	{
 
 	}
 
 	//-----------
 
-	void Cacher::Update_scale(float scale)
+	void Cacher::updateScale(float scale)
 	{
-        model=glm::scale(model,glm::vec3(scale,scale,scale));
+        _model=glm::scale(_model,glm::vec3(scale,scale,scale));
 	}
 
-	void Cacher::Update_translate(float x,float y)
+	void Cacher::updateTranslate(float x,float y)
 	{
-        model=glm::translate(model,glm::vec3(x,y,0.0));
+        _model=glm::translate(_model,glm::vec3(x,y,0.0));
 	}
 
-    void Cacher::Update_rotate(float angle)
+    void Cacher::updateRotate(float angle)
     {
-        model=glm::rotate(model, angle, glm::vec3(0.0f ,0.0f ,1.0f) );
+        _model=glm::rotate(_model, angle, glm::vec3(0.0f ,0.0f ,1.0f) );
     }
 
-    void Cacher::Reset_Transformations()
+    void Cacher::resetTransformations()
     {
-        model=glm::mat4(1.0f);
+        _model=glm::mat4(1.0f);
     }
 
-    double Cacher::Get_Scale()
+    double Cacher::getScale()
     {
-        return model[2][2];
+        return _model[2][2];
     }
 
-    double Cacher::Get_Translate_X()
+    double Cacher::getTranslateX()
     {
-        return model[3][0];
+        return _model[3][0];
     }
 
-    double Cacher::Get_Translate_Y()
+    double Cacher::getTranslateY()
     {
-        return model[3][1];
+        return _model[3][1];
     }   
 
 	//------------------------------------for properties ( painter calls)------------------------------------
   
 	//###########################################################################
-void Cacher::Add_Vertex(float x,float y,float z)
+void Cacher::addVertex(float x,float y,float z)
 {
-  //Compute D.. (D=0 if current_vertices=empty) 
-  //              else D= distance(this.xy-current_vertices.xy)
-  if(current_vertices.size()==0)
-    path_distance=0.0f;
+  //Compute D.. (D=0 if _current_vertices=empty) 
+  //              else D= distance(this.xy-_current_vertices.xy)
+  if(_current_vertices.size()==0)
+    _path_distance=0.0f;
   else
   {
-     glm::vec2 P=glm::vec2( (*(current_vertices.rbegin())) );
+     glm::vec2 P=glm::vec2( (*(_current_vertices.rbegin())) );
      glm::vec2 Q=glm::vec2( x , -y);
      float d=glm::length(P-Q);
-     path_distance+=d;
+     _path_distance+=d;
   }
   
-  current_vertices.push_back( glm::vec4(x,-y,z,path_distance) );
+  _current_vertices.push_back( glm::vec4(x,-y,z,_path_distance) );
 }
 
-void Cacher::Append_Vertex_Data()
+void Cacher::appendVertexData()
 {
- if(current_vertices.size()>1)
+ if(_current_vertices.size()>1)
  {
-  if(fill==true)
+  if(_fill==true)
   {
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     jumps.push_back(current_vertices.size());
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _jumps.push_back(_current_vertices.size());
   }
 
   else
   {
-    if(closed==false)
+    if(_closed==false)
     {
-     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     vertex_data.push_back( *(current_vertices.rbegin()+1) );    // 2nd Last
+     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
 
-     jumps.push_back(current_vertices.size()+2);
+     _jumps.push_back(_current_vertices.size()+2);
     }
 
     else
     {
-     vertex_data.push_back( *(current_vertices.rbegin()) );  // last
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     vertex_data.push_back( *(current_vertices.begin())  );    // 1st
-     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
+     _vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
+     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
 
-     jumps.push_back(current_vertices.size()+3);
+     _jumps.push_back(_current_vertices.size()+3);
     }
   }
  }
 
- else if(current_vertices.size()==1)
+ else if(_current_vertices.size()==1)
  {
-    vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     jumps.push_back(current_vertices.size());
+    _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _jumps.push_back(_current_vertices.size());
  }
 
- current_vertices.clear();
+ _current_vertices.clear();
 }
 
-void Cacher::Jump()
+void Cacher::jump()
 {
-    Append_Vertex_Data();
-    closed=false;
-    path_distance=0.0f;
+    appendVertexData();
+    _closed=false;
+    _path_distance=0.0f;
 }
 
 
-void Cacher::Close_Loop()
+void Cacher::closeLoop()
 {
-  closed=true;
+  _closed=true;
 }
 
-void Cacher::Clear_Data()
+void Cacher::clearData()
 {
-  closed=false;
-  fill=false;
-  path_distance=0.0f;
-  vertex_data.clear();
-  current_vertices.clear();
-  jumps.clear();
+  _closed=false;
+  _fill=false;
+  _path_distance=0.0f;
+  _vertex_data.clear();
+  _current_vertices.clear();
+  _jumps.clear();
 
 }
 
 
 	//---------------------------------------------------------------
-	void Cacher::Add_Data_To_GL_Entity()
+	void Cacher::addDataToCurrentEntity()
 	{
-       Append_Vertex_Data();
+       appendVertexData();
 
-        current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
-        current_gl_entity->SetModelMatrix(model);          
+        _current_gl_entity->loadVertexData(&_vertex_data[0].x , _vertex_data.size()*(4*sizeof(float)) , _jumps );
+        _current_gl_entity->setModelMatrix(_model);          
         
-        current_gl_entity->SetLineWidth(line_width);                        // ALERT:
-        current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
-        current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
-        current_gl_entity->SetType(shaders);
-        current_gl_entity->SetFont(fonts,font_style);
-        current_gl_entity->AddTextData(vertex_data[0], text_value, text_height, no_text_magnify);
+        _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
+        _current_gl_entity->setDashes(_dashes_data,_dashes_size,_dashes_sum);   // THIS Order
+        _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
+        _current_gl_entity->setType(_shaders);
+        _current_gl_entity->setFont(_fonts,_font_style);
+        _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);
         
 	}
 
-	void Cacher::Select_Fill()
+	void Cacher::selectFill()
 	{
-        fill=true;  
+        _fill=true;  
 	}
 
-    void Cacher::Select_Color(float R,float G,float B,float A)
+    void Cacher::selectColor(float R,float G,float B,float A)
     {
        // Till now dont need to be cached
     }
 
-    void Cacher::Select_Line_Width(float width)
+    void Cacher::selectLineWidth(float width)
     {
-       line_width=width;
+       _line_width=width;
        
     }
 
-    void Cacher::Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled)
+    void Cacher::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
     {
          if(num_dashes==0)
          {
-            dashes_size=0;
-            dashes_sum=0;
-            dashes_data.clear();
+            _dashes_size=0;
+            _dashes_sum=0;
+            _dashes_data.clear();
          }
 
        else
@@ -212,163 +212,160 @@ void Cacher::Clear_Data()
        
            while(r--)
            { 
-              dashes_size+=num_dashes;   
+              _dashes_size+=num_dashes;   
               for(int i=0;i<num_dashes;i++)
               {
                   d=(float)(floor(dashes[i]+1));
-                 dashes_sum+=d;
-                 dashes_data.push_back(d);
+                 _dashes_sum+=d;
+                 _dashes_data.push_back(d);
                }
             }
 
          }
     }
 
-    void Cacher::Select_Font_Size(float size, bool deviceCoords)
+    void Cacher::selectFontSize(float size, bool deviceCoords)
     {
-        text_height=size;
-        no_text_magnify=deviceCoords;
+        _text_height=size;
+        _no_text_magnify=deviceCoords;
     }
 
-    void Cacher::Select_Font_Face(const char* text_style)
+    void Cacher::selectFontFace(const char* text_style)
     {
-        font_style=text_style;
+        _font_style=text_style;
     }
 
-    void Cacher::Select_Font_Value(const char* text_val)
+    void Cacher::selectFontValue(const char* text_val)
     {
-        text_value=text_val;
+        _text_value=text_val;
     }
 
 
     //--------------------------gradient--------------------------------
 
-    void Cacher::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
+    void Cacher::addLinearGradient(float x0,float y0,float x1,float y1)
     {
-        current_gl_entity->AddLinearGradient(x0,-y0,x1,-y1);   //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
+        _current_gl_entity->addLinearGradient(x0,-y0,x1,-y1);   //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
     }
 
-    void Cacher::Add_Gradient_Color_Point(float R,float G,float B,float A)
+    void Cacher::addGradientColorPoint(float R,float G,float B,float A)
     {
-        current_gl_entity->AddGradientColorPoint(R,G,B,A);
+        _current_gl_entity->addGradientColorPoint(R,G,B,A);
     }
 
 
     //--------------------------gl_entity / gl_pack / reset manipulations------------
     
-    void Cacher::Set_New_GL_Pack()
+    void Cacher::setNewPack()
     {
-        current_gl_pack = new GL_Pack();
+        _current_gl_pack = new GL_Pack();
     }
 
-    void Cacher::Set_New_Shape_Entity()
+    void Cacher::setNewShapeEntity()
     {
-        current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetType(shaders);
+        _current_gl_entity = new Shape_Entity();
     }
 
-    void Cacher::Set_New_Gradient_Entity()
+    void Cacher::setNewGradientEntity()
     {
-        current_gl_entity = new Shape_Entity();
-        current_gl_entity->SetType(shaders);
+        _current_gl_entity = new Shape_Entity();
     }
 
-    void Cacher::Set_New_Text_Entity()
+    void Cacher::setNewTextEntity()
     {
-        current_gl_entity = new Text_Entity();
-        current_gl_entity->SetType(shaders);
+        _current_gl_entity = new Text_Entity();
     }
 
-    void Cacher::Push_Entity_In_Pack()
+    void Cacher::pushEntityInPack()
     {
-        current_gl_pack->Push_Entity_In_Pack( current_gl_entity );
+        _current_gl_pack->pushEntityInPack( _current_gl_entity );
     }
 
-    void Cacher::Set_Default()
+    void Cacher::setDefault()
     {
-    	Clear_Data();
+    	clearData();
        
-        model=glm::mat4(1.0f);
+        _model=glm::mat4(1.0f);
 
-         font_style="arial";
-         text_value=" ";
-         text_height=12;
-         no_text_magnify=false;
+         _font_style="arial";
+         _text_value=" ";
+         _text_height=12;
+         _no_text_magnify=false;
     }
 
-    void Cacher::Ready_For_Next_GL_Entity()
+    void Cacher::readyForNextEntity()
     {   
-    	Add_Data_To_GL_Entity();
-    	Push_Entity_In_Pack();
-    	Set_Default();
-    	Set_New_Shape_Entity();
+    	addDataToCurrentEntity();
+    	pushEntityInPack();
+    	setDefault();
+    	setNewShapeEntity();
     }
 
-    void Cacher::Ready_Fresh_GL_Pack()
+    void Cacher::readyFreshPack()
     {
-    	Set_Default();
-    	Set_New_GL_Pack();
-    	Set_New_Shape_Entity();
+    	setDefault();
+    	setNewPack();
+    	setNewShapeEntity();
     }
 
 
     //--------------------------------cache entity pack-----------------
 
-    void Cacher::Save_Entity_Pack(unsigned long id)
+    void Cacher::savePack(unsigned long id)
     {
-    	gl_pack_map.insert(std::make_pair( id, current_gl_pack ) );
+    	_gl_pack_map.insert(std::make_pair( id, _current_gl_pack ) );
 
-    	Ready_Fresh_GL_Pack();
+    	readyFreshPack();
     }
 
     //--------------------------------caching query/insert/delete------------
 
-    bool Cacher::Is_Entity_Cached_Pack(unsigned long id)
+    bool Cacher::isPackCached(unsigned long id)
     {
         std::map< unsigned long, GL_Pack* >::iterator it;
         
-        it = gl_pack_map.find(id);
+        it = _gl_pack_map.find(id);
         
-        if (it != gl_pack_map.end())
+        if (it != _gl_pack_map.end())
           return true;
         else
           return false;	
     }
 
-    GL_Pack* Cacher::Get_Entity_Cached_Pack(unsigned long id)
+    GL_Pack* Cacher::getCachedPack(unsigned long id)
     {
         std::map< unsigned long, GL_Pack* >::iterator it;
         
-        it = gl_pack_map.find(id);
+        it = _gl_pack_map.find(id);
       
-        if (it != gl_pack_map.end())
+        if (it != _gl_pack_map.end())
           return (it->second);
         else
           return NULL;	
     }
 
-    void Cacher::Erase_Entity_Pack(unsigned long id)
+    void Cacher::erasePack(unsigned long id)
     {
        std::map< unsigned long, GL_Pack* >::iterator it;
         
-        it = gl_pack_map.find(id);
+        it = _gl_pack_map.find(id);
         
-        if (it != gl_pack_map.end())
+        if (it != _gl_pack_map.end())
          { 
-            (it->second)->Free_GPU_Pack();
-            gl_pack_map.erase(it);
+            (it->second)->freePackGPU();
+            _gl_pack_map.erase(it);
          }
 
       }
 
-    void Cacher::Log_Cached_Packs()   //Temporary to debug
+    void Cacher::logCachedPacks()   //Temporary to debug
     {
     	std::map< unsigned long, GL_Pack* >::iterator itr;
         qDebug("     |MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM|");
 
-        for(itr=gl_pack_map.begin();itr!=gl_pack_map.end();itr++)
+        for(itr=_gl_pack_map.begin();itr!=_gl_pack_map.end();itr++)
         {
-                qDebug("     | pack cached ID =  %u  size=%d  add=%u",itr->first,(itr->second)->Pack_Size(),itr->second);
+                qDebug("     | pack cached ID =  %u  size=%d  add=%u",itr->first,(itr->second)->packSize(),itr->second);
                
         };
         qDebug("     |WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW|");

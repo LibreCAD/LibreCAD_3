@@ -12,11 +12,11 @@ Font_Book::~Font_Book()
 	
 }
 
-bool Font_Book::Create_Default_TTF_Font(const std::string& name,const std::string& ttf_path)
+bool Font_Book::createDefaultFont(const std::string& name,const std::string& ttf_path)
 {
    _default_font=new GL_Font();
 
-   if(_default_font->ReadyTTF(ttf_path))
+   if(_default_font->readyTTF(ttf_path))
    {
    	  _font_map.insert(std::make_pair( name , _default_font ) );
    	  return true;
@@ -25,11 +25,11 @@ bool Font_Book::Create_Default_TTF_Font(const std::string& name,const std::strin
    return false;
 }
 
-bool Font_Book::Create_TTF_Font(const std::string& name,const std::string& ttf_path)
+bool Font_Book::createFont(const std::string& name,const std::string& ttf_path)
 {
    GL_Font* ttf_font=new GL_Font();
 
-   if(ttf_font->ReadyTTF(ttf_path))
+   if(ttf_font->readyTTF(ttf_path))
    {
    	  _font_map.insert(std::make_pair( name , ttf_font ) );
    	  return true;
@@ -38,16 +38,8 @@ bool Font_Book::Create_TTF_Font(const std::string& name,const std::string& ttf_p
    return false;
 }
 
-bool Font_Book::Create_MSDF_Font(const std::string& name,
-	                             const std::string& msdf_path,
-	                              const std::string& csv_path)
-{
 
-   // MSDF font generation
-
-}
-
-GL_Font* Font_Book::Pick_Font(const std::string& font_name)
+GL_Font* Font_Book::pickFont(const std::string& font_name)
 {
     std::map<const std::string, GL_Font* >::iterator it;
         

@@ -16,21 +16,21 @@ namespace lc
 class VertexBuffer
 {
 private:
-	unsigned int m_RendererID;
+	unsigned int _vb_id;
 public:
 	VertexBuffer();
 	~VertexBuffer();
 
-    void Gen(const void* data,unsigned int size);
-	void Bind() const;
-	void UnBind() const;
-	void FreeGPU() const;
+    void gen(const void* data,unsigned int size);
+	void bind() const;
+	void unbind() const;
+	void freeGPU() const;
 
 };
 
-}
+      }
 
-}
+   }
 
 }
 

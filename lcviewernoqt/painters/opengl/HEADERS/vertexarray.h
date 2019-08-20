@@ -18,16 +18,16 @@ namespace lc
 class VertexArray
 {
 private:
-    unsigned int m_RendererID;
+    unsigned int _va_id;
 public:		
 	VertexArray();
 	~VertexArray();
 
-    void Gen();
-	void Bind() const;
-	void UnBind() const;
-    void FreeGPU() const;
-	void AddBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout);
+    void gen();
+	void bind() const;
+	void unbind() const;
+    void freeGPU() const;
+	void addBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout);
 
 };
 

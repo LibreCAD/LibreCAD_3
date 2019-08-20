@@ -46,17 +46,17 @@ GLenum glCheckError_(const char *file, int line)
 Renderer::Renderer()
 {
 	DebugMessage("Constructor Renderer");	
-   dashes_sum=0; 
-   dashes_size=0;
+   _dashes_sum=0; 
+   _dashes_size=0;
    
-   ctm=glm::mat4(1.0f);   
-   view=ctm;
+   _ctm=glm::mat4(1.0f);   
+   _view=_ctm;
 
-   shader_path=SHADER_PATH;
-   font_path=FONT_PATH;
+   _shader_path=SHADER_PATH;
+   _font_path=FONT_PATH;
     
-   DebugMessage(shader_path);
-   DebugMessage(font_path);
+   DebugMessage(_shader_path);
+   DebugMessage(_font_path);
 }
 
 Renderer::~Renderer()
@@ -64,37 +64,37 @@ Renderer::~Renderer()
    DebugMessage("Destructor Renderer");
 }
 
-void Renderer::CreateShaderProgram()
+void Renderer::createResources()
 {
-  DebugMessage("generating Shader");
+  DebugMessage("generating Resources");
 
 
-  shaders.basic_shader = new Shader();
-  shaders.basic_shader->Gen(shader_path+"basic_shader.shader");
-  shaders.basic_shader->UnBind();
+  _shaders.basic_shader = new Shader();
+  _shaders.basic_shader->gen(_shader_path+"basic_shader.shader");
+  _shaders.basic_shader->unbind();
 
-  shaders.gradient_shader = new Shader();
-  shaders.gradient_shader->Gen(shader_path+"color_vertex_shader.shader");
-  shaders.gradient_shader->UnBind();
+  _shaders.gradient_shader = new Shader();
+  _shaders.gradient_shader->gen(_shader_path+"color_vertex_shader.shader");
+  _shaders.gradient_shader->unbind();
 
-  shaders.thickline_shader = new Shader();
-  shaders.thickline_shader->Gen(shader_path+"thickline_shader.shader");
-  shaders.thickline_shader->UnBind();
+  _shaders.thickline_shader = new Shader();
+  _shaders.thickline_shader->gen(_shader_path+"thickline_shader.shader");
+  _shaders.thickline_shader->unbind();
 
-  shaders.linepattern_shader = new Shader();
-  shaders.linepattern_shader->Gen(shader_path+"dash_pattern_shader.shader");
-  shaders.linepattern_shader->UnBind();
+  _shaders.linepattern_shader = new Shader();
+  _shaders.linepattern_shader->gen(_shader_path+"dash_pattern_shader.shader");
+  _shaders.linepattern_shader->unbind();
 
-  shaders.text_shader = new Shader();
-  shaders.text_shader->Gen(shader_path+"text_shader.shader");
-  shaders.text_shader->UnBind();
+  _shaders.text_shader = new Shader();
+  _shaders.text_shader->gen(_shader_path+"text_shader.shader");
+  _shaders.text_shader->unbind();
 
-  CH_Ptr->Set_Shader_Book(shaders);
+  _cacherPtr->setShaderBook(_shaders);
 
-  fonts.Create_Default_TTF_Font("arial",font_path+"arial.ttf");
-  fonts.Create_TTF_Font("cac_champagne",font_path+"cac_champagne.ttf");
+  _fonts.createDefaultFont("arial",_font_path+"arial.ttf");
+  _fonts.createFont("cac_champagne",_font_path+"cac_champagne.ttf");
    
-  CH_Ptr->Set_Font_Book(fonts); 
+  _cacherPtr->setFontBook(_fonts); 
 
    
     glEnable(GL_BLEND);
@@ -102,96 +102,96 @@ void Renderer::CreateShaderProgram()
     
 }
 
-void Renderer::Set_Cacher_Ref(Cacher* ch)
+void Renderer::setCacherRef(Cacher* ch)
 {
-   CH_Ptr=ch;
+   _cacherPtr=ch;
 }
 
 //-------------------------------------------------
 
 
-void Renderer::Update_projection(float l,float r,float b,float t)
+void Renderer::updateProjection(float l,float r,float b,float t)
 {
-    projB=glm::ortho(-r/2,r/2,b/2,-b/2,-1.0f,1.0f);
-    proj=glm::ortho(l,r,b,t,-1.0f,1.0f);
+    _projB=glm::ortho(-r/2,r/2,b/2,-b/2,-1.0f,1.0f);
+    _proj=glm::ortho(l,r,b,t,-1.0f,1.0f);
 
-    if(shaders.thickline_shader!=NULL)
+    if(_shaders.thickline_shader!=NULL)
     {
-      shaders.thickline_shader->Bind();
-      shaders.thickline_shader->SetUniform2f("WIN_SCALE",r,b);
-      shaders.thickline_shader->UnBind();
+      _shaders.thickline_shader->bind();
+      _shaders.thickline_shader->setUniform2f("WIN_SCALE",r,b);
+      _shaders.thickline_shader->unbind();
     }
 
-    if(shaders.linepattern_shader!=NULL)
+    if(_shaders.linepattern_shader!=NULL)
     {
-      shaders.linepattern_shader->Bind();
-      shaders.linepattern_shader->SetUniform2f("WIN_SCALE",r,b);
-      shaders.linepattern_shader->UnBind();
+      _shaders.linepattern_shader->bind();
+      _shaders.linepattern_shader->setUniform2f("WIN_SCALE",r,b);
+      _shaders.linepattern_shader->unbind();
     }
     
 }
 
-void Renderer::Update_view()
+void Renderer::updateView()
 {
-	  view=ctm;
+	  _view=_ctm;
 }
 
 //------------------------
 
-void Renderer::Update_scale(float scale_f)
+void Renderer::updateScale(float scale_f)
 {
-	ctm=glm::scale(ctm,glm::vec3(scale_f,scale_f,scale_f));	
-	view=ctm;
+	_ctm=glm::scale(_ctm,glm::vec3(scale_f,scale_f,scale_f));	
+	_view=_ctm;
 
 }
 
-void Renderer::Update_translate(float x,float y)
+void Renderer::updateTranslate(float x,float y)
 {
-	ctm=glm::translate(ctm,glm::vec3(x,y,0.0));
-	view=ctm;
+	_ctm=glm::translate(_ctm,glm::vec3(x,y,0.0));
+	_view=_ctm;
 }
 
-void Renderer::Update_rotate(float angle)
+void Renderer::updateRotate(float angle)
 {
-	ctm=glm::rotate(ctm, angle, glm::vec3(0.0f ,0.0f ,1.0f) );
-	view=ctm;
+	_ctm=glm::rotate(_ctm, angle, glm::vec3(0.0f ,0.0f ,1.0f) );
+	_view=_ctm;
 }
 
-void Renderer::Reset_Transformations()
+void Renderer::resetTransformations()
 {
-    ctm=glm::mat4(1.0f);
-    view=ctm;
+    _ctm=glm::mat4(1.0f);
+    _view=_ctm;
 }
 
-double Renderer::Get_Scale()
+double Renderer::getScale()
 {
-	return ctm[2][2];
+	return _ctm[2][2];
 }
 
-double Renderer::Get_Translate_X()
+double Renderer::getTranslateX()
 {
-	return ctm[3][0];
+	return _ctm[3][0];
 }
 
-double Renderer::Get_Translate_Y()
+double Renderer::getTranslateY()
 {
-	return ctm[3][1];
+	return _ctm[3][1];
 }    
 
 //-----------------------
 
-void Renderer::Device_To_User(double* x, double* y)
+void Renderer::deviceToUser(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::inverse(ctm) * temp;
+	temp=glm::inverse(_ctm) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
 
-void Renderer::Device_To_User_Distance(double* x, double* y)
+void Renderer::deviceToUserDistance(double* x, double* y)
 {
 	glm::vec4 temp_vec=glm::vec4(*x,*y,0,1);
-	glm::mat4 temp_mat=ctm;
+	glm::mat4 temp_mat=_ctm;
 	temp_mat[3][0]=0;
 	temp_mat[3][1]=0;
 	temp_vec=glm::inverse( temp_mat ) * temp_vec;
@@ -199,18 +199,18 @@ void Renderer::Device_To_User_Distance(double* x, double* y)
 	*y=temp_vec.y;
 }
 
-void Renderer::User_To_Device(double* x, double* y)
+void Renderer::userToDevice(double* x, double* y)
 {
 	glm::vec4 temp=glm::vec4(*x,*y,0,1);
-	temp=glm::mat4(ctm) * temp;
+	temp=glm::mat4(_ctm) * temp;
 	*x=temp.x;
 	*y=temp.y;
 }
 
-void Renderer::User_To_Device_Distance(double* x, double* y)
+void Renderer::userToDeviceDistance(double* x, double* y)
 {
 	glm::vec4 temp_vec=glm::vec4(*x,*y,0,1);
-	glm::mat4 temp_mat=ctm;
+	glm::mat4 temp_mat=_ctm;
 	temp_mat[3][0]=0;
 	temp_mat[3][1]=0;
 	temp_vec=glm::inverse( temp_mat ) * temp_vec;
@@ -220,171 +220,168 @@ void Renderer::User_To_Device_Distance(double* x, double* y)
 
 //------------------------------------------
 
-void Renderer::Save()
+void Renderer::save()
 {
 	context_att current_context;
-	current_context.ctm = this->ctm;
-	context_stack.push(current_context);
+	current_context.ctm = this->_ctm;
+	_context_stack.push(current_context);
 
 }
 
-void Renderer::Restore()
+void Renderer::restore()
 {
-	context_att prev_context = context_stack.top();
-	this->ctm = prev_context.ctm;
-	context_stack.pop();
-    view=ctm;
+	context_att prev_context = _context_stack.top();
+	this->_ctm = prev_context.ctm;
+	_context_stack.pop();
+  _view=_ctm;
    
 }
 
 //------------------------------------------
 
-void Renderer::Add_New_Shape_Entity()
+void Renderer::addNewShapeEntity()
 {
-	if(current_gl_entity!=NULL)
-	delete current_gl_entity;
+	if(_current_gl_entity!=NULL)
+	delete _current_gl_entity;
 
-	current_gl_entity = new Shape_Entity();
-  current_gl_entity->SetType(shaders);
+	_current_gl_entity = new Shape_Entity();
 }
 
-void Renderer::Add_New_Gradient_Entity()
+void Renderer::addNewGradientEntity()
 {
-  if(current_gl_entity!=NULL)
-  delete current_gl_entity;
+  if(_current_gl_entity!=NULL)
+  delete _current_gl_entity;
 
-  current_gl_entity = new Gradient_Entity();
-  current_gl_entity->SetType(shaders);
+  _current_gl_entity = new Gradient_Entity();
 }
 
-void Renderer::Add_New_Text_Entity()
+void Renderer::addNewTextEntity()
 {
-  if(current_gl_entity!=NULL)
-  delete current_gl_entity;
+  if(_current_gl_entity!=NULL)
+  delete _current_gl_entity;
 
-  current_gl_entity = new Text_Entity();
-  current_gl_entity->SetType(shaders);
+  _current_gl_entity = new Text_Entity();
 }
 
 //-------------------------------------------
 //###########################################################################
-void Renderer::Add_Vertex(float x,float y,float z)
+void Renderer::addVertex(float x,float y,float z)
 {
-  //Compute D.. (D=0 if current_vertices=empty) 
-  //              else D= distance(this.xy-current_vertices.xy)
-  if(current_vertices.size()==0)
-    path_distance=0.0f;
+  //Compute D.. (D=0 if _current_vertices=empty) 
+  //              else D= distance(this.xy-_current_vertices.xy)
+  if(_current_vertices.size()==0)
+    _path_distance=0.0f;
   else
   {
-     glm::vec2 P=glm::vec2( (*(current_vertices.rbegin())) );
+     glm::vec2 P=glm::vec2( (*(_current_vertices.rbegin())) );
      glm::vec2 Q=glm::vec2( x , -y);
      float d=glm::length(P-Q);
-     path_distance+=d;
+     _path_distance+=d;
   }
-  current_vertices.push_back( glm::vec4(x,-y,z,path_distance) );
+  _current_vertices.push_back( glm::vec4(x,-y,z,_path_distance) );
 }
 
-void Renderer::Append_Vertex_Data()
+void Renderer::appendVertexData()
 {
- if(current_vertices.size()>1)
+ if(_current_vertices.size()>1)
  {
-  if(fill==true)
+  if(_fill==true)
   {
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     jumps.push_back(current_vertices.size());
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _jumps.push_back(_current_vertices.size());
   }
 
   else
   {
-    if(closed==false)
+    if(_closed==false)
     {
-     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     vertex_data.push_back( *(current_vertices.rbegin()+1) );    // 2nd Last
+     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
 
-     jumps.push_back(current_vertices.size()+2);
+     _jumps.push_back(_current_vertices.size()+2);
     }
 
     else
     {
-     vertex_data.push_back( *(current_vertices.rbegin()) );  // last
-     vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     vertex_data.push_back( *(current_vertices.begin())  );    // 1st
-     vertex_data.push_back( *(current_vertices.begin()+1)  );  // 2nd
+     _vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
+     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
+     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
 
-     jumps.push_back(current_vertices.size()+3);
+     _jumps.push_back(_current_vertices.size()+3);
     }
    }
  }
 
- else if(current_vertices.size()==1)
+ else if(_current_vertices.size()==1)
  {
-    vertex_data.insert( vertex_data.end() , current_vertices.begin() , current_vertices.end() );
-     jumps.push_back(current_vertices.size());
+    _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+     _jumps.push_back(_current_vertices.size());
  }
 
-  current_vertices.clear();
+  _current_vertices.clear();
 }
 
-void Renderer::Jump()
+void Renderer::jump()
 {
-    Append_Vertex_Data();
-    closed=false;
-    path_distance=0.0f;
+    appendVertexData();
+    _closed=false;
+    _path_distance=0.0f;
 }
 
 
-void Renderer::Close_Loop()
+void Renderer::closeLoop()
 {
-  closed=true;
+  _closed=true;
 }
 
-void Renderer::Clear_Data()
+void Renderer::clearData()
 {
-  closed=false;
-  fill=false;
-  path_distance=0.0f;
-  vertex_data.clear();
-	current_vertices.clear();
-	jumps.clear();
+  _closed=false;
+  _fill=false;
+  _path_distance=0.0f;
+  _vertex_data.clear();
+	_current_vertices.clear();
+	_jumps.clear();
   
 }
 
 //----------------------------------------------------
 
-void Renderer::Add_Data_To_GL_Entity()
+void Renderer::addDataToCurrentEntity()
 {
-    Append_Vertex_Data();
+    appendVertexData();
 
-   current_gl_entity->LoadVertexData(&vertex_data[0].x , vertex_data.size()*(4*sizeof(float)) , jumps );
+   _current_gl_entity->loadVertexData(&_vertex_data[0].x , _vertex_data.size()*(4*sizeof(float)) , _jumps );
    
-    current_gl_entity->SetLineWidth(line_width);                        // ALERT:
-    current_gl_entity->SetDashes(dashes_data,dashes_size,dashes_sum);   // THIS Order
-    current_gl_entity->SetFillMode(fill);                               // Is Fixed!!!
-    current_gl_entity->SetType(shaders);
-    current_gl_entity->SetFont(fonts,font_style);
-    current_gl_entity->AddTextData(vertex_data[0], text_value, text_height, no_text_magnify);
+    _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
+    _current_gl_entity->setDashes(_dashes_data,_dashes_size,_dashes_sum);   // THIS Order
+    _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
+    _current_gl_entity->setType(_shaders);
+    _current_gl_entity->setFont(_fonts,_font_style);
+    _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);
 }
 
-void Renderer::Select_Fill()
+void Renderer::selectFill()
 {
-  fill=true;
+  _fill=true;
 }
 
-void Renderer::Select_Line_Width(float width)
+void Renderer::selectLineWidth(float width)
 {
-   line_width=width;
+   _line_width=width;
 	
 }
 
-void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double offset, bool scaled)
+void Renderer::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
 {
   
    if(num_dashes==0)
    { 
-     dashes_size=0;
-     dashes_sum=0;
-     dashes_data.clear();
+     _dashes_size=0;
+     _dashes_sum=0;
+     _dashes_data.clear();
    }
 
    else
@@ -397,12 +394,12 @@ void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double 
        
         while(r--)
         { 
-            dashes_size+=num_dashes;   
+            _dashes_size+=num_dashes;   
             for(int i=0;i<num_dashes;i++)
             {
               d=(float)(floor(dashes[i]+1));
-              dashes_sum+=d;
-              dashes_data.push_back(d);
+              _dashes_sum+=d;
+              _dashes_data.push_back(d);
             }
         }
 
@@ -410,109 +407,109 @@ void Renderer::Select_Dashes(const double* dashes, const int num_dashes, double 
 
 }
 
-void Renderer::Select_Color(float R,float G,float B,float A)
+void Renderer::selectColor(float R,float G,float B,float A)
 {
 
-  shaders.basic_shader->Bind();
-  shaders.basic_shader->SetUniform4f("u_Color",R,G,B,A);
-  shaders.basic_shader->UnBind();
+  _shaders.basic_shader->bind();
+  _shaders.basic_shader->setUniform4f("u_Color",R,G,B,A);
+  _shaders.basic_shader->unbind();
 
-  shaders.thickline_shader->Bind();
-  shaders.thickline_shader->SetUniform4f("u_Color",R,G,B,A);
-  shaders.thickline_shader->UnBind();
+  _shaders.thickline_shader->bind();
+  _shaders.thickline_shader->setUniform4f("u_Color",R,G,B,A);
+  _shaders.thickline_shader->unbind();
 
-  shaders.linepattern_shader->Bind();
-  shaders.linepattern_shader->SetUniform4f("u_Color",R,G,B,A);
-  shaders.linepattern_shader->UnBind();
+  _shaders.linepattern_shader->bind();
+  _shaders.linepattern_shader->setUniform4f("u_Color",R,G,B,A);
+  _shaders.linepattern_shader->unbind();
 
-  shaders.text_shader->Bind();
-  shaders.text_shader->SetUniform4f("u_Color",R,G,B,A);
-  shaders.text_shader->UnBind();
+  _shaders.text_shader->bind();
+  _shaders.text_shader->setUniform4f("u_Color",R,G,B,A);
+  _shaders.text_shader->unbind();
 }
 
 
-void Renderer::Select_Font_Size(float size, bool deviceCoords)
+void Renderer::selectFontSize(float size, bool deviceCoords)
 {
-   text_height=size;
-   no_text_magnify=deviceCoords;
+   _text_height=size;
+   _no_text_magnify=deviceCoords;
 }
 
-void Renderer::Select_Font_Face(const char* text_style)
+void Renderer::selectFontFace(const char* text_style)
 {
-   font_style=text_style;
+   _font_style=text_style;
 }
 
-void Renderer::Select_Font_Value(const char* text_val)
+void Renderer::selectFontValue(const char* text_val)
 {
-   text_value=text_val;
+   _text_value=text_val;
 }
 
 
 //---------------------gradient------------------------
 
-void Renderer::Add_Linear_Gradient(float x0,float y0,float x1,float y1)
+void Renderer::addLinearGradient(float x0,float y0,float x1,float y1)
 {
-    current_gl_entity->AddLinearGradient(x0,-y0,x1,-y1);   // !!! BEWARE !!!
+    _current_gl_entity->addLinearGradient(x0,-y0,x1,-y1);   // !!! BEWARE !!!
 }
 
-void Renderer::Add_Gradient_Color_Point(float R,float G,float B,float A)
+void Renderer::addGradientColorPoint(float R,float G,float B,float A)
 {
-    current_gl_entity->AddGradientColorPoint(R,G,B,A);
+    _current_gl_entity->addGradientColorPoint(R,G,B,A);
 }
 
 //----------------------------------------------------------
-void Renderer::Set_Default()
+void Renderer::setDefault()
 {
-      Clear_Data();
+      clearData();
      
-      font_style="arial";
-      text_value=" ";
-      text_height=12;
-      no_text_magnify=false;
+      _font_style="arial";
+      _text_value=" ";
+      _text_height=12;
+      _no_text_magnify=false;
 }
 
-void Renderer::Render()
+void Renderer::render()
 {
       //load data to current entity
-      Add_Data_To_GL_Entity();
+      addDataToCurrentEntity();
       
-      // Send the proj & view matrix needed to draw
-      current_gl_entity->Draw(proj,projB,view);
+      // Send the _proj & _view matrix needed to draw
+      _current_gl_entity->draw(_proj,_projB,_view);
 
       //Free the GPU memory
-      current_gl_entity->FreeGPU();
+      _current_gl_entity->freeGPU();
       
       //Clear data in buffer(CPU)
-      Set_Default();
+      setDefault();
 
       //Adding a new entity( Shape_entity )
-      Add_New_Shape_Entity();    
+      addNewShapeEntity();    
 }
 
-void Renderer::Render_Cached_Entity(GL_Entity* cached_entity)
+void Renderer::renderCachedEntity(GL_Entity* cached_entity)
 {
   
-     current_gl_entity->UnBind();
+     _current_gl_entity->unbind();
     
-     Save();
+     save();
 	 
-       cached_entity->Draw(proj,projB,view);
+       cached_entity->draw(_proj,_projB,_view);
  
-     Restore();
+     restore();
    
 }
 
-void Renderer::Render_Cached_Pack(GL_Pack* pack)
+void Renderer::renderCachedPack(GL_Pack* pack)
 {
  
-   int l=pack->Pack_Size();
+   int l=pack->packSize();
 
    GL_Entity* gl_entity_in_pack;
 
    for(int i=0;i<l;i++)
    {
-      gl_entity_in_pack=pack->Get_GL_Entity_At(i);
-      Render_Cached_Entity(gl_entity_in_pack);
+      gl_entity_in_pack=pack->getEntityAt(i);
+      renderCachedEntity(gl_entity_in_pack);
    }
 
 }
