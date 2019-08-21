@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "vertexbuffer.h"
-#include "indexbuffer.h"
 #include "vertexarray.h"
 #include "vertexbufferlayout.h"
 #include "shader.h"

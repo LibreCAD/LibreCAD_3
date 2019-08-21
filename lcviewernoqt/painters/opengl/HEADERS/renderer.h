@@ -30,18 +30,6 @@ namespace lc
 	{
 		namespace opengl
 		{
-//---------------Error handling(if needed)----------------------
-
- #define ASSERT(x) if (!(x)) raise(SIGINT);
- 
- #define GLCall(x) GLClearError();\
-   x;\
-   ASSERT(GLLogCall(#x,__FILE__,__LINE__))
-
-
-
-void GLClearError();
-bool GLLogCall(const char* function,const char* file,int line);
 
 //--------------------------------------------------------------
 

@@ -64,7 +64,6 @@ drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
 viewersettings.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexbuffer.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/indexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexarray.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shape_entity.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gradient_entity.cpp
@@ -130,7 +129,6 @@ drawitems/lcvinsert.h
 viewersettings.h
 
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbuffer.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/indexbuffer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexarray.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbufferlayout.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_entity.h
@@ -143,7 +141,6 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/font_book.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/cacher.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/renderer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shader.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/debug.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.h
 )
 

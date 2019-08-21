@@ -1,5 +1,4 @@
 #include "cacher.h"
-#include "debug.h"
 #include <QtDebug>
 using namespace lc::viewer::opengl;
 
@@ -11,7 +10,7 @@ using namespace lc::viewer::opengl;
 
         readyFreshPack();
 
-     	DebugMessage("Constructor cacher");
+     	qDebug("Constructor cacher");
   }
 
 	Cacher::~Cacher()

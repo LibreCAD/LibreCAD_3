@@ -1,16 +1,15 @@
 #include "shader.h"
-#include "debug.h"
 #include <QtDebug>
 using namespace lc::viewer::opengl;
 
 Shader::Shader()
 {
-	DebugMessage("Constructor Shader");
+	qDebug("Constructor Shader");
 }
 
 Shader::~Shader()
 {
-	DebugMessage("Destructor Shader");
+	qDebug("Destructor Shader");
     glDeleteProgram(_shader_id);
 }
 
