@@ -3,7 +3,7 @@
 #include "../painters/lcpainter.h"
 #include "cad/geometry/geoarea.h"
 #include "cad/meta/color.h"
-#include <QtDebug>
+
 using namespace lc;
 using namespace lc::viewer::drawable;
 
@@ -17,7 +17,6 @@ Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& mino
 }
 
 void Grid::draw(event::DrawEvent const & event) const {
-     qDebug( "Grid draw()");
     
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
@@ -68,16 +67,11 @@ void Grid::draw(event::DrawEvent const & event) const {
     double left = updateRect.minP().x() - fmod(updateRect.minP().x(), gridSize);
     double top = updateRect.maxP().y() - fmod(updateRect.maxP().y(), gridSize);
 
-     //qDebug("left=%d top=%d",left,top);
-     //qDebug("maxPx=%f minPy=%f",updateRect.maxP().x(),updateRect.minP().y());
-   
-
     painter.line_width(1);
     for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
         painter.move_to(x, updateRect.maxP().y());
         painter.line_to(x, updateRect.minP().y()); 
-       // qDebug("line from (%f ,%f ) to (%f , %f)",x,updateRect.maxP().y(),x,updateRect.minP().y());
-    }
+     }
 
     for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
         painter.move_to(updateRect.minP().x(), y);

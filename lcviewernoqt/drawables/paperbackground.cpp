@@ -1,5 +1,5 @@
 #include "paperbackground.h"
-#include <QtDebug>
+
 using namespace lc;
 using namespace lc::viewer::drawable;
 
@@ -7,7 +7,7 @@ PaperBackground::PaperBackground(int width,int height) : _width(width), _height(
 }
 
 void PaperBackground::draw(event::DrawEvent const & event) const {
-    qDebug( "PaperBackground draw()");
+    
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
     unsigned long patId = painter.pattern_create_linear(0.0,  updateRect.minP().y(),  0.0, updateRect.maxP().y());

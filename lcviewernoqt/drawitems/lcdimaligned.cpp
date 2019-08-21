@@ -3,7 +3,7 @@
 #include "lcdimaligned.h"
 #include "endcaps.h"
 #include <cad/tools/string_helper.h>
-#include <QtDebug>
+
 using namespace lc::viewer;
 
 LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned) :
@@ -13,8 +13,7 @@ LCDimAligned::LCDimAligned(const lc::entity::DimAligned_CSPtr& dimAligned) :
 
 void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
     const double capSize = 10.;
- qDebug("===============================LCDimAligned===================================");
-   
+ 
     // Decide to show the explicit value or the measured value
     std::string value = lc::tools::StringHelper::dim_value(
             _dimAligned->explicitValue(),
@@ -48,11 +47,9 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
         painter.line_to(p2.x(), p2.y());
         painter.line_to(_dimAligned->definitionPoint2().x(), _dimAligned->definitionPoint2().y());
         
-        qDebug("---------------1");
-        /* draw a nice line for text
+       /* draw a nice line for text
          */
         if (std::abs(d0ext.angleTo(p2ext)) >= 90. / 180.*M_PI) {
-             qDebug("---------------1-T-1");
             painter.move_to(d0ext.x() + te.width, d0ext.y());
             painter.line_to(d0ext.x(), d0ext.y());
             painter.stroke();
@@ -67,7 +64,6 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
             );
         }
         else {
-            qDebug("---------------1-T-2");
             painter.move_to(p2ext.x() + te.width, p2ext.y());
             painter.line_to(p2ext.x(), p2ext.y());
             painter.stroke();
@@ -101,7 +97,6 @@ void LCDimAligned::draw(LcPainter &painter, const LcDrawOptions &options, const 
         ) ;
     }
     else {
-        qDebug("---------------2");
         painter.move_to(_dimAligned->definitionPoint3().x(), _dimAligned->definitionPoint3().y());
         painter.line_to(_dimAligned->definitionPoint().x(), _dimAligned->definitionPoint().y());
         painter.line_to(p2.x(), p2.y());

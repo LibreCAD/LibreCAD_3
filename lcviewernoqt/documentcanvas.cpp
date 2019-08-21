@@ -37,7 +37,7 @@
 #include <cmath>
 
 #include <typeinfo>
-#include <QtDebug>
+
 using namespace lc;
 using namespace lc::viewer;
 
@@ -89,11 +89,7 @@ DocumentCanvas::DocumentCanvas(const std::shared_ptr<lc::storage::Document>& doc
         painter.stroke();
         painter.dash_destroy();
         painter.restore();
-    };
-
-
-    qDebug("DocCanvas  Constructor %u",this);
-    
+    }; 
 }
 
 DocumentCanvas::~DocumentCanvas() {
@@ -109,7 +105,6 @@ DocumentCanvas::~DocumentCanvas() {
 
 void DocumentCanvas::setPainter(LcPainter* painter)
 {  
-    qDebug("DocCanvas  SetPainter-- %u  with %u",_painterPtr,painter);
     _painterPtr=painter;
 }
 
@@ -160,9 +155,6 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     painter.save();
     double refX = deviceCenterX;
     double refY = deviceCenterY;
-
-     //qDebug("Document canvas zoom2 factor=%f Ux=%f Uy=%f Rx=%f Ry=%f relative_zoom=%d",factor,userCenterX,userCenterY,refX,refY,relativezoom);
-   
     painter.reset_transformations();
     painter.scale(factor);
     painter.device_to_user(&refX, &refY);
@@ -211,8 +203,6 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
 
     switch(type) {
         case VIEWER_BACKGROUND: {
-            qDebug("=========================RENDER VIEWER_BACKGROUND===================");
-            
             painter.clear(0.133,0.545,0.133); 
             painter.lineWidthCompensation(0.);
             _background(drawEvent);
@@ -222,7 +212,6 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         case VIEWER_DOCUMENT: {
             // Draw Document
             // caller is responsible for clearing    painter.clear(1., 1., 1., 0.);
-            qDebug("=========================RENDER VIEWER_DOCUMENT=====================");
             painter.source_rgb(1., 1., 1.);
             painter.lineWidthCompensation(0.5);
             painter.enable_antialias();
@@ -234,9 +223,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                     visibleDrawables.push_back(di);
                 }
             });
-           // qDebug("----------------------------------------");
             for(const auto& di: visibleDrawables) {
-                qDebug("----to render-- entity ID=%u",(di->entity())->id());
                 
                  if(painter.isEntityCached( (di->entity())->id() ) == true)
                  {  
@@ -256,9 +243,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         }
 
         case VIEWER_FOREGROUND: {
-
-            qDebug("========================RENDER VIEWER_FOREGROUND======================");
-            
+ 
             _foreground(drawEvent);
 
             // Draw selection rectangle
@@ -453,7 +438,6 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     
     
     LcDrawOptions lcDrawOptions;
-  //qDebug("--cacheEntity--- painter got here %u",_painterPtr);
     double x = 0.;
     double y = 0.;
     double w = _deviceWidth;
@@ -502,8 +486,6 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     );
 
     //===========Here caching happens==============
- //qDebug(" XXXXXXXXXX CACHE ENTITY  XXXXXX ID=%u",id);
-   
     drawable->draw( (*cachepainter), lcDrawOptions, visibleUserArea);
     cachepainter->finishcaching(id);
     cachepainter->restore();  
@@ -522,9 +504,6 @@ void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
     auto entity = event.entity();
     auto drawable = asDrawable(entity);
     _entityDrawItem.insert(std::make_pair(entity->id(), drawable));
-
-    qDebug("     |----on_addEntityEvent-------------id=%u-----|",(event.entity())->id());
-
 }
 
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
@@ -533,8 +512,6 @@ void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& ev
     _entityDrawItem.erase((event.entity())->id());
     (*_painterPtr).deleteEntityCached( (event.entity())->id() );  // Delete the cacahed pack
 
-    qDebug("     |--------on_removeEntityEvent------id=%u-----|",(event.entity())->id());
-  
 }
 
 std::shared_ptr<lc::storage::Document> DocumentCanvas::document() const {
