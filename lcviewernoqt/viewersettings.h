@@ -6,7 +6,6 @@
 
 namespace lc {
     namespace viewer {
-        extern lc::storage::settings::ModuleSettings shaderPathSettings;
-        extern lc::storage::settings::ModuleSettings fontPathSettings;
-    }
+        extern lc::storage::settings::ModuleSettings resourcesPathSettings;
+        }
 }

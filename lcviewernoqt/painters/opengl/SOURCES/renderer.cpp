@@ -52,8 +52,8 @@ Renderer::Renderer()
    _ctm=glm::mat4(1.0f);   
    _view=_ctm;
 
-   _shader_path=(lc::viewer::shaderPathSettings.get(SETTINGS_GL_SHADER_PATH)->getString());
-   _font_path=(lc::viewer::fontPathSettings.get(SETTINGS_GL_FONT_PATH)->getString());
+   _shader_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_SHADER_PATH)->getString());
+   _font_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_FONT_PATH)->getString());
 
  
    DebugMessage(_shader_path);
