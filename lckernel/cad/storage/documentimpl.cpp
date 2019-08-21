@@ -46,10 +46,10 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
-    //if (_storageManager->entityByID(cadEntity->id()) != nullptr)
-    // {
+    if (_storageManager->entityByID(cadEntity->id()) != nullptr)
+     {
         removeEntity(cadEntity);
-    //}
+     }
 
     _storageManager->insertEntity(cadEntity);
     event::AddEntityEvent event(cadEntity);
@@ -75,12 +75,12 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
         }
     }
     
-    //if (_storageManager->entityByID(entity->id()) != nullptr) 
-    //{
+    if (_storageManager->entityByID(entity->id()) != nullptr) 
+    {
         _storageManager->removeEntity(entity);
         event::RemoveEntityEvent event(entity);
         removeEntityEvent()(event);
-   // }
+    }
 }
 
 
