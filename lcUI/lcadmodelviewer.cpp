@@ -5,7 +5,6 @@ using namespace lc::viewer;
 
 LCADModelViewer::LCADModelViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id)
 {
-    qDebug( "lcadmodelviewer--- Constructor()--- object= %u parent=%u id=%d",this,parent,id );
     _gradientBackground = std::make_shared<drawable::GradientBackground>(lc::Color(0x07, 0x15, 0x11), lc::Color(0x06, 0x35, 0x06));
     _grid = std::make_shared<drawable::Grid>(20, lc::Color(0x40, 0x48, 0x40), lc::Color(0x80, 0x90, 0x80));
     _cursor = std::make_shared<drawable::Cursor>(40, this->documentCanvas(), lc::Color(0xff, 0x00, 0x00), lc::Color(0x00, 0xff, 0x00));
@@ -13,7 +12,6 @@ LCADModelViewer::LCADModelViewer(QWidget* parent,int id = 0):LCADViewer(parent),
 }
 
 void LCADModelViewer::setDocument(std::shared_ptr<lc::storage::Document> document){
-    qDebug( "lcadmodelviewer--- setDocument()--- object= %u",this);
     
     LCADViewer::setDocument(document,nullptr);
     this->documentCanvas()->background().connect<drawable::GradientBackground, &drawable::GradientBackground::draw>(_gradientBackground.get());

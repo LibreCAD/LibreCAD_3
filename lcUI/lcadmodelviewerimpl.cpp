@@ -7,7 +7,6 @@ using namespace lc::ui;
 LCADModelViewerImpl::LCADModelViewerImpl(QWidget* parent):QWidget(parent),_document(nullptr){
     _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
    
-   qDebug( "lcadmodelviewerimpl--- Constructor()--- object= %u parent=%u",this,parent );
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
@@ -17,8 +16,6 @@ LCADModelViewerImpl::LCADModelViewerImpl(QWidget* parent):QWidget(parent),_docum
     //For now splitter to two views
     auto splitter = new QSplitter(this);
     gridLayout->addWidget(splitter, 0, 0, 1, 1);
-    qDebug( "lcadmodelviewerimpl---constructor()--- size of _viewer= %d",_viewers.size() );
-   
     auto v=getViewer();
     v->setFocused(true);
     splitter->addWidget(v);
@@ -28,7 +25,6 @@ LCADModelViewerImpl::LCADModelViewerImpl(QWidget* parent):QWidget(parent),_docum
 };
 
 void LCADModelViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> document){
-    qDebug( "lcadmodelviewerimpl---setDocument()--- object= %u",this );
     _document = document;
     for(auto _viewer : _viewers){
         _viewer->setDocument(document);
@@ -37,10 +33,8 @@ void LCADModelViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> doc
 
 LCADModelViewer* LCADModelViewerImpl::getViewer()
 {
-    qDebug( "lcadmodelviewerimpl---getViewer()--- object= %u",this );
     auto viewer = new LCADModelViewer(this,_viewers.size());
     _viewers.push_back(viewer);
-    qDebug( "lcadmodelviewerimpl---getviewer()--- size of _viewer= %d",_viewers.size() );
     if(_document){
         viewer->setDocument(_document);
     }

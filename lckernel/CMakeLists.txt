@@ -15,15 +15,6 @@ message("***** LibreCAD kernel *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# --------------Temporary to debug------------------
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-find_package(Qt5Widgets)
-find_package(Qt5Core)
-find_package(Qt5Designer)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-#---------------------------------------------------
 
 # SOURCE FILES
 set(lckernel_srcs
@@ -271,11 +262,7 @@ add_custom_command(
 )
 
 add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
-target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared
-Qt5::Core
-Qt5::Gui
-Qt5::Widgets
-Qt5::UiTools)
+target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecpp_shared)
 
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)

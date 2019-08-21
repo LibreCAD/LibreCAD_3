@@ -9,7 +9,6 @@
 #include <file.h>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
-#include <QtDebug>
 
 using namespace lc::ui;
 using namespace lc::viewer;
@@ -19,8 +18,6 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     _id(0),
     _activeLayer(nullptr) 
     {
-
-        qDebug( "cadmdichild--- Constructor()--- object= %u parent=%u",this,parent );
 
     if (this->objectName().isEmpty()) {
         this->setObjectName(QStringLiteral("CadMdiChild"));
@@ -49,7 +46,7 @@ CadMdiChild::~CadMdiChild() {
 void CadMdiChild::newDocument() {
     // Create a new document with required objects, all objects that are required needs to be passed into the constructor
     _document = std::make_shared<lc::storage::DocumentImpl>(storageManager());
-    qDebug( "cadmdichild---newDocument()--- object= %u",this );
+   
     // Add the document to a LibreCAD Viewer system so we can visualize the document
     _viewerProxy->setDocument(_document);
 

@@ -5,7 +5,6 @@
 #include "documentimpl.h"
 #include <cad/primitive/insert.h>
 #include <cad/primitive/customentity.h>
-#include <QtDebug>
 
 using namespace lc;
 using namespace lc::storage;
@@ -47,7 +46,6 @@ void DocumentImpl::commit(const operation::DocumentOperation_SPtr& operation) {
 }
 
 void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
-    qDebug("\n\n\n\n---------------insertEntity()------------Document");
     //if (_storageManager->entityByID(cadEntity->id()) != nullptr)
     // {
         removeEntity(cadEntity);
@@ -55,7 +53,6 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
 
     _storageManager->insertEntity(cadEntity);
     event::AddEntityEvent event(cadEntity);
-    qDebug("\nXXXXXXXXXXXXXXXX AddEntity XXXXXXXXXXX SIGNAL");
     addEntityEvent()(event);
 
     auto insert = std::dynamic_pointer_cast<const entity::Insert>(cadEntity);
@@ -70,8 +67,7 @@ void DocumentImpl::insertEntity(const entity::CADEntity_CSPtr& cadEntity) {
 }
 
 void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
-    qDebug("\n\n---------------removeEntity()------------Document");
-    auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
+   auto insert = std::dynamic_pointer_cast<const entity::Insert>(entity);
     if (insert != nullptr && std::dynamic_pointer_cast<const entity::CustomEntity>(entity) == nullptr) {
         auto ces = std::dynamic_pointer_cast<const meta::CustomEntityStorage>(insert->displayBlock());
         if (ces != nullptr) {
@@ -82,7 +78,6 @@ void DocumentImpl::removeEntity(const entity::CADEntity_CSPtr& entity) {
     //if (_storageManager->entityByID(entity->id()) != nullptr) 
     //{
         _storageManager->removeEntity(entity);
-        qDebug("XXXXXXXXXXXXXXXX RemoveEntity XXXXXXXXXXX SIGNAL");
         event::RemoveEntityEvent event(entity);
         removeEntityEvent()(event);
    // }

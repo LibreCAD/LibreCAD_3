@@ -77,8 +77,6 @@ namespace lc {
 
                 ~LCADViewer();
 
-                
-
                 void setDocument(std::shared_ptr<lc::storage::Document> document, meta::Block_CSPtr viewport=nullptr);
 
                 void setSnapManager(std::shared_ptr<lc::viewer::manager::SnapManager> snapmanager);
@@ -147,12 +145,6 @@ namespace lc {
                 void updateDocument();
 
                 void on_commitProcessEvent(const lc::event::CommitProcessEvent& event);
-                
-                //################################
-                //just for checking opengl
-                void SAMPLE_OPENGL();               
-                //################################
-
 
                 /* for panning */
                 bool _altKeyActive;
