@@ -50,9 +50,17 @@ function LineOperations:setSecondPoint(eventName, data)
             local relativeCoordinate = lc.geo.Coordinate(angle):multiply(self.length)
             self.builder:setEndPoint(self.builder:startPoint():add(relativeCoordinate))
             self:createEntity()
+            self:close()
         else
             self.length = data["number"]
             message("Click on second point or enter coordinates or enter line angle", self.target_widget)
         end
     end
+end
+
+function LineOperations:manualClose() -- this function gets called after the first line is added to document
+        local newBuilder = lc.builder.LineBuilder()
+        newBuilder:setStartPoint(self.builder:endPoint())
+        self.builder = newBuilder
+        self.step = "setSecondPoint"    
 end
