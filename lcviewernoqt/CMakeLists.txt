@@ -62,7 +62,7 @@ drawables/dragpoints.cpp
 drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
-
+viewersettings.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/indexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexarray.cpp
@@ -127,6 +127,7 @@ events/dragpointsevent.h
 drawables/tempentities.h
 drawables/CursorLocation.h
 drawitems/lcvinsert.h
+viewersettings.h
 
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbuffer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/indexbuffer.h

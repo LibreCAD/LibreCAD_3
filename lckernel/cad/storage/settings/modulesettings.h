@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "doublesettingvalue.h"
+#include "stringsettingvalue.h"
 
 namespace lc {
     namespace storage {

@@ -22,7 +22,7 @@
 #include "cacher.h"
 #include "gl_font.h"
 #include "font_book.h"
-#include "res.h"
+#include "viewersettings.h"
 
 namespace lc
 {
