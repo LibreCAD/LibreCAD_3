@@ -1,6 +1,5 @@
 
 #include "openglpainter.h"
-#include <QtDebug>
 #include <cmath>
 #include <QOpenGLContext>
 
@@ -12,25 +11,22 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
 
    _cacher_painter=new LcCacherPainter();
 
-   qDebug( "=======================Opengl_Painter_Created=============%u w=%d h=%d",this,width,height);
     QOpenGLContext *CC= QOpenGLContext::currentContext();
      if(CC!=0)
     {
-      ReadyShaderProgram();
+       create_resources();
       _renderer.addNewShapeEntity();
     }
 
    
 }
 
-void LcOpenGLPainter::ReadyShaderProgram()
+void LcOpenGLPainter::create_resources()
 {
      LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(_cacher_painter);
      _renderer.setCacherRef(&(((*cp)._cacher)));
 
      _renderer.createResources();
-     qDebug( "==_renderer.CreatingShader() call");
-
     
 }
 
@@ -446,7 +442,6 @@ void LcOpenGLPainter::ReadyShaderProgram()
                  {
                     LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(_cacher_painter);
                     GL_Pack* _gl_pack=((*cp)._cacher).getCachedPack(id);
-                   // qDebug(">>>gl_pack>>> %u size>> %d",_gl_pack,_gl_pack->Pack_Size());
                     _renderer.renderCachedPack(_gl_pack);
                  }
 

@@ -1,15 +1,11 @@
-
 #include "cacherpainter.h"
-#include <QtDebug>
-
 
 LcCacherPainter::LcCacherPainter() 
 {      
-   qDebug(" cacherpainter-- Constructor");
-  
+   
 }
 
-void LcCacherPainter::ReadyShaderProgram()
+void LcCacherPainter::create_resources()
 {
     // NO Need ( main painter uses for rendering)
 }
@@ -382,16 +378,14 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  
                  void LcCacherPainter::startcaching()
                  {
-                    qDebug("<<<<<<<<<<<<<<<<<<<caching STARTS>>>>>>>>>>>>>>>>");
                      _cacher.readyFreshPack();
                  }
 
                  void LcCacherPainter::finishcaching(unsigned long id)
                  {
-                    qDebug("<<<<<<<<<<<<<<<<<<<caching FINISH>>>>>>>>>>>>>>>>> id=%u",id);
                      _cacher.savePack(id);
 
-                     //_cacher.Log_Cached_Packs();  // DEBUG
+                    //_cacher.Log_Cached_Packs();  // DEBUG
                  }
 
                  LcPainter* LcCacherPainter::getCacherpainter()

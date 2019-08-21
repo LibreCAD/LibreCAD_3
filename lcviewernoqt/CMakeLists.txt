@@ -113,7 +113,6 @@ painters/createpainter.h
 painters/lccairopainter.tcc
 painters/openglpainter.h
 painters/cacherpainter.h
-painters/mydrawing.h
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h

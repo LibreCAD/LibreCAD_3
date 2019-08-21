@@ -17,7 +17,7 @@ namespace lc {
             public:
                 virtual ~LcPainter() = default;
 
-                virtual void ReadyShaderProgram() = 0;
+                virtual void create_resources() = 0;
 
                 virtual void new_device_size(unsigned int width, unsigned int height) = 0;
 

@@ -1,5 +1,5 @@
 #include "cacher.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
   Cacher::Cacher()
@@ -10,7 +10,6 @@ using namespace lc::viewer::opengl;
 
         readyFreshPack();
 
-     	qDebug("Constructor cacher");
   }
 
 	Cacher::~Cacher()
@@ -359,14 +358,6 @@ void Cacher::clearData()
 
     void Cacher::logCachedPacks()   //Temporary to debug
     {
-    	std::map< unsigned long, GL_Pack* >::iterator itr;
-        qDebug("     |MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM|");
-
-        for(itr=_gl_pack_map.begin();itr!=_gl_pack_map.end();itr++)
-        {
-                qDebug("     | pack cached ID =  %u  size=%d  add=%u",itr->first,(itr->second)->packSize(),itr->second);
-               
-        };
-        qDebug("     |WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW|");
+    	
 
     }

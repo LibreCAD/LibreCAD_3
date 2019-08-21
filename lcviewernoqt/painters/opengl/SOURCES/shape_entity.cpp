@@ -1,5 +1,5 @@
 #include "shape_entity.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 Shape_Entity :: Shape_Entity()
@@ -68,7 +68,6 @@ void Shape_Entity::setType(Shaders_book& shaders)
       _shader=shaders.basic_shader;
       _fill_mode=GL_LINE;
       _render_mode=GL_LINE_STRIP_ADJACENCY;
-      qDebug("--basic");
     }
 
   else if( _type == Entity_Type::FILL )         // Filled shape
@@ -76,7 +75,6 @@ void Shape_Entity::setType(Shaders_book& shaders)
      _shader=shaders.basic_shader;
      _fill_mode=GL_FILL;
      _render_mode=GL_TRIANGLE_FAN;
-     qDebug("--filled");
    }
 
   else if( _type == Entity_Type::THICK )         // Thickline
@@ -84,7 +82,6 @@ void Shape_Entity::setType(Shaders_book& shaders)
      _shader=shaders.thickline_shader;
      _fill_mode=GL_FILL;
      _render_mode=GL_LINE_STRIP_ADJACENCY;
-     qDebug("--thick");
    }
 
     else if( _type == Entity_Type::PATTERN )         // Pattern
@@ -92,7 +89,6 @@ void Shape_Entity::setType(Shaders_book& shaders)
      _shader=shaders.linepattern_shader;
      _fill_mode=GL_FILL;
      _render_mode=GL_LINE_STRIP_ADJACENCY;
-     qDebug("--dashed");
    }
 }
 

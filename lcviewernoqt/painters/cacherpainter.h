@@ -26,7 +26,7 @@ using namespace lc::viewer::opengl;
            
                  LcCacherPainter();
 
-                 void ReadyShaderProgram();
+                 void create_resources();
 
                  void new_device_size(unsigned int width, unsigned int height);
 

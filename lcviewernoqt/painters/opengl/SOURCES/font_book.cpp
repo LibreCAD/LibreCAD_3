@@ -1,5 +1,5 @@
 #include "font_book.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 Font_Book::Font_Book()

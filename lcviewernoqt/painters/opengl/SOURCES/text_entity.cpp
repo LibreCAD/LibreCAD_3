@@ -1,5 +1,5 @@
 #include "text_entity.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 Text_Entity :: Text_Entity()

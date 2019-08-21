@@ -1,15 +1,14 @@
 #include "shader.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 Shader::Shader()
 {
-	qDebug("Constructor Shader");
+	
 }
 
 Shader::~Shader()
 {
-	qDebug("Destructor Shader");
     glDeleteProgram(_shader_id);
 }
 
@@ -76,8 +75,6 @@ ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 		}
 	}
    
-  // qDebug("parse shader===> %s \n %s",ss[0].str().c_str(),ss[1].str().c_str());
-   
 	return { ss[0].str() ,ss[1].str() ,ss[2].str() };
 }
 
@@ -88,13 +85,11 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 
 	if(shaderID==0)
 	{
-		std::cout<<type<<" not created"<<std::endl;
+		//std::cout<<type<<" not created"<<std::endl;
 		return 0;
 	}
     
-    qDebug("compile shader===>  *** %d",shaderID);
-    //qDebug("compile shader===>  %s \n *** %d",shaderCode,shaderID);
-	glShaderSource(shaderID,1,&shaderCode,NULL);
+    glShaderSource(shaderID,1,&shaderCode,NULL);
 	glCompileShader(shaderID);
 
     //--------------
@@ -110,7 +105,7 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 
 		glGetShaderInfoLog(shaderID,length,&length,error_message);
 
-		std::cout<<"Cannot compile"<<type<<std::endl;
+		//std::cout<<"Cannot compile"<<type<<std::endl;
 		std::cout<<error_message<<std::endl;
 
 		delete[] error_message;
@@ -118,7 +113,7 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 		return 0;
 	}
 
-	std::cout<<"compiled OK !!!!- "<<type<<std::endl;
+	//std::cout<<"compiled OK !!!!- "<<type<<std::endl;
     //--------------
 	return shaderID;
 }
@@ -130,7 +125,7 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
 	if(programID==0)
 	{
-		std::cout<<"Program not created"<<std::endl;
+		//std::cout<<"Program not created"<<std::endl;
 		return 0;
 	}
 
@@ -152,7 +147,7 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
 	if(!linkstatus)
 	{
-		std::cout<<"Error linking program"<<std::endl;
+		//std::cout<<"Error linking program"<<std::endl;
 		glDetachShader(programID,vertexShaderID);
 		glDetachShader(programID,geometryShaderID);
 		glDetachShader(programID,fragmentShaderID);
@@ -160,7 +155,7 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
          
         return 0;
 	}
-	std::cout<<"linked program !!! OK"<<std::endl;
+	//std::cout<<"linked program !!! OK"<<std::endl;
 	//--------------------
 
 	return programID;
@@ -212,10 +207,11 @@ int Shader:: getUniformLocation(const std::string& name)
 {
    int location=glGetUniformLocation(_shader_id,name.c_str());
    
-   //qDebug(" -- Location = %d",location);
    if(location==-1)
-   	qDebug("!! NOT FOUND!!!!");
-   //else
-   //	qDebug("-- found !!!!");
+   	{
+   		return -1;
+   		//("!! NOT FOUND!!!!");
+   	}
+   
    return location;
 }

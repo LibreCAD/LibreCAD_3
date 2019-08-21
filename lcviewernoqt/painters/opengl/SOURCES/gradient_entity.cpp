@@ -1,5 +1,5 @@
 #include "gradient_entity.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 Gradient_Entity :: Gradient_Entity()

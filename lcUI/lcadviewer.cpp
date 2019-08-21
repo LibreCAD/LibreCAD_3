@@ -114,11 +114,12 @@ void LCADViewer::initializeGL()
   QOpenGLWidget::makeCurrent();
   QOpenGLContext *CC= QOpenGLContext::currentContext();
   
-  QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
+  /*QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
     logger->initialize();
 
     connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
     logger->startLogging();
+    */
 
   if(CC!=0)
   {

@@ -1,10 +1,10 @@
 #include "gl_font.h"
-#include <QtDebug>
+
 using namespace lc::viewer::opengl;
 
 GL_Font::GL_Font()
 {
-   qDebug("GL_Font constructor");
+   
 }
 
 GL_Font::~GL_Font()
@@ -16,20 +16,18 @@ bool GL_Font::readyTTF(const std::string& path)
 {
   const char* font_path= path.c_str();
 
-  qDebug("GL_Font ReadyCharacters");
-
   FT_Library ft;
   FT_Face face;
 
   if (FT_Init_FreeType(&ft))
   {
-      qDebug("ERROR::FREETYPE: Could not init FreeType Library");
+      //("ERROR::FREETYPE: Could not init FreeType Library");
       
   }
 
   if (FT_New_Face(ft, font_path , 0, &face))
   {
-      qDebug("ERROR::FREETYPE: Failed to load font");  
+      //("ERROR::FREETYPE: Failed to load font");  
   }
 
    FT_Set_Pixel_Sizes(face, 64,64);  
@@ -46,7 +44,7 @@ bool GL_Font::readyTTF(const std::string& path)
       // Load character glyph 
       if (FT_Load_Char(face, c, FT_LOAD_RENDER))
      {
-          qDebug("ERROR::FREETYTPE: Failed to load Glyph");
+          //("ERROR::FREETYTPE: Failed to load Glyph");
           continue;
       }
      // Generate texture
@@ -76,14 +74,6 @@ bool GL_Font::readyTTF(const std::string& path)
 
      glGenerateMipmap(GL_TEXTURE_2D);
 
-    /* qDebug("%d [ %c ] = %d , %d , %d , %d , %d , %d",c,c,
-                                                  face->glyph->bitmap.width,
-                                                  face->glyph->bitmap.rows,
-                                                  face->glyph->bitmap_left, 
-                                                  face->glyph->bitmap_top,
-                                                  face->glyph->advance.x,
-                                                  face->glyph->advance.y);
-      */
       //Now saving coordinate data for the glypph
 
        xpos =    (float)(face->glyph->bitmap_left);

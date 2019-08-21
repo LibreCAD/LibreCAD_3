@@ -34,7 +34,7 @@ using namespace lc::viewer::opengl;
 
                  void new_device_size(unsigned int width, unsigned int height);
 
-                 void ReadyShaderProgram();
+                 void create_resources();
 
                  void new_path();
 
