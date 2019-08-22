@@ -238,6 +238,12 @@ void Cacher::clearData()
         _text_value=text_val;
     }
 
+    GL_Text_Extend Cacher::getTextExtend(const char* text_val)
+    {
+         GL_Text_Extend TE=(_fonts.pickFont(_font_style))->getTextExtend(std::string(text_val),_text_height);
+         return TE;
+    }
+
 
     //--------------------------gradient--------------------------------
 

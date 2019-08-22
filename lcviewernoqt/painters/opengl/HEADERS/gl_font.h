@@ -21,13 +21,28 @@ namespace lc
     namespace opengl
     {
 
+  struct GL_Text_Extend   // Info of cobined "string" glyph(s)
+  {
+    int x_bearing;
+    int y_bearing;
+    int width;
+    int height;
+    int x_advance;
+    int y_advance;  
+  };
 
-  struct Character 
+  struct Character     // Info of a single character glyph
   {
     GLuint     textureID;  // ID handle of the glyph texture
     GLuint     vbo;        //VertexBuffer
     GLuint     vao;        //Vertex Array
-    int        advance_x;  // Offset to advance to next glyph
+ 
+    int x_bearing;
+    int y_bearing;
+    int width;
+    int height;
+    int x_advance;   // Offset to advance to next glyph
+    int y_advance;  
   };
 
 class GL_Font
@@ -47,6 +62,9 @@ class GL_Font
                    glm::mat4 view,
                    glm::mat4 model,
                    Shader* text_shader);
+   GL_Text_Extend getTextExtend(std::string text , int font_size);
+ 
+
 };
 
    }

@@ -245,7 +245,19 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  TextExtends LcCacherPainter::text_extends(const char* text_val)
                  {
+                      TextExtends te;
 
+                       GL_Text_Extend extents=_cacher.getTextExtend(text_val);
+        
+
+                         te.height = extents.height;
+                         te.width = extents.width;
+                         te.x_advance = extents.x_advance;
+                         te.x_bearing = extents.x_bearing;
+                         te.y_advance = extents.y_advance;
+                         te.y_bearing = extents.y_bearing;
+
+                         return te;
                  }
 
                  void LcCacherPainter::quadratic_curve_to(double x1, double y1, double x2, double y2)

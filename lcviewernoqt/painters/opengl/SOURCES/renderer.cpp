@@ -398,6 +398,11 @@ void Renderer::selectFontValue(const char* text_val)
    _text_value=text_val;
 }
 
+GL_Text_Extend Renderer::getTextExtend(const char* text_val)
+{
+    GL_Text_Extend TE=(_fonts.pickFont(_font_style))->getTextExtend(std::string(text_val),_text_height);
+    return TE;
+}
 
 //---------------------gradient------------------------
 

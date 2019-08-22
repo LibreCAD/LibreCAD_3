@@ -118,7 +118,13 @@ bool GL_Font::readyTTF(const std::string& path)
 
     //Finally Save the Character Data
 
-    Character ch = { texture, vbo ,vao , face->glyph->advance.x };
+    Character ch = { texture, vbo ,vao ,
+                     face->glyph->bitmap_left,
+                     face->glyph->bitmap_top,
+                     face->glyph->bitmap.width,
+                     face->glyph->bitmap.rows, 
+                     face->glyph->advance.x,
+                     face->glyph->advance.y };
       
     _characters.insert(std::pair<unsigned int, Character>(c, ch));   
      
@@ -182,11 +188,82 @@ void GL_Font::renderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
         glBindTexture(GL_TEXTURE_2D, 0);
         
         // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-        model=glm::translate(model,glm::vec3( ( (it->second).advance_x >> 6 ),0.0,0.0));
+        model=glm::translate(model,glm::vec3( ( (it->second).x_advance >> 6 ),0.0,0.0));
         
     }
 
     text_shader->unbind();
    
     
+}
+
+GL_Text_Extend GL_Font::getTextExtend(std::string text , int font_size)
+{
+   std::map<unsigned int, Character>::iterator it;
+    
+    QString qs=QString::fromUtf8(text.c_str());
+    std::wstring w_text=qs.toStdWString();
+    
+    // Iterate through all characters
+    std::wstring::const_iterator c;
+
+    int total_adv_x=0;
+    int total_adv_y=0;
+    int bear_x;
+    int bear_y;
+    int height;
+    int width;
+
+    c = w_text.begin();
+    unsigned int v=(unsigned int)((unsigned char)(*c));
+   
+    it=_characters.find(v);
+
+    total_adv_x=((it->second).x_advance >> 6 );
+    total_adv_y=0;
+    bear_x=((it->second).x_bearing);
+    bear_y=((it->second).y_bearing);
+    height=((it->second).height);
+    width=((it->second).width);
+
+    int max_y=bear_y+height;
+
+    for (c = w_text.begin(); c != w_text.end(); c++)
+    {
+        unsigned int v=(unsigned int)((unsigned char)(*c));
+        
+        it=_characters.find(v);
+
+        if(it==_characters.end())
+          it=_characters.find(' ');
+
+        total_adv_x =total_adv_x + ((it->second).x_advance >> 6 );
+
+        if( ((it->second).y_bearing) < bear_y )
+          bear_y=((it->second).y_bearing);
+
+        if( ( ((it->second).y_bearing)+((it->second).height) ) > max_y )
+          max_y=( ((it->second).y_bearing)+((it->second).height) );
+
+        
+    }
+    
+    height=max_y - bear_y;
+    width=total_adv_x;
+
+    total_adv_x *=(font_size/64.0);
+    total_adv_y*=(font_size/64.0);
+    bear_x*=(font_size/64.0);
+    bear_y*=(font_size/64.0);
+    height*=(font_size/64.0);
+    width*=(font_size/64.0);
+
+    GL_Text_Extend TE = { bear_x,
+                          bear_y,
+                          width,
+                          height,
+                          total_adv_x,
+                          total_adv_y };
+
+     return TE;                     
 }

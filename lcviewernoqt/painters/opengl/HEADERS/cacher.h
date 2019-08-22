@@ -129,6 +129,8 @@ public:
     void selectFontFace(const char* text_style);
 
     void selectFontValue(const char* text_val);
+    
+    GL_Text_Extend getTextExtend(const char* text_val);
 
     //----------------------------gradient------------------------------
 
