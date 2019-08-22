@@ -115,7 +115,10 @@ void LcOpenGLPainter::create_resources()
                  }
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
-                 {
+                 {  
+                       if(start>end)
+                        end+=2*PI;
+
                     _renderer.jump();
                     
                       float delta=(std::abs(end-start));
@@ -132,7 +135,10 @@ void LcOpenGLPainter::create_resources()
                  }
 
                  void LcOpenGLPainter::arcNegative(double x, double y, double r, double start, double end)
-                 {
+                 {      
+                        if(start<end)
+                        end-=2*PI;
+
                         _renderer.jump();
 
                         float delta=(std::abs(end-start));

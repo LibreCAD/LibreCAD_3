@@ -79,7 +79,10 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  }
 
                  void LcCacherPainter::arc(double x, double y, double r, double start, double end)
-                 {
+                 {    
+                       if(start>end)
+                        end+=2*PI;
+
                       _cacher.jump();
                     
                       float delta=(std::abs(end-start));
@@ -96,7 +99,10 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  }
 
                  void LcCacherPainter::arcNegative(double x, double y, double r, double start, double end)
-                 {
+                 {     
+                       if(start<end)
+                        end-=2*PI;
+                    
                        _cacher.jump();
 
                         float delta=(std::abs(end-start));
