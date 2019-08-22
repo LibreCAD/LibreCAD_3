@@ -1,7 +1,6 @@
 
 #include "openglpainter.h"
-#include <cmath>
-#include <QOpenGLContext>
+
 
 
 LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height) 
@@ -35,8 +34,6 @@ void LcOpenGLPainter::create_resources()
      if (height == 0) 
         height = 1;     
                    
-   GLfloat aspect = (GLfloat)width / (GLfloat)height;
- 
    glViewport(0, 0, width, height);
 
    _device_width=(float)width;
@@ -177,16 +174,16 @@ void LcOpenGLPainter::create_resources()
                         float SA= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
                         float EA= atan( (rx/ry)* tan(ea) );
 
-                        if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
+                         if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
                          SA+=PI;
 
-                        else if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
+                         if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
                          SA+=2*PI;   
 
                          if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
                          EA+=PI;
 
-                        else if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
+                         if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
                          EA+=2*PI;   
 
 
@@ -393,7 +390,7 @@ void LcOpenGLPainter::create_resources()
 
                  unsigned char* LcOpenGLPainter::data()
                  {
-
+                      return NULL;
                  }
 
                  void LcOpenGLPainter::set_dash(const double* dashes, const int num_dashes, double offset, bool scaled)
@@ -408,7 +405,7 @@ void LcOpenGLPainter::create_resources()
 
                  long LcOpenGLPainter::image_create(const std::string& file)
                  {
-
+                      return 0;
                  }
 
                  void LcOpenGLPainter::image_destroy(long image)

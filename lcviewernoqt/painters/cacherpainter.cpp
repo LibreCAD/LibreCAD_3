@@ -102,7 +102,7 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                  {     
                        if(start<end)
                         end-=2*PI;
-                    
+
                        _cacher.jump();
 
                         float delta=(std::abs(end-start));
@@ -140,16 +140,16 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                         float SA= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
                         float EA= atan( (rx/ry)* tan(ea) );
 
-                        if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
+                         if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
                          SA+=PI;
 
-                        else if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
+                         if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
                          SA+=2*PI;   
 
                          if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
                          EA+=PI;
 
-                        else if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
+                         if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
                          EA+=2*PI;   
 
 

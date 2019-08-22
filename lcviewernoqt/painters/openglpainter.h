@@ -5,14 +5,18 @@
 #include "gl_pack.h"
 #include "cacher.h"
 #include "cacherpainter.h"
+
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
+
 #include <iostream>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <cad/geometry/geoarea.h>
 #include <map>
+#include <cmath>
 #include <cad/meta/color.h>
 
-#include <QOpenGLWidget>
 using namespace lc::viewer;
 using namespace lc::viewer::opengl;
 
