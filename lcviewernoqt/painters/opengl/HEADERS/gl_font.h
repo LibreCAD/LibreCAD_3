@@ -34,7 +34,7 @@ class GL_Font
 {
    private:
   
-  std::map<GLchar, Character> _characters;
+  std::map<unsigned int, Character> _characters;
 
   
  public:

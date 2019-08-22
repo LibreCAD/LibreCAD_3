@@ -1,5 +1,5 @@
 #include "gl_font.h"
-
+#include <QString>
 using namespace lc::viewer::opengl;
 
 GL_Font::GL_Font()
@@ -38,12 +38,12 @@ bool GL_Font::readyTTF(const std::string& path)
   //=========================================
    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
   
-   for (GLubyte c = 0; c < 128; c++)
+   for (unsigned int c = 0; c < 256; c++)
   {
 
       // Load character glyph 
       if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-     {
+      {
           //("ERROR::FREETYTPE: Failed to load Glyph");
           continue;
       }
@@ -120,7 +120,7 @@ bool GL_Font::readyTTF(const std::string& path)
 
     Character ch = { texture, vbo ,vao , face->glyph->advance.x };
       
-    _characters.insert(std::pair<GLchar, Character>(c, ch));   
+    _characters.insert(std::pair<unsigned int, Character>(c, ch));   
      
 
    }
@@ -138,18 +138,22 @@ void GL_Font::renderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
 {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    std::map<GLchar, Character>::iterator it;
+    std::map<unsigned int, Character>::iterator it;
     
     text_shader->bind();
     text_shader->setUniform1i("u_Texture",0);  // same slot of texture (optional)
 
     glActiveTexture(GL_TEXTURE0);
-   
+    
+    // converting to std::wstring
+    QString qs=QString::fromUtf8(text.c_str());
+    std::wstring w_text=qs.toStdWString();
+    
     // Iterate through all characters
-    std::string::const_iterator c;
-    for (c = text.begin(); c != text.end(); c++)
+    std::wstring::const_iterator c;
+    for (c = w_text.begin(); c != w_text.end(); c++)
     {
-      
+        
         it=_characters.find(*c);
 
         if(it==_characters.end())
