@@ -80,26 +80,6 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
                  void LcCacherPainter::arc(double x, double y, double r, double start, double end)
                  {    
-                       if(start>end)
-                        end+=2*PI;
-
-                      _cacher.jump();
-                    
-                      float delta=(std::abs(end-start));
-                      float angle=0;
-                      long points=CURVE_POINTS;
-                        
-                        for(int i=0;i<=points;i++)
-                        {
-                            angle=( ((float)i)/points)*(delta) + (start);
-                            
-                            _cacher.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
-                        }
-
-                 }
-
-                 void LcCacherPainter::arcNegative(double x, double y, double r, double start, double end)
-                 {     
                        if(start<end)
                         end-=2*PI;
 
@@ -112,6 +92,26 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
                         for(int i=0;i<=points;i++)
                         {
                             angle=start - ( ((float)i)/points)*(delta) ;
+                            
+                            _cacher.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+                        }
+
+                 }
+
+                 void LcCacherPainter::arcNegative(double x, double y, double r, double start, double end)
+                 {     
+                      if(start>end)
+                      end+=2*PI;
+
+                      _cacher.jump();
+                    
+                      float delta=(std::abs(end-start));
+                      float angle=0;
+                      long points=CURVE_POINTS;
+                        
+                        for(int i=0;i<=points;i++)
+                        {
+                            angle=( ((float)i)/points)*(delta) + (start);
                             
                             _cacher.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }

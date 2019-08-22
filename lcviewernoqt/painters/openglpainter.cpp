@@ -113,26 +113,6 @@ void LcOpenGLPainter::create_resources()
 
                  void LcOpenGLPainter::arc(double x, double y, double r, double start, double end)
                  {  
-                       if(start>end)
-                        end+=2*PI;
-
-                    _renderer.jump();
-                    
-                      float delta=(std::abs(end-start));
-                      float angle=0;
-                      long points=CURVE_POINTS;
-                        
-                        for(int i=0;i<points;i++)
-                        {
-                            angle=( ((float)i)/points)*(delta) + (start);
-                            
-                            _renderer.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
-                        }
-
-                 }
-
-                 void LcOpenGLPainter::arcNegative(double x, double y, double r, double start, double end)
-                 {      
                         if(start<end)
                         end-=2*PI;
 
@@ -145,6 +125,26 @@ void LcOpenGLPainter::create_resources()
                         for(int i=0;i<points;i++)
                         {
                             angle=start - ( ((float)i)/points)*(delta) ;
+                            
+                            _renderer.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+                        }
+
+                 }
+
+                 void LcOpenGLPainter::arcNegative(double x, double y, double r, double start, double end)
+                 {      
+                        if(start>end)
+                        end+=2*PI;
+
+                       _renderer.jump();
+                     
+                      float delta=(std::abs(end-start));
+                      float angle=0;
+                      long points=CURVE_POINTS;
+                        
+                        for(int i=0;i<points;i++)
+                        {
+                            angle=( ((float)i)/points)*(delta) + (start);
                             
                             _renderer.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
                         }
