@@ -1,19 +1,14 @@
 #include "renderer.h"
-
 using namespace lc::viewer::opengl;
 
 Renderer::Renderer()
 {
-	
-   _dashes_sum=0; 
-   _dashes_size=0;
-   
-   _ctm=glm::mat4(1.0f);   
-   _view=_ctm;
-   
-   _shader_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_SHADER_PATH)->getString());
-   _font_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_FONT_PATH)->getString());
-
+  _dashes_sum=0; 
+  _dashes_size=0;
+  _ctm=glm::mat4(1.0f);   
+  _view=_ctm;
+  _shader_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_SHADER_PATH)->getString());
+  _font_path=(lc::viewer::resourcesPathSettings.get(SETTINGS_GL_FONT_PATH)->getString());
 }
 
 Renderer::~Renderer()
@@ -50,7 +45,6 @@ void Renderer::createResources()
    
   _cacherPtr->setFontBook(_fonts); 
 
-   
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
@@ -60,10 +54,7 @@ void Renderer::setCacherRef(Cacher* ch)
 {
    _cacherPtr=ch;
 }
-
 //-------------------------------------------------
-
-
 void Renderer::updateProjection(float l,float r,float b,float t)
 {
   _projB=glm::ortho(-r/2,r/2,b/2,-b/2,-1.0f,1.0f);
@@ -89,14 +80,11 @@ void Renderer::updateView()
 {
 	 _view=_ctm;
 }
-
 //------------------------
-
 void Renderer::updateScale(float scale_f)
 {
 	_ctm=glm::scale(_ctm,glm::vec3(scale_f,scale_f,scale_f));	
 	_view=_ctm;
-
 }
 
 void Renderer::updateTranslate(float x,float y)
@@ -179,7 +167,6 @@ void Renderer::save()
 	context_att current_context;
 	current_context.ctm = this->_ctm;
 	_context_stack.push(current_context);
-
 }
 
 void Renderer::restore()
@@ -188,11 +175,8 @@ void Renderer::restore()
 	this->_ctm = prev_context.ctm;
 	_context_stack.pop();
   _view=_ctm;
-   
 }
-
 //------------------------------------------
-
 void Renderer::addNewShapeEntity()
 {
 	if(_current_gl_entity!=NULL)
@@ -218,11 +202,8 @@ void Renderer::addNewTextEntity()
 }
 
 //-------------------------------------------
-//###########################################################################
 void Renderer::addVertex(float x,float y,float z)
 {
-  //Compute D.. (D=0 if _current_vertices=empty) 
-  //              else D= distance(this.xy-_current_vertices.xy)
   if(_current_vertices.size()==0)
     _path_distance=0.0f;
   else
@@ -237,41 +218,41 @@ void Renderer::addVertex(float x,float y,float z)
 
 void Renderer::appendVertexData()
 {
- if(_current_vertices.size()>1)
- {
-  if(_fill==true)
+  if(_current_vertices.size()>1)
   {
-     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-     _jumps.push_back(_current_vertices.size());
-  }
-
-  else
-  {
-    if(_closed==false)
+    if(_fill==true)
     {
-     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
-     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-     _vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
-
-     _jumps.push_back(_current_vertices.size()+2);
+      _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+      _jumps.push_back(_current_vertices.size());
     }
 
     else
     {
-     _vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
-     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-     _vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
-     _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+      if(_closed==false)
+      {
+        _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+        _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+        _vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
 
-     _jumps.push_back(_current_vertices.size()+3);
+        _jumps.push_back(_current_vertices.size()+2);
+      }
+
+      else
+      {
+        _vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
+        _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+        _vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
+        _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+
+        _jumps.push_back(_current_vertices.size()+3);
+      }
     }
-   }
- }
+  }
 
  else if(_current_vertices.size()==1)
  {
     _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-     _jumps.push_back(_current_vertices.size());
+    _jumps.push_back(_current_vertices.size());
  }
 
   _current_vertices.clear();
@@ -279,11 +260,10 @@ void Renderer::appendVertexData()
 
 void Renderer::jump()
 {
-    appendVertexData();
-    _closed=false;
-    _path_distance=0.0f;
+  appendVertexData();
+  _closed=false;
+  _path_distance=0.0f;
 }
-
 
 void Renderer::closeLoop()
 {
@@ -300,9 +280,7 @@ void Renderer::clearData()
 	_jumps.clear();
   
 }
-
 //----------------------------------------------------
-
 void Renderer::addDataToCurrentEntity()
 {
   appendVertexData();
@@ -324,46 +302,42 @@ void Renderer::selectFill()
 
 void Renderer::selectLineWidth(float width)
 {
-   _line_width=width;
-	
+  _line_width=width;
 }
 
 void Renderer::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
 {
-  
-   if(num_dashes==0)
-   { 
-     _dashes_size=0;
-     _dashes_sum=0;
-     _dashes_data.clear();
-   }
+  if(num_dashes==0)
+  { 
+    _dashes_size=0;
+    _dashes_sum=0;
+    _dashes_data.clear();
+  }
 
-   else
-   { 
-     int r;  float d;
-       if(num_dashes%2==0)
-       r=1;
-       else
-       r=2;
+  else
+  { 
+    int r;  float d;
+    if(num_dashes%2==0)
+      r=1;
+    else
+      r=2;
        
-        while(r--)
-        { 
-            _dashes_size+=num_dashes;   
-            for(int i=0;i<num_dashes;i++)
-            {
-              d=(float)(floor(dashes[i]+1));
-              _dashes_sum+=d;
-              _dashes_data.push_back(d);
-            }
-        }
-
+    while(r--)
+    { 
+      _dashes_size+=num_dashes;   
+      for(int i=0;i<num_dashes;i++)
+      {
+        d=(float)(floor(dashes[i]+1));
+        _dashes_sum+=d;
+        _dashes_data.push_back(d);
+      }
     }
 
+  }
 }
 
 void Renderer::selectColor(float R,float G,float B,float A)
 {
-
   _shaders.basic_shader->bind();
   _shaders.basic_shader->setUniform4f("u_Color",R,G,B,A);
   _shaders.basic_shader->unbind();
@@ -384,24 +358,24 @@ void Renderer::selectColor(float R,float G,float B,float A)
 
 void Renderer::selectFontSize(float size, bool deviceCoords)
 {
-   _text_height=size;
-   _no_text_magnify=deviceCoords;
+  _text_height=size;
+  _no_text_magnify=deviceCoords;
 }
 
 void Renderer::selectFontFace(const char* text_style)
 {
-   _font_style=text_style;
+  _font_style=text_style;
 }
 
 void Renderer::selectFontValue(const char* text_val)
 {
-   _text_value=text_val;
+  _text_value=text_val;
 }
 
 GL_Text_Extend Renderer::getTextExtend(const char* text_val)
 {
-    GL_Text_Extend TE=(_fonts.pickFont(_font_style))->getTextExtend(std::string(text_val),_text_height);
-    return TE;
+  GL_Text_Extend TE=(_fonts.pickFont(_font_style))->getTextExtend(std::string(text_val),_text_height);
+  return TE;
 }
 
 //---------------------gradient------------------------
@@ -419,50 +393,38 @@ void Renderer::addGradientColorPoint(float R,float G,float B,float A)
 //----------------------------------------------------------
 void Renderer::setDefault()
 {
-      clearData();
-     
-      _font_style="arial";
-      _text_value=" ";
-      _text_height=12;
-      _no_text_magnify=false;
+  clearData();   
+  _font_style="arial";
+  _text_value=" ";
+  _text_height=12;
+  _no_text_magnify=false;
 }
 
 void Renderer::render()
 {
   //load data to current entity
-  addDataToCurrentEntity();
-      
+  addDataToCurrentEntity();   
   // Send the _proj & _view matrix needed to draw
   _current_gl_entity->draw(_proj,_projB,_view);
-
   //Free the GPU memory
-  _current_gl_entity->freeGPU();
-      
+  _current_gl_entity->freeGPU();     
   //Clear data in buffer(CPU)
   setDefault();
-
   //Adding a new entity( Shape_entity )
   addNewShapeEntity();    
 }
 
 void Renderer::renderCachedEntity(GL_Entity* cached_entity)
 {
-  
-  _current_gl_entity->unbind();
-    
+  _current_gl_entity->unbind();   
   save();
-	 
   cached_entity->draw(_proj,_projB,_view);
- 
   restore();
-   
 }
 
 void Renderer::renderCachedPack(GL_Pack* pack)
 {
- 
   int l=pack->packSize();
-
   GL_Entity* gl_entity_in_pack;
 
   for(int i=0;i<l;i++)

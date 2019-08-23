@@ -47,12 +47,12 @@ namespace lc
 
 class GL_Font
 {
-   private:
+private:
   
   std::map<unsigned int, Character> _characters;
 
   
- public:
+public:
    	GL_Font();
    ~GL_Font();
    

@@ -12,12 +12,11 @@ namespace lc
 
 class Font_Book
 {
-   private:
-  
-  
+private:
   std::map<const std::string, GL_Font* > _font_map;
   GL_Font* _default_font=NULL;
- public:
+
+public:
    	Font_Book();
    ~Font_Book();
     bool createDefaultFont(const std::string& name,const std::string& ttf_path);

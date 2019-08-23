@@ -62,8 +62,8 @@ ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 				type=ShaderType::VERTEX;
 			else if(line.find("geometry")!=std::string::npos)
 	        {
-	           	  type=ShaderType::GEOMETRY;
-	           	  _has_geometry=true;
+	           	 type=ShaderType::GEOMETRY;
+	           	 _has_geometry=true;
 	        }
 			else if(line.find("fragment")!=std::string::npos)
 	           type=ShaderType::FRAGMENT;

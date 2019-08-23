@@ -16,9 +16,7 @@ Text_Entity::~Text_Entity()
 
 void Text_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
 {
-  
  //---Nothing
-
 }
 
 void Text_Entity::bind()
@@ -41,7 +39,6 @@ void Text_Entity::setModelMatrix(glm::mat4 model)
    _model=model;
 }
 
-
 void Text_Entity::setFillMode(bool fill)
 {
    // NO Need (Used by Shape_Entity)
@@ -56,7 +53,6 @@ void Text_Entity::setDashes(std::vector<float> &dashes, int num_dashes,float sum
 {
    // NO Need (Used by Shape_Entity)
 }
-
 
 void Text_Entity::setColor(float R,float G,float B,float A)
 {
@@ -93,26 +89,24 @@ void Text_Entity::addTextData(glm::vec4 pos , std::string textval , float font_s
     _model=glm::scale( _model,glm::vec3(font_size/64,font_size/64,font_size/64) );   // Scale according to font height
 }
 
-
 void Text_Entity::freeGPU()
 {
   
 }
 
-
 void Text_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
-    //Set the Fill Mode
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  //Set the Fill Mode
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
-    //making a temp model matrix 
-    glm::mat4 temp_model=_model;
+  //making a temp model matrix 
+  glm::mat4 temp_model=_model;
 
-    // If not magnified
-    if(_no_magnify)
+  // If not magnified
+  if(_no_magnify)
     temp_model=glm::scale(temp_model,glm::vec3(1.0f/_view[2][2],1.0f/_view[2][2],1.0f/_view[2][2]) );
 
-   //Finally Render Text
-    _font->renderText( _text, _proj, _view, temp_model,_shader);
+  //Finally Render Text
+  _font->renderText( _text, _proj, _view, temp_model,_shader);
    
 }

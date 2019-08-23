@@ -166,28 +166,23 @@ void main()
 
    //--------------------- deciding in dash or gap-------
             
-             float r=0; float s=0;
-              for(int i=0;i<dashes_size;i++)
-              {
-                 s+=dashes[i];
+    float r=0; float s=0;
+    for(int i=0;i<dashes_size;i++)
+    {
+      s+=dashes[i];
 
-                 r=s/dashes_sum;
+      r=s/dashes_sum;
 
-                 if(R<=r)          // current fragment belong to this
-                 {
-                     if(i%2!=0)          // this is gap
-                     {
-                       discard;
-                     }
-                     break;
-                 }
-               }
+      if(R<=r)          // current fragment belong to this
+      {
+        if(i%2!=0)          // this is gap
+        {
+          discard;
+        }
+          break;
+      }
+    }
                
-
     //---------------------------------------------------- 
-
-  
       out_Color = u_Color;
- 
-   
 } 

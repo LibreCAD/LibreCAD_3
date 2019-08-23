@@ -15,31 +15,22 @@ namespace lc
 
 class GL_Pack
 {
-  private:   
+private:   
     std::vector< GL_Entity* > _gl_entities;   // vector of gl_entity
 
-  public:
+public:
 
 	GL_Pack();
-
 	~GL_Pack();
-
-	//-------------------------------------
-    
-    int packSize();
-
+	  
+	int packSize();
     GL_Entity* getEntityAt(int i);
-
     void pushEntityInPack( GL_Entity* glentity);
-
     void freePackGPU();
 
 };
-
-
-}
-
-}
+		}
+	}
 
 }
 #endif // GL_PACK_H

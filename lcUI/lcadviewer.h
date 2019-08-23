@@ -96,8 +96,8 @@ namespace lc {
                 void updateHelper();
 
             protected:
-               // void paintEvent(QPaintEvent*);
-                 void paintGL();
+                // void paintEvent(QPaintEvent*);
+                void paintGL();
 
                 virtual void mousePressEvent(QMouseEvent* event);
 
@@ -164,9 +164,7 @@ namespace lc {
                 // When set to true, the line width on screen will scale with the zoom factor
                 bool _scaleLineWidth;
 
-                //
                 QPoint startSelectPos;
-
 
                 // Entity container that track's all entities within the document
                 std::shared_ptr<lc::storage::Document> _document;

@@ -19,7 +19,6 @@ ModuleSettings::~ModuleSettings() {
 }
 
 const ISettingValue* ModuleSettings::get(const std::string& name) const {
-   // std::cout << name << std::endl;
     try {
         return _settings.at(name);
     }

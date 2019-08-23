@@ -15,12 +15,9 @@ find_package(Qt5UiTools REQUIRED)
 
 
 # OpenGL  classes---------------------
-    
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
-
-#-----------------------------------------
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
 
 message("***** LibreCAD lcviewernoqt *****")
 
@@ -143,8 +140,6 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/headers/shader.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 )
 
-# --------------------temporary-------------------
-
 # OpenGL & GLEW library-------------------------
 
 find_package(OpenGL REQUIRED)
@@ -158,8 +153,7 @@ endif()
 
 include_directories(
     ${GLEW_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR}
-    )
+    ${OPENGL_INCLUDE_DIR})
 
 message(${OPENGL_INCLUDE_DIR})
 
@@ -170,10 +164,6 @@ add_custom_command(
         OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
         COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
 )
-
- 
-#--------------------------------------------------
-
 
 
 find_package(PkgConfig)

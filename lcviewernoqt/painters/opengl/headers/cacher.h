@@ -26,7 +26,7 @@
 namespace lc
 {
 	namespace viewer
-	{
+    {
 		namespace opengl
 		{
 
@@ -72,110 +72,70 @@ private:
 public:
 
 	Cacher();
-
 	~Cacher();
 
     void setShaderBook(struct Shaders_book& book);
-
     void setFontBook(Font_Book& book);
-
-	//---------------------------For Matrix/ Vectors/ Coordinate-----------
-
+	
+    //---------------------------For Matrix/ Vectors/ Coordinate-----------
 	void updateModel();
 
 	//-----------
-
 	void updateScale(float scale);
-
 	void updateTranslate(float x,float y);
-
     void updateRotate(float angle);
-
     void resetTransformations();
-
     double getScale();
-
     double getTranslateX();
-
     double getTranslateY();    
 
     //---------------Functions manipulating vertex data(raw)----------------------
-
     void addVertex(float x,float y,float z=0.0f);
-    
     void appendVertexData();
-
     void jump();
-
     void clearData();
-
     void closeLoop();
 
 	//------------------------------------for properties ( painter calls)------------------------------------
-  
 	void addDataToCurrentEntity();                      
-
 	void selectFill();
-
     void selectColor(float R,float G,float B,float A);
-
     void selectLineWidth(float width);
-
     void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
-
-    
     void selectFontSize(float size, bool deviceCoords);
-
     void selectFontFace(const char* text_style);
-
     void selectFontValue(const char* text_val);
-    
     GL_Text_Extend getTextExtend(const char* text_val);
 
     //----------------------------gradient------------------------------
-
     void addLinearGradient(float x0,float y0,float x1,float y1);
-
     void addGradientColorPoint(float R,float G,float B,float A);
 
     //--------------------------gl_entity / gl_pack / reset manipulations------------
-    
     void setNewPack();
-
     void setNewShapeEntity();
-
     void setNewGradientEntity();
-
     void setNewTextEntity();
-
     void pushEntityInPack();
-
     void setDefault();
-
     void readyForNextEntity();
-
     void readyFreshPack();
 
     //--------------------------------caching query/insert/delete------------
-
     void savePack(unsigned long id);
-
     bool isPackCached(unsigned long id);
-
     GL_Pack* getCachedPack(unsigned long id);
-
     void erasePack(unsigned long id);
 
     //-------debug------
-
     void logCachedPacks(); 
 
 };
 
 
-}
+        }
 
-}
+    }
 
 }
 #endif // CACHER_H

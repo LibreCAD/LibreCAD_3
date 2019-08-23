@@ -18,15 +18,12 @@ struct Linear_Pattern
    std::vector < glm::vec4 > color_points;
 };
 
-
-
 class Gradient_Entity : public GL_Entity
 {
 private:   
 	VertexArray _vao;
-	VertexBuffer _vbo;                       // GPU Buffer Objects (vertex data)
+	VertexBuffer _vbo;                       // GPU Buffer Objects (vertex data) 
                     
-
 	glm::mat4 _model;                      // model matrix
 
 	GLenum _render_mode;                   //mode for render
@@ -38,39 +35,37 @@ private:
     Linear_Pattern* _pattern;
     std::vector<float> _color_vertex_data;
     Shader* _gradient_shader;
+	
 public:
 	Gradient_Entity();
 	~Gradient_Entity();
-	void loadVertexData(float* vertices,int size,std::vector<int> &jumps);
+	void loadVertexData(float* vertices,int size,std::vector<int> &jumps) override;
 	
-	void bind();
-	void unbind();
+	void bind() override;
+	void unbind() override;
     
-    void setType(Shaders_book& shaders);
-	void setModelMatrix(glm::mat4 model);
+    void setType(Shaders_book& shaders) override;
+	void setModelMatrix(glm::mat4 model) override;
 	
-	void setFillMode(bool fill);
-	void setLineWidth(float width);
-	void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes);
-	void setColor(float R,float G,float B,float A);
+	void setFillMode(bool fill) override;
+	void setLineWidth(float width) override;
+	void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
+	void setColor(float R,float G,float B,float A) override;
 
-	void addLinearGradient(float x0,float y0,float x1,float y1);
-	void addGradientColorPoint(float R,float G,float B,float A);
-	void applyGradient(float* vertices,int size);
+	void addLinearGradient(float x0,float y0,float x1,float y1) override;
+	void addGradientColorPoint(float R,float G,float B,float A) override;
+	void applyGradient(float* vertices,int size) override;
     
-    void setFont(Font_Book& fonts,const std::string& style);
-	void addTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain);
+    void setFont(Font_Book& fonts,const std::string& style) override;
+	void addTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain) override;
 
-	void freeGPU();
+	void freeGPU() override;
 
-	void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view);
+	void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) override;
 };
 
-
-
-    }
-  }
-
+		}
+	}
 }
 
-#endif // SHAPE_ENTITY_H
+#endif // GRADIENT_ENTITY_H

@@ -119,8 +119,6 @@ link_directories(${LUA_LIBRARY_DIRS})
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
-# --------------------temporary-------------------
-
 # OpenGL & GLEW library-------------------------
 
 find_package(OpenGL REQUIRED)
@@ -130,12 +128,9 @@ if(NOT ${OPENGL_FOUND})
     message("OPENGL not found")
 endif()
 
-# include directories----------------------------
-
 include_directories(
     ${GLEW_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR}
-    )
+    ${OPENGL_INCLUDE_DIR})
 
 message(${OPENGL_INCLUDE_DIR})
 #--------------------------------------------------
