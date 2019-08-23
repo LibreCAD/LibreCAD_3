@@ -120,7 +120,7 @@ link_directories(${LUA_LIBRARY_DIRS})
 set(SEPARATE_BUILD OFF)
 
 # OpenGL & GLEW library-------------------------
-
+find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 

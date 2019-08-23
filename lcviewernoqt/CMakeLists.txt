@@ -141,7 +141,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 )
 
 # OpenGL & GLEW library-------------------------
-
+find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
