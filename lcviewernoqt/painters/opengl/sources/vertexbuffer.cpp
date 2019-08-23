@@ -3,12 +3,12 @@ using namespace lc::viewer::opengl;
 
 VertexBuffer::VertexBuffer()
 {
-  
+  //constructor
 }
 
 VertexBuffer::~VertexBuffer()
 {
-   
+   //destructor
 }
 
 void VertexBuffer::gen(const void* data,unsigned int size)

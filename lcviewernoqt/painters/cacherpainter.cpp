@@ -2,7 +2,7 @@
 
 LcCacherPainter::LcCacherPainter() 
 {      
-   
+   //constructor
 }
 
 void LcCacherPainter::create_resources()
@@ -17,7 +17,6 @@ void LcCacherPainter::new_device_size(unsigned int width, unsigned int height)
 
 void LcCacherPainter::new_path()
 {
-
 }
 
 void LcCacherPainter::close_path()
@@ -27,7 +26,6 @@ void LcCacherPainter::close_path()
 
 void LcCacherPainter::new_sub_path()
 {
-
 }
 
 void LcCacherPainter::clear(double r, double g, double b)
@@ -55,7 +53,6 @@ void LcCacherPainter::line_to(double x, double y)
 
 void LcCacherPainter::lineWidthCompensation(double lwc) // When set, we add this to the current linewidth, perhaps we should find a better method
 {
-
 }
 
 void LcCacherPainter::line_width(double lineWidth)
@@ -164,8 +161,7 @@ void LcCacherPainter::ellipse(double cx, double cy, double rx, double ry, double
     Tx=(tx*cos(ra) - ty*sin(ra)) + cx;  // first rotate then shift origin
     Ty=(tx*sin(ra) + ty*cos(ra)) + cy;
 
-    _cacher.addVertex( Tx , Ty );
-              
+    _cacher.addVertex( Tx , Ty );         
   }
 }
 
@@ -289,13 +285,11 @@ void LcCacherPainter::curve_to(double x1, double y1, double x2, double y2, doubl
 }
 
 void LcCacherPainter::save()
-{
-           
+{      
 }
 
 void LcCacherPainter::restore()
-{
-           
+{        
 }
 
 long LcCacherPainter::pattern_create_linear(double x1, double y1, double x2, double y2)
@@ -312,12 +306,10 @@ void LcCacherPainter::pattern_add_color_stop_rgba(long pat, double offset, doubl
 
 void LcCacherPainter::set_pattern_source(long pat)
 {
-
 }
 
 void LcCacherPainter::pattern_destroy(long pat)
 {
-
 }
 
 void LcCacherPainter::fill()
@@ -327,12 +319,10 @@ void LcCacherPainter::fill()
 
 void LcCacherPainter::point(double x, double y, double size, bool deviceCoords)
 {
-
 }
 
 void LcCacherPainter::reset_transformations()
 {
-
 }
 
 unsigned char* LcCacherPainter::data()
@@ -357,27 +347,22 @@ long LcCacherPainter::image_create(const std::string& file)
 
 void LcCacherPainter::image_destroy(long image)
 {
-
 }
 
 void LcCacherPainter::image(long image, double uvx, double vy, double vvx, double vvy, double x, double y)
 {
-
 }
 
 void LcCacherPainter::disable_antialias()
 {
-
 }
 
 void LcCacherPainter::enable_antialias()
 {
-
 }
 
 void LcCacherPainter::getTranslate(double* x, double* y)
 {
-
 }
          
 void LcCacherPainter::startcaching()

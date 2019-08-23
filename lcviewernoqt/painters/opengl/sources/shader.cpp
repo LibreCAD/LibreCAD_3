@@ -4,7 +4,7 @@ using namespace lc::viewer::opengl;
 
 Shader::Shader()
 {
-  
+  //constructor
 }
 
 Shader::~Shader()
@@ -156,7 +156,6 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
   //--------------------
 
   return programID;
-
 }
 
 

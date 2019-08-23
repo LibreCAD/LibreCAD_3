@@ -163,7 +163,6 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     painter.reset_transformations();
     painter.scale(factor);       
     painter.translate(refX - userCenterX,-refY + userCenterY);
-    
 }
 
 void DocumentCanvas::autoScale(LcPainter& painter) {
@@ -194,7 +193,6 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         painter.device_to_user(&x, &y);
         painter.device_to_user_distance(&w, &h);
         visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
-      
     }
 
    
@@ -224,7 +222,6 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                 }
             });
             for(const auto& di: visibleDrawables) {
-                
                  if(painter.isEntityCached( (di->entity())->id() ) == true)
                  {  
                      drawCachedEntity(painter,di);
@@ -243,9 +240,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
         }
 
         case VIEWER_FOREGROUND: {
- 
             _foreground(drawEvent);
-
             // Draw selection rectangle
             if (_selectedArea != nullptr) {
                 _selectedAreaPainter(painter, *_selectedArea, _selectedAreaIntersects);
@@ -435,8 +430,6 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
 
 void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& drawable,
                                 const lc::entity::Insert_CSPtr& insert) {
-    
-    
     LcDrawOptions lcDrawOptions;
     double x = 0.;
     double y = 0.;
@@ -491,7 +484,6 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     cachepainter->restore();  
     cachepainter->dash_destroy();
     //===============================================
-    
 }
 
 void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& event) {
@@ -500,18 +492,15 @@ void DocumentCanvas::on_commitProcessEvent(const lc::event::CommitProcessEvent& 
 
 // This assumes that the entity has already been added to _document->entityContainer()
 void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
-
     auto entity = event.entity();
     auto drawable = asDrawable(entity);
     _entityDrawItem.insert(std::make_pair(entity->id(), drawable));
 }
 
-void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) {
-    
+void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) { 
      entityContainer().remove(event.entity());
     _entityDrawItem.erase((event.entity())->id());
     (*_painterPtr).deleteEntityCached( (event.entity())->id() );  // Delete the cacahed pack
-
 }
 
 std::shared_ptr<lc::storage::Document> DocumentCanvas::document() const {

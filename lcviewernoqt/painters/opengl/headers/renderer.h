@@ -78,7 +78,6 @@ namespace lc
         Cacher* _cacherPtr;
   
       public:
-
         Renderer();
         ~Renderer();
         void createResources();

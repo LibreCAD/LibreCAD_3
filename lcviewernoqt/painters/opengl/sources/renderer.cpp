@@ -13,7 +13,7 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-   
+   //destructor
 }
 
 void Renderer::createResources()
@@ -47,7 +47,6 @@ void Renderer::createResources()
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
 }
 
 void Renderer::setCacherRef(Cacher* ch)
@@ -73,7 +72,6 @@ void Renderer::updateProjection(float l,float r,float b,float t)
     _shaders.linepattern_shader->setUniform2f("WIN_SCALE",r,b);
     _shaders.linepattern_shader->unbind();
   }
-    
 }
 
 void Renderer::updateView()
@@ -278,7 +276,6 @@ void Renderer::clearData()
   _vertex_data.clear();
   _current_vertices.clear();
   _jumps.clear();
-  
 }
 //----------------------------------------------------
 void Renderer::addDataToCurrentEntity()
@@ -432,5 +429,4 @@ void Renderer::renderCachedPack(GL_Pack* pack)
     gl_entity_in_pack=pack->getEntityAt(i);
     renderCachedEntity(gl_entity_in_pack);
   }
-
 }

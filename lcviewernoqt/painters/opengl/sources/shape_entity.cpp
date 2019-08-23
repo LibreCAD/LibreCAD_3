@@ -20,7 +20,7 @@ Shape_Entity :: Shape_Entity()
 
 Shape_Entity::~Shape_Entity()
 {
-  
+  //destructor
 }
 
 void Shape_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
@@ -123,7 +123,7 @@ void Shape_Entity::setDashes(std::vector<float> &dashes, int num_dashes,float su
 
 void Shape_Entity::setColor(float R,float G,float B,float A)
 {
- 
+  // NO Need
 }
 
 void Shape_Entity::addLinearGradient(float x0,float y0,float x1,float y1)

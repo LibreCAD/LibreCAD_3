@@ -47,7 +47,6 @@ namespace lc
       class GL_Font
       {
       private:
-  
         std::map<unsigned int, Character> _characters;
 
       public:

@@ -35,7 +35,6 @@ void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)
 
 void LcOpenGLPainter::new_path()
 {
-
 }
 
 void LcOpenGLPainter::close_path()
@@ -45,7 +44,6 @@ void LcOpenGLPainter::close_path()
 
 void LcOpenGLPainter::new_sub_path()
 {
-
 }
 
 void LcOpenGLPainter::clear(double r, double g, double b)
@@ -75,7 +73,6 @@ void LcOpenGLPainter::line_to(double x, double y)
 
 void LcOpenGLPainter::lineWidthCompensation(double lwc) // When set, we add this to the current linewidth, perhaps we should find a better method
 {
-
 }
 
 void LcOpenGLPainter::line_width(double lineWidth)
@@ -339,12 +336,10 @@ void LcOpenGLPainter::pattern_add_color_stop_rgba(long pat, double offset, doubl
 
 void LcOpenGLPainter::set_pattern_source(long pat)
 {
-
 }
 
 void LcOpenGLPainter::pattern_destroy(long pat)
 {
-
 }
 
 void LcOpenGLPainter::fill()
@@ -354,7 +349,6 @@ void LcOpenGLPainter::fill()
 
 void LcOpenGLPainter::point(double x, double y, double size, bool deviceCoords)
 {
-
 }
 
 void LcOpenGLPainter::reset_transformations()
@@ -384,27 +378,22 @@ long LcOpenGLPainter::image_create(const std::string& file)
 
 void LcOpenGLPainter::image_destroy(long image)
 {
-
 }
 
 void LcOpenGLPainter::image(long image, double uvx, double vy, double vvx, double vvy, double x, double y)
 {
-
 }
 
 void LcOpenGLPainter::disable_antialias()
 {
-
 }
 
 void LcOpenGLPainter::enable_antialias()
 {
-
 }
 
 void LcOpenGLPainter::getTranslate(double* x, double* y)
 {
-
 }
          
 void LcOpenGLPainter::startcaching()

@@ -33,7 +33,6 @@ namespace lc
         Entity_Type _type;                     // Type of entity ( basic/filled/thick/pattern) 
 
       public:
-  
         Shape_Entity();
         ~Shape_Entity();
   

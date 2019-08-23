@@ -4,12 +4,12 @@ using namespace lc::viewer::opengl;
 
 Font_Book::Font_Book()
 {
-   
+   //constructor
 }
 
 Font_Book::~Font_Book()
 {
-  
+  //destructor
 }
 
 bool Font_Book::createDefaultFont(const std::string& name,const std::string& ttf_path)

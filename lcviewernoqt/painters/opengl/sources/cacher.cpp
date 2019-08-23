@@ -6,13 +6,12 @@ Cacher::Cacher()
   _dashes_sum=0; 
   _dashes_size=0;
   _model=glm::mat4(1.0f);
-
   readyFreshPack();
 }
 
 Cacher::~Cacher()
 {
-
+   //destructor
 }
 
 void Cacher::setShaderBook(struct Shaders_book& book)
@@ -26,12 +25,6 @@ void Cacher::setFontBook(Font_Book& book)
 }
 
 //---------------------------For Matrix/ Vectors/ Coordinate-----------
-void Cacher::updateModel()
-{
-
-}
-
-//-----------
 void Cacher::updateScale(float scale)
 {
   _model=glm::scale(_model,glm::vec3(scale,scale,scale));
@@ -79,7 +72,6 @@ void Cacher::addVertex(float x,float y,float z)
     float d=glm::length(P-Q);
     _path_distance+=d;
   }
-  
   _current_vertices.push_back( glm::vec4(x,-y,z,_path_distance) );
 }
 
@@ -145,7 +137,6 @@ void Cacher::clearData()
   _vertex_data.clear();
   _current_vertices.clear();
   _jumps.clear();
-
 }
 
 //---------------------------------------------------------------
@@ -161,8 +152,7 @@ void Cacher::addDataToCurrentEntity()
   _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
   _current_gl_entity->setType(_shaders);
   _current_gl_entity->setFont(_fonts,_font_style);
-  _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);
-        
+  _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);  
 }
 
 void Cacher::selectFill()
@@ -343,10 +333,4 @@ void Cacher::erasePack(unsigned long id)
     (it->second)->freePackGPU();
     _gl_pack_map.erase(it);
   }
-
-}
-
-void Cacher::logCachedPacks()   
-{
-      
 }

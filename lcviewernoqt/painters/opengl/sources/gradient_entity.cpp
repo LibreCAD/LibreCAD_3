@@ -11,7 +11,7 @@ Gradient_Entity :: Gradient_Entity()
 
 Gradient_Entity::~Gradient_Entity()
 {
-  
+   // destructor
 }
 
 void Gradient_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
@@ -36,7 +36,6 @@ void Gradient_Entity::loadVertexData(float* vertices,int size,std::vector<int> &
 
   //--------attaching VB and (its)layout to VA---  
   _vao.addBuffer(_vbo,layout);
-
 }
 
 void Gradient_Entity::bind()
@@ -75,7 +74,7 @@ void Gradient_Entity::setLineWidth(float width)
 
 void Gradient_Entity::setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes)
 {
-  
+  // NOTHING
 }
 
 void Gradient_Entity::setColor(float R,float G,float B,float A)
@@ -127,7 +126,6 @@ void Gradient_Entity::applyGradient(float* vertices,int count)
     _color_vertex_data.push_back( ((_pattern->color_points)[0]).b + d * ratio_B );    // B
     _color_vertex_data.push_back( ((_pattern->color_points)[0]).a + d * ratio_A );    // A
   }
-
 }
 
 void Gradient_Entity::setFont(Font_Book& fonts,const std::string& style)

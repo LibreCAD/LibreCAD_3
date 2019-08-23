@@ -3,11 +3,9 @@
 #include <GL/glew.h>  
 #include <GL/gl.h>
 #include <signal.h> 
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <vector>
 #include <utility>
 #include <iterator> 
@@ -30,7 +28,6 @@ namespace lc
     namespace opengl
     {
       #define PI 3.14159265
-
       class Cacher
       {
       private:   
@@ -65,7 +62,6 @@ namespace lc
         std::map < unsigned long, GL_Pack* > _gl_pack_map;
 
       public:
-
         Cacher();
         ~Cacher();
 
@@ -73,9 +69,6 @@ namespace lc
         void setFontBook(Font_Book& book);
   
         //---------------------------For Matrix/ Vectors/ Coordinate-----------
-        void updateModel();
-
-        //-----------
         void updateScale(float scale);
         void updateTranslate(float x,float y);
         void updateRotate(float angle);
@@ -121,12 +114,7 @@ namespace lc
         bool isPackCached(unsigned long id);
         GL_Pack* getCachedPack(unsigned long id);
         void erasePack(unsigned long id);
-
-        //-------debug------
-        void logCachedPacks(); 
-
       };
-
 
     }
 

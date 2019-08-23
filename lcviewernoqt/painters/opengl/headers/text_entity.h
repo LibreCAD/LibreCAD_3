@@ -19,7 +19,6 @@ namespace lc
         GL_Font* _font=NULL;
   
       public:
-  
         Text_Entity();
         ~Text_Entity();
   

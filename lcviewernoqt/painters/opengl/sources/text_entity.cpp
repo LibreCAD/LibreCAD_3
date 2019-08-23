@@ -11,7 +11,7 @@ Text_Entity :: Text_Entity()
 
 Text_Entity::~Text_Entity()
 {
-  
+  //destructor
 }
 
 void Text_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
@@ -21,12 +21,12 @@ void Text_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jump
 
 void Text_Entity::bind()
 {
-  
+  // text Entity have no own BOs
 }
 
 void Text_Entity::unbind()
 {
-  
+  // text Entity have no own BOs
 }
 
 void Text_Entity::setType(Shaders_book& shaders)
@@ -56,7 +56,7 @@ void Text_Entity::setDashes(std::vector<float> &dashes, int num_dashes,float sum
 
 void Text_Entity::setColor(float R,float G,float B,float A)
 {
- 
+  //No Need
 }
 
 void Text_Entity::addLinearGradient(float x0,float y0,float x1,float y1)
@@ -91,7 +91,7 @@ void Text_Entity::addTextData(glm::vec4 pos , std::string textval , float font_s
 
 void Text_Entity::freeGPU()
 {
-  
+  // text Entity have no own BOs
 }
 
 void Text_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
@@ -108,5 +108,4 @@ void Text_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 
   //Finally Render Text
   _font->renderText( _text, _proj, _view, temp_model,_shader);
-  
 }

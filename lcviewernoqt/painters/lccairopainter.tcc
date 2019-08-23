@@ -480,49 +480,31 @@ public:
     //#################### with OpenGL  ############################
     //##############################################################
     
-    void create_resources()  
-    {                            
-                                 
+    void create_resources(){ 
     }                            
 
-    void new_device_size(unsigned int width, unsigned int height)
-    {
-    
+    void new_device_size(unsigned int width, unsigned int height){
     }
 
-    void startcaching()
-    {
-
+    void startcaching(){
     }
 
-    void finishcaching(unsigned long id)
-    {
-         
+    void finishcaching(unsigned long id){     
     }
 
-    LcPainter* getCacherpainter()
-    {
-    
+    LcPainter* getCacherpainter(){
     }
 
-    bool isEntityCached(unsigned long id)
-    {
-
+    bool isEntityCached(unsigned long id){
     }
 
-    void renderEntityCached(unsigned long id)
-    {
-
+    void renderEntityCached(unsigned long id){
     }
 
-    void deleteEntityCached(unsigned long id)
-    {
-                    
+    void deleteEntityCached(unsigned long id){                
     }
 
-    void dash_destroy()
-    {
-
+    void dash_destroy(){
     }
 
 
