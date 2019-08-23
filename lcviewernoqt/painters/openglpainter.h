@@ -6,7 +6,6 @@
 #include "cacher.h"
 #include "cacherpainter.h"
 
-#include <QOpenGLWidget>
 #include <QOpenGLContext>
 
 #include <iostream>
