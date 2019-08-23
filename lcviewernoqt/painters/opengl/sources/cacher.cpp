@@ -11,7 +11,6 @@ Cacher::Cacher()
 
 Cacher::~Cacher()
 {
-   //destructor
 }
 
 void Cacher::setShaderBook(struct Shaders_book& book)

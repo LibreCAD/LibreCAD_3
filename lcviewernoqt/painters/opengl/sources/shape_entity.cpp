@@ -20,7 +20,6 @@ Shape_Entity :: Shape_Entity()
 
 Shape_Entity::~Shape_Entity()
 {
-  //destructor
 }
 
 void Shape_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)

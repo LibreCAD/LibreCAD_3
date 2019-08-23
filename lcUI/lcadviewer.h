@@ -129,11 +129,9 @@ namespace lc {
                 void selectedItemsEvent(const lc::viewer::event::SelectedItemsEvent&);
 
             public slots:
-
                 void messageLogged(const QOpenGLDebugMessage &msg);
 
             private:
-
                 void initializeGL();
 
                 void createPainters(unsigned int width, unsigned int height);

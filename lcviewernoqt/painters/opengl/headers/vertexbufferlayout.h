@@ -47,10 +47,8 @@ namespace lc
         {
           //static_assert(false);
         }
-
         inline const std::vector<VertexBufferElement> getElements() const { return _elements; }
         inline unsigned int getStride() const { return _stride; }
-
       };
 
       template<>

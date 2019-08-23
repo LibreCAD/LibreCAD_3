@@ -99,5 +99,4 @@ class LcOpenGLPainter : public LcPainter
   bool isEntityCached(unsigned long id) override;
   void renderEntityCached(unsigned long id) override;
   void deleteEntityCached(unsigned long id) override;
-
 };

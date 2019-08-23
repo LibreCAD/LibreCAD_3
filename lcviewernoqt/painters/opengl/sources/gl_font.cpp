@@ -4,12 +4,10 @@ using namespace lc::viewer::opengl;
 
 GL_Font::GL_Font()
 {
-   //constructor
 }
 
 GL_Font::~GL_Font()
 {
-   //destructor
 }
 
 bool GL_Font::readyTTF(const std::string& path)
