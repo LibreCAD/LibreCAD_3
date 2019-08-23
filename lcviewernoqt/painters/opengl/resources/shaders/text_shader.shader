@@ -9,8 +9,8 @@ out vec2 v_TexCoord;
 
 void main() 
 {
-	gl_Position = u_MVP * vec4(pos, 1);
-	v_TexCoord=texCoord;
+  gl_Position = u_MVP * vec4(pos, 1);
+  v_TexCoord=texCoord;
 } 
 
 //-------------------------------------------
@@ -27,6 +27,6 @@ out vec4 out_Color;
 
 void main() 
 {
-	vec4 sampled = vec4(1.0, 1.0, 1.0, texture(u_Texture,v_TexCoord).r);
-	out_Color = u_Color * sampled;
+  vec4 sampled = vec4(1.0, 1.0, 1.0, texture(u_Texture,v_TexCoord).r);
+  out_Color = u_Color * sampled;
 }

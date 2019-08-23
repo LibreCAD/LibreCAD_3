@@ -10,26 +10,26 @@
 
 namespace lc
 {
-	namespace viewer
-	{
-		namespace opengl
-		{
-			class VertexArray
-			{
-			private:
-				unsigned int _va_id;
-			public:		
-				VertexArray();
-				~VertexArray();
+  namespace viewer
+  {
+    namespace opengl
+    {
+      class VertexArray
+      {
+      private:
+        unsigned int _va_id;
+      public:   
+        VertexArray();
+        ~VertexArray();
 
-				void gen();
-				void bind() const;
-				void unbind() const;
-				void freeGPU() const;
-				void addBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout);
-			};
-		}
-	}
+        void gen();
+        void bind() const;
+        void unbind() const;
+        void freeGPU() const;
+        void addBuffer(const VertexBuffer& vb,const VertexBufferLayout& layout);
+      };
+    }
+  }
 }
 
 #endif // VERTEXARRAY_H

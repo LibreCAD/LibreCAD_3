@@ -9,8 +9,8 @@ out vec2 v_TexCoord;
 
 void main() 
 {
-	gl_Position = u_MVP * vec4(pos, 1);
-	v_TexCoord=texCoord;
+  gl_Position = u_MVP * vec4(pos, 1);
+  v_TexCoord=texCoord;
 } 
 
 //-------------------------------------------
@@ -30,9 +30,9 @@ const float edge=0.01;
 
 void main() 
 {
-	float distance = 1.0 - texture2D(u_Texture,v_TexCoord).r;
+  float distance = 1.0 - texture2D(u_Texture,v_TexCoord).r;
 
-	float alpha= 1.0 - smoothstep(width, width + edge , distance);
+  float alpha= 1.0 - smoothstep(width, width + edge , distance);
 
-	out_Color = vec4(u_Color.rgb ,  alpha);
+  out_Color = vec4(u_Color.rgb ,  alpha);
 }

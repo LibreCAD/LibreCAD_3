@@ -7,7 +7,7 @@ auto fontpath = StringSettingValue(lc::viewer::opengl::FONT_PATH);
 
 
 ModuleSettings lc::viewer::resourcesPathSettings({
-		{SETTINGS_GL_SHADER_PATH, &shaderpath},
-		{SETTINGS_GL_FONT_PATH, &fontpath}
+    {SETTINGS_GL_SHADER_PATH, &shaderpath},
+    {SETTINGS_GL_FONT_PATH, &fontpath}
 });
 
