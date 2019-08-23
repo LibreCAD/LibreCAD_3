@@ -121,6 +121,7 @@ set(SEPARATE_BUILD OFF)
 
 # OpenGL & GLEW library-------------------------
 find_package(Qt5OpenGL REQUIRED)
+set(QT_USE_QTOPENGL TRUE)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
@@ -179,6 +180,9 @@ if(WITH_UNITTESTS)
 endif(WITH_UNITTESTS)
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
+
+qt5_use_modules(librecad Core Gui Widgets OpenGL)
+
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARY})
