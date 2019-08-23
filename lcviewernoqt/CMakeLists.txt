@@ -16,9 +16,9 @@ find_package(Qt5UiTools REQUIRED)
 
 # OpenGL  classes---------------------
     
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS")
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES")
-    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/RES")
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
+    include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
 
 #-----------------------------------------
 
@@ -63,18 +63,18 @@ drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
 viewersettings.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexbuffer.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/vertexarray.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shape_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gradient_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/text_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gl_pack.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/gl_font.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/font_book.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/cacher.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/renderer.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/SOURCES/shader.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexbuffer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexarray.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/shape_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gradient_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/text_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_pack.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_font.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/font_book.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/cacher.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/renderer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/shader.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
 
 )
 
@@ -127,20 +127,20 @@ drawables/CursorLocation.h
 drawitems/lcvinsert.h
 viewersettings.h
 
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbuffer.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexarray.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/vertexbufferlayout.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shape_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gradient_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/text_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_pack.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/gl_font.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/font_book.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/cacher.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/renderer.h
-${PROJECT_SOURCE_DIR}/painters/opengl/HEADERS/shader.h
-${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbuffer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexarray.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbufferlayout.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/shape_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gradient_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/text_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_pack.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_font.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/font_book.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/cacher.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/renderer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/shader.h
+${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 )
 
 # --------------------temporary-------------------
@@ -167,7 +167,7 @@ message(${OPENGL_INCLUDE_DIR})
 
 add_custom_command(
         PRE_BUILD
-        OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/RES/res.cpp
+        OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
         COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
 )
 
