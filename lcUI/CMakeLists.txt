@@ -130,7 +130,8 @@ endif()
 
 include_directories(
     ${GLEW_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR})
+    ${OPENGL_INCLUDE_DIR}
+    ${QT_QTOPENGL_INCLUDE_DIR})
 
 message(${OPENGL_INCLUDE_DIR})
 #--------------------------------------------------
