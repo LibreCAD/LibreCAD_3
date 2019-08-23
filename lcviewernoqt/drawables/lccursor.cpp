@@ -22,7 +22,6 @@ Cursor::Cursor(int cursorSize,
 }
 
 void Cursor::onDraw(event::DrawEvent const & event) const {
-   
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;
     event.painter().device_to_user(&zeroCornerX, &zeroCornerY);
@@ -44,7 +43,7 @@ void Cursor::onDraw(event::DrawEvent const & event) const {
 //        x = event.mousePosition().x();
 //        y = event.mousePosition().y();
     }
-  
+
     event.painter().save();
     event.painter().disable_antialias();
 
@@ -59,13 +58,12 @@ void Cursor::onDraw(event::DrawEvent const & event) const {
     event.painter().stroke();
 
     /** Cursor added temporarily until we have a better system for this **/
-    event.painter().source_rgb(1.,1.,1.);  //NOTE:TEMOPORARY UNABLED
+    event.painter().source_rgb(1.,1.,1.);
     event.painter().move_to(x, y);
     std::string foo = lc::tools::StringHelper::string_format("%.2f,%.2f",x, y);
     event.painter().font_size(12, true);
     event.painter().text(foo.c_str());
     event.painter().stroke();
-    
     /** Cursor added temporarily until we have a better system for this **/
 
     event.painter().restore();

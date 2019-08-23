@@ -10,7 +10,6 @@ void DragPoints::setPoints(event::DragPointsEvent const &points) {
 }
 
 void DragPoints::onDraw(event::DrawEvent const &event) const {
-	
 	double x = _size;
 	double y = _size;
 
@@ -27,7 +26,6 @@ void DragPoints::onDraw(event::DrawEvent const &event) const {
 	for(const auto& point : _points) {
 		event.painter().rectangle(point.x() - size / 2, point.y() - size / 2, size, size);
 	}
-	
-	 event.painter().stroke();
+	event.painter().stroke();
 }
 

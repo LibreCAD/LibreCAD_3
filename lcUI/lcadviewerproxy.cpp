@@ -6,8 +6,7 @@ using namespace lc::ui;
 
 using namespace lc::ui;
 
-LCADViewerProxy::LCADViewerProxy(QWidget* parent=0)
-{
+LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
@@ -41,8 +40,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0)
     connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 }
 
-void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document)
-{
+void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
 

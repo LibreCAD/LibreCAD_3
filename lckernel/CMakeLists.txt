@@ -15,7 +15,6 @@ message("***** LibreCAD kernel *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-
 # SOURCE FILES
 set(lckernel_srcs
 version.cpp

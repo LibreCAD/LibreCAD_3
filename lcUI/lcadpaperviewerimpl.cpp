@@ -8,19 +8,17 @@ using namespace lc::ui;
 using namespace lc::ui;
 
 LCADPaperViewerImpl::LCADPaperViewerImpl(QWidget* parent):_document(nullptr),_parent(parent){
-    _storageManager = std::make_shared<lc::storage::StorageManagerImpl>(); 
-   
+    _storageManager = std::make_shared<lc::storage::StorageManagerImpl>();
+
 };
 
 void LCADPaperViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> document){
-    _document = document;    
+    _document = document;
 }
 
-LCADPaperViewer* LCADPaperViewerImpl::getViewer()
-{
+LCADPaperViewer* LCADPaperViewerImpl::getViewer(){
     auto viewer = new LCADPaperViewer(_parent,_viewers.size());
     _viewers.push_back(viewer);
-    
     connect(viewer, SIGNAL(setActive(int)), this, SLOT(setActive(int)));
     //connect(viewer, SIGNAL(customContextMenuRequested(const QPoint&)), this->parent(), SLOT(ctxMenu(const QPoint&)));
     return viewer;

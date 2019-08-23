@@ -17,7 +17,6 @@ Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& mino
 }
 
 void Grid::draw(event::DrawEvent const & event) const {
-    
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
 
@@ -70,8 +69,8 @@ void Grid::draw(event::DrawEvent const & event) const {
     painter.line_width(1);
     for (double x = left; x < updateRect.maxP().x(); x += gridSize) {
         painter.move_to(x, updateRect.maxP().y());
-        painter.line_to(x, updateRect.minP().y()); 
-     }
+        painter.line_to(x, updateRect.minP().y());
+    }
 
     for (double y = top; y > updateRect.minP().y(); y -= gridSize) {
         painter.move_to(updateRect.minP().x(), y);
@@ -111,14 +110,12 @@ void Grid::draw(event::DrawEvent const & event) const {
     event.painter().source_rgba(1., 0., 0., 1.);
     event.painter().stroke();
 
-    
     event.painter().move_to(0., -originSize);
     event.painter().line_to(0., originSize);
     event.painter().source_rgba(0., 1., 0., 1.);
     event.painter().stroke();
 
     painter.restore();
-    
 }
 
 
