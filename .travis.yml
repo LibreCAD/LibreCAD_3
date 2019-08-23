@@ -21,8 +21,9 @@ matrix:
             - libcurl4-gnutls-dev
             - libgtk-3-dev
             - libgdk-pixbuf2.0-dev
-            - gcc
-            - g++
+            
+      services:
+      - xvfb
 
       script:
         - ./scripts/travis.sh
@@ -31,5 +32,3 @@ cache: ccache
 
 before_script:
   - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
