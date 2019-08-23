@@ -120,7 +120,7 @@ link_directories(${LUA_LIBRARY_DIRS})
 set(SEPARATE_BUILD OFF)
 
 # OpenGL & GLEW library-------------------------
-find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS OpenGL)
 set(QT_USE_QTOPENGL TRUE)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -171,6 +171,7 @@ set(EXTRA_LIBS
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
+        Qt5::OpenGL
         ${APR_LIBRARIES})
 
 #Create library for unit tests

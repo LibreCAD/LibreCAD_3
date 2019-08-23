@@ -215,5 +215,6 @@ Qt5::Core
 Qt5::Gui
 Qt5::Widgets
 Qt5::UiTools
+Qt5::OpenGL
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARY})
