@@ -11,8 +11,8 @@ uniform mat4 u_MVP;
 
 void main() 
 {
-   gl_Position = u_MVP * vec4(pos, 1);
-   eachcol=col;
+	gl_Position = u_MVP * vec4(pos, 1);
+	eachcol=col;
 } 
 
 #shader fragment
@@ -24,5 +24,5 @@ in vec4 eachcol;
 
 void main() 
 {
-    out_Color = eachcol;
+	out_Color = eachcol;
 } 

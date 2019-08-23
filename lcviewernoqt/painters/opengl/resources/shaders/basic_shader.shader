@@ -7,7 +7,7 @@ uniform mat4 u_MVP;
 
 void main()
 {
-    gl_Position = u_MVP *vec4(pos, 1.0); 
+	gl_Position = u_MVP *vec4(pos, 1.0); 
 }
 
 //-------------------------------------------
@@ -20,6 +20,6 @@ out vec4 out_Color;
 
 void main() 
 {
-    out_Color = u_Color;
+	out_Color = u_Color;
 } 
 

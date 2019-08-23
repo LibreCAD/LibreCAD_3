@@ -6,12 +6,10 @@ namespace lc
 	{
 		namespace opengl
 		{
+			const char* SHADER_PATH = "${SHADER_PATH}";
+			const char* FONT_PATH = "${FONT_PATH}";
+		}
 
-           const char* SHADER_PATH = "${SHADER_PATH}";
-           const char* FONT_PATH = "${FONT_PATH}";
-
-        }
-
-    }
+	}
 
 } 

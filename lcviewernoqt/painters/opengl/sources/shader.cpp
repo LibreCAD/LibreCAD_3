@@ -9,7 +9,7 @@ Shader::Shader()
 
 Shader::~Shader()
 {
-    glDeleteProgram(_shader_id);
+	glDeleteProgram(_shader_id);
 }
 
 void Shader::gen(const std::string& filepath)
@@ -33,7 +33,7 @@ void Shader::gen(const std::string& filepath)
 	  
 	_shader_id= linkProgram(vertexshaderID,geometryshaderID,fragmentshaderID);
 
-    bind();
+	bind();
 }
 
 unsigned int Shader::getID() const
@@ -41,18 +41,17 @@ unsigned int Shader::getID() const
 	return _shader_id;
 }
 
-
 ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 {
 	std::ifstream stream(filepath);
 
-    enum ShaderType{
-        NONE=-1, VERTEX =0,GEOMETRY=1,FRAGMENT=2
-    };
+	enum ShaderType{
+		NONE=-1, VERTEX =0,GEOMETRY=1,FRAGMENT=2
+	};
 
 	std::string line;
-    std::stringstream ss[3];
-    ShaderType type=ShaderType::NONE;
+	std::stringstream ss[3];
+	ShaderType type=ShaderType::NONE;
 
 	while(getline(stream,line))
 	{
@@ -61,14 +60,13 @@ ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 			if(line.find("vertex")!=std::string::npos)
 				type=ShaderType::VERTEX;
 			else if(line.find("geometry")!=std::string::npos)
-	        {
-	           	 type=ShaderType::GEOMETRY;
-	           	 _has_geometry=true;
-	        }
+			{
+				type=ShaderType::GEOMETRY;
+				_has_geometry=true;
+			}
 			else if(line.find("fragment")!=std::string::npos)
-	           type=ShaderType::FRAGMENT;
+				type=ShaderType::FRAGMENT;
 		}
-
 		else
 		{
 			ss[(int)type]<< line <<'\n';
@@ -81,18 +79,18 @@ ShaderProgramSource Shader:: parseShader(const std::string& filepath)
 unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 {
 	const char* shaderCode= shader.c_str();
-   GLuint shaderID= glCreateShader(type);
+	GLuint shaderID= glCreateShader(type);
 
 	if(shaderID==0)
 	{
 		//std::cout<<type<<" not created"<<std::endl;
 		return 0;
 	}
-    
-    glShaderSource(shaderID,1,&shaderCode,NULL);
+	
+	glShaderSource(shaderID,1,&shaderCode,NULL);
 	glCompileShader(shaderID);
 
-    //--------------
+	//--------------
 	GLint compileStatus;
 
 	glGetShaderiv(shaderID,GL_COMPILE_STATUS,&compileStatus);
@@ -112,9 +110,8 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 		glDeleteShader(shaderID);
 		return 0;
 	}
-
 	//std::cout<<"compiled OK !!!!- "<<type<<std::endl;
-    //--------------
+	//--------------
 	return shaderID;
 }
 
@@ -131,16 +128,16 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
 	if(vertexShaderID!=0)
 	glAttachShader(programID,vertexShaderID);
-    
-    if(geometryShaderID!=0 && _has_geometry)
+	
+	if(geometryShaderID!=0 && _has_geometry)
 	glAttachShader(programID,geometryShaderID);
 
-    if(fragmentShaderID!=0)
-    glAttachShader(programID,fragmentShaderID);
+	if(fragmentShaderID!=0)
+	glAttachShader(programID,fragmentShaderID);
 
 	glLinkProgram(programID);
 
-    //--------------------
+	//--------------------
 	GLint linkstatus;
 
 	glGetProgramiv(programID,GL_LINK_STATUS,&linkstatus);
@@ -152,8 +149,8 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 		glDetachShader(programID,geometryShaderID);
 		glDetachShader(programID,fragmentShaderID);
 		glDeleteProgram(programID);
-         
-        return 0;
+		 
+		return 0;
 	}
 	//std::cout<<"linked program !!! OK"<<std::endl;
 	//--------------------
@@ -165,27 +162,27 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
 void Shader::bind() const
 {
-   glUseProgram(_shader_id);
+	glUseProgram(_shader_id);
 }
 
 void Shader::unbind() const
 {
-   glUseProgram(0);
+	glUseProgram(0);
 }
 
 void Shader::setUniform4f(const std::string& name,float v0,float v1,float v2,float v3)
 {
-   glUniform4f( getUniformLocation(name) , v0,v1,v2,v3 );
+	glUniform4f( getUniformLocation(name) , v0,v1,v2,v3 );
 }
 
 void Shader::setUniform2f(const std::string& name,float v0,float v1)
 {
-   glUniform2f( getUniformLocation(name) , v0,v1);
+	glUniform2f( getUniformLocation(name) , v0,v1);
 }
 
 void Shader::setUniform1i(const std::string& name,int value)
 {
-   glUniform1i( getUniformLocation(name) , value );
+	glUniform1i( getUniformLocation(name) , value );
 }
 
 void Shader::setUniformMat4f(const std::string& name,const glm::mat4& matrix)
@@ -205,13 +202,11 @@ void Shader::setUniform1fv(const std::string& name,int count, const float *value
 
 int Shader:: getUniformLocation(const std::string& name)
 {
-   int location=glGetUniformLocation(_shader_id,name.c_str());
-   
-   if(location==-1)
-   	{
-   		return -1;
-   		//("!! NOT FOUND!!!!");
-   	}
-   
-   return location;
+	int location=glGetUniformLocation(_shader_id,name.c_str());
+	if(location==-1)
+	{
+		return -1;
+		//("!! NOT FOUND!!!!");
+	}
+	return location;
 }

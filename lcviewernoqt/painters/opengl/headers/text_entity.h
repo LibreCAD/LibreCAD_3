@@ -9,49 +9,44 @@ namespace lc
 	{
 		namespace opengl
 		{
-
-
-class Text_Entity : public GL_Entity
-{
-	private:   
-    std::string _text;
-    Shader* _shader;                       //Shader to be used
-    glm::mat4 _model;                      // model matrix
-    bool _no_magnify;
-    GL_Font* _font=NULL;
-    
-	public:
+			class Text_Entity : public GL_Entity
+			{
+			private:   
+				std::string _text;
+				Shader* _shader;                       //Shader to be used
+				glm::mat4 _model;                      // model matrix
+				bool _no_magnify;
+				GL_Font* _font=NULL;
 	
-	Text_Entity();
-	~Text_Entity();
+			public:
 	
-	void loadVertexData(float* vertices,int size,std::vector<int> &jumps) override;
+				Text_Entity();
+				~Text_Entity();
 	
-	void bind() override;
-	void unbind() override;
-    
-    void setType(Shaders_book& shaders) override;
-	void setModelMatrix(glm::mat4 model) override;
+				void loadVertexData(float* vertices,int size,std::vector<int> &jumps) override;
 	
-	void setFillMode(bool fill) override;
-	void setLineWidth(float width) override;
-	void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
-	void setColor(float R,float G,float B,float A) override;
-    
-    void addLinearGradient(float x0,float y0,float x1,float y1) override;
-	void addGradientColorPoint(float R,float G,float B,float A) override;
-	void applyGradient(float* vertices,int size) override;
-    
-    void setFont(Font_Book& fonts,const std::string& style) override;
-	void addTextData(glm::vec4 pos, std::string textval , float font_size, bool retain) override;
+				void bind() override;
+				void unbind() override;
+	
+				void setType(Shaders_book& shaders) override;
+				void setModelMatrix(glm::mat4 model) override;
+	
+				void setFillMode(bool fill) override;
+				void setLineWidth(float width) override;
+				void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
+				void setColor(float R,float G,float B,float A) override;
+	
+				void addLinearGradient(float x0,float y0,float x1,float y1) override;
+				void addGradientColorPoint(float R,float G,float B,float A) override;
+				void applyGradient(float* vertices,int size) override;
+	
+				void setFont(Font_Book& fonts,const std::string& style) override;
+				void addTextData(glm::vec4 pos, std::string textval , float font_size, bool retain) override;
 
-	void freeGPU() override;
+				void freeGPU() override;
 
-	void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) override;
-};
-
-
-
+				void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) override;
+			};
 		}
 	}
 }
