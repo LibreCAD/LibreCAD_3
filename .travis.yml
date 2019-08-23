@@ -24,7 +24,7 @@ matrix:
             - libgtk-3-dev
             - libgdk-pixbuf2.0-dev
             - mesa-common-dev
-            - libglu1-mesa-dev -y
+            - libglu1-mesa-dev 
             - libqt5opengl5-dev
             - libglew1.5-dev 
             - libglm-dev
