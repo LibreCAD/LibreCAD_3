@@ -6,6 +6,6 @@
 
 namespace lc {
   namespace viewer {
-    extern lc::storage::settings::ModuleSettings resourcesPathSettings;
+    extern lc::storage::settings::ModuleSettings viewerSettings;
     }
 }
