@@ -1,5 +1,7 @@
 #include "gl_font.h"
-#include <QString>
+#include <codecvt>
+#include <locale>
+#include <string>
 using namespace lc::viewer::opengl;
 
 GL_Font::GL_Font()
@@ -135,9 +137,9 @@ void GL_Font::renderText(std::string text,glm::mat4 proj,glm::mat4 view,glm::mat
   glActiveTexture(GL_TEXTURE0);
     
   // converting to std::wstring
-  QString qs=QString::fromUtf8(text.c_str());
-  std::wstring w_text=qs.toStdWString();
-    
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+  std::wstring w_text = converter.from_bytes(text);
+  
   // Iterate through all characters
   std::wstring::const_iterator c;
   for (c = w_text.begin(); c != w_text.end(); c++)
@@ -180,8 +182,9 @@ GL_Text_Extend GL_Font::getTextExtend(std::string text , int font_size)
 {
   std::map<unsigned int, Character>::iterator it;
     
-  QString qs=QString::fromUtf8(text.c_str());
-  std::wstring w_text=qs.toStdWString();
+  // converting to std::wstring
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+  std::wstring w_text = converter.from_bytes(text);
     
   // Iterate through all characters
   std::wstring::const_iterator c;

@@ -7,7 +7,6 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5Core)
 
 # OpenGL  classes---------------------
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
@@ -159,7 +158,6 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
 )
 
-
 find_package(PkgConfig)
 
 # Cairo
@@ -204,6 +202,5 @@ endif ()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
-Qt5::Core
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARY})
