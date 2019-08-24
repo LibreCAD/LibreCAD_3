@@ -4,7 +4,6 @@ using namespace lc::viewer::opengl;
 
 Shader::Shader()
 {
-  //constructor
 }
 
 Shader::~Shader()

@@ -80,7 +80,7 @@ void Cacher::appendVertexData()
   {
     if(_fill==true)
     {
-      _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+      _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
       _jumps.push_back(_current_vertices.size());
     }
 
@@ -88,20 +88,18 @@ void Cacher::appendVertexData()
     {
       if(_closed==false)
       {
-        _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
-        _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-        _vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
-
+        _cacher_vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
+        _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+        _cacher_vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
         _jumps.push_back(_current_vertices.size()+2);
       }
 
       else
       {
-        _vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
-        _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-        _vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
-        _vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
-
+        _cacher_vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
+        _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+        _cacher_vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
+        _cacher_vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
         _jumps.push_back(_current_vertices.size()+3);
       }
     }
@@ -109,7 +107,7 @@ void Cacher::appendVertexData()
 
   else if(_current_vertices.size()==1)
   {
-    _vertex_data.insert( _vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
+    _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
     _jumps.push_back(_current_vertices.size());
   }
 
@@ -133,7 +131,7 @@ void Cacher::clearData()
   _closed=false;
   _fill=false;
   _path_distance=0.0f;
-  _vertex_data.clear();
+  _cacher_vertex_data.clear();
   _current_vertices.clear();
   _jumps.clear();
 }
@@ -143,7 +141,7 @@ void Cacher::addDataToCurrentEntity()
 {
   appendVertexData();
 
-  _current_gl_entity->loadVertexData(&_vertex_data[0].x , _vertex_data.size()*(4*sizeof(float)) , _jumps );
+  _current_gl_entity->loadVertexData(&_cacher_vertex_data[0].x , _cacher_vertex_data.size()*(4*sizeof(float)) , _jumps );
   _current_gl_entity->setModelMatrix(_model);          
         
   _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
@@ -151,7 +149,7 @@ void Cacher::addDataToCurrentEntity()
   _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
   _current_gl_entity->setType(_shaders);
   _current_gl_entity->setFont(_fonts,_font_style);
-  _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);  
+  _current_gl_entity->addTextData(_cacher_vertex_data[0], _text_value, _text_height, _no_text_magnify);  
 }
 
 void Cacher::selectFill()
@@ -173,11 +171,10 @@ void Cacher::selectDashes(const double* dashes, const int num_dashes, double off
 {
   if(num_dashes==0)
   {
-    _dashes_size=0;
     _dashes_sum=0;
+    _dashes_size=0;
     _dashes_data.clear();
   }
-
   else
   { 
     int r;  float d;
@@ -192,8 +189,8 @@ void Cacher::selectDashes(const double* dashes, const int num_dashes, double off
       for(int i=0;i<num_dashes;i++)
       {
         d=(float)(floor(dashes[i]+1));
-        _dashes_sum+=d;
         _dashes_data.push_back(d);
+        _dashes_sum+=d;
       }
     }
 

@@ -11,12 +11,11 @@ Text_Entity :: Text_Entity()
 
 Text_Entity::~Text_Entity()
 {
-  //destructor
 }
 
 void Text_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)
 {
-  //---Nothing
+  //---Nothing Text_Entity has no vertex data of own
 }
 
 void Text_Entity::bind()

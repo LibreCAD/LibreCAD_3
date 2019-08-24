@@ -11,7 +11,6 @@ Gradient_Entity :: Gradient_Entity()
 
 Gradient_Entity::~Gradient_Entity()
 {
-   // destructor
 }
 
 void Gradient_Entity::loadVertexData(float* vertices,int size,std::vector<int> &jumps)

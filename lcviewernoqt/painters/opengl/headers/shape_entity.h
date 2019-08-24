@@ -40,25 +40,23 @@ namespace lc
   
         void bind() override;
         void unbind() override;
-  
+        
         void setType(Shaders_book& shaders) override;
         void setModelMatrix(glm::mat4 model) override;
-  
         void setFillMode(bool fill) override;
         void setLineWidth(float width) override;
         void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
         void setColor(float R,float G,float B,float A) override;
 
+        void freeGPU() override;
+        void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) override;
+
+        //---------------No need---------------------------
         void addLinearGradient(float x0,float y0,float x1,float y1) override;
         void addGradientColorPoint(float R,float G,float B,float A) override;
         void applyGradient(float* vertices,int size) override;
-  
         void setFont(Font_Book& fonts,const std::string& style) override;
         void addTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain) override;
-
-        void freeGPU() override;
-
-        void draw(glm::mat4 proj,glm::mat4 projB,glm::mat4 view) override;
       };
     }
   }

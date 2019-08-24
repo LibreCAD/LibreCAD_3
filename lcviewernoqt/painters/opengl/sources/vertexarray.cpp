@@ -4,12 +4,10 @@ using namespace lc::viewer::opengl;
 
 VertexArray::VertexArray()
 {
-   //constructor
 }
 
 VertexArray::~VertexArray()
 {
-   //destructor
 }
 
 void VertexArray::gen()

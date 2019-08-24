@@ -28,7 +28,7 @@ void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)
 }
 
 void LcOpenGLPainter::new_path()
-{
+{ 
 }
 
 void LcOpenGLPainter::close_path()

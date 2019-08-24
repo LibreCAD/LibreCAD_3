@@ -40,7 +40,7 @@ namespace lc
       {
       private: 
         //-------------------------------------FOR VERTEX DATA-----------------  
-        std::vector< glm::vec4 > _vertex_data;       // for vertex data
+        std::vector< glm::vec4 > _renderer_vertex_data; // for vertex data
         std::vector<int> _jumps;
         std::vector< glm::vec4 > _current_vertices;  // for current shape(continous)
   
@@ -87,7 +87,7 @@ namespace lc
         void updateProjection(float l,float r,float b,float t);
         void updateView();
 
-        //-----------
+        //-----------For Updaing Matrix
         void updateScale(float scale);
         void updateTranslate(float x,float y);
         void updateRotate(float angle);
@@ -126,6 +126,8 @@ namespace lc
         void selectColor(float R,float G,float B,float A);
         void selectLineWidth(float width);
         void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
+        
+        //---------------Functions for Font-----------------------
         void selectFontSize(float size, bool deviceCoords);
         void selectFontFace(const char* text_style);
         void selectFontValue(const char* text_val);

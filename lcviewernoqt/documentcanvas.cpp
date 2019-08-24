@@ -396,30 +396,29 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
                                 const lc::entity::Insert_CSPtr& insert) {
     LcDrawOptions lcDrawOptions;
 
-    double x = 0.;
-    double y = 0.;
     double w = _deviceWidth;
     double h = _deviceHeight;
+    double x = 0.;
+    double y = 0.;
     painter.device_to_user(&x, &y);
     painter.device_to_user_distance(&w, &h);
     lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
 
     auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
-    if(asInsert != nullptr) {
+    if(asInsert != nullptr) 
+    {
         asInsert->draw(shared_from_this(), painter);
         return;
     }
 
     painter.save();
-
+    
+    // getting CADEntity_CSPtr
     lc::entity::CADEntity_CSPtr ci = drawable->entity();
 
-
-    // Used to give the illusation from slightly thinner lines. Not sure yet what to d with it and if I will keep it
     double alpha_compensation = 0.9;
 
     // Decide what color to render the entity into
-
     auto color = drawColor(ci, insert, drawable->selected());
     painter.source_rgba(
             color.red(),
@@ -428,7 +427,6 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
             color.alpha() * alpha_compensation
     );
   
-   
     painter.renderEntityCached( (drawable->entity())->id() );
 
     painter.restore();  

@@ -4,12 +4,10 @@ using namespace lc::viewer::opengl;
 
 GL_Pack::GL_Pack()
 {
-   //constructor
 }
 
 GL_Pack::~GL_Pack()
 {
-  //destructor
 }
 
 int GL_Pack::packSize()

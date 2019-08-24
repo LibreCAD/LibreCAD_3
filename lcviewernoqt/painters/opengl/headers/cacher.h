@@ -32,7 +32,7 @@ namespace lc
       {
       private:   
         //----------------------------------FOR VERTEX DATA------------
-        std::vector< glm::vec4 > _vertex_data;       // for vertex data
+        std::vector< glm::vec4 > _cacher_vertex_data; // for vertex data
         std::vector<int> _jumps;
         std::vector< glm::vec4 > _current_vertices;  // for current shape(continous)
   
