@@ -3,13 +3,11 @@ language: cpp
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: bionic
       sudo: false
       compiler: gcc
       addons:
         apt:
-          sources:
-            - ubuntu-toolchain-r-test
           packages:
             - qtbase5-dev
             - qttools5-dev
@@ -31,18 +29,16 @@ matrix:
             - libglew-dev
             - gcc-4.9
             - g++-4.9
-      env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+
+      services:
+      - xvfb
+
 
       script:
-        - ./scripts/travis.sh
+      - ./scripts/travis.sh
 
 cache: ccache
 
 before_script:
   - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-
-before_install:
-  - eval "${MATRIX_EVAL}"
