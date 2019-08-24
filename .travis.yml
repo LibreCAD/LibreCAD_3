@@ -27,14 +27,9 @@ matrix:
             - libglew1.5-dev
             - libglm-dev
             - libglew-dev
-            - gcc-4.9
-            - g++-4.9
-      env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
       services:
       - xvfb
-
 
       script:
       - ./scripts/travis.sh
