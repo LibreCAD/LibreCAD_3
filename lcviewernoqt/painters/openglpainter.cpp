@@ -4,20 +4,14 @@ LcOpenGLPainter::LcOpenGLPainter(unsigned int width, unsigned int height)
 {
   new_device_size(width,height);
   _cacher_painter=new LcCacherPainter();
-
-  QOpenGLContext *CC= QOpenGLContext::currentContext();
-  if(CC!=0)
-  {
-    create_resources();
-    _renderer.addNewShapeEntity();
-  } 
 }
 
 void LcOpenGLPainter::create_resources()
 {
   LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(_cacher_painter);
   _renderer.setCacherRef(&(((*cp)._cacher)));
-  _renderer.createResources(); 
+  _renderer.createResources();
+  _renderer.addNewShapeEntity(); 
 }
 
 void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)

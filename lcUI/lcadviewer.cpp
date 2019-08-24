@@ -116,22 +116,28 @@ void LCADViewer::initializeGL()
     logger->startLogging();
     */
 
+  int width = size().width();
+  int height = size().height();
+
   if(CC!=0)
   {
-     GLenum err = glewInit();
+    GLenum err = glewInit();
           
-         if (err != GLEW_OK)
-          exit(1); // or handle the error in a nicer way
-          if (!GLEW_VERSION_2_1)  // check that the machine supports the 2.1 API.
-         exit(1); // or handle the error in a nicer way
+    if (err != GLEW_OK)
+      exit(1); // or handle the error in a nicer way
+    if (!GLEW_VERSION_2_1)  // check that the machine supports the 2.1 API.
+      exit(1); // or handle the error in a nicer way
 
+    deletePainters();     
+    createPainters(width, height);
+    _documentPainter->create_resources();
   }
 
-    int width = size().width();
-    int height = size().height();
-
+  else
+  {
      deletePainters();     
-    createPainters(width, height);
+     createPainters(width, height);
+  }
 }
 
 
