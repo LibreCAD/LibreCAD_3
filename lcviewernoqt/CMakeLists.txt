@@ -7,12 +7,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5Widgets)
 find_package(Qt5Core)
-find_package(Qt5Designer)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5UiTools REQUIRED)
-
 
 # OpenGL  classes---------------------
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
@@ -141,7 +136,6 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 )
 
 # OpenGL & GLEW library-------------------------
-find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
@@ -153,8 +147,7 @@ endif()
 
 include_directories(
     ${GLEW_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR}
-    ${QT_QTOPENGL_INCLUDE_DIR})
+    ${OPENGL_INCLUDE_DIR})
 
 message(${OPENGL_INCLUDE_DIR})
 
@@ -212,9 +205,5 @@ endif ()
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
 Qt5::Core
-Qt5::Gui
-Qt5::Widgets
-Qt5::UiTools
-Qt5::OpenGL
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARY})

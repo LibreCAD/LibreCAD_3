@@ -119,22 +119,14 @@ link_directories(${LUA_LIBRARY_DIRS})
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
-# OpenGL & GLEW library-------------------------
+# QT OpenGL & GLEW library-------------------------
 find_package(Qt5 REQUIRED COMPONENTS OpenGL)
 set(QT_USE_QTOPENGL TRUE)
-find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-
-if(NOT ${OPENGL_FOUND})
-    message("OPENGL not found")
-endif()
 
 include_directories(
     ${GLEW_INCLUDE_DIR}
-    ${OPENGL_INCLUDE_DIR}
     ${QT_QTOPENGL_INCLUDE_DIR})
-
-message(${OPENGL_INCLUDE_DIR})
 #--------------------------------------------------
 
 
@@ -185,5 +177,4 @@ add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 qt5_use_modules(librecad Core Gui Widgets OpenGL)
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
-${OPENGL_LIBRARY}
 ${GLEW_LIBRARY})
