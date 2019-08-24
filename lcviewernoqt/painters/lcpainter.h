@@ -123,6 +123,8 @@ namespace lc {
                 virtual void getTranslate(double* x, double* y) = 0;
 
                 // functions for caching mechanism
+                virtual bool isCachingEnabled() = 0;
+                
                 virtual void startcaching() = 0;
 
                 virtual void finishcaching(unsigned long id) = 0;

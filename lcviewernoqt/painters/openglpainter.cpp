@@ -395,6 +395,11 @@ void LcOpenGLPainter::enable_antialias()
 void LcOpenGLPainter::getTranslate(double* x, double* y)
 {
 }
+
+bool LcOpenGLPainter::isCachingEnabled()
+{
+  return true;
+}
          
 void LcOpenGLPainter::startcaching()
 {

@@ -364,6 +364,11 @@ void LcCacherPainter::enable_antialias()
 void LcCacherPainter::getTranslate(double* x, double* y)
 {
 }
+
+bool LcCacherPainter::isCachingEnabled()
+{
+  return true;
+}
          
 void LcCacherPainter::startcaching()
 {

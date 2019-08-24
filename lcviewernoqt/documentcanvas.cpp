@@ -222,16 +222,22 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                 }
             });
             for(const auto& di: visibleDrawables) {
-                 if(painter.isEntityCached( (di->entity())->id() ) == true)
-                 {  
-                     drawCachedEntity(painter,di);
-                  }
-                
-                 else
-                 {
+                if(painter.isCachingEnabled() )
+                {    
+                    if(painter.isEntityCached( (di->entity())->id() ) == true)
+                    {  
+                        drawCachedEntity(painter,di);
+                    }
+                    else
+                    {
+                        drawEntity(painter, di);
+                        cacheEntity((di->entity())->id(), di);
+                    }
+                }
+                else
+                {
                     drawEntity(painter, di);
-                    cacheEntity((di->entity())->id(), di);
-                 }
+                }
             };
             painter.line_width(1.);
             painter.source_rgb(1., 1., 1.);
@@ -500,6 +506,7 @@ void DocumentCanvas::on_addEntityEvent(const lc::event::AddEntityEvent& event) {
 void DocumentCanvas::on_removeEntityEvent(const lc::event::RemoveEntityEvent& event) { 
      entityContainer().remove(event.entity());
     _entityDrawItem.erase((event.entity())->id());
+    if(_painterPtr!=NULL && ((*_painterPtr).isCachingEnabled()) )
     (*_painterPtr).deleteEntityCached( (event.entity())->id() );  // Delete the cacahed pack
 }
 

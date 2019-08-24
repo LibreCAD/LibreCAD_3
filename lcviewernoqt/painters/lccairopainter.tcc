@@ -486,6 +486,11 @@ public:
     void new_device_size(unsigned int width, unsigned int height){
     }
 
+    bool isCachingEnabled()
+    {
+      return false;
+    }
+
     void startcaching(){
     }
 

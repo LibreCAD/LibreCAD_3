@@ -82,6 +82,7 @@ class LcCacherPainter : public LcPainter
   void enable_antialias() override;
   void getTranslate(double* x, double* y) override;
   
+  bool isCachingEnabled() override;
   void startcaching() override;
   void finishcaching(unsigned long id) override;
   LcPainter* getCacherpainter() override;
