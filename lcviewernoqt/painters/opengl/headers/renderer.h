@@ -49,8 +49,10 @@ namespace lc
         bool _fill=false;
 
         //--------------------------------------FOR DASH DATA---------------
-        float _line_width;
-        std::vector<float> _dashes_data; float _dashes_sum=0; int _dashes_size=0;
+        float _renderer_line_width;
+        std::vector<float> _renderer_dashes_data; 
+        float _renderer_dashes_sum=0; 
+        int _renderer_dashes_size=0;
    
         //--------------------------------------FOR TEXT DATA-----------------
         std::string _text_value;

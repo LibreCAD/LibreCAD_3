@@ -192,7 +192,6 @@ void Shape_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
     _shader->setUniform1fv("dashes",_dashes_size,&_dashes[0]);
     _shader->setUniform1i("dashes_size",_dashes_size);
     _shader->setUniform1f("dashes_sum",_dashes_sum);
-    
   }
   
   // Bind this Entity

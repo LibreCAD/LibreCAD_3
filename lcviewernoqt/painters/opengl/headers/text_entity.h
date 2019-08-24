@@ -42,7 +42,6 @@ namespace lc
         void addLinearGradient(float x0,float y0,float x1,float y1) override;
         void addGradientColorPoint(float R,float G,float B,float A) override;
         void applyGradient(float* vertices,int size) override;
-  
       };
     }
   }

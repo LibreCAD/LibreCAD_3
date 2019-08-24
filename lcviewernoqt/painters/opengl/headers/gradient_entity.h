@@ -57,7 +57,6 @@ namespace lc
         void setDashes(std::vector<float> &dashes, int num_dashes,float sum_dashes) override;
         void setFont(Font_Book& fonts,const std::string& style) override;
         void addTextData(glm::vec4 pos, std::string text_val , float font_size, bool retain) override;
-        
       };
     }
   }

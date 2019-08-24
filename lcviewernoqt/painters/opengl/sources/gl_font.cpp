@@ -19,8 +19,7 @@ bool GL_Font::readyTTF(const std::string& path)
 
   if (FT_Init_FreeType(&ft))
   {
-      //("ERROR::FREETYPE: Could not init FreeType Library");
-      
+      //("ERROR::FREETYPE: Could not init FreeType Library"); 
   }
 
   if (FT_New_Face(ft, font_path , 0, &face))
@@ -115,7 +114,6 @@ bool GL_Font::readyTTF(const std::string& path)
                     face->glyph->advance.y };
       
     _characters.insert(std::pair<unsigned int, Character>(c, ch));   
-     
   }
 
   //Finished working with Freetype

@@ -396,13 +396,13 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
                                 const lc::entity::Insert_CSPtr& insert) {
     LcDrawOptions lcDrawOptions;
 
-    double w = _deviceWidth;
-    double h = _deviceHeight;
-    double x = 0.;
-    double y = 0.;
-    painter.device_to_user(&x, &y);
-    painter.device_to_user_distance(&w, &h);
-    lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(x, y), w, h);
+    double wc = _deviceWidth;
+    double hc = _deviceHeight;
+    double xc = 0.;
+    double yc = 0.;
+    painter.device_to_user(&xc, &yc);
+    painter.device_to_user_distance(&wc, &hc);
+    lc::geo::Area visibleUserArea = lc::geo::Area(lc::geo::Coordinate(xc, yc), wc, hc);
 
     auto asInsert = std::dynamic_pointer_cast<const LCVInsert>(drawable);
     if(asInsert != nullptr) 
@@ -410,16 +410,12 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
         asInsert->draw(shared_from_this(), painter);
         return;
     }
-
-    painter.save();
-    
     // getting CADEntity_CSPtr
-    lc::entity::CADEntity_CSPtr ci = drawable->entity();
-
+    lc::entity::CADEntity_CSPtr ce = drawable->entity();
     double alpha_compensation = 0.9;
-
+    painter.save();
     // Decide what color to render the entity into
-    auto color = drawColor(ci, insert, drawable->selected());
+    auto color = drawColor(ce, insert, drawable->selected());
     painter.source_rgba(
             color.red(),
             color.green(),
@@ -428,7 +424,6 @@ void DocumentCanvas::drawCachedEntity(LcPainter& painter, const LCVDrawItem_CSPt
     );
   
     painter.renderEntityCached( (drawable->entity())->id() );
-
     painter.restore();  
 }
 

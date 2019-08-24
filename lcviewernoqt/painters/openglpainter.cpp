@@ -136,50 +136,48 @@ void LcOpenGLPainter::circle(double x, double y, double r)
     angle=( ((float)i)/CURVE_POINTS )*(2*PI);
     _renderer.addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
   }
-
-  _renderer.closeLoop();
-             
+  _renderer.closeLoop();       
 }
 
 void LcOpenGLPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra)
 {
   _renderer.jump();
         
-  float SA= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
-  float EA= atan( (rx/ry)* tan(ea) );
+  float Esa= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
+  float Eea= atan( (rx/ry)* tan(ea) );
 
   if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
-    SA+=PI;
+    Esa+=PI;
 
   if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
-    SA+=2*PI;   
+    Esa+=2*PI;   
 
   if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
-    EA+=PI;
+    Eea+=PI;
 
   if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
-    EA+=2*PI;   
+    Eea+=2*PI;   
 
-  float delta=(std::abs(EA-SA));
+  float delta=(std::abs(Eea-Esa));
   if(ea==sa)                           // 360 full
   
   delta=2*PI;
 
-  float A=0;
+  float EA=0;
   long points=CURVE_POINTS;
-  float tx,ty,Tx,Ty;
+  float tx,ty,TX,TY;
             
   for(int i=0;i<=points;i++)
   {
-    A=( ((float)i)/points)*(delta) + (SA);
+    EA=( ((float)i)/points)*(delta) + (Esa);
                
-    tx=rx*cos(A);                       // parametric equation
-    ty=ry*sin(A);
+    tx=rx*cos(EA);                       // parametric equation
+    ty=ry*sin(EA);
               
-    Tx=(tx*cos(ra) - ty*sin(ra)) + cx;  // first rotate then shift origin
-    Ty=(tx*sin(ra) + ty*cos(ra)) + cy;
+    TX=(tx*cos(ra) - ty*sin(ra)) + cx;  // first rotate then shift origin
+    TY=(tx*sin(ra) + ty*cos(ra)) + cy;
 
-    _renderer.addVertex( Tx , Ty );                     
+    _renderer.addVertex( TX , TY );                     
   }
 }
 

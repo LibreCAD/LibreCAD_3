@@ -3,8 +3,8 @@ using namespace lc::viewer::opengl;
 
 Renderer::Renderer()
 {
-  _dashes_sum=0; 
-  _dashes_size=0;
+  _renderer_dashes_sum=0; 
+  _renderer_dashes_size=0;
   _ctm=glm::mat4(1.0f);   
   _view=_ctm;
   _shader_path=(lc::viewer::viewerSettings.get(SETTINGS_GL_SHADER_PATH)->getString());
@@ -283,8 +283,8 @@ void Renderer::addDataToCurrentEntity()
 
   _current_gl_entity->loadVertexData(&_renderer_vertex_data[0].x , _renderer_vertex_data.size()*(4*sizeof(float)) , _jumps );
    
-  _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
-  _current_gl_entity->setDashes(_dashes_data,_dashes_size,_dashes_sum);   // THIS Order
+  _current_gl_entity->setLineWidth(_renderer_line_width);                        // ALERT:
+  _current_gl_entity->setDashes(_renderer_dashes_data,_renderer_dashes_size,_renderer_dashes_sum);   // THIS Order
   _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
   _current_gl_entity->setType(_shaders);
   _current_gl_entity->setFont(_fonts,_font_style);
@@ -298,16 +298,16 @@ void Renderer::selectFill()
 
 void Renderer::selectLineWidth(float width)
 {
-  _line_width=width;
+  _renderer_line_width=width;
 }
 
 void Renderer::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
 {
   if(num_dashes==0)
   { 
-    _dashes_size=0;
-    _dashes_sum=0;
-    _dashes_data.clear();
+    _renderer_dashes_size=0;
+    _renderer_dashes_sum=0;
+    _renderer_dashes_data.clear();
   }
 
   else
@@ -320,15 +320,14 @@ void Renderer::selectDashes(const double* dashes, const int num_dashes, double o
        
     while(r--)
     { 
-      _dashes_size+=num_dashes;   
+      _renderer_dashes_size+=num_dashes;   
       for(int i=0;i<num_dashes;i++)
       {
         d=(float)(floor(dashes[i]+1));
-        _dashes_sum+=d;
-        _dashes_data.push_back(d);
+        _renderer_dashes_sum+=d;
+        _renderer_dashes_data.push_back(d);
       }
     }
-
   }
 }
 

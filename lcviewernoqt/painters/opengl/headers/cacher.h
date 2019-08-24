@@ -40,8 +40,10 @@ namespace lc
         bool _closed=false;
   
         //------------------------------------FOR DASH DATA--------------
-        float _line_width;
-        std::vector<float> _dashes_data; float _dashes_sum=0; int _dashes_size=0;
+        float _cacher_line_width;
+        std::vector<float> _cacher_dashes_data; 
+        float _cacher_dashes_sum=0; 
+        int _cacher_dashes_size=0;
         bool _fill=false;
   
         //--------------------------------------FOR TEXT DATA-----------------
@@ -88,16 +90,19 @@ namespace lc
         void addDataToCurrentEntity();                      
         void selectFill();
         void selectColor(float R,float G,float B,float A);
-        void selectLineWidth(float width);
-        void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
-        void selectFontSize(float size, bool deviceCoords);
-        void selectFontFace(const char* text_style);
-        void selectFontValue(const char* text_val);
-        GL_Text_Extend getTextExtend(const char* text_val);
-
+    
         //----------------------------gradient------------------------------
         void addLinearGradient(float x0,float y0,float x1,float y1);
         void addGradientColorPoint(float R,float G,float B,float A);
+
+        void selectLineWidth(float width);
+        void selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled);
+
+        //----------------------------Font----------------------------------
+        void selectFontFace(const char* text_style);
+        void selectFontValue(const char* text_val);
+        void selectFontSize(float size, bool deviceCoords);
+        GL_Text_Extend getTextExtend(const char* text_val);
 
         //--------------------------gl_entity / gl_pack / reset manipulations------------
         void setNewPack();

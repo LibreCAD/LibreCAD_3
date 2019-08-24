@@ -3,8 +3,8 @@ using namespace lc::viewer::opengl;
 
 Cacher::Cacher()
 {
-  _dashes_sum=0; 
-  _dashes_size=0;
+  _cacher_dashes_sum=0; 
+  _cacher_dashes_size=0;
   _model=glm::mat4(1.0f);
   readyFreshPack();
 }
@@ -144,8 +144,8 @@ void Cacher::addDataToCurrentEntity()
   _current_gl_entity->loadVertexData(&_cacher_vertex_data[0].x , _cacher_vertex_data.size()*(4*sizeof(float)) , _jumps );
   _current_gl_entity->setModelMatrix(_model);          
         
-  _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
-  _current_gl_entity->setDashes(_dashes_data,_dashes_size,_dashes_sum);   // THIS Order
+  _current_gl_entity->setLineWidth(_cacher_line_width);                        // ALERT:
+  _current_gl_entity->setDashes(_cacher_dashes_data,_cacher_dashes_size,_cacher_dashes_sum);   // THIS Order
   _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
   _current_gl_entity->setType(_shaders);
   _current_gl_entity->setFont(_fonts,_font_style);
@@ -164,16 +164,16 @@ void Cacher::selectColor(float R,float G,float B,float A)
 
 void Cacher::selectLineWidth(float width)
 {
-  _line_width=width;
+  _cacher_line_width=width;
 }
 
 void Cacher::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
 {
   if(num_dashes==0)
   {
-    _dashes_sum=0;
-    _dashes_size=0;
-    _dashes_data.clear();
+    _cacher_dashes_sum=0;
+    _cacher_dashes_size=0;
+    _cacher_dashes_data.clear();
   }
   else
   { 
@@ -185,15 +185,14 @@ void Cacher::selectDashes(const double* dashes, const int num_dashes, double off
        
     while(r--)
     { 
-      _dashes_size+=num_dashes;   
+      _cacher_dashes_size+=num_dashes;   
       for(int i=0;i<num_dashes;i++)
       {
         d=(float)(floor(dashes[i]+1));
-        _dashes_data.push_back(d);
-        _dashes_sum+=d;
+        _cacher_dashes_data.push_back(d);
+        _cacher_dashes_sum+=d;
       }
     }
-
   }
 }
 
