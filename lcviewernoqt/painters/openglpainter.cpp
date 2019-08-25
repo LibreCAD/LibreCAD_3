@@ -149,13 +149,13 @@ void LcOpenGLPainter::ellipse(double cx, double cy, double rx, double ry, double
   if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
     Esa+=PI;
 
-  if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
+  if(sa>(3*(PI/2)))  // 4th Quadrant
     Esa+=2*PI;   
 
   if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
     Eea+=PI;
 
-  if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
+  if(ea>(3*(PI/2)))   // 4th Quadrant
     Eea+=2*PI;   
 
   float delta=(std::abs(Eea-Esa));

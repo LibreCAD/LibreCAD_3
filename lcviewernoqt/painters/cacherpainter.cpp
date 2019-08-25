@@ -133,13 +133,13 @@ void LcCacherPainter::ellipse(double cx, double cy, double rx, double ry, double
   if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
     SA+=PI;
 
-  if(sa>(3*(PI/2)) && sa<=(2*PI) )  // 4th Quadrant
+  if(sa>(3*(PI/2)))  // 4th Quadrant
     SA+=2*PI;   
 
   if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
     EA+=PI;
 
-  if(ea>(3*(PI/2)) && ea<=(2*PI) )   // 4th Quadrant
+  if(ea>(3*(PI/2)))   // 4th Quadrant
     EA+=2*PI;   
 
 
