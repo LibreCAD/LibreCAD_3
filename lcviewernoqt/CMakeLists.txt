@@ -62,6 +62,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/sources/text_entity.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_pack.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_font.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/font_book.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/manager.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/cacher.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/renderer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/shader.cpp
@@ -128,6 +129,7 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/headers/text_entity.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_pack.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_font.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/font_book.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/manager.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/cacher.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/renderer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/shader.h

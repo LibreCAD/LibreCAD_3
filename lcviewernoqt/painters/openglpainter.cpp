@@ -11,7 +11,8 @@ void LcOpenGLPainter::create_resources()
   LcCacherPainter* cp= dynamic_cast<LcCacherPainter*>(_cacher_painter);
   _renderer.setCacherRef(&(((*cp)._cacher)));
   _renderer.createResources();
-  _renderer.addNewShapeEntity(); 
+  _renderer.deleteCurrentEntity();
+  _renderer.setNewShapeEntity(); 
 }
 
 void LcOpenGLPainter::new_device_size(unsigned int width, unsigned int height)
@@ -249,7 +250,8 @@ void LcOpenGLPainter::select_font_face(const char* text_val)
 
 void LcOpenGLPainter::text(const char* text_val)
 {
-  _renderer.addNewTextEntity();
+  _renderer.deleteCurrentEntity();
+  _renderer.setNewTextEntity();
   _renderer.selectFontValue(text_val);
 }
 
@@ -316,7 +318,8 @@ void LcOpenGLPainter::restore()
 
 long LcOpenGLPainter::pattern_create_linear(double x1, double y1, double x2, double y2)
 {
-  _renderer.addNewGradientEntity();
+  _renderer.deleteCurrentEntity();
+  _renderer.setNewGradientEntity();
   _renderer.addLinearGradient(x1,y1,x2,y2);
   return 0;
 }

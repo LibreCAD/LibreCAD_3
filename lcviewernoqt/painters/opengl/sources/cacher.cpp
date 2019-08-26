@@ -3,8 +3,6 @@ using namespace lc::viewer::opengl;
 
 Cacher::Cacher()
 {
-  _cacher_dashes_sum=0; 
-  _cacher_dashes_size=0;
   _model=glm::mat4(1.0f);
   readyFreshPack();
 }
@@ -59,157 +57,18 @@ double Cacher::getTranslateY()
   return _model[3][1];
 }   
 
-//------------------------------------for properties ( painter calls)------------------------------------
-void Cacher::addVertex(float x,float y,float z)
-{
-  if(_current_vertices.size()==0)
-    _path_distance=0.0f;
-  else
-  {
-    glm::vec2 P=glm::vec2( (*(_current_vertices.rbegin())) );
-    glm::vec2 Q=glm::vec2( x , -y);
-    float d=glm::length(P-Q);
-    _path_distance+=d;
-  }
-  _current_vertices.push_back( glm::vec4(x,-y,z,_path_distance) );
-}
-
-void Cacher::appendVertexData()
-{
-  if(_current_vertices.size()>1)
-  {
-    if(_fill==true)
-    {
-      _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-      _jumps.push_back(_current_vertices.size());
-    }
-
-    else
-    {
-      if(_closed==false)
-      {
-        _cacher_vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
-        _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-        _cacher_vertex_data.push_back( *(_current_vertices.rbegin()+1) );    // 2nd Last
-        _jumps.push_back(_current_vertices.size()+2);
-      }
-
-      else
-      {
-        _cacher_vertex_data.push_back( *(_current_vertices.rbegin()) );  // last
-        _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-        _cacher_vertex_data.push_back( *(_current_vertices.begin())  );    // 1st
-        _cacher_vertex_data.push_back( *(_current_vertices.begin()+1)  );  // 2nd
-        _jumps.push_back(_current_vertices.size()+3);
-      }
-    }
-  }
-
-  else if(_current_vertices.size()==1)
-  {
-    _cacher_vertex_data.insert( _cacher_vertex_data.end() , _current_vertices.begin() , _current_vertices.end() );
-    _jumps.push_back(_current_vertices.size());
-  }
-
-  _current_vertices.clear();
-}
-
-void Cacher::jump()
-{
-    appendVertexData();
-    _closed=false;
-    _path_distance=0.0f;
-}
-
-void Cacher::closeLoop()
-{
-  _closed=true;
-}
-
-void Cacher::clearData()
-{
-  _closed=false;
-  _fill=false;
-  _path_distance=0.0f;
-  _cacher_vertex_data.clear();
-  _current_vertices.clear();
-  _jumps.clear();
-}
-
 //---------------------------------------------------------------
-void Cacher::addDataToCurrentEntity()
+void Cacher::readyCurrentEntity()
 {
-  appendVertexData();
-
-  _current_gl_entity->loadVertexData(&_cacher_vertex_data[0].x , _cacher_vertex_data.size()*(4*sizeof(float)) , _jumps );
-  _current_gl_entity->setModelMatrix(_model);          
-        
-  _current_gl_entity->setLineWidth(_cacher_line_width);                        // ALERT:
-  _current_gl_entity->setDashes(_cacher_dashes_data,_cacher_dashes_size,_cacher_dashes_sum);   // THIS Order
-  _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
-  _current_gl_entity->setType(_shaders);
-  _current_gl_entity->setFont(_fonts,_font_style);
-  _current_gl_entity->addTextData(_cacher_vertex_data[0], _text_value, _text_height, _no_text_magnify);  
-}
-
-void Cacher::selectFill()
-{
-  _fill=true;  
+  getCurrentEntity()->setModelMatrix(_model); 
+  addDataToCurrentEntity();
+  getCurrentEntity()->setType(_shaders);
+  getCurrentEntity()->setFont(_fonts,_font_style);
 }
 
 void Cacher::selectColor(float R,float G,float B,float A)
 {
   // Till now dont need to be cached
-}
-
-void Cacher::selectLineWidth(float width)
-{
-  _cacher_line_width=width;
-}
-
-void Cacher::selectDashes(const double* dashes, const int num_dashes, double offset, bool scaled)
-{
-  if(num_dashes==0)
-  {
-    _cacher_dashes_sum=0;
-    _cacher_dashes_size=0;
-    _cacher_dashes_data.clear();
-  }
-  else
-  { 
-    int r;  float d;
-    if(num_dashes%2==0)
-      r=1;
-    else
-      r=2;
-       
-    while(r--)
-    { 
-      _cacher_dashes_size+=num_dashes;   
-      for(int i=0;i<num_dashes;i++)
-      {
-        d=(float)(floor(dashes[i]+1));
-        _cacher_dashes_data.push_back(d);
-        _cacher_dashes_sum+=d;
-      }
-    }
-  }
-}
-
-void Cacher::selectFontSize(float size, bool deviceCoords)
-{
-  _text_height=size;
-  _no_text_magnify=deviceCoords;
-}
-
-void Cacher::selectFontFace(const char* text_style)
-{
-  _font_style=text_style;
-}
-
-void Cacher::selectFontValue(const char* text_val)
-{
-  _text_value=text_val;
 }
 
 GL_Text_Extend Cacher::getTextExtend(const char* text_val)
@@ -218,67 +77,29 @@ GL_Text_Extend Cacher::getTextExtend(const char* text_val)
   return TE;
 }
 
-
-//--------------------------gradient--------------------------------
-void Cacher::addLinearGradient(float x0,float y0,float x1,float y1)
-{
-  _current_gl_entity->addLinearGradient(x0,-y0,x1,-y1);   //  !!! BEWARE !!! ( negation on y , to have coherent with cairo)
-}
-
-void Cacher::addGradientColorPoint(float R,float G,float B,float A)
-{
-  _current_gl_entity->addGradientColorPoint(R,G,B,A);
-}
-
-
 //--------------------------gl_entity / gl_pack / reset manipulations------------
 void Cacher::setNewPack()
 {
   _current_gl_pack = new GL_Pack();
 }
 
-void Cacher::setNewShapeEntity()
-{
-  _current_gl_entity = new Shape_Entity();
-}
-
-void Cacher::setNewGradientEntity()
-{
-  _current_gl_entity = new Shape_Entity();
-}
-
-void Cacher::setNewTextEntity()
-{
-  _current_gl_entity = new Text_Entity();
-}
-
 void Cacher::pushEntityInPack()
 {
-  _current_gl_pack->pushEntityInPack( _current_gl_entity );
-}
-
-void Cacher::setDefault()
-{
-  clearData();
-       
-  _model=glm::mat4(1.0f);
-
-  _font_style="arial";
-  _text_value=" ";
-  _text_height=12;
-  _no_text_magnify=false;
+  _current_gl_pack->pushEntityInPack( getCurrentEntity() );
 }
 
 void Cacher::readyForNextEntity()
 {   
-  addDataToCurrentEntity();
+  readyCurrentEntity();
   pushEntityInPack();
+  _model=glm::mat4(1.0f);
   setDefault();
   setNewShapeEntity();
 }
 
 void Cacher::readyFreshPack()
 {
+  _model=glm::mat4(1.0f);
   setDefault();
   setNewPack();
   setNewShapeEntity();
