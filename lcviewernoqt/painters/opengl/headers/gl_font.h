@@ -53,12 +53,12 @@ namespace lc
         GL_Font();
         ~GL_Font();
    
-        bool readyTTF(const std::string& path);
+        bool readyFont(const std::string& path);
         void renderText(std::string text, 
-        glm::mat4 proj,
-        glm::mat4 view,
-        glm::mat4 model,
-        Shader* text_shader);
+                        glm::mat4 proj,
+                        glm::mat4 view,
+                        glm::mat4 model,
+                        Shader* text_shader);
         GL_Text_Extend getTextExtend(std::string text , int font_size);
       };
     }

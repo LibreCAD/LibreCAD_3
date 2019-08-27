@@ -18,8 +18,8 @@ namespace lc
       public:
         Font_Book();
         ~Font_Book();
-        bool createDefaultFont(const std::string& name,const std::string& ttf_path);
-        bool createFont(const std::string& name,const std::string& ttf_path);
+        bool createDefaultFont(const std::string& name,const std::string& file_path);
+        bool createFont(const std::string& name,const std::string& file_path);
         GL_Font* pickFont(const std::string& font_style);
       };
     }

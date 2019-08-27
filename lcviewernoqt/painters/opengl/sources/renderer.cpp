@@ -37,8 +37,7 @@ void Renderer::createResources()
 
   _cacherPtr->setShaderBook(_shaders);
 
-  _fonts.createDefaultFont("arial",_font_path+"arial.ttf");
-  _fonts.createFont("cac_champagne",_font_path+"cac_champagne.ttf");
+  _fonts.createDefaultFont("ABeeZee-Regular",_font_path+"ABeeZee-Regular.otf");
    
   _cacherPtr->setFontBook(_fonts); 
 

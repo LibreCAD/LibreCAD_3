@@ -285,7 +285,6 @@ public:
 
     void line_to(double x, double y) {
         cairo_line_to(_cr, x, -y);
-       //std::cout<<"painter line"<<x<<","<<y<<std::endl;
     }
 
     void lineWidthCompensation(double lwc) {

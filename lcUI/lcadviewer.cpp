@@ -8,8 +8,6 @@
 using namespace lc;
 using namespace lc::ui;
 
-QOpenGLContext *m_context;
-
 LCADViewer::LCADViewer(QWidget *parent) :
      QOpenGLWidget(parent),
     _docCanvas(nullptr),
@@ -385,21 +383,15 @@ void LCADViewer::deletePainters()
         delete pair.first;
         delete pair.second;
     }
-    
-
     imagemaps.clear();
 }
 
 void LCADViewer::updateBackground()
 {
-   // _backgroundPainter->clear(1.0, 1.0, 1.0, 0.0);
-   // _docCanvas->render(*_backgroundPainter, lc::viewer::VIEWER_BACKGROUND);
 }
 
 void LCADViewer::updateDocument() 
 {
-   // _documentPainter->clear(1.0, 1.0, 1.0, 0.0);
-   // _docCanvas->render(*_documentPainter, lc::viewer::VIEWER_DOCUMENT);  
 }
 
 const std::shared_ptr<lc::viewer::DocumentCanvas>& LCADViewer::docCanvas() const {

@@ -148,9 +148,6 @@ void Gradient_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
   //Set the Fill Mode
   glPolygonMode(GL_FRONT_AND_BACK, _fill_mode);
 
-  //Set the Width
-  // glLineWidth(_linewidth);
-    
   //compute the MVP matrix ( received -V ,-P  .. already have -M)
   glm::mat4 mvp=_proj * _view * _model;
   _gradient_shader->bind();

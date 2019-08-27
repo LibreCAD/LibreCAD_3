@@ -117,7 +117,6 @@ void DocumentCanvas::pan(LcPainter& painter, double move_x, double move_y) {
     double tY = 0;
     painter.device_to_user(&tX,&tY);
     painter.device_to_user(&move_x,&move_y);
-    //qDebug("documentcanvas PAN TX=%f TY=%f",move_x-tX,-move_y+tY);
     painter.translate(move_x-tX, -move_y+tY);
 }
 
@@ -132,7 +131,6 @@ void DocumentCanvas::zoom(LcPainter& painter, double factor, bool relativezoom,
     painter.save();
     double userX = deviceCenterX;
     double userY = deviceCenterY;
-   // qDebug("Document canvas zoom1 factor=%f Ux=%f Uy=%f relative_zoom=%d",factor,userX,userY,relativezoom);
     painter.device_to_user(&userX, &userY);
     painter.restore();
 

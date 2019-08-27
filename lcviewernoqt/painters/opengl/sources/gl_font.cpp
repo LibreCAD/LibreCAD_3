@@ -12,7 +12,7 @@ GL_Font::~GL_Font()
 {
 }
 
-bool GL_Font::readyTTF(const std::string& path)
+bool GL_Font::readyFont(const std::string& path)
 {
   const char* font_path= path.c_str();
 

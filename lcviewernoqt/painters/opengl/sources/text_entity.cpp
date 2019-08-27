@@ -95,9 +95,6 @@ void Text_Entity::freeGPU()
 
 void Text_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
 {
-  //Set the Fill Mode
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    
   //making a temp model matrix 
   glm::mat4 temp_model=_model;
 

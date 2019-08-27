@@ -189,7 +189,7 @@ void Manager::selectFontValue(const char* text_val)
 void Manager::setDefault()
 {
   clearData();   
-  _font_style="arial";
+  _font_style="ABeeZee-Regular";
   _text_value=" ";
   _text_height=12;
   _no_text_magnify=false;

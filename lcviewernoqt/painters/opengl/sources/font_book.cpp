@@ -10,11 +10,11 @@ Font_Book::~Font_Book()
 {
 }
 
-bool Font_Book::createDefaultFont(const std::string& name,const std::string& ttf_path)
+bool Font_Book::createDefaultFont(const std::string& name,const std::string& file_path)
 {
   _default_font=new GL_Font();
 
-  if(_default_font->readyTTF(ttf_path))
+  if(_default_font->readyFont(file_path))
   {
     _font_map.insert(std::make_pair( name , _default_font ) );
     return true;
@@ -23,13 +23,13 @@ bool Font_Book::createDefaultFont(const std::string& name,const std::string& ttf
   return false;
 }
 
-bool Font_Book::createFont(const std::string& name,const std::string& ttf_path)
+bool Font_Book::createFont(const std::string& name,const std::string& file_path)
 {
-  GL_Font* ttf_font=new GL_Font();
+  GL_Font* font=new GL_Font();
 
-  if(ttf_font->readyTTF(ttf_path))
+  if(font->readyFont(file_path))
   {
-    _font_map.insert(std::make_pair( name , ttf_font ) );
+    _font_map.insert(std::make_pair( name , font ) );
     return true;
   }
 

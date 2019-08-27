@@ -96,7 +96,7 @@ namespace lc {
                 void updateHelper();
 
             protected:
-                // void paintEvent(QPaintEvent*);
+    
                 void paintGL();
 
                 virtual void mousePressEvent(QMouseEvent* event);
@@ -111,8 +111,7 @@ namespace lc {
 
                 virtual void keyReleaseEvent(QKeyEvent* event);
 
-               // virtual void resizeEvent(QResizeEvent* event);
-                 void resizeGL(int w, int h);
+                void resizeGL(int w, int h);
 
             signals:
 
