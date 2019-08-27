@@ -66,10 +66,12 @@ class OpenglRenderPainter : public OpenglPainter
   void getTranslate(double* x, double* y) override;
   
   bool isCachingEnabled() override;
-  void startcaching() override;
-  void finishcaching(unsigned long id) override;
   LcPainter* getCacherpainter() override;
   bool isEntityCached(unsigned long id) override;
   void renderEntityCached(unsigned long id) override;
   void deleteEntityCached(unsigned long id) override;
+
+  //-------------No need---------------------------------
+  void startcaching() override;
+  void finishcaching(unsigned long id) override;
 };

@@ -1,5 +1,5 @@
 #include "shader.h"
-
+#include <cad/logger/logger.h>
 using namespace lc::viewer::opengl;
 
 Shader::Shader()
@@ -82,14 +82,13 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 
   if(shaderID==0)
   {
-    //std::cout<<type<<" not created"<<std::endl;
+    LOG_WARNING << "Shader not created";
     return 0;
   }
   
   glShaderSource(shaderID,1,&shaderCode,NULL);
   glCompileShader(shaderID);
 
-  //--------------
   GLint compileStatus;
 
   glGetShaderiv(shaderID,GL_COMPILE_STATUS,&compileStatus);
@@ -101,16 +100,13 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
     char* error_message=new char[length];
 
     glGetShaderInfoLog(shaderID,length,&length,error_message);
-
-    //std::cout<<"Cannot compile"<<type<<std::endl;
-    std::cout<<error_message<<std::endl;
-
+    LOG_WARNING << "Cannot compile Shader" << error_message;
+   
     delete[] error_message;
     glDeleteShader(shaderID);
     return 0;
   }
-  //std::cout<<"compiled OK !!!!- "<<type<<std::endl;
-  //--------------
+
   return shaderID;
 }
 
@@ -121,7 +117,7 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
   if(programID==0)
   {
-    //std::cout<<"Program not created"<<std::endl;
+    LOG_WARNING << "Program not created";
     return 0;
   }
 
@@ -136,14 +132,13 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
   glLinkProgram(programID);
 
-  //--------------------
   GLint linkstatus;
 
   glGetProgramiv(programID,GL_LINK_STATUS,&linkstatus);
 
   if(!linkstatus)
   {
-    //std::cout<<"Error linking program"<<std::endl;
+    LOG_WARNING << "Error linking program";
     glDetachShader(programID,vertexShaderID);
     glDetachShader(programID,geometryShaderID);
     glDetachShader(programID,fragmentShaderID);
@@ -151,9 +146,6 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
      
     return 0;
   }
-  //std::cout<<"linked program !!! OK"<<std::endl;
-  //--------------------
-
   return programID;
 }
 
@@ -204,7 +196,6 @@ int Shader:: getUniformLocation(const std::string& name)
   if(location==-1)
   {
     return -1;
-    //("!! NOT FOUND!!!!");
   }
   return location;
 }

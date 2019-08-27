@@ -163,6 +163,14 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
 )
 
+# Boost logging
+add_definitions(-DBOOST_LOG_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
 find_package(PkgConfig)
 
 # Cairo
@@ -208,4 +216,5 @@ endif ()
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
 ${OPENGL_LIBRARY}
-${GLEW_LIBRARY})
+${GLEW_LIBRARY}
+${Boost_LIBRARIES})

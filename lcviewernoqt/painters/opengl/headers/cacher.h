@@ -16,7 +16,6 @@ namespace lc
       class Cacher: public Manager
       {
       private:   
-       
         glm::mat4 _model;                     //model matrix
    
         GL_Pack* _current_gl_pack;

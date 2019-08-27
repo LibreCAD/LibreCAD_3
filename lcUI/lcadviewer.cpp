@@ -4,7 +4,7 @@
 #include <iostream>
 #include <QOpenGLContext>
 #include <QSurfaceFormat>
-
+#include <cad/logger/logger.h>
 using namespace lc;
 using namespace lc::ui;
 
@@ -21,8 +21,6 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _documentPainter(nullptr),
     _foregroundPainter(nullptr)
      {
-    QOpenGLContext *CC= QOpenGLContext::currentContext();
-    
     setMouseTracking(true);
     this->_altKeyActive = false;
     this->_ctrlKeyActive = false;
@@ -38,7 +36,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
 
 void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 {
-    qCritical() << "OpenGL log:\n";
+    LOG_WARNING << "OpenGL log:\n";
   QString error;
 
   // Format based on severity
@@ -93,7 +91,8 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 #undef CASE
 
   error += ")";
-  qCritical() << qPrintable(error) << "\n" << qPrintable(msg.message()) << "\n";
+
+  LOG_WARNING << (error).toStdString() << "\n" << (msg.message()).toStdString() << "\n";
 }
 
 LCADViewer::~LCADViewer() 
@@ -107,12 +106,12 @@ void LCADViewer::initializeGL()
   QOpenGLWidget::makeCurrent();
   QOpenGLContext *CC= QOpenGLContext::currentContext();
   
-  /*QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
-    logger->initialize();
+  QOpenGLDebugLogger *logger = new QOpenGLDebugLogger(this);
+  logger->initialize();
 
-    connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
-    logger->startLogging();
-    */
+  connect(logger, &QOpenGLDebugLogger::messageLogged, this, &LCADViewer::messageLogged);
+  logger->startLogging();
+    
 
   int width = size().width();
   int height = size().height();

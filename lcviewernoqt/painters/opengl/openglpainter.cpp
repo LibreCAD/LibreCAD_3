@@ -2,7 +2,6 @@
 
 OpenglPainter::OpenglPainter() 
 {
-  
 }
 
 void OpenglPainter::set_manager(Manager* manager)

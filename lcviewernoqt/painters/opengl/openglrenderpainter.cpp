@@ -221,7 +221,6 @@ void OpenglRenderPainter::renderEntityCached(unsigned long id)
   OpenglCacherPainter* cp= dynamic_cast<OpenglCacherPainter*>(_cacher_painter);
   GL_Pack* _gl_pack=((*cp)._cacher)->getCachedPack(id);
   _renderer->renderCachedPack(_gl_pack);
-  
 }
 
 void OpenglRenderPainter::deleteEntityCached(unsigned long id)

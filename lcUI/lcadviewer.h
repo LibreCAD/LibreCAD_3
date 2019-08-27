@@ -96,7 +96,6 @@ namespace lc {
                 void updateHelper();
 
             protected:
-    
                 void paintGL();
 
                 virtual void mousePressEvent(QMouseEvent* event);
@@ -114,7 +113,6 @@ namespace lc {
                 void resizeGL(int w, int h);
 
             signals:
-
                 void mouseMoveEvent();
 
                 void mousePressEvent();
