@@ -9,7 +9,7 @@ function CreateOperations:_init(id, builder, step)
 
     self.prevEntity = nil
     if(builder ~= nil) then
-        self.builder = builder()
+        self.builder = builder() -- is it working?
     end
 
     self.step = step
@@ -36,7 +36,7 @@ function CreateOperations:createEntity()
     b:appendEntity(self:build())
     b:execute()
 
-    self:close()
+    self:manualClose()
 end
 
 function CreateOperations:build()
@@ -88,4 +88,8 @@ function CreateOperations:close()
         self:unregisterEvents()
         self.finished = true
     end
+end
+
+function CreateOperations:manualClose()
+    self.close() --if not defined manually
 end

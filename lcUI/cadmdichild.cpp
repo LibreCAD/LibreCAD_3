@@ -33,6 +33,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     _viewerProxy = new LCADViewerProxy(this);
     gridLayout->addWidget(_viewerProxy, 0, 0, 1, 1);
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
+    connect(this,SIGNAL(keyPressEventx(int)),_viewerProxy,SIGNAL(keyPressEvent(int)));
 }
 
 CadMdiChild::~CadMdiChild() {
@@ -195,6 +196,7 @@ void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {
 void CadMdiChild::keyPressEvent(QKeyEvent *event) {
     QWidget::keyPressEvent(event);
     emit keyPressed(event);
+    emit keyPressEventx(event->key());
 }
 
 drawable::TempEntities_SPtr CadMdiChild::tempEntities() {
