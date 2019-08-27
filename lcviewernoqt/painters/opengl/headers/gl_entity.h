@@ -57,5 +57,4 @@ namespace lc
     }
   }
 }
-
 #endif // GL_ENTITY_H

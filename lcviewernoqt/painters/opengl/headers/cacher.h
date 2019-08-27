@@ -1,21 +1,6 @@
 #ifndef CACHER_H
 #define CACHER_H
-#include <GL/glew.h>  
-#include <GL/gl.h>
-#include <signal.h> 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <vector>
-#include <utility>
-#include <iterator> 
-#include <map> 
-#include <cmath>
 
-#include "shape_entity.h"
-#include "gradient_entity.h"
-#include "text_entity.h"
-#include "gl_entity.h"
 #include "gl_pack.h"
 #include "shader.h"
 #include "font_book.h"

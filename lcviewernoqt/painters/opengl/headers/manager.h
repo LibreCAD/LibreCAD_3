@@ -10,6 +10,7 @@
 #include <utility>
 #include <iterator> 
 #include <map> 
+#include <stack>
 #include <cmath>
 
 #include "shape_entity.h"

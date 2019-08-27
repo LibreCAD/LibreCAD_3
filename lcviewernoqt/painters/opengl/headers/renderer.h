@@ -1,21 +1,6 @@
 #ifndef RENDERER_H
 #define RENDERER_H
-#include <GL/glew.h>  
-#include <GL/gl.h>
-#include <signal.h> 
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <stack>
-#include <vector>
-#include <cmath>
-
-#include "gl_entity.h"
-#include "shape_entity.h"
-#include "gradient_entity.h"
-#include "text_entity.h"
 #include "shader.h"
 #include "gl_pack.h"
 #include "cacher.h"

@@ -9,6 +9,8 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_AUTOMOC ON)
 
 # OpenGL  classes---------------------
+include_directories("${PROJECT_SOURCE_DIR}/painters")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl")
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
@@ -41,9 +43,6 @@ drawitems/lcdimangular.cpp
 drawitems/lclwpolyline.cpp
 drawables/lccursor.cpp
 painters/createpainter.cpp
-painters/openglpainter.cpp
-painters/openglpainter.cpp
-painters/cacherpainter.cpp
 documentcanvas.cpp
 managers/snapmanagerimpl.cpp
         managers/eventmanager.cpp
@@ -54,6 +53,9 @@ drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
 viewersettings.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexbuffer.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexarray.cpp
 ${PROJECT_SOURCE_DIR}/painters/opengl/sources/shape_entity.cpp
@@ -103,8 +105,6 @@ events/snappointevent.h
 painters/lcpainter.h
 painters/createpainter.h
 painters/lccairopainter.tcc
-painters/openglpainter.h
-painters/cacherpainter.h
 documentcanvas.h
 managers/snapmanager.h
 managers/snapmanagerimpl.h
@@ -119,6 +119,9 @@ drawables/CursorLocation.h
 drawitems/lcvinsert.h
 viewersettings.h
 
+${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.h
+${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.h
+${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbuffer.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexarray.h
 ${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbufferlayout.h

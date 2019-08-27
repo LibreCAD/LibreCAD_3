@@ -22,11 +22,7 @@ namespace lc
         bool createFont(const std::string& name,const std::string& ttf_path);
         GL_Font* pickFont(const std::string& font_style);
       };
-
     }
-
   }
-
 } 
-
 #endif // FONT_BOOK_H
