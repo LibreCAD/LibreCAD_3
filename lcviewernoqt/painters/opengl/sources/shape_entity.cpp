@@ -173,13 +173,11 @@ void Shape_Entity::draw(glm::mat4 _proj,glm::mat4 projB,glm::mat4 _view)
   if( _type == Entity_Type::THICK )      //Set the Width (if it is THICK)
   {
     _shader->setUniform1f("u_W",_linewidth);      
-    // _shader->setUniform1f("u_W",std::max(_linewidth,_linewidth*_view[2][2] ) );  // If width is magnified.. 
   }
 
   if(_type == Entity_Type::PATTERN )      // Set Width,projB,Dashes (If it is PATTERN)
   {
-    _shader->setUniform1f("u_W",_linewidth);
-    //_shader->setUniform1f("u_W",std::max(_linewidth,_linewidth*_view[2][2] ) );  // If width is magnified.. 
+    _shader->setUniform1f("u_W",_linewidth); 
     
     _view[3][0]=0;
     _view[3][1]=0;  //neglect translations

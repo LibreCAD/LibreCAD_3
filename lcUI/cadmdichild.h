@@ -63,6 +63,7 @@ namespace lc {
             signals:
 
                 void keyPressed(QKeyEvent* event);
+                void keyPressEventx(int key); //tempory soln, need custom event handlers
 		
             public:
                 QWidget* view() const;
