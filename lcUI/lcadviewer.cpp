@@ -27,8 +27,8 @@ LCADViewer::LCADViewer(QWidget *parent) :
     setCursor(Qt::BlankCursor);
 
    QSurfaceFormat format;
-    format.setMajorVersion(4);
-    format.setMinorVersion(3);
+    format.setMajorVersion(3);
+    format.setMinorVersion(0);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
