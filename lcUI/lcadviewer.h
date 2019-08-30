@@ -1,6 +1,15 @@
 #pragma once
+#define GL_GLEXT_PROTOTYPES
+
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
 #include <map>
-#include <QWidget>
+#include <QOpenGLWidget>
+#include <QOpenGLContext>
+
+
 
 #include "cad/storage/document.h"
 #include "cad/storage/entitycontainer.h"
@@ -20,6 +29,8 @@
 #include "documentcanvas.h"
 
 #include "painters/createpainter.h"
+
+#include <QOpenGLDebugMessage>
 
 namespace lc {
     namespace ui {
@@ -57,7 +68,8 @@ namespace lc {
             int scale;
         };
 
-        class LCADViewer : public QWidget {
+        class LCADViewer : public QOpenGLWidget
+        {
             Q_OBJECT
 
             public:
@@ -84,7 +96,7 @@ namespace lc {
                 void updateHelper();
 
             protected:
-                void paintEvent(QPaintEvent*);
+                void paintGL();
 
                 virtual void mousePressEvent(QMouseEvent* event);
 
@@ -98,10 +110,9 @@ namespace lc {
 
                 virtual void keyReleaseEvent(QKeyEvent* event);
 
-                virtual void resizeEvent(QResizeEvent* event);
+                void resizeGL(int w, int h);
 
             signals:
-
                 void mouseMoveEvent();
 
                 void mousePressEvent();
@@ -115,8 +126,11 @@ namespace lc {
                 void selectedItemsEvent(const lc::viewer::event::SelectedItemsEvent&);
 
             public slots:
+                void messageLogged(const QOpenGLDebugMessage &msg);
 
             private:
+                void initializeGL();
+
                 void createPainters(unsigned int width, unsigned int height);
 
                 void deletePainters();
@@ -145,9 +159,7 @@ namespace lc {
                 // When set to true, the line width on screen will scale with the zoom factor
                 bool _scaleLineWidth;
 
-                //
                 QPoint startSelectPos;
-
 
                 // Entity container that track's all entities within the document
                 std::shared_ptr<lc::storage::Document> _document;

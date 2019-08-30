@@ -29,6 +29,20 @@ void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
 }
 
 void StorageManagerImpl::removeEntity(entity::CADEntity_CSPtr entity) {
+   if (entity->block() != nullptr) 
+   {
+        auto it = _blocksEntities.find(entity->block()->name());
+
+        if (it == _blocksEntities.end()) {
+            // nothing
+        }
+        else {
+            it->second.remove(entity);
+        }
+    }
+    
+
+    else
     _entities.remove(entity);
 }
 
@@ -125,3 +139,4 @@ EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(met
         return _entities;
     };
 }
+

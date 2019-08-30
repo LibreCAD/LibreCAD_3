@@ -103,6 +103,7 @@ else()
 endif()
 
 # Boost logging
+add_definitions(-DBOOST_LOG_DYN_LINK)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
@@ -118,6 +119,18 @@ link_directories(${LUA_LIBRARY_DIRS})
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
+
+# QT OpenGL & GLEW library-------------------------
+find_package(Qt5 REQUIRED COMPONENTS OpenGL)
+set(QT_USE_QTOPENGL TRUE)
+find_package(GLEW REQUIRED)
+
+include_directories(
+    ${GLEW_INCLUDE_DIR}
+    ${QT_QTOPENGL_INCLUDE_DIR})
+#--------------------------------------------------
+
+
 
 if (SEPARATE_BUILD STREQUAL "ON")
     include_directories("${CMAKE_SOURCE_DIR}/../lckernel")
@@ -151,6 +164,7 @@ set(EXTRA_LIBS
         Qt5::Gui
         Qt5::Widgets
         Qt5::UiTools
+        Qt5::OpenGL
         ${APR_LIBRARIES})
 
 #Create library for unit tests
@@ -160,4 +174,8 @@ if(WITH_UNITTESTS)
 endif(WITH_UNITTESTS)
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
-target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+qt5_use_modules(librecad Core Gui Widgets OpenGL)
+
+target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
+${GLEW_LIBRARY})

@@ -5,6 +5,16 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
+
+# OpenGL  classes---------------------
+include_directories("${PROJECT_SOURCE_DIR}/painters")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
+include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
+
 message("***** LibreCAD lcviewernoqt *****")
 
 # SOURCE FILES
@@ -42,6 +52,24 @@ drawables/dragpoints.cpp
 drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
+viewersettings.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexbuffer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexarray.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/shape_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gradient_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/text_entity.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_pack.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_font.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/font_book.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/manager.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/cacher.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/renderer.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/sources/shader.cpp
+${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
+
 )
 
 # HEADER FILES
@@ -89,7 +117,59 @@ events/dragpointsevent.h
 drawables/tempentities.h
 drawables/CursorLocation.h
 drawitems/lcvinsert.h
+viewersettings.h
+
+${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.h
+${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.h
+${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbuffer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexarray.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbufferlayout.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/shape_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gradient_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/text_entity.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_pack.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_font.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/font_book.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/manager.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/cacher.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/renderer.h
+${PROJECT_SOURCE_DIR}/painters/opengl/headers/shader.h
+${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 )
+
+# OpenGL & GLEW library-------------------------
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+
+if(NOT ${OPENGL_FOUND})
+    message("OPENGL not found")
+endif()
+
+# include directories----------------------------
+
+include_directories(
+    ${GLEW_INCLUDE_DIR}
+    ${OPENGL_INCLUDE_DIR})
+
+message(${OPENGL_INCLUDE_DIR})
+
+# creating res.cpp for path of opengl resources
+
+add_custom_command(
+        PRE_BUILD
+        OUTPUT ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
+        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${PROJECT_SOURCE_DIR}/painters/opengl/cmake/FindOpenGLRes.cmake"
+)
+
+# Boost logging
+add_definitions(-DBOOST_LOG_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
+find_package(Boost REQUIRED COMPONENTS log)
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 find_package(PkgConfig)
 
@@ -134,4 +214,7 @@ else ()
 endif ()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
-target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel)
+target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
+${OPENGL_LIBRARY}
+${GLEW_LIBRARY}
+${Boost_LIBRARIES})

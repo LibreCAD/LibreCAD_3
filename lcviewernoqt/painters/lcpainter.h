@@ -17,6 +17,10 @@ namespace lc {
             public:
                 virtual ~LcPainter() = default;
 
+                virtual void create_resources() = 0;
+
+                virtual void new_device_size(unsigned int width, unsigned int height) = 0;
+
                 virtual void new_path() = 0;
 
                 virtual void close_path() = 0;
@@ -101,7 +105,9 @@ namespace lc {
 
                 //        virtual inline void arrow(double startX, double startY, double endX, double endY, const CapType& startCap, const CapType& endCap) = 0;
                 virtual void set_dash(const double* dashes, const int num_dashes, double offset, bool scaled) = 0;
-
+                
+                virtual void dash_destroy() = 0;
+                
                 virtual long image_create(const std::string& file) = 0;
 
                 virtual void image_destroy(long image) = 0;
@@ -116,6 +122,22 @@ namespace lc {
                 // We should consider returning a matrix?
                 virtual void getTranslate(double* x, double* y) = 0;
 
+                // functions for caching mechanism
+                virtual bool isCachingEnabled() = 0;
+                
+                virtual void startcaching() = 0;
+
+                virtual void finishcaching(unsigned long id) = 0;
+
+                virtual LcPainter* getCacherpainter() = 0;
+
+                virtual bool isEntityCached(unsigned long id) = 0;
+
+                virtual void renderEntityCached(unsigned long id) = 0;
+
+                virtual void deleteEntityCached(unsigned long id) = 0;
+
+               
         };
     }
 }
