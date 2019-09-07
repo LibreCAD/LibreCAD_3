@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lcpainter.h"
+#include <painters/lcpainter.h>
 #include "manager.h"
 #include <iostream>
 #include <GL/gl.h>

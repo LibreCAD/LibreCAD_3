@@ -1,6 +1,6 @@
 #include "createpainter.h"
 #include "lccairopainter.tcc"
-#include "openglrenderpainter.h"
+#include <painters/opengl/openglrenderpainter.h>
 
 namespace lc {
     namespace viewer {

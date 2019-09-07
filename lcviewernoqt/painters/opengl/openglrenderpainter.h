@@ -1,7 +1,6 @@
 #pragma once
 
 #include "manager.h"
-#include "lcpainter.h"
 #include "renderer.h"
 #include "gl_pack.h"
 #include "cacher.h"

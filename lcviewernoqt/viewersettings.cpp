@@ -1,5 +1,5 @@
 #include "viewersettings.h"
-#include "res.h"
+#include <painters/opengl/resources/res.h>
 using namespace lc::storage::settings;
 
 auto shaderpath = StringSettingValue(lc::viewer::opengl::SHADER_PATH);

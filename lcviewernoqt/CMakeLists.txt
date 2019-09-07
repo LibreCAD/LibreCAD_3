@@ -5,13 +5,6 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# OpenGL  classes---------------------
-include_directories("${PROJECT_SOURCE_DIR}/painters")
-include_directories("${PROJECT_SOURCE_DIR}/painters/opengl")
-include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/headers")
-include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/sources")
-include_directories("${PROJECT_SOURCE_DIR}/painters/opengl/resources")
-
 message("***** LibreCAD lcviewernoqt *****")
 
 # SOURCE FILES
@@ -50,22 +43,22 @@ drawables/tempentities.cpp
 drawables/CursorLocation.cpp
 drawitems/lcvinsert.cpp
 viewersettings.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexbuffer.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/vertexarray.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/shape_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/gradient_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/text_entity.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_pack.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/gl_font.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/font_book.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/manager.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/cacher.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/renderer.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/sources/shader.cpp
-${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.cpp
+painters/opengl/openglpainter.cpp
+painters/opengl/openglrenderpainter.cpp
+painters/opengl/openglcacherpainter.cpp
+painters/opengl/vertexbuffer.cpp
+painters/opengl/vertexarray.cpp
+painters/opengl/shape_entity.cpp
+painters/opengl/gradient_entity.cpp
+painters/opengl/text_entity.cpp
+painters/opengl/gl_pack.cpp
+painters/opengl/gl_font.cpp
+painters/opengl/font_book.cpp
+painters/opengl/manager.cpp
+painters/opengl/cacher.cpp
+painters/opengl/renderer.cpp
+painters/opengl/shader.cpp
+painters/opengl/resources/res.cpp
 
 )
 
@@ -115,25 +108,24 @@ drawables/tempentities.h
 drawables/CursorLocation.h
 drawitems/lcvinsert.h
 viewersettings.h
-
-${PROJECT_SOURCE_DIR}/painters/opengl/openglpainter.h
-${PROJECT_SOURCE_DIR}/painters/opengl/openglrenderpainter.h
-${PROJECT_SOURCE_DIR}/painters/opengl/openglcacherpainter.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbuffer.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexarray.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/vertexbufferlayout.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/shape_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/gradient_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/text_entity.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_pack.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/gl_font.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/font_book.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/manager.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/cacher.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/renderer.h
-${PROJECT_SOURCE_DIR}/painters/opengl/headers/shader.h
-${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
+painters/opengl/openglpainter.h
+painters/opengl/openglrenderpainter.h
+painters/opengl/openglcacherpainter.h
+painters/opengl/vertexbuffer.h
+painters/opengl/vertexarray.h
+painters/opengl/vertexbufferlayout.h
+painters/opengl/gl_entity.h
+painters/opengl/shape_entity.h
+painters/opengl/gradient_entity.h
+painters/opengl/text_entity.h
+painters/opengl/gl_pack.h
+painters/opengl/gl_font.h
+painters/opengl/font_book.h
+painters/opengl/manager.h
+painters/opengl/cacher.h
+painters/opengl/renderer.h
+painters/opengl/shader.h
+painters/opengl/resources/res.h
 )
 
 # OpenGL & GLEW library-------------------------
