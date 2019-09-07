@@ -5,9 +5,6 @@ ADD_DEFINITIONS("-Wall")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-
 # OpenGL  classes---------------------
 include_directories("${PROJECT_SOURCE_DIR}/painters")
 include_directories("${PROJECT_SOURCE_DIR}/painters/opengl")
@@ -142,10 +139,6 @@ ${PROJECT_SOURCE_DIR}/painters/opengl/resources/res.h
 # OpenGL & GLEW library-------------------------
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-
-if(NOT ${OPENGL_FOUND})
-    message("OPENGL not found")
-endif()
 
 # include directories----------------------------
 
