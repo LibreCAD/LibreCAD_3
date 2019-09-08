@@ -158,15 +158,29 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 find_package(PkgConfig)
 
+if(WITH_CAIRO)
 # Cairo
-pkg_check_modules(CAIRO REQUIRED cairo>=1.13)
-include_directories(${CAIRO_INCLUDE_DIRS})
-link_directories(${CAIRO_LIBRARY_DIRS})
+    pkg_check_modules(CAIRO REQUIRED cairo>=1.13)
+    include_directories(${CAIRO_INCLUDE_DIRS})
+    link_directories(${CAIRO_LIBRARY_DIRS})
+    
+    # Pango
+    pkg_check_modules(PANGO REQUIRED pango>=1.36)
+    include_directories(${PANGO_INCLUDE_DIRS})
+    link_directories(${PANGO_LIBRARY_DIRS})
 
-# Pango
-pkg_check_modules(PANGO REQUIRED pango>=1.36)
-include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARY_DIRS})
+    # GDK-Pixbuf
+    find_package(GDK-Pixbuf REQUIRED)
+    include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
+    
+    #GDK
+    find_package(GDK REQUIRED)
+    include_directories(${GDK_INCLUDE_DIRS})
+endif()
+
+# FreeType
+find_package(Freetype REQUIRED)
+include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -175,14 +189,6 @@ if( CMAKE_COMPILER_IS_GNUCXX)
 else ()
     include_directories( ${EIGEN3_INCLUDE_DIR})
 endif ()
-
-# GDK-Pixbuf
-find_package(GDK-Pixbuf REQUIRED)
-include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
-
-#GDK
-find_package(GDK REQUIRED)
-include_directories(${GDK_INCLUDE_DIRS})
 
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
@@ -202,4 +208,5 @@ add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARY}
-${Boost_LIBRARIES})
+${Boost_LIBRARIES}
+${FREETYPE_LIBRARIES})

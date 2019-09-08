@@ -7,6 +7,7 @@ option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" ON)
+option(WITH_CAIRO "Compile with Cairo painter" OFF)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
@@ -31,8 +32,13 @@ message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
 message("  - Use libopencad: ${WITH_LIBOPENCAD}")
+message("  - Use Cairo: ${WITH_CAIRO}")
 
 message("\n")
+
+if(WITH_CAIRO)
+    add_definitions(-DWITH_CAIRO)
+endif(WITH_QT_UI)
 
 #Add each LibreCAD component
 add_subdirectory("lckernel")
