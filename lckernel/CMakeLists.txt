@@ -7,6 +7,7 @@ add_definitions("-Wall")
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
+include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_definitions(-std=c++14)

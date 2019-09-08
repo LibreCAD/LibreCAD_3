@@ -1,4 +1,6 @@
 #include "geospline.h"
+#include <tinysplinecpp.h>
+#include <cad/logger/logger.h>
 
 using namespace lc;
 using namespace geo;
@@ -79,41 +81,36 @@ Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
 }
 
 void Spline::populateCurve() {
+    tinyspline::BSpline splineCurve;
+
     try {
         auto nbControlPoints = _controlPoints.size();
 
-        _splineCurve = ts::BSpline(degree(), 3, nbControlPoints, TS_CLAMPED);
+        splineCurve = tinyspline::BSpline(nbControlPoints, 3, degree(), TS_CLAMPED);
 
         //Set control points
-        std::vector<ts::rational> ts_controlPoints;
+        std::vector<tinyspline::real> ts_controlPoints;
         for (const auto& cp : _controlPoints) {
             ts_controlPoints.push_back(cp.x());
             ts_controlPoints.push_back(cp.y());
             ts_controlPoints.push_back(cp.z());
         }
 
-        _splineCurve.setCtrlp(ts_controlPoints);
+        splineCurve.setControlPoints(ts_controlPoints);
     }
     catch (std::runtime_error& e) {
-        _splineCurve = ts::BSpline();
+	LOG_ERROR << e.what() << std::endl;
+        splineCurve = tinyspline::BSpline();
     }
-}
+    
+    auto beziers = splineCurve.toBeziers();
 
-const std::vector<BB_CSPtr> Spline::beziers() const {
-    return _beziers;
-}
+    int nbBeziers = ts_bspline_num_control_points(beziers.data()) / splineCurve.order();
+    int nbCoordinate = splineCurve.order() * splineCurve.dimension();
 
-/*
- * Need to be updated to return bezier objects instead of returning coordinate vectors.
- * No external need to cast to bezier and then find intersections.
- */
-void Spline::generateBeziers() {
-    auto beziers = _splineCurve.toBeziers();
+    auto controlPoints = beziers.controlPoints();
 
-    int nbBeziers = beziers.nCtrlp() / _splineCurve.order();
-    int nbCoordinate = _splineCurve.order() * _splineCurve.dim();
-
-    if(_splineCurve.deg() == 2) {
+    if(splineCurve.degree() == 2) {
         for (int i = 0; i < nbBeziers; i++) {
             std::vector<geo::Coordinate> bez;
 
@@ -121,14 +118,14 @@ void Spline::generateBeziers() {
             auto end = nbCoordinate * (i+1);
 
             while(j < end) {
-                lc::geo::Coordinate cp(beziers.ctrlp()[j], beziers.ctrlp()[j+1], beziers.ctrlp()[j+2]);
+                lc::geo::Coordinate cp(controlPoints[j], controlPoints[j+1], controlPoints[j+2]);
                 bez.push_back(cp);
                 j = j + 3;
             }
 
             _beziers.push_back(std::make_shared<Bezier>(bez.at(0),bez.at(1),bez.at(2)));
         }
-    } else if(_splineCurve.deg() == 3) {
+    } else if(splineCurve.degree() == 3) {
         for (int i = 0; i < nbBeziers; i++) {
             std::vector<geo::Coordinate> bez;
 
@@ -136,7 +133,7 @@ void Spline::generateBeziers() {
             auto end = nbCoordinate * (i+1);
 
             while(j < end) {
-                lc::geo::Coordinate cp(beziers.ctrlp()[j], beziers.ctrlp()[j+1], beziers.ctrlp()[j+2]);
+                lc::geo::Coordinate cp(controlPoints[j], controlPoints[j+1], controlPoints[j+2]);
                 bez.push_back(cp);
 
                 j = j + 3;
@@ -145,6 +142,10 @@ void Spline::generateBeziers() {
             _beziers.push_back(std::make_shared<CubicBezier>(bez.at(0),bez.at(1),bez.at(2),bez.at(3)));
         }
     }
+}
+
+const std::vector<BB_CSPtr> Spline::beziers() const {
+    return _beziers;
 }
 
 void Spline::trimAtPoint(const geo::Coordinate& c) {
