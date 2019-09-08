@@ -91,5 +91,5 @@ function CreateOperations:close()
 end
 
 function CreateOperations:manualClose()
-    self.close() --if not defined manually
+    self:close() --if not defined manually
 end
