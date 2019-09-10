@@ -57,9 +57,6 @@ find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 
 # Logging
-add_definitions(-DBOOST_LOG_DYN_LINK)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})

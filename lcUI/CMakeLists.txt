@@ -100,9 +100,6 @@ else()
 endif()
 
 # Boost logging
-add_definitions(-DBOOST_LOG_DYN_LINK)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost 1.54.0 REQUIRED COMPONENTS log)
 FIND_PACKAGE ( Threads )
 include_directories(${Boost_INCLUDE_DIRS})

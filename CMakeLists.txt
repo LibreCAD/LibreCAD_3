@@ -23,6 +23,11 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 
+# Use dynamic linking for Boost
+add_definitions(-DBOOST_ALL_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
+
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
     file(READ "${CMAKE_SOURCE_DIR}/lckernel/version.h" FILE_VERSION_H REGEX "^#define")
