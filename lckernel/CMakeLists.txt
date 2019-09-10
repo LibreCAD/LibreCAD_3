@@ -8,8 +8,6 @@ add_subdirectory("tinyspline")
 include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_definitions(-std=c++14)
-
 message("***** LibreCAD kernel *****")
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -265,4 +263,3 @@ target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIB
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
-

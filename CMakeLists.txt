@@ -19,6 +19,10 @@ if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
 endif()
 
+# Set C++ version
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
+
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
     file(READ "${CMAKE_SOURCE_DIR}/lckernel/version.h" FILE_VERSION_H REGEX "^#define")
