@@ -136,7 +136,7 @@ include_directories(
     ${GLEW_INCLUDE_DIR}
     ${OPENGL_INCLUDE_DIR})
 
-message(${OPENGL_INCLUDE_DIR})
+message("OpenGL include dir: ${OPENGL_INCLUDE_DIR}")
 
 # creating res.cpp for path of opengl resources
 
