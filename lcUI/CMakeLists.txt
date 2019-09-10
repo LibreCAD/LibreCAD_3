@@ -1,7 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (LC)
 ADD_DEFINITIONS(-std=c++14)
-ADD_DEFINITIONS("-Wall")
 set(CMAKE_CXX_STANDARD 14)
 
 message("***** LibreCAD Qt user interface *****")

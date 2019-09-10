@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
 
-add_definitions("-Wall")
-
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)

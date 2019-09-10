@@ -14,6 +14,11 @@ option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
 
+# Define compiler warnings
+if (NOT MSVC) # Too much warnings on MSVC
+     add_definitions("-Wall")
+endif()
+
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
     file(READ "${CMAKE_SOURCE_DIR}/lckernel/version.h" FILE_VERSION_H REGEX "^#define")

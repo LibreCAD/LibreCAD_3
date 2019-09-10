@@ -1,7 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (UnitTest)
 ADD_DEFINITIONS(-std=c++14)
-ADD_DEFINITIONS("-Wall")
 
 message("***** LibreCAD unit tests *****")
 
