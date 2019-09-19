@@ -1,4 +1,6 @@
 #include "manager.h"
+#include <cad/logger/logger.h>
+
 using namespace lc::viewer::opengl;
 
 Manager::Manager()
@@ -197,11 +199,16 @@ void Manager::setDefault()
 
 void Manager::addDataToCurrentEntity()
 {
-  appendVertexData();
-  _current_gl_entity->loadVertexData(&_vertex_data[0].x , _vertex_data.size()*(4*sizeof(float)) , _jumps );
-  _current_gl_entity->setLineWidth(_line_width);                        // ALERT:
-  _current_gl_entity->setDashes(_dashes_data,_dashes_size,_dashes_sum);   // THIS Order
-  _current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
-  _current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);
+	if (_vertex_data.empty()) {
+		LOG_WARNING << "Vertex data is empty. Ignoring." << std::endl;
+	}
+	else {
+		appendVertexData();
+		_current_gl_entity->loadVertexData(&_vertex_data[0].x, _vertex_data.size() * (4 * sizeof(float)), _jumps);
+		_current_gl_entity->setLineWidth(_line_width);                        // ALERT:
+		_current_gl_entity->setDashes(_dashes_data, _dashes_size, _dashes_sum);   // THIS Order
+		_current_gl_entity->setFillMode(_fill);                               // Is Fixed!!!
+		_current_gl_entity->addTextData(_vertex_data[0], _text_value, _text_height, _no_text_magnify);
+	}
 }
 

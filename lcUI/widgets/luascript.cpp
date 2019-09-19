@@ -6,7 +6,7 @@
 
 using namespace lc::ui::widgets;
 
-LuaScript::LuaScript(CadMdiChild* mdiChild, CliCommand* cliCommand) :
+LuaScript::LuaScript(lc::ui::CadMdiChild* mdiChild, CliCommand* cliCommand) :
     ui(new Ui::LuaScript),
 	_mdiChild(mdiChild),
 	_cliCommand(cliCommand) {

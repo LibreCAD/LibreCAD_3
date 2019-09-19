@@ -30,7 +30,13 @@ void LuaInterface::initLua() {
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
     if (s) {
-        std::cout << lua_tostring(_L.state(), -1) << std::endl;
+		const char* out = lua_tostring(_L.state(), -1);
+		if (out == nullptr) {
+			LOG_WARNING << "Lua output null" << std::endl;
+		}
+		else {
+			LOG_INFO << "Lua output:" << out << std::endl;
+		}
         lua_pop(_L.state(), 1);
     }
 
