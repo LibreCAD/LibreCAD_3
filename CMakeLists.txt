@@ -21,6 +21,7 @@ endif()
 
 if(MSVC)
 	add_definitions("/bigobj")
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
 # Set C++ version
