@@ -5,6 +5,6 @@
 
 namespace lc {
     namespace kernel {
-        extern lc::storage::settings::ModuleSettings settings;
+        lc::storage::settings::ModuleSettings getSettings();
     }
 }
