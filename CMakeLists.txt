@@ -19,6 +19,10 @@ if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
 endif()
 
+if(MSVC)
+	add_definitions("/bigobj")
+endif()
+
 # Set C++ version
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
