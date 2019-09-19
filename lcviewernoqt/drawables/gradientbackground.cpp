@@ -6,7 +6,7 @@ using namespace lc::viewer::drawable;
 GradientBackground::GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor) : _topColor(topColor), _bottomColor(bottomColor) {
 }
 
-void GradientBackground::draw(event::DrawEvent const & event) const {
+void GradientBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     
     const lc::geo::Area &updateRect = event.updateRect();

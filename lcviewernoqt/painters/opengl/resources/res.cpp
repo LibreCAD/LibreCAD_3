@@ -6,8 +6,8 @@ namespace lc
 	{
 		namespace opengl
 		{
-			const char* SHADER_PATH = "/home/feragon/Workspace/LibreCAD_3/lcviewernoqt/painters/opengl/resources/shaders/";
-			const char* FONT_PATH = "/home/feragon/Workspace/LibreCAD_3/lcviewernoqt/painters/opengl/resources/fonts/";
+			const char* SHADER_PATH = "C:/Users/ferag/Workspace/LibreCAD_3/lcviewernoqt/painters/opengl/resources/shaders/";
+			const char* FONT_PATH = "C:/Users/ferag/Workspace/LibreCAD_3/lcviewernoqt/painters/opengl/resources/fonts/";
 		}
 
 	}

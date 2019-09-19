@@ -18,7 +18,7 @@ void TempEntities::removeEntity(lc::entity::CADEntity_CSPtr entity) {
     requestUpdateEvent()();
 }
 
-void TempEntities::onDraw(event::DrawEvent const &event) {
+void TempEntities::onDraw(lc::viewer::event::DrawEvent const &event) {
     _entities.each<const lc::entity::CADEntity>([&](lc::entity::CADEntity_CSPtr entity) {
         _docCanvas->drawEntity(event.painter(), _docCanvas->asDrawable(entity));
 	});

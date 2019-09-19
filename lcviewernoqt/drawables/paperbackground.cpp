@@ -6,7 +6,7 @@ using namespace lc::viewer::drawable;
 PaperBackground::PaperBackground(int width,int height) : _width(width), _height(height){
 }
 
-void PaperBackground::draw(event::DrawEvent const & event) const {
+void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
     unsigned long patId = painter.pattern_create_linear(0.0,  updateRect.minP().y(),  0.0, updateRect.maxP().y());
