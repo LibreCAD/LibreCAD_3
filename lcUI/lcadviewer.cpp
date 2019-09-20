@@ -36,26 +36,7 @@ LCADViewer::LCADViewer(QWidget *parent) :
 
 void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 {
-    LOG_WARNING << "OpenGL log:\n";
   QString error;
-
-  // Format based on severity
-  switch (msg.severity())
-  {
-  case QOpenGLDebugMessage::NotificationSeverity:
-    error += "--";
-    break;
-  case QOpenGLDebugMessage::HighSeverity:
-    error += "!!";
-    break;
-  case QOpenGLDebugMessage::MediumSeverity:
-    error += "!~";
-    break;
-  case QOpenGLDebugMessage::LowSeverity:
-    error += "~~";
-    break;
-  }
-
   error += " (";
 
   // Format based on source
@@ -92,7 +73,21 @@ void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
 
   error += ")";
 
-  LOG_WARNING << (error).toStdString() << "\n" << (msg.message()).toStdString() << "\n";
+  switch (msg.severity())
+  {
+  case QOpenGLDebugMessage::NotificationSeverity:
+	  LOG_DEBUG << error.toStdString() << std::endl;
+	  break;
+  case QOpenGLDebugMessage::HighSeverity:
+	  LOG_ERROR << error.toStdString() << std::endl;
+	  break;
+  case QOpenGLDebugMessage::MediumSeverity:
+	  LOG_WARNING << error.toStdString() << std::endl;
+	  break;
+  case QOpenGLDebugMessage::LowSeverity:
+	  LOG_INFO << error.toStdString() << std::endl;
+	  break;
+  }
 }
 
 LCADViewer::~LCADViewer() 
