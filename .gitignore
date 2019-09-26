@@ -14,6 +14,7 @@ playground
 xcode
 debug
 doc
+lcviewernoqt/painters/opengl/resources/res.cpp
 lckernel/version.cpp
 cmake-build-debug
 unittest/rendering/res/*.out
