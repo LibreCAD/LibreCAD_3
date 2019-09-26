@@ -199,11 +199,11 @@ void Manager::setDefault()
 
 void Manager::addDataToCurrentEntity()
 {
+	appendVertexData();
 	if (_vertex_data.empty()) {
 		LOG_WARNING << "Vertex data is empty. Ignoring." << std::endl;
 	}
 	else {
-		appendVertexData();
 		_current_gl_entity->loadVertexData(&_vertex_data[0].x, _vertex_data.size() * (4 * sizeof(float)), _jumps);
 		_current_gl_entity->setLineWidth(_line_width);                        // ALERT:
 		_current_gl_entity->setDashes(_dashes_data, _dashes_size, _dashes_sum);   // THIS Order
