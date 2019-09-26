@@ -22,6 +22,9 @@ endif()
 if(MSVC)
 	add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	# Kaguya uses a pointer to a local variable (in object.hpp file) to store class convertions.
+	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
+	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
 endif()
 
 # Set C++ version
