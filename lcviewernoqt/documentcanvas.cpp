@@ -304,7 +304,7 @@ std::vector<double> DocumentCanvas::drawLinePattern(
         return layer->linePattern()->lcPattern(width);
     }
 
-    return std::vector<double>();
+	return std::vector<double>({{1.0}});
 }
 
 lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert,
