@@ -8,6 +8,6 @@ ModuleSettings settings({
         {SETTINGS_LCTOLERANCE, &lcTolerance}
 });
 
-ModuleSettings lc::kernel::getSettings() {
+const ModuleSettings& lc::kernel::getSettings() {
 	return settings;
 }

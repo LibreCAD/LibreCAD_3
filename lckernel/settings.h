@@ -5,6 +5,6 @@
 
 namespace lc {
     namespace kernel {
-        lc::storage::settings::ModuleSettings getSettings();
+        const lc::storage::settings::ModuleSettings& getSettings();
     }
 }
