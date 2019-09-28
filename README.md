@@ -112,67 +112,50 @@ http://askubuntu.com/a/456849
 Windows
 ========
 
-### Bash for Windows 10
-This is the only way to get LibreCAD running on Windows at the moment.
-1) Follow the instructions for Ubuntu 14.04.
+# Visual Studio
+Install Visual Studio with:
+- C++
+- CMake for Windows
+- Windows SDK
 
-2) Install Xming or any other X server for Windows
+## Dependencies
 
-3) Enter `export DISPLAY=:0` before running LibreCAD
+### Boost
+Download prebuilt Windows binaries for Boost from: https://sourceforge.net/projects/boost/files/boost-binaries/
 
-### MSYS2
+### Eigen 3
+Download Eigen 3 zip archive from https://eigen.tuxfamily.org 
+Unzip it on your disk (`C:\local\eigen-3.3.7`)
 
+### Qt
+Download and install Qt (open source version) from https://www.qt.io/download
+You must select at least one version of Qt for the MSVC compiler
+
+### Lua
+Download Windows binaries (dll15) here: https://sourceforge.net/projects/luabinaries/files/5.3.5/Windows%20Libraries/Dynamic/
+Unzip it on your disk (`C:\local\lua-5.3.5`)
+
+### GLEW
+Download Windows binaries from glew.sourceforge.net
+Unzip this archive on your disk (`C:\local\glew-2.1.0`)
+
+## Libdxfrw
+Clone libdxfrw repository
+Open it as a folder in Visual Studio:
+- Build all
+- Install DXFRW
+
+## LibreCAD
+Open project as folder in Visual Studio
+Project > CMake Settings
+
+Set the following CMake options
 ```
-pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango mingw-w64-x86_64-lua mingw-w64-x86_64-eigen3 mingw-w64-x86_64-apr mingw-w64-x86_64-apr-util mingw-w64-x86_64-qt5 mingw-w64-x86_64-gtest git mingw-w64-x86_64-cmake mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-boost mingw-w64-x86_64-gdk-pixbuf2 mingw-w64-x86_64-gtk3 mingw-w64-x86_64-curl mingw-w64-x86_64-pkg-config
-
-cd ~
-git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
+-DBoost_ADDITIONAL_VERSIONS=1.71.0 -DBoost_COMPILER=-vc142 -DBOOST_LIBRARYDIR=C:\local\boost_1_71_0\lib64-msvc-14.2 -DEIGEN3_ROOT=C:\local\eigen-3.3.7 -DLIBDXFRW_PATH=C:\Users\ferag\Workspace\libdxfrw\out\install\x64-Debug -DWITH_LIBOPENCAD=OFF -DGLEW_LIBRARY=C:\local\glew-2.1.0\lib\Release\x64\glew32.lib -DGLEW_INCLUDE_DIR=C:\local\glew-2.1.0\include -DFREETYPE_LIBRARY=C:\local\freetype-2.10.1\win64\freetype.lib -DCMAKE_PREFIX_PATH=C:\Qt\5.13.1\msvc2017_64\lib\cmake -DCMAKE_LIBRARY_PATH=C:\Qt\5.13.1\msvc2017_64\lib -DWITH_LUACMDINTERFACE=FALSE -DWITH_RENDERING_UNITTESTS=OFF -DWITH_CAIRO=OFF -DOPENGL_INCLUDE_DIR=C:\local\glm-0.9.9.6 -DWITH_UNITTESTS=OFF
 ```
+`-DBoost` options were added because the latest version of Boost wasn't supported by CMake. They may not be necessary anymore.
 
-#### libdxfrw:
-```
-git clone https://github.com/LibreCAD/libdxfrw.git LibreCAD_3/third_party/libdxfrw
-cd ~/LibreCAD_3/third_party/libdxfrw
-mkdir build
-cd build
-/mingw64/bin/cmake \
-    -G "MSYS Makefiles" \
-    -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
-    -DCMAKE_AR=/mingw64/bin/ar.exe \
-    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
-    ..
-
-mingw32-make
-```
-
-#### LibreCAD:
-
-```
-cd ~/LibreCAD_3
-mkdir build
-cd build
-
-/mingw64/bin/cmake \
-    -G "MSYS Makefiles" \
-    -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe \
-    -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe \
-    -DCMAKE_AR=/mingw64/bin/ar.exe \
-    -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe \
-    -DCMAKE_C_FLAGS=-Wa,-mbig-obj \
-    -DCMAKE_CXX_FLAGS=-Wa,-mbig-obj \
-    -DLIBDXFRW_PATH=~/LibreCAD_3/third_party/libdxfrw/build \
-    -DWITH_LIBOPENCAD=OFF \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_FIND_LIBRARY_SUFFIXES=".dll.a" \
-    ..
-
-
-mingw32-make
-```
-
-Add each filder containing .dll files (including /mingw64/bin) to %PATH%.
-
+Add the folders containing the .dll files in your `PATH` environment variable
 
 Reading materials for feature usage
 =========
