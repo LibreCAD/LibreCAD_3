@@ -112,7 +112,7 @@ if(WITH_RENDERING_UNITTESTS)
     #GLib
     set(GLIB_FIND_COMPONENTS gobject)
     find_package(GLib REQUIRED)
-    include_directories(${GLib_INCLUDE_DIRS})
+    include_directories(${GLIB_INCLUDE_DIRS})
 
     # Cairo
     find_package(Cairo 1.13 REQUIRED)
@@ -135,7 +135,7 @@ if(WITH_RENDERING_UNITTESTS)
         ${GDK-PIXBUF_LIBRARIES}
         ${GDK_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES}
-        ${GLib_LIBRARIES}
+	${GLIB_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 
