@@ -18,4 +18,4 @@ cmake ..
 
 make -j2 lcunittest VERBOSE=1
 
-./unittest/lcunittest
+./bin/lcunittest
