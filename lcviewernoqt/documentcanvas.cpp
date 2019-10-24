@@ -304,7 +304,7 @@ std::vector<double> DocumentCanvas::drawLinePattern(
         return layer->linePattern()->lcPattern(width);
     }
 
-	return std::vector<double>({{1.0}});
+	return std::vector<double>();
 }
 
 lc::Color DocumentCanvas::drawColor(const lc::entity::CADEntity_CSPtr& entity, const lc::entity::Insert_CSPtr& insert,
@@ -371,7 +371,7 @@ void DocumentCanvas::drawEntity(LcPainter& painter, const LCVDrawItem_CSPtr& dra
     painter.line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
 
     auto path = drawLinePattern(ci, insert, width);
-    painter.set_dash(&path[0], path.size(), 0., true);
+    painter.set_dash(path.data(), path.size(), 0., true);
 
     // Decide what color to render the entity into
 
@@ -463,7 +463,7 @@ void DocumentCanvas::cacheEntity(unsigned long id, const LCVDrawItem_CSPtr& draw
     cachepainter->line_width(std::max(width, MINIMUM_READER_LINEWIDTH));
 
     auto path = drawLinePattern(ci, insert, width);
-    cachepainter->set_dash(&path[0], path.size(), 0., true);
+    cachepainter->set_dash(path.data(), path.size(), 0., true);
 
     // Decide what color to render the entity into
 
