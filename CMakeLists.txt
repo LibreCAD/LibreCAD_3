@@ -6,12 +6,40 @@ option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)
 option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
-option(WITH_LIBOPENCAD "Use libopencad" ON)
+option(WITH_LIBOPENCAD "Use libopencad" OFF)
+option(WITH_CAIRO "Compile with Cairo painter" OFF)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)
 
 option(WITH_PERSISTENCE "Build dxf/dwg support" ON)
+
+# Define compiler warnings
+if (NOT MSVC) # Too much warnings on MSVC
+     add_definitions("-Wall")
+endif()
+
+if(MSVC)
+	add_definitions("/bigobj")
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+	# Kaguya uses a pointer to a local variable (in object.hpp file) to store class convertions.
+	# When used in different modules, the variable doesn't have the same address, preventing to mix kernel and UI bindings
+	add_definitions("-DKAGUYA_SUPPORT_MULTIPLE_SHARED_LIBRARY=1")
+endif()
+
+# Set C++ version
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 14)
+
+# Use dynamic linking for Boost
+add_definitions(-DBOOST_ALL_DYN_LINK)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_LIBS OFF)
+
+# Add dirent.h if compiler is MSVC
+if(MSVC)
+    include_directories("third_party/msvc_dirent")
+endif()
 
 #Try to find version
 if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
@@ -31,8 +59,13 @@ message("  - Rendering unit tests: ${WITH_RENDERING_UNITTESTS}")
 message("  - Documentation: ${WITH_DOCUMENTATION}")
 message("  - LibreCAD DXF/DWG support: ${WITH_LCDXFDWG}")
 message("  - Use libopencad: ${WITH_LIBOPENCAD}")
+message("  - Use Cairo: ${WITH_CAIRO}")
 
 message("\n")
+
+if(WITH_CAIRO)
+    add_definitions(-DWITH_CAIRO)
+endif(WITH_QT_UI)
 
 #Add each LibreCAD component
 add_subdirectory("lckernel")

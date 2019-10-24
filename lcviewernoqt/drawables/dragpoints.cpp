@@ -4,12 +4,12 @@ using namespace lc;
 using namespace lc::viewer;
 using namespace lc::viewer::drawable;
 
-void DragPoints::setPoints(event::DragPointsEvent const &points) {
+void DragPoints::setPoints(lc::viewer::event::DragPointsEvent const &points) {
 	_points = points.dragPoints();
 	_size = points.size();
 }
 
-void DragPoints::onDraw(event::DrawEvent const &event) const {
+void DragPoints::onDraw(lc::viewer::event::DrawEvent const &event) const {
 	double x = _size;
 	double y = _size;
 

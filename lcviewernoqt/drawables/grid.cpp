@@ -16,7 +16,7 @@ Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& mino
        _lastGridSize(1) {
 }
 
-void Grid::draw(event::DrawEvent const & event) const {
+void Grid::draw(lc::viewer::event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
 

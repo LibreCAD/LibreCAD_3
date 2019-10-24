@@ -6,7 +6,7 @@ using namespace lc::viewer::drawable;
 PaperBackground::PaperBackground(int width,int height) : _width(width), _height(height){
 }
 
-void PaperBackground::draw(event::DrawEvent const & event) const {
+void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     LcPainter &painter = event.painter();
     const lc::geo::Area &updateRect = event.updateRect();
     unsigned long patId = painter.pattern_create_linear(0.0,  updateRect.minP().y(),  0.0, updateRect.maxP().y());
@@ -16,6 +16,7 @@ void PaperBackground::draw(event::DrawEvent const & event) const {
     painter.rectangle(updateRect.minP().x(), updateRect.minP().y(), updateRect.width(), updateRect.height());
     painter.fill();
     painter.pattern_destroy(patId);
+    painter.stroke();
 
     painter.source_rgb(0., 0., 0.);
     painter.rectangle(0, 0, _width, _height);
@@ -24,4 +25,5 @@ void PaperBackground::draw(event::DrawEvent const & event) const {
     painter.source_rgb(1., 1., 1.);
     painter.rectangle(0, 0, _width, _height);
     painter.fill();
+    painter.stroke();
 }

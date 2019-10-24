@@ -12,7 +12,7 @@ namespace lc {
     namespace lua {
         class PluginManager {
             public:
-                PluginManager(lua_State* l, const char* interface);
+                PluginManager(lua_State* l, const char* iface);
 
                 /**
                  * @brief Load the Lua plugins

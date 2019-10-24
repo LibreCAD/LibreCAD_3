@@ -1,10 +1,6 @@
 #include "pluginmanager.h"
 #include "lclua.h"
-#ifdef _MSC_VER
-#include "dirent_msvc.h"
-#else
 #include <dirent.h>
-#endif
 #include <kaguya/kaguya.hpp>
 
 using namespace lc::lua;

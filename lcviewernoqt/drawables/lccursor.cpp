@@ -21,7 +21,7 @@ Cursor::Cursor(int cursorSize,
 
 }
 
-void Cursor::onDraw(event::DrawEvent const & event) const {
+void Cursor::onDraw(lc::viewer::event::DrawEvent const & event) const {
     double zeroCornerX = 0.;
     double zeroCornerY = 0.;
     event.painter().device_to_user(&zeroCornerX, &zeroCornerY);

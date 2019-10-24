@@ -1,7 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT (UnitTest)
-ADD_DEFINITIONS(-std=c++14)
-ADD_DEFINITIONS("-Wall")
 
 message("***** LibreCAD unit tests *****")
 
@@ -26,8 +24,6 @@ FIND_PACKAGE ( Threads REQUIRED )
 link_directories(${PROJECT_SOURCE_DIR}/../third_party/gtest_build) # Used by Travis CI
 
 # Boost logging
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -116,7 +112,7 @@ if(WITH_RENDERING_UNITTESTS)
     #GLib
     set(GLIB_FIND_COMPONENTS gobject)
     find_package(GLib REQUIRED)
-    include_directories(${GLib_INCLUDE_DIRS})
+    include_directories(${GLIB_INCLUDE_DIRS})
 
     # Cairo
     find_package(Cairo 1.13 REQUIRED)
@@ -139,7 +135,7 @@ if(WITH_RENDERING_UNITTESTS)
         ${GDK-PIXBUF_LIBRARIES}
         ${GDK_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES}
-        ${GLib_LIBRARIES}
+	${GLIB_LIBRARIES}
         ${Boost_LIBRARIES}
     )
 

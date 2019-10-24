@@ -21,8 +21,6 @@ void DocumentImpl::execute(const operation::DocumentOperation_SPtr& operation) {
         begin(operation);
         this->operationProcess(operation);
         commit(operation);
-
-        _documentMutex.unlock();
     }
 
     auto tmp = _newWaitingCustomEntities;

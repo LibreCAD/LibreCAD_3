@@ -330,6 +330,7 @@ public:
 
     void circle(double x, double y, double r) {
         cairo_arc(_cr, x, -y, r, 0, 2. * M_PI);
+        std::cout<<"painter Circle"<<x<<","<<y<<std::endl;
     }
 
     void ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra = 0) {
@@ -472,7 +473,51 @@ public:
     void fill() {
         cairo_fill(_cr);
     }
+    
+   //##############################################################
+    //############# Blank Functions to compatible ##################
+    //#################### with OpenGL  ############################
+    //##############################################################
+    
+    void create_resources(){ 
+    }                            
 
+    void new_device_size(unsigned int width, unsigned int height){
+    }
+
+    bool isCachingEnabled()
+    {
+      return false;
+    }
+
+    void startcaching(){
+    }
+
+    void finishcaching(unsigned long id){     
+    }
+
+    LcPainter* getCacherpainter(){
+    }
+
+    bool isEntityCached(unsigned long id){
+    }
+
+    void renderEntityCached(unsigned long id){
+    }
+
+    void deleteEntityCached(unsigned long id){                
+    }
+
+    void dash_destroy(){
+    }
+
+
+   //##############################################################
+    //##############################################################
+    //##############################################################
+    //##############################################################
+    
+    
     void point(double x, double y, double size, bool deviceCoords) {
         if (deviceCoords) {
             cairo_arc(_cr, x, -y, size / scale(), 0, 2. * M_PI);
@@ -507,7 +552,7 @@ public:
             }
 
             cairo_set_dash(_cr, scaledDashes, num_dashes, offset);
-			delete scaledDashes;
+            delete scaledDashes;
         } else {
             cairo_set_dash(_cr, dashes, num_dashes, offset);
         }

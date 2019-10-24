@@ -7,7 +7,6 @@
 #include "cad/geometry/geobezierbase.h"
 #include "cad/geometry/geobezier.h"
 #include "cad/geometry/geobeziercubic.h"
-#include <tinyspline/tinysplinecpp.h>
 
 namespace lc {
     namespace geo {
@@ -38,7 +37,6 @@ namespace lc {
                         _eTanX(etanx), _eTanY(etany), _eTanZ(etanz),
                         _nX(nx), _nY(ny), _nZ(nz), _flags(flags) {
                     populateCurve();
-                    generateBeziers();
                 }
 
                 /**
@@ -98,7 +96,6 @@ namespace lc {
                  */
                 bool closed() const;
                 const std::vector<BB_CSPtr> beziers() const;
-                void generateBeziers();
                 void trimAtPoint(const geo::Coordinate& c);
 
                 /**
@@ -143,7 +140,6 @@ namespace lc {
                 const double _nY;  // normal vector y coordinate
                 const double _nZ;  // normal vector z coordinate
 
-                ts::BSpline _splineCurve;
                 std::vector<BB_CSPtr> _beziers;
                 const splineflag _flags;
         };

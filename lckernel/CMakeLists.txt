@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
 
-add_definitions("-Wall")
-
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
 add_subdirectory("tinyspline")
+include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-add_definitions(-std=c++14)
 
 message("***** LibreCAD kernel *****")
 
@@ -216,9 +213,6 @@ cad/tools/maphelper.h
 )
 
 # Boost logging
-add_definitions(-DBOOST_LOG_DYN_LINK)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS OFF)
 find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
@@ -266,4 +260,3 @@ target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIB
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
-

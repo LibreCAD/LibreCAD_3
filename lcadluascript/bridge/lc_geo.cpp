@@ -216,7 +216,6 @@ void import_lc_geo_namespace(kaguya::State& state) {
         .addFunction("fitPoints", &lc::geo::Spline::fitPoints)
         .addFunction("fitTolerance", &lc::geo::Spline::fitTolerance)
         .addFunction("flags", &lc::geo::Spline::flags)
-        .addFunction("generateBeziers", &lc::geo::Spline::generateBeziers)
         .addFunction("knotPoints", &lc::geo::Spline::knotPoints)
         .addFunction("nX", &lc::geo::Spline::nX)
         .addFunction("nY", &lc::geo::Spline::nY)
