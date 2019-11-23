@@ -93,6 +93,7 @@ CADEntity_CSPtr DimRadial::rotate(const geo::Coordinate& rotation_center, double
                                                     this->layer(),
                                                     this->metaInfo()
     );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
@@ -109,6 +110,7 @@ CADEntity_CSPtr DimRadial::scale(const geo::Coordinate& scale_center, const geo:
                                                     this->layer(),
                                                     this->metaInfo()
     );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
@@ -125,6 +127,7 @@ CADEntity_CSPtr DimRadial::mirror(const geo::Coordinate& axis1, const geo::Coord
                                                     this->layer(),
                                                     this->metaInfo()
     );
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 
@@ -147,7 +150,7 @@ CADEntity_CSPtr DimRadial::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr 
                             layer,
                             metaInfo, block
     );
-
+    newDimRadial->setID(this->id());
     return newDimRadial;
 }
 

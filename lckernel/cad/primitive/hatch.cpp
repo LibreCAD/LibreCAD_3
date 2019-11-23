@@ -23,20 +23,20 @@ CADEntity_CSPtr Hatch::move(const geo::Coordinate &offset) const {
     return newHatch;
 }
 
-CADEntity_CSPtr Hatch::copy(const geo::Coordinate &offset) const {
+CADEntity_CSPtr Hatch::copy(const geo::Coordinate &offset) const {//@TODO: Below operations must be compleated later
     auto newHatch =  std::make_shared<Hatch>(layer(), metaInfo());
     return newHatch;
 }
 
 CADEntity_CSPtr Hatch::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     auto newHatch =  std::make_shared<Hatch>(layer(), metaInfo());
-    newHatch->setID(this->id());
+//     newHatch->setID(this->id());
     return newHatch;
 }
 
 CADEntity_CSPtr Hatch::scale(const geo::Coordinate &scale_center, const geo::Coordinate &scale_factor) const {
     auto newHatch =  std::make_shared<Hatch>(layer(), metaInfo());
-    newHatch->setID(this->id());
+//     newHatch->setID(this->id());
     return newHatch;
 }
 
@@ -51,7 +51,7 @@ const geo::Area Hatch::boundingBox() const {
 
 CADEntity_CSPtr Hatch::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newHatch =  std::make_shared<Hatch>(layer, metaInfo,block);
-    newHatch->setID(this->id());
+//     newHatch->setID(this->id());
     return newHatch;
 }
 

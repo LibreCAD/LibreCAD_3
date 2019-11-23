@@ -106,6 +106,7 @@ CADEntity_CSPtr DimDiametric::scale(const geo::Coordinate& scale_center, const g
                                                           this->_leader,
                                                           this->layer(),
                                                           this->metaInfo());
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
@@ -121,6 +122,7 @@ CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Co
                                                           this->_leader,
                                                           this->layer(),
                                                           this->metaInfo());
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 
@@ -144,7 +146,7 @@ CADEntity_CSPtr DimDiametric::modify(meta::Layer_CSPtr layer, const meta::MetaIn
                                metaInfo,
                                block
     );
-
+    newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
 

@@ -94,6 +94,7 @@ CADEntity_CSPtr DimAligned::rotate(const geo::Coordinate& rotation_center, doubl
                                                       this->layer(),
                                                       this->metaInfo()
     );
+    newDimAligned->setID(this->id());
     return newDimAligned;
 }
 
@@ -110,6 +111,7 @@ CADEntity_CSPtr DimAligned::scale(const geo::Coordinate& scale_center, const geo
                                                       this->layer(),
                                                       this->metaInfo()
     );
+    newDimAligned->setID(this->id());
     return newDimAligned;
 }
 
@@ -128,6 +130,7 @@ CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
                                                       this->layer(),
                                                       this->metaInfo()
     );
+    newDimAligned->setID(this->id());
     return newDimAligned;
 }
 
@@ -151,7 +154,7 @@ CADEntity_CSPtr DimAligned::modify(meta::Layer_CSPtr layer, const meta::MetaInfo
                              metaInfo,
                              block
     );
-
+    newDimAligned->setID(this->id());
     return newDimAligned;
 }
 
