@@ -68,7 +68,7 @@ namespace lc {
             }
 
             friend std::ostream& operator<<(std::ostream& os, const Color& color) {
-                os << "Color(red=" << color._r << " green=" << color._g << " blue=" << color._b << " ahlpa=" << color._a << ")";
+                os << "Color(red=" << color._r << " green=" << color._g << " blue=" << color._b << " alpha=" << color._a << ")";
                 return os;
             }
 
