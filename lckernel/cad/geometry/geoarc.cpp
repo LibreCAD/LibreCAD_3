@@ -8,8 +8,10 @@ Arc::Arc(Coordinate center, double radius, double startAngle, double endAngle, b
         Base(),
         _center(std::move(center)),
         _radius(radius),
-        _startAngle(maths::Math::correctAngle(startAngle)),
-        _endAngle(maths::Math::correctAngle(endAngle)),
+        //_startAngle(maths::Math::correctAngle(startAngle)),
+        //_endAngle(maths::Math::correctAngle(endAngle)), //no correction since 2pi changes to 0,ie. (0,2pi)->(0,0)
+        _startAngle(startAngle),
+        _endAngle(endAngle),
         _CCW(isCCW) {
 
     if (radius <= 0.0) {

@@ -53,10 +53,10 @@ namespace lc {
             double _angle;              /*!< hatch pattern angle, code 52 */
             double _scale;              /*!< hatch pattern scale, code 41 */
             int _deflines;              /*!< number of pattern definition lines, code 78 */
+            geo::Area _boundingBox;     //Bounding box for hatch
 
-            std::vector<std::shared_ptr<HatchLoop> > _loopList;  /*!< polyline list */
         public:
-            void addLoop(std::shared_ptr<HatchLoop> lp);
+            std::vector<HatchLoop> _loopList;  /*!< polyline list */
             void setPatternName(std::string name){_name = name;};
             void setSolid(int solid){_solid = solid;};
 //            int _associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
@@ -66,6 +66,7 @@ namespace lc {
 //            int _loopsnum;              /*!< namber of boundary paths (loops), code 91 */
             void setAngle(double angle){_angle = angle;};
             void setScale(double scale){_scale = scale;};
+            void calculateBoundingBox();
         };
         DECLARE_SHORT_SHARED_PTR(Hatch)
     }

@@ -46,7 +46,7 @@ CADEntity_CSPtr Hatch::mirror(const geo::Coordinate &axis1, const geo::Coordinat
 }
 
 const geo::Area Hatch::boundingBox() const {
-    return geo::Area(geo::Coordinate(),geo::Coordinate());
+    return _boundingBox;
 }
 
 CADEntity_CSPtr Hatch::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
@@ -55,6 +55,12 @@ CADEntity_CSPtr Hatch::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
     return newHatch;
 }
 
-void Hatch::addLoop(std::shared_ptr<HatchLoop> lp){
-    _loopList.push_back(lp);
+void Hatch::calculateBoundingBox(){
+    _boundingBox =  geo::Area(geo::Coordinate(),geo::Coordinate());
+    //Merge box of each entities
+    for(auto &x:_loopList){
+        for(auto &y:x.objList){
+            _boundingBox = _boundingBox.merge(y->boundingBox());
+        }
+    }
 }
