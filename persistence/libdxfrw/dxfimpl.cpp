@@ -245,8 +245,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
         _builder->append(al);
     }
     else if (data.name.length() > 0 && (data.name.compare(0,1,"*") != 0)) {
-        auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
-        _builder->append(al);
+        std::make_shared<lc::operation::AddLayer>(_document, layer)->execute();
     }
 }
 
