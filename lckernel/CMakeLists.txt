@@ -4,7 +4,7 @@ project(LCKERNEL)
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
-add_subdirectory("tinyspline")
+add_subdirectory("tinyspline/src")
 include_directories("${CMAKE_SOURCE_DIR}/lckernel/tinyspline/src")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

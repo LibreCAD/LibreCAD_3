@@ -201,7 +201,7 @@ endif ()
 
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
-${OPENGL_LIBRARY}
-${GLEW_LIBRARY}
+${OPENGL_LIBRARIES} # library or libraries both same
+${GLEW_LIBRARIES} #GLEW_LIBRAY is null in my arch 
 ${Boost_LIBRARIES}
 ${FREETYPE_LIBRARIES})
