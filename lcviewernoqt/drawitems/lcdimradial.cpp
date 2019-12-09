@@ -19,7 +19,7 @@ LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr& dimRadial) :
 *
 */
 void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    // Decide to show the explecit value or the measured value
+    // Decide to show the explicit value or the measured value
     double radiusCircle = _dimRadial->definitionPoint().distanceTo(_dimRadial->definitionPoint2());
     const lc::geo::Coordinate& mousePos = _dimRadial->middleOfText();
     //const bool mouseIsInside = mousePos.distanceTo(_dimRadial->definitionPoint()) < radiusCircle;
