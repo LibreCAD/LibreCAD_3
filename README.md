@@ -147,11 +147,26 @@ Open it as a folder in Visual Studio:
 
 ## LibreCAD
 Open project as folder in Visual Studio
-Project > CMake Settings
 
-Set the following CMake options
+In `Project > CMake Settings`, set the following CMake options, after adapting the paths to your environment:
+
 ```
--DBoost_ADDITIONAL_VERSIONS=1.71.0 -DBoost_COMPILER=-vc142 -DBOOST_LIBRARYDIR=C:\local\boost_1_71_0\lib64-msvc-14.2 -DEIGEN3_ROOT=C:\local\eigen-3.3.7 -DLIBDXFRW_PATH=C:\Users\ferag\Workspace\libdxfrw\out\install\x64-Debug -DWITH_LIBOPENCAD=OFF -DGLEW_LIBRARY=C:\local\glew-2.1.0\lib\Release\x64\glew32.lib -DGLEW_INCLUDE_DIR=C:\local\glew-2.1.0\include -DFREETYPE_LIBRARY=C:\local\freetype-2.10.1\win64\freetype.lib -DCMAKE_PREFIX_PATH=C:\Qt\5.13.1\msvc2017_64\lib\cmake -DCMAKE_LIBRARY_PATH=C:\Qt\5.13.1\msvc2017_64\lib -DWITH_LUACMDINTERFACE=FALSE -DWITH_RENDERING_UNITTESTS=OFF -DWITH_CAIRO=OFF -DOPENGL_INCLUDE_DIR=C:\local\glm-0.9.9.6 -DWITH_UNITTESTS=OFF
+-DBoost_ADDITIONAL_VERSIONS=1.71.0 
+-DBoost_COMPILER=-vc142 
+-DBOOST_LIBRARYDIR=C:\local\boost_1_71_0\lib64-msvc-14.2 
+-DEIGEN3_ROOT=C:\local\eigen-3.3.7 
+-DLIBDXFRW_PATH=C:\Users\ferag\Workspace\libdxfrw\out\install\x64-Debug 
+-DWITH_LIBOPENCAD=OFF 
+-DGLEW_LIBRARY=C:\local\glew-2.1.0\lib\Release\x64\glew32.lib 
+-DGLEW_INCLUDE_DIR=C:\local\glew-2.1.0\include 
+-DFREETYPE_LIBRARY=C:\local\freetype-2.10.1\win64\freetype.lib 
+-DCMAKE_PREFIX_PATH=C:\Qt\5.13.1\msvc2017_64\lib\cmake 
+-DCMAKE_LIBRARY_PATH=C:\Qt\5.13.1\msvc2017_64\lib 
+-DWITH_LUACMDINTERFACE=FALSE 
+-DWITH_RENDERING_UNITTESTS=OFF 
+-DWITH_CAIRO=OFF 
+-DOPENGL_INCLUDE_DIR=C:\local\glm-0.9.9.6 
+-DWITH_UNITTESTS=OFF
 ```
 `-DBoost` options were added because the latest version of Boost wasn't supported by CMake. They may not be necessary anymore.
 
