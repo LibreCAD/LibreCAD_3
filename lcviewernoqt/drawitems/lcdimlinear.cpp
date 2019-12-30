@@ -40,7 +40,7 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         isHorizontal = true;
     }
 
-    // Decide to show the explecit value or the measured value
+    // Decide to show the explicit value or the measured value
     std::string value = lc::tools::StringHelper::dim_value(
             _dimLinear->explicitValue(),
             options.linearFormat(),

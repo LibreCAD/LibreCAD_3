@@ -16,7 +16,7 @@ LCDimDiametric::LCDimDiametric(const lc::entity::DimDiametric_CSPtr& dimDiametri
 * TODO: draw correct leader and verification if we draw this correctly compared to other CAD drawings
 */
 void LCDimDiametric::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
-    // Decide to show the explecit value or the measured value
+    // Decide to show the explicit value or the measured value
     auto diameterCircle = _dimDiametric->definitionPoint().distanceTo(_dimDiametric->definitionPoint2());
     auto circle_middle_p0 = _dimDiametric->definitionPoint2().mid(_dimDiametric->definitionPoint());
     // FIXME this should not be fixed

@@ -195,7 +195,7 @@ namespace lc {
                 }
 
                 /**
-                  * Dot product with other coordindate : return _x * coord._x + _y * coord._y + _z * coord._z;
+                  * Dot product with other coordinate : return _x * coord._x + _y * coord._y + _z * coord._z;
                   *
                   * @param Coordinate
                   * @return double   Dot product value
