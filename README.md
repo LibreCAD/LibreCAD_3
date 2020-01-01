@@ -139,6 +139,8 @@ Unzip it on your disk (`C:\local\lua-5.3.5`)
 Download Windows binaries from glew.sourceforge.net
 Unzip this archive on your disk (`C:\local\glew-2.1.0`)
 
+The `GLEW_ROOT` environment variable (in Windows) should be set to where the archive was extracted, in this case `C:\local\glew-2.1.0`
+
 ## Libdxfrw
 Clone libdxfrw repository
 Open it as a folder in Visual Studio:
@@ -156,8 +158,7 @@ In `Project > CMake Settings`, set the following CMake options, after adapting t
 -DBOOST_LIBRARYDIR=C:\local\boost_1_71_0\lib64-msvc-14.2 
 -DEIGEN3_ROOT=C:\local\eigen-3.3.7 
 -DLIBDXFRW_PATH=C:\Users\ferag\Workspace\libdxfrw\out\install\x64-Debug 
--DWITH_LIBOPENCAD=OFF 
--DGLEW_LIBRARY=C:\local\glew-2.1.0\lib\Release\x64\glew32.lib 
+-DWITH_LIBOPENCAD=OFF
 -DGLEW_INCLUDE_DIR=C:\local\glew-2.1.0\include 
 -DFREETYPE_LIBRARY=C:\local\freetype-2.10.1\win64\freetype.lib 
 -DCMAKE_PREFIX_PATH=C:\Qt\5.13.1\msvc2017_64\lib\cmake 
