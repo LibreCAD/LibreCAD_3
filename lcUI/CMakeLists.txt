@@ -15,6 +15,7 @@ find_package(Qt5Core)
 find_package(Qt5Designer)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5UiTools REQUIRED)
+find_package(Qt5Svg REQUIRED)
 
 SET(QT_USE_QTDESIGNER ON)
 
@@ -159,6 +160,7 @@ set(EXTRA_LIBS
         Qt5::Widgets
         Qt5::UiTools
         Qt5::OpenGL
+		Qt5::Svg
         ${APR_LIBRARIES})
 
 #Create library for unit tests
@@ -169,7 +171,7 @@ endif(WITH_UNITTESTS)
 
 add_executable(librecad ${UI_srcs} ${UI_hdrs} ${UI_HEADERS} ${UI_RESOURCES})
 
-qt5_use_modules(librecad Core Gui Widgets OpenGL)
+qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${GLEW_LIBRARY})
