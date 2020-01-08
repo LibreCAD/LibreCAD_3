@@ -14,16 +14,18 @@ Compilation Instructions
 Required libraries
 ----------
 
-1) cairo 
-2) Pango
-3) Qt 5
-4) git
-5) Google test
-6) Eigen 3
-7) Lua >= 5.2
-8) Curl
-9) Boost
-10) LibDxfRW (see compilation instruction after)
+1) Qt 5
+2) git
+3) Google test
+4) Eigen 3
+5) Lua >= 5.2
+6) Curl
+7) Boost
+8) LibDxfRW (see compilation instruction after)
+9) GLEW
+10) glm
+11) GLU
+12) OpenGL
 
 LibDxfRW compilation
 ----------
@@ -100,10 +102,18 @@ Ubuntu/Mint
 ========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev libglm-dev libqt5opengl5-dev libglew1.5-dev
 ```
 
-You need to compile Google Test in /usr/src/gtest/ and move the libraries in /usr/lib/
+You need to compile Google Test in /usr/src/gtest/ :
+```
+mkdir /tmp/gtest
+cd /tmp/gtest
+cmake /usr/src/gtest
+make
+sudo cp libgtest.a /usr/lib/
+sudo cp libgtest_main.a /usr/lib/
+```
 
 ### Ubuntu 14.xx
 GCC version from Ubuntu 14 doesn't support C++14. You need to install GCC 4.9.
