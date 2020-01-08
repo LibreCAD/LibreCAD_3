@@ -125,8 +125,8 @@ local function create_menu(mainWindow, widget, commandLine, id)
 
 	-- connect draw menu options
 	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
-	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
-	luaInterface:luaConnect(arcAction, "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
+	luaInterface:luaConnect(circleAction, "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_default()  end)
+	luaInterface:luaConnect(arcAction, "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_3p() end)
 	luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
 	luaInterface:luaConnect(splineAction, "triggered(bool)", function() run_basic_operation(id, SplineOperations) end)
 	luaInterface:luaConnect(polylineAction, "triggered(bool)", function() create_lw_polyline(id) end)
@@ -138,11 +138,15 @@ local function connect_buttons(mainWindow, id)
 	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
 	
 	-- circle
-	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
-	--luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_cr()  end)
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_cd() end)
+	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Circle"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_2p() end)
+	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Circle_2"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_3p() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Radius"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_3t() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Tan"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_2t() end)
 
 	-- arc
-	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Arc"), "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Arc"), "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_3p() end)
 
 	-- ellipse
 	luaInterface:luaConnect(mainWindow:findChild("actionEllipse"), "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
