@@ -84,6 +84,7 @@ target_link_libraries(luacmdinterface
         ${APR_LIBRARIES}
         ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
         ${LUA_LIBRARIES}
+        ${GDK-PIXBUF_LIBRARIES}
         lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES}
 
 )
