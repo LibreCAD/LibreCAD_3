@@ -139,6 +139,7 @@ local function connect_buttons(mainWindow, id)
 	
 	-- circle
 	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
+	--luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
 
 	-- arc
 	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Arc"), "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
@@ -151,6 +152,13 @@ local function connect_buttons(mainWindow, id)
 
 	-- polylines
 	luaInterface:luaConnect(mainWindow:findChild("actionPolyline"), "triggered(bool)", function() create_lw_polyline(id) end)
+
+	--dimensions
+	luaInterface:luaConnect(mainWindow:findChild("actionLinear"), "triggered(bool)", function() run_basic_operation(id, DimLinearOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionAligned"), "triggered(bool)", function() run_basic_operation(id, DimAlignedOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionRadius"), "triggered(bool)", function() run_basic_operation(id, DimRadialOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionDiameter"), "triggered(bool)", function() run_basic_operation(id, DimDiametricOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionANG3PT"), "triggered(bool)", function() run_basic_operation(id, DimAngularOperations) end)
 end
 
 --Create a new window
