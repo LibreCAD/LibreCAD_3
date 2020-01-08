@@ -147,6 +147,7 @@ local function connect_buttons(mainWindow, id)
 
 	-- arc
 	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Arc"), "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_3p() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Start_End_2"), "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_cse() end)
 
 	-- ellipse
 	luaInterface:luaConnect(mainWindow:findChild("actionEllipse"), "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)

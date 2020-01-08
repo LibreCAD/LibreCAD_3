@@ -26,6 +26,7 @@ function CircleOperations:_init_default()
 	message("<b>CIRCLE</b>", self.target_widget)
     message("Options: <b><u>2P</u>oint</b>, <u>3P</u>oint, <u>T</u>TT, TT<u>R</u>", self.target_widget)
     message("Provide Center Point:", self.target_widget)
+	self.step = "CircleWithCenterRadius"
 end
 
 function CircleOperations:_init_cr()
