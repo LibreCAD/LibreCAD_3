@@ -75,3 +75,13 @@ lc::entity::LWPolyline_CSPtr lc::builder::LWPolylineBuilder::build()
 {
 	return lc::entity::LWPolyline_CSPtr(new lc::entity::LWPolyline(*this));
 }
+
+void lc::builder::LWPolylineBuilder::removeVertex(int index)
+{
+	if (index < 0) {
+		_vertices.erase(_vertices.end() + index);
+	}
+	else {
+		_vertices.erase(_vertices.begin() + index);
+	}
+}

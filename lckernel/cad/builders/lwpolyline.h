@@ -39,6 +39,7 @@ namespace lc {
 				void modifyLastVertexArc();
 				void modifyLastVertexLine();
 				void createTempLWPolyline(const geo::Coordinate& point);
+				void removeVertex(int index);
 				std::vector<lc::builder::LWBuilderVertex>& getVertices();
 				lc::entity::LWPolyline_CSPtr build();
 		private:
