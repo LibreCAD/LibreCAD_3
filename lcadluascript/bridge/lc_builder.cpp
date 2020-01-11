@@ -249,6 +249,18 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("startTangent", &lc::builder::SplineBuilder::startTangent)
     );
 
+	state["lc"]["builder"]["LWPolylineBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::LWPolylineBuilder, lc::builder::CADEntityBuilder>()
+		.setConstructors<lc::builder::LWPolylineBuilder()>()
+		.addFunction("addLineVertex", &lc::builder::LWPolylineBuilder::addLineVertex)
+		.addFunction("addArcVertex", &lc::builder::LWPolylineBuilder::addArcVertex)
+		.addFunction("modifyLastVertex", &lc::builder::LWPolylineBuilder::modifyLastVertex)
+		.addFunction("modifyLastVertexArc", &lc::builder::LWPolylineBuilder::modifyLastVertexArc)
+		.addFunction("modifyLastVertexLine", &lc::builder::LWPolylineBuilder::modifyLastVertexLine)
+		.addFunction("createTempLWPolyline", &lc::builder::LWPolylineBuilder::createTempLWPolyline)
+		.addFunction("getVertices", &lc::builder::LWPolylineBuilder::getVertices)
+		.addFunction("build", &lc::builder::LWPolylineBuilder::build)
+	);
+
     state["lc"]["builder"]["InsertBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::InsertBuilder, lc::builder::CADEntityBuilder>()
         .setConstructors<lc::builder::InsertBuilder()>()
         .addFunction("build", &lc::builder::InsertBuilder::build)

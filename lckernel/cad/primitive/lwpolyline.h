@@ -11,6 +11,8 @@
 #include "cad/interface/draggable.h"
 #include <vector>
 
+#include <cad/builders/lwpolyline.h>
+
 namespace lc {
     namespace entity {
         /**
@@ -118,6 +120,7 @@ namespace lc {
 
             LWPolyline(const LWPolyline_CSPtr& other, bool sameID = false);
 
+			LWPolyline(lc::builder::LWPolylineBuilder& builder);
 
             double width() const {
                 return _width;
@@ -159,7 +162,7 @@ namespace lc {
              */
             void generateEntities();
 
-            const std::vector<LWVertex2D> _vertex;
+            std::vector<LWVertex2D> _vertex;
             const double _width;
             const double _elevation;
             const double _tickness;
