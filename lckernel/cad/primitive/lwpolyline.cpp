@@ -61,6 +61,8 @@ LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
 	{
 		_vertex.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
 	}
+
+	generateEntities();
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {

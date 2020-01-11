@@ -11,8 +11,8 @@ namespace lc {
 			{
 				location = v;
 				bulge = bul;
-				startWidth = 1;
-				endWidth = 1;
+				startWidth = 0;
+				endWidth = 0;
 			}
 
 			LWBuilderVertex(geo::Coordinate v, double startW, double endW, double bul)
