@@ -9,9 +9,7 @@ lc::builder::LWPolylineBuilder::LWPolylineBuilder()
 	_currentVertex_StartWidth(0),
 	_currentVertex_EndWidth(0),
 	_currentVertex_Location()
-{
-
-}
+{}
 
 void lc::builder::LWPolylineBuilder::addLineVertex(const lc::geo::Coordinate& vert)
 {
