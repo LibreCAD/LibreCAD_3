@@ -20,7 +20,6 @@ function LWPolylineOperations:enterPoint(eventName, data)
 	if(eventName == "point" or eventName == "number") then
         self:newData(data["position"])
     elseif(eventName == "mouseMove") then
-		--self.builder:createTempLWPolyline(data["position"])
 		self:refreshTempEntity()
     end
 end
@@ -34,29 +33,28 @@ function LWPolylineOperations:newData(data)
 			self.builder:addArcVertex(data)
         end
     else
-		--self.build:modifyLastVertex(data)
+		self.build:modifyLastVertex(data)
     end
 end
 
---[[function LWPolylineOperations:createLWPolyline()
-	self:createEntity()
-end]]--
-
 function LWPolylineOperations:refreshTempEntity()
-	if(#self.builder:getVertices() > 2) then
+	if(#self.builder:getVertices() > 1) then
         CreateOperations.refreshTempEntity(self)
     end
 end
 
 function LWPolylineOperations:close()
-	--self:createEntity()
-	CreateOperations.close(self)
+	if(self.creatingPolyspline == nil) then
+        self.creatingPolyspline = true
+        self:createEntity()
+        CreateOperations.close(self)
+    end
 end
 
---[[function LWPolylineOperations:createArc()
+function LWPolylineOperations:createArc()
     self.currentVertex = "arc"
 
-    if(self.builder:getVertices() > 0) then
+    if(#self.builder:getVertices() > 0) then
 		self.builder:modifyLastVertexArc()
     end
 
@@ -66,9 +64,9 @@ end
 function LWPolylineOperations:createLine()
     self.currentVertex = "line"
 
-    if(self.builder:getVertices() > 0) then
+    if(#self.builder:getVertices() > 0) then
 		self.builder:modifyLastVertexLine()
     end
 
     message("Give line coordinates", self.target_widget)
-end ]]--
+end

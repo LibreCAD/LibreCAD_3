@@ -33,14 +33,14 @@ void lc::builder::LWPolylineBuilder::modifyLastVertex(const geo::Coordinate& dat
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, _currentVertex_Bulge);
 }
 
-void lc::builder::LWPolylineBuilder::modifyLastVertexArc(geo::Coordinate data)
+void lc::builder::LWPolylineBuilder::modifyLastVertexArc()
 {
 	int n = _vertices.size();
-	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];(data / 4);
+	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, _currentVertex_Bulge);
 }
 
-void lc::builder::LWPolylineBuilder::modifyLastVertexLine(geo::Coordinate data)
+void lc::builder::LWPolylineBuilder::modifyLastVertexLine()
 {
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
