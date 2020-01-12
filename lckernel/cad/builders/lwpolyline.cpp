@@ -45,28 +45,9 @@ void lc::builder::LWPolylineBuilder::modifyLastVertexLine()
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, 0);
 }
 
-std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder::getVertices()
+const std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder::getVertices()
 {
 	return _vertices;
-}
-
-void lc::builder::LWPolylineBuilder::createTempLWPolyline(const geo::Coordinate& point)
-{
-	int n = _vertices.size();
-	std::vector<lc::builder::LWBuilderVertex> vertexes;
-	vertexes.reserve(n);
-	for (int i = 0; i < n; i++)
-	{
-		vertexes.push_back(_vertices[i]);
-	}
-
-	// create temp vertex location
-	geo::Coordinate location = this->_currentVertex_Location;
-	double bulge = this->_currentVertex_Bulge;
-
-	location = point;
-
-	vertexes.push_back(lc::builder::LWBuilderVertex(location, bulge));
 }
 
 lc::entity::LWPolyline_CSPtr lc::builder::LWPolylineBuilder::build()

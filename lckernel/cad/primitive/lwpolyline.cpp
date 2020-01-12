@@ -55,9 +55,9 @@ LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
 	_closed(false),
 	_extrusionDirection(lc::geo::Coordinate(0, 0))
 {
-	std::vector<lc::builder::LWBuilderVertex> builderVerts = builder.getVertices();
+	const std::vector<lc::builder::LWBuilderVertex>& builderVerts = builder.getVertices();
 
-	for (lc::builder::LWBuilderVertex vert : builder.getVertices())
+	for (const lc::builder::LWBuilderVertex& vert : builderVerts)
 	{
 		_vertex.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
 	}
