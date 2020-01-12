@@ -162,7 +162,14 @@ namespace lc {
              */
             void generateEntities();
 
-            std::vector<LWVertex2D> _vertex;
+			/** 
+			 * @brief Helper method to generate vertex data from passed in builder vertex struct in constructor
+			 * @param vector of LWBuilderVertex
+			 * @return vector of LWVertex2D
+			 */
+			std::vector<LWVertex2D> generateVertexFromBuilderVertex(const std::vector<lc::builder::LWBuilderVertex>& builderVerts) const;
+
+            const std::vector<LWVertex2D> _vertex;
             const double _width;
             const double _elevation;
             const double _tickness;

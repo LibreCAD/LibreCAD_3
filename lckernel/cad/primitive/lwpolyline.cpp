@@ -48,21 +48,26 @@ LWPolyline::LWPolyline(const LWPolyline_CSPtr& other, bool sameID) :
 LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
 	:
 	CADEntity(builder),
-	_vertex(),
+	_vertex(generateVertexFromBuilderVertex(builder.getVertices())),
 	_width(1),
 	_elevation(1),
 	_tickness(1),
 	_closed(false),
 	_extrusionDirection(lc::geo::Coordinate(0, 0))
 {
-	const std::vector<lc::builder::LWBuilderVertex>& builderVerts = builder.getVertices();
+	generateEntities();
+}
+
+std::vector<LWVertex2D> LWPolyline::generateVertexFromBuilderVertex(const std::vector<lc::builder::LWBuilderVertex>& builderVerts) const
+{
+	std::vector<LWVertex2D> verts;
 
 	for (const lc::builder::LWBuilderVertex& vert : builderVerts)
 	{
-		_vertex.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
+		verts.emplace_back(LWVertex2D(vert.location, vert.bulge, vert.startWidth, vert.endWidth));
 	}
 
-	generateEntities();
+	return verts;
 }
 
 CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
