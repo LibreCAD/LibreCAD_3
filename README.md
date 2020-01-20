@@ -124,7 +124,7 @@ Install Visual Studio with:
 Download prebuilt Windows binaries for Boost from: https://sourceforge.net/projects/boost/files/boost-binaries/
 
 ### Eigen 3
-Download Eigen 3 zip archive from https://eigen.tuxfamily.org 
+Download Eigen 3 zip archive from https://gitlab.com/libeigen/eigen 
 Unzip it on your disk (`C:\local\eigen-3.3.7`)
 
 ### Qt
