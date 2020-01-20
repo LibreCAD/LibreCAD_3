@@ -17,7 +17,7 @@ namespace lc {
 				Q_OBJECT
 
 			public:
-				WidgetTitleBar(const QString& title, QDockWidget* parent);
+				WidgetTitleBar(const QString& title, QDockWidget* parent, bool verticalOnHidden);
 			protected slots:
 				void expandButtonTriggered();
 				void closeButtonTriggered();
@@ -29,8 +29,9 @@ namespace lc {
 				QPushButton* m_pExpandButton;
 				QPushButton* m_pCloseButton;
 				QStackedWidget* stackedWidget;
-				void setHorizontalLayout();
-				void setVerticalLayout();
+				bool verticalOnHidden;
+				void setHorizontalLayout(bool switched);
+				void setVerticalLayout(bool switched);
 			};
 		}
 	}
