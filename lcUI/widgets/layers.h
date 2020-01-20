@@ -57,8 +57,6 @@ namespace lc {
 
                     void changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& name);
 
-					void showWidget();
-
                 protected:
                     Ui::Layers* ui;
                     LayerModel* model;

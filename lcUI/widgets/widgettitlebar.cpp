@@ -29,9 +29,6 @@ WidgetTitleBar::WidgetTitleBar(const QString& title, QDockWidget* parent)
 
 	m_pExpandButton->hide();
 
-	Layers* parentObj = (Layers*)parent;
-
-	connect(m_pExpandButton, SIGNAL(clicked()), parentObj, SLOT(showWidget()));
 	connect(m_pExpandButton, SIGNAL(clicked()), this, SLOT(expandButtonTriggered()));
 	connect(m_pCloseButton, SIGNAL(clicked()), this, SLOT(closeButtonTriggered()));
 }
@@ -42,6 +39,9 @@ void WidgetTitleBar::expandButtonTriggered()
 	m_pExpandButton->hide();
 
 	setHorizontalLayout();
+
+	pDock->widget()->show();
+	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
 void WidgetTitleBar::closeButtonTriggered()

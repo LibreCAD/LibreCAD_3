@@ -205,9 +205,3 @@ void Layers::closeEvent(QCloseEvent* event)
 	this->widget()->hide();
 	event->ignore();
 }
-
-void Layers::showWidget()
-{
-	this->widget()->show();
-	this->setFeatures(this->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
-}
