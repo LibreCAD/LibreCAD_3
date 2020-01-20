@@ -29,6 +29,8 @@ namespace lc {
 				QPushButton* m_pExpandButton;
 				QPushButton* m_pCloseButton;
 				QStackedWidget* stackedWidget;
+				void setHorizontalLayout();
+				void setVerticalLayout();
 			};
 		}
 	}
