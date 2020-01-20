@@ -108,6 +108,7 @@ apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev 
 Optional dependencies for Cairo painter:
 ```
 apt-get install libcairo2-dev libpango-1.0-0 libpango1.0-dev libgtk-3-dev
+```
 
 You need to compile Google Test in /usr/src/gtest/ :
 ```
