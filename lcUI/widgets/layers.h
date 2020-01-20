@@ -40,7 +40,6 @@ namespace lc {
                      * Update the layer list.
                      */
                     void setMdiChild(CadMdiChild* mdiChild = nullptr);
-					void closeEvent(QCloseEvent* event);
                 signals:
 
                     void layerChanged(lc::meta::Layer_CSPtr layer);
@@ -77,6 +76,8 @@ namespace lc {
                     void on_removeLayerEvent(const lc::event::RemoveLayerEvent&);
 
                     void on_replaceLayerEvent(const lc::event::ReplaceLayerEvent&);
+
+					void closeEvent(QCloseEvent* event);
             };
         }
     }

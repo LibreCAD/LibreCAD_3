@@ -30,6 +30,9 @@ CliCommand::CliCommand(QWidget* parent) :
     _completer->setModel(_commands.get());
 
     ui->command->setCompleter(_completer.get());
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar("CliCommand", this, false);
+	this->setTitleBarWidget(titleBar);
 }
 
 CliCommand::~CliCommand() {
@@ -208,4 +211,10 @@ void CliCommand::returnText(bool returnText) {
 
 void CliCommand::commandActive(bool commandActive) {
     _commandActive = commandActive;
+}
+
+void CliCommand::closeEvent(QCloseEvent* event)
+{
+	this->widget()->hide();
+	event->ignore();
 }

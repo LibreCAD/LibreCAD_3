@@ -13,6 +13,7 @@ WidgetTitleBar::WidgetTitleBar(const QString& title, QDockWidget* parent, bool v
 	this->verticalOnHidden = verticalOnHidden;
 
 	m_pLabel = new QLabel(title, this);
+	m_pRLabel = new RotatableLabel(title, this);
 	m_pExpandButton = new QPushButton(this);
 	m_pCloseButton = new QPushButton(this);
 
@@ -23,14 +24,18 @@ WidgetTitleBar::WidgetTitleBar(const QString& title, QDockWidget* parent, bool v
 		m_pMainHLayout->addWidget(m_pLabel);
 		m_pMainHLayout->addWidget(m_pExpandButton);
 		m_pMainHLayout->addWidget(m_pCloseButton);
+
+		m_pRLabel->hide();
 	}
 	else
 	{
 		m_pMainVLayout = new QVBoxLayout(this);
 
-		m_pMainVLayout->addWidget(m_pLabel);
+		m_pMainVLayout->addWidget(m_pRLabel);
 		m_pMainVLayout->addWidget(m_pExpandButton);
 		m_pMainVLayout->addWidget(m_pCloseButton);
+
+		m_pLabel->hide();
 	}
 
 	QIcon icon1 = pDock->style()->standardIcon(QStyle::SP_TitleBarMaxButton, 0, pDock);
@@ -53,7 +58,8 @@ void WidgetTitleBar::expandButtonTriggered()
 	setHorizontalLayout(!verticalOnHidden);
 
 	pDock->widget()->show();
-	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
+
+	//pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
 void WidgetTitleBar::closeButtonTriggered()
@@ -62,6 +68,8 @@ void WidgetTitleBar::closeButtonTriggered()
 	m_pExpandButton->show();
 
 	setVerticalLayout(!verticalOnHidden);
+
+	//pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 	pDock->close();
 }
 
@@ -73,7 +81,7 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 		return;
 	}
 
-	m_pMainVLayout->removeWidget(m_pLabel);
+	m_pMainVLayout->removeWidget(m_pRLabel);
 	m_pMainVLayout->removeWidget(m_pCloseButton);
 	m_pMainVLayout->removeWidget(m_pExpandButton);
 
@@ -84,6 +92,10 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 	m_pMainHLayout->addWidget(m_pLabel);
 	m_pMainHLayout->addWidget(m_pCloseButton);
 	m_pMainHLayout->addWidget(m_pExpandButton);
+	m_pLabel->show();
+	m_pRLabel->hide();
+
+	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
 void WidgetTitleBar::setVerticalLayout(bool switched)
@@ -102,7 +114,11 @@ void WidgetTitleBar::setVerticalLayout(bool switched)
 	m_pMainHLayout = nullptr;
 
 	m_pMainVLayout = new QVBoxLayout(this);
-	m_pMainVLayout->addWidget(m_pLabel);
+	m_pMainVLayout->addWidget(m_pRLabel);
 	m_pMainVLayout->addWidget(m_pCloseButton);
 	m_pMainVLayout->addWidget(m_pExpandButton);
+	m_pRLabel->show();
+	m_pLabel->hide();
+
+	pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 }

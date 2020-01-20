@@ -201,7 +201,6 @@ void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelec
 
 void Layers::closeEvent(QCloseEvent* event)
 {
-	this->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 	this->widget()->hide();
 	event->ignore();
 }
