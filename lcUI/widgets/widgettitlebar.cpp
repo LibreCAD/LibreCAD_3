@@ -38,9 +38,9 @@ WidgetTitleBar::WidgetTitleBar(const QString& title, QDockWidget* parent, bool v
 		m_pLabel->hide();
 	}
 
+	// add approriate icons for close and expand button
 	QIcon icon1 = pDock->style()->standardIcon(QStyle::SP_TitleBarMaxButton, 0, pDock);
 	QIcon icon2 = pDock->style()->standardIcon(QStyle::SP_TitleBarCloseButton, 0, pDock);
-
 	m_pExpandButton->setIcon(icon1);
 	m_pCloseButton->setIcon(icon2);
 
@@ -58,8 +58,6 @@ void WidgetTitleBar::expandButtonTriggered()
 	setHorizontalLayout(!verticalOnHidden);
 
 	pDock->widget()->show();
-
-	//pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
 void WidgetTitleBar::closeButtonTriggered()
@@ -69,7 +67,6 @@ void WidgetTitleBar::closeButtonTriggered()
 
 	setVerticalLayout(!verticalOnHidden);
 
-	//pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 	pDock->close();
 }
 
@@ -81,6 +78,7 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 		return;
 	}
 
+	// Removes the widgets and destroys v layout
 	m_pMainVLayout->removeWidget(m_pRLabel);
 	m_pMainVLayout->removeWidget(m_pCloseButton);
 	m_pMainVLayout->removeWidget(m_pExpandButton);
@@ -88,6 +86,7 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 	delete m_pMainVLayout;
 	m_pMainVLayout = nullptr;
 
+	// Initializes and adds widgets to h layout
 	m_pMainHLayout = new QHBoxLayout(this);
 	m_pMainHLayout->addWidget(m_pLabel);
 	m_pMainHLayout->addWidget(m_pCloseButton);
@@ -95,6 +94,7 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 	m_pLabel->show();
 	m_pRLabel->hide();
 
+	// disable DockWidgetVerticalTitleBar feature
 	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
@@ -106,6 +106,7 @@ void WidgetTitleBar::setVerticalLayout(bool switched)
 		return;
 	}
 
+	// Removes the widgets and destroys h layout
 	m_pMainHLayout->removeWidget(m_pLabel);
 	m_pMainHLayout->removeWidget(m_pCloseButton);
 	m_pMainHLayout->removeWidget(m_pExpandButton);
@@ -113,6 +114,7 @@ void WidgetTitleBar::setVerticalLayout(bool switched)
 	delete m_pMainHLayout;
 	m_pMainHLayout = nullptr;
 
+	// Initializes and adds widgets to v layout
 	m_pMainVLayout = new QVBoxLayout(this);
 	m_pMainVLayout->addWidget(m_pRLabel);
 	m_pMainVLayout->addWidget(m_pCloseButton);
@@ -120,5 +122,6 @@ void WidgetTitleBar::setVerticalLayout(bool switched)
 	m_pRLabel->show();
 	m_pLabel->hide();
 
+	// enable DockWidgetVerticalTitleBar feature
 	pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 }

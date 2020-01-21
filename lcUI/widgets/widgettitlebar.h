@@ -13,6 +13,9 @@ namespace lc {
 	namespace ui {
 		namespace widgets {
 
+			/**
+			 * @brief RotatableLabel (by default rotates by 90)
+			 */
 			class RotatableLabel : public QLabel
 			{
 			Q_OBJECT
@@ -21,12 +24,14 @@ namespace lc {
 				explicit RotatableLabel(QWidget* parent = 0)
 					:
 					QLabel(parent),
-					angle(90)
+					angle(90),
+					qfm(QFont("times", 16))
 				{}
 				explicit RotatableLabel(const QString& text, QWidget* parent = 0)
 					:
 					QLabel(text, parent),
-					angle(90)
+					angle(90),
+					qfm(QFont("times", 16))
 				{}
 				void SetRotateAngle(float rot)
 				{
@@ -42,44 +47,59 @@ namespace lc {
 
 					painter.rotate(angle);
 						
-					// 5,-5
-					painter.drawText(0,0, text());
+					// hardcoded to 10 and -10, TODO think of a way to dynamically get vallues
+					painter.drawText(10,-10, text());
 				}
 				QSize RotatableLabel::minimumSizeHint() const
 				{
-					QSize s = QLabel::minimumSizeHint();
-					return QSize(s.height(), s.width());
+					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
 				}
 
 				QSize RotatableLabel::sizeHint() const
 				{
-					QSize s = QLabel::sizeHint();
-					return QSize(s.height(), s.width());
+					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
 				}
 			private:
 				float angle;
+				// QFontMetrics allows greater control plus fixed a bug of some
+				// of the text being covered by the button
+				QFontMetrics qfm;
 			};
+
 			/**
-			 * \brief Widget which shows a list of layers
+			 * @brief Custom widget title bar to replace default one
+			 *
+			 * Requires parent widget to override closeEvent and ignore event to stop
+			 * the widget from closing (see layers.cpp for example)
 			 */
 			class WidgetTitleBar : public QWidget {
 				Q_OBJECT
 
 			public:
+				/**
+				 * @params title of widget, parent, boolean for title bar to be vertical on hidden
+				 */
 				WidgetTitleBar(const QString& title, QDockWidget* parent, bool verticalOnHidden);
 			protected slots:
 				void expandButtonTriggered();
 				void closeButtonTriggered();
 			private:
 				QDockWidget* pDock;
+
 				QVBoxLayout* m_pMainVLayout;
 				QHBoxLayout* m_pMainHLayout;
+
+				// RotatableLabel for vertical text
 				RotatableLabel* m_pRLabel;
+				// Normal Qlabel for horizontal text
 				QLabel* m_pLabel;
+
 				QPushButton* m_pExpandButton;
 				QPushButton* m_pCloseButton;
-				QStackedWidget* stackedWidget;
+
 				bool verticalOnHidden;
+
+				// switched - calls the other layout function
 				void setHorizontalLayout(bool switched);
 				void setVerticalLayout(bool switched);
 			};
