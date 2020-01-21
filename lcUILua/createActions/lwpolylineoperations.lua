@@ -65,7 +65,12 @@ end
 function LWPolylineOperations:createArc()
     self.currentVertex = "arc"
 
-    if(#self.builder:getVertices() > 0) then
+    if(#self.builder:getVertices() > 1) then
+		if(self.tempPoint) then
+			self.builder:removeVertex(-1)
+			self.tempPoint = false
+		end
+
 		self.builder:modifyLastVertexArc()
     end
 
@@ -75,7 +80,12 @@ end
 function LWPolylineOperations:createLine()
     self.currentVertex = "line"
 
-    if(#self.builder:getVertices() > 0) then
+    if(#self.builder:getVertices() > 1) then
+		if(self.tempPoint) then
+			self.builder:removeVertex(-1)
+			self.tempPoint = false
+		end
+
 		self.builder:modifyLastVertexLine()
     end
 
