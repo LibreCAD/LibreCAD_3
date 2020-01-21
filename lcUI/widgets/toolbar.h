@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDockWidget>
+#include <QCloseEvent>
 #include "toolbartab.h"
 
 namespace Ui {
@@ -42,6 +43,7 @@ namespace lc {
                      * \return Pointer to ToolbarTab
                      */
                     ToolbarTab* tabByName(const char* name);
+					void closeEvent(QCloseEvent* event);
 
                 private:
                     Ui::Toolbar* ui;
