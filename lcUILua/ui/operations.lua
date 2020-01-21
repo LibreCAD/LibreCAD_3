@@ -38,6 +38,8 @@ function run_basic_operation(id, operation, ...)
     finish_operation(id)
     create_cancel_button(id)
     luaInterface:setOperation(id, operation(id, ...))
+	op = luaInterface:operation(id)
+	return op
 end
 
 function create_lw_polyline(id)
