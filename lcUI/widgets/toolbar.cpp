@@ -12,7 +12,10 @@ Toolbar::Toolbar(QWidget *parent) :
 	setTitleBarWidget(nullptr);
 	setWidget(ui->tabWidget);
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar("Toolbar", this, false);
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Toolbar", this,
+													WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+
 	this->setTitleBarWidget(titleBar);
 }
 

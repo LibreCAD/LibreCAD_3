@@ -74,12 +74,19 @@ namespace lc {
 			 */
 			class WidgetTitleBar : public QWidget {
 				Q_OBJECT
-
+	
+			public:
+				enum class TitleBarOptions {
+					VerticalOnHidden,
+					HorizontalOnHidden
+				};
 			public:
 				/**
 				 * @params title of widget, parent, boolean for title bar to be vertical on hidden
 				 */
-				WidgetTitleBar(const QString& title, QDockWidget* parent, bool verticalOnHidden);
+				WidgetTitleBar( const QString& title,
+								QDockWidget* parent,
+								const TitleBarOptions hideOptions);
 			protected slots:
 				void expandButtonTriggered();
 				void closeButtonTriggered();
@@ -97,11 +104,12 @@ namespace lc {
 				QPushButton* m_pExpandButton;
 				QPushButton* m_pCloseButton;
 
-				bool verticalOnHidden;
+				// enums for hide options
+				TitleBarOptions hideOptions;
 
-				// switched - calls the other layout function
-				void setHorizontalLayout(bool switched);
-				void setVerticalLayout(bool switched);
+				// functions to switch to horizontal or vertical layouts
+				void setHorizontalLayout();
+				void setVerticalLayout();
 			};
 		}
 	}

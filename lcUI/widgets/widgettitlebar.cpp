@@ -5,37 +5,27 @@ using namespace lc;
 using namespace lc::ui;
 using namespace lc::ui::widgets;
 
-WidgetTitleBar::WidgetTitleBar(const QString& title, QDockWidget* parent, bool verticalOnHidden)
-	: QWidget(parent)
+WidgetTitleBar::WidgetTitleBar( const QString& title,
+								QDockWidget* parent,
+								WidgetTitleBar::TitleBarOptions hideOptions)
+	: QWidget(parent), m_pMainHLayout(nullptr), m_pMainVLayout(nullptr)
 {
 	pDock = parent;
 
-	this->verticalOnHidden = verticalOnHidden;
+	this->hideOptions = hideOptions;
 
 	m_pLabel = new QLabel(title, this);
 	m_pRLabel = new RotatableLabel(title, this);
 	m_pExpandButton = new QPushButton(this);
 	m_pCloseButton = new QPushButton(this);
 
-	if (verticalOnHidden)
+	if (hideOptions == WidgetTitleBar::TitleBarOptions::VerticalOnHidden)
 	{
-		m_pMainHLayout = new QHBoxLayout(this);
-
-		m_pMainHLayout->addWidget(m_pLabel);
-		m_pMainHLayout->addWidget(m_pExpandButton);
-		m_pMainHLayout->addWidget(m_pCloseButton);
-
-		m_pRLabel->hide();
+		setHorizontalLayout();
 	}
-	else
+	else if(hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden)
 	{
-		m_pMainVLayout = new QVBoxLayout(this);
-
-		m_pMainVLayout->addWidget(m_pRLabel);
-		m_pMainVLayout->addWidget(m_pExpandButton);
-		m_pMainVLayout->addWidget(m_pCloseButton);
-
-		m_pLabel->hide();
+		setVerticalLayout();
 	}
 
 	// add approriate icons for close and expand button
@@ -55,7 +45,14 @@ void WidgetTitleBar::expandButtonTriggered()
 	m_pCloseButton->show();
 	m_pExpandButton->hide();
 
-	setHorizontalLayout(!verticalOnHidden);
+	if (hideOptions == WidgetTitleBar::TitleBarOptions::VerticalOnHidden)
+	{
+		setHorizontalLayout();
+	}
+	else if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden)
+	{
+		setVerticalLayout();
+	}
 
 	pDock->widget()->show();
 }
@@ -65,26 +62,31 @@ void WidgetTitleBar::closeButtonTriggered()
 	m_pCloseButton->hide();
 	m_pExpandButton->show();
 
-	setVerticalLayout(!verticalOnHidden);
+	if (hideOptions == WidgetTitleBar::TitleBarOptions::VerticalOnHidden)
+	{
+		setVerticalLayout();
+	}
+	else if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden)
+	{
+		setHorizontalLayout();
+	}
 
 	pDock->close();
 }
 
-void WidgetTitleBar::setHorizontalLayout(bool switched)
+void WidgetTitleBar::setHorizontalLayout()
 {
-	if (switched)
+
+	if (m_pMainVLayout != nullptr)
 	{
-		setVerticalLayout(!switched);
-		return;
+		// Removes the widgets and destroys v layout
+		m_pMainVLayout->removeWidget(m_pRLabel);
+		m_pMainVLayout->removeWidget(m_pCloseButton);
+		m_pMainVLayout->removeWidget(m_pExpandButton);
+
+		delete m_pMainVLayout;
+		m_pMainVLayout = nullptr;
 	}
-
-	// Removes the widgets and destroys v layout
-	m_pMainVLayout->removeWidget(m_pRLabel);
-	m_pMainVLayout->removeWidget(m_pCloseButton);
-	m_pMainVLayout->removeWidget(m_pExpandButton);
-
-	delete m_pMainVLayout;
-	m_pMainVLayout = nullptr;
 
 	// Initializes and adds widgets to h layout
 	m_pMainHLayout = new QHBoxLayout(this);
@@ -98,21 +100,19 @@ void WidgetTitleBar::setHorizontalLayout(bool switched)
 	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
 }
 
-void WidgetTitleBar::setVerticalLayout(bool switched)
+void WidgetTitleBar::setVerticalLayout()
 {
-	if (switched)
+
+	if (m_pMainHLayout != nullptr)
 	{
-		setHorizontalLayout(!switched);
-		return;
+		// Removes the widgets and destroys h layout
+		m_pMainHLayout->removeWidget(m_pLabel);
+		m_pMainHLayout->removeWidget(m_pCloseButton);
+		m_pMainHLayout->removeWidget(m_pExpandButton);
+
+		delete m_pMainHLayout;
+		m_pMainHLayout = nullptr;
 	}
-
-	// Removes the widgets and destroys h layout
-	m_pMainHLayout->removeWidget(m_pLabel);
-	m_pMainHLayout->removeWidget(m_pCloseButton);
-	m_pMainHLayout->removeWidget(m_pExpandButton);
-
-	delete m_pMainHLayout;
-	m_pMainHLayout = nullptr;
 
 	// Initializes and adds widgets to v layout
 	m_pMainVLayout = new QVBoxLayout(this);

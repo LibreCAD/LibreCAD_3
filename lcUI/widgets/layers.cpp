@@ -25,7 +25,8 @@ Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     connect(ui->layerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar("Layers", this, true);
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Layers", this,
+													WidgetTitleBar::TitleBarOptions::VerticalOnHidden);
 	this->setTitleBarWidget(titleBar);
 }
 

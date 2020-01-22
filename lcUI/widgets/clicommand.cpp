@@ -31,7 +31,9 @@ CliCommand::CliCommand(QWidget* parent) :
 
     ui->command->setCompleter(_completer.get());
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar("CliCommand", this, false);
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Cli Command", this,
+													WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
 	this->setTitleBarWidget(titleBar);
 }
 
