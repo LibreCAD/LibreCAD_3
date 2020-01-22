@@ -51,12 +51,12 @@ namespace lc {
 				}
 				QSize minimumSizeHint() const
 				{
-					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
+					return QSize(qfm.height(), qfm.boundingRect(text()).width());
 				}
 
 				QSize sizeHint() const
 				{
-					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
+					return QSize(qfm.height(), qfm.boundingRect(text()).width());
 				}
 			private:
 				float angle;
