@@ -80,6 +80,7 @@ namespace lc {
 					VerticalOnHidden,
 					HorizontalOnHidden
 				};
+
 			public:
 				/**
 				 * @params title of widget, parent, boolean for title bar to be vertical on hidden
@@ -90,6 +91,7 @@ namespace lc {
 			protected slots:
 				void expandButtonTriggered();
 				void closeButtonTriggered();
+
 			private:
 				QDockWidget* pDock;
 

@@ -76,7 +76,6 @@ void WidgetTitleBar::closeButtonTriggered()
 
 void WidgetTitleBar::setHorizontalLayout()
 {
-
 	if (m_pMainVLayout != nullptr)
 	{
 		// Removes the widgets and destroys v layout
@@ -102,7 +101,6 @@ void WidgetTitleBar::setHorizontalLayout()
 
 void WidgetTitleBar::setVerticalLayout()
 {
-
 	if (m_pMainHLayout != nullptr)
 	{
 		// Removes the widgets and destroys h layout
