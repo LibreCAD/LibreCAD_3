@@ -7,7 +7,6 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QStylePainter>
-#include<iostream>
 
 namespace lc {
 	namespace ui {
@@ -50,12 +49,12 @@ namespace lc {
 					// hardcoded to 10 and -10, TODO think of a way to dynamically get vallues
 					painter.drawText(10,-10, text());
 				}
-				QSize RotatableLabel::minimumSizeHint() const
+				QSize minimumSizeHint() const
 				{
 					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
 				}
 
-				QSize RotatableLabel::sizeHint() const
+				QSize sizeHint() const
 				{
 					return QSize(qfm.height(), qfm.horizontalAdvance(text()));
 				}
