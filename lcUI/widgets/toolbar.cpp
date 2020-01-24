@@ -1,5 +1,6 @@
 #include "toolbar.h"
 #include "ui_toolbar.h"
+#include "widgettitlebar.h"
 
 using namespace lc::ui::widgets;
 
@@ -10,6 +11,12 @@ Toolbar::Toolbar(QWidget *parent) :
 	ui->setupUi(this);
 	setTitleBarWidget(nullptr);
 	setWidget(ui->tabWidget);
+
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Toolbar", this,
+													WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+
+	this->setTitleBarWidget(titleBar);
 }
 
 Toolbar::~Toolbar() {
@@ -39,4 +46,10 @@ ToolbarTab* Toolbar::tabByName(const char *name) {
 	}
 
 	return nullptr;
+}
+
+void Toolbar::closeEvent(QCloseEvent* event)
+{
+	this->widget()->hide();
+	event->ignore();
 }

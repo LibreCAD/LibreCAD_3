@@ -9,6 +9,8 @@
 #include <memory>
 #include <cad/geometry/geocoordinate.h>
 
+#include "widgettitlebar.h"
+
 namespace Ui {
     class CliCommand;
 }
@@ -100,6 +102,8 @@ namespace lc {
                     void enterCoordinate(QString coordinate);
 
                     void enterNumber(double number);
+
+					void closeEvent(QCloseEvent* event);
 
                     Ui::CliCommand* ui;
                     std::shared_ptr<QCompleter> _completer;

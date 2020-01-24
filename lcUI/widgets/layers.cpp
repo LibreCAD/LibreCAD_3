@@ -24,6 +24,10 @@ Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     connect(model, &LayerModel::nameChanged, this, &Layers::changeLayerName);
     connect(ui->layerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Layers", this,
+													WidgetTitleBar::TitleBarOptions::VerticalOnHidden);
+	this->setTitleBarWidget(titleBar);
 }
 
 Layers::~Layers() {
@@ -194,4 +198,10 @@ void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelec
     auto layer = model->layerAt(selected.first().top());
     _mdiChild->setActiveLayer(layer);
     emit layerChanged(layer);
+}
+
+void Layers::closeEvent(QCloseEvent* event)
+{
+	this->widget()->hide();
+	event->ignore();
 }

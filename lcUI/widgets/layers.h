@@ -11,6 +11,7 @@
 #include "dialogs/addlayerdialog.h"
 #include "layermodel.h"
 #include <cad/operations/layerops.h>
+#include "widgettitlebar.h"
 
 namespace Ui {
     class Layers;
@@ -39,7 +40,6 @@ namespace lc {
                      * Update the layer list.
                      */
                     void setMdiChild(CadMdiChild* mdiChild = nullptr);
-
                 signals:
 
                     void layerChanged(lc::meta::Layer_CSPtr layer);
@@ -76,6 +76,8 @@ namespace lc {
                     void on_removeLayerEvent(const lc::event::RemoveLayerEvent&);
 
                     void on_replaceLayerEvent(const lc::event::ReplaceLayerEvent&);
+
+					void closeEvent(QCloseEvent* event);
             };
         }
     }
