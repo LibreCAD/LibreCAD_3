@@ -83,7 +83,6 @@
       <string>&amp;Line</string>
      </property>
      <addaction name="action2_Point_Line"/>
-     <addaction name="actionConstruction_Line"/>
     </widget>
     <widget class="QMenu" name="menuCircle">
      <property name="title">

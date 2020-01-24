@@ -19,9 +19,25 @@ function ArcOperations:_init(id)
     self.Arc_SecondPoint = nil
     self.Arc_ThirdPoint = nil
     self.Arc_Center = nil
+end
+
+function ArcOperations:_init_default()
     message("<b>Arc</b>", self.target_widget)
     message("Options: <u>C</u>enter, or", self.target_widget)
     message("Provide Start Point:", self.target_widget)
+	self.step = "ArcWith3Points"
+end
+
+function ArcOperations:_init_3p()
+    message("<b>Arc 3 point</b>", self.target_widget)
+    message("Provide Start Point:", self.target_widget)
+	self.step = "ArcWith3Points"
+end
+
+function ArcOperations:_init_cse()
+    message("<b>Arc 3 point</b>", self.target_widget)
+    message("Provide Center Point:", self.target_widget)
+	self.step = "ArcWithCSE"
 end
 
 function ArcOperations:ArcWith3Points(eventName, data)
