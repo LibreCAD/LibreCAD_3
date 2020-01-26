@@ -158,6 +158,7 @@ void addQtWidgetsBindings(lua_State *L) {
 		})
 		.addFunction("setFlat", &QPushButton::setFlat)
 		.addFunction("setMenu", &QPushButton::setMenu)
+        .addFunction("setToolTip", &QPushButton::setToolTip)
 	);
 
 }

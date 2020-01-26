@@ -2,8 +2,9 @@ local iconSize = qt.QSize(24, 24)
 toolbars = {}
 
 --Create a new QPushbutton with name and icon
-function create_button(name, icon)
+function create_button(name, icon, tooltip)
     local button = qt.QPushButton(name)
+    button:setToolTip(qt.QString(tooltip or ""))
     button:setFlat(true)
 
     if(icon ~= nil) then
@@ -55,23 +56,23 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     local quickAccessTab = create_tab(id, "Quick Access")
     local creationGroup = quickAccessTab:addGroup("Creation")
 
-    local lineButton = create_button("", ":/icons/linesnormal.png")
+    local lineButton = create_button("", ":/icons/linesnormal.png", "Line")
     quickAccessTab:addWidget(creationGroup, lineButton, 0, 0, 1, 1)
     luaInterface:luaConnect(lineButton, "pressed()", function() run_basic_operation(id, LineOperations) end)
 
-    local circleButton = create_button("", ":/icons/circle.svg")
+    local circleButton = create_button("", ":/icons/circle.svg", "Circle")
     quickAccessTab:addWidget(creationGroup, circleButton, 1, 0, 1, 1)
     luaInterface:luaConnect(circleButton, "pressed()", function() run_basic_operation(id, CircleOperations) end)
 
-    local arcButton = create_button("", ":/icons/arc.svg")
+    local arcButton = create_button("", ":/icons/arc.svg", "Arc")
     quickAccessTab:addWidget(creationGroup, arcButton, 0, 1, 1, 1)
     luaInterface:luaConnect(arcButton, "pressed()", function() run_basic_operation(id, ArcOperations) end)
 
-    local spline = create_button("", ":/icons/spline.svg")
+    local spline = create_button("", ":/icons/spline.svg", "Spline")
     quickAccessTab:addWidget(creationGroup, spline, 2, 0, 1, 1)
     luaInterface:luaConnect(spline, "pressed()", function() run_basic_operation(id, SplineOperations) end)
 
-    local polylineButton = create_button("", ":/icons/polylines.svg")
+    local polylineButton = create_button("", ":/icons/polylines.svg", "Polyline")
     quickAccessTab:addWidget(creationGroup, polylineButton, 2, 1, 1, 1)
     luaInterface:luaConnect(polylineButton, "pressed()", function() create_lw_polyline(id) end)
 
@@ -79,7 +80,7 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     --
     -- Ellipses
     --
-    local ellipseButton = create_button("", ":/icons/ellipse.svg")
+    local ellipseButton = create_button("", ":/icons/ellipse.svg", "Ellipse")
     local ellipseMenu = qt.QMenu()
 
     local ellipseAction = create_action(ellipseMenu, "Ellipse", ":/icons/ellipse_axis.svg")
@@ -95,23 +96,23 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     --
     local dimGroup = quickAccessTab:addGroup("Dimensions")
 
-    local dimAligned = create_button("", ":/icons/dim_aligned.svg")
+    local dimAligned = create_button("", ":/icons/dim_aligned.svg", "Aligned Dimension")
     quickAccessTab:addWidget(dimGroup, dimAligned, 0, 0, 1, 1)
     luaInterface:luaConnect(dimAligned, "pressed()", function() run_basic_operation(id, DimAlignedOperations) end)
 
-    local dimAngular = create_button("", ":/icons/dim_angular.svg")
+    local dimAngular = create_button("", ":/icons/dim_angular.svg", "Angular Dimension")
     quickAccessTab:addWidget(dimGroup, dimAngular, 1, 0, 1, 1)
     luaInterface:luaConnect(dimAngular, "pressed()", function() run_basic_operation(id, DimAngularOperations) end)
 
-    local dimDiametric = create_button("", ":/icons/dim_diametric.svg")
+    local dimDiametric = create_button("", ":/icons/dim_diametric.svg", "Diametric Dimension")
     quickAccessTab:addWidget(dimGroup, dimDiametric, 0, 1, 1, 1)
     luaInterface:luaConnect(dimDiametric, "pressed()", function() run_basic_operation(id, DimDiametricOperations) end)
 
-    local dimLinear = create_button("", ":/icons/dim_linear.svg")
+    local dimLinear = create_button("", ":/icons/dim_linear.svg", "Linear Dimension")
     quickAccessTab:addWidget(dimGroup, dimLinear, 1, 1, 1, 1)
     luaInterface:luaConnect(dimLinear, "pressed()", function() run_basic_operation(id, DimLinearOperations) end)
 
-    local dimRadial = create_button("", ":/icons/dim_radial.svg")
+    local dimRadial = create_button("", ":/icons/dim_radial.svg", "Radial Dimension")
     quickAccessTab:addWidget(dimGroup, dimRadial, 2, 0, 1, 1)
     luaInterface:luaConnect(dimRadial, "pressed()", function() run_basic_operation(id, DimRadialOperations) end)
 
@@ -120,27 +121,27 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     --
     local modifyGroup = quickAccessTab:addGroup("Modify")
 
-    local moveButton = create_button("", ":/icons/modifymove.png")
+    local moveButton = create_button("", ":/icons/modifymove.png", "Move")
     quickAccessTab:addWidget(modifyGroup, moveButton, 0, 0, 1, 1)
     luaInterface:luaConnect(moveButton, "pressed()", function() run_basic_operation(id, MoveOperation) end)
 
-    local rotateButton = create_button("", ":/icons/modifyrotate.png")
+    local rotateButton = create_button("", ":/icons/modifyrotate.png", "Rotate")
     quickAccessTab:addWidget(modifyGroup, rotateButton, 1, 0, 1, 1)
     luaInterface:luaConnect(rotateButton, "pressed()", function() run_basic_operation(id, RotateOperation) end)
 
-    local copyButton = create_button("", ":/icons/move_copy.svg")
+    local copyButton = create_button("", ":/icons/move_copy.svg", "Copy")
     quickAccessTab:addWidget(modifyGroup, copyButton, 0, 1, 1, 1)
     luaInterface:luaConnect(copyButton, "pressed()", function() run_basic_operation(id, CopyOperation) end)
 
-    local scaleButton = create_button("", ":/icons/scale.png")
+    local scaleButton = create_button("", ":/icons/scale.png", "Scale")
     quickAccessTab:addWidget(modifyGroup, scaleButton, 1, 1, 1, 1)
     luaInterface:luaConnect(scaleButton, "pressed()", function() run_basic_operation(id, ScaleOperation) end)
 
-    local removeButton = create_button("", ":/icons/delete.svg")
+    local removeButton = create_button("", ":/icons/delete.svg", "Delete")
     quickAccessTab:addWidget(modifyGroup, removeButton, 2, 0, 1, 1)
     luaInterface:luaConnect(removeButton, "pressed()", function() run_basic_operation(id, RemoveOperation) end)
 
-    local removeButton = create_button("", ":/icons/modifytrim.png")
+    local removeButton = create_button("", ":/icons/modifytrim.png", "Trim")
     quickAccessTab:addWidget(modifyGroup, removeButton, 2, 1, 1, 1)
     luaInterface:luaConnect(removeButton, "pressed()", function() run_basic_operation(id, TrimOperation) end)
 
@@ -148,28 +149,28 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     -- Snap options
     --
     local snapOptionGroup = quickAccessTab:addGroup("Snap options")
-    local snapGridButton = create_button("", ":/icons/snap_grid.svg")
+    local snapGridButton = create_button("", ":/icons/snap_grid.svg", "Snap Grid")
     snapGridButton:setCheckable(true)
     quickAccessTab:addWidget(snapOptionGroup, snapGridButton, 0, 0, 1, 1)
     luaInterface:luaConnect(snapGridButton, "toggled(bool)", function(enabled)
         getWindow(id):getSnapManager():setGridSnappable(enabled)
     end)
 
-    local snapIntersectionButton = create_button("", ":/icons/snap_intersection.svg")
+    local snapIntersectionButton = create_button("", ":/icons/snap_intersection.svg", "Snap Intersection")
     snapIntersectionButton:setCheckable(true)
     quickAccessTab:addWidget(snapOptionGroup, snapIntersectionButton, 0, 1, 1, 1)
     luaInterface:luaConnect(snapIntersectionButton, "toggled(bool)", function(enabled)
         getWindow(id):getSnapManager():setIntersectionSnappable(enabled)
     end)
 
-    local snapMiddleButton = create_button("", ":/icons/snap_middle.svg")
+    local snapMiddleButton = create_button("", ":/icons/snap_middle.svg", "Snap Middle")
     snapMiddleButton:setCheckable(true)
     quickAccessTab:addWidget(snapOptionGroup, snapMiddleButton, 1, 0, 1, 1)
     luaInterface:luaConnect(snapMiddleButton, "toggled(bool)", function(enabled)
         getWindow(id):getSnapManager():setMiddleSnappable(enabled)
     end)
 
-    local snapEntityButton = create_button("", ":/icons/snap_entity.svg")
+    local snapEntityButton = create_button("", ":/icons/snap_entity.svg", "Snap Entity")
     snapEntityButton:setCheckable(true)
     quickAccessTab:addWidget(snapOptionGroup, snapEntityButton, 1, 1, 1, 1)
     luaInterface:luaConnect(snapEntityButton, "toggled(bool)", function(enabled)
