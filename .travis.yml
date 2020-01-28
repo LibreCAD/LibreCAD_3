@@ -27,9 +27,13 @@ matrix:
             - libglew1.5-dev
             - libglm-dev
             - libglew-dev
+            - lcov
 
       services:
       - xvfb
+
+      before_install:
+      - pip install --user cpp-coveralls
 
       script:
       - ./scripts/travis.sh
