@@ -28,6 +28,17 @@ find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+# Coverage
+if(WITH_COVERAGE)
+	include(CodeCoverage)
+	append_coverage_compiler_flags()
+	setup_target_for_coverage_lcov(
+            NAME lccoverage
+            EXECUTABLE lcunittest
+	    BASE_DIRECTORY "${PROJECT_SOURCE_DIR}/"
+	    EXCLUDE "/usr/include/*" "/usr/lib/*" "../unittest/*" "../third_party/*"
+        )
+endif(WITH_COVERAGE)
 
 set(src
 main.cpp
@@ -48,11 +59,16 @@ lckernel/operations/blocksopstest.cpp
 lckernel/operations/buildertest.cpp
 lckernel/operations/layerops.cpp
 lckernel/dochelpers/documentlist.cpp
+lckernel/geometry/testgeoellipse.cpp 
+lckernel/primitive/testellipse.cpp 
+lckernel/geometry/comparecoordinate.cpp 
+lckernel/operations/layerops.cpp
 )
 
 set(hdrs
 lckernel/primitive/entitytest.h
 lckernel/math/code.h
+lckernel/geometry/comparecoordinate.h
 )
 
 if(WITH_QT_UI)
@@ -101,6 +117,8 @@ if(WITH_QT_UI)
 endif(WITH_QT_UI)
 
 if(WITH_RENDERING_UNITTESTS)
+    add_compile_definitions(SOURCE_DIR=\"${CMAKE_CURRENT_LIST_DIR}\")
+
     # GDK-Pixbuf
     find_package(GDK-Pixbuf 2.30 REQUIRED)
     include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
@@ -142,7 +160,7 @@ if(WITH_RENDERING_UNITTESTS)
     set(src
         ${src}
         rendering/renderingtest.cpp
-            lckernel/geometry/testgeoellipse.cpp lckernel/primitive/testellipse.cpp lckernel/geometry/comparecoordinate.cpp lckernel/geometry/comparecoordinate.h lckernel/operations/layerops.cpp)
+    )
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/lckernel")
