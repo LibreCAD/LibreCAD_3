@@ -31,7 +31,7 @@ matrix:
 
       services:
       - xvfb
-      
+
       before_install:
       - pip install --user cpp-coveralls
 
