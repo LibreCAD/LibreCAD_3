@@ -19,4 +19,4 @@ cmake -DWITH_COVERAGE=ON ..
 make -j2 lcunittest VERBOSE=1
 make lccoverage
 cd ..
-coveralls
+coveralls -e third_party -e unittest -e lckernel/tinyspline -e lckernel/nano-signal-slot -e build/CMakeFiles 
