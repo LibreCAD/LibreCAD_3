@@ -120,7 +120,37 @@ Install Visual Studio with:
 - CMake for Windows
 - Windows SDK
 
+# Clone the repository
+Using Git Bash (or any other command line git command): 
+```
+git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
+```
+
+Using any GUI git client:
+Clone https://github.com/LibreCAD/LibreCAD_3.git recursively.
+
+# Using Conan (recommended)
+Conan is a package manager which provides C++ dependencies, compatible with Windows and Visual Studio. We recommand using it to simplify the compilation process.
+
+## Conan
+Download and install [Conan](https://conan.io/downloads.html).
+
 ## Dependencies
+Open a terminal inside the `LibreCAD_3` repository folder.
+Add the bincrafters repository
+```
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan 
+```
+
+Download and install the dependencies:
+```
+conan install .
+```
+
+**Not all dependencies are available (see https://github.com/conan-io/wishlist/issues/124). They have to be installed manually (see next section)**
+
+# Manual installation
+## Dependencies 
 
 ### Boost
 Download prebuilt Windows binaries for Boost from: https://sourceforge.net/projects/boost/files/boost-binaries/
