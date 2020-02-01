@@ -45,6 +45,8 @@ LibreCAD compilation
 ```
 git clone --recursive https://github.com/LibreCAD/LibreCAD_3.git
 
+cd LibreCAD_3
+
 git submodule init
 
 git submodule update --recursive --remote
@@ -102,7 +104,7 @@ Ubuntu/Mint
 ========
 
 ```
-apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev libglm-dev libqt5opengl5-dev libglew1.5-dev libqt5svg-dev
+apt-get install qttools5-dev qttools5-dev-tools libqt5opengl5-dev liblua5.2-dev git g++ gcc-4.8 libcairo2-dev libpango-1.0-0 libpango1.0-dev libboost-all-dev libqt5svg5 libgtest-dev libeigen3-dev libcurl4-gnutls-dev libgtk-3-dev libglew-dev libglm-dev libqt5opengl5-dev libqt5svg5-dev
 ```
 
 Optional dependencies for Cairo painter:
