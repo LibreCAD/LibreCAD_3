@@ -40,6 +40,11 @@ include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
 find_package(GDK REQUIRED)
 include_directories(${GDK_INCLUDE_DIRS})
 
+#GTK
+find_package(GTK REQUIRED)
+include_directories(${GTK_INCLUDE_DIRS})
+
+
 #GLib
 set(GLIB_FIND_COMPONENTS gobject)
 find_package(GLib REQUIRED)
@@ -85,6 +90,7 @@ target_link_libraries(luacmdinterface
         ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
         ${LUA_LIBRARIES}
         ${GDK-PIXBUF_LIBRARIES}
+        ${GTK_LIBRARIES}
         lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES}
 
 )
