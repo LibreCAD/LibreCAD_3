@@ -126,6 +126,8 @@ painters/opengl/shader.h
 painters/opengl/resources/res.h
 )
 
+cmake_policy(SET CMP0074 OLD)
+
 # OpenGL & GLEW library-------------------------
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
@@ -177,6 +179,10 @@ endif()
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
+# libpng and bzip2, required as Freetype dependency on Windows
+find_package(PNG)
+find_package(BZip2)
+
 # Eigen 3
 find_package(Eigen3 REQUIRED)
 if( CMAKE_COMPILER_IS_GNUCXX)
@@ -204,4 +210,6 @@ target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-P
 ${OPENGL_LIBRARY}
 ${GLEW_LIBRARIES}
 ${Boost_LIBRARIES}
-${FREETYPE_LIBRARIES})
+${FREETYPE_LIBRARIES}
+${PNG_LIBRARIES}
+${BZIP2_LIBRARIES})

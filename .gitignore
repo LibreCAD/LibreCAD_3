@@ -26,3 +26,6 @@ unittest/rendering/res/*.out
 # Visual Studio
 /CMakeSettings.json
 .vs/
+
+# Conan
+conan/

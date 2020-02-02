@@ -148,6 +148,13 @@ conan install .
 ```
 
 **Not all dependencies are available (see https://github.com/conan-io/wishlist/issues/124). They have to be installed manually (see next section)**
+Those dependencies are:
+- libdxfrw
+- Qt (version provided by binutils does not contains SVG/UiTools)
+
+## Configuration
+Change build type to RelWithDebInfo. Debug won't work as Conan libraries are compiled in release mode.
+
 
 # Manual installation
 ## Dependencies 
@@ -161,7 +168,9 @@ Unzip it on your disk (`C:\local\eigen-3.3.7`)
 
 ### Qt
 Download and install Qt (open source version) from https://www.qt.io/download
-You must select at least one version of Qt for the MSVC compiler
+You must select at least one version of Qt for the MSVC compiler and the correct architecture.
+
+Add Qt `bin` folder (`C:\Qt\5.14.1\msvc2017_64\bin`) to the PATH environment variable.
 
 ### Lua
 Download Windows binaries (dll15) here: https://sourceforge.net/projects/luabinaries/files/5.3.5/Windows%20Libraries/Dynamic/
@@ -174,10 +183,15 @@ Unzip this archive on your disk (`C:\local\glew-2.1.0`)
 The `GLEW_ROOT` environment variable (in Windows) should be set to where the archive was extracted, in this case `C:\local\glew-2.1.0`
 
 ## Libdxfrw
-Clone libdxfrw repository
+Clone libdxfrw repository:
+```
+git clone https://github.com/LibreCAD/libdxfrw
+```
 Open it as a folder in Visual Studio:
 - Build all
 - Install DXFRW
+
+Note the folder where it was installed (ex: `C:\Users\...\libdxfrw\out\install\x64-Debug`)
 
 ## LibreCAD
 Open project as folder in Visual Studio
