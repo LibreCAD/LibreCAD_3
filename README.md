@@ -142,9 +142,11 @@ Add the bincrafters repository
 conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan 
 ```
 
-Download and install the dependencies:
+Download and install the dependencies (in a terminal inside LibreCAD_3 folder):
 ```
-conan install .
+mkdir conan
+cd conan
+conan install ..
 ```
 
 **Not all dependencies are available (see https://github.com/conan-io/wishlist/issues/124). They have to be installed manually (see next section)**
@@ -154,6 +156,12 @@ Those dependencies are:
 
 ## Configuration
 Change build type to RelWithDebInfo. Debug won't work as Conan libraries are compiled in release mode.
+
+Set CMake command arguments to and adapt to your configuration:
+```
+-DLIBDXFRW_PATH=......./libdxfrw/out/install/x64-Debug 
+-DCMAKE_PREFIX_PATH=C:\Qt\5.14.1\msvc2017_64\lib\cmake
+```
 
 
 # Manual installation
