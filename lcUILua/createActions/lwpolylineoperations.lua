@@ -56,8 +56,10 @@ function LWPolylineOperations:close()
     end
 
 	if(self.creatingPolyspline == nil) then
-        self.creatingPolyspline = true
-        self:createEntity()
+        if(#self.builder:getVertices() > 1) then
+            self.creatingPolyspline = true
+            self:createEntity()
+        end
         CreateOperations.close(self)
     end
 end
