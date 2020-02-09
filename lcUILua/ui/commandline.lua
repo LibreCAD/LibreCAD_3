@@ -28,6 +28,11 @@ function cli_command_active(id, status)
     end
 end
 
+-- focus cli command
+function focusClicommand()
+    cliCommand:setFocus()
+end
+
 --Configure command line to return raw text
 function cli_get_text(id, getText)
     if cliCommands[id] ~= nil then
@@ -47,7 +52,7 @@ end
 
 --Create the command line and add it to the main window
 function add_commandline(mainWindow, id)
-    local cliCommand = lc.CliCommand(mainWindow)
+    cliCommand = lc.CliCommand(mainWindow)
     mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
 

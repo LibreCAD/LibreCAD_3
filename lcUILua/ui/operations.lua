@@ -35,6 +35,7 @@ luaInterface:registerEvent('operationFinished', remove_operation_group)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
 function run_basic_operation(id, operation, ...)
+    focusClicommand()
     finish_operation(id)
     create_cancel_button(id)
     luaInterface:setOperation(id, operation(id, ...))
@@ -43,6 +44,7 @@ function run_basic_operation(id, operation, ...)
 end
 
 function create_lw_polyline(id)
+    focusClicommand()
     finish_operation(id)
     create_cancel_button(id)
 
