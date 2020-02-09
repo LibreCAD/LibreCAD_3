@@ -58,6 +58,11 @@ function add_commandline(mainWindow, id)
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
 
+    luaInterface:luaConnect(cliCommand, "finishOperation()", function()
+        luaInterface:triggerEvent('operationFinished', 0)
+        luaInterface:triggerEvent('finishOperation', 0)
+    end)
+
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
         luaInterface:triggerEvent('point', {
             position = coordinate,

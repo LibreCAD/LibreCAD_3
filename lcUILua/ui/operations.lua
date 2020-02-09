@@ -11,6 +11,10 @@ local function remove_operation_group(eventName, id)
     getWindow(id):viewer():setOperationActive(false)
 end
 
+function finish(eventName, id)
+    finish_operation(id)
+end
+
 --End the current operation, even if it's not finished
 function finish_operation(id)
     local op = luaInterface:operation(id);
@@ -32,6 +36,7 @@ local function create_cancel_button(id)
 end
 
 luaInterface:registerEvent('operationFinished', remove_operation_group)
+luaInterface:registerEvent('finishOperation', finish)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
 function run_basic_operation(id, operation, ...)
