@@ -104,8 +104,8 @@ end
 
 --Register every commands
 add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
-add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
-add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
+add_command("CIRCLE", function(id) op = run_basic_operation(id, CircleOperations); op:_init_default()  end)
+add_command("ARC", function(id) op = run_basic_operation(id, ArcOperations); op:_init_default() end)
 add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
 add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, true) end)
 add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
