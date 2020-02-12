@@ -117,8 +117,8 @@ local function create_menu(mainWindow, widget, commandLine, id)
 
 	-- connect draw menu options
 	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
-	luaInterface:luaConnect(circleAction, "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_default()  end)
-	luaInterface:luaConnect(arcAction, "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_3p() end)
+	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
+	luaInterface:luaConnect(arcAction, "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
 	luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
 	luaInterface:luaConnect(splineAction, "triggered(bool)", function() run_basic_operation(id, SplineOperations) end)
 	luaInterface:luaConnect(polylineAction, "triggered(bool)", function() create_lw_polyline(id) end)
