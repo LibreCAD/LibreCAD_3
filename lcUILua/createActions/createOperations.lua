@@ -86,7 +86,7 @@ function CreateOperations:close()
         luaInterface:triggerEvent('operationFinished', self.target_widget)
         self:removeTempEntity()
         self:unregisterEvents()
-        cli_get_text(0, false)
+        cli_get_text(self.target_widget, false)
         cli_command_active(self.target_widget, false)
         self.finished = true
     end

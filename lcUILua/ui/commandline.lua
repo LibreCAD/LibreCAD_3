@@ -29,8 +29,8 @@ function cli_command_active(id, status)
 end
 
 -- focus cli command
-function focusClicommand()
-    cliCommand:setFocus()
+function focusClicommand(id)
+    cliCommands[id]:setFocus()
 end
 
 --Configure command line to return raw text
@@ -52,7 +52,7 @@ end
 
 --Create the command line and add it to the main window
 function add_commandline(mainWindow, id)
-    cliCommand = lc.CliCommand(mainWindow)
+    local cliCommand = lc.CliCommand(mainWindow)
     mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
 
@@ -104,8 +104,8 @@ end
 
 --Register every commands
 add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
-add_command("CIRCLE", function(id) op = run_basic_operation(id, CircleOperations); op:_init_default()  end)
-add_command("ARC", function(id) op = run_basic_operation(id, ArcOperations); op:_init_default() end)
+add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
+add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
 add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
 add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, true) end)
 add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
