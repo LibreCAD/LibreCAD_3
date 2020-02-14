@@ -123,9 +123,6 @@ void Layers::changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& na
 
 void Layers::createLayer(lc::meta::Layer_CSPtr layer) {
     if(_mdiChild != nullptr) {
-        QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
-        deleteBut->setEnabled(true);
-
         auto operation = std::make_shared<lc::operation::AddLayer>(_mdiChild->document(), layer);
         operation->execute();
     }
@@ -170,11 +167,15 @@ void Layers::updateLayerList() {
         emit layerChanged(layer);
     }
 
+    QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
     //check if only one layer is remaining, in which case disable button
-    if (model->rowCount(QModelIndex()) == 1)
+    if(model->rowCount(QModelIndex()) == 1)
     {
-        QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
         deleteBut->setEnabled(false);
+    }
+    else
+    {
+        deleteBut->setEnabled(true);
     }
 }
 
