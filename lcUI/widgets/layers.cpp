@@ -2,7 +2,6 @@
 #include <QtWidgets/QMessageBox>
 #include "layers.h"
 #include "ui_layers.h"
-#include <iostream>
 
 using namespace lc;
 using namespace lc::ui;
@@ -124,11 +123,8 @@ void Layers::changeLayerName(lc::meta::Layer_CSPtr& layer, const std::string& na
 
 void Layers::createLayer(lc::meta::Layer_CSPtr layer) {
     if(_mdiChild != nullptr) {
-        if (model->rowCount(QModelIndex()) == 1)
-        {
-            QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
-            deleteBut->setEnabled(true);
-        }
+        QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
+        deleteBut->setEnabled(true);
 
         auto operation = std::make_shared<lc::operation::AddLayer>(_mdiChild->document(), layer);
         operation->execute();
@@ -190,7 +186,7 @@ void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
 
 void Layers::on_removeLayerEvent(const lc::event::RemoveLayerEvent& event) {
     if(_mdiChild->activeLayer() == event.layer()) {
-        _mdiChild->setActiveLayer(_mdiChild->document()->layerByName("0"));
+        _mdiChild->setActiveLayer(model->layerAt(0));
     }
 
     updateLayerList();
