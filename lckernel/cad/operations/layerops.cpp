@@ -30,11 +30,6 @@ void AddLayer::redo() const {
 RemoveLayer::RemoveLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) :
         DocumentOperation(std::move(document), "RemoveLayer"),
         _layer(std::move(layer)) {
-
-    if(_layer->name() == "0") {
-        throw std::runtime_error("Layer 0 cannot be removed");
-    }
-
 }
 
 void RemoveLayer::processInternal() {

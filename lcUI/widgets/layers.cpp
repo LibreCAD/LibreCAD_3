@@ -166,6 +166,17 @@ void Layers::updateLayerList() {
 
         emit layerChanged(layer);
     }
+
+    QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
+    //check if only one layer is remaining, in which case disable button
+    if(model->rowCount(QModelIndex()) == 1)
+    {
+        deleteBut->setEnabled(false);
+    }
+    else
+    {
+        deleteBut->setEnabled(true);
+    }
 }
 
 void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
@@ -176,7 +187,7 @@ void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
 
 void Layers::on_removeLayerEvent(const lc::event::RemoveLayerEvent& event) {
     if(_mdiChild->activeLayer() == event.layer()) {
-        _mdiChild->setActiveLayer(_mdiChild->document()->layerByName("0"));
+        _mdiChild->setActiveLayer(model->layerAt(0));
     }
 
     updateLayerList();
