@@ -17,6 +17,7 @@ namespace lc {
                 CircleBuilder* setRadius(double radius);
 
                 entity::Circle_CSPtr build();
+                CircleBuilder* threeTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, lc::entity::CADEntity_CSPtr circle2);
 
             private:
                 geo::Coordinate _center;

@@ -42,6 +42,8 @@ namespace lc {
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
 
+            geo::Coordinate getCenter() const;
+            double getRadius() const;
         public:
 
             /**
@@ -95,7 +97,8 @@ namespace lc {
 
         private:
             Circle(const builder::CircleBuilder& builder);
-
+            geo::Coordinate center_circle;
+            double radius_circle;
         };
 
         DECLARE_SHORT_SHARED_PTR(Circle)
