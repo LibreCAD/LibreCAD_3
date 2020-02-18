@@ -193,15 +193,19 @@ function CircleOperations:CircleWith3Points(eventName, data)
 end
 
 function CircleOperations:CircleWith3Tans(eventName, data)
-    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
     self.selection = getWindow(self.target_widget):selection()
     message(tostring(#self.selection) .. " items selected", self.target_widget)
 
     -- assuming selected entities are circle for now
-    -- see page http://mathworld.wolfram.com/ApolloniusProblem.html for calculation
     if(#self.selection == 3) then
-        self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
-        self:createEntity()
+        local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
+        if success == false then
+            message("Entities selected MUST be circles", self.target_widget)
+        else
+            self:createEntity()
+        end
+    else
+        message("THREE circle entities should be selected", self.target_widget)
     end
 
     finish_operation(self.target_widget)

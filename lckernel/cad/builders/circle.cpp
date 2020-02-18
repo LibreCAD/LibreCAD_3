@@ -23,11 +23,16 @@ lc::builder::CircleBuilder* lc::builder::CircleBuilder::setRadius(double radius)
 /* Algebraic solution from Problem of Apollonius - https://en.wikipedia.org/wiki/Problem_of_Apollonius
 *  Calculation code snippet from rosettacode.org - https://rosettacode.org/wiki/Problem_of_Apollonius
 */
-lc::builder::CircleBuilder* lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, lc::entity::CADEntity_CSPtr circ2, float s1, float s2, float s3)
+bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, lc::entity::CADEntity_CSPtr circ2, float s1, float s2, float s3)
 {
     lc::entity::Circle_CSPtr circle0 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ0);
     lc::entity::Circle_CSPtr circle1 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ1);
     lc::entity::Circle_CSPtr circle2 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ2);
+
+    // check if selected entities are in fact circles, if not return false
+    if (circle0 == nullptr || circle1 == nullptr || circle2 == nullptr) {
+        return false;
+    }
 
     double x1 = circle0->getCenter().x();
     double y1 = circle0->getCenter().y();
@@ -72,6 +77,8 @@ lc::builder::CircleBuilder* lc::builder::CircleBuilder::threeTanConstructor(lc::
     std::vector<double> sol = lc::maths::Math::quadraticSolver(coffs);
 
     double r = 0;
+
+    // taking only positive roots
     for (double d : sol) {
         if (d > 0) {
             r = d;
@@ -84,7 +91,7 @@ lc::builder::CircleBuilder* lc::builder::CircleBuilder::threeTanConstructor(lc::
     _center = lc::geo::Coordinate(xs, ys);
     _radius = r;
 
-    return this;
+    return true;
 }
 
 lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
