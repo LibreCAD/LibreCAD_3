@@ -25,8 +25,11 @@ namespace lc {
                  * @return construction was successful or not
                  */
                 bool threeTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, lc::entity::CADEntity_CSPtr circle2, double s1, double s2, double s3);
-                bool twoTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, double s1, double s2, double r, int index);
 
+                /*
+                *   @return 0 - successful, -1 - given s0,s1 don't yield a real solution, -2 - not circle entities
+                */
+                int twoTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, double s1, double s2, double r, int index);
 
             private:
                 geo::Coordinate _center;

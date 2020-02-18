@@ -225,6 +225,17 @@ function CircleOperations:getCircleWith3TansOptions(newPos)
     end
 end
 
+function CircleOperations:getIndexForCircleWithTwoTan(newPos)
+    local base = lc.geo.Coordinate(self.initialMousePosition.x, 0)
+    local angle = self.initialMousePosition:angleBetween(base, newPos)
+
+    if(angle > 0) then
+        return 0
+    else
+        return 1
+    end
+end
+
 function CircleOperations:CircleWith3Tans(eventName, data)
     if(eventName == "mouseMove") then
         if(self.constructed3tan ~= true) then
@@ -255,11 +266,33 @@ function CircleOperations:CircleWith3Tans(eventName, data)
 end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
-    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
-    self.selection = getWindow(self.target_widget):selection()
-    -- -1,-1
-    local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)
-    self:createEntity()
+    if(eventName == "mouseMove") then
+        if(self.constructed2tan ~= true) then
+            self.selection = getWindow(self.target_widget):selection()
+            self.initialMousePosition = data["position"]
+            if(#self.selection == 2) then
+                local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)
+                if (success == -2) then
+                    message("Entities selected MUST be circles", self.target_widget)
+                    finish_operation(self.target_widget)
+                elseif (success == 0) then
+                    self:refreshTempEntity()
+                end
+                message("Move mouse for radius, and around to cycle through different circles", self.target_widget)
+                self.constructed2tan = true
+            else
+                message("TWO circle entities should be selected", self.target_widget)
+                finish_operation(self.target_widget)
+            end
+        else
+            local radius = self.initialMousePosition:distanceTo(data["position"])
+            local index = self:getIndexForCircleWithTwoTan(data["position"])
+            self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, radius, index)
+            self:refreshTempEntity()
+        end
+    elseif(eventName == "point") then
+        self:createEntity()
+    end
 end
 
 function CircleOperations:Circumcenter(Point1,Point2,Point3)

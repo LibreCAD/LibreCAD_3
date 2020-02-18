@@ -94,14 +94,14 @@ bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr
     return true;
 }
 
-bool lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, double s1, double s2, double r, int index)
+int lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, double s1, double s2, double r, int index)
 {
     lc::entity::Circle_CSPtr circle0 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ0);
     lc::entity::Circle_CSPtr circle1 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ1);
 
-    // check if selected entities are in fact circles, if not return false
+    // check if selected entities are in fact circles, if not return -2
     if (circle0 == nullptr || circle1 == nullptr) {
-        return false;
+        return -2;
     }
 
     double x1 = circle0->getCenter().x();
@@ -130,7 +130,7 @@ bool lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr c
     double y = 0;
 
     if (sol.size() == 0) {
-        return false;
+        return -1;
     }
 
     y = sol[index];
@@ -140,7 +140,7 @@ bool lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr c
     _center = lc::geo::Coordinate(x, y);
     _radius = r;
 
-    return true;
+    return 0;
 }
 
 
