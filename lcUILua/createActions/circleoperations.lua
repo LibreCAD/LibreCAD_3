@@ -200,7 +200,8 @@ function CircleOperations:CircleWith3Tans(eventName, data)
     -- assuming selected entities are circle for now
     -- see page http://mathworld.wolfram.com/ApolloniusProblem.html for calculation
     if(#self.selection == 3) then
-        self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3])
+        self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
+        self:createEntity()
     end
 
     finish_operation(self.target_widget)
