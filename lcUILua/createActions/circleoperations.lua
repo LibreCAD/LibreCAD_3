@@ -193,22 +193,27 @@ function CircleOperations:CircleWith3Points(eventName, data)
 end
 
 function CircleOperations:CircleWith3Tans(eventName, data)
-    self.selection = getWindow(self.target_widget):selection()
-    message(tostring(#self.selection) .. " items selected", self.target_widget)
-
-    -- assuming selected entities are circle for now
-    if(#self.selection == 3) then
-        local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
-        if success == false then
-            message("Entities selected MUST be circles", self.target_widget)
+    if(eventName == "mouseMove") then
+        if(self.constructed3tan ~= true) then
+            self.selection = getWindow(self.target_widget):selection()
+            if(#self.selection == 3) then
+                local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
+                if success == false then
+                    message("Entities selected MUST be circles", self.target_widget)
+                else
+                    self:refreshTempEntity()
+                    self.constructed3tan = true
+                end
+            else
+                message("THREE circle entities should be selected", self.target_widget)
+            end
         else
-            self:createEntity()
+            self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, -1, 1)
+            self:refreshTempEntity()
         end
-    else
-        message("THREE circle entities should be selected", self.target_widget)
+    elseif(eventName == "point") then
+        self:createEntity()
     end
-
-    finish_operation(self.target_widget)
 end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
