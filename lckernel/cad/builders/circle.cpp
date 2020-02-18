@@ -94,6 +94,56 @@ bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr
     return true;
 }
 
+bool lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, double s1, double s2, double r, int index)
+{
+    lc::entity::Circle_CSPtr circle0 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ0);
+    lc::entity::Circle_CSPtr circle1 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ1);
+
+    // check if selected entities are in fact circles, if not return false
+    if (circle0 == nullptr || circle1 == nullptr) {
+        return false;
+    }
+
+    double x1 = circle0->getCenter().x();
+    double y1 = circle0->getCenter().y();
+    double x2 = circle1->getCenter().x();
+    double y2 = circle1->getCenter().y();
+    double r1 = circle0->getRadius();
+    double r2 = circle1->getRadius();
+
+    double a = (r - s1 * r1) * (r - s1 * r1);
+    double b = (r - s2 * r2) * (r - s2 * r2);
+
+    double c = ((x1 * x1 - x2 * x2) + (y1 * y1 - y2 * y2) - (a - b)) / (2 * (x1 - x2));
+    double d = (y1 - y2) / (x1 - x2);
+    double e = c - x1;
+
+    double A = d * d + 1;
+    double B = (-2 * e * d) - (2 * y1);
+    double C = (e * e) + (y1 * y1) - a;
+
+    std::vector<double> coffs;
+    coffs.push_back(B / A);
+    coffs.push_back(C / A);
+    std::vector<double> sol = lc::maths::Math::quadraticSolver(coffs);
+
+    double y = 0;
+
+    if (sol.size() == 0) {
+        return false;
+    }
+
+    y = sol[index];
+
+    double x = c - d * y;
+
+    _center = lc::geo::Coordinate(x, y);
+    _radius = r;
+
+    return true;
+}
+
+
 lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
     return entity::Circle_CSPtr(new entity::Circle(*this));
 }

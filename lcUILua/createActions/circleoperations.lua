@@ -256,7 +256,10 @@ end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
     message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
-    finish_operation(self.target_widget)
+    self.selection = getWindow(self.target_widget):selection()
+    -- -1,-1
+    local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)
+    self:createEntity()
 end
 
 function CircleOperations:Circumcenter(Point1,Point2,Point3)
