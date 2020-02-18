@@ -24,7 +24,7 @@ namespace lc {
                  *        would yield 8 solutions
                  * @return construction was successful or not
                  */
-                bool threeTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, lc::entity::CADEntity_CSPtr circle2, float s0, float s1, float s2);
+                bool threeTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, lc::entity::CADEntity_CSPtr circle2, double s1, double s2, double s3);
 
             private:
                 geo::Coordinate _center;

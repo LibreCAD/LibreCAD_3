@@ -23,7 +23,7 @@ lc::builder::CircleBuilder* lc::builder::CircleBuilder::setRadius(double radius)
 /* Algebraic solution from Problem of Apollonius - https://en.wikipedia.org/wiki/Problem_of_Apollonius
 *  Calculation code snippet from rosettacode.org - https://rosettacode.org/wiki/Problem_of_Apollonius
 */
-bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, lc::entity::CADEntity_CSPtr circ2, float s1, float s2, float s3)
+bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr circ0, lc::entity::CADEntity_CSPtr circ1, lc::entity::CADEntity_CSPtr circ2, double s1, double s2, double s3)
 {
     lc::entity::Circle_CSPtr circle0 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ0);
     lc::entity::Circle_CSPtr circle1 = std::dynamic_pointer_cast<const lc::entity::Circle>(circ1);

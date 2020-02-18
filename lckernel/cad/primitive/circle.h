@@ -42,7 +42,7 @@ namespace lc {
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
 
-            geo::Coordinate getCenter() const;
+            const geo::Coordinate& getCenter() const;
             double getRadius() const;
         public:
 
