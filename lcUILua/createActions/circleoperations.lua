@@ -275,6 +275,9 @@ function CircleOperations:CircleWith2Tans(eventName, data)
                 if (success == -2) then
                     message("Entities selected MUST be circles", self.target_widget)
                     finish_operation(self.target_widget)
+                elseif (success == -3) then
+                    message("Circle cannot be created for selected circle entities (one circle should not be contained inside another)", self.target_widget)
+                    finish_operation(self.target_widget)
                 elseif (success == 0) then
                     self:refreshTempEntity()
                 end

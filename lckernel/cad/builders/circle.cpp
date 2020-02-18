@@ -1,6 +1,7 @@
 #include "circle.h"
 #include <cad/primitive/circle.h>
 #include <cad/math/lcmath.h>
+#include <cmath>
 
 const lc::geo::Coordinate& lc::builder::CircleBuilder::center() const {
     return _center;
@@ -110,6 +111,23 @@ int lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr ci
     double y2 = circle1->getCenter().y();
     double r1 = circle0->getRadius();
     double r2 = circle1->getRadius();
+
+    // check if circle is completely contained by another circle, if so not possible and return -3
+    double dist = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    if (r1 < r2)
+    {
+        if (dist + r1 <= r2)
+        {
+            return -3;
+        }
+    }
+    else
+    {
+        if (dist + r2 <= r1)
+        {
+            return -3;
+        }
+    }
 
     double a = (r - s1 * r1) * (r - s1 * r1);
     double b = (r - s2 * r2) * (r - s2 * r2);

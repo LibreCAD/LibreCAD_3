@@ -27,7 +27,10 @@ namespace lc {
                 bool threeTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, lc::entity::CADEntity_CSPtr circle2, double s1, double s2, double s3);
 
                 /*
+                *   @brief circle tangent to two other circle given radius
+                *   @param CADEntity_CSPtr to two circle entities, s0,s1,radius and index to choose among solutions
                 *   @return 0 - successful, -1 - given s0,s1 don't yield a real solution, -2 - not circle entities
+                *           -3 - not possible given any s0,s1
                 */
                 int twoTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, double s1, double s2, double r, int index);
 
