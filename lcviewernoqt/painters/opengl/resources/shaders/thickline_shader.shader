@@ -1,8 +1,8 @@
 #shader vertex
 
-#version 330 core
-layout (location = 0) in vec3 pos; 
-layout (location = 1) in float prev_distance; 
+#version 140
+in vec3 pos;
+in float prev_distance;
 uniform mat4 u_MVP;
 
 
@@ -16,7 +16,7 @@ void main()
 //#############################################################
 
 #shader geometry
-#version 330 core
+#version 150
 layout (lines_adjacency) in;
 layout (triangle_strip, max_vertices = 4) out;
 
@@ -102,7 +102,7 @@ void main(void)
 //############################################################
 #shader fragment
 
-#version 330 core
+#version 140
 
 out vec4 out_Color;
 uniform vec4 u_Color;
