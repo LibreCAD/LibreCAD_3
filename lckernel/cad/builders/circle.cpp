@@ -35,15 +35,15 @@ bool lc::builder::CircleBuilder::threeTanConstructor(lc::entity::CADEntity_CSPtr
         return false;
     }
 
-    double x1 = circle0->getCenter().x();
-    double y1 = circle0->getCenter().y();
-    double x2 = circle1->getCenter().x();
-    double y2 = circle1->getCenter().y();
-    double x3 = circle2->getCenter().x();
-    double y3 = circle2->getCenter().y();
-    double r1 = circle0->getRadius();
-    double r2 = circle1->getRadius();
-    double r3 = circle2->getRadius();
+    double x1 = circle0->center().x();
+    double y1 = circle0->center().y();
+    double x2 = circle1->center().x();
+    double y2 = circle1->center().y();
+    double x3 = circle2->center().x();
+    double y3 = circle2->center().y();
+    double r1 = circle0->radius();
+    double r2 = circle1->radius();
+    double r3 = circle2->radius();
 
     double v11 = 2 * x2 - 2 * x1;
     double v12 = 2 * y2 - 2 * y1;
@@ -105,12 +105,15 @@ int lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr ci
         return -2;
     }
 
-    double x1 = circle0->getCenter().x();
-    double y1 = circle0->getCenter().y();
-    double x2 = circle1->getCenter().x();
-    double y2 = circle1->getCenter().y();
-    double r1 = circle0->getRadius();
-    double r2 = circle1->getRadius();
+    _twotanCircleCenter1 = circle0->center();
+    _twotanCircleCenter2 = circle1->center();
+
+    double x1 = circle0->center().x();
+    double y1 = circle0->center().y();
+    double x2 = circle1->center().x();
+    double y2 = circle1->center().y();
+    double r1 = circle0->radius();
+    double r2 = circle1->radius();
 
     // check if circle is completely contained by another circle, if so not possible and return -3
     double dist = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -161,6 +164,13 @@ int lc::builder::CircleBuilder::twoTanConstructor(lc::entity::CADEntity_CSPtr ci
     return 0;
 }
 
+const std::vector<lc::geo::Coordinate> lc::builder::CircleBuilder::twoTanCircleCenters() const
+{
+    std::vector<lc::geo::Coordinate> res;
+    res.push_back(_twotanCircleCenter1);
+    res.push_back(_twotanCircleCenter2);
+    return res;
+}
 
 lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
     return entity::Circle_CSPtr(new entity::Circle(*this));

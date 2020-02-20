@@ -90,6 +90,7 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("setRadius", &lc::builder::CircleBuilder::setRadius)
         .addFunction("threeTanConstructor", &lc::builder::CircleBuilder::threeTanConstructor)
         .addFunction("twoTanConstructor", &lc::builder::CircleBuilder::twoTanConstructor)
+        .addFunction("twoTanCircleCenters", &lc::builder::CircleBuilder::twoTanCircleCenters)
     );
 
 

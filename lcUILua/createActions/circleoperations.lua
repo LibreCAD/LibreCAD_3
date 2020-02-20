@@ -226,9 +226,7 @@ function CircleOperations:getCircleWith3TansOptions(newPos)
 end
 
 function CircleOperations:getIndexForCircleWithTwoTan(newPos)
-    local base = lc.geo.Coordinate(self.initialMousePosition.x, 0)
-    local angle = self.initialMousePosition:angleBetween(base, newPos)
-
+    local angle = self.twocirclecenters[1]:angleBetween(self.twocirclecenters[2], newPos)
     if(angle > 0) then
         return 0
     else
@@ -282,13 +280,17 @@ function CircleOperations:CircleWith2Tans(eventName, data)
                     self:refreshTempEntity()
                 end
                 message("Move mouse for radius, and around to cycle through different circles", self.target_widget)
+                -- get center of two circles from circlebuilder and set center between the two circles
+                self.twocirclecenters = self.builder:twoTanCircleCenters()
+                self.centerbetweentwocircles = self.twocirclecenters[1]:add(self.twocirclecenters[2])
+                self.centerbetweentwocircles = self.centerbetweentwocircles:multiply(0.5)
                 self.constructed2tan = true
             else
                 message("TWO circle entities should be selected", self.target_widget)
                 finish_operation(self.target_widget)
             end
         else
-            local radius = self.initialMousePosition:distanceTo(data["position"])
+            local radius = self.centerbetweentwocircles:distanceTo(data["position"])
             local index = self:getIndexForCircleWithTwoTan(data["position"])
             self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, radius, index)
             self:refreshTempEntity()

@@ -41,9 +41,6 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
-
-            const geo::Coordinate& getCenter() const;
-            double getRadius() const;
         public:
 
             /**

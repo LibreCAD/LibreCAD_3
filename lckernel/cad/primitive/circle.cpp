@@ -110,13 +110,3 @@ CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSP
     return newEntity;
 }
 
-const geo::Coordinate& Circle::getCenter() const
-{
-    return center_circle;
-}
-
-double Circle::getRadius() const
-{
-    return radius_circle;
-}
-
