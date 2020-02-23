@@ -192,14 +192,112 @@ function CircleOperations:CircleWith3Points(eventName, data)
     end
 end
 
+-- Depending on position of mouse cursor, return appropriate s1,s2 and s3 for circle with 3 tans
+function CircleOperations:getCircleWith3TansOptions(newPos)
+    if(self.initialMousePosition == nil) then
+        return 1,1,1
+    end
+
+    local base = lc.geo.Coordinate(self.initialMousePosition.x, 0)
+    local angle = self.initialMousePosition:angleBetween(base, newPos)
+
+    -- convert angle from range -pi to pi to 1 to 8
+    angle = angle + 3.14159265
+    angle = angle / (3.14159265 * 2)
+    angle = angle * 8
+
+    if(angle < 1) then
+        return 1,1,1
+    elseif(angle < 2) then
+        return -1,1,1
+    elseif(angle < 3) then
+        return 1,-1,1
+    elseif(angle < 4) then
+        return 1,1,-1
+    elseif(angle < 5) then
+        return -1,-1,1
+    elseif(angle < 6) then
+        return 1,-1,-1
+    elseif(angle < 7) then
+        return -1,1,-1
+    else
+        return -1,-1,-1
+    end
+end
+
+function CircleOperations:getIndexForCircleWithTwoTan(newPos)
+    local angle = self.twocirclecenters[1]:angleBetween(self.twocirclecenters[2], newPos)
+    if(angle > 0) then
+        return 0
+    else
+        return 1
+    end
+end
+
 function CircleOperations:CircleWith3Tans(eventName, data)
-    message("TODO:3 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
-    finish_operation(self.target_widget)
+    if(eventName == "mouseMove") then
+        if(self.constructed3tan ~= true) then
+            self.selection = getWindow(self.target_widget):selection()
+            self.initialMousePosition = data["position"]
+            if(#self.selection == 3) then
+                local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
+                if success == false then
+                    message("Entities selected MUST be circles", self.target_widget)
+                    finish_operation(self.target_widget)
+                else
+                    self:refreshTempEntity()
+                    self.constructed3tan = true
+                    message("Move mouse around to cycle through different circles", self.target_widget)
+                end
+            else
+                message("THREE circle entities should be selected", self.target_widget)
+                finish_operation(self.target_widget)
+            end
+        else
+            local s1,s2,s3 = self:getCircleWith3TansOptions(data["position"])
+            self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], s1, s2, s3)
+            self:refreshTempEntity()
+        end
+    elseif(eventName == "point") then
+        self:createEntity()
+    end
 end
 
 function CircleOperations:CircleWith2Tans(eventName, data)
-    message("TODO:2 Tan Circle.",self.target_widget) -- This function requires picking or selecting CIRCLE or ARC entities. Once picking or selcting of objects starts working this function can be coded.
-    finish_operation(self.target_widget)
+    if(eventName == "mouseMove") then
+        if(self.constructed2tan ~= true) then
+            self.selection = getWindow(self.target_widget):selection()
+            self.initialMousePosition = data["position"]
+            if(#self.selection == 2) then
+                local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)
+                if (success == -2) then
+                    message("Entities selected MUST be circles", self.target_widget)
+                    finish_operation(self.target_widget)
+                elseif (success == -3) then
+                    message("Circle cannot be created for selected circle entities (one circle should not be contained inside another)", self.target_widget)
+                    finish_operation(self.target_widget)
+                elseif (success == 0) then
+                    self:refreshTempEntity()
+                end
+                message("Move mouse for radius, and around to cycle through different circles", self.target_widget)
+                -- get center of two circles from circlebuilder and set center between the two circles
+                self.twocirclecenters = self.builder:twoTanCircleCenters()
+                self.centerbetweentwocircles = self.twocirclecenters[1]:add(self.twocirclecenters[2])
+                self.centerbetweentwocircles = self.centerbetweentwocircles:multiply(0.5)
+                self.constructed2tan = true
+            else
+                message("TWO circle entities should be selected", self.target_widget)
+                finish_operation(self.target_widget)
+            end
+        else
+            local radius = self.centerbetweentwocircles:distanceTo(data["position"])
+            local index = self:getIndexForCircleWithTwoTan(data["position"])
+            self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, radius, index)
+            self:refreshTempEntity()
+        end
+    elseif(eventName == "point") then
+        self:createEntity()
+    end
 end
 
 function CircleOperations:Circumcenter(Point1,Point2,Point3)
