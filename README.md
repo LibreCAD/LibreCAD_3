@@ -1,5 +1,7 @@
-LibreCAD_3 ![Build status](https://api.travis-ci.org/LibreCAD/LibreCAD_3.svg?branch=master)
+LibreCAD_3
 ==========
+
+![Build status](https://api.travis-ci.org/LibreCAD/LibreCAD_3.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/LibreCAD/LibreCAD_3/badge.svg?branch=master)](https://coveralls.io/github/LibreCAD/LibreCAD_3?branch=master)
 
 LibreCAD 3 development (GSoC 2014)
 This is the new LibreCAD Kernel. With keeping in mind the extensibilty, modularity and the design, the LibreCAD is divided into 3 parts.  
@@ -141,7 +143,7 @@ Install Visual Studio with:
 Download prebuilt Windows binaries for Boost from: https://sourceforge.net/projects/boost/files/boost-binaries/
 
 ### Eigen 3
-Download Eigen 3 zip archive from https://eigen.tuxfamily.org 
+Download Eigen 3 zip archive from https://gitlab.com/libeigen/eigen 
 Unzip it on your disk (`C:\local\eigen-3.3.7`)
 
 ### Qt

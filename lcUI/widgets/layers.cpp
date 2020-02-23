@@ -24,6 +24,10 @@ Layers::Layers(CadMdiChild* mdiChild, QWidget *parent) :
     connect(model, &LayerModel::nameChanged, this, &Layers::changeLayerName);
     connect(ui->layerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
+
+	WidgetTitleBar* titleBar = new WidgetTitleBar( "Layers", this,
+													WidgetTitleBar::TitleBarOptions::VerticalOnHidden);
+	this->setTitleBarWidget(titleBar);
 }
 
 Layers::~Layers() {
@@ -162,6 +166,17 @@ void Layers::updateLayerList() {
 
         emit layerChanged(layer);
     }
+
+    QPushButton* deleteBut = this->findChild<QPushButton*>(QString("deleteButton"));
+    //check if only one layer is remaining, in which case disable button
+    if(model->rowCount(QModelIndex()) == 1)
+    {
+        deleteBut->setEnabled(false);
+    }
+    else
+    {
+        deleteBut->setEnabled(true);
+    }
 }
 
 void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
@@ -172,7 +187,7 @@ void Layers::on_addLayerEvent(const lc::event::AddLayerEvent& event) {
 
 void Layers::on_removeLayerEvent(const lc::event::RemoveLayerEvent& event) {
     if(_mdiChild->activeLayer() == event.layer()) {
-        _mdiChild->setActiveLayer(_mdiChild->document()->layerByName("0"));
+        _mdiChild->setActiveLayer(model->layerAt(0));
     }
 
     updateLayerList();
@@ -194,4 +209,10 @@ void Layers::onSelectionChanged(const QItemSelection& selected, const QItemSelec
     auto layer = model->layerAt(selected.first().top());
     _mdiChild->setActiveLayer(layer);
     emit layerChanged(layer);
+}
+
+void Layers::closeEvent(QCloseEvent* event)
+{
+	this->widget()->hide();
+	event->ignore();
 }

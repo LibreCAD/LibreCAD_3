@@ -40,6 +40,8 @@ void addQtBaseBindings(lua_State *L) {
 		.addFunction("setWindowTitle", &QWidget::setWindowTitle)
 		.addFunction("show", &QWidget::show)
 		.addFunction("showMaximized", &QWidget::showMaximized)
+        .addFunction("setToolTip", &QWidget::setToolTip)
+        .addFunction("setFocus", static_cast<void (QWidget::*)()>(&QMainWindow::setFocus))
 	);
 
 	state["qt"]["QString"].setClass(kaguya::UserdataMetatable<QString>()

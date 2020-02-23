@@ -131,7 +131,10 @@ TEST(RenderingTest, Test) {
             ("tolerance", po::value<int>(&tolerance), "Tolerance (between 0 and 100)");
 
     dirent** files = NULL;
-    int nbFiles = scandir("../unittest/rendering/res", &files, NULL, alphasort); //TODO: get correct folder
+
+    const char* resDir = SOURCE_DIR "/rendering/res/";
+    std::cout << "Opening resources from " << resDir << std::endl;
+    int nbFiles = scandir(resDir, &files, NULL, alphasort); 
     if(nbFiles < 0) {
         perror("Error");
         FAIL() << "Cannot open rendering resources dir.";
@@ -168,7 +171,7 @@ TEST(RenderingTest, Test) {
         }
 
         if(dxfFound && pngFound && configFound) {
-            auto base = std::string("../unittest/rendering/res/") + std::to_string(newNumber);
+            auto base = std::string(resDir) + std::to_string(newNumber);
             auto expectedFile = base + ".png";
             auto dxfFile = base + ".dxf";
             auto resultFile = base + ".out";

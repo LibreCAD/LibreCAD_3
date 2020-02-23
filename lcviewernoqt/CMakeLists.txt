@@ -202,6 +202,6 @@ endif ()
 add_library(lcviewernoqt SHARED ${viewer_srcs} ${viewer_hdrs})
 target_link_libraries(lcviewernoqt ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES} ${GDK-PIXBUF_LIBRARIES} ${GDK_LIBRARIES} lckernel
 ${OPENGL_LIBRARIES}
-${GLEW_LIBRARY}
+${GLEW_LIBRARIES}
 ${Boost_LIBRARIES}
 ${FREETYPE_LIBRARIES})

@@ -13,9 +13,10 @@ make -j2
 cd ../..
 mkdir -p build
 cd build
-cmake ..
+cmake -DWITH_COVERAGE=ON ..
 
 
 make -j2 lcunittest VERBOSE=1
-
-./bin/lcunittest
+make lccoverage
+cd ..
+coveralls -e third_party -e unittest -e lckernel/tinyspline -e lckernel/nano-signal-slot -e build/CMakeFiles 

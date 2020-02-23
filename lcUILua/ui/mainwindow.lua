@@ -78,23 +78,19 @@ local function open_lua_script(widget, commandLine)
     luaScript:show()
 end
 
-local  function changelcTolerance(id)
-    message("Enter desired value to change it",id)
-    return nil
-end
-
 --Create main window menu
-local function create_menu(mainWindow, widget, commandLine)
+local function create_menu(mainWindow, widget, commandLine, id)
     local menuBar = mainWindow:menuBar()
     local drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
     local lineAction = drawMenu:addActionStr(qt.QString("Line"))
     local circleAction = drawMenu:addActionStr(qt.QString("Circle"))
     local arcAction = drawMenu:addActionStr(qt.QString("Arc"))
+	local ellipseAction = drawMenu:addActionStr(qt.QString("Ellipse"))
+	local splineAction = drawMenu:addActionStr(qt.QString("Spline"))
+	local polylineAction = drawMenu:addActionStr(qt.QString("Polyline"))
 
     local luaMenu = menuBar:addMenuStr(qt.QString("Lua"))
     local luaScriptAction = luaMenu:addActionStr(qt.QString("Run script"))
-    local settings = menuBar:addMenuStr(qt.QString("Settings Manager"))
-    local lcTolerance = settings:addActionStr(qt.QString("LCTOLERANCE"))
 
     luaInterface:luaConnect(mainWindow:findChild("actionNew"), "triggered(bool)", new_file)
     luaInterface:luaConnect(mainWindow:findChild("actionOpen"), "triggered(bool)", open_file)
@@ -118,7 +114,48 @@ local function create_menu(mainWindow, widget, commandLine)
     luaInterface:luaConnect(luaScriptAction, "triggered(bool)", function()
         open_lua_script(widget, commandLine)
     end)
-    luaInterface:luaConnect(lcTolerance, "triggered(bool)", changelcTolerance)
+
+	-- connect draw menu options
+	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
+	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
+	luaInterface:luaConnect(arcAction, "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
+	luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
+	luaInterface:luaConnect(splineAction, "triggered(bool)", function() run_basic_operation(id, SplineOperations) end)
+	luaInterface:luaConnect(polylineAction, "triggered(bool)", function() create_lw_polyline(id) end)
+end
+
+-- Connect menu buttons in the menu bar
+local function connect_buttons(mainWindow, id)
+	-- line
+	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
+	
+	-- circle
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_cr()  end)
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_cd() end)
+	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Circle"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_2p() end)
+	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Circle_2"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_3p() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Radius"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_3t() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionTan_Tan_Tan"), "triggered(bool)", function() op = run_basic_operation(id, CircleOperations); op:_init_2t() end)
+
+	-- arc
+	luaInterface:luaConnect(mainWindow:findChild("action3_Point_Arc"), "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_3p() end)
+	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Start_End_2"), "triggered(bool)", function() op = run_basic_operation(id, ArcOperations); op:_init_cse() end)
+
+	-- ellipse
+	luaInterface:luaConnect(mainWindow:findChild("actionEllipse"), "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
+
+	-- spline
+	luaInterface:luaConnect(mainWindow:findChild("actionSpline"), "triggered(bool)", function() run_basic_operation(id, SplineOperations) end)
+
+	-- polylines
+	luaInterface:luaConnect(mainWindow:findChild("actionPolyline"), "triggered(bool)", function() create_lw_polyline(id) end)
+
+	--dimensions
+	luaInterface:luaConnect(mainWindow:findChild("actionLinear"), "triggered(bool)", function() run_basic_operation(id, DimLinearOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionAligned"), "triggered(bool)", function() run_basic_operation(id, DimAlignedOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionRadius"), "triggered(bool)", function() run_basic_operation(id, DimRadialOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionDiameter"), "triggered(bool)", function() run_basic_operation(id, DimDiametricOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("actionANG3PT"), "triggered(bool)", function() run_basic_operation(id, DimAngularOperations) end)
 end
 
 --Create a new window
@@ -147,7 +184,8 @@ function create_new_window(widget)
     add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSelect)
     addCadMdiChild(widget, id, commandLine)
 
-    create_menu(mainWindow, widget, commandLine)
+    create_menu(mainWindow, widget, commandLine, id)
+	connect_buttons(mainWindow, id)
 
     if(hideUI ~= true) then
         mainWindow:showMaximized()

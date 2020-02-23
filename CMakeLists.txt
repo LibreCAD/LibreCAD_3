@@ -9,6 +9,7 @@ option(WITH_UNITTESTS "Build unit tests" ON)
 option(WITH_RENDERING_UNITTESTS "Build rendering unit tests (require GDK)" ON)
 option(WITH_LIBOPENCAD "Use libopencad" OFF)
 option(WITH_CAIRO "Compile with Cairo painter" OFF)
+option(WITH_COVERAGE "Compile with coverage for unit tests" OFF)
 
 #make doc/tests ?
 option(WITH_DOCUMENTATION "Build documentation" OFF)

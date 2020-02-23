@@ -81,6 +81,7 @@ cad/builders/insert.cpp
 cad/builders/layer.cpp
 cad/builders/linepattern.cpp
 cad/builders/spline.cpp
+cad/builders/lwpolyline.cpp
 cad/meta/customentitystorage.cpp
 cad/operations/blockops.cpp
 cad/operations/builder.cpp
