@@ -35,12 +35,14 @@ namespace lc {
                 int twoTanConstructor(lc::entity::CADEntity_CSPtr circle0, lc::entity::CADEntity_CSPtr circle1, double s1, double s2, double r, int index);
 
                 const std::vector<lc::geo::Coordinate> twoTanCircleCenters() const;
+                void modifyForTempEntity(bool val);
 
             private:
                 geo::Coordinate _center;
                 double _radius;
                 geo::Coordinate _twotanCircleCenter1;
                 geo::Coordinate _twotanCircleCenter2;
+                bool tempEntity = false;
         };
     }
 }

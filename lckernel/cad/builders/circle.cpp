@@ -172,6 +172,25 @@ const std::vector<lc::geo::Coordinate> lc::builder::CircleBuilder::twoTanCircleC
     return res;
 }
 
+void lc::builder::CircleBuilder::modifyForTempEntity(bool val)
+{
+    tempEntity = val;
+}
+
 lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
-    return entity::Circle_CSPtr(new entity::Circle(*this));
+
+    if (tempEntity)
+    {
+        lc::entity::Circle_CSPtr new_circle = entity::Circle_CSPtr(new entity::Circle(*this));
+        lc::meta::Layer_CSPtr oldLayer = new_circle->layer();
+        lc::meta::MetaLineWidthByValue newWidth = lc::meta::MetaLineWidthByValue(oldLayer->lineWidth().width() / 2);
+        lc::meta::DxfLinePatternByValue_CSPtr linePattern = oldLayer->linePattern();
+        lc::meta::Layer* tempLayer = new lc::meta::Layer(oldLayer->name(), newWidth, oldLayer->color(), oldLayer->linePattern(), oldLayer->isFrozen());
+
+        return std::dynamic_pointer_cast<const lc::entity::Circle>(new_circle->modify(lc::meta::Layer_CSPtr(tempLayer), new_circle->metaInfo(), new_circle->block()));
+    }
+    else
+    {
+        return entity::Circle_CSPtr(new entity::Circle(*this));;
+    }
 }

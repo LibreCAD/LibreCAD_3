@@ -91,6 +91,7 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("threeTanConstructor", &lc::builder::CircleBuilder::threeTanConstructor)
         .addFunction("twoTanConstructor", &lc::builder::CircleBuilder::twoTanConstructor)
         .addFunction("twoTanCircleCenters", &lc::builder::CircleBuilder::twoTanCircleCenters)
+        .addFunction("modifyForTempEntity", &lc::builder::CircleBuilder::modifyForTempEntity)
     );
 
 

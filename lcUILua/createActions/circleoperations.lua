@@ -225,6 +225,30 @@ function CircleOperations:getCircleWith3TansOptions(newPos)
     end
 end
 
+function CircleOperations:drawAllTan3Circles()
+    self.builder:modifyForTempEntity(true)
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], -1, -1, -1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, -1, 1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], -1, 1, -1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], -1, -1, 1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, -1, -1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], -1, 1, 1)
+    b:appendEntity(self.builder:build())
+    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, -1)
+    b:appendEntity(self.builder:build())
+    self.builder:modifyForTempEntity(false)
+
+    b:execute()
+end
+
 function CircleOperations:getIndexForCircleWithTwoTan(newPos)
     local angle = self.twocirclecenters[1]:angleBetween(self.twocirclecenters[2], newPos)
     if(angle > 0) then
@@ -254,6 +278,7 @@ function CircleOperations:CircleWith3Tans(eventName, data)
                 finish_operation(self.target_widget)
             end
         else
+            self:drawAllTan3Circles()
             local s1,s2,s3 = self:getCircleWith3TansOptions(data["position"])
             self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], s1, s2, s3)
             self:refreshTempEntity()
