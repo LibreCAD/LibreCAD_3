@@ -3,6 +3,15 @@
 #include <cad/math/lcmath.h>
 #include <cmath>
 
+lc::builder::CircleBuilder::CircleBuilder() {
+    // creating the temporary line pattern
+    lc::builder::LinePatternBuilder lp_builder;
+    lp_builder.setName("tempEntity");
+    lp_builder.addElement(10);
+
+    linePattern = lp_builder.build();
+}
+
 const lc::geo::Coordinate& lc::builder::CircleBuilder::center() const {
     return _center;
 }
@@ -183,9 +192,8 @@ lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
     {
         lc::entity::Circle_CSPtr new_circle = entity::Circle_CSPtr(new entity::Circle(*this));
         lc::meta::Layer_CSPtr oldLayer = new_circle->layer();
-        lc::meta::MetaLineWidthByValue newWidth = lc::meta::MetaLineWidthByValue(oldLayer->lineWidth().width() / 2);
-        lc::meta::DxfLinePatternByValue_CSPtr linePattern = oldLayer->linePattern();
-        lc::meta::Layer* tempLayer = new lc::meta::Layer(oldLayer->name(), newWidth, oldLayer->color(), oldLayer->linePattern(), oldLayer->isFrozen());
+
+        lc::meta::Layer* tempLayer = new lc::meta::Layer(oldLayer->name(), oldLayer->lineWidth(), oldLayer->color(), linePattern, oldLayer->isFrozen());
 
         return std::dynamic_pointer_cast<const lc::entity::Circle>(new_circle->modify(lc::meta::Layer_CSPtr(tempLayer), new_circle->metaInfo(), new_circle->block()));
     }

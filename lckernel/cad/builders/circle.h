@@ -7,7 +7,7 @@ namespace lc {
     namespace builder {
         class CircleBuilder : public CADEntityBuilder {
             public:
-                CircleBuilder() = default;
+                CircleBuilder();
                 virtual ~CircleBuilder() = default;
 
                 const geo::Coordinate& center() const;
@@ -43,6 +43,7 @@ namespace lc {
                 geo::Coordinate _twotanCircleCenter1;
                 geo::Coordinate _twotanCircleCenter2;
                 bool tempEntity = false;
+                lc::meta::DxfLinePatternByValue_CSPtr linePattern;
         };
     }
 }
