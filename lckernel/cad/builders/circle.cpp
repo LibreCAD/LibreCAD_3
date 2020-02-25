@@ -7,7 +7,8 @@ lc::builder::CircleBuilder::CircleBuilder() {
     // creating the temporary line pattern
     lc::builder::LinePatternBuilder lp_builder;
     lp_builder.setName("tempEntity");
-    lp_builder.addElement(10);
+    lp_builder.addElement(1);
+    lp_builder.addElement(-10);
 
     linePattern = lp_builder.build();
 }
@@ -186,8 +187,8 @@ void lc::builder::CircleBuilder::modifyForTempEntity(bool val)
     tempEntity = val;
 }
 
-lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build() {
-
+lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
+{
     if (tempEntity)
     {
         lc::entity::Circle_CSPtr new_circle = entity::Circle_CSPtr(new entity::Circle(*this));
