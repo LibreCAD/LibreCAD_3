@@ -111,14 +111,18 @@ void LCADViewer::initializeGL()
   int width = size().width();
   int height = size().height();
 
-  if(CC!=0)
+  if (CC != 0)
   {
-    GLenum err = glewInit();
-          
-    if (err != GLEW_OK)
-      exit(1); // or handle the error in a nicer way
-    if (!GLEW_VERSION_2_1)  // check that the machine supports the 2.1 API.
-      exit(1); // or handle the error in a nicer way
+      GLenum err = glewInit();
+
+      if (err != GLEW_OK) {
+          LOG_ERROR << "GLEW Error: " << glewGetErrorString(err) << std::endl;
+          exit(1);
+      }
+      if (!GLEW_VERSION_2_1) {
+          LOG_ERROR << "OpenGL version 2.1 is not available" << std::endl;
+          exit(1);
+      }
 
     deletePainters();     
     createPainters(width, height);
