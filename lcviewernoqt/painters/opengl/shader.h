@@ -14,6 +14,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <functional>
 
 namespace lc
 {
@@ -38,7 +39,7 @@ namespace lc
       public:
         Shader();
         ~Shader();
-        void gen(const std::string& filepath);
+        void gen(const std::string& filepath, std::function<void (GLuint)> variableBinder=[](GLuint programId){});
         void bind() const;
         void unbind() const;
         unsigned int getID() const;
@@ -55,9 +56,12 @@ namespace lc
         int getUniformLocation(const std::string& name);
         unsigned int compileShaders(std::string shader, GLenum type);
         ShaderProgramSource parseShader(const std::string& filepath);
-        unsigned int linkProgram(unsigned int vertexShaderID,
-                    unsigned int geometryShaderID, 
-                    unsigned int fragmentShaderID);
+        unsigned int linkProgram(
+                unsigned int vertexShaderID,
+                unsigned int geometryShaderID,
+                unsigned int fragmentShaderID,
+                std::function<void (GLuint)> variableBinder
+        );
       };
 
       struct Shaders_book

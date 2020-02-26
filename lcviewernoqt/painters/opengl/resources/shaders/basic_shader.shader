@@ -1,8 +1,8 @@
 #shader vertex
+#version 140
 
-#version 330 core
-layout (location = 0) in vec3 pos; 
-layout (location = 1) in float prev_distance; 
+in vec3 pos;
+in float prev_distance;
 uniform mat4 u_MVP;
 
 void main()
@@ -12,8 +12,7 @@ void main()
 
 //-------------------------------------------
 #shader fragment
-
-#version 330 core
+#version 140
 
 uniform vec4 u_Color;
 out vec4 out_Color;
