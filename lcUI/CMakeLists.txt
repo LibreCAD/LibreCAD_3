@@ -10,12 +10,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+set(QT_USE_QTOPENGL TRUE)
+
 find_package(Qt5Widgets)
 find_package(Qt5Core)
 find_package(Qt5Designer)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5UiTools REQUIRED)
 find_package(Qt5Svg REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
 
 SET(QT_USE_QTDESIGNER ON)
 
@@ -117,9 +120,9 @@ link_directories(${LUA_LIBRARY_DIRS})
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)
 
-# QT OpenGL & GLEW library-------------------------
-find_package(Qt5 REQUIRED COMPONENTS OpenGL)
-set(QT_USE_QTOPENGL TRUE)
+# GLEW library-------------------------
+
+cmake_policy(SET CMP0074 OLD)
 find_package(GLEW REQUIRED)
 
 include_directories(

@@ -1,0 +1,10 @@
+[requires]
+boost/1.72.0
+eigen/3.3.7
+lua/5.3.5
+glew/2.1.0@bincrafters/stable
+glm/0.9.9.7
+freetype/2.10.1
+
+[generators]
+cmake

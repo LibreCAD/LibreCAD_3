@@ -94,6 +94,8 @@ namespace lc {
 
                     void textEntered(QString text);
 
+                    void finishOperation();
+
                 private:
                     bool checkParam(const QString& command);
 

@@ -11,6 +11,16 @@ OpenglRenderPainter::OpenglRenderPainter(unsigned int width, unsigned int height
 
 void OpenglRenderPainter::create_resources()
 {
+    //On Windows, GLEW context is not shared between libraries. We have to recreate it
+    GLenum err = glewInit();
+
+    if (err != GLEW_OK) {
+        LOG_ERROR << "GLEW Error in lcviewernoqt: " << glewGetErrorString(err) << std::endl;
+    }
+    if (!GLEW_VERSION_2_1) {
+        LOG_ERROR << "OpenGL version 2.1 is not available" << std::endl;
+    }
+
   OpenglCacherPainter* cp= dynamic_cast<OpenglCacherPainter*>(_cacher_painter);
   _renderer->setCacherRef((((*cp)._cacher)));
   _renderer->createResources();

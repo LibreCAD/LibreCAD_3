@@ -28,6 +28,11 @@ function cli_command_active(id, status)
     end
 end
 
+-- focus cli command
+function focusClicommand(id)
+    cliCommands[id]:setFocus()
+end
+
 --Configure command line to return raw text
 function cli_get_text(id, getText)
     if cliCommands[id] ~= nil then
@@ -52,6 +57,11 @@ function add_commandline(mainWindow, id)
     cliCommands[id] = cliCommand
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
+
+    luaInterface:luaConnect(cliCommand, "finishOperation()", function()
+        luaInterface:triggerEvent('operationFinished', 0)
+        luaInterface:triggerEvent('finishOperation', 0)
+    end)
 
     luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
         luaInterface:triggerEvent('point', {
