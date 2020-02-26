@@ -1289,6 +1289,12 @@ void DXFimpl::writeEntity(const lc::entity::CADEntity_CSPtr& entity) {
          writeInsert(insert);
          return;
     }
+
+    auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(entity);
+    if (spline != nullptr) {
+        writeSpline(spline);
+        return;
+    }
 }
 
 void DXFimpl::writeBlockRecords() {

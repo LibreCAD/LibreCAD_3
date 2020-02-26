@@ -197,6 +197,10 @@ void CliCommand::onKeyPressed(QKeyEvent *event) {
             }
             break;
 
+        case Qt::Key_Escape:
+            emit finishOperation();
+            break;
+
         default:
             ui->command->event(event);
             break;

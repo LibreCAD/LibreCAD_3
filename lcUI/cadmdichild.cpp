@@ -133,6 +133,11 @@ void CadMdiChild::saveAsFile() {
 
     auto file = QFileDialog::getSaveFileName(nullptr, "Save file", "", filterList, &selectedFilter);
 
+    if (file.isEmpty())
+    {
+        return;
+    }
+
     auto selectedType = selectedFilter.toStdString();
     //Removing extension part
     std::size_t fpos = selectedType.rfind("(*");

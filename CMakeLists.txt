@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 project(LC)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(WITH_QT_UI "With QT user interface" ON)
 option(WITH_LUACMDINTERFACE "Build Lua command line interface" ON)

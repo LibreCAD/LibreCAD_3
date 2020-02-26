@@ -12,7 +12,7 @@ Circle::Circle(const geo::Coordinate &center,
                meta::MetaInfo_CSPtr metaInfo,
                meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Circle(center, radius) {
+        geo::Circle(center, radius){
 }
 
 
@@ -22,7 +22,7 @@ Circle::Circle(const Circle_CSPtr& other, bool sameID) : CADEntity(other, sameID
 
 Circle::Circle(const builder::CircleBuilder& builder) :
     CADEntity(builder),
-    geo::Circle(builder.center(), builder.radius()) {
+    geo::Circle(builder.center(), builder.radius()){
 }
 
 std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
@@ -107,5 +107,4 @@ CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSP
     newEntity->setID(this->id());
     return newEntity;
 }
-
 
