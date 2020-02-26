@@ -225,6 +225,29 @@ function CircleOperations:getCircleWith3TansOptions(newPos)
     end
 end
 
+function CircleOperations:drawAllTan3Circles()
+    self.builder:modifyForTempEntity(true)
+    local oldId =self.builder:id()
+    self.temp3tans = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+
+    for i=-1,1 do
+        for j=-1,1 do
+            for k=-1,1 do
+                if (i~=0 and j~=0 and k~=0) then
+                    self.builder:newID()
+                    self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], i, j, k)
+                    self.temp3tans:appendEntity(self.builder:build())
+                end
+            end
+        end
+    end
+
+    self.builder:setID(oldId)
+    self.builder:modifyForTempEntity(false)
+
+    self.temp3tans:execute()
+end
+
 function CircleOperations:getIndexForCircleWithTwoTan(newPos)
     local angle = self.twocirclecenters[1]:angleBetween(self.twocirclecenters[2], newPos)
     if(angle > 0) then
@@ -253,6 +276,7 @@ function CircleOperations:CircleWith3Tans(eventName, data)
                 message("THREE circle entities should be selected", self.target_widget)
                 finish_operation(self.target_widget)
             end
+            self:drawAllTan3Circles()
         else
             local s1,s2,s3 = self:getCircleWith3TansOptions(data["position"])
             self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], s1, s2, s3)
@@ -260,6 +284,10 @@ function CircleOperations:CircleWith3Tans(eventName, data)
         end
     elseif(eventName == "point") then
         self:createEntity()
+        self.temp3tans:appendOperation(lc.operation.Push())
+        self.temp3tans:appendOperation(lc.operation.Remove())
+        self.temp3tans:execute()
+        self.constructed3tan = false
     end
 end
 
@@ -308,4 +336,12 @@ function CircleOperations:Circumcenter(Point1,Point2,Point3)
     local Y = (Point1:y() * math.sin(2 * Angle1) + Point2:y() * math.sin(2 * Angle2) + Point3:y() * math.sin(2 * Angle3) ) / ( math.sin(2 * Angle1) + math.sin(2 * Angle2) + math.sin(2 * Angle3))
     local Output=lc.geo.Coordinate(X,Y)
     return Output
+end
+
+function CircleOperations:cleanUp()
+    if (self.constructed3tan) then
+        self.temp3tans:appendOperation(lc.operation.Push())
+        self.temp3tans:appendOperation(lc.operation.Remove())
+        self.temp3tans:execute()
+    end
 end

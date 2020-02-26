@@ -94,8 +94,6 @@ namespace lc {
 
         private:
             Circle(const builder::CircleBuilder& builder);
-            geo::Coordinate center_circle;
-            double radius_circle;
         };
 
         DECLARE_SHORT_SHARED_PTR(Circle)

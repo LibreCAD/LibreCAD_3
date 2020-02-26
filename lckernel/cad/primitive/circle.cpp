@@ -12,19 +12,17 @@ Circle::Circle(const geo::Coordinate &center,
                meta::MetaInfo_CSPtr metaInfo,
                meta::Block_CSPtr block) :
         CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Circle(center, radius) , center_circle(center), radius_circle(radius){
+        geo::Circle(center, radius){
 }
 
 
 Circle::Circle(const Circle_CSPtr& other, bool sameID) : CADEntity(other, sameID),
-                                                        geo::Circle(other->center(), other->radius()),
-                                                        center_circle(other->center()), radius_circle(other->radius()) {
+                                                        geo::Circle(other->center(), other->radius()) {
 }
 
 Circle::Circle(const builder::CircleBuilder& builder) :
     CADEntity(builder),
-    geo::Circle(builder.center(), builder.radius()),
-    center_circle(builder.center()), radius_circle(builder.radius()) {
+    geo::Circle(builder.center(), builder.radius()){
 }
 
 std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
