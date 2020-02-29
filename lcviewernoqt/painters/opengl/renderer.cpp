@@ -20,7 +20,11 @@ void Renderer::createResources()
   _shaders.basic_shader->unbind();
 
   _shaders.gradient_shader = new Shader();
-  _shaders.gradient_shader->gen(_shader_path+"color_vertex_shader.shader");
+  _shaders.gradient_shader->gen(_shader_path+"color_vertex_shader.shader", [](GLuint programId) {
+      glBindAttribLocation(programId, 0, "pos");
+      glBindAttribLocation(programId, 1, "prev_distance");
+      glBindAttribLocation(programId, 2, "col");
+  });
   _shaders.gradient_shader->unbind();
 
   _shaders.thickline_shader = new Shader();

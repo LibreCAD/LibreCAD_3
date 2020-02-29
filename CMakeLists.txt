@@ -21,6 +21,46 @@ if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
+    include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
+    set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
+    
+    set(WITH_LIBOPENCAD OFF)
+    set(WITH_LUACMDINTERFACE FALSE)
+    set(WITH_RENDERING_UNITTESTS OFF)
+    set(WITH_CAIRO OFF)
+    set(WITH_UNITTESTS OFF)
+
+    set(BOOST_ROOT "${CONAN_BOOST_ROOT}")
+    set(Boost_USE_STATIC_LIBS ON)
+    add_definitions("${CONAN_DEFINES_BOOST}")
+
+    set(EIGEN3_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_EIGEN}")
+
+    set(ENV{LUA_DIR} "${CONAN_LUA_ROOT}")
+
+    set(GLEW_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLEW}")
+    set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
+    add_definitions("${CONAN_DEFINES_GLEW}")
+    
+    set(ENV{FREETYPE_DIR} "${CONAN_FREETYPE_ROOT}")
+    
+    set(PNG_PNG_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_LIBPNG}")
+    set(PNG_LIBRARY "${CONAN_LIB_DIRS_LIBPNG}/libpng16.lib")
+    
+    set(ZLIB_ROOT "${CONAN_ZLIB_ROOT}")
+    
+    set(BZIP2_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_BZIP2}")
+    set(BZIP2_LIBRARIES "${CONAN_LIB_DIRS_BZIP2}/bz2.lib")
+    
+ 
+    set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
+endif()
+
+#ELSE
+#set(Boost_USE_STATIC_LIBS OFF)
+#add_definitions(-DBOOST_ALL_DYN_LINK)
+
 if(MSVC)
 	add_definitions("/bigobj")
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -33,10 +73,7 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 14)
 
-# Use dynamic linking for Boost
-add_definitions(-DBOOST_ALL_DYN_LINK)
 set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_LIBS OFF)
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)

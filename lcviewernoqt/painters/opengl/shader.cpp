@@ -11,7 +11,7 @@ Shader::~Shader()
   glDeleteProgram(_shader_id);
 }
 
-void Shader::gen(const std::string& filepath)
+void Shader::gen(const std::string& filepath, std::function<void (GLuint)> variableBinder)
 {
   _shader_id=0;
   _file_path=filepath;
@@ -30,7 +30,7 @@ void Shader::gen(const std::string& filepath)
   
   fragmentshaderID=compileShaders(source.fragmentSource,GL_FRAGMENT_SHADER);
     
-  _shader_id= linkProgram(vertexshaderID,geometryshaderID,fragmentshaderID);
+  _shader_id= linkProgram(vertexshaderID,geometryshaderID,fragmentshaderID, std::move(variableBinder));
 
   bind();
 }
@@ -111,8 +111,10 @@ unsigned int Shader:: compileShaders(std::string shader, GLenum type)
 }
 
 
-unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geometryShaderID, unsigned int fragmentShaderID)
-{
+unsigned int Shader::linkProgram(unsigned int vertexShaderID,
+                                 unsigned int geometryShaderID,
+                                 unsigned int fragmentShaderID,
+                                 std::function<void (GLuint)> variableBinder) {
   GLuint programID= glCreateProgram();
 
   if(programID==0)
@@ -129,6 +131,8 @@ unsigned int Shader:: linkProgram(unsigned int vertexShaderID,unsigned int geome
 
   if(fragmentShaderID!=0)
   glAttachShader(programID,fragmentShaderID);
+
+  variableBinder(programID);
 
   glLinkProgram(programID);
 

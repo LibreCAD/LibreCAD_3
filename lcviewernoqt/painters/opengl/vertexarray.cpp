@@ -47,5 +47,5 @@ void VertexArray::unbind() const
 void VertexArray::freeGPU() const
 {
   unbind();
-  glDeleteVertexArrays(1,&_va_id); 
+  glDeleteVertexArrays(1,&_va_id);
 }
