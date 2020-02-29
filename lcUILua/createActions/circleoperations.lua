@@ -262,12 +262,14 @@ function CircleOperations:CircleWith3Tans(eventName, data)
         if(self.constructed3tan ~= true) then
             self.selection = getWindow(self.target_widget):selection()
             self.initialMousePosition = data["position"]
+            local successful = false
             if(#self.selection == 3) then
                 local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
                 if success == false then
                     message("Entities selected MUST be circles", self.target_widget)
                     finish_operation(self.target_widget)
                 else
+                    successful = true
                     self:refreshTempEntity()
                     self.constructed3tan = true
                     message("Move mouse around to cycle through different circles", self.target_widget)
@@ -276,7 +278,9 @@ function CircleOperations:CircleWith3Tans(eventName, data)
                 message("THREE circle entities should be selected", self.target_widget)
                 finish_operation(self.target_widget)
             end
-            self:drawAllTan3Circles()
+            if (successful) then
+                self:drawAllTan3Circles()
+            end
         else
             local s1,s2,s3 = self:getCircleWith3TansOptions(data["position"])
             self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], s1, s2, s3)
