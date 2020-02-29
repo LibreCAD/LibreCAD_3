@@ -192,11 +192,39 @@ lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
     if (tempEntity)
     {
         lc::entity::Circle_CSPtr new_circle = entity::Circle_CSPtr(new entity::Circle(*this));
-        lc::meta::Layer_CSPtr oldLayer = new_circle->layer();
+        lc::meta::MetaInfo_CSPtr metaInfo = new_circle->metaInfo();
+        lc::meta::MetaInfo_SPtr newMetaInfo = lc::meta::MetaInfo::create();
 
-        lc::meta::Layer* tempLayer = new lc::meta::Layer(oldLayer->name(), oldLayer->lineWidth(), oldLayer->color(), linePattern, oldLayer->isFrozen());
+        if (metaInfo && metaInfo->size() != 0)
+        {
+            newMetaInfo->add(linePattern);
 
-        return std::dynamic_pointer_cast<const lc::entity::Circle>(new_circle->modify(lc::meta::Layer_CSPtr(tempLayer), new_circle->metaInfo(), new_circle->block()));
+            try
+            {
+                const lc::meta::EntityMetaType_CSPtr lineWidth = metaInfo->at("_LINEWIDTH");
+                newMetaInfo->add(std::move(lineWidth));
+            }
+            catch (std::out_of_range & e)
+            {
+                // Do nothing
+            }
+
+            try
+            {
+                const lc::meta::EntityMetaType_CSPtr color = metaInfo->at("_COLOR");
+                newMetaInfo->add(std::move(color));
+            }
+            catch (std::out_of_range & e)
+            {
+                // Do nothing
+            }
+        }
+        else
+        {
+            newMetaInfo->add(linePattern);
+        }
+
+        return std::dynamic_pointer_cast<const lc::entity::Circle>(new_circle->modify(new_circle->layer(), newMetaInfo, new_circle->block()));
     }
     else
     {
