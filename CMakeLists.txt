@@ -41,6 +41,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
 
     set(GLEW_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLEW}")
     set(ENV{GLEW_ROOT} "${CONAN_GLEW_ROOT}")
+    set(GLEW_LIBRARIES "${CONAN_GLEW_ROOT}/lib/libglew32.lib")
     add_definitions("${CONAN_DEFINES_GLEW}")
     
     set(ENV{FREETYPE_DIR} "${CONAN_FREETYPE_ROOT}")
