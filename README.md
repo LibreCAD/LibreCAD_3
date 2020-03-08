@@ -147,7 +147,7 @@ Using any GUI git client:
 Clone https://github.com/LibreCAD/LibreCAD_3.git recursively.
 
 # Using Conan (recommended)
-Conan is a package manager which provides C++ dependencies, compatible with Windows and Visual Studio. We recommand using it to simplify the compilation process.
+Conan is a package manager which provides C++ dependencies, compatible with Windows and Visual Studio. We recommend using it to simplify the compilation process.
 
 ## Conan
 Download and install [Conan](https://conan.io/downloads.html).

@@ -74,13 +74,13 @@ function CircleOperations:enterCenter(eventName, data)
             message("Provide Diameter Start Point:",self.target_widget)
             self.step = "CircleWith2Points"
         elseif ((data["text"]) == "3p" or string.lower(data["text"]) == "3point") then
-            message("Provide Frist Point:",self.target_widget)
+            message("Provide First Point:",self.target_widget)
             self.step = "CircleWith3Points"
         elseif (string.lower(data["text"]) == "t" or string.lower(data["text"]) == "ttt") then
-            message("Provide Frist Tangent:",self.target_widget)
+            message("Provide First Tangent:",self.target_widget)
             self.step = "CircleWith3Tans"
         elseif (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "ttr") then
-            message("Provide Frist Tangent:",self.target_widget)
+            message("Provide First Tangent:",self.target_widget)
             self.step = "CircleWith2Tans"
         end
     end
