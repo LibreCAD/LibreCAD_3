@@ -31,7 +31,7 @@ namespace lc
         //----------------------------------FOR VERTEX DATA------------
         std::vector< glm::vec4 > _vertex_data; // for vertex data
         std::vector<int> _jumps;
-        std::vector< glm::vec4 > _current_vertices;  // for current shape(continous)
+        std::vector< glm::vec4 > _current_vertices;  // for current shape(continuous)
   
         float _path_distance;                  //distance(scalar) from start point to current
         bool _closed=false;
