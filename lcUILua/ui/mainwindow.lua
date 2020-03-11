@@ -115,6 +115,19 @@ local function create_menu(mainWindow, widget, commandLine, id)
         open_lua_script(widget, commandLine)
     end)
 
+    -- select options
+    luaInterface:luaConnect(mainWindow:findChild("actionSelect_All"), "triggered(bool)", function()
+        local bounds = widget:viewer():docCanvas():bounds()
+        local documentCanvas = widget:viewer():docCanvas()
+        documentCanvas:makeSelection(bounds:minP():x(), bounds:minP():y(), bounds:width(), bounds:height(), true)
+        documentCanvas:closeSelection()
+        documentCanvas:removeSelectionArea()
+    end)
+
+    luaInterface:luaConnect(mainWindow:findChild("actionSelect_None"), "triggered(bool)", function()
+        widget:viewer():docCanvas():removeSelection()
+    end)
+
 	-- connect draw menu options
 	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
 	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)

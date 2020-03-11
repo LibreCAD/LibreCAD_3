@@ -275,7 +275,7 @@ function CircleOperations:CircleWith3Tans(eventName, data)
                     message("Move mouse around to cycle through different circles", self.target_widget)
                 end
             else
-                message("THREE circle entities should be selected", self.target_widget)
+                message("THREE circle entities should be selected, there are " .. #self.selection .. " entities selected", self.target_widget)
                 finish_operation(self.target_widget)
             end
             if (successful) then
@@ -318,7 +318,7 @@ function CircleOperations:CircleWith2Tans(eventName, data)
                 self.centerbetweentwocircles = self.centerbetweentwocircles:multiply(0.5)
                 self.constructed2tan = true
             else
-                message("TWO circle entities should be selected", self.target_widget)
+                message("TWO circle entities should be selected, there are " .. #self.selection .. " entities selected", self.target_widget)
                 finish_operation(self.target_widget)
             end
         else
