@@ -166,6 +166,11 @@ namespace lc {
 
                 void removeSelection();
 
+                /**
+                * @brief Inverse select the given area
+                */
+                void inverseSelection(double x, double y, double w, double h, bool occupies);
+
                 std::vector<lc::viewer::LCVDrawItem_SPtr>& selectedDrawables();
 
                 lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();

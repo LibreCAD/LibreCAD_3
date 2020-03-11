@@ -228,6 +228,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("closeSelection", &DocumentCanvas::closeSelection)
         .addFunction("removeSelectionArea", &DocumentCanvas::removeSelectionArea)
         .addFunction("removeSelection", &DocumentCanvas::removeSelection)
+        .addFunction("inverseSelection", &DocumentCanvas::inverseSelection)
         .addFunction("bounds", &DocumentCanvas::bounds)
 	);
 

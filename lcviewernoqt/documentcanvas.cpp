@@ -599,6 +599,24 @@ void DocumentCanvas::removeSelection() {
     _selectedDrawables.clear();
 }
 
+void DocumentCanvas::inverseSelection(double x, double y, double w, double h, bool occupies) {
+    makeSelection(x, y, w, w, occupies);
+
+    std::vector<lc::viewer::LCVDrawItem_SPtr> updatedSelection;
+
+    auto iter = _newSelection.begin();
+    while (iter != _newSelection.end()) {
+        auto iter1 = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), *iter);
+        if (iter1 == _selectedDrawables.end()) {
+            updatedSelection.push_back(*iter);
+        }
+        iter++;
+    };
+
+    removeSelection();
+    _newSelection = std::move(updatedSelection);
+}
+
 Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::background ()  {
     return _background;
 }
