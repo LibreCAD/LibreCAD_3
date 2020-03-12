@@ -591,6 +591,16 @@ void DocumentCanvas::removeSelectionArea() {
     }
 }
 
+void DocumentCanvas::selectAll() {
+    _selectedDrawables.clear();
+    _newSelection.clear();
+
+    entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        _entityDrawItem[entity->id()]->selected(true);
+        _selectedDrawables.push_back(_entityDrawItem[entity->id()]);
+    });
+}
+
 void DocumentCanvas::removeSelection() {
     for(const auto& di: _selectedDrawables) {
         di->selected(false);
@@ -599,22 +609,22 @@ void DocumentCanvas::removeSelection() {
     _selectedDrawables.clear();
 }
 
-void DocumentCanvas::inverseSelection(double x, double y, double w, double h, bool occupies) {
-    makeSelection(x, y, w, w, occupies);
+void DocumentCanvas::inverseSelection() {
+    _selectedDrawables.clear();
+    _newSelection.clear();
 
-    std::vector<lc::viewer::LCVDrawItem_SPtr> updatedSelection;
-
-    auto iter = _newSelection.begin();
-    while (iter != _newSelection.end()) {
-        auto iter1 = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), *iter);
-        if (iter1 == _selectedDrawables.end()) {
-            updatedSelection.push_back(*iter);
+    entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        lc::viewer::LCVDrawItem_SPtr item = _entityDrawItem[entity->id()];
+        if (item->selected())
+        {
+            item->selected(false);
         }
-        iter++;
-    };
-
-    removeSelection();
-    _newSelection = std::move(updatedSelection);
+        else
+        {
+            item->selected(true);
+            _selectedDrawables.push_back(item);
+        }
+    });
 }
 
 Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::background ()  {

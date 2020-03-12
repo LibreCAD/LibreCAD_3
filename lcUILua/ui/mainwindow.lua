@@ -117,11 +117,7 @@ local function create_menu(mainWindow, widget, commandLine, id)
 
     -- select options
     luaInterface:luaConnect(mainWindow:findChild("actionSelect_All"), "triggered(bool)", function()
-        local bounds = widget:viewer():docCanvas():bounds()
-        local documentCanvas = widget:viewer():docCanvas()
-        documentCanvas:makeSelection(bounds:minP():x(), bounds:minP():y(), bounds:width(), bounds:height(), true)
-        documentCanvas:closeSelection()
-        documentCanvas:removeSelectionArea()
+        widget:viewer():docCanvas():selectAll()
     end)
 
     luaInterface:luaConnect(mainWindow:findChild("actionSelect_None"), "triggered(bool)", function()
@@ -129,11 +125,7 @@ local function create_menu(mainWindow, widget, commandLine, id)
     end)
 
     luaInterface:luaConnect(mainWindow:findChild("actionInvert_Selection"), "triggered(bool)", function()
-        local bounds = widget:viewer():docCanvas():bounds()
-        local documentCanvas = widget:viewer():docCanvas()
-        documentCanvas:inverseSelection(bounds:minP():x(), bounds:minP():y(), bounds:width(), bounds:height(), true)
-        documentCanvas:closeSelection()
-        documentCanvas:removeSelectionArea()
+        widget:viewer():docCanvas():inverseSelection()
     end)
 
 	-- connect draw menu options
