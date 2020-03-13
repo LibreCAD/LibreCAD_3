@@ -55,11 +55,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     
  
     set(OPENGL_INCLUDE_DIR "${CONAN_INCLUDE_DIRS_GLM}")
+else()
+    set(Boost_USE_STATIC_LIBS OFF)
+    add_definitions(-DBOOST_ALL_DYN_LINK)
 endif()
-
-#ELSE
-#set(Boost_USE_STATIC_LIBS OFF)
-#add_definitions(-DBOOST_ALL_DYN_LINK)
 
 if(MSVC)
 	add_definitions("/bigobj")
