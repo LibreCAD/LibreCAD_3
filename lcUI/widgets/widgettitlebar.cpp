@@ -28,7 +28,7 @@ WidgetTitleBar::WidgetTitleBar( const QString& title,
 		setVerticalLayout();
 	}
 
-	// add approriate icons for close and expand button
+	// add appropriate icons for close and expand button
 	QIcon icon1 = pDock->style()->standardIcon(QStyle::SP_TitleBarMaxButton, 0, pDock);
 	QIcon icon2 = pDock->style()->standardIcon(QStyle::SP_TitleBarCloseButton, 0, pDock);
 	m_pExpandButton->setIcon(icon1);

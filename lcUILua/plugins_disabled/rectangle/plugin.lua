@@ -50,7 +50,7 @@ function dragPointClicked(insert, builder, point)
 
     local d = insert:document()
 
-    --Remove old entitites
+    --Remove old entities
     local removeEntitiesBuilder = EntityBuilder(d)
 
     drag_storage[insert:id()] = d:entitiesByBlock(insert:displayBlock()):asVector()

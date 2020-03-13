@@ -46,7 +46,7 @@ namespace lc {
 
 					painter.rotate(angle);
 						
-					// hardcoded to 10 and -10, TODO think of a way to dynamically get vallues
+					// hardcoded to 10 and -10, TODO think of a way to dynamically get values
 					painter.drawText(10,-10, text());
 				}
 				QSize minimumSizeHint() const
