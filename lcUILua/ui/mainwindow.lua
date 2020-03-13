@@ -115,6 +115,19 @@ local function create_menu(mainWindow, widget, commandLine, id)
         open_lua_script(widget, commandLine)
     end)
 
+    -- select options
+    luaInterface:luaConnect(mainWindow:findChild("actionSelect_All"), "triggered(bool)", function()
+        widget:viewer():docCanvas():selectAll()
+    end)
+
+    luaInterface:luaConnect(mainWindow:findChild("actionSelect_None"), "triggered(bool)", function()
+        widget:viewer():docCanvas():removeSelection()
+    end)
+
+    luaInterface:luaConnect(mainWindow:findChild("actionInvert_Selection"), "triggered(bool)", function()
+        widget:viewer():docCanvas():inverseSelection()
+    end)
+
 	-- connect draw menu options
 	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
 	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
