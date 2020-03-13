@@ -224,6 +224,9 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
 	    .addFunction("autoScale", &DocumentCanvas::autoScale)
 		.addFunction("selectPoint", &DocumentCanvas::selectPoint)
+        .addFunction("removeSelection", &DocumentCanvas::removeSelection)
+        .addFunction("inverseSelection", &DocumentCanvas::inverseSelection)
+        .addFunction("selectAll", &DocumentCanvas::selectAll)
 	);
 
 	state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand, QDockWidget>()

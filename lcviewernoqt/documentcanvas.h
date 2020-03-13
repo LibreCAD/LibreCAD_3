@@ -166,6 +166,16 @@ namespace lc {
 
                 void removeSelection();
 
+                /**
+                * @brief selectAll selects all the entities in the document
+                */
+                void selectAll();
+
+                /**
+                * @brief Inverse select the given area
+                */
+                void inverseSelection();
+
                 std::vector<lc::viewer::LCVDrawItem_SPtr>& selectedDrawables();
 
                 lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();

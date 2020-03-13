@@ -591,12 +591,40 @@ void DocumentCanvas::removeSelectionArea() {
     }
 }
 
+void DocumentCanvas::selectAll() {
+    _selectedDrawables.clear();
+    _newSelection.clear();
+
+    entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        _entityDrawItem[entity->id()]->selected(true);
+        _selectedDrawables.push_back(_entityDrawItem[entity->id()]);
+    });
+}
+
 void DocumentCanvas::removeSelection() {
     for(const auto& di: _selectedDrawables) {
         di->selected(false);
     };
 
     _selectedDrawables.clear();
+}
+
+void DocumentCanvas::inverseSelection() {
+    _selectedDrawables.clear();
+    _newSelection.clear();
+
+    entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
+        lc::viewer::LCVDrawItem_SPtr item = _entityDrawItem[entity->id()];
+        if (item->selected())
+        {
+            item->selected(false);
+        }
+        else
+        {
+            item->selected(true);
+            _selectedDrawables.push_back(item);
+        }
+    });
 }
 
 Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::background ()  {
