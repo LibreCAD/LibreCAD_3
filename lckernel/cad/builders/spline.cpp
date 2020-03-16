@@ -69,6 +69,8 @@ void lc::builder::SplineBuilder::addFitPoint(lc::geo::Coordinate fitPoint) {
 }
 
 lc::entity::Spline_CSPtr lc::builder::SplineBuilder::build() const {
+    checkEntityConstraints();
+
     return lc::entity::Spline_CSPtr(new lc::entity::Spline(*this));
 }
 

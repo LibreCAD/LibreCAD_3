@@ -189,6 +189,13 @@ void lc::builder::CircleBuilder::modifyForTempEntity(bool val)
 
 lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
 {
+    checkEntityConstraints();
+
+    if (_radius < 0)
+    {
+        throw std::runtime_error("Radius cannot be negative");
+    }
+
     if (tempEntity)
     {
         lc::entity::Circle_CSPtr new_circle = entity::Circle_CSPtr(new entity::Circle(*this));

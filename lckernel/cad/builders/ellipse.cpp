@@ -4,6 +4,8 @@
 using namespace lc::builder;
 
 lc::entity::Ellipse_CSPtr EllipseBuilder::build() {
+    checkEntityConstraints();
+
     return lc::entity::Ellipse_CSPtr(new lc::entity::Ellipse(*this));
 }
 

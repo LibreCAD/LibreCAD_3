@@ -142,6 +142,15 @@ namespace lc {
                     return _layer != nullptr;
                 }
 
+                /**
+                 * @brief Throw the appropriate exception if any of the required info is nullptr
+                 */
+                void checkEntityConstraints() const {
+                    if (_layer == nullptr){
+                        throw std::runtime_error("Layer is NULL");
+                    }
+                }
+
             private:
                 meta::Layer_CSPtr _layer;
                 meta::MetaInfo_CSPtr _metaInfo;
