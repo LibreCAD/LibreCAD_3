@@ -187,14 +187,17 @@ void lc::builder::CircleBuilder::modifyForTempEntity(bool val)
     tempEntity = val;
 }
 
-lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
-{
-    checkEntityConstraints();
-
-    if (_radius < 0)
+bool lc::builder::CircleBuilder::checkValues(bool throwExceptions) const {
+    if (throwExceptions && _radius < 0)
     {
         throw std::runtime_error("Radius cannot be negative");
     }
+    return lc::builder::CADEntityBuilder::checkValues(throwExceptions);
+}
+
+lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
+{
+    checkValues(true);
 
     if (tempEntity)
     {

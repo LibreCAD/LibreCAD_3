@@ -20,7 +20,7 @@ PointBuilder* PointBuilder::setCoordinate(const geo::Coordinate& coordinate) {
 }
 
 entity::Point_CSPtr PointBuilder::build() {
-    checkEntityConstraints();
+    checkValues(true);
 
     return entity::Point_CSPtr(new entity::Point(*this));
 }

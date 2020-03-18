@@ -8,8 +8,8 @@ InsertBuilder::InsertBuilder() :
         _displayBlock(nullptr) {
 }
 
-bool InsertBuilder::checkValues() {
-    return CADEntityBuilder::checkValues() &&
+bool InsertBuilder::checkValues(bool throwExceptions) const{
+    return CADEntityBuilder::checkValues(throwExceptions) &&
            _displayBlock != nullptr &&
            _document != nullptr;
 }

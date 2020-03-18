@@ -39,7 +39,7 @@ void lc::builder::DimAlignedBuilder::dimAuto(lc::geo::Coordinate p2,
 }
 
 lc::entity::DimAligned_CSPtr lc::builder::DimAlignedBuilder::build() {
-    checkEntityConstraints();
+    checkValues(true);
 
     return lc::entity::DimAligned_CSPtr(new lc::entity::DimAligned(*this));
 }

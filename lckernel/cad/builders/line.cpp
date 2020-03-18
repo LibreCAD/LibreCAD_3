@@ -27,7 +27,7 @@ LineBuilder* LineBuilder::setEnd(const lc::geo::Coordinate& end) {
 }
 
 lc::entity::Line_CSPtr LineBuilder::build() {
-    checkEntityConstraints();
+    checkValues(true);
 
     return entity::Line_CSPtr(new entity::Line(*this));
 }

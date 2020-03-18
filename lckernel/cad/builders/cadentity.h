@@ -138,16 +138,19 @@ namespace lc {
                     _id = new entity::ID();
                 }
 
-                virtual bool checkValues() {
-                    return _layer != nullptr;
-                }
-
-                /**
-                 * @brief Throw the appropriate exception if any of the required info is nullptr
-                 */
-                void checkEntityConstraints() const {
-                    if (_layer == nullptr){
-                        throw std::runtime_error("Layer is NULL");
+                virtual bool checkValues(bool throwExceptions=false) const{
+                    if (_layer == nullptr)
+                    {
+                        if (throwExceptions) {
+                            throw std::runtime_error("Layer is NULL");
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return true;
                     }
                 }
 

@@ -21,8 +21,8 @@ const kaguya::LuaRef& CustomEntityBuilder::snapFunction() const {
     return _snapFunction;
 }
 
-bool CustomEntityBuilder::checkValues() {
-    return InsertBuilder::checkValues() && 
+bool CustomEntityBuilder::checkValues(bool throwExceptions) const{
+    return InsertBuilder::checkValues(throwExceptions) && 
            _snapFunction.type() == LUA_TFUNCTION &&
            _nearestPointFunction.type() == LUA_TFUNCTION &&
            _dragPointsFunction.type() == LUA_TFUNCTION &&

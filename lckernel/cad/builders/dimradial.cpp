@@ -22,7 +22,7 @@ void lc::builder::DimRadialBuilder::setDefinitionPoint2(const lc::geo::Coordinat
 }
 
 lc::entity::DimRadial_CSPtr lc::builder::DimRadialBuilder::build() const {
-    checkEntityConstraints();
+    checkValues(true);
 
     return lc::entity::DimRadial_CSPtr(new lc::entity::DimRadial(*this));
 }
