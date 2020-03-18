@@ -180,3 +180,6 @@ qt5_use_modules(librecad Core Gui Widgets OpenGL Svg)
 
 target_link_libraries(librecad ${EXTRA_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} -lboost_system
 ${GLEW_LIBRARY})
+
+# INSTALLATION
+install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")

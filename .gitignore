@@ -8,6 +8,7 @@ lcdemo*
 *.so
 .idea
 build
+install
 release
 CMakeLists.txt.user
 playground

@@ -261,3 +261,4 @@ target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIB
 # INSTALLATION
 install(TARGETS lckernel DESTINATION lib)
 install(FILES ${kernel_hdrs}  DESTINATION include)
+install(TARGETS lckernel DESTINATION "${CMAKE_INSTALL_BINDIR}")
