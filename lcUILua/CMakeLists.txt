@@ -10,9 +10,9 @@ file(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/path.lua"
 )
 
 install(CODE "file(WRITE \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/path.lua\"
-	\"package.path = package.path .. ';${CMAKE_CURRENT_LIST_DIR}/?.lua' \n\"
-	\"ui_path='${PROJECT_SOURCE_DIR}/lcUI/ui' \n\"
-	\"plugin_path='${PROJECT_SOURCE_DIR}/lcUILua/plugins' \n\"
+	\"package.path = package.path .. ';${CMAKE_INSTALL_PREFIX}/usr/share/librecad/lcUILua/?.lua' \n\"
+	\"ui_path='${CMAKE_INSTALL_PREFIX}/usr/share/librecad/lcUI/ui' \n\"
+	\"plugin_path='${CMAKE_INSTALL_PREFIX}/usr/share/librecad/lcUILua/plugins' \n\"
 	\"require 'ui.init'\"
 )")
 
