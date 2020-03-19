@@ -15,13 +15,14 @@ bool InsertBuilder::checkValues(bool throwExceptions) const{
             _document != nullptr;
     }
     else {
-        CADEntityBuilder::checkValues(throwExceptions);
         if (_displayBlock == nullptr) {
             throw std::runtime_error("Display block cannot be NULL");
         }
         if (_document == nullptr) {
             throw std::runtime_error("Document cannot be NULL");
         }
+
+        return CADEntityBuilder::checkValues(throwExceptions);
     }
 }
 

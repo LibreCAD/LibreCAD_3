@@ -192,6 +192,11 @@ bool lc::builder::CircleBuilder::checkValues(bool throwExceptions) const {
     {
         throw std::runtime_error("Radius cannot be negative");
     }
+    else if (_radius < 0)
+    {
+        return false;
+    }
+
     return lc::builder::CADEntityBuilder::checkValues(throwExceptions);
 }
 
