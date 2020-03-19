@@ -8,10 +8,22 @@ InsertBuilder::InsertBuilder() :
         _displayBlock(nullptr) {
 }
 
-bool InsertBuilder::checkValues() {
-    return CADEntityBuilder::checkValues() &&
-           _displayBlock != nullptr &&
-           _document != nullptr;
+bool InsertBuilder::checkValues(bool throwExceptions) const{
+    if (!throwExceptions) {
+        return CADEntityBuilder::checkValues(throwExceptions) &&
+            _displayBlock != nullptr &&
+            _document != nullptr;
+    }
+    else {
+        if (_displayBlock == nullptr) {
+            throw std::runtime_error("Display block cannot be NULL");
+        }
+        if (_document == nullptr) {
+            throw std::runtime_error("Document cannot be NULL");
+        }
+
+        return CADEntityBuilder::checkValues(throwExceptions);
+    }
 }
 
 const meta::Block_CSPtr& InsertBuilder::displayBlock() const {

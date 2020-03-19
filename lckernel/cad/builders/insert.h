@@ -19,7 +19,7 @@ namespace lc {
                 const storage::Document_SPtr& document() const;
                 InsertBuilder* setDocument(const storage::Document_SPtr& document);
 
-                bool checkValues() override;
+                bool checkValues(bool throwExceptions = false) const override;
                 entity::Insert_CSPtr build();
 
             private:

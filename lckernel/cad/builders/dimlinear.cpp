@@ -7,6 +7,8 @@ lc::builder::DimLinearBuilder::DimLinearBuilder() {
 }
 
 lc::entity::DimLinear_CSPtr lc::builder::DimLinearBuilder::build() const {
+    checkValues(true);
+
     return lc::entity::DimLinear_CSPtr(new lc::entity::DimLinear(*this));
 }
 
