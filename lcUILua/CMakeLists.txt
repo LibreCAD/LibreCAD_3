@@ -15,3 +15,5 @@ install(CODE "file(WRITE \"${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/path.
 	\"plugin_path='${PROJECT_SOURCE_DIR}/lcUILua/plugins' \n\"
 	\"require 'ui.init'\"
 )")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUILua" DESTINATION "usr/share/librecad")

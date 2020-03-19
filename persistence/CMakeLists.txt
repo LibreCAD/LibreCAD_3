@@ -72,5 +72,4 @@ target_link_libraries(persistence lckernel ${Boost_LIBRARIES} ${LIBDXFRW_LIBRARY
 
 # INSTALLATION
 install(TARGETS persistence DESTINATION lib)
-install(FILES ${persistence_hdrs} DESTINATION include)
 install(TARGETS persistence DESTINATION "${CMAKE_INSTALL_BINDIR}")

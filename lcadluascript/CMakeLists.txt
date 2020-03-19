@@ -83,5 +83,4 @@ target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
 
 # INSTALLATION
 install(TARGETS lcluascript DESTINATION lib)
-install(FILES ${lcluascript_hdrs}  DESTINATION include)
 install(TARGETS lcluascript DESTINATION "${CMAKE_INSTALL_BINDIR}")
