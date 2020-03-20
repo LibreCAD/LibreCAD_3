@@ -22,6 +22,7 @@ if (NOT MSVC) # Too much warnings on MSVC
 endif()
 
 include(GNUInstallDirs)
+set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
