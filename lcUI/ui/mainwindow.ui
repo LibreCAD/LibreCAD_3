@@ -121,8 +121,8 @@
      <property name="title">
       <string>Ellipse</string>
      </property>
-     <addaction name="actionEllipseAxis_Start_End"/>
-     <addaction name="actionEllipseAxis_Center_End"/>
+     <addaction name="actionEllipse_Axis"/>
+     <addaction name="actionEllipse_Arc"/>
     </widget>
     <widget class="QMenu" name="menuDimension">
      <property name="title">
@@ -257,14 +257,14 @@
     <string>Line</string>
    </property>
   </action>
-  <action name="actionEllipseAxis_Start_End">
+  <action name="actionEllipse_Axis">
    <property name="text">
     <string>&amp;Ellipse</string>
    </property>
   </action>
-  <action name="actionEllipseAxis_Center_End">
+  <action name="actionEllipse_Arc">
    <property name="text">
-    <string>&amp;Ellipse Center</string>
+    <string>&amp;Ellipse Arc</string>
    </property>
   </action>
   <action name="actionPolyline">

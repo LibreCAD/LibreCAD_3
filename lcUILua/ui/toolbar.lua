@@ -87,7 +87,7 @@ function add_toolbar(mainWindow, id, linePatternSelect, lineWidthSelect, colorSe
     luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
 
     local arcEllipseAction = create_action(ellipseMenu, "Arc Ellipse", ":/icons/ellipse_arc_axis.svg")
-    luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations, "_init_center") end)
+    luaInterface:luaConnect(arcEllipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations, "_init_arc") end)
 
     ellipseButton:setMenu(ellipseMenu)
     quickAccessTab:addWidget(creationGroup, ellipseButton, 1, 1, 1, 1)

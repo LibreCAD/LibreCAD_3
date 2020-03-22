@@ -28,7 +28,7 @@ function EllipseOperations:_init_default()
     self.step = "EllipsewithAxisEnd"
 end
 
-function EllipseOperations:_init_center()
+function EllipseOperations:_init_arc()
     message("<b>Ellipse</b>", self.target_widget)
     message("Options: <u>E</u>lliptical Arc, <u>C</u>enter", self.target_widget)
     message("Provide Center Point:", self.target_widget)
