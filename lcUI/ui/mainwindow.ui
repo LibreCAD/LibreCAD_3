@@ -117,6 +117,13 @@
      <addaction name="separator"/>
      <addaction name="actionContinue"/>
     </widget>
+    <widget class="QMenu" name="menuEllipse">
+     <property name="title">
+      <string>Ellipse</string>
+     </property>
+     <addaction name="actionEllipseAxis_Start_End"/>
+     <addaction name="actionEllipseAxis_Center_End"/>
+    </widget>
     <widget class="QMenu" name="menuDimension">
      <property name="title">
       <string>&amp;Dimension</string>
@@ -137,7 +144,7 @@
     <addaction name="menuLine"/>
     <addaction name="menuCircle"/>
     <addaction name="menuArc"/>
-    <addaction name="actionEllipse"/>
+    <addaction name="menuEllipse"/>
     <addaction name="menuDimension"/>
     <addaction name="actionPolyline"/>
     <addaction name="actionSpline"/>
@@ -250,9 +257,14 @@
     <string>Line</string>
    </property>
   </action>
-  <action name="actionEllipse">
+  <action name="actionEllipseAxis_Start_End">
    <property name="text">
     <string>&amp;Ellipse</string>
+   </property>
+  </action>
+  <action name="actionEllipseAxis_Center_End">
+   <property name="text">
+    <string>&amp;Ellipse Center</string>
    </property>
   </action>
   <action name="actionPolyline">
