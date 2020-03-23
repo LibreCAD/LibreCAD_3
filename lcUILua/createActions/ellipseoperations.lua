@@ -11,7 +11,7 @@ setmetatable(EllipseOperations, {
 })
 
 
-function EllipseOperations:_init(id, isArc)
+function EllipseOperations:_init(id)
     self.isArc = isArc or false
     self.Axis_StartPoint = nil
     self.Axis_EndPoint = nil
@@ -19,10 +19,26 @@ function EllipseOperations:_init(id, isArc)
     self.rotation = false
     CreateOperations._init(self, id, lc.builder.EllipseBuilder, "EllipsewithAxisEnd")
     cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
+end
 
+function EllipseOperations:_init_default()
     message("<b>Ellipse</b>", self.target_widget)
     message("Options: <u>E</u>lliptical Arc, <u>C</u>enter", self.target_widget)
     message("Provide Axis start Point:", self.target_widget)
+    self.step = "EllipsewithAxisEnd"
+end
+
+function EllipseOperations:_init_arc()
+    message("<b>Ellipse</b>", self.target_widget)
+    message("Options: <u>E</u>lliptical Arc, <u>C</u>enter", self.target_widget)
+    message("Provide Center Point:", self.target_widget)
+    self.step = "EllipsewithCenter"
+end
+
+function EllipseOperations:_init_foci()
+    message("<b>Ellipse</b>", self.target_widget)
+    message("Provide first foci point:", self.target_widget)
+    self.step = "EllipseFociPoints"
 end
 
 function EllipseOperations:EllipsewithAxisEnd(eventName, data)
@@ -111,6 +127,50 @@ function EllipseOperations:EllipsewithCenter(eventName, data)
     end
 end
 
+function EllipseOperations:EllipseFociPoints(eventName, data)
+    if (eventName == "point" and not self.Axis_FirstFoci ) then
+        self.Axis_FirstFoci = data['position']
+        message("Provide other foci point:",self.target_widget)
+    elseif (eventName == "point" and self.Axis_FirstFoci and not self.Axis_SecondFoci) then
+        self.Axis_SecondFoci = data['position']
+        self.builder:setCenter(self.Axis_FirstFoci:mid(self.Axis_SecondFoci))
+        self.Axis_FociDistance = self.Axis_FirstFoci:distanceTo(self.builder:center())
+        message("Provide major point:", self.target_widget)
+    elseif (eventName == "mouseMove" and self.Axis_FirstFoci and self.Axis_SecondFoci and not self.Axis_MajorPoint) then
+        local majorPoint = data["position"]:sub(self.builder:center())
+        if(majorPoint:magnitude() > self.Axis_FociDistance) then
+            self.builder:setMajorPoint(majorPoint)
+        else
+            self.builder:setMajorPoint(self.Axis_FirstFoci:sub(self.builder:center()))
+        end
+        self.minRadius=self.builder:center():distanceTo(data["position"])
+        self.builder:setMinorRadius(self.minRadius)
+    elseif (eventName == "point" and self.Axis_FirstFoci and self.Axis_SecondFoci and not self.Axis_MajorPoint) then
+        local majorPoint = data["position"]:sub(self.builder:center())
+        if(majorPoint:magnitude() > self.Axis_FociDistance) then
+            self.builder:setMajorPoint(majorPoint)
+            self.Axis_MajorPoint = majorPoint
+        else
+            self.builder:setMajorPoint(self.Axis_FirstFoci:sub(self.builder:center()))
+            self.Axis_MajorPoint = self.builder:majorPoint()
+        end
+        self.minRadius=self.builder:center():distanceTo(data["position"])
+        self.builder:setMinorRadius(self.minRadius)
+        message("Specify rotation:", self.target_widget)
+        cli_get_text(self.target_widget, false)
+    elseif (eventName == "mouseMove" and self.Axis_FirstFoci and self.Axis_SecondFoci and self.Axis_MajorPoint) then
+        self.minRadius = self.builder:center():distanceTo(data["position"])
+        self.builder:setMinorRadius(self.minRadius)
+    elseif (eventName == "point" and self.Axis_FirstFoci and self.Axis_SecondFoci and self.Axis_MajorPoint) then
+        self.minRadius = self.builder:center():distanceTo(data["position"])
+        self.builder:setMinorRadius(self.minRadius)
+        self:createEntity()
+    elseif (eventName == "number" and self.Axis_FirstFoci and self.Axis_SecondFoci and self.Axis_MajorPoint) then
+        self.minRadius =  math.cos(math.rad(data["number"])) *  self.builder:center():distanceTo(self.builder:center():add(self.builder:majorPoint()))
+        self.builder:setMinorRadius(self.minRadius)
+        self:createEntity()
+    end
+end
 
 --[[
 function EllipseOperations:_init(id, isArc)

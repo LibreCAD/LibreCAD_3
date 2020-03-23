@@ -117,6 +117,15 @@
      <addaction name="separator"/>
      <addaction name="actionContinue"/>
     </widget>
+    <widget class="QMenu" name="menuEllipse">
+     <property name="title">
+      <string>Ellipse</string>
+     </property>
+     <addaction name="actionEllipse_Axis"/>
+     <addaction name="actionEllipse_Arc"/>
+     <addaction name="actionEllipse_FociPoints"/>
+     <addaction name="actionEllipse_4Points"/>
+    </widget>
     <widget class="QMenu" name="menuDimension">
      <property name="title">
       <string>&amp;Dimension</string>
@@ -137,7 +146,7 @@
     <addaction name="menuLine"/>
     <addaction name="menuCircle"/>
     <addaction name="menuArc"/>
-    <addaction name="actionEllipse"/>
+    <addaction name="menuEllipse"/>
     <addaction name="menuDimension"/>
     <addaction name="actionPolyline"/>
     <addaction name="actionSpline"/>
@@ -250,10 +259,25 @@
     <string>Line</string>
    </property>
   </action>
-  <action name="actionEllipse">
+  <action name="actionEllipse_Axis">
    <property name="text">
     <string>&amp;Ellipse</string>
    </property>
+  </action>
+  <action name="actionEllipse_Arc">
+   <property name="text">
+    <string>&amp;Ellipse Arc</string>
+   </property>
+  </action>
+  <action name="actionEllipse_FociPoints">
+      <property name="text">
+          <string>&amp;Ellipse Foci Points</string>
+      </property>
+  </action>
+  <action name="actionEllipse_4Points">
+      <property name="text">
+          <string>&amp;Ellipse 4 Points</string>
+      </property>
   </action>
   <action name="actionPolyline">
    <property name="text">
