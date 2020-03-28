@@ -21,6 +21,9 @@ if (NOT MSVC) # Too much warnings on MSVC
      add_definitions("-Wall")
 endif()
 
+include(GNUInstallDirs)
+set(FINAL_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     include(${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake)
     set(CMAKE_FIND_LIBRARY_PREFIXES "" "lib")

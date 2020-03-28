@@ -8,3 +8,12 @@ file(WRITE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/path.lua"
 	"plugin_path='${PROJECT_SOURCE_DIR}/lcUILua/plugins' \n"
 	"require 'ui.init'"
 )
+
+install(CODE "file(WRITE \"${FINAL_INSTALL_DIR}/${CMAKE_INSTALL_BINDIR}/path.lua\"
+	\"package.path = package.path .. ';${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/?.lua' \n\"
+	\"ui_path='${FINAL_INSTALL_DIR}/usr/share/librecad/lcUI/ui' \n\"
+	\"plugin_path='${FINAL_INSTALL_DIR}/usr/share/librecad/lcUILua/plugins' \n\"
+	\"require 'ui.init'\"
+)")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUILua" DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad")
