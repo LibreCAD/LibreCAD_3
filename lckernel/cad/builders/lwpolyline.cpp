@@ -52,6 +52,8 @@ const std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder:
 
 lc::entity::LWPolyline_CSPtr lc::builder::LWPolylineBuilder::build()
 {
+    checkValues(true);
+
 	return lc::entity::LWPolyline_CSPtr(new lc::entity::LWPolyline(*this));
 }
 

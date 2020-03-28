@@ -36,6 +36,7 @@ namespace lc {
 
                 const std::vector<lc::geo::Coordinate> twoTanCircleCenters() const;
                 void modifyForTempEntity(bool val);
+                bool checkValues(bool throwExceptions = false) const override;
 
             private:
                 geo::Coordinate _center;

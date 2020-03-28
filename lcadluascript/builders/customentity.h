@@ -32,7 +32,7 @@ namespace lc {
                 const kaguya::LuaRef& dragPointsReleasedFunction() const;
                 void setDragPointsReleasedFunction(const kaguya::LuaRef& dragPointsReleasedFunction);
 
-                bool checkValues() override;
+                bool checkValues(bool throwExceptions=false) const override;
 
                 entity::LuaCustomEntity_CSPtr build();
 

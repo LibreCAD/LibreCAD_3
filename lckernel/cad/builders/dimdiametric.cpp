@@ -22,5 +22,7 @@ void lc::builder::DimDiametricBuilder::setDefinitionPoint2(const lc::geo::Coordi
 }
 
 lc::entity::DimDiametric_CSPtr lc::builder::DimDiametricBuilder::build() {
+    checkValues(true);
+
     return lc::entity::DimDiametric_CSPtr(new lc::entity::DimDiametric(*this));
 }

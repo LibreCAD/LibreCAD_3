@@ -21,14 +21,38 @@ const kaguya::LuaRef& CustomEntityBuilder::snapFunction() const {
     return _snapFunction;
 }
 
-bool CustomEntityBuilder::checkValues() {
-    return InsertBuilder::checkValues() && 
-           _snapFunction.type() == LUA_TFUNCTION &&
-           _nearestPointFunction.type() == LUA_TFUNCTION &&
-           _dragPointsFunction.type() == LUA_TFUNCTION &&
-           _newDragPointFunction.type() == LUA_TFUNCTION &&
-           _dragPointsClickedFunction.type() == LUA_TFUNCTION &&
-           _dragPointsReleasedFunction.type() == LUA_TFUNCTION;
+bool CustomEntityBuilder::checkValues(bool throwExceptions) const{
+    if (!throwExceptions){
+        return InsertBuilder::checkValues(throwExceptions) &&
+            _snapFunction.type() == LUA_TFUNCTION &&
+            _nearestPointFunction.type() == LUA_TFUNCTION &&
+            _dragPointsFunction.type() == LUA_TFUNCTION &&
+            _newDragPointFunction.type() == LUA_TFUNCTION &&
+            _dragPointsClickedFunction.type() == LUA_TFUNCTION &&
+            _dragPointsReleasedFunction.type() == LUA_TFUNCTION;
+    }else
+    {
+        if (_snapFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("Snap function callback MUST be a function");
+        }
+        if (_nearestPointFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("Nearest point function callback MUST be a function");
+        }
+        if (_dragPointsFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("Drag points function callback MUST be a function");
+        }
+        if (_newDragPointFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("New drag point function callback MUST be a function");
+        }
+        if (_dragPointsClickedFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("Drag points clicked function callback MUST be a function");
+        }
+        if (_dragPointsReleasedFunction.type() != LUA_TFUNCTION) {
+            throw std::runtime_error("Drag points released function callback MUST be a function");
+        }
+
+        return InsertBuilder::checkValues(throwExceptions);
+    }
 }
 
 const kaguya::LuaRef& CustomEntityBuilder::nearestPointFunction() const {
