@@ -18,6 +18,5 @@ install(CODE "file(WRITE \"${FINAL_INSTALL_DIR}/${CMAKE_INSTALL_BINDIR}/path.lua
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUILua"
 		DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad"
-		PATTERN *
-		EXCLUDE PATTERN "CMakeLists.txt"
+		PATTERN "CMakeLists.txt" EXCLUDE
 )
