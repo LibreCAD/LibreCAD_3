@@ -140,7 +140,8 @@ end
 -- Connect menu buttons in the menu bar
 local function connect_buttons(mainWindow, id)
 	-- line
-	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
+	luaInterface:luaConnect(mainWindow:findChild("action2_Point_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_2p") end)
+    luaInterface:luaConnect(mainWindow:findChild("actionPoint_Angle_Length_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_pal") end)
 	
 	-- circle
 	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() run_basic_operation(id, CircleOperations, "_init_cr") end)

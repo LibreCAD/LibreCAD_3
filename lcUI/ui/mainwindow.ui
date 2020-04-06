@@ -83,6 +83,10 @@
       <string>&amp;Line</string>
      </property>
      <addaction name="action2_Point_Line"/>
+     <addaction name="actionPoint_Angle_Length_Line" />
+     <addaction name="separator"/>
+     <addaction name="actionRectangle" />
+     <addaction name="actionPolygon" />
     </widget>
     <widget class="QMenu" name="menuCircle">
      <property name="title">
@@ -292,6 +296,21 @@
   <action name="action2_Point_Line">
    <property name="text">
     <string>&amp;2 Point Line</string>
+   </property>
+  </action>
+  <action name="actionPoint_Angle_Length_Line">
+   <property name="text">
+    <string>&amp;Point, Angle, Length</string>
+   </property>
+  </action>
+  <action name="actionRectangle">
+   <property name="text">
+    <string>&amp;Rectangle</string>
+   </property>
+  </action>
+  <action name="actionPolygon">
+   <property name="text">
+    <string>&amp;Polygon</string>
    </property>
   </action>
   <action name="actionCenter_Radius">
