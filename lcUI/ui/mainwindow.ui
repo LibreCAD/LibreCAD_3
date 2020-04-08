@@ -86,7 +86,7 @@
      <addaction name="actionPoint_Angle_Length_Line" />
      <addaction name="separator"/>
      <addaction name="actionRectangle" />
-     <addaction name="actionPolygon" />
+     <addaction name="actionPolygonCenCor" />
     </widget>
     <widget class="QMenu" name="menuCircle">
      <property name="title">
@@ -308,9 +308,9 @@
     <string>&amp;Rectangle</string>
    </property>
   </action>
-  <action name="actionPolygon">
+  <action name="actionPolygonCenCor">
    <property name="text">
-    <string>&amp;Polygon</string>
+    <string>&amp;Polygon (Cen,Cor)</string>
    </property>
   </action>
   <action name="actionCenter_Radius">

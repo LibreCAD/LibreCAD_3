@@ -42,6 +42,12 @@ function LineOperations:_init_rectangle()
     self.step = "RectangleWithCornerPoints"
 end
 
+function LineOperations:_init_polygon_cencor()
+    message("<b>LINE - Polygon</b>", self.target_widget)
+    message("Click on center of polygon or enter coordinates:", self.target_widget)
+    self.step = "PolygonWithCenterPoint"
+end
+
 function LineOperations:setFirstPoint(eventName, data)
     if(eventName == "point") then
         self.builder:setStartPoint(data["position"])
@@ -179,9 +185,48 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
     end
 end
 
+function LineOperations:PolygonWithCenterPoint(eventName, data)
+    if(eventName == "point" and not self.polygonCenter) then
+        self.polygonCenter = data["position"]
+        message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
+    elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
+        if(self.tempEntities ~= nil) then
+            for k, entity in pairs(self.tempEntities) do
+                getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            end
+        else
+            self.tempEntities = {}
+        end
+        -- 150 + () ensures that numPoints is atleast 3
+        local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        local length = 50
+        for i=0,numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * i), length * math.sin((3.14159265 * 2)/numPoints * i)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * (i+1)), length * math.sin((3.14159265 * 2)/numPoints * (i+1))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+            end
+        end
+    end
+end
+
 function LineOperations:manualClose() -- this function gets called after the first line is added to document
         local newBuilder = lc.builder.LineBuilder()
         newBuilder:setStartPoint(self.builder:endPoint())
         self.builder = newBuilder
         self.step = "setSecondPoint"    
+end
+
+function LineOperations:close()
+    if(self.tempEntities ~= nil) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+    end
+    CreateOperations.close(self)
 end
