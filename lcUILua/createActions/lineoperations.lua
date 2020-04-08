@@ -36,6 +36,12 @@ function LineOperations:_init_pal()
     self.step = "LineWithPointAngleLength"
 end
 
+function LineOperations:_init_rectangle()
+    message("<b>LINE - RECTANGLE</b>", self.target_widget)
+    message("Click on top left point of rectangle or enter coordinates:", self.target_widget)
+    self.step = "RectangleWithCornerPoints"
+end
+
 function LineOperations:setFirstPoint(eventName, data)
     if(eventName == "point") then
         self.builder:setStartPoint(data["position"])
@@ -115,6 +121,59 @@ function LineOperations:LineWithPointAngleLength(eventName, data)
         local p2 = lc.geo.Coordinate(length,0)
         p2 = p2:rotate(self.angle)
         self.builder:setEndPoint(self.startPoint:add(p2))
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:RectangleWithCornerPoints(eventName, data)
+    if(eventName == "point" and not self.topLeftPoint) then
+        self.topLeftPoint = data["position"]
+        message("Click on bottom right point or enter coordinates:-", self.target_widget)
+    elseif(eventName == "mouseMove" and self.topLeftPoint and not self.bottomRightPoint) then
+        if(self.tempEntities ~= nil) then
+            for k, entity in pairs(self.tempEntities) do
+                getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            end
+        else
+            self.tempEntities = {}
+        end
+
+        -- TOP LEFT -> TOP RIGHT
+        self.builder:newID()
+        self.builder:setStartPoint(self.topLeftPoint)
+        self.builder:setEndPoint(lc.geo.Coordinate(data["position"]:x(), self.topLeftPoint:y()))
+        self.tempEntities[0] = self.builder:build()
+        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[0])
+
+        -- TOP RIGHT -> BOTTOM RIGHT
+        self.builder:newID()
+        self.builder:setStartPoint(lc.geo.Coordinate(data["position"]:x(), self.topLeftPoint:y()))
+        self.builder:setEndPoint(data["position"])
+        self.tempEntities[1] = self.builder:build()
+        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[1])
+
+        -- BOTTOM RIGHT -> BOTTOM LEFT
+        self.builder:newID()
+        self.builder:setStartPoint(data["position"])
+        self.builder:setEndPoint(lc.geo.Coordinate(self.topLeftPoint:x(), data["position"]:y()))
+        self.tempEntities[2] = self.builder:build()
+        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[2])
+
+        -- BOTTOM LEFT -> TOP LEFT
+        self.builder:newID()
+        self.builder:setStartPoint(lc.geo.Coordinate(self.topLeftPoint:x(), data["position"]:y()))
+        self.builder:setEndPoint(self.topLeftPoint)
+    elseif(eventName == "point" and self.topLeftPoint and not self.bottomRightPoint) then
+        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+        if(self.tempEntities ~= nil) then
+            for k, entity in pairs(self.tempEntities) do
+                b:appendEntity(entity)
+                getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            end
+        end
+        b:execute()
+        self.bottomRightPoint = true
         self:createEntity()
         self:close()
     end
