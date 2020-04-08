@@ -202,18 +202,7 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         -- 150 + () ensures that numPoints is atleast 3
         local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
         local length = 50
-        for i=0,numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * i), length * math.sin((3.14159265 * 2)/numPoints * i)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * (i+1)), length * math.sin((3.14159265 * 2)/numPoints * (i+1))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
-            end
-        end
+        self:drawTempPolygon(length, 0, numPoints)
     elseif(eventName == "point" and self.polygonCenter and not self.numPoints) then
         self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
         message("Click on a polygon end point to finalize polygon", self.target_widget)
@@ -223,38 +212,14 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         end
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(data["position"])
-        for i=0,self.numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=self.numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
-            end
-        end
+        self:drawTempPolygon(length, angle, self.numPoints)
     elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
-        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
         for k, entity in pairs(self.tempEntities) do
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
         end
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(data["position"])
-        for i=0,self.numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=self.numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                b:appendEntity(self.tempEntities[i])
-            end
-        end
-        b:execute()
+        self:drawFinalPolygon(length, angle)
         self:createEntity()
         self:close()
     end
@@ -272,18 +237,7 @@ function LineOperations:PolygonWith2Points(eventName, data)
         local length = 50
         self.polygonCenter = self.firstPoint:add(lc.geo.Coordinate(-length, 0))
         local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
-        for i=0,numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * i), length * math.sin((3.14159265 * 2)/numPoints * i)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * (i+1)), length * math.sin((3.14159265 * 2)/numPoints * (i+1))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
-            end
-        end
+        self:drawTempPolygon(length, 0, numPoints)
     elseif(eventName == "point" and self.firstPoint and not self.numPoints) then
         self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
         message("Click on a polygon corner point to finalize polygon", self.target_widget)
@@ -302,18 +256,7 @@ function LineOperations:PolygonWith2Points(eventName, data)
 
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(self.firstPoint)
-        for i=0,self.numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=self.numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
-            end
-        end
+        self:drawTempPolygon(length, angle, self.numPoints)
     elseif(eventName == "point" and self.firstPoint and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
@@ -329,23 +272,42 @@ function LineOperations:PolygonWith2Points(eventName, data)
 
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(self.firstPoint)
-        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
-        for i=0,self.numPoints-1 do
-            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
-            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
-            
-            self.builder:newID()
-            self.builder:setStartPoint(newCoord1)
-            self.builder:setEndPoint(newCoord2)
-            if i~=self.numPoints-1 then
-                self.tempEntities[i] = self.builder:build()
-                b:appendEntity(self.tempEntities[i])
-            end
-        end
-        b:execute()
+        self:drawFinalPolygon(length, angle)
         self:createEntity()
         self:close()
     end
+end
+
+function LineOperations:drawTempPolygon(length, angle, numPoints)
+    for i=0,numPoints-1 do
+        local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/numPoints * i) + angle)))
+        local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/numPoints * (i+1) + angle))))
+            
+        self.builder:newID()
+        self.builder:setStartPoint(newCoord1)
+        self.builder:setEndPoint(newCoord2)
+        if i~=numPoints-1 then
+            self.tempEntities[i] = self.builder:build()
+            getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+        end
+    end
+end
+
+function LineOperations:drawFinalPolygon(length, angle)
+    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    for i=0,self.numPoints-1 do
+        local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
+        local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
+            
+        self.builder:newID()
+        self.builder:setStartPoint(newCoord1)
+        self.builder:setEndPoint(newCoord2)
+        if i~=self.numPoints-1 then
+            self.tempEntities[i] = self.builder:build()
+            b:appendEntity(self.tempEntities[i])
+        end
+    end
+    b:execute()
 end
 
 function LineOperations:manualClose() -- this function gets called after the first line is added to document
