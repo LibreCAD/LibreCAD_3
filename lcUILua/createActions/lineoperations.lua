@@ -48,6 +48,12 @@ function LineOperations:_init_polygon_cencor()
     self.step = "PolygonWithCenterPoint"
 end
 
+function LineOperations:_init_polygon_corcor()
+    message("<b>LINE - Polygon</b>", self.target_widget)
+    message("Click on first coordinate of polygon or enter coordinates:", self.target_widget)
+    self.step = "PolygonWith2Points"
+end
+
 function LineOperations:setFirstPoint(eventName, data)
     if(eventName == "point") then
         self.builder:setStartPoint(data["position"])
@@ -188,7 +194,7 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
     if(eventName == "point" and not self.polygonCenter) then
         self.polygonCenter = data["position"]
         self.tempEntities = {}
-        message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
+        message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose", self.target_widget)
     elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
@@ -210,7 +216,7 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         end
     elseif(eventName == "point" and self.polygonCenter and not self.numPoints) then
         self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
-        message("Click on a polygon end point to finalize polygon")
+        message("Click on a polygon end point to finalize polygon", self.target_widget)
     elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
@@ -236,6 +242,94 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         end
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(data["position"])
+        for i=0,self.numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=self.numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                b:appendEntity(self.tempEntities[i])
+            end
+        end
+        b:execute()
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:PolygonWith2Points(eventName, data)
+    if(eventName == "point" and not self.firstPoint) then
+        self.firstPoint = data["position"]
+        self.tempEntities = {}
+        message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint and not self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+        local length = 50
+        self.polygonCenter = self.firstPoint:add(lc.geo.Coordinate(-length, 0))
+        local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        for i=0,numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * i), length * math.sin((3.14159265 * 2)/numPoints * i)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos((3.14159265 * 2)/numPoints * (i+1)), length * math.sin((3.14159265 * 2)/numPoints * (i+1))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+            end
+        end
+    elseif(eventName == "point" and self.firstPoint and not self.numPoints) then
+        self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        message("Click on a polygon corner point to finalize polygon", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint and self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+
+        local x = self.firstPoint:distanceTo(data["position"]) / 2
+        local theta = (3.14159265/2) - (3.14159265/self.numPoints)
+        local pointx = self.firstPoint:add(data["position"]):multiply(0.5)
+
+        local y = x * math.tan(theta)
+        local pointxnormal = pointx:sub(self.firstPoint):rotate(3.14159265/2):norm()
+        self.polygonCenter = pointx:add(pointxnormal:multiply(y))
+
+        local length = self.polygonCenter:distanceTo(data["position"])
+        local angle = self.polygonCenter:angleTo(self.firstPoint)
+        for i=0,self.numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=self.numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+            end
+        end
+    elseif(eventName == "point" and self.firstPoint and self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+
+        local x = self.firstPoint:distanceTo(data["position"]) / 2
+        local theta = (3.14159265/2) - (3.14159265/self.numPoints)
+        local pointx = self.firstPoint:add(data["position"]):multiply(0.5)
+
+        local y = x * math.tan(theta)
+        local pointxnormal = pointx:sub(self.firstPoint):rotate(3.14159265/2):norm()
+        self.polygonCenter = pointx:add(pointxnormal:multiply(y))
+
+        local length = self.polygonCenter:distanceTo(data["position"])
+        local angle = self.polygonCenter:angleTo(self.firstPoint)
+        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
         for i=0,self.numPoints-1 do
             local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
             local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
