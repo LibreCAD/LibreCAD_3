@@ -136,7 +136,7 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
     if(eventName == "point" and not self.topLeftPoint) then
         self.topLeftPoint = data["position"]
         message("Click on bottom right point or enter coordinates:-", self.target_widget)
-    elseif(eventName == "mouseMove" and self.topLeftPoint and not self.bottomRightPoint) then
+    elseif(eventName == "mouseMove" and self.topLeftPoint) then
         if(self.tempEntities ~= nil) then
             for k, entity in pairs(self.tempEntities) do
                 getWindow(self.target_widget):tempEntities():removeEntity(entity)
@@ -170,7 +170,7 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
         self.builder:newID()
         self.builder:setStartPoint(lc.geo.Coordinate(self.topLeftPoint:x(), data["position"]:y()))
         self.builder:setEndPoint(self.topLeftPoint)
-    elseif(eventName == "point" and self.topLeftPoint and not self.bottomRightPoint) then
+    elseif(eventName == "point" and self.topLeftPoint) then
         local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
         if(self.tempEntities ~= nil) then
             for k, entity in pairs(self.tempEntities) do
@@ -179,7 +179,6 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
             end
         end
         b:execute()
-        self.bottomRightPoint = true
         self:createEntity()
         self:close()
     end
@@ -212,6 +211,35 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
                 getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
             end
         end
+    elseif(eventName == "point" and self.polygonCenter and not self.numPoints) then
+        self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+    elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+        local length = self.polygonCenter:distanceTo(data["position"])
+        local angle = self.polygonCenter:angleTo(data["position"])
+        for i=0,self.numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=self.numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+            end
+        end
+    elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
+        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+        for k, entity in pairs(self.tempEntities) do
+            b:appendEntity(entity)
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+        b:execute()
+        self:createEntity()
+        self:close()
     end
 end
 
