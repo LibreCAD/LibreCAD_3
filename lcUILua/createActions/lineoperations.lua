@@ -187,14 +187,11 @@ end
 function LineOperations:PolygonWithCenterPoint(eventName, data)
     if(eventName == "point" and not self.polygonCenter) then
         self.polygonCenter = data["position"]
+        self.tempEntities = {}
         message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
     elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
-        if(self.tempEntities ~= nil) then
-            for k, entity in pairs(self.tempEntities) do
-                getWindow(self.target_widget):tempEntities():removeEntity(entity)
-            end
-        else
-            self.tempEntities = {}
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
         end
         -- 150 + () ensures that numPoints is atleast 3
         local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
@@ -213,6 +210,7 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         end
     elseif(eventName == "point" and self.polygonCenter and not self.numPoints) then
         self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        message("Click on a polygon end point to finalize polygon")
     elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
@@ -234,8 +232,21 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
     elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
         local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
         for k, entity in pairs(self.tempEntities) do
-            b:appendEntity(entity)
             getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+        local length = self.polygonCenter:distanceTo(data["position"])
+        local angle = self.polygonCenter:angleTo(data["position"])
+        for i=0,self.numPoints-1 do
+            local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
+            local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
+            
+            self.builder:newID()
+            self.builder:setStartPoint(newCoord1)
+            self.builder:setEndPoint(newCoord2)
+            if i~=self.numPoints-1 then
+                self.tempEntities[i] = self.builder:build()
+                b:appendEntity(self.tempEntities[i])
+            end
         end
         b:execute()
         self:createEntity()
