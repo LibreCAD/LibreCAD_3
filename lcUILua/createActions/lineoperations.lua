@@ -48,6 +48,12 @@ function LineOperations:_init_polygon_cencor()
     self.step = "PolygonWithCenterPoint"
 end
 
+function LineOperations:_init_polygon_centan()
+    message("<b>LINE - Polygon</b>", self.target_widget)
+    message("Click on center of polygon or enter coordinates:", self.target_widget)
+    self.step = "PolygonWithCenterTangent"
+end
+
 function LineOperations:_init_polygon_corcor()
     message("<b>LINE - Polygon</b>", self.target_widget)
     message("Click on first coordinate of polygon or enter coordinates:", self.target_widget)
@@ -271,6 +277,56 @@ function LineOperations:PolygonWith2Points(eventName, data)
         self.polygonCenter = pointx:add(pointxnormal:multiply(y))
 
         local length = self.polygonCenter:distanceTo(data["position"])
+        local angle = self.polygonCenter:angleTo(self.firstPoint)
+        self:drawFinalPolygon(length, angle)
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:PolygonWithCenterTangent(eventName, data)
+    if(eventName == "point" and not self.polygonCenter) then
+        self.polygonCenter = data["position"]
+        self.tempEntities = {}
+        message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose", self.target_widget)
+    elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+        local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        local length = 50
+        self:drawTempPolygon(length, 0, numPoints)
+    elseif(eventName == "point" and self.polygonCenter and not self.numPoints) then
+        self.numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
+        message("Click on a polygon tangent point to finalize polygon", self.target_widget)
+    elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+
+        local dist = self.polygonCenter:distanceTo(data["position"])
+        local phi = (3.14159265/self.numPoints)
+        local x = dist * math.tan(phi)
+
+        local tangentvec = self.polygonCenter:sub(data["position"]):rotate(3.14159265/2):norm()
+        self.firstPoint = data["position"]:add(tangentvec:multiply(x))
+
+        local length = self.polygonCenter:distanceTo(self.firstPoint)
+        local angle = self.polygonCenter:angleTo(self.firstPoint)
+        self:drawTempPolygon(length, angle, self.numPoints)
+    elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
+        for k, entity in pairs(self.tempEntities) do
+            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+        end
+
+        local dist = self.polygonCenter:distanceTo(data["position"])
+        local phi = (3.14159265/self.numPoints)
+        local x = dist * math.tan(phi)
+
+        local tangentvec = self.polygonCenter:sub(data["position"]):rotate(3.14159265/2):norm()
+        self.firstPoint = data["position"]:add(tangentvec:multiply(x))
+
+        local length = self.polygonCenter:distanceTo(self.firstPoint)
         local angle = self.polygonCenter:angleTo(self.firstPoint)
         self:drawFinalPolygon(length, angle)
         self:createEntity()

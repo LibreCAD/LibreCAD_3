@@ -87,6 +87,7 @@
      <addaction name="separator"/>
      <addaction name="actionRectangle" />
      <addaction name="actionPolygonCenCor" />
+     <addaction name="actionPolygonCenTan" />
      <addaction name="actionPolygonCorCor" />
     </widget>
     <widget class="QMenu" name="menuCircle">
@@ -312,6 +313,11 @@
   <action name="actionPolygonCenCor">
    <property name="text">
     <string>&amp;Polygon (Cen,Cor)</string>
+   </property>
+  </action>
+  <action name="actionPolygonCenTan">
+   <property name="text">
+    <string>&amp;Polygon (Cen,Tan)</string>
    </property>
   </action>
   <action name="actionPolygonCorCor">

@@ -144,7 +144,9 @@ local function connect_buttons(mainWindow, id)
     luaInterface:luaConnect(mainWindow:findChild("actionPoint_Angle_Length_Line"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_pal") end)
     luaInterface:luaConnect(mainWindow:findChild("actionRectangle"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_rectangle") end)
     luaInterface:luaConnect(mainWindow:findChild("actionPolygonCenCor"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_polygon_cencor") end)
+    luaInterface:luaConnect(mainWindow:findChild("actionPolygonCenTan"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_polygon_centan") end)
     luaInterface:luaConnect(mainWindow:findChild("actionPolygonCorCor"), "triggered(bool)", function() run_basic_operation(id, LineOperations, "_init_polygon_corcor") end)
+
 	-- circle
 	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Radius"), "triggered(bool)", function() run_basic_operation(id, CircleOperations, "_init_cr") end)
 	luaInterface:luaConnect(mainWindow:findChild("actionCenter_Diameter"), "triggered(bool)", function() run_basic_operation(id, CircleOperations, "_init_cd") end)
