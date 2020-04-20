@@ -36,6 +36,16 @@ function LineOperations:_init_pal()
     self.step = "LineWithPointAngleLength"
 end
 
+function LineOperations:_init_parallel()
+    message("<b>LINE - Line parallel to another line</b>", self.target_widget)
+    self.step = "LineParallelToLine"
+end
+
+function LineOperations:_init_orthogonal()
+    message("<b>LINE - Line orthogonal to another line</b>", self.target_widget)
+    self.step = "LineOrthogonalToLine"
+end
+
 function LineOperations:_init_rectangle()
     message("<b>LINE - RECTANGLE</b>", self.target_widget)
     message("Click on top left point of rectangle or enter coordinates:", self.target_widget)
@@ -142,6 +152,50 @@ function LineOperations:LineWithPointAngleLength(eventName, data)
         self:createEntity()
         self:close()
     end
+end
+
+function LineOperations:LineParallelToLine(eventName, data)
+    if(eventName == "mouseMove" and not self.firstPoint) then
+        if(self.angle == nil) then
+            self.selection = getWindow(self.target_widget):selection()
+            if(#self.selection == 1) then
+                self.angle = self.builder:getLineAngle(self.selection[1])
+                if(self.angle == -1) then
+                    message("Entity selected should be a LINE", self.target_widget)
+                    finish_operation(self.target_widget)
+                else
+                    message("Click on first point or enter coordinates:", self.target_widget)
+                end
+            else
+                message("Only one line entity should be selected, there are " .. #self.selection .. " entities selected", self.target_widget)
+                finish_operation(self.target_widget)
+            end
+        end
+        local start = data["position"]
+        local endpt = lc.geo.Coordinate(100,0):rotate(self.angle)
+        endpt = start:add(endpt)
+        self.builder:setStartPoint(start)
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and not self.firstPoint) then
+        self.firstPoint = data["position"]
+        message("Click to finalize distance for end point of the line:", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle)
+        endpt = self.firstPoint:add(endpt)
+        self.builder:setStartPoint(self.firstPoint)
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle)
+        endpt = self.firstPoint:add(endpt)
+        self.builder:setStartPoint(self.firstPoint)
+        self.builder:setEndPoint(endpt)
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:LineOrthogonalToLine(eventName, data)
+
 end
 
 function LineOperations:RectangleWithCornerPoints(eventName, data)
