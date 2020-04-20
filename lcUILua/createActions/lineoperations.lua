@@ -194,8 +194,45 @@ function LineOperations:LineParallelToLine(eventName, data)
     end
 end
 
+-- TODO - Allow choosing end point on both sides of the start point
 function LineOperations:LineOrthogonalToLine(eventName, data)
-
+    if(eventName == "mouseMove" and not self.firstPoint) then
+        if(self.angle == nil) then
+            self.selection = getWindow(self.target_widget):selection()
+            if(#self.selection == 1) then
+                self.angle = self.builder:getLineAngle(self.selection[1])
+                if(self.angle == -1) then
+                    message("Entity selected should be a LINE", self.target_widget)
+                    finish_operation(self.target_widget)
+                else
+                    message("Click on first point or enter coordinates:", self.target_widget)
+                end
+            else
+                message("Only one line entity should be selected, there are " .. #self.selection .. " entities selected", self.target_widget)
+                finish_operation(self.target_widget)
+            end
+        end
+        local start = data["position"]
+        local endpt = lc.geo.Coordinate(100,0):rotate(self.angle + 1.570796326)
+        endpt = start:add(endpt)
+        self.builder:setStartPoint(start)
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and not self.firstPoint) then
+        self.firstPoint = data["position"]
+        message("Click to finalize distance for end point of the line:", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + 1.570796326)
+        endpt = self.firstPoint:add(endpt)
+        self.builder:setStartPoint(self.firstPoint)
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + 1.570796326)
+        endpt = self.firstPoint:add(endpt)
+        self.builder:setStartPoint(self.firstPoint)
+        self.builder:setEndPoint(endpt)
+        self:createEntity()
+        self:close()
+    end
 end
 
 function LineOperations:RectangleWithCornerPoints(eventName, data)
