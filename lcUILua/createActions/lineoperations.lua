@@ -180,12 +180,31 @@ function LineOperations:LineParallelToLine(eventName, data)
         self.firstPoint = data["position"]
         message("Click to finalize distance for end point of the line:", self.target_widget)
     elseif(eventName == "mouseMove" and self.firstPoint) then
-        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle)
+        -- determine direction of line end point based on mouse position
+        local p2 = lc.geo.Coordinate(1,0):rotate(self.angle + 1.570796326)
+        p2 = self.firstPoint:add(p2)
+        self.direction = -1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = 1
+        end
+
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0)
+        if(self.direction < 0) then
+            endpt = endpt:rotate(self.angle)
+        else
+            endpt = endpt:rotate(self.angle - 3.14159265)
+        end
         endpt = self.firstPoint:add(endpt)
         self.builder:setStartPoint(self.firstPoint)
         self.builder:setEndPoint(endpt)
     elseif(eventName == "point" and self.firstPoint) then
-        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle)
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0)
+        if(self.direction < 0) then
+            endpt = endpt:rotate(self.angle)
+        else
+            endpt = endpt:rotate(self.angle - 3.14159265)
+        end
         endpt = self.firstPoint:add(endpt)
         self.builder:setStartPoint(self.firstPoint)
         self.builder:setEndPoint(endpt)
@@ -221,12 +240,21 @@ function LineOperations:LineOrthogonalToLine(eventName, data)
         self.firstPoint = data["position"]
         message("Click to finalize distance for end point of the line:", self.target_widget)
     elseif(eventName == "mouseMove" and self.firstPoint) then
-        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + 1.570796326)
+        -- determine direction of line end point based on mouse position
+        local p2 = lc.geo.Coordinate(1,0):rotate(self.angle)
+        p2 = self.firstPoint:add(p2)
+        self.direction = -1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = 1
+        end
+
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + self.direction * 1.570796326)
         endpt = self.firstPoint:add(endpt)
         self.builder:setStartPoint(self.firstPoint)
         self.builder:setEndPoint(endpt)
     elseif(eventName == "point" and self.firstPoint) then
-        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + 1.570796326)
+        local endpt = lc.geo.Coordinate(data["position"]:distanceTo(self.firstPoint),0):rotate(self.angle + self.direction * 1.570796326)
         endpt = self.firstPoint:add(endpt)
         self.builder:setStartPoint(self.firstPoint)
         self.builder:setEndPoint(endpt)
