@@ -36,6 +36,18 @@ function LineOperations:_init_pal()
     self.step = "LineWithPointAngleLength"
 end
 
+function LineOperations:_init_horizontal()
+    message("<b>LINE - Horizontal Line</b>", self.target_widget)
+    message("Click on first point or enter coordinates:", self.target_widget)
+    self.step = "HorizontalLine"
+end
+
+function LineOperations:_init_vertical()
+    message("<b>LINE - Vertical Line</b>", self.target_widget)
+    message("Click on first point or enter coordinates:", self.target_widget)
+    self.step = "VerticalLine"
+end
+
 function LineOperations:_init_parallel()
     message("<b>LINE - Line parallel to another line</b>", self.target_widget)
     self.step = "LineParallelToLine"
@@ -149,6 +161,80 @@ function LineOperations:LineWithPointAngleLength(eventName, data)
         local p2 = lc.geo.Coordinate(length,0)
         p2 = p2:rotate(self.angle)
         self.builder:setEndPoint(self.startPoint:add(p2))
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:HorizontalLine(eventName, data)
+    if(eventName == "mouseMove" and not self.firstPoint) then
+        local distance = 100
+        self.builder:setStartPoint(data["position"])
+        local endpt = lc.geo.Coordinate(data["position"]:x() + distance, data["position"]:y())
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and not self.firstPoint) then
+        self.firstPoint = data["position"]
+        message("Click to finalize distance for end point of the line or enter distance of end point from start point:", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint) then
+        local p2 = self.firstPoint:add(lc.geo.Coordinate(0,1))
+        self.direction = 1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = -1
+        end
+        local endpt = lc.geo.Coordinate(self.firstPoint:x() + self.direction * self.firstPoint:distanceTo(data["position"]), self.firstPoint:y())
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "number" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(self.firstPoint:x() + self.direction * data["number"], self.firstPoint:y())
+        self.builder:setEndPoint(endpt)
+        self:createEntity()
+        self:close()
+    elseif(eventName == "point" and self.firstPoint) then
+        local p2 = self.firstPoint:add(lc.geo.Coordinate(0,1))
+        self.direction = 1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = -1
+        end
+        local endpt = lc.geo.Coordinate(self.firstPoint:x() + self.direction * self.firstPoint:distanceTo(data["position"]), self.firstPoint:y())
+        self.builder:setEndPoint(endpt)
+        self:createEntity()
+        self:close()
+    end
+end
+
+function LineOperations:VerticalLine(eventName, data)
+    if(eventName == "mouseMove" and not self.firstPoint) then
+        local distance = 100
+        self.builder:setStartPoint(data["position"])
+        local endpt = lc.geo.Coordinate(data["position"]:x(), data["position"]:y() + distance)
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "point" and not self.firstPoint) then
+        self.firstPoint = data["position"]
+        message("Click to finalize distance for end point of the line or enter distance of end point from start point:", self.target_widget)
+    elseif(eventName == "mouseMove" and self.firstPoint) then
+        local p2 = self.firstPoint:add(lc.geo.Coordinate(1,0))
+        self.direction = -1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = 1
+        end
+        local endpt = lc.geo.Coordinate(self.firstPoint:x(), self.firstPoint:y() + self.direction * self.firstPoint:distanceTo(data["position"]))
+        self.builder:setEndPoint(endpt)
+    elseif(eventName == "number" and self.firstPoint) then
+        local endpt = lc.geo.Coordinate(self.firstPoint:x(), self.firstPoint:y() + self.direction * data["number"])
+        self.builder:setEndPoint(endpt)
+        self:createEntity()
+        self:close()
+    elseif(eventName == "point" and self.firstPoint) then
+        local p2 = self.firstPoint:add(lc.geo.Coordinate(1,0))
+        self.direction = -1
+        local d = ((data["position"]:x() - self.firstPoint:x()) * (p2:y() - self.firstPoint:y())) - ((data["position"]:y() - self.firstPoint:y()) * (p2:x() - self.firstPoint:x()))
+        if(d < 0) then
+            self.direction = 1
+        end
+        local endpt = lc.geo.Coordinate(self.firstPoint:x(), self.firstPoint:y() + self.direction * self.firstPoint:distanceTo(data["position"]))
+        self.builder:setEndPoint(endpt)
         self:createEntity()
         self:close()
     end
