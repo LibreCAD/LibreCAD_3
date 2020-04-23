@@ -57,7 +57,7 @@ mkdir build
 cd build
 cmake .. (for a release you would use cmake -DCMAKE_BUILD_TYPE=Release ..)
 make -j 4
-./lcUI/librecad
+./bin/librecad
 ```
 
 OSX MacPorts
@@ -69,7 +69,7 @@ mkdir build
 cd build
 /opt/local/bin/cmake -DCMAKE_CXX_COMPILER=/opt/local/bin/g++ -DCMAKE_C_COMPILER=/opt/local/bin/gcc ..
 make -j 4
-./lcUI/librecad
+./bin/librecad
 ```
 
 For a release build you would do:
