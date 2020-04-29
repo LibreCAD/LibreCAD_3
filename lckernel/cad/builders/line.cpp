@@ -26,6 +26,16 @@ LineBuilder* LineBuilder::setEnd(const lc::geo::Coordinate& end) {
     return this;
 }
 
+double LineBuilder::getLineAngle(lc::entity::CADEntity_CSPtr entity) const {
+    lc::entity::Line_CSPtr line = std::dynamic_pointer_cast<const lc::entity::Line>(entity);
+
+    if (line == nullptr) {
+        return -1;
+    }
+
+    return line->Angle1();
+}
+
 lc::entity::Line_CSPtr LineBuilder::build() {
     checkValues(true);
 
