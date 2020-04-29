@@ -1,5 +1,5 @@
 #include "geospline.h"
-#include <tinysplinecpp.h>
+#include <tinysplinecxx.cxx>
 #include <cad/logger/logger.h>
 
 using namespace lc;

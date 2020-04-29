@@ -16,8 +16,7 @@ else ()
 endif ()
 
 # LibbDXFRW
-find_package(LibDxfrw REQUIRED)
-include_directories(${LIBDXFRW_INCLUDE_DIR})
+find_package(libdxfrw REQUIRED)
 
 FIND_PACKAGE ( Threads REQUIRED )
 
