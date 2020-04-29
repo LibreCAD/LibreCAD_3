@@ -218,6 +218,7 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("setEndPoint", &lc::builder::LineBuilder::setEnd)
         .addFunction("setStartPoint", &lc::builder::LineBuilder::setStart)
         .addFunction("startPoint", &lc::builder::LineBuilder::start)
+        .addFunction("getLineAngle", &lc::builder::LineBuilder::getLineAngle)
     );
 
 
