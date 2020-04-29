@@ -21,8 +21,7 @@ set(persistence_hdrs
 )
 
 # LibbDXFRW
-find_package(LibDxfrw REQUIRED)
-include_directories(${LIBDXFRW_INCLUDE_DIR})
+find_package(libdxfrw REQUIRED)
 
 # Boost logging
 find_package(Boost REQUIRED COMPONENTS log)
@@ -68,7 +67,7 @@ endif()
 # DEBUGGING PATHS
 
 add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
-target_link_libraries(persistence lckernel ${Boost_LIBRARIES} ${LIBDXFRW_LIBRARY} ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
+target_link_libraries(persistence lckernel ${Boost_LIBRARIES} libdxfrw::libdxfrw ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
 install(TARGETS persistence RUNTIME DESTINATION lib)

@@ -28,43 +28,49 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-find_package(PkgConfig QUIET)
-#pkg_check_modules(PC_LIBDXFRW QUIET LibDxfrw)
+if(NOT TARGET libdxfrw::libdxfrw)
+	find_package(PkgConfig QUIET)
+	#pkg_check_modules(PC_LIBDXFRW QUIET LibDxfrw)
 
-list(APPEND LIBDXFRW_PATH
-	"~/Library/Frameworks"
-	"/Library/Frameworks"
-	"/usr/local"
-	"/usr"
-	"/sw" # Fink
-	"/opt/local" # DarwinPorts
-	"/opt/csw" # Blastwave
-	"/opt"
-	"${PROJECT_SOURCE_DIR}/../third_party/libdxfrw"
-)
+	list(APPEND LIBDXFRW_PATH
+			"~/Library/Frameworks"
+			"/Library/Frameworks"
+			"/usr/local"
+			"/usr"
+			"/sw" # Fink
+			"/opt/local" # DarwinPorts
+			"/opt/csw" # Blastwave
+			"/opt"
+			"${PROJECT_SOURCE_DIR}/../third_party/libdxfrw"
+	)
 
-find_path(LIBDXFRW_INCLUDE_DIR
-    NAMES libdxfrw.h
-    HINTS ${PC_LIBDXFRW_INCLUDEDIR}
-          ${PC_LIBDXFRW_INCLUDE_DIRS}
-          ${LIBDXFRW_PATH}
-    PATH_SUFFIXES include/libdxfrw include/libdxfrw0 include src
-)
-mark_as_advanced(LIBDXFRW_INCLUDE_DIR)
+	find_path(LIBDXFRW_INCLUDE_DIR
+			NAMES libdxfrw.h
+			HINTS ${PC_LIBDXFRW_INCLUDEDIR}
+			${PC_LIBDXFRW_INCLUDE_DIRS}
+			${LIBDXFRW_PATH}
+			PATH_SUFFIXES include/libdxfrw include/libdxfrw0 include src
+	)
+	mark_as_advanced(LIBDXFRW_INCLUDE_DIR)
 
-find_library(LIBDXFRW_LIBRARY
-    NAMES dxfrw dxfrw0 dxfrw.dll
-    HINTS ${PC_LIBDXFRW_LIBDIR}
-          ${PC_LIBDXFRW_LIBRARY_DIRS}
-          ${LIBDXFRW_PATH}
-    PATH_SUFFIXES lib64 lib
-)
-mark_as_advanced(LIBDXFRW_LIBRARY)
+	find_library(LIBDXFRW_LIBRARY
+			NAMES dxfrw dxfrw0 dxfrw.dll
+			HINTS ${PC_LIBDXFRW_LIBDIR}
+			${PC_LIBDXFRW_LIBRARY_DIRS}
+			${LIBDXFRW_PATH}
+			PATH_SUFFIXES lib64 lib
+			)
+	mark_as_advanced(LIBDXFRW_LIBRARY)
 
-include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(LibDxfrw DEFAULT_MSG LIBDXFRW_LIBRARY LIBDXFRW_INCLUDE_DIR)
+	include(FindPackageHandleStandardArgs)
+	FIND_PACKAGE_HANDLE_STANDARD_ARGS(libdxfrw DEFAULT_MSG LIBDXFRW_LIBRARY LIBDXFRW_INCLUDE_DIR)
 
-if(LibDxfrw_FOUND)
-	message(STATUS "Found libDxfrw include dir: ${LIBDXFRW_INCLUDE_DIR}")
-	message(STATUS "Found libDxfrw library: ${LIBDXFRW_LIBRARY}")
-endif(LibDxfrw_FOUND)
+	if(libdxfrw_FOUND)
+		message(STATUS "Found libDxfrw include dir: ${LIBDXFRW_INCLUDE_DIR}")
+		message(STATUS "Found libDxfrw library: ${LIBDXFRW_LIBRARY}")
+
+		add_library(libdxfrw::libdxfrw INTERFACE IMPORTED)
+		target_include_directories(libdxfrw::libdxfrw INTERFACE ${LIBDXFRW_INCLUDE_DIR})
+		target_link_libraries(libdxfrw::libdxfrw INTERFACE ${LIBDXFRW_LIBRARY})
+	endif(libdxfrw_FOUND)
+endif()
