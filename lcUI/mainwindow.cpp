@@ -6,9 +6,11 @@ using namespace lc::ui::widgets;
 
 MainWindow::MainWindow()
     :
-    linePatternSelect(&cadMdiChild, this, true, true),
-    lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
-    colorSelect(cadMdiChild.metaInfoManager(), this, true, true)
+    //linePatternSelect(&cadMdiChild, this, true, true),
+    //lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
+    //colorSelect(cadMdiChild.metaInfoManager(), this, true, true),
+    cliCommand(this),
+    toolbar(this)
 {
     cadMdiChild.newDocument();
     setWindowTitle(QObject::tr("LibreCAD"));
@@ -16,7 +18,10 @@ MainWindow::MainWindow()
     setCentralWidget(&cadMdiChild);
     
     layers.setMdiChild(&cadMdiChild);
-    addDockWidget(Qt::RightDockWidgetArea, &layers);
 
-    show();
+    addDockWidget(Qt::RightDockWidgetArea, &layers);
+    addDockWidget(Qt::BottomDockWidgetArea, &cliCommand);
+    addDockWidget(Qt::TopDockWidgetArea, &toolbar);
+
+    showMaximized();
 }

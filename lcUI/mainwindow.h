@@ -6,6 +6,7 @@
 #include "widgets/linepatternselect.h"
 #include "widgets/linewidthselect.h"
 #include "widgets/colorselect.h"
+#include "widgets/toolbar.h"
 #include "cadmdichild.h"
 
 namespace lc
@@ -28,14 +29,14 @@ namespace lc
                 MainWindow();
             private:
                 CadMdiChild cadMdiChild;
-                //QMainWindow* mainWindow;
                 lc::ui::widgets::Layers layers;
-                //lc::ui::widgets::CliCommand cliCommand;
+                lc::ui::widgets::CliCommand cliCommand;
+                lc::ui::widgets::Toolbar toolbar;
 
                 // Select tools
-                lc::ui::widgets::LinePatternSelect linePatternSelect;
-                lc::ui::widgets::LineWidthSelect lineWidthSelect;
-                lc::ui::widgets::ColorSelect colorSelect;
+                //lc::ui::widgets::LinePatternSelect linePatternSelect;
+                //lc::ui::widgets::LineWidthSelect lineWidthSelect;
+                //lc::ui::widgets::ColorSelect colorSelect;
             };
         }
     }
