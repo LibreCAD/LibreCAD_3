@@ -67,12 +67,12 @@ bool LuaInterface::luaConnect(
 	return false;
 }
 
-std::shared_ptr<QWidget> LuaInterface::loadUiFile(const char* fileName) {
+QWidget* LuaInterface::loadUiFile(const char* fileName) {
 	QUiLoader uiLoader;
 	QFile file(fileName);
     file.open(QFile::ReadOnly);
 
-    std::shared_ptr<QWidget> widget(uiLoader.load(&file));
+    QWidget* widget = uiLoader.load(&file);
 
     file.close();
 

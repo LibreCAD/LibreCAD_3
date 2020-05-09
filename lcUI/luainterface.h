@@ -76,7 +76,7 @@ namespace lc {
                  * \brief Load Qt widget from .ui file
                  * \param fileName full path to .ui file
                  */
-				static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
+				static QWidget* loadUiFile(const char* fileName);
 
 				/**
                  * \brief Return a list of plugins

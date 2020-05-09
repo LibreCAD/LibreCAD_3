@@ -25,7 +25,7 @@ void luaOpenQtBridge(lua_State *L) {
 void addQtBaseBindings(lua_State *L) {
 	kaguya::State state(L);
 
-	state["qt"]["loadUi"].setFunction([](const char* fileName) { return std::dynamic_pointer_cast<QMainWindow>(LuaInterface::loadUiFile(fileName)); });
+	state["qt"]["loadUi"].setFunction([](const char* fileName) { return static_cast<QMainWindow*>(LuaInterface::loadUiFile(fileName)); });
 	state["qt"]["QObject"].setClass(kaguya::UserdataMetatable<QObject>()
 		.addStaticFunction("findChild", [](QObject* object, std::string name) {
 			return LuaQObject::findChild(object, name);

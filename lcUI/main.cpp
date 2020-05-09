@@ -4,6 +4,7 @@
 #include <QtWidgets/QStyleFactory>
 #include <QSettings>
 #include "cad/logger/logger.h"
+#include "mainwindow.h"
 
 int main(int argc, char* argv[]) {
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -14,8 +15,10 @@ int main(int argc, char* argv[]) {
 
     LOGGER;//Init logger
 
-    lc::ui::LuaInterface li;
-    li.initLua();
+    lc::ui::widgets::MainWindow* mainWindow = new lc::ui::widgets::MainWindow();
+
+    //lc::ui::LuaInterface li;
+    //li.initLua();
 
     return QApplication::exec();
 }
