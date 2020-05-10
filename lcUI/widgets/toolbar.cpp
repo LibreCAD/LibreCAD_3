@@ -53,3 +53,12 @@ void Toolbar::closeEvent(QCloseEvent* event)
 	this->widget()->hide();
 	event->ignore();
 }
+
+void Toolbar::InitializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect){
+    addTab("Quick Access", &quickAccessTab);
+
+    QGroupBox* metaInfoGroup = quickAccessTab.addGroup("Entity properties");
+    quickAccessTab.addWidget(metaInfoGroup, linePatternSelect, 0, 0, 1, 1);
+    quickAccessTab.addWidget(metaInfoGroup, lineWidthSelect, 0, 1, 1, 1);
+    quickAccessTab.addWidget(metaInfoGroup, colorSelect, 0, 2, 1, 1);
+}

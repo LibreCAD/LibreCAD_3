@@ -2,10 +2,10 @@ op = {}
 
 --Create empty new window
 function new_file()
-    local cadMdiChild = lc.CadMdiChild()
-    cadMdiChild:newDocument()
+    --local cadMdiChild = lc.CadMdiChild()
+    --cadMdiChild:newDocument()
 
-    create_new_window(cadMdiChild);
+    --create_new_window(cadMdiChild);
 end
 
 function open_file()

@@ -23,20 +23,25 @@ namespace lc
                 Q_OBJECT
             public:
                 /*
-                    \ briefConstructor called during MainWindow
-                    initialization during starting of program
-                */
+                 *  \ brief  Constructor called during MainWindow
+                 */
                 MainWindow();
+
+                /*
+                 * \brief Create menu
+                 */
+                void CreateMenu();
+
             private:
-                CadMdiChild cadMdiChild;
+                lc::ui::CadMdiChild cadMdiChild;
                 lc::ui::widgets::Layers layers;
                 lc::ui::widgets::CliCommand cliCommand;
                 lc::ui::widgets::Toolbar toolbar;
 
                 // Select tools
-                //lc::ui::widgets::LinePatternSelect linePatternSelect;
-                //lc::ui::widgets::LineWidthSelect lineWidthSelect;
-                //lc::ui::widgets::ColorSelect colorSelect;
+                lc::ui::widgets::LinePatternSelect linePatternSelect;
+                lc::ui::widgets::LineWidthSelect lineWidthSelect;
+                lc::ui::widgets::ColorSelect colorSelect;
             };
         }
     }

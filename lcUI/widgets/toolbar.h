@@ -45,8 +45,14 @@ namespace lc {
                     ToolbarTab* tabByName(const char* name);
 					void closeEvent(QCloseEvent* event);
 
+                    /**
+                     * \brief Initialize toolbar
+                     */
+                    void InitializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect);
+
                 private:
                     Ui::Toolbar* ui;
+                    ToolbarTab quickAccessTab;
             };
         }
     }

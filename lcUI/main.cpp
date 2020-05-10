@@ -15,10 +15,9 @@ int main(int argc, char* argv[]) {
 
     LOGGER;//Init logger
 
+    lc::ui::LuaInterface li;
+    li.initLua();
     lc::ui::widgets::MainWindow* mainWindow = new lc::ui::widgets::MainWindow();
-
-    //lc::ui::LuaInterface li;
-    //li.initLua();
 
     return QApplication::exec();
 }
