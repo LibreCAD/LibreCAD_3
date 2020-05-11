@@ -7,8 +7,10 @@ function new_file()
 
     --create_new_window(cadMdiChild);
     local id = nextTableId(windows)
+    windows[id] = mainWindow:getCadMdiChild()
+    windows[id].id = id
     add_commandline(mainWindow:getCliCommand(), id)
-    addCadMdiChild(mainWindow:getCadMdiChild(), id, mainWindow:getCliCommand())
+    --addCadMdiChild(mainWindow:getCadMdiChild(), id, mainWindow:getCliCommand())
     local lineAction = mainWindow:createMenu()
     luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
 end

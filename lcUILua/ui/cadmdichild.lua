@@ -11,26 +11,27 @@ function addCadMdiChild(cadMdiChild, id, cliCommand)
         return
     end
 
-    cadMdiChild:viewer():autoScale()
+    --cadMdiChild:viewer():autoScale()
     cadMdiChild:setDestroyCallback(onMdiChildDestroyed)
 
     windows[id] = cadMdiChild
     cadMdiChild.id = id
 
-    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mousePressEvent()", function()
-        local position = cadMdiChild:cursor():position()
-        luaInterface:triggerEvent('point', {position = position, widget = cadMdiChild})
-    end)
+    --luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mousePressEvent()", function()
+    --    local position = cadMdiChild:cursor():position()
+    --    luaInterface:triggerEvent('point', {position = position, widget = cadMdiChild})
+    --end)
 
-    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseReleaseEvent()", function()
-        luaInterface:triggerEvent('selectionChanged', {widget = cadMdiChild})
-    end)
+    --luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseReleaseEvent()", function()
+    --    luaInterface:triggerEvent('selectionChanged', {widget = cadMdiChild})
+    --end)
 
-    luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseMoveEvent()", function()
-        local position = cadMdiChild:cursor():position()
-        luaInterface:triggerEvent('mouseMove', {position = position, widget = cadMdiChild})
-    end)
+    --luaInterface:luaConnect(cadMdiChild:viewerProxy(), "mouseMoveEvent()", function()
+    --    local position = cadMdiChild:cursor():position()
+    --    luaInterface:triggerEvent('mouseMove', {position = position, widget = cadMdiChild})
+    --end)
 
+    --[[
     luaInterface:luaConnect(cadMdiChild:viewerProxy(), "keyPressEvent(int)", function(key)
         --Here int has ascii value
         if (key==16777216) then
@@ -40,8 +41,8 @@ function addCadMdiChild(cadMdiChild, id, cliCommand)
             luaInterface:triggerEvent('keyPressed', {key = key, widget = cadMdiChild})
         end
     end)
-
-    luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
+    ]]--
+    --luaInterface:connect(cadMdiChild, "keyPressed(QKeyEvent*)", cliCommand, "onKeyPressed(QKeyEvent*)")
 end
 
 -- Clean Lua information of window when it's destroyed

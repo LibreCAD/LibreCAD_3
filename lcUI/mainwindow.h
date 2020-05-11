@@ -22,18 +22,30 @@ namespace lc
         {
             Q_OBJECT
         public:
-            /*
-                *  \ brief  Constructor called during MainWindow
-                */
+            /**
+            * \brief Constructor for MainWindow
+            * \param luaInterface pointer to luaInterface instance
+            */
             MainWindow(lc::ui::LuaInterface* luaInterface);
 
             /*
-                * \brief Create menu
-                */
+             * \brief Create menu
+             */
             QAction* createMenu();
+
+            /**
+            * \brief Trigger appropriate signals for input events
+            */
+            void ConnectInputEvents();
 
             lc::ui::widgets::CliCommand* getCliCommand();
             lc::ui::CadMdiChild* getCadMdiChild();
+
+        public slots:
+            void triggerMousePressed();
+            void triggerMouseReleased();
+            void triggerMouseMoved();
+            void triggerKeyPressed(int key);
 
         private:
             lc::ui::CadMdiChild cadMdiChild;
