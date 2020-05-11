@@ -42,7 +42,7 @@ luaInterface:registerEvent('finishOperation', finish)
 function run_basic_operation(id, operation, init_method, ...)
     focusClicommand(id)
     finish_operation(id)
-    create_cancel_button(id)
+    --create_cancel_button(id)
     luaInterface:setOperation(id, operation(id, ...))
 	op = luaInterface:operation(id)
     if(init_method) then

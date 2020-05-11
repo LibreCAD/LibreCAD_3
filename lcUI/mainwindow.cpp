@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
-#include "luainterface.h"
+#include<QMenuBar>
+#include<QMenu>
 
 using namespace lc::ui::widgets;
 
@@ -26,15 +27,25 @@ MainWindow::MainWindow()
     addDockWidget(Qt::TopDockWidgetArea, &toolbar);
 
     toolbar.InitializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
-    CreateMenu();
 
-    showMaximized();
+    //showMaximized();
 }
 
-void MainWindow::CreateMenu()
+lc::ui::widgets::CliCommand* MainWindow::getCliCommand(){
+    return &cliCommand;
+}
+
+lc::ui::CadMdiChild* MainWindow::getCadMdiChild() {
+    return &cadMdiChild;
+}
+
+QAction* MainWindow::createMenu()
 {
     QMenuBar* menu = this->menuBar();
 
     QMenu* drawMenu = menu->addMenu(QString("Draw"));
-    auto lineAction = drawMenu->addAction(QString("Line"));
+    QAction* lineAction = drawMenu->addAction(QString("Line"));
+
+    showMaximized();
+    return lineAction;
 }

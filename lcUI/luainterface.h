@@ -19,6 +19,7 @@ extern "C"
 #include <QCoreApplication>
 #include <managers/pluginmanager.h>
 #include "lua/luaqobject.h"
+#include "mainwindow.h"
 
 #include <kaguya/kaguya.hpp>
 #include "lua/qtbridge.h"
@@ -40,7 +41,7 @@ namespace lc {
 				/**
                  * \brief Read and execute Lua files
                  */
-				void initLua();
+				void initLua(lc::ui::widgets::MainWindow* mainWindow);
 
 				/**
                  * \brief Connect Qt signal with Lua function

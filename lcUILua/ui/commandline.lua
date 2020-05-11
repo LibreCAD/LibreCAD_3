@@ -51,9 +51,9 @@ local function setLastPoint(point)
 end
 
 --Create the command line and add it to the main window
-function add_commandline(mainWindow, id)
-    local cliCommand = lc.CliCommand(mainWindow)
-    mainWindow:addDockWidget(8, cliCommand)
+function add_commandline(cliCommand, id)
+    --local cliCommand = lc.CliCommand(mainWindow)
+    --mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)

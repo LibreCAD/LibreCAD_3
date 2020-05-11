@@ -16,7 +16,7 @@ LuaInterface::~LuaInterface() {
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
 
-void LuaInterface::initLua() {
+void LuaInterface::initLua(lc::ui::widgets::MainWindow* mainWindow) {
 	auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
@@ -25,6 +25,7 @@ void LuaInterface::initLua() {
     luaOpenQtBridge(_L.state());
 
     _L["luaInterface"] = this;
+    _L["mainWindow"] = mainWindow;
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());

@@ -33,6 +33,7 @@ extern "C"
 #include <drawables/tempentities.h>
 #include "widgets/linewidthselect.h"
 #include "widgets/colorselect.h"
+#include "mainwindow.h"
 
 
 Q_DECLARE_METATYPE(lc::geo::Coordinate);

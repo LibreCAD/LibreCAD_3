@@ -30,7 +30,10 @@ namespace lc
                 /*
                  * \brief Create menu
                  */
-                void CreateMenu();
+                QAction* createMenu();
+
+                lc::ui::widgets::CliCommand* getCliCommand();
+                lc::ui::CadMdiChild* getCadMdiChild();
 
             private:
                 lc::ui::CadMdiChild cadMdiChild;
