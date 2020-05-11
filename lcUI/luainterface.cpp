@@ -2,6 +2,8 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
+#include "mainwindow.h"
+
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
@@ -16,7 +18,7 @@ LuaInterface::~LuaInterface() {
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
 
-void LuaInterface::initLua(lc::ui::widgets::MainWindow* mainWindow) {
+void LuaInterface::initLua(QMainWindow* mainWindow) {
 	auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
@@ -25,7 +27,7 @@ void LuaInterface::initLua(lc::ui::widgets::MainWindow* mainWindow) {
     luaOpenQtBridge(_L.state());
 
     _L["luaInterface"] = this;
-    _L["mainWindow"] = mainWindow;
+    _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());

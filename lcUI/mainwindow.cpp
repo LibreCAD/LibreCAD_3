@@ -3,15 +3,16 @@
 #include<QMenuBar>
 #include<QMenu>
 
-using namespace lc::ui::widgets;
+using namespace lc::ui;
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     :
     linePatternSelect(&cadMdiChild, this, true, true),
     lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(cadMdiChild.metaInfoManager(), this, true, true),
     cliCommand(this),
-    toolbar(this)
+    toolbar(this),
+    luaInterface(luaInterface)
 {
     // new document and set mainwindow attributes
     cadMdiChild.newDocument();

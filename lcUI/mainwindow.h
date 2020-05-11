@@ -1,5 +1,6 @@
 #pragma once
 
+#include "luainterface.h"
 #include<QMainWindow>
 #include "widgets/clicommand.h"
 #include "Widgets/layers.h"
@@ -13,39 +14,39 @@ namespace lc
 {
     namespace ui
     {
-        namespace widgets
+        class LuaInterface;
+        /*
+            MainWindow GUI Initialization and Menu GUI API functions
+        */
+        class MainWindow : public QMainWindow
         {
+            Q_OBJECT
+        public:
             /*
-                MainWindow GUI Initialization and Menu GUI API functions
-            */
-            class MainWindow : QMainWindow
-            {
-                Q_OBJECT
-            public:
-                /*
-                 *  \ brief  Constructor called during MainWindow
-                 */
-                MainWindow();
+                *  \ brief  Constructor called during MainWindow
+                */
+            MainWindow(lc::ui::LuaInterface* luaInterface);
 
-                /*
-                 * \brief Create menu
-                 */
-                QAction* createMenu();
+            /*
+                * \brief Create menu
+                */
+            QAction* createMenu();
 
-                lc::ui::widgets::CliCommand* getCliCommand();
-                lc::ui::CadMdiChild* getCadMdiChild();
+            lc::ui::widgets::CliCommand* getCliCommand();
+            lc::ui::CadMdiChild* getCadMdiChild();
 
-            private:
-                lc::ui::CadMdiChild cadMdiChild;
-                lc::ui::widgets::Layers layers;
-                lc::ui::widgets::CliCommand cliCommand;
-                lc::ui::widgets::Toolbar toolbar;
+        private:
+            lc::ui::CadMdiChild cadMdiChild;
+            lc::ui::widgets::Layers layers;
+            lc::ui::widgets::CliCommand cliCommand;
+            lc::ui::widgets::Toolbar toolbar;
 
-                // Select tools
-                lc::ui::widgets::LinePatternSelect linePatternSelect;
-                lc::ui::widgets::LineWidthSelect lineWidthSelect;
-                lc::ui::widgets::ColorSelect colorSelect;
-            };
-        }
+            // Select tools
+            lc::ui::widgets::LinePatternSelect linePatternSelect;
+            lc::ui::widgets::LineWidthSelect lineWidthSelect;
+            lc::ui::widgets::ColorSelect colorSelect;
+
+            lc::ui::LuaInterface* luaInterface;
+        };
     }
 }

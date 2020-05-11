@@ -307,10 +307,10 @@ void addLCBindings(lua_State *L) {
 	    .addFunction("setMetaInfoManager", &lc::ui::widgets::ColorSelect::setMetaInfoManager)
 	);
 
-    state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::MainWindow>()
-        .addFunction("createMenu", &lc::ui::widgets::MainWindow::createMenu)
-        .addFunction("getCliCommand", &lc::ui::widgets::MainWindow::getCliCommand)
-        .addFunction("getCadMdiChild", &lc::ui::widgets::MainWindow::getCadMdiChild)
+    state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::MainWindow>()
+        .addFunction("createMenu", &lc::ui::MainWindow::createMenu)
+        .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
+        .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
     );
 }
 
