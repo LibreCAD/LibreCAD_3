@@ -86,6 +86,7 @@ dialogs/linepatternmanager.cpp
         managers/metainfomanager.cpp managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
+mainwindow.ui
 widgets/clicommand.ui
 widgets/luascript.ui
 widgets/toolbar.ui

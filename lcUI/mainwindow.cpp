@@ -1,14 +1,14 @@
 #include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 #include<QMenuBar>
 #include<QMenu>
-
-#include <iostream>
 
 using namespace lc::ui;
 
 MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     :
+    ui(new Ui::MainWindow),
     linePatternSelect(&cadMdiChild, this, true, true),
     lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(cadMdiChild.metaInfoManager(), this, true, true),
@@ -16,6 +16,7 @@ MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     toolbar(this),
     luaInterface(luaInterface)
 {
+    ui->setupUi(this);
     // new document and set mainwindow attributes
     cadMdiChild.newDocument();
     setWindowTitle(QObject::tr("LibreCAD"));
@@ -36,22 +37,17 @@ MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     showMaximized();
 }
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
 lc::ui::widgets::CliCommand* MainWindow::getCliCommand(){
     return &cliCommand;
 }
 
 lc::ui::CadMdiChild* MainWindow::getCadMdiChild() {
     return &cadMdiChild;
-}
-
-QAction* MainWindow::createMenu()
-{
-    QMenuBar* menu = this->menuBar();
-
-    QMenu* drawMenu = menu->addMenu(QString("Draw"));
-    QAction* lineAction = drawMenu->addAction(QString("Line"));
-
-    return lineAction;
 }
 
 void MainWindow::ConnectInputEvents()
@@ -69,7 +65,19 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(&cliCommand, &widgets::CliCommand::finishOperation, this, &MainWindow::triggerFinishOperation);
     QObject::connect(&cliCommand, &widgets::CliCommand::commandEntered, this, &MainWindow::triggerCommandEntered);
 
+    QObject::connect(&layers, &widgets::Layers::layerChanged, &linePatternSelect, &widgets::LinePatternSelect::onLayerChanged);
+    QObject::connect(&layers, &widgets::Layers::layerChanged, &lineWidthSelect, &widgets::LineWidthSelect::onLayerChanged);
+    QObject::connect(&layers, &widgets::Layers::layerChanged, &colorSelect, &widgets::ColorSelect::onLayerChanged);
+
     QObject::connect(this, &MainWindow::point, this, &MainWindow::triggerPoint);
+    QObject::connect(this->findChild<QAction*>("actionExit"), &QAction::triggered, this, &MainWindow::close);
+}
+
+/* Menu functions */
+
+void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
+{
+    luaInterface->luaConnect(this->findChild<QAction*>(QString(itemName.c_str())), "triggered(bool)", callback);
 }
 
 /* Trigger slots */

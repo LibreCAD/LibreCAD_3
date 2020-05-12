@@ -309,7 +309,7 @@ void addLCBindings(lua_State *L) {
 	);
 
     state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::MainWindow>()
-        .addFunction("createMenu", &lc::ui::MainWindow::createMenu)
+        .addFunction("connectMenuItem", &lc::ui::MainWindow::connectMenuItem)
         .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
         .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
     );

@@ -10,6 +10,10 @@
 #include "widgets/toolbar.h"
 #include "cadmdichild.h"
 
+namespace Ui {
+    class MainWindow;
+}
+
 namespace lc
 {
     namespace ui
@@ -26,12 +30,9 @@ namespace lc
             * \brief Constructor for MainWindow
             * \param luaInterface pointer to luaInterface instance
             */
-            MainWindow(lc::ui::LuaInterface* luaInterface);
+            explicit MainWindow(lc::ui::LuaInterface* luaInterface);
 
-            /*
-             * \brief Create menu
-             */
-            QAction* createMenu();
+            ~MainWindow();
 
             /**
             * \brief Trigger appropriate signals for input events
@@ -40,6 +41,12 @@ namespace lc
 
             lc::ui::widgets::CliCommand* getCliCommand();
             lc::ui::CadMdiChild* getCadMdiChild();
+
+            /**
+            * \brief Connect existing menu item to lua callback function
+            * \param itemName item name , callback - function callback
+            */
+            void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
 
         public slots:
             // CadMdiChild slots
@@ -63,6 +70,8 @@ namespace lc
             void point(lc::geo::Coordinate coordinate);
 
         private:
+            Ui::MainWindow* ui;
+
             lc::ui::CadMdiChild cadMdiChild;
             lc::ui::widgets::Layers layers;
             lc::ui::widgets::CliCommand cliCommand;
