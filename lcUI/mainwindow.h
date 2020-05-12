@@ -50,6 +50,7 @@ namespace lc
 
             // CliCommand slots
             void triggerCoordinateEntered(lc::geo::Coordinate coordinate);
+            void triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate);
             void triggerNumberEntered(double number);
             void triggerTextEntered(QString text);
             void triggerFinishOperation();
@@ -67,6 +68,7 @@ namespace lc
             lc::ui::widgets::ColorSelect colorSelect;
 
             lc::ui::LuaInterface* luaInterface;
+            lc::geo::Coordinate lastPoint;
         };
     }
 }

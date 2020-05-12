@@ -39,7 +39,7 @@ function cli_get_text(id, getText)
         cliCommands[id]:returnText(getText)
     end
 end
-
+--[[
 --Execute a command from command line
 function command(id, command)
     cliCommands[id]:runCommand(command, id)
@@ -49,7 +49,7 @@ end
 --Store the point in memory when needed for relative coordinates
 local function setLastPoint(point)
     lastPoint = point
-end
+end]]--
 
 --Create the command line and add it to the main window
 function add_commandline(cliCommand, id)
@@ -72,14 +72,14 @@ function add_commandline(cliCommand, id)
         })
     end)]]--
 
-    luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
+    --[[luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
         local absolute = lastPoint:add(relative)
         message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z(), id)
         luaInterface:triggerEvent('point', {
             position = absolute,
             widget = mainWindow:centralWidget()
         })
-    end)
+    end)]]--
 
     --[[luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
         luaInterface:triggerEvent('number', {
@@ -95,16 +95,17 @@ function add_commandline(cliCommand, id)
         })
     end)]]--
 
-    for name, cb in pairs(commands) do
+    --[[for name, cb in pairs(commands) do
         cliCommand:addCommand(name)
-    end
+    end]]--
 
-    luaInterface:registerEvent('point', setLastPoint)
+    --luaInterface:registerEvent('point', setLastPoint)
 
     return cliCommand
 end
 
 function register_all_commands()
+    --Register every commands
     add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
     add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
     add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
@@ -124,23 +125,3 @@ function register_all_commands()
     add_command("REMOVE", function(id) run_basic_operation(id, RemoveOperation) end)
     add_command("TRIM", function(id) run_basic_operation(id, TrimOperation) end)
 end
-
---Register every commands
-add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
-add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
-add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
-add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
-add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, "_init_arc") end)
-add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
-add_command("DIMDIAMETRIC", function(id) run_basic_operation(id, DimDiametricOperations) end)
-add_command("DIMLINEAR", function(id) run_basic_operation(id, DimLinearOperations) end)
-add_command("DIMRADIAL", function(id) run_basic_operation(id, DimRadialOperations) end)
-add_command("SPLINE", function(id) run_basic_operation(id, SplineOperations) end)
-add_command("POLYLINE", function(id) create_lw_polyline(id) end)
-
-add_command("MOVE", function(id) run_basic_operation(id, MoveOperation) end)
-add_command("ROTATE", function(id) run_basic_operation(id, RotateOperation) end)
-add_command("COPY", function(id) run_basic_operation(id, CopyOperation) end)
-add_command("SCALE", function(id) run_basic_operation(id, ScaleOperation) end)
-add_command("REMOVE", function(id) run_basic_operation(id, RemoveOperation) end)
-add_command("TRIM", function(id) run_basic_operation(id, TrimOperation) end)

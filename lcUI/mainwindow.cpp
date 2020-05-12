@@ -57,17 +57,18 @@ void MainWindow::ConnectInputEvents()
 {
     cadMdiChild.viewer()->autoScale();
     
-    luaInterface->qtConnect(cadMdiChild.viewerProxy(), "mousePressEvent()", this, "triggerMousePressed()");
-    luaInterface->qtConnect(cadMdiChild.viewerProxy(), "mouseReleaseEvent()", this, "triggerMouseReleased()");
-    luaInterface->qtConnect(cadMdiChild.viewerProxy(), "mouseMoveEvent()", this, "triggerMouseMoved()");
-    luaInterface->qtConnect(cadMdiChild.viewerProxy(), "keyPressEvent(int)", this, "triggerKeyPressed(int)");
-    luaInterface->qtConnect(&cadMdiChild, "keyPressed(QKeyEvent*)", &cliCommand, "onKeyPressed(QKeyEvent*)");
+    QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mousePressEvent, this, &MainWindow::triggerMousePressed);
+    QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
+    QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
+    QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::keyPressEvent, this, &MainWindow::triggerKeyPressed);
+    QObject::connect(&cadMdiChild, &CadMdiChild::keyPressed, &cliCommand, &widgets::CliCommand::onKeyPressed);
 
-    luaInterface->qtConnect(&cliCommand, "coordinateEntered(lc::geo::Coordinate)", this, "triggerCoordinateEntered(lc::geo::Coordinate)");
-    luaInterface->qtConnect(&cliCommand, "numberEntered(double)", this, "triggerNumberEntered(double)");
-    luaInterface->qtConnect(&cliCommand, "textEntered(QString)", this, "triggerTextEntered(QString)");
-    luaInterface->qtConnect(&cliCommand, "finishOperation()", this, "triggerFinishOperation()");
-    luaInterface->qtConnect(&cliCommand, "commandEntered(QString)", this, "triggerCommandEntered(QString)");
+    QObject::connect(&cliCommand, &widgets::CliCommand::coordinateEntered, this, &MainWindow::triggerCoordinateEntered);
+    QObject::connect(&cliCommand, &widgets::CliCommand::relativeCoordinateEntered, this, &MainWindow::triggerRelativeCoordinateEntered);
+    QObject::connect(&cliCommand, &widgets::CliCommand::numberEntered, this, &MainWindow::triggerNumberEntered);
+    QObject::connect(&cliCommand, &widgets::CliCommand::textEntered, this, &MainWindow::triggerTextEntered);
+    QObject::connect(&cliCommand, &widgets::CliCommand::finishOperation, this, &MainWindow::triggerFinishOperation);
+    QObject::connect(&cliCommand, &widgets::CliCommand::commandEntered, this, &MainWindow::triggerCommandEntered);
 }
 
 /* Trigger slots */
@@ -80,6 +81,8 @@ void MainWindow::triggerMousePressed()
     data["position"] = cursorPos;
     data["widget"] = &cadMdiChild;
     luaInterface->triggerEvent("point", data);
+
+    lastPoint = cursorPos;
 }
 
 void MainWindow::triggerMouseReleased()
@@ -123,6 +126,19 @@ void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
     data["position"] = coordinate;
     data["widget"] = &cadMdiChild;
     luaInterface->triggerEvent("point", data);
+
+    lastPoint = coordinate;
+}
+
+void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
+{
+    auto state = luaInterface->luaState();
+    kaguya::LuaTable data(state);
+    data["position"] = lastPoint + coordinate;
+    data["widget"] = &cadMdiChild;
+    luaInterface->triggerEvent("point", data);
+
+    lastPoint = lastPoint + coordinate;
 }
 
 void MainWindow::triggerNumberEntered(double number)
