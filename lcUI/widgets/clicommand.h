@@ -7,9 +7,12 @@
 #include <QStringListModel>
 
 #include <memory>
+#include <QMap>
 #include <cad/geometry/geocoordinate.h>
 
 #include "widgettitlebar.h"
+
+#include <kaguya/kaguya.hpp>
 
 namespace Ui {
     class CliCommand;
@@ -38,7 +41,7 @@ namespace lc {
                     /**
                      * \brief Add a new command
                      */
-                    bool addCommand(const std::string& name);
+                    bool addCommand(const std::string& name, kaguya::LuaRef cb);
 
                     /**
                      * \brief Write a message in the logs
@@ -65,6 +68,8 @@ namespace lc {
                      * \param commandActive true when command is on, false when command is over
                      */
                     void commandActive(bool commandActive);
+
+                    void runCommand(const QString& command, unsigned int id);
 
                 public slots:
 
@@ -116,6 +121,8 @@ namespace lc {
                     QStringList _history;
                     int _historySize;
                     int _historyIndex;
+
+                    QMap<QString, kaguya::LuaRef> _commands_cb;
             };
         }
     }

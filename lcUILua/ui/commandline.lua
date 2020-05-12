@@ -11,10 +11,10 @@ end
 
 --Register a new command
 function add_command(name, callback)
-    commands[name] = callback
+    --commands[name] = callback
 
     for i, cliCommand in pairs(cliCommands) do
-        if(not cliCommand:addCommand(name)) then
+        if(not cliCommand:addCommand(name, callback)) then
             print("Command " .. name .. " is already defined")
             break
         end
@@ -42,7 +42,8 @@ end
 
 --Execute a command from command line
 function command(id, command)
-    commands[qt.QString.toStdString(command)](id)
+    cliCommands[id]:runCommand(command, id)
+    --commands[qt.QString.toStdString(command)](id)
 end
 
 --Store the point in memory when needed for relative coordinates
@@ -55,8 +56,9 @@ function add_commandline(cliCommand, id)
     --local cliCommand = lc.CliCommand(mainWindow)
     --mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
+    register_all_commands()
 
-    luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
+    --luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
 
     --[[luaInterface:luaConnect(cliCommand, "finishOperation()", function()
         luaInterface:triggerEvent('operationFinished', 0)
@@ -100,6 +102,27 @@ function add_commandline(cliCommand, id)
     luaInterface:registerEvent('point', setLastPoint)
 
     return cliCommand
+end
+
+function register_all_commands()
+    add_command("LINE", function(id) run_basic_operation(id, LineOperations) end)
+    add_command("CIRCLE", function(id) run_basic_operation(id, CircleOperations) end)
+    add_command("ARC", function(id) run_basic_operation(id, ArcOperations) end)
+    add_command("ELLIPSE", function(id) run_basic_operation(id, EllipseOperations) end)
+    add_command("ARCELLIPSE", function(id) run_basic_operation(id, EllipseOperations, "_init_arc") end)
+    add_command("DIMALIGNED", function(id) run_basic_operation(id, DimAlignedOperations) end)
+    add_command("DIMDIAMETRIC", function(id) run_basic_operation(id, DimDiametricOperations) end)
+    add_command("DIMLINEAR", function(id) run_basic_operation(id, DimLinearOperations) end)
+    add_command("DIMRADIAL", function(id) run_basic_operation(id, DimRadialOperations) end)
+    add_command("SPLINE", function(id) run_basic_operation(id, SplineOperations) end)
+    add_command("POLYLINE", function(id) create_lw_polyline(id) end)
+
+    add_command("MOVE", function(id) run_basic_operation(id, MoveOperation) end)
+    add_command("ROTATE", function(id) run_basic_operation(id, RotateOperation) end)
+    add_command("COPY", function(id) run_basic_operation(id, CopyOperation) end)
+    add_command("SCALE", function(id) run_basic_operation(id, ScaleOperation) end)
+    add_command("REMOVE", function(id) run_basic_operation(id, RemoveOperation) end)
+    add_command("TRIM", function(id) run_basic_operation(id, TrimOperation) end)
 end
 
 --Register every commands

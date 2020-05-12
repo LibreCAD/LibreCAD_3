@@ -67,6 +67,7 @@ void MainWindow::ConnectInputEvents()
     luaInterface->qtConnect(&cliCommand, "numberEntered(double)", this, "triggerNumberEntered(double)");
     luaInterface->qtConnect(&cliCommand, "textEntered(QString)", this, "triggerTextEntered(QString)");
     luaInterface->qtConnect(&cliCommand, "finishOperation()", this, "triggerFinishOperation()");
+    luaInterface->qtConnect(&cliCommand, "commandEntered(QString)", this, "triggerCommandEntered(QString)");
 }
 
 /* Trigger slots */
@@ -149,4 +150,9 @@ void MainWindow::triggerFinishOperation()
     s["id"] = 0;
     luaInterface->triggerEvent("operationFinished", s["id"]);
     luaInterface->triggerEvent("finishOperation", s["id"]);
+}
+
+void MainWindow::triggerCommandEntered(QString command)
+{
+    cliCommand.runCommand(command, cadMdiChild.id());
 }

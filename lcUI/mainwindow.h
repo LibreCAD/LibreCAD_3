@@ -53,6 +53,7 @@ namespace lc
             void triggerNumberEntered(double number);
             void triggerTextEntered(QString text);
             void triggerFinishOperation();
+            void triggerCommandEntered(QString command);
 
         private:
             lc::ui::CadMdiChild cadMdiChild;

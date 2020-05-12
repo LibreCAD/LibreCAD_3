@@ -41,11 +41,12 @@ CliCommand::~CliCommand() {
     delete ui;
 }
 
-bool CliCommand::addCommand(const std::string& name) {
+bool CliCommand::addCommand(const std::string& name, kaguya::LuaRef cb) {
     if(_commands->stringList().indexOf(name.c_str()) == -1) {
         auto newList = _commands->stringList();
         newList << QString(name.c_str());
         _commands->setStringList(newList);
+        _commands_cb[QString(name.c_str())] = cb;
         return true;
     }
     else {
@@ -223,4 +224,10 @@ void CliCommand::closeEvent(QCloseEvent* event)
 {
 	this->widget()->hide();
 	event->ignore();
+}
+
+void CliCommand::runCommand(const QString& command, unsigned int id)
+{
+    kaguya::LuaRef& cb = _commands_cb[command];
+    cb(id);
 }
