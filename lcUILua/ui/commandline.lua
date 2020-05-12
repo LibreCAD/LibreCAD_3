@@ -58,17 +58,17 @@ function add_commandline(cliCommand, id)
 
     luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
 
-    luaInterface:luaConnect(cliCommand, "finishOperation()", function()
+    --[[luaInterface:luaConnect(cliCommand, "finishOperation()", function()
         luaInterface:triggerEvent('operationFinished', 0)
         luaInterface:triggerEvent('finishOperation', 0)
-    end)
+    end)]]--
 
-    luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
+    --[[luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
         luaInterface:triggerEvent('point', {
             position = coordinate,
             widget = mainWindow:centralWidget()
         })
-    end)
+    end)]]--
 
     luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
         local absolute = lastPoint:add(relative)
@@ -79,7 +79,7 @@ function add_commandline(cliCommand, id)
         })
     end)
 
-    luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
+    --[[luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
         luaInterface:triggerEvent('number', {
             number = number,
             widget = mainWindow:centralWidget()
@@ -91,7 +91,7 @@ function add_commandline(cliCommand, id)
             text = qt.QString.toStdString(text),
             widget = mainWindow:centralWidget()
         })
-    end)
+    end)]]--
 
     for name, cb in pairs(commands) do
         cliCommand:addCommand(name)

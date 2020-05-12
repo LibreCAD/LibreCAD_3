@@ -42,10 +42,17 @@ namespace lc
             lc::ui::CadMdiChild* getCadMdiChild();
 
         public slots:
+            // CadMdiChild slots
             void triggerMousePressed();
             void triggerMouseReleased();
             void triggerMouseMoved();
             void triggerKeyPressed(int key);
+
+            // CliCommand slots
+            void triggerCoordinateEntered(lc::geo::Coordinate coordinate);
+            void triggerNumberEntered(double number);
+            void triggerTextEntered(QString text);
+            void triggerFinishOperation();
 
         private:
             lc::ui::CadMdiChild cadMdiChild;

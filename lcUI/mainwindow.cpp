@@ -3,6 +3,8 @@
 #include<QMenuBar>
 #include<QMenu>
 
+#include <iostream>
+
 using namespace lc::ui;
 
 MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
@@ -60,7 +62,14 @@ void MainWindow::ConnectInputEvents()
     luaInterface->qtConnect(cadMdiChild.viewerProxy(), "mouseMoveEvent()", this, "triggerMouseMoved()");
     luaInterface->qtConnect(cadMdiChild.viewerProxy(), "keyPressEvent(int)", this, "triggerKeyPressed(int)");
     luaInterface->qtConnect(&cadMdiChild, "keyPressed(QKeyEvent*)", &cliCommand, "onKeyPressed(QKeyEvent*)");
+
+    luaInterface->qtConnect(&cliCommand, "coordinateEntered(lc::geo::Coordinate)", this, "triggerCoordinateEntered(lc::geo::Coordinate)");
+    luaInterface->qtConnect(&cliCommand, "numberEntered(double)", this, "triggerNumberEntered(double)");
+    luaInterface->qtConnect(&cliCommand, "textEntered(QString)", this, "triggerTextEntered(QString)");
+    luaInterface->qtConnect(&cliCommand, "finishOperation()", this, "triggerFinishOperation()");
 }
+
+/* Trigger slots */
 
 void MainWindow::triggerMousePressed()
 {
@@ -104,4 +113,40 @@ void MainWindow::triggerKeyPressed(int key)
         data["widget"] = &cadMdiChild;
         luaInterface->triggerEvent("keyPressed", data);
     }
+}
+
+void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
+{
+    auto state = luaInterface->luaState();
+    kaguya::LuaTable data(state);
+    data["position"] = coordinate;
+    data["widget"] = &cadMdiChild;
+    luaInterface->triggerEvent("point", data);
+}
+
+void MainWindow::triggerNumberEntered(double number)
+{
+    auto state = luaInterface->luaState();
+    kaguya::LuaTable data(state);
+    data["number"] = number;
+    data["widget"] = &cadMdiChild;
+    luaInterface->triggerEvent("number", data);
+}
+
+void MainWindow::triggerTextEntered(QString text)
+{
+    auto state = luaInterface->luaState();
+    kaguya::LuaTable data(state);
+    data["text"] = text;
+    data["widget"] = &cadMdiChild;
+    luaInterface->triggerEvent("text", data);
+}
+
+void MainWindow::triggerFinishOperation()
+{
+    auto state = luaInterface->luaState();
+    kaguya::State s(state);
+    s["id"] = 0;
+    luaInterface->triggerEvent("operationFinished", s["id"]);
+    luaInterface->triggerEvent("finishOperation", s["id"]);
 }
