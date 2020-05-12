@@ -1,6 +1,5 @@
 local commands = {}
 local cliCommands = {}
-local lastPoint = lc.geo.Coordinate(0,0)
 
 --Write a message to the command line log
 function message(message, id)
@@ -11,8 +10,6 @@ end
 
 --Register a new command
 function add_command(name, callback)
-    --commands[name] = callback
-
     for i, cliCommand in pairs(cliCommands) do
         if(not cliCommand:addCommand(name, callback)) then
             print("Command " .. name .. " is already defined")
@@ -28,78 +25,17 @@ function cli_command_active(id, status)
     end
 end
 
--- focus cli command
-function focusClicommand(id)
-    cliCommands[id]:setFocus()
-end
-
 --Configure command line to return raw text
 function cli_get_text(id, getText)
     if cliCommands[id] ~= nil then
         cliCommands[id]:returnText(getText)
     end
 end
---[[
---Execute a command from command line
-function command(id, command)
-    cliCommands[id]:runCommand(command, id)
-    --commands[qt.QString.toStdString(command)](id)
-end
-
---Store the point in memory when needed for relative coordinates
-local function setLastPoint(point)
-    lastPoint = point
-end]]--
 
 --Create the command line and add it to the main window
 function add_commandline(cliCommand, id)
-    --local cliCommand = lc.CliCommand(mainWindow)
-    --mainWindow:addDockWidget(8, cliCommand)
     cliCommands[id] = cliCommand
     register_all_commands()
-
-    --luaInterface:luaConnect(cliCommand, "commandEntered(QString)", function(...) command(id, ...) end)
-
-    --[[luaInterface:luaConnect(cliCommand, "finishOperation()", function()
-        luaInterface:triggerEvent('operationFinished', 0)
-        luaInterface:triggerEvent('finishOperation', 0)
-    end)]]--
-
-    --[[luaInterface:luaConnect(cliCommand, "coordinateEntered(lc::geo::Coordinate)", function(coordinate)
-        luaInterface:triggerEvent('point', {
-            position = coordinate,
-            widget = mainWindow:centralWidget()
-        })
-    end)]]--
-
-    --[[luaInterface:luaConnect(cliCommand, "relativeCoordinateEntered(lc::geo::Coordinate)", function(relative)
-        local absolute = lastPoint:add(relative)
-        message("-> " .. "x=" .. absolute:x() .. " y=" .. absolute:y() .. " z=" .. absolute:z(), id)
-        luaInterface:triggerEvent('point', {
-            position = absolute,
-            widget = mainWindow:centralWidget()
-        })
-    end)]]--
-
-    --[[luaInterface:luaConnect(cliCommand, "numberEntered(double)", function(number)
-        luaInterface:triggerEvent('number', {
-            number = number,
-            widget = mainWindow:centralWidget()
-        })
-    end)
-
-    luaInterface:luaConnect(cliCommand, "textEntered(QString)", function(text)
-        luaInterface:triggerEvent('text', {
-            text = qt.QString.toStdString(text),
-            widget = mainWindow:centralWidget()
-        })
-    end)]]--
-
-    --[[for name, cb in pairs(commands) do
-        cliCommand:addCommand(name)
-    end]]--
-
-    --luaInterface:registerEvent('point', setLastPoint)
 
     return cliCommand
 end

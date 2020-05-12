@@ -56,6 +56,12 @@ namespace lc
             void triggerFinishOperation();
             void triggerCommandEntered(QString command);
 
+            // Slot to deal with things to do in C++ after a point is triggered
+            void triggerPoint(lc::geo::Coordinate coordinate);
+
+        signals:
+            void point(lc::geo::Coordinate coordinate);
+
         private:
             lc::ui::CadMdiChild cadMdiChild;
             lc::ui::widgets::Layers layers;

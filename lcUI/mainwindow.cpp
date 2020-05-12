@@ -30,8 +30,10 @@ MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     addDockWidget(Qt::TopDockWidgetArea, &toolbar);
 
     toolbar.InitializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
+    cadMdiChild.viewer()->autoScale();
+
     ConnectInputEvents();
-    //showMaximized();
+    showMaximized();
 }
 
 lc::ui::widgets::CliCommand* MainWindow::getCliCommand(){
@@ -49,14 +51,11 @@ QAction* MainWindow::createMenu()
     QMenu* drawMenu = menu->addMenu(QString("Draw"));
     QAction* lineAction = drawMenu->addAction(QString("Line"));
 
-    showMaximized();
     return lineAction;
 }
 
 void MainWindow::ConnectInputEvents()
-{
-    cadMdiChild.viewer()->autoScale();
-    
+{   
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
@@ -69,6 +68,8 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(&cliCommand, &widgets::CliCommand::textEntered, this, &MainWindow::triggerTextEntered);
     QObject::connect(&cliCommand, &widgets::CliCommand::finishOperation, this, &MainWindow::triggerFinishOperation);
     QObject::connect(&cliCommand, &widgets::CliCommand::commandEntered, this, &MainWindow::triggerCommandEntered);
+
+    QObject::connect(this, &MainWindow::point, this, &MainWindow::triggerPoint);
 }
 
 /* Trigger slots */
@@ -82,7 +83,7 @@ void MainWindow::triggerMousePressed()
     data["widget"] = &cadMdiChild;
     luaInterface->triggerEvent("point", data);
 
-    lastPoint = cursorPos;
+    emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
@@ -108,6 +109,10 @@ void MainWindow::triggerKeyPressed(int key)
     if (key == Qt::Key_Escape)
     {
         // run finish operation
+        auto state = luaInterface->luaState();
+        kaguya::State s(state);
+        s["id"] = 0;
+        luaInterface->triggerEvent("finishOperation", s["id"]);
     }
     else
     {
@@ -127,7 +132,7 @@ void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
     data["widget"] = &cadMdiChild;
     luaInterface->triggerEvent("point", data);
 
-    lastPoint = coordinate;
+    emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
@@ -138,7 +143,7 @@ void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate
     data["widget"] = &cadMdiChild;
     luaInterface->triggerEvent("point", data);
 
-    lastPoint = lastPoint + coordinate;
+    emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
@@ -171,4 +176,11 @@ void MainWindow::triggerFinishOperation()
 void MainWindow::triggerCommandEntered(QString command)
 {
     cliCommand.runCommand(command, cadMdiChild.id());
+}
+
+void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)
+{
+    lastPoint = coordinate;
+
+    cadMdiChild.viewer()->docCanvas()->selectPoint(coordinate.x(), coordinate.y());
 }
