@@ -12,7 +12,6 @@ LuaInterface::LuaInterface() :
 
 LuaInterface::~LuaInterface() {
 	_luaQObjects.clear();
-    _operations.clear();
     _events.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
@@ -142,16 +141,12 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
     return fopen(path.toStdString().c_str(), mode);
 }
 
-kaguya::LuaRef LuaInterface::operation(unsigned int windowID) {
-    if(_operations.find(windowID) != _operations.end()) {
-        return _operations[windowID];
-    }
-
-    return kaguya::LuaRef();
+kaguya::LuaRef LuaInterface::operation() {
+    return _operation;
 }
 
-void LuaInterface::setOperation(unsigned int windowID, kaguya::LuaRef operation) {
-    _operations[windowID] = std::move(operation);
+void LuaInterface::setOperation(kaguya::LuaRef operation) {
+    _operation = std::move(operation);
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {

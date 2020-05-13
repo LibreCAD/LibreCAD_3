@@ -17,8 +17,7 @@ end
 
 --End the current operation, even if it's not finished
 function finish_operation()
-    id = 0
-    local op = luaInterface:operation(id);
+    local op = luaInterface:operation();
     if(op ~= nil) then
         op:close()
     end
@@ -43,8 +42,8 @@ function run_basic_operation(operation, init_method, ...)
     mainWindow:getCliCommand():setFocus()
     finish_operation()
     create_cancel_button()
-    luaInterface:setOperation(id, operation(id, ...))
-	op = luaInterface:operation(id)
+    luaInterface:setOperation(operation(id, ...))
+	op = luaInterface:operation()
     if(init_method) then
         op[init_method](op, ...)
     else
@@ -67,13 +66,13 @@ function create_lw_polyline()
         local group = quickAccessTab:groupByName("Current operation")
 
         toolbar:addButton("", ":/icons/linesnormal.png", group, 0, 1, function()
-            luaInterface:operation(id):createLine()
+            luaInterface:operation():createLine()
         end, "Line")
 
         toolbar:addButton("", ":/icons/arc.svg", group, 1, 1, function()
-            luaInterface:operation(id):createArc()
+            luaInterface:operation():createArc()
         end, "Arc")
     end
 
-    luaInterface:setOperation(id, LWPolylineOperations(id))
+    luaInterface:setOperation(LWPolylineOperations(id))
 end

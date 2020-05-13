@@ -243,18 +243,18 @@ end
 function LineOperations:LineParallelToLine(eventName, data)
     if(eventName == "mouseMove" and not self.firstPoint) then
         if(self.angle == nil) then
-            self.selection = getWindow(self.target_widget):selection()
+            self.selection = mainWindow:getCadMdiChild():selection()
             if(#self.selection == 1) then
                 self.angle = self.builder:getLineAngle(self.selection[1])
                 if(self.angle == -1) then
                     message("Entity selected should be a LINE")
-                    finish_operation(self.target_widget)
+                    finish_operation()
                 else
                     message("Click on first point or enter coordinates:")
                 end
             else
                 message("Only one line entity should be selected, there are " .. #self.selection .. " entities selected")
-                finish_operation(self.target_widget)
+                finish_operation()
             end
         end
         local start = data["position"]
@@ -314,18 +314,18 @@ end
 function LineOperations:LineOrthogonalToLine(eventName, data)
     if(eventName == "mouseMove" and not self.firstPoint) then
         if(self.angle == nil) then
-            self.selection = getWindow(self.target_widget):selection()
+            self.selection = mainWindow:getCadMdiChild():selection()
             if(#self.selection == 1) then
                 self.angle = self.builder:getLineAngle(self.selection[1])
                 if(self.angle == -1) then
                     message("Entity selected should be a LINE")
-                    finish_operation(self.target_widget)
+                    finish_operation()
                 else
                     message("Click on first point or enter coordinates:")
                 end
             else
                 message("Only one line entity should be selected, there are " .. #self.selection .. " entities selected")
-                finish_operation(self.target_widget)
+                finish_operation()
             end
         end
         local start = data["position"]
@@ -374,7 +374,7 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
     elseif(eventName == "mouseMove" and self.topLeftPoint) then
         if(self.tempEntities ~= nil) then
             for k, entity in pairs(self.tempEntities) do
-                getWindow(self.target_widget):tempEntities():removeEntity(entity)
+                mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
             end
         else
             self.tempEntities = {}
@@ -385,32 +385,32 @@ function LineOperations:RectangleWithCornerPoints(eventName, data)
         self.builder:setStartPoint(self.topLeftPoint)
         self.builder:setEndPoint(lc.geo.Coordinate(data["position"]:x(), self.topLeftPoint:y()))
         self.tempEntities[0] = self.builder:build()
-        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[0])
+        mainWindow:getCadMdiChild():tempEntities():addEntity(self.tempEntities[0])
 
         -- TOP RIGHT -> BOTTOM RIGHT
         self.builder:newID()
         self.builder:setStartPoint(lc.geo.Coordinate(data["position"]:x(), self.topLeftPoint:y()))
         self.builder:setEndPoint(data["position"])
         self.tempEntities[1] = self.builder:build()
-        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[1])
+        mainWindow:getCadMdiChild():tempEntities():addEntity(self.tempEntities[1])
 
         -- BOTTOM RIGHT -> BOTTOM LEFT
         self.builder:newID()
         self.builder:setStartPoint(data["position"])
         self.builder:setEndPoint(lc.geo.Coordinate(self.topLeftPoint:x(), data["position"]:y()))
         self.tempEntities[2] = self.builder:build()
-        getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[2])
+        mainWindow:getCadMdiChild():tempEntities():addEntity(self.tempEntities[2])
 
         -- BOTTOM LEFT -> TOP LEFT
         self.builder:newID()
         self.builder:setStartPoint(lc.geo.Coordinate(self.topLeftPoint:x(), data["position"]:y()))
         self.builder:setEndPoint(self.topLeftPoint)
     elseif(eventName == "point" and self.topLeftPoint) then
-        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+        local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
         if(self.tempEntities ~= nil) then
             for k, entity in pairs(self.tempEntities) do
                 b:appendEntity(entity)
-                getWindow(self.target_widget):tempEntities():removeEntity(entity)
+                mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
             end
         end
         b:execute()
@@ -426,7 +426,7 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
     elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
         -- 150 + () ensures that numPoints is atleast 3
         local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
@@ -437,14 +437,14 @@ function LineOperations:PolygonWithCenterPoint(eventName, data)
         message("Click on a polygon end point to finalize polygon")
     elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(data["position"])
         self:drawTempPolygon(length, angle, self.numPoints)
     elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
         local length = self.polygonCenter:distanceTo(data["position"])
         local angle = self.polygonCenter:angleTo(data["position"])
@@ -461,7 +461,7 @@ function LineOperations:PolygonWith2Points(eventName, data)
         message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
     elseif(eventName == "mouseMove" and self.firstPoint and not self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
         local length = 50
         self.polygonCenter = self.firstPoint:add(lc.geo.Coordinate(-length, 0))
@@ -472,7 +472,7 @@ function LineOperations:PolygonWith2Points(eventName, data)
         message("Click on a polygon corner point to finalize polygon")
     elseif(eventName == "mouseMove" and self.firstPoint and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
 
         local x = self.firstPoint:distanceTo(data["position"]) / 2
@@ -488,7 +488,7 @@ function LineOperations:PolygonWith2Points(eventName, data)
         self:drawTempPolygon(length, angle, self.numPoints)
     elseif(eventName == "point" and self.firstPoint and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
 
         local x = self.firstPoint:distanceTo(data["position"]) / 2
@@ -514,7 +514,7 @@ function LineOperations:PolygonWithCenterTangent(eventName, data)
         message("Move the mouse to scroll through n-sides polygons,enter number of points or click to choose")
     elseif(eventName == "mouseMove" and self.polygonCenter and not self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
         local numPoints = math.floor((150+self.polygonCenter:distanceTo(data["position"]))/50)
         local length = 50
@@ -524,7 +524,7 @@ function LineOperations:PolygonWithCenterTangent(eventName, data)
         message("Click on a polygon tangent point to finalize polygon")
     elseif(eventName == "mouseMove" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
 
         local dist = self.polygonCenter:distanceTo(data["position"])
@@ -539,7 +539,7 @@ function LineOperations:PolygonWithCenterTangent(eventName, data)
         self:drawTempPolygon(length, angle, self.numPoints)
     elseif(eventName == "point" and self.polygonCenter and self.numPoints) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
 
         local dist = self.polygonCenter:distanceTo(data["position"])
@@ -567,13 +567,13 @@ function LineOperations:drawTempPolygon(length, angle, numPoints)
         self.builder:setEndPoint(newCoord2)
         if i~=numPoints-1 then
             self.tempEntities[i] = self.builder:build()
-            getWindow(self.target_widget):tempEntities():addEntity(self.tempEntities[i])
+            mainWindow:getCadMdiChild():tempEntities():addEntity(self.tempEntities[i])
         end
     end
 end
 
 function LineOperations:drawFinalPolygon(length, angle)
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
     for i=0,self.numPoints-1 do
         local newCoord1 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * i) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * i) + angle)))
         local newCoord2 = self.polygonCenter:add(lc.geo.Coordinate(length * math.cos(((3.14159265 * 2)/self.numPoints * (i+1)) + angle), length * math.sin(((3.14159265 * 2)/self.numPoints * (i+1) + angle))))
@@ -599,7 +599,7 @@ end
 function LineOperations:close()
     if(self.tempEntities ~= nil) then
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
     end
     CreateOperations.close(self)

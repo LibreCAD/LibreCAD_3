@@ -70,16 +70,16 @@ function CircleOperations:enterCenter(eventName, data)
         self.step = "enterRadius"
     elseif(eventName == "text") then
         if ((data["text"]) == "2p" or string.lower(data["text"]) == "2point") then
-            message("Provide Diameter Start Point:",self.target_widget)
+            message("Provide Diameter Start Point:")
             self.step = "CircleWith2Points"
         elseif ((data["text"]) == "3p" or string.lower(data["text"]) == "3point") then
-            message("Provide First Point:",self.target_widget)
+            message("Provide First Point:")
             self.step = "CircleWith3Points"
         elseif (string.lower(data["text"]) == "t" or string.lower(data["text"]) == "ttt") then
-            message("Provide First Tangent:",self.target_widget)
+            message("Provide First Tangent:")
             self.step = "CircleWith3Tans"
         elseif (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "ttr") then
-            message("Provide First Tangent:",self.target_widget)
+            message("Provide First Tangent:")
             self.step = "CircleWith2Tans"
         end
     end
@@ -95,11 +95,11 @@ function CircleOperations:enterRadius(eventName, data)
                 message("Provide Diameter:")
                 self.step = "enterDiameter"
             else
-                message("Invalid input:" .. data["text"] ,self.target_widget)
+                message("Invalid input:" .. data["text"] )
                 message("Provide Radius:")
             end
         else
-            message(data["text"],self.target_widget)
+            message(data["text"])
             self.builder:setRadius(tonumber(data["text"]))
             self:createEntity()
         end
@@ -114,10 +114,10 @@ function CircleOperations:enterDiameter(eventName, data)
         self.builder:setRadius(self.builder:center():distanceTo(data["position"]) / 2)
     elseif(eventName == "text") then
         if (tonumber(data["text"]) == nil) then
-            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Invalid input:" .. data["text"] )
             message("Provide Diameter:")
         else
-            message(data["text"],self.target_widget)
+            message(data["text"])
             self.builder:setRadius(tonumber(data["text"])/2)
             self:createEntity()
         end
@@ -176,9 +176,9 @@ end
 function CircleOperations:CircleWith3Points(eventName, data)
     if (eventName == "point" and not self.firstpoint) then
         self.firstpoint = data['position']
-        message("Provide Second Point:",self.target_widget)
+        message("Provide Second Point:")
     elseif(eventName == "point" and self.firstpoint and not self.secondpoint) then
-        message("Provide Third Point:",self.target_widget)
+        message("Provide Third Point:")
         self.secondpoint = data['position']
     elseif(eventName == "mouseMove" and self.firstpoint and self.secondpoint and  not self.thirdpoint) then
         self.builder:setCenter(self:Circumcenter(self.firstpoint,self.secondpoint,data['position']))
@@ -227,7 +227,7 @@ end
 function CircleOperations:drawAllTan3Circles()
     self.builder:modifyForTempEntity(true)
     local oldId =self.builder:id()
-    self.temp3tans = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    self.temp3tans = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
 
     for i=-1,1 do
         for j=-1,1 do
@@ -259,14 +259,14 @@ end
 function CircleOperations:CircleWith3Tans(eventName, data)
     if(eventName == "mouseMove") then
         if(self.constructed3tan ~= true) then
-            self.selection = getWindow(self.target_widget):selection()
+            self.selection = mainWindow:getCadMdiChild():selection()
             self.initialMousePosition = data["position"]
             local successful = false
             if(#self.selection == 3) then
                 local success = self.builder:threeTanConstructor(self.selection[1], self.selection[2], self.selection[3], 1, 1, 1)
                 if success == false then
                     message("Entities selected MUST be circles")
-                    finish_operation(self.target_widget)
+                    finish_operation()
                 else
                     successful = true
                     self:refreshTempEntity()
@@ -275,7 +275,7 @@ function CircleOperations:CircleWith3Tans(eventName, data)
                 end
             else
                 message("THREE circle entities should be selected, there are " .. #self.selection .. " entities selected")
-                finish_operation(self.target_widget)
+                finish_operation()
             end
             if (successful) then
                 self:drawAllTan3Circles()
@@ -297,16 +297,16 @@ end
 function CircleOperations:CircleWith2Tans(eventName, data)
     if(eventName == "mouseMove") then
         if(self.constructed2tan ~= true) then
-            self.selection = getWindow(self.target_widget):selection()
+            self.selection = mainWindow:getCadMdiChild():selection()
             self.initialMousePosition = data["position"]
             if(#self.selection == 2) then
                 local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)
                 if (success == -2) then
                     message("Entities selected MUST be circles")
-                    finish_operation(self.target_widget)
+                    finish_operation()
                 elseif (success == -3) then
                     message("Circle cannot be created for selected circle entities (one circle should not be contained inside another)")
-                    finish_operation(self.target_widget)
+                    finish_operation()
                 elseif (success == 0) then
                     self:refreshTempEntity()
                 end
@@ -318,7 +318,7 @@ function CircleOperations:CircleWith2Tans(eventName, data)
                 self.constructed2tan = true
             else
                 message("TWO circle entities should be selected, there are " .. #self.selection .. " entities selected")
-                finish_operation(self.target_widget)
+                finish_operation()
             end
         else
             local radius = self.centerbetweentwocircles:distanceTo(data["position"])

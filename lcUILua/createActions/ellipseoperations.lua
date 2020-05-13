@@ -48,25 +48,25 @@ function EllipseOperations:EllipsewithAxisEnd(eventName, data)
             mainWindow:getCliCommand():returnText( false)
             self.step = "EllipsewithCenter"
         else
-            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Invalid input:" .. data["text"] )
             message("Provide Axis start Point:")
         end
     elseif (eventName == "point" and not self.Axis_StartPoint ) then
         self.Axis_StartPoint = data['position']
-        message("Provide Axis end Point:",self.target_widget)
+        message("Provide Axis end Point:")
     elseif (eventName == "point" and self.Axis_StartPoint and not self.Axis_EndPoint) then
         self.Axis_EndPoint = data['position']
         self.builder:setCenter(self.Axis_StartPoint:mid(self.Axis_EndPoint))
         self.builder:setMajorPoint(self.Axis_EndPoint:sub(self.builder:center()))
-        message("Options: <u>R</u>otation or",self.target_widget)
-        message("Provide other axis end Point:",self.target_widget)
+        message("Options: <u>R</u>otation or")
+        message("Provide other axis end Point:")
     elseif (eventName == "text" and self.Axis_StartPoint and self.Axis_EndPoint) then
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
             message("Specify rotation:")
             self.rotation = true
             mainWindow:getCliCommand():returnText( false)
         else
-            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Invalid input:" .. data["text"] )
             message("Provide other axis end Point:")
         end
     elseif (eventName == "mouseMove" and self.Axis_StartPoint and self.Axis_EndPoint and self.rotation == false) then
@@ -90,20 +90,20 @@ function EllipseOperations:EllipsewithCenter(eventName, data)
     if (eventName == "point" and not self.Axis_CenterPoint ) then
         self.Axis_CenterPoint = data['position']
         self.builder:setCenter(self.Axis_CenterPoint)
-        message("Provide Axis end Point:",self.target_widget)
+        message("Provide Axis end Point:")
     elseif (eventName == "point" and self.Axis_CenterPoint and not self.Axis_EndPoint) then
         self.Axis_EndPoint = data['position']
         self.builder:setMajorPoint(self.Axis_EndPoint:sub(self.builder:center()))
-        message("Options: <u>R</u>otation or",self.target_widget)
+        message("Options: <u>R</u>otation or")
         mainWindow:getCliCommand():returnText( true)
-        message("Provide other axis end Point:",self.target_widget)
+        message("Provide other axis end Point:")
     elseif (eventName == "text" and self.Axis_EndPoint) then
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
             message("Specify rotation:")
             self.rotation = true
             mainWindow:getCliCommand():returnText( false)
         else
-            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Invalid input:" .. data["text"] )
             message("Provide other axis end Point:")
         end
     elseif (eventName == "mouseMove"  and self.Axis_EndPoint and self.rotation == false) then
@@ -130,7 +130,7 @@ end
 function EllipseOperations:EllipseFociPoints(eventName, data)
     if (eventName == "point" and not self.Axis_FirstFoci ) then
         self.Axis_FirstFoci = data['position']
-        message("Provide other foci point:",self.target_widget)
+        message("Provide other foci point:")
     elseif (eventName == "point" and self.Axis_FirstFoci and not self.Axis_SecondFoci) then
         self.Axis_SecondFoci = data['position']
         self.builder:setCenter(self.Axis_FirstFoci:mid(self.Axis_SecondFoci))

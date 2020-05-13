@@ -46,7 +46,7 @@ function ArcOperations:ArcWith3Points(eventName, data)
             message("Provide Center Point:")
             self.step = "ArcWithCSE"
         else
-            message("Invalid input:" .. data["text"] ,self.target_widget)
+            message("Invalid input:" .. data["text"] )
             message("Provide Radius:")
         end
     elseif (eventName == "point" and not self.Arc_FirstPoint) then

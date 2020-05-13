@@ -98,9 +98,9 @@ namespace lc {
 
 				static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-				kaguya::LuaRef operation(unsigned int windowID);
+				kaguya::LuaRef operation();
 
-				void setOperation(unsigned int windowID, kaguya::LuaRef);
+				void setOperation(kaguya::LuaRef);
 
 				void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
 
@@ -112,7 +112,7 @@ namespace lc {
 				kaguya::State _L;
 				std::vector<LuaQObject_SPtr> _luaQObjects;
 				lc::lua::PluginManager _pluginManager;
-				std::map<unsigned int, kaguya::LuaRef> _operations;
+				kaguya::LuaRef _operation;
 				std::map<std::string, std::vector<kaguya::LuaRef>> _events;
 		};
 	}
