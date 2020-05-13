@@ -83,14 +83,14 @@ end
 
 function CreateOperations:close()
     if(not self.finished) then
-        luaInterface:triggerEvent('operationFinished', 0)
+        luaInterface:triggerEvent('operationFinished', id)
         self:removeTempEntity()
         if (self.cleanUp ~= nil) then
             self:cleanUp()
         end
         self:unregisterEvents()
-        cli_get_text(false)
-        cli_command_active(false)
+        mainWindow:getCliCommand():returnText(false)
+        mainWindow:getCliCommand():commandActive(false)
         self.finished = true
     end
 end

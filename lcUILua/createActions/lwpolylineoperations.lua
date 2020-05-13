@@ -76,7 +76,7 @@ function LWPolylineOperations:createArc()
 		self.builder:modifyLastVertexArc()
     end
 
-    message("Give arc angle and coordinates", self.target_widget)
+    message("Give arc angle and coordinates")
 end
 
 function LWPolylineOperations:createLine()
@@ -91,5 +91,5 @@ function LWPolylineOperations:createLine()
 		self.builder:modifyLastVertexLine()
     end
 
-    message("Give line coordinates", self.target_widget)
+    message("Give line coordinates")
 end

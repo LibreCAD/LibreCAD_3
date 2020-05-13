@@ -14,27 +14,6 @@ function add_command(name, callback)
     end
 end
 
---Coomand line command On/OFF
-function cli_command_active(status)
-    local cliCommand = mainWindow:getCliCommand()
-    if cliCommand ~= nil then
-        cliCommand:commandActive(status)
-    end
-end
-
---Configure command line to return raw text
-function cli_get_text(getText)
-    local cliCommand = mainWindow:getCliCommand()
-    if cliCommand ~= nil then
-        cliCommand:returnText(getText)
-    end
-end
-
---Create the command line and add it to the main window
-function add_commandline()
-    register_all_commands()
-end
-
 function register_all_commands()
     --Register every commands
     add_command("LINE", function() run_basic_operation(LineOperations) end)

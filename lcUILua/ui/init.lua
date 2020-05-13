@@ -1,5 +1,4 @@
 require 'ui.mainwindow'
-require 'ui.cadmdichild'
 require 'ui.commandline'
 require 'ui.toolbar'
 

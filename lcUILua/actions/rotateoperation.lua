@@ -13,7 +13,7 @@ setmetatable(RotateOperation, {
 function RotateOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:getCadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected", id)
 
@@ -50,11 +50,11 @@ function RotateOperation:newData(point)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(point)
 
-        message("Give first point", self.target_widget)
+        message("Give first point")
     elseif(self.firstPoint == nil) then
         self.firstPoint = Operations:getCoordinate(point)
 
-        message("Give second point", self.target_widget)
+        message("Give second point")
     elseif(Operations:getCoordinate(point) ~= nil) then
         self.secondPoint = Operations:getCoordinate(point)
 
@@ -64,7 +64,7 @@ end
 
 function RotateOperation:tempRotate(point)
     if(self.origin ~= nil and self.firstPoint ~= nil) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:getCadMdiChild()
 
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
@@ -83,7 +83,7 @@ end
 
 function RotateOperation:rotate()
     local angle = self.origin:angleTo(self.secondPoint) - self.origin:angleTo(self.firstPoint)
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -101,12 +101,12 @@ function RotateOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished', id)
     end
 end

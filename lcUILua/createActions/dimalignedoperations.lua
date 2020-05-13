@@ -29,7 +29,7 @@ function DimAlignedOperations:enterFirstPoint(eventName, data)
         self.firstPoint = data["position"]
         self.step = "enterSecondPoint"
 
-        message("Click on end point", self.target_widget)
+        message("Click on end point")
     end
 end
 
@@ -43,7 +43,7 @@ function DimAlignedOperations:enterSecondPoint(eventName, data)
         self.secondPoint = data["position"]
         self.step = "enterMiddleOfText"
 
-        message("Click on text position", self.target_widget)
+        message("Click on text position")
     end
 end
 
@@ -59,14 +59,14 @@ function DimAlignedOperations:enterMiddleOfText(eventName, data)
                              data["position"]
         )
         self.step = "enterText"
-        message("Enter text (<> for value)", self.target_widget)
-        cli_get_text(self.target_widget, true)
+        message("Enter text (<> for value)")
+        mainWindow:getCliCommand():returnText( true)
     end
 end
 
 function DimAlignedOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:getCliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

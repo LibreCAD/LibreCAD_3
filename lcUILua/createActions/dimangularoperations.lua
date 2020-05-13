@@ -29,7 +29,7 @@ function DimAngularOperations:enterCenterPoint(eventName, data)
         self.centerPoint = data["position"]
         self.step = "enterFirstPoint"
 
-        message("Click on first point", self.target_widget)
+        message("Click on first point")
     end
 end
 
@@ -43,7 +43,7 @@ function DimAngularOperations:enterFirstPoint(eventName, data)
         self.firstPoint = data["position"]
         self.step = "enterSecondPoint"
 
-        message("Click on second point", self.target_widget)
+        message("Click on second point")
     end
 end
 
@@ -57,15 +57,15 @@ function DimAngularOperations:enterSecondPoint(eventName, data)
         self.secondPoint = data["position"]
         self.step = "enterText"
 
-        cli_get_text(self.target_widget, true)
+        mainWindow:getCliCommand():returnText( true)
 
-        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        message("Enter dimension text or leave it empty (<> for value)")
     end
 end
 
 function DimAngularOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:getCliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

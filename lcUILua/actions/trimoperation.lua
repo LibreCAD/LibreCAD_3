@@ -40,20 +40,20 @@ end
 
 function TrimOperation:selectionChanged()
     if(self.toTrim == nil) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:getCadMdiChild()
         local nbEntities = #window:selection()
         if(nbEntities == 1) then
             if(self.limit == nil) then
                 self.limit = window:selection()[1]
 
-                message("Select entity to trim", self.target_widget)
+                message("Select entity to trim")
             elseif(self.toTrim == nil) then
                 self.toTrim = window:selection()[1]
 
                 self:getIntersectionPoints()
             end
         elseif(nbEntities > 1) then
-            message("Select only one entity", self.target_widget)
+            message("Select only one entity")
         end
     end
 end
@@ -71,16 +71,16 @@ function TrimOperation:getIntersectionPoints()
     self.intersectionPoints = intersect:result()
 
     if(#self.intersectionPoints == 0) then
-        message("No intersection found", self.target_widget)
+        message("No intersection found")
 
         self:close()
     elseif(#self.intersectionPoints >= 1) then
-        message("Click on the part of the entity to remove", self.target_widget)
+        message("Click on the part of the entity to remove")
     end
 end
 
 function TrimOperation:trim()
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
     b:appendEntity(self.toTrim)
 
     b:appendOperation(lc.operation.Push())
@@ -122,7 +122,7 @@ function TrimOperation:trim()
         end
     elseif(self.toTrim.entityType == "circle") then
         if(#self.intersectionPoints < 2) then
-            message("Circle need at least two intersection points", self.target_widget)
+            message("Circle need at least two intersection points")
 
             self:close()
             return
@@ -187,12 +187,12 @@ function TrimOperation:trim()
         for i, v in ipairs(intersectAngles) do
             if(selectedAngle < v) then
                 if(i > 1) then
-                    message("first", self.target_widget)
+                    message("first")
                     previousAngle = intersectAngles[i - 1]
                     nextAngle = v
                     break
                 else
-                    message("second", self.target_widget)
+                    message("second")
                     previousAngle = v
                     nextAngle = intersectAngles[#intersectAngles]
                     break
@@ -212,7 +212,7 @@ function TrimOperation:trim()
             b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
         end
     else
-        message("Unsupported entity", self.target_widget)
+        message("Unsupported entity")
     end
 
     b:execute()
@@ -227,6 +227,6 @@ function TrimOperation:close()
         luaInterface:deleteEvent("point", self)
         luaInterface:deleteEvent("selectionChanged", self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished', id)
     end
 end

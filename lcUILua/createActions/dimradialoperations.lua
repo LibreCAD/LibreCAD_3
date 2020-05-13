@@ -24,7 +24,7 @@ function DimRadialOperations:enterStartPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterEndPoint"
 
-        message("Click on end point", self.target_widget)
+        message("Click on end point")
     end
 end
 
@@ -36,7 +36,7 @@ function DimRadialOperations:enterEndPoint(eventName, data)
     if(eventName == "point") then
         self.step = "enterMiddleOfText"
 
-        message("Click on text position", self.target_widget)
+        message("Click on text position")
     end
 end
 
@@ -48,15 +48,15 @@ function DimRadialOperations:enterMiddleOfText(eventName, data)
     if(eventName == "point") then
         self.step = "enterText"
 
-        cli_get_text(self.target_widget, true)
+        mainWindow:getCliCommand():returnText( true)
 
-        message("Enter dimension text (<> for value)", self.target_widget)
+        message("Enter dimension text (<> for value)")
     end
 end
 
 function DimRadialOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:getCliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

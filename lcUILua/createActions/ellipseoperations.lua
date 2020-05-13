@@ -18,38 +18,38 @@ function EllipseOperations:_init(id)
     self.Axis_CenterPoint = nil
     self.rotation = false
     CreateOperations._init(self, id, lc.builder.EllipseBuilder, "EllipsewithAxisEnd")
-    cli_get_text(self.target_widget, true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
+    mainWindow:getCliCommand():returnText( true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
 end
 
 function EllipseOperations:_init_default()
-    message("<b>Ellipse</b>", self.target_widget)
-    message("Options: <u>E</u>lliptical Arc, <u>C</u>enter", self.target_widget)
-    message("Provide Axis start Point:", self.target_widget)
+    message("<b>Ellipse</b>")
+    message("Options: <u>E</u>lliptical Arc, <u>C</u>enter")
+    message("Provide Axis start Point:")
     self.step = "EllipsewithAxisEnd"
 end
 
 function EllipseOperations:_init_arc()
-    message("<b>Ellipse</b>", self.target_widget)
-    message("Options: <u>E</u>lliptical Arc, <u>C</u>enter", self.target_widget)
-    message("Provide Center Point:", self.target_widget)
+    message("<b>Ellipse</b>")
+    message("Options: <u>E</u>lliptical Arc, <u>C</u>enter")
+    message("Provide Center Point:")
     self.step = "EllipsewithCenter"
 end
 
 function EllipseOperations:_init_foci()
-    message("<b>Ellipse</b>", self.target_widget)
-    message("Provide first foci point:", self.target_widget)
+    message("<b>Ellipse</b>")
+    message("Provide first foci point:")
     self.step = "EllipseFociPoints"
 end
 
 function EllipseOperations:EllipsewithAxisEnd(eventName, data)
     if(eventName == "text" and not self.Axis_StartPoint) then
         if (string.lower(data["text"]) == "c" or string.lower(data["text"]) == "center") then
-            message("Provide Center Point:", self.target_widget)
-            cli_get_text(self.target_widget, false)
+            message("Provide Center Point:")
+            mainWindow:getCliCommand():returnText( false)
             self.step = "EllipsewithCenter"
         else
             message("Invalid input:" .. data["text"] ,self.target_widget)
-            message("Provide Axis start Point:", self.target_widget)
+            message("Provide Axis start Point:")
         end
     elseif (eventName == "point" and not self.Axis_StartPoint ) then
         self.Axis_StartPoint = data['position']
@@ -62,12 +62,12 @@ function EllipseOperations:EllipsewithAxisEnd(eventName, data)
         message("Provide other axis end Point:",self.target_widget)
     elseif (eventName == "text" and self.Axis_StartPoint and self.Axis_EndPoint) then
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
-            message("Specify rotation:", self.target_widget)
+            message("Specify rotation:")
             self.rotation = true
-            cli_get_text(self.target_widget, false)
+            mainWindow:getCliCommand():returnText( false)
         else
             message("Invalid input:" .. data["text"] ,self.target_widget)
-            message("Provide other axis end Point:", self.target_widget)
+            message("Provide other axis end Point:")
         end
     elseif (eventName == "mouseMove" and self.Axis_StartPoint and self.Axis_EndPoint and self.rotation == false) then
         self.builder:setMinorRadius(self.builder:center():distanceTo(data["position"]))
@@ -95,16 +95,16 @@ function EllipseOperations:EllipsewithCenter(eventName, data)
         self.Axis_EndPoint = data['position']
         self.builder:setMajorPoint(self.Axis_EndPoint:sub(self.builder:center()))
         message("Options: <u>R</u>otation or",self.target_widget)
-        cli_get_text(self.target_widget, true)
+        mainWindow:getCliCommand():returnText( true)
         message("Provide other axis end Point:",self.target_widget)
     elseif (eventName == "text" and self.Axis_EndPoint) then
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
-            message("Specify rotation:", self.target_widget)
+            message("Specify rotation:")
             self.rotation = true
-            cli_get_text(self.target_widget, false)
+            mainWindow:getCliCommand():returnText( false)
         else
             message("Invalid input:" .. data["text"] ,self.target_widget)
-            message("Provide other axis end Point:", self.target_widget)
+            message("Provide other axis end Point:")
         end
     elseif (eventName == "mouseMove"  and self.Axis_EndPoint and self.rotation == false) then
         self.minRadius=self.builder:center():distanceTo(data["position"])
@@ -135,7 +135,7 @@ function EllipseOperations:EllipseFociPoints(eventName, data)
         self.Axis_SecondFoci = data['position']
         self.builder:setCenter(self.Axis_FirstFoci:mid(self.Axis_SecondFoci))
         self.Axis_FociDistance = self.Axis_FirstFoci:distanceTo(self.builder:center())
-        message("Provide major point:", self.target_widget)
+        message("Provide major point:")
     elseif (eventName == "mouseMove" and self.Axis_FirstFoci and self.Axis_SecondFoci and not self.Axis_MajorPoint) then
         local majorPoint = data["position"]:sub(self.builder:center())
         if(majorPoint:magnitude() > self.Axis_FociDistance) then
@@ -156,8 +156,8 @@ function EllipseOperations:EllipseFociPoints(eventName, data)
         end
         self.minRadius=self.builder:center():distanceTo(data["position"])
         self.builder:setMinorRadius(self.minRadius)
-        message("Specify rotation:", self.target_widget)
-        cli_get_text(self.target_widget, false)
+        message("Specify rotation:")
+        mainWindow:getCliCommand():returnText( false)
     elseif (eventName == "mouseMove" and self.Axis_FirstFoci and self.Axis_SecondFoci and self.Axis_MajorPoint) then
         self.minRadius = self.builder:center():distanceTo(data["position"])
         self.builder:setMinorRadius(self.minRadius)
@@ -195,7 +195,7 @@ function EllipseOperations:setCenter(eventName, data)
 
     if(eventName == "point") then
     self.step = "setMajorPoint"
-        message("Click on major point", self.target_widget)
+        message("Click on major point")
     elseif(eventName == "mouseMove") then
         self:refreshTempEntity()
     end
@@ -208,7 +208,7 @@ function EllipseOperations:setMajorPoint(eventName, data)
 
     if(eventName == "point") then
         self.step = "setMinorRadius"
-        message("Give minor radius", self.target_widget)
+        message("Give minor radius")
     elseif(eventName == "mouseMove") then
         self:refreshTempEntity()
     end
@@ -225,7 +225,7 @@ function EllipseOperations:setMinorRadius(eventName, data)
         if(not self.isArc) then
             self:createEntity()
         else
-            message("Enter start angle", self.target_widget)
+            message("Enter start angle")
             self.step = "setStartAngle"
         end
     elseif(eventName == "mouseMove") then
@@ -241,7 +241,7 @@ function EllipseOperations:setStartAngle(eventName, data)
     end
 
     if(eventName == "point" or eventName == "number") then
-        message("Click on end point or enter the end angle", self.target_widget)
+        message("Click on end point or enter the end angle")
         self.step = "setEndAngle"
     end
 end

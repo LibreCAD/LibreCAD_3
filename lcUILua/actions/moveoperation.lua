@@ -13,7 +13,7 @@ setmetatable(MoveOperation, {
 function MoveOperation:_init(id)
     Operations._init(self, id)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:getCadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected", id)
 
@@ -50,7 +50,7 @@ function MoveOperation:newData(point)
         message("Give destination point", id)
     elseif(Operations:getCoordinate(point) ~= nil) then
         local offset = point:sub(self.origin)
-        local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+        local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
 
         for k, entity in pairs(self.selection) do
             b:appendEntity(entity)
@@ -66,7 +66,7 @@ end
 
 function MoveOperation:tempMove(point)
     if(self.origin ~= nil) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:getCadMdiChild()
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
         end
@@ -84,7 +84,7 @@ end
 
 function MoveOperation:close()
     if(not self.finished) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:getCadMdiChild()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
@@ -94,6 +94,6 @@ function MoveOperation:close()
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished', id)
     end
 end

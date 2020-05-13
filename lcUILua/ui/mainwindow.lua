@@ -1,10 +1,14 @@
 op = {}
 id = 0
 
+function getWindow()
+    return mainWindow:getCadMdiChild()
+end
+
 --Create empty new window
 function new_file()
     --windows[id] = mainWindow:getCadMdiChild()
-    add_commandline()
+    register_all_commands()
     --addCadMdiChild(mainWindow:getCadMdiChild(), id, mainWindow:getCliCommand())
 
     create_new_window()
@@ -35,7 +39,7 @@ function active_layer()
 end
 
 --Return the selected viewport
-function active_block(id)
+function active_block()
     return mainWindow:getCadMdiChild():activeViewport()
 end
 
