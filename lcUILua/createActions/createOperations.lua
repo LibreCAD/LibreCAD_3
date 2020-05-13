@@ -32,7 +32,7 @@ function CreateOperations:onEvent(eventName, data)
 end
 
 function CreateOperations:createEntity()
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
     b:appendEntity(self:build())
     b:execute()
 
@@ -40,22 +40,22 @@ function CreateOperations:createEntity()
 end
 
 function CreateOperations:build()
-    self.builder:setLayer(active_layer(self.target_widget))
-    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
-    self.builder:setBlock(active_block(self.target_widget))
+    self.builder:setLayer(active_layer())
+    self.builder:setMetaInfo(active_metaInfo())
+    self.builder:setBlock(active_block())
 
     return self.builder:build()
 end
 
 function CreateOperations:refreshTempEntity()
     if (self.prevEntity ~= nil) then
-        getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
+        mainWindow:getCadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 
     self.entity = self:build()
 
     if (self.entity ~= nil) then
-        getWindow(self.target_widget):tempEntities():addEntity(self.entity)
+        mainWindow:getCadMdiChild():tempEntities():addEntity(self.entity)
     end
 
     self.prevEntity = self.entity
@@ -63,7 +63,7 @@ end
 
 function CreateOperations:removeTempEntity()
     if (self.prevEntity ~= nil) then
-        getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
+        mainWindow:getCadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 end
 
@@ -83,14 +83,14 @@ end
 
 function CreateOperations:close()
     if(not self.finished) then
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished', 0)
         self:removeTempEntity()
         if (self.cleanUp ~= nil) then
             self:cleanUp()
         end
         self:unregisterEvents()
-        cli_get_text(self.target_widget, false)
-        cli_command_active(self.target_widget, false)
+        cli_get_text(false)
+        cli_command_active(false)
         self.finished = true
     end
 end

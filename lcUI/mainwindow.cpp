@@ -3,15 +3,14 @@
 
 using namespace lc::ui;
 
-MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
+MainWindow::MainWindow()
     :
     ui(new Ui::MainWindow),
-    luaInterface(luaInterface),
     linePatternSelect(&cadMdiChild, this, true, true),
     lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(cadMdiChild.metaInfoManager(), this, true, true),
     cliCommand(this),
-    toolbar(luaInterface, this)
+    toolbar(&luaInterface, this)
 {
     ui->setupUi(this);
     // new document and set mainwindow attributes
@@ -32,6 +31,8 @@ MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
 
     ConnectInputEvents();
     showMaximized();
+
+    luaInterface.initLua(this);
 }
 
 MainWindow::~MainWindow()
@@ -78,7 +79,7 @@ void MainWindow::ConnectInputEvents()
 
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
-    luaInterface->luaConnect(this->findChild<QAction*>(QString(itemName.c_str())), "triggered(bool)", callback);
+    luaInterface.luaConnect(this->findChild<QAction*>(QString(itemName.c_str())), "triggered(bool)", callback);
 }
 
 /* Trigger slots */
@@ -86,31 +87,31 @@ void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef cal
 void MainWindow::triggerMousePressed()
 {
     lc::geo::Coordinate cursorPos = cadMdiChild.cursor()->position();
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["position"] = cursorPos;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("point", data);
+    luaInterface.triggerEvent("point", data);
 
     emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("selectionChanged", data);
+    luaInterface.triggerEvent("selectionChanged", data);
 }
 
 void MainWindow::triggerMouseMoved()
 {
     lc::geo::Coordinate cursorPos = cadMdiChild.cursor()->position();
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["position"] = cursorPos;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("mouseMove", data);
+    luaInterface.triggerEvent("mouseMove", data);
 }
 
 void MainWindow::triggerKeyPressed(int key)
@@ -118,68 +119,68 @@ void MainWindow::triggerKeyPressed(int key)
     if (key == Qt::Key_Escape)
     {
         // run finish operation
-        auto state = luaInterface->luaState();
+        auto state = luaInterface.luaState();
         kaguya::State s(state);
         s["id"] = 0;
-        luaInterface->triggerEvent("finishOperation", s["id"]);
+        luaInterface.triggerEvent("finishOperation", s["id"]);
     }
     else
     {
-        auto state = luaInterface->luaState();
+        auto state = luaInterface.luaState();
         kaguya::LuaTable data(state);
         data["key"] = key;
         data["widget"] = &cadMdiChild;
-        luaInterface->triggerEvent("keyPressed", data);
+        luaInterface.triggerEvent("keyPressed", data);
     }
 }
 
 void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["position"] = coordinate;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("point", data);
+    luaInterface.triggerEvent("point", data);
 
     emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["position"] = lastPoint + coordinate;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("point", data);
+    luaInterface.triggerEvent("point", data);
 
     emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["number"] = number;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("number", data);
+    luaInterface.triggerEvent("number", data);
 }
 
 void MainWindow::triggerTextEntered(QString text)
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::LuaTable data(state);
     data["text"] = text;
     data["widget"] = &cadMdiChild;
-    luaInterface->triggerEvent("text", data);
+    luaInterface.triggerEvent("text", data);
 }
 
 void MainWindow::triggerFinishOperation()
 {
-    auto state = luaInterface->luaState();
+    auto state = luaInterface.luaState();
     kaguya::State s(state);
     s["id"] = 0;
-    luaInterface->triggerEvent("operationFinished", s["id"]);
-    luaInterface->triggerEvent("finishOperation", s["id"]);
+    luaInterface.triggerEvent("operationFinished", s["id"]);
+    luaInterface.triggerEvent("finishOperation", s["id"]);
 }
 
 void MainWindow::triggerCommandEntered(QString command)

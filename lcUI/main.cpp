@@ -3,7 +3,6 @@
 #include <QtWidgets/QStyleFactory>
 #include <QSettings>
 #include "cad/logger/logger.h"
-#include "luainterface.h"
 #include "mainwindow.h"
 
 int main(int argc, char* argv[]) {
@@ -15,9 +14,7 @@ int main(int argc, char* argv[]) {
 
     LOGGER;//Init logger
 
-    lc::ui::LuaInterface li;
-    lc::ui::MainWindow* mainWindow = new lc::ui::MainWindow(&li);
-    li.initLua(mainWindow);
+    lc::ui::MainWindow* mainWindow = new lc::ui::MainWindow();
 
     return QApplication::exec();
 }

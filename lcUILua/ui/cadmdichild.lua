@@ -1,4 +1,4 @@
-windows = {}
+--[[windows = {}
 
 function getWindow(id)
     return windows[id]
@@ -20,4 +20,4 @@ end
 -- Clean Lua information of window when it's destroyed
 function onMdiChildDestroyed(id)
     windows[id] = nil
-end
+end]]--

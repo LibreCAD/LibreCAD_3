@@ -1,5 +1,5 @@
 --Remove "Current operation" group in the toolbar
-local function remove_operation_group(eventName, id)
+local function remove_operation_group(eventName)
     if(hideUI ~= true) then
         local quickAccessTab = mainWindow:getToolbar():tabByName("Quick Access")
         local group = quickAccessTab:groupByName("Current operation")
@@ -8,15 +8,16 @@ local function remove_operation_group(eventName, id)
         end
     end
 
-    getWindow(id):viewer():setOperationActive(false)
+    mainWindow:getCadMdiChild():viewer():setOperationActive(false)
 end
 
-function finish(eventName, id)
-    finish_operation(id)
+function finish(eventName)
+    finish_operation()
 end
 
 --End the current operation, even if it's not finished
-function finish_operation(id)
+function finish_operation()
+    id = 0
     local op = luaInterface:operation(id);
     if(op ~= nil) then
         op:close()
@@ -24,12 +25,12 @@ function finish_operation(id)
 end
 
 --Add a cancel button in the toolbar for the current operation
-local function create_cancel_button(id)
+local function create_cancel_button()
     if(hideUI ~= true) then
         local quickAccessTab = mainWindow:getToolbar():tabByName("Quick Access")
         local operationGroup = quickAccessTab:addGroup("Current operation")
 
-        mainWindow:getToolbar():addButton("", ":/icons/quit.svg", operationGroup, 0, 0, function() finish_operation(id) end, "Cancel")
+        mainWindow:getToolbar():addButton("", ":/icons/quit.svg", operationGroup, 0, 0, function() finish_operation() end, "Cancel")
     end
 end
 
@@ -37,10 +38,11 @@ luaInterface:registerEvent('operationFinished', remove_operation_group)
 luaInterface:registerEvent('finishOperation', finish)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
-function run_basic_operation(id, operation, init_method, ...)
+function run_basic_operation(operation, init_method, ...)
+    local id = 0
     mainWindow:getCliCommand():setFocus()
-    finish_operation(id)
-    create_cancel_button(id)
+    finish_operation()
+    create_cancel_button()
     luaInterface:setOperation(id, operation(id, ...))
 	op = luaInterface:operation(id)
     if(init_method) then
@@ -53,10 +55,11 @@ function run_basic_operation(id, operation, init_method, ...)
 	return op
 end
 
-function create_lw_polyline(id)
+function create_lw_polyline()
+    local id = 0
     mainWindow:getCliCommand():setFocus()
     finish_operation(id)
-    create_cancel_button(id)
+    create_cancel_button()
 
     if(hideUI ~= true) then
         local toolbar = mainWindow:getToolbar()

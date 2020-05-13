@@ -31,7 +31,7 @@ namespace lc
             * \brief Constructor for MainWindow
             * \param luaInterface pointer to luaInterface instance
             */
-            explicit MainWindow(lc::ui::LuaInterface* luaInterface);
+            explicit MainWindow();
 
             ~MainWindow();
 
@@ -73,7 +73,7 @@ namespace lc
 
         private:
             Ui::MainWindow* ui;
-            lc::ui::LuaInterface* luaInterface;
+            lc::ui::LuaInterface luaInterface;
 
             lc::ui::CadMdiChild cadMdiChild;
             lc::ui::widgets::Layers layers;
