@@ -193,6 +193,8 @@ end
 function create_new_window(id)
     create_menu(id)
     connect_buttons(id)
+
+    add_toolbar(id)
 end
 
 --Get next available index in the table

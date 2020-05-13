@@ -7,8 +7,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <iostream>
-
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QObject>
@@ -23,9 +21,6 @@ extern "C"
 #include "lua/qtbridge.h"
 
 #include "lua/luaqobject.h"
-
-class LuaQObject;
-DECLARE_SHORT_SHARED_PTR(LuaQObject)
 
 namespace lc {
 	namespace ui {

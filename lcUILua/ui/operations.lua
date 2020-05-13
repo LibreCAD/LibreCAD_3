@@ -1,7 +1,7 @@
 --Remove "Current operation" group in the toolbar
 local function remove_operation_group(eventName, id)
     if(hideUI ~= true) then
-        local quickAccessTab = get_tab(id, "Quick Access")
+        local quickAccessTab = mainWindow:getToolbar():tabByName("Quick Access")
         local group = quickAccessTab:groupByName("Current operation")
         if(group ~= nil) then
             quickAccessTab:removeGroup(group)

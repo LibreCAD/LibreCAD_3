@@ -2,6 +2,20 @@
 #include "luaqobject.h"
 #include "luainterface.h"
 
+#include "cadmdichild.h"
+#include "documentcanvas.h"
+#include "lcadviewer.h"
+#include "widgets/luascript.h"
+#include "widgets/clicommand.h"
+#include "widgets/toolbar.h"
+#include "widgets/toolbartab.h"
+#include "widgets/layers.h"
+#include "dialogs/linepatternmanager.h"
+#include <drawables/tempentities.h>
+#include "widgets/linewidthselect.h"
+#include "widgets/colorselect.h"
+#include "mainwindow.h"
+
 using namespace lc;
 using namespace viewer;
 using namespace ui;
@@ -241,10 +255,11 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
-		.setConstructors<widgets::Toolbar(), widgets::Toolbar(QWidget*)>()
 		.addFunction("addTab", &widgets::Toolbar::addTab)
 		.addFunction("removeTab", &widgets::Toolbar::removeTab)
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
+        .addFunction("addButton", &widgets::Toolbar::addButton)
+        .addFunction("addCheckableButton", &widgets::Toolbar::addCheckableButton)
 	);
 
 	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
@@ -312,6 +327,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("connectMenuItem", &lc::ui::MainWindow::connectMenuItem)
         .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
         .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
+        .addFunction("getToolbar", &lc::ui::MainWindow::getToolbar)
     );
 }
 

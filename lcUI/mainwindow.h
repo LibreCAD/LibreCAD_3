@@ -1,6 +1,8 @@
 #pragma once
 
 #include "luainterface.h"
+#include <kaguya/kaguya.hpp>
+
 #include<QMainWindow>
 #include "widgets/clicommand.h"
 #include "Widgets/layers.h"
@@ -18,7 +20,6 @@ namespace lc
 {
     namespace ui
     {
-        class LuaInterface;
         /*
             MainWindow GUI Initialization and Menu GUI API functions
         */
@@ -41,6 +42,7 @@ namespace lc
 
             lc::ui::widgets::CliCommand* getCliCommand();
             lc::ui::CadMdiChild* getCadMdiChild();
+            lc::ui::widgets::Toolbar* getToolbar();
 
             /**
             * \brief Connect existing menu item to lua callback function
@@ -71,6 +73,7 @@ namespace lc
 
         private:
             Ui::MainWindow* ui;
+            lc::ui::LuaInterface* luaInterface;
 
             lc::ui::CadMdiChild cadMdiChild;
             lc::ui::widgets::Layers layers;
@@ -82,7 +85,6 @@ namespace lc
             lc::ui::widgets::LineWidthSelect lineWidthSelect;
             lc::ui::widgets::ColorSelect colorSelect;
 
-            lc::ui::LuaInterface* luaInterface;
             lc::geo::Coordinate lastPoint;
         };
     }

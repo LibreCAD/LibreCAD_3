@@ -1,5 +1,7 @@
 #pragma once
 
+#include "luainterface.h"
+
 #include <QDockWidget>
 #include <QCloseEvent>
 #include "toolbartab.h"
@@ -20,7 +22,7 @@ namespace lc {
                      * \brief Create widget
                      * \param parent Pointer to parent widget
                      */
-                    Toolbar(QWidget* parent = 0);
+                    Toolbar(lc::ui::LuaInterface* luaInterface, QWidget* parent = 0);
 
                     ~Toolbar();
 
@@ -48,11 +50,18 @@ namespace lc {
                     /**
                      * \brief Initialize toolbar
                      */
-                    void InitializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect);
+                    void initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect);
 
+                    /**
+                     * \brief Add button to toolbar
+                     */
+                    void addButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
+
+                    void addCheckableButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
                 private:
                     Ui::Toolbar* ui;
                     ToolbarTab quickAccessTab;
+                    lc::ui::LuaInterface* luaInterface;
             };
         }
     }

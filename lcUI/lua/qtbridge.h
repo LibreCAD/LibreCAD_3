@@ -6,8 +6,6 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <kaguya/kaguya.hpp>
-
 #include <QObject>
 #include <QMetaObject>
 #include <QWidget>
@@ -21,19 +19,8 @@ extern "C"
 #include <QMdiSubWindow>
 #include <QFileDialog>
 
-#include "cadmdichild.h"
-#include "documentcanvas.h"
-#include "lcadviewer.h"
-#include "widgets/luascript.h"
-#include "widgets/clicommand.h"
-#include "widgets/toolbar.h"
-#include "widgets/toolbartab.h"
-#include "widgets/layers.h"
-#include "dialogs/linepatternmanager.h"
-#include <drawables/tempentities.h>
-#include "widgets/linewidthselect.h"
-#include "widgets/colorselect.h"
-#include "mainwindow.h"
+#include "cad/geometry/geocoordinate.h"
+#include <kaguya/kaguya.hpp>
 
 
 Q_DECLARE_METATYPE(lc::geo::Coordinate);

@@ -1,20 +1,17 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include<QMenuBar>
-#include<QMenu>
-
 using namespace lc::ui;
 
 MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     :
     ui(new Ui::MainWindow),
+    luaInterface(luaInterface),
     linePatternSelect(&cadMdiChild, this, true, true),
     lineWidthSelect(cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(cadMdiChild.metaInfoManager(), this, true, true),
     cliCommand(this),
-    toolbar(this),
-    luaInterface(luaInterface)
+    toolbar(luaInterface, this)
 {
     ui->setupUi(this);
     // new document and set mainwindow attributes
@@ -30,7 +27,7 @@ MainWindow::MainWindow(lc::ui::LuaInterface* luaInterface)
     addDockWidget(Qt::BottomDockWidgetArea, &cliCommand);
     addDockWidget(Qt::TopDockWidgetArea, &toolbar);
 
-    toolbar.InitializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
+    toolbar.initializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
     cadMdiChild.viewer()->autoScale();
 
     ConnectInputEvents();
@@ -48,6 +45,10 @@ lc::ui::widgets::CliCommand* MainWindow::getCliCommand(){
 
 lc::ui::CadMdiChild* MainWindow::getCadMdiChild() {
     return &cadMdiChild;
+}
+
+lc::ui::widgets::Toolbar* MainWindow::getToolbar() {
+    return &toolbar;
 }
 
 void MainWindow::ConnectInputEvents()

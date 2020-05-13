@@ -7,8 +7,6 @@
 #include <QScrollArea>
 #include <QSpacerItem>
 
-#include <iostream>
-
 namespace Ui {
 	class ToolbarTab;
 }
