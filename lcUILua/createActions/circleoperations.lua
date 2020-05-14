@@ -10,8 +10,8 @@ setmetatable(CircleOperations, {
     end,
 })
 
-function CircleOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.CircleBuilder, "enterCenter")
+function CircleOperations:_init()
+    CreateOperations._init(self, lc.builder.CircleBuilder, "enterCenter")
     mainWindow:getCliCommand():commandActive(true)
 
     self.builder:setRadius(10)

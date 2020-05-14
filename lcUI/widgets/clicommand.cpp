@@ -226,8 +226,8 @@ void CliCommand::closeEvent(QCloseEvent* event)
 	event->ignore();
 }
 
-void CliCommand::runCommand(const QString& command, unsigned int id)
+void CliCommand::runCommand(const QString& command)
 {
     kaguya::LuaRef& cb = _commands_cb[command];
-    cb(id);
+    cb();
 }

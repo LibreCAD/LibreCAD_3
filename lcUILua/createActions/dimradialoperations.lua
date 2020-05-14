@@ -10,10 +10,10 @@ setmetatable(DimRadialOperations, {
     end,
 })
 
-function DimRadialOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimRadialBuilder, "enterStartPoint")
+function DimRadialOperations:_init()
+    CreateOperations._init(self, lc.builder.DimRadialBuilder, "enterStartPoint")
 
-    message("Click on first definition point", id)
+    message("Click on first definition point")
 end
 
 function DimRadialOperations:enterStartPoint(eventName, data)

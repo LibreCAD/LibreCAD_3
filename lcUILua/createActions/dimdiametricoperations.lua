@@ -10,8 +10,8 @@ setmetatable(DimDiametricOperations, {
     end,
 })
 
-function DimDiametricOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimDiametricBuilder, "enterStartPoint")
+function DimDiametricOperations:_init()
+    CreateOperations._init(self, lc.builder.DimDiametricBuilder, "enterStartPoint")
     message("Click on start point", id)
 end
 

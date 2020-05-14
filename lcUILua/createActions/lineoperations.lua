@@ -10,8 +10,8 @@ setmetatable(LineOperations, {
     end,
 })
 
-function LineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.LineBuilder, "setFirstPoint")
+function LineOperations:_init()
+    CreateOperations._init(self, lc.builder.LineBuilder, "setFirstPoint")
     self.length = nil
 end
 

@@ -11,8 +11,8 @@ setmetatable(ArcOperations, {
 })
 
 
-function ArcOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.ArcBuilder, "ArcWith3Points")
+function ArcOperations:_init()
+    CreateOperations._init(self, lc.builder.ArcBuilder, "ArcWith3Points")
     mainWindow:getCliCommand():returnText(true)
     self.builder:setRadius(10)
     self.Arc_FirstPoint = nil

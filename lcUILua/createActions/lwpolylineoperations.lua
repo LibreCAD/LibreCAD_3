@@ -10,8 +10,8 @@ setmetatable(LWPolylineOperations, {
     end,
 })
 
-function LWPolylineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.LWPolylineBuilder, "enterPoint")
+function LWPolylineOperations:_init()
+    CreateOperations._init(self, lc.builder.LWPolylineBuilder, "enterPoint")
 	self.currentVertex = "line"
 	self.tempPoint = false
 end

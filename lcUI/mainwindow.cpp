@@ -120,9 +120,7 @@ void MainWindow::triggerKeyPressed(int key)
     {
         // run finish operation
         auto state = luaInterface.luaState();
-        kaguya::State s(state);
-        s["id"] = 0;
-        luaInterface.triggerEvent("finishOperation", s["id"]);
+        luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
     }
     else
     {
@@ -177,15 +175,13 @@ void MainWindow::triggerTextEntered(QString text)
 void MainWindow::triggerFinishOperation()
 {
     auto state = luaInterface.luaState();
-    kaguya::State s(state);
-    s["id"] = 0;
-    luaInterface.triggerEvent("operationFinished", s["id"]);
-    luaInterface.triggerEvent("finishOperation", s["id"]);
+    luaInterface.triggerEvent("operationFinished", kaguya::LuaRef(state));
+    luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
 }
 
 void MainWindow::triggerCommandEntered(QString command)
 {
-    cliCommand.runCommand(command, cadMdiChild.id());
+    cliCommand.runCommand(command);
 }
 
 void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)

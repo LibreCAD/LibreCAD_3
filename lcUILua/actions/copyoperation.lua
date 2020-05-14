@@ -34,10 +34,6 @@ function CopyOperation:_init(widget)
 end
 
 function CopyOperation:onEvent(eventName, event)
-    if(Operations.forMe(self, event) == false) then
-        return
-    end
-
     if(eventName == "point" or eventName == "number") then
         self:newData(event["position"])
     elseif(eventName == "mouseMove") then
@@ -101,6 +97,6 @@ function CopyOperation:close()
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

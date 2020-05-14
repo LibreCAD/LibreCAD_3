@@ -1,5 +1,4 @@
 op = {}
-id = 0
 
 function getWindow()
     return mainWindow:getCadMdiChild()

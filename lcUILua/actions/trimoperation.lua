@@ -13,7 +13,7 @@ setmetatable(TrimOperation, {
 })
 
 function TrimOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
     self.limit = nil
     self.toTrim = nil
@@ -23,14 +23,10 @@ function TrimOperation:_init(id)
     luaInterface:registerEvent("point", self)
     luaInterface:registerEvent("selectionChanged", self)
 
-    message("Select limit entity", id)
+    message("Select limit entity")
 end
 
 function TrimOperation:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(eventName == "selectionChanged") then
         self:selectionChanged()
     elseif(eventName == "point") then
@@ -227,6 +223,6 @@ function TrimOperation:close()
         luaInterface:deleteEvent("point", self)
         luaInterface:deleteEvent("selectionChanged", self)
 
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

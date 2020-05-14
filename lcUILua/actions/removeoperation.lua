@@ -11,7 +11,7 @@ setmetatable(RemoveOperation, {
 })
 
 function RemoveOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
     self.selection = mainWindow:getCadMdiChild():selection()
 
@@ -37,6 +37,6 @@ end
 function RemoveOperation:close()
     if(not self.finished) then
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

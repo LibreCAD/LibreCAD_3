@@ -69,7 +69,7 @@ namespace lc {
                      */
                     void commandActive(bool commandActive);
 
-                    void runCommand(const QString& command, unsigned int id);
+                    void runCommand(const QString& command);
 
                 public slots:
 

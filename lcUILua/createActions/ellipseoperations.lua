@@ -11,13 +11,13 @@ setmetatable(EllipseOperations, {
 })
 
 
-function EllipseOperations:_init(id)
+function EllipseOperations:_init()
     self.isArc = isArc or false
     self.Axis_StartPoint = nil
     self.Axis_EndPoint = nil
     self.Axis_CenterPoint = nil
     self.rotation = false
-    CreateOperations._init(self, id, lc.builder.EllipseBuilder, "EllipsewithAxisEnd")
+    CreateOperations._init(self, lc.builder.EllipseBuilder, "EllipsewithAxisEnd")
     mainWindow:getCliCommand():returnText( true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
 end
 

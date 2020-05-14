@@ -10,10 +10,10 @@ setmetatable(DimLinearOperations, {
     end,
 })
 
-function DimLinearOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimLinearBuilder, "enterStartPoint")
+function DimLinearOperations:_init()
+    CreateOperations._init(self, lc.builder.DimLinearBuilder, "enterStartPoint")
 
-    message("Click on start point", id)
+    message("Click on start point")
 end
 
 function DimLinearOperations:enterStartPoint(eventName, data)

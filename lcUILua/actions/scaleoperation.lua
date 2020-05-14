@@ -11,11 +11,11 @@ setmetatable(ScaleOperation, {
 })
 
 function ScaleOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
     self.selection = mainWindow:getCadMdiChild():selection()
 
-    message(tostring(#self.selection) .. " items selected", id)
+    message(tostring(#self.selection) .. " items selected")
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -29,15 +29,11 @@ function ScaleOperation:_init(id)
         message("Give origin point")
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
 function ScaleOperation:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(eventName == "point") then
         self:newData(data["position"])
     elseif(eventName == "number") then

@@ -38,11 +38,10 @@ luaInterface:registerEvent('finishOperation', finish)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
 function run_basic_operation(operation, init_method, ...)
-    local id = 0
     mainWindow:getCliCommand():setFocus()
     finish_operation()
     create_cancel_button()
-    luaInterface:setOperation(operation(id, ...))
+    luaInterface:setOperation(operation(...))
 	op = luaInterface:operation()
     if(init_method) then
         op[init_method](op, ...)
@@ -57,7 +56,7 @@ end
 function create_lw_polyline()
     local id = 0
     mainWindow:getCliCommand():setFocus()
-    finish_operation(id)
+    finish_operation()
     create_cancel_button()
 
     if(hideUI ~= true) then
@@ -74,5 +73,5 @@ function create_lw_polyline()
         end, "Arc")
     end
 
-    luaInterface:setOperation(LWPolylineOperations(id))
+    luaInterface:setOperation(LWPolylineOperations())
 end

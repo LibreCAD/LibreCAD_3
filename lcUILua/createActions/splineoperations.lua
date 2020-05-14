@@ -10,8 +10,8 @@ setmetatable(SplineOperations, {
     end,
 })
 
-function SplineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.SplineBuilder, "enterPoint")
+function SplineOperations:_init()
+    CreateOperations._init(self, lc.builder.SplineBuilder, "enterPoint")
     self.tempPoint = false
     message("Add a new points or enter degree")
 end

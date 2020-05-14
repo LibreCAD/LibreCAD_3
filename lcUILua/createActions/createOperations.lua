@@ -4,8 +4,8 @@ setmetatable(CreateOperations, {
     __index = Operations
 })
 
-function CreateOperations:_init(id, builder, step)
-    Operations._init(self, id)
+function CreateOperations:_init(builder, step)
+    Operations._init(self)
 
     self.prevEntity = nil
     if(builder ~= nil) then
@@ -18,10 +18,6 @@ function CreateOperations:_init(id, builder, step)
 end
 
 function CreateOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(self.step ~= nil) then
         self[self.step](self, eventName, data)
     end
@@ -83,7 +79,7 @@ end
 
 function CreateOperations:close()
     if(not self.finished) then
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
         self:removeTempEntity()
         if (self.cleanUp ~= nil) then
             self:cleanUp()

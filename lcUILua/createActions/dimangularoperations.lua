@@ -10,8 +10,8 @@ setmetatable(DimAngularOperations, {
     end,
 })
 
-function DimAngularOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimAngularBuilder, "enterCenterPoint")
+function DimAngularOperations:_init()
+    CreateOperations._init(self, lc.builder.DimAngularBuilder, "enterCenterPoint")
 
     self.centerPoint = nil
     self.firstPoint = nil
