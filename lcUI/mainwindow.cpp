@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "windowmanager.h"
+
 using namespace lc::ui;
 
 MainWindow::MainWindow()
@@ -31,7 +33,6 @@ MainWindow::MainWindow()
 
     // connect required signals and slots
     ConnectInputEvents();
-    showMaximized();
 
     // open qt bridge and run lua scripts
     luaInterface.initLua(this);
@@ -56,12 +57,14 @@ lc::ui::widgets::Toolbar* MainWindow::getToolbar() {
 
 void MainWindow::ConnectInputEvents()
 {   
+    // CadMdiChild connections
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
     QObject::connect(cadMdiChild.viewerProxy(), &LCADViewerProxy::keyPressEvent, this, &MainWindow::triggerKeyPressed);
     QObject::connect(&cadMdiChild, &CadMdiChild::keyPressed, &cliCommand, &widgets::CliCommand::onKeyPressed);
 
+    // CliCommand connections
     QObject::connect(&cliCommand, &widgets::CliCommand::coordinateEntered, this, &MainWindow::triggerCoordinateEntered);
     QObject::connect(&cliCommand, &widgets::CliCommand::relativeCoordinateEntered, this, &MainWindow::triggerRelativeCoordinateEntered);
     QObject::connect(&cliCommand, &widgets::CliCommand::numberEntered, this, &MainWindow::triggerNumberEntered);
@@ -69,12 +72,18 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(&cliCommand, &widgets::CliCommand::finishOperation, this, &MainWindow::triggerFinishOperation);
     QObject::connect(&cliCommand, &widgets::CliCommand::commandEntered, this, &MainWindow::triggerCommandEntered);
 
+    // Layers to select tools connections
     QObject::connect(&layers, &widgets::Layers::layerChanged, &linePatternSelect, &widgets::LinePatternSelect::onLayerChanged);
     QObject::connect(&layers, &widgets::Layers::layerChanged, &lineWidthSelect, &widgets::LineWidthSelect::onLayerChanged);
     QObject::connect(&layers, &widgets::Layers::layerChanged, &colorSelect, &widgets::ColorSelect::onLayerChanged);
 
+    // Other
     QObject::connect(this, &MainWindow::point, this, &MainWindow::triggerPoint);
     QObject::connect(this->findChild<QAction*>("actionExit"), &QAction::triggered, this, &MainWindow::close);
+
+    // File connections
+    QObject::connect(this->findChild<QAction*>("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
+    QObject::connect(this->findChild<QAction*>("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
 }
 
 /* Menu functions */
@@ -190,4 +199,22 @@ void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)
 {
     lastPoint = coordinate;
     cadMdiChild.viewer()->docCanvas()->selectPoint(coordinate.x(), coordinate.y());
+}
+
+void MainWindow::newFile()
+{
+    /*
+        TODO : Ask user if he wishes to save the file before replacing current window with new file
+    */
+
+    WindowManager::newFile(this);
+}
+
+void MainWindow::openFile()
+{
+    /*
+        TODO : Ask user if he wishes to save the file before replacing current window with new file
+    */
+
+    WindowManager::openFile();
 }

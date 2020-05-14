@@ -7,14 +7,6 @@ function new_file()
     create_new_window()
 end
 
-function open_file()
-    -- @todo: It could be better if we create the CadMdiChild only if the filename is correct
-    --local cadMdiChild = lc.CadMdiChild()
-    --if(cadMdiChild:openFile()) then
-    --    create_new_window(cadMdiChild)
-    --end
-end
-
 --Create save file dialog and save the file
 function save_file()
     mainWindow:getCadMdiChild():saveFile()
@@ -47,8 +39,8 @@ local function create_menu()
 
     local widget = mainWindow:getCadMdiChild()
 
-    mainWindow:connectMenuItem("actionNew", new_file)
-    mainWindow:connectMenuItem("actionOpen", open_file)
+    --mainWindow:connectMenuItem("actionNew", new_file)
+    --mainWindow:connectMenuItem("actionOpen", open_file)
     mainWindow:connectMenuItem("actionSave_2", function()
         save_file()
     end)

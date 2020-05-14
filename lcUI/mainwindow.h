@@ -70,6 +70,10 @@ namespace lc
             // Slot to deal with things to do in C++ after a point is triggered
             void triggerPoint(lc::geo::Coordinate coordinate);
 
+            // File related slots
+            void newFile();
+            void openFile();
+
         signals:
             void point(lc::geo::Coordinate coordinate);
 
