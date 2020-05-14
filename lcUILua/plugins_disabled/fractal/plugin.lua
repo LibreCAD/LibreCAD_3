@@ -50,10 +50,10 @@ function FractalTree:onEvent(eventName, data)
         local eb = EntityBuilder(active_widget():document())
         b:append(eb)
 
-        createFractalTree(eb, data:x(), data:y(), self.angle, self.depth, active_layer(), active_metaInfo(), block)
+        createFractalTree(eb, data:x(), data:y(), self.angle, self.depth, mainWindow:getCadMdiChild():activeLayer(), mainWindow:getCadMdiChild():metaInfoManager():metaInfo(), block)
 
         local insertBuilder = InsertBuilder()
-        insertBuilder:setLayer(active_layer())
+        insertBuilder:setLayer(mainWindow:getCadMdiChild():activeLayer())
         insertBuilder:setDisplayBlock(block)
         insertBuilder:setCoordinate(data)
         insertBuilder:setDocument(active_widget():document())

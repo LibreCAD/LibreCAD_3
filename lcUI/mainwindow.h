@@ -3,7 +3,7 @@
 #include "luainterface.h"
 #include <kaguya/kaguya.hpp>
 
-#include<QMainWindow>
+#include <QMainWindow>
 #include "widgets/clicommand.h"
 #include "Widgets/layers.h"
 #include "widgets/linepatternselect.h"
@@ -29,7 +29,6 @@ namespace lc
         public:
             /**
             * \brief Constructor for MainWindow
-            * \param luaInterface pointer to luaInterface instance
             */
             explicit MainWindow();
 
@@ -40,6 +39,9 @@ namespace lc
             */
             void ConnectInputEvents();
 
+            /**
+            * \brief Gettters for clicommand,cadmdichild and toolbar for use in lua
+            */
             lc::ui::widgets::CliCommand* getCliCommand();
             lc::ui::CadMdiChild* getCadMdiChild();
             lc::ui::widgets::Toolbar* getToolbar();

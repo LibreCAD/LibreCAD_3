@@ -1,9 +1,3 @@
-op = {}
-
-function getWindow()
-    return mainWindow:getCadMdiChild()
-end
-
 --Create empty new window
 function new_file()
     --windows[id] = mainWindow:getCadMdiChild()
@@ -29,36 +23,6 @@ end
 
 function save_as_file()
     mainWindow:getCadMdiChild():saveAsFile()
-end
-
-
---Return the selected layer
-function active_layer()
-    return mainWindow:getCadMdiChild():activeLayer()
-end
-
---Return the selected viewport
-function active_block()
-    return mainWindow:getCadMdiChild():activeViewport()
-end
-
-
---Create MetaInfo containing every selected MetaTypes
-function active_metaInfo()
-    local widget = mainWindow:getCadMdiChild()
-
-    if(widget == nil) then
-        return nil
-    end
-
-    local metaInfo = widget:metaInfoManager():metaInfo()
-
-    if(metaInfo == nil) then
-        metaInfo = lc.meta.MetaInfo() -- nil != nullptr when calling a c++ function
-    end
-
-
-    return metaInfo
 end
 
 --Create dialog to enter Lua script

@@ -36,9 +36,9 @@ function CreateOperations:createEntity()
 end
 
 function CreateOperations:build()
-    self.builder:setLayer(active_layer())
-    self.builder:setMetaInfo(active_metaInfo())
-    self.builder:setBlock(active_block())
+    self.builder:setLayer(mainWindow:getCadMdiChild():activeLayer())
+    self.builder:setMetaInfo(mainWindow:getCadMdiChild():metaInfoManager():metaInfo())
+    self.builder:setBlock(mainWindow:getCadMdiChild():activeViewport())
 
     return self.builder:build()
 end

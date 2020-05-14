@@ -54,7 +54,6 @@ function run_basic_operation(operation, init_method, ...)
 end
 
 function create_lw_polyline()
-    local id = 0
     mainWindow:getCliCommand():setFocus()
     finish_operation()
     create_cancel_button()

@@ -29,9 +29,11 @@ MainWindow::MainWindow()
     toolbar.initializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
     cadMdiChild.viewer()->autoScale();
 
+    // connect required signals and slots
     ConnectInputEvents();
     showMaximized();
 
+    // open qt bridge and run lua scripts
     luaInterface.initLua(this);
 }
 
@@ -187,6 +189,5 @@ void MainWindow::triggerCommandEntered(QString command)
 void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)
 {
     lastPoint = coordinate;
-
     cadMdiChild.viewer()->docCanvas()->selectPoint(coordinate.x(), coordinate.y());
 }
