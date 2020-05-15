@@ -59,6 +59,8 @@ namespace lc {
             public slots:
 
                 void ctxMenu(const QPoint& pos);
+                void saveFile();
+                void saveAsFile();
 
             signals:
 
@@ -107,9 +109,6 @@ namespace lc {
                  * This function was added for Lua which can't access EntityContainer functions
                  */
                 std::vector<lc::entity::CADEntity_CSPtr> selection();
-
-                void saveFile();
-                void saveAsFile();
 
                 const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
 

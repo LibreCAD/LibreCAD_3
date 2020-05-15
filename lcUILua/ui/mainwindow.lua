@@ -1,20 +1,10 @@
 --Create empty new window
 function new_file()
-    --windows[id] = mainWindow:getCadMdiChild()
     register_all_commands()
-    --addCadMdiChild(mainWindow:getCadMdiChild(), id, mainWindow:getCliCommand())
-
     create_new_window()
-end
-
---Create save file dialog and save the file
-function save_file()
-    mainWindow:getCadMdiChild():saveFile()
-end
-
-
-function save_as_file()
-    mainWindow:getCadMdiChild():saveAsFile()
+    create_menu()
+    connect_buttons()
+    add_toolbar()
 end
 
 --Create dialog to enter Lua script
@@ -38,18 +28,6 @@ local function create_menu()
     local luaScriptAction = luaMenu:addActionStr(qt.QString("Run script"))]]--
 
     local widget = mainWindow:getCadMdiChild()
-
-    --mainWindow:connectMenuItem("actionNew", new_file)
-    --mainWindow:connectMenuItem("actionOpen", open_file)
-    mainWindow:connectMenuItem("actionSave_2", function()
-        save_file()
-    end)
-
-    --luaInterface:connect(mainWindow:findChild("actionExit"), "triggered(bool)", mainWindow, "close()")
-
-    mainWindow:connectMenuItem("actionSave_As", function()
-        save_as_file()
-    end)
 
     mainWindow:connectMenuItem("actionUndo", function ()
         widget:undoManager():undo()
@@ -127,12 +105,4 @@ local function connect_buttons()
 	mainWindow:connectMenuItem("actionRadius", function() run_basic_operation(DimRadialOperations) end)
 	mainWindow:connectMenuItem("actionDiameter", function() run_basic_operation(DimDiametricOperations) end)
 	mainWindow:connectMenuItem("actionANG3PT", function() run_basic_operation(DimAngularOperations) end)
-end
-
---Create a new window
-function create_new_window()
-    create_menu()
-    connect_buttons()
-
-    add_toolbar()
 end

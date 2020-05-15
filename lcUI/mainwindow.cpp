@@ -84,6 +84,8 @@ void MainWindow::ConnectInputEvents()
     // File connections
     QObject::connect(this->findChild<QAction*>("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
     QObject::connect(this->findChild<QAction*>("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
+    QObject::connect(this->findChild<QAction*>("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
+    QObject::connect(this->findChild<QAction*>("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
 }
 
 /* Menu functions */
