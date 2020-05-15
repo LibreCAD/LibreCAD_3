@@ -10,6 +10,11 @@ setmetatable(MoveOperation, {
     end,
 })
 
+function init()
+
+    mainWindow:getCliCommand:addCommand("MOVE", function() run_basic_operation(MoveOperation) end)
+end
+
 function MoveOperation:_init(id)
     Operations._init(self)
 

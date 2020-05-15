@@ -10,6 +10,12 @@ setmetatable(DimRadialOperations, {
     end,
 })
 
+function init()
+   	mainWindow:connectMenuItem("actionRadius", function() run_basic_operation(DimRadialOperations) end)
+
+    mainWindow:getCliCommand:addCommand("DIMRADIAL", function() run_basic_operation(DimRadialOperations) end)
+end
+
 function DimRadialOperations:_init()
     CreateOperations._init(self, lc.builder.DimRadialBuilder, "enterStartPoint")
 

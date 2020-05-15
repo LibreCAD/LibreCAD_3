@@ -1,65 +1,7 @@
---Create empty new window
-function new_file()
-    register_all_commands()
-    create_new_window()
-    create_menu()
-    connect_buttons()
-    add_toolbar()
-end
-
 --Create dialog to enter Lua script
 local function open_lua_script(widget, commandLine)
     local luaScript = lc.LuaScript(widget, commandLine)
     luaScript:show()
-end
-
---Create main window menu
-local function create_menu()
-    --[[local menuBar = mainWindow:menuBar()
-    local drawMenu = menuBar:addMenuStr(qt.QString("Draw"))
-    local lineAction = drawMenu:addActionStr(qt.QString("Line"))
-    local circleAction = drawMenu:addActionStr(qt.QString("Circle"))
-    local arcAction = drawMenu:addActionStr(qt.QString("Arc"))
-	local ellipseAction = drawMenu:addActionStr(qt.QString("Ellipse"))
-	local splineAction = drawMenu:addActionStr(qt.QString("Spline"))
-	local polylineAction = drawMenu:addActionStr(qt.QString("Polyline"))
-
-    local luaMenu = menuBar:addMenuStr(qt.QString("Lua"))
-    local luaScriptAction = luaMenu:addActionStr(qt.QString("Run script"))]]--
-
-    local widget = mainWindow:getCadMdiChild()
-
-    mainWindow:connectMenuItem("actionUndo", function ()
-        widget:undoManager():undo()
-    end)
-    mainWindow:connectMenuItem("actionRedo", function ()
-        widget:undoManager():redo()
-    end)
-
-    --[[luaInterface:luaConnect(luaScriptAction, "triggered(bool)", function()
-        open_lua_script(widget, commandLine)
-    end)]]--
-
-    -- select options
-    mainWindow:connectMenuItem("actionSelect_All", function()
-        widget:viewer():docCanvas():selectAll()
-    end)
-
-    mainWindow:connectMenuItem("actionSelect_None", function()
-        widget:viewer():docCanvas():removeSelection()
-    end)
-
-    mainWindow:connectMenuItem("actionInvert_Selection", function()
-        widget:viewer():docCanvas():inverseSelection()
-    end)
-
-	--[[-- connect draw menu options
-	luaInterface:luaConnect(lineAction, "triggered(bool)", function() run_basic_operation(id, LineOperations) end)
-	luaInterface:luaConnect(circleAction, "triggered(bool)", function() run_basic_operation(id, CircleOperations) end)
-	luaInterface:luaConnect(arcAction, "triggered(bool)", function() run_basic_operation(id, ArcOperations) end)
-	luaInterface:luaConnect(ellipseAction, "triggered(bool)", function() run_basic_operation(id, EllipseOperations) end)
-	luaInterface:luaConnect(splineAction, "triggered(bool)", function() run_basic_operation(id, SplineOperations) end)
-	luaInterface:luaConnect(polylineAction, "triggered(bool)", function() create_lw_polyline(id) end)]]--
 end
 
 -- Connect menu buttons in the menu bar
@@ -105,4 +47,12 @@ local function connect_buttons()
 	mainWindow:connectMenuItem("actionRadius", function() run_basic_operation(DimRadialOperations) end)
 	mainWindow:connectMenuItem("actionDiameter", function() run_basic_operation(DimDiametricOperations) end)
 	mainWindow:connectMenuItem("actionANG3PT", function() run_basic_operation(DimAngularOperations) end)
+end
+
+--Create empty new window
+function new_file()
+    register_all_commands()
+    create_menu()
+    connect_buttons()
+    add_toolbar()
 end

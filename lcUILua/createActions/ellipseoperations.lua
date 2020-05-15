@@ -10,6 +10,14 @@ setmetatable(EllipseOperations, {
     end,
 })
 
+function init()
+    mainWindow:connectMenuItem("actionEllipse_Axis", function() run_basic_operation(EllipseOperations) end)
+    mainWindow:connectMenuItem("actionEllipse_Arc", function() run_basic_operation(EllipseOperations, "_init_arc") end)
+    mainWindow:connectMenuItem("actionEllipse_FociPoints", function() run_basic_operation(EllipseOperations, "_init_foci") end)
+
+    mainWindow:getCliCommand:addCommand("ELLIPSE", function() run_basic_operation(EllipseOperations) end)
+    mainWindow:getCliCommand:addCommand("ARCELLIPSE", function() run_basic_operation(EllipseOperations, "_init_arc") end)
+end
 
 function EllipseOperations:_init()
     self.isArc = isArc or false

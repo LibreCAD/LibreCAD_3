@@ -10,6 +10,11 @@ setmetatable(RotateOperation, {
     end,
 })
 
+function init()
+
+    mainWindow:getCliCommand:addCommand("ROTATE", function() run_basic_operation(RotateOperation) end)
+end
+
 function RotateOperation:_init(id)
     Operations._init(self)
 

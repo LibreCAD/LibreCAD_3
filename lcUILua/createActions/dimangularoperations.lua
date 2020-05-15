@@ -10,6 +10,12 @@ setmetatable(DimAngularOperations, {
     end,
 })
 
+function init()
+    mainWindow:connectMenuItem("actionANG3PT", function() run_basic_operation(DimAngularOperations) end)
+
+    mainWindow:getCliCommand:addCommand("DIMANGULAR", function() run_basic_operation(DimAngularOperations) end)
+end
+
 function DimAngularOperations:_init()
     CreateOperations._init(self, lc.builder.DimAngularBuilder, "enterCenterPoint")
 

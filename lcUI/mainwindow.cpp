@@ -86,6 +86,13 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(this->findChild<QAction*>("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
     QObject::connect(this->findChild<QAction*>("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
     QObject::connect(this->findChild<QAction*>("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
+
+    // Edit connections
+    QObject::connect(this->findChild<QAction*>("actionUndo"), &QAction::triggered, this, &MainWindow::undo);
+    QObject::connect(this->findChild<QAction*>("actionRedo"), &QAction::triggered, this, &MainWindow::redo);
+    QObject::connect(this->findChild<QAction*>("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
+    QObject::connect(this->findChild<QAction*>("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
+    QObject::connect(this->findChild<QAction*>("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
 }
 
 /* Menu functions */
@@ -214,9 +221,31 @@ void MainWindow::newFile()
 
 void MainWindow::openFile()
 {
-    /*
-        TODO : Ask user if he wishes to save the file before replacing current window with new file
-    */
-
     WindowManager::openFile();
+}
+
+// Edit slots
+void MainWindow::undo()
+{
+    cadMdiChild.undoManager()->undo();
+}
+
+void MainWindow::redo()
+{
+    cadMdiChild.undoManager()->redo();
+}
+
+void MainWindow::selectAll()
+{
+    cadMdiChild.viewer()->docCanvas()->selectAll();
+}
+
+void MainWindow::selectNone()
+{
+    cadMdiChild.viewer()->docCanvas()->removeSelection();
+}
+
+void MainWindow::invertSelection()
+{
+    cadMdiChild.viewer()->docCanvas()->inverseSelection();
 }

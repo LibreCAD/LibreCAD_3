@@ -74,6 +74,13 @@ namespace lc
             void newFile();
             void openFile();
 
+            // Edit slots
+            void undo();
+            void redo();
+            void selectAll();
+            void selectNone();
+            void invertSelection();
+
         signals:
             void point(lc::geo::Coordinate coordinate);
 

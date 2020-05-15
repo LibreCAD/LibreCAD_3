@@ -10,6 +10,21 @@ setmetatable(LineOperations, {
     end,
 })
 
+function init()
+    mainWindow:connectMenuItem("action2_Point_Line", function() run_basic_operation(LineOperations, "_init_2p") end)
+    mainWindow:connectMenuItem("actionPoint_Angle_Length_Line", function() run_basic_operation(LineOperations, "_init_pal") end)
+    mainWindow:connectMenuItem("actionHorizontalLine", function() run_basic_operation(LineOperations, "_init_horizontal") end)
+    mainWindow:connectMenuItem("actionVerticalLine", function() run_basic_operation(LineOperations, "_init_vertical") end)
+    mainWindow:connectMenuItem("actionParallelLine", function() run_basic_operation(LineOperations, "_init_parallel") end)
+    mainWindow:connectMenuItem("actionOrthogonalLine", function() run_basic_operation(LineOperations, "_init_orthogonal") end)
+    mainWindow:connectMenuItem("actionRectangle", function() run_basic_operation(LineOperations, "_init_rectangle") end)
+    mainWindow:connectMenuItem("actionPolygonCenCor", function() run_basic_operation(LineOperations, "_init_polygon_cencor") end)
+    mainWindow:connectMenuItem("actionPolygonCenTan", function() run_basic_operation(LineOperations, "_init_polygon_centan") end)
+    mainWindow:connectMenuItem("actionPolygonCorCor", function() run_basic_operation(LineOperations, "_init_polygon_corcor") end)
+
+    mainWindow:getCliCommand:addCommand("LINE", function() run_basic_operation(LineOperations) end)
+end
+
 function LineOperations:_init()
     CreateOperations._init(self, lc.builder.LineBuilder, "setFirstPoint")
     self.length = nil

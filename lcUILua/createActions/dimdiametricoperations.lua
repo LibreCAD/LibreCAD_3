@@ -10,6 +10,12 @@ setmetatable(DimDiametricOperations, {
     end,
 })
 
+function init()
+    mainWindow:connectMenuItem("actionDiameter", function() run_basic_operation(DimDiametricOperations) end)
+
+    mainWindow:getCliCommand:addCommand("DIMDIAMETRIC", function() run_basic_operation(DimDiametricOperations) end)
+end
+
 function DimDiametricOperations:_init()
     CreateOperations._init(self, lc.builder.DimDiametricBuilder, "enterStartPoint")
     message("Click on start point", id)
