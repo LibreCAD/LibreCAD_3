@@ -1,11 +1,3 @@
---Write a message to the command line log
-function message(message)
-    local cliCommand = mainWindow:getCliCommand()
-    if cliCommand ~= nil then
-        cliCommand:write(tostring(message))
-    end
-end
-
 --Register a new command
 function add_command(name, callback)
     local cliCommand = mainWindow:getCliCommand()

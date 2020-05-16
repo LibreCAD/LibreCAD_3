@@ -41,6 +41,8 @@ namespace lc {
                  */
 				void initLua(QMainWindow* mainWindow);
 
+                void loadLuaOperations(const std::string& lua_path);
+
 				/**
                  * \brief Connect Qt signal with Lua function
                  * \param sender Pointer to sender object

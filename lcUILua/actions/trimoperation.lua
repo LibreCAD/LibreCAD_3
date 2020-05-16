@@ -12,9 +12,9 @@ setmetatable(TrimOperation, {
     end,
 })
 
-function init()
+function TrimOperation:init()
 
-    mainWindow:getCliCommand:addCommand("TRIM", function() run_basic_operation(TrimOperation) end)
+    mainWindow:getCliCommand():addCommand("TRIM", function() run_basic_operation(TrimOperation) end)
 end
 
 function TrimOperation:_init(id)

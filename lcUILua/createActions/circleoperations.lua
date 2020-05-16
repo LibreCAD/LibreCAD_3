@@ -10,7 +10,7 @@ setmetatable(CircleOperations, {
     end,
 })
 
-function init()
+function CircleOperations:init()
     mainWindow:connectMenuItem("actionCenter_Radius", function() run_basic_operation(CircleOperations, "_init_cr") end)
 	mainWindow:connectMenuItem("actionCenter_Diameter", function() run_basic_operation(CircleOperations, "_init_cd") end)
 	mainWindow:connectMenuItem("action2_Point_Circle", function() run_basic_operation(CircleOperations, "_init_2p") end)
@@ -18,7 +18,7 @@ function init()
 	mainWindow:connectMenuItem("actionTan_Tan_Radius", function() run_basic_operation(CircleOperations, "_init_2t") end)
 	mainWindow:connectMenuItem("actionTan_Tan_Tan", function() run_basic_operation(CircleOperations, "_init_3t") end)
 
-    mainWindow:getCliCommand:addCommand("CIRCLE", function() run_basic_operation(CircleOperations) end)
+    mainWindow:getCliCommand():addCommand("CIRCLE", function() run_basic_operation(CircleOperations) end)
 end
 
 function CircleOperations:_init()

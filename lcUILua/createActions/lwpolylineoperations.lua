@@ -10,10 +10,10 @@ setmetatable(LWPolylineOperations, {
     end,
 })
 
-function init()
+function LWPolylineOperations:init()
    	mainWindow:connectMenuItem("actionPolyline", function() create_lw_polyline() end)
 
-    mainWindow:getCliCommand:addCommand("POLYLINE", function() create_lw_polyline() end)
+    mainWindow:getCliCommand():addCommand("POLYLINE", function() create_lw_polyline() end)
 end
 
 function LWPolylineOperations:_init()

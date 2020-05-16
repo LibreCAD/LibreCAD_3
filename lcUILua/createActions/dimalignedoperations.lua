@@ -10,10 +10,10 @@ setmetatable(DimAlignedOperations, {
     end,
 })
 
-function init()
+function DimAlignedOperations:init()
     mainWindow:connectMenuItem("actionAligned", function() run_basic_operation(DimAlignedOperations) end)
 
-    mainWindow:getCliCommand:addCommand("DIMALIGNED", function() run_basic_operation(DimAlignedOperations) end)
+    mainWindow:getCliCommand():addCommand("DIMALIGNED", function() run_basic_operation(DimAlignedOperations) end)
 end
 
 function DimAlignedOperations:_init()

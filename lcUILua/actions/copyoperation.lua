@@ -10,9 +10,9 @@ setmetatable(CopyOperation, {
     end,
 })
 
-function init()
+function CopyOperation:init()
 
-    mainWindow:getCliCommand:addCommand("COPY", function() run_basic_operation(CopyOperation) end)
+    mainWindow:getCliCommand():addCommand("COPY", function() run_basic_operation(CopyOperation) end)
 end
 
 function CopyOperation:_init(widget)

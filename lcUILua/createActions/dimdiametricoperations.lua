@@ -10,10 +10,10 @@ setmetatable(DimDiametricOperations, {
     end,
 })
 
-function init()
+function DimDiametricOperations:init()
     mainWindow:connectMenuItem("actionDiameter", function() run_basic_operation(DimDiametricOperations) end)
 
-    mainWindow:getCliCommand:addCommand("DIMDIAMETRIC", function() run_basic_operation(DimDiametricOperations) end)
+    mainWindow:getCliCommand():addCommand("DIMDIAMETRIC", function() run_basic_operation(DimDiametricOperations) end)
 end
 
 function DimDiametricOperations:_init()

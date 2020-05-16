@@ -10,10 +10,10 @@ setmetatable(DimLinearOperations, {
     end,
 })
 
-function init()
+function DimLinearOperations:init()
    	mainWindow:connectMenuItem("actionLinear", function() run_basic_operation(DimLinearOperations) end)
 
-    mainWindow:getCliCommand:addCommand("DIMLINEAR", function() run_basic_operation(DimLinearOperations) end)
+    mainWindow:getCliCommand():addCommand("DIMLINEAR", function() run_basic_operation(DimLinearOperations) end)
 end
 
 function DimLinearOperations:_init()

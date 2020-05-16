@@ -1,3 +1,11 @@
+--Write a message to the command line log
+function message(message)
+    local cliCommand = mainWindow:getCliCommand()
+    if cliCommand ~= nil then
+        cliCommand:write(tostring(message))
+    end
+end
+
 --Remove "Current operation" group in the toolbar
 local function remove_operation_group(eventName)
     if(hideUI ~= true) then

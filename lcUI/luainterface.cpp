@@ -31,6 +31,9 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
+    std::string lua_path = _L["lua_path"];
+    loadLuaOperations(lua_path);
+
     if (s) {
 		const char* out = lua_tostring(_L.state(), -1);
 		if (out == nullptr) {
@@ -173,6 +176,60 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
         }
         else if(eventCallback.type() == LUA_TTABLE) {
             eventCallback["onEvent"](eventCallback, event, args);
+        }
+    }
+}
+
+void LuaInterface::loadLuaOperations(const std::string& lua_path)
+{
+    _L.dofile(lua_path + "/ui/operations.lua");
+
+    // run all lua files in createActions folder
+    QDir createActionsDir((lua_path + "/createActions").c_str());
+    QStringList luaFiles = createActionsDir.entryList(QStringList() << "*.lua", QDir::Files);
+    for (QString str : luaFiles)
+    {
+        _L.dofile(lua_path + "/createActions/" + str.toStdString());
+    }
+
+    // run all lua files in actions folder
+    QDir actionsDir((lua_path + "/actions").c_str());
+    QStringList luaFiles1 = actionsDir.entryList(QStringList() << "*.lua", QDir::Files);
+    for (QString str : luaFiles1)
+    {
+        _L.dofile(lua_path + "/actions/" + str.toStdString());
+    }
+
+    // fetch a list of all keys from the state table
+    kaguya::LuaTable globalTable(_L.globalTable());
+    std::vector<kaguya::LuaRef> globalKeys = globalTable.keys();
+
+    /* Loop through all keys to search for the ones containing "Operation" in their name,
+     * If this operation has a "init" function, call it.
+     */
+    for (kaguya::LuaRef v : globalKeys)
+    {
+        if (v.isType<std::string>())
+        {
+            std::string vkey = std::string(v.get<std::string>());
+            if (vkey.find("Operation") < vkey.length()) {
+                kaguya::LuaTable opTable = _L[vkey];
+
+                std::vector<kaguya::LuaRef> op_keys = opTable.keys();
+                for(kaguya::LuaRef& op : op_keys)
+                {
+                    if (op.isType<std::string>())
+                    {
+                        std::string opkey = std::string(op.get<std::string>());
+
+                        if (opkey == "init")
+                        {
+                            std::cout << "callining init for " << vkey << std::endl;
+                            _L[vkey][opkey]();
+                        }
+                    }
+                }
+            }
         }
     }
 }

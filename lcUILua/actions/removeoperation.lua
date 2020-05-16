@@ -10,9 +10,9 @@ setmetatable(RemoveOperation, {
     end,
 })
 
-function init()
+function RemoveOperation:init()
 
-    mainWindow:getCliCommand:addCommand("REMOVE", function() run_basic_operation(RemoveOperation) end)
+    mainWindow:getCliCommand():addCommand("REMOVE", function() run_basic_operation(RemoveOperation) end)
 end
 
 function RemoveOperation:_init(id)

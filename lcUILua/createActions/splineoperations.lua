@@ -10,10 +10,10 @@ setmetatable(SplineOperations, {
     end,
 })
 
-function init()
+function SplineOperations:init()
    	mainWindow:connectMenuItem("actionSpline", function() run_basic_operation(SplineOperations) end)
 
-    mainWindow:getCliCommand:addCommand("SPLINE", function() run_basic_operation(SplineOperations) end)
+    mainWindow:getCliCommand():addCommand("SPLINE", function() run_basic_operation(SplineOperations) end)
 end
 
 function SplineOperations:_init()

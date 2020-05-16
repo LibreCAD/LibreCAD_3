@@ -10,9 +10,9 @@ setmetatable(ScaleOperation, {
     end,
 })
 
-function init()
+function ScaleOperation:init()
 
-    mainWindow:getCliCommand:addCommand("SCALE", function() run_basic_operation(ScaleOperation) end)
+    mainWindow:getCliCommand():addCommand("SCALE", function() run_basic_operation(ScaleOperation) end)
 end
 
 function ScaleOperation:_init(id)

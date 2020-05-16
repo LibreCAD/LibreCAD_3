@@ -14,6 +14,7 @@ function CreateOperations:_init(builder, step)
 
     self.step = step
 
+    print("REGISTER EVENTS?")
     self:registerEvents()
 end
 

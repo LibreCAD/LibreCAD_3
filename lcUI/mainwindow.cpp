@@ -107,31 +107,31 @@ void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef cal
 void MainWindow::triggerMousePressed()
 {
     lc::geo::Coordinate cursorPos = cadMdiChild.cursor()->position();
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["position"] = cursorPos;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("point", data);
+    kaguya::State state(luaInterface.luaState());
+    state["mousePressed"] = kaguya::NewTable();
+    state["mousePressed"]["position"] = cursorPos;
+    state["mousePressed"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("point", state["mousePressed"]);
 
     emit point(cursorPos);
 }
 
 void MainWindow::triggerMouseReleased()
 {
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("selectionChanged", data);
+    kaguya::State state(luaInterface.luaState());
+    state["mouseRelease"] = kaguya::NewTable();
+    state["mouseRelease"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("selectionChanged", state["mouseRelease"]);
 }
 
 void MainWindow::triggerMouseMoved()
 {
     lc::geo::Coordinate cursorPos = cadMdiChild.cursor()->position();
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["position"] = cursorPos;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("mouseMove", data);
+    kaguya::State state(luaInterface.luaState());
+    state["mouseMove"] = kaguya::NewTable();
+    state["mouseMove"]["position"] = cursorPos;
+    state["mouseMove"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("mouseMove", state["mouseMove"]);
 }
 
 void MainWindow::triggerKeyPressed(int key)
@@ -144,52 +144,52 @@ void MainWindow::triggerKeyPressed(int key)
     }
     else
     {
-        auto state = luaInterface.luaState();
-        kaguya::LuaTable data(state);
-        data["key"] = key;
-        data["widget"] = &cadMdiChild;
-        luaInterface.triggerEvent("keyPressed", data);
+        kaguya::State state(luaInterface.luaState());
+        state["finishOperationEvent"] = kaguya::NewTable();
+        state["finishOperationEvent"]["key"] = key;
+        state["finishOperationEvent"]["widget"] = &cadMdiChild;
+        luaInterface.triggerEvent("keyPressed", state["finishOperationEvent"]);
     }
 }
 
 void MainWindow::triggerCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["position"] = coordinate;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("point", data);
+    kaguya::State state(luaInterface.luaState());
+    state["coordinateEntered"] = kaguya::NewTable();
+    state["coordinateEntered"]["position"] = coordinate;
+    state["coordinateEntered"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("point", state["coordinateEntered"]);
 
     emit point(coordinate);
 }
 
 void MainWindow::triggerRelativeCoordinateEntered(lc::geo::Coordinate coordinate)
 {
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["position"] = lastPoint + coordinate;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("point", data);
+    kaguya::State state(luaInterface.luaState());
+    state["relCoordinateEntered"] = kaguya::NewTable();
+    state["relCoordinateEntered"]["position"] = lastPoint + coordinate;
+    state["relCoordinateEntered"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("point", state["relCoordinateEntered"]);
 
     emit point(lastPoint + coordinate);
 }
 
 void MainWindow::triggerNumberEntered(double number)
 {
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["number"] = number;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("number", data);
+    kaguya::State state(luaInterface.luaState());
+    state["numberEntered"] = kaguya::NewTable();
+    state["numberEntered"]["number"] = number;
+    state["numberEntered"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("number", state["numberEntered"]);
 }
 
 void MainWindow::triggerTextEntered(QString text)
 {
-    auto state = luaInterface.luaState();
-    kaguya::LuaTable data(state);
-    data["text"] = text;
-    data["widget"] = &cadMdiChild;
-    luaInterface.triggerEvent("text", data);
+    kaguya::State state(luaInterface.luaState());
+    state["textEntered"] = kaguya::NewTable();
+    state["textEntered"]["text"] = text;
+    state["textEntered"]["widget"] = &cadMdiChild;
+    luaInterface.triggerEvent("text", state["textEntered"]);
 }
 
 void MainWindow::triggerFinishOperation()
