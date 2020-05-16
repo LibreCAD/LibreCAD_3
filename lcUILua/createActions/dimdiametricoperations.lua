@@ -13,6 +13,8 @@ setmetatable(DimDiametricOperations, {
 function DimDiametricOperations:init()
     mainWindow:connectMenuItem("actionDiameter", function() run_basic_operation(DimDiametricOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/dim_diametric.svg", "Dimensions", 0, 1, function() run_basic_operation(DimDiametricOperations) end, "Diametric Dimension")
+
     mainWindow:getCliCommand():addCommand("DIMDIAMETRIC", function() run_basic_operation(DimDiametricOperations) end)
 end
 

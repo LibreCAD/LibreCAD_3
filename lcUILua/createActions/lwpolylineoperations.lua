@@ -13,6 +13,8 @@ setmetatable(LWPolylineOperations, {
 function LWPolylineOperations:init()
    	mainWindow:connectMenuItem("actionPolyline", function() create_lw_polyline() end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/polylines.svg", "Creation", 2, 1, function() create_lw_polyline() end, "Polyline")
+
     mainWindow:getCliCommand():addCommand("POLYLINE", function() create_lw_polyline() end)
 end
 

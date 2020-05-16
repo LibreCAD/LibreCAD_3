@@ -11,6 +11,7 @@ setmetatable(RotateOperation, {
 })
 
 function RotateOperation:init()
+    mainWindow:getToolbar():addButton("", ":/icons/modifyrotate.png", "Modify", 1, 0, function() run_basic_operation(RotateOperation) end, "Rotate")
 
     mainWindow:getCliCommand():addCommand("ROTATE", function() run_basic_operation(RotateOperation) end)
 end

@@ -55,13 +55,22 @@ namespace lc {
                     /**
                      * \brief Add button to toolbar
                      */
-                    void addButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
+                    void addButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
 
-                    void addCheckableButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
+                    /**
+                     * \brief Add Checkable button to toolbar
+                     */
+                    void addCheckableButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
+
+                    /**
+                     * \brief Remove group from quickaccesstab if it exists
+                     */
+                    void removeGroupByName(const char* groupName);
                 private:
                     Ui::Toolbar* ui;
                     ToolbarTab quickAccessTab;
                     lc::ui::LuaInterface* luaInterface;
+                    QMap<QString, QGroupBox*> quickAccessGroups;
             };
         }
     }

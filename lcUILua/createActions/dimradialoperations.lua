@@ -13,6 +13,8 @@ setmetatable(DimRadialOperations, {
 function DimRadialOperations:init()
    	mainWindow:connectMenuItem("actionRadius", function() run_basic_operation(DimRadialOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/dim_radial.svg", "Dimensions", 2, 0, function() run_basic_operation(DimRadialOperations) end, "Radial Dimension")
+
     mainWindow:getCliCommand():addCommand("DIMRADIAL", function() run_basic_operation(DimRadialOperations) end)
 end
 

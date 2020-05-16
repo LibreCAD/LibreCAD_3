@@ -13,6 +13,8 @@ setmetatable(DimAlignedOperations, {
 function DimAlignedOperations:init()
     mainWindow:connectMenuItem("actionAligned", function() run_basic_operation(DimAlignedOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/dim_aligned.svg", "Dimensions", 0, 0, function() run_basic_operation(DimAlignedOperations) end, "Aligned Dimension")
+
     mainWindow:getCliCommand():addCommand("DIMALIGNED", function() run_basic_operation(DimAlignedOperations) end)
 end
 

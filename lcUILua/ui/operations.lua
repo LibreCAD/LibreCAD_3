@@ -9,11 +9,7 @@ end
 --Remove "Current operation" group in the toolbar
 local function remove_operation_group(eventName)
     if(hideUI ~= true) then
-        local quickAccessTab = mainWindow:getToolbar():tabByName("Quick Access")
-        local group = quickAccessTab:groupByName("Current operation")
-        if(group ~= nil) then
-            quickAccessTab:removeGroup(group)
-        end
+        mainWindow:getToolbar():removeGroupByName("Current operation")
     end
 
     mainWindow:getCadMdiChild():viewer():setOperationActive(false)
@@ -34,10 +30,7 @@ end
 --Add a cancel button in the toolbar for the current operation
 local function create_cancel_button()
     if(hideUI ~= true) then
-        local quickAccessTab = mainWindow:getToolbar():tabByName("Quick Access")
-        local operationGroup = quickAccessTab:addGroup("Current operation")
-
-        mainWindow:getToolbar():addButton("", ":/icons/quit.svg", operationGroup, 0, 0, function() finish_operation() end, "Cancel")
+        mainWindow:getToolbar():addButton("", ":/icons/quit.svg", "Current operation", 0, 0, function() finish_operation() end, "Cancel")
     end
 end
 
@@ -68,17 +61,30 @@ function create_lw_polyline()
 
     if(hideUI ~= true) then
         local toolbar = mainWindow:getToolbar()
-        local quickAccessTab = toolbar:tabByName("Quick Access")
-        local group = quickAccessTab:groupByName("Current operation")
-
-        toolbar:addButton("", ":/icons/linesnormal.png", group, 0, 1, function()
+        toolbar:addButton("", ":/icons/linesnormal.png", "Current operation", 0, 1, function()
             luaInterface:operation():createLine()
         end, "Line")
 
-        toolbar:addButton("", ":/icons/arc.svg", group, 1, 1, function()
+        toolbar:addButton("", ":/icons/arc.svg", "Current operation", 1, 1, function()
             luaInterface:operation():createArc()
         end, "Arc")
     end
 
     luaInterface:setOperation(LWPolylineOperations())
 end
+
+--
+-- Toolbar Snap options
+--
+mainWindow:getToolbar():addCheckableButton("", ":/icons/snap_grid.svg", "Snap Options", 0, 0, function(enabled)
+    mainWindow:getCadMdiChild():getSnapManager():setGridSnappable(enabled)
+end, "Snap Grid")
+mainWindow:getToolbar():addCheckableButton("", ":/icons/snap_intersection.svg", "Snap Options", 0, 1, function(enabled)
+    mainWindow:getCadMdiChild():getSnapManager():setIntersectionSnappable(enabled)
+end, "Snap Intersection")
+mainWindow:getToolbar():addCheckableButton("", ":/icons/snap_middle.svg", "Snap Options", 1, 0, function(enabled)
+    mainWindow:getCadMdiChild():getSnapManager():setMiddleSnappable(enabled)
+end, "Snap Middle")
+mainWindow:getToolbar():addCheckableButton("", ":/icons/snap_entity.svg", "Snap Options", 1, 1, function(enabled)
+    mainWindow:getCadMdiChild():getSnapManager():setEntitySnappable(enabled)
+end, "Snap Entity")

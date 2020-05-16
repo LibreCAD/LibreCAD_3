@@ -13,6 +13,8 @@ setmetatable(SplineOperations, {
 function SplineOperations:init()
    	mainWindow:connectMenuItem("actionSpline", function() run_basic_operation(SplineOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/spline.svg", "Creation", 2, 0, function() run_basic_operation(SplineOperations) end, "Spline")
+
     mainWindow:getCliCommand():addCommand("SPLINE", function() run_basic_operation(SplineOperations) end)
 end
 

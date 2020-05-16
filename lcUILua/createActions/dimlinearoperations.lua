@@ -13,6 +13,8 @@ setmetatable(DimLinearOperations, {
 function DimLinearOperations:init()
    	mainWindow:connectMenuItem("actionLinear", function() run_basic_operation(DimLinearOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/dim_linear.svg", "Dimensions", 1, 1, function() run_basic_operation(DimLinearOperations) end, "Linear Dimension")
+
     mainWindow:getCliCommand():addCommand("DIMLINEAR", function() run_basic_operation(DimLinearOperations) end)
 end
 

@@ -18,6 +18,8 @@ function CircleOperations:init()
 	mainWindow:connectMenuItem("actionTan_Tan_Radius", function() run_basic_operation(CircleOperations, "_init_2t") end)
 	mainWindow:connectMenuItem("actionTan_Tan_Tan", function() run_basic_operation(CircleOperations, "_init_3t") end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/circle.svg", "Creation", 1, 0, function() run_basic_operation(CircleOperations) end, "Circle")
+
     mainWindow:getCliCommand():addCommand("CIRCLE", function() run_basic_operation(CircleOperations) end)
 end
 

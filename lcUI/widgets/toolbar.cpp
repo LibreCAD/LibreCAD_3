@@ -64,8 +64,11 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     quickAccessTab.addWidget(metaInfoGroup, colorSelect, 0, 2, 1, 1);
 }
 
-void Toolbar::addButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
+void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
 {
+    if (quickAccessGroups.find(groupBox) == quickAccessGroups.end()){
+        quickAccessGroups[groupBox] = quickAccessTab.addGroup(groupBox);
+    }
     QPushButton* button = new QPushButton(name);
     button->setToolTip(tooltip);
     button->setFlat(true);
@@ -75,12 +78,16 @@ void Toolbar::addButton(const char* name, const char* icon, QGroupBox* groupBox,
         button->setIconSize(QSize(24, 24));
     }
 
-    quickAccessTab.addWidget(groupBox, button, x, y, 1, 1);
+    quickAccessTab.addWidget(quickAccessGroups[groupBox], button, x, y, 1, 1);
     luaInterface->luaConnect(button, "pressed()", cb);
 }
 
-void Toolbar::addCheckableButton(const char* name, const char* icon, QGroupBox* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
+void Toolbar::addCheckableButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
 {
+    if (quickAccessGroups.find(groupBox) == quickAccessGroups.end())
+    {
+        quickAccessGroups[groupBox] = quickAccessTab.addGroup(groupBox);
+    }
     QPushButton* button = new QPushButton(name);
     button->setToolTip(tooltip);
     button->setFlat(true);
@@ -91,6 +98,16 @@ void Toolbar::addCheckableButton(const char* name, const char* icon, QGroupBox* 
         button->setIconSize(QSize(24, 24));
     }
 
-    quickAccessTab.addWidget(groupBox, button, x, y, 1, 1);
+    quickAccessTab.addWidget(quickAccessGroups[groupBox], button, x, y, 1, 1);
     luaInterface->luaConnect(button, "toggled(bool)", cb);
+}
+
+void Toolbar::removeGroupByName(const char* groupName)
+{
+    if (quickAccessGroups.find(groupName) == quickAccessGroups.end()){
+        return;
+    }
+
+    quickAccessTab.removeGroup(quickAccessGroups[groupName]);
+    quickAccessGroups.remove(groupName);
 }

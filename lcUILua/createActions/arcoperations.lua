@@ -14,6 +14,8 @@ function ArcOperations:init()
     mainWindow:connectMenuItem("action3_Point_Arc", function() run_basic_operation(ArcOperations, "_init_3p") end)
 	mainWindow:connectMenuItem("actionCenter_Start_End_2", function() run_basic_operation(ArcOperations, "_init_cse") end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/arc.svg", "Creation", 0, 1, function() run_basic_operation(ArcOperations) end, "Arc")
+
     mainWindow:getCliCommand():addCommand("ARC", function() run_basic_operation(ArcOperations) end)
 end
 

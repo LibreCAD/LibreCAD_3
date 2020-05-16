@@ -15,6 +15,8 @@ function EllipseOperations:init()
     mainWindow:connectMenuItem("actionEllipse_Arc", function() run_basic_operation(EllipseOperations, "_init_arc") end)
     mainWindow:connectMenuItem("actionEllipse_FociPoints", function() run_basic_operation(EllipseOperations, "_init_foci") end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/ellipse.svg", "Creation", 1, 1, function() run_basic_operation(EllipseOperations) end, "Ellipse")
+
     mainWindow:getCliCommand():addCommand("ELLIPSE", function() run_basic_operation(EllipseOperations) end)
     mainWindow:getCliCommand():addCommand("ARCELLIPSE", function() run_basic_operation(EllipseOperations, "_init_arc") end)
 end

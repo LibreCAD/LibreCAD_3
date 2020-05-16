@@ -225,8 +225,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path) {
             if (vkey.find("Operation") < vkey.length()) {
                 kaguya::LuaTable opTable = _L[vkey];
 
-                std::vector<kaguya::LuaRef> op_keys = opTable.keys();
-                for(kaguya::LuaRef& op : op_keys)
+                for(kaguya::LuaRef& op : opTable.keys())
                 {
                     if (op.isType<std::string>())
                     {

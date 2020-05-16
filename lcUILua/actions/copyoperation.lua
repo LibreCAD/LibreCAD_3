@@ -11,6 +11,7 @@ setmetatable(CopyOperation, {
 })
 
 function CopyOperation:init()
+    mainWindow:getToolbar():addButton("", ":/icons/move_copy.svg", "Modify", 0, 1, function() run_basic_operation(CopyOperation) end, "Copy")
 
     mainWindow:getCliCommand():addCommand("COPY", function() run_basic_operation(CopyOperation) end)
 end

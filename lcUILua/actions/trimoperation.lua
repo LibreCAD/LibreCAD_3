@@ -13,6 +13,7 @@ setmetatable(TrimOperation, {
 })
 
 function TrimOperation:init()
+    mainWindow:getToolbar():addButton("", ":/icons/modifytrim.png", "Modify", 2, 1, function() run_basic_operation(TrimOperation) end, "Trim")
 
     mainWindow:getCliCommand():addCommand("TRIM", function() run_basic_operation(TrimOperation) end)
 end

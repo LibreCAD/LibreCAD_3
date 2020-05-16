@@ -13,6 +13,8 @@ setmetatable(DimAngularOperations, {
 function DimAngularOperations:init()
     mainWindow:connectMenuItem("actionANG3PT", function() run_basic_operation(DimAngularOperations) end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/dim_angular.svg", "Dimensions", 1, 0, function() run_basic_operation(DimAngularOperations) end, "Angular Dimension")
+
     mainWindow:getCliCommand():addCommand("DIMANGULAR", function() run_basic_operation(DimAngularOperations) end)
 end
 

@@ -22,6 +22,8 @@ function LineOperations:init()
     mainWindow:connectMenuItem("actionPolygonCenTan", function() run_basic_operation(LineOperations, "_init_polygon_centan") end)
     mainWindow:connectMenuItem("actionPolygonCorCor", function() run_basic_operation(LineOperations, "_init_polygon_corcor") end)
 
+    mainWindow:getToolbar():addButton("", ":/icons/linesnormal.png", "Creation", 0, 0, function() run_basic_operation(LineOperations) end, "Line")
+
     mainWindow:getCliCommand():addCommand("LINE", function() run_basic_operation(LineOperations) end)
 end
 

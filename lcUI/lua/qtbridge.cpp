@@ -256,6 +256,7 @@ void addLCBindings(lua_State *L) {
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("addButton", &widgets::Toolbar::addButton)
         .addFunction("addCheckableButton", &widgets::Toolbar::addCheckableButton)
+        .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
 	);
 
 	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
