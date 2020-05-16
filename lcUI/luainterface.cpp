@@ -180,16 +180,23 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
     }
 }
 
-void LuaInterface::loadLuaOperations(const std::string& lua_path)
-{
+void LuaInterface::loadLuaOperations(const std::string& lua_path) {
+    // for global functions like run_operation, message etc
     _L.dofile(lua_path + "/ui/operations.lua");
+
+    // call operations and createoperations first
+    _L.dofile(lua_path + "/actions/operations.lua");
+    _L.dofile(lua_path + "/createActions/createOperations.lua");
 
     // run all lua files in createActions folder
     QDir createActionsDir((lua_path + "/createActions").c_str());
     QStringList luaFiles = createActionsDir.entryList(QStringList() << "*.lua", QDir::Files);
     for (QString str : luaFiles)
     {
-        _L.dofile(lua_path + "/createActions/" + str.toStdString());
+        // skip createOperations.lua as it has been already called
+        if (str.toStdString() != "createOperations") {
+            _L.dofile(lua_path + "/createActions/" + str.toStdString());
+        }
     }
 
     // run all lua files in actions folder
@@ -197,7 +204,10 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path)
     QStringList luaFiles1 = actionsDir.entryList(QStringList() << "*.lua", QDir::Files);
     for (QString str : luaFiles1)
     {
-        _L.dofile(lua_path + "/actions/" + str.toStdString());
+        // skip operations.lua as it has been already called
+        if (str.toStdString() != "operations") {
+            _L.dofile(lua_path + "/actions/" + str.toStdString());
+        }
     }
 
     // fetch a list of all keys from the state table
@@ -224,7 +234,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path)
 
                         if (opkey == "init")
                         {
-                            std::cout << "callining init for " << vkey << std::endl;
+                            // eg. _L["LineOperations"]["init"]()
                             _L[vkey][opkey]();
                         }
                     }
