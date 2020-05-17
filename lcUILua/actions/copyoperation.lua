@@ -1,5 +1,6 @@
 CopyOperation = {
-    command_line = "COPY"
+    command_line = "COPY",
+    icon = "move_copy.svg"
 }
 CopyOperation.__index = CopyOperation
 
@@ -11,10 +12,6 @@ setmetatable(CopyOperation, {
         return self
     end,
 })
-
-function CopyOperation:init()
-    mainWindow:getToolbar():addButton("", ":/icons/move_copy.svg", "Modify", 0, 1, function() run_basic_operation(CopyOperation) end, "Copy")
-end
 
 function CopyOperation:_init(widget)
     Operations._init(self, widget)

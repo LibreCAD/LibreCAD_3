@@ -1,5 +1,6 @@
 DimRadialOperations = {
     command_line = "DIMRADIAL",
+    icon = "dim_radial.svg",
     menu_actions = {
         default = "actionRadius"
     }
@@ -14,10 +15,6 @@ setmetatable(DimRadialOperations, {
         return self
     end,
 })
-
-function DimRadialOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/dim_radial.svg", "Dimensions", 2, 0, function() run_basic_operation(DimRadialOperations) end, "Radial Dimension")
-end
 
 function DimRadialOperations:_init()
     CreateOperations._init(self, lc.builder.DimRadialBuilder, "enterStartPoint")

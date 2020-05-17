@@ -1,5 +1,6 @@
 DimAngularOperations = {
     command_line = "DIMANGULAR",
+    icon = "dim_angular.svg",
     menu_actions = {
         default = "actionANG3PT"
     }
@@ -14,10 +15,6 @@ setmetatable(DimAngularOperations, {
         return self
     end,
 })
-
-function DimAngularOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/dim_angular.svg", "Dimensions", 1, 0, function() run_basic_operation(DimAngularOperations) end, "Angular Dimension")
-end
 
 function DimAngularOperations:_init()
     CreateOperations._init(self, lc.builder.DimAngularBuilder, "enterCenterPoint")

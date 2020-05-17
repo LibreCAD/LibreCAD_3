@@ -1,5 +1,6 @@
 DimLinearOperations = {
     command_line = "DIMLINEAR",
+    icon = "dim_linear.svg",
     menu_actions = {
         default = "actionLinear"
     }
@@ -14,10 +15,6 @@ setmetatable(DimLinearOperations, {
         return self
     end,
 })
-
-function DimLinearOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/dim_linear.svg", "Dimensions", 1, 1, function() run_basic_operation(DimLinearOperations) end, "Linear Dimension")
-end
 
 function DimLinearOperations:_init()
     CreateOperations._init(self, lc.builder.DimLinearBuilder, "enterStartPoint")

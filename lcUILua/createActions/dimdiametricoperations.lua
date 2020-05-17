@@ -1,5 +1,6 @@
 DimDiametricOperations = {
     command_line = "DIMDIAMETRIC",
+    icon = "dim_diametric.svg",
     menu_actions = {
         default = "actionDiameter"
     }
@@ -14,10 +15,6 @@ setmetatable(DimDiametricOperations, {
         return self
     end,
 })
-
-function DimDiametricOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/dim_diametric.svg", "Dimensions", 0, 1, function() run_basic_operation(DimDiametricOperations) end, "Diametric Dimension")
-end
 
 function DimDiametricOperations:_init()
     CreateOperations._init(self, lc.builder.DimDiametricBuilder, "enterStartPoint")

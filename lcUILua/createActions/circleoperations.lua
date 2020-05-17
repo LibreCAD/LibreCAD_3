@@ -1,5 +1,6 @@
 CircleOperations = {
     command_line = "CIRCLE",
+    icon = "circle.svg",
     menu_actions = {
         cr = "actionCenter_Radius",
         cd = "actionCenter_Diameter",
@@ -19,19 +20,6 @@ setmetatable(CircleOperations, {
         return self
     end,
 })
-
-function CircleOperations:init()
-    mainWindow:connectMenuItem("actionCenter_Radius", function() run_basic_operation(CircleOperations, "_init_cr") end)
-	mainWindow:connectMenuItem("actionCenter_Diameter", function() run_basic_operation(CircleOperations, "_init_cd") end)
-	mainWindow:connectMenuItem("action2_Point_Circle", function() run_basic_operation(CircleOperations, "_init_p2") end)
-	mainWindow:connectMenuItem("action3_Point_Circle_2", function() run_basic_operation(CircleOperations, "_init_p3") end)
-	mainWindow:connectMenuItem("actionTan_Tan_Radius", function() run_basic_operation(CircleOperations, "_init_t2") end)
-	mainWindow:connectMenuItem("actionTan_Tan_Tan", function() run_basic_operation(CircleOperations, "_init_t3") end)
-
-    mainWindow:getToolbar():addButton("", ":/icons/circle.svg", "Creation", 1, 0, function() run_basic_operation(CircleOperations) end, "Circle")
-
-    mainWindow:getCliCommand():addCommand("CIRCLE", function() run_basic_operation(CircleOperations) end)
-end
 
 function CircleOperations:_init()
     CreateOperations._init(self, lc.builder.CircleBuilder, "enterCenter")

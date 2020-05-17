@@ -1,5 +1,6 @@
 ArcOperations = {
     command_line = "ARC",
+    icon = "arc.svg",
     menu_actions = {
         p3 = "action3_Point_Arc",
         cse = "actionCenter_Start_End_2"
@@ -15,10 +16,6 @@ setmetatable(ArcOperations, {
         return self
     end,
 })
-
-function ArcOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/arc.svg", "Creation", 0, 1, function() run_basic_operation(ArcOperations) end, "Arc")
-end
 
 function ArcOperations:_init()
     CreateOperations._init(self, lc.builder.ArcBuilder, "ArcWith3Points")

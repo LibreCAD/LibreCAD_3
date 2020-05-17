@@ -1,5 +1,6 @@
 LineOperations = {
     command_line = "LINE",
+    icon = "linesnormal.png",
     menu_actions = {
         p2 = "action2_Point_Line",
         pal = "actionPoint_Angle_Length_Line",
@@ -23,10 +24,6 @@ setmetatable(LineOperations, {
         return self
     end,
 })
-
-function LineOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/linesnormal.png", "Creation", 0, 0, function() run_basic_operation(LineOperations) end, "Line")
-end
 
 function LineOperations:_init()
     CreateOperations._init(self, lc.builder.LineBuilder, "setFirstPoint")

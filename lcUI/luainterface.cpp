@@ -2,8 +2,11 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
+#include <set>
+
 #include "mainwindow.h"
 #include "widgets/clicommand.h"
+#include "widgets/toolbar.h"
 
 using namespace lc::ui;
 
@@ -186,6 +189,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     // mainWindow to connect to command line and menu
     lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
     lc::ui::widgets::CliCommand* cliCommand = mWindow->getCliCommand();
+    lc::ui::widgets::Toolbar* toolbar = mWindow->getToolbar();
 
     // for global functions like run_operation, message etc
     _L.dofile(lua_path + "/ui/operations.lua");
@@ -199,9 +203,30 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     QStringList luaFiles = createActionsDir.entryList(QStringList() << "*.lua", QDir::Files);
     for (QString str : luaFiles)
     {
+        std::string filename = str.toStdString();
         // skip createOperations.lua as it has been already called
-        if (str.toStdString() != "createOperations") {
-            _L.dofile(lua_path + "/createActions/" + str.toStdString());
+        if (filename != "createOperations") {
+            _L.dofile(lua_path + "/createActions/" + filename);
+        }
+    }
+
+    // create list of all operations in creaetActions folder
+    std::set<std::string> creationGroupElements;
+    std::set<std::string> dimensionsGroupElements;
+
+    for (kaguya::LuaRef v : _L.globalTable().keys())
+    {
+        if (v.isType<std::string>()){
+            std::string vkey = std::string(v.get<std::string>());
+
+            if (vkey.find("Operation") < vkey.length()) {
+                if (vkey.find("Dim") < vkey.length()) {
+                    dimensionsGroupElements.insert(vkey);
+                }
+                else {
+                    creationGroupElements.insert(vkey);
+                }
+            }
         }
     }
 
@@ -223,6 +248,10 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     /* Loop through all keys to search for the ones containing "Operation" in their name,
      * If this operation has a "init" function, call it.
      */
+    int creationWidgetCount = 0;
+    int dimWidgetCount = 0;
+    int modifyWidgetCount = 0;
+
     for (kaguya::LuaRef v : globalKeys)
     {
         if (v.isType<std::string>())
@@ -231,6 +260,9 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
 
             if (vkey.find("Operation") < vkey.length()) {
                 kaguya::LuaTable opTable = _L[vkey];
+
+                // toolbar icon attributes
+                std::string icon = "";
 
                 for(kaguya::LuaRef& op : opTable.keys())
                 {
@@ -260,7 +292,46 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
                             // eg. _L["LineOperations"]["init"]()
                             _L[vkey][opkey]();
                         }
+
+                        // Toolbar attributes
+                        if (opkey == "icon"){
+                            icon = _L[vkey][opkey].get<std::string>();
+                        }
                     }
+                }
+
+                // if toolbar attributes are provided
+                if (icon != ""){
+                    std::string tooltip = vkey.substr(0, vkey.find("Operation"));
+                    std::string iconPath = ":/icons/" + icon;
+                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                    std::string groupName;
+                    int row;
+                    int col;
+
+                    const int widgetsPerRow = 3;
+
+                    if (creationGroupElements.find(vkey) != creationGroupElements.end()) {
+                        groupName = "Creation";
+                        col = creationWidgetCount / widgetsPerRow;
+                        row = creationWidgetCount % widgetsPerRow;
+                        creationWidgetCount++;
+                    }
+                    else if (dimensionsGroupElements.find(vkey) != dimensionsGroupElements.end()) {
+                        groupName = "Dimensions";
+                        col = dimWidgetCount / widgetsPerRow;
+                        row = dimWidgetCount % widgetsPerRow;
+                        dimWidgetCount++;
+                    }
+                    else {
+                        // if not in creation group or dimension group, it has to be in the modify group
+                        groupName = "Modify";
+                        col = modifyWidgetCount / widgetsPerRow;
+                        row = modifyWidgetCount % widgetsPerRow;
+                        modifyWidgetCount++;
+                    }
+
+                    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
                 }
             }
         }

@@ -1,5 +1,6 @@
 EllipseOperations = {
     command_line = "ELLIPSE",
+    icon = "ellipse.svg",
     menu_actions = {
         default = "actionEllipse_Axis",
         arc = "actionEllipse_Axis",
@@ -18,7 +19,6 @@ setmetatable(EllipseOperations, {
 })
 
 function EllipseOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/ellipse.svg", "Creation", 1, 1, function() run_basic_operation(EllipseOperations) end, "Ellipse")
     mainWindow:getCliCommand():addCommand("ARCELLIPSE", function() run_basic_operation(EllipseOperations, "_init_arc") end)
 end
 

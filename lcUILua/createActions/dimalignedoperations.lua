@@ -1,5 +1,6 @@
 DimAlignedOperations = {
     command_line = "DIMALIGNED",
+    icon = "dim_aligned.svg",
     menu_actions = {
         default = "actionAligned"
     }
@@ -14,10 +15,6 @@ setmetatable(DimAlignedOperations, {
         return self
     end,
 })
-
-function DimAlignedOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/dim_aligned.svg", "Dimensions", 0, 0, function() run_basic_operation(DimAlignedOperations) end, "Aligned Dimension")
-end
 
 function DimAlignedOperations:_init()
     CreateOperations._init(self, lc.builder.DimAlignedBuilder, "enterFirstPoint")

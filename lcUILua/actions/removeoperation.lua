@@ -1,5 +1,6 @@
 RemoveOperation = {
-    command_line = "REMOVE"
+    command_line = "REMOVE",
+    icon = "delete.svg"
 }
 RemoveOperation.__index = RemoveOperation
 
@@ -11,10 +12,6 @@ setmetatable(RemoveOperation, {
         return self
     end,
 })
-
-function RemoveOperation:init()
-    mainWindow:getToolbar():addButton("", ":/icons/delete.svg", "Modify", 2, 0, function() run_basic_operation(RemoveOperation) end, "Delete")
-end
 
 function RemoveOperation:_init(id)
     Operations._init(self)

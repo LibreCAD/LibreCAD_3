@@ -1,5 +1,6 @@
 SplineOperations = {
     command_line = "SPLINE",
+    icon = "spline.svg",
     menu_actions = {
         default = "actionSpline"
     }
@@ -14,10 +15,6 @@ setmetatable(SplineOperations, {
         return self
     end,
 })
-
-function SplineOperations:init()
-    mainWindow:getToolbar():addButton("", ":/icons/spline.svg", "Creation", 2, 0, function() run_basic_operation(SplineOperations) end, "Spline")
-end
 
 function SplineOperations:_init()
     CreateOperations._init(self, lc.builder.SplineBuilder, "enterPoint")

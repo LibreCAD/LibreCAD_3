@@ -1,7 +1,8 @@
 --TODO: may not work, it should be moved to C++
 
 TrimOperation = {
-    command_line = "TRIM"
+    command_line = "TRIM",
+    icon = "modifytrim.png"
 }
 TrimOperation.__index = TrimOperation
 
@@ -13,10 +14,6 @@ setmetatable(TrimOperation, {
         return self
     end,
 })
-
-function TrimOperation:init()
-    mainWindow:getToolbar():addButton("", ":/icons/modifytrim.png", "Modify", 2, 1, function() run_basic_operation(TrimOperation) end, "Trim")
-end
 
 function TrimOperation:_init(id)
     Operations._init(self)
