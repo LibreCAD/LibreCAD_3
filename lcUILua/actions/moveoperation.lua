@@ -1,4 +1,6 @@
-MoveOperation = {}
+MoveOperation = {
+    command_line = "MOVE"
+}
 MoveOperation.__index = MoveOperation
 
 setmetatable(MoveOperation, {
@@ -12,8 +14,6 @@ setmetatable(MoveOperation, {
 
 function MoveOperation:init()
     mainWindow:getToolbar():addButton("", ":/icons/modifymove.png", "Modify", 0, 0, function() run_basic_operation(MoveOperation) end, "Move")
-
-    mainWindow:getCliCommand():addCommand("MOVE", function() run_basic_operation(MoveOperation) end)
 end
 
 function MoveOperation:_init(id)

@@ -1,4 +1,6 @@
-ScaleOperation = {}
+ScaleOperation = {
+    command_line = "SCALE"
+}
 ScaleOperation.__index = ScaleOperation
 
 setmetatable(ScaleOperation, {
@@ -12,8 +14,6 @@ setmetatable(ScaleOperation, {
 
 function ScaleOperation:init()
     mainWindow:getToolbar():addButton("", ":/icons/scale.png", "Modify", 1, 1, function() run_basic_operation(ScaleOperation) end, "Scale")
-
-    mainWindow:getCliCommand():addCommand("SCALE", function() run_basic_operation(ScaleOperation) end)
 end
 
 function ScaleOperation:_init(id)

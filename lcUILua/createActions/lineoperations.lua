@@ -1,4 +1,18 @@
-LineOperations = {}
+LineOperations = {
+    command_line = "LINE",
+    menu_actions = {
+        p2 = "action2_Point_Line",
+        pal = "actionPoint_Angle_Length_Line",
+        horizontal = "actionHorizontalLine",
+        vertical = "actionVerticalLine",
+        parallel = "actionParallelLine",
+        orthogonal = "actionOrthogonalLine",
+        rectangle = "actionRectangle",
+        polygon_cencor = "actionPolygonCenCor",
+        polygon_centan = "actionPolygonCenTan",
+        polygon_corcor = "actionPolygonCorCor"
+    }
+}
 LineOperations.__index = LineOperations
 
 setmetatable(LineOperations, {
@@ -11,24 +25,10 @@ setmetatable(LineOperations, {
 })
 
 function LineOperations:init()
-    mainWindow:connectMenuItem("action2_Point_Line", function() run_basic_operation(LineOperations, "_init_2p") end)
-    mainWindow:connectMenuItem("actionPoint_Angle_Length_Line", function() run_basic_operation(LineOperations, "_init_pal") end)
-    mainWindow:connectMenuItem("actionHorizontalLine", function() run_basic_operation(LineOperations, "_init_horizontal") end)
-    mainWindow:connectMenuItem("actionVerticalLine", function() run_basic_operation(LineOperations, "_init_vertical") end)
-    mainWindow:connectMenuItem("actionParallelLine", function() run_basic_operation(LineOperations, "_init_parallel") end)
-    mainWindow:connectMenuItem("actionOrthogonalLine", function() run_basic_operation(LineOperations, "_init_orthogonal") end)
-    mainWindow:connectMenuItem("actionRectangle", function() run_basic_operation(LineOperations, "_init_rectangle") end)
-    mainWindow:connectMenuItem("actionPolygonCenCor", function() run_basic_operation(LineOperations, "_init_polygon_cencor") end)
-    mainWindow:connectMenuItem("actionPolygonCenTan", function() run_basic_operation(LineOperations, "_init_polygon_centan") end)
-    mainWindow:connectMenuItem("actionPolygonCorCor", function() run_basic_operation(LineOperations, "_init_polygon_corcor") end)
-
     mainWindow:getToolbar():addButton("", ":/icons/linesnormal.png", "Creation", 0, 0, function() run_basic_operation(LineOperations) end, "Line")
-
-    mainWindow:getCliCommand():addCommand("LINE", function() run_basic_operation(LineOperations) end)
 end
 
 function LineOperations:_init()
-    print("Called")
     CreateOperations._init(self, lc.builder.LineBuilder, "setFirstPoint")
     self.length = nil
 end
@@ -40,7 +40,7 @@ function LineOperations:_init_default()
     self.step = "setFirstPoint"
 end
 
-function LineOperations:_init_2p()
+function LineOperations:_init_p2()
     message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")

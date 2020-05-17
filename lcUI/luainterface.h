@@ -45,7 +45,7 @@ namespace lc {
                  * \brief load operations from lua scripts and run init functions
                  * \param lua_path string path to lcUI folder
                  */
-                void loadLuaOperations(const std::string& lua_path);
+                void loadLuaOperations(const std::string& lua_path, QMainWindow* mainWindow);
 
 				/**
                  * \brief Connect Qt signal with Lua function

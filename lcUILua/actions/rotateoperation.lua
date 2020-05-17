@@ -1,4 +1,6 @@
-RotateOperation = {}
+RotateOperation = {
+    command_line = "ROTATE"
+}
 RotateOperation.__index = RotateOperation
 
 setmetatable(RotateOperation, {
@@ -12,8 +14,6 @@ setmetatable(RotateOperation, {
 
 function RotateOperation:init()
     mainWindow:getToolbar():addButton("", ":/icons/modifyrotate.png", "Modify", 1, 0, function() run_basic_operation(RotateOperation) end, "Rotate")
-
-    mainWindow:getCliCommand():addCommand("ROTATE", function() run_basic_operation(RotateOperation) end)
 end
 
 function RotateOperation:_init(id)

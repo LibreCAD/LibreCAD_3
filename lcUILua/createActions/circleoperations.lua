@@ -1,4 +1,14 @@
-CircleOperations = {}
+CircleOperations = {
+    command_line = "CIRCLE",
+    menu_actions = {
+        cr = "actionCenter_Radius",
+        cd = "actionCenter_Diameter",
+        p2 = "action2_Point_Circle",
+        p3 = "action3_Point_Circle_2",
+        t2 = "actionTan_Tan_Radius",
+        t3 = "actionTan_Tan_Tan"
+    }
+}
 CircleOperations.__index = CircleOperations
 
 setmetatable(CircleOperations, {
@@ -13,10 +23,10 @@ setmetatable(CircleOperations, {
 function CircleOperations:init()
     mainWindow:connectMenuItem("actionCenter_Radius", function() run_basic_operation(CircleOperations, "_init_cr") end)
 	mainWindow:connectMenuItem("actionCenter_Diameter", function() run_basic_operation(CircleOperations, "_init_cd") end)
-	mainWindow:connectMenuItem("action2_Point_Circle", function() run_basic_operation(CircleOperations, "_init_2p") end)
-	mainWindow:connectMenuItem("action3_Point_Circle_2", function() run_basic_operation(CircleOperations, "_init_3p") end)
-	mainWindow:connectMenuItem("actionTan_Tan_Radius", function() run_basic_operation(CircleOperations, "_init_2t") end)
-	mainWindow:connectMenuItem("actionTan_Tan_Tan", function() run_basic_operation(CircleOperations, "_init_3t") end)
+	mainWindow:connectMenuItem("action2_Point_Circle", function() run_basic_operation(CircleOperations, "_init_p2") end)
+	mainWindow:connectMenuItem("action3_Point_Circle_2", function() run_basic_operation(CircleOperations, "_init_p3") end)
+	mainWindow:connectMenuItem("actionTan_Tan_Radius", function() run_basic_operation(CircleOperations, "_init_t2") end)
+	mainWindow:connectMenuItem("actionTan_Tan_Tan", function() run_basic_operation(CircleOperations, "_init_t3") end)
 
     mainWindow:getToolbar():addButton("", ":/icons/circle.svg", "Creation", 1, 0, function() run_basic_operation(CircleOperations) end, "Circle")
 
@@ -53,24 +63,24 @@ function CircleOperations:_init_cd()
     self.step = "CircleWithCenterDiameter"
 end
 
-function CircleOperations:_init_2p()
+function CircleOperations:_init_p2()
     message("<b>CIRCLE</b>")
     message("Provide First Point:")
     self.step = "CircleWith2Points"
 end
 
-function CircleOperations:_init_3p()
+function CircleOperations:_init_p3()
     message("<b>CIRCLE</b>")
     message("Provide First Point:") 
     self.step = "CircleWith3Points"
 end
 
-function CircleOperations:_init_3t()
+function CircleOperations:_init_t3()
     message("<b>CIRCLE</b>")
     self.step = "CircleWith3Tans"
 end
 
-function CircleOperations:_init_2t()
+function CircleOperations:_init_t2()
     message("<b>CIRCLE</b>")
     self.step = "CircleWith2Tans"
 end

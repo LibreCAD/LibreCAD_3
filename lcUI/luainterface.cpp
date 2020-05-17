@@ -3,6 +3,7 @@
 #include "luainterface.h"
 
 #include "mainwindow.h"
+#include "widgets/clicommand.h"
 
 using namespace lc::ui;
 
@@ -32,7 +33,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
     std::string lua_path = _L["lua_path"];
-    loadLuaOperations(lua_path);
+    loadLuaOperations(lua_path, mainWindow);
 
     if (s) {
 		const char* out = lua_tostring(_L.state(), -1);
@@ -180,7 +181,12 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
     }
 }
 
-void LuaInterface::loadLuaOperations(const std::string& lua_path) {
+void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* mainWindow) {
+
+    // mainWindow to connect to command line and menu
+    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
+    lc::ui::widgets::CliCommand* cliCommand = mWindow->getCliCommand();
+
     // for global functions like run_operation, message etc
     _L.dofile(lua_path + "/ui/operations.lua");
 
@@ -222,6 +228,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path) {
         if (v.isType<std::string>())
         {
             std::string vkey = std::string(v.get<std::string>());
+
             if (vkey.find("Operation") < vkey.length()) {
                 kaguya::LuaTable opTable = _L[vkey];
 
@@ -230,6 +237,23 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path) {
                     if (op.isType<std::string>())
                     {
                         std::string opkey = std::string(op.get<std::string>());
+
+                        if (opkey == "command_line")
+                        {
+                            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                            cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+                        }
+
+                        if (opkey == "menu_actions")
+                        {
+                            std::map<std::string, std::string> map = _L[vkey][opkey];
+
+                            for (auto element : map)
+                            {
+                                _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
+                                mWindow->connectMenuItem(element.second, _L["run_op"]);
+                            }
+                        }
 
                         if (opkey == "init")
                         {
@@ -241,4 +265,6 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path) {
             }
         }
     }
+
+    _L["run_op"] = nullptr; 
 }
