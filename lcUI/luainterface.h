@@ -109,6 +109,8 @@ namespace lc {
 
 				void setOperation(kaguya::LuaRef);
 
+                void finishOperation();
+
 				void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
 
 				void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);

@@ -43,6 +43,34 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method){
+    cliCommand.setFocus();
+    luaInterface.finishOperation();
+    kaguya::State state(luaInterface.luaState());
+
+    // add toolbar cancel button
+    state.dostring("finish_op = function() finish_operation() end");
+    toolbar.addButton("", ":/icons/quit.svg", "Current operation", 0, 0, state["finish_op"], "Cancel");
+    state["finish_op"] = nullptr;
+
+    luaInterface.setOperation(operation.call<kaguya::LuaRef>());
+    kaguya::LuaRef op = luaInterface.operation();
+    if (init_method == "") {
+        if (!op["_init_default"].isNilref()) {
+            op["_init_default"](op);
+        }
+    }
+    else {
+        op[init_method.c_str()](op);
+    }
+}
+
+void MainWindow::operationFinished() {
+    // remove operation group
+    toolbar.removeGroupByName("Current operation");
+    cadMdiChild.viewer()->setOperationActive(false);
+}
+
 lc::ui::widgets::CliCommand* MainWindow::getCliCommand(){
     return &cliCommand;
 }

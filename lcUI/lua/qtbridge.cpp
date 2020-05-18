@@ -225,6 +225,7 @@ void addLCBindings(lua_State *L) {
 	    .addFunction("registerEvent", &LuaInterface::registerEvent)
 	    .addFunction("deleteEvent", &LuaInterface::deleteEvent)
 	    .addFunction("triggerEvent", &LuaInterface::triggerEvent)
+        .addFunction("finishOperation", &LuaInterface::finishOperation)
 	);
 
 	state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript, QWidget>()
@@ -325,6 +326,8 @@ void addLCBindings(lua_State *L) {
         .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
         .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
         .addFunction("getToolbar", &lc::ui::MainWindow::getToolbar)
+        .addFunction("operationFinished", &lc::ui::MainWindow::operationFinished)
+        .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })
     );
 }
 

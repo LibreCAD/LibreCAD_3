@@ -30,6 +30,14 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     _L["luaInterface"] = this;
     _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
 
+    // register common functions i.e. run_basic_operation and message
+    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
+    _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
+    _L.dostring("message = function(m) mainWindow:getCliCommand():write(tostring(m)) end");
+    _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
+    _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
+
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
 
@@ -154,6 +162,12 @@ void LuaInterface::setOperation(kaguya::LuaRef operation) {
     _operation = std::move(operation);
 }
 
+void LuaInterface::finishOperation() {
+    if(!_operation.isNilref() && !_operation["close"].isNilref()){
+        _operation["close"](_operation);
+    }
+}
+
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
     if(callback.type() == LUA_TTABLE && callback["onEvent"].isNilref()) {
         return;
@@ -263,7 +277,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
         {
             std::string vkey = std::string(v.get<std::string>());
 
-            if (vkey.find("Operation") < vkey.length()) {
+            if (vkey.find("Operation") < vkey.length() && _L[vkey].type() == _L[vkey].TYPE_TABLE) {
                 kaguya::LuaTable opTable = _L[vkey];
 
                 std::set<std::string> foundProperties;
@@ -285,7 +299,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
         }
     }
 
-    _L["run_op"] = nullptr; 
+    _L["run_op"] = nullptr;
 }
 
 void LuaInterface::initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties,
@@ -327,8 +341,8 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
                     }
                     else {
                         // connect to provided init function
-                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + key + "') end");
-                        cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
+                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
+                        cliCommand->addCommand(key, _L["run_op"]);
                     }
                 }
             }

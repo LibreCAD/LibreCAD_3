@@ -1,5 +1,5 @@
 --Write a message to the command line log
-function message(message)
+--[[function message(message)
     local cliCommand = mainWindow:getCliCommand()
     if cliCommand ~= nil then
         cliCommand:write(tostring(message))
@@ -7,15 +7,16 @@ function message(message)
 end
 
 --Remove "Current operation" group in the toolbar
-local function remove_operation_group(eventName)
+--[[local function remove_operation_group(eventName)
     if(hideUI ~= true) then
         mainWindow:getToolbar():removeGroupByName("Current operation")
     end
 
     mainWindow:getCadMdiChild():viewer():setOperationActive(false)
-end
+end]]--
 
-function finish(eventName)
+--[[function finish(eventName)
+    print("FINISH CALLED")
     finish_operation()
 end
 
@@ -25,20 +26,21 @@ function finish_operation()
     if(op ~= nil) then
         op:close()
     end
-end
+    print("FINISH OPERATION CALLED")
+end]]--
 
 --Add a cancel button in the toolbar for the current operation
-local function create_cancel_button()
+--[[local function create_cancel_button()
     if(hideUI ~= true) then
         mainWindow:getToolbar():addButton("", ":/icons/quit.svg", "Current operation", 0, 0, function() finish_operation() end, "Cancel")
     end
 end
 
-luaInterface:registerEvent('operationFinished', remove_operation_group)
-luaInterface:registerEvent('finishOperation', finish)
+--luaInterface:registerEvent('operationFinished', remove_operation_group)
+--luaInterface:registerEvent('finishOperation', finish)
 
 --Every function corresponding to the buttons in the toolbar or commands in cli widget
-function run_basic_operation(operation, init_method, ...)
+--[[function run_basic_operation(operation, init_method, ...)
     mainWindow:getCliCommand():setFocus()
     finish_operation()
     create_cancel_button()
@@ -52,7 +54,7 @@ function run_basic_operation(operation, init_method, ...)
         end
     end
 	return op
-end
+end]]--
 
 function create_lw_polyline()
     mainWindow:getCliCommand():setFocus()

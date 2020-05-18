@@ -52,6 +52,10 @@ namespace lc
             */
             void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
 
+            void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
+
+            void operationFinished();
+
         public slots:
             // CadMdiChild slots
             void triggerMousePressed();
