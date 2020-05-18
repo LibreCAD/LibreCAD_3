@@ -1,9 +1,7 @@
 EllipseOperations = {
     command_line = {
         "ELLIPSE",
-        ARCELLIPSE = "arc",
-        ARCELLIPSEOTHER = "arc",
-        "ELLIPSEOTHER"
+        ARCELLIPSE = "arc"
     },
     icon = "ellipse.svg",
     description = "Ellipse Operation",

@@ -197,9 +197,6 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
 }
 
 void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* mainWindow) {
-    // for global functions like run_operation, message etc
-    _L.dofile(lua_path + "/ui/operations.lua");
-
     // call operations and createoperations first
     _L.dofile(lua_path + "/actions/operations.lua");
     _L.dofile(lua_path + "/createActions/createOperations.lua");
@@ -425,6 +422,8 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
                 optionsList.push_back(_L["operation_op"]);
                 count++;
             }
+
+            // provide options list to mainWindow so it can run necessary function on runOperation
             mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
             _L["operation_op"] = nullptr;
         }

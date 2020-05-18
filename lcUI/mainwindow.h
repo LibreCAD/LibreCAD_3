@@ -52,10 +52,22 @@ namespace lc
             */
             void connectMenuItem(const std::string& itemName, kaguya::LuaRef callback);
 
+            /**
+            * \brief Run tool operation
+            * \param operation Operation class , init_method - which init_method to run
+            */
             void runOperation(kaguya::LuaRef operation, const std::string& init_method = "");
 
+            /**
+            * \brief Called on operation finish
+            */
             void operationFinished();
 
+            /**
+            * \brief These will be called by runOperation for respective operation if extra icons
+            *        are to be added during the operation
+            * \param operation string to identify for which operation , options - list of functions to be run
+            */
             void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
 
         public slots:

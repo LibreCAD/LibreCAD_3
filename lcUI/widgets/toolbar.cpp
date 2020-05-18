@@ -62,6 +62,23 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     quickAccessTab.addWidget(metaInfoGroup, linePatternSelect, 0, 0, 1, 1);
     quickAccessTab.addWidget(metaInfoGroup, lineWidthSelect, 0, 1, 1, 1);
     quickAccessTab.addWidget(metaInfoGroup, colorSelect, 0, 2, 1, 1);
+
+    // Add toolbar snap options
+    kaguya::State state(luaInterface->luaState());
+
+    state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setGridSnappable(enabled) end");
+    addCheckableButton("", ":/icons/snap_grid.svg", "Snap Options", 0, 0, state["snap_op"], "Snap Grid");
+
+    state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
+    addCheckableButton("", ":/icons/snap_intersection.svg", "Snap Options", 0, 1, state["snap_op"], "Snap Intersection");
+
+    state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
+    addCheckableButton("", ":/icons/snap_middle.svg", "Snap Options", 1, 0, state["snap_op"], "Snap Middle");
+
+    state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
+    addCheckableButton("", ":/icons/snap_entity.svg", "Snap Options", 1, 1, state["snap_op"], "Snap Entity");
+
+    state["snap_op"] = nullptr;
 }
 
 void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)

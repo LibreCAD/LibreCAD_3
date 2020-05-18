@@ -48,12 +48,14 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     luaInterface.finishOperation();
     kaguya::State state(luaInterface.luaState());
 
+    // if current operation had extra operation toolbar icons, add them
     if (!operation["operation_options"].isNilref())
     {
         if (operation_options.find(operation["command_line"]) != operation_options.end()) {
             std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
 
             for (auto op : options) {
+                // run operation which adds option icon to toolbar
                 op();
             }
         }
@@ -64,6 +66,7 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     toolbar.addButton("", ":/icons/quit.svg", "Current operation", 0, 0, state["finish_op"], "Cancel");
     state["finish_op"] = nullptr;
 
+    // call operation to run CreateOperations init method etc
     luaInterface.setOperation(operation.call<kaguya::LuaRef>());
     kaguya::LuaRef op = luaInterface.operation();
     if (init_method == "") {
