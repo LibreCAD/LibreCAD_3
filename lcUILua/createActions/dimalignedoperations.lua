@@ -1,6 +1,7 @@
 DimAlignedOperations = {
     command_line = "DIMALIGNED",
     icon = "dim_aligned.svg",
+    description = "Aligned Dimension",
     menu_actions = {
         default = "actionAligned"
     }

@@ -1,6 +1,7 @@
 DimAngularOperations = {
     command_line = "DIMANGULAR",
     icon = "dim_angular.svg",
+    description = "Angular Dimension",
     menu_actions = {
         default = "actionANG3PT"
     }

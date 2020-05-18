@@ -7,6 +7,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
+#include <set>
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QObject>
@@ -113,6 +114,11 @@ namespace lc {
 				void deleteEvent(const std::string& event, const kaguya::LuaRef& callback);
 
 				void triggerEvent(const std::string& event, kaguya::LuaRef args);
+
+            private:
+                void initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties, 
+                    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, 
+                    QMainWindow* mainWindow);
 
 			private:
 				kaguya::State _L;

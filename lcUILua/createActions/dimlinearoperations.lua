@@ -1,6 +1,7 @@
 DimLinearOperations = {
     command_line = "DIMLINEAR",
     icon = "dim_linear.svg",
+    description = "Linear Dimension",
     menu_actions = {
         default = "actionLinear"
     }

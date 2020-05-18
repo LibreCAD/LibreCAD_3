@@ -1,6 +1,7 @@
 DimDiametricOperations = {
     command_line = "DIMDIAMETRIC",
     icon = "dim_diametric.svg",
+    description = "Diametric Dimension",
     menu_actions = {
         default = "actionDiameter"
     }

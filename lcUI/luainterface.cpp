@@ -2,8 +2,6 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
-#include <set>
-
 #include "mainwindow.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
@@ -185,12 +183,6 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
 }
 
 void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* mainWindow) {
-
-    // mainWindow to connect to command line and menu
-    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
-    lc::ui::widgets::CliCommand* cliCommand = mWindow->getCliCommand();
-    lc::ui::widgets::Toolbar* toolbar = mWindow->getToolbar();
-
     // for global functions like run_operation, message etc
     _L.dofile(lua_path + "/ui/operations.lua");
 
@@ -210,10 +202,12 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
         }
     }
 
-    // create list of all operations in creaetActions folder
-    std::set<std::string> creationGroupElements;
-    std::set<std::string> dimensionsGroupElements;
+    // create list of all operations in creationGroup and dimensionsGroup
+    std::map<std::string, std::set<std::string>> groupElements;
+    groupElements["creationGroupElements"] = std::set<std::string>();
+    groupElements["dimensionsGroupElements"] = std::set<std::string>();
 
+    // insert elements into their respective sets
     for (kaguya::LuaRef v : _L.globalTable().keys())
     {
         if (v.isType<std::string>()){
@@ -221,10 +215,10 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
 
             if (vkey.find("Operation") < vkey.length()) {
                 if (vkey.find("Dim") < vkey.length()) {
-                    dimensionsGroupElements.insert(vkey);
+                    groupElements["dimensionsGroupElements"].insert(vkey);
                 }
                 else {
-                    creationGroupElements.insert(vkey);
+                    groupElements["creationGroupElements"].insert(vkey);
                 }
             }
         }
@@ -245,13 +239,22 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     kaguya::LuaTable globalTable(_L.globalTable());
     std::vector<kaguya::LuaRef> globalKeys = globalTable.keys();
 
+    std::map<std::string, int> widgetCount;
+    widgetCount["creationWidgetCount"] = 0;
+    widgetCount["dimWidgetCount"] = 0;
+    widgetCount["modifyWidgetCount"] = 0;
+
+    std::set<std::string> initProperties = {
+        "init",
+        "command_line",
+        "menu_actions",
+        "icon",
+        "description"
+    };
+
     /* Loop through all keys to search for the ones containing "Operation" in their name,
      * If this operation has a "init" function, call it.
      */
-    int creationWidgetCount = 0;
-    int dimWidgetCount = 0;
-    int modifyWidgetCount = 0;
-
     for (kaguya::LuaRef v : globalKeys)
     {
         if (v.isType<std::string>())
@@ -261,8 +264,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
             if (vkey.find("Operation") < vkey.length()) {
                 kaguya::LuaTable opTable = _L[vkey];
 
-                // toolbar icon attributes
-                std::string icon = "";
+                std::set<std::string> foundProperties;
 
                 for(kaguya::LuaRef& op : opTable.keys())
                 {
@@ -270,72 +272,102 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
                     {
                         std::string opkey = std::string(op.get<std::string>());
 
-                        if (opkey == "command_line")
-                        {
-                            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                            cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
-                        }
-
-                        if (opkey == "menu_actions")
-                        {
-                            std::map<std::string, std::string> map = _L[vkey][opkey];
-
-                            for (auto element : map)
-                            {
-                                _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
-                                mWindow->connectMenuItem(element.second, _L["run_op"]);
-                            }
-                        }
-
-                        if (opkey == "init")
-                        {
-                            // eg. _L["LineOperations"]["init"]()
-                            _L[vkey][opkey]();
-                        }
-
-                        // Toolbar attributes
-                        if (opkey == "icon"){
-                            icon = _L[vkey][opkey].get<std::string>();
+                        if (initProperties.find(opkey) != initProperties.end()) {
+                            foundProperties.insert(opkey);
                         }
                     }
                 }
 
-                // if toolbar attributes are provided
-                if (icon != ""){
-                    std::string tooltip = vkey.substr(0, vkey.find("Operation"));
-                    std::string iconPath = ":/icons/" + icon;
-                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                    std::string groupName;
-                    int row;
-                    int col;
-
-                    const int widgetsPerRow = 3;
-
-                    if (creationGroupElements.find(vkey) != creationGroupElements.end()) {
-                        groupName = "Creation";
-                        col = creationWidgetCount / widgetsPerRow;
-                        row = creationWidgetCount % widgetsPerRow;
-                        creationWidgetCount++;
-                    }
-                    else if (dimensionsGroupElements.find(vkey) != dimensionsGroupElements.end()) {
-                        groupName = "Dimensions";
-                        col = dimWidgetCount / widgetsPerRow;
-                        row = dimWidgetCount % widgetsPerRow;
-                        dimWidgetCount++;
-                    }
-                    else {
-                        // if not in creation group or dimension group, it has to be in the modify group
-                        groupName = "Modify";
-                        col = modifyWidgetCount / widgetsPerRow;
-                        row = modifyWidgetCount % widgetsPerRow;
-                        modifyWidgetCount++;
-                    }
-
-                    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
-                }
+                initializeOperation(vkey, foundProperties, widgetCount, groupElements, mainWindow);
             }
         }
     }
 
     _L["run_op"] = nullptr; 
+}
+
+void LuaInterface::initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties,
+    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, QMainWindow* mainWindow)
+{
+    // mainWindow to connect to command line and menu
+    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
+    lc::ui::widgets::CliCommand* cliCommand = mWindow->getCliCommand();
+    lc::ui::widgets::Toolbar* toolbar = mWindow->getToolbar();
+
+    for (const std::string& opkey : foundProperties)
+    {
+        // init function
+        if (opkey == "init") {
+            // eg. _L["LineOperations"]["init"]()
+            _L[vkey][opkey]();
+        }
+
+        // command line
+        if (opkey == "command_line") {
+            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+            cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+        }
+
+        //menu actions
+        if (opkey == "menu_actions")
+        {
+            std::map<std::string, std::string> map = _L[vkey][opkey];
+
+            for (auto element : map)
+            {
+                if (element.first == "default") {
+                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                }
+                else {
+                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
+                }
+                mWindow->connectMenuItem(element.second, _L["run_op"]);
+            }
+        }
+
+        // Toolbar attributes
+        if (opkey == "icon") {
+            std::string icon = _L[vkey][opkey].get<std::string>();
+
+            std::string tooltip;
+            
+            // if description not provided, use operation name
+            if (foundProperties.find("description") != foundProperties.end()) {
+                tooltip = _L[vkey]["description"].get<std::string>();
+            }
+            else {
+                tooltip = vkey.substr(0, vkey.find("Operation"));
+            }
+            
+            std::string iconPath = ":/icons/" + icon;
+            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+            std::string groupName;
+            int row;
+            int col;
+
+            const int widgetsPerRow = 3;
+
+            if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
+                groupName = "Creation";
+                col = widgetCount["creationWidgetCount"] / widgetsPerRow;
+                row = widgetCount["creationWidgetCount"] % widgetsPerRow;
+                widgetCount["creationWidgetCount"]++;
+            }
+            else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
+                groupName = "Dimensions";
+                col = widgetCount["dimWidgetCount"] / widgetsPerRow;
+                row = widgetCount["dimWidgetCount"] % widgetsPerRow;
+                widgetCount["dimWidgetCount"]++;
+            }
+            else {
+                // if not in creation group or dimension group, it has to be in the modify group
+                groupName = "Modify";
+                col = widgetCount["modifyWidgetCount"] / widgetsPerRow;
+                row = widgetCount["modifyWidgetCount"] % widgetsPerRow;
+                widgetCount["modifyWidgetCount"]++;
+            }
+
+            toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
+        }
+    }
 }
