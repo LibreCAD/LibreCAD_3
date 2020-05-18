@@ -48,6 +48,17 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     luaInterface.finishOperation();
     kaguya::State state(luaInterface.luaState());
 
+    if (!operation["operation_options"].isNilref())
+    {
+        if (operation_options.find(operation["command_line"]) != operation_options.end()) {
+            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
+
+            for (auto op : options) {
+                op();
+            }
+        }
+    }
+
     // add toolbar cancel button
     state.dostring("finish_op = function() finish_operation() end");
     toolbar.addButton("", ":/icons/quit.svg", "Current operation", 0, 0, state["finish_op"], "Cancel");
@@ -63,6 +74,10 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     else {
         op[init_method.c_str()](op);
     }
+}
+
+void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
+    operation_options[operation] = options;
 }
 
 void MainWindow::operationFinished() {

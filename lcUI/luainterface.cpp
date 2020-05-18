@@ -265,7 +265,8 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
         "command_line",
         "menu_actions",
         "icon",
-        "description"
+        "description",
+        "operation_options"
     };
 
     /* Loop through all keys to search for the ones containing "Operation" in their name,
@@ -408,6 +409,24 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
             }
 
             toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
+        }
+
+        // operation icons
+        if (opkey == "operation_options") {
+            std::map<std::string, kaguya::LuaRef> options = _L[vkey][opkey];
+
+            int count = 0;
+            std::vector<kaguya::LuaRef> optionsList;
+            for (auto element : options) {
+                std::map<std::string, std::string> option = element.second;
+
+                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+                _L.dostring(action);
+                optionsList.push_back(_L["operation_op"]);
+                count++;
+            }
+            mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+            _L["operation_op"] = nullptr;
         }
     }
 }

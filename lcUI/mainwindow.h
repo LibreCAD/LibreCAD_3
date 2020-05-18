@@ -56,6 +56,8 @@ namespace lc
 
             void operationFinished();
 
+            void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
+
         public slots:
             // CadMdiChild slots
             void triggerMousePressed();
@@ -103,6 +105,7 @@ namespace lc
             lc::ui::widgets::ColorSelect colorSelect;
 
             lc::geo::Coordinate lastPoint;
+            std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
         };
     }
 }

@@ -1,4 +1,21 @@
-LWPolylineOperations = {}
+LWPolylineOperations = {
+    command_line = "POLYLINE",
+    icon = "polylines.svg",
+    description = "Polyline",
+    menu_actions = {
+        default = "actionPolyline"
+    },
+    operation_options = {
+        Line = {
+            icon = "linesnormal.png",
+            action = "createLine"
+        },
+        Arc = {
+            icon = "arc.svg",
+            action = "createArc"
+        }
+    }
+}
 LWPolylineOperations.__index = LWPolylineOperations
 
 setmetatable(LWPolylineOperations, {
@@ -10,18 +27,15 @@ setmetatable(LWPolylineOperations, {
     end,
 })
 
-function LWPolylineOperations:init()
-   	mainWindow:connectMenuItem("actionPolyline", function() create_lw_polyline() end)
-
-    mainWindow:getToolbar():addButton("", ":/icons/polylines.svg", "Creation", 2, 1, function() create_lw_polyline() end, "Polyline")
-
-    mainWindow:getCliCommand():addCommand("POLYLINE", function() create_lw_polyline() end)
-end
-
 function LWPolylineOperations:_init()
     CreateOperations._init(self, lc.builder.LWPolylineBuilder, "enterPoint")
 	self.currentVertex = "line"
 	self.tempPoint = false
+end
+
+function LWPolylineOperations:_init_default()
+    message("<b>Polyline</b>")
+    message("Click on first point or enter coordinates:")
 end
 
 function LWPolylineOperations:enterPoint(eventName, data)
