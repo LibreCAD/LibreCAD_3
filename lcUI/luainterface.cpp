@@ -239,11 +239,13 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     kaguya::LuaTable globalTable(_L.globalTable());
     std::vector<kaguya::LuaRef> globalKeys = globalTable.keys();
 
+    // count of widgets for proper positioning in toolbar group
     std::map<std::string, int> widgetCount;
     widgetCount["creationWidgetCount"] = 0;
     widgetCount["dimWidgetCount"] = 0;
     widgetCount["modifyWidgetCount"] = 0;
 
+    // list of properties to look out for in the operation
     std::set<std::string> initProperties = {
         "init",
         "command_line",
@@ -253,7 +255,7 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     };
 
     /* Loop through all keys to search for the ones containing "Operation" in their name,
-     * If this operation has a "init" function, call it.
+     * Call initialize operation with list of all found properties for the operation
      */
     for (kaguya::LuaRef v : globalKeys)
     {
@@ -304,8 +306,32 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
 
         // command line
         if (opkey == "command_line") {
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-            cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+            if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
+                _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+            }
+
+            if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_TABLE) {
+
+                std::vector<kaguya::LuaRef> commandList = _L[vkey][opkey].keys();
+
+                for (kaguya::LuaRef commandKey : commandList) {
+                    std::string key = commandKey.get<std::string>();
+
+                    // if key is digits only i.e. if no key provided, connect it to default init
+                    if (std::find_if(key.begin(), key.end(), [](unsigned char c) {return !std::isdigit(c); }) == key.end())
+                    {
+                        // connect to default init function
+                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                        cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
+                    }
+                    else {
+                        // connect to provided init function
+                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + key + "') end");
+                        cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
+                    }
+                }
+            }
         }
 
         //menu actions

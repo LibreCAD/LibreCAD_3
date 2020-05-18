@@ -1,6 +1,11 @@
 EllipseOperations = {
-    command_line = "ELLIPSE",
+    command_line = {
+        "ELLIPSE",
+        arc = "ARCELLIPSE",
+        "ELLIPSEOTHER"
+    },
     icon = "ellipse.svg",
+    description = "Ellipse Operation",
     menu_actions = {
         default = "actionEllipse_Axis",
         arc = "actionEllipse_Axis",
@@ -17,10 +22,6 @@ setmetatable(EllipseOperations, {
         return self
     end,
 })
-
-function EllipseOperations:init()
-    mainWindow:getCliCommand():addCommand("ARCELLIPSE", function() run_basic_operation(EllipseOperations, "_init_arc") end)
-end
 
 function EllipseOperations:_init()
     self.isArc = isArc or false

@@ -116,6 +116,14 @@ namespace lc {
 				void triggerEvent(const std::string& event, kaguya::LuaRef args);
 
             private:
+                /**
+                 * \brief Helper function to initialize each operation on the basis of found properties
+                 * \param vkey - Operation key for state table
+                 *        foundProperties - List of found properties of operation in lua file
+                 *        widgetCount - Count of widgets in toolbar groups
+                 *        groupElements - List of widgets in toolbar groups
+                 *        mainWindow - to cast to MainWindow and access clicommand,toolbar and cadmdichild
+                 */
                 void initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties, 
                     std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, 
                     QMainWindow* mainWindow);
