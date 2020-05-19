@@ -130,6 +130,11 @@ namespace lc {
                     std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, 
                     QMainWindow* mainWindow);
 
+                /**
+                 * \brief make common functions available globally and register finish events
+                 */
+                void registerGlobalFunctions();
+
 			private:
 				kaguya::State _L;
 				std::vector<LuaQObject_SPtr> _luaQObjects;

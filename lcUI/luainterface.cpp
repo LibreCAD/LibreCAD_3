@@ -30,13 +30,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     _L["luaInterface"] = this;
     _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
 
-    // register common functions i.e. run_basic_operation and message
-    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
-    _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
-    _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
-    _L.dostring("message = function(m) mainWindow:getCliCommand():write(tostring(m)) end");
-    _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
-    _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
+    registerGlobalFunctions();
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
@@ -415,17 +409,53 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
             int count = 0;
             std::vector<kaguya::LuaRef> optionsList;
             for (auto element : options) {
-                std::map<std::string, std::string> option = element.second;
 
-                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
-                _L.dostring(action);
-                optionsList.push_back(_L["operation_op"]);
-                count++;
+                // operation_options for init_method
+                if (element.first.find("_init") < element.first.size()) {
+                    std::map<std::string, kaguya::LuaRef> optionsInit = element.second;
+
+                    int countInit = 0;
+                    std::vector<kaguya::LuaRef> optionsInitList;
+                    for (auto elementInit : optionsInit) {
+                        std::map<std::string, std::string> optionInit = elementInit.second;
+
+                        std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation'," + std::string(1, (countInit + '0')) + ", 1, function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
+                        _L.dostring(action);
+                        optionsInitList.push_back(_L["operation_op"]);
+                        countInit++;
+                    }
+
+                    // LINEOPERATIONS_init_pal - example key for operation options list
+                    mWindow->addOperationOptions(_L[vkey]["command_line"].get<std::string>() + element.first, optionsInitList);
+                }
+                else
+                {   
+                    // default operation_options
+                    std::map<std::string, std::string> option = element.second;
+
+                    std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+                    _L.dostring(action);
+                    optionsList.push_back(_L["operation_op"]);
+                    count++;
+                }
             }
 
             // provide options list to mainWindow so it can run necessary function on runOperation
-            mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+            if (optionsList.size() > 0) {
+                mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+            }
             _L["operation_op"] = nullptr;
         }
     }
+}
+
+void LuaInterface::registerGlobalFunctions() {
+    // register common functions i.e. run_basic_operation and message
+    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
+    _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
+    _L.dostring("message = function(m) mainWindow:getCliCommand():write(tostring(m)) end");
+
+    _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
+    _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
 }

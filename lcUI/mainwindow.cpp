@@ -51,7 +51,14 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     // if current operation had extra operation toolbar icons, add them
     if (!operation["operation_options"].isNilref())
     {
-        if (operation_options.find(operation["command_line"]) != operation_options.end()) {
+        if (operation_options.find(operation["command_line"].get<std::string>() + init_method) != operation_options.end()) {
+            std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"].get<std::string>() + init_method];
+
+            for (auto op : options) {
+                // run operation which adds option icon to toolbar
+                op();
+            }
+        }else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
             std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
 
             for (auto op : options) {
