@@ -10,7 +10,7 @@ using namespace lc::ui::widgets;
 
 TEST(ToolbarTest, TabOperations) {
 	QApplication app(argc, argv);
-	Toolbar toolbar;
+	Toolbar toolbar(nullptr);
 
 	toolbar.addTab("Test", new ToolbarTab());
 	auto tab = toolbar.tabByName("Test");

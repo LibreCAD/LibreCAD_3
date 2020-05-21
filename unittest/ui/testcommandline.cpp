@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 #include "clicommandtest.h"
 
+#include <kaguya/kaguya.hpp>
+
 #include "uitests.h"
 
 TEST(CommandLine, CommandTest) {
@@ -16,7 +18,7 @@ TEST(CommandLine, CommandTest) {
 	QString c1 = "COMMAND";
 	QString c2 = "INVALID";
 
-	cliTest.addCommand(c1.toStdString());
+	cliTest.addCommand(c1.toStdString(), kaguya::LuaRef());
 	cliTest.testCommand(c1);
 	cliTest.testCommand(c2);
 

@@ -5,7 +5,7 @@
 
 #include <QMainWindow>
 #include "widgets/clicommand.h"
-#include "Widgets/layers.h"
+#include "widgets/layers.h"
 #include "widgets/linepatternselect.h"
 #include "widgets/linewidthselect.h"
 #include "widgets/colorselect.h"
@@ -102,7 +102,7 @@ namespace lc
         signals:
             void point(lc::geo::Coordinate coordinate);
 
-        private:
+        protected:
             Ui::MainWindow* ui;
             lc::ui::LuaInterface luaInterface;
 

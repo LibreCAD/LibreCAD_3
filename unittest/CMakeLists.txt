@@ -88,6 +88,7 @@ if(WITH_QT_UI)
     set(hdrs
             ${hdrs}
             ui/clicommandtest.h
+            ui/mainwindowtest.h
             ui/uitests.h
             ui/widgets/layers.h
             ui/dialogs/addlinepatterndialog.h
@@ -104,6 +105,7 @@ if(WITH_QT_UI)
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp
+            ui/testmainwindow.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")

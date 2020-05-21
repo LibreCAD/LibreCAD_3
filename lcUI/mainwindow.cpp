@@ -198,10 +198,10 @@ void MainWindow::triggerKeyPressed(int key)
     else
     {
         kaguya::State state(luaInterface.luaState());
-        state["finishOperationEvent"] = kaguya::NewTable();
-        state["finishOperationEvent"]["key"] = key;
-        state["finishOperationEvent"]["widget"] = &cadMdiChild;
-        luaInterface.triggerEvent("keyPressed", state["finishOperationEvent"]);
+        state["keyEvent"] = kaguya::NewTable();
+        state["keyEvent"]["key"] = key;
+        state["keyEvent"]["widget"] = &cadMdiChild;
+        luaInterface.triggerEvent("keyPressed", state["keyEvent"]);
     }
 }
 
