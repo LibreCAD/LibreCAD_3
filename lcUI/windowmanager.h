@@ -25,6 +25,8 @@ namespace lc
             */
             static void openFile();
 
+            static std::vector<MainWindow*>& getMainWindows();
+
         public:
             static std::vector<MainWindow*> mainWindows;
         };

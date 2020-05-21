@@ -81,4 +81,17 @@ public:
 
         return toolbar.tabByName("Current operation") == nullptr;
     }
+
+    bool testRunOperation()
+    {
+        kaguya::State state(luaInterface.luaState());
+        state.dostring("mainWindow:runOperation(LineOperations, '_init_p2')");
+
+        kaguya::LuaRef curOperation = luaInterface.operation();
+
+        bool checkCorrectOperation = curOperation["command_line"] == "LINE";
+        bool checkCurrentOperationGroupAdded = (toolbar.tabByName("Quick Access")->groupByName("Current operation") != nullptr);
+
+        return checkCorrectOperation && checkCurrentOperationGroupAdded;
+    }
 };

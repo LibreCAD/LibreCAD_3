@@ -27,3 +27,10 @@ TEST(MWindowTest, OperationFinishedTest) {
 
     EXPECT_TRUE(mainWindow->testOperationFinished());
 }
+
+TEST(MWindowTest, RunOperationTest) {
+    QApplication app(argc, argv);
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    EXPECT_TRUE(mainWindow->testRunOperation());
+}

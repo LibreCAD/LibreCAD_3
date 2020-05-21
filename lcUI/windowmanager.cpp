@@ -35,3 +35,8 @@ void WindowManager::openFile()
     window->showMaximized();
     mainWindows.push_back(window);
 }
+
+std::vector<MainWindow*>& WindowManager::getMainWindows()
+{
+    return mainWindows;
+}

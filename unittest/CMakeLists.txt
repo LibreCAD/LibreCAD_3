@@ -97,8 +97,8 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            #ui/testluaui.cpp
-            #ui/testluaoperations.cpp
+            ui/testluaui.cpp
+            ui/testluaoperations.cpp
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
@@ -106,6 +106,7 @@ if(WITH_QT_UI)
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp
+            ui/testwindowmanager.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")
