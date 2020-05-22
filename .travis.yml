@@ -36,6 +36,7 @@ matrix:
       - pip install --user cpp-coveralls
 
       script:
+      - cmake --version
       - ./scripts/travis.sh
 
 cache: ccache
