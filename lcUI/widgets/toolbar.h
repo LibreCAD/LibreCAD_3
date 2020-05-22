@@ -66,6 +66,7 @@ namespace lc {
                      * \brief Remove group from quickaccesstab if it exists
                      */
                     void removeGroupByName(const char* groupName);
+
                 private:
                     Ui::Toolbar* ui;
                     ToolbarTab quickAccessTab;

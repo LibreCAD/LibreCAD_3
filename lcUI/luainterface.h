@@ -135,6 +135,19 @@ namespace lc {
                  */
                 void registerGlobalFunctions();
 
+                void loadLuaFolder(const std::string folderName, const std::string& fileToSkip, const std::string& luaPath);
+
+                std::map<std::string, std::set<std::string>> getSetOfGroupElements();
+
+                void addOperationCommandLine(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
+
+                void addOperationMenuAction(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
+
+                void addOperationIcon(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow, const std::set<std::string>& foundProperties,
+                    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements);
+
+                void addOperationToolbarOptions(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
+
 			private:
 				kaguya::State _L;
 				std::vector<LuaQObject_SPtr> _luaQObjects;

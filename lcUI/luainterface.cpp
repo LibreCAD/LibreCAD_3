@@ -194,51 +194,12 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     // call operations and createoperations first
     _L.dofile(lua_path + "/actions/operations.lua");
     _L.dofile(lua_path + "/createActions/createOperations.lua");
-
-    // run all lua files in createActions folder
-    QDir createActionsDir((lua_path + "/createActions").c_str());
-    QStringList luaFiles = createActionsDir.entryList(QStringList() << "*.lua", QDir::Files);
-    for (QString str : luaFiles)
-    {
-        std::string filename = str.toStdString();
-        // skip createOperations.lua as it has been already called
-        if (filename != "createOperations") {
-            _L.dofile(lua_path + "/createActions/" + filename);
-        }
-    }
+    loadLuaFolder("createActions", "createOperations", lua_path);
 
     // create list of all operations in creationGroup and dimensionsGroup
-    std::map<std::string, std::set<std::string>> groupElements;
-    groupElements["creationGroupElements"] = std::set<std::string>();
-    groupElements["dimensionsGroupElements"] = std::set<std::string>();
+    std::map<std::string, std::set<std::string>> groupElements = getSetOfGroupElements();
 
-    // insert elements into their respective sets
-    for (kaguya::LuaRef v : _L.globalTable().keys())
-    {
-        if (v.isType<std::string>()){
-            std::string vkey = std::string(v.get<std::string>());
-
-            if (vkey.find("Operation") < vkey.length()) {
-                if (vkey.find("Dim") < vkey.length()) {
-                    groupElements["dimensionsGroupElements"].insert(vkey);
-                }
-                else {
-                    groupElements["creationGroupElements"].insert(vkey);
-                }
-            }
-        }
-    }
-
-    // run all lua files in actions folder
-    QDir actionsDir((lua_path + "/actions").c_str());
-    QStringList luaFiles1 = actionsDir.entryList(QStringList() << "*.lua", QDir::Files);
-    for (QString str : luaFiles1)
-    {
-        // skip operations.lua as it has been already called
-        if (str.toStdString() != "operations") {
-            _L.dofile(lua_path + "/actions/" + str.toStdString());
-        }
-    }
+    loadLuaFolder("actions", "operations", lua_path);
 
     // fetch a list of all keys from the state table
     kaguya::LuaTable globalTable(_L.globalTable());
@@ -297,11 +258,6 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
 void LuaInterface::initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties,
     std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, QMainWindow* mainWindow)
 {
-    // mainWindow to connect to command line and menu
-    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
-    lc::ui::widgets::CliCommand* cliCommand = mWindow->getCliCommand();
-    lc::ui::widgets::Toolbar* toolbar = mWindow->getToolbar();
-
     for (const std::string& opkey : foundProperties)
     {
         // init function
@@ -312,139 +268,23 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
 
         // command line
         if (opkey == "command_line") {
-            if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
-                _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
-            }
-
-            if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_TABLE) {
-
-                std::vector<kaguya::LuaRef> commandList = _L[vkey][opkey].keys();
-
-                for (kaguya::LuaRef commandKey : commandList) {
-                    std::string key = commandKey.get<std::string>();
-
-                    // if key is digits only i.e. if no key provided, connect it to default init
-                    if (std::find_if(key.begin(), key.end(), [](unsigned char c) {return !std::isdigit(c); }) == key.end())
-                    {
-                        // connect to default init function
-                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                        cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
-                    }
-                    else {
-                        // connect to provided init function
-                        _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
-                        cliCommand->addCommand(key, _L["run_op"]);
-                    }
-                }
-            }
+            addOperationCommandLine(vkey, opkey, mainWindow);
         }
 
         //menu actions
         if (opkey == "menu_actions")
         {
-            std::map<std::string, std::string> map = _L[vkey][opkey];
-
-            for (auto element : map)
-            {
-                if (element.first == "default") {
-                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                }
-                else {
-                    _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
-                }
-                mWindow->connectMenuItem(element.second, _L["run_op"]);
-            }
+            addOperationMenuAction(vkey, opkey, mainWindow);
         }
 
         // Toolbar attributes
         if (opkey == "icon") {
-            std::string icon = _L[vkey][opkey].get<std::string>();
-
-            std::string tooltip;
-            
-            // if description not provided, use operation name
-            if (foundProperties.find("description") != foundProperties.end()) {
-                tooltip = _L[vkey]["description"].get<std::string>();
-            }
-            else {
-                tooltip = vkey.substr(0, vkey.find("Operation"));
-            }
-            
-            std::string iconPath = ":/icons/" + icon;
-            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-            std::string groupName;
-            int row;
-            int col;
-
-            const int widgetsPerRow = 3;
-
-            if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
-                groupName = "Creation";
-                col = widgetCount["creationWidgetCount"] / widgetsPerRow;
-                row = widgetCount["creationWidgetCount"] % widgetsPerRow;
-                widgetCount["creationWidgetCount"]++;
-            }
-            else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
-                groupName = "Dimensions";
-                col = widgetCount["dimWidgetCount"] / widgetsPerRow;
-                row = widgetCount["dimWidgetCount"] % widgetsPerRow;
-                widgetCount["dimWidgetCount"]++;
-            }
-            else {
-                // if not in creation group or dimension group, it has to be in the modify group
-                groupName = "Modify";
-                col = widgetCount["modifyWidgetCount"] / widgetsPerRow;
-                row = widgetCount["modifyWidgetCount"] % widgetsPerRow;
-                widgetCount["modifyWidgetCount"]++;
-            }
-
-            toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
+            addOperationIcon(vkey, opkey, mainWindow, foundProperties, widgetCount, groupElements);
         }
 
         // operation icons
         if (opkey == "operation_options") {
-            std::map<std::string, kaguya::LuaRef> options = _L[vkey][opkey];
-
-            int count = 0;
-            std::vector<kaguya::LuaRef> optionsList;
-            for (auto element : options) {
-
-                // operation_options for init_method
-                if (element.first.find("_init") < element.first.size()) {
-                    std::map<std::string, kaguya::LuaRef> optionsInit = element.second;
-
-                    int countInit = 0;
-                    std::vector<kaguya::LuaRef> optionsInitList;
-                    for (auto elementInit : optionsInit) {
-                        std::map<std::string, std::string> optionInit = elementInit.second;
-
-                        std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation'," + std::string(1, (countInit + '0')) + ", 1, function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
-                        _L.dostring(action);
-                        optionsInitList.push_back(_L["operation_op"]);
-                        countInit++;
-                    }
-
-                    // LINEOPERATIONS_init_pal - example key for operation options list
-                    mWindow->addOperationOptions(_L[vkey]["command_line"].get<std::string>() + element.first, optionsInitList);
-                }
-                else
-                {   
-                    // default operation_options
-                    std::map<std::string, std::string> option = element.second;
-
-                    std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
-                    _L.dostring(action);
-                    optionsList.push_back(_L["operation_op"]);
-                    count++;
-                }
-            }
-
-            // provide options list to mainWindow so it can run necessary function on runOperation
-            if (optionsList.size() > 0) {
-                mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
-            }
-            _L["operation_op"] = nullptr;
+            addOperationToolbarOptions(vkey, opkey, mainWindow);
         }
     }
 }
@@ -458,4 +298,179 @@ void LuaInterface::registerGlobalFunctions() {
 
     _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
     _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
+}
+
+void LuaInterface::loadLuaFolder(const std::string folderName, const std::string& fileToSkip, const std::string& luaPath){
+    QDir folderDir((luaPath + "/" + folderName).c_str());
+    QStringList luaFiles = folderDir.entryList(QStringList() << "*.lua", QDir::Files);
+    for (QString str : luaFiles)
+    {
+        std::string filename = str.toStdString();
+        // skip fileToSkip.lua as it has been already called
+        if (str.toStdString() != fileToSkip) {
+            _L.dofile(luaPath + "/" + folderName + "/" + filename);
+        }
+    }
+}
+
+std::map<std::string, std::set<std::string>> LuaInterface::getSetOfGroupElements(){
+    std::map<std::string, std::set<std::string>> groupElements;
+    groupElements["creationGroupElements"] = std::set<std::string>();
+    groupElements["dimensionsGroupElements"] = std::set<std::string>();
+
+    // insert elements into their respective sets
+    for (kaguya::LuaRef v : _L.globalTable().keys())
+    {
+        if (v.isType<std::string>()) {
+            std::string vkey = std::string(v.get<std::string>());
+
+            if (vkey.find("Operation") < vkey.length()) {
+                if (vkey.find("Dim") < vkey.length()) {
+                    groupElements["dimensionsGroupElements"].insert(vkey);
+                }
+                else {
+                    groupElements["creationGroupElements"].insert(vkey);
+                }
+            }
+        }
+    }
+
+    return groupElements;
+}
+
+void LuaInterface::addOperationCommandLine(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {
+    lc::ui::widgets::CliCommand* cliCommand = static_cast<lc::ui::MainWindow*>(mainWindow)->getCliCommand();
+    
+    if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
+        _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+        cliCommand->addCommand(_L[vkey][opkey], _L["run_op"]);
+    }
+
+    if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_TABLE) {
+        std::vector<kaguya::LuaRef> commandList = _L[vkey][opkey].keys();
+
+        for (kaguya::LuaRef commandKey : commandList) {
+            std::string key = commandKey.get<std::string>();
+
+            // if key is digits only i.e. if no key provided, connect it to default init
+            if (std::find_if(key.begin(), key.end(), [](unsigned char c) {return !std::isdigit(c); }) == key.end())
+            {
+                // connect to default init function
+                _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
+            }
+            else {
+                // connect to provided init function
+                _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
+                cliCommand->addCommand(key, _L["run_op"]);
+            }
+        }
+    }
+}
+
+void LuaInterface::addOperationMenuAction(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {
+    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
+    std::map<std::string, std::string> map = _L[vkey][opkey];
+
+    for (auto element : map)
+    {
+        if (element.first == "default") {
+            _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+        }
+        else {
+            _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + element.first + "') end");
+        }
+        mWindow->connectMenuItem(element.second, _L["run_op"]);
+    }
+}
+
+void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow, const std::set<std::string>& foundProperties,
+    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements){
+    lc::ui::widgets::Toolbar* toolbar = static_cast<lc::ui::MainWindow*>(mainWindow)->getToolbar();
+
+    std::string icon = _L[vkey][opkey].get<std::string>();
+
+    std::string tooltip;
+
+    // if description not provided, use operation name
+    if (foundProperties.find("description") != foundProperties.end()) {
+        tooltip = _L[vkey]["description"].get<std::string>();
+    }
+    else {
+        tooltip = vkey.substr(0, vkey.find("Operation"));
+    }
+
+    std::string iconPath = ":/icons/" + icon;
+    _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
+    std::string groupName;
+    int row;
+    int col;
+
+    const int widgetsPerRow = 3;
+
+    if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
+        groupName = "Creation";
+        col = widgetCount["creationWidgetCount"] / widgetsPerRow;
+        row = widgetCount["creationWidgetCount"] % widgetsPerRow;
+        widgetCount["creationWidgetCount"]++;
+    }
+    else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
+        groupName = "Dimensions";
+        col = widgetCount["dimWidgetCount"] / widgetsPerRow;
+        row = widgetCount["dimWidgetCount"] % widgetsPerRow;
+        widgetCount["dimWidgetCount"]++;
+    }
+    else {
+        // if not in creation group or dimension group, it has to be in the modify group
+        groupName = "Modify";
+        col = widgetCount["modifyWidgetCount"] / widgetsPerRow;
+        row = widgetCount["modifyWidgetCount"] % widgetsPerRow;
+        widgetCount["modifyWidgetCount"]++;
+    }
+
+    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
+}
+
+void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {
+    lc::ui::MainWindow* mWindow = static_cast<lc::ui::MainWindow*>(mainWindow);
+    std::map<std::string, kaguya::LuaRef> options = _L[vkey][opkey];
+
+    int count = 0;
+    std::vector<kaguya::LuaRef> optionsList;
+    for (auto element : options) {
+        // operation_options for init_method
+        if (element.first.find("_init") < element.first.size()) {
+            std::map<std::string, kaguya::LuaRef> optionsInit = element.second;
+
+            int countInit = 0;
+            std::vector<kaguya::LuaRef> optionsInitList;
+            for (auto elementInit : optionsInit) {
+                std::map<std::string, std::string> optionInit = elementInit.second;
+
+                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation'," + std::string(1, (countInit + '0')) + ", 1, function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
+                _L.dostring(action);
+                optionsInitList.push_back(_L["operation_op"]);
+                countInit++;
+            }
+
+            // LINEOPERATIONS_init_pal - example key for operation options list
+            mWindow->addOperationOptions(_L[vkey]["command_line"].get<std::string>() + element.first, optionsInitList);
+        }
+        else
+        {
+            // default operation_options
+            std::map<std::string, std::string> option = element.second;
+
+            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+            _L.dostring(action);
+            optionsList.push_back(_L["operation_op"]);
+            count++;
+        }
+    }
+
+    // provide options list to mainWindow so it can run necessary function on runOperation
+    if (optionsList.size() > 0) {
+        mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
+    }
+    _L["operation_op"] = nullptr;
 }
