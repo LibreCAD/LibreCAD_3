@@ -28,9 +28,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     luaOpenQtBridge(_L.state());
 
     _L["luaInterface"] = this;
-    _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
-
-    registerGlobalFunctions();
+    registerGlobalFunctions(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
@@ -289,8 +287,9 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
     }
 }
 
-void LuaInterface::registerGlobalFunctions() {
+void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     // register common functions i.e. run_basic_operation and message
+    _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
     _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
     _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
     _L.dostring("operationFinished = function() mainWindow:operationFinished() end");

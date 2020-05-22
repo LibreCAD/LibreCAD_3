@@ -133,7 +133,7 @@ namespace lc {
                 /**
                  * \brief make common functions available globally and register finish events
                  */
-                void registerGlobalFunctions();
+                void registerGlobalFunctions(QMainWindow* mainWindow);
 
                 void loadLuaFolder(const std::string folderName, const std::string& fileToSkip, const std::string& luaPath);
 

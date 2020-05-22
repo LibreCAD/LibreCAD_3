@@ -97,8 +97,8 @@ if(WITH_QT_UI)
     set(src
             ${src}
             ui/testtoolbar.cpp
-            ui/testluaui.cpp
-            ui/testluaoperations.cpp
+            #ui/testluaui.cpp
+            #ui/testluaoperations.cpp
             ui/uitests.cpp
             ui/testlayers.cpp
             ui/testlinepatterns.cpp
