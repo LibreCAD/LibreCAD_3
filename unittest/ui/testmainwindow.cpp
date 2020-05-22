@@ -34,3 +34,17 @@ TEST(MWindowTest, RunOperationTest) {
 
     EXPECT_TRUE(mainWindow->testRunOperation());
 }
+
+TEST(MWindowTest, AddOperationOptionsTest) {
+    QApplication app(argc, argv);
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    EXPECT_TRUE(mainWindow->testAddOperationOptions());
+}
+
+TEST(MWindowTest, ConnectMenuTest) {
+    QApplication app(argc, argv);
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    EXPECT_TRUE(mainWindow->testConnectMenuItem());
+}

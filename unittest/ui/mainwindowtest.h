@@ -94,4 +94,31 @@ public:
 
         return checkCorrectOperation && checkCurrentOperationGroupAdded;
     }
+
+    bool testAddOperationOptions()
+    {
+        std::vector<kaguya::LuaRef> ops;
+        ops.push_back(kaguya::LuaRef());
+
+        addOperationOptions("TEST", ops);
+
+        return operation_options.find("TEST") != operation_options.end();
+    }
+
+    bool testConnectMenuItem()
+    {
+        QAction* testAction = this->findChild<QAction*>(QString("action2_Point_Line"));
+
+        kaguya::State state(luaInterface.luaState());
+        state.dostring("test_menu = function() testMenuItem=5 end");
+        connectMenuItem("action2_Point_Line", state["test_menu"]);
+
+        testAction->trigger();
+
+        kaguya::LuaRef testMenuItem = state["testMenuItem"];
+        bool condition1 = !testMenuItem.isNilref();
+        bool condition2 = testMenuItem.get<int>() == 5;
+
+        return condition1 && condition2;
+    }
 };
