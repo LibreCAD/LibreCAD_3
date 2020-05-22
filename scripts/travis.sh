@@ -8,12 +8,12 @@ make -j2
 cd ..
 git clone https://github.com/LibreCAD/libdxfrw.git libdxfrw
 cd libdxfrw
-cmake .
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON .
 make -j2
 cd ../..
 mkdir -p build
 cd build
-cmake -DWITH_COVERAGE=ON ..
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_COVERAGE=ON ..
 
 
 make -j2 lcunittest VERBOSE=1

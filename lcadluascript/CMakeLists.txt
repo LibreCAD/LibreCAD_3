@@ -82,5 +82,7 @@ add_library(lcluascript SHARED ${lcluascript_srcs} ${lcluascript_hdrs})
 target_link_libraries(lcluascript ${LUA_LIBRARIES} lckernel)
 
 # INSTALLATION
-install(TARGETS lcluascript RUNTIME DESTINATION lib)
-install(TARGETS lcluascript RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS lcluascript 
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)

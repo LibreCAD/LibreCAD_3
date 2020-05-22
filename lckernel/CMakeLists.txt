@@ -259,5 +259,6 @@ add_library(lckernel SHARED ${lckernel_srcs} ${lckernel_hdrs})
 target_link_libraries(lckernel ${Boost_LIBRARIES} ${APR_LIBRARIES} ${G_EXTRA_LIBS} tinysplinecxx_shared)
 
 # INSTALLATION
-install(TARGETS lckernel RUNTIME DESTINATION lib)
-install(TARGETS lckernel RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS lckernel 
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
