@@ -70,5 +70,7 @@ add_library(persistence SHARED ${persistence_srcs} ${persistence_hdrs})
 target_link_libraries(persistence lckernel ${Boost_LIBRARIES} libdxfrw::libdxfrw ${Boost_LIBRARIES} ${APR_LIBRARIES} ${OPENCAD_LIB})
 
 # INSTALLATION
-install(TARGETS persistence RUNTIME DESTINATION lib)
-install(TARGETS persistence RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS persistence
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
