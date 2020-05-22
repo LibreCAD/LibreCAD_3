@@ -13,7 +13,7 @@ make -j2
 cd ../..
 mkdir -p build
 cd build
-cmake -DWITH_COVERAGE=ON ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DWITH_COVERAGE=ON ..
 
 
 make -j2 lcunittest VERBOSE=1
