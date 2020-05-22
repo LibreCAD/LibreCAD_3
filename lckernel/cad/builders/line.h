@@ -40,6 +40,12 @@ namespace lc {
                  */
                 entity::Line_CSPtr build();
 
+                /**
+                *  @brief Get angle of line from the horizontal axis
+                *  @return angle if line, -1 if entity is not a line
+                */
+                double getLineAngle(lc::entity::CADEntity_CSPtr entity) const;
+
             private:
                 geo::Coordinate _start;
                 geo::Coordinate _end;
