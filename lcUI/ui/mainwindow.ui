@@ -84,6 +84,10 @@
      </property>
      <addaction name="action2_Point_Line"/>
      <addaction name="actionPoint_Angle_Length_Line" />
+     <addaction name="actionHorizontalLine" />
+     <addaction name="actionVerticalLine" />
+     <addaction name="actionParallelLine" />
+     <addaction name="actionOrthogonalLine" />
      <addaction name="separator"/>
      <addaction name="actionRectangle" />
      <addaction name="actionPolygonCenCor" />
@@ -303,6 +307,26 @@
   <action name="actionPoint_Angle_Length_Line">
    <property name="text">
     <string>&amp;Point, Angle, Length</string>
+   </property>
+  </action>
+  <action name="actionHorizontalLine">
+   <property name="text">
+    <string>&amp;Horizontal Line</string>
+   </property>
+  </action>
+  <action name="actionVerticalLine">
+   <property name="text">
+    <string>&amp;Vertical Line</string>
+   </property>
+  </action>
+  <action name="actionParallelLine">
+   <property name="text">
+    <string>&amp;Parallel Line</string>
+   </property>
+  </action>
+  <action name="actionOrthogonalLine">
+   <property name="text">
+    <string>&amp;Orthogonal Line</string>
    </property>
   </action>
   <action name="actionRectangle">
