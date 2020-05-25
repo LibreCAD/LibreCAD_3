@@ -48,6 +48,8 @@ widgets/linepatternmodel.h
 widgets/linewidthselect.h
 widgets/colorselect.h
 widgets/widgettitlebar.h
+widgets/guiAPI/menu.h
+widgets/guiAPI/menuitem.h
 lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
@@ -80,6 +82,8 @@ widgets/linepatternmodel.cpp
 widgets/linewidthselect.cpp
 widgets/colorselect.cpp
 widgets/widgettitlebar.cpp
+widgets/guiAPI/menu.cpp
+widgets/guiAPI/menuitem.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp

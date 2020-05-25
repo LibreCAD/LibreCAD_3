@@ -38,6 +38,13 @@ function LineOperations:_init_default()
 end
 
 function LineOperations:_init_p2()
+    local something = mainWindow:addMenu("Something")
+    local item1 = gui.MenuItem("Item1")
+    something:addItem(item1)
+
+    local foundit = mainWindow:getMenu("Something")
+    print(foundit:getLabel())
+
     message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")

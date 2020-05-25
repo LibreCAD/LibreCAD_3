@@ -32,4 +32,5 @@ void addQtWindowBindings(lua_State *L);
 void addQtLayoutBindings(lua_State *L);
 void addQtWidgetsBindings(lua_State *L);
 void addLCBindings(lua_State *L);
+void addLuaGUIAPIBindings(lua_State* L);
 void addQtMetaTypes();

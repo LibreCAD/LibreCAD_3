@@ -12,6 +12,8 @@
 #include "widgets/toolbar.h"
 #include "cadmdichild.h"
 
+#include "widgets/guiAPI/menu.h"
+
 namespace Ui {
     class MainWindow;
 }
@@ -70,6 +72,18 @@ namespace lc
             */
             void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
 
+            /* ------------ MENU GUI FUNCTIONS ---------------- */
+
+            /*void initMenuAPI();*/
+
+            /**
+            * \brief Add menu to the menu bar
+            */
+            lc::ui::api::Menu* addMenu(const std::string& menuName);
+            void addMenu(lc::ui::api::Menu* menu);
+
+            lc::ui::api::Menu* getMenu(const std::string& menuName);
+
         public slots:
             // CadMdiChild slots
             void triggerMousePressed();
@@ -118,6 +132,8 @@ namespace lc
 
             lc::geo::Coordinate lastPoint;
             std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
+
+            QMap<QString, api::Menu*> menuMap;
         };
     }
 }

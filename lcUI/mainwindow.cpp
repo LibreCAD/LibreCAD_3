@@ -34,8 +34,32 @@ MainWindow::MainWindow()
     // connect required signals and slots
     ConnectInputEvents();
 
+    api::Menu* menu = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuDemo_Project"));
+
+    if (menu != nullptr) {
+        this->menuBar()->addAction(menu->menuAction());
+    }
+
+    api::Menu* menu1 = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuEdit"));
+
+    if (menu1 != nullptr) {
+        this->menuBar()->addAction(menu1->menuAction());
+    }
+
+    api::Menu* menu2 = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuDemo"));
+
+    if (menu2 != nullptr) {
+        this->menuBar()->addAction(menu2->menuAction());
+    }
+
+    //menuEdit
+    //menuDemo
+
     // open qt bridge and run lua scripts
     luaInterface.initLua(this);
+
+    // menu api initialization
+    //initMenuAPI();
 }
 
 MainWindow::~MainWindow()
@@ -153,6 +177,42 @@ void MainWindow::ConnectInputEvents()
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
     luaInterface.luaConnect(this->findChild<QAction*>(QString(itemName.c_str())), "triggered(bool)", callback);
+}
+
+/* Menu Lua GUI API */
+
+/*void MainWindow::initMenuAPI() {
+    QList<QMenu*> menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
+
+    for (QMenu* men : menus)
+    {
+        menuMap[men->title()] = men;
+    }
+}*/
+
+api::Menu* MainWindow::addMenu(const std::string& menuName) {
+    api::Menu* newMenu = new api::Menu(menuName.c_str());
+    menuBar()->addMenu(newMenu);
+
+    menuMap[QString(menuName.c_str())] = newMenu;
+
+    return newMenu;
+}
+
+void MainWindow::addMenu(lc::ui::api::Menu* menu) {
+    menuMap[menu->title()] = menu;
+    menuBar()->addMenu(menu);
+}
+
+api::Menu* MainWindow::getMenu(const std::string& menuName) {
+    QString key = QString(menuName.c_str());
+    if (menuMap.find(key) != menuMap.end())
+    {
+        return menuMap[key];
+    }
+    else {
+        return nullptr;
+    }
 }
 
 /* Trigger slots */

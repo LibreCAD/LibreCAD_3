@@ -10,6 +10,8 @@
 #include "widgets/toolbar.h"
 #include "widgets/toolbartab.h"
 #include "widgets/layers.h"
+#include "widgets/guiAPI/menu.h"
+#include "widgets/guiAPI/menuitem.h"
 #include "dialogs/linepatternmanager.h"
 #include <drawables/tempentities.h>
 #include "widgets/linewidthselect.h"
@@ -27,12 +29,14 @@ using namespace drawable;
 void luaOpenQtBridge(lua_State *L) {
 	kaguya::State state(L);
 	state["qt"] = kaguya::NewTable();
+    state["gui"] = kaguya::NewTable();
 
 	addQtBaseBindings(L);
 	addQtWindowBindings(L);
 	addQtLayoutBindings(L);
 	addQtWidgetsBindings(L);
 	addLCBindings(L);
+    addLuaGUIAPIBindings(L);
 	addQtMetaTypes();
 }
 
@@ -327,10 +331,25 @@ void addLCBindings(lua_State *L) {
         .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
         .addFunction("getToolbar", &lc::ui::MainWindow::getToolbar)
         .addFunction("operationFinished", &lc::ui::MainWindow::operationFinished)
+        .addFunction("getMenu", &lc::ui::MainWindow::getMenu)
+        .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })
     );
 }
 
+void addLuaGUIAPIBindings(lua_State* L) {
+    kaguya::State state(L);
+
+    state["gui"]["Menu"].setClass(kaguya::UserdataMetatable<lc::ui::api::Menu>()
+        .setConstructors<lc::ui::api::Menu(const char*)>()
+        .addFunction("addItem", &lc::ui::api::Menu::addItem)
+        .addFunction("getLabel", &lc::ui::api::Menu::getLabel)
+    );
+
+    state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
+        .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
+    );
+}
 
 void addQtMetaTypes() {
 	qRegisterMetaType<lc::geo::Coordinate>();
