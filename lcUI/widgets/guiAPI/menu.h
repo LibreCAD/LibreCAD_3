@@ -19,6 +19,8 @@ namespace lc
 
                 Menu(QMenuBar* menuBar);
 
+                Menu(QMenu* menu);
+
                 void addItem(MenuItem* item);
 
                 const std::string& getLabel();

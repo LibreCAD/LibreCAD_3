@@ -2,6 +2,7 @@
 <ui version="4.0">
 <includes>
     <include location="global" impldecl="in implementation">widgets/guiAPI/menu.h</include>
+    <include location="global" impldecl="in implementation">widgets/guiAPI/menuitem.h</include>
 </includes>
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
@@ -60,7 +61,7 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <widget class="QMenu" name="menuSelect">
+    <widget class="lc::ui::api::Menu" name="menuSelect">
      <property name="title">
       <string>&amp;Select</string>
      </property>
@@ -75,13 +76,12 @@
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
     <addaction name="separator"/>
-    <addaction name="menuSelect"/>
    </widget>
    <widget class="lc::ui::api::Menu" name="menuDemo">
     <property name="title">
      <string>C&amp;reate</string>
     </property>
-    <widget class="QMenu" name="menuLine">
+    <widget class="lc::ui::api::Menu" name="menuLine">
      <property name="title">
       <string>&amp;Line</string>
      </property>
@@ -97,7 +97,7 @@
      <addaction name="actionPolygonCenTan" />
      <addaction name="actionPolygonCorCor" />
     </widget>
-    <widget class="QMenu" name="menuCircle">
+    <widget class="lc::ui::api::Menu" name="menuCircle">
      <property name="title">
       <string>C&amp;ircle</string>
      </property>
@@ -110,7 +110,7 @@
      <addaction name="actionTan_Tan_Radius"/>
      <addaction name="actionTan_Tan_Tan"/>
     </widget>
-    <widget class="QMenu" name="menuArc">
+    <widget class="lc::ui::api::Menu" name="menuArc">
      <property name="title">
       <string>Arc</string>
      </property>
@@ -130,7 +130,7 @@
      <addaction name="separator"/>
      <addaction name="actionContinue"/>
     </widget>
-    <widget class="QMenu" name="menuEllipse">
+    <widget class="lc::ui::api::Menu" name="menuEllipse">
      <property name="title">
       <string>Ellipse</string>
      </property>
@@ -139,7 +139,7 @@
      <addaction name="actionEllipse_FociPoints"/>
      <addaction name="actionEllipse_4Points"/>
     </widget>
-    <widget class="QMenu" name="menuDimension">
+    <widget class="lc::ui::api::Menu" name="menuDimension">
      <property name="title">
       <string>&amp;Dimension</string>
      </property>
@@ -156,11 +156,6 @@
     <addaction name="actionAdd_Random_Arc"/>
     <addaction name="actionClear_Undoable_Stack"/>
     <addaction name="separator"/>
-    <addaction name="menuLine"/>
-    <addaction name="menuCircle"/>
-    <addaction name="menuArc"/>
-    <addaction name="menuEllipse"/>
-    <addaction name="menuDimension"/>
     <addaction name="actionPolyline"/>
     <addaction name="actionSpline"/>
    </widget>

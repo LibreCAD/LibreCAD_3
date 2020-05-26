@@ -15,6 +15,12 @@ Menu::Menu(QMenuBar* menuBar)
 {
 }
 
+Menu::Menu(QMenu* menu)
+    :
+    QMenu(menu)
+{
+}
+
 void Menu::addItem(MenuItem* item) {
     this->addAction(item);
 }

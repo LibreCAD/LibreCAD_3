@@ -18,6 +18,8 @@ namespace lc
                 MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent = nullptr);
 
                 MenuItem(const char* menuItemName, QWidget* parent = nullptr);
+
+                std::string getLabel();
             };
         }
     }

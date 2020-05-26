@@ -31,35 +31,14 @@ MainWindow::MainWindow()
     toolbar.initializeToolbar(&linePatternSelect, &lineWidthSelect, &colorSelect);
     cadMdiChild.viewer()->autoScale();
 
+    initMenuAPI();
+
     // connect required signals and slots
     ConnectInputEvents();
-
-    api::Menu* menu = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuDemo_Project"));
-
-    if (menu != nullptr) {
-        this->menuBar()->addAction(menu->menuAction());
-    }
-
-    api::Menu* menu1 = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuEdit"));
-
-    if (menu1 != nullptr) {
-        this->menuBar()->addAction(menu1->menuAction());
-    }
-
-    api::Menu* menu2 = static_cast<api::Menu*>(menuBar()->findChild<QMenu*>("menuDemo"));
-
-    if (menu2 != nullptr) {
-        this->menuBar()->addAction(menu2->menuAction());
-    }
-
-    //menuEdit
-    //menuDemo
 
     // open qt bridge and run lua scripts
     luaInterface.initLua(this);
 
-    // menu api initialization
-    //initMenuAPI();
 }
 
 MainWindow::~MainWindow()
@@ -156,39 +135,142 @@ void MainWindow::ConnectInputEvents()
 
     // Other
     QObject::connect(this, &MainWindow::point, this, &MainWindow::triggerPoint);
-    QObject::connect(this->findChild<QAction*>("actionExit"), &QAction::triggered, this, &MainWindow::close);
+    QObject::connect(findMenuItem("actionExit"), &QAction::triggered, this, &MainWindow::close);
 
     // File connections
-    QObject::connect(this->findChild<QAction*>("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
-    QObject::connect(this->findChild<QAction*>("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
-    QObject::connect(this->findChild<QAction*>("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
-    QObject::connect(this->findChild<QAction*>("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
+    QObject::connect(findMenuItem("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
+    QObject::connect(findMenuItem("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
+    QObject::connect(findMenuItem("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
+    QObject::connect(findMenuItem("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
 
     // Edit connections
-    QObject::connect(this->findChild<QAction*>("actionUndo"), &QAction::triggered, this, &MainWindow::undo);
-    QObject::connect(this->findChild<QAction*>("actionRedo"), &QAction::triggered, this, &MainWindow::redo);
-    QObject::connect(this->findChild<QAction*>("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
-    QObject::connect(this->findChild<QAction*>("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
-    QObject::connect(this->findChild<QAction*>("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
+    QObject::connect(findMenuItem("actionUndo"), &QAction::triggered, this, &MainWindow::undo);
+    QObject::connect(findMenuItem("actionRedo"), &QAction::triggered, this, &MainWindow::redo);
+    QObject::connect(findMenuItem("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
+    QObject::connect(findMenuItem("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
+    QObject::connect(findMenuItem("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
 }
 
 /* Menu functions */
 
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
-    luaInterface.luaConnect(this->findChild<QAction*>(QString(itemName.c_str())), "triggered(bool)", callback);
+    QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
+
+    for (QMenu* current_menu : allMenus)
+    {
+        connectMenuitemRecur(current_menu, itemName.c_str(), callback);
+    }
+}
+
+void MainWindow::connectMenuitemRecur(QMenu* menu, QString itemName, kaguya::LuaRef& callback) {
+    QList<QAction*> actions = menu->actions();
+
+    for (QAction* action : actions)
+    {
+        if (action->menu()) {
+            connectMenuitemRecur(action->menu(), itemName, callback);
+        }
+        else if (!action->isSeparator()) {
+            if (itemName == action->objectName()) {
+                luaInterface.luaConnect(action, "triggered(bool)", callback);
+            }
+        }
+    }
 }
 
 /* Menu Lua GUI API */
 
-/*void MainWindow::initMenuAPI() {
-    QList<QMenu*> menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
+void MainWindow::initMenuAPI() {
+    QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
 
-    for (QMenu* men : menus)
+    for (QMenu* current_menu : allMenus)
     {
-        menuMap[men->title()] = men;
+        api::Menu* menu = static_cast<api::Menu*>(current_menu);
+        this->menuBar()->addAction(menu->menuAction());
+        menuMap[menu->title()] = menu;
+
+        QList<QMenu*> allMenusOfCurrentMenu = menu->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
+
+        for (QMenu* currentChildMenu : allMenusOfCurrentMenu)
+        {
+            if (currentChildMenu != nullptr) {
+                menu->addAction(currentChildMenu->menuAction());
+            }
+        }
+
+        addActionsAsMenuItem(menu);
     }
-}*/
+}
+
+void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
+    QList<QAction*> actions = menu->actions();
+    QList<QAction*> menuItemsToBeAdded;
+
+    for (QAction* action : actions)
+    {
+        if (action->menu()) {
+            addActionsAsMenuItem(static_cast<api::Menu*>(action->menu()));
+        }
+        else if (action->isSeparator()) {
+            QAction* sep = new QAction();
+            sep->setSeparator(true);
+            menuItemsToBeAdded.push_back(sep);
+        }
+        else{
+            lc::ui::api::MenuItem* newMenuItem = new lc::ui::api::MenuItem(action->text().toStdString().c_str());
+
+            QString oldObjectName = action->objectName();
+            action->setObjectName(oldObjectName + QString("changed"));
+            newMenuItem->setObjectName(oldObjectName);
+
+            menu->removeAction(action);
+            menuItemsToBeAdded.push_back(newMenuItem);
+        }
+    }
+
+    for (QAction* act : menuItemsToBeAdded)
+    {
+        menu->addAction(act);
+    }
+}
+
+QAction* MainWindow::findMenuItem(std::string objectName) {
+    QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
+    QString menuName = QString(objectName.c_str());
+
+    for (QMenu* currentMenu : allMenus)
+    {
+        QAction* foundIt = findMenuItemRecur(currentMenu, menuName);
+
+        if (foundIt != nullptr) {
+            return foundIt;
+        }
+    }
+
+    return nullptr;
+}
+
+QAction* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName) {
+    QList<QAction*> actions = menu->actions();
+
+    for (QAction* action : actions)
+    {
+        if (action->menu()) {
+            QAction* foundIt = findMenuItemRecur(action->menu(), objectName);
+            if (foundIt != nullptr) {
+                return foundIt;
+            }
+        }
+        else if (!action->isSeparator()) {
+            if (objectName == action->objectName()) {
+                return action;
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 api::Menu* MainWindow::addMenu(const std::string& menuName) {
     api::Menu* newMenu = new api::Menu(menuName.c_str());
