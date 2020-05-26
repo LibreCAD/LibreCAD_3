@@ -2,6 +2,7 @@
 
 #include <QMenu>
 
+#include <luainterface.h>
 #include "menuitem.h"
 
 namespace lc
@@ -23,7 +24,16 @@ namespace lc
 
                 void addItem(MenuItem* item);
 
-                const std::string& getLabel();
+                MenuItem* addItem(const char* menuItemName);
+
+                std::string getLabel();
+
+                MenuItem* getMenuItem(const char* menuItemLabel);
+
+                void setLuaInterface(LuaInterface* luaInterfaceIn);
+
+            private:
+                LuaInterface* luaInterface;
             };
         }
     }

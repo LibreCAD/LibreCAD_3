@@ -74,9 +74,11 @@ namespace lc
 
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
-            void initMenuAPI();
-
-            QAction* findMenuItem(std::string objectName);
+            /**
+            * \brief Find and return menu item
+            *  uses recursive helper function findMenuItemRecur
+            */
+            lc::ui::api::MenuItem* findMenuItem(std::string objectName);
 
             /**
             * \brief Add menu to the menu bar
@@ -87,11 +89,14 @@ namespace lc
             lc::ui::api::Menu* getMenu(const std::string& menuName);
 
         private:
+            /**
+            * \brief Add Menu items as actions, replace QAction with MenuItem
+            */
+            void initMenuAPI();
+
             void addActionsAsMenuItem(lc::ui::api::Menu* menu);
 
-            void connectMenuitemRecur(QMenu* menu, QString itemName, kaguya::LuaRef& callback);
-
-            QAction* findMenuItemRecur(QMenu* menu, QString objectName);
+            lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName);
 
         public slots:
             // CadMdiChild slots

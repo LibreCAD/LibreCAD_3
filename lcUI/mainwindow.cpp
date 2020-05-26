@@ -155,31 +155,8 @@ void MainWindow::ConnectInputEvents()
 
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
-    QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
-
-    for (QMenu* current_menu : allMenus)
-    {
-        connectMenuitemRecur(current_menu, itemName.c_str(), callback);
-    }
+    luaInterface.luaConnect(findMenuItem(itemName.c_str()), "triggered(bool)", callback);
 }
-
-void MainWindow::connectMenuitemRecur(QMenu* menu, QString itemName, kaguya::LuaRef& callback) {
-    QList<QAction*> actions = menu->actions();
-
-    for (QAction* action : actions)
-    {
-        if (action->menu()) {
-            connectMenuitemRecur(action->menu(), itemName, callback);
-        }
-        else if (!action->isSeparator()) {
-            if (itemName == action->objectName()) {
-                luaInterface.luaConnect(action, "triggered(bool)", callback);
-            }
-        }
-    }
-}
-
-/* Menu Lua GUI API */
 
 void MainWindow::initMenuAPI() {
     QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
@@ -233,15 +210,25 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
     {
         menu->addAction(act);
     }
+
+    // reorder menu to appear below
+    for (QAction* action : actions)
+    {
+        if (action->menu()) {
+            menu->insertMenu(menuItemsToBeAdded.last(), action->menu());
+        }
+    }
 }
 
-QAction* MainWindow::findMenuItem(std::string objectName) {
+/* Menu Lua GUI API */
+
+api::MenuItem* MainWindow::findMenuItem(std::string objectName) {
     QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
     QString menuName = QString(objectName.c_str());
 
     for (QMenu* currentMenu : allMenus)
     {
-        QAction* foundIt = findMenuItemRecur(currentMenu, menuName);
+        api::MenuItem* foundIt = findMenuItemRecur(currentMenu, menuName);
 
         if (foundIt != nullptr) {
             return foundIt;
@@ -251,20 +238,20 @@ QAction* MainWindow::findMenuItem(std::string objectName) {
     return nullptr;
 }
 
-QAction* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName) {
+api::MenuItem* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName) {
     QList<QAction*> actions = menu->actions();
 
     for (QAction* action : actions)
     {
         if (action->menu()) {
-            QAction* foundIt = findMenuItemRecur(action->menu(), objectName);
+            api::MenuItem* foundIt = findMenuItemRecur(action->menu(), objectName);
             if (foundIt != nullptr) {
                 return foundIt;
             }
         }
         else if (!action->isSeparator()) {
             if (objectName == action->objectName()) {
-                return action;
+                return static_cast<api::MenuItem*>(action);
             }
         }
     }
@@ -275,6 +262,7 @@ QAction* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName) {
 api::Menu* MainWindow::addMenu(const std::string& menuName) {
     api::Menu* newMenu = new api::Menu(menuName.c_str());
     menuBar()->addMenu(newMenu);
+    newMenu->setLuaInterface(&luaInterface);
 
     menuMap[QString(menuName.c_str())] = newMenu;
 
@@ -284,6 +272,7 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
 void MainWindow::addMenu(lc::ui::api::Menu* menu) {
     menuMap[menu->title()] = menu;
     menuBar()->addMenu(menu);
+    menu->setLuaInterface(&luaInterface);
 }
 
 api::Menu* MainWindow::getMenu(const std::string& menuName) {

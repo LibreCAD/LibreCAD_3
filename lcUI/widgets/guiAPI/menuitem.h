@@ -20,6 +20,14 @@ namespace lc
                 MenuItem(const char* menuItemName, QWidget* parent = nullptr);
 
                 std::string getLabel();
+
+                void addCallback(kaguya::LuaRef callback);
+
+                void setLuaInterface(LuaInterface* luaInterfaceIn);
+
+            private:
+                LuaInterface* luaInterface;
+                std::vector<kaguya::LuaRef> callbacks;
             };
         }
     }
