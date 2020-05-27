@@ -135,27 +135,27 @@ void MainWindow::ConnectInputEvents()
 
     // Other
     QObject::connect(this, &MainWindow::point, this, &MainWindow::triggerPoint);
-    QObject::connect(findMenuItem("actionExit"), &QAction::triggered, this, &MainWindow::close);
+    QObject::connect(findMenuItemByObjectName("actionExit"), &QAction::triggered, this, &MainWindow::close);
 
     // File connections
-    QObject::connect(findMenuItem("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
-    QObject::connect(findMenuItem("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
-    QObject::connect(findMenuItem("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
-    QObject::connect(findMenuItem("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
+    QObject::connect(findMenuItemByObjectName("actionNew"), &QAction::triggered, this, &MainWindow::newFile);
+    QObject::connect(findMenuItemByObjectName("actionOpen"), &QAction::triggered, this, &MainWindow::openFile);
+    QObject::connect(findMenuItemByObjectName("actionSave_2"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveFile);
+    QObject::connect(findMenuItemByObjectName("actionSave_As"), &QAction::triggered, &cadMdiChild, &CadMdiChild::saveAsFile);
 
     // Edit connections
-    QObject::connect(findMenuItem("actionUndo"), &QAction::triggered, this, &MainWindow::undo);
-    QObject::connect(findMenuItem("actionRedo"), &QAction::triggered, this, &MainWindow::redo);
-    QObject::connect(findMenuItem("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
-    QObject::connect(findMenuItem("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
-    QObject::connect(findMenuItem("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
+    QObject::connect(findMenuItemByObjectName("actionUndo"), &QAction::triggered, this, &MainWindow::undo);
+    QObject::connect(findMenuItemByObjectName("actionRedo"), &QAction::triggered, this, &MainWindow::redo);
+    QObject::connect(findMenuItemByObjectName("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
+    QObject::connect(findMenuItemByObjectName("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
+    QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
 }
 
 /* Menu functions */
 
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
-    luaInterface.luaConnect(findMenuItem(itemName.c_str()), "triggered(bool)", callback);
+    luaInterface.luaConnect(findMenuItemByObjectName(itemName.c_str()), "triggered(bool)", callback);
 }
 
 void MainWindow::initMenuAPI() {
@@ -222,13 +222,20 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
 
 /* Menu Lua GUI API */
 
-api::MenuItem* MainWindow::findMenuItem(std::string objectName) {
-    QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
-    QString menuName = QString(objectName.c_str());
+lc::ui::api::MenuItem* MainWindow::findMenuItem(std::string label) {
+    return findMenuItemBy(label, true);
+}
 
-    for (QMenu* currentMenu : allMenus)
+lc::ui::api::MenuItem* MainWindow::findMenuItemByObjectName(std::string objectName) {
+    return findMenuItemBy(objectName, false);
+}
+
+api::MenuItem* MainWindow::findMenuItemBy(std::string objectName, bool searchByLabel) {
+    QString name = QString(objectName.c_str());
+    
+    for (auto key : menuMap.keys())
     {
-        api::MenuItem* foundIt = findMenuItemRecur(currentMenu, menuName);
+        api::MenuItem* foundIt = findMenuItemRecur(menuMap[key], name, searchByLabel);
 
         if (foundIt != nullptr) {
             return foundIt;
@@ -238,20 +245,27 @@ api::MenuItem* MainWindow::findMenuItem(std::string objectName) {
     return nullptr;
 }
 
-api::MenuItem* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName) {
+api::MenuItem* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel) {
     QList<QAction*> actions = menu->actions();
 
     for (QAction* action : actions)
     {
         if (action->menu()) {
-            api::MenuItem* foundIt = findMenuItemRecur(action->menu(), objectName);
+            api::MenuItem* foundIt = findMenuItemRecur(action->menu(), objectName, searchByLabel);
             if (foundIt != nullptr) {
                 return foundIt;
             }
         }
         else if (!action->isSeparator()) {
-            if (objectName == action->objectName()) {
-                return static_cast<api::MenuItem*>(action);
+            if (searchByLabel) {
+                if (objectName == action->text()) {
+                    return static_cast<api::MenuItem*>(action);
+                }
+            }
+            else{ 
+                if (objectName == action->objectName()) {
+                    return static_cast<api::MenuItem*>(action);
+                }
             }
         }
     }

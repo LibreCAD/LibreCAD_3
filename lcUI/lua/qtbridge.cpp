@@ -333,6 +333,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("operationFinished", &lc::ui::MainWindow::operationFinished)
         .addFunction("getMenu", &lc::ui::MainWindow::getMenu)
         .addFunction("findMenuItem", &lc::ui::MainWindow::findMenuItem)
+        .addFunction("findMenuItemByObjectName", &lc::ui::MainWindow::findMenuItemByObjectName)
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })
     );
@@ -344,14 +345,21 @@ void addLuaGUIAPIBindings(lua_State* L) {
     state["gui"]["Menu"].setClass(kaguya::UserdataMetatable<lc::ui::api::Menu>()
         .setConstructors<lc::ui::api::Menu(const char*)>()
         .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem*(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem))
+        .addOverloadedFunctions("removeItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::removeItem), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeItem))
         .addFunction("getLabel", &lc::ui::api::Menu::getLabel)
-        .addFunction("getMenuItem", &lc::ui::api::Menu::getMenuItem)
+        .addFunction("setLabel", &lc::ui::api::Menu::setLabel)
+        .addFunction("getItem", &lc::ui::api::Menu::getItem)
+        .addFunction("hide", &lc::ui::api::Menu::hide)
+        .addFunction("show", &lc::ui::api::Menu::show)
     );
 
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
         .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
         .addFunction("getLabel", &lc::ui::api::MenuItem::getLabel)
+        .addFunction("setLabel", &lc::ui::api::MenuItem::setLabel)
         .addFunction("addCallback", &lc::ui::api::MenuItem::addCallback)
+        .addFunction("hide", &lc::ui::api::MenuItem::hide)
+        .addFunction("show", &lc::ui::api::MenuItem::show)
     );
 }
 

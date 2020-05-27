@@ -41,14 +41,15 @@ function LineOperations:_init_p2()
     local something = mainWindow:addMenu("Something")
     local item1 = gui.MenuItem("Item1", function() print("TESTING Item1") end)
     something:addItem(item1)
-    something:addItem("Woohoo")
 
     local othermenu = gui.Menu("OtherMenu")
     local otheritem = gui.MenuItem("OtherItem", function() print("TESTING OtherItem") end)
     othermenu:addItem(otheritem)
-
     mainWindow:addMenu(othermenu)
 
+    item1:hide()
+    something:hide()
+    othermenu:hide()
     message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")
@@ -60,6 +61,8 @@ function LineOperations:_init_pal()
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")
     self.step = "LineWithPointAngleLength"
+    local item2 = mainWindow:findMenuItem("Item1")
+    item2:show()
 end
 
 function LineOperations:_init_horizontal()

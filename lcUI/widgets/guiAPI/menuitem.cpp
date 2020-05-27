@@ -23,6 +23,18 @@ std::string MenuItem::getLabel() {
     return this->text().toStdString();
 }
 
+void MenuItem::setLabel(const char* newLabel) {
+    this->setText(newLabel);
+}
+
+void MenuItem::hide() {
+    setVisible(false);
+}
+
+void MenuItem::show() {
+    setVisible(true);
+}
+
 void MenuItem::setLuaInterface(LuaInterface* luaInterfaceIn) {
     if (luaInterface != nullptr) {
         return;

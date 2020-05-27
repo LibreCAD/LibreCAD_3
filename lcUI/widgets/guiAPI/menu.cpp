@@ -32,8 +32,8 @@ void Menu::addItem(MenuItem* item) {
     }
 }
 
-MenuItem* Menu::addItem(const char* menuItemName) {
-    MenuItem* newItem = new MenuItem(menuItemName);
+MenuItem* Menu::addItem(const char* menuItemLabel) {
+    MenuItem* newItem = new MenuItem(menuItemLabel);
     this->addAction(newItem);
 
     if (luaInterface != nullptr) {
@@ -47,7 +47,11 @@ std::string Menu::getLabel() {
     return this->title().toStdString();
 }
 
-MenuItem* Menu::getMenuItem(const char* menuItemLabel) {
+void Menu::setLabel(const char* newMenuLabel) {
+    this->setTitle(newMenuLabel);
+}
+
+MenuItem* Menu::getItem(const char* menuItemLabel) {
     QList<QAction*> menuActions = this->actions();
 
     for (QAction* action : menuActions)
@@ -60,6 +64,22 @@ MenuItem* Menu::getMenuItem(const char* menuItemLabel) {
     }
 
     return nullptr;
+}
+
+void Menu::hide() {
+    this->setVisible(false);
+}
+
+void Menu::show() {
+    this->setVisible(true);
+}
+
+void Menu::removeItem(const char* menuItemLabel) {
+    removeAction(getItem(menuItemLabel));
+}
+
+void Menu::removeItem(MenuItem* item) {
+    removeAction(item);
 }
 
 void Menu::setLuaInterface(LuaInterface* luaInterfaceIn) {

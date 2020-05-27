@@ -45,7 +45,9 @@ namespace lc
             * \brief Gettters for clicommand,cadmdichild and toolbar for use in lua
             */
             lc::ui::widgets::CliCommand* getCliCommand();
+
             lc::ui::CadMdiChild* getCadMdiChild();
+
             lc::ui::widgets::Toolbar* getToolbar();
 
             /**
@@ -75,17 +77,25 @@ namespace lc
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
             /**
-            * \brief Find and return menu item
-            *  uses recursive helper function findMenuItemRecur
+            * \brief Find and return menu item, FIND BY LABEL
             */
-            lc::ui::api::MenuItem* findMenuItem(std::string objectName);
+            lc::ui::api::MenuItem* findMenuItem(std::string label);
+
+            /**
+            * \brief Find and return menu item, FIND BY OBJECT NAME
+            */
+            lc::ui::api::MenuItem* findMenuItemByObjectName(std::string objectName);
 
             /**
             * \brief Add menu to the menu bar
             */
             lc::ui::api::Menu* addMenu(const std::string& menuName);
+
             void addMenu(lc::ui::api::Menu* menu);
 
+            /**
+            * \brief Get menu from the menu bar
+            */
             lc::ui::api::Menu* getMenu(const std::string& menuName);
 
         private:
@@ -96,7 +106,16 @@ namespace lc
 
             void addActionsAsMenuItem(lc::ui::api::Menu* menu);
 
-            lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName);
+            /**
+            * \brief Helper function for finding menu item
+            *        uses recursive helper function findMenuItemRecur
+            */
+            lc::ui::api::MenuItem* findMenuItemBy(std::string objectName, bool searchByLabel);
+
+            /**
+            * \brief Recursive function to search for menu item
+            */
+            lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
 
         public slots:
             // CadMdiChild slots

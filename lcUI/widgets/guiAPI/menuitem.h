@@ -21,7 +21,13 @@ namespace lc
 
                 std::string getLabel();
 
+                void setLabel(const char* newLabel);
+
                 void addCallback(kaguya::LuaRef callback);
+
+                void hide();
+
+                void show();
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn);
 

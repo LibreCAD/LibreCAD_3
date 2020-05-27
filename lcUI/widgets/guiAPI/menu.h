@@ -24,11 +24,21 @@ namespace lc
 
                 void addItem(MenuItem* item);
 
-                MenuItem* addItem(const char* menuItemName);
+                MenuItem* addItem(const char* menuItemLabel);
 
                 std::string getLabel();
 
-                MenuItem* getMenuItem(const char* menuItemLabel);
+                void setLabel(const char* newMenuLabel);
+
+                MenuItem* getItem(const char* menuItemLabel);
+
+                void removeItem(const char* menuItemLabel);
+
+                void removeItem(MenuItem* item);
+
+                void hide();
+
+                void show();
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn);
 
