@@ -5,7 +5,8 @@ using namespace lc::ui::api;
 Menu::Menu(const char* menuName, QWidget* parent)
     :
     QMenu(QString(menuName), parent),
-    luaInterface(nullptr)
+    luaInterface(nullptr),
+    menuPosition(-1)
 {
     this->setObjectName(menuName);
 }
@@ -13,14 +14,16 @@ Menu::Menu(const char* menuName, QWidget* parent)
 Menu::Menu(QMenuBar* menuBar)
     :
     QMenu(menuBar),
-    luaInterface(nullptr)
+    luaInterface(nullptr),
+    menuPosition(-1)
 {
 }
 
 Menu::Menu(QMenu* menu)
     :
     QMenu(menu),
-    luaInterface(nullptr)
+    luaInterface(nullptr),
+    menuPosition(-1)
 {
 }
 
@@ -67,11 +70,11 @@ MenuItem* Menu::getItem(const char* menuItemLabel) {
 }
 
 void Menu::hide() {
-    this->setVisible(false);
+    menuAction()->setVisible(false);
 }
 
 void Menu::show() {
-    this->setVisible(true);
+    menuAction()->setVisible(true);
 }
 
 void Menu::removeItem(const char* menuItemLabel) {
@@ -82,7 +85,7 @@ void Menu::removeItem(MenuItem* item) {
     removeAction(item);
 }
 
-void Menu::setLuaInterface(LuaInterface* luaInterfaceIn) {
+void Menu::setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks) {
     if (luaInterface != nullptr) {
         return;
     }
@@ -95,6 +98,43 @@ void Menu::setLuaInterface(LuaInterface* luaInterfaceIn) {
     for (QAction* action : menuActions)
     {
         MenuItem* item = static_cast<MenuItem*>(action);
-        item->setLuaInterface(luaInterface);
+        item->setLuaInterface(luaInterface, setCallbacks);
     }
+
+    /*
+     * luaInterface is connected when the menu gets added, so determine
+     * the position of the menu
+    */
+    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
+    QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
+    QList<QAction*> menuList = menuBar->actions();
+    menuPosition = menuList.size() - 1;
+}
+
+int Menu::getPosition() const {
+    return menuPosition;
+}
+
+void Menu::setPosition(int newPosition) {
+    if (newPosition == menuPosition || newPosition < 0) {
+        return;
+    }
+    int setToNewPosition = newPosition;
+
+    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
+    QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
+
+    QList<QAction*> menuList = menuBar->actions();
+
+    if (newPosition > menuPosition) {
+        newPosition++;
+    }
+
+    menuBar->insertMenu(menuList[newPosition], this);
+
+    menuPosition = setToNewPosition;
+}
+
+void Menu::teststuff() {
+    
 }

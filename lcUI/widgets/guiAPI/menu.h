@@ -40,10 +40,18 @@ namespace lc
 
                 void show();
 
-                void setLuaInterface(LuaInterface* luaInterfaceIn);
+                void teststuff();
+
+                int getPosition() const;
+
+                /* 0 indexed positions */
+                void setPosition(int newPosition);
+
+                void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks=true);
 
             private:
                 LuaInterface* luaInterface;
+                int menuPosition;
             };
         }
     }

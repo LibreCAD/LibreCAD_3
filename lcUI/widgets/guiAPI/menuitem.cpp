@@ -35,7 +35,7 @@ void MenuItem::show() {
     setVisible(true);
 }
 
-void MenuItem::setLuaInterface(LuaInterface* luaInterfaceIn) {
+void MenuItem::setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks) {
     if (luaInterface != nullptr) {
         return;
     }
@@ -43,9 +43,11 @@ void MenuItem::setLuaInterface(LuaInterface* luaInterfaceIn) {
     luaInterface = luaInterfaceIn;
 
     // loop through all already added callbacks and connect them
-    for (kaguya::LuaRef cb : callbacks)
-    {
-        luaInterface->luaConnect(this, "triggered(bool)", cb);
+    if (setCallbacks) {
+        for (kaguya::LuaRef cb : callbacks)
+        {
+            luaInterface->luaConnect(this, "triggered(bool)", cb);
+        }
     }
 }
 

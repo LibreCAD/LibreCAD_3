@@ -166,6 +166,7 @@ void MainWindow::initMenuAPI() {
         api::Menu* menu = static_cast<api::Menu*>(current_menu);
         this->menuBar()->addAction(menu->menuAction());
         menuMap[menu->title()] = menu;
+        menu->setLuaInterface(&luaInterface, false);
 
         QList<QMenu*> allMenusOfCurrentMenu = menu->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
 

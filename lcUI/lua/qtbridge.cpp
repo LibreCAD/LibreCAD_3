@@ -351,6 +351,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("getItem", &lc::ui::api::Menu::getItem)
         .addFunction("hide", &lc::ui::api::Menu::hide)
         .addFunction("show", &lc::ui::api::Menu::show)
+        .addFunction("isEnabled", &lc::ui::api::Menu::isEnabled)
+        .addFunction("setEnabled", &lc::ui::api::Menu::setEnabled)
+        .addFunction("getPosition", &lc::ui::api::Menu::getPosition)
+        .addFunction("setPosition", &lc::ui::api::Menu::setPosition)
+        .addFunction("teststuff", &lc::ui::api::Menu::teststuff)
     );
 
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
@@ -360,6 +365,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("addCallback", &lc::ui::api::MenuItem::addCallback)
         .addFunction("hide", &lc::ui::api::MenuItem::hide)
         .addFunction("show", &lc::ui::api::MenuItem::show)
+        .addFunction("isEnabled", &lc::ui::api::MenuItem::isEnabled)
+        .addFunction("setEnabled", &lc::ui::api::MenuItem::setEnabled)
     );
 }
 

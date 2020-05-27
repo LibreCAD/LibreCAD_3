@@ -29,7 +29,7 @@ namespace lc
 
                 void show();
 
-                void setLuaInterface(LuaInterface* luaInterfaceIn);
+                void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks = true);
 
             private:
                 LuaInterface* luaInterface;

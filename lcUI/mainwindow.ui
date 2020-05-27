@@ -47,7 +47,7 @@
    </property>
    <widget class="lc::ui::api::Menu" name="menuDemo_Project">
     <property name="title">
-     <string>Fi&amp;le</string>
+     <string>File</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
@@ -79,7 +79,7 @@
    </widget>
    <widget class="lc::ui::api::Menu" name="menuDemo">
     <property name="title">
-     <string>C&amp;reate</string>
+     <string>Create</string>
     </property>
     <widget class="lc::ui::api::Menu" name="menuLine">
      <property name="title">
