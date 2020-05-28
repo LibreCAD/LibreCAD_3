@@ -121,6 +121,15 @@ void MenuItem::setPosition(int newPosition) {
     position = newPosition;
 }
 
+void MenuItem::remove() {
+    QList<QWidget*> widgets = this->associatedWidgets();
+
+    for (QWidget* widget : widgets) {
+        QMenu* menu = static_cast<QMenu*>(widget);
+        menu->removeAction(this);
+    }
+}
+
 void MenuItem::updatePositionVariable(int pos) {
     position = pos;
 }

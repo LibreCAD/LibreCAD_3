@@ -306,6 +306,45 @@ api::Menu* MainWindow::getMenu(const std::string& menuName) {
     return nullptr;
 }
 
+lc::ui::api::Menu* MainWindow::getMenu(int pos) {
+    QList<QAction*> menuList = menuBar()->actions();
+
+    if (pos < 0 || pos >= menuList.size()) {
+        return nullptr;
+    }
+
+    return static_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
+}
+
+void MainWindow::removeFromMenuMap(std::string menuName) {
+    auto iter = menuMap.begin();
+    QString key;
+    for(; iter != menuMap.end(); ++iter)
+    {
+        std::string keystr = iter.key().toStdString();
+        keystr.erase(std::remove(keystr.begin(), keystr.end(), '&'), keystr.end());
+
+        if (keystr == menuName) {
+            key = iter.key();
+            break;
+        }
+    }
+
+    menuMap.remove(key);
+}
+
+void MainWindow::removeMenu(const char* menuLabel) {
+    lc::ui::api::Menu* menuremove = getMenu(menuLabel);
+    removeFromMenuMap(menuLabel);
+    menuBar()->removeAction(menuremove->menuAction());
+}
+
+void MainWindow::removeMenu(int position) {
+    lc::ui::api::Menu* menuremove = getMenu(position);
+    removeFromMenuMap(menuremove->getLabel());
+    menuBar()->removeAction(menuremove->menuAction());
+}
+
 /* Trigger slots */
 
 void MainWindow::triggerMousePressed()

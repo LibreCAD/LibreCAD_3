@@ -26,11 +26,15 @@ namespace lc
 
                 MenuItem* addItem(const char* menuItemLabel);
 
+                MenuItem* addItem(const char* menuItemLabel, kaguya::LuaRef callback);
+
                 std::string getLabel();
 
                 void setLabel(const char* newMenuLabel);
 
                 MenuItem* getItem(const char* menuItemLabel);
+
+                MenuItem* getItem(int pos);
 
                 void removeItem(const char* menuItemLabel);
 
@@ -42,16 +46,20 @@ namespace lc
 
                 int getPosition() const;
 
-                /* 0 indexed positions */
                 void setPosition(int newPosition);
 
+                /*
+                *   Position variable updated by other menu's setPosition
+                */
                 void updatePositionVariable(int newPosition);
+
+                void remove();
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks=true);
 
             private:
                 LuaInterface* luaInterface;
-                int menuPosition;
+                int position;
             };
         }
     }

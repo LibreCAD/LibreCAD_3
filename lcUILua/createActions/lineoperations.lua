@@ -38,7 +38,6 @@ function LineOperations:_init_default()
 end
 
 function LineOperations:_init_p2()
-
     message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")

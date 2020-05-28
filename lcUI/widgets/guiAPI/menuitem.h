@@ -34,9 +34,11 @@ namespace lc
                 void setPosition(int newPosition);
 
                 /*
-                    Position variable updated by other menu item's setPosition
+                *   Position variable updated by other menu item's setPosition
                 */
                 void updatePositionVariable(int pos);
+
+                void remove();
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks = true);
 

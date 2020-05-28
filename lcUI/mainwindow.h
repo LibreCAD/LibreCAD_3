@@ -98,6 +98,18 @@ namespace lc
             */
             lc::ui::api::Menu* getMenu(const std::string& menuName);
 
+            lc::ui::api::Menu* getMenu(int pos);
+
+            /**
+            * \brief Remove menu from menu bar
+            */
+            void removeMenu(const char* menuLabel);
+
+            void removeMenu(int position);
+
+            /* --- OTHER FUNCTIONS --- */
+            void removeFromMenuMap(std::string menuName);
+
         private:
             /**
             * \brief Add Menu items as actions, replace QAction with MenuItem
