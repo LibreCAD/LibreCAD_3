@@ -29,11 +29,21 @@ namespace lc
 
                 void show();
 
+                int getPosition() const;
+
+                void setPosition(int newPosition);
+
+                /*
+                    Position variable updated by other menu item's setPosition
+                */
+                void updatePositionVariable(int pos);
+
                 void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks = true);
 
             private:
                 LuaInterface* luaInterface;
                 std::vector<kaguya::LuaRef> callbacks;
+                int position;
             };
         }
     }

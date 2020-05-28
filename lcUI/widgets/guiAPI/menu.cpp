@@ -131,10 +131,19 @@ void Menu::setPosition(int newPosition) {
     }
 
     menuBar->insertMenu(menuList[newPosition], this);
-
     menuPosition = setToNewPosition;
+
+    // update position of menus after new menuPosition
+    menuList = menuBar->actions();
+    int n = menuList.size();
+
+    for (int i = menuPosition + 1; i < n; i++)
+    {
+        Menu* item = static_cast<Menu*>(menuList[i]->menu());
+        item->updatePositionVariable(i);
+    }
 }
 
-void Menu::teststuff() {
-    
+void Menu::updatePositionVariable(int newPosition) {
+    menuPosition = newPosition;
 }

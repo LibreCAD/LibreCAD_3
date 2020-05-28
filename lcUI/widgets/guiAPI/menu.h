@@ -40,12 +40,12 @@ namespace lc
 
                 void show();
 
-                void teststuff();
-
                 int getPosition() const;
 
                 /* 0 indexed positions */
                 void setPosition(int newPosition);
+
+                void updatePositionVariable(int newPosition);
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks=true);
 

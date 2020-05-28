@@ -291,14 +291,19 @@ void MainWindow::addMenu(lc::ui::api::Menu* menu) {
 }
 
 api::Menu* MainWindow::getMenu(const std::string& menuName) {
-    QString key = QString(menuName.c_str());
-    if (menuMap.find(key) != menuMap.end())
+    QList<QString> keys = menuMap.keys();
+
+    for (QString key : keys)
     {
-        return menuMap[key];
+        std::string keystr = key.toStdString();
+        keystr.erase(std::remove(keystr.begin(), keystr.end(), '&'), keystr.end());
+
+        if (keystr == menuName) {
+            return menuMap[key];
+        }
     }
-    else {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 /* Trigger slots */
