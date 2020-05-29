@@ -1,5 +1,7 @@
 #include "menuitem.h"
 
+#include "menu.h"
+
 #include <stack>
 
 using namespace lc::ui::api;
@@ -93,19 +95,22 @@ void MenuItem::setPosition(int newPosition) {
     QMenu* menu = static_cast<QMenu*>(widgets[0]);
 
     QList<QAction*> items = menu->actions();
-
     QAction* currentItem = items[position];
-
     menu->removeAction(currentItem);
-
     std::stack<QAction*> actionsStack;
 
     items = menu->actions();
     while (items.size() != newPosition)
     {
         QAction* item = items[items.size() - 1];
-        MenuItem* menuItem = static_cast<MenuItem*>(item);
-        menuItem->updatePositionVariable(items.size());
+        if (item->menu()) {
+            Menu* menu_i = static_cast<Menu*>(item->menu());
+            menu_i->updatePositionVariable(items.size());
+        }
+        else {
+            MenuItem* menuItem = static_cast<MenuItem*>(item);
+            menuItem->updatePositionVariable(items.size());
+        }
         actionsStack.push(item);
         menu->removeAction(item);
         items = menu->actions();

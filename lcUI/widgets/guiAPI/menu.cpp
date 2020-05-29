@@ -8,7 +8,8 @@ Menu::Menu(const char* menuName, QWidget* parent)
     :
     QMenu(QString(menuName), parent),
     luaInterface(nullptr),
-    position(-1)
+    position(-1),
+    insideMenu(false)
 {
     this->setObjectName(menuName);
 }
@@ -17,7 +18,8 @@ Menu::Menu(QMenuBar* menuBar)
     :
     QMenu(menuBar),
     luaInterface(nullptr),
-    position(-1)
+    position(-1),
+    insideMenu(false)
 {
 }
 
@@ -25,7 +27,8 @@ Menu::Menu(QMenu* menu)
     :
     QMenu(menu),
     luaInterface(nullptr),
-    position(-1)
+    position(-1),
+    insideMenu(false)
 {
 }
 
@@ -51,6 +54,21 @@ MenuItem* Menu::addItem(const char* menuItemLabel, kaguya::LuaRef callback) {
     return newItem;
 }
 
+void Menu::addMenu(Menu* newMenu) {
+    this->addAction(newMenu->menuAction());
+    newMenu->insideMenu = true;
+
+    if (luaInterface != nullptr) {
+        newMenu->setLuaInterface(luaInterface);
+    }
+}
+
+Menu* Menu::addMenu(const char* menuLabel) {
+    Menu* newMenu = new Menu(menuLabel);
+    addMenu(newMenu);
+    return newMenu;
+}
+
 std::string Menu::getLabel() {
     return this->title().toStdString();
 }
@@ -64,6 +82,9 @@ MenuItem* Menu::getItem(const char* menuItemLabel) {
 
     for (QAction* action : menuActions)
     {
+        if (action->menu()) {
+            continue;
+        }
         MenuItem* item = static_cast<MenuItem*>(action);
 
         if (item->getLabel() == std::string(menuItemLabel)) {
@@ -81,7 +102,42 @@ MenuItem* Menu::getItem(int pos) {
         return nullptr;
     }
 
+    if (menuActions[pos]->menu()) {
+        return nullptr;
+    }
+
     return static_cast<MenuItem*>(menuActions[pos]);
+}
+
+Menu* Menu::getMenu(const char* menuLabel) {
+    QList<QAction*> menuActions = this->actions();
+
+    for (QAction* action : menuActions)
+    {
+        if (action->menu()) {
+            Menu* item = static_cast<Menu*>(action->menu());
+
+            if (item->getLabel() == std::string(menuLabel)) {
+                return item;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+Menu* Menu::getMenu(int pos) {
+    QList<QAction*> menuActions = this->actions();
+
+    if (pos < 0 || pos >= menuActions.size()) {
+        return nullptr;
+    }
+
+    if (!menuActions[pos]->menu()) {
+        return nullptr;
+    }
+
+    return static_cast<Menu*>(menuActions[pos]->menu());
 }
 
 void Menu::hide() {
@@ -100,6 +156,14 @@ void Menu::removeItem(MenuItem* item) {
     removeAction(item);
 }
 
+void Menu::removeMenu(const char* menuLabel) {
+    removeAction(getMenu(menuLabel)->menuAction());
+}
+
+void Menu::removeMenu(Menu* menu) {
+    removeAction(menu->menuAction());
+}
+
 void Menu::setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks) {
     if (luaInterface != nullptr) {
         return;
@@ -112,6 +176,12 @@ void Menu::setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks) {
 
     for (QAction* action : menuActions)
     {
+        if (action->menu()) {
+            Menu* item = static_cast<Menu*>(action->menu());
+            item->setLuaInterface(luaInterface, setCallbacks);
+            continue;
+        }
+
         MenuItem* item = static_cast<MenuItem*>(action);
         item->setLuaInterface(luaInterface, setCallbacks);
     }
@@ -121,9 +191,17 @@ void Menu::setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks) {
      * the position of the menu
     */
     QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
-    QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
-    QList<QAction*> menuList = menuBar->actions();
-    position = menuList.size() - 1;
+
+    if (insideMenu) {
+        QMenu* menu = static_cast<QMenu*>(widgets[0]);
+        QList<QAction*> menuList = menu->actions();
+        position = menuList.size() - 1;
+    }
+    else {
+        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
+        QList<QAction*> menuList = menuBar->actions();
+        position = menuList.size() - 1;
+    }
 }
 
 int Menu::getPosition() const {
@@ -137,25 +215,62 @@ void Menu::setPosition(int newPosition) {
     int setToNewPosition = newPosition;
 
     QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
-    QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
 
-    QList<QAction*> menuList = menuBar->actions();
+    if (!insideMenu) {
+        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
 
-    if (newPosition > position) {
-        newPosition++;
+        QList<QAction*> menuList = menuBar->actions();
+
+        if (newPosition > position) {
+            newPosition++;
+        }
+
+        menuBar->insertMenu(menuList[newPosition], this);
+        position = setToNewPosition;
+
+        // update position of menus after new position
+        menuList = menuBar->actions();
+        int n = menuList.size();
+
+        for (int i = position + 1; i < n; i++)
+        {
+            Menu* item = static_cast<Menu*>(menuList[i]->menu());
+            item->updatePositionVariable(i);
+        }
     }
+    else {
+        QMenu* menu = static_cast<QMenu*>(widgets[0]);
 
-    menuBar->insertMenu(menuList[newPosition], this);
-    position = setToNewPosition;
+        QList<QAction*> items = menu->actions();
+        QAction* currentItem = items[position];
+        menu->removeAction(currentItem);
 
-    // update position of menus after new position
-    menuList = menuBar->actions();
-    int n = menuList.size();
+        std::stack<QAction*> actionsStack;
+        items = menu->actions();
+        while (items.size() != newPosition)
+        {
+            QAction* item = items[items.size() - 1];
+            if (item->menu()) {
+                Menu* menu_i = static_cast<Menu*>(item->menu());
+                menu_i->updatePositionVariable(items.size());
+            }
+            else {
+                MenuItem* menuItem = static_cast<MenuItem*>(item);
+                menuItem->updatePositionVariable(items.size());
+            }
+            actionsStack.push(item);
+            menu->removeAction(item);
+            items = menu->actions();
+        }
 
-    for (int i = position + 1; i < n; i++)
-    {
-        Menu* item = static_cast<Menu*>(menuList[i]->menu());
-        item->updatePositionVariable(i);
+        menu->addAction(currentItem);
+
+        while (actionsStack.size() > 0) {
+            menu->addAction(actionsStack.top());
+            actionsStack.pop();
+        }
+
+        position = newPosition;
     }
 }
 

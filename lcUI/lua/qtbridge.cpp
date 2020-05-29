@@ -345,11 +345,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["Menu"].setClass(kaguya::UserdataMetatable<lc::ui::api::Menu>()
         .setConstructors<lc::ui::api::Menu(const char*)>()
-        .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem*(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem*(lc::ui::api::Menu::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::Menu::addItem))
-        .addOverloadedFunctions("removeItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::removeItem), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeItem))
         .addFunction("getLabel", &lc::ui::api::Menu::getLabel)
         .addFunction("setLabel", &lc::ui::api::Menu::setLabel)
-        .addOverloadedFunctions("getItem", static_cast<lc::ui::api::MenuItem*(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::getItem), static_cast<lc::ui::api::MenuItem*(lc::ui::api::Menu::*)(int)>(&lc::ui::api::Menu::getItem))
         .addFunction("hide", &lc::ui::api::Menu::hide)
         .addFunction("show", &lc::ui::api::Menu::show)
         .addFunction("isEnabled", &lc::ui::api::Menu::isEnabled)
@@ -357,6 +354,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("getPosition", &lc::ui::api::Menu::getPosition)
         .addFunction("setPosition", &lc::ui::api::Menu::setPosition)
         .addFunction("remove", &lc::ui::api::Menu::remove)
+        .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::Menu::addItem))
+        .addOverloadedFunctions("removeItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::removeItem), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeItem))
+        .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::Menu*)>(&lc::ui::api::Menu::removeMenu), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeMenu))
+        .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addMenu), static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::Menu*)>(&lc::ui::api::Menu::addMenu))
+        .addOverloadedFunctions("getItem", static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::getItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(int)>(&lc::ui::api::Menu::getItem))
+        .addOverloadedFunctions("getMenu", static_cast<lc::ui::api::Menu * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::getMenu), static_cast<lc::ui::api::Menu * (lc::ui::api::Menu::*)(int)>(&lc::ui::api::Menu::getMenu))
     );
 
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
