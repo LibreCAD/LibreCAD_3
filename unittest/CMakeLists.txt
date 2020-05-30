@@ -92,7 +92,8 @@ if(WITH_QT_UI)
             ui/uitests.h
             ui/widgets/layers.h
             ui/dialogs/addlinepatterndialog.h
-            ui/dialogs/addlayerdialog.h)
+            ui/dialogs/addlayerdialog.h
+            ui/gui/apimainwindowtest.h)
 
     set(src
             ${src}
@@ -107,6 +108,7 @@ if(WITH_QT_UI)
             ui/testlinewidthselect.cpp
             ui/testmainwindow.cpp
             ui/testwindowmanager.cpp
+            ui/gui/testmenuitem.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")

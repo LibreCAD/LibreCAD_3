@@ -95,9 +95,30 @@ void MenuItem::setPosition(int newPosition) {
     QMenu* menu = static_cast<QMenu*>(widgets[0]);
 
     QList<QAction*> items = menu->actions();
+    int size = items.size();
+
+    for (int i = 0; i < size; i++)
+    {
+        QAction* item = items[i];
+        if (i > position) {
+            if (item->menu()) {
+                Menu* menu_i = static_cast<Menu*>(item->menu());
+                menu_i->updatePositionVariable(menu_i->getPosition() - 1);
+            }
+            else {
+                MenuItem* menuItem = static_cast<MenuItem*>(item);
+                menuItem->updatePositionVariable(menuItem->getPosition() - 1);
+            }
+        }
+    }
+
     QAction* currentItem = items[position];
     menu->removeAction(currentItem);
     std::stack<QAction*> actionsStack;
+
+    if (newPosition >= size) {
+        newPosition = size - 1;
+    }
 
     items = menu->actions();
     while (items.size() != newPosition)

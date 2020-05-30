@@ -107,7 +107,7 @@ public:
 
     bool testConnectMenuItem()
     {
-        QAction* testAction = this->findChild<QAction*>(QString("action2_Point_Line"));
+        QAction* testAction = findMenuItemByObjectName("action2_Point_Line");
 
         kaguya::State state(luaInterface.luaState());
         state.dostring("test_menu = function() testMenuItem=5 end");
