@@ -72,6 +72,9 @@ namespace lc
                 bool insideMenu;
 
             private:
+                bool checkForItemOfSameLabel(const char* label, bool isMenu);
+
+            private:
                 LuaInterface* luaInterface;
                 int position;
             };

@@ -129,6 +129,8 @@ namespace lc
             */
             lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
 
+            bool checkForMenuOfSameLabel(const std::string& label);
+
         public slots:
             // CadMdiChild slots
             void triggerMousePressed();

@@ -33,6 +33,10 @@ Menu::Menu(QMenu* menu)
 }
 
 void Menu::addItem(MenuItem* item) {
+    if (checkForItemOfSameLabel(item->getLabel().c_str(), false)) {
+        return;
+    }
+
     this->addAction(item);
 
     if (luaInterface != nullptr) {
@@ -55,6 +59,10 @@ MenuItem* Menu::addItem(const char* menuItemLabel, kaguya::LuaRef callback) {
 }
 
 void Menu::addMenu(Menu* newMenu) {
+    if (checkForItemOfSameLabel(newMenu->getLabel().c_str(), true)) {
+        return;
+    }
+
     this->addAction(newMenu->menuAction());
     newMenu->insideMenu = true;
 
@@ -286,4 +294,33 @@ void Menu::remove() {
 
 void Menu::updatePositionVariable(int newPosition) {
     position = newPosition;
+}
+
+bool Menu::checkForItemOfSameLabel(const char* label, bool isMenu) {
+    QList<QAction*> menuActions = this->actions();
+
+    for (QAction* action : menuActions)
+    {
+        if (!isMenu) {
+            if (action->menu()) {
+                continue;
+            }
+            MenuItem* item = static_cast<MenuItem*>(action);
+
+            if (item->getLabel() == std::string(label)) {
+                return true;
+            }
+        }
+        else {
+            if (action->menu()) {
+                Menu* item = static_cast<Menu*>(action->menu());
+
+                if (item->getLabel() == std::string(label)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }

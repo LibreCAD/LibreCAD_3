@@ -274,7 +274,27 @@ api::MenuItem* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName, bo
     return nullptr;
 }
 
+bool MainWindow::checkForMenuOfSameLabel(const std::string& label) {
+    QList<QString> keys = menuMap.keys();
+
+    for (QString key : keys)
+    {
+        std::string keystr = key.toStdString();
+        keystr.erase(std::remove(keystr.begin(), keystr.end(), '&'), keystr.end());
+
+        if (keystr == label) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 api::Menu* MainWindow::addMenu(const std::string& menuName) {
+    if (checkForMenuOfSameLabel(menuName)) {
+        return nullptr;
+    }
+
     api::Menu* newMenu = new api::Menu(menuName.c_str());
     menuBar()->addMenu(newMenu);
     newMenu->setLuaInterface(&luaInterface);
@@ -285,6 +305,10 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
 }
 
 void MainWindow::addMenu(lc::ui::api::Menu* menu) {
+    if (checkForMenuOfSameLabel(menu->getLabel())) {
+        return;
+    }
+
     menuMap[menu->title()] = menu;
     menuBar()->addMenu(menu);
     menu->setLuaInterface(&luaInterface);
