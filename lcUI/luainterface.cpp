@@ -74,6 +74,33 @@ bool LuaInterface::luaConnect(
 	return false;
 }
 
+bool LuaInterface::luaDisconnect(
+    QObject* sender,
+    const std::string& signalName,
+    const kaguya::LuaRef& slot)
+{
+    int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
+
+    if (signalId < 0) {
+        std::cout << "No such signal " << signalName << std::endl;
+    }
+    else {
+        bool disconnected = false;
+        for (LuaQObject_SPtr objectsptr : _luaQObjects)
+        {
+            if (objectsptr->objectName() == sender->objectName().toStdString()) {
+                disconnected = objectsptr->disconnect(signalId, slot);
+            }
+        }
+
+        cleanInvalidQObject();
+
+        return disconnected;
+    }
+
+    return false;
+}
+
 QWidget* LuaInterface::loadUiFile(const char* fileName) {
 	QUiLoader uiLoader;
 	QFile file(fileName);

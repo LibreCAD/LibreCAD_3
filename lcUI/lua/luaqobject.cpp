@@ -32,6 +32,28 @@ bool LuaQObject::connect(int signalId, const kaguya::LuaRef& slot) {
 	return _valid;
 }
 
+bool LuaQObject::disconnect(int signalId, const kaguya::LuaRef& slot) {
+    if (_signalId != signalId) {
+        return false;
+    }
+
+    if (slot.type() == LUA_TFUNCTION) {
+        _slotId = 1;
+
+        if (_slotFunction == slot) {
+            if (QMetaObject::disconnect(_object, signalId, this, this->metaObject()->methodCount() + _slotId)) {
+                _valid = false;
+                return true;
+            }
+        }
+    }
+    else {
+        std::cerr << "Given slot is not a function" << std::endl;
+    }
+
+    return false;
+}
+
 int LuaQObject::qt_metacall(QMetaObject::Call c, int id, void **a)
 {
 	id = QObject::qt_metacall(c, id, a);

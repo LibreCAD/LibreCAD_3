@@ -78,6 +78,23 @@ void MenuItem::addCallback(kaguya::LuaRef callback) {
     }
 }
 
+void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+    if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
+        return;
+    }
+    
+    addCallback(callback);
+    namedCallbacks[cb_name] = callbacks.size() - 1;
+}
+
+void MenuItem::removeCallback(const char* cb_name) {
+    if (luaInterface != nullptr) {
+        luaInterface->luaDisconnect(this, "triggered(bool)", callbacks[namedCallbacks[cb_name]]);
+        callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
+        namedCallbacks.erase(namedCallbacks.find(cb_name));
+    }
+}
+
 int MenuItem::getPosition() const {
     return position;
 }

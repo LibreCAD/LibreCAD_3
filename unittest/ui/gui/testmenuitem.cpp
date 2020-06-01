@@ -8,7 +8,6 @@
 TEST(MenuItemTest, ItemAddTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::MenuItem* testItem1 = testMenu->addItem("TESTITEM1");
@@ -34,7 +33,6 @@ TEST(MenuItemTest, ItemAddTest) {
 TEST(MenuItemTest, ItemLabelTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::MenuItem* testItem1 = new lc::ui::api::MenuItem("LABEL_TEST");
     
@@ -48,7 +46,6 @@ TEST(MenuItemTest, ItemLabelTest) {
 TEST(MenuItemTest, ItemCallbackTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
     
     lc::ui::LuaInterface* luaInterface = mainWindow->getLuaInterface();
     kaguya::State state(luaInterface->luaState());
@@ -85,7 +82,6 @@ TEST(MenuItemTest, ItemCallbackTest) {
 TEST(MenuItemTest, ItemPositionTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TestMenu");
     lc::ui::api::MenuItem* testitem1 = testmenu->addItem("TestItem1");
@@ -124,7 +120,6 @@ TEST(MenuItemTest, ItemPositionTest) {
 TEST(MenuItemTest, ItemRemoveTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TestMenu");
     lc::ui::api::MenuItem* testitem1 = testmenu->addItem("TestItem1");

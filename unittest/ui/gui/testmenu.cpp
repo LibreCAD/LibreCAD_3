@@ -8,7 +8,6 @@
 TEST(MenuTest, MenuLabelTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::Menu* testMenu2 = new lc::ui::api::Menu("TESTMENU2");
@@ -38,7 +37,6 @@ TEST(MenuTest, MenuLabelTest) {
 TEST(MenuTest, MenuGetTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::Menu* testMenu2 = new lc::ui::api::Menu("TESTMENU2");
@@ -67,7 +65,6 @@ TEST(MenuTest, MenuGetTest) {
 TEST(MenuTest, MenuPositionTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
 
@@ -129,7 +126,6 @@ TEST(MenuTest, MenuPositionTest) {
 TEST(MenuTest, MenuRemoveTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
 
@@ -171,7 +167,6 @@ TEST(MenuTest, MenuRemoveTest) {
 TEST(MenuTest, MenuInBarRemoveTest) {
     QApplication app(argc, argv);
     ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
-    mainWindow->hide();
 
     lc::ui::api::Menu* menu1 = mainWindow->addMenu("Menu1");
     lc::ui::api::Menu* menu2 = mainWindow->addMenu("Menu2");

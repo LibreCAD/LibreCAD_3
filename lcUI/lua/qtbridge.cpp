@@ -366,7 +366,6 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
         .addFunction("getLabel", &lc::ui::api::MenuItem::getLabel)
         .addFunction("setLabel", &lc::ui::api::MenuItem::setLabel)
-        .addFunction("addCallback", &lc::ui::api::MenuItem::addCallback)
         .addFunction("hide", &lc::ui::api::MenuItem::hide)
         .addFunction("show", &lc::ui::api::MenuItem::show)
         .addFunction("isEnabled", &lc::ui::api::MenuItem::isEnabled)
@@ -374,6 +373,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("getPosition", &lc::ui::api::MenuItem::getPosition)
         .addFunction("setPosition", &lc::ui::api::MenuItem::setPosition)
         .addFunction("remove", &lc::ui::api::MenuItem::remove)
+        .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)
+        .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
     );
 }
 

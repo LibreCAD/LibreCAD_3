@@ -33,6 +33,8 @@ class LuaQObject : public QObject {
          */
 		bool connect(int signalId, const kaguya::LuaRef& slot);
 
+        bool disconnect(int signalId, const kaguya::LuaRef& slot);
+
         /**
          * \brief Add signal parameter
          * \param s Lua state

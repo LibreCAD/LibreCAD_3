@@ -3,7 +3,7 @@
 #include <QtWidgets/QStyleFactory>
 #include <QSettings>
 #include "cad/logger/logger.h"
-#include "windowmanager.h"
+#include "mainwindow.h"
 
 int main(int argc, char* argv[]) {
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -14,7 +14,13 @@ int main(int argc, char* argv[]) {
 
     LOGGER;//Init logger
 
-    lc::ui::WindowManager::init();
+    //lc::ui::WindowManager::init();
+
+    //lc::ui::MainWindow* window = new lc::ui::MainWindow();
+    //window->showMaximized();
+
+    lc::ui::MainWindow* window = new lc::ui::MainWindow();
+    window->showMaximized();
 
     return QApplication::exec();
 }

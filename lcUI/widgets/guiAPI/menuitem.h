@@ -2,6 +2,7 @@
 
 #include <luainterface.h>
 
+#include <unordered_map>
 #include <QAction>
 
 namespace lc
@@ -25,6 +26,10 @@ namespace lc
 
                 void addCallback(kaguya::LuaRef callback);
 
+                void addCallback(const char* cb_name, kaguya::LuaRef callback);
+
+                void removeCallback(const char* cb_name);
+                
                 void hide();
 
                 void show();
@@ -48,6 +53,7 @@ namespace lc
             private:
                 LuaInterface* luaInterface;
                 std::vector<kaguya::LuaRef> callbacks;
+                std::unordered_map<std::string, int> namedCallbacks;
                 int position;
             };
         }

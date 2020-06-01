@@ -61,6 +61,12 @@ namespace lc {
 						const kaguya::LuaRef& slot
 				);
 
+                bool luaDisconnect(
+                    QObject* sender,
+                    const std::string& signalName,
+                    const kaguya::LuaRef& slot
+                );
+
 				/**
                  * \brief Connect Qt signal with Qt slot
                  * \param sender Pointer to sender object
