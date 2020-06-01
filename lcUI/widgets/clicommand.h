@@ -41,13 +41,13 @@ namespace lc {
                     /**
                      * \brief Add a new command
                      */
-                    bool addCommand(const std::string& name, kaguya::LuaRef cb);
+                    bool addCommand(const char* name, kaguya::LuaRef cb);
 
                     /**
                      * \brief Write a message in the logs
                      * \param message QString
                      */
-                    void write(const QString& message);
+                    void write(std::string message);
 
                     /**
                      * \brief Write text in input.
@@ -69,7 +69,17 @@ namespace lc {
                      */
                     void commandActive(bool commandActive);
 
-                    void runCommand(const QString& command);
+                    void runCommand(const char* command);
+
+                    void enableCommand(const char* command, bool enable);
+
+                    bool isCommandEnabled(const char* command) const;
+
+                    std::vector<std::string> getAvailableCommands() const;
+
+                    std::vector<std::string> getCommandsHistory() const;
+
+                    void clear();
 
                 public slots:
 
@@ -123,6 +133,8 @@ namespace lc {
                     int _historyIndex;
 
                     QMap<QString, kaguya::LuaRef> _commands_cb;
+                    QMap<QString, bool> _commands_enabled;
+                    std::vector<std::string> _commands_entered;
             };
         }
     }

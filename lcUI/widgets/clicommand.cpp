@@ -41,12 +41,13 @@ CliCommand::~CliCommand() {
     delete ui;
 }
 
-bool CliCommand::addCommand(const std::string& name, kaguya::LuaRef cb) {
-    if(_commands->stringList().indexOf(name.c_str()) == -1) {
+bool CliCommand::addCommand(const char* name, kaguya::LuaRef cb) {
+    if(_commands->stringList().indexOf(name) == -1) {
         auto newList = _commands->stringList();
-        newList << QString(name.c_str());
+        newList << QString(name);
         _commands->setStringList(newList);
-        _commands_cb[QString(name.c_str())] = cb;
+        _commands_cb[QString(name)] = cb;
+        _commands_enabled[QString(name)] = true;
         return true;
     }
     else {
@@ -54,8 +55,8 @@ bool CliCommand::addCommand(const std::string& name, kaguya::LuaRef cb) {
     }
 }
 
-void CliCommand::write(const QString& message) {
-    ui->history->setHtml(ui->history->toHtml() + message);
+void CliCommand::write(std::string message) {
+    ui->history->setHtml(ui->history->toHtml() + QString(message.c_str()));
     ui->history->verticalScrollBar()->setValue(ui->history->verticalScrollBar()->maximum());
 }
 
@@ -92,7 +93,7 @@ void CliCommand::onReturnPressed() {
                 lc::storage::Settings::setVal(varFind[0].toStdString(),varFind[1].toFloat());*/
             }
             else {
-                write(QString("No such variable."));
+                write("No such variable.");
             }
         }
         else {
@@ -118,7 +119,7 @@ void CliCommand::enterCommand(const QString& command) {
     auto completion = _completer->currentCompletion();
 
     if(command.compare(completion, Qt::CaseInsensitive) == 0) {
-        write("Command: " + completion);
+        write("Command: " + completion.toStdString());
         emit commandEntered(completion);
     }
     else {
@@ -127,7 +128,7 @@ void CliCommand::enterCommand(const QString& command) {
         }
         else
         {
-            write("Command " + command + " not found");
+            write("Command " + command.toStdString() + " not found");
         }
     }
 }
@@ -162,7 +163,7 @@ void CliCommand::enterCoordinate(QString coordinate) {
     }
 
     auto message = QString("Coordinate: x=%1; y=%2; z=%3").arg(point.x()).arg(point.y()).arg(point.z());
-    write(message);
+    write(message.toStdString());
 
     if(isRelative) {
         emit relativeCoordinateEntered(point);
@@ -173,7 +174,7 @@ void CliCommand::enterCoordinate(QString coordinate) {
 }
 
 void CliCommand::enterNumber(double number) {
-    write(QString("Number: %1").arg(number));
+    write((QString("Number: %1").arg(number)).toStdString().c_str());
     emit numberEntered(number); 
 }
 
@@ -226,8 +227,47 @@ void CliCommand::closeEvent(QCloseEvent* event)
 	event->ignore();
 }
 
-void CliCommand::runCommand(const QString& command)
+void CliCommand::runCommand(const char* command)
 {
+    if (!_commands_enabled[command]) {
+        write(std::string(command) + " command has been disabled.");
+        return;
+    }
+    _commands_entered.push_back(command);
     kaguya::LuaRef& cb = _commands_cb[command];
     cb();
+}
+
+void CliCommand::enableCommand(const char* command, bool enable) {
+    if (_commands_enabled.find(command) == _commands_enabled.end()) {
+        return;
+    }
+
+    _commands_enabled[command] = enable;
+}
+
+bool CliCommand::isCommandEnabled(const char* command) const {
+    if (_commands_enabled.find(QString(command)) == _commands_enabled.end()) {
+        return false;
+    }
+
+    return _commands_enabled[QString(command)];
+}
+
+std::vector<std::string> CliCommand::getAvailableCommands() const {
+    std::vector<std::string> allcommands;
+
+    for (auto command : _commands_enabled.keys()) {
+        allcommands.push_back(command.toStdString());
+    }
+
+    return allcommands;
+}
+
+std::vector<std::string> CliCommand::getCommandsHistory() const {
+    return _commands_entered;
+}
+
+void CliCommand::clear() {
+    ui->history->setHtml(QString(""));
 }

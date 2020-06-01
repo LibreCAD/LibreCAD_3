@@ -253,6 +253,16 @@ void addLCBindings(lua_State *L) {
 	    .addFunction("returnText", &widgets::CliCommand::returnText)
 	    .addFunction("commandActive", &widgets::CliCommand::commandActive)
         .addFunction("runCommand", &widgets::CliCommand::runCommand)
+        .addStaticFunction("enableCommand", [](widgets::CliCommand* cliCommand, const char* command) {
+            cliCommand->enableCommand(command, true);
+        })
+        .addStaticFunction("disableCommand", [](widgets::CliCommand* cliCommand, const char* command) {
+            cliCommand->enableCommand(command, false);
+        })
+        .addFunction("isCommandEnabled", &widgets::CliCommand::isCommandEnabled)
+        .addFunction("getAvailableCommands", &widgets::CliCommand::getAvailableCommands)
+        .addFunction("getCommandsHistory", &widgets::CliCommand::getCommandsHistory)
+        .addFunction("clear", &widgets::CliCommand::clear)
 	);
 
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()

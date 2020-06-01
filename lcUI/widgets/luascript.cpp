@@ -27,7 +27,7 @@ void LuaScript::on_luaRun_clicked() {
     lcLua.setDocument(_mdiChild->document());
 
     auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
-    _cliCommand->write(QString::fromStdString(out));
+    _cliCommand->write(out);
 }
 
 void LuaScript::on_open_clicked() {

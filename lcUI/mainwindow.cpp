@@ -466,7 +466,7 @@ void MainWindow::triggerFinishOperation()
 
 void MainWindow::triggerCommandEntered(QString command)
 {
-    cliCommand.runCommand(command);
+    cliCommand.runCommand(command.toStdString().c_str());
 }
 
 void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)

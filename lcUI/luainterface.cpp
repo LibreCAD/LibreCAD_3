@@ -320,7 +320,13 @@ void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
     _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
     _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
+
+    // cli command helper functions
     _L.dostring("message = function(m) mainWindow:getCliCommand():write(tostring(m)) end");
+    _L.dostring("cli_get_text = function(getText) mainWindow:getCliCommand():returnText(getText) end");
+    _L.dostring("add_command = function(command, callback) mainWindow:getCliCommand():addCommand(command, callback) end");
+    _L.dostring("run_command = function(command) mainWindow:getCliCommand():runCommand(command) end");
+    _L.dostring("add_command('CLEAR', function() mainWindow:getCliCommand():clear() end)");
 
     _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
     _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
@@ -383,12 +389,12 @@ void LuaInterface::addOperationCommandLine(const std::string& vkey, const std::s
             {
                 // connect to default init function
                 _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>(), _L["run_op"]);
+                cliCommand->addCommand(_L[vkey][opkey][commandKey].get<std::string>().c_str(), _L["run_op"]);
             }
             else {
                 // connect to provided init function
                 _L.dostring("run_op = function() run_basic_operation(" + vkey + ", '_init_" + _L[vkey][opkey][commandKey].get<std::string>() + "') end");
-                cliCommand->addCommand(key, _L["run_op"]);
+                cliCommand->addCommand(key.c_str(), _L["run_op"]);
             }
         }
     }

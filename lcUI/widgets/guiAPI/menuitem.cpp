@@ -89,9 +89,11 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
 
 void MenuItem::removeCallback(const char* cb_name) {
     if (luaInterface != nullptr) {
-        luaInterface->luaDisconnect(this, "triggered(bool)", callbacks[namedCallbacks[cb_name]]);
-        callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
-        namedCallbacks.erase(namedCallbacks.find(cb_name));
+        if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
+            luaInterface->luaDisconnect(this, "triggered(bool)", callbacks[namedCallbacks[cb_name]]);
+            callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
+            namedCallbacks.erase(namedCallbacks.find(cb_name));
+        }
     }
 }
 
