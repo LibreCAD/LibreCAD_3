@@ -120,3 +120,40 @@ TEST(MenuItemTest, ItemPositionTest) {
     EXPECT_EQ(0, testitem2->getPosition());
     EXPECT_EQ(2, testitem3->getPosition());
 }
+
+TEST(MenuItemTest, ItemRemoveTest) {
+    QApplication app(argc, argv);
+    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    mainWindow->hide();
+
+    lc::ui::api::Menu* testmenu = mainWindow->addMenu("TestMenu");
+    lc::ui::api::MenuItem* testitem1 = testmenu->addItem("TestItem1");
+    lc::ui::api::MenuItem* testitem2 = testmenu->addItem("TestItem2");
+    lc::ui::api::MenuItem* testitem3 = testmenu->addItem("TestItem3");
+
+    EXPECT_EQ(0, testitem1->getPosition());
+    EXPECT_EQ(1, testitem2->getPosition());
+    EXPECT_EQ(2, testitem3->getPosition());
+
+    testitem1->remove();
+
+    EXPECT_EQ(0, testitem2->getPosition());
+    EXPECT_EQ(1, testitem3->getPosition());
+
+    lc::ui::api::MenuItem* testitem4 = testmenu->addItem("TestItem4");
+
+    EXPECT_EQ(0, testitem2->getPosition());
+    EXPECT_EQ(1, testitem3->getPosition());
+    EXPECT_EQ(2, testitem4->getPosition());
+
+    testitem2->setPosition(testitem4->getPosition());
+
+    EXPECT_EQ(2, testitem2->getPosition());
+    EXPECT_EQ(0, testitem3->getPosition());
+    EXPECT_EQ(1, testitem4->getPosition());
+
+    testitem4->remove();
+
+    EXPECT_EQ(1, testitem2->getPosition());
+    EXPECT_EQ(0, testitem3->getPosition());
+}

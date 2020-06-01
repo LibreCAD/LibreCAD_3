@@ -109,6 +109,7 @@ if(WITH_QT_UI)
             ui/testmainwindow.cpp
             ui/testwindowmanager.cpp
             ui/gui/testmenuitem.cpp
+            ui/gui/testmenu.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")

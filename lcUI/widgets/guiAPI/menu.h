@@ -74,6 +74,8 @@ namespace lc
             private:
                 bool checkForItemOfSameLabel(const char* label, bool isMenu);
 
+                void updateOtherPositionsAfterRemove();
+
             private:
                 LuaInterface* luaInterface;
                 int position;

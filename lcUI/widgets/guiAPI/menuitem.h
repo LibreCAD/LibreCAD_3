@@ -43,6 +43,9 @@ namespace lc
                 void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks = true);
 
             private:
+                void updateOtherPositionsAfterRemove();
+
+            private:
                 LuaInterface* luaInterface;
                 std::vector<kaguya::LuaRef> callbacks;
                 int position;

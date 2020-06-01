@@ -359,14 +359,12 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 
 void MainWindow::removeMenu(const char* menuLabel) {
     lc::ui::api::Menu* menuremove = getMenu(menuLabel);
-    removeFromMenuMap(menuLabel);
-    menuBar()->removeAction(menuremove->menuAction());
+    menuremove->remove();
 }
 
 void MainWindow::removeMenu(int position) {
     lc::ui::api::Menu* menuremove = getMenu(position);
-    removeFromMenuMap(menuremove->getLabel());
-    menuBar()->removeAction(menuremove->menuAction());
+    menuremove->remove();
 }
 
 /* Trigger slots */

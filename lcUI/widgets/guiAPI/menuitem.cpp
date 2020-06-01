@@ -148,6 +148,8 @@ void MenuItem::setPosition(int newPosition) {
 }
 
 void MenuItem::remove() {
+    updateOtherPositionsAfterRemove();
+
     QList<QWidget*> widgets = this->associatedWidgets();
 
     for (QWidget* widget : widgets) {
@@ -158,4 +160,27 @@ void MenuItem::remove() {
 
 void MenuItem::updatePositionVariable(int pos) {
     position = pos;
+}
+
+void MenuItem::updateOtherPositionsAfterRemove() {
+    QList<QWidget*> widgets = this->associatedWidgets();
+
+    for (QWidget* widget : widgets) {
+        QMenu* menu = static_cast<QMenu*>(widget);
+        
+        QList<QAction*> actions = menu->actions();
+
+        for (int i = position + 1; i < actions.size(); i++) {
+            QAction* item = actions[i];
+
+            if (item->menu()) {
+                Menu* menu_i = static_cast<Menu*>(item->menu());
+                menu_i->updatePositionVariable(menu_i->getPosition() - 1);
+            }
+            else {
+                MenuItem* menuItem = static_cast<MenuItem*>(item);
+                menuItem->updatePositionVariable(menuItem->getPosition() - 1);
+            }
+        }
+    }
 }

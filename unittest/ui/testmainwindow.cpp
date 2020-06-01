@@ -48,3 +48,31 @@ TEST(MWindowTest, ConnectMenuTest) {
 
     EXPECT_TRUE(mainWindow->testConnectMenuItem());
 }
+
+TEST(MWindowTest, MenuAPITest) {
+    QApplication app(argc, argv);
+    MainWindowTest* mainWindow = new MainWindowTest();
+
+    lc::ui::api::Menu* menu1 = mainWindow->addMenu("Menu1");
+    lc::ui::api::Menu* menu2 = new lc::ui::api::Menu("Menu2");
+    mainWindow->addMenu(menu2);
+
+    EXPECT_EQ(menu1, mainWindow->getMenu("Menu1"));
+    EXPECT_EQ(menu1, mainWindow->getMenu(3));
+
+    EXPECT_EQ(menu2, mainWindow->getMenu("Menu2"));
+    EXPECT_EQ(menu2, mainWindow->getMenu(4));
+
+    EXPECT_EQ(3, menu1->getPosition());
+    EXPECT_EQ(4, menu2->getPosition());
+
+    mainWindow->removeMenu(0);
+
+    EXPECT_EQ(2, menu1->getPosition());
+    EXPECT_EQ(3, menu2->getPosition());
+
+    mainWindow->removeMenu("Create");
+
+    EXPECT_EQ(1, menu1->getPosition());
+    EXPECT_EQ(2, menu2->getPosition());
+}
