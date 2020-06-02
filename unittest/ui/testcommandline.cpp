@@ -18,7 +18,7 @@ TEST(CommandLine, CommandTest) {
 	QString c1 = "COMMAND";
 	QString c2 = "INVALID";
 
-	cliTest.addCommand(c1.toStdString(), kaguya::LuaRef());
+	cliTest.addCommand(c1.toStdString().c_str(), kaguya::LuaRef());
 	cliTest.testCommand(c1);
 	cliTest.testCommand(c2);
 
@@ -115,4 +115,64 @@ TEST(CommandLine, NumberTest) {
 
 	EXPECT_FLOAT_EQ(n1, n1_Received);
 	EXPECT_FLOAT_EQ(n2, n2_Received);
+}
+
+TEST(CommandLine, EnableCommandTest) {
+    QApplication app(argc, argv);
+    CliCommandTest cliTest;
+
+    kaguya::State state;
+    state.dostring("testvalue = false");
+    state.dostring("testfunction = function() testvalue=true end");
+
+    const char* c1 = "COMMAND";
+    cliTest.addCommand(c1, state["testfunction"]);
+
+    EXPECT_TRUE(cliTest.isCommandEnabled("COMMAND"));
+    EXPECT_FALSE(state["testvalue"].get<bool>());
+
+    cliTest.enableCommand(c1, false);
+    cliTest.runCommand(c1);
+
+    EXPECT_FALSE(cliTest.isCommandEnabled("COMMAND"));
+    EXPECT_FALSE(state["testvalue"].get<bool>());
+
+    cliTest.enableCommand(c1, true);
+    cliTest.runCommand(c1);
+
+    EXPECT_TRUE(cliTest.isCommandEnabled("COMMAND"));
+    EXPECT_TRUE(state["testvalue"].get<bool>());
+}
+
+TEST(CommandLine, GetAPITest) {
+    QApplication app(argc, argv);
+    CliCommandTest cliTest;
+
+    std::vector<std::string> availableCommands = cliTest.getAvailableCommands();
+    std::vector<std::string> commandsEntered = cliTest.getCommandsHistory();
+
+    kaguya::State state;
+    state.dostring("testfunction = function() testvalue=true end");
+
+    EXPECT_EQ(0, availableCommands.size());
+    EXPECT_EQ(0, commandsEntered.size());
+
+    cliTest.addCommand("COMMAND1", state["testfunction"]);
+    cliTest.addCommand("COMMAND2", state["testfunction"]);
+
+    availableCommands = cliTest.getAvailableCommands();
+    commandsEntered = cliTest.getCommandsHistory();
+
+    EXPECT_EQ(2, availableCommands.size());
+    EXPECT_EQ(0, commandsEntered.size());
+
+    cliTest.runCommand("COMMAND1");
+    cliTest.enableCommand("COMMAND2", false);
+    cliTest.runCommand("COMMAND2");
+
+    availableCommands = cliTest.getAvailableCommands();
+    commandsEntered = cliTest.getCommandsHistory();
+
+    EXPECT_EQ(2, availableCommands.size());
+    EXPECT_EQ(1, commandsEntered.size());
 }
