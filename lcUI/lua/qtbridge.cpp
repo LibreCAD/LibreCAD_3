@@ -310,6 +310,8 @@ void addLCBindings(lua_State *L) {
             static_cast<void(widgets::Layers::*)(const char*)>(&widgets::Layers::removeLayer))
         .addOverloadedFunctions("renameLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr, const char*)>(&widgets::Layers::renameLayer),
             static_cast<void(widgets::Layers::*)(const char*, const char*)>(&widgets::Layers::renameLayer))
+        .addOverloadedFunctions("replaceLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr, lc::meta::Layer_CSPtr)>(&widgets::Layers::replaceLayerAPI),
+            static_cast<void(widgets::Layers::*)(const char*, lc::meta::Layer_CSPtr)>(&widgets::Layers::replaceLayerAPI))
 	);
 
 	state["lc"]["SnapManager"].setClass(kaguya::UserdataMetatable<manager::SnapManagerImpl>()

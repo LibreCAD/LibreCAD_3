@@ -41,7 +41,7 @@ namespace lc {
                      */
                     void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
-                    /* Lua GUI API Functions */
+                    /* --------- Lua GUI API Functions --------- */
 
                     /**
                      * \brief API function for adding a layer
@@ -70,6 +70,12 @@ namespace lc {
                      */
                     void renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName);
                     void renameLayer(const char* layerName, const char* newLayerName);
+
+                    /**
+                     * \brief API functions for replacing a layer
+                     */
+                    void replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+                    void replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer);
 
                 signals:
 

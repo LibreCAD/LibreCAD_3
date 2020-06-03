@@ -309,3 +309,14 @@ void Layers::renameLayer(const char* layerName, const char* newLayerName) {
     lc::meta::Layer_CSPtr layer = model->getLayer(layerName);
     renameLayer(layer, newLayerName);
 }
+
+void Layers::replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer) {
+    if (oldLayer != nullptr && newLayer != nullptr) {
+        replaceLayer(oldLayer, newLayer);
+    }
+}
+
+void Layers::replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer) {
+    lc::meta::Layer_CSPtr oldLayer = model->getLayer(oldLayerName);
+    replaceLayer(oldLayer, newLayer);
+}

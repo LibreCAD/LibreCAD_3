@@ -136,3 +136,53 @@ TEST(LayersTest, EditionDialog) {
             color.blue() == dialogColor.blue()
     );
 }
+
+TEST(LayersTest, AddAndGetAPI) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new lc::ui::widgets::Layers(mdiChild, nullptr);
+
+    auto layer1 = std::make_shared<const lc::meta::Layer>("TestLayer1", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->addLayer(layer1);
+    EXPECT_EQ(layers->getLayer("TestLayer1"), layer1);
+
+    auto layer2 = layers->addLayer("TestLayer2");
+    EXPECT_EQ(layers->getLayer("TestLayer2"), layer2);
+
+    auto layer3 = layers->addLayer("TestLayer3", 2.00);
+    EXPECT_EQ(layers->getLayer("TestLayer3"), layer3);
+
+    auto layer4 = layers->addLayer("TestLayer4", 0, 255, 0);
+    EXPECT_EQ(layers->getLayer("TestLayer4"), layer4);
+
+    auto layer5 = layers->addLayer("TestLayer5", 2.00, 0, 255, 0);
+    EXPECT_EQ(layers->getLayer("TestLayer5"), layer5);
+
+    auto layer6 = layers->addLayer("TestLayer6", 2.00, lc::Color(0.0,1.0,0.0));
+    EXPECT_EQ(layers->getLayer("TestLayer6"), layer6);
+}
+
+TEST(LayersTest, APITest) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new lc::ui::widgets::Layers(mdiChild, nullptr);
+
+    auto layer1 = std::make_shared<const lc::meta::Layer>("TestLayer1", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->addLayer(layer1);
+    EXPECT_EQ(layers->getLayer("TestLayer1"), layer1);
+
+    layers->removeLayer("TestLayer1");
+    EXPECT_EQ(layers->getLayer("TestLayer1"), nullptr);
+
+    auto layer2 = layers->addLayer("TestLayer2");
+    layers->renameLayer("TestLayer2", "RenamedLayer");
+    EXPECT_EQ(layers->getLayer("RenamedLayer"), layer2);
+
+    auto layer3 = layers->addLayer("TestLayer3");
+    layers->removeLayer(layer3);
+    EXPECT_EQ(layers->getLayer("TestLayer3"), layer3);
+}
