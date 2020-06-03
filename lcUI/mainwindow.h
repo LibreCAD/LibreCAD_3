@@ -50,6 +50,8 @@ namespace lc
 
             lc::ui::widgets::Toolbar* getToolbar();
 
+            lc::ui::widgets::Layers* getLayers();
+
             /**
             * \brief Connect existing menu item to lua callback function
             * \param itemName item name , callback - function callback

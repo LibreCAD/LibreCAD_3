@@ -298,6 +298,18 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["Layers"].setClass(kaguya::UserdataMetatable<widgets::Layers, QDockWidget>()
 	    .setConstructors<widgets::Layers()>() //return new widgets::Layers() before
 		.addFunction("setMdiChild", &widgets::Layers::setMdiChild)
+        .addFunction("getLayer", &widgets::Layers::getLayer)
+        .addOverloadedFunctions("addLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, double)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, int, int, int)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, double, int, int, int)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, lc::Color)>(&widgets::Layers::addLayer),
+            static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, double, lc::Color)>(&widgets::Layers::addLayer))
+        .addOverloadedFunctions("removeLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr)>(&widgets::Layers::removeLayer),
+            static_cast<void(widgets::Layers::*)(const char*)>(&widgets::Layers::removeLayer))
+        .addOverloadedFunctions("renameLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr, const char*)>(&widgets::Layers::renameLayer),
+            static_cast<void(widgets::Layers::*)(const char*, const char*)>(&widgets::Layers::renameLayer))
 	);
 
 	state["lc"]["SnapManager"].setClass(kaguya::UserdataMetatable<manager::SnapManagerImpl>()
@@ -340,6 +352,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
         .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
         .addFunction("getToolbar", &lc::ui::MainWindow::getToolbar)
+        .addFunction("getLayers", &lc::ui::MainWindow::getLayers)
         .addFunction("operationFinished", &lc::ui::MainWindow::operationFinished)
         .addFunction("findMenuItem", &lc::ui::MainWindow::findMenuItem)
         .addFunction("findMenuItemByObjectName", &lc::ui::MainWindow::findMenuItemByObjectName)

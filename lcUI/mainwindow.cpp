@@ -111,6 +111,10 @@ lc::ui::widgets::Toolbar* MainWindow::getToolbar() {
     return &toolbar;
 }
 
+lc::ui::widgets::Layers* MainWindow::getLayers() {
+    return &layers;
+}
+
 void MainWindow::ConnectInputEvents()
 {   
     // CadMdiChild connections

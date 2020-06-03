@@ -216,3 +216,96 @@ void Layers::closeEvent(QCloseEvent* event)
 	this->widget()->hide();
 	event->ignore();
 }
+
+/* Lua GUI API Functions */
+void Layers::addLayer(lc::meta::Layer_CSPtr layer) {
+    if (layer != nullptr) {
+        createLayer(layer);
+    }
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        1.00,
+        lc::Color(255, 255, 255)
+        );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        lineWidth,
+        lc::Color(255, 255, 255)
+        );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, int r, int g, int b) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        1.00,
+        lc::Color(r, g, b)
+        );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth, int r, int g, int b) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        lineWidth,
+        lc::Color(r,g,b)
+        );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, lc::Color color) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        1.00,
+        color
+        );
+    addLayer(layer);
+    return layer;
+}
+
+lc::meta::Layer_CSPtr Layers::addLayer(const char* layerName, double lineWidth, lc::Color color) {
+    lc::meta::Layer_CSPtr layer = std::make_shared<const lc::meta::Layer>(
+        std::string(layerName),
+        lineWidth,
+        color
+        );
+    addLayer(layer);
+    return layer;
+}
+
+void Layers::removeLayer(lc::meta::Layer_CSPtr layer) {
+    if (layer != nullptr) {
+        deleteLayer(layer);
+    }
+}
+
+void Layers::removeLayer(const char* layerName) {
+    lc::meta::Layer_CSPtr layer = model->getLayer(layerName);
+    removeLayer(layer);
+}
+
+lc::meta::Layer_CSPtr Layers::getLayer(const char* layerName) {
+    return model->getLayer(layerName);
+}
+
+void Layers::renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName) {
+    if (layer != nullptr) {
+        changeLayerName(layer, newLayerName);
+    }
+}
+
+void Layers::renameLayer(const char* layerName, const char* newLayerName) {
+    lc::meta::Layer_CSPtr layer = model->getLayer(layerName);
+    renameLayer(layer, newLayerName);
+}
