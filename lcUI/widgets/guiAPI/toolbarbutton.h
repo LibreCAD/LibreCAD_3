@@ -27,6 +27,10 @@ namespace lc
 
                 void addCallback(kaguya::LuaRef callback);
 
+                void changeIcon(const char* newIconPath);
+
+                void remove();
+
                 void setLuaInterface(LuaInterface* luaInterfaceIn);
 
             private:

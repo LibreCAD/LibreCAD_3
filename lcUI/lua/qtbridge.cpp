@@ -412,11 +412,29 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
         .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)
         .addFunction("addCallback", &lc::ui::api::ToolbarButton::addCallback)
+        .addFunction("isEnabled", &lc::ui::api::ToolbarButton::isEnabled)
+        .addFunction("hide", &lc::ui::api::ToolbarButton::hide)
+        .addFunction("show", &lc::ui::api::ToolbarButton::show)
+        .addFunction("remove", &lc::ui::api::ToolbarButton::remove)
+        .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(true); })
+        .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(false); })
     );
 
     state["gui"]["ToolbarGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarGroup>()
         .setConstructors<lc::ui::api::ToolbarGroup(const char*), lc::ui::api::ToolbarGroup(const char*, int)>()
-        .addFunction("addButton", &lc::ui::api::ToolbarGroup::addButton)
+        .addFunction("getLabel", &lc::ui::api::ToolbarGroup::getLabel)
+        .addFunction("setLabel", &lc::ui::api::ToolbarGroup::setLabel)
+        .addFunction("getButton", &lc::ui::api::ToolbarGroup::getButton)
+        .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)
+        .addFunction("hide", &lc::ui::api::ToolbarGroup::hide)
+        .addFunction("show", &lc::ui::api::ToolbarGroup::show)
+        .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(true); })
+        .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(false); })
+        .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),
+            static_cast<lc::ui::api::ToolbarButton*(lc::ui::api::ToolbarGroup::*)(const char*, const char*)>(&lc::ui::api::ToolbarGroup::addButton),
+            static_cast<lc::ui::api::ToolbarButton*(lc::ui::api::ToolbarGroup::*)(const char*, const char*, kaguya::LuaRef)>(&lc::ui::api::ToolbarGroup::addButton))
+        .addOverloadedFunctions("removeButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::removeButton),
+            static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))
     );
 }
 

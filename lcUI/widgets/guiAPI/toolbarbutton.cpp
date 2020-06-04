@@ -1,5 +1,7 @@
 #include "toolbarbutton.h"
 
+#include "toolbargroup.h"
+
 using namespace lc::ui::api;
 
 ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, QWidget* parent)
@@ -24,10 +26,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     }
     this->setFlat(true);
 
-    if (icon != nullptr) {
-        this->setIcon(QIcon(icon));
-        this->setIconSize(QSize(24, 24));
-    }
+    changeIcon(icon);
 }
 
 std::string ToolbarButton::getLabel() {
@@ -48,6 +47,19 @@ void ToolbarButton::addCallback(kaguya::LuaRef callback) {
     if (luaInterface != nullptr) {
         luaInterface->luaConnect(this, "pressed()", callback);
     }
+}
+
+void ToolbarButton::changeIcon(const char* icon) {
+    if (icon != nullptr) {
+        this->setIcon(QIcon(icon));
+        this->setIconSize(QSize(24, 24));
+    }
+}
+
+void ToolbarButton::remove() {
+    ToolbarGroup* toolbarGroup = static_cast<ToolbarGroup*>(this->parent());
+    auto gridLayout = static_cast<QGridLayout*>(toolbarGroup->layout());
+    gridLayout->removeWidget(this);
 }
 
 void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {

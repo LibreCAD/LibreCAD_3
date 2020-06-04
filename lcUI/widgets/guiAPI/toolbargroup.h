@@ -21,11 +21,28 @@ namespace lc
 
                 void addButton(ToolbarButton* button);
 
+                ToolbarButton* addButton(const char* buttonName, const char* buttonIcon);
+
+                ToolbarButton* addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback);
+
+                std::string getLabel() const;
+
+                void setLabel(const char* newGroupName);
+
+                ToolbarButton* getButton(const char* buttonName);
+
+                std::vector<ToolbarButton*> getAllButtons();
+
+                void removeButton(const char* buttonName);
+
+                void removeButton(ToolbarButton* button);
+
                 void setLuaInterface(LuaInterface* luaInterface);
 
             private:
                 LuaInterface* luaInterface;
-                int width;
+                const int width;
+                int count;
             };
         }
     }
