@@ -30,6 +30,10 @@ QGroupBox* ToolbarTab::addGroup(const char* name) {
 	return group;
 }
 
+void ToolbarTab::addToolbarGroup(api::ToolbarGroup* group) {
+    _layout->insertWidget(_layout->count() - 1, group);
+}
+
 QPushButton* ToolbarTab::addButton(QGroupBox* groupBox, const char* buttonName, int x, int y, int w, int h) {
 	auto button = new QPushButton(buttonName);
 
@@ -51,6 +55,10 @@ void ToolbarTab::addWidget(QGroupBox *groupBox, QWidget *widget, int x, int y, i
     else {
         groupBox->layout()->addWidget(widget);
     }
+}
+
+void ToolbarTab::addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x, int y, int w, int h) {
+    addWidget(groupBox, button, x, y, w, h);
 }
 
 QGroupBox* ToolbarTab::groupByName(const char* groupName) {

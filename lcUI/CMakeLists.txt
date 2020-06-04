@@ -50,6 +50,8 @@ widgets/colorselect.h
 widgets/widgettitlebar.h
 widgets/guiAPI/menu.h
 widgets/guiAPI/menuitem.h
+widgets/guiAPI/toolbarbutton.h
+widgets/guiAPI/toolbargroup.h
 lua/qtbridge.h
 lua/luaqobject.h
 dialogs/addlayerdialog.h
@@ -84,6 +86,8 @@ widgets/colorselect.cpp
 widgets/widgettitlebar.cpp
 widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
+widgets/guiAPI/toolbarbutton.cpp
+widgets/guiAPI/toolbargroup.cpp
 lua/qtbridge.cpp
 lua/luaqobject.cpp
 dialogs/addlayerdialog.cpp

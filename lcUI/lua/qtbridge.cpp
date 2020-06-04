@@ -12,6 +12,8 @@
 #include "widgets/layers.h"
 #include "widgets/guiAPI/menu.h"
 #include "widgets/guiAPI/menuitem.h"
+#include "widgets/guiAPI/toolbarbutton.h"
+#include "widgets/guiAPI/toolbargroup.h"
 #include "dialogs/linepatternmanager.h"
 #include <drawables/tempentities.h>
 #include "widgets/linewidthselect.h"
@@ -280,10 +282,12 @@ void addLCBindings(lua_State *L) {
         })
         .addFunction("addButton", &widgets::ToolbarTab::addButton)
 	    .addFunction("addWidget", &widgets::ToolbarTab::addWidget)
+        .addFunction("addToolbarButton", &widgets::ToolbarTab::addToolbarButton)
 		.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
 		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
 		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
 		.addFunction("removeGroup", &widgets::ToolbarTab::removeGroup)
+        .addFunction("addToolbarGroup", &widgets::ToolbarTab::addToolbarGroup)
 	);
 
 	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()
@@ -400,6 +404,19 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("remove", &lc::ui::api::MenuItem::remove)
         .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
+    );
+
+    state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
+        .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef), lc::ui::api::ToolbarButton(const char*, const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef, const char*)>()
+        .addFunction("getLabel", &lc::ui::api::ToolbarButton::getLabel)
+        .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
+        .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)
+        .addFunction("addCallback", &lc::ui::api::ToolbarButton::addCallback)
+    );
+
+    state["gui"]["ToolbarGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarGroup>()
+        .setConstructors<lc::ui::api::ToolbarGroup(const char*), lc::ui::api::ToolbarGroup(const char*, int)>()
+        .addFunction("addButton", &lc::ui::api::ToolbarGroup::addButton)
     );
 }
 

@@ -7,6 +7,9 @@
 #include <QScrollArea>
 #include <QSpacerItem>
 
+#include "guiAPI/toolbarbutton.h"
+#include "guiAPI/toolbargroup.h"
+
 namespace Ui {
 	class ToolbarTab;
 }
@@ -32,6 +35,8 @@ namespace lc {
                      */
 					QGroupBox* addGroup(const char* name);
 
+                    void addToolbarGroup(api::ToolbarGroup* toolbarGroup);
+
 					/**
                      * \brief Add new widget
                      * \param groupBox Pointer to target group
@@ -54,6 +59,8 @@ namespace lc {
                      */
 					QPushButton*
 					addButton(QGroupBox* groupBox, const char* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
+
+                    void addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x = 0, int y = 0, int w = 1, int h = 1);
 
 					/**
                      * \brief Get existing group
