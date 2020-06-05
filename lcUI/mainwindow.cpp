@@ -73,7 +73,7 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
 
     // add toolbar cancel button
     state.dostring("finish_op = function() finish_operation() end");
-    toolbar.addButton("", ":/icons/quit.svg", "Current operation", 0, 0, state["finish_op"], "Cancel");
+    toolbar.addButton("", ":/icons/quit.svg", "Current operation", state["finish_op"], "Cancel");
     state["finish_op"] = nullptr;
 
     // call operation to run CreateOperations init method etc

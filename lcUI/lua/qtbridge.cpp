@@ -286,8 +286,10 @@ void addLCBindings(lua_State *L) {
 		.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
 		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
 		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
-		.addFunction("removeGroup", &widgets::ToolbarTab::removeGroup)
-        .addFunction("addToolbarGroup", &widgets::ToolbarTab::addToolbarGroup)
+        .addOverloadedFunctions("removeGroup", static_cast<void(widgets::ToolbarTab::*)(QGroupBox*)>(&widgets::ToolbarTab::removeGroup),
+            static_cast<void(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::removeGroup))
+        .addOverloadedFunctions("addToolbarGroup", static_cast<void(widgets::ToolbarTab::*)(api::ToolbarGroup*)>(&widgets::ToolbarTab::addToolbarGroup),
+            static_cast<api::ToolbarGroup*(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::addToolbarGroup))
 	);
 
 	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()

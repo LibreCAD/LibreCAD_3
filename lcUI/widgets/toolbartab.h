@@ -10,6 +10,8 @@
 #include "guiAPI/toolbarbutton.h"
 #include "guiAPI/toolbargroup.h"
 
+#include <luainterface.h>
+
 namespace Ui {
 	class ToolbarTab;
 }
@@ -37,6 +39,8 @@ namespace lc {
 
                     void addToolbarGroup(api::ToolbarGroup* toolbarGroup);
 
+                    lc::ui::api::ToolbarGroup* addToolbarGroup(const char* name);
+
 					/**
                      * \brief Add new widget
                      * \param groupBox Pointer to target group
@@ -62,6 +66,8 @@ namespace lc {
 
                     void addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x = 0, int y = 0, int w = 1, int h = 1);
 
+                    void addToolbarButtonOther(api::ToolbarButton* button, const char* groupName);
+
 					/**
                      * \brief Get existing group
                      * \param name Tab name
@@ -83,15 +89,24 @@ namespace lc {
                      */
 					void removeGroup(QGroupBox* group);
 
+                    /**
+                     * \brief Remove group by name
+                     * \param group Pointer to QGroupBox
+                     */
+                    void removeGroup(const char* groupName);
+
 					/**
                      * \brief Remove button
                      * \param button Pointer to QPushButton
                      */
 					void removeButton(QPushButton* button);
 
+                    void setLuaInterface(LuaInterface* luaInterfaceIn);
+
 				private:
 					Ui::ToolbarTab* ui;
 					QHBoxLayout* _layout;
+                    LuaInterface* luaInterface;
 			};
 		}
 	}

@@ -1,6 +1,8 @@
 #include "toolbar.h"
 #include "ui_toolbar.h"
 #include "widgettitlebar.h"
+#include "guiAPI/toolbarbutton.h"
+#include "guiAPI/toolbargroup.h"
 
 using namespace lc::ui::widgets;
 
@@ -57,8 +59,10 @@ void Toolbar::closeEvent(QCloseEvent* event)
 
 void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect){
     addTab("Quick Access", &quickAccessTab);
+    quickAccessTab.setLuaInterface(luaInterface);
 
-    QGroupBox* metaInfoGroup = quickAccessTab.addGroup("Entity properties");
+    lc::ui::api::ToolbarGroup* metaInfoGroup = new lc::ui::api::ToolbarGroup("Entity properties");
+    quickAccessTab.addToolbarGroup(metaInfoGroup);
     quickAccessTab.addWidget(metaInfoGroup, linePatternSelect, 0, 0, 1, 1);
     quickAccessTab.addWidget(metaInfoGroup, lineWidthSelect, 0, 1, 1, 1);
     quickAccessTab.addWidget(metaInfoGroup, colorSelect, 0, 2, 1, 1);
@@ -81,22 +85,11 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     state["snap_op"] = nullptr;
 }
 
-void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
+void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip) 
 {
-    if (quickAccessGroups.find(groupBox) == quickAccessGroups.end()){
-        quickAccessGroups[groupBox] = quickAccessTab.addGroup(groupBox);
-    }
-    QPushButton* button = new QPushButton(name);
-    button->setToolTip(tooltip);
-    button->setFlat(true);
-
-    if (icon != nullptr) {
-        button->setIcon(QIcon(icon));
-        button->setIconSize(QSize(24, 24));
-    }
-
-    quickAccessTab.addWidget(quickAccessGroups[groupBox], button, x, y, 1, 1);
-    luaInterface->luaConnect(button, "pressed()", cb);
+    lc::ui::api::ToolbarButton* button = new lc::ui::api::ToolbarButton(name, icon, cb, tooltip);
+    button->setLuaInterface(luaInterface);
+    quickAccessTab.addToolbarButtonOther(button, groupBox);
 }
 
 void Toolbar::addCheckableButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip)
@@ -121,10 +114,5 @@ void Toolbar::addCheckableButton(const char* name, const char* icon, const char*
 
 void Toolbar::removeGroupByName(const char* groupName)
 {
-    if (quickAccessGroups.find(groupName) == quickAccessGroups.end()){
-        return;
-    }
-
-    quickAccessTab.removeGroup(quickAccessGroups[groupName]);
-    quickAccessGroups.remove(groupName);
+    quickAccessTab.removeGroup(groupName);
 }

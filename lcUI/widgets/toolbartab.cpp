@@ -31,7 +31,21 @@ QGroupBox* ToolbarTab::addGroup(const char* name) {
 }
 
 void ToolbarTab::addToolbarGroup(api::ToolbarGroup* group) {
+    if (group == nullptr) {
+        return;
+    }
+
+    if (luaInterface != nullptr) {
+        group->setLuaInterface(luaInterface);
+    }
+
     _layout->insertWidget(_layout->count() - 1, group);
+}
+
+lc::ui::api::ToolbarGroup* ToolbarTab::addToolbarGroup(const char* name) {
+    lc::ui::api::ToolbarGroup* group = new lc::ui::api::ToolbarGroup(name);
+    addToolbarGroup(group);
+    return group;
 }
 
 QPushButton* ToolbarTab::addButton(QGroupBox* groupBox, const char* buttonName, int x, int y, int w, int h) {
@@ -59,6 +73,15 @@ void ToolbarTab::addWidget(QGroupBox *groupBox, QWidget *widget, int x, int y, i
 
 void ToolbarTab::addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x, int y, int w, int h) {
     addWidget(groupBox, button, x, y, w, h);
+}
+
+void ToolbarTab::addToolbarButtonOther(api::ToolbarButton* button, const char* groupName) {
+    if (groupByName(groupName) == nullptr) {
+        addToolbarGroup(new api::ToolbarGroup(groupName));
+    }
+
+    api::ToolbarGroup* group = static_cast<api::ToolbarGroup*>(groupByName(groupName));
+    group->addButton(button);
 }
 
 QGroupBox* ToolbarTab::groupByName(const char* groupName) {
@@ -89,10 +112,31 @@ QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonTex
 	return nullptr;
 }
 
+void ToolbarTab::removeGroup(const char* groupName) {
+    removeGroup(groupByName(groupName));
+}
+
 void ToolbarTab::removeGroup(QGroupBox *group) {
 	delete group;
 }
 
 void ToolbarTab::removeButton(QPushButton *button) {
 	delete button;
+}
+
+void ToolbarTab::setLuaInterface(LuaInterface* luaInterfaceIn) {
+    if (luaInterface != nullptr) {
+        return;
+    }
+
+    luaInterface = luaInterfaceIn;
+
+    auto nbGroups = _layout->count();
+    for (int i = 0; i < nbGroups; i++) {
+        auto groupBox = dynamic_cast<api::ToolbarGroup*>(_layout->itemAt(i)->widget());
+
+        if (groupBox != nullptr) {
+            groupBox->setLuaInterface(luaInterface);
+        }
+    }
 }

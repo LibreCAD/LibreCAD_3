@@ -55,7 +55,7 @@ namespace lc {
                     /**
                      * \brief Add button to toolbar
                      */
-                    void addButton(const char* name, const char* icon, const char* groupBox, int x, int y, kaguya::LuaRef cb, const char* tooltip = "");
+                    void addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip = "");
 
                     /**
                      * \brief Add Checkable button to toolbar

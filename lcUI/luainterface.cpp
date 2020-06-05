@@ -460,7 +460,7 @@ void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& 
         widgetCount["modifyWidgetCount"]++;
     }
 
-    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), row, col, _L["run_op"], tooltip.c_str());
+    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), _L["run_op"], tooltip.c_str());
 }
 
 void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {
@@ -479,7 +479,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             for (auto elementInit : optionsInit) {
                 std::map<std::string, std::string> optionInit = elementInit.second;
 
-                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation'," + std::string(1, (countInit + '0')) + ", 1, function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
+                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
                 _L.dostring(action);
                 optionsInitList.push_back(_L["operation_op"]);
                 countInit++;
@@ -493,7 +493,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             // default operation_options
             std::map<std::string, std::string> option = element.second;
 
-            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation'," + std::string(1, (count + '0')) + ", 1, function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
             _L.dostring(action);
             optionsList.push_back(_L["operation_op"]);
             count++;
