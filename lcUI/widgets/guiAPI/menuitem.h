@@ -20,7 +20,7 @@ namespace lc
 
                 MenuItem(const char* menuItemName, QWidget* parent = nullptr);
 
-                std::string getLabel();
+                std::string label();
 
                 void setLabel(const char* newLabel);
 

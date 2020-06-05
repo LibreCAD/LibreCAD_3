@@ -19,7 +19,7 @@ namespace lc
 
                 ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip = "", QWidget* parent = nullptr);
 
-                std::string getLabel();
+                std::string label();
 
                 void setLabel(const char* newLabel);
 
@@ -35,7 +35,7 @@ namespace lc
 
             private:
                 LuaInterface* luaInterface;
-                std::string label;
+                std::string _label;
                 std::vector<kaguya::LuaRef> callbacks;
             };
         }

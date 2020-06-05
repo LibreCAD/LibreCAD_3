@@ -25,7 +25,7 @@ MenuItem::MenuItem(const char* menuItemName, QWidget* parent)
     this->setObjectName(menuItemName);
 }
 
-std::string MenuItem::getLabel() {
+std::string MenuItem::label() {
     return this->text().toStdString();
 }
 

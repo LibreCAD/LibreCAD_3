@@ -13,7 +13,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::
 
 ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, QWidget* parent)
     :
-    label(buttonLabel),
+    _label(buttonLabel),
     QPushButton("", parent),
     luaInterface(nullptr)
 {
@@ -29,12 +29,12 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     changeIcon(icon);
 }
 
-std::string ToolbarButton::getLabel() {
-    return label;
+std::string ToolbarButton::label() {
+    return _label;
 }
 
 void ToolbarButton::setLabel(const char* newLabel) {
-    label = std::string(newLabel);
+    _label = std::string(newLabel);
 }
 
 void ToolbarButton::setTooltip(const char* newToolTip) {

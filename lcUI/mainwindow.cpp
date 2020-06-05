@@ -309,7 +309,7 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
 }
 
 void MainWindow::addMenu(lc::ui::api::Menu* menu) {
-    if (checkForMenuOfSameLabel(menu->getLabel())) {
+    if (checkForMenuOfSameLabel(menu->label())) {
         return;
     }
 

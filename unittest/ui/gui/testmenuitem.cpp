@@ -12,7 +12,7 @@ TEST(MenuItemTest, ItemAddTest) {
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::MenuItem* testItem1 = testMenu->addItem("TESTITEM1");
 
-    EXPECT_EQ("TESTITEM1", testItem1->getLabel());
+    EXPECT_EQ("TESTITEM1", testItem1->label());
 
     lc::ui::api::MenuItem* testItem2 = new lc::ui::api::MenuItem("TESTITEM2");
     testMenu->addItem(testItem2);
@@ -27,7 +27,7 @@ TEST(MenuItemTest, ItemAddTest) {
     testMenu->addItem("TESTITEM4", kaguya::LuaRef());
     lc::ui::api::MenuItem* testItem4 = testMenu->getItem("TESTITEM4");
 
-    EXPECT_EQ("TESTITEM4", testItem4->getLabel());
+    EXPECT_EQ("TESTITEM4", testItem4->label());
 }
 
 TEST(MenuItemTest, ItemLabelTest) {
@@ -36,11 +36,11 @@ TEST(MenuItemTest, ItemLabelTest) {
 
     lc::ui::api::MenuItem* testItem1 = new lc::ui::api::MenuItem("LABEL_TEST");
     
-    EXPECT_EQ("LABEL_TEST", testItem1->getLabel());
+    EXPECT_EQ("LABEL_TEST", testItem1->label());
 
     testItem1->setLabel("CHANGED_LABEL");
 
-    EXPECT_EQ("CHANGED_LABEL", testItem1->getLabel());
+    EXPECT_EQ("CHANGED_LABEL", testItem1->label());
 }
 
 TEST(MenuItemTest, ItemCallbackTest) {

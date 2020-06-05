@@ -33,7 +33,7 @@ Menu::Menu(QMenu* menu)
 }
 
 void Menu::addItem(MenuItem* item) {
-    if (checkForItemOfSameLabel(item->getLabel().c_str(), false)) {
+    if (checkForItemOfSameLabel(item->label().c_str(), false)) {
         return;
     }
 
@@ -59,7 +59,7 @@ MenuItem* Menu::addItem(const char* menuItemLabel, kaguya::LuaRef callback) {
 }
 
 void Menu::addMenu(Menu* newMenu) {
-    if (checkForItemOfSameLabel(newMenu->getLabel().c_str(), true)) {
+    if (checkForItemOfSameLabel(newMenu->label().c_str(), true)) {
         return;
     }
 
@@ -77,7 +77,7 @@ Menu* Menu::addMenu(const char* menuLabel) {
     return newMenu;
 }
 
-std::string Menu::getLabel() {
+std::string Menu::label() {
     return this->title().toStdString();
 }
 
@@ -95,7 +95,7 @@ MenuItem* Menu::getItem(const char* menuItemLabel) {
         }
         MenuItem* item = static_cast<MenuItem*>(action);
 
-        if (item->getLabel() == std::string(menuItemLabel)) {
+        if (item->label() == std::string(menuItemLabel)) {
             return item;
         }
     }
@@ -125,7 +125,7 @@ Menu* Menu::getMenu(const char* menuLabel) {
         if (action->menu()) {
             Menu* item = static_cast<Menu*>(action->menu());
 
-            if (item->getLabel() == std::string(menuLabel)) {
+            if (item->label() == std::string(menuLabel)) {
                 return item;
             }
         }
@@ -323,7 +323,7 @@ void Menu::remove() {
     else {
         QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
         lc::ui::MainWindow* mainWindow = static_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
-        mainWindow->removeFromMenuMap(this->getLabel());
+        mainWindow->removeFromMenuMap(this->label());
         menuBar->removeAction(this->menuAction());
     }
 }
@@ -343,7 +343,7 @@ bool Menu::checkForItemOfSameLabel(const char* label, bool isMenu) {
             }
             MenuItem* item = static_cast<MenuItem*>(action);
 
-            if (item->getLabel() == std::string(label)) {
+            if (item->label() == std::string(label)) {
                 return true;
             }
         }
@@ -351,7 +351,7 @@ bool Menu::checkForItemOfSameLabel(const char* label, bool isMenu) {
             if (action->menu()) {
                 Menu* item = static_cast<Menu*>(action->menu());
 
-                if (item->getLabel() == std::string(label)) {
+                if (item->label() == std::string(label)) {
                     return true;
                 }
             }

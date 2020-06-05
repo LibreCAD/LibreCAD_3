@@ -32,7 +32,7 @@ namespace lc
 
                 Menu* addMenu(const char* menuLabel);
 
-                std::string getLabel();
+                std::string label();
 
                 void setLabel(const char* newMenuLabel);
 

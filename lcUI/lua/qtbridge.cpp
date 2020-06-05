@@ -376,7 +376,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["Menu"].setClass(kaguya::UserdataMetatable<lc::ui::api::Menu>()
         .setConstructors<lc::ui::api::Menu(const char*)>()
-        .addFunction("getLabel", &lc::ui::api::Menu::getLabel)
+        .addFunction("label", &lc::ui::api::Menu::label)
         .addFunction("setLabel", &lc::ui::api::Menu::setLabel)
         .addFunction("hide", &lc::ui::api::Menu::hide)
         .addFunction("show", &lc::ui::api::Menu::show)
@@ -395,7 +395,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["MenuItem"].setClass(kaguya::UserdataMetatable<lc::ui::api::MenuItem>()
         .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
-        .addFunction("getLabel", &lc::ui::api::MenuItem::getLabel)
+        .addFunction("label", &lc::ui::api::MenuItem::label)
         .addFunction("setLabel", &lc::ui::api::MenuItem::setLabel)
         .addFunction("hide", &lc::ui::api::MenuItem::hide)
         .addFunction("show", &lc::ui::api::MenuItem::show)
@@ -410,7 +410,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
         .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef), lc::ui::api::ToolbarButton(const char*, const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef, const char*)>()
-        .addFunction("getLabel", &lc::ui::api::ToolbarButton::getLabel)
+        .addFunction("label", &lc::ui::api::ToolbarButton::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
         .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)
         .addFunction("addCallback", &lc::ui::api::ToolbarButton::addCallback)
@@ -424,7 +424,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["ToolbarGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarGroup>()
         .setConstructors<lc::ui::api::ToolbarGroup(const char*), lc::ui::api::ToolbarGroup(const char*, int)>()
-        .addFunction("getLabel", &lc::ui::api::ToolbarGroup::getLabel)
+        .addFunction("label", &lc::ui::api::ToolbarGroup::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarGroup::setLabel)
         .addFunction("getButton", &lc::ui::api::ToolbarGroup::getButton)
         .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)

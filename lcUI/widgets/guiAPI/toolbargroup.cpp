@@ -35,7 +35,7 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
     return button;
 }
 
-std::string ToolbarGroup::getLabel() const {
+std::string ToolbarGroup::label() const {
     return this->title().toStdString();
 }
 
@@ -50,7 +50,7 @@ ToolbarButton* ToolbarGroup::getButton(const char* buttonName) {
     for (int i = 0; i < nbButtons; i++) {
         auto button = static_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
 
-        if (button->getLabel() == buttonText) {
+        if (button->label() == buttonText) {
             return button;
         }
     }

@@ -16,22 +16,22 @@ TEST(MenuTest, MenuLabelTest) {
 
     lc::ui::api::Menu* insideMenu1 = testMenu->addMenu("INSIDEMENU1");
 
-    EXPECT_EQ("TESTMENU", testMenu->getLabel());
-    EXPECT_EQ("INSIDEMENU1", insideMenu1->getLabel());
+    EXPECT_EQ("TESTMENU", testMenu->label());
+    EXPECT_EQ("INSIDEMENU1", insideMenu1->label());
 
     lc::ui::api::Menu* insideMenu2 = new lc::ui::api::Menu("INSIDEMENU2");
     testMenu->addMenu(insideMenu2);
 
-    EXPECT_EQ("INSIDEMENU2", insideMenu2->getLabel());
+    EXPECT_EQ("INSIDEMENU2", insideMenu2->label());
 
     insideMenu2->setLabel("NEWINSIDEMENU2");
 
-    EXPECT_EQ("NEWINSIDEMENU2", insideMenu2->getLabel());
+    EXPECT_EQ("NEWINSIDEMENU2", insideMenu2->label());
     
     EXPECT_EQ(insideMenu2, testMenu->getMenu("NEWINSIDEMENU2"));
     EXPECT_EQ(nullptr,testMenu->getMenu("INSIDEMENU2"));
 
-    EXPECT_EQ(mainWindow->getMenu("TESTMENU2")->getLabel(), "TESTMENU2");
+    EXPECT_EQ(mainWindow->getMenu("TESTMENU2")->label(), "TESTMENU2");
 }
 
 TEST(MenuTest, MenuGetTest) {
