@@ -30,18 +30,7 @@ namespace lc {
                      */
 					ToolbarTab(QWidget* parent = 0);
 
-					/**
-                     * \brief Add new group
-                     * \param name Group name
-                     * \return Pointer to created QGroupBox
-                     */
-					QGroupBox* addGroup(const char* name);
-
-                    void addToolbarGroup(api::ToolbarGroup* toolbarGroup);
-
-                    lc::ui::api::ToolbarGroup* addToolbarGroup(const char* name);
-
-					/**
+                    /**
                      * \brief Add new widget
                      * \param groupBox Pointer to target group
                      * \param button Pointer to existing QPushButton
@@ -53,20 +42,16 @@ namespace lc {
 					void addWidget(QGroupBox* groupBox, QWidget* widget, int x = 0, int y = 0, int w = 0, int h = 1);
 
 					/**
-                     * \brief Create a new button and add it to the page
-                     * \param groupBox Pointer to target group
-                     * \param buttonName Name of the new button
-                     * \param x Horizontal position
-                     * \param y Vertical position
-                     * \param w Width
-                     * \param h Height
+                     * \brief Add new group
+                     * \param name Group name
+                     * \return Pointer to created QGroupBox
                      */
-					QPushButton*
-					addButton(QGroupBox* groupBox, const char* buttonName, int x = 0, int y = 0, int w = 1, int h = 1);
 
-                    void addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x = 0, int y = 0, int w = 1, int h = 1);
+                    void addGroup(api::ToolbarGroup* toolbarGroup);
 
-                    void addToolbarButtonOther(api::ToolbarButton* button, const char* groupName);
+                    lc::ui::api::ToolbarGroup* addGroup(const char* name);
+
+                    void addButton(api::ToolbarButton* button, const char* groupName);
 
 					/**
                      * \brief Get existing group

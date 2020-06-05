@@ -15,9 +15,9 @@ namespace lc
                 Q_OBJECT
 
             public:
-                ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip = "", QWidget* parent = nullptr);
+                ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip = "", bool checkable=false, QWidget* parent = nullptr);
 
-                ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip = "", QWidget* parent = nullptr);
+                ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip = "", bool checkable = false, QWidget* parent = nullptr);
 
                 std::string label();
 
@@ -34,9 +34,13 @@ namespace lc
                 void setLuaInterface(LuaInterface* luaInterfaceIn);
 
             private:
+                void connectToCallback(kaguya::LuaRef callback);
+
+            private:
                 LuaInterface* luaInterface;
                 std::string _label;
                 std::vector<kaguya::LuaRef> callbacks;
+                bool checkable;
             };
         }
     }

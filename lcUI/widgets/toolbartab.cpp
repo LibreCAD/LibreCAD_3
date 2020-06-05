@@ -21,16 +21,22 @@ ToolbarTab::ToolbarTab(QWidget *parent) :
 	}
 }
 
-QGroupBox* ToolbarTab::addGroup(const char* name) {
-	auto group = new QGroupBox(tr(name));
-	group->setLayout(new QGridLayout());
+void ToolbarTab::addWidget(QGroupBox* groupBox, QWidget* widget, int x, int y, int w, int h) {
+    if (groupBox == nullptr) {
+        return;
+    }
 
-	_layout->insertWidget(_layout->count() - 1, group);
+    auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
 
-	return group;
+    if (gridLayout != nullptr) {
+        gridLayout->addWidget(widget, y, x, h, w);
+    }
+    else {
+        groupBox->layout()->addWidget(widget);
+    }
 }
 
-void ToolbarTab::addToolbarGroup(api::ToolbarGroup* group) {
+void ToolbarTab::addGroup(api::ToolbarGroup* group) {
     if (group == nullptr) {
         return;
     }
@@ -42,42 +48,15 @@ void ToolbarTab::addToolbarGroup(api::ToolbarGroup* group) {
     _layout->insertWidget(_layout->count() - 1, group);
 }
 
-lc::ui::api::ToolbarGroup* ToolbarTab::addToolbarGroup(const char* name) {
+lc::ui::api::ToolbarGroup* ToolbarTab::addGroup(const char* name) {
     lc::ui::api::ToolbarGroup* group = new lc::ui::api::ToolbarGroup(name);
-    addToolbarGroup(group);
+    addGroup(group);
     return group;
 }
 
-QPushButton* ToolbarTab::addButton(QGroupBox* groupBox, const char* buttonName, int x, int y, int w, int h) {
-	auto button = new QPushButton(buttonName);
-
-	addWidget(groupBox, button, x, y, w, h);
-
-	return button;
-}
-
-void ToolbarTab::addWidget(QGroupBox *groupBox, QWidget *widget, int x, int y, int w, int h) {
-	if(groupBox == nullptr) {
-		return;
-	}
-
-	auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
-
-    if(gridLayout != nullptr) {
-        gridLayout->addWidget(widget, y, x, h, w);
-    }
-    else {
-        groupBox->layout()->addWidget(widget);
-    }
-}
-
-void ToolbarTab::addToolbarButton(QGroupBox* groupBox, api::ToolbarButton* button, int x, int y, int w, int h) {
-    addWidget(groupBox, button, x, y, w, h);
-}
-
-void ToolbarTab::addToolbarButtonOther(api::ToolbarButton* button, const char* groupName) {
+void ToolbarTab::addButton(api::ToolbarButton* button, const char* groupName) {
     if (groupByName(groupName) == nullptr) {
-        addToolbarGroup(new api::ToolbarGroup(groupName));
+        addGroup(new api::ToolbarGroup(groupName));
     }
 
     api::ToolbarGroup* group = static_cast<api::ToolbarGroup*>(groupByName(groupName));

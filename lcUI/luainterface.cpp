@@ -230,12 +230,6 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     kaguya::LuaTable globalTable(_L.globalTable());
     std::vector<kaguya::LuaRef> globalKeys = globalTable.keys();
 
-    // count of widgets for proper positioning in toolbar group
-    std::map<std::string, int> widgetCount;
-    widgetCount["creationWidgetCount"] = 0;
-    widgetCount["dimWidgetCount"] = 0;
-    widgetCount["modifyWidgetCount"] = 0;
-
     // list of properties to look out for in the operation
     std::set<std::string> initProperties = {
         "init",
@@ -272,7 +266,20 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
                     }
                 }
 
-                initializeOperation(vkey, foundProperties, widgetCount, groupElements, mainWindow);
+                std::string groupName;
+
+                if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
+                    groupName = "Creation";
+                }
+                else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
+                    groupName = "Dimensions";
+                }
+                else {
+                    // if not in creation group or dimension group, it has to be in the modify group
+                    groupName = "Modify";
+                }
+
+                initializeOperation(vkey, foundProperties, groupName, mainWindow);
             }
         }
     }
@@ -280,8 +287,8 @@ void LuaInterface::loadLuaOperations(const std::string& lua_path, QMainWindow* m
     _L["run_op"] = nullptr;
 }
 
-void LuaInterface::initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties,
-    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements, QMainWindow* mainWindow)
+void LuaInterface::initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties, const std::string& groupName,
+    QMainWindow* mainWindow)
 {
     for (const std::string& opkey : foundProperties)
     {
@@ -304,7 +311,7 @@ void LuaInterface::initializeOperation(const std::string& vkey, const std::set<s
 
         // Toolbar attributes
         if (opkey == "icon") {
-            addOperationIcon(vkey, opkey, mainWindow, foundProperties, widgetCount, groupElements);
+            addOperationIcon(vkey, opkey, mainWindow, foundProperties, groupName);
         }
 
         // operation icons
@@ -417,11 +424,9 @@ void LuaInterface::addOperationMenuAction(const std::string& vkey, const std::st
 }
 
 void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow, const std::set<std::string>& foundProperties,
-    std::map<std::string, int>& widgetCount, const std::map<std::string, std::set<std::string>>& groupElements){
+    const std::string& groupName){
     lc::ui::widgets::Toolbar* toolbar = static_cast<lc::ui::MainWindow*>(mainWindow)->getToolbar();
-
     std::string icon = _L[vkey][opkey].get<std::string>();
-
     std::string tooltip;
 
     // if description not provided, use operation name
@@ -434,31 +439,6 @@ void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& 
 
     std::string iconPath = ":/icons/" + icon;
     _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
-    std::string groupName;
-    int row;
-    int col;
-
-    const int widgetsPerRow = 3;
-
-    if (groupElements.at("creationGroupElements").find(vkey) != groupElements.at("creationGroupElements").end()) {
-        groupName = "Creation";
-        col = widgetCount["creationWidgetCount"] / widgetsPerRow;
-        row = widgetCount["creationWidgetCount"] % widgetsPerRow;
-        widgetCount["creationWidgetCount"]++;
-    }
-    else if (groupElements.at("dimensionsGroupElements").find(vkey) != groupElements.at("dimensionsGroupElements").end()) {
-        groupName = "Dimensions";
-        col = widgetCount["dimWidgetCount"] / widgetsPerRow;
-        row = widgetCount["dimWidgetCount"] % widgetsPerRow;
-        widgetCount["dimWidgetCount"]++;
-    }
-    else {
-        // if not in creation group or dimension group, it has to be in the modify group
-        groupName = "Modify";
-        col = widgetCount["modifyWidgetCount"] / widgetsPerRow;
-        row = widgetCount["modifyWidgetCount"] % widgetsPerRow;
-        widgetCount["modifyWidgetCount"]++;
-    }
 
     toolbar->addButton("", iconPath.c_str(), groupName.c_str(), _L["run_op"], tooltip.c_str());
 }
@@ -479,7 +459,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             for (auto elementInit : optionsInit) {
                 std::map<std::string, std::string> optionInit = elementInit.second;
 
-                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
+                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('cancel', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
                 _L.dostring(action);
                 optionsInitList.push_back(_L["operation_op"]);
                 countInit++;
@@ -493,7 +473,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             // default operation_options
             std::map<std::string, std::string> option = element.second;
 
-            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('cancel', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
             _L.dostring(action);
             optionsList.push_back(_L["operation_op"]);
             count++;

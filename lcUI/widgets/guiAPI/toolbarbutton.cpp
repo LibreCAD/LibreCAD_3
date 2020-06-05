@@ -4,18 +4,19 @@
 
 using namespace lc::ui::api;
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, bool checkable, QWidget* parent)
     :
-    ToolbarButton(buttonLabel, icon, tooltip, parent)
+    ToolbarButton(buttonLabel, icon, tooltip, checkable, parent)
 {
     callbacks.push_back(callback);
 }
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, bool checkable, QWidget* parent)
     :
     _label(buttonLabel),
     QPushButton("", parent),
-    luaInterface(nullptr)
+    luaInterface(nullptr),
+    checkable(checkable)
 {
     this->setObjectName(buttonLabel);
     if (tooltip == "") {
@@ -25,6 +26,10 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
         this->setToolTip(tooltip);
     }
     this->setFlat(true);
+
+    if (checkable) {
+        this->setCheckable(true);
+    }
 
     changeIcon(icon);
 }
@@ -45,7 +50,7 @@ void ToolbarButton::addCallback(kaguya::LuaRef callback) {
     callbacks.push_back(callback);
 
     if (luaInterface != nullptr) {
-        luaInterface->luaConnect(this, "pressed()", callback);
+        connectToCallback(callback);
     }
 }
 
@@ -72,6 +77,15 @@ void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {
     // loop through all already added callbacks and connect them
     for (kaguya::LuaRef cb : callbacks)
     {
-        luaInterface->luaConnect(this, "pressed()", cb);
+        connectToCallback(cb);
+    }
+}
+
+void ToolbarButton::connectToCallback(kaguya::LuaRef callback) {
+    if (checkable) {
+        luaInterface->luaConnect(this, "toggled(bool)", callback);
+    }
+    else {
+        luaInterface->luaConnect(this, "pressed()", callback);
     }
 }

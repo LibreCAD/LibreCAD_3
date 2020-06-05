@@ -25,6 +25,8 @@ namespace lc
 
                 ToolbarButton* addButton(const char* buttonName, const char* buttonIcon, kaguya::LuaRef callback);
 
+                void addWidget(QWidget* widget);
+
                 std::string label() const;
 
                 void setLabel(const char* newGroupName);

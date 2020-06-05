@@ -272,7 +272,6 @@ void addLCBindings(lua_State *L) {
 		.addFunction("removeTab", &widgets::Toolbar::removeTab)
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("addButton", &widgets::Toolbar::addButton)
-        .addFunction("addCheckableButton", &widgets::Toolbar::addCheckableButton)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
 	);
 
@@ -281,15 +280,12 @@ void addLCBindings(lua_State *L) {
             return new ToolbarTab;
         })
         .addFunction("addButton", &widgets::ToolbarTab::addButton)
-	    .addFunction("addWidget", &widgets::ToolbarTab::addWidget)
-        .addFunction("addToolbarButton", &widgets::ToolbarTab::addToolbarButton)
-		.addFunction("addGroup", &widgets::ToolbarTab::addGroup)
 		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
 		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
         .addOverloadedFunctions("removeGroup", static_cast<void(widgets::ToolbarTab::*)(QGroupBox*)>(&widgets::ToolbarTab::removeGroup),
             static_cast<void(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::removeGroup))
-        .addOverloadedFunctions("addToolbarGroup", static_cast<void(widgets::ToolbarTab::*)(api::ToolbarGroup*)>(&widgets::ToolbarTab::addToolbarGroup),
-            static_cast<api::ToolbarGroup*(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::addToolbarGroup))
+        .addOverloadedFunctions("addGroup", static_cast<void(widgets::ToolbarTab::*)(api::ToolbarGroup*)>(&widgets::ToolbarTab::addGroup),
+            static_cast<api::ToolbarGroup*(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::addGroup))
 	);
 
 	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()
@@ -409,7 +405,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
     );
 
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
-        .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef), lc::ui::api::ToolbarButton(const char*, const char*, const char*), lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef, const char*)>()
+        .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*),
+        lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef),
+        lc::ui::api::ToolbarButton(const char*, const char*, const char*),
+        lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef, const char*),
+        lc::ui::api::ToolbarButton(const char*, const char*, const char*, bool),
+        lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef, const char*, bool)>()
         .addFunction("label", &lc::ui::api::ToolbarButton::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
         .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)

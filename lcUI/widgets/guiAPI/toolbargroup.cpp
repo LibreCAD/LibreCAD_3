@@ -35,6 +35,12 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
     return button;
 }
 
+void ToolbarGroup::addWidget(QWidget* widget) {
+    auto gridLayout = static_cast<QGridLayout*>(this->layout());
+    gridLayout->addWidget(widget, count / width, count % width, 1, 1);
+    count++;
+}
+
 std::string ToolbarGroup::label() const {
     return this->title().toStdString();
 }
