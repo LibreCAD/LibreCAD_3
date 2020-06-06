@@ -26,17 +26,41 @@ Toolbar::~Toolbar() {
 	delete ui;
 }
 
-void Toolbar::addTab(const char* name, ToolbarTab* page) {
-	ui->tabWidget->addTab(page, tr(name));
+ToolbarTab* Toolbar::addTab(const char* name) {
+    if (tabs.find(name) != tabs.end()) {
+        return tabs[name];
+    }
+
+    ToolbarTab* newTab = new ToolbarTab(name);
+    addTab(newTab);
+
+    return newTab;
 }
 
-void Toolbar::removeTab(QWidget *page) {
+void Toolbar::addTab(ToolbarTab* newTab) {
+    if (newTab == nullptr || tabs.find(newTab->label().c_str()) != tabs.end()) {
+        return;
+    }
+    newTab->setLuaInterface(luaInterface);
+
+    QString name = QString(newTab->label().c_str());
+    ui->tabWidget->addTab(newTab, name);
+    tabs[name] = newTab;
+}
+
+void Toolbar::removeTab(ToolbarTab* page) {
 	if(page == nullptr) {
 		return;
 	}
 
+    tabs.remove(page->label().c_str());
+
 	auto index = ui->tabWidget->indexOf(page);
 	ui->tabWidget->removeTab(index);
+}
+
+void Toolbar::removeTab(const char* tabName) {
+    removeTab(tabs[tabName]);
 }
 
 ToolbarTab* Toolbar::tabByName(const char *name) {
@@ -58,11 +82,11 @@ void Toolbar::closeEvent(QCloseEvent* event)
 }
 
 void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect){
-    addTab("Quick Access", &quickAccessTab);
-    quickAccessTab.setLuaInterface(luaInterface);
+    ToolbarTab* quickAccessTab = addTab("Quick Access");
 
+    // Add metaInfoGroup and the select widgets
     lc::ui::api::ToolbarGroup* metaInfoGroup = new lc::ui::api::ToolbarGroup("Entity properties", 1);
-    quickAccessTab.addGroup(metaInfoGroup);
+    quickAccessTab->addGroup(metaInfoGroup);
     metaInfoGroup->addWidget(linePatternSelect);
     metaInfoGroup->addWidget(lineWidthSelect);
     metaInfoGroup->addWidget(colorSelect);
@@ -70,6 +94,7 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     // Add toolbar snap options
     kaguya::State state(luaInterface->luaState());
 
+    quickAccessTab->addGroup(new api::ToolbarGroup("Snap Options", 2));
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setGridSnappable(enabled) end");
     addButton("", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
 
@@ -85,14 +110,18 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     state["snap_op"] = nullptr;
 }
 
-void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip, bool checkable) 
+void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip, bool checkable, const char* tabName)
 {
+    if (tabs.find(tabName) == tabs.end()) {
+        addTab(tabName);
+    }
+
     lc::ui::api::ToolbarButton* button = new lc::ui::api::ToolbarButton(name, icon, cb, tooltip, checkable);
     button->setLuaInterface(luaInterface);
-    quickAccessTab.addButton(button, groupBox);
+    tabs[tabName]->addButton(button, groupBox);
 }
 
-void Toolbar::removeGroupByName(const char* groupName)
+void Toolbar::removeGroupByName(const char* groupName, const char* tabName)
 {
-    quickAccessTab.removeGroup(groupName);
+    tabs[tabName]->removeGroup(groupName);
 }

@@ -28,18 +28,7 @@ namespace lc {
                      * \brief Create widget
                      * \param parent Pointer to parent widget
                      */
-					ToolbarTab(QWidget* parent = 0);
-
-                    /**
-                     * \brief Add new widget
-                     * \param groupBox Pointer to target group
-                     * \param button Pointer to existing QPushButton
-                     * \param x Horizontal position
-                     * \param y Vertical position
-                     * \param w Width
-                     * \param h Height
-                     */
-					void addWidget(QGroupBox* groupBox, QWidget* widget, int x = 0, int y = 0, int w = 0, int h = 1);
+					ToolbarTab(const char* tabName, QWidget* parent = 0);
 
 					/**
                      * \brief Add new group
@@ -58,25 +47,25 @@ namespace lc {
                      * \param name Tab name
                      * \return Pointer to QGroupBox
                      */
-					QGroupBox* groupByName(const char* groupName);
+                    lc::ui::api::ToolbarGroup* groupByName(const char* groupName);
 
 					/**
                      * \brief Get existing button
-                     * \param groupBox Group to search
+                     * \param toolbargroup Group to search
                      * \param buttonText Button name
-                     * \return Pointer to QPushButton
+                     * \return Pointer to ToolbarButton
                      */
-					QPushButton* buttonByText(QGroupBox* groupBox, const char* buttonText);
+                    lc::ui::api::ToolbarButton* buttonByText(lc::ui::api::ToolbarGroup* groupBox, const char* buttonText);
 
 					/**
                      * \brief Remove group
                      * \param group Pointer to QGroupBox
                      */
-					void removeGroup(QGroupBox* group);
+					void removeGroup(lc::ui::api::ToolbarGroup* group);
 
                     /**
                      * \brief Remove group by name
-                     * \param group Pointer to QGroupBox
+                     * \param group name
                      */
                     void removeGroup(const char* groupName);
 
@@ -84,11 +73,16 @@ namespace lc {
                      * \brief Remove button
                      * \param button Pointer to QPushButton
                      */
-					void removeButton(QPushButton* button);
+					void removeButton(lc::ui::api::ToolbarButton* button);
+
+                    std::string label() const;
+
+                    void setLabel(const char* newLabel);
 
                     void setLuaInterface(LuaInterface* luaInterfaceIn);
 
 				private:
+                    std::string _label;
 					Ui::ToolbarTab* ui;
 					QHBoxLayout* _layout;
                     LuaInterface* luaInterface;

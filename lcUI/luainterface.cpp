@@ -440,7 +440,7 @@ void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& 
     std::string iconPath = ":/icons/" + icon;
     _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
 
-    toolbar->addButton("", iconPath.c_str(), groupName.c_str(), _L["run_op"], tooltip.c_str());
+    toolbar->addButton(vkey.c_str(), iconPath.c_str(), groupName.c_str(), _L["run_op"], tooltip.c_str());
 }
 
 void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {

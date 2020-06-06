@@ -268,21 +268,22 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
-		.addFunction("addTab", &widgets::Toolbar::addTab)
-		.addFunction("removeTab", &widgets::Toolbar::removeTab)
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("addButton", &widgets::Toolbar::addButton)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
+        .addOverloadedFunctions("addTab", static_cast<widgets::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
+            static_cast<void(widgets::Toolbar::*)(widgets::ToolbarTab*)>(&widgets::Toolbar::addTab))
+        .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(widgets::ToolbarTab*)>(&widgets::Toolbar::removeTab),
+            static_cast<void(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::removeTab))
 	);
 
 	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
-        .addStaticFunction("new", []() {
-            return new ToolbarTab;
-        })
+        .setConstructors<widgets::ToolbarTab(const char*)>()
         .addFunction("addButton", &widgets::ToolbarTab::addButton)
 		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
 		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
-        .addOverloadedFunctions("removeGroup", static_cast<void(widgets::ToolbarTab::*)(QGroupBox*)>(&widgets::ToolbarTab::removeGroup),
+        .addFunction("removeButton", &widgets::ToolbarTab::removeButton)
+        .addOverloadedFunctions("removeGroup", static_cast<void(widgets::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&widgets::ToolbarTab::removeGroup),
             static_cast<void(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::removeGroup))
         .addOverloadedFunctions("addGroup", static_cast<void(widgets::ToolbarTab::*)(api::ToolbarGroup*)>(&widgets::ToolbarTab::addGroup),
             static_cast<api::ToolbarGroup*(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::addGroup))

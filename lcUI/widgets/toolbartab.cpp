@@ -3,8 +3,9 @@
 
 using namespace lc::ui::widgets;
 
-ToolbarTab::ToolbarTab(QWidget *parent) :
+ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
 		QWidget(parent),
+        _label(tabName),
 		ui(new Ui::ToolbarTab) {
 	ui->setupUi(this);
 
@@ -19,21 +20,6 @@ ToolbarTab::ToolbarTab(QWidget *parent) :
 			throw std::runtime_error("Wrong layout for ToolbarTab container");
 		}
 	}
-}
-
-void ToolbarTab::addWidget(QGroupBox* groupBox, QWidget* widget, int x, int y, int w, int h) {
-    if (groupBox == nullptr) {
-        return;
-    }
-
-    auto gridLayout = dynamic_cast<QGridLayout*>(groupBox->layout());
-
-    if (gridLayout != nullptr) {
-        gridLayout->addWidget(widget, y, x, h, w);
-    }
-    else {
-        groupBox->layout()->addWidget(widget);
-    }
 }
 
 void ToolbarTab::addGroup(api::ToolbarGroup* group) {
@@ -63,11 +49,11 @@ void ToolbarTab::addButton(api::ToolbarButton* button, const char* groupName) {
     group->addButton(button);
 }
 
-QGroupBox* ToolbarTab::groupByName(const char* groupName) {
+lc::ui::api::ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
 	auto nbGroups = _layout->count();
 
 	for (int i = 0; i < nbGroups; i++) {
-		auto groupBox = dynamic_cast<QGroupBox*>(_layout->itemAt(i)->widget());
+		auto groupBox = dynamic_cast<lc::ui::api::ToolbarGroup*>(_layout->itemAt(i)->widget());
 
 		if (groupBox != nullptr && groupBox->title() == groupName) {
 			return groupBox;
@@ -77,13 +63,13 @@ QGroupBox* ToolbarTab::groupByName(const char* groupName) {
 	return nullptr;
 }
 
-QPushButton *ToolbarTab::buttonByText(QGroupBox* groupBox, const char* buttonText) {
+lc::ui::api::ToolbarButton* ToolbarTab::buttonByText(lc::ui::api::ToolbarGroup* groupBox, const char* buttonText) {
 	auto nbButtons = groupBox->layout()->count();
 
 	for (int i = 0; i < nbButtons; i++) {
-		auto button = dynamic_cast<QPushButton*>(groupBox->layout()->itemAt(i)->widget());
+		auto button = dynamic_cast<lc::ui::api::ToolbarButton*>(groupBox->layout()->itemAt(i)->widget());
 
-		if(button != nullptr && button->text() == buttonText) {
+		if(button != nullptr && button->label() == buttonText) {
 			return button;
 		}
 	}
@@ -95,12 +81,22 @@ void ToolbarTab::removeGroup(const char* groupName) {
     removeGroup(groupByName(groupName));
 }
 
-void ToolbarTab::removeGroup(QGroupBox *group) {
-	delete group;
+void ToolbarTab::removeGroup(lc::ui::api::ToolbarGroup* group) {
+    if (group != nullptr) {
+        _layout->removeWidget(group);
+    }
 }
 
-void ToolbarTab::removeButton(QPushButton *button) {
+void ToolbarTab::removeButton(lc::ui::api::ToolbarButton* button) {
 	delete button;
+}
+
+std::string ToolbarTab::label() const {
+    return _label;
+}
+
+void ToolbarTab::setLabel(const char* newLabel) {
+    _label = std::string(newLabel);
 }
 
 void ToolbarTab::setLuaInterface(LuaInterface* luaInterfaceIn) {

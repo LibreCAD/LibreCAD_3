@@ -54,9 +54,9 @@ ToolbarButton* ToolbarGroup::getButton(const char* buttonName) {
     std::string buttonText = std::string(buttonName);
 
     for (int i = 0; i < nbButtons; i++) {
-        auto button = static_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
+        auto button = dynamic_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
 
-        if (button->label() == buttonText) {
+        if (button != nullptr && button->label() == buttonText) {
             return button;
         }
     }
@@ -69,8 +69,11 @@ std::vector<ToolbarButton*> ToolbarGroup::getAllButtons() {
     std::vector<ToolbarButton*> buttons;
 
     for (int i = 0; i < nbButtons; i++) {
-        auto button = static_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
-        buttons.push_back(button);
+        auto button = dynamic_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
+
+        if (button != nullptr) {
+            buttons.push_back(button);
+        }
     }
 
     return buttons;

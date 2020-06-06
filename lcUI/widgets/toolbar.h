@@ -24,20 +24,36 @@ namespace lc {
                      */
                     Toolbar(lc::ui::LuaInterface* luaInterface, QWidget* parent = 0);
 
+                    /**
+                     * \brief Destructor
+                     */
                     ~Toolbar();
 
                     /**
                      * \brief Add a new tab
                      * \param name Tab name
                      * \param page Pointer to ToolbarTab
+                     * \return Pointer to ToolbarTab
                      */
-                    void addTab(const char* name, ToolbarTab* page);
+                    ToolbarTab* addTab(const char* name);
+
+                    /**
+                     * \brief Add a new tab
+                     * \param newTab Pointer to ToolbarTab
+                     */
+                    void addTab(ToolbarTab* newTab);
 
                     /**
                      * \brief Remove a tab
-                     * \param page Pointer to tab widget
+                     * \param tab Pointer to tab widget
                      */
-                    void removeTab(QWidget* page);
+                    void removeTab(ToolbarTab* tab);
+
+                    /**
+                     * \brief Remove a tab
+                     * \param tabName name of tab widget
+                     */
+                    void removeTab(const char* tabName);
 
                     /**
                      * \brief Get existing tab
@@ -45,6 +61,10 @@ namespace lc {
                      * \return Pointer to ToolbarTab
                      */
                     ToolbarTab* tabByName(const char* name);
+
+                    /**
+                     * \brief Close event
+                     */
 					void closeEvent(QCloseEvent* event);
 
                     /**
@@ -55,18 +75,19 @@ namespace lc {
                     /**
                      * \brief Add button to toolbar
                      */
-                    void addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip = "", bool checkable = false);
+                    void addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip = "", bool checkable = false, const char* tabName = "Quick Access");
 
                     /**
                      * \brief Remove group from quickaccesstab if it exists
+                     * \param groupName Group to be removed
+                     * \param tabName Group the tab is in, default Quick Access
                      */
-                    void removeGroupByName(const char* groupName);
+                    void removeGroupByName(const char* groupName, const char* tabName = "Quick Access");
 
                 private:
                     Ui::Toolbar* ui;
-                    ToolbarTab quickAccessTab;
                     lc::ui::LuaInterface* luaInterface;
-                    QMap<QString, QGroupBox*> quickAccessGroups;
+                    QMap<QString, ToolbarTab*> tabs;
             };
         }
     }
