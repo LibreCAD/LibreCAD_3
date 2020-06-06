@@ -20,6 +20,7 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
         button->setLuaInterface(luaInterface);
     }
 
+    QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)), Qt::QueuedConnection);
     count++;
 }
 
@@ -86,6 +87,10 @@ void ToolbarGroup::removeButton(ToolbarButton* button) {
 
 void ToolbarGroup::removeButton(const char* buttonName) {
     removeButton(getButton(buttonName));
+}
+
+void ToolbarGroup::remove() {
+    emit removeGroup(this);
 }
 
 void ToolbarGroup::setLuaInterface(LuaInterface* luaInterfaceIn) {

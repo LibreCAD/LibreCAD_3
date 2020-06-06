@@ -26,18 +26,18 @@ Toolbar::~Toolbar() {
 	delete ui;
 }
 
-ToolbarTab* Toolbar::addTab(const char* name) {
+lc::ui::api::ToolbarTab* Toolbar::addTab(const char* name) {
     if (tabs.find(name) != tabs.end()) {
         return tabs[name];
     }
 
-    ToolbarTab* newTab = new ToolbarTab(name);
+    lc::ui::api::ToolbarTab* newTab = new lc::ui::api::ToolbarTab(name);
     addTab(newTab);
 
     return newTab;
 }
 
-void Toolbar::addTab(ToolbarTab* newTab) {
+void Toolbar::addTab(lc::ui::api::ToolbarTab* newTab) {
     if (newTab == nullptr || tabs.find(newTab->label().c_str()) != tabs.end()) {
         return;
     }
@@ -46,9 +46,12 @@ void Toolbar::addTab(ToolbarTab* newTab) {
     QString name = QString(newTab->label().c_str());
     ui->tabWidget->addTab(newTab, name);
     tabs[name] = newTab;
+
+    QObject::connect(newTab, SIGNAL(labelChanged(QString, QString)), this, SLOT(setToolbarTabLabel(QString, QString)));
+    QObject::connect(newTab, SIGNAL(removeTab(lc::ui::api::ToolbarTab*)), this, SLOT(removeTab(lc::ui::api::ToolbarTab*)));
 }
 
-void Toolbar::removeTab(ToolbarTab* page) {
+void Toolbar::removeTab(lc::ui::api::ToolbarTab* page) {
 	if(page == nullptr) {
 		return;
 	}
@@ -63,12 +66,12 @@ void Toolbar::removeTab(const char* tabName) {
     removeTab(tabs[tabName]);
 }
 
-ToolbarTab* Toolbar::tabByName(const char *name) {
+lc::ui::api::ToolbarTab* Toolbar::tabByName(const char *name) {
 	auto nbTab = ui->tabWidget->count();
 
 	for(int i = 0; i < nbTab; i++) {
 		if(ui->tabWidget->tabText(i) == name) {
-			return dynamic_cast<ToolbarTab*>(ui->tabWidget->widget(i));
+			return dynamic_cast<lc::ui::api::ToolbarTab*>(ui->tabWidget->widget(i));
 		}
 	}
 
@@ -82,7 +85,7 @@ void Toolbar::closeEvent(QCloseEvent* event)
 }
 
 void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect){
-    ToolbarTab* quickAccessTab = addTab("Quick Access");
+    lc::ui::api::ToolbarTab* quickAccessTab = addTab("Quick Access");
 
     // Add metaInfoGroup and the select widgets
     lc::ui::api::ToolbarGroup* metaInfoGroup = new lc::ui::api::ToolbarGroup("Entity properties", 1);
@@ -94,7 +97,7 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     // Add toolbar snap options
     kaguya::State state(luaInterface->luaState());
 
-    quickAccessTab->addGroup(new api::ToolbarGroup("Snap Options", 2));
+    quickAccessTab->addGroup(new lc::ui::api::ToolbarGroup("Snap Options", 2));
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setGridSnappable(enabled) end");
     addButton("", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
 
@@ -124,4 +127,10 @@ void Toolbar::addButton(const char* name, const char* icon, const char* groupBox
 void Toolbar::removeGroupByName(const char* groupName, const char* tabName)
 {
     tabs[tabName]->removeGroup(groupName);
+}
+
+void Toolbar::setToolbarTabLabel(QString newLabel, QString oldLabel) {
+    lc::ui::api::ToolbarTab* tab = tabByName(oldLabel.toStdString().c_str());
+    auto index = ui->tabWidget->indexOf(tab);
+    ui->tabWidget->setTabText(index, newLabel);
 }

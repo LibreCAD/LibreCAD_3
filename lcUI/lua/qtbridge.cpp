@@ -8,7 +8,7 @@
 #include "widgets/luascript.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
-#include "widgets/toolbartab.h"
+#include "widgets/guiAPI/toolbartab.h"
 #include "widgets/layers.h"
 #include "widgets/guiAPI/menu.h"
 #include "widgets/guiAPI/menuitem.h"
@@ -271,22 +271,10 @@ void addLCBindings(lua_State *L) {
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("addButton", &widgets::Toolbar::addButton)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
-        .addOverloadedFunctions("addTab", static_cast<widgets::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
-            static_cast<void(widgets::Toolbar::*)(widgets::ToolbarTab*)>(&widgets::Toolbar::addTab))
-        .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(widgets::ToolbarTab*)>(&widgets::Toolbar::removeTab),
+        .addOverloadedFunctions("addTab", static_cast<api::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
+            static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::addTab))
+        .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::removeTab),
             static_cast<void(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::removeTab))
-	);
-
-	state["lc"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<widgets::ToolbarTab, QWidget>()
-        .setConstructors<widgets::ToolbarTab(const char*)>()
-        .addFunction("addButton", &widgets::ToolbarTab::addButton)
-		.addFunction("buttonByText", &widgets::ToolbarTab::buttonByText)
-		.addFunction("groupByName", &widgets::ToolbarTab::groupByName)
-        .addFunction("removeButton", &widgets::ToolbarTab::removeButton)
-        .addOverloadedFunctions("removeGroup", static_cast<void(widgets::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&widgets::ToolbarTab::removeGroup),
-            static_cast<void(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::removeGroup))
-        .addOverloadedFunctions("addGroup", static_cast<void(widgets::ToolbarTab::*)(api::ToolbarGroup*)>(&widgets::ToolbarTab::addGroup),
-            static_cast<api::ToolbarGroup*(widgets::ToolbarTab::*)(const char*)>(&widgets::ToolbarTab::addGroup))
 	);
 
 	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()
@@ -405,6 +393,24 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
     );
 
+    state["gui"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<api::ToolbarTab, QWidget>()
+        .setConstructors<api::ToolbarTab(const char*)>()
+        .addFunction("addButton", &api::ToolbarTab::addButton)
+        .addFunction("buttonByText", &api::ToolbarTab::buttonByText)
+        .addFunction("groupByName", &api::ToolbarTab::groupByName)
+        .addFunction("removeButton", &api::ToolbarTab::removeButton)
+        .addFunction("label", &api::ToolbarTab::label)
+        .addFunction("setLabel", &api::ToolbarTab::setLabel)
+        .addFunction("getAllGroups", &api::ToolbarTab::getAllGroups)
+        .addFunction("remove", &api::ToolbarTab::remove)
+        .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarTab& self) { self.setEnabled(true); })
+        .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarTab& self) { self.setEnabled(false); })
+        .addOverloadedFunctions("removeGroup", static_cast<void(api::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&api::ToolbarTab::removeGroup),
+            static_cast<void(api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::removeGroup))
+        .addOverloadedFunctions("addGroup", static_cast<void(api::ToolbarTab::*)(api::ToolbarGroup*)>(&api::ToolbarTab::addGroup),
+            static_cast<api::ToolbarGroup * (api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::addGroup))
+    );
+
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
         .setConstructors<lc::ui::api::ToolbarButton(const char*, const char*),
         lc::ui::api::ToolbarButton(const char*, const char*, kaguya::LuaRef),
@@ -432,6 +438,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)
         .addFunction("hide", &lc::ui::api::ToolbarGroup::hide)
         .addFunction("show", &lc::ui::api::ToolbarGroup::show)
+        .addFunction("remove", &lc::ui::api::ToolbarGroup::remove)
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),

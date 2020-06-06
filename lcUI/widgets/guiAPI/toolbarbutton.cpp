@@ -62,9 +62,7 @@ void ToolbarButton::changeIcon(const char* icon) {
 }
 
 void ToolbarButton::remove() {
-    ToolbarGroup* toolbarGroup = static_cast<ToolbarGroup*>(this->parent());
-    auto gridLayout = static_cast<QGridLayout*>(toolbarGroup->layout());
-    gridLayout->removeWidget(this);
+    emit removeButton(this);
 }
 
 void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {

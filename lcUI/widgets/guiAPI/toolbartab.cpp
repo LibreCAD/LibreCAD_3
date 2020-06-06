@@ -1,7 +1,9 @@
 #include "toolbartab.h"
 #include "ui_toolbartab.h"
 
-using namespace lc::ui::widgets;
+#include <widgets/toolbar.h>
+
+using namespace lc::ui::api;
 
 ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
 		QWidget(parent),
@@ -22,7 +24,7 @@ ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
 	}
 }
 
-void ToolbarTab::addGroup(api::ToolbarGroup* group) {
+void ToolbarTab::addGroup(ToolbarGroup* group) {
     if (group == nullptr) {
         return;
     }
@@ -32,28 +34,29 @@ void ToolbarTab::addGroup(api::ToolbarGroup* group) {
     }
 
     _layout->insertWidget(_layout->count() - 1, group);
+    QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)), Qt::QueuedConnection);
 }
 
-lc::ui::api::ToolbarGroup* ToolbarTab::addGroup(const char* name) {
-    lc::ui::api::ToolbarGroup* group = new lc::ui::api::ToolbarGroup(name);
+ToolbarGroup* ToolbarTab::addGroup(const char* name) {
+    ToolbarGroup* group = new ToolbarGroup(name);
     addGroup(group);
     return group;
 }
 
-void ToolbarTab::addButton(api::ToolbarButton* button, const char* groupName) {
+void ToolbarTab::addButton(ToolbarButton* button, const char* groupName) {
     if (groupByName(groupName) == nullptr) {
-        addGroup(new api::ToolbarGroup(groupName));
+        addGroup(new ToolbarGroup(groupName));
     }
 
-    api::ToolbarGroup* group = static_cast<api::ToolbarGroup*>(groupByName(groupName));
+    ToolbarGroup* group = static_cast<ToolbarGroup*>(groupByName(groupName));
     group->addButton(button);
 }
 
-lc::ui::api::ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
+ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
 	auto nbGroups = _layout->count();
 
 	for (int i = 0; i < nbGroups; i++) {
-		auto groupBox = dynamic_cast<lc::ui::api::ToolbarGroup*>(_layout->itemAt(i)->widget());
+		auto groupBox = dynamic_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
 
 		if (groupBox != nullptr && groupBox->title() == groupName) {
 			return groupBox;
@@ -63,11 +66,26 @@ lc::ui::api::ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
 	return nullptr;
 }
 
-lc::ui::api::ToolbarButton* ToolbarTab::buttonByText(lc::ui::api::ToolbarGroup* groupBox, const char* buttonText) {
+std::vector<ToolbarGroup*> ToolbarTab::getAllGroups() {
+    std::vector<ToolbarGroup*> groupsList;
+    auto nbGroups = _layout->count();
+
+    for (int i = 0; i < nbGroups; i++) {
+        auto groupBox = dynamic_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
+
+        if (groupBox != nullptr) {
+            groupsList.push_back(groupBox);
+        }
+    }
+
+    return groupsList;
+}
+
+ToolbarButton* ToolbarTab::buttonByText(ToolbarGroup* groupBox, const char* buttonText) {
 	auto nbButtons = groupBox->layout()->count();
 
 	for (int i = 0; i < nbButtons; i++) {
-		auto button = dynamic_cast<lc::ui::api::ToolbarButton*>(groupBox->layout()->itemAt(i)->widget());
+		auto button = dynamic_cast<ToolbarButton*>(groupBox->layout()->itemAt(i)->widget());
 
 		if(button != nullptr && button->label() == buttonText) {
 			return button;
@@ -81,13 +99,13 @@ void ToolbarTab::removeGroup(const char* groupName) {
     removeGroup(groupByName(groupName));
 }
 
-void ToolbarTab::removeGroup(lc::ui::api::ToolbarGroup* group) {
+void ToolbarTab::removeGroup(ToolbarGroup* group) {
     if (group != nullptr) {
         _layout->removeWidget(group);
     }
 }
 
-void ToolbarTab::removeButton(lc::ui::api::ToolbarButton* button) {
+void ToolbarTab::removeButton(ToolbarButton* button) {
 	delete button;
 }
 
@@ -96,7 +114,15 @@ std::string ToolbarTab::label() const {
 }
 
 void ToolbarTab::setLabel(const char* newLabel) {
+    QString oldLabel = QString(_label.c_str());
     _label = std::string(newLabel);
+
+    // set tab label
+    emit labelChanged(QString(newLabel), oldLabel);
+}
+
+void ToolbarTab::remove() {
+    emit removeTab(this);
 }
 
 void ToolbarTab::setLuaInterface(LuaInterface* luaInterfaceIn) {
@@ -108,7 +134,7 @@ void ToolbarTab::setLuaInterface(LuaInterface* luaInterfaceIn) {
 
     auto nbGroups = _layout->count();
     for (int i = 0; i < nbGroups; i++) {
-        auto groupBox = dynamic_cast<api::ToolbarGroup*>(_layout->itemAt(i)->widget());
+        auto groupBox = dynamic_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
 
         if (groupBox != nullptr) {
             groupBox->setLuaInterface(luaInterface);

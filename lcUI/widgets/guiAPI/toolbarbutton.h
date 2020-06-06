@@ -33,6 +33,9 @@ namespace lc
 
                 void setLuaInterface(LuaInterface* luaInterfaceIn);
 
+            signals:
+                void removeButton(ToolbarButton* button);
+
             private:
                 void connectToCallback(kaguya::LuaRef callback);
 

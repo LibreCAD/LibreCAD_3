@@ -4,7 +4,7 @@
 
 #include <QDockWidget>
 #include <QCloseEvent>
-#include "toolbartab.h"
+#include "guiAPI/toolbartab.h"
 
 namespace Ui {
 	class Toolbar;
@@ -17,6 +17,7 @@ namespace lc {
              * \brief Toolbar widget, displays only ToolbarTabs
              */
             class Toolbar : public QDockWidget {
+                    Q_OBJECT
                 public:
                     /**
                      * \brief Create widget
@@ -35,19 +36,13 @@ namespace lc {
                      * \param page Pointer to ToolbarTab
                      * \return Pointer to ToolbarTab
                      */
-                    ToolbarTab* addTab(const char* name);
+                    lc::ui::api::ToolbarTab* addTab(const char* name);
 
                     /**
                      * \brief Add a new tab
                      * \param newTab Pointer to ToolbarTab
                      */
-                    void addTab(ToolbarTab* newTab);
-
-                    /**
-                     * \brief Remove a tab
-                     * \param tab Pointer to tab widget
-                     */
-                    void removeTab(ToolbarTab* tab);
+                    void addTab(lc::ui::api::ToolbarTab* newTab);
 
                     /**
                      * \brief Remove a tab
@@ -60,7 +55,7 @@ namespace lc {
                      * \param name Tab name
                      * \return Pointer to ToolbarTab
                      */
-                    ToolbarTab* tabByName(const char* name);
+                    lc::ui::api::ToolbarTab* tabByName(const char* name);
 
                     /**
                      * \brief Close event
@@ -84,10 +79,22 @@ namespace lc {
                      */
                     void removeGroupByName(const char* groupName, const char* tabName = "Quick Access");
 
+                public slots:
+                    /**
+                     * \brief Set tab label of toolbar tab
+                     */
+                    void setToolbarTabLabel(QString newLabel, QString oldLabel);
+
+                    /**
+                     * \brief Remove a tab
+                     * \param tab Pointer to tab widget
+                     */
+                    void removeTab(lc::ui::api::ToolbarTab* tab);
+
                 private:
                     Ui::Toolbar* ui;
                     lc::ui::LuaInterface* luaInterface;
-                    QMap<QString, ToolbarTab*> tabs;
+                    QMap<QString, lc::ui::api::ToolbarTab*> tabs;
             };
         }
     }

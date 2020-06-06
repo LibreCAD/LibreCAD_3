@@ -37,9 +37,15 @@ namespace lc
 
                 void removeButton(const char* buttonName);
 
-                void removeButton(ToolbarButton* button);
+                void remove();
 
                 void setLuaInterface(LuaInterface* luaInterface);
+
+            signals:
+                void removeGroup(ToolbarGroup* group);
+
+            public slots:
+                void removeButton(ToolbarButton* button);
 
             private:
                 LuaInterface* luaInterface;

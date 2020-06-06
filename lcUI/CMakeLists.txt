@@ -38,7 +38,7 @@ windowmanager.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
-widgets/toolbartab.h
+widgets/guiAPI/toolbartab.h
 widgets/layers.h
 widgets/layermodel.h
 widgets/linepatternselect.h
@@ -74,7 +74,7 @@ windowmanager.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
-widgets/toolbartab.cpp
+widgets/guiAPI/toolbartab.cpp
 widgets/layers.cpp
 widgets/layermodel.cpp
 widgets/linepatternselect.cpp
@@ -100,7 +100,7 @@ mainwindow.ui
 widgets/clicommand.ui
 widgets/luascript.ui
 widgets/toolbar.ui
-widgets/toolbartab.ui
+widgets/guiAPI/toolbartab.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui
