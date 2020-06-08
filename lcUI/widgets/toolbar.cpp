@@ -120,7 +120,6 @@ void Toolbar::addButton(const char* name, const char* icon, const char* groupBox
     }
 
     lc::ui::api::ToolbarButton* button = new lc::ui::api::ToolbarButton(name, icon, cb, tooltip, checkable);
-    button->setLuaInterface(luaInterface);
     tabs[tabName]->addButton(button, groupBox);
 }
 

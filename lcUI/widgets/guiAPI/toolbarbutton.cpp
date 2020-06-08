@@ -4,19 +4,19 @@
 
 using namespace lc::ui::api;
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, bool checkable, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, kaguya::LuaRef callback, const char* tooltip, bool _checkable, QWidget* parent)
     :
-    ToolbarButton(buttonLabel, icon, tooltip, checkable, parent)
+    ToolbarButton(buttonLabel, icon, tooltip, _checkable, parent)
 {
     callbacks.push_back(callback);
 }
 
-ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, bool checkable, QWidget* parent)
+ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const char* tooltip, bool _checkable, QWidget* parent)
     :
     _label(buttonLabel),
     QPushButton("", parent),
     luaInterface(nullptr),
-    checkable(checkable)
+    _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);
     if (tooltip == "") {
@@ -27,7 +27,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     }
     this->setFlat(true);
 
-    if (checkable) {
+    if (_checkable) {
         this->setCheckable(true);
     }
 
@@ -50,7 +50,7 @@ void ToolbarButton::addCallback(kaguya::LuaRef callback) {
     callbacks.push_back(callback);
 
     if (luaInterface != nullptr) {
-        connectToCallback(callback);
+        emit connectToCallback(callbacks.size() - 1, this);
     }
 }
 
@@ -65,6 +65,14 @@ void ToolbarButton::remove() {
     emit removeButton(this);
 }
 
+bool ToolbarButton::checkable() const {
+    return _checkable;
+}
+
+kaguya::LuaRef& ToolbarButton::getCallback(int index) {
+    return callbacks[index];
+}
+
 void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {
     if (luaInterface != nullptr) {
         return;
@@ -73,17 +81,8 @@ void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {
     luaInterface = luaInterfaceIn;
 
     // loop through all already added callbacks and connect them
-    for (kaguya::LuaRef cb : callbacks)
+    for (int i=0;i<callbacks.size();i++)
     {
-        connectToCallback(cb);
-    }
-}
-
-void ToolbarButton::connectToCallback(kaguya::LuaRef callback) {
-    if (checkable) {
-        luaInterface->luaConnect(this, "toggled(bool)", callback);
-    }
-    else {
-        luaInterface->luaConnect(this, "pressed()", callback);
+        emit connectToCallback(i, this);
     }
 }

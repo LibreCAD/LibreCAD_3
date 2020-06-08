@@ -45,6 +45,7 @@ namespace lc
                 void removeGroup(ToolbarGroup* group);
 
             public slots:
+                void connectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
                 void removeButton(ToolbarButton* button);
 
             private:

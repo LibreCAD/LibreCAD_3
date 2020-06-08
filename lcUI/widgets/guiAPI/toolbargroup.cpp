@@ -16,11 +16,12 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
     auto gridLayout = static_cast<QGridLayout*>(this->layout());
     gridLayout->addWidget(button, count / width, count % width, 1, 1);
 
+    luaInterface->qtConnect(button, "removeButton(ToolbarButton*)", this, "removeButton(ToolbarButton*)");
+    luaInterface->qtConnect(button, "connectToCallback(int,ToolbarButton*)", this, "connectToolbarButtonToCallback(int,ToolbarButton*)");
+
     if (luaInterface != nullptr) {
         button->setLuaInterface(luaInterface);
     }
-
-    QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)), Qt::QueuedConnection);
     count++;
 }
 
@@ -91,6 +92,15 @@ void ToolbarGroup::removeButton(const char* buttonName) {
 
 void ToolbarGroup::remove() {
     emit removeGroup(this);
+}
+
+void ToolbarGroup::connectToolbarButtonToCallback(int cb_index, ToolbarButton* button) {
+    if (button->checkable()) {
+        luaInterface->luaConnect(button, "toggled(bool)", button->getCallback(cb_index));
+    }
+    else {
+        luaInterface->luaConnect(button, "pressed()", button->getCallback(cb_index));
+    }
 }
 
 void ToolbarGroup::setLuaInterface(LuaInterface* luaInterfaceIn) {
