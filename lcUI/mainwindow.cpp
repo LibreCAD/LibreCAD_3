@@ -39,6 +39,8 @@ MainWindow::MainWindow()
     // open qt bridge and run lua scripts
     luaInterface.initLua(this);
 
+    toolbar.addSnapOptions();
+
 }
 
 MainWindow::~MainWindow()

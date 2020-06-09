@@ -84,6 +84,7 @@ std::vector<ToolbarButton*> ToolbarGroup::getAllButtons() {
 void ToolbarGroup::removeButton(ToolbarButton* button) {
     auto gridLayout = static_cast<QGridLayout*>(this->layout());
     gridLayout->removeWidget(button);
+    delete button;
 }
 
 void ToolbarGroup::removeButton(const char* buttonName) {

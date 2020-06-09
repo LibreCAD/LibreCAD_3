@@ -102,6 +102,7 @@ void ToolbarTab::removeGroup(const char* groupName) {
 void ToolbarTab::removeGroup(ToolbarGroup* group) {
     if (group != nullptr) {
         _layout->removeWidget(group);
+        delete group;
     }
 }
 

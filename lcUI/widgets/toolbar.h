@@ -79,6 +79,8 @@ namespace lc {
                      */
                     void removeGroupByName(const char* groupName, const char* tabName = "Quick Access");
 
+                    void addSnapOptions();
+
                 public slots:
                     /**
                      * \brief Set tab label of toolbar tab

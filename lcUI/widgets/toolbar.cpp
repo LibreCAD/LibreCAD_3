@@ -93,22 +93,25 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
     metaInfoGroup->addWidget(linePatternSelect);
     metaInfoGroup->addWidget(lineWidthSelect);
     metaInfoGroup->addWidget(colorSelect);
+}
 
+void Toolbar::addSnapOptions() {
     // Add toolbar snap options
+    lc::ui::api::ToolbarTab* quickAccessTab = tabByName("Quick Access");
     kaguya::State state(luaInterface->luaState());
 
     quickAccessTab->addGroup(new lc::ui::api::ToolbarGroup("Snap Options", 2));
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setGridSnappable(enabled) end");
-    addButton("", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
+    addButton("SnapGrid", ":/icons/snap_grid.svg", "Snap Options", state["snap_op"], "Snap Grid", true);
 
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
-    addButton("", ":/icons/snap_intersection.svg", "Snap Options", state["snap_op"], "Snap Intersection", true);
+    addButton("SnapIntersection", ":/icons/snap_intersection.svg", "Snap Options", state["snap_op"], "Snap Intersection", true);
 
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
-    addButton("", ":/icons/snap_middle.svg", "Snap Options", state["snap_op"], "Snap Middle", true);
+    addButton("SnapMiddle", ":/icons/snap_middle.svg", "Snap Options", state["snap_op"], "Snap Middle", true);
 
     state.dostring("snap_op = function(enabled) mainWindow:getCadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
-    addButton("", ":/icons/snap_entity.svg", "Snap Options", state["snap_op"], "Snap Entity", true);
+    addButton("SnapEntity", ":/icons/snap_entity.svg", "Snap Options", state["snap_op"], "Snap Entity", true);
 
     state["snap_op"] = nullptr;
 }

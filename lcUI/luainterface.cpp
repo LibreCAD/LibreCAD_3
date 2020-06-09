@@ -9,7 +9,7 @@
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
-	_pluginManager(_L.state(), "gui") {
+	_pluginManager(_L.state(), "gui"){
 }
 
 LuaInterface::~LuaInterface() {
@@ -61,8 +61,8 @@ bool LuaInterface::luaConnect(
 		std::cout << "No such signal " << signalName << std::endl;
 	}
 	else {
-		auto lqo = std::make_shared<LuaQObject>(sender);
-		_luaQObjects.push_back(lqo);
+		QSharedPointer<LuaQObject> lqo = QSharedPointer<LuaQObject>(new LuaQObject(sender));
+		_luaQObjects.append(lqo);
 
 		auto connected = lqo->connect(signalId, slot);
 
@@ -86,7 +86,7 @@ bool LuaInterface::luaDisconnect(
     }
     else {
         bool disconnected = false;
-        for (LuaQObject_SPtr objectsptr : _luaQObjects)
+        for (QSharedPointer<LuaQObject> objectsptr : _luaQObjects)
         {
             if (objectsptr->objectName() == sender->objectName().toStdString()) {
                 disconnected = objectsptr->disconnect(signalId, slot);
@@ -116,7 +116,7 @@ QWidget* LuaInterface::loadUiFile(const char* fileName) {
 void LuaInterface::cleanInvalidQObject() {
 	_luaQObjects.erase(std::remove_if(_luaQObjects.begin(),
 									  _luaQObjects.end(),
-							  [](LuaQObject_SPtr lqo){
+							  [](QSharedPointer<LuaQObject> lqo){
 								  return !lqo->valid();
 							  }),
 					   _luaQObjects.end());
