@@ -33,7 +33,7 @@ namespace lc
 
                 bool checkable() const;
 
-                void setLuaInterface(LuaInterface* luaInterfaceIn);
+                void enableConnections();
 
                 kaguya::LuaRef& getCallback(int index);
 
@@ -42,10 +42,10 @@ namespace lc
                 void removeButton(ToolbarButton*);
 
             private:
-                LuaInterface* luaInterface;
                 std::string _label;
                 std::vector<kaguya::LuaRef> callbacks;
                 bool _checkable;
+                bool _connected;
             };
         }
     }

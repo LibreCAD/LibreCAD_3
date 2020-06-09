@@ -39,17 +39,19 @@ namespace lc
 
                 void remove();
 
-                void setLuaInterface(LuaInterface* luaInterface);
+                void enableConnections();
 
             signals:
                 void removeGroup(ToolbarGroup* group);
+
+                void connectToCallbackButton(lc::ui::api::ToolbarButton* object, const std::string& function_name, kaguya::LuaRef& callback);
 
             public slots:
                 void connectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
                 void removeButton(ToolbarButton* button);
 
             private:
-                LuaInterface* luaInterface;
+                bool _connected;
                 const int width;
                 int count;
             };

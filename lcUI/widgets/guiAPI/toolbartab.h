@@ -101,10 +101,9 @@ namespace lc {
                     void remove();
 
                     /**
-                     * \brief Set luaInterface of widget and all groups
-                     * \param Pointer to luaInterface
+                     * \brief Enable connections for groups
                      */
-                    void setLuaInterface(LuaInterface* luaInterfaceIn);
+                    void enableConnections();
 
                 signals:
                     /**
@@ -122,10 +121,10 @@ namespace lc {
                     void removeGroup(ToolbarGroup* group);
 
 				private:
+                    bool _connected;
                     std::string _label;
 					Ui::ToolbarTab* ui;
 					QHBoxLayout* _layout;
-                    LuaInterface* luaInterface;
 			};
 		}
 	}

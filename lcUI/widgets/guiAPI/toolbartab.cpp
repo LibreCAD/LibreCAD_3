@@ -8,6 +8,7 @@ using namespace lc::ui::api;
 ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
 		QWidget(parent),
         _label(tabName),
+        _connected(false),
 		ui(new Ui::ToolbarTab) {
 	ui->setupUi(this);
 
@@ -29,12 +30,14 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
         return;
     }
 
-    if (luaInterface != nullptr) {
-        group->setLuaInterface(luaInterface);
+    if (_connected) {
+        group->enableConnections();
     }
 
     _layout->insertWidget(_layout->count() - 1, group);
+    lc::ui::widgets::Toolbar* toolbarWidget = static_cast<lc::ui::widgets::Toolbar*>(this->parentWidget()->parentWidget()->parentWidget());
     QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)), Qt::QueuedConnection);
+    QObject::connect(group, SIGNAL(connectToCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(connectToCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
 }
 
 ToolbarGroup* ToolbarTab::addGroup(const char* name) {
@@ -126,19 +129,19 @@ void ToolbarTab::remove() {
     emit removeTab(this);
 }
 
-void ToolbarTab::setLuaInterface(LuaInterface* luaInterfaceIn) {
-    if (luaInterface != nullptr) {
+void ToolbarTab::enableConnections() {
+    if (_connected) {
         return;
     }
 
-    luaInterface = luaInterfaceIn;
+    _connected = true;
 
     auto nbGroups = _layout->count();
     for (int i = 0; i < nbGroups; i++) {
         auto groupBox = dynamic_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
 
         if (groupBox != nullptr) {
-            groupBox->setLuaInterface(luaInterface);
+            groupBox->enableConnections();
         }
     }
 }

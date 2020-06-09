@@ -6,7 +6,7 @@ ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
     :
     QGroupBox(groupName, parent),
     width(width),
-    luaInterface(nullptr),
+    _connected(false),
     count(0)
 {
     this->setLayout(new QGridLayout());
@@ -16,11 +16,11 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
     auto gridLayout = static_cast<QGridLayout*>(this->layout());
     gridLayout->addWidget(button, count / width, count % width, 1, 1);
 
-    luaInterface->qtConnect(button, "removeButton(ToolbarButton*)", this, "removeButton(ToolbarButton*)");
-    luaInterface->qtConnect(button, "connectToCallback(int,ToolbarButton*)", this, "connectToolbarButtonToCallback(int,ToolbarButton*)");
+    QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
+    QObject::connect(button, SIGNAL(connectToCallback(int,ToolbarButton*)), this, SLOT(connectToolbarButtonToCallback(int,ToolbarButton*)));
 
-    if (luaInterface != nullptr) {
-        button->setLuaInterface(luaInterface);
+    if (_connected) {
+        button->enableConnections();
     }
     count++;
 }
@@ -97,23 +97,23 @@ void ToolbarGroup::remove() {
 
 void ToolbarGroup::connectToolbarButtonToCallback(int cb_index, ToolbarButton* button) {
     if (button->checkable()) {
-        luaInterface->luaConnect(button, "toggled(bool)", button->getCallback(cb_index));
+        emit connectToCallbackButton(button, "toggled(bool)", button->getCallback(cb_index));
     }
     else {
-        luaInterface->luaConnect(button, "pressed()", button->getCallback(cb_index));
+        emit connectToCallbackButton(button, "pressed()", button->getCallback(cb_index));
     }
 }
 
-void ToolbarGroup::setLuaInterface(LuaInterface* luaInterfaceIn) {
-    if (luaInterface != nullptr) {
+void ToolbarGroup::enableConnections() {
+    if (_connected) {
         return;
     }
 
-    luaInterface = luaInterfaceIn;
+    _connected = true;
 
     auto nbButtons = this->layout()->count();
     for (int i = 0; i < nbButtons; i++) {
         auto button = static_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
-        button->setLuaInterface(luaInterface);
+        button->enableConnections();
     }
 }

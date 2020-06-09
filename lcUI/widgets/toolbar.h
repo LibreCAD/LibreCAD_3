@@ -5,6 +5,7 @@
 #include <QDockWidget>
 #include <QCloseEvent>
 #include "guiAPI/toolbartab.h"
+#include "guiAPI/toolbarbutton.h"
 
 namespace Ui {
 	class Toolbar;
@@ -79,6 +80,9 @@ namespace lc {
                      */
                     void removeGroupByName(const char* groupName, const char* tabName = "Quick Access");
 
+                    /**
+                     * \brief Add snap options to toolbar, called by mainwindow
+                     */
                     void addSnapOptions();
 
                 public slots:
@@ -92,6 +96,11 @@ namespace lc {
                      * \param tab Pointer to tab widget
                      */
                     void removeTab(lc::ui::api::ToolbarTab* tab);
+
+                    /**
+                     * \brief Connect toolbar button to provided callback
+                     */
+                    void connectToCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback);
 
                 private:
                     Ui::Toolbar* ui;

@@ -15,7 +15,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     :
     _label(buttonLabel),
     QPushButton("", parent),
-    luaInterface(nullptr),
+    _connected(false),
     _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);
@@ -49,7 +49,7 @@ void ToolbarButton::setTooltip(const char* newToolTip) {
 void ToolbarButton::addCallback(kaguya::LuaRef callback) {
     callbacks.push_back(callback);
 
-    if (luaInterface != nullptr) {
+    if (_connected) {
         emit connectToCallback(callbacks.size() - 1, this);
     }
 }
@@ -73,16 +73,17 @@ kaguya::LuaRef& ToolbarButton::getCallback(int index) {
     return callbacks[index];
 }
 
-void ToolbarButton::setLuaInterface(LuaInterface* luaInterfaceIn) {
-    if (luaInterface != nullptr) {
+void ToolbarButton::enableConnections() {
+    if (_connected) {
         return;
     }
 
-    luaInterface = luaInterfaceIn;
+    _connected = true;
 
     // loop through all already added callbacks and connect them
-    for (int i=0;i<callbacks.size();i++)
+    for (int i = 0; i < callbacks.size(); i++)
     {
         emit connectToCallback(i, this);
     }
 }
+

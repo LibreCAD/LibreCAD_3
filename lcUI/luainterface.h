@@ -155,7 +155,7 @@ namespace lc {
 
 			private:
 				kaguya::State _L;
-				QList<QSharedPointer<LuaQObject>> _luaQObjects;
+				std::vector<LuaQObject_SPtr> _luaQObjects;
 				lc::lua::PluginManager _pluginManager;
 				kaguya::LuaRef _operation;
 				std::map<std::string, std::vector<kaguya::LuaRef>> _events;
