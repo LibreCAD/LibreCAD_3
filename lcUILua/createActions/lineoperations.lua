@@ -38,11 +38,6 @@ function LineOperations:_init_default()
 end
 
 function LineOperations:_init_p2()
-    local toolbar = mainWindow:getToolbar()
-    local taba = toolbar:addTab("New TAb")
-    local groupa = taba:addGroup("Whhot")
-    groupa:addButton("Hi", "C:/Users/targe/Documents/GSoC/LibreCAD_3/lcUI/ui/icons/arc.svg", function() message("Beetlejuice") end)
-    groupa:addButton("Offer", "C:/Users/targe/Documents/GSoC/LibreCAD_3/lcUI/ui/icons/arc.svg")
     message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")
@@ -50,19 +45,6 @@ function LineOperations:_init_p2()
 end
 
 function LineOperations:_init_pal()
-    local toolbar = mainWindow:getToolbar()
-    local taba = toolbar:tabByName("New TAb")
-    local groupa = taba:groupByName("Whhot")
-    local button1 = groupa:getButton("Hi")
-    local button2 = groupa:getButton("Offer")
-    button1:remove()
-    message("Button2 -> " .. tostring(button2:label()))
-    button2:remove()
-    local buttons = groupa:getAllButtons()
-    for k,v in pairs(buttons) do
-        message(v:label())
-    end
-    message("<b>LINE</b>")
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")
     self.step = "LineWithPointAngleLength"

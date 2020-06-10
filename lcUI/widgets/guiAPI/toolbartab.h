@@ -111,6 +111,9 @@ namespace lc {
                      */
                     void labelChanged(QString newLabel, QString oldLabel);
 
+                    /**
+                     * \brief Signal for removing this tab
+                     */
                     void removeTab(lc::ui::api::ToolbarTab* tab);
 
                 public slots:

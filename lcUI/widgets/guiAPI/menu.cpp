@@ -2,6 +2,7 @@
 
 #include <mainwindow.h>
 
+using namespace lc::ui;
 using namespace lc::ui::api;
 
 Menu::Menu(const char* menuName, QWidget* parent)

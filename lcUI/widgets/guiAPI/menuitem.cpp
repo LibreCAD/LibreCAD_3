@@ -4,6 +4,7 @@
 
 #include <stack>
 
+using namespace lc::ui;
 using namespace lc::ui::api;
 
 MenuItem::MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* parent)

@@ -36,7 +36,7 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
 
     _layout->insertWidget(_layout->count() - 1, group);
     lc::ui::widgets::Toolbar* toolbarWidget = static_cast<lc::ui::widgets::Toolbar*>(this->parentWidget()->parentWidget()->parentWidget());
-    QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)), Qt::QueuedConnection);
+    QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
     QObject::connect(group, SIGNAL(connectToCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(connectToCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
 }
 
@@ -110,7 +110,9 @@ void ToolbarTab::removeGroup(ToolbarGroup* group) {
 }
 
 void ToolbarTab::removeButton(ToolbarButton* button) {
-	delete button;
+    if (button != nullptr) {
+        delete button;
+    }
 }
 
 std::string ToolbarTab::label() const {
