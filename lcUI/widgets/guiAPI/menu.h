@@ -56,7 +56,7 @@ namespace lc
 
                 void show();
 
-                int getPosition() const;
+                int position() const;
 
                 void setPosition(int newPosition);
 
@@ -67,7 +67,7 @@ namespace lc
 
                 void remove();
 
-                void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks=true);
+                void enableConnections(bool setCallbacks = true);
 
                 bool insideMenu;
 
@@ -77,8 +77,8 @@ namespace lc
                 void updateOtherPositionsAfterRemove();
 
             private:
-                LuaInterface* luaInterface;
-                int position;
+                bool _connected;
+                int _position;
             };
         }
     }

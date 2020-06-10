@@ -63,16 +63,16 @@ TEST(MWindowTest, MenuAPITest) {
     EXPECT_EQ(menu2, mainWindow->getMenu("Menu2"));
     EXPECT_EQ(menu2, mainWindow->getMenu(4));
 
-    EXPECT_EQ(3, menu1->getPosition());
-    EXPECT_EQ(4, menu2->getPosition());
+    EXPECT_EQ(3, menu1->position());
+    EXPECT_EQ(4, menu2->position());
 
     mainWindow->removeMenu(0);
 
-    EXPECT_EQ(2, menu1->getPosition());
-    EXPECT_EQ(3, menu2->getPosition());
+    EXPECT_EQ(2, menu1->position());
+    EXPECT_EQ(3, menu2->position());
 
     mainWindow->removeMenu("Create");
 
-    EXPECT_EQ(1, menu1->getPosition());
-    EXPECT_EQ(2, menu2->getPosition());
+    EXPECT_EQ(1, menu1->position());
+    EXPECT_EQ(2, menu2->position());
 }

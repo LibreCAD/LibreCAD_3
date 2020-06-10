@@ -162,6 +162,10 @@ namespace lc
             void selectNone();
             void invertSelection();
 
+            // Menu callback slot
+            void connectToCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback);
+            void disconnectCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback);
+
         signals:
             void point(lc::geo::Coordinate coordinate);
 

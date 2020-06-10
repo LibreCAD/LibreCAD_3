@@ -269,12 +269,14 @@ void addLCBindings(lua_State *L) {
 
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
-        .addFunction("addButton", &widgets::Toolbar::addButton)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
         .addOverloadedFunctions("addTab", static_cast<api::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
             static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::addTab))
         .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::removeTab),
             static_cast<void(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::removeTab))
+        .addStaticFunction("addButton", [](widgets::Toolbar* toolbar, const char* name, const char* icon, const char* group, kaguya::LuaRef cb, const char* tooltip) {
+            toolbar->addButton(name, icon, group, cb, tooltip);
+        })
 	);
 
 	state["lc"]["TempEntities"].setClass(kaguya::UserdataMetatable<drawable::TempEntities>()
@@ -367,7 +369,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("show", &lc::ui::api::Menu::show)
         .addFunction("isEnabled", &lc::ui::api::Menu::isEnabled)
         .addFunction("setEnabled", &lc::ui::api::Menu::setEnabled)
-        .addFunction("getPosition", &lc::ui::api::Menu::getPosition)
+        .addFunction("position", &lc::ui::api::Menu::position)
         .addFunction("setPosition", &lc::ui::api::Menu::setPosition)
         .addFunction("remove", &lc::ui::api::Menu::remove)
         .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::Menu::addItem))
@@ -386,7 +388,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("show", &lc::ui::api::MenuItem::show)
         .addFunction("isEnabled", &lc::ui::api::MenuItem::isEnabled)
         .addFunction("setEnabled", &lc::ui::api::MenuItem::setEnabled)
-        .addFunction("getPosition", &lc::ui::api::MenuItem::getPosition)
+        .addFunction("position", &lc::ui::api::MenuItem::position)
         .addFunction("setPosition", &lc::ui::api::MenuItem::setPosition)
         .addFunction("remove", &lc::ui::api::MenuItem::remove)
         .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)

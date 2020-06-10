@@ -171,7 +171,7 @@ void MainWindow::initMenuAPI() {
         api::Menu* menu = static_cast<api::Menu*>(current_menu);
         this->menuBar()->addAction(menu->menuAction());
         menuMap[menu->title()] = menu;
-        menu->setLuaInterface(&luaInterface, false);
+        menu->enableConnections(false);
 
         QList<QMenu*> allMenusOfCurrentMenu = menu->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
 
@@ -302,7 +302,7 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
 
     api::Menu* newMenu = new api::Menu(menuName.c_str());
     menuBar()->addMenu(newMenu);
-    newMenu->setLuaInterface(&luaInterface);
+    newMenu->enableConnections();
 
     menuMap[QString(menuName.c_str())] = newMenu;
 
@@ -316,7 +316,7 @@ void MainWindow::addMenu(lc::ui::api::Menu* menu) {
 
     menuMap[menu->title()] = menu;
     menuBar()->addMenu(menu);
-    menu->setLuaInterface(&luaInterface);
+    menu->enableConnections();
 }
 
 api::Menu* MainWindow::getMenu(const std::string& menuName) {
@@ -518,4 +518,12 @@ void MainWindow::selectNone()
 void MainWindow::invertSelection()
 {
     cadMdiChild.viewer()->docCanvas()->inverseSelection();
+}
+
+void MainWindow::connectToCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback) {
+    luaInterface.luaConnect(object, signal_name, callback);
+}
+
+void MainWindow::disconnectCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback) {
+    luaInterface.luaDisconnect(object, signal_name, callback);
 }

@@ -34,7 +34,7 @@ namespace lc
 
                 void show();
 
-                int getPosition() const;
+                int position() const;
 
                 void setPosition(int newPosition);
 
@@ -45,16 +45,21 @@ namespace lc
 
                 void remove();
 
-                void setLuaInterface(LuaInterface* luaInterfaceIn, bool setCallbacks = true);
+                void enableConnections(bool setCallbacks = true);
+
+            signals:
+                void connectToCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&);
+
+                void disconnectCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&);
 
             private:
                 void updateOtherPositionsAfterRemove();
 
             private:
-                LuaInterface* luaInterface;
+                bool _connected;
                 std::vector<kaguya::LuaRef> callbacks;
                 std::unordered_map<std::string, int> namedCallbacks;
-                int position;
+                int _position;
             };
         }
     }

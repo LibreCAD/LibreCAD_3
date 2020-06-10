@@ -73,54 +73,54 @@ TEST(MenuTest, MenuPositionTest) {
     testmenu->addMenu(menu2);
     lc::ui::api::Menu* menu3 = testmenu->addMenu("Menu3");
 
-    EXPECT_EQ(0, menu1->getPosition());
-    EXPECT_EQ(1, menu2->getPosition());
-    EXPECT_EQ(2, menu3->getPosition());
+    EXPECT_EQ(0, menu1->position());
+    EXPECT_EQ(1, menu2->position());
+    EXPECT_EQ(2, menu3->position());
 
     menu3->setPosition(0);
 
-    EXPECT_EQ(1, menu1->getPosition());
-    EXPECT_EQ(2, menu2->getPosition());
-    EXPECT_EQ(0, menu3->getPosition());
+    EXPECT_EQ(1, menu1->position());
+    EXPECT_EQ(2, menu2->position());
+    EXPECT_EQ(0, menu3->position());
 
-    menu2->setPosition(menu3->getPosition());
+    menu2->setPosition(menu3->position());
 
-    EXPECT_EQ(2, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(1, menu3->getPosition());
+    EXPECT_EQ(2, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(1, menu3->position());
 
     menu1->setPosition(2);
 
-    EXPECT_EQ(2, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(1, menu3->getPosition());
+    EXPECT_EQ(2, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(1, menu3->position());
 
     menu3->setPosition(4);
 
-    EXPECT_EQ(1, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(2, menu3->getPosition());
+    EXPECT_EQ(1, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(2, menu3->position());
 
     lc::ui::api::MenuItem* item1 = testmenu->addItem("Item1");
 
-    EXPECT_EQ(1, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(2, menu3->getPosition());
-    EXPECT_EQ(3, item1->getPosition());
+    EXPECT_EQ(1, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(2, menu3->position());
+    EXPECT_EQ(3, item1->position());
 
     item1->setPosition(0);
 
-    EXPECT_EQ(2, menu1->getPosition());
-    EXPECT_EQ(1, menu2->getPosition());
-    EXPECT_EQ(3, menu3->getPosition());
-    EXPECT_EQ(0, item1->getPosition());
+    EXPECT_EQ(2, menu1->position());
+    EXPECT_EQ(1, menu2->position());
+    EXPECT_EQ(3, menu3->position());
+    EXPECT_EQ(0, item1->position());
 
     item1->setPosition(2);
 
-    EXPECT_EQ(1, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(3, menu3->getPosition());
-    EXPECT_EQ(2, item1->getPosition());
+    EXPECT_EQ(1, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(3, menu3->position());
+    EXPECT_EQ(2, item1->position());
 }
 
 TEST(MenuTest, MenuRemoveTest) {
@@ -135,33 +135,33 @@ TEST(MenuTest, MenuRemoveTest) {
     lc::ui::api::Menu* menu3 = testmenu->addMenu("Menu3");
 
     menu3->setPosition(0);
-    menu2->setPosition(menu3->getPosition());
+    menu2->setPosition(menu3->position());
     lc::ui::api::MenuItem* item1 = testmenu->addItem("Item1");
 
-    EXPECT_EQ(2, menu1->getPosition());
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(1, menu3->getPosition());
-    EXPECT_EQ(3, item1->getPosition());
+    EXPECT_EQ(2, menu1->position());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(1, menu3->position());
+    EXPECT_EQ(3, item1->position());
 
     menu1->remove();
 
-    EXPECT_EQ(0, menu2->getPosition());
-    EXPECT_EQ(1, menu3->getPosition());
-    EXPECT_EQ(2, item1->getPosition());
+    EXPECT_EQ(0, menu2->position());
+    EXPECT_EQ(1, menu3->position());
+    EXPECT_EQ(2, item1->position());
 
     testmenu->removeMenu(menu2);
 
-    EXPECT_EQ(0, menu3->getPosition());
-    EXPECT_EQ(1, item1->getPosition());
+    EXPECT_EQ(0, menu3->position());
+    EXPECT_EQ(1, item1->position());
 
     item1->setPosition(0);
 
-    EXPECT_EQ(1, menu3->getPosition());
-    EXPECT_EQ(0, item1->getPosition());
+    EXPECT_EQ(1, menu3->position());
+    EXPECT_EQ(0, item1->position());
 
     testmenu->removeItem("Item1");
 
-    EXPECT_EQ(0, menu3->getPosition());
+    EXPECT_EQ(0, menu3->position());
 }
 
 TEST(MenuTest, MenuInBarRemoveTest) {
@@ -173,29 +173,29 @@ TEST(MenuTest, MenuInBarRemoveTest) {
     lc::ui::api::Menu* menu3 = new lc::ui::api::Menu("Menu3");
     mainWindow->addMenu(menu3);
 
-    EXPECT_EQ(3, menu1->getPosition());
-    EXPECT_EQ(4, menu2->getPosition());
-    EXPECT_EQ(5, menu3->getPosition());
+    EXPECT_EQ(3, menu1->position());
+    EXPECT_EQ(4, menu2->position());
+    EXPECT_EQ(5, menu3->position());
 
     menu3->setPosition(3);
 
-    EXPECT_EQ(4, menu1->getPosition());
-    EXPECT_EQ(5, menu2->getPosition());
-    EXPECT_EQ(3, menu3->getPosition());
+    EXPECT_EQ(4, menu1->position());
+    EXPECT_EQ(5, menu2->position());
+    EXPECT_EQ(3, menu3->position());
 
     menu1->remove();
 
-    EXPECT_EQ(4, menu2->getPosition());
-    EXPECT_EQ(3, menu3->getPosition());
+    EXPECT_EQ(4, menu2->position());
+    EXPECT_EQ(3, menu3->position());
 
     lc::ui::api::Menu* menu4 = mainWindow->addMenu("Menu4");
 
-    EXPECT_EQ(4, menu2->getPosition());
-    EXPECT_EQ(3, menu3->getPosition());
-    EXPECT_EQ(5, menu4->getPosition());
+    EXPECT_EQ(4, menu2->position());
+    EXPECT_EQ(3, menu3->position());
+    EXPECT_EQ(5, menu4->position());
 
     menu3->remove();
 
-    EXPECT_EQ(3, menu2->getPosition());
-    EXPECT_EQ(4, menu4->getPosition());
+    EXPECT_EQ(3, menu2->position());
+    EXPECT_EQ(4, menu4->position());
 }

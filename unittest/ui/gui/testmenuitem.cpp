@@ -88,33 +88,33 @@ TEST(MenuItemTest, ItemPositionTest) {
     lc::ui::api::MenuItem* testitem2 = testmenu->addItem("TestItem2");
     lc::ui::api::MenuItem* testitem3 = testmenu->addItem("TestItem3");
 
-    EXPECT_EQ(0, testitem1->getPosition());
-    EXPECT_EQ(1, testitem2->getPosition());
-    EXPECT_EQ(2, testitem3->getPosition());
+    EXPECT_EQ(0, testitem1->position());
+    EXPECT_EQ(1, testitem2->position());
+    EXPECT_EQ(2, testitem3->position());
 
     testitem3->setPosition(0);
 
-    EXPECT_EQ(1, testitem1->getPosition());
-    EXPECT_EQ(2, testitem2->getPosition());
-    EXPECT_EQ(0, testitem3->getPosition());
+    EXPECT_EQ(1, testitem1->position());
+    EXPECT_EQ(2, testitem2->position());
+    EXPECT_EQ(0, testitem3->position());
 
-    testitem2->setPosition(testitem3->getPosition());
+    testitem2->setPosition(testitem3->position());
 
-    EXPECT_EQ(2, testitem1->getPosition());
-    EXPECT_EQ(0, testitem2->getPosition());
-    EXPECT_EQ(1, testitem3->getPosition());
+    EXPECT_EQ(2, testitem1->position());
+    EXPECT_EQ(0, testitem2->position());
+    EXPECT_EQ(1, testitem3->position());
 
     testitem1->setPosition(2);
 
-    EXPECT_EQ(2, testitem1->getPosition());
-    EXPECT_EQ(0, testitem2->getPosition());
-    EXPECT_EQ(1, testitem3->getPosition());
+    EXPECT_EQ(2, testitem1->position());
+    EXPECT_EQ(0, testitem2->position());
+    EXPECT_EQ(1, testitem3->position());
 
     testitem3->setPosition(4);
 
-    EXPECT_EQ(1, testitem1->getPosition());
-    EXPECT_EQ(0, testitem2->getPosition());
-    EXPECT_EQ(2, testitem3->getPosition());
+    EXPECT_EQ(1, testitem1->position());
+    EXPECT_EQ(0, testitem2->position());
+    EXPECT_EQ(2, testitem3->position());
 }
 
 TEST(MenuItemTest, ItemRemoveTest) {
@@ -126,29 +126,29 @@ TEST(MenuItemTest, ItemRemoveTest) {
     lc::ui::api::MenuItem* testitem2 = testmenu->addItem("TestItem2");
     lc::ui::api::MenuItem* testitem3 = testmenu->addItem("TestItem3");
 
-    EXPECT_EQ(0, testitem1->getPosition());
-    EXPECT_EQ(1, testitem2->getPosition());
-    EXPECT_EQ(2, testitem3->getPosition());
+    EXPECT_EQ(0, testitem1->position());
+    EXPECT_EQ(1, testitem2->position());
+    EXPECT_EQ(2, testitem3->position());
 
     testitem1->remove();
 
-    EXPECT_EQ(0, testitem2->getPosition());
-    EXPECT_EQ(1, testitem3->getPosition());
+    EXPECT_EQ(0, testitem2->position());
+    EXPECT_EQ(1, testitem3->position());
 
     lc::ui::api::MenuItem* testitem4 = testmenu->addItem("TestItem4");
 
-    EXPECT_EQ(0, testitem2->getPosition());
-    EXPECT_EQ(1, testitem3->getPosition());
-    EXPECT_EQ(2, testitem4->getPosition());
+    EXPECT_EQ(0, testitem2->position());
+    EXPECT_EQ(1, testitem3->position());
+    EXPECT_EQ(2, testitem4->position());
 
-    testitem2->setPosition(testitem4->getPosition());
+    testitem2->setPosition(testitem4->position());
 
-    EXPECT_EQ(2, testitem2->getPosition());
-    EXPECT_EQ(0, testitem3->getPosition());
-    EXPECT_EQ(1, testitem4->getPosition());
+    EXPECT_EQ(2, testitem2->position());
+    EXPECT_EQ(0, testitem3->position());
+    EXPECT_EQ(1, testitem4->position());
 
     testitem4->remove();
 
-    EXPECT_EQ(1, testitem2->getPosition());
-    EXPECT_EQ(0, testitem3->getPosition());
+    EXPECT_EQ(1, testitem2->position());
+    EXPECT_EQ(0, testitem3->position());
 }
