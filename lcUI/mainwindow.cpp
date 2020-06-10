@@ -40,7 +40,6 @@ MainWindow::MainWindow()
     luaInterface.initLua(this);
 
     toolbar.addSnapOptions();
-
 }
 
 MainWindow::~MainWindow()

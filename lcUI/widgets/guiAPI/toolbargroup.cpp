@@ -51,7 +51,7 @@ void ToolbarGroup::setLabel(const char* newGroupName) {
     this->setTitle(newGroupName);
 }
 
-ToolbarButton* ToolbarGroup::getButton(const char* buttonName) {
+ToolbarButton* ToolbarGroup::buttonByName(const char* buttonName) {
     auto nbButtons = this->layout()->count();
     std::string buttonText = std::string(buttonName);
 
@@ -88,7 +88,7 @@ void ToolbarGroup::removeButton(ToolbarButton* button) {
 }
 
 void ToolbarGroup::removeButton(const char* buttonName) {
-    removeButton(getButton(buttonName));
+    removeButton(buttonByName(buttonName));
 }
 
 void ToolbarGroup::remove() {

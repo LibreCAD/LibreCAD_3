@@ -34,7 +34,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     changeIcon(icon);
 }
 
-std::string ToolbarButton::label() {
+std::string ToolbarButton::label() const {
     return _label;
 }
 

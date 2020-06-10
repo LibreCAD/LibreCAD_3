@@ -434,7 +434,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::ToolbarGroup(const char*), lc::ui::api::ToolbarGroup(const char*, int)>()
         .addFunction("label", &lc::ui::api::ToolbarGroup::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarGroup::setLabel)
-        .addFunction("getButton", &lc::ui::api::ToolbarGroup::getButton)
+        .addFunction("buttonByName", &lc::ui::api::ToolbarGroup::buttonByName)
         .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)
         .addFunction("hide", &lc::ui::api::ToolbarGroup::hide)
         .addFunction("show", &lc::ui::api::ToolbarGroup::show)
