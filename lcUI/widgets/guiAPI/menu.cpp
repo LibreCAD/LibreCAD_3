@@ -91,7 +91,7 @@ Menu* Menu::addMenu(const char* menuLabel) {
     return newMenu;
 }
 
-std::string Menu::label() {
+std::string Menu::label() const {
     return this->title().toStdString();
 }
 
@@ -99,7 +99,7 @@ void Menu::setLabel(const char* newMenuLabel) {
     this->setTitle(newMenuLabel);
 }
 
-MenuItem* Menu::getItem(const char* menuItemLabel) {
+MenuItem* Menu::itemByName(const char* menuItemLabel) {
     QList<QAction*> menuActions = this->actions();
 
     for (QAction* action : menuActions)
@@ -117,7 +117,7 @@ MenuItem* Menu::getItem(const char* menuItemLabel) {
     return nullptr;
 }
 
-MenuItem* Menu::getItem(int pos) {
+MenuItem* Menu::itemByPosition(int pos) {
     QList<QAction*> menuActions = this->actions();
 
     if (pos < 0 || pos >= menuActions.size()) {
@@ -131,7 +131,7 @@ MenuItem* Menu::getItem(int pos) {
     return qobject_cast<MenuItem*>(menuActions[pos]);
 }
 
-Menu* Menu::getMenu(const char* menuLabel) {
+Menu* Menu::menuByName(const char* menuLabel) {
     QList<QAction*> menuActions = this->actions();
 
     for (QAction* action : menuActions)
@@ -148,7 +148,7 @@ Menu* Menu::getMenu(const char* menuLabel) {
     return nullptr;
 }
 
-Menu* Menu::getMenu(int pos) {
+Menu* Menu::menuByPosition(int pos) {
     QList<QAction*> menuActions = this->actions();
 
     if (pos < 0 || pos >= menuActions.size()) {
@@ -171,7 +171,7 @@ void Menu::show() {
 }
 
 void Menu::removeItem(const char* menuItemLabel) {
-    getItem(menuItemLabel)->remove();
+    itemByName(menuItemLabel)->remove();
 }
 
 void Menu::removeItem(MenuItem* item) {
@@ -179,7 +179,7 @@ void Menu::removeItem(MenuItem* item) {
 }
 
 void Menu::removeMenu(const char* menuLabel) {
-    getMenu(menuLabel)->remove();
+    menuByName(menuLabel)->remove();
 }
 
 void Menu::removeMenu(Menu* menu) {

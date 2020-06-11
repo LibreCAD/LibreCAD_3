@@ -57,11 +57,11 @@ TEST(MWindowTest, MenuAPITest) {
     lc::ui::api::Menu* menu2 = new lc::ui::api::Menu("Menu2");
     mainWindow->addMenu(menu2);
 
-    EXPECT_EQ(menu1, mainWindow->getMenu("Menu1"));
-    EXPECT_EQ(menu1, mainWindow->getMenu(3));
+    EXPECT_EQ(menu1, mainWindow->menuByName("Menu1"));
+    EXPECT_EQ(menu1, mainWindow->menuByPosition(3));
 
-    EXPECT_EQ(menu2, mainWindow->getMenu("Menu2"));
-    EXPECT_EQ(menu2, mainWindow->getMenu(4));
+    EXPECT_EQ(menu2, mainWindow->menuByName("Menu2"));
+    EXPECT_EQ(menu2, mainWindow->menuByPosition(4));
 
     EXPECT_EQ(3, menu1->position());
     EXPECT_EQ(4, menu2->position());

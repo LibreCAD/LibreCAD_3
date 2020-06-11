@@ -17,15 +17,15 @@ TEST(MenuItemTest, ItemAddTest) {
     lc::ui::api::MenuItem* testItem2 = new lc::ui::api::MenuItem("TESTITEM2");
     testMenu->addItem(testItem2);
 
-    EXPECT_EQ(testItem2, testMenu->getItem("TESTITEM2"));
+    EXPECT_EQ(testItem2, testMenu->itemByName("TESTITEM2"));
 
     lc::ui::api::MenuItem* testItem3 = new lc::ui::api::MenuItem("TESTITEM3", kaguya::LuaRef());
     testMenu->addItem(testItem3);
 
-    EXPECT_EQ(testItem3, testMenu->getItem("TESTITEM3"));
+    EXPECT_EQ(testItem3, testMenu->itemByName("TESTITEM3"));
 
     testMenu->addItem("TESTITEM4", kaguya::LuaRef());
-    lc::ui::api::MenuItem* testItem4 = testMenu->getItem("TESTITEM4");
+    lc::ui::api::MenuItem* testItem4 = testMenu->itemByName("TESTITEM4");
 
     EXPECT_EQ("TESTITEM4", testItem4->label());
 }

@@ -319,7 +319,7 @@ void MainWindow::addMenu(lc::ui::api::Menu* menu) {
     menu->enableConnections();
 }
 
-api::Menu* MainWindow::getMenu(const std::string& menuName) {
+api::Menu* MainWindow::menuByName(const std::string& menuName) {
     QList<QString> keys = menuMap.keys();
 
     for (QString key : keys)
@@ -335,7 +335,7 @@ api::Menu* MainWindow::getMenu(const std::string& menuName) {
     return nullptr;
 }
 
-lc::ui::api::Menu* MainWindow::getMenu(int pos) {
+lc::ui::api::Menu* MainWindow::menuByPosition(int pos) {
     QList<QAction*> menuList = menuBar()->actions();
 
     if (pos < 0 || pos >= menuList.size()) {
@@ -363,12 +363,12 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 }
 
 void MainWindow::removeMenu(const char* menuLabel) {
-    lc::ui::api::Menu* menuremove = getMenu(menuLabel);
+    lc::ui::api::Menu* menuremove = menuByName(menuLabel);
     menuremove->remove();
 }
 
 void MainWindow::removeMenu(int position) {
-    lc::ui::api::Menu* menuremove = getMenu(position);
+    lc::ui::api::Menu* menuremove = menuByPosition(position);
     menuremove->remove();
 }
 

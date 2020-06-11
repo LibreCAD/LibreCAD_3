@@ -98,9 +98,9 @@ namespace lc
             /**
             * \brief Get menu from the menu bar
             */
-            lc::ui::api::Menu* getMenu(const std::string& menuName);
+            lc::ui::api::Menu* menuByName(const std::string& menuName);
 
-            lc::ui::api::Menu* getMenu(int pos);
+            lc::ui::api::Menu* menuByPosition(int pos);
 
             /**
             * \brief Remove menu from menu bar
