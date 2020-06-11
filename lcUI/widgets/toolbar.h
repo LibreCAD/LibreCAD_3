@@ -102,6 +102,11 @@ namespace lc {
                      */
                     void connectToCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback);
 
+                    /**
+                     * \brief Disconnect toolbar button from provided callback
+                     */
+                    void disconnectCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback);
+
                 private:
                     Ui::Toolbar* ui;
                     lc::ui::LuaInterface* luaInterface;

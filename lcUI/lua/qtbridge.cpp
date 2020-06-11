@@ -423,13 +423,15 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("label", &lc::ui::api::ToolbarButton::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
         .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)
-        .addFunction("addCallback", &lc::ui::api::ToolbarButton::addCallback)
+        .addFunction("removeCallback", &lc::ui::api::ToolbarButton::removeCallback)
         .addFunction("isEnabled", &lc::ui::api::ToolbarButton::isEnabled)
         .addFunction("hide", &lc::ui::api::ToolbarButton::hide)
         .addFunction("show", &lc::ui::api::ToolbarButton::show)
         .addFunction("remove", &lc::ui::api::ToolbarButton::remove)
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(false); })
+        .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::ToolbarButton::*)(kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback),
+            static_cast<void(lc::ui::api::ToolbarButton::*)(const char*,kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback))
     );
 
     state["gui"]["ToolbarGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarGroup>()

@@ -66,8 +66,12 @@ TEST(ToolbarButtonTest, CallbackTest) {
 
     state.dostring("testbutton1 = function() doesThisExist1=true end");
     state.dostring("testbutton2 = function() doesThisExist2=true end");
+    state.dostring("testbutton3 = function() doesThisExist3=true end");
+    state.dostring("testbutton4 = function() doesThisExist4=true end");
     kaguya::LuaRef cb1 = state["testbutton1"];
     kaguya::LuaRef cb2 = state["testbutton2"];
+    kaguya::LuaRef cb3 = state["testbutton3"];
+    kaguya::LuaRef cb4 = state["testbutton4"];
 
     Toolbar* toolbar = mainWindow->getToolbar();
     ToolbarTab* testtab = toolbar->addTab("TestTab");
@@ -91,4 +95,21 @@ TEST(ToolbarButtonTest, CallbackTest) {
     EXPECT_TRUE(state["doesThisExist2"].get<bool>());
 
     EXPECT_EQ(cb2, testbutton->getCallback(1));
+
+    ToolbarButton* testbutton2 = new ToolbarButton("TestButton2", "");
+    testgroup->addButton(testbutton2);
+    testbutton2->addCallback("Callback1", cb3);
+    testbutton2->addCallback("Callback2", cb4);
+
+    EXPECT_FALSE(state["doesThisExist3"].get<bool>());
+    EXPECT_FALSE(state["doesThisExist4"].get<bool>());
+
+    testbutton2->removeCallback("Callback1");
+
+    testbutton2->pressed();
+
+    EXPECT_FALSE(state["doesThisExist3"].get<bool>());
+    EXPECT_TRUE(state["doesThisExist4"].get<bool>());
+
+    mainWindow->close();
 }

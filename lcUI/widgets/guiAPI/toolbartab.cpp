@@ -43,6 +43,7 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
 
     QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
     QObject::connect(group, SIGNAL(connectToCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(connectToCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
+    QObject::connect(group, SIGNAL(disconnectCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(disconnectCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
 }
 
 ToolbarGroup* ToolbarTab::addGroup(const char* name) {

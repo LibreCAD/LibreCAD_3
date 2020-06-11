@@ -87,3 +87,16 @@ void ToolbarButton::enableConnections() {
     }
 }
 
+void ToolbarButton::addCallback(const char* cb_name, kaguya::LuaRef callback) {
+    namedCallbacks[cb_name] = callbacks.size();
+    addCallback(callback);
+}
+
+void ToolbarButton::removeCallback(const char* cb_name) {
+    if (_connected) {
+        emit disconnectCallback(namedCallbacks[cb_name], this);
+    }
+
+    callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
+    namedCallbacks.erase(namedCallbacks.find(cb_name));
+}

@@ -108,6 +108,11 @@ namespace lc
                 */
                 void connectToCallbackButton(lc::ui::api::ToolbarButton* object, const std::string& function_name, kaguya::LuaRef& callback);
 
+                /**
+                * \brief Signal to toolbar to connect callback
+                */
+                void disconnectCallbackButton(lc::ui::api::ToolbarButton* object, const std::string& function_name, kaguya::LuaRef& callback);
+
             public slots:
                 /**
                 * \brief Slot for toolbar button callback connect
@@ -115,6 +120,13 @@ namespace lc
                 * \param pointer to toolbar button
                 */
                 void connectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
+
+                /**
+                * \brief Slot for toolbar button callback disconnection
+                * \param int index of callback in button callback list
+                * \param pointer to toolbar button
+                */
+                void disconnectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
 
                 /**
                 * \brief Slot to remove button

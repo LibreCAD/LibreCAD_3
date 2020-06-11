@@ -140,3 +140,7 @@ void Toolbar::setToolbarTabLabel(QString newLabel, QString oldLabel) {
 void Toolbar::connectToCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback) {
     luaInterface->luaConnect(object, signal_name, callback);
 }
+
+void Toolbar::disconnectCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback) {
+    luaInterface->luaDisconnect(object, signal_name, callback);
+}

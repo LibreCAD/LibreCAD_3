@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QPushButton>
+#include <unordered_map>
 
 #include "luainterface.h"
 
@@ -58,6 +59,18 @@ namespace lc
                 void addCallback(kaguya::LuaRef callback);
 
                 /**
+                * \brief Add another lua callback
+                * \param LuaRef callback
+                */
+                void addCallback(const char* cb_name, kaguya::LuaRef callback);
+
+                /**
+                * \brief remove
+                * \param LuaRef callback
+                */
+                void removeCallback(const char* cb_name);
+
+                /**
                 * \brief Change the button icon
                 * \param string new icon path
                 */
@@ -94,6 +107,13 @@ namespace lc
                 void connectToCallback(int, ToolbarButton*);
 
                 /**
+                * \brief Signal to group to disconnect callback
+                * \param int index
+                * \param ToolbarButton* pointer to this button
+                */
+                void disconnectCallback(int, ToolbarButton*);
+
+                /**
                 * \brief Signal to remove this button
                 * \param ToolbarButton* pointer to this button
                 */
@@ -102,6 +122,7 @@ namespace lc
             private:
                 std::string _label;
                 std::vector<kaguya::LuaRef> callbacks;
+                std::unordered_map<std::string, int> namedCallbacks;
                 bool _checkable;
                 bool _connected;
             };

@@ -18,6 +18,7 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
 
     QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
     QObject::connect(button, SIGNAL(connectToCallback(int,ToolbarButton*)), this, SLOT(connectToolbarButtonToCallback(int,ToolbarButton*)));
+    QObject::connect(button, SIGNAL(disconnectCallback(int,ToolbarButton*)), this, SLOT(disconnectToolbarButtonToCallback(int, ToolbarButton*)));
 
     if (_connected) {
         button->enableConnections();
@@ -101,6 +102,15 @@ void ToolbarGroup::connectToolbarButtonToCallback(int cb_index, ToolbarButton* b
     }
     else {
         emit connectToCallbackButton(button, "pressed()", button->getCallback(cb_index));
+    }
+}
+
+void ToolbarGroup::disconnectToolbarButtonToCallback(int cb_index, ToolbarButton* button) {
+    if (button->checkable()) {
+        emit disconnectCallbackButton(button, "toggled(bool)", button->getCallback(cb_index));
+    }
+    else {
+        emit disconnectCallbackButton(button, "pressed()", button->getCallback(cb_index));
     }
 }
 
