@@ -71,7 +71,7 @@ lc::ui::api::ToolbarTab* Toolbar::tabByName(const char *name) {
 
 	for(int i = 0; i < nbTab; i++) {
 		if(ui->tabWidget->tabText(i) == name) {
-			return dynamic_cast<lc::ui::api::ToolbarTab*>(ui->tabWidget->widget(i));
+			return qobject_cast<lc::ui::api::ToolbarTab*>(ui->tabWidget->widget(i));
 		}
 	}
 

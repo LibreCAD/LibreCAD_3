@@ -13,7 +13,7 @@ ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
 }
 
 void ToolbarGroup::addButton(ToolbarButton* button) {
-    auto gridLayout = static_cast<QGridLayout*>(this->layout());
+    auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
     gridLayout->addWidget(button, count / width, count % width, 1, 1);
 
     QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
@@ -38,7 +38,7 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
 }
 
 void ToolbarGroup::addWidget(QWidget* widget) {
-    auto gridLayout = static_cast<QGridLayout*>(this->layout());
+    auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
     gridLayout->addWidget(widget, count / width, count % width, 1, 1);
     count++;
 }
@@ -56,7 +56,7 @@ ToolbarButton* ToolbarGroup::buttonByName(const char* buttonName) {
     std::string buttonText = std::string(buttonName);
 
     for (int i = 0; i < nbButtons; i++) {
-        auto button = dynamic_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
+        auto button = qobject_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
 
         if (button != nullptr && button->label() == buttonText) {
             return button;
@@ -71,7 +71,7 @@ std::vector<ToolbarButton*> ToolbarGroup::getAllButtons() {
     std::vector<ToolbarButton*> buttons;
 
     for (int i = 0; i < nbButtons; i++) {
-        auto button = dynamic_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
+        auto button = qobject_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
 
         if (button != nullptr) {
             buttons.push_back(button);
@@ -82,7 +82,7 @@ std::vector<ToolbarButton*> ToolbarGroup::getAllButtons() {
 }
 
 void ToolbarGroup::removeButton(ToolbarButton* button) {
-    auto gridLayout = static_cast<QGridLayout*>(this->layout());
+    auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
     gridLayout->removeWidget(button);
     delete button;
 }
@@ -113,7 +113,9 @@ void ToolbarGroup::enableConnections() {
 
     auto nbButtons = this->layout()->count();
     for (int i = 0; i < nbButtons; i++) {
-        auto button = static_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
-        button->enableConnections();
+        auto button = qobject_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
+        if (button != nullptr) {
+            button->enableConnections();
+        }
     }
 }

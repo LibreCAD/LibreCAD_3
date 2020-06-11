@@ -1,5 +1,5 @@
 #include "menu.h"
-
+#include <QObject>
 #include <mainwindow.h>
 
 using namespace lc::ui;
@@ -44,11 +44,11 @@ void Menu::addItem(MenuItem* item) {
     while (menuWidget->insideMenu)
     {
         QList<QWidget*> widgets = menuWidget->menuAction()->associatedWidgets();
-        menuWidget = static_cast<lc::ui::api::Menu*>(widgets[0]);
+        menuWidget = qobject_cast<lc::ui::api::Menu*>(widgets[0]);
     }
 
-    QMenuBar* menuBar = static_cast<QMenuBar*>(menuWidget->menuAction()->associatedWidgets()[0]);
-    lc::ui::MainWindow* mainWindow = static_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
+    QMenuBar* menuBar = qobject_cast<QMenuBar*>(menuWidget->menuAction()->associatedWidgets()[0]);
+    lc::ui::MainWindow* mainWindow = qobject_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
 
     QObject::connect(item, SIGNAL(connectToCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)), mainWindow, SLOT(connectToCallbackMenu(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)));
     QObject::connect(item, SIGNAL(disconnectCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)), mainWindow, SLOT(disconnectCallbackMenu(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)));
@@ -107,7 +107,7 @@ MenuItem* Menu::getItem(const char* menuItemLabel) {
         if (action->menu()) {
             continue;
         }
-        MenuItem* item = static_cast<MenuItem*>(action);
+        MenuItem* item = qobject_cast<MenuItem*>(action);
 
         if (item->label() == std::string(menuItemLabel)) {
             return item;
@@ -128,7 +128,7 @@ MenuItem* Menu::getItem(int pos) {
         return nullptr;
     }
 
-    return static_cast<MenuItem*>(menuActions[pos]);
+    return qobject_cast<MenuItem*>(menuActions[pos]);
 }
 
 Menu* Menu::getMenu(const char* menuLabel) {
@@ -137,7 +137,7 @@ Menu* Menu::getMenu(const char* menuLabel) {
     for (QAction* action : menuActions)
     {
         if (action->menu()) {
-            Menu* item = static_cast<Menu*>(action->menu());
+            Menu* item = qobject_cast<Menu*>(action->menu());
 
             if (item->label() == std::string(menuLabel)) {
                 return item;
@@ -159,7 +159,7 @@ Menu* Menu::getMenu(int pos) {
         return nullptr;
     }
 
-    return static_cast<Menu*>(menuActions[pos]->menu());
+    return qobject_cast<Menu*>(menuActions[pos]->menu());
 }
 
 void Menu::hide() {
@@ -199,13 +199,17 @@ void Menu::enableConnections(bool setCallbacks) {
     for (QAction* action : menuActions)
     {
         if (action->menu()) {
-            Menu* item = static_cast<Menu*>(action->menu());
-            item->enableConnections(setCallbacks);
+            Menu* item = qobject_cast<Menu*>(action->menu());
+            if (item != nullptr) {
+                item->enableConnections(setCallbacks);
+            }
             continue;
         }
 
-        MenuItem* item = static_cast<MenuItem*>(action);
-        item->enableConnections(setCallbacks);
+        MenuItem* item = qobject_cast<MenuItem*>(action);
+        if (item != nullptr) {
+            item->enableConnections(setCallbacks);
+        }
     }
 
     /*
@@ -215,14 +219,18 @@ void Menu::enableConnections(bool setCallbacks) {
     QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
 
     if (insideMenu) {
-        QMenu* menu = static_cast<QMenu*>(widgets[0]);
-        QList<QAction*> menuList = menu->actions();
-        _position = menuList.size() - 1;
+        QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
+        if (menu != nullptr) {
+            QList<QAction*> menuList = menu->actions();
+            _position = menuList.size() - 1;
+        }
     }
     else {
-        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
-        QList<QAction*> menuList = menuBar->actions();
-        _position = menuList.size() - 1;
+        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
+        if (menuBar != nullptr) {
+            QList<QAction*> menuList = menuBar->actions();
+            _position = menuList.size() - 1;
+        }
     }
 }
 
@@ -238,7 +246,11 @@ void Menu::setPosition(int newPosition) {
     QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
 
     if (!insideMenu) {
-        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
+        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
+
+        if (menuBar == nullptr) {
+            return;
+        }
 
         QList<QAction*> menuList = menuBar->actions();
 
@@ -261,12 +273,18 @@ void Menu::setPosition(int newPosition) {
 
         for (int i = _position + 1; i < n; i++)
         {
-            Menu* item = static_cast<Menu*>(menuList[i]->menu());
-            item->updatePositionVariable(i);
+            Menu* item = qobject_cast<Menu*>(menuList[i]->menu());
+            if (item != nullptr) {
+                item->updatePositionVariable(i);
+            }
         }
     }
     else {
-        QMenu* menu = static_cast<QMenu*>(widgets[0]);
+        QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
+
+        if (menu == nullptr) {
+            return;
+        }
 
         QList<QAction*> items = menu->actions();
 
@@ -281,12 +299,16 @@ void Menu::setPosition(int newPosition) {
             QAction* item = items[i];
             if (i > _position) {
                 if (item->menu()) {
-                    Menu* menu_i = static_cast<Menu*>(item->menu());
-                    menu_i->updatePositionVariable(menu_i->position() - 1);
+                    Menu* menu_i = qobject_cast<Menu*>(item->menu());
+                    if (menu_i != nullptr) {
+                        menu_i->updatePositionVariable(menu_i->position() - 1);
+                    }
                 }
                 else {
-                    MenuItem* menuItem = static_cast<MenuItem*>(item);
-                    menuItem->updatePositionVariable(menuItem->position() - 1);
+                    MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+                    if (menuItem != nullptr) {
+                        menuItem->updatePositionVariable(menuItem->position() - 1);
+                    }
                 }
             }
         }
@@ -300,12 +322,16 @@ void Menu::setPosition(int newPosition) {
         {
             QAction* item = items[items.size() - 1];
             if (item->menu()) {
-                Menu* menu_i = static_cast<Menu*>(item->menu());
-                menu_i->updatePositionVariable(items.size());
+                Menu* menu_i = qobject_cast<Menu*>(item->menu());
+                if (menu_i != nullptr) {
+                    menu_i->updatePositionVariable(items.size());
+                }
             }
             else {
-                MenuItem* menuItem = static_cast<MenuItem*>(item);
-                menuItem->updatePositionVariable(items.size());
+                MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+                if (menuItem != nullptr) {
+                    menuItem->updatePositionVariable(items.size());
+                }
             }
             actionsStack.push(item);
             menu->removeAction(item);
@@ -330,15 +356,21 @@ void Menu::remove() {
 
     if (insideMenu) {
         for (QWidget* widget : widgets) {
-            QMenu* parentMenu = static_cast<QMenu*>(widget);
-            parentMenu->removeAction(this->menuAction());
+            QMenu* parentMenu = qobject_cast<QMenu*>(widget);
+            if (parentMenu != nullptr) {
+                parentMenu->removeAction(this->menuAction());
+            }
         }
     }
     else {
-        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
-        lc::ui::MainWindow* mainWindow = static_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
-        mainWindow->removeFromMenuMap(this->label());
-        menuBar->removeAction(this->menuAction());
+        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
+        if (menuBar != nullptr) {
+            lc::ui::MainWindow* mainWindow = qobject_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
+            if (mainWindow != nullptr) {
+                mainWindow->removeFromMenuMap(this->label());
+                menuBar->removeAction(this->menuAction());
+            }
+        }
     }
 }
 
@@ -355,18 +387,22 @@ bool Menu::checkForItemOfSameLabel(const char* label, bool isMenu) {
             if (action->menu()) {
                 continue;
             }
-            MenuItem* item = static_cast<MenuItem*>(action);
+            MenuItem* item = qobject_cast<MenuItem*>(action);
 
-            if (item->label() == std::string(label)) {
-                return true;
+            if (item != nullptr) {
+                if (item->label() == std::string(label)) {
+                    return true;
+                }
             }
         }
         else {
             if (action->menu()) {
-                Menu* item = static_cast<Menu*>(action->menu());
+                Menu* item = qobject_cast<Menu*>(action->menu());
 
-                if (item->label() == std::string(label)) {
-                    return true;
+                if (item != nullptr) {
+                    if (item->label() == std::string(label)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -380,7 +416,11 @@ void Menu::updateOtherPositionsAfterRemove() {
 
     if (insideMenu) {
         for (QWidget* widget : widgets) {
-            QMenu* menu = static_cast<QMenu*>(widget);
+            QMenu* menu = qobject_cast<QMenu*>(widget);
+
+            if (menu == nullptr) {
+                return;
+            }
 
             QList<QAction*> actions = menu->actions();
 
@@ -388,26 +428,37 @@ void Menu::updateOtherPositionsAfterRemove() {
                 QAction* item = actions[i];
 
                 if (item->menu()) {
-                    Menu* menu_i = static_cast<Menu*>(item->menu());
-                    menu_i->updatePositionVariable(menu_i->position() - 1);
+                    Menu* menu_i = qobject_cast<Menu*>(item->menu());
+                    if (menu_i != nullptr) {
+                        menu_i->updatePositionVariable(menu_i->position() - 1);
+                    }
                 }
                 else {
-                    MenuItem* menuItem = static_cast<MenuItem*>(item);
-                    menuItem->updatePositionVariable(menuItem->position() - 1);
+                    MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+                    if (menuItem != nullptr) {
+                        menuItem->updatePositionVariable(menuItem->position() - 1);
+                    }
                 }
             }
         }
     }
     else {
-        QMenuBar* menuBar = static_cast<QMenuBar*>(widgets[0]);
+        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
+
+        if (menuBar == nullptr) {
+            return;
+        }
 
         QList<QAction*> menuList = menuBar->actions();
 
         for (int i = _position + 1; i < menuList.size(); i++) {
             QAction* item = menuList[i];
 
-            Menu* menu = static_cast<Menu*>(item->menu());
-            menu->updatePositionVariable(menu->position() - 1);
+            Menu* menu = qobject_cast<Menu*>(item->menu());
+
+            if (menu != nullptr) {
+                menu->updatePositionVariable(menu->position() - 1);
+            }
         }
     }
 }
