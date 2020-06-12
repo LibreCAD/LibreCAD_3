@@ -16,7 +16,7 @@ setmetatable(CopyOperation, {
 function CopyOperation:_init(widget)
     Operations._init(self, widget)
 
-    self.selection = mainWindow:getCadMdiChild():selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected")
 
@@ -58,7 +58,7 @@ end
 
 function CopyOperation:tempCopy(point)
     if(self.origin ~= nil) then
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
         end
@@ -76,7 +76,7 @@ end
 
 function CopyOperation:copy()
     local offset = self.destination:sub(self.origin)
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -92,7 +92,7 @@ end
 function CopyOperation:close()
     if(not self.finished) then
         self.finished = true
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
         end

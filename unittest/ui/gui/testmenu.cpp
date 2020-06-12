@@ -1,13 +1,13 @@
 #include<QApplication>
 #include <gtest/gtest.h>
 
-#include "apimainwindowtest.h"
+#include <mainwindow.h>
 
 #include "../uitests.h"
 
 TEST(MenuTest, MenuLabelTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::Menu* testMenu2 = new lc::ui::api::Menu("TESTMENU2");
@@ -36,7 +36,7 @@ TEST(MenuTest, MenuLabelTest) {
 
 TEST(MenuTest, MenuGetTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testMenu = mainWindow->addMenu("TESTMENU");
     lc::ui::api::Menu* testMenu2 = new lc::ui::api::Menu("TESTMENU2");
@@ -64,7 +64,7 @@ TEST(MenuTest, MenuGetTest) {
 
 TEST(MenuTest, MenuPositionTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
 
@@ -125,7 +125,7 @@ TEST(MenuTest, MenuPositionTest) {
 
 TEST(MenuTest, MenuRemoveTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* testmenu = mainWindow->addMenu("TESTMENU");
 
@@ -166,36 +166,36 @@ TEST(MenuTest, MenuRemoveTest) {
 
 TEST(MenuTest, MenuInBarRemoveTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::Menu* menu1 = mainWindow->addMenu("Menu1");
     lc::ui::api::Menu* menu2 = mainWindow->addMenu("Menu2");
     lc::ui::api::Menu* menu3 = new lc::ui::api::Menu("Menu3");
     mainWindow->addMenu(menu3);
 
-    EXPECT_EQ(3, menu1->position());
-    EXPECT_EQ(4, menu2->position());
-    EXPECT_EQ(5, menu3->position());
-
-    menu3->setPosition(3);
-
     EXPECT_EQ(4, menu1->position());
     EXPECT_EQ(5, menu2->position());
-    EXPECT_EQ(3, menu3->position());
+    EXPECT_EQ(6, menu3->position());
+
+    menu3->setPosition(4);
+
+    EXPECT_EQ(5, menu1->position());
+    EXPECT_EQ(6, menu2->position());
+    EXPECT_EQ(4, menu3->position());
 
     menu1->remove();
 
-    EXPECT_EQ(4, menu2->position());
-    EXPECT_EQ(3, menu3->position());
+    EXPECT_EQ(5, menu2->position());
+    EXPECT_EQ(4, menu3->position());
 
     lc::ui::api::Menu* menu4 = mainWindow->addMenu("Menu4");
 
-    EXPECT_EQ(4, menu2->position());
-    EXPECT_EQ(3, menu3->position());
-    EXPECT_EQ(5, menu4->position());
+    EXPECT_EQ(5, menu2->position());
+    EXPECT_EQ(4, menu3->position());
+    EXPECT_EQ(6, menu4->position());
 
     menu3->remove();
 
-    EXPECT_EQ(3, menu2->position());
-    EXPECT_EQ(4, menu4->position());
+    EXPECT_EQ(4, menu2->position());
+    EXPECT_EQ(5, menu4->position());
 }

@@ -291,12 +291,12 @@ void Layers::removeLayer(lc::meta::Layer_CSPtr layer) {
 }
 
 void Layers::removeLayer(const char* layerName) {
-    lc::meta::Layer_CSPtr layer = model->getLayer(layerName);
+    lc::meta::Layer_CSPtr layer = model->layerByName(layerName);
     removeLayer(layer);
 }
 
-lc::meta::Layer_CSPtr Layers::getLayer(const char* layerName) {
-    return model->getLayer(layerName);
+lc::meta::Layer_CSPtr Layers::layerByName(const char* layerName) {
+    return model->layerByName(layerName);
 }
 
 void Layers::renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName) {
@@ -306,7 +306,7 @@ void Layers::renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName) 
 }
 
 void Layers::renameLayer(const char* layerName, const char* newLayerName) {
-    lc::meta::Layer_CSPtr layer = model->getLayer(layerName);
+    lc::meta::Layer_CSPtr layer = model->layerByName(layerName);
     renameLayer(layer, newLayerName);
 }
 
@@ -317,6 +317,6 @@ void Layers::replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSP
 }
 
 void Layers::replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer) {
-    lc::meta::Layer_CSPtr oldLayer = model->getLayer(oldLayerName);
+    lc::meta::Layer_CSPtr oldLayer = model->layerByName(oldLayerName);
     replaceLayer(oldLayer, newLayer);
 }

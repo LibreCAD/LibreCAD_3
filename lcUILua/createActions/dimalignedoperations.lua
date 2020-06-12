@@ -67,13 +67,13 @@ function DimAlignedOperations:enterMiddleOfText(eventName, data)
         )
         self.step = "enterText"
         message("Enter text (<> for value)")
-        mainWindow:getCliCommand():returnText( true)
+        mainWindow:cliCommand():returnText( true)
     end
 end
 
 function DimAlignedOperations:enterText(eventName, data)
     if(eventName == "text") then
-        mainWindow:getCliCommand():returnText( false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

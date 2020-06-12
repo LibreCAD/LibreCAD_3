@@ -44,13 +44,15 @@ namespace lc
             /**
             * \brief Gettters for clicommand,cadmdichild and toolbar for use in lua
             */
-            lc::ui::widgets::CliCommand* getCliCommand();
+            lc::ui::widgets::CliCommand* cliCommand();
 
-            lc::ui::CadMdiChild* getCadMdiChild();
+            lc::ui::CadMdiChild* cadMdiChild();
 
-            lc::ui::widgets::Toolbar* getToolbar();
+            lc::ui::widgets::Toolbar* toolbar();
 
-            lc::ui::widgets::Layers* getLayers();
+            lc::ui::widgets::Layers* layers();
+
+            lc::ui::LuaInterface* luaInterface();
 
             /**
             * \brief Connect existing menu item to lua callback function
@@ -171,12 +173,12 @@ namespace lc
 
         protected:
             Ui::MainWindow* ui;
-            lc::ui::LuaInterface luaInterface;
+            lc::ui::LuaInterface _luaInterface;
 
-            lc::ui::CadMdiChild cadMdiChild;
-            lc::ui::widgets::Layers layers;
-            lc::ui::widgets::CliCommand cliCommand;
-            lc::ui::widgets::Toolbar toolbar;
+            lc::ui::CadMdiChild _cadMdiChild;
+            lc::ui::widgets::Layers _layers;
+            lc::ui::widgets::CliCommand _cliCommand;
+            lc::ui::widgets::Toolbar _toolbar;
 
             // Select tools
             lc::ui::widgets::LinePatternSelect linePatternSelect;

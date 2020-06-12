@@ -54,7 +54,7 @@ function DimRadialOperations:enterMiddleOfText(eventName, data)
     if(eventName == "point") then
         self.step = "enterText"
 
-        mainWindow:getCliCommand():returnText( true)
+        mainWindow:cliCommand():returnText( true)
 
         message("Enter dimension text (<> for value)")
     end
@@ -62,7 +62,7 @@ end
 
 function DimRadialOperations:enterText(eventName, data)
     if(eventName == "text") then
-        mainWindow:getCliCommand():returnText( false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

@@ -274,14 +274,14 @@ function Rectangle:storeRectangle()
     local block = createStorage(self.p1, self.p2:x() - self.p1:x(), self.p2:y() - self.p1:y())
     b:append(AddBlock(d, block))
 
-    local entities = generate_lines(self.p1, self.p2, mainWindow:getCadMdiChild():activeLayer(), block, mainWindow:getCadMdiChild():metaInfoManager():metaInfo())
+    local entities = generate_lines(self.p1, self.p2, mainWindow:cadMdiChild():activeLayer(), block, mainWindow:cadMdiChild():metaInfoManager():metaInfo())
     local eb = EntityBuilder(d)
 
     for k, v in pairs(entities) do
         eb:appendEntity(v)
     end
 
-    eb:appendEntity(createInsert(self.p1, mainWindow:getCadMdiChild():activeLayer(), d, block, mainWindow:getCadMdiChild():metaInfoManager():metaInfo()))
+    eb:appendEntity(createInsert(self.p1, mainWindow:cadMdiChild():activeLayer(), d, block, mainWindow:cadMdiChild():metaInfoManager():metaInfo()))
     b:append(eb)
 
     b:execute()
@@ -298,7 +298,7 @@ function Rectangle:tempRectangle(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = generate_lines(self.p1, point, mainWindow:getCadMdiChild():activeLayer(), nil, mainWindow:getCadMdiChild():metaInfoManager():metaInfo())
+    self.entities = generate_lines(self.p1, point, mainWindow:cadMdiChild():activeLayer(), nil, mainWindow:cadMdiChild():metaInfoManager():metaInfo())
 
     for k, v in pairs(self.entities) do
         active_widget():tempEntities():addEntity(v)

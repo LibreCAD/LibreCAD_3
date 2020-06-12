@@ -92,8 +92,7 @@ if(WITH_QT_UI)
             ui/uitests.h
             ui/widgets/layers.h
             ui/dialogs/addlinepatterndialog.h
-            ui/dialogs/addlayerdialog.h
-            ui/gui/apimainwindowtest.h)
+            ui/dialogs/addlayerdialog.h)
 
     set(src
             ${src}

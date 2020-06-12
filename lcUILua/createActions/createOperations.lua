@@ -28,7 +28,7 @@ function CreateOperations:onEvent(eventName, data)
 end
 
 function CreateOperations:createEntity()
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
     b:appendEntity(self:build())
     b:execute()
 
@@ -36,22 +36,22 @@ function CreateOperations:createEntity()
 end
 
 function CreateOperations:build()
-    self.builder:setLayer(mainWindow:getCadMdiChild():activeLayer())
-    self.builder:setMetaInfo(mainWindow:getCadMdiChild():metaInfoManager():metaInfo())
-    self.builder:setBlock(mainWindow:getCadMdiChild():activeViewport())
+    self.builder:setLayer(mainWindow:cadMdiChild():activeLayer())
+    self.builder:setMetaInfo(mainWindow:cadMdiChild():metaInfoManager():metaInfo())
+    self.builder:setBlock(mainWindow:cadMdiChild():activeViewport())
 
     return self.builder:build()
 end
 
 function CreateOperations:refreshTempEntity()
     if (self.prevEntity ~= nil) then
-        mainWindow:getCadMdiChild():tempEntities():removeEntity(self.prevEntity)
+        mainWindow:cadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 
     self.entity = self:build()
 
     if (self.entity ~= nil) then
-        mainWindow:getCadMdiChild():tempEntities():addEntity(self.entity)
+        mainWindow:cadMdiChild():tempEntities():addEntity(self.entity)
     end
 
     self.prevEntity = self.entity
@@ -59,7 +59,7 @@ end
 
 function CreateOperations:removeTempEntity()
     if (self.prevEntity ~= nil) then
-        mainWindow:getCadMdiChild():tempEntities():removeEntity(self.prevEntity)
+        mainWindow:cadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 end
 
@@ -85,8 +85,8 @@ function CreateOperations:close()
             self:cleanUp()
         end
         self:unregisterEvents()
-        mainWindow:getCliCommand():returnText(false)
-        mainWindow:getCliCommand():commandActive(false)
+        mainWindow:cliCommand():returnText(false)
+        mainWindow:cliCommand():commandActive(false)
         self.finished = true
     end
 end

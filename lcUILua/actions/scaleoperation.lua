@@ -16,7 +16,7 @@ setmetatable(ScaleOperation, {
 function ScaleOperation:_init(id)
     Operations._init(self)
 
-    self.selection = mainWindow:getCadMdiChild():selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected")
 
@@ -57,7 +57,7 @@ function ScaleOperation:newData(data)
 end
 
 function ScaleOperation:scale()
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -75,7 +75,7 @@ function ScaleOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
+            mainWindow:cadMdiChild():tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('point', self)

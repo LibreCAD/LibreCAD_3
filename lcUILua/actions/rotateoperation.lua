@@ -16,7 +16,7 @@ setmetatable(RotateOperation, {
 function RotateOperation:_init(id)
     Operations._init(self)
 
-    self.selection = mainWindow:getCadMdiChild():selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected")
 
@@ -63,7 +63,7 @@ end
 
 function RotateOperation:tempRotate(point)
     if(self.origin ~= nil and self.firstPoint ~= nil) then
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
 
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
@@ -82,7 +82,7 @@ end
 
 function RotateOperation:rotate()
     local angle = self.origin:angleTo(self.secondPoint) - self.origin:angleTo(self.firstPoint)
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -100,7 +100,7 @@ function RotateOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            mainWindow:getCadMdiChild():tempEntities():removeEntity(entity)
+            mainWindow:cadMdiChild():tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('mouseMove', self)

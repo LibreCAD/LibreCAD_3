@@ -45,7 +45,7 @@ public:
 
     bool testAddingOfSelectTools()
     {
-        QList<QWidget*> childWidgets = toolbar.tabByName("Quick Access")->findChildren<QWidget*>();
+        QList<QWidget*> childWidgets = _toolbar.tabByName("Quick Access")->findChildren<QWidget*>();
         bool linePatternSelectFound = false;
         bool lineWidthSelectFound = false;
         bool colorSelectFound = false;
@@ -76,21 +76,21 @@ public:
 
     bool testOperationFinished()
     {
-        auto state = luaInterface.luaState();
-        luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
+        auto state = _luaInterface.luaState();
+        _luaInterface.triggerEvent("finishOperation", kaguya::LuaRef(state));
 
-        return toolbar.tabByName("Current operation") == nullptr;
+        return _toolbar.tabByName("Current operation") == nullptr;
     }
 
     bool testRunOperation()
     {
-        kaguya::State state(luaInterface.luaState());
+        kaguya::State state(_luaInterface.luaState());
         state.dostring("mainWindow:runOperation(LineOperations, '_init_p2')");
 
-        kaguya::LuaRef curOperation = luaInterface.operation();
+        kaguya::LuaRef curOperation = _luaInterface.operation();
 
         bool checkCorrectOperation = curOperation["command_line"] == "LINE";
-        bool checkCurrentOperationGroupAdded = (toolbar.tabByName("Quick Access")->groupByName("Current operation") != nullptr);
+        bool checkCurrentOperationGroupAdded = (_toolbar.tabByName("Quick Access")->groupByName("Current operation") != nullptr);
 
         return checkCorrectOperation && checkCurrentOperationGroupAdded;
     }
@@ -109,7 +109,7 @@ public:
     {
         QAction* testAction = findMenuItemByObjectName("action2_Point_Line");
 
-        kaguya::State state(luaInterface.luaState());
+        kaguya::State state(_luaInterface.luaState());
         state.dostring("test_menu = function() testMenuItem=5 end");
         connectMenuItem("action2_Point_Line", state["test_menu"]);
 

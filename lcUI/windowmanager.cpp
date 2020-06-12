@@ -31,7 +31,7 @@ void WindowManager::newFile(MainWindow* prevWindow)
 void WindowManager::openFile()
 {
     MainWindow* window = new MainWindow();
-    window->getCadMdiChild()->openFile();
+    window->cadMdiChild()->openFile();
     window->showMaximized();
     mainWindows.push_back(window);
 }

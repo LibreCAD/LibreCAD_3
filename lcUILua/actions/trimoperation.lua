@@ -39,7 +39,7 @@ end
 
 function TrimOperation:selectionChanged()
     if(self.toTrim == nil) then
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
         local nbEntities = #window:selection()
         if(nbEntities == 1) then
             if(self.limit == nil) then
@@ -79,7 +79,7 @@ function TrimOperation:getIntersectionPoints()
 end
 
 function TrimOperation:trim()
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
     b:appendEntity(self.toTrim)
 
     b:appendOperation(lc.operation.Push())

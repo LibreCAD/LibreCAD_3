@@ -5,8 +5,11 @@
 #include <QMdiSubWindow>
 #include <QFileDialog>
 #include <QTextStream>
+#include <mainwindow.h>
 #include "cadmdichild.h"
 #include "clicommand.h"
+
+#include <lclua.h>
 
 namespace Ui {
     class LuaScript;
@@ -28,7 +31,7 @@ namespace lc {
                      * \param mdiArea Pointer to QMdiArea
                      * \param cliCommand Pointer to CliCommand
                      */
-					explicit LuaScript(CadMdiChild* mdiArea, CliCommand* cliCommand);
+					explicit LuaScript(lc::ui::MainWindow* mainWindow);
 
 					virtual ~LuaScript();
 
@@ -49,10 +52,15 @@ namespace lc {
                      */
 					void on_save_clicked();
 
+                private:
+                    void registerGlobalFunctions(kaguya::State& luaState);
+
 				private:
 					Ui::LuaScript* ui;
+                    lc::ui::MainWindow* _mainWindow;
 					CadMdiChild* _mdiChild;
 					CliCommand* _cliCommand;
+                    lc::lua::LCLua* _lcLua;
 			};
 		}
 	}

@@ -29,7 +29,7 @@ function EllipseOperations:_init()
     self.Axis_CenterPoint = nil
     self.rotation = false
     CreateOperations._init(self, lc.builder.EllipseBuilder, "EllipsewithAxisEnd")
-    mainWindow:getCliCommand():returnText( true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
+    mainWindow:cliCommand():returnText( true) -- This command prevents the user from entering coordinates in the command line. But at the same time it is needed for receiving text options from user. Alternate method need to be worked out.
 end
 
 function EllipseOperations:_init_default()
@@ -56,7 +56,7 @@ function EllipseOperations:EllipsewithAxisEnd(eventName, data)
     if(eventName == "text" and not self.Axis_StartPoint) then
         if (string.lower(data["text"]) == "c" or string.lower(data["text"]) == "center") then
             message("Provide Center Point:")
-            mainWindow:getCliCommand():returnText( false)
+            mainWindow:cliCommand():returnText( false)
             self.step = "EllipsewithCenter"
         else
             message("Invalid input:" .. data["text"] )
@@ -75,7 +75,7 @@ function EllipseOperations:EllipsewithAxisEnd(eventName, data)
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
             message("Specify rotation:")
             self.rotation = true
-            mainWindow:getCliCommand():returnText( false)
+            mainWindow:cliCommand():returnText( false)
         else
             message("Invalid input:" .. data["text"] )
             message("Provide other axis end Point:")
@@ -106,13 +106,13 @@ function EllipseOperations:EllipsewithCenter(eventName, data)
         self.Axis_EndPoint = data['position']
         self.builder:setMajorPoint(self.Axis_EndPoint:sub(self.builder:center()))
         message("Options: <u>R</u>otation or")
-        mainWindow:getCliCommand():returnText( true)
+        mainWindow:cliCommand():returnText( true)
         message("Provide other axis end Point:")
     elseif (eventName == "text" and self.Axis_EndPoint) then
         if (string.lower(data["text"]) == "r" or string.lower(data["text"]) == "rotation") then
             message("Specify rotation:")
             self.rotation = true
-            mainWindow:getCliCommand():returnText( false)
+            mainWindow:cliCommand():returnText( false)
         else
             message("Invalid input:" .. data["text"] )
             message("Provide other axis end Point:")
@@ -168,7 +168,7 @@ function EllipseOperations:EllipseFociPoints(eventName, data)
         self.minRadius=self.builder:center():distanceTo(data["position"])
         self.builder:setMinorRadius(self.minRadius)
         message("Specify rotation:")
-        mainWindow:getCliCommand():returnText( false)
+        mainWindow:cliCommand():returnText( false)
     elseif (eventName == "mouseMove" and self.Axis_FirstFoci and self.Axis_SecondFoci and self.Axis_MajorPoint) then
         self.minRadius = self.builder:center():distanceTo(data["position"])
         self.builder:setMinorRadius(self.minRadius)

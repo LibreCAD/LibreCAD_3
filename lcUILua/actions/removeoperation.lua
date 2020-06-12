@@ -16,13 +16,13 @@ setmetatable(RemoveOperation, {
 function RemoveOperation:_init(id)
     Operations._init(self)
 
-    self.selection = mainWindow:getCadMdiChild():selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     self:remove()
 end
 
 function RemoveOperation:remove()
-    local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)

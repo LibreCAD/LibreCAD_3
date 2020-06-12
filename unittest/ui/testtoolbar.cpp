@@ -2,7 +2,7 @@
 
 #include <QApplication>
 
-#include "gui/apimainwindowtest.h"
+#include <mainwindow.h>
 #include <widgets/toolbar.h>
 #include <widgets/guiAPI/toolbartab.h>
 #include <widgets/guiAPI/toolbargroup.h>
@@ -58,15 +58,15 @@ TEST(ToolbarTest, GroupOperations) {
 
 TEST(ToolbarTest, SlotTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
-    lc::ui::LuaInterface* luaInterface = mainWindow->getLuaInterface();
+    lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
     kaguya::State state(luaInterface->luaState());
 
     state.dostring("testtoolbar = function() doesThisExist=true end");
     kaguya::LuaRef cb = state["testtoolbar"];
 
-    Toolbar* toolbar = mainWindow->getToolbar();
+    Toolbar* toolbar = mainWindow->toolbar();
     ToolbarTab* testtab = toolbar->addTab("TestTab");
 
     EXPECT_EQ(testtab, toolbar->tabByName("TestTab"));

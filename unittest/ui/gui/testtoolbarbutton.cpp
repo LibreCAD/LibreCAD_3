@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <luainterface.h>
-#include "apimainwindowtest.h"
+#include <mainwindow.h>
 
 #include <widgets/toolbar.h>
 #include <widgets/guiAPI/toolbartab.h>
@@ -59,9 +59,9 @@ TEST(ToolbarButtonTest, TooltipAndRemoveTest) {
 
 TEST(ToolbarButtonTest, CallbackTest) {
     QApplication app(argc, argv);
-    ApiMainWindowTest* mainWindow = new ApiMainWindowTest();
+    MainWindow* mainWindow = new MainWindow();
 
-    lc::ui::LuaInterface* luaInterface = mainWindow->getLuaInterface();
+    lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
     kaguya::State state(luaInterface->luaState());
 
     state.dostring("testbutton1 = function() doesThisExist1=true end");
@@ -73,7 +73,7 @@ TEST(ToolbarButtonTest, CallbackTest) {
     kaguya::LuaRef cb3 = state["testbutton3"];
     kaguya::LuaRef cb4 = state["testbutton4"];
 
-    Toolbar* toolbar = mainWindow->getToolbar();
+    Toolbar* toolbar = mainWindow->toolbar();
     ToolbarTab* testtab = toolbar->addTab("TestTab");
     ToolbarGroup* testgroup = testtab->addGroup("TestGroup");
     ToolbarButton* testbutton = new ToolbarButton("TestButton", "", cb1);

@@ -23,7 +23,7 @@ setmetatable(CircleOperations, {
 
 function CircleOperations:_init()
     CreateOperations._init(self, lc.builder.CircleBuilder, "enterCenter")
-    mainWindow:getCliCommand():commandActive(true)
+    mainWindow:cliCommand():commandActive(true)
 
     self.builder:setRadius(10)
     self.firstpoint = nil
@@ -238,7 +238,7 @@ end
 function CircleOperations:drawAllTan3Circles()
     self.builder:modifyForTempEntity(true)
     local oldId =self.builder:id()
-    self.temp3tans = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+    self.temp3tans = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for i=-1,1 do
         for j=-1,1 do
@@ -270,7 +270,7 @@ end
 function CircleOperations:CircleWith3Tans(eventName, data)
     if(eventName == "mouseMove") then
         if(self.constructed3tan ~= true) then
-            self.selection = mainWindow:getCadMdiChild():selection()
+            self.selection = mainWindow:cadMdiChild():selection()
             self.initialMousePosition = data["position"]
             local successful = false
             if(#self.selection == 3) then
@@ -308,7 +308,7 @@ end
 function CircleOperations:CircleWith2Tans(eventName, data)
     if(eventName == "mouseMove") then
         if(self.constructed2tan ~= true) then
-            self.selection = mainWindow:getCadMdiChild():selection()
+            self.selection = mainWindow:cadMdiChild():selection()
             self.initialMousePosition = data["position"]
             if(#self.selection == 2) then
                 local success = self.builder:twoTanConstructor(self.selection[1], self.selection[2], -1, -1, 50, 0)

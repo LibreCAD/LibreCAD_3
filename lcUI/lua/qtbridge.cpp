@@ -235,7 +235,7 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript, QWidget>()
-	    .setConstructors<widgets::LuaScript(CadMdiChild*, widgets::CliCommand*)>()
+	    .setConstructors<widgets::LuaScript(lc::ui::MainWindow*)>()
 	);
 
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
@@ -291,7 +291,7 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["Layers"].setClass(kaguya::UserdataMetatable<widgets::Layers, QDockWidget>()
 	    .setConstructors<widgets::Layers()>() //return new widgets::Layers() before
 		.addFunction("setMdiChild", &widgets::Layers::setMdiChild)
-        .addFunction("getLayer", &widgets::Layers::getLayer)
+        .addFunction("layerByName", &widgets::Layers::layerByName)
         .addOverloadedFunctions("addLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr)>(&widgets::Layers::addLayer),
             static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*)>(&widgets::Layers::addLayer),
             static_cast<lc::meta::Layer_CSPtr(widgets::Layers::*)(const char*, double)>(&widgets::Layers::addLayer),
@@ -344,10 +344,10 @@ void addLCBindings(lua_State *L) {
 
     state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::MainWindow>()
         .addFunction("connectMenuItem", &lc::ui::MainWindow::connectMenuItem)
-        .addFunction("getCliCommand", &lc::ui::MainWindow::getCliCommand)
-        .addFunction("getCadMdiChild", &lc::ui::MainWindow::getCadMdiChild)
-        .addFunction("getToolbar", &lc::ui::MainWindow::getToolbar)
-        .addFunction("getLayers", &lc::ui::MainWindow::getLayers)
+        .addFunction("cliCommand", &lc::ui::MainWindow::cliCommand)
+        .addFunction("cadMdiChild", &lc::ui::MainWindow::cadMdiChild)
+        .addFunction("toolbar", &lc::ui::MainWindow::toolbar)
+        .addFunction("layers", &lc::ui::MainWindow::layers)
         .addFunction("operationFinished", &lc::ui::MainWindow::operationFinished)
         .addFunction("findMenuItem", &lc::ui::MainWindow::findMenuItem)
         .addFunction("findMenuItemByObjectName", &lc::ui::MainWindow::findMenuItemByObjectName)

@@ -193,8 +193,8 @@ function Gear:calc(N, phi, Pc, layer, metaInfo, block)
 end
 
 function Gear:drawGear()
-    local layer = mainWindow:getCadMdiChild():activeLayer()
-    local metaInfo = mainWindow:getCadMdiChild():metaInfoManager():metaInfo()
+    local layer = mainWindow:cadMdiChild():activeLayer()
+    local metaInfo = mainWindow:cadMdiChild():metaInfoManager():metaInfo()
     local block = Block("Gear_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
 
     local entities = Gear:calc(self.n, math.rad(self.phi), math.rad(self.pc), layer, metaInfo, block)
@@ -247,7 +247,7 @@ function Gear:tempGear(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, math.rad(phi), math.rad(pc), mainWindow:getCadMdiChild():activeLayer(), mainWindow:getCadMdiChild():metaInfoManager():metaInfo())
+    self.entities = self:calc(n, math.rad(phi), math.rad(pc), mainWindow:cadMdiChild():activeLayer(), mainWindow:cadMdiChild():metaInfoManager():metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin):scale(origin, scalePoint)

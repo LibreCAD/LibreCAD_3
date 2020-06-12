@@ -63,7 +63,7 @@ namespace lc {
                     /**
                      * \brief API function for getting a layer
                      */
-                    lc::meta::Layer_CSPtr getLayer(const char* layerName);
+                    lc::meta::Layer_CSPtr layerByName(const char* layerName);
 
                     /**
                      * \brief API functions for renaming a layer

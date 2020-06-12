@@ -329,11 +329,11 @@ void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
 
     // cli command helper functions
-    _L.dostring("message = function(m) mainWindow:getCliCommand():write(tostring(m)) end");
-    _L.dostring("cli_get_text = function(getText) mainWindow:getCliCommand():returnText(getText) end");
-    _L.dostring("add_command = function(command, callback) mainWindow:getCliCommand():addCommand(command, callback) end");
-    _L.dostring("run_command = function(command) mainWindow:getCliCommand():runCommand(command) end");
-    _L.dostring("add_command('CLEAR', function() mainWindow:getCliCommand():clear() end)");
+    _L.dostring("message = function(m) mainWindow:cliCommand():write(tostring(m)) end");
+    _L.dostring("cli_get_text = function(getText) mainWindow:cliCommand():returnText(getText) end");
+    _L.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
+    _L.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
+    _L.dostring("add_command('CLEAR', function() mainWindow:cliCommand():clear() end)");
 
     _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
     _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
@@ -378,7 +378,7 @@ std::map<std::string, std::set<std::string>> LuaInterface::getSetOfGroupElements
 }
 
 void LuaInterface::addOperationCommandLine(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow) {
-    lc::ui::widgets::CliCommand* cliCommand = static_cast<lc::ui::MainWindow*>(mainWindow)->getCliCommand();
+    lc::ui::widgets::CliCommand* cliCommand = static_cast<lc::ui::MainWindow*>(mainWindow)->cliCommand();
     
     if (_L[vkey][opkey].type() == _L[vkey][opkey].TYPE_STRING) {
         _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");
@@ -425,7 +425,7 @@ void LuaInterface::addOperationMenuAction(const std::string& vkey, const std::st
 
 void LuaInterface::addOperationIcon(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow, const std::set<std::string>& foundProperties,
     const std::string& groupName){
-    lc::ui::widgets::Toolbar* toolbar = static_cast<lc::ui::MainWindow*>(mainWindow)->getToolbar();
+    lc::ui::widgets::Toolbar* toolbar = static_cast<lc::ui::MainWindow*>(mainWindow)->toolbar();
     std::string icon = _L[vkey][opkey].get<std::string>();
     std::string tooltip;
 
@@ -459,7 +459,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             for (auto elementInit : optionsInit) {
                 std::map<std::string, std::string> optionInit = elementInit.second;
 
-                std::string action = "operation_op = function() mainWindow:getToolbar():addButton('cancel', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
+                std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + optionInit["icon"] + "', 'Current operation', function() luaInterface:operation():" + optionInit["action"] + "() end, '" + elementInit.first + "') end";
                 _L.dostring(action);
                 optionsInitList.push_back(_L["operation_op"]);
                 countInit++;
@@ -473,7 +473,7 @@ void LuaInterface::addOperationToolbarOptions(const std::string& vkey, const std
             // default operation_options
             std::map<std::string, std::string> option = element.second;
 
-            std::string action = "operation_op = function() mainWindow:getToolbar():addButton('cancel', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
+            std::string action = "operation_op = function() mainWindow:toolbar():addButton('cancel', ':/icons/" + option["icon"] + "', 'Current operation', function() luaInterface:operation():" + option["action"] + "() end, '" + element.first + "') end";
             _L.dostring(action);
             optionsList.push_back(_L["operation_op"]);
             count++;

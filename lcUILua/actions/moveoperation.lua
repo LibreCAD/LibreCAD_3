@@ -16,7 +16,7 @@ setmetatable(MoveOperation, {
 function MoveOperation:_init(id)
     Operations._init(self)
 
-    self.selection = mainWindow:getCadMdiChild():selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
     message(tostring(#self.selection) .. " items selected")
 
@@ -49,7 +49,7 @@ function MoveOperation:newData(point)
         message("Give destination point")
     elseif(Operations:getCoordinate(point) ~= nil) then
         local offset = point:sub(self.origin)
-        local b = lc.operation.EntityBuilder(mainWindow:getCadMdiChild():document())
+        local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
         for k, entity in pairs(self.selection) do
             b:appendEntity(entity)
@@ -65,7 +65,7 @@ end
 
 function MoveOperation:tempMove(point)
     if(self.origin ~= nil) then
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
         end
@@ -83,7 +83,7 @@ end
 
 function MoveOperation:close()
     if(not self.finished) then
-        local window = mainWindow:getCadMdiChild()
+        local window = mainWindow:cadMdiChild()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do

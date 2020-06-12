@@ -64,7 +64,7 @@ function DimAngularOperations:enterSecondPoint(eventName, data)
         self.secondPoint = data["position"]
         self.step = "enterText"
 
-        mainWindow:getCliCommand():returnText( true)
+        mainWindow:cliCommand():returnText( true)
 
         message("Enter dimension text or leave it empty (<> for value)")
     end
@@ -72,7 +72,7 @@ end
 
 function DimAngularOperations:enterText(eventName, data)
     if(eventName == "text") then
-        mainWindow:getCliCommand():returnText( false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

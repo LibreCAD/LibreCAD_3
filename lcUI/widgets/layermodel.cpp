@@ -91,7 +91,7 @@ unsigned int LayerModel::indexOf(const lc::meta::Layer_CSPtr& layer) {
     return 0;
 }
 
-lc::meta::Layer_CSPtr LayerModel::getLayer(const std::string& layerName) {
+lc::meta::Layer_CSPtr LayerModel::layerByName(const std::string& layerName) {
     for (unsigned int i = 0; i < _layers.size(); i++) {
         if (_layers[i]->name() == layerName) {
             return _layers[i];
