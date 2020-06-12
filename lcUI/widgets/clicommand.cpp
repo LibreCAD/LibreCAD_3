@@ -254,7 +254,7 @@ bool CliCommand::isCommandEnabled(const char* command) const {
     return _commands_enabled[QString(command)];
 }
 
-std::vector<std::string> CliCommand::getAvailableCommands() const {
+std::vector<std::string> CliCommand::availableCommands() const {
     std::vector<std::string> allcommands;
 
     for (auto command : _commands_enabled.keys()) {
@@ -264,7 +264,7 @@ std::vector<std::string> CliCommand::getAvailableCommands() const {
     return allcommands;
 }
 
-std::vector<std::string> CliCommand::getCommandsHistory() const {
+std::vector<std::string> CliCommand::commandsHistory() const {
     return _commands_entered;
 }
 

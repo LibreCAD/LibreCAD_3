@@ -262,8 +262,8 @@ void addLCBindings(lua_State *L) {
             cliCommand->enableCommand(command, false);
         })
         .addFunction("isCommandEnabled", &widgets::CliCommand::isCommandEnabled)
-        .addFunction("getAvailableCommands", &widgets::CliCommand::getAvailableCommands)
-        .addFunction("getCommandsHistory", &widgets::CliCommand::getCommandsHistory)
+        .addFunction("availableCommands", &widgets::CliCommand::availableCommands)
+        .addFunction("commandsHistory", &widgets::CliCommand::commandsHistory)
         .addFunction("clear", &widgets::CliCommand::clear)
 	);
 
@@ -446,6 +446,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("hide", &lc::ui::api::ToolbarGroup::hide)
         .addFunction("show", &lc::ui::api::ToolbarGroup::show)
         .addFunction("remove", &lc::ui::api::ToolbarGroup::remove)
+        .addFunction("setWidth", &lc::ui::api::ToolbarGroup::setWidth)
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),

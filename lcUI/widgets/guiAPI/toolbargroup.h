@@ -93,6 +93,11 @@ namespace lc
                 void remove();
 
                 /**
+                * \brief Change number of columns for group
+                */
+                void setWidth(int width);
+
+                /**
                 * \brief Ready for callback connection
                 */
                 void enableConnections();
@@ -136,8 +141,8 @@ namespace lc
 
             private:
                 bool _connected;
-                const int width;
-                int count;
+                int _width;
+                int _count;
             };
         }
     }

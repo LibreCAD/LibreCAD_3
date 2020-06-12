@@ -1,7 +1,6 @@
 #include "menuitem.h"
 
 #include "menu.h"
-#include <QObject>
 #include <stack>
 
 using namespace lc::ui;

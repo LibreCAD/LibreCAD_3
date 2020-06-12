@@ -56,25 +56,49 @@ namespace lc {
 
                     /**
                      * \brief API function for removing a layer
+                     * \param shared ptr to layer
                      */
                     void removeLayer(lc::meta::Layer_CSPtr layer);
+
+                    /**
+                    * \brief API function for removing a layer
+                    * \param string layer name
+                    */
                     void removeLayer(const char* layerName);
 
                     /**
                      * \brief API function for getting a layer
+                     * \param string layer name
+                     * \return shared ptr to layer
                      */
                     lc::meta::Layer_CSPtr layerByName(const char* layerName);
 
                     /**
                      * \brief API functions for renaming a layer
+                     * \param shared ptr to layer
+                     * \param string new layer name
                      */
                     void renameLayer(lc::meta::Layer_CSPtr layer, const char* newLayerName);
+
+                    /**
+                     * \brief API functions for renaming a layer
+                     * \param string old layer name
+                     * \param string new layer name
+                     */
                     void renameLayer(const char* layerName, const char* newLayerName);
 
                     /**
                      * \brief API functions for replacing a layer
+                     * \param shared ptr to old layer
+                     * \param string shared ptr to newlayer
                      */
                     void replaceLayerAPI(lc::meta::Layer_CSPtr oldLayer, lc::meta::Layer_CSPtr newLayer);
+
+                    /**
+                     * \brief API functions for replacing a layer
+                     * \param string old layer name
+                     * \param string shared ptr to newlayer
+                     */
                     void replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer);
 
                 signals:

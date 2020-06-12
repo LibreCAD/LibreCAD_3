@@ -1,5 +1,4 @@
 #include "menu.h"
-#include <QObject>
 #include <mainwindow.h>
 
 using namespace lc::ui;

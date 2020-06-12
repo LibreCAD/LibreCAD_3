@@ -69,16 +69,41 @@ namespace lc {
                      */
                     void commandActive(bool commandActive);
 
+                    /**
+                     * \brief run the command
+                     * \param command string
+                     */
                     void runCommand(const char* command);
 
+                    /**
+                     * \brief Enable/Disable the command
+                     * \param command string
+                     * \param enable bool
+                     */
                     void enableCommand(const char* command, bool enable);
 
+                    /**
+                     * \brief Is the command enabled
+                     * \param command string
+                     * \return enable bool
+                     */
                     bool isCommandEnabled(const char* command) const;
 
-                    std::vector<std::string> getAvailableCommands() const;
+                    /**
+                     * \brief Get all available commands
+                     * \return vector of command strings
+                     */
+                    std::vector<std::string> availableCommands() const;
 
-                    std::vector<std::string> getCommandsHistory() const;
+                    /**
+                     * \brief Get the history of commands run
+                     * \return vector of command strings
+                     */
+                    std::vector<std::string> commandsHistory() const;
 
+                    /**
+                     * \brief Clear the clicommand output in the widget
+                     */
                     void clear();
 
                 public slots:

@@ -5,16 +5,16 @@ using namespace lc::ui::api;
 ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent) 
     :
     QGroupBox(groupName, parent),
-    width(width),
+    _width(width),
     _connected(false),
-    count(0)
+    _count(0)
 {
     this->setLayout(new QGridLayout());
 }
 
 void ToolbarGroup::addButton(ToolbarButton* button) {
     auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
-    gridLayout->addWidget(button, count / width, count % width, 1, 1);
+    gridLayout->addWidget(button, _count / _width, _count % _width, 1, 1);
 
     QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
     QObject::connect(button, SIGNAL(connectToCallback(int,ToolbarButton*)), this, SLOT(connectToolbarButtonToCallback(int,ToolbarButton*)));
@@ -23,7 +23,30 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
     if (_connected) {
         button->enableConnections();
     }
-    count++;
+    _count++;
+}
+
+void ToolbarGroup::setWidth(int width) {
+    std::vector<QWidget*> widgetsList;
+    auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
+
+    for (int i = 0; i < gridLayout->count(); i++) {
+        QWidget* currentWidget = gridLayout->itemAt(i)->widget();
+        widgetsList.push_back(currentWidget);
+    }
+
+    for (QWidget* currentWidget : widgetsList)
+    {
+        gridLayout->removeWidget(currentWidget);
+    }
+
+    _count = 0;
+    _width = width;
+    for (QWidget* currentWidget : widgetsList)
+    {
+        gridLayout->addWidget(currentWidget, _count / _width, _count % _width, 1, 1);
+        _count++;
+    }
 }
 
 ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* buttonIcon) {
@@ -40,8 +63,8 @@ ToolbarButton* ToolbarGroup::addButton(const char* buttonName, const char* butto
 
 void ToolbarGroup::addWidget(QWidget* widget) {
     auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
-    gridLayout->addWidget(widget, count / width, count % width, 1, 1);
-    count++;
+    gridLayout->addWidget(widget, _count / _width, _count % _width, 1, 1);
+    _count++;
 }
 
 std::string ToolbarGroup::label() const {

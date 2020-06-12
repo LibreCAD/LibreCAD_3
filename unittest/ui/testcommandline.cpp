@@ -148,8 +148,8 @@ TEST(CommandLine, GetAPITest) {
     QApplication app(argc, argv);
     CliCommandTest cliTest;
 
-    std::vector<std::string> availableCommands = cliTest.getAvailableCommands();
-    std::vector<std::string> commandsEntered = cliTest.getCommandsHistory();
+    std::vector<std::string> availableCommands = cliTest.availableCommands();
+    std::vector<std::string> commandsEntered = cliTest.commandsHistory();
 
     kaguya::State state;
     state.dostring("testfunction = function() testvalue=true end");
@@ -160,8 +160,8 @@ TEST(CommandLine, GetAPITest) {
     cliTest.addCommand("COMMAND1", state["testfunction"]);
     cliTest.addCommand("COMMAND2", state["testfunction"]);
 
-    availableCommands = cliTest.getAvailableCommands();
-    commandsEntered = cliTest.getCommandsHistory();
+    availableCommands = cliTest.availableCommands();
+    commandsEntered = cliTest.commandsHistory();
 
     EXPECT_EQ(2, availableCommands.size());
     EXPECT_EQ(0, commandsEntered.size());
@@ -170,8 +170,8 @@ TEST(CommandLine, GetAPITest) {
     cliTest.enableCommand("COMMAND2", false);
     cliTest.runCommand("COMMAND2");
 
-    availableCommands = cliTest.getAvailableCommands();
-    commandsEntered = cliTest.getCommandsHistory();
+    availableCommands = cliTest.availableCommands();
+    commandsEntered = cliTest.commandsHistory();
 
     EXPECT_EQ(2, availableCommands.size());
     EXPECT_EQ(1, commandsEntered.size());
