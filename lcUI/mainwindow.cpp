@@ -170,18 +170,21 @@ void MainWindow::ConnectInputEvents()
 
 void MainWindow::connectMenuItem(const std::string& itemName, kaguya::LuaRef callback)
 {
-    _luaInterface.luaConnect(findMenuItemByObjectName(itemName.c_str()), "triggered(bool)", callback);
+    lc::ui::api::MenuItem* menuItem = findMenuItemByObjectName(itemName.c_str());
+    menuItem->addCallback(callback);
 }
 
 void MainWindow::initMenuAPI() {
     QList<QMenu*> allMenus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
 
+    int menuPosition = 0;
     for (QMenu* current_menu : allMenus)
     {
         api::Menu* menu = static_cast<api::Menu*>(current_menu);
         this->menuBar()->addAction(menu->menuAction());
         menuMap[menu->title()] = menu;
-        menu->enableConnections(false);
+        menu->updatePositionVariable(menuPosition);
+        menuPosition++;
 
         QList<QMenu*> allMenusOfCurrentMenu = menu->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
 
@@ -222,9 +225,9 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
         }
     }
 
-    for (QAction* act : menuItemsToBeAdded)
+    for (QAction* it : menuItemsToBeAdded)
     {
-        menu->addAction(act);
+        menu->addAction(it);
     }
 
     // reorder menu to appear below
@@ -311,10 +314,7 @@ api::Menu* MainWindow::addMenu(const std::string& menuName) {
     }
 
     api::Menu* newMenu = new api::Menu(menuName.c_str());
-    menuBar()->addMenu(newMenu);
-    newMenu->enableConnections();
-
-    menuMap[QString(menuName.c_str())] = newMenu;
+    addMenu(newMenu);
 
     return newMenu;
 }
@@ -326,7 +326,9 @@ void MainWindow::addMenu(lc::ui::api::Menu* menu) {
 
     menuMap[menu->title()] = menu;
     menuBar()->addMenu(menu);
-    menu->enableConnections();
+
+    QList<QAction*> menuList = menuBar()->actions();
+    menu->updatePositionVariable(menuList.size() - 1);
 }
 
 api::Menu* MainWindow::menuByName(const std::string& menuName) {
@@ -374,6 +376,9 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 
 void MainWindow::removeMenu(const char* menuLabel) {
     lc::ui::api::Menu* menuremove = menuByName(menuLabel);
+    if (menuremove != nullptr) {
+        std::cout << "NOt null" << std::endl;
+    }
     menuremove->remove();
 }
 
@@ -528,12 +533,4 @@ void MainWindow::selectNone()
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
-}
-
-void MainWindow::connectToCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback) {
-    _luaInterface.luaConnect(object, signal_name, callback);
-}
-
-void MainWindow::disconnectCallbackMenu(lc::ui::api::MenuItem* object, const std::string& signal_name, kaguya::LuaRef& callback) {
-    _luaInterface.luaDisconnect(object, signal_name, callback);
 }

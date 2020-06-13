@@ -87,11 +87,6 @@ namespace lc
                 bool checkable() const;
 
                 /**
-                * \brief Ready to connect callbacks
-                */
-                void enableConnections();
-
-                /**
                 * \brief Get callback at index of callbacks list
                 * \param int index
                 * \return LuaRef& callback
@@ -100,31 +95,20 @@ namespace lc
 
             signals:
                 /**
-                * \brief Signal to group to connect callback
-                * \param int index
-                * \param ToolbarButton* pointer to this button
-                */
-                void connectToCallback(int, ToolbarButton*);
-
-                /**
-                * \brief Signal to group to disconnect callback
-                * \param int index
-                * \param ToolbarButton* pointer to this button
-                */
-                void disconnectCallback(int, ToolbarButton*);
-
-                /**
                 * \brief Signal to remove this button
                 * \param ToolbarButton* pointer to this button
                 */
                 void removeButton(ToolbarButton*);
+
+            public slots:
+
+                void buttonPressed();
 
             private:
                 std::string _label;
                 std::vector<kaguya::LuaRef> callbacks;
                 std::unordered_map<std::string, int> namedCallbacks;
                 bool _checkable;
-                bool _connected;
             };
         }
     }

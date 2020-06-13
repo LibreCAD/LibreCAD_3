@@ -15,7 +15,6 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     :
     _label(buttonLabel),
     QPushButton("", parent),
-    _connected(false),
     _checkable(_checkable)
 {
     this->setObjectName(buttonLabel);
@@ -32,6 +31,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     }
 
     changeIcon(icon);
+    connect(this, &ToolbarButton::pressed, this, &ToolbarButton::buttonPressed);
 }
 
 std::string ToolbarButton::label() const {
@@ -48,10 +48,6 @@ void ToolbarButton::setTooltip(const char* newToolTip) {
 
 void ToolbarButton::addCallback(kaguya::LuaRef callback) {
     callbacks.push_back(callback);
-
-    if (_connected) {
-        emit connectToCallback(callbacks.size() - 1, this);
-    }
 }
 
 void ToolbarButton::changeIcon(const char* icon) {
@@ -73,30 +69,18 @@ kaguya::LuaRef& ToolbarButton::getCallback(int index) {
     return callbacks[index];
 }
 
-void ToolbarButton::enableConnections() {
-    if (_connected) {
-        return;
-    }
-
-    _connected = true;
-
-    // loop through all already added callbacks and connect them
-    for (int i = 0; i < callbacks.size(); i++)
-    {
-        emit connectToCallback(i, this);
-    }
-}
-
 void ToolbarButton::addCallback(const char* cb_name, kaguya::LuaRef callback) {
     namedCallbacks[cb_name] = callbacks.size();
     addCallback(callback);
 }
 
 void ToolbarButton::removeCallback(const char* cb_name) {
-    if (_connected) {
-        emit disconnectCallback(namedCallbacks[cb_name], this);
-    }
-
     callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
     namedCallbacks.erase(namedCallbacks.find(cb_name));
+}
+
+void ToolbarButton::buttonPressed() {
+    for (int i = 0; i < callbacks.size(); i++) {
+        callbacks[i]();
+    }
 }

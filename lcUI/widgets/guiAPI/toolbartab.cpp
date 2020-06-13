@@ -8,7 +8,6 @@ using namespace lc::ui::api;
 ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
 		QWidget(parent),
         _label(tabName),
-        _connected(false),
 		ui(new Ui::ToolbarTab) {
 	ui->setupUi(this);
 
@@ -30,20 +29,8 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
         return;
     }
 
-    if (_connected) {
-        group->enableConnections();
-    }
-
     _layout->insertWidget(_layout->count() - 1, group);
-    lc::ui::widgets::Toolbar* toolbarWidget = qobject_cast<lc::ui::widgets::Toolbar*>(this->parentWidget()->parentWidget()->parentWidget());
-
-    if (toolbarWidget == nullptr) {
-        return;
-    }
-
     QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
-    QObject::connect(group, SIGNAL(connectToCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(connectToCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
-    QObject::connect(group, SIGNAL(disconnectCallbackButton(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)), toolbarWidget, SLOT(disconnectCallbackToolbar(lc::ui::api::ToolbarButton*, const std::string&, kaguya::LuaRef&)));
 }
 
 ToolbarGroup* ToolbarTab::addGroup(const char* name) {
@@ -135,21 +122,4 @@ void ToolbarTab::setLabel(const char* newLabel) {
 
 void ToolbarTab::remove() {
     emit removeTab(this);
-}
-
-void ToolbarTab::enableConnections() {
-    if (_connected) {
-        return;
-    }
-
-    _connected = true;
-
-    auto nbGroups = _layout->count();
-    for (int i = 0; i < nbGroups; i++) {
-        auto groupBox = qobject_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
-
-        if (groupBox != nullptr) {
-            groupBox->enableConnections();
-        }
-    }
 }

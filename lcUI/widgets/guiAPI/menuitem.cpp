@@ -16,10 +16,10 @@ MenuItem::MenuItem(const char* menuItemName, kaguya::LuaRef callback, QWidget* p
 MenuItem::MenuItem(const char* menuItemName, QWidget* parent)
     :
     QAction(menuItemName, parent),
-    _connected(false),
     _position(-1)
 {
     this->setObjectName(menuItemName);
+    connect(this, &MenuItem::triggered, this, &MenuItem::itemTriggered);
 }
 
 std::string MenuItem::label() {
@@ -38,43 +38,8 @@ void MenuItem::show() {
     setVisible(true);
 }
 
-void MenuItem::enableConnections(bool setCallbacks) {
-    if (_connected) {
-        return;
-    }
-
-    _connected = true;
-
-    // loop through all already added callbacks and connect them
-    if (setCallbacks) {
-        for (kaguya::LuaRef& cb : callbacks)
-        {
-            emit connectToCallback(this, "triggered(bool)", cb);
-        }
-    }
-
-    //determine position of menu item
-    QList<QWidget*> widgets = this->associatedWidgets();
-    QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
-
-    if (menu != nullptr) {
-        QList<QAction*> items = menu->actions();
-
-        for (int i = 0; i < items.size(); i++) {
-            if (items[i] == this) {
-                _position = i;
-                break;
-            }
-        }
-    }
-}
-
 void MenuItem::addCallback(kaguya::LuaRef callback) {
     callbacks.push_back(callback);
-
-    if (_connected) {
-        emit connectToCallback(this, "triggered(bool)", callback);
-    }
 }
 
 void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
@@ -87,14 +52,7 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
 }
 
 void MenuItem::removeCallback(const char* cb_name) {
-    if (_connected) {
-        if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
-            emit disconnectCallback(this, "triggered(bool)", callbacks[namedCallbacks[cb_name]]);
-            callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
-            namedCallbacks.erase(namedCallbacks.find(cb_name));
-        }
-    }
-    else {
+    if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
         callbacks.erase(callbacks.begin() + namedCallbacks[cb_name]);
         namedCallbacks.erase(namedCallbacks.find(cb_name));
     }
@@ -226,5 +184,11 @@ void MenuItem::updateOtherPositionsAfterRemove() {
                 }
             }
         }
+    }
+}
+
+void MenuItem::itemTriggered() {
+    for (int i = 0; i < callbacks.size(); i++) {
+        callbacks[i]();
     }
 }

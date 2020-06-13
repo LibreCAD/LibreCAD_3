@@ -41,7 +41,6 @@ void Toolbar::addTab(lc::ui::api::ToolbarTab* newTab) {
     if (newTab == nullptr || tabs.find(newTab->label().c_str()) != tabs.end()) {
         return;
     }
-    newTab->enableConnections();
 
     QString name = QString(newTab->label().c_str());
     ui->tabWidget->addTab(newTab, name);
@@ -135,12 +134,4 @@ void Toolbar::setToolbarTabLabel(QString newLabel, QString oldLabel) {
     lc::ui::api::ToolbarTab* tab = tabByName(oldLabel.toStdString().c_str());
     auto index = ui->tabWidget->indexOf(tab);
     ui->tabWidget->setTabText(index, newLabel);
-}
-
-void Toolbar::connectToCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback) {
-    luaInterface->luaConnect(object, signal_name, callback);
-}
-
-void Toolbar::disconnectCallbackToolbar(lc::ui::api::ToolbarButton* object, const std::string& signal_name, kaguya::LuaRef& callback) {
-    luaInterface->luaDisconnect(object, signal_name, callback);
 }

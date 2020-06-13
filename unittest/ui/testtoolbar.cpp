@@ -74,7 +74,7 @@ TEST(ToolbarTest, SlotTest) {
     EXPECT_EQ(testtab, toolbar->tabByName("NewTab"));
 
     ToolbarButton button("TestButton", "");
-    toolbar->connectToCallbackToolbar(&button, "pressed()", cb);
+    button.addCallback(cb);
 
     EXPECT_FALSE(state["doesThisExist"].get<bool>());
     button.pressed();

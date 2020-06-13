@@ -100,11 +100,6 @@ namespace lc {
                      */
                     void remove();
 
-                    /**
-                     * \brief Enable connections for groups
-                     */
-                    void enableConnections();
-
                 signals:
                     /**
                      * \brief Signal for label being changed
@@ -124,7 +119,6 @@ namespace lc {
                     void removeGroup(ToolbarGroup* group);
 
 				private:
-                    bool _connected;
                     std::string _label;
 					Ui::ToolbarTab* ui;
 					QHBoxLayout* _layout;

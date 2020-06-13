@@ -6,7 +6,6 @@ ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
     :
     QGroupBox(groupName, parent),
     _width(width),
-    _connected(false),
     _count(0)
 {
     this->setLayout(new QGridLayout());
@@ -17,12 +16,7 @@ void ToolbarGroup::addButton(ToolbarButton* button) {
     gridLayout->addWidget(button, _count / _width, _count % _width, 1, 1);
 
     QObject::connect(button, SIGNAL(removeButton(ToolbarButton*)), this, SLOT(removeButton(ToolbarButton*)));
-    QObject::connect(button, SIGNAL(connectToCallback(int,ToolbarButton*)), this, SLOT(connectToolbarButtonToCallback(int,ToolbarButton*)));
-    QObject::connect(button, SIGNAL(disconnectCallback(int,ToolbarButton*)), this, SLOT(disconnectToolbarButtonToCallback(int, ToolbarButton*)));
 
-    if (_connected) {
-        button->enableConnections();
-    }
     _count++;
 }
 
@@ -117,38 +111,4 @@ void ToolbarGroup::removeButton(const char* buttonName) {
 
 void ToolbarGroup::remove() {
     emit removeGroup(this);
-}
-
-void ToolbarGroup::connectToolbarButtonToCallback(int cb_index, ToolbarButton* button) {
-    if (button->checkable()) {
-        emit connectToCallbackButton(button, "toggled(bool)", button->getCallback(cb_index));
-    }
-    else {
-        emit connectToCallbackButton(button, "pressed()", button->getCallback(cb_index));
-    }
-}
-
-void ToolbarGroup::disconnectToolbarButtonToCallback(int cb_index, ToolbarButton* button) {
-    if (button->checkable()) {
-        emit disconnectCallbackButton(button, "toggled(bool)", button->getCallback(cb_index));
-    }
-    else {
-        emit disconnectCallbackButton(button, "pressed()", button->getCallback(cb_index));
-    }
-}
-
-void ToolbarGroup::enableConnections() {
-    if (_connected) {
-        return;
-    }
-
-    _connected = true;
-
-    auto nbButtons = this->layout()->count();
-    for (int i = 0; i < nbButtons; i++) {
-        auto button = qobject_cast<ToolbarButton*>(this->layout()->itemAt(i)->widget());
-        if (button != nullptr) {
-            button->enableConnections();
-        }
-    }
 }

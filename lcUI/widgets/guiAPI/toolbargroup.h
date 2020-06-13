@@ -97,42 +97,13 @@ namespace lc
                 */
                 void setWidth(int width);
 
-                /**
-                * \brief Ready for callback connection
-                */
-                void enableConnections();
-
             signals:
                 /**
                 * \brief Signal for group remove
                 */
                 void removeGroup(ToolbarGroup* group);
 
-                /**
-                * \brief Signal to toolbar to connect callback
-                */
-                void connectToCallbackButton(lc::ui::api::ToolbarButton* object, const std::string& function_name, kaguya::LuaRef& callback);
-
-                /**
-                * \brief Signal to toolbar to connect callback
-                */
-                void disconnectCallbackButton(lc::ui::api::ToolbarButton* object, const std::string& function_name, kaguya::LuaRef& callback);
-
             public slots:
-                /**
-                * \brief Slot for toolbar button callback connect
-                * \param int index of callback in button callback list
-                * \param pointer to toolbar button
-                */
-                void connectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
-
-                /**
-                * \brief Slot for toolbar button callback disconnection
-                * \param int index of callback in button callback list
-                * \param pointer to toolbar button
-                */
-                void disconnectToolbarButtonToCallback(int cb_index, ToolbarButton* button);
-
                 /**
                 * \brief Slot to remove button
                 * \param pointer to toolbar button
@@ -140,7 +111,6 @@ namespace lc
                 void removeButton(ToolbarButton* button);
 
             private:
-                bool _connected;
                 int _width;
                 int _count;
             };

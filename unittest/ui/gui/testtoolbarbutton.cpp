@@ -82,12 +82,6 @@ TEST(ToolbarButtonTest, CallbackTest) {
     EXPECT_FALSE(state["doesThisExist1"].get<bool>());
     EXPECT_FALSE(state["doesThisExist2"].get<bool>());
 
-    testbutton->pressed();
-
-    // False because button has not been added yet
-    EXPECT_FALSE(state["doesThisExist1"].get<bool>());
-    EXPECT_FALSE(state["doesThisExist2"].get<bool>());
-
     testgroup->addButton(testbutton);
     testbutton->pressed();
 

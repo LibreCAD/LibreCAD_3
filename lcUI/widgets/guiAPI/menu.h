@@ -169,11 +169,6 @@ namespace lc
                 */
                 void remove();
 
-                /**
-                * \brief Ready for menu item callback connections
-                */
-                void enableConnections(bool setCallbacks = true);
-
                 bool insideMenu;
 
             private:
@@ -182,7 +177,6 @@ namespace lc
                 void updateOtherPositionsAfterRemove();
 
             private:
-                bool _connected;
                 int _position;
             };
         }

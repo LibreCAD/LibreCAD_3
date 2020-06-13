@@ -7,7 +7,6 @@ using namespace lc::ui::api;
 Menu::Menu(const char* menuName, QWidget* parent)
     :
     QMenu(QString(menuName), parent),
-    _connected(false),
     _position(-1),
     insideMenu(false)
 {
@@ -17,7 +16,6 @@ Menu::Menu(const char* menuName, QWidget* parent)
 Menu::Menu(QMenuBar* menuBar)
     :
     QMenu(menuBar),
-    _connected(false),
     _position(-1),
     insideMenu(false)
 {
@@ -26,7 +24,6 @@ Menu::Menu(QMenuBar* menuBar)
 Menu::Menu(QMenu* menu)
     :
     QMenu(menu),
-    _connected(false),
     _position(-1),
     insideMenu(false)
 {
@@ -39,21 +36,15 @@ void Menu::addItem(MenuItem* item) {
 
     this->addAction(item);
 
-    lc::ui::api::Menu* menuWidget = this;
-    while (menuWidget->insideMenu)
-    {
-        QList<QWidget*> widgets = menuWidget->menuAction()->associatedWidgets();
-        menuWidget = qobject_cast<lc::ui::api::Menu*>(widgets[0]);
-    }
+    // set menu position
+    QList<QAction*> items = this->actions();
 
-    QMenuBar* menuBar = qobject_cast<QMenuBar*>(menuWidget->menuAction()->associatedWidgets()[0]);
-    lc::ui::MainWindow* mainWindow = qobject_cast<lc::ui::MainWindow*>(menuBar->parentWidget());
+    for (int i = 0; i < items.size(); i++) {
+        if (items[i] == item) {
 
-    QObject::connect(item, SIGNAL(connectToCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)), mainWindow, SLOT(connectToCallbackMenu(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)));
-    QObject::connect(item, SIGNAL(disconnectCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)), mainWindow, SLOT(disconnectCallbackMenu(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&)));
-
-    if (_connected) {
-        item->enableConnections();
+            item->updatePositionVariable(i);
+            break;
+        }
     }
 }
 
@@ -79,9 +70,8 @@ void Menu::addMenu(Menu* newMenu) {
     this->addAction(newMenu->menuAction());
     newMenu->insideMenu = true;
 
-    if (_connected) {
-        newMenu->enableConnections();
-    }
+    QList<QAction*> menuList = this->actions();
+    newMenu->updatePositionVariable(menuList.size() - 1);
 }
 
 Menu* Menu::addMenu(const char* menuLabel) {
@@ -183,54 +173,6 @@ void Menu::removeMenu(const char* menuLabel) {
 
 void Menu::removeMenu(Menu* menu) {
     menu->remove();
-}
-
-void Menu::enableConnections(bool setCallbacks) {
-    if (_connected) {
-        return;
-    }
-
-    _connected = true;
-
-    // set connections of all child menu items
-    QList<QAction*> menuActions = this->actions();
-
-    for (QAction* action : menuActions)
-    {
-        if (action->menu()) {
-            Menu* item = qobject_cast<Menu*>(action->menu());
-            if (item != nullptr) {
-                item->enableConnections(setCallbacks);
-            }
-            continue;
-        }
-
-        MenuItem* item = qobject_cast<MenuItem*>(action);
-        if (item != nullptr) {
-            item->enableConnections(setCallbacks);
-        }
-    }
-
-    /*
-     * callbacks is connected when the menu gets added, so determine
-     * the position of the menu
-    */
-    QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
-
-    if (insideMenu) {
-        QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
-        if (menu != nullptr) {
-            QList<QAction*> menuList = menu->actions();
-            _position = menuList.size() - 1;
-        }
-    }
-    else {
-        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
-        if (menuBar != nullptr) {
-            QList<QAction*> menuList = menuBar->actions();
-            _position = menuList.size() - 1;
-        }
-    }
 }
 
 int Menu::position() const {

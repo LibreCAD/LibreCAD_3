@@ -97,21 +97,13 @@ namespace lc
                 */
                 void remove();
 
-                /**
-                * \brief Ready for menu item callback connections
-                */
-                void enableConnections(bool setCallbacks = true);
-
-            signals:
-                void connectToCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&);
-
-                void disconnectCallback(lc::ui::api::MenuItem*, const std::string&, kaguya::LuaRef&);
+            public slots:
+                void itemTriggered();
 
             private:
                 void updateOtherPositionsAfterRemove();
 
             private:
-                bool _connected;
                 std::vector<kaguya::LuaRef> callbacks;
                 std::unordered_map<std::string, int> namedCallbacks;
                 int _position;
