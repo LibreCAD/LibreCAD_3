@@ -21,8 +21,6 @@ extern "C"
 #include <kaguya/kaguya.hpp>
 #include "lua/qtbridge.h"
 
-#include "lua/luaqobject.h"
-
 namespace lc {
 	namespace ui {
 		/**
@@ -41,42 +39,6 @@ namespace lc {
                  * \brief Read and execute Lua files
                  */
 				void initLua(QMainWindow* mainWindow);
-
-				/**
-                 * \brief Connect Qt signal with Lua function
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param slot Lua function
-                 * \return true if connected, false if an error happened
-                 */
-				bool luaConnect(
-						QObject* sender,
-						const std::string& signalName,
-						const kaguya::LuaRef& slot
-				);
-
-                bool luaDisconnect(
-                    QObject* sender,
-                    const std::string& signalName,
-                    const kaguya::LuaRef& slot
-                );
-
-				/**
-                 * \brief Connect Qt signal with Qt slot
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param receiver Pointer to receiver object
-                 * \param slotName Name of the slot with parameters
-                 */
-				bool qtConnect(QObject* sender,
-							   const std::string& signalName,
-							   QObject* receiver,
-							   const std::string& slotName);
-
-				/**
-                 * \brief Remove all connections that aren't valid anymore.
-                 */
-				void cleanInvalidQObject();
 
 				/**
                  * \brief Load Qt widget from .ui file
@@ -125,7 +87,6 @@ namespace lc {
 
 			private:
 				kaguya::State _L;
-				std::vector<LuaQObject_SPtr> _luaQObjects;
 				lc::lua::PluginManager _pluginManager;
 				kaguya::LuaRef _operation;
 				std::map<std::string, std::vector<kaguya::LuaRef>> _events;

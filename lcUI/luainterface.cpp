@@ -12,7 +12,6 @@ LuaInterface::LuaInterface() :
 }
 
 LuaInterface::~LuaInterface() {
-	_luaQObjects.clear();
     _events.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
@@ -49,57 +48,6 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
 	_pluginManager.loadPlugins();
 }
 
-bool LuaInterface::luaConnect(
-	QObject* sender,
-	const std::string& signalName,
-	const kaguya::LuaRef& slot)
-{
-	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
-	
-	if(signalId < 0) {
-		std::cout << "No such signal " << signalName << std::endl;
-	}
-	else {
-        auto lqo = std::make_shared<LuaQObject>(sender);
-		_luaQObjects.push_back(lqo);
-
-		auto connected = lqo->connect(signalId, slot);
-
-		cleanInvalidQObject();
-
-		return connected;
-	}
-
-	return false;
-}
-
-bool LuaInterface::luaDisconnect(
-    QObject* sender,
-    const std::string& signalName,
-    const kaguya::LuaRef& slot)
-{
-    int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
-
-    if (signalId < 0) {
-        std::cout << "No such signal " << signalName << std::endl;
-    }
-    else {
-        bool disconnected = false;
-        for (LuaQObject_SPtr objectsptr : _luaQObjects)
-        {
-            if (objectsptr->objectName() == sender->objectName().toStdString()) {
-                disconnected = objectsptr->disconnect(signalId, slot);
-            }
-        }
-
-        cleanInvalidQObject();
-
-        return disconnected;
-    }
-
-    return false;
-}
-
 QWidget* LuaInterface::loadUiFile(const char* fileName) {
 	QUiLoader uiLoader;
 	QFile file(fileName);
@@ -110,29 +58,6 @@ QWidget* LuaInterface::loadUiFile(const char* fileName) {
     file.close();
 
     return widget;
-}
-
-void LuaInterface::cleanInvalidQObject() {
-	_luaQObjects.erase(std::remove_if(_luaQObjects.begin(),
-									  _luaQObjects.end(),
-							  [](LuaQObject_SPtr lqo){
-								  return !lqo->valid();
-							  }),
-					   _luaQObjects.end());
-}
-
-bool LuaInterface::qtConnect(QObject *sender, const std::string& signalName, QObject *receiver, const std::string& slotName) {
-	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
-	if(signalId < 0) {
-		std::cout << "No such signal " << signalName << std::endl;
-	}
-
-	int slotId = receiver->metaObject()->indexOfSlot(slotName.c_str());
-	if(slotId < 0) {
-		std::cout << "No such slot " << slotName << std::endl;
-	}
-
-	return QMetaObject::connect(sender, signalId, receiver, slotId) != nullptr;
 }
 
 void LuaInterface::hideUI(bool hidden) {

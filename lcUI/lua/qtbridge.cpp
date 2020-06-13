@@ -1,5 +1,4 @@
 #include "lua/qtbridge.h"
-#include "luaqobject.h"
 #include "luainterface.h"
 
 #include "cadmdichild.h"
@@ -47,9 +46,6 @@ void addQtBaseBindings(lua_State *L) {
 
 	state["qt"]["loadUi"].setFunction([](const char* fileName) { return static_cast<QMainWindow*>(LuaInterface::loadUiFile(fileName)); });
 	state["qt"]["QObject"].setClass(kaguya::UserdataMetatable<QObject>()
-		.addStaticFunction("findChild", [](QObject* object, std::string name) {
-			return LuaQObject::findChild(object, name);
-		})
 		.addStaticFunction("tr", [](const char* text) {
 		    return QObject::tr(text);
 		})
@@ -223,8 +219,6 @@ void addLCBindings(lua_State *L) {
 	);
 
 	state["lc"]["LuaInterface"].setClass(kaguya::UserdataMetatable<LuaInterface>()
-	    .addFunction("luaConnect", &LuaInterface::luaConnect)
-	    .addFunction("connect", &LuaInterface::qtConnect)
 	    .addFunction("pluginList", &LuaInterface::pluginList)
 	    .addFunction("operation", &LuaInterface::operation)
 	    .addFunction("setOperation", &LuaInterface::setOperation)

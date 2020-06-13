@@ -102,7 +102,9 @@ namespace lc
 
             public slots:
 
-                void buttonPressed();
+                void callbackCalled();
+
+                void callbackCalledToggle(bool enabled);
 
             private:
                 std::string _label;

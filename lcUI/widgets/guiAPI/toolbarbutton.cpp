@@ -31,7 +31,13 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
     }
 
     changeIcon(icon);
-    connect(this, &ToolbarButton::pressed, this, &ToolbarButton::buttonPressed);
+
+    if (_checkable) {
+        connect(this, &ToolbarButton::toggled, this, &ToolbarButton::callbackCalledToggle);
+    }
+    else {
+        connect(this, &ToolbarButton::pressed, this, &ToolbarButton::callbackCalled);
+    }
 }
 
 std::string ToolbarButton::label() const {
@@ -79,8 +85,14 @@ void ToolbarButton::removeCallback(const char* cb_name) {
     namedCallbacks.erase(namedCallbacks.find(cb_name));
 }
 
-void ToolbarButton::buttonPressed() {
+void ToolbarButton::callbackCalled() {
     for (int i = 0; i < callbacks.size(); i++) {
         callbacks[i]();
+    }
+}
+
+void ToolbarButton::callbackCalledToggle(bool enabled) {
+    for (int i = 0; i < callbacks.size(); i++) {
+        callbacks[i](enabled);
     }
 }
