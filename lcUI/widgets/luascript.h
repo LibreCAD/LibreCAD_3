@@ -53,6 +53,9 @@ namespace lc {
 					void on_save_clicked();
 
                 private:
+                    /**
+                     * \brief Register helper global functions
+                     */
                     void registerGlobalFunctions(kaguya::State& luaState);
 
 				private:
@@ -60,7 +63,7 @@ namespace lc {
                     lc::ui::MainWindow* _mainWindow;
 					CadMdiChild* _mdiChild;
 					CliCommand* _cliCommand;
-                    lc::lua::LCLua* _lcLua;
+                    kaguya::State luaState;
 			};
 		}
 	}

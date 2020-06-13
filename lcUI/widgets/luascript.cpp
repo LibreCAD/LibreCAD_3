@@ -1,15 +1,23 @@
 #include "luascript.h"
 #include "ui_luascript.h"
 
+#include <lua/qtbridge.h>
+
 using namespace lc::ui::widgets;
 
 LuaScript::LuaScript(lc::ui::MainWindow* mainWindow) :
     ui(new Ui::LuaScript),
     _mainWindow(mainWindow),
 	_mdiChild(mainWindow->cadMdiChild()),
-	_cliCommand(mainWindow->cliCommand()),
-    _lcLua(new lc::lua::LCLua(mainWindow->luaInterface()->luaState())){
+	_cliCommand(mainWindow->cliCommand()){
     ui->setupUi(this);
+
+    auto lcLua = lc::lua::LCLua(luaState.state());
+    lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
+    lcLua.addLuaLibs();
+    lcLua.importLCKernel();
+    luaOpenQtBridge(luaState.state());
+    registerGlobalFunctions(luaState);
 }
 
 LuaScript::~LuaScript() {
@@ -18,9 +26,10 @@ LuaScript::~LuaScript() {
 
 
 void LuaScript::on_luaRun_clicked() {
-    _lcLua->setDocument(_mdiChild->document());
+    auto lcLua = lc::lua::LCLua(luaState.state());
+    lcLua.setDocument(_mdiChild->document());
 
-    auto out = _lcLua->runString(ui->luaInput->toPlainText().toStdString().c_str());
+    auto out = lcLua.runString(ui->luaInput->toPlainText().toStdString().c_str());
     _cliCommand->write(out);
 }
 
@@ -66,6 +75,7 @@ void LuaScript::on_save_clicked() {
 
 void LuaScript::registerGlobalFunctions(kaguya::State& luaState) {
     // register common functions i.e. run_basic_operation and message
+    luaState["mainWindow"] = static_cast<lc::ui::MainWindow*>(_mainWindow);
     luaState.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
 
     // cli command helper functions
