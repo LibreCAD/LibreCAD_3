@@ -42,12 +42,6 @@ namespace lc {
                  */
 				void initLua(QMainWindow* mainWindow);
 
-                /**
-                 * \brief load operations from lua scripts and run init functions
-                 * \param lua_path string path to lcUI folder
-                 */
-                void loadLuaOperations(const std::string& lua_path, QMainWindow* mainWindow);
-
 				/**
                  * \brief Connect Qt signal with Lua function
                  * \param sender Pointer to sender object
@@ -125,33 +119,9 @@ namespace lc {
 
             private:
                 /**
-                 * \brief Helper function to initialize each operation on the basis of found properties
-                 * \param vkey - Operation key for state table
-                 *        foundProperties - List of found properties of operation in lua file
-                 *        widgetCount - Count of widgets in toolbar groups
-                 *        groupElements - List of widgets in toolbar groups
-                 *        mainWindow - to cast to MainWindow and access clicommand,toolbar and cadmdichild
-                 */
-                void initializeOperation(const std::string& vkey, const std::set<std::string>& foundProperties, const std::string& groupName,
-                    QMainWindow* mainWindow);
-
-                /**
                  * \brief make common functions available globally and register finish events
                  */
                 void registerGlobalFunctions(QMainWindow* mainWindow);
-
-                void loadLuaFolder(const std::string folderName, const std::string& fileToSkip, const std::string& luaPath);
-
-                std::map<std::string, std::set<std::string>> getSetOfGroupElements();
-
-                void addOperationCommandLine(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
-
-                void addOperationMenuAction(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
-
-                void addOperationIcon(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow, const std::set<std::string>& foundProperties,
-                    const std::string& groupName);
-
-                void addOperationToolbarOptions(const std::string& vkey, const std::string& opkey, QMainWindow* mainWindow);
 
 			private:
 				kaguya::State _L;
