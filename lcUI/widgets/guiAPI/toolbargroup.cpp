@@ -1,5 +1,7 @@
 #include "toolbargroup.h"
 
+#include <QGridLayout>
+
 using namespace lc::ui::api;
 
 ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent) 

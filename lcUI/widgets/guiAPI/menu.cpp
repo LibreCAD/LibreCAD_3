@@ -1,6 +1,9 @@
 #include "menu.h"
 #include <mainwindow.h>
 
+#include <QMenuBar>
+#include <QWidget>
+
 using namespace lc::ui;
 using namespace lc::ui::api;
 

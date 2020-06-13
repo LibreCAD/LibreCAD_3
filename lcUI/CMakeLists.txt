@@ -53,7 +53,7 @@ widgets/guiAPI/menu.h
 widgets/guiAPI/menuitem.h
 widgets/guiAPI/toolbarbutton.h
 widgets/guiAPI/toolbargroup.h
-lua/qtbridge.h
+lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
@@ -89,7 +89,7 @@ widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
 widgets/guiAPI/toolbarbutton.cpp
 widgets/guiAPI/toolbargroup.cpp
-lua/qtbridge.cpp
+lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp

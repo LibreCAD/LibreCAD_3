@@ -4,6 +4,10 @@
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
 
+#include <QDir>
+#include <QString>
+#include <QStringList>
+
 using namespace lc::ui;
 
 OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState) 

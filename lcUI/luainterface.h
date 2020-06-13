@@ -19,7 +19,7 @@ extern "C"
 #include <managers/pluginmanager.h>
 
 #include <kaguya/kaguya.hpp>
-#include "lua/qtbridge.h"
+#include "lua/guibridge.h"
 
 namespace lc {
 	namespace ui {

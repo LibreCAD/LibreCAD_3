@@ -1,7 +1,7 @@
 #include "luascript.h"
 #include "ui_luascript.h"
 
-#include <lua/qtbridge.h>
+#include <lua/guibridge.h>
 
 using namespace lc::ui::widgets;
 
@@ -16,7 +16,7 @@ LuaScript::LuaScript(lc::ui::MainWindow* mainWindow) :
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
     lcLua.importLCKernel();
-    luaOpenQtBridge(luaState.state());
+    luaOpenGUIBridge(luaState.state());
     registerGlobalFunctions(luaState);
 }
 

@@ -2,6 +2,9 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
+#include <QDir>
+#include <QFileDialog>
+
 #include "mainwindow.h"
 #include "operationloader.h"
 
@@ -23,7 +26,7 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     lcLua.addLuaLibs();
 	lcLua.importLCKernel();
 
-    luaOpenQtBridge(_L.state());
+    luaOpenGUIBridge(_L.state());
 
     _L["luaInterface"] = this;
     registerGlobalFunctions(mainWindow);
