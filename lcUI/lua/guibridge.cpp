@@ -13,10 +13,7 @@
 #include "widgets/guiAPI/menuitem.h"
 #include "widgets/guiAPI/toolbarbutton.h"
 #include "widgets/guiAPI/toolbargroup.h"
-#include "dialogs/linepatternmanager.h"
 #include <drawables/tempentities.h>
-#include "widgets/linewidthselect.h"
-#include "widgets/colorselect.h"
 #include "mainwindow.h"
 
 using namespace lc;
@@ -33,13 +30,12 @@ void luaOpenGUIBridge(lua_State *L) {
 
 	addLCBindings(L);
     addLuaGUIAPIBindings(L);
-	addQtMetaTypes();
 }
 
 void addLCBindings(lua_State *L) {
 	kaguya::State state(L);
 
-	state["lc"]["CadMdiChild"].setClass(kaguya::UserdataMetatable<CadMdiChild, QWidget>()
+	state["lc"]["CadMdiChild"].setClass(kaguya::UserdataMetatable<CadMdiChild>()
 		.addStaticFunction("new", []() {
 			return new CadMdiChild;
 		})
@@ -62,13 +58,13 @@ void addLCBindings(lua_State *L) {
 		.addFunction("activeViewport", &CadMdiChild::activeViewport)
 	);
 
-    state["lc"]["LCADViewerProxy"].setClass(kaguya::UserdataMetatable<LCADViewerProxy, QObject>());
+    state["lc"]["LCADViewerProxy"].setClass(kaguya::UserdataMetatable<LCADViewerProxy>());
 
 	state["lc"]["Cursor"].setClass(kaguya::UserdataMetatable<drawable::Cursor>()
 	    .addFunction("position", &drawable::Cursor::position)
 	);
 
-	state["lc"]["LCADViewer"].setClass(kaguya::UserdataMetatable<LCADViewer, QWidget>()
+	state["lc"]["LCADViewer"].setClass(kaguya::UserdataMetatable<LCADViewer>()
 	    .addFunction("autoScale", &LCADViewer::autoScale)
 	    .addFunction("setOperationActive", &LCADViewer::setOperationActive)
 	    .addFunction("docCanvas", &LCADViewer::docCanvas)
@@ -84,7 +80,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("finishOperation", &LuaInterface::finishOperation)
 	);
 
-    state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript, QWidget>()
+    state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript>()
         .setConstructors<widgets::LuaScript(lc::ui::MainWindow*)>()
         .addFunction("show", &widgets::LuaScript::show)
 	);
@@ -97,8 +93,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("selectAll", &DocumentCanvas::selectAll)
 	);
 
-	state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand, QDockWidget>()
-	    .setConstructors<widgets::CliCommand(), widgets::CliCommand(QWidget*)>()
+	state["lc"]["CliCommand"].setClass(kaguya::UserdataMetatable<widgets::CliCommand>()
 	    .addFunction("addCommand", &widgets::CliCommand::addCommand)
 	    .addStaticFunction("write", [](widgets::CliCommand* cliCommand, const char* message) {
 	        cliCommand->write(message);
@@ -118,7 +113,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("clear", &widgets::CliCommand::clear)
 	);
 
-	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar, QDockWidget>()
+	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar>()
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
         .addOverloadedFunctions("addTab", static_cast<api::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
@@ -139,8 +134,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("metaInfo", &lc::ui::MetaInfoManager::metaInfo)
 	);
 
-	state["lc"]["Layers"].setClass(kaguya::UserdataMetatable<widgets::Layers, QDockWidget>()
-	    .setConstructors<widgets::Layers()>() //return new widgets::Layers() before
+	state["lc"]["Layers"].setClass(kaguya::UserdataMetatable<widgets::Layers>()
 		.addFunction("setMdiChild", &widgets::Layers::setMdiChild)
         .addFunction("layerByName", &widgets::Layers::layerByName)
         .addOverloadedFunctions("addLayer", static_cast<void(widgets::Layers::*)(lc::meta::Layer_CSPtr)>(&widgets::Layers::addLayer),
@@ -163,34 +157,6 @@ void addLCBindings(lua_State *L) {
 	    .addFunction("setIntersectionSnappable", &manager::SnapManagerImpl::setIntersectionsSnappable)
 	    .addFunction("setMiddleSnappable", &manager::SnapManagerImpl::setMiddleSnappable)
 	    .addFunction("setEntitySnappable", &manager::SnapManagerImpl::setEntitySnappable)
-	);
-
-	state["lc"]["LinePatternManager"].setClass(kaguya::UserdataMetatable<dialog::LinePatternManager, QDialog>()
-	    .addStaticFunction("new", [](lc::storage::Document_SPtr document) {
- 		    return new dialog::LinePatternManager(document);
-        })
-	    .addFunction("setDocument", &dialog::LinePatternManager::setDocument)
-	);
-
-	state["lc"]["LinePatternSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LinePatternSelect, QComboBox>()
-	    .addStaticFunction("new", [](lc::storage::Document_SPtr document, QWidget* parent, bool showByLayer, bool showByBlock) {
-	  	    return new widgets::LinePatternSelect(document, parent, showByLayer, showByBlock);
-	    })
-		.addFunction("setMdiChild", &lc::ui::widgets::LinePatternSelect::setMdiChild)
-	);
-
-	state["lc"]["LineWidthSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::LineWidthSelect, QComboBox>()
-		.addStaticFunction("new", [](MetaInfoManager_SPtr metaInfoManager, QWidget* parent, bool showByLayer, bool showByBlock) {
-			return new widgets::LineWidthSelect(metaInfoManager, parent, showByLayer, showByBlock);
-		})
-	    .addFunction("setMetaInfoManager", &lc::ui::widgets::LineWidthSelect::setMetaInfoManager)
-	);
-
-	state["lc"]["ColorSelect"].setClass(kaguya::UserdataMetatable<lc::ui::widgets::ColorSelect, QComboBox>()
-		.addStaticFunction("new", [](MetaInfoManager_SPtr metaInfoManager, QWidget* parent, bool showByLayer, bool showByBlock) {
-			return new widgets::ColorSelect(metaInfoManager, parent, showByLayer, showByBlock);
-		})
-	    .addFunction("setMetaInfoManager", &lc::ui::widgets::ColorSelect::setMetaInfoManager)
 	);
 
     state["lc"]["MainWindow"].setClass(kaguya::UserdataMetatable<lc::ui::MainWindow>()
@@ -249,7 +215,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
     );
 
-    state["gui"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<api::ToolbarTab, QWidget>()
+    state["gui"]["ToolbarTab"].setClass(kaguya::UserdataMetatable<api::ToolbarTab>()
         .setConstructors<api::ToolbarTab(const char*)>()
         .addFunction("addButton", &api::ToolbarTab::addButton)
         .addFunction("buttonByText", &api::ToolbarTab::buttonByText)
@@ -306,8 +272,4 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("removeButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::removeButton),
             static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))
     );
-}
-
-void addQtMetaTypes() {
-	qRegisterMetaType<lc::geo::Coordinate>();
 }

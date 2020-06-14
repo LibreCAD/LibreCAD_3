@@ -1,7 +1,11 @@
 #pragma once
 
 #include <vector>
+
+#include "cad/geometry/geocoordinate.h"
 #include "mainwindow.h"
+
+Q_DECLARE_METATYPE(lc::geo::Coordinate);
 
 namespace lc
 {

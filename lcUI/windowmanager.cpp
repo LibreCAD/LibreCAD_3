@@ -1,11 +1,15 @@
 #include "windowmanager.h"
 
+#include <QObject>
+#include <QMetaObject>
+
 using namespace lc::ui;
 
 std::vector<MainWindow*> WindowManager::mainWindows;
 
 void WindowManager::init()
 {
+    qRegisterMetaType<lc::geo::Coordinate>();
     MainWindow* window = new MainWindow();
     window->showMaximized();
     mainWindows.push_back(window);
