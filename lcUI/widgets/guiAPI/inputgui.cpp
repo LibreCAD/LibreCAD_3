@@ -9,7 +9,7 @@ InputGUI::InputGUI(std::string _label, QWidget* parent)
 
 }
 
-const std::string& InputGUI::label() const {
+std::string InputGUI::label() const {
     return _label;
 }
 

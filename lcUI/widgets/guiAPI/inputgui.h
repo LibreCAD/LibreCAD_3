@@ -3,7 +3,11 @@
 #include <QObject>
 #include <QMetaObject>
 #include <QWidget>
+
+#include <kaguya/kaguya.hpp>
+
 #include <string>
+#include <vector>
 
 namespace lc
 {
@@ -21,7 +25,7 @@ namespace lc
             public:
                 InputGUI(std::string _label, QWidget* parent = nullptr);
 
-                const std::string& label() const;
+                std::string label() const;
 
                 virtual void setLabel(const std::string& newLabel);
 

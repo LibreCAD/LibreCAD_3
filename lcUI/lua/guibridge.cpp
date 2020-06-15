@@ -277,16 +277,25 @@ void addLuaGUIAPIBindings(lua_State* L) {
     );
 
     state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
-        .setConstructors<lc::ui::api::DialogWidget()>()
+        .setConstructors<lc::ui::api::DialogWidget(const std::string&)>()
         .addFunction("addWidget", &lc::ui::api::DialogWidget::addWidget)
+        .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
+        .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
+        .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
         .addFunction("label", &lc::ui::api::InputGUI::label)
         .addFunction("setLabel", &lc::ui::api::InputGUI::setLabel)
+        .addOverloadedFunctions("enable", [](lc::ui::api::InputGUI& self) { self.setEnabled(true); })
+        .addOverloadedFunctions("disable", [](lc::ui::api::InputGUI& self) { self.setEnabled(false); })
     );
 
     state["gui"]["TextGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::TextGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::TextGUI(std::string)>()
+        .addFunction("text", &lc::ui::api::TextGUI::text)
+        .addFunction("setText", &lc::ui::api::TextGUI::setText)
+        .addFunction("addFinishCallback", &lc::ui::api::TextGUI::addFinishCallback)
+        .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
     );
 }
