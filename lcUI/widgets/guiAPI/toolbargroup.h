@@ -2,9 +2,8 @@
 
 #include <QGroupBox>
 
+#include <kaguya/kaguya.hpp>
 #include "toolbarbutton.h"
-
-#include "luainterface.h"
 
 namespace lc
 {

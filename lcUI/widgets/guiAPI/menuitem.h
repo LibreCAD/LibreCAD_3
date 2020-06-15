@@ -1,6 +1,6 @@
 #pragma once
 
-#include <luainterface.h>
+#include <kaguya/kaguya.hpp>
 
 #include <unordered_map>
 #include <QAction>

@@ -3,7 +3,7 @@
 #include <QPushButton>
 #include <unordered_map>
 
-#include "luainterface.h"
+#include <kaguya/kaguya.hpp>
 
 namespace lc
 {

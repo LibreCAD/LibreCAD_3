@@ -2,7 +2,7 @@
 
 #include <QMenu>
 
-#include <luainterface.h>
+#include <kaguya/kaguya.hpp>
 #include "menuitem.h"
 
 namespace lc

@@ -53,6 +53,9 @@ widgets/guiAPI/menu.h
 widgets/guiAPI/menuitem.h
 widgets/guiAPI/toolbarbutton.h
 widgets/guiAPI/toolbargroup.h
+widgets/guiAPI/dialogwidget.h
+widgets/guiAPI/inputgui.h
+widgets/guiAPI/textgui.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -89,6 +92,9 @@ widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
 widgets/guiAPI/toolbarbutton.cpp
 widgets/guiAPI/toolbargroup.cpp
+widgets/guiAPI/dialogwidget.cpp
+widgets/guiAPI/inputgui.cpp
+widgets/guiAPI/textgui.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
@@ -101,6 +107,8 @@ widgets/clicommand.ui
 widgets/luascript.ui
 widgets/toolbar.ui
 widgets/guiAPI/toolbartab.ui
+widgets/guiAPI/dialogwidget.ui
+widgets/guiAPI/textgui.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui

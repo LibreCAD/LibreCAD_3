@@ -13,6 +13,9 @@
 #include "widgets/guiAPI/menuitem.h"
 #include "widgets/guiAPI/toolbarbutton.h"
 #include "widgets/guiAPI/toolbargroup.h"
+#include "widgets/guiAPI/dialogwidget.h"
+#include "widgets/guiAPI/inputgui.h"
+#include "widgets/guiAPI/textgui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -271,5 +274,19 @@ void addLuaGUIAPIBindings(lua_State* L) {
             static_cast<lc::ui::api::ToolbarButton*(lc::ui::api::ToolbarGroup::*)(const char*, const char*, kaguya::LuaRef)>(&lc::ui::api::ToolbarGroup::addButton))
         .addOverloadedFunctions("removeButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::removeButton),
             static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))
+    );
+
+    state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
+        .setConstructors<lc::ui::api::DialogWidget()>()
+        .addFunction("addWidget", &lc::ui::api::DialogWidget::addWidget)
+    );
+
+    state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
+        .addFunction("label", &lc::ui::api::InputGUI::label)
+        .addFunction("setLabel", &lc::ui::api::InputGUI::setLabel)
+    );
+
+    state["gui"]["TextGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::TextGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::TextGUI(std::string)>()
     );
 }
