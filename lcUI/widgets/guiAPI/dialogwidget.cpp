@@ -1,6 +1,8 @@
 #include "dialogwidget.h"
 #include "ui_dialogwidget.h"
 
+#include "buttongroupgui.h"
+
 #include <iostream>
 #include <QGridLayout>
 
@@ -36,6 +38,12 @@ void DialogWidget::addWidget(InputGUI* guiWidget) {
     guiWidget->setParent(this);
     vboxlayout->addWidget(guiWidget);
     _inputWidgets.push_back(guiWidget);
+}
+
+void DialogWidget::addWidget(ButtonGUI* buttonWidget) {
+    ButtonGroupGUI* buttonGroup = new ButtonGroupGUI(buttonWidget->label() + "_group");
+    buttonGroup->addButton(buttonWidget);
+    addWidget(buttonGroup);
 }
 
 const std::vector<InputGUI*>& DialogWidget::inputWidgets() {

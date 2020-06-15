@@ -16,6 +16,8 @@
 #include "widgets/guiAPI/dialogwidget.h"
 #include "widgets/guiAPI/inputgui.h"
 #include "widgets/guiAPI/textgui.h"
+#include "widgets/guiAPI/buttongroupgui.h"
+#include "widgets/guiAPI/buttongui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -278,10 +280,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
         .setConstructors<lc::ui::api::DialogWidget(const std::string&)>()
-        .addFunction("addWidget", &lc::ui::api::DialogWidget::addWidget)
         .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
+        .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget))
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
@@ -297,5 +300,17 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setText", &lc::ui::api::TextGUI::setText)
         .addFunction("addFinishCallback", &lc::ui::api::TextGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
+    );
+
+    state["gui"]["ButtonGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI>()
+        .setConstructors<lc::ui::api::ButtonGUI(std::string)>()
+        .addFunction("label", &lc::ui::api::ButtonGUI::label)
+        .addFunction("setLabel", &lc::ui::api::ButtonGUI::setLabel)
+        .addFunction("addCallback", &lc::ui::api::ButtonGUI::addCallback)
+    );
+
+    state["gui"]["ButtonGroupGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGroupGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::ButtonGroupGUI(std::string)>()
+        .addFunction("addButton", &lc::ui::api::ButtonGroupGUI::addButton)
     );
 }

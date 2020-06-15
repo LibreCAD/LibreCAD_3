@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 
 #include "inputgui.h"
+#include "buttongui.h"
 
 namespace Ui { 
     class DialogWidget; 
@@ -38,6 +39,12 @@ namespace lc {
                 * \param pointer to InputGUI widget
                 */
                 void addWidget(InputGUI* guiWidget);
+
+                /**
+                * \brief Add button directly (create a button group containing only that button)
+                * \param pointer to ButtonGUI button
+                */
+                void addWidget(ButtonGUI* buttonWidget);
 
                 /**
                 * \brief Return list of all input widgets
