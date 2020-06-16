@@ -16,8 +16,11 @@
 #include "widgets/guiAPI/dialogwidget.h"
 #include "widgets/guiAPI/inputgui.h"
 #include "widgets/guiAPI/textgui.h"
-#include "widgets/guiAPI/buttongroupgui.h"
+#include "widgets/guiAPI/horizontalgroupgui.h"
 #include "widgets/guiAPI/buttongui.h"
+#include "widgets/guiAPI/checkboxgui.h"
+#include "widgets/guiAPI/radiobuttongui.h"
+#include "widgets/guiAPI/radiogroupgui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -284,7 +287,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget))
+            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
@@ -294,7 +298,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("disable", [](lc::ui::api::InputGUI& self) { self.setEnabled(false); })
     );
 
-    state["gui"]["TextGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::TextGUI, lc::ui::api::InputGUI>()
+    state["gui"]["Text"].setClass(kaguya::UserdataMetatable<lc::ui::api::TextGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::TextGUI(std::string)>()
         .addFunction("text", &lc::ui::api::TextGUI::text)
         .addFunction("setText", &lc::ui::api::TextGUI::setText)
@@ -302,15 +306,40 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
     );
 
-    state["gui"]["ButtonGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI>()
+    state["gui"]["Button"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI>()
         .setConstructors<lc::ui::api::ButtonGUI(std::string)>()
         .addFunction("label", &lc::ui::api::ButtonGUI::label)
         .addFunction("setLabel", &lc::ui::api::ButtonGUI::setLabel)
         .addFunction("addCallback", &lc::ui::api::ButtonGUI::addCallback)
     );
 
-    state["gui"]["ButtonGroupGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGroupGUI, lc::ui::api::InputGUI>()
-        .setConstructors<lc::ui::api::ButtonGroupGUI(std::string)>()
-        .addFunction("addButton", &lc::ui::api::ButtonGroupGUI::addButton)
+    state["gui"]["CheckBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::CheckBoxGUI>()
+        .setConstructors<lc::ui::api::CheckBoxGUI(std::string), lc::ui::api::CheckBoxGUI(std::string, bool)>()
+        .addFunction("label", &lc::ui::api::CheckBoxGUI::label)
+        .addFunction("setLabel", &lc::ui::api::CheckBoxGUI::setLabel)
+        .addFunction("addCallback", &lc::ui::api::CheckBoxGUI::addCallback)
+        .addFunction("checked", &lc::ui::api::CheckBoxGUI::isChecked)
+        .addFunction("setChecked", &lc::ui::api::CheckBoxGUI::setChecked)
+    );
+
+    state["gui"]["RadioButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioButtonGUI>()
+        .setConstructors<lc::ui::api::RadioButtonGUI(std::string)>()
+        .addFunction("label", &lc::ui::api::RadioButtonGUI::label)
+        .addFunction("setLabel", &lc::ui::api::RadioButtonGUI::setLabel)
+        .addFunction("addCallback", &lc::ui::api::RadioButtonGUI::addCallback)
+        .addFunction("checked", &lc::ui::api::RadioButtonGUI::isChecked)
+        .addFunction("setChecked", &lc::ui::api::RadioButtonGUI::setChecked)
+    );
+
+    state["gui"]["HorizontalGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::HorizontalGroupGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::HorizontalGroupGUI(std::string)>()
+        .addOverloadedFunctions("addWidget", [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::ButtonGUI* newButton) { self.addWidget(newButton); },
+            [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::InputGUI* newGUI) { self.addWidget(newGUI); },
+            [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::CheckBoxGUI* checkGUI) { self.addWidget(checkGUI); })
+    );
+
+    state["gui"]["RadioGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioGroupGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::RadioGroupGUI(std::string)>()
+        .addFunction("addButton", &lc::ui::api::RadioGroupGUI::addButton)
     );
 }

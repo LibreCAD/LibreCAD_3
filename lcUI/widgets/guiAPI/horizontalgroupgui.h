@@ -7,28 +7,28 @@ namespace lc {
     namespace ui {
         namespace api {
             /**
-            * \brief Button Group GUI Widget
+            * \brief Horizontal Group GUI Widget
             */
-            class ButtonGroupGUI : public InputGUI
+            class HorizontalGroupGUI : public InputGUI
             {
                 Q_OBJECT
 
             public:
                 /**
-                * \brief Button Group GUI Constructor
+                * \brief Horizontal Group GUI Constructor
                 * \param string group label
                 * \param parent qwidget parent
                 */
-                ButtonGroupGUI(std::string label, QWidget* parent = nullptr);
+                HorizontalGroupGUI(std::string label, QWidget* parent = nullptr);
 
                 /**
-                * \brief addd button to group
-                * \param newButton pointer to ButtonGUI
+                * \brief add button to group
+                * \param newWidget pointer to QWidget
                 */
-                void addButton(ButtonGUI* newButton);
+                void addWidget(QWidget* newWidget);
 
             private:
-                std::vector<ButtonGUI*> _buttons;
+                std::vector<QWidget*> _widgets;
                 QHBoxLayout* qhboxlayout;
             };
         }

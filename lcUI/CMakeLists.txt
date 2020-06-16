@@ -57,7 +57,10 @@ widgets/guiAPI/dialogwidget.h
 widgets/guiAPI/inputgui.h
 widgets/guiAPI/textgui.h
 widgets/guiAPI/buttongui.h
-widgets/guiAPI/buttongroupgui.h
+widgets/guiAPI/checkboxgui.h
+widgets/guiAPI/horizontalgroupgui.h
+widgets/guiAPI/radiobuttongui.h
+widgets/guiAPI/radiogroupgui.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -98,7 +101,10 @@ widgets/guiAPI/dialogwidget.cpp
 widgets/guiAPI/inputgui.cpp
 widgets/guiAPI/textgui.cpp
 widgets/guiAPI/buttongui.cpp
-widgets/guiAPI/buttongroupgui.cpp
+widgets/guiAPI/checkboxgui.cpp
+widgets/guiAPI/horizontalgroupgui.cpp
+widgets/guiAPI/radiobuttongui.cpp
+widgets/guiAPI/radiogroupgui.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp

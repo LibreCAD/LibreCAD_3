@@ -1,7 +1,7 @@
 #include "dialogwidget.h"
 #include "ui_dialogwidget.h"
 
-#include "buttongroupgui.h"
+#include "horizontalgroupgui.h"
 
 #include <iostream>
 #include <QGridLayout>
@@ -41,9 +41,15 @@ void DialogWidget::addWidget(InputGUI* guiWidget) {
 }
 
 void DialogWidget::addWidget(ButtonGUI* buttonWidget) {
-    ButtonGroupGUI* buttonGroup = new ButtonGroupGUI(buttonWidget->label() + "_group");
-    buttonGroup->addButton(buttonWidget);
-    addWidget(buttonGroup);
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label() + "_group");
+    horizGroup->addWidget(buttonWidget);
+    addWidget(horizGroup);
+}
+
+void DialogWidget::addWidget(CheckBoxGUI* checkboxWidget) {
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label() + "_group");
+    horizGroup->addWidget(checkboxWidget);
+    addWidget(horizGroup);
 }
 
 const std::vector<InputGUI*>& DialogWidget::inputWidgets() {

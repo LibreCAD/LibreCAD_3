@@ -6,6 +6,7 @@
 
 #include "inputgui.h"
 #include "buttongui.h"
+#include "checkboxgui.h"
 
 namespace Ui { 
     class DialogWidget; 
@@ -45,6 +46,12 @@ namespace lc {
                 * \param pointer to ButtonGUI button
                 */
                 void addWidget(ButtonGUI* buttonWidget);
+
+                /**
+                * \brief Add checkbox directly (create a button group containing only that button)
+                * \param pointer to CheckBoxGUI button
+                */
+                void addWidget(CheckBoxGUI* buttonWidget);
 
                 /**
                 * \brief Return list of all input widgets
