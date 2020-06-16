@@ -21,6 +21,7 @@
 #include "widgets/guiAPI/checkboxgui.h"
 #include "widgets/guiAPI/radiobuttongui.h"
 #include "widgets/guiAPI/radiogroupgui.h"
+#include "widgets/guiAPI/coordinategui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -341,5 +342,11 @@ void addLuaGUIAPIBindings(lua_State* L) {
     state["gui"]["RadioGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioGroupGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::RadioGroupGUI(std::string)>()
         .addFunction("addButton", &lc::ui::api::RadioGroupGUI::addButton)
+    );
+
+    state["gui"]["Coordinate"].setClass(kaguya::UserdataMetatable<lc::ui::api::CoordinateGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::CoordinateGUI(std::string)>()
+        .addFunction("addFinishCallback", &lc::ui::api::CoordinateGUI::addFinishCallback)
+        .addFunction("addOnChangeCallback", &lc::ui::api::CoordinateGUI::addOnChangeCallback)
     );
 }
