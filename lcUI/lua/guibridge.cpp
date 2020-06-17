@@ -23,6 +23,8 @@
 #include "widgets/guiAPI/radiogroupgui.h"
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/anglegui.h"
+#include "widgets/guiAPI/slidergui.h"
+#include "widgets/guiAPI/comboboxgui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -357,5 +359,19 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("toRadians", &lc::ui::api::AngleGUI::toRadians)
         .addFunction("addFinishCallback", &lc::ui::api::AngleGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::AngleGUI::addOnChangeCallback)
+    );
+
+    state["gui"]["Slider"].setClass(kaguya::UserdataMetatable<lc::ui::api::SliderGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::SliderGUI(std::string), lc::ui::api::SliderGUI(std::string, int minVal, int maxVal)>()
+        .addFunction("addCallback", &lc::ui::api::SliderGUI::addCallback)
+        .addFunction("setLabel", &lc::ui::api::SliderGUI::setLabel)
+    );
+
+    state["gui"]["ComboBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::ComboBoxGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::ComboBoxGUI(std::string)>()
+        .addFunction("addCallback", &lc::ui::api::ComboBoxGUI::addCallback)
+        .addFunction("setLabel", &lc::ui::api::ComboBoxGUI::setLabel)
+        .addOverloadedFunctions("addItem", [](lc::ui::api::ComboBoxGUI& self, const std::string& item) { self.addItem(item); },
+            [](lc::ui::api::ComboBoxGUI& self, const std::string& item, int index) { self.addItem(item, index); })
     );
 }

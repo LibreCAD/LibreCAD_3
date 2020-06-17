@@ -16,6 +16,7 @@ TextGUI::TextGUI(std::string label, QWidget* parent)
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _lineEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(1)->widget());
+    ui->horizontalLayout->insertStretch(1);
 
     _textLabel->setText(QString(this->label().c_str()));
 

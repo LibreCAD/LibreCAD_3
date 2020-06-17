@@ -35,6 +35,10 @@ std::string DialogWidget::title() const {
 }
 
 void DialogWidget::addWidget(InputGUI* guiWidget) {
+    if (guiWidget == nullptr) {
+        return;
+    }
+
     guiWidget->setParent(this);
     vboxlayout->addWidget(guiWidget);
     _inputWidgets.push_back(guiWidget);

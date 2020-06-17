@@ -15,6 +15,7 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _xcoordEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(2)->widget());
     _ycoordEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(4)->widget());
+    ui->horizontalLayout->insertStretch(1);
 
     QDoubleValidator* doubleValidator = new QDoubleValidator(this);
     doubleValidator->setDecimals(3);
@@ -45,7 +46,15 @@ void CoordinateGUI::updateCoordinateDisplay() {
 }
 
 QString CoordinateGUI::generateTooltip() const {
-    QString tooltipcoord = QString("(%1,%2)").arg(_xcoordEdit->text(), _ycoordEdit->text());
+    QString xcoordText = _xcoordEdit->text();
+    QString ycoordText = _ycoordEdit->text();
+    if (xcoordText == "") {
+        xcoordText = "0";
+    }
+    if (ycoordText == "") {
+        ycoordText = "0";
+    }
+    QString tooltipcoord = QString("(%1,%2)").arg(xcoordText, ycoordText);
     QString tooltipmagnitude = QString("Magnitude - %1").arg(QString::number(_coordinate.magnitude()));
     QString tooltipangle = QString("Angle - %1").arg(QString::number(_coordinate.angle() * 180 / 3.141592));
     return tooltipcoord + "\n" + tooltipmagnitude + "\n" + tooltipangle;
