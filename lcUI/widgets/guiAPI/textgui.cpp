@@ -34,11 +34,11 @@ void TextGUI::setLabel(const std::string& newLabel) {
     _textLabel->setText(QString(newLabel.c_str()));
 }
 
-std::string TextGUI::text() const {
+std::string TextGUI::value() const {
     return _lineEdit->text().toStdString();
 }
 
-void TextGUI::setText(const std::string& newText) {
+void TextGUI::setValue (const std::string& newText) {
     _lineEdit->setText(QString(newText.c_str()));
 }
 

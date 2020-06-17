@@ -63,6 +63,18 @@ namespace lc {
                 */
                 void setLabel(const std::string& newLabel) override;
 
+                /**
+                * \brief Return angle
+                * \return double value
+                */
+                double value() const;
+
+                /**
+                * \brief Set angle value
+                * \param double value
+                */
+                void setValue(double val);
+
             public slots:
                 /**
                 * \brief Toggle the units from rad to deg and vice versa

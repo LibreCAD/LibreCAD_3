@@ -54,6 +54,24 @@ namespace lc
                 */
                 void addItem(const std::string& item, int index=-1);
 
+                /**
+                * \brief Return selected item string
+                * \return string value
+                */
+                std::string value() const;
+
+                /**
+                * \brief Set selected item
+                * \param string value
+                */
+                void setValue(const std::string& val);
+
+                /**
+                * \brief Set selected item
+                * \param int index of item
+                */
+                void setValue(int index);
+
             public slots:
                 /**
                 * \brief Run callbacks

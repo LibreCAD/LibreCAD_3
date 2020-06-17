@@ -45,3 +45,11 @@ void SliderGUI::valueChangedCallbacks(int value) {
 void SliderGUI::updateValueDisplay(int value) {
     _displayValue->setText(QString::number(value));
 }
+
+int SliderGUI::value() const {
+    return _slider->value();
+}
+
+void SliderGUI::setValue(int val) {
+    _slider->setValue(val);
+}

@@ -49,6 +49,18 @@ namespace lc
                 */
                 void setLabel(const std::string& newLabel) override;
 
+                /**
+                * \brief Return slider value
+                * \return int value
+                */
+                int value() const;
+
+                /**
+                * \brief Set slider value
+                * \param int value
+                */
+                void setValue(int val);
+
             public slots:
                 /**
                 * \brief Run callbacks for value changed

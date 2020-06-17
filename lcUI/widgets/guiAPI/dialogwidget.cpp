@@ -45,12 +45,20 @@ void DialogWidget::addWidget(InputGUI* guiWidget) {
 }
 
 void DialogWidget::addWidget(ButtonGUI* buttonWidget) {
+    if (buttonWidget == nullptr) {
+        return;
+    }
+
     HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label() + "_group");
     horizGroup->addWidget(buttonWidget);
     addWidget(horizGroup);
 }
 
 void DialogWidget::addWidget(CheckBoxGUI* checkboxWidget) {
+    if (checkboxWidget == nullptr) {
+        return;
+    }
+
     HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label() + "_group");
     horizGroup->addWidget(checkboxWidget);
     addWidget(horizGroup);
@@ -58,4 +66,18 @@ void DialogWidget::addWidget(CheckBoxGUI* checkboxWidget) {
 
 const std::vector<InputGUI*>& DialogWidget::inputWidgets() {
     return _inputWidgets;
+}
+
+void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
+    if (buttonWidget != nullptr) {
+        connect(buttonWidget, &ButtonGUI::clicked, this, &DialogWidget::finishCallbacks);
+    }
+}
+
+void DialogWidget::finishCallbacks() {
+    std::cout << "FINISH CALLBACK CALLED" << std::endl;
+}
+
+void DialogWidget::addFinishCallback(kaguya::LuaRef cb) {
+    _callbacks.push_back(cb);
 }

@@ -112,3 +112,27 @@ void AngleGUI::setLabel(const std::string& newLabel) {
     InputGUI::setLabel(newLabel);
     _textLabel->setText(QString(newLabel.c_str()));
 }
+
+double AngleGUI::value() const {
+    double angleInRad;
+    QString angleText = _lineEdit->text();
+    if (angleType == AngleGUI::AngleType::Degrees) {
+        double angleInDeg = angleText.toDouble();
+        angleInRad = angleInDeg * 3.1416 / 180;
+    }
+    else {
+        angleInRad = angleText.toDouble();
+    }
+    return angleInRad;
+}
+
+void AngleGUI::setValue(double val) {
+    double angle;
+    if (angleType == AngleGUI::AngleType::Degrees) {
+        angle = val * 180 / 3.1416;
+    }
+    else {
+        angle = val;
+    }
+    _lineEdit->setText(QString::number(angle));
+}

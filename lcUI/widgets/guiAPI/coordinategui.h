@@ -64,6 +64,18 @@ namespace lc {
                 */
                 void setLabel(const std::string& newLabel) override;
 
+                /**
+                * \brief Return coordinate
+                * \return geo::Coordinate coordinate
+                */
+                lc::geo::Coordinate value() const;
+
+                /**
+                * \brief Set coordinate value
+                * \param geo::Coordinate coordinate
+                */
+                void setValue(lc::geo::Coordinate coord);
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished

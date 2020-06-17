@@ -57,13 +57,13 @@ namespace lc {
                 * \brief Return lineedit text
                 * \return string text
                 */
-                std::string text() const;
+                std::string value() const;
 
                 /**
                 * \brief Set lineedit text
                 * \param string text
                 */
-                void setText(const std::string& newText);
+                void setValue(const std::string& newText);
 
             public slots:
                 /**

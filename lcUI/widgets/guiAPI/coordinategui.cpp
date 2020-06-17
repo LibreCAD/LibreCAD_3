@@ -89,3 +89,12 @@ void CoordinateGUI::setLabel(const std::string& newLabel) {
     InputGUI::setLabel(newLabel);
     _textLabel->setText(QString(newLabel.c_str()));
 }
+
+lc::geo::Coordinate CoordinateGUI::value() const {
+    return _coordinate;
+}
+
+void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
+    _xcoordEdit->setText(QString::number(coord.x()));
+    _ycoordEdit->setText(QString::number(coord.y()));
+}

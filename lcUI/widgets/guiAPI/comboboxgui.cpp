@@ -47,3 +47,18 @@ void ComboBoxGUI::addItem(const std::string& item, int index) {
         _comboBox->insertItem(index, QString(item.c_str()));
     }
 }
+
+std::string ComboBoxGUI::value() const {
+    return _comboBox->currentText().toStdString();
+}
+
+void ComboBoxGUI::setValue(const std::string& val) {
+    int found = _comboBox->findText(val.c_str());
+    if (found != -1) {
+        setValue(found);
+    }
+}
+
+void ComboBoxGUI::setValue(int index) {
+    _comboBox->setCurrentIndex(index);
+}

@@ -25,6 +25,7 @@
 #include "widgets/guiAPI/anglegui.h"
 #include "widgets/guiAPI/slidergui.h"
 #include "widgets/guiAPI/comboboxgui.h"
+#include "widgets/guiAPI/numbergui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -288,6 +289,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
     state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
         .setConstructors<lc::ui::api::DialogWidget(const std::string&)>()
         .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
+        .addFunction("setFinishButton", &lc::ui::api::DialogWidget::setFinishButton)
+        .addFunction("addFinishCallback", &lc::ui::api::DialogWidget::addFinishCallback)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
@@ -304,8 +307,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["Text"].setClass(kaguya::UserdataMetatable<lc::ui::api::TextGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::TextGUI(std::string)>()
-        .addFunction("text", &lc::ui::api::TextGUI::text)
-        .addFunction("setText", &lc::ui::api::TextGUI::setText)
+        .addFunction("value", &lc::ui::api::TextGUI::value)
+        .addFunction("setValue", &lc::ui::api::TextGUI::setValue)
         .addFunction("addFinishCallback", &lc::ui::api::TextGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
     );
@@ -351,6 +354,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::CoordinateGUI(std::string)>()
         .addFunction("addFinishCallback", &lc::ui::api::CoordinateGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::CoordinateGUI::addOnChangeCallback)
+        .addFunction("value", &lc::ui::api::CoordinateGUI::value)
+        .addFunction("setValue", &lc::ui::api::CoordinateGUI::setValue)
     );
 
     state["gui"]["Angle"].setClass(kaguya::UserdataMetatable<lc::ui::api::AngleGUI, lc::ui::api::InputGUI>()
@@ -359,19 +364,34 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("toRadians", &lc::ui::api::AngleGUI::toRadians)
         .addFunction("addFinishCallback", &lc::ui::api::AngleGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::AngleGUI::addOnChangeCallback)
+        .addFunction("value", &lc::ui::api::AngleGUI::value)
+        .addFunction("setValue", &lc::ui::api::AngleGUI::setValue)
     );
 
     state["gui"]["Slider"].setClass(kaguya::UserdataMetatable<lc::ui::api::SliderGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::SliderGUI(std::string), lc::ui::api::SliderGUI(std::string, int minVal, int maxVal)>()
         .addFunction("addCallback", &lc::ui::api::SliderGUI::addCallback)
         .addFunction("setLabel", &lc::ui::api::SliderGUI::setLabel)
+        .addFunction("value", &lc::ui::api::SliderGUI::value)
+        .addFunction("setValue", &lc::ui::api::SliderGUI::setValue)
     );
 
     state["gui"]["ComboBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::ComboBoxGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::ComboBoxGUI(std::string)>()
         .addFunction("addCallback", &lc::ui::api::ComboBoxGUI::addCallback)
         .addFunction("setLabel", &lc::ui::api::ComboBoxGUI::setLabel)
+        .addFunction("value", &lc::ui::api::ComboBoxGUI::value)
         .addOverloadedFunctions("addItem", [](lc::ui::api::ComboBoxGUI& self, const std::string& item) { self.addItem(item); },
             [](lc::ui::api::ComboBoxGUI& self, const std::string& item, int index) { self.addItem(item, index); })
+        .addOverloadedFunctions("setValue", static_cast<void(lc::ui::api::ComboBoxGUI::*)(const std::string&)>(&lc::ui::api::ComboBoxGUI::setValue),
+            static_cast<void(lc::ui::api::ComboBoxGUI::*)(int)>(&lc::ui::api::ComboBoxGUI::setValue))
+    );
+
+    state["gui"]["Number"].setClass(kaguya::UserdataMetatable<lc::ui::api::NumberGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::NumberGUI(std::string)>()
+        .addFunction("addCallback", &lc::ui::api::NumberGUI::addCallback)
+        .addFunction("setLabel", &lc::ui::api::NumberGUI::setLabel)
+        .addFunction("value", &lc::ui::api::NumberGUI::value)
+        .addFunction("setValue", &lc::ui::api::NumberGUI::setValue)
     );
 }

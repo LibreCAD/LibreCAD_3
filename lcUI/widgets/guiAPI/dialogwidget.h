@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QVBoxLayout>
 
+#include <kaguya/kaguya.hpp>
 #include "inputgui.h"
 #include "buttongui.h"
 #include "checkboxgui.h"
@@ -71,11 +72,30 @@ namespace lc {
                 */
                 std::string title() const;
 
+                /**
+                * \brief Set button to be connected to finish callbacks
+                * \return pointer to ButtonGUI buttonWidget
+                */
+                void setFinishButton(ButtonGUI* buttonWidget);
+
+                /**
+                * \brief Add lua callback for dialog finish
+                * \return LuaRef callback
+                */
+                void addFinishCallback(kaguya::LuaRef cb);
+
+            public slots:
+                /**
+                * \brief Call Lua callbacks to be called on finish
+                */
+                void finishCallbacks();
+
             private:
                 Ui::DialogWidget* ui;
                 QVBoxLayout* vboxlayout;
 
                 std::vector<InputGUI*> _inputWidgets;
+                std::vector<kaguya::LuaRef> _callbacks;
             };
         }
     }
