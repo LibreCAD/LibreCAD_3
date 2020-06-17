@@ -83,7 +83,7 @@ TEST(ToolbarButtonTest, CallbackTest) {
     EXPECT_FALSE(state["doesThisExist2"].get<bool>());
 
     testgroup->addButton(testbutton);
-    testbutton->pressed();
+    testbutton->clicked();
 
     EXPECT_TRUE(state["doesThisExist1"].get<bool>());
     EXPECT_TRUE(state["doesThisExist2"].get<bool>());
@@ -100,7 +100,7 @@ TEST(ToolbarButtonTest, CallbackTest) {
 
     testbutton2->removeCallback("Callback1");
 
-    testbutton2->pressed();
+    testbutton2->clicked();
 
     EXPECT_FALSE(state["doesThisExist3"].get<bool>());
     EXPECT_TRUE(state["doesThisExist4"].get<bool>());

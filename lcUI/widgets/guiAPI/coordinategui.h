@@ -1,3 +1,5 @@
+#pragma once
+
 #include "inputgui.h"
 #include <QObject>
 #include <QMetaObject>
@@ -55,6 +57,12 @@ namespace lc {
                 * \brief Update the GUI tooltip
                 */
                 void updateCoordinateDisplay();
+
+                /**
+                * \brief Overriden Angle Text GUI widget label
+                * \param string gui label
+                */
+                void setLabel(const std::string& newLabel) override;
 
             public slots:
                 /**

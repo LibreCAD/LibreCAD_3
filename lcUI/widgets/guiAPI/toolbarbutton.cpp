@@ -36,7 +36,7 @@ ToolbarButton::ToolbarButton(const char* buttonLabel, const char* icon, const ch
         connect(this, &ToolbarButton::toggled, this, &ToolbarButton::callbackCalledToggle);
     }
     else {
-        connect(this, &ToolbarButton::pressed, this, &ToolbarButton::callbackCalled);
+        connect(this, &ToolbarButton::clicked, this, &ToolbarButton::callbackCalled);
     }
 }
 

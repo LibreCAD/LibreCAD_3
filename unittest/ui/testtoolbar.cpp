@@ -77,7 +77,7 @@ TEST(ToolbarTest, SlotTest) {
     button.addCallback(cb);
 
     EXPECT_FALSE(state["doesThisExist"].get<bool>());
-    button.pressed();
+    button.clicked();
     EXPECT_TRUE(state["doesThisExist"].get<bool>());
 
     mainWindow->close();

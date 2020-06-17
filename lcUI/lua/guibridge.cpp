@@ -22,6 +22,7 @@
 #include "widgets/guiAPI/radiobuttongui.h"
 #include "widgets/guiAPI/radiogroupgui.h"
 #include "widgets/guiAPI/coordinategui.h"
+#include "widgets/guiAPI/anglegui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -348,5 +349,13 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::CoordinateGUI(std::string)>()
         .addFunction("addFinishCallback", &lc::ui::api::CoordinateGUI::addFinishCallback)
         .addFunction("addOnChangeCallback", &lc::ui::api::CoordinateGUI::addOnChangeCallback)
+    );
+
+    state["gui"]["Angle"].setClass(kaguya::UserdataMetatable<lc::ui::api::AngleGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::AngleGUI(std::string)>()
+        .addFunction("toDegrees", &lc::ui::api::AngleGUI::toDegrees)
+        .addFunction("toRadians", &lc::ui::api::AngleGUI::toRadians)
+        .addFunction("addFinishCallback", &lc::ui::api::AngleGUI::addFinishCallback)
+        .addFunction("addOnChangeCallback", &lc::ui::api::AngleGUI::addOnChangeCallback)
     );
 }

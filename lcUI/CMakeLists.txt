@@ -62,6 +62,7 @@ widgets/guiAPI/horizontalgroupgui.h
 widgets/guiAPI/radiobuttongui.h
 widgets/guiAPI/radiogroupgui.h
 widgets/guiAPI/coordinategui.h
+widgets/guiAPI/anglegui.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -107,6 +108,7 @@ widgets/guiAPI/horizontalgroupgui.cpp
 widgets/guiAPI/radiobuttongui.cpp
 widgets/guiAPI/radiogroupgui.cpp
 widgets/guiAPI/coordinategui.cpp
+widgets/guiAPI/anglegui.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
@@ -122,6 +124,7 @@ widgets/guiAPI/toolbartab.ui
 widgets/guiAPI/dialogwidget.ui
 widgets/guiAPI/textgui.ui
 widgets/guiAPI/coordinategui.ui
+widgets/guiAPI/anglegui.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui

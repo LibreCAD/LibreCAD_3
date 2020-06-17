@@ -47,7 +47,7 @@ void CoordinateGUI::updateCoordinateDisplay() {
 QString CoordinateGUI::generateTooltip() const {
     QString tooltipcoord = QString("(%1,%2)").arg(_xcoordEdit->text(), _ycoordEdit->text());
     QString tooltipmagnitude = QString("Magnitude - %1").arg(QString::number(_coordinate.magnitude()));
-    QString tooltipangle = QString("Angle - %1").arg(QString::number(_coordinate.angle() * 180/3.14159265));
+    QString tooltipangle = QString("Angle - %1").arg(QString::number(_coordinate.angle() * 180 / 3.141592));
     return tooltipcoord + "\n" + tooltipmagnitude + "\n" + tooltipangle;
 }
 
@@ -74,4 +74,9 @@ void CoordinateGUI::textChangedCallbacks() {
     for (kaguya::LuaRef& cb : _callbacks_onchange) {
         cb(_coordinate);
     }
+}
+
+void CoordinateGUI::setLabel(const std::string& newLabel) {
+    InputGUI::setLabel(newLabel);
+    _textLabel->setText(QString(newLabel.c_str()));
 }
