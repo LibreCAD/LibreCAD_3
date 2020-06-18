@@ -16,3 +16,18 @@ void RadioGroupGUI::addButton(RadioButtonGUI* newWidget) {
     qbuttongroup->addButton(newWidget);
     qhboxlayout->addWidget(newWidget);
 }
+
+void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
+    RadioButtonGUI* checkButton = qobject_cast<RadioButtonGUI*>(qbuttongroup->checkedButton());
+    if (checkButton != nullptr) {
+        table[label()] = checkButton->label();
+    }
+    
+    QList<QAbstractButton*> buttons = qbuttongroup->buttons();
+    for (QAbstractButton* abstractButton : buttons){
+        RadioButtonGUI* guiButton = qobject_cast<RadioButtonGUI*>(abstractButton);
+        if (guiButton != nullptr) {
+            guiButton->getLuaValue(table);
+        }
+    }
+}

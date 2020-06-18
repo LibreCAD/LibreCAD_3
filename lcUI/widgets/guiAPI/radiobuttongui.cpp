@@ -28,3 +28,8 @@ void RadioButtonGUI::callbackCalled(bool toggled) {
         cb(toggled);
     }
 }
+
+void RadioButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = isChecked();
+}
+

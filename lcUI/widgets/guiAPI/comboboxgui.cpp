@@ -62,3 +62,7 @@ void ComboBoxGUI::setValue(const std::string& val) {
 void ComboBoxGUI::setValue(int index) {
     _comboBox->setCurrentIndex(index);
 }
+
+void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = value();
+}

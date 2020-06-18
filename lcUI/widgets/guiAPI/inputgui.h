@@ -42,6 +42,8 @@ namespace lc
                 */
                 virtual void setLabel(const std::string& newLabel);
 
+                virtual void getLuaValue(kaguya::LuaRef& table) = 0;
+
             private:
                 std::string _label;
             };

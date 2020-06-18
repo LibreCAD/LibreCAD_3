@@ -65,6 +65,12 @@ namespace lc {
                 */
                 void setValue(const std::string& newText);
 
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished

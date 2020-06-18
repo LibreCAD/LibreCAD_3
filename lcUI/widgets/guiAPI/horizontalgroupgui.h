@@ -1,8 +1,6 @@
 #include "inputgui.h"
 #include <QHBoxLayout>
 
-#include "buttongui.h"
-
 namespace lc {
     namespace ui {
         namespace api {
@@ -26,6 +24,12 @@ namespace lc {
                 * \param newWidget pointer to QWidget
                 */
                 void addWidget(QWidget* newWidget);
+
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
 
             private:
                 std::vector<QWidget*> _widgets;

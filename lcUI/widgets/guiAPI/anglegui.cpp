@@ -136,3 +136,7 @@ void AngleGUI::setValue(double val) {
     }
     _lineEdit->setText(QString::number(angle));
 }
+
+void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = value();
+}

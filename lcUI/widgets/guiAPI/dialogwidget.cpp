@@ -75,9 +75,25 @@ void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
 }
 
 void DialogWidget::finishCallbacks() {
-    std::cout << "FINISH CALLBACK CALLED" << std::endl;
+    for (kaguya::LuaRef& cb : _callbacks) {
+        kaguya::LuaRef result = generateDialogInfo(cb.state());
+        cb(result);
+    }
 }
 
 void DialogWidget::addFinishCallback(kaguya::LuaRef cb) {
     _callbacks.push_back(cb);
+}
+
+kaguya::LuaRef DialogWidget::generateDialogInfo(kaguya::State state) {
+    std::string refName = title() + "_table";
+    state[refName] = kaguya::NewTable();
+    kaguya::LuaRef table = state[refName];
+    std::vector<InputGUI*> inputGUIs = inputWidgets();
+
+    for (InputGUI* inputgui : inputGUIs) {
+        inputgui->getLuaValue(table);
+    }
+
+    return table;
 }

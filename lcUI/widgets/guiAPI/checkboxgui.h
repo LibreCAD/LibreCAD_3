@@ -42,6 +42,12 @@ namespace lc {
                 */
                 void addCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table);
+
             public slots:
                 /**
                 * \brief Run all callbacks

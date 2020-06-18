@@ -98,3 +98,7 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
     _xcoordEdit->setText(QString::number(coord.x()));
     _ycoordEdit->setText(QString::number(coord.y()));
 }
+
+void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = value();
+}

@@ -76,6 +76,12 @@ namespace lc {
                 */
                 void setValue(lc::geo::Coordinate coord);
 
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished

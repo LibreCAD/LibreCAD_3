@@ -28,6 +28,12 @@ namespace lc {
                 */
                 void addButton(RadioButtonGUI* radioButton);
 
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
+
             private:
                 QButtonGroup* qbuttongroup;
                 QHBoxLayout* qhboxlayout;

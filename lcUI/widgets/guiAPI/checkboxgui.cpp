@@ -29,3 +29,7 @@ void CheckBoxGUI::callbackCalled(int state) {
         cb(state == Qt::Checked);
     }
 }
+
+void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = isChecked();
+}

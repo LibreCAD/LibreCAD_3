@@ -72,6 +72,12 @@ namespace lc
                 */
                 void setValue(int index);
 
+                /**
+                * \brief Return lua value
+                * \param LuaRef value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
+
             public slots:
                 /**
                 * \brief Run callbacks

@@ -49,3 +49,7 @@ double NumberGUI::value() const {
 void NumberGUI::setValue(double val) {
     _spinBox->setValue(val);
 }
+
+void NumberGUI::getLuaValue(kaguya::LuaRef& table) {
+    table[label()] = value();
+}

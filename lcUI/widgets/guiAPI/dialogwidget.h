@@ -84,6 +84,12 @@ namespace lc {
                 */
                 void addFinishCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Generate table containing info of all widgets in dialog
+                * \return LuaRef info table
+                */
+                kaguya::LuaRef generateDialogInfo(kaguya::State state);
+
             public slots:
                 /**
                 * \brief Call Lua callbacks to be called on finish
