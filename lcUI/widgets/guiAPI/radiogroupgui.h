@@ -1,6 +1,7 @@
 #include "inputgui.h"
 #include <QButtonGroup>
 #include <QHBoxLayout>
+#include <set>
 
 #include "radiobuttongui.h"
 
@@ -26,7 +27,7 @@ namespace lc {
                 * \brief add radio button to group
                 * \param newButton pointer to RadioButtonGUI
                 */
-                void addButton(RadioButtonGUI* radioButton);
+                void addButton(const std::string& key, RadioButtonGUI* radioButton);
 
                 /**
                 * \brief Return lua value
@@ -34,9 +35,16 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Get keys of all widgets added to the group
+                * \param set of string keys
+                */
+                std::set<std::string> getKeys();
+
             private:
                 QButtonGroup* qbuttongroup;
                 QHBoxLayout* qhboxlayout;
+                std::set<std::string> _addedKeys;
             };
         }
     }

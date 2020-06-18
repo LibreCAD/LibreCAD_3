@@ -55,5 +55,5 @@ void SliderGUI::setValue(int val) {
 }
 
 void SliderGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }

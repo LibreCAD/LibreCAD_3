@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QDialog>
 #include <QVBoxLayout>
+#include <set>
 
 #include <kaguya/kaguya.hpp>
 #include "inputgui.h"
@@ -40,19 +41,19 @@ namespace lc {
                 * \brief Add input gui widget
                 * \param pointer to InputGUI widget
                 */
-                void addWidget(InputGUI* guiWidget);
+                void addWidget(const std::string& key, InputGUI* guiWidget);
 
                 /**
                 * \brief Add button directly (create a button group containing only that button)
                 * \param pointer to ButtonGUI button
                 */
-                void addWidget(ButtonGUI* buttonWidget);
+                void addWidget(const std::string& key, ButtonGUI* buttonWidget);
 
                 /**
                 * \brief Add checkbox directly (create a button group containing only that button)
                 * \param pointer to CheckBoxGUI button
                 */
-                void addWidget(CheckBoxGUI* buttonWidget);
+                void addWidget(const std::string& key, CheckBoxGUI* buttonWidget);
 
                 /**
                 * \brief Return list of all input widgets
@@ -102,6 +103,7 @@ namespace lc {
 
                 std::vector<InputGUI*> _inputWidgets;
                 std::vector<kaguya::LuaRef> _callbacks;
+                std::set<std::string> _addedKeys;
             };
         }
     }

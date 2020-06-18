@@ -30,6 +30,9 @@ void RadioButtonGUI::callbackCalled(bool toggled) {
 }
 
 void RadioButtonGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = isChecked();
+    table[_key] = isChecked();
 }
 
+void RadioButtonGUI::setKey(const std::string& keyIn) {
+    _key = keyIn;
+}

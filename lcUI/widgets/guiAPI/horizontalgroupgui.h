@@ -1,6 +1,8 @@
 #include "inputgui.h"
 #include <QHBoxLayout>
 
+#include <set>
+
 namespace lc {
     namespace ui {
         namespace api {
@@ -23,7 +25,7 @@ namespace lc {
                 * \brief add button to group
                 * \param newWidget pointer to QWidget
                 */
-                void addWidget(QWidget* newWidget);
+                void addWidget(const std::string& key, QWidget* newWidget);
 
                 /**
                 * \brief Return lua value
@@ -31,9 +33,16 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Get keys of all widgets added to the group
+                * \param set of string keys
+                */
+                std::set<std::string> getKeys();
+
             private:
                 std::vector<QWidget*> _widgets;
                 QHBoxLayout* qhboxlayout;
+                std::set<std::string> _addedKeys;
             };
         }
     }

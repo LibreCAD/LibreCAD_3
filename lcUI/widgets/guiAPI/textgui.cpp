@@ -63,6 +63,6 @@ void TextGUI::textChangedCallbacks(const QString& changedText) {
 }
 
 void TextGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }
 

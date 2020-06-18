@@ -28,3 +28,7 @@ void ButtonGUI::callbackCalled() {
         cb();
     }
 }
+
+void ButtonGUI::setKey(const std::string& keyIn) {
+    _key = keyIn;
+}

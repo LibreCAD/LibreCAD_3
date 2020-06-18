@@ -11,16 +11,22 @@ RadioGroupGUI::RadioGroupGUI(std::string label, QWidget* parent)
     this->setLayout(qhboxlayout);
 }
 
-void RadioGroupGUI::addButton(RadioButtonGUI* newWidget) {
+void RadioGroupGUI::addButton(const std::string& key, RadioButtonGUI* newWidget) {
+    if (_addedKeys.find(key) != _addedKeys.end()) {
+        return;
+    }
+
     newWidget->setParent(this);
     qbuttongroup->addButton(newWidget);
     qhboxlayout->addWidget(newWidget);
+    newWidget->setKey(key);
+    _addedKeys.insert(key);
 }
 
 void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
     RadioButtonGUI* checkButton = qobject_cast<RadioButtonGUI*>(qbuttongroup->checkedButton());
     if (checkButton != nullptr) {
-        table[label()] = checkButton->label();
+        table[_key] = checkButton->label();
     }
     
     QList<QAbstractButton*> buttons = qbuttongroup->buttons();
@@ -30,4 +36,8 @@ void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
             guiButton->getLuaValue(table);
         }
     }
+}
+
+std::set<std::string> RadioGroupGUI::getKeys() {
+    return _addedKeys;
 }

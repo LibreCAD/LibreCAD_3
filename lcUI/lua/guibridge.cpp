@@ -293,9 +293,9 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("addFinishCallback", &lc::ui::api::DialogWidget::addFinishCallback)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
-        .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<void(lc::ui::api::DialogWidget::*)(lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
+        .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
@@ -340,9 +340,9 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["HorizontalGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::HorizontalGroupGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::HorizontalGroupGUI(std::string)>()
-        .addOverloadedFunctions("addWidget", [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::ButtonGUI* newButton) { self.addWidget(newButton); },
-            [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::InputGUI* newGUI) { self.addWidget(newGUI); },
-            [](lc::ui::api::HorizontalGroupGUI& self, lc::ui::api::CheckBoxGUI* checkGUI) { self.addWidget(checkGUI); })
+        .addOverloadedFunctions("addWidget", [](lc::ui::api::HorizontalGroupGUI& self, const std::string& key, lc::ui::api::ButtonGUI* newButton) { self.addWidget(key, newButton); },
+            [](lc::ui::api::HorizontalGroupGUI& self, const std::string& key, lc::ui::api::InputGUI* newGUI) { self.addWidget(key, newGUI); },
+            [](lc::ui::api::HorizontalGroupGUI& self, const std::string& key, lc::ui::api::CheckBoxGUI* checkGUI) { self.addWidget(key, checkGUI); })
     );
 
     state["gui"]["RadioGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioGroupGUI, lc::ui::api::InputGUI>()

@@ -16,3 +16,7 @@ std::string InputGUI::label() const {
 void InputGUI::setLabel(const std::string& newLabel) {
     _label = newLabel;
 }
+
+void InputGUI::setKey(const std::string& keyIn) {
+    _key = keyIn;
+}

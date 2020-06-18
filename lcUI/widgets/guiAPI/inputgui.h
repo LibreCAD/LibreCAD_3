@@ -42,10 +42,21 @@ namespace lc
                 */
                 virtual void setLabel(const std::string& newLabel);
 
+                /**
+                * \brief add key and value to the lua table
+                * \param LuaRef lua table
+                */
                 virtual void getLuaValue(kaguya::LuaRef& table) = 0;
 
-            private:
+                /**
+                * \brief Set gui key for the lua table
+                * \param string gui key
+                */
+                void setKey(const std::string& keyIn);
+
+            protected:
                 std::string _label;
+                std::string _key;
             };
         }
     }

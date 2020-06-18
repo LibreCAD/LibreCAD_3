@@ -31,5 +31,9 @@ void CheckBoxGUI::callbackCalled(int state) {
 }
 
 void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = isChecked();
+    table[_key] = isChecked();
+}
+
+void CheckBoxGUI::setKey(const std::string& keyIn) {
+    _key = keyIn;
 }

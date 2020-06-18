@@ -100,5 +100,5 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
 }
 
 void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }

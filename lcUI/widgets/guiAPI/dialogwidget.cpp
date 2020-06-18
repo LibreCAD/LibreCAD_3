@@ -2,6 +2,7 @@
 #include "ui_dialogwidget.h"
 
 #include "horizontalgroupgui.h"
+#include "radiogroupgui.h"
 
 #include <iostream>
 #include <QGridLayout>
@@ -34,34 +35,69 @@ std::string DialogWidget::title() const {
     return this->windowTitle().toStdString();
 }
 
-void DialogWidget::addWidget(InputGUI* guiWidget) {
+void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     if (guiWidget == nullptr) {
         return;
     }
 
+    if (_addedKeys.find(key) != _addedKeys.end()) {
+        return;
+    }
+
+    HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(guiWidget);
+    RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(guiWidget);
+
+    if (isHorizGroup != nullptr) {
+        std::set<std::string> widgetKeys = isHorizGroup->getKeys();
+
+        for (std::string wkey : widgetKeys) {
+            if (_addedKeys.find(wkey) != _addedKeys.end()) {
+                return;
+            }
+            else {
+                _addedKeys.insert(wkey);
+            }
+        }
+    }
+
+    if (isRadioGroup != nullptr) {
+        std::set<std::string> widgetKeys = isRadioGroup->getKeys();
+
+        for (std::string wkey : widgetKeys) {
+            if (_addedKeys.find(wkey) != _addedKeys.end()) {
+                return;
+            }
+            else {
+                _addedKeys.insert(wkey);
+            }
+        }
+    }
+
+    guiWidget->setKey(key);
     guiWidget->setParent(this);
     vboxlayout->addWidget(guiWidget);
     _inputWidgets.push_back(guiWidget);
+    _addedKeys.insert(key);
 }
 
-void DialogWidget::addWidget(ButtonGUI* buttonWidget) {
+void DialogWidget::addWidget(const std::string& key, ButtonGUI* buttonWidget) {
     if (buttonWidget == nullptr) {
         return;
     }
 
     HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label() + "_group");
-    horizGroup->addWidget(buttonWidget);
-    addWidget(horizGroup);
+    horizGroup->addWidget(key, buttonWidget);
+    addWidget(horizGroup->label(), horizGroup);
 }
 
-void DialogWidget::addWidget(CheckBoxGUI* checkboxWidget) {
+void DialogWidget::addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) {
     if (checkboxWidget == nullptr) {
         return;
     }
 
     HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label() + "_group");
-    horizGroup->addWidget(checkboxWidget);
-    addWidget(horizGroup);
+    horizGroup->addWidget(key, checkboxWidget);
+    addWidget(horizGroup->label(), horizGroup);
 }
 
 const std::vector<InputGUI*>& DialogWidget::inputWidgets() {

@@ -41,6 +41,12 @@ namespace lc {
                 */
                 void addCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Set gui key for the lua table
+                * \param string gui key
+                */
+                void setKey(const std::string& keyIn);
+
             public slots:
                 /**
                 * \brief Run all callbacks
@@ -50,6 +56,7 @@ namespace lc {
             private:
                 std::string _label;
                 std::vector<kaguya::LuaRef> _callbacks;
+                std::string _key;
             };
         }
     }

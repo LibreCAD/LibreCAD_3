@@ -138,5 +138,5 @@ void AngleGUI::setValue(double val) {
 }
 
 void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }

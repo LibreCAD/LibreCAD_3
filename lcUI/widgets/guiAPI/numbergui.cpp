@@ -51,5 +51,5 @@ void NumberGUI::setValue(double val) {
 }
 
 void NumberGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }

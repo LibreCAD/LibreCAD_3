@@ -14,10 +14,30 @@ HorizontalGroupGUI::HorizontalGroupGUI(std::string label, QWidget* parent)
     this->setLayout(qhboxlayout);
 }
 
-void HorizontalGroupGUI::addWidget(QWidget* newWidget) {
+void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
+    if (_addedKeys.find(key) != _addedKeys.end()) {
+        return;
+    }
+
+    InputGUI* inpgui = qobject_cast<InputGUI*>(newWidget);
+    if (inpgui != nullptr) {
+        inpgui->setKey(key);
+    }
+
+    CheckBoxGUI* checkbox = qobject_cast<CheckBoxGUI*>(newWidget);
+    if (checkbox != nullptr) {
+        checkbox->setKey(key);
+    }
+
+    RadioButtonGUI* radiobutton = qobject_cast<RadioButtonGUI*>(newWidget);
+    if (radiobutton != nullptr) {
+        radiobutton->setKey(key);
+    }
+
     newWidget->setParent(this);
     _widgets.push_back(newWidget);
     qhboxlayout->addWidget(newWidget);
+    _addedKeys.insert(key);
 }
 
 void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
@@ -37,4 +57,8 @@ void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
             }
         }
     }
+}
+
+std::set<std::string> HorizontalGroupGUI::getKeys() {
+    return _addedKeys;
 }

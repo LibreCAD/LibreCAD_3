@@ -64,5 +64,5 @@ void ComboBoxGUI::setValue(int index) {
 }
 
 void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[label()] = value();
+    table[_key] = value();
 }
