@@ -287,7 +287,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
     );
 
     state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
-        .setConstructors<lc::ui::api::DialogWidget(const std::string&)>()
+        .setConstructors<lc::ui::api::DialogWidget(const std::string&, lc::ui::MainWindow*)>()
         .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
         .addFunction("setFinishButton", &lc::ui::api::DialogWidget::setFinishButton)
         .addFunction("addFinishCallback", &lc::ui::api::DialogWidget::addFinishCallback)

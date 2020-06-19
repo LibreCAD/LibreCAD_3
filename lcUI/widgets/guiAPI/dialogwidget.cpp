@@ -3,15 +3,17 @@
 
 #include "horizontalgroupgui.h"
 #include "radiogroupgui.h"
+#include "coordinategui.h"
 
 #include <iostream>
 #include <QGridLayout>
 
 using namespace lc::ui::api;
 
-DialogWidget::DialogWidget(const std::string& dialogTitle, QWidget* parent)
+DialogWidget::DialogWidget(const std::string& dialogTitle, lc::ui::MainWindow* mainWindow, QWidget* parent)
     : 
     QDialog(parent),
+    mainWindow(mainWindow),
     ui(new Ui::DialogWidget)
 {
     ui->setupUi(this);
@@ -46,6 +48,7 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
 
     HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(guiWidget);
     RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(guiWidget);
+    CoordinateGUI* isCoordinate = qobject_cast<CoordinateGUI*>(guiWidget);
 
     if (isHorizGroup != nullptr) {
         std::set<std::string> widgetKeys = isHorizGroup->getKeys();
@@ -71,6 +74,10 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
                 _addedKeys.insert(wkey);
             }
         }
+    }
+
+    if (isCoordinate != nullptr) {
+        isCoordinate->enableCoordinateSelection(mainWindow);
     }
 
     guiWidget->setKey(key);

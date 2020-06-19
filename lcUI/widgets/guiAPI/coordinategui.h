@@ -6,6 +6,9 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QLabel>
+#include <QPushButton>
+
+#include "mainwindow.h"
 
 #include "cad/geometry/geocoordinate.h"
 
@@ -82,6 +85,8 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                void enableCoordinateSelection(lc::ui::MainWindow* mainWindow);
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished
@@ -92,6 +97,13 @@ namespace lc {
                 * \brief Run callbacks for text changed
                 */
                 void textChangedCallbacks();
+
+                /**
+                * \brief A point been selected on the cadmdi by the user
+                */
+                void pointSelected(lc::geo::Coordinate point);
+
+                void togglePointSelection(bool toggle);
 
             private:
                 /**
@@ -105,7 +117,11 @@ namespace lc {
                 QLineEdit* _xcoordEdit;
                 QLineEdit* _ycoordEdit;
                 QLabel* _textLabel;
+                QPushButton* _pointButton;
                 lc::geo::Coordinate _coordinate;
+                lc::ui::MainWindow* mainWindow;
+
+                bool _pointSelectionEnabled;
 
                 std::vector<kaguya::LuaRef> _callbacks_finished;
                 std::vector<kaguya::LuaRef> _callbacks_onchange;

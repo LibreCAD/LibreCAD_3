@@ -10,6 +10,8 @@
 #include "buttongui.h"
 #include "checkboxgui.h"
 
+#include "mainwindow.h"
+
 namespace Ui { 
     class DialogWidget; 
 }
@@ -30,7 +32,7 @@ namespace lc {
                 * \param string dialog title
                 * \param parent qwidget parent
                 */
-                DialogWidget(const std::string& dialogTitle, QWidget* parent = nullptr);
+                DialogWidget(const std::string& dialogTitle, lc::ui::MainWindow* mainWindow, QWidget* parent = nullptr);
 
                 /**
                 * \brief Dialog Widget Destructor
@@ -104,6 +106,7 @@ namespace lc {
                 std::vector<InputGUI*> _inputWidgets;
                 std::vector<kaguya::LuaRef> _callbacks;
                 std::set<std::string> _addedKeys;
+                lc::ui::MainWindow* mainWindow;
             };
         }
     }

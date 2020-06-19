@@ -1,6 +1,7 @@
 #include "coordinategui.h"
 #include "ui_coordinategui.h"
 
+#include <QTimer>
 #include <QDoubleValidator>
 
 using namespace lc::ui::api;
@@ -8,6 +9,7 @@ using namespace lc::ui::api;
 CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     : 
     InputGUI(label, parent),
+    _pointSelectionEnabled(false),
     ui(new Ui::CoordinateGUI)
 {
     ui->setupUi(this);
@@ -15,7 +17,9 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _xcoordEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(2)->widget());
     _ycoordEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(4)->widget());
+    _pointButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(5)->widget());
     ui->horizontalLayout->insertStretch(1);
+    _pointButton->setStyleSheet("padding-left: 1px; padding-right: 1px;");
 
     QDoubleValidator* doubleValidator = new QDoubleValidator(this);
     doubleValidator->setDecimals(3);
@@ -31,6 +35,7 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     connect(_ycoordEdit, &QLineEdit::editingFinished, this, &CoordinateGUI::editingFinishedCallbacks);
     connect(_xcoordEdit, &QLineEdit::textChanged, this, &CoordinateGUI::textChangedCallbacks);
     connect(_ycoordEdit, &QLineEdit::textChanged, this, &CoordinateGUI::textChangedCallbacks);
+    connect(_pointButton, &QPushButton::toggled, this, &CoordinateGUI::togglePointSelection);
 }
 
 CoordinateGUI::~CoordinateGUI() {
@@ -101,4 +106,28 @@ void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
 
 void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void CoordinateGUI::enableCoordinateSelection(lc::ui::MainWindow* mainWindow) {
+    this->mainWindow = mainWindow;
+    if (mainWindow != nullptr) {
+        connect(mainWindow, &lc::ui::MainWindow::point, this, &CoordinateGUI::pointSelected);
+    }
+}
+
+void CoordinateGUI::pointSelected(lc::geo::Coordinate point) {
+    if (_pointSelectionEnabled) {
+        this->setValue(point);
+        parentWidget()->activateWindow();
+        this->setFocus();
+        _pointButton->toggled(false);
+        _pointButton->setChecked(false);
+    }
+}
+
+void CoordinateGUI::togglePointSelection(bool toggle) {
+    _pointSelectionEnabled = toggle;
+    if (toggle) {
+        mainWindow->activateWindow();
+    }
 }

@@ -82,4 +82,5 @@ void LuaScript::registerGlobalFunctions(kaguya::State& luaState) {
     luaState.dostring("message = function(m) mainWindow:cliCommand():write(m) end");
     luaState.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
     luaState.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
+    luaState.dostring("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
 }

@@ -155,6 +155,7 @@ void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
     _L.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
     _L.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
     _L.dostring("add_command('CLEAR', function() mainWindow:cliCommand():clear() end)");
+    _L.dostring("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
 
     _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
     _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
