@@ -123,7 +123,7 @@ if(WITH_RENDERING_UNITTESTS)
     find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 
-    find_package(glfw3 3.3 REQUIRED)
+    find_package(glfw3 3.2 REQUIRED)
 
     set(EXTRA_LIBS
         ${EXTRA_LIBS}

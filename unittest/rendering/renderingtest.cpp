@@ -66,10 +66,8 @@ void render(const std::string& dxf, const std::string& output, unsigned int imag
     GLFWwindow* window;
     window = glfwCreateWindow(imageWidth, imageHeight, "LibreCAD", nullptr, nullptr);
     if(window == nullptr) {
-        const char* description;
-        glfwGetError(&description);
         glfwTerminate();
-        FAIL() << "Failed opening GLFW: " << description << std::endl;
+        FAIL() << "Failed opening GLFW: " << std::endl;
     }
 
     glfwMakeContextCurrent(window);
