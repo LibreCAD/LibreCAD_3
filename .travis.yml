@@ -27,6 +27,7 @@ matrix:
             - libglew1.5-dev
             - libglm-dev
             - libglew-dev
+            - libglfw3-dev
             - lcov
 
       services:
