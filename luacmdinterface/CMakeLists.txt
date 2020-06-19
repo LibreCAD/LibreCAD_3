@@ -5,19 +5,12 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 message("***** Lua command line interface *****")
 
-# Cairo
-find_package(Cairo REQUIRED)
-include_directories(${CAIRO_INCLUDE_DIRS})
-
-# Pango
-find_package(Pango 1.36 REQUIRED)
-include_directories(${PANGO_INCLUDE_DIRS})
-link_directories(${PANGO_LIBRARY_DIRS})
-
 # Curl
 find_package(CURL REQUIRED)
 include_directories(${CURL_INCLUDE_DIRS})
 link_directories(${CURL_LIBRARY_DIRS})
+
+find_package(glfw3 3.3 REQUIRED)
 
 # Eigen 3
 find_package(Eigen3 REQUIRED)
@@ -31,24 +24,6 @@ endif ()
 find_package(Boost COMPONENTS program_options filesystem system log date_time thread log_setup REQUIRED)
 FIND_PACKAGE ( Threads REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
-
-# GDK-Pixbuf
-find_package(GDK-Pixbuf REQUIRED)
-include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
-
-#GDK
-find_package(GDK REQUIRED)
-include_directories(${GDK_INCLUDE_DIRS})
-
-#GTK
-find_package(GTK REQUIRED)
-include_directories(${GTK_INCLUDE_DIRS})
-
-
-#GLib
-set(GLIB_FIND_COMPONENTS gobject)
-find_package(GLib REQUIRED)
-include_directories(${GLIB_INCLUDE_DIRS})
 
 #Lua
 find_package(Lua 5.2 REQUIRED)
@@ -83,14 +58,10 @@ set(hdrs
 add_executable(luacmdinterface ${src} ${hdrs})
 target_link_libraries(luacmdinterface
         ${CMAKE_THREAD_LIBS_INIT}
-        ${CAIRO_LIBRARIES} ${PANGO_LIBRARIES}
         ${Boost_LIBRARIES}
         ${CURL_LIBRARIES}
         ${APR_LIBRARIES}
-        ${GLIB_GOBJECT_LIBRARIES} ${GLIB_LIBRARIES}
         ${LUA_LIBRARIES}
-        ${GDK-PIXBUF_LIBRARIES}
-        ${GTK_LIBRARIES}
-        lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES}
+        lcluascript lckernel lcluascript lcviewernoqt ${Boost_LIBRARIES} glfw
 
 )
