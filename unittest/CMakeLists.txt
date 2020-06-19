@@ -118,42 +118,17 @@ endif(WITH_QT_UI)
 if(WITH_RENDERING_UNITTESTS)
     add_compile_definitions(SOURCE_DIR=\"${CMAKE_CURRENT_LIST_DIR}\")
 
-    # GDK-Pixbuf
-    find_package(GDK-Pixbuf 2.30 REQUIRED)
-    include_directories(${GDK-PIXBUF_INCLUDE_DIRS})
-
-    #GDK
-    find_package(GDK REQUIRED)
-    include_directories(${GDK_INCLUDE_DIRS})
-
-    #GLib
-    set(GLIB_FIND_COMPONENTS gobject)
-    find_package(GLib REQUIRED)
-    include_directories(${GLIB_INCLUDE_DIRS})
-
-    # Cairo
-    find_package(Cairo 1.13 REQUIRED)
-    include_directories(${CAIRO_INCLUDE_DIRS})
-
-    # Pango
-    find_package(Pango 1.36 REQUIRED)
-    include_directories(${PANGO_INCLUDE_DIRS})
-    link_directories(${PANGO_LIBRARIES})
-
     # Boost
     set(Boost_USE_MULTITHREADED ON)
     find_package(Boost COMPONENTS program_options filesystem system log REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
 
+    find_package(glfw3 3.3 REQUIRED)
+
     set(EXTRA_LIBS
         ${EXTRA_LIBS}
-        ${CAIRO_LIBRARIES}
-        ${PANGO_LIBRARIES}
-        ${GDK-PIXBUF_LIBRARIES}
-        ${GDK_LIBRARIES}
-        ${GLIB_GOBJECT_LIBRARIES}
-	${GLIB_LIBRARIES}
         ${Boost_LIBRARIES}
+        glfw
     )
 
     set(src
