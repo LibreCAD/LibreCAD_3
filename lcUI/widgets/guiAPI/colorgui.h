@@ -17,26 +17,59 @@ namespace Ui {
 namespace lc {
     namespace ui {
         namespace api {
+            /**
+            * \brief Color Picker GUI Widget
+            */
             class ColorGUI : public InputGUI
             {
                 Q_OBJECT
 
             public:
+                /**
+                * \brief ColorGUI constructor
+                * \param string gui label
+                * \param parent qwidget parent
+                */
                 ColorGUI(std::string label, QWidget* parent = nullptr);
 
+                /**
+                * \brief ColorGUI destructor
+                */
                 ~ColorGUI();
 
+                /**
+                * \brief Add lua value to return table
+                * \param LuaRef table
+                */
                 void getLuaValue(kaguya::LuaRef& table);
 
+                /**
+                * \brief Return color value
+                * \return lc::Color value
+                */
                 lc::Color value() const;
 
+                /**
+                * \brief Set color value
+                * \param lc::Color color
+                */
                 void setValue(lc::Color col);
 
+                /**
+                * \brief Add callback for color selected
+                * \param LuaRef callback
+                */
                 void addCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Run callbacks for color selected
+                */
                 void colorSelectedCallbacks();
 
             public slots:
+                /**
+                * \brief Slot called when color is changed
+                */
                 void changeColor();
 
             private:

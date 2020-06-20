@@ -58,7 +58,19 @@ lc::Color ColorGUI::value() const {
 }
 
 void ColorGUI::setValue(lc::Color col) {
-    _color = QColor(col.red(), col.green(), col.blue(), col.alpha());
+    _color = QColor(col.red() * 255, col.green() * 255, col.blue() * 255, col.alpha());
+    std::cout << _color.red() << std::endl;
+    std::cout << _color.green() << std::endl;
+    std::cout << _color.blue() << std::endl;
+    QColor textColor = getIdealTextColor(_color);
+
+    const QString COLOR_STYLE("QPushButton { background-color : %1; color : %2; }");
+    _colorButton->setStyleSheet(COLOR_STYLE.arg(_color.name()).arg(textColor.name()));
+
+    const QString COLOR_LABEL("R:%1 G:%2 B:%3");
+    _colorButton->setText(COLOR_LABEL.arg(QString::number(_color.red()), 3, QLatin1Char('0')).arg(QString::number(_color.green()), 3, QLatin1Char('0')).arg(QString::number(_color.blue()), 3, QLatin1Char('0')));
+
+    colorSelectedCallbacks();
 }
 
 void ColorGUI::addCallback(kaguya::LuaRef cb) {

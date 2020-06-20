@@ -85,6 +85,10 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Enable coordinate selection by connecting to slot in mainwindow
+                * \param MainWindow pointer
+                */
                 void enableCoordinateSelection(lc::ui::MainWindow* mainWindow);
 
             public slots:

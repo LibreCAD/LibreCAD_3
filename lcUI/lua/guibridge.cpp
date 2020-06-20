@@ -409,5 +409,6 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("value", &lc::ui::api::EntityGUI::value)
         .addFunction("setValue", &lc::ui::api::EntityGUI::setValue)
         .addFunction("addEntity", &lc::ui::api::EntityGUI::addEntity)
+        .addFunction("addCallback", &lc::ui::api::EntityGUI::addCallback)
     );
 }

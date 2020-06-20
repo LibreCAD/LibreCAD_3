@@ -1,12 +1,78 @@
 #include<QApplication>
 #include <gtest/gtest.h>
+#include <vector>
+#include <iostream>
 
 #include "../uitests.h"
 
 #include <widgets/guiAPI/dialogwidget.h>
 #include <widgets/guiAPI/inputgui.h>
 #include <widgets/guiAPI/anglegui.h>
+#include <widgets/guiAPI/textgui.h>
+#include <widgets/guiAPI/slidergui.h>
+#include <widgets/guiAPI/numbergui.h>
+#include <widgets/guiAPI/coordinategui.h>
+#include <widgets/guiAPI/colorgui.h>
+#include <widgets/guiAPI/comboboxgui.h>
 #include <kaguya/kaguya.hpp>
+
+TEST(InputGUIWidgetsTest, TestGetLuaValue) {
+    QApplication app(argc, argv);
+    lc::ui::api::AngleGUI angleGUI("TestAngle");
+    angleGUI.setKey("testangle");
+    lc::ui::api::TextGUI textGUI("TestText");
+    textGUI.setKey("testtext");
+    lc::ui::api::SliderGUI sliderGUI("TestSlider");
+    sliderGUI.setKey("testslider");
+    lc::ui::api::NumberGUI numberGUI("TestNumber");
+    numberGUI.setKey("testnumber");
+    lc::ui::api::CoordinateGUI coordinateGUI("TestCoordinate");
+    coordinateGUI.setKey("testcoordinate");
+    lc::ui::api::ColorGUI colorGUI("TestColor");
+    colorGUI.setKey("testcolor");
+    lc::ui::api::ComboBoxGUI comboboxGUI("TestComboBox");
+    comboboxGUI.setKey("testcombobox");
+
+    angleGUI.setValue(10);
+    textGUI.setValue("TEST_TEXT");
+    sliderGUI.setValue(10);
+    numberGUI.setValue(10);
+    coordinateGUI.setValue(lc::geo::Coordinate(5,5));
+    lc::Color actualcolor = lc::Color(1, 1, 1);
+    colorGUI.setValue(actualcolor);
+    comboboxGUI.addItem("Item1");
+    comboboxGUI.addItem("Item2");
+    comboboxGUI.setValue("Item1");
+
+    std::vector<lc::ui::api::InputGUI*> inputgui_list;
+
+    inputgui_list.push_back(&angleGUI);
+    inputgui_list.push_back(&textGUI);
+    inputgui_list.push_back(&sliderGUI);
+    inputgui_list.push_back(&numberGUI);
+    inputgui_list.push_back(&coordinateGUI);
+    inputgui_list.push_back(&colorGUI);
+    inputgui_list.push_back(&comboboxGUI);
+
+    kaguya::State state;
+    state["testtable"] = kaguya::NewTable();
+    kaguya::LuaRef table = state["testtable"];
+
+    for (lc::ui::api::InputGUI* inputgui : inputgui_list) {
+        inputgui->getLuaValue(table);
+    }
+
+    double diff = state["testtable"]["testangle"].get<double>() - 10;
+    EXPECT_TRUE(diff < 0.01 || diff < -0.01);
+    EXPECT_EQ("TEST_TEXT", state["testtable"]["testtext"].get<std::string>());
+    EXPECT_EQ(10, state["testtable"]["testslider"].get<int>());
+    double diff1 = state["testtable"]["testnumber"].get<double>() - 10;
+    EXPECT_TRUE(diff1 < 0.001 || diff1 < -0.001);
+    EXPECT_EQ(lc::geo::Coordinate(5, 5), state["testtable"]["testcoordinate"].get<lc::geo::Coordinate>());
+    lc::Color testcol = state["testtable"]["testcolor"].get<lc::Color>();
+    EXPECT_TRUE(testcol.red() == actualcolor.red() && testcol.green() == actualcolor.green() && testcol.blue() == actualcolor.blue());
+    EXPECT_EQ("Item1", state["testtable"]["testcombobox"].get<std::string>());
+}
 
 TEST(InputGUIWidgetsTest, AngleGUITest) {
     QApplication app(argc, argv);
@@ -28,4 +94,17 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
 
     double diff1 = state["testValue"].get<double>() - 5;
     EXPECT_TRUE(diff1 < 0.01 || diff1 < 0.01);
+}
+
+TEST(InputGUIWidgetsTest, TextGUITest) {
+    QApplication app(argc, argv);
+    lc::ui::api::TextGUI textGUI("TestText");
+
+    kaguya::State state;
+    state.dostring("cb1 = function(tex) testValue=tex end");
+    textGUI.addOnChangeCallback(state["cb1"]);
+
+    textGUI.setValue("NewValue");
+    EXPECT_EQ("NewValue", textGUI.value());
+    EXPECT_EQ("NewValue", state["testValue"].get<std::string>());
 }

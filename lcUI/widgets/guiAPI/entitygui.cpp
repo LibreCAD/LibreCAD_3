@@ -22,6 +22,7 @@ EntityGUI::EntityGUI(std::string label, QWidget* parent)
     _textLabel->setText(QString(this->label().c_str()));
 
     connect(_addButton, &QPushButton::toggled, this, &EntityGUI::enableSelections);
+    connect(_entityList, &QListWidget::currentItemChanged, this, &EntityGUI::itemChangedCallbacks);
 }
 
 EntityGUI::~EntityGUI()
@@ -106,5 +107,16 @@ std::vector<lc::entity::CADEntity_CSPtr> EntityGUI::value() const {
 void EntityGUI::setValue(std::vector<lc::entity::CADEntity_CSPtr> newSelectedEntities) {
     for (lc::entity::CADEntity_CSPtr entity : newSelectedEntities) {
         addEntity(entity);
+    }
+}
+
+void EntityGUI::addCallback(kaguya::LuaRef cb) {
+    _callbacks.push_back(cb);
+}
+
+void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* previous) {
+    int index = current->data(Qt::UserRole).toInt();
+    for (kaguya::LuaRef& cb : _callbacks) {
+        cb(_selectedEntitiesList[index]);
     }
 }
