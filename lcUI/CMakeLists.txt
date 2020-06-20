@@ -66,6 +66,8 @@ widgets/guiAPI/anglegui.h
 widgets/guiAPI/slidergui.h
 widgets/guiAPI/comboboxgui.h
 widgets/guiAPI/numbergui.h
+widgets/guiAPI/colorgui.h
+widgets/guiAPI/entitygui.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -115,6 +117,8 @@ widgets/guiAPI/anglegui.cpp
 widgets/guiAPI/slidergui.cpp
 widgets/guiAPI/comboboxgui.cpp
 widgets/guiAPI/numbergui.cpp
+widgets/guiAPI/colorgui.cpp
+widgets/guiAPI/entitygui.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
@@ -134,6 +138,8 @@ widgets/guiAPI/anglegui.ui
 widgets/guiAPI/slidergui.ui
 widgets/guiAPI/comboboxgui.ui
 widgets/guiAPI/numbergui.ui
+widgets/guiAPI/colorgui.ui
+widgets/guiAPI/entitygui.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui

@@ -26,6 +26,8 @@
 #include "widgets/guiAPI/slidergui.h"
 #include "widgets/guiAPI/comboboxgui.h"
 #include "widgets/guiAPI/numbergui.h"
+#include "widgets/guiAPI/colorgui.h"
+#include "widgets/guiAPI/entitygui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -393,5 +395,16 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setLabel", &lc::ui::api::NumberGUI::setLabel)
         .addFunction("value", &lc::ui::api::NumberGUI::value)
         .addFunction("setValue", &lc::ui::api::NumberGUI::setValue)
+    );
+
+    state["gui"]["ColorPicker"].setClass(kaguya::UserdataMetatable<lc::ui::api::ColorGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::ColorGUI(std::string)>()
+        .addFunction("value", &lc::ui::api::ColorGUI::value)
+        .addFunction("setValue", &lc::ui::api::ColorGUI::setValue)
+        .addFunction("addCallback", &lc::ui::api::ColorGUI::addCallback)
+    );
+
+    state["gui"]["EntityPicker"].setClass(kaguya::UserdataMetatable<lc::ui::api::EntityGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::EntityGUI(std::string)>()
     );
 }
