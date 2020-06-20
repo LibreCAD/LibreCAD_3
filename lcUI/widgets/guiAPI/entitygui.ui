@@ -22,13 +22,16 @@
      </widget>
     </item>
     <item>
-     <widget class="QListView" name="listView">
+     <widget class="QListWidget" name="listView">
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="pushButton">
       <property name="text">
-       <string>PushButton</string>
+       <string>Add Widget</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
       </property>
      </widget>
     </item>

@@ -10,6 +10,7 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     : 
     InputGUI(label, parent),
     _pointSelectionEnabled(false),
+    mainWindow(nullptr),
     ui(new Ui::CoordinateGUI)
 {
     ui->setupUi(this);
@@ -109,6 +110,10 @@ void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
 }
 
 void CoordinateGUI::enableCoordinateSelection(lc::ui::MainWindow* mainWindow) {
+    if (this->mainWindow != nullptr) {
+        return;
+    }
+
     this->mainWindow = mainWindow;
     if (mainWindow != nullptr) {
         connect(mainWindow, &lc::ui::MainWindow::point, this, &CoordinateGUI::pointSelected);

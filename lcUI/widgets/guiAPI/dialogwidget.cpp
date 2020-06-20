@@ -4,6 +4,7 @@
 #include "horizontalgroupgui.h"
 #include "radiogroupgui.h"
 #include "coordinategui.h"
+#include "entitygui.h"
 
 #include <iostream>
 #include <QGridLayout>
@@ -49,6 +50,7 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(guiWidget);
     RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(guiWidget);
     CoordinateGUI* isCoordinate = qobject_cast<CoordinateGUI*>(guiWidget);
+    EntityGUI* isEntityGUI = qobject_cast<EntityGUI*>(guiWidget);
 
     if (isHorizGroup != nullptr) {
         std::set<std::string> widgetKeys = isHorizGroup->getKeys();
@@ -78,6 +80,10 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
 
     if (isCoordinate != nullptr) {
         isCoordinate->enableCoordinateSelection(mainWindow);
+    }
+
+    if (isEntityGUI != nullptr) {
+        isEntityGUI->enableWidgetSelection(mainWindow);
     }
 
     guiWidget->setKey(key);

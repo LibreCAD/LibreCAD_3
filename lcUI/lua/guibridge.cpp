@@ -406,5 +406,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
 
     state["gui"]["EntityPicker"].setClass(kaguya::UserdataMetatable<lc::ui::api::EntityGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::EntityGUI(std::string)>()
+        .addFunction("value", &lc::ui::api::EntityGUI::value)
+        .addFunction("setValue", &lc::ui::api::EntityGUI::setValue)
+        .addFunction("addEntity", &lc::ui::api::EntityGUI::addEntity)
     );
 }
