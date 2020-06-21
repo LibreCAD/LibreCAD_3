@@ -59,9 +59,6 @@ lc::Color ColorGUI::value() const {
 
 void ColorGUI::setValue(lc::Color col) {
     _color = QColor(col.red() * 255, col.green() * 255, col.blue() * 255, col.alpha());
-    std::cout << _color.red() << std::endl;
-    std::cout << _color.green() << std::endl;
-    std::cout << _color.blue() << std::endl;
     QColor textColor = getIdealTextColor(_color);
 
     const QString COLOR_STYLE("QPushButton { background-color : %1; color : %2; }");

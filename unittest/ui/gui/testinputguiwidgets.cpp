@@ -14,6 +14,10 @@
 #include <widgets/guiAPI/coordinategui.h>
 #include <widgets/guiAPI/colorgui.h>
 #include <widgets/guiAPI/comboboxgui.h>
+#include <widgets/guiAPI/buttongui.h>
+#include <widgets/guiAPI/horizontalgroupgui.h>
+#include <widgets/guiAPI/radiogroupgui.h>
+#include <widgets/guiAPI/radiobuttongui.h>
 #include <kaguya/kaguya.hpp>
 
 TEST(InputGUIWidgetsTest, TestGetLuaValue) {
@@ -96,15 +100,80 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
     EXPECT_TRUE(diff1 < 0.01 || diff1 < 0.01);
 }
 
-TEST(InputGUIWidgetsTest, TextGUITest) {
+TEST(InputGUIWidgetsTest, TextAndNumberGUITest) {
     QApplication app(argc, argv);
     lc::ui::api::TextGUI textGUI("TestText");
+    lc::ui::api::NumberGUI numberGUI("TestNumber");
 
     kaguya::State state;
     state.dostring("cb1 = function(tex) testValue=tex end");
+    state.dostring("cb2 = function(num) testValue2=num end");
     textGUI.addOnChangeCallback(state["cb1"]);
+    numberGUI.addCallback(state["cb2"]);
 
     textGUI.setValue("NewValue");
     EXPECT_EQ("NewValue", textGUI.value());
     EXPECT_EQ("NewValue", state["testValue"].get<std::string>());
+
+    numberGUI.setValue(4.8);
+    double diff1 = state["testValue2"].get<double>() - 4.8;
+    double diff2 = numberGUI.value() - 4.8;
+    EXPECT_TRUE(diff1 < 0.01 || diff1 < 0.01);
+    EXPECT_TRUE(diff2 < 0.01 || diff2 < 0.01);
+}
+
+TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
+    QApplication app(argc, argv);
+    lc::ui::api::HorizontalGroupGUI horizGroupGUI("TestGroup");
+
+    lc::ui::api::TextGUI textGUI("TestText");
+    lc::ui::api::NumberGUI numberGUI("TestNumber");
+    lc::ui::api::ButtonGUI buttonGUI("TestButton");
+
+    horizGroupGUI.addWidget("testtext", &textGUI);
+    horizGroupGUI.addWidget("testnumber", &numberGUI);
+    horizGroupGUI.addWidget("testbutton", &buttonGUI);
+
+    textGUI.setValue("TEST");
+    numberGUI.setValue(5);
+
+    std::set<std::string> keysSet = horizGroupGUI.getKeys();
+    EXPECT_TRUE(keysSet.find("testtext") != keysSet.end());
+    EXPECT_TRUE(keysSet.find("testnumber") != keysSet.end());
+    EXPECT_TRUE(keysSet.find("testbutton") != keysSet.end());
+
+    kaguya::State state;
+    state["testtable"] = kaguya::NewTable();
+    kaguya::LuaRef table = state["testtable"];
+    
+    horizGroupGUI.getLuaValue(table);
+    EXPECT_EQ("TEST", state["testtable"]["testtext"].get<std::string>());
+    double diff1 = state["testtable"]["testnumber"].get<double>() - 5;
+    EXPECT_TRUE(diff1 < 0.01 || diff1 < 0.01);
+}
+
+TEST(InputGUIWidgetsTest, RadioGroupTest) {
+    QApplication app(argc, argv);
+    lc::ui::api::RadioGroupGUI radioGroupGUI("TestRadioGroup");
+
+    lc::ui::api::RadioButtonGUI radioButton1("RadioButton1");
+    lc::ui::api::RadioButtonGUI radioButton2("RadioButton2");
+
+    radioGroupGUI.addButton("button1", &radioButton1);
+    radioGroupGUI.addButton("button2", &radioButton2);
+
+    std::set<std::string> keysSet = radioGroupGUI.getKeys();
+    EXPECT_TRUE(keysSet.find("button1") != keysSet.end());
+    EXPECT_TRUE(keysSet.find("button2") != keysSet.end());
+
+    radioButton1.setValue(true);
+    radioButton2.setValue(true);
+
+    kaguya::State state;
+    state["testtable"] = kaguya::NewTable();
+    kaguya::LuaRef table = state["testtable"];
+
+    radioGroupGUI.getLuaValue(table);
+    EXPECT_FALSE(state["testtable"]["button1"].get<bool>());
+    EXPECT_TRUE(state["testtable"]["button2"].get<bool>());
 }

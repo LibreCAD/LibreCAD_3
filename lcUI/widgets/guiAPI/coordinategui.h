@@ -107,6 +107,9 @@ namespace lc {
                 */
                 void pointSelected(lc::geo::Coordinate point);
 
+                /**
+                * \brief Enable/disable point selection through mouse
+                */
                 void togglePointSelection(bool toggle);
 
             private:

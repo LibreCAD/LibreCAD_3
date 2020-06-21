@@ -2,6 +2,7 @@
 #include "ui_entitygui.h"
 
 #include "cadmdichild.h"
+#include "entitypickervisitor.h"
 
 using namespace lc::ui::api;
 
@@ -97,7 +98,11 @@ void EntityGUI::addEntity(lc::entity::CADEntity_CSPtr entity) {
 
 QString EntityGUI::getEntityInformation(lc::entity::CADEntity_CSPtr entity) {
     int numId = entity->id();
-    return QString("Entity" + QString::number(numId));
+    EntityPickerVisitor entityVisitor;
+    entity->dispatch(entityVisitor);
+    QString entityInfo = QString(entityVisitor.getEntityInformation().c_str());
+
+    return entityInfo + QString(" #%1").arg(QString::number(numId));
 }
 
 std::vector<lc::entity::CADEntity_CSPtr> EntityGUI::value() const {
@@ -116,7 +121,14 @@ void EntityGUI::addCallback(kaguya::LuaRef cb) {
 
 void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* previous) {
     int index = current->data(Qt::UserRole).toInt();
+    entityItemSelected(_selectedEntitiesList[index]);
+
     for (kaguya::LuaRef& cb : _callbacks) {
         cb(_selectedEntitiesList[index]);
     }
+}
+
+void EntityGUI::entityItemSelected(lc::entity::CADEntity_CSPtr entity) {
+    mainWindow->selectNone();
+    mainWindow->cadMdiChild()->selectEntity(entity);
 }

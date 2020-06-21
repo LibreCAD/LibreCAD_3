@@ -54,6 +54,18 @@ namespace lc {
                 */
                 void setKey(const std::string& keyIn);
 
+                /**
+                * \brief Return whether radio button is checked
+                * \return bool value
+                */
+                bool value() const;
+
+                /**
+                * \brief Set radio button toggle
+                * \param bool toggle
+                */
+                void setValue(bool toggle);
+
             public slots:
                 /**
                 * \brief Run all callbacks

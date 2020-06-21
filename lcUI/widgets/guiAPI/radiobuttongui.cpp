@@ -36,3 +36,11 @@ void RadioButtonGUI::getLuaValue(kaguya::LuaRef& table) {
 void RadioButtonGUI::setKey(const std::string& keyIn) {
     _key = keyIn;
 }
+
+bool RadioButtonGUI::value() const {
+    return this->isChecked();
+}
+
+void RadioButtonGUI::setValue(bool toggle) {
+    this->setChecked(toggle);
+}

@@ -95,6 +95,8 @@ namespace lc {
             private:
                 QString getEntityInformation(lc::entity::CADEntity_CSPtr entity);
 
+                void entityItemSelected(lc::entity::CADEntity_CSPtr entity);
+
             private:
                 Ui::EntityGUI* ui;
                 QLabel* _textLabel;

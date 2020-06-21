@@ -68,6 +68,7 @@ widgets/guiAPI/comboboxgui.h
 widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
+widgets/guiAPI/entitypickervisitor.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -119,6 +120,7 @@ widgets/guiAPI/comboboxgui.cpp
 widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
+widgets/guiAPI/entitypickervisitor.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp

@@ -112,11 +112,13 @@ namespace lc {
 
                 const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
 
-		std::string getFilename() { return _filename; }
+                void selectEntity(lc::entity::CADEntity_CSPtr entityPtr);
+
+		        std::string getFilename() { return _filename; }
 
             private:
                 std::string _filename;
-		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
+		        lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
                 kaguya::LuaRef _destroyCallback;
 
