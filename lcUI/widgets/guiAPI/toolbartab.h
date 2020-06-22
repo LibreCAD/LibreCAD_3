@@ -24,6 +24,7 @@ namespace lc {
              */
 			class ToolbarTab : public QWidget {
                     Q_OBJECT
+
 				public:
 					/**
                      * \brief Create widget

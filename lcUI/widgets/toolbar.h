@@ -19,6 +19,7 @@ namespace lc {
              */
             class Toolbar : public QDockWidget {
                     Q_OBJECT
+
                 public:
                     /**
                      * \brief Create widget

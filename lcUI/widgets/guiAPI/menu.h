@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMenu>
+#include <QMenuBar>
 
 #include <kaguya/kaguya.hpp>
 #include "menuitem.h"
@@ -175,6 +176,10 @@ namespace lc
                 bool checkForItemOfSameLabel(const char* label, bool isMenu);
 
                 void updateOtherPositionsAfterRemove();
+
+                void setPositionInsideMenu(QWidget* widget, int newPosition);
+
+                void setPositionInsideMenuBar(QWidget* widget, int newPosition);
 
             private:
                 int _position;

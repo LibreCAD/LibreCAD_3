@@ -5,9 +5,8 @@ using namespace lc::ui::api;
 InputGUI::InputGUI(std::string _label, QWidget* parent)
     :
     QWidget(parent),
-    _label(_label){
-
-}
+    _label(_label)
+{}
 
 std::string InputGUI::label() const {
     return _label;

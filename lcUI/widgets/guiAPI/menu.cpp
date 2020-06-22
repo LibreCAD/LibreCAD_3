@@ -44,7 +44,6 @@ void Menu::addItem(MenuItem* item) {
 
     for (int i = 0; i < items.size(); i++) {
         if (items[i] == item) {
-
             item->updatePositionVariable(i);
             break;
         }
@@ -191,106 +190,10 @@ void Menu::setPosition(int newPosition) {
     QList<QWidget*> widgets = this->menuAction()->associatedWidgets();
 
     if (!insideMenu) {
-        QMenuBar* menuBar = qobject_cast<QMenuBar*>(widgets[0]);
-
-        if (menuBar == nullptr) {
-            return;
-        }
-
-        QList<QAction*> menuList = menuBar->actions();
-
-        if (newPosition >= menuList.size()) {
-            newPosition = menuList.size() - 1;
-        }
-
-        int setToNewPosition = newPosition;
-
-        if (newPosition > _position) {
-            newPosition++;
-        }
-
-        menuBar->insertMenu(menuList[newPosition], this);
-        _position = setToNewPosition;
-
-        // update position of menus after new position
-        menuList = menuBar->actions();
-        int n = menuList.size();
-
-        for (int i = _position + 1; i < n; i++)
-        {
-            Menu* item = qobject_cast<Menu*>(menuList[i]->menu());
-            if (item != nullptr) {
-                item->updatePositionVariable(i);
-            }
-        }
+        setPositionInsideMenuBar(widgets[0], newPosition);
     }
     else {
-        QMenu* menu = qobject_cast<QMenu*>(widgets[0]);
-
-        if (menu == nullptr) {
-            return;
-        }
-
-        QList<QAction*> items = menu->actions();
-
-        if (newPosition >= items.size()) {
-            newPosition = items.size() - 1;
-        }
-
-        int size = items.size();
-
-        for (int i = 0; i < size; i++)
-        {
-            QAction* item = items[i];
-            if (i > _position) {
-                if (item->menu()) {
-                    Menu* menu_i = qobject_cast<Menu*>(item->menu());
-                    if (menu_i != nullptr) {
-                        menu_i->updatePositionVariable(menu_i->position() - 1);
-                    }
-                }
-                else {
-                    MenuItem* menuItem = qobject_cast<MenuItem*>(item);
-                    if (menuItem != nullptr) {
-                        menuItem->updatePositionVariable(menuItem->position() - 1);
-                    }
-                }
-            }
-        }
-
-        QAction* currentItem = items[_position];
-        menu->removeAction(currentItem);
-
-        std::stack<QAction*> actionsStack;
-        items = menu->actions();
-        while (items.size() != newPosition)
-        {
-            QAction* item = items[items.size() - 1];
-            if (item->menu()) {
-                Menu* menu_i = qobject_cast<Menu*>(item->menu());
-                if (menu_i != nullptr) {
-                    menu_i->updatePositionVariable(items.size());
-                }
-            }
-            else {
-                MenuItem* menuItem = qobject_cast<MenuItem*>(item);
-                if (menuItem != nullptr) {
-                    menuItem->updatePositionVariable(items.size());
-                }
-            }
-            actionsStack.push(item);
-            menu->removeAction(item);
-            items = menu->actions();
-        }
-
-        menu->addAction(currentItem);
-
-        while (actionsStack.size() > 0) {
-            menu->addAction(actionsStack.top());
-            actionsStack.pop();
-        }
-
-        _position = newPosition;
+        setPositionInsideMenu(widgets[0], newPosition);
     }
 }
 
@@ -404,6 +307,105 @@ void Menu::updateOtherPositionsAfterRemove() {
             if (menu != nullptr) {
                 menu->updatePositionVariable(menu->position() - 1);
             }
+        }
+    }
+}
+
+void Menu::setPositionInsideMenu(QWidget* widget, int newPosition) {
+    QMenu* menu = qobject_cast<QMenu*>(widget);
+
+    if (menu == nullptr) {
+        return;
+    }
+
+    QList<QAction*> items = menu->actions();
+    if (newPosition >= items.size()) {
+        newPosition = items.size() - 1;
+    }
+
+    for (int i = 0; i < items.size(); i++)
+    {
+        QAction* item = items[i];
+        if (i > _position) {
+            if (item->menu()) {
+                Menu* menu_i = qobject_cast<Menu*>(item->menu());
+                if (menu_i != nullptr) {
+                    menu_i->updatePositionVariable(menu_i->position() - 1);
+                }
+            }
+            else {
+                MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+                if (menuItem != nullptr) {
+                    menuItem->updatePositionVariable(menuItem->position() - 1);
+                }
+            }
+        }
+    }
+
+    QAction* currentItem = items[_position];
+    menu->removeAction(currentItem);
+
+    std::stack<QAction*> actionsStack;
+    items = menu->actions();
+    while (items.size() != newPosition)
+    {
+        QAction* item = items[items.size() - 1];
+        if (item->menu()) {
+            Menu* menu_i = qobject_cast<Menu*>(item->menu());
+            if (menu_i != nullptr) {
+                menu_i->updatePositionVariable(items.size());
+            }
+        }
+        else {
+            MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+            if (menuItem != nullptr) {
+                menuItem->updatePositionVariable(items.size());
+            }
+        }
+        actionsStack.push(item);
+        menu->removeAction(item);
+        items = menu->actions();
+    }
+
+    menu->addAction(currentItem);
+    while (actionsStack.size() > 0) {
+        menu->addAction(actionsStack.top());
+        actionsStack.pop();
+    }
+    _position = newPosition;
+}
+
+void Menu::setPositionInsideMenuBar(QWidget* widget, int newPosition) {
+    QMenuBar* menuBar = qobject_cast<QMenuBar*>(widget);
+
+    if (menuBar == nullptr) {
+        return;
+    }
+
+    QList<QAction*> menuList = menuBar->actions();
+
+    if (newPosition >= menuList.size()) {
+        newPosition = menuList.size() - 1;
+    }
+
+    int setToNewPosition = newPosition;
+
+    if (newPosition > _position) {
+        newPosition++;
+    }
+
+    menuBar->insertMenu(menuList[newPosition], this);
+    _position = setToNewPosition;
+
+    // update position of menus after new position
+    menuList = menuBar->actions();
+    int n = menuList.size();
+
+    for (int i = _position + 1; i < n; i++)
+    {
+        Menu* item = qobject_cast<Menu*>(menuList[i]->menu());
+        if (item != nullptr) {
+            item->updatePositionVariable(i);
         }
     }
 }

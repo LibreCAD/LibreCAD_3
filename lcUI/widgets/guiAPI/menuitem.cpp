@@ -79,33 +79,14 @@ void MenuItem::setPosition(int newPosition) {
     }
 
     QList<QAction*> items = menu->actions();
-    int size = items.size();
-
-    for (int i = 0; i < size; i++)
-    {
-        QAction* item = items[i];
-        if (i > _position) {
-            if (item->menu()) {
-                Menu* menu_i = qobject_cast<Menu*>(item->menu());
-                if (menu_i != nullptr) {
-                    menu_i->updatePositionVariable(menu_i->position() - 1);
-                }
-            }
-            else {
-                MenuItem* menuItem = qobject_cast<MenuItem*>(item);
-                if (menuItem != nullptr) {
-                    menuItem->updatePositionVariable(menuItem->position() - 1);
-                }
-            }
-        }
-    }
+    updateItemPositionsAfterSet(items);
 
     QAction* currentItem = items[_position];
     menu->removeAction(currentItem);
     std::stack<QAction*> actionsStack;
 
-    if (newPosition >= size) {
-        newPosition = size - 1;
+    if (newPosition >= items.size()) {
+        newPosition = items.size() - 1;
     }
 
     items = menu->actions();
@@ -190,5 +171,28 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 void MenuItem::itemTriggered() {
     for (int i = 0; i < callbacks.size(); i++) {
         callbacks[i]();
+    }
+}
+
+void MenuItem::updateItemPositionsAfterSet(QList<QAction*>& items) {
+    int size = items.size();
+
+    for (int i = 0; i < size; i++)
+    {
+        QAction* item = items[i];
+        if (i > _position) {
+            if (item->menu()) {
+                Menu* menu_i = qobject_cast<Menu*>(item->menu());
+                if (menu_i != nullptr) {
+                    menu_i->updatePositionVariable(menu_i->position() - 1);
+                }
+            }
+            else {
+                MenuItem* menuItem = qobject_cast<MenuItem*>(item);
+                if (menuItem != nullptr) {
+                    menuItem->updatePositionVariable(menuItem->position() - 1);
+                }
+            }
+        }
     }
 }

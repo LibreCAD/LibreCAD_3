@@ -103,6 +103,8 @@ namespace lc
             private:
                 void updateOtherPositionsAfterRemove();
 
+                void updateItemPositionsAfterSet(QList<QAction*>& items);
+
             private:
                 std::vector<kaguya::LuaRef> callbacks;
                 std::unordered_map<std::string, int> namedCallbacks;
