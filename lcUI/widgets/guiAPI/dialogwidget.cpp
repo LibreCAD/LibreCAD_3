@@ -137,7 +137,8 @@ void DialogWidget::addFinishCallback(kaguya::LuaRef cb) {
     _callbacks.push_back(cb);
 }
 
-kaguya::LuaRef DialogWidget::generateDialogInfo(kaguya::State state) {
+kaguya::LuaRef DialogWidget::generateDialogInfo(lua_State *luastate) {
+    kaguya::State state(luastate);
     std::string refName = title() + "_table";
     state[refName] = kaguya::NewTable();
     kaguya::LuaRef table = state[refName];

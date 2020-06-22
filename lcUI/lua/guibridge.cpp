@@ -97,7 +97,7 @@ void addLCBindings(lua_State *L) {
 
     state["lc"]["LuaScript"].setClass(kaguya::UserdataMetatable<widgets::LuaScript>()
         .setConstructors<widgets::LuaScript(lc::ui::MainWindow*)>()
-        .addFunction("show", &widgets::LuaScript::show)
+        .addOverloadedFunctions("show", [](widgets::LuaScript& self) { self.show(); })
 	);
 
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
@@ -198,10 +198,6 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::Menu(const char*)>()
         .addFunction("label", &lc::ui::api::Menu::label)
         .addFunction("setLabel", &lc::ui::api::Menu::setLabel)
-        .addFunction("hide", &lc::ui::api::Menu::hide)
-        .addFunction("show", &lc::ui::api::Menu::show)
-        .addFunction("isEnabled", &lc::ui::api::Menu::isEnabled)
-        .addFunction("setEnabled", &lc::ui::api::Menu::setEnabled)
         .addFunction("position", &lc::ui::api::Menu::position)
         .addFunction("setPosition", &lc::ui::api::Menu::setPosition)
         .addFunction("remove", &lc::ui::api::Menu::remove)
@@ -209,6 +205,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("itemByPosition", &lc::ui::api::Menu::itemByPosition)
         .addFunction("menuByName", &lc::ui::api::Menu::menuByName)
         .addFunction("menuByPosition", &lc::ui::api::Menu::menuByPosition)
+        .addOverloadedFunctions("hide", [](lc::ui::api::Menu& self) { self.hide(); })
+        .addOverloadedFunctions("show", [](lc::ui::api::Menu& self) { self.show(); })
+        .addOverloadedFunctions("isEnabled", [](lc::ui::api::Menu& self) { return self.isEnabled(); })
+        .addOverloadedFunctions("setEnabled", [](lc::ui::api::Menu& self, bool enable) { self.setEnabled(enable); })
         .addOverloadedFunctions("addItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::addItem), static_cast<lc::ui::api::MenuItem * (lc::ui::api::Menu::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::Menu::addItem))
         .addOverloadedFunctions("removeItem", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::MenuItem*)>(&lc::ui::api::Menu::removeItem), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeItem))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::api::Menu::*)(lc::ui::api::Menu*)>(&lc::ui::api::Menu::removeMenu), static_cast<void(lc::ui::api::Menu::*)(const char*)>(&lc::ui::api::Menu::removeMenu))
@@ -219,14 +219,14 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .setConstructors<lc::ui::api::MenuItem(const char*), lc::ui::api::MenuItem(const char*, kaguya::LuaRef)>()
         .addFunction("label", &lc::ui::api::MenuItem::label)
         .addFunction("setLabel", &lc::ui::api::MenuItem::setLabel)
-        .addFunction("hide", &lc::ui::api::MenuItem::hide)
-        .addFunction("show", &lc::ui::api::MenuItem::show)
-        .addFunction("isEnabled", &lc::ui::api::MenuItem::isEnabled)
-        .addFunction("setEnabled", &lc::ui::api::MenuItem::setEnabled)
         .addFunction("position", &lc::ui::api::MenuItem::position)
         .addFunction("setPosition", &lc::ui::api::MenuItem::setPosition)
         .addFunction("remove", &lc::ui::api::MenuItem::remove)
         .addFunction("removeCallback", &lc::ui::api::MenuItem::removeCallback)
+        .addOverloadedFunctions("hide", [](lc::ui::api::MenuItem& self) { self.hide(); })
+        .addOverloadedFunctions("show", [](lc::ui::api::MenuItem& self) { self.show(); })
+        .addOverloadedFunctions("isEnabled", [](lc::ui::api::MenuItem& self) { return self.isEnabled(); })
+        .addOverloadedFunctions("setEnabled", [](lc::ui::api::MenuItem& self, bool enable) { self.setEnabled(enable); })
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::MenuItem::*)(kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback), static_cast<void(lc::ui::api::MenuItem::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::MenuItem::addCallback))
     );
 
@@ -259,10 +259,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setLabel", &lc::ui::api::ToolbarButton::setLabel)
         .addFunction("setTooltip", &lc::ui::api::ToolbarButton::setTooltip)
         .addFunction("removeCallback", &lc::ui::api::ToolbarButton::removeCallback)
-        .addFunction("isEnabled", &lc::ui::api::ToolbarButton::isEnabled)
-        .addFunction("hide", &lc::ui::api::ToolbarButton::hide)
-        .addFunction("show", &lc::ui::api::ToolbarButton::show)
         .addFunction("remove", &lc::ui::api::ToolbarButton::remove)
+        .addOverloadedFunctions("hide", [](lc::ui::api::ToolbarButton& self) { self.hide(); })
+        .addOverloadedFunctions("show", [](lc::ui::api::ToolbarButton& self) { self.show(); })
+        .addOverloadedFunctions("isEnabled", [](lc::ui::api::ToolbarButton& self) { return self.isEnabled(); })
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::ToolbarButton::*)(kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback),
@@ -275,10 +275,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setLabel", &lc::ui::api::ToolbarGroup::setLabel)
         .addFunction("buttonByName", &lc::ui::api::ToolbarGroup::buttonByName)
         .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)
-        .addFunction("hide", &lc::ui::api::ToolbarGroup::hide)
-        .addFunction("show", &lc::ui::api::ToolbarGroup::show)
         .addFunction("remove", &lc::ui::api::ToolbarGroup::remove)
         .addFunction("setWidth", &lc::ui::api::ToolbarGroup::setWidth)
+        .addOverloadedFunctions("hide", [](lc::ui::api::ToolbarGroup& self) { self.hide(); })
+        .addOverloadedFunctions("show", [](lc::ui::api::ToolbarGroup& self) { self.show(); })
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),
@@ -328,8 +328,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("label", &lc::ui::api::CheckBoxGUI::label)
         .addFunction("setLabel", &lc::ui::api::CheckBoxGUI::setLabel)
         .addFunction("addCallback", &lc::ui::api::CheckBoxGUI::addCallback)
-        .addFunction("checked", &lc::ui::api::CheckBoxGUI::isChecked)
-        .addFunction("setChecked", &lc::ui::api::CheckBoxGUI::setChecked)
+        .addOverloadedFunctions("checked", [](lc::ui::api::CheckBoxGUI& self) { self.isChecked(); })
+        .addOverloadedFunctions("setChecked", [](lc::ui::api::CheckBoxGUI& self, bool check) { self.setChecked(check); })
     );
 
     state["gui"]["RadioButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioButtonGUI>()
@@ -337,8 +337,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("label", &lc::ui::api::RadioButtonGUI::label)
         .addFunction("setLabel", &lc::ui::api::RadioButtonGUI::setLabel)
         .addFunction("addCallback", &lc::ui::api::RadioButtonGUI::addCallback)
-        .addFunction("checked", &lc::ui::api::RadioButtonGUI::isChecked)
-        .addFunction("setChecked", &lc::ui::api::RadioButtonGUI::setChecked)
+        .addOverloadedFunctions("checked", [](lc::ui::api::RadioButtonGUI& self) { self.isChecked(); })
+        .addOverloadedFunctions("setChecked", [](lc::ui::api::RadioButtonGUI& self, bool check) { self.setChecked(check); })
     );
 
     state["gui"]["HorizontalGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::HorizontalGroupGUI, lc::ui::api::InputGUI>()

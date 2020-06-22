@@ -180,9 +180,9 @@ TEST(LayersTest, APITest) {
 
     auto layer2 = layers->addLayer("TestLayer2");
     layers->renameLayer("TestLayer2", "RenamedLayer");
-    EXPECT_EQ(layers->layerByName("RenamedLayer"), layer2);
+    EXPECT_TRUE(layers->layerByName("RenamedLayer") != nullptr);
 
     auto layer3 = layers->addLayer("TestLayer3");
     layers->removeLayer(layer3);
-    EXPECT_EQ(layers->layerByName("TestLayer3"), layer3);
+    EXPECT_TRUE(layers->layerByName("TestLayer3") == nullptr);
 }

@@ -94,7 +94,7 @@ namespace lc {
                 * \brief Generate table containing info of all widgets in dialog
                 * \return LuaRef info table
                 */
-                kaguya::LuaRef generateDialogInfo(kaguya::State state);
+                kaguya::LuaRef generateDialogInfo(lua_State *luastate);
 
                 /**
                 * \brief Return list of all keys

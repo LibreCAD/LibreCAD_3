@@ -90,7 +90,7 @@ void EntityGUI::addEntity(lc::entity::CADEntity_CSPtr entity) {
     QString entityInfo = getEntityInformation(entity);
 
     QListWidgetItem* item = new QListWidgetItem(entityInfo);
-    item->setData(Qt::UserRole, _selectedEntitiesList.size());
+    item->setData(Qt::UserRole, (int)_selectedEntitiesList.size());
     _selectedEntitiesList.push_back(entity);
     _entityList->addItem(item);
     _addedEntities.insert(entity->id());
