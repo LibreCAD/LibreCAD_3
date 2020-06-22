@@ -219,8 +219,3 @@ lc::ui::MetaInfoManager_SPtr CadMdiChild::metaInfoManager() const {
 const manager::SnapManagerImpl_SPtr CadMdiChild::getSnapManager() const {
     return _viewerProxy->snapManager();
 }
-
-void CadMdiChild::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
-    lc::viewer::LCVDrawItem_SPtr entityDrawable = viewer()->documentCanvas()->getDrawable(entityPtr);
-    entityDrawable->selected(true);
-}

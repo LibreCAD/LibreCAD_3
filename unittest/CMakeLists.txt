@@ -113,6 +113,7 @@ if(WITH_QT_UI)
             ui/gui/testtoolbargroup.cpp
             ui/gui/testtoolbarbutton.cpp
             ui/gui/testinputguiwidgets.cpp
+            ui/gui/testdialogwidget.cpp
             )
 
     include_directories("${CMAKE_SOURCE_DIR}/lcUI")

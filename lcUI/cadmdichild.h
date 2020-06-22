@@ -112,8 +112,6 @@ namespace lc {
 
                 const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
 
-                void selectEntity(lc::entity::CADEntity_CSPtr entityPtr);
-
 		        std::string getFilename() { return _filename; }
 
             private:

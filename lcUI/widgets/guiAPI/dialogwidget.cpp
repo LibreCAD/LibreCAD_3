@@ -38,13 +38,13 @@ std::string DialogWidget::title() const {
     return this->windowTitle().toStdString();
 }
 
-void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
+bool DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     if (guiWidget == nullptr) {
-        return;
+        return false;
     }
 
     if (_addedKeys.find(key) != _addedKeys.end()) {
-        return;
+        return false;
     }
 
     HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(guiWidget);
@@ -57,7 +57,7 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
 
         for (std::string wkey : widgetKeys) {
             if (_addedKeys.find(wkey) != _addedKeys.end()) {
-                return;
+                return false;
             }
             else {
                 _addedKeys.insert(wkey);
@@ -70,7 +70,7 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
 
         for (std::string wkey : widgetKeys) {
             if (_addedKeys.find(wkey) != _addedKeys.end()) {
-                return;
+                return false;
             }
             else {
                 _addedKeys.insert(wkey);
@@ -91,26 +91,29 @@ void DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     vboxlayout->addWidget(guiWidget);
     _inputWidgets.push_back(guiWidget);
     _addedKeys.insert(key);
+    return true;
 }
 
-void DialogWidget::addWidget(const std::string& key, ButtonGUI* buttonWidget) {
+bool DialogWidget::addWidget(const std::string& key, ButtonGUI* buttonWidget) {
     if (buttonWidget == nullptr) {
-        return;
+        return false;
     }
 
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label() + "_group");
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(key + "_group");
     horizGroup->addWidget(key, buttonWidget);
     addWidget(horizGroup->label(), horizGroup);
+    return true;
 }
 
-void DialogWidget::addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) {
+bool DialogWidget::addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) {
     if (checkboxWidget == nullptr) {
-        return;
+        return false;
     }
 
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label() + "_group");
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(key + "_group");
     horizGroup->addWidget(key, checkboxWidget);
     addWidget(horizGroup->label(), horizGroup);
+    return true;
 }
 
 const std::vector<InputGUI*>& DialogWidget::inputWidgets() {
@@ -145,4 +148,12 @@ kaguya::LuaRef DialogWidget::generateDialogInfo(kaguya::State state) {
     }
 
     return table;
+}
+
+std::vector<std::string> DialogWidget::keys() const {
+    std::vector<std::string> listOfKeys;
+    for (std::string key : _addedKeys) {
+        listOfKeys.push_back(key);
+    }
+    return listOfKeys;
 }

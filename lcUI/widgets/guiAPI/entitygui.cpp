@@ -130,5 +130,7 @@ void EntityGUI::itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* 
 
 void EntityGUI::entityItemSelected(lc::entity::CADEntity_CSPtr entity) {
     mainWindow->selectNone();
-    mainWindow->cadMdiChild()->selectEntity(entity);
+    mainWindow->cadMdiChild()->viewer()->documentCanvas()->selectEntity(entity);
+    mainWindow->activateWindow();
+    parentWidget()->activateWindow();
 }

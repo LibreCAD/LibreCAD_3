@@ -293,11 +293,12 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
         .addFunction("setFinishButton", &lc::ui::api::DialogWidget::setFinishButton)
         .addFunction("addFinishCallback", &lc::ui::api::DialogWidget::addFinishCallback)
+        .addFunction("keys", &lc::ui::api::DialogWidget::keys)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
-        .addOverloadedFunctions("addWidget", static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<void(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
+        .addOverloadedFunctions("addWidget", static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
+            static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()

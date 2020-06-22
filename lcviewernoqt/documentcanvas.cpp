@@ -783,3 +783,9 @@ void DocumentCanvas::selectPoint(double x, double y) {
         _entityDrawItem[entity->id()]->selected(!_entityDrawItem[entity->id()]->selected());
     });
 }
+
+void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
+    lc::viewer::LCVDrawItem_SPtr entityDrawable = getDrawable(entityPtr);
+    entityDrawable->selected(true);
+    _selectedDrawables.push_back(entityDrawable);
+}

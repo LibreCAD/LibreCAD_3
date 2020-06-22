@@ -42,20 +42,23 @@ namespace lc {
                 /**
                 * \brief Add input gui widget
                 * \param pointer to InputGUI widget
+                * \return successfully added bool
                 */
-                void addWidget(const std::string& key, InputGUI* guiWidget);
+                bool addWidget(const std::string& key, InputGUI* guiWidget);
 
                 /**
                 * \brief Add button directly (create a button group containing only that button)
                 * \param pointer to ButtonGUI button
+                * \return successfully added bool
                 */
-                void addWidget(const std::string& key, ButtonGUI* buttonWidget);
+                bool addWidget(const std::string& key, ButtonGUI* buttonWidget);
 
                 /**
                 * \brief Add checkbox directly (create a button group containing only that button)
                 * \param pointer to CheckBoxGUI button
+                * \return successfully added bool
                 */
-                void addWidget(const std::string& key, CheckBoxGUI* buttonWidget);
+                bool addWidget(const std::string& key, CheckBoxGUI* checkboxWidget);
 
                 /**
                 * \brief Return list of all input widgets
@@ -92,6 +95,12 @@ namespace lc {
                 * \return LuaRef info table
                 */
                 kaguya::LuaRef generateDialogInfo(kaguya::State state);
+
+                /**
+                * \brief Return list of all keys
+                * \return vector of string keys
+                */
+                std::vector<std::string> keys() const;
 
             public slots:
                 /**

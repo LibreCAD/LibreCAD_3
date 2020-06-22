@@ -1,7 +1,6 @@
 #include<QApplication>
 #include <gtest/gtest.h>
 #include <vector>
-#include <iostream>
 
 #include "../uitests.h"
 
