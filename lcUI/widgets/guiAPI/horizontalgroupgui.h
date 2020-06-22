@@ -43,6 +43,7 @@ namespace lc {
                 std::vector<QWidget*> _widgets;
                 QHBoxLayout* qhboxlayout;
                 std::set<std::string> _addedKeys;
+                std::set<std::string> _buttonKeys;
             };
         }
     }

@@ -15,7 +15,7 @@ HorizontalGroupGUI::HorizontalGroupGUI(std::string label, QWidget* parent)
 }
 
 void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
-    if (_addedKeys.find(key) != _addedKeys.end()) {
+    if (_addedKeys.find(key) != _addedKeys.end() || _buttonKeys.find(key) != _buttonKeys.end()) {
         return;
     }
 
@@ -34,10 +34,17 @@ void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
         radiobutton->setKey(key);
     }
 
+    ButtonGUI* button = qobject_cast<ButtonGUI*>(newWidget);
+    if (button != nullptr) {
+        _buttonKeys.insert(key);
+    }
+    else {
+        _addedKeys.insert(key);
+    }
+
     newWidget->setParent(this);
     _widgets.push_back(newWidget);
     qhboxlayout->addWidget(newWidget);
-    _addedKeys.insert(key);
 }
 
 void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {

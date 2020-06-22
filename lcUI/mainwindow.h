@@ -120,7 +120,15 @@ namespace lc
             */
             void initMenuAPI();
 
+            /**
+            * \brief Readd actions as menu items
+            */
             void addActionsAsMenuItem(lc::ui::api::Menu* menu);
+
+            /**
+            * \brief Helper function for updating position variables of readded menu items
+            */
+            void fixMenuPositioning(lc::ui::api::Menu* menu);
 
             /**
             * \brief Helper function for finding menu item

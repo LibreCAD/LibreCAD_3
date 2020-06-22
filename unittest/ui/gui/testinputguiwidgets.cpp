@@ -139,7 +139,7 @@ TEST(InputGUIWidgetsTest, HorizontalGroupTest) {
     std::set<std::string> keysSet = horizGroupGUI.getKeys();
     EXPECT_TRUE(keysSet.find("testtext") != keysSet.end());
     EXPECT_TRUE(keysSet.find("testnumber") != keysSet.end());
-    EXPECT_TRUE(keysSet.find("testbutton") != keysSet.end());
+    EXPECT_FALSE(keysSet.find("testbutton") != keysSet.end());
 
     kaguya::State state;
     state["testtable"] = kaguya::NewTable();

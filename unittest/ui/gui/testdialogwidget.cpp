@@ -41,7 +41,7 @@ TEST(DialogWidgetTest, AddTest) {
 
     std::vector<std::string> keysList = dialogWidget.keys();
     for (std::string key : keysList) {
-        EXPECT_TRUE(key == "testangle" || key == "testbutton_group" || key == "testcheckbox_group" || key == "testcheckbox" || key == "testbutton");
+        EXPECT_TRUE(key == "testangle" || key == "testbutton_group" || key == "testcheckbox_group" || key == "testcheckbox");
     }
 }
 

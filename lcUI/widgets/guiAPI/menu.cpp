@@ -130,8 +130,9 @@ Menu* Menu::menuByName(const char* menuLabel) {
     {
         if (action->menu()) {
             Menu* item = qobject_cast<Menu*>(action->menu());
-
-            if (item->label() == std::string(menuLabel)) {
+            std::string menulabel = item->label();
+            menulabel.erase(std::remove(menulabel.begin(), menulabel.end(), '&'), menulabel.end());
+            if (menulabel == std::string(menuLabel)) {
                 return item;
             }
         }

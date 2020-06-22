@@ -196,6 +196,7 @@ void MainWindow::initMenuAPI() {
         }
 
         addActionsAsMenuItem(menu);
+        fixMenuPositioning(menu);
     }
 }
 
@@ -211,6 +212,7 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
         else if (action->isSeparator()) {
             QAction* sep = new QAction();
             sep->setSeparator(true);
+            menu->removeAction(action);
             menuItemsToBeAdded.push_back(sep);
         }
         else{
@@ -236,6 +238,25 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
         if (action->menu()) {
             menu->insertMenu(menuItemsToBeAdded.last(), action->menu());
         }
+    }
+}
+
+void MainWindow::fixMenuPositioning(lc::ui::api::Menu* menu) {
+    QList<QAction*> actions = menu->actions();
+
+    int pos = 0;
+    for (QAction* action : actions) {
+        lc::ui::api::Menu* actionMenu = qobject_cast<lc::ui::api::Menu*>(action->menu());
+        lc::ui::api::MenuItem* actionItem = qobject_cast<lc::ui::api::MenuItem*>(action);
+
+        if (actionMenu != nullptr) {
+            actionMenu->updatePositionVariable(pos);
+        }
+
+        if (actionItem != nullptr) {
+            actionItem->updatePositionVariable(pos);
+        }
+        pos++;
     }
 }
 
