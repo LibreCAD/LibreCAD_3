@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "widgets/layers.h"
+#include <QSignalSpy>
 
 #include "uitests.h"
 
@@ -185,4 +186,54 @@ TEST(LayersTest, APITest) {
     auto layer3 = layers->addLayer("TestLayer3");
     layers->removeLayer(layer3);
     EXPECT_TRUE(layers->layerByName("TestLayer3") == nullptr);
+
+    auto layer4 = layers->addLayer("TestLayer4", lc::Color(255,255,255));
+    auto layer5 = std::make_shared<const lc::meta::Layer>("TestLayer5", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+
+    EXPECT_TRUE(layers->layerByName("TestLayer4") != nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer5") == nullptr);
+
+    layers->replaceLayerAPI(layer4, layer5);
+
+    EXPECT_TRUE(layers->layerByName("TestLayer4") == nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer5") != nullptr);
+
+    auto layer6 = std::make_shared<const lc::meta::Layer>("TestLayer6", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->replaceLayerAPI("TestLayer5", layer6);
+
+    EXPECT_TRUE(layers->layerByName("TestLayer5") == nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer6") != nullptr);
+    layers->close();
+
+    layers->renameLayer(layer6, "");
+    EXPECT_TRUE(layers->layerByName("TestLayer6") != nullptr);
+}
+
+TEST(LayersTest, ButtonClickTest) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new LayersTest(mdiChild);
+    auto layer1 = std::make_shared<const lc::meta::Layer>("Test", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    layers->addLayer(layer1);
+
+    QSignalSpy layerSpy(layers, SIGNAL(layerChanged(lc::meta::Layer_CSPtr)));
+    EXPECT_TRUE(layerSpy.isValid());
+
+    layers->remove();
+    EXPECT_EQ(2, layerSpy.count());
+
+    layers->newClicked();
+
+    bool found = false;
+    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
+        if(widget->objectName().toStdString() == "AddLayerDialog"){
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+    app.closeAllWindows();
 }

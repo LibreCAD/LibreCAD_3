@@ -35,4 +35,8 @@ class LayersTest : public lc::ui::widgets::Layers {
         void remove() {
             QTest::mouseClick(ui->deleteButton, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5), 100);
         }
+
+        void newClicked() {
+            QTest::mouseClick(ui->newButton, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5), 100);
+        }
 };
