@@ -1,5 +1,3 @@
-
-
 Operations = {}
 Operations.__index = Operations
 
@@ -11,13 +9,8 @@ setmetatable(Operations, {
 	end,
 })
 
-function Operations:_init(widget)
-	self.target_widget = widget
+function Operations:_init()
 	self.finished = false
-end
-
-function Operations:forMe(event)
-	return lc.CadMdiChild.getId(event["widget"]) == self.target_widget
 end
 
 function Operations:getDistance(center, point)

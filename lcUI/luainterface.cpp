@@ -2,32 +2,40 @@
 #include <managers/luacustomentitymanager.h>
 #include "luainterface.h"
 
+#include <QDir>
+#include <QFileDialog>
+
+#include "mainwindow.h"
+#include "operationloader.h"
+
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
-	_pluginManager(_L.state(), "gui") {
+	_pluginManager(_L.state(), "gui"){
 }
 
 LuaInterface::~LuaInterface() {
-	_luaQObjects.clear();
-    _operations.clear();
     _events.clear();
 
     lc::lua::LuaCustomEntityManager::getInstance().removePlugins();
 }
 
-void LuaInterface::initLua() {
+void LuaInterface::initLua(QMainWindow* mainWindow) {
 	auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
 	lcLua.importLCKernel();
 
-    luaOpenQtBridge(_L.state());
+    luaOpenGUIBridge(_L.state());
 
     _L["luaInterface"] = this;
+    registerGlobalFunctions(mainWindow);
 
     QString luaFile = QCoreApplication::applicationDirPath() + "/path.lua";
     bool s = _L.dofile(luaFile.toStdString().c_str());
+
+    std::string luaPath = _L["lua_path"];
+    lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
     if (s) {
 		const char* out = lua_tostring(_L.state(), -1);
@@ -43,63 +51,16 @@ void LuaInterface::initLua() {
 	_pluginManager.loadPlugins();
 }
 
-bool LuaInterface::luaConnect(
-	QObject* sender,
-	const std::string& signalName,
-	const kaguya::LuaRef& slot)
-{
-	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
-	
-	if(signalId < 0) {
-		std::cout << "No such signal " << signalName << std::endl;
-	}
-	else {
-		auto lqo = std::make_shared<LuaQObject>(sender);
-		_luaQObjects.push_back(lqo);
-
-		auto connected = lqo->connect(signalId, slot);
-
-		cleanInvalidQObject();
-
-		return connected;
-	}
-
-	return false;
-}
-
-std::shared_ptr<QWidget> LuaInterface::loadUiFile(const char* fileName) {
+QWidget* LuaInterface::loadUiFile(const char* fileName) {
 	QUiLoader uiLoader;
 	QFile file(fileName);
     file.open(QFile::ReadOnly);
 
-    std::shared_ptr<QWidget> widget(uiLoader.load(&file));
+    QWidget* widget = uiLoader.load(&file);
 
     file.close();
 
     return widget;
-}
-
-void LuaInterface::cleanInvalidQObject() {
-	_luaQObjects.erase(std::remove_if(_luaQObjects.begin(),
-									  _luaQObjects.end(),
-							  [](LuaQObject_SPtr lqo){
-								  return !lqo->valid();
-							  }),
-					   _luaQObjects.end());
-}
-
-bool LuaInterface::qtConnect(QObject *sender, const std::string& signalName, QObject *receiver, const std::string& slotName) {
-	int signalId = sender->metaObject()->indexOfSignal(signalName.c_str());
-	if(signalId < 0) {
-		std::cout << "No such signal " << signalName << std::endl;
-	}
-
-	int slotId = receiver->metaObject()->indexOfSlot(slotName.c_str());
-	if(slotId < 0) {
-		std::cout << "No such slot " << slotName << std::endl;
-	}
-
-	return QMetaObject::connect(sender, signalId, receiver, slotId) != nullptr;
 }
 
 void LuaInterface::hideUI(bool hidden) {
@@ -139,16 +100,18 @@ FILE* LuaInterface::openFileDialog(bool isOpening, const char* description, cons
     return fopen(path.toStdString().c_str(), mode);
 }
 
-kaguya::LuaRef LuaInterface::operation(unsigned int windowID) {
-    if(_operations.find(windowID) != _operations.end()) {
-        return _operations[windowID];
-    }
-
-    return kaguya::LuaRef();
+kaguya::LuaRef LuaInterface::operation() {
+    return _operation;
 }
 
-void LuaInterface::setOperation(unsigned int windowID, kaguya::LuaRef operation) {
-    _operations[windowID] = std::move(operation);
+void LuaInterface::setOperation(kaguya::LuaRef operation) {
+    _operation = std::move(operation);
+}
+
+void LuaInterface::finishOperation() {
+    if(!_operation.isNilref() && !_operation["close"].isNilref()){
+        _operation["close"](_operation);
+    }
 }
 
 void LuaInterface::registerEvent(const std::string& event, const kaguya::LuaRef& callback) {
@@ -177,4 +140,23 @@ void LuaInterface::triggerEvent(const std::string& event, kaguya::LuaRef args) {
             eventCallback["onEvent"](eventCallback, event, args);
         }
     }
+}
+
+void LuaInterface::registerGlobalFunctions(QMainWindow* mainWindow) {
+    // register common functions i.e. run_basic_operation and message
+    _L["mainWindow"] = static_cast<lc::ui::MainWindow*>(mainWindow);
+    _L.dostring("run_basic_operation = function(operation, init_method) mainWindow:runOperation(operation, init_method) end");
+    _L.dostring("finish_operation = function() luaInterface:finishOperation() end");
+    _L.dostring("operationFinished = function() mainWindow:operationFinished() end");
+
+    // cli command helper functions
+    _L.dostring("message = function(m) mainWindow:cliCommand():write(tostring(m)) end");
+    _L.dostring("cli_get_text = function(getText) mainWindow:cliCommand():returnText(getText) end");
+    _L.dostring("add_command = function(command, callback) mainWindow:cliCommand():addCommand(command, callback) end");
+    _L.dostring("run_command = function(command) mainWindow:cliCommand():runCommand(command) end");
+    _L.dostring("add_command('CLEAR', function() mainWindow:cliCommand():clear() end)");
+    _L.dostring("CreateDialogWidget = function(widgetName) return gui.DialogWidget(widgetName,mainWindow) end");
+
+    _L.dostring("luaInterface:registerEvent('finishOperation', finish_operation)");
+    _L.dostring("luaInterface:registerEvent('operationFinished', operationFinished)");
 }

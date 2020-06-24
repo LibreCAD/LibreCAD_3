@@ -1,9 +1,9 @@
-#include "luainterface.h"
 #include <QApplication>
 #include <QtCore/QDebug>
 #include <QtWidgets/QStyleFactory>
 #include <QSettings>
 #include "cad/logger/logger.h"
+#include "windowmanager.h"
 
 int main(int argc, char* argv[]) {
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -14,8 +14,7 @@ int main(int argc, char* argv[]) {
 
     LOGGER;//Init logger
 
-    lc::ui::LuaInterface li;
-    li.initLua();
+    lc::ui::WindowManager::init();
 
     return QApplication::exec();
 }

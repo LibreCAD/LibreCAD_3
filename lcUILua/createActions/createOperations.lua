@@ -4,8 +4,8 @@ setmetatable(CreateOperations, {
     __index = Operations
 })
 
-function CreateOperations:_init(id, builder, step)
-    Operations._init(self, id)
+function CreateOperations:_init(builder, step)
+    Operations._init(self)
 
     self.prevEntity = nil
     if(builder ~= nil) then
@@ -18,10 +18,6 @@ function CreateOperations:_init(id, builder, step)
 end
 
 function CreateOperations:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(self.step ~= nil) then
         self[self.step](self, eventName, data)
     end
@@ -32,7 +28,7 @@ function CreateOperations:onEvent(eventName, data)
 end
 
 function CreateOperations:createEntity()
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
     b:appendEntity(self:build())
     b:execute()
 
@@ -40,22 +36,22 @@ function CreateOperations:createEntity()
 end
 
 function CreateOperations:build()
-    self.builder:setLayer(active_layer(self.target_widget))
-    self.builder:setMetaInfo(active_metaInfo(self.target_widget))
-    self.builder:setBlock(active_block(self.target_widget))
+    self.builder:setLayer(mainWindow:cadMdiChild():activeLayer())
+    self.builder:setMetaInfo(mainWindow:cadMdiChild():metaInfoManager():metaInfo())
+    self.builder:setBlock(mainWindow:cadMdiChild():activeViewport())
 
     return self.builder:build()
 end
 
 function CreateOperations:refreshTempEntity()
     if (self.prevEntity ~= nil) then
-        getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
+        mainWindow:cadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 
     self.entity = self:build()
 
     if (self.entity ~= nil) then
-        getWindow(self.target_widget):tempEntities():addEntity(self.entity)
+        mainWindow:cadMdiChild():tempEntities():addEntity(self.entity)
     end
 
     self.prevEntity = self.entity
@@ -63,7 +59,7 @@ end
 
 function CreateOperations:removeTempEntity()
     if (self.prevEntity ~= nil) then
-        getWindow(self.target_widget):tempEntities():removeEntity(self.prevEntity)
+        mainWindow:cadMdiChild():tempEntities():removeEntity(self.prevEntity)
     end
 end
 
@@ -83,14 +79,14 @@ end
 
 function CreateOperations:close()
     if(not self.finished) then
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished')
         self:removeTempEntity()
         if (self.cleanUp ~= nil) then
             self:cleanUp()
         end
         self:unregisterEvents()
-        cli_get_text(self.target_widget, false)
-        cli_command_active(self.target_widget, false)
+        mainWindow:cliCommand():returnText(false)
+        mainWindow:cliCommand():commandActive(false)
         self.finished = true
     end
 end

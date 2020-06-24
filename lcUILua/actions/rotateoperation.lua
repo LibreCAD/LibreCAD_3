@@ -1,4 +1,7 @@
-RotateOperation = {}
+RotateOperation = {
+    command_line = "ROTATE",
+    icon = "modifyrotate.png"
+}
 RotateOperation.__index = RotateOperation
 
 setmetatable(RotateOperation, {
@@ -11,11 +14,11 @@ setmetatable(RotateOperation, {
 })
 
 function RotateOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
-    message(tostring(#self.selection) .. " items selected", id)
+    message(tostring(#self.selection) .. " items selected")
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -27,18 +30,14 @@ function RotateOperation:_init(id)
         luaInterface:registerEvent('point', self)
         luaInterface:registerEvent('mouseMove', self)
 
-        message("Give origin point", id)
+        message("Give origin point")
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
 function RotateOperation:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(eventName == "point" or eventName == "number") then
         self:newData(data["position"])
     elseif(eventName == "mouseMove") then
@@ -50,11 +49,11 @@ function RotateOperation:newData(point)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(point)
 
-        message("Give first point", self.target_widget)
+        message("Give first point")
     elseif(self.firstPoint == nil) then
         self.firstPoint = Operations:getCoordinate(point)
 
-        message("Give second point", self.target_widget)
+        message("Give second point")
     elseif(Operations:getCoordinate(point) ~= nil) then
         self.secondPoint = Operations:getCoordinate(point)
 
@@ -64,7 +63,7 @@ end
 
 function RotateOperation:tempRotate(point)
     if(self.origin ~= nil and self.firstPoint ~= nil) then
-        local window = getWindow(self.target_widget)
+        local window = mainWindow:cadMdiChild()
 
         for k, entity in pairs(self.tempEntities) do
             window:tempEntities():removeEntity(entity)
@@ -83,7 +82,7 @@ end
 
 function RotateOperation:rotate()
     local angle = self.origin:angleTo(self.secondPoint) - self.origin:angleTo(self.firstPoint)
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -101,12 +100,12 @@ function RotateOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:cadMdiChild():tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

@@ -224,6 +224,8 @@ namespace lc {
 
                 meta::Block_CSPtr viewport(){return _viewport;};
 
+                void selectEntity(lc::entity::CADEntity_CSPtr entityPtr);
+
             private:
                 void on_addEntityEvent(const lc::event::AddEntityEvent&);
 

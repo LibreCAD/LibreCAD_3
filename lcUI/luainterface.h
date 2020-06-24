@@ -7,8 +7,7 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include <iostream>
-
+#include <set>
 #include <QMetaObject>
 #include <QMetaMethod>
 #include <QObject>
@@ -18,10 +17,9 @@ extern "C"
 #include <QtUiTools/QUiLoader>
 #include <QCoreApplication>
 #include <managers/pluginmanager.h>
-#include "lua/luaqobject.h"
 
 #include <kaguya/kaguya.hpp>
-#include "lua/qtbridge.h"
+#include "lua/guibridge.h"
 
 namespace lc {
 	namespace ui {
@@ -40,43 +38,13 @@ namespace lc {
 				/**
                  * \brief Read and execute Lua files
                  */
-				void initLua();
-
-				/**
-                 * \brief Connect Qt signal with Lua function
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param slot Lua function
-                 * \return true if connected, false if an error happened
-                 */
-				bool luaConnect(
-						QObject* sender,
-						const std::string& signalName,
-						const kaguya::LuaRef& slot
-				);
-
-				/**
-                 * \brief Connect Qt signal with Qt slot
-                 * \param sender Pointer to sender object
-                 * \param signalName Name of the signal with parameters
-                 * \param receiver Pointer to receiver object
-                 * \param slotName Name of the slot with parameters
-                 */
-				bool qtConnect(QObject* sender,
-							   const std::string& signalName,
-							   QObject* receiver,
-							   const std::string& slotName);
-
-				/**
-                 * \brief Remove all connections that aren't valid anymore.
-                 */
-				void cleanInvalidQObject();
+				void initLua(QMainWindow* mainWindow);
 
 				/**
                  * \brief Load Qt widget from .ui file
                  * \param fileName full path to .ui file
                  */
-				static std::shared_ptr<QWidget> loadUiFile(const char* fileName);
+				static QWidget* loadUiFile(const char* fileName);
 
 				/**
                  * \brief Return a list of plugins
@@ -99,9 +67,11 @@ namespace lc {
 
 				static FILE* openFileDialog(bool isOpening, const char* description, const char* mode);
 
-				kaguya::LuaRef operation(unsigned int windowID);
+				kaguya::LuaRef operation();
 
-				void setOperation(unsigned int windowID, kaguya::LuaRef);
+				void setOperation(kaguya::LuaRef);
+
+                void finishOperation();
 
 				void registerEvent(const std::string& event, const kaguya::LuaRef& callback);
 
@@ -109,11 +79,16 @@ namespace lc {
 
 				void triggerEvent(const std::string& event, kaguya::LuaRef args);
 
+            private:
+                /**
+                 * \brief make common functions available globally and register finish events
+                 */
+                void registerGlobalFunctions(QMainWindow* mainWindow);
+
 			private:
 				kaguya::State _L;
-				std::vector<LuaQObject_SPtr> _luaQObjects;
 				lc::lua::PluginManager _pluginManager;
-				std::map<unsigned int, kaguya::LuaRef> _operations;
+				kaguya::LuaRef _operation;
 				std::map<std::string, std::vector<kaguya::LuaRef>> _events;
 		};
 	}

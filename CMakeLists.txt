@@ -32,7 +32,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/conan/conanbuildinfo.cmake")
     set(WITH_LUACMDINTERFACE FALSE)
     set(WITH_RENDERING_UNITTESTS OFF)
     set(WITH_CAIRO OFF)
-    set(WITH_UNITTESTS OFF)
+    set(WITH_UNITTESTS ON)
 
     set(BOOST_ROOT "${CONAN_BOOST_ROOT}")
     set(Boost_USE_STATIC_LIBS ON)
