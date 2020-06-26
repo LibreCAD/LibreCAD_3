@@ -529,10 +529,10 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     }
     _newSelection.clear();
 
-    //repeated step
-    //for(const auto& di: _selectedDrawables) {
-    //    di->selected(true);
-    //}
+    // refresh selection contents
+    for(const auto& di: _selectedDrawables) {
+        di->selected(true);
+    }
 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
     if (occupies) {
@@ -546,8 +546,11 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
 	//if not found in selected drawables
         if (iter==_selectedDrawables.end()){
-	        _newSelection.push_back(di);
-        	di->selected(true);
+	    _newSelection.push_back(di);
+            di->selected(true);
+	}else{
+            // if already seen as selected, unselect
+            di->selected(false);
 	}
         //@TODO: else remove from _selectedDrawables if code is required
 
@@ -579,14 +582,9 @@ void DocumentCanvas::closeSelection() {
     for(const auto& drawable: _newSelection) {
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
         if(iter == _selectedDrawables.end()) {
-        //if(iter != _selectedDrawables.end()) {
-        //    drawable->selected(false);
-        //    _selectedDrawables.erase(iter);
-        //}
-        //else {
-        // broken logic
-        //    drawable->selected(true);
             _selectedDrawables.push_back(drawable);
+        }else{
+            _selectedDrawables.erase(iter);
         }
     };
 
@@ -624,9 +622,11 @@ void DocumentCanvas::inverseSelection() {
 
     entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
         lc::viewer::LCVDrawItem_SPtr item = _entityDrawItem[entity->id()];
-        if (item->selected())
+        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), item);
+        if (iter != _selectedDrawables.end())
         {
             item->selected(false);
+            _selectedDrawables.erase(iter);
         }
         else
         {
@@ -789,6 +789,15 @@ void DocumentCanvas::selectPoint(double x, double y) {
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
     auto entities = entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
-        _entityDrawItem[entity->id()]->selected(!_entityDrawItem[entity->id()]->selected());
+	auto di = _entityDrawItem[entity->id()];
+	auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
+	//if not found in selected drawables
+        if (iter==_selectedDrawables.end()){
+		di->selected(true);
+		_selectedDrawables.push_back(di);
+	}else{
+		di->selected(false);
+		_selectedDrawables.erase(iter);
+	}
     });
 }
