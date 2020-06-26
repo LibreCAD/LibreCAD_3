@@ -36,7 +36,7 @@ git clone https://github.com/LibreCAD/libdxfrw
 cd libdxfrw
 mkdir release
 cd release
-cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=On ..
 make
 sudo make install
 ```
@@ -168,7 +168,6 @@ conan install ..
 
 **Not all dependencies are available (see https://github.com/conan-io/wishlist/issues/124). They have to be installed manually (see next section)**
 Those dependencies are:
-- libdxfrw
 - Qt (version provided by binutils does not contains SVG/UiTools)
 
 ## Configuration
@@ -176,7 +175,6 @@ Change build type to RelWithDebInfo. Debug won't work as Conan libraries are com
 
 Set CMake command arguments to and adapt to your configuration:
 ```
--DLIBDXFRW_PATH=......./libdxfrw/out/install/x64-Debug 
 -DCMAKE_PREFIX_PATH=C:\Qt\5.14.1\msvc2017_64\lib\cmake
 ```
 
