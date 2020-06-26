@@ -523,29 +523,36 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     // std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
 
-
+    // remove old new selection
     for(const auto& di: _newSelection) {
         di->selected(false);
     }
+    _newSelection.clear();
 
-    for(const auto& di: _selectedDrawables) {
-        di->selected(true);
-    }
+    //repeated step
+    //for(const auto& di: _selectedDrawables) {
+    //    di->selected(true);
+    //}
 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
-
     if (occupies) {
         entitiesInSelection = entityContainer().entitiesFullWithinArea(*_selectedArea);
     }
     else {
         entitiesInSelection = entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
     }
-    _newSelection.clear();
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
         auto di = _entityDrawItem[entity->id()];
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
-        _newSelection.push_back(di);
-        di->selected(!entity || iter == _selectedDrawables.end());
+	//if not found in selected drawables
+        if (iter==_selectedDrawables.end()){
+	        _newSelection.push_back(di);
+        	di->selected(true);
+	}
+        //@TODO: else remove from _selectedDrawables if code is required
+
+        //di->selected(!entity || iter == _selectedDrawables.end());
+        // why this check?
     });
 }
 
@@ -571,12 +578,14 @@ void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, uns
 void DocumentCanvas::closeSelection() {
     for(const auto& drawable: _newSelection) {
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
-        if(iter != _selectedDrawables.end()) {
-            drawable->selected(false);
-            _selectedDrawables.erase(iter);
-        }
-        else {
-            drawable->selected(true);
+        if(iter == _selectedDrawables.end()) {
+        //if(iter != _selectedDrawables.end()) {
+        //    drawable->selected(false);
+        //    _selectedDrawables.erase(iter);
+        //}
+        //else {
+        // broken logic
+        //    drawable->selected(true);
             _selectedDrawables.push_back(drawable);
         }
     };
