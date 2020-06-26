@@ -1,4 +1,21 @@
-LWPolylineOperations = {}
+LWPolylineOperations = {
+    command_line = "POLYLINE",
+    icon = "polylines.svg",
+    description = "Polyline",
+    menu_actions = {
+        default = "actionPolyline"
+    },
+    operation_options = {
+        Line = {
+            icon = "linesnormal.png",
+            action = "createLine"
+        },
+        Arc = {
+            icon = "arc.svg",
+            action = "createArc"
+        }
+    }
+}
 LWPolylineOperations.__index = LWPolylineOperations
 
 setmetatable(LWPolylineOperations, {
@@ -10,10 +27,15 @@ setmetatable(LWPolylineOperations, {
     end,
 })
 
-function LWPolylineOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.LWPolylineBuilder, "enterPoint")
+function LWPolylineOperations:_init()
+    CreateOperations._init(self, lc.builder.LWPolylineBuilder, "enterPoint")
 	self.currentVertex = "line"
 	self.tempPoint = false
+end
+
+function LWPolylineOperations:_init_default()
+    message("<b>Polyline</b>")
+    message("Click on first point or enter coordinates:")
 end
 
 function LWPolylineOperations:enterPoint(eventName, data)
@@ -76,7 +98,7 @@ function LWPolylineOperations:createArc()
 		self.builder:modifyLastVertexArc()
     end
 
-    message("Give arc angle and coordinates", self.target_widget)
+    message("Give arc angle and coordinates")
 end
 
 function LWPolylineOperations:createLine()
@@ -91,5 +113,5 @@ function LWPolylineOperations:createLine()
 		self.builder:modifyLastVertexLine()
     end
 
-    message("Give line coordinates", self.target_widget)
+    message("Give line coordinates")
 end

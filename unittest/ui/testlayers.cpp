@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "widgets/layers.h"
+#include <QSignalSpy>
 
 #include "uitests.h"
 
@@ -135,4 +136,104 @@ TEST(LayersTest, EditionDialog) {
             color.green() == dialogColor.green() &&
             color.blue() == dialogColor.blue()
     );
+}
+
+TEST(LayersTest, AddAndGetAPI) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new lc::ui::widgets::Layers(mdiChild, nullptr);
+
+    auto layer1 = std::make_shared<const lc::meta::Layer>("TestLayer1", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->addLayer(layer1);
+    EXPECT_EQ(layers->layerByName("TestLayer1"), layer1);
+
+    auto layer2 = layers->addLayer("TestLayer2");
+    EXPECT_EQ(layers->layerByName("TestLayer2"), layer2);
+
+    auto layer3 = layers->addLayer("TestLayer3", 2.00);
+    EXPECT_EQ(layers->layerByName("TestLayer3"), layer3);
+
+    auto layer4 = layers->addLayer("TestLayer4", 0, 255, 0);
+    EXPECT_EQ(layers->layerByName("TestLayer4"), layer4);
+
+    auto layer5 = layers->addLayer("TestLayer5", 2.00, 0, 255, 0);
+    EXPECT_EQ(layers->layerByName("TestLayer5"), layer5);
+
+    auto layer6 = layers->addLayer("TestLayer6", 2.00, lc::Color(0.0,1.0,0.0));
+    EXPECT_EQ(layers->layerByName("TestLayer6"), layer6);
+}
+
+TEST(LayersTest, APITest) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new lc::ui::widgets::Layers(mdiChild, nullptr);
+
+    auto layer1 = std::make_shared<const lc::meta::Layer>("TestLayer1", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->addLayer(layer1);
+    EXPECT_EQ(layers->layerByName("TestLayer1"), layer1);
+
+    layers->removeLayer("TestLayer1");
+    EXPECT_EQ(layers->layerByName("TestLayer1"), nullptr);
+
+    auto layer2 = layers->addLayer("TestLayer2");
+    layers->renameLayer("TestLayer2", "RenamedLayer");
+    EXPECT_TRUE(layers->layerByName("RenamedLayer") != nullptr);
+
+    auto layer3 = layers->addLayer("TestLayer3");
+    layers->removeLayer(layer3);
+    EXPECT_TRUE(layers->layerByName("TestLayer3") == nullptr);
+
+    auto layer4 = layers->addLayer("TestLayer4", lc::Color(255,255,255));
+    auto layer5 = std::make_shared<const lc::meta::Layer>("TestLayer5", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+
+    EXPECT_TRUE(layers->layerByName("TestLayer4") != nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer5") == nullptr);
+
+    layers->replaceLayerAPI(layer4, layer5);
+
+    EXPECT_TRUE(layers->layerByName("TestLayer4") == nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer5") != nullptr);
+
+    auto layer6 = std::make_shared<const lc::meta::Layer>("TestLayer6", lc::meta::MetaLineWidthByValue(1), lc::Color(255, 255, 255, 255));
+    layers->replaceLayerAPI("TestLayer5", layer6);
+
+    EXPECT_TRUE(layers->layerByName("TestLayer5") == nullptr);
+    EXPECT_TRUE(layers->layerByName("TestLayer6") != nullptr);
+    layers->close();
+
+    layers->renameLayer(layer6, "");
+    EXPECT_TRUE(layers->layerByName("TestLayer6") != nullptr);
+}
+
+TEST(LayersTest, ButtonClickTest) {
+    QApplication app(argc, argv);
+    auto mdiChild = new lc::ui::CadMdiChild;
+    mdiChild->newDocument();
+
+    auto layers = new LayersTest(mdiChild);
+    auto layer1 = std::make_shared<const lc::meta::Layer>("Test", lc::meta::MetaLineWidthByValue(1), lc::Color(255,255,255,255));
+    layers->addLayer(layer1);
+
+    QSignalSpy layerSpy(layers, SIGNAL(layerChanged(lc::meta::Layer_CSPtr)));
+    EXPECT_TRUE(layerSpy.isValid());
+
+    layers->remove();
+    EXPECT_EQ(2, layerSpy.count());
+
+    layers->newClicked();
+
+    bool found = false;
+    const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelWidgets) {
+        if(widget->objectName().toStdString() == "AddLayerDialog"){
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+    app.closeAllWindows();
 }

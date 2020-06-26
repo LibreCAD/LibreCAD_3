@@ -801,3 +801,9 @@ void DocumentCanvas::selectPoint(double x, double y) {
 	}
     });
 }
+
+void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
+    lc::viewer::LCVDrawItem_SPtr entityDrawable = getDrawable(entityPtr);
+    entityDrawable->selected(true);
+    _selectedDrawables.push_back(entityDrawable);
+}

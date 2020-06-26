@@ -1,4 +1,7 @@
-ScaleOperation = {}
+ScaleOperation = {
+    command_line = "SCALE",
+    icon = "scale.png"
+}
 ScaleOperation.__index = ScaleOperation
 
 setmetatable(ScaleOperation, {
@@ -11,11 +14,11 @@ setmetatable(ScaleOperation, {
 })
 
 function ScaleOperation:_init(id)
-    Operations._init(self, id)
+    Operations._init(self)
 
-    self.selection = getWindow(id):selection()
+    self.selection = mainWindow:cadMdiChild():selection()
 
-    message(tostring(#self.selection) .. " items selected", id)
+    message(tostring(#self.selection) .. " items selected")
 
     if(#self.selection > 0) then
         self.origin = nil
@@ -29,15 +32,11 @@ function ScaleOperation:_init(id)
         message("Give origin point")
     else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished', id)
+        luaInterface:triggerEvent('operationFinished')
     end
 end
 
 function ScaleOperation:onEvent(eventName, data)
-    if(Operations.forMe(self, data) == false) then
-        return
-    end
-
     if(eventName == "point") then
         self:newData(data["position"])
     elseif(eventName == "number") then
@@ -49,7 +48,7 @@ function ScaleOperation:newData(data)
     if(self.origin == nil) then
         self.origin = Operations:getCoordinate(data)
 
-        message("Enter scale factor or entity end", self.target_widget)
+        message("Enter scale factor or entity end")
     elseif(type(data) == "number") then
         self.factor = lc.geo.Coordinate(data, data, data)
 
@@ -58,7 +57,7 @@ function ScaleOperation:newData(data)
 end
 
 function ScaleOperation:scale()
-    local b = lc.operation.EntityBuilder(getWindow(self.target_widget):document())
+    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
 
     for k, entity in pairs(self.selection) do
         b:appendEntity(entity)
@@ -76,12 +75,12 @@ function ScaleOperation:close()
         self.finished = true
 
         for k, entity in pairs(self.tempEntities) do
-            getWindow(self.target_widget):tempEntities():removeEntity(entity)
+            mainWindow:cadMdiChild():tempEntities():removeEntity(entity)
         end
 
         luaInterface:deleteEvent('point', self)
         luaInterface:deleteEvent('number', self)
 
-        luaInterface:triggerEvent('operationFinished', self.target_widget)
+        luaInterface:triggerEvent('operationFinished')
     end
 end

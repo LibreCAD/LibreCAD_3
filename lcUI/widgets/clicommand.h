@@ -7,9 +7,12 @@
 #include <QStringListModel>
 
 #include <memory>
+#include <QMap>
 #include <cad/geometry/geocoordinate.h>
 
 #include "widgettitlebar.h"
+
+#include <kaguya/kaguya.hpp>
 
 namespace Ui {
     class CliCommand;
@@ -38,13 +41,13 @@ namespace lc {
                     /**
                      * \brief Add a new command
                      */
-                    bool addCommand(const std::string& name);
+                    bool addCommand(const char* name, kaguya::LuaRef cb);
 
                     /**
                      * \brief Write a message in the logs
                      * \param message QString
                      */
-                    void write(const QString& message);
+                    void write(std::string message);
 
                     /**
                      * \brief Write text in input.
@@ -65,6 +68,43 @@ namespace lc {
                      * \param commandActive true when command is on, false when command is over
                      */
                     void commandActive(bool commandActive);
+
+                    /**
+                     * \brief run the command
+                     * \param command string
+                     */
+                    void runCommand(const char* command);
+
+                    /**
+                     * \brief Enable/Disable the command
+                     * \param command string
+                     * \param enable bool
+                     */
+                    void enableCommand(const char* command, bool enable);
+
+                    /**
+                     * \brief Is the command enabled
+                     * \param command string
+                     * \return enable bool
+                     */
+                    bool isCommandEnabled(const char* command) const;
+
+                    /**
+                     * \brief Get all available commands
+                     * \return vector of command strings
+                     */
+                    std::vector<std::string> availableCommands() const;
+
+                    /**
+                     * \brief Get the history of commands run
+                     * \return vector of command strings
+                     */
+                    std::vector<std::string> commandsHistory() const;
+
+                    /**
+                     * \brief Clear the clicommand output in the widget
+                     */
+                    void clear();
 
                 public slots:
 
@@ -116,6 +156,10 @@ namespace lc {
                     QStringList _history;
                     int _historySize;
                     int _historyIndex;
+
+                    QMap<QString, kaguya::LuaRef> _commands_cb;
+                    QMap<QString, bool> _commands_enabled;
+                    std::vector<std::string> _commands_entered;
             };
         }
     }

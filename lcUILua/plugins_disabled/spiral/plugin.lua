@@ -94,8 +94,8 @@ function Spiral:calc(N, R, layer, metaInfo, block)
 end
 
 function Spiral:drawSpiral()
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = mainWindow:cadMdiChild():activeLayer()
+    local metaInfo = mainWindow:cadMdiChild():metaInfoManager():metaInfo()
     local block = Block("Spiral_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
 
     local entities = self:calc(self.n, self.R, layer, metaInfo, block)
@@ -130,7 +130,7 @@ function Spiral:tempSpiral(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, R, active_layer(), active_metaInfo())
+    self.entities = self:calc(n, R, mainWindow:cadMdiChild():activeLayer(), mainWindow:cadMdiChild():metaInfoManager():metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin)
