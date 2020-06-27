@@ -1,4 +1,11 @@
-DimAngularOperations = {}
+DimAngularOperations = {
+    command_line = "DIMANGULAR",
+    icon = "dim_angular.svg",
+    description = "Angular Dimension",
+    menu_actions = {
+        default = "actionANG3PT"
+    }
+}
 DimAngularOperations.__index = DimAngularOperations
 
 setmetatable(DimAngularOperations, {
@@ -10,8 +17,8 @@ setmetatable(DimAngularOperations, {
     end,
 })
 
-function DimAngularOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimAngularBuilder, "enterCenterPoint")
+function DimAngularOperations:_init()
+    CreateOperations._init(self, lc.builder.DimAngularBuilder, "enterCenterPoint")
 
     self.centerPoint = nil
     self.firstPoint = nil
@@ -29,7 +36,7 @@ function DimAngularOperations:enterCenterPoint(eventName, data)
         self.centerPoint = data["position"]
         self.step = "enterFirstPoint"
 
-        message("Click on first point", self.target_widget)
+        message("Click on first point")
     end
 end
 
@@ -43,7 +50,7 @@ function DimAngularOperations:enterFirstPoint(eventName, data)
         self.firstPoint = data["position"]
         self.step = "enterSecondPoint"
 
-        message("Click on second point", self.target_widget)
+        message("Click on second point")
     end
 end
 
@@ -57,15 +64,15 @@ function DimAngularOperations:enterSecondPoint(eventName, data)
         self.secondPoint = data["position"]
         self.step = "enterText"
 
-        cli_get_text(self.target_widget, true)
+        mainWindow:cliCommand():returnText( true)
 
-        message("Enter dimension text or leave it empty (<> for value)", self.target_widget)
+        message("Enter dimension text or leave it empty (<> for value)")
     end
 end
 
 function DimAngularOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

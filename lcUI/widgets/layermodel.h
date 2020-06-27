@@ -42,6 +42,13 @@ namespace lc {
                     lc::meta::Layer_CSPtr layerAt(int row);
 
                     /**
+                     * \brief Get layer with given name.
+                     * \param layerName name of the layer
+                     * \return Shared pointer to Layer
+                     */
+                    lc::meta::Layer_CSPtr layerByName(const std::string& layerName);
+
+                    /**
                      * @brief Give the index of the given layer
                      * @param layer
                      * @return Index of layer

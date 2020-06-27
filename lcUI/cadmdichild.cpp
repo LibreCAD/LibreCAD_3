@@ -15,7 +15,6 @@ using namespace lc::viewer;
 
 CadMdiChild::CadMdiChild(QWidget* parent) :
     QWidget(parent),
-    _id(0),
     _activeLayer(nullptr) {
 
     if (this->objectName().isEmpty()) {
@@ -38,7 +37,7 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
 
 CadMdiChild::~CadMdiChild() {
 	if(_destroyCallback) {
-		_destroyCallback(_id);
+		_destroyCallback();
 	}
 }
 
@@ -185,13 +184,6 @@ lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {
 
 std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
 	return _viewerProxy->cursor();
-}
-
-unsigned int CadMdiChild::id() const {
-	return _id;
-}
-void CadMdiChild::setId(unsigned int id) {
-	_id = id;
 }
 
 void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {

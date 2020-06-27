@@ -91,8 +91,8 @@ function Star:calc(N, innerR, outerR, layer, metaInfo, block)
 end
 
 function Star:drawStar()
-    local layer = active_layer()
-    local metaInfo = active_metaInfo()
+    local layer = mainWindow:cadMdiChild():activeLayer()
+    local metaInfo = mainWindow:cadMdiChild():metaInfoManager():metaInfo()
     local block = Block("Star_" .. math.random(9999999999), Coordinate(0, 0, 0)) --TODO: get proper ID
     local entities = self:calc(self.n, self.innerR, self.outerR, layer, metaInfo, block)
 
@@ -145,7 +145,7 @@ function Star:tempStar(point)
         active_widget():tempEntities():removeEntity(v)
     end
 
-    self.entities = self:calc(n, innerR, outerR, active_layer(), active_metaInfo())
+    self.entities = self:calc(n, innerR, outerR, mainWindow:cadMdiChild():activeLayer(), mainWindow:cadMdiChild():metaInfoManager():metaInfo())
 
     for k, v in pairs(self.entities) do
         v = v:move(origin)

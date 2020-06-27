@@ -1,4 +1,11 @@
-DimAlignedOperations = {}
+DimAlignedOperations = {
+    command_line = "DIMALIGNED",
+    icon = "dim_aligned.svg",
+    description = "Aligned Dimension",
+    menu_actions = {
+        default = "actionAligned"
+    }
+}
 DimAlignedOperations.__index = DimAlignedOperations
 
 setmetatable(DimAlignedOperations, {
@@ -10,8 +17,8 @@ setmetatable(DimAlignedOperations, {
     end,
 })
 
-function DimAlignedOperations:_init(id)
-    CreateOperations._init(self, id, lc.builder.DimAlignedBuilder, "enterFirstPoint")
+function DimAlignedOperations:_init()
+    CreateOperations._init(self, lc.builder.DimAlignedBuilder, "enterFirstPoint")
 
     self.firstPoint = nil
     self.secondPoint = nil
@@ -29,7 +36,7 @@ function DimAlignedOperations:enterFirstPoint(eventName, data)
         self.firstPoint = data["position"]
         self.step = "enterSecondPoint"
 
-        message("Click on end point", self.target_widget)
+        message("Click on end point")
     end
 end
 
@@ -43,7 +50,7 @@ function DimAlignedOperations:enterSecondPoint(eventName, data)
         self.secondPoint = data["position"]
         self.step = "enterMiddleOfText"
 
-        message("Click on text position", self.target_widget)
+        message("Click on text position")
     end
 end
 
@@ -59,14 +66,14 @@ function DimAlignedOperations:enterMiddleOfText(eventName, data)
                              data["position"]
         )
         self.step = "enterText"
-        message("Enter text (<> for value)", self.target_widget)
-        cli_get_text(self.target_widget, true)
+        message("Enter text (<> for value)")
+        mainWindow:cliCommand():returnText( true)
     end
 end
 
 function DimAlignedOperations:enterText(eventName, data)
     if(eventName == "text") then
-        cli_get_text(self.target_widget, false)
+        mainWindow:cliCommand():returnText( false)
         self.builder:setExplicitValue(data["text"])
         self:createEntity()
     end

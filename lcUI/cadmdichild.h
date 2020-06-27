@@ -59,6 +59,8 @@ namespace lc {
             public slots:
 
                 void ctxMenu(const QPoint& pos);
+                void saveFile();
+                void saveAsFile();
 
             signals:
 
@@ -108,32 +110,13 @@ namespace lc {
                  */
                 std::vector<lc::entity::CADEntity_CSPtr> selection();
 
-                void saveFile();
-                void saveAsFile();
-
-                /**
-                 * \brief Get window ID
-                 * \return Window ID
-                 * This is used by Lua to distinguish the different windows.
-                 */
-                unsigned int id() const;
-
-                /**
-                 * \brief Set window ID
-                 * \param id Window ID
-                 * This is used by Lua to distinguish the different windows.
-                 * This function should not be used.
-                 */
-                void setId(unsigned int id);
-
                 const viewer::manager::SnapManagerImpl_SPtr getSnapManager() const;
 
-		std::string getFilename() { return _filename; }
+		        std::string getFilename() { return _filename; }
 
             private:
                 std::string _filename;
-                unsigned int _id;
-		lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
+		        lc::persistence::File::Type _fileType = lc::persistence::File::Type::LIBDXFRW_DXF_R2000;
 
                 kaguya::LuaRef _destroyCallback;
 
