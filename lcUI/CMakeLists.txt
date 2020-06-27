@@ -69,6 +69,13 @@ widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
 widgets/guiAPI/entitypickervisitor.h
+widgets/customizeToolbar/operationdragmodel.h
+widgets/customizeToolbar/operationdropmodel.h
+widgets/customizeToolbar/iconlist.h
+widgets/customizeToolbar/deleteiconarea.h
+widgets/customizeToolbar/customizetoolbar.h
+widgets/customizeToolbar/customizeparenttab.h
+widgets/customizeToolbar/customizegrouptab.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
@@ -121,6 +128,13 @@ widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
 widgets/guiAPI/entitypickervisitor.cpp
+widgets/customizeToolbar/operationdragmodel.cpp
+widgets/customizeToolbar/operationdropmodel.cpp
+widgets/customizeToolbar/iconlist.cpp
+widgets/customizeToolbar/deleteiconarea.cpp
+widgets/customizeToolbar/customizetoolbar.cpp
+widgets/customizeToolbar/customizeparenttab.cpp
+widgets/customizeToolbar/customizegrouptab.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
@@ -142,6 +156,7 @@ widgets/guiAPI/comboboxgui.ui
 widgets/guiAPI/numbergui.ui
 widgets/guiAPI/colorgui.ui
 widgets/guiAPI/entitygui.ui
+widgets/customizeToolbar/customizetoolbar.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui

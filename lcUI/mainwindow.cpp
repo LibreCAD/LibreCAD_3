@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "windowmanager.h"
+#include "widgets/customizeToolbar/customizetoolbar.h"
 
 using namespace lc::ui;
 
@@ -46,6 +47,9 @@ MainWindow::MainWindow()
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
+
+    widgets::CustomizeToolbar* custToolbar = new widgets::CustomizeToolbar();
+    custToolbar->show();
 }
 
 MainWindow::~MainWindow()
