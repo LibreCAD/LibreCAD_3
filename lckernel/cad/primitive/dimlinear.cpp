@@ -66,8 +66,7 @@ CADEntity_CSPtr DimLinear::move(const geo::Coordinate& offset) const {
                                                     this->_definitionPoint3 + offset,
                                                     this->_angle,
                                                     this->_oblique,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     newDimLinear->setID(this->id());
     return newDimLinear;
@@ -85,8 +84,7 @@ CADEntity_CSPtr DimLinear::copy(const geo::Coordinate& offset) const {
                                                     this->_definitionPoint3 + offset,
                                                     this->_angle,
                                                     this->_oblique,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimLinear;
 }
@@ -103,8 +101,7 @@ CADEntity_CSPtr DimLinear::rotate(const geo::Coordinate& rotation_center, double
                                                     this->_definitionPoint3.rotate(rotation_center, rotation_angle),
                                                     this->_angle,
                                                     this->_oblique,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimLinear;
 }
@@ -121,8 +118,7 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
                                                     this->_definitionPoint3.scale(scale_center, scale_factor),
                                                     this->_angle,
                                                     this->_oblique,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimLinear;
 }
@@ -192,8 +188,7 @@ CADEntity_CSPtr DimLinear::setDragPoints(std::map<unsigned int, lc::geo::Coordin
                                                       dragPoints.at(3),
                                                       angle(),
                                                       oblique(),
-                                                      layer(),
-                                                      metaInfo());
+                                                      layer(), metaInfo(), block());
         newEntity->setID(id());
         return newEntity;
     }

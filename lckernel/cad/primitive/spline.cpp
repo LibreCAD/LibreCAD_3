@@ -109,8 +109,8 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
                                               nY(),
                                               nZ(),
                                               flags(),
-                                              layer(),
-                                              metaInfo()
+                                              layer()
+                                              , metaInfo(), block()
     );
     newSpline->setID(this->id());
     return newSpline;
@@ -139,8 +139,8 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
                                               nY(),
                                               nZ(),
                                               flags(),
-                                              layer(),
-                                              metaInfo()
+                                              layer()
+                                              , metaInfo(), block()
     );
     return newSpline;
 }
@@ -170,8 +170,8 @@ CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, double ro
                                               normal.y(),
                                               normal.z(),
                                               flags(),
-                                              layer(),
-                                              metaInfo()
+                                              layer()
+                                              , metaInfo(), block()
     );
     newSpline->setID(this->id());
     return newSpline;
@@ -200,8 +200,8 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
                                               nY(),
                                               nZ(),
                                               flags(),
-                                              layer(),
-                                              metaInfo()
+                                              layer()
+                                              , metaInfo(), block()
     );
     newSpline->setID(this->id());
     return newSpline;
@@ -230,8 +230,8 @@ CADEntity_CSPtr Spline::mirror(const geo::Coordinate& axis1, const geo::Coordina
                                               nY(),
                                               nZ(),
                                               flags(),
-                                              layer(),
-                                              metaInfo()
+                                              layer()
+                                              , metaInfo(), block()
     );
     newSpline->setID(this->id());
     return newSpline;
@@ -317,8 +317,8 @@ CADEntity_CSPtr Spline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate
                                                     endTanX(), endTanY(), endTanZ(),
                                                     nX(), nY(), nZ(),
                                                     flags(),
-                                                    layer(),
-                                                    metaInfo());
+                                                    layer()
+                                                    , metaInfo(), block());
 
         newEntity->setID(id());
 
