@@ -58,8 +58,7 @@ CADEntity_CSPtr DimAligned::move(const geo::Coordinate& offset) const {
                                                       this->explicitValue(),
                                                       this->_definitionPoint2 + offset,
                                                       this->_definitionPoint3 + offset,
-                                                      this->layer(),
-                                                      this->metaInfo()
+                                                      this->layer(), metaInfo(), block()
     );
     newDimAligned->setID(this->id());
     return newDimAligned;
@@ -75,8 +74,7 @@ CADEntity_CSPtr DimAligned::copy(const geo::Coordinate& offset) const {
                                                       this->explicitValue(),
                                                       this->_definitionPoint2 + offset,
                                                       this->_definitionPoint3 + offset,
-                                                      this->layer(),
-                                                      this->metaInfo()
+                                                      this->layer(), metaInfo(), block()
     );
     return newDimAligned;
 }
@@ -91,8 +89,7 @@ CADEntity_CSPtr DimAligned::rotate(const geo::Coordinate& rotation_center, doubl
                                                       this->explicitValue(),
                                                       this->_definitionPoint2.rotate(rotation_center, rotation_angle),
                                                       this->_definitionPoint3.rotate(rotation_center, rotation_angle),
-                                                      this->layer(),
-                                                      this->metaInfo()
+                                                      this->layer(), metaInfo(), block()
     );
     return newDimAligned;
 }
@@ -107,8 +104,7 @@ CADEntity_CSPtr DimAligned::scale(const geo::Coordinate& scale_center, const geo
                                                       this->explicitValue(),
                                                       this->_definitionPoint2.scale(scale_center, scale_factor),
                                                       this->_definitionPoint3.scale(scale_center, scale_factor),
-                                                      this->layer(),
-                                                      this->metaInfo()
+                                                      this->layer(), metaInfo(), block()
     );
     return newDimAligned;
 }
@@ -125,8 +121,7 @@ CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
                                                       this->explicitValue(),
                                                       this->_definitionPoint2.mirror(axis1, axis2),
                                                       this->_definitionPoint3.mirror(axis1, axis2),
-                                                      this->layer(),
-                                                      this->metaInfo()
+                                                      this->layer(), metaInfo(), block()
     );
     return newDimAligned;
 }
@@ -185,8 +180,7 @@ CADEntity_CSPtr DimAligned::setDragPoints(std::map<unsigned int, lc::geo::Coordi
                                                       explicitValue(),
                                                       dragPoints.at(2),
                                                       dragPoints.at(3),
-                                                      layer(),
-                                                      metaInfo());
+                                                      layer(), metaInfo(), block());
         newEntity->setID(id());
         return newEntity;
     }

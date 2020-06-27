@@ -57,8 +57,8 @@ CADEntity_CSPtr DimRadial::move(const geo::Coordinate& offset) const {
                                                     this->explicitValue(),
                                                     this->_definitionPoint2 + offset,
                                                     this->_leader,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer()
+                                                    , metaInfo(), block()
     );
     newDimRadial->setID(this->id());
     return newDimRadial;
@@ -74,8 +74,7 @@ CADEntity_CSPtr DimRadial::copy(const geo::Coordinate& offset) const {
                                                     this->explicitValue(),
                                                     this->_definitionPoint2 + offset,
                                                     this->_leader,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimRadial;
 }
@@ -90,8 +89,7 @@ CADEntity_CSPtr DimRadial::rotate(const geo::Coordinate& rotation_center, double
                                                     this->explicitValue(),
                                                     this->_definitionPoint2.rotate(rotation_center, rotation_angle),
                                                     this->_leader,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimRadial;
 }
@@ -106,8 +104,7 @@ CADEntity_CSPtr DimRadial::scale(const geo::Coordinate& scale_center, const geo:
                                                     this->explicitValue(),
                                                     this->_definitionPoint2.scale(scale_center, scale_factor),
                                                     this->_leader,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimRadial;
 }
@@ -122,8 +119,7 @@ CADEntity_CSPtr DimRadial::mirror(const geo::Coordinate& axis1, const geo::Coord
                                                     this->explicitValue(),
                                                     this->_definitionPoint2.mirror(axis1,axis2),
                                                     this->_leader,
-                                                    this->layer(),
-                                                    this->metaInfo()
+                                                    this->layer(), metaInfo(), block()
     );
     return newDimRadial;
 }
@@ -181,8 +177,7 @@ CADEntity_CSPtr DimRadial::setDragPoints(std::map<unsigned int, lc::geo::Coordin
                                                       explicitValue(),
                                                       dragPoints.at(2),
                                                       leader(),
-                                                      layer(),
-                                                      metaInfo());
+                                                      layer(), metaInfo(), block());
         newEntity->setID(id());
         return newEntity;
     }

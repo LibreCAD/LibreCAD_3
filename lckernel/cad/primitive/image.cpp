@@ -101,8 +101,8 @@ CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
                                             _brightness,
                                             _contrast,
                                             _fade,
-                                            layer(),
-                                            metaInfo()
+                                            layer()
+                                            , metaInfo(), block()
     );
     newImage->setID(this->id());
     return newImage;
@@ -118,8 +118,8 @@ CADEntity_CSPtr Image::copy(const geo::Coordinate& offset) const {
                                             _brightness,
                                             _contrast,
                                             _fade,
-                                            layer(),
-                                            metaInfo()
+                                            layer()
+                                            , metaInfo(), block()
     );
     return newImage;
 }

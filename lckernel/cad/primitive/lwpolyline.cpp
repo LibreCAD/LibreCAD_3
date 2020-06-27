@@ -81,8 +81,8 @@ CADEntity_CSPtr LWPolyline::move(const geo::Coordinate& offset) const {
                                                   tickness(),
                                                   closed(),
                                                   extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo());
+                                                  layer()
+                                                 , metaInfo(), block());
     newEntity->setID(this->id());
     return newEntity;
 }
@@ -98,8 +98,8 @@ CADEntity_CSPtr LWPolyline::copy(const geo::Coordinate& offset) const {
                                                   tickness(),
                                                   closed(),
                                                   extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo()
+                                                  layer()
+                                                  , metaInfo(), block()
     );
     return newEntity;
 }
@@ -118,8 +118,8 @@ CADEntity_CSPtr LWPolyline::rotate(const geo::Coordinate& rotation_center, doubl
                                                   tickness(),
                                                   closed(),
                                                   extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo());
+                                                  layer()
+                                                  , metaInfo(), block());
     return newEntity;
 }
 
@@ -141,8 +141,8 @@ CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo
                                                   tickness(),
                                                   closed(),
                                                   extrusionDirection(),
-                                                  layer(),
-                                                  metaInfo()
+                                                  layer()
+                                                  , metaInfo(), block()
     );
     return newEntity;
 }
@@ -352,8 +352,8 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
                                                       tickness(),
                                                       closed(),
                                                       extrusionDirection(),
-                                                      layer(),
-                                                      metaInfo()
+                                                      layer()
+                                                      , metaInfo(), block()
         );
         newEntity->setID(id());
         return newEntity;
