@@ -529,7 +529,7 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     }
     _newSelection.clear();
 
-    // refresh selection contents
+    // Refresh: old new selection has been canceled
     for(const auto& di: _selectedDrawables) {
         di->selected(true);
     }
@@ -543,19 +543,11 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     }
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
         auto di = _entityDrawItem[entity->id()];
-        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
-	//if not found in selected drawables
-        if (iter==_selectedDrawables.end()){
-	    _newSelection.push_back(di);
-            di->selected(true);
-	}else{
-            // if already seen as selected, unselect
-            di->selected(false);
-	}
-        //@TODO: else remove from _selectedDrawables if code is required
-
-        //di->selected(!entity || iter == _selectedDrawables.end());
-        // why this check?
+	// add if it does not previously exist
+        auto iter = std::find(_newSelection.begin(), _newSelection.end(), di);
+        if(iter == _newSelection.end())
+		_newSelection.push_back(di);// indicate needs update
+        di->selected(!di->selected());
     });
 }
 
@@ -582,13 +574,19 @@ void DocumentCanvas::closeSelection() {
     for(const auto& drawable: _newSelection) {
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
         if(iter == _selectedDrawables.end()) {
-            _selectedDrawables.push_back(drawable);
+	    if(drawable->selected())
+	            _selectedDrawables.push_back(drawable);
         }else{
-            _selectedDrawables.erase(iter);
+	    if(!drawable->selected())
+	            _selectedDrawables.erase(iter);
         }
     };
 
     _newSelection.clear();
+    // Refresh
+    for(const auto& di: _selectedDrawables) {
+        di->selected(true);
+    }
 }
 
 void DocumentCanvas::removeSelectionArea() {
