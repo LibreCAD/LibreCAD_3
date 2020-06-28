@@ -187,6 +187,7 @@ void OpenglPainter::close_path()
 void OpenglPainter::fill()
 {
   _manager->selectFill();
+  stroke();
 }
 
 void OpenglPainter::new_path()
