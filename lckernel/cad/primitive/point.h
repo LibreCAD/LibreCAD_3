@@ -90,12 +90,12 @@ namespace lc {
 
             virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
-            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
+            std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
                                                              const SimpleSnapConstrain& constrain,
                                                              double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const override;
-            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
-            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+            std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
             geo::Coordinate nearestPointOnPath(const Coordinate& coord) const;
             geo::Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
