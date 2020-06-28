@@ -27,8 +27,8 @@ Toolbar::~Toolbar() {
 }
 
 lc::ui::api::ToolbarTab* Toolbar::addTab(const char* name) {
-    if (tabs.find(name) != tabs.end()) {
-        return tabs[name];
+    if (_tabs.find(name) != _tabs.end()) {
+        return _tabs[name];
     }
 
     lc::ui::api::ToolbarTab* newTab = new lc::ui::api::ToolbarTab(name);
@@ -38,13 +38,13 @@ lc::ui::api::ToolbarTab* Toolbar::addTab(const char* name) {
 }
 
 void Toolbar::addTab(lc::ui::api::ToolbarTab* newTab) {
-    if (newTab == nullptr || tabs.find(newTab->label().c_str()) != tabs.end()) {
+    if (newTab == nullptr || _tabs.find(newTab->label().c_str()) != _tabs.end()) {
         return;
     }
 
     QString name = QString(newTab->label().c_str());
     ui->tabWidget->addTab(newTab, name);
-    tabs[name] = newTab;
+    _tabs[name] = newTab;
 
     QObject::connect(newTab, SIGNAL(labelChanged(QString, QString)), this, SLOT(setToolbarTabLabel(QString, QString)));
     QObject::connect(newTab, SIGNAL(removeTab(lc::ui::api::ToolbarTab*)), this, SLOT(removeTab(lc::ui::api::ToolbarTab*)));
@@ -55,14 +55,14 @@ void Toolbar::removeTab(lc::ui::api::ToolbarTab* page) {
 		return;
 	}
 
-    tabs.remove(page->label().c_str());
+    _tabs.remove(page->label().c_str());
 
 	auto index = ui->tabWidget->indexOf(page);
 	ui->tabWidget->removeTab(index);
 }
 
 void Toolbar::removeTab(const char* tabName) {
-    removeTab(tabs[tabName]);
+    removeTab(_tabs[tabName]);
 }
 
 lc::ui::api::ToolbarTab* Toolbar::tabByName(const char *name) {
@@ -88,6 +88,7 @@ void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSe
 
     // Add metaInfoGroup and the select widgets
     lc::ui::api::ToolbarGroup* metaInfoGroup = new lc::ui::api::ToolbarGroup("Entity properties", 1);
+    metaInfoGroup->setNonButtonGroup(true);
     quickAccessTab->addGroup(metaInfoGroup);
     metaInfoGroup->addWidget(linePatternSelect);
     metaInfoGroup->addWidget(lineWidthSelect);
@@ -117,21 +118,25 @@ void Toolbar::addSnapOptions() {
 
 void Toolbar::addButton(const char* name, const char* icon, const char* groupBox, kaguya::LuaRef cb, const char* tooltip, bool checkable, const char* tabName)
 {
-    if (tabs.find(tabName) == tabs.end()) {
+    if (_tabs.find(tabName) == _tabs.end()) {
         addTab(tabName);
     }
 
     lc::ui::api::ToolbarButton* button = new lc::ui::api::ToolbarButton(name, icon, cb, tooltip, checkable);
-    tabs[tabName]->addButton(button, groupBox);
+    _tabs[tabName]->addButton(button, groupBox);
 }
 
 void Toolbar::removeGroupByName(const char* groupName, const char* tabName)
 {
-    tabs[tabName]->removeGroup(groupName);
+    _tabs[tabName]->removeGroup(groupName);
 }
 
 void Toolbar::setToolbarTabLabel(QString newLabel, QString oldLabel) {
     lc::ui::api::ToolbarTab* tab = tabByName(oldLabel.toStdString().c_str());
     auto index = ui->tabWidget->indexOf(tab);
     ui->tabWidget->setTabText(index, newLabel);
+}
+
+QList<lc::ui::api::ToolbarTab*> Toolbar::tabs() {
+    return _tabs.values();
 }

@@ -53,3 +53,19 @@ CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
     tableControlLayout->addWidget(colControlLabel);
     tableControlLayout->addWidget(colControl);
 }
+
+CustomizeGroupTab::CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QWidget* parent)
+    :
+    CustomizeGroupTab(toolbarGroup->label().c_str(), parent)
+{
+    std::vector<lc::ui::api::ToolbarButton*> buttonsList = toolbarGroup->buttons();
+
+    int nCols = toolbarGroup->width();
+    int nRows = buttonsList.size() / nCols;
+    if (buttonsList.size() % nCols != 0) {
+        nRows++;
+    }
+
+    dropModel->setNumCols(nCols);
+    dropModel->setNumRows(nRows);
+}

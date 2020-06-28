@@ -86,6 +86,11 @@ namespace lc {
                      */
                     void addSnapOptions();
 
+                    /**
+                     * \brief Retrieve list of all tabs in the toolbar
+                     */
+                    QList<lc::ui::api::ToolbarTab*> tabs();
+
                 public slots:
                     /**
                      * \brief Set tab label of toolbar tab
@@ -101,7 +106,7 @@ namespace lc {
                 private:
                     Ui::Toolbar* ui;
                     lc::ui::LuaInterface* luaInterface;
-                    QMap<QString, lc::ui::api::ToolbarTab*> tabs;
+                    QMap<QString, lc::ui::api::ToolbarTab*> _tabs;
             };
         }
     }

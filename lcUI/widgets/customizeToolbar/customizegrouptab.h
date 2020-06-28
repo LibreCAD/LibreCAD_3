@@ -3,6 +3,8 @@
 #include <QWidget>
 #include "operationdropmodel.h"
 
+#include <widgets/guiAPI/toolbargroup.h>
+
 namespace lc {
     namespace ui {
         namespace widgets {
@@ -10,9 +12,9 @@ namespace lc {
             {
                 Q_OBJECT
             public:
-                explicit CustomizeGroupTab(QString groupName, QWidget* parent = nullptr);
+                CustomizeGroupTab(QString groupName, QWidget* parent = nullptr);
 
-            signals:
+                CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QWidget* parent = nullptr);
 
             private:
                 OperationDropModel* dropModel;

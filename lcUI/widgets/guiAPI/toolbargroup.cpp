@@ -8,6 +8,7 @@ ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
     :
     QGroupBox(groupName, parent),
     _width(width),
+    _nonButtonGroup(false),
     _count(0)
 {
     this->setLayout(new QGridLayout());
@@ -86,7 +87,7 @@ ToolbarButton* ToolbarGroup::buttonByName(const char* buttonName) {
     return nullptr;
 }
 
-std::vector<ToolbarButton*> ToolbarGroup::getAllButtons() {
+std::vector<ToolbarButton*> ToolbarGroup::buttons() {
     auto nbButtons = this->layout()->count();
     std::vector<ToolbarButton*> buttons;
 
@@ -113,4 +114,16 @@ void ToolbarGroup::removeButton(const char* buttonName) {
 
 void ToolbarGroup::remove() {
     emit removeGroup(this);
+}
+
+void ToolbarGroup::setNonButtonGroup(bool nonButtonGroupIn) {
+    _nonButtonGroup = nonButtonGroupIn;
+}
+
+bool ToolbarGroup::nonButtonGroup() const {
+    return _nonButtonGroup;
+}
+
+int ToolbarGroup::width() const {
+    return _width;
 }

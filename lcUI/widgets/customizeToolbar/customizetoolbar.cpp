@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QInputDialog>
 #include <QVBoxLayout>
+#include <QList>
 
 #include "customizeparenttab.h"
 #include "deleteiconarea.h"
@@ -13,13 +14,14 @@
 
 using namespace lc::ui::widgets;
 
-CustomizeToolbar::CustomizeToolbar(QWidget *parent)
+CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::CustomizeToolbar)
 {
     ui->setupUi(this);
 
     initializeGroupList();
+    initialize(toolbar);
     initializeParentTab();
 }
 
@@ -44,16 +46,6 @@ void CustomizeToolbar::initializeGroupList() {
 void CustomizeToolbar::initializeParentTab() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
 
-    QToolButton *tb = new QToolButton();
-    tb->setText("+");
-    tabWidget->addTab(new QLabel("Add groups by pressing \"+\""), QString("Add tab"));
-    tabWidget->setTabEnabled(0, false);
-    tabWidget->tabBar()->setTabButton(0, QTabBar::RightSide, tb);
-
-    connect(tb, &QToolButton::clicked, this, &CustomizeToolbar::addParentTab);
-
-    tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab("Quick Access Group"), QString("Quick Access Group"));
-
     QSizePolicy sizePolicy2 = tabWidget->sizePolicy();
     sizePolicy2.setHorizontalStretch(2);
     tabWidget->setSizePolicy(sizePolicy2);
@@ -70,4 +62,26 @@ void CustomizeToolbar::addParentTab() {
     if (ok && !text.isEmpty()){
         tabWidget->insertTab(tabWidget->count()-1, new CustomizeParentTab(text), text);
     }
+}
+
+void CustomizeToolbar::initialize(Toolbar* toolbar) {
+    QList<lc::ui::api::ToolbarTab*> toolbarTabs = toolbar->tabs();
+
+    for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
+        addToolbarTab(toolbarTab);
+    }
+}
+
+void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+
+    QToolButton* tb = new QToolButton();
+    tb->setText("+");
+    tabWidget->addTab(new QLabel("Add groups by pressing \"+\""), QString("Add tab"));
+    tabWidget->setTabEnabled(0, false);
+    tabWidget->tabBar()->setTabButton(0, QTabBar::RightSide, tb);
+
+    connect(tb, &QToolButton::clicked, this, &CustomizeToolbar::addParentTab);
+
+    tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab(newTab), QString(newTab->label().c_str()));
 }

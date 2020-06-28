@@ -62,7 +62,7 @@ ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
 	return nullptr;
 }
 
-std::vector<ToolbarGroup*> ToolbarTab::getAllGroups() {
+std::vector<ToolbarGroup*> ToolbarTab::groups() {
     std::vector<ToolbarGroup*> groupsList;
     auto nbGroups = _layout->count();
 

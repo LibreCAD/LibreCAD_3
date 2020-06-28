@@ -48,7 +48,7 @@ MainWindow::MainWindow()
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
 
-    widgets::CustomizeToolbar* custToolbar = new widgets::CustomizeToolbar();
+    widgets::CustomizeToolbar* custToolbar = new widgets::CustomizeToolbar(&_toolbar);
     custToolbar->show();
 }
 

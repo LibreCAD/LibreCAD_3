@@ -7,6 +7,8 @@
 #include <QListView>
 #include <QTableView>
 
+#include <widgets/toolbar.h>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class CustomizeToolbar; }
 QT_END_NAMESPACE
@@ -20,7 +22,12 @@ namespace lc {
                 Q_OBJECT
 
             public:
-                CustomizeToolbar(QWidget* parent = nullptr);
+                CustomizeToolbar(Toolbar* toolbar, QWidget* parent = nullptr);
+
+                void initialize(Toolbar* toolbar);
+
+                void addToolbarTab(lc::ui::api::ToolbarTab* newTab);
+
                 ~CustomizeToolbar();
 
             public slots:

@@ -62,7 +62,7 @@ namespace lc {
                      * \brief Get list of all groups
                      * \return vector of pointers to ToolbarGroups
                      */
-                    std::vector<ToolbarGroup*> getAllGroups();
+                    std::vector<ToolbarGroup*> groups();
 
 					/**
                      * \brief Get existing button
