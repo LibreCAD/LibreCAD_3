@@ -10,11 +10,6 @@ using namespace lc::ui::widgets;
 OperationDragModel::OperationDragModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-    /*operations.push_back({"Circle", QIcon("C:/Users/targe/Documents/GSoC/LibreCAD_3Conam/LibreCAD_3Conan/lcUI/ui/icons/circle.svg")});
-    operations.push_back({"Arc", QIcon("C:/Users/targe/Documents/GSoC/LibreCAD_3Conam/LibreCAD_3Conan/lcUI/ui/icons/arc.svg")});
-    operations.push_back({"Ellipse", QIcon("C:/Users/targe/Documents/GSoC/LibreCAD_3Conam/LibreCAD_3Conan/lcUI/ui/icons/ellipse.svg")});
-    operations.push_back({"Circle", QIcon("C:/Users/targe/Documents/GSoC/LibreCAD_3Conam/LibreCAD_3Conan/lcUI/ui/icons/circle.svg")});
-    operations.push_back({"Modify", QIcon("C:/Users/targe/Documents/GSoC/LibreCAD_3Conam/LibreCAD_3Conan/lcUI/ui/icons/modify.svg")});*/
 }
 
 int OperationDragModel::rowCount(const QModelIndex &parent) const
@@ -34,17 +29,21 @@ QVariant OperationDragModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if(role == Qt::DecorationRole || role == Qt::DisplayRole){
-        QPair<QString, QIcon> element = operations.at(index.row());
+        QPair<QString, lc::ui::api::ToolbarButton*> element = operations.at(index.row());
 
         if(role == Qt::DecorationRole)
         {
-          return element.second;
+          return element.second->icon();
         }
         else
         {
             return element.first;
         }
     }
+
+    /*if (role == Qt::UserRole) {
+        return operations.at(index.row());
+    }*/
 
     // FIXME: Implement me!
     return QVariant();
@@ -92,6 +91,7 @@ QMimeData* OperationDragModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-void OperationDragModel::addToolbarButtonItem(QString name, QString icon) {
-    operations.push_back({name, QIcon(icon)});
+void OperationDragModel::addToolbarButtonItem(lc::ui::api::ToolbarButton* button) {
+    operations.push_back({ QString(button->label().c_str()), button });
+    buttonMap[QString(button->label().c_str())] = button;
 }

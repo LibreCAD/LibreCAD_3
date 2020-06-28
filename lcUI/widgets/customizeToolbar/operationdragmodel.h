@@ -3,6 +3,8 @@
 #include <QAbstractListModel>
 #include <QIcon>
 
+#include <widgets/guiAPI/toolbarbutton.h>
+
 namespace lc {
     namespace ui {
         namespace widgets {
@@ -22,10 +24,11 @@ namespace lc {
                 QStringList mimeTypes() const override;
                 QMimeData* mimeData(const QModelIndexList& indexes) const override;
 
-                void addToolbarButtonItem(QString name, QString icon);
+                void addToolbarButtonItem(lc::ui::api::ToolbarButton* button);
 
             private:
-                QList<QPair<QString, QIcon>> operations;
+                QList<QPair<QString,lc::ui::api::ToolbarButton*>> operations;
+                QMap<QString, lc::ui::api::ToolbarButton*> buttonMap;
             };
 
         }

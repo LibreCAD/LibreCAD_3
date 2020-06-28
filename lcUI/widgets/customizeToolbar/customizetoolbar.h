@@ -34,7 +34,7 @@ namespace lc {
                 void addParentTab();
 
             private:
-                void initializeGroupList();
+                void initializeGroupList(Toolbar* toolbar);
                 void initializeParentTab();
 
             private:

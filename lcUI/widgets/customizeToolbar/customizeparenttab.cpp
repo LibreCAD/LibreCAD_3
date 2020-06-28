@@ -27,12 +27,6 @@ CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWid
     for (lc::ui::api::ToolbarGroup* toolbarGroup : groupsList) {
         if (!toolbarGroup->nonButtonGroup()) {
             insertTab(count() - 1, new CustomizeGroupTab(toolbarGroup), toolbarGroup->label().c_str());
-            /*std::vector<lc::ui::api::ToolbarButton*> toolbarButtons = toolbarGroup->buttons();
-
-            for (lc::ui::api::ToolbarButton* toolbarButton : toolbarButtons)
-            {
-                std::cout << toolbarButton->label() << std::endl;
-            }*/
         }
     }
 

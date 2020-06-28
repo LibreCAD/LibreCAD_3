@@ -52,3 +52,22 @@ void IconList::dropEvent(QDropEvent *event)
 
     dropModel->removeItemAt(index.first, index.second);
 }
+
+void IconList::initialize(Toolbar* toolbar) {
+    QList<lc::ui::api::ToolbarTab*> toolbarTabs = toolbar->tabs();
+
+    for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
+        std::vector<lc::ui::api::ToolbarGroup*> groupsList = toolbarTab->groups();
+
+        for (lc::ui::api::ToolbarGroup* toolbarGroup : groupsList) {
+            if (!toolbarGroup->nonButtonGroup()) {
+                std::vector<lc::ui::api::ToolbarButton*> toolbarButtons = toolbarGroup->buttons();
+
+                for (lc::ui::api::ToolbarButton* toolbarButton : toolbarButtons)
+                {
+                    opModel->addToolbarButtonItem(toolbarButton);
+                }
+            }
+        }
+    }
+}

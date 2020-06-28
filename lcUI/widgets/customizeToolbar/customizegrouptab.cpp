@@ -34,10 +34,12 @@ CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
     QLabel* rowControlLabel = new QLabel("Rows :- ", this);
     QSpinBox* rowControl = new QSpinBox(this);
     rowControl->setValue(dropModel->rowCount());
+    rowControl->setObjectName("rows_control");
 
     QLabel* colControlLabel = new QLabel("Columns :- ", this);
     QSpinBox* colControl = new QSpinBox(this);
     colControl->setValue(dropModel->columnCount());
+    colControl->setObjectName("cols_control");
 
     rowControl->setMinimum(1);
     colControl->setMinimum(1);
@@ -68,4 +70,15 @@ CustomizeGroupTab::CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QW
 
     dropModel->setNumCols(nCols);
     dropModel->setNumRows(nRows);
+
+    QSpinBox* rowControl = this->findChild<QSpinBox*>("rows_control");
+    QSpinBox* colControl = this->findChild<QSpinBox*>("cols_control");
+
+    if (rowControl != nullptr) {
+        rowControl->setValue(dropModel->rowCount());
+    }
+
+    if (colControl != nullptr) {
+        colControl->setValue(dropModel->columnCount());
+    }
 }

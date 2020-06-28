@@ -20,7 +20,7 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
 {
     ui->setupUi(this);
 
-    initializeGroupList();
+    initializeGroupList(toolbar);
     initialize(toolbar);
     initializeParentTab();
 }
@@ -30,10 +30,13 @@ CustomizeToolbar::~CustomizeToolbar()
     delete ui;
 }
 
-void CustomizeToolbar::initializeGroupList() {
+void CustomizeToolbar::initializeGroupList(Toolbar* toolbar) {
     QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->horizontalLayout->itemAt(0)->layout());
     IconList* iconList = new IconList(this);
     verticalLayout->insertWidget(0, iconList);
+
+    // initliaze icon list
+    iconList->initialize(toolbar);
 
     QSizePolicy sizePolicy1 = iconList->sizePolicy();
     sizePolicy1.setHorizontalStretch(1);
