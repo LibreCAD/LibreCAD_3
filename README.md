@@ -12,7 +12,7 @@ Reading materials for feature usage
 =========
 
 If we want to support associative drawings, this is a good introduction to get started
-http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/
+[Understanding how dimensions are associated with objects](https://web.archive.org/web/20170318040619/http://www.ellenfinkelstein.com/acadblog/understanding-how-dimensions-are-associated-with-objects/)
 
 
 List of apparently awesome frameworks
