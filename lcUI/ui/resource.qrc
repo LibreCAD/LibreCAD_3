@@ -31,5 +31,6 @@
         <file alias="snap_grid.svg">icons/snap_grid.svg</file>
         <file alias="snap_intersection.svg">icons/snap_intersection.svg</file>
         <file alias="snap_middle.svg">icons/snap_middle.svg</file>
+        <file alias="point.svg">icons/point.svg</file>
     </qresource>
 </RCC>

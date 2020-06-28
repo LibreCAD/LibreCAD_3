@@ -18,6 +18,19 @@ void OpenglPainter::move_to(double x, double y)
 
 void OpenglPainter::point(double x, double y, double size, bool deviceCoords)
 {
+	if (deviceCoords){
+		double x = size;
+		double y = size;
+
+		double zeroCornerX = 0.;
+		double zeroCornerY = 0.;
+
+		device_to_user(&zeroCornerX, &zeroCornerY);
+		device_to_user(&x, &y);
+
+		size = (x - zeroCornerX);
+	}
+	circle(x,y,size);
 }
 
 void OpenglPainter::line_to(double x, double y)

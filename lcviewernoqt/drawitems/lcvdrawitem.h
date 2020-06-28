@@ -37,6 +37,9 @@ namespace lc {
 
                 virtual void selected(bool selected);
 
+                bool cacheable() const;
+                void cacheable(bool selected);
+
                 /**
                  * @brief Return the entity which is drawn
                  * @return Entity
@@ -46,6 +49,7 @@ namespace lc {
             private:
                 bool _selectable;
                 bool _selected;
+		bool _cacheable;
         };
 
         DECLARE_SHORT_SHARED_PTR(LCVDrawItem)

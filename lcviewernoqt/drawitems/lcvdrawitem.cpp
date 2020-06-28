@@ -4,7 +4,8 @@ using namespace lc::viewer;
 
 LCVDrawItem::LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable) :
         _selectable(selectable),
-        _selected(false) {
+        _selected(false),
+	_cacheable(true) {
 
 }
 
@@ -19,3 +20,12 @@ bool LCVDrawItem::selected() const {
 void LCVDrawItem::selected(bool selected) {
     _selected = selected;
 }
+
+bool LCVDrawItem::cacheable() const {
+    return _cacheable;
+}
+
+void LCVDrawItem::cacheable(bool cache) {
+    _cacheable = cache;
+}
+

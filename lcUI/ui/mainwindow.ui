@@ -159,6 +159,7 @@
     <addaction name="menuEllipse"/>
     <addaction name="menuDimension"/>
     <addaction name="actionPolyline"/>
+    <addaction name="actionPoint"/>
     <addaction name="actionSpline"/>
    </widget>
    <addaction name="menuDemo_Project"/>
@@ -292,6 +293,11 @@
   <action name="actionPolyline">
    <property name="text">
     <string>&amp;Polyline</string>
+   </property>
+  </action>
+  <action name="actionPoint">
+   <property name="text">
+    <string>P&amp;oint</string>
    </property>
   </action>
   <action name="actionSpline">

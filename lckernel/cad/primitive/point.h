@@ -8,13 +8,16 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 
+#include "cad/interface/snapable.h"
+#include "cad/interface/draggable.h"
+
 #include <cad/meta/layer.h>
 
 #include <cad/builders/point.h>
 
 namespace lc {
     namespace entity {
-        class Point : public std::enable_shared_from_this<Point>, public CADEntity, public geo::Coordinate, virtual public Visitable {
+        class Point : public std::enable_shared_from_this<Point>, public CADEntity, public geo::Coordinate, public Snapable, public Draggable, virtual public Visitable {
         friend class builder::PointBuilder;
 
         public:
@@ -86,6 +89,15 @@ namespace lc {
             virtual const geo::Area boundingBox() const override;
 
             virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+
+            virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
+                                                             const SimpleSnapConstrain& constrain,
+                                                             double minDistanceToSnap,
+                                                             int maxNumberOfSnapPoints) const override;
+            virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+            virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+            geo::Coordinate nearestPointOnPath(const Coordinate& coord) const;
+            geo::Coordinate nearestPointOnEntity(const Coordinate& coord) const;
 
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
