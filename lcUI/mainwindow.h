@@ -171,6 +171,7 @@ namespace lc
             void selectAll();
             void selectNone();
             void invertSelection();
+            void clearUndoableStack();
 
         signals:
             void point(lc::geo::Coordinate coordinate);

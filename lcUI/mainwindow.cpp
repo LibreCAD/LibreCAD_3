@@ -164,6 +164,7 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
     QObject::connect(findMenuItemByObjectName("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
+    QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
 }
 
 /* Menu functions */
@@ -534,24 +535,34 @@ void MainWindow::openFile()
 void MainWindow::undo()
 {
     _cadMdiChild.undoManager()->undo();
+    _cadMdiChild.viewer()->update();
+}
+
+void MainWindow::clearUndoableStack()
+{
+    _cadMdiChild.undoManager()->removeUndoables();
 }
 
 void MainWindow::redo()
 {
     _cadMdiChild.undoManager()->redo();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectAll()
 {
     _cadMdiChild.viewer()->docCanvas()->selectAll();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectNone()
 {
     _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
+    _cadMdiChild.viewer()->update();
 }
