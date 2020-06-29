@@ -113,7 +113,7 @@ namespace lc
                 bool nonButtonGroup() const;
 
                 /**
-                * \brief Removes all buttons from group (but don't delete button)
+                * \brief Removes all buttons from group (but don't delete button) and remove parentship
                 */
                 void clear();
 

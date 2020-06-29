@@ -123,3 +123,13 @@ void ToolbarTab::setLabel(const char* newLabel) {
 void ToolbarTab::remove() {
     emit removeTab(this);
 }
+
+void ToolbarTab::clear() {
+    std::vector<ToolbarGroup*> groupList = this->groups();
+
+    for (ToolbarGroup* group : groupList) {
+        if (!group->nonButtonGroup()) {
+            removeGroup(group);
+        }
+    }
+}

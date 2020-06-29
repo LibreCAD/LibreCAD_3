@@ -70,4 +70,6 @@ void IconList::initialize(Toolbar* toolbar) {
             }
         }
     }
+
+    opModel->arrangeByAscending();
 }

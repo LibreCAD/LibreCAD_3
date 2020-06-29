@@ -4,6 +4,7 @@
 #include <QTableView>
 #include "operationdropmodel.h"
 #include <iostream>
+#include <algorithm>
 
 using namespace lc::ui::widgets;
 
@@ -94,4 +95,10 @@ QMimeData* OperationDragModel::mimeData(const QModelIndexList &indexes) const
 void OperationDragModel::addToolbarButtonItem(lc::ui::api::ToolbarButton* button) {
     operations.push_back({ QString(button->label().c_str()), button });
     buttonMap[QString(button->label().c_str())] = button;
+}
+
+void OperationDragModel::arrangeByAscending() {
+    std::sort(operations.begin(), operations.end(), [](const QPair<QString, lc::ui::api::ToolbarButton*>& v1, const QPair<QString, lc::ui::api::ToolbarButton*>& v2) {
+        return v1.first < v2.first;
+    });
 }

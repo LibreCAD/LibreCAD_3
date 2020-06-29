@@ -4,6 +4,7 @@
 #include <QToolButton>
 #include <QLabel>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QVBoxLayout>
 #include <QList>
 
@@ -50,6 +51,7 @@ void CustomizeToolbar::initializeGroupList() {
 
 void CustomizeToolbar::initializeParentTab() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    tabWidget->setTabsClosable(true);
 
     QSizePolicy sizePolicy2 = tabWidget->sizePolicy();
     sizePolicy2.setHorizontalStretch(2);
@@ -66,6 +68,7 @@ void CustomizeToolbar::addParentTab() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
     if (ok && !text.isEmpty()){
         tabWidget->insertTab(tabWidget->count()-1, new CustomizeParentTab(text), text);
+        tabWidget->setCurrentIndex(tabWidget->count() - 2);
     }
 }
 
@@ -82,11 +85,12 @@ void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
 
     QToolButton* tb = new QToolButton();
     tb->setText("+");
-    tabWidget->addTab(new QLabel("Add groups by pressing \"+\""), QString("Add tab"));
+    tabWidget->addTab(new QLabel("Add tabs by pressing \"+\""), QString("Add tab"));
     tabWidget->setTabEnabled(0, false);
     tabWidget->tabBar()->setTabButton(0, QTabBar::RightSide, tb);
 
     connect(tb, &QToolButton::clicked, this, &CustomizeToolbar::addParentTab);
+    connect(tabWidget, &QTabWidget::tabCloseRequested, this, &CustomizeToolbar::parentTabClosed);
 
     tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab(newTab), QString(newTab->label().c_str()));
 }
@@ -107,5 +111,18 @@ void CustomizeToolbar::updateButtons() {
                 toolbarGroup->clear();
             }
         }
+
+        toolbarTab->clear();
+    }
+}
+
+void CustomizeToolbar::parentTabClosed(int index) {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Remove Tab", "Are you sure you want to remove this tab?",
+        QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+        tabWidget->removeTab(index);
+        tabWidget->setCurrentIndex(0);
     }
 }

@@ -135,5 +135,6 @@ void ToolbarGroup::clear() {
         auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
         gridLayout->removeWidget(button);
         button->setVisible(false);
+        button->setParent(nullptr);
     }
 }

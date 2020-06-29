@@ -101,6 +101,11 @@ namespace lc {
                      */
                     void remove();
 
+                    /**
+                    * \brief Removes all groups (remove and delete) ONLY BUTTON GROUPS
+                    */
+                    void clear();
+
                 signals:
                     /**
                      * \brief Signal for label being changed

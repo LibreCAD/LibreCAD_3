@@ -5,6 +5,7 @@
 #include <QTabBar>
 #include <QLabel>
 #include <QInputDialog>
+#include <QMessageBox>
 #include <QDir>
 
 using namespace lc::ui::widgets;
@@ -13,13 +14,7 @@ CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWid
     :
       QTabWidget(parent)
 {
-    QToolButton *tb = new QToolButton();
-    tb->setText("+");
-    addTab(new QLabel("Add tabs by pressing \"+\""), QString("Add group"));
-    setTabEnabled(0, false);
-    tabBar()->setTabButton(0, QTabBar::RightSide, tb);
-
-    connect(tb, &QToolButton::clicked, this, &CustomizeParentTab::addGroupTab);
+    init();
 
     // add groups
     std::vector<lc::ui::api::ToolbarGroup*> groupsList = toolbarTab->groups();
@@ -37,18 +32,25 @@ CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent)
     :
     QTabWidget(parent)
 {
-    QToolButton* tb = new QToolButton();
-    tb->setText("+");
-    addTab(new QLabel("Add tabs by pressing \"+\""), QString("Add group"));
-    setTabEnabled(0, false);
-    tabBar()->setTabButton(0, QTabBar::RightSide, tb);
+    init();
 
-    connect(tb, &QToolButton::clicked, this, &CustomizeParentTab::addGroupTab);
     insertTab(count() - 1, new CustomizeGroupTab("New Group"), "New Group");
 
     /* TODO ADD RENAME BY DOUBLE CLICKING ON THE GROUP LABEL */
 
     setCurrentIndex(0);
+}
+
+void CustomizeParentTab::init() {
+    QToolButton* tb = new QToolButton();
+    tb->setText("+");
+    addTab(new QLabel("Add groups by pressing \"+\""), QString("Add group"));
+    setTabEnabled(0, false);
+    tabBar()->setTabButton(0, QTabBar::RightSide, tb);
+    this->setTabsClosable(true);
+
+    connect(tb, &QToolButton::clicked, this, &CustomizeParentTab::addGroupTab);
+    connect(this, &QTabWidget::tabCloseRequested, this, &CustomizeParentTab::groupTabClosed);
 }
 
 void CustomizeParentTab::addGroupTab() {
@@ -58,5 +60,16 @@ void CustomizeParentTab::addGroupTab() {
                                              QDir::home().dirName(), &ok);
     if (ok && !text.isEmpty()){
         insertTab(count()-1, new CustomizeGroupTab(text), text);
+        setCurrentIndex(count() - 2);
+    }
+}
+
+void CustomizeParentTab::groupTabClosed(int index) {
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Remove Group", "Are you sure you want to remove this group?",
+        QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::Yes) {
+        removeTab(index);
+        setCurrentIndex(0);
     }
 }

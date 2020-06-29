@@ -37,6 +37,8 @@ namespace lc {
             public slots:
                 void addParentTab();
 
+                void parentTabClosed(int index);
+
             private:
                 void initializeGroupList();
                 void initializeParentTab();

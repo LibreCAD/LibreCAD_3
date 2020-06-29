@@ -15,8 +15,13 @@ namespace lc {
 
                 CustomizeParentTab(QString label , QWidget* parent = nullptr);
 
+            private:
+                void init();
+
             public slots:
                 void addGroupTab();
+
+                void groupTabClosed(int index);
             };
         }
     }
