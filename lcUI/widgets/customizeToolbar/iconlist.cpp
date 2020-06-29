@@ -73,3 +73,7 @@ void IconList::initialize(Toolbar* toolbar) {
 
     opModel->arrangeByAscending();
 }
+
+lc::ui::api::ToolbarButton* IconList::buttonByName(QString& buttonName) {
+    return opModel->buttonByName(buttonName);
+}

@@ -102,3 +102,12 @@ void OperationDragModel::arrangeByAscending() {
         return v1.first < v2.first;
     });
 }
+
+lc::ui::api::ToolbarButton* OperationDragModel::buttonByName(QString& buttonName) {
+    if (buttonMap.find(buttonName) != buttonMap.end()) {
+        return buttonMap[buttonName];
+    }
+    else {
+        return nullptr;
+    }
+}

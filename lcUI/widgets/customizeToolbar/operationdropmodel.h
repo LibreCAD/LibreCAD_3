@@ -34,6 +34,8 @@ namespace lc{
 
                 bool checkIfAlreadyInModel(QPair<QString, QIcon>& element);
 
+                QList<QString> buttonNameList() const;
+
             public slots:
                 void setNumRows(int numRows);
 

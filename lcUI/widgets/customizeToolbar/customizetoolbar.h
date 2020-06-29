@@ -43,6 +43,8 @@ namespace lc {
                 void initializeGroupList();
                 void initializeParentTab();
 
+                void reAddButtons();
+
             private:
                 Ui::CustomizeToolbar* ui;
                 Toolbar* _toolbar;

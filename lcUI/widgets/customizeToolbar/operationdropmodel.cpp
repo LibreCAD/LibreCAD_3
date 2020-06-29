@@ -265,3 +265,13 @@ bool OperationDropModel::checkIfAlreadyInModel(QPair<QString, QIcon>& element) {
 
     return false;
 }
+
+QList<QString> OperationDropModel::buttonNameList() const {
+    QList<QString> nameList;
+
+    for (QPair<QString, QIcon> op : operations) {
+        nameList.push_back(op.first);
+    }
+
+    return nameList;
+}

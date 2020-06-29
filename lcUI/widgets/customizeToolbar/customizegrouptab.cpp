@@ -12,7 +12,7 @@ using namespace lc::ui::widgets;
 CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
     :
       QWidget(parent),
-      groupName(groupName)
+      _groupName(groupName.toStdString())
 {
     QTableView* tableView = new QTableView(this);
     dropModel = new OperationDropModel(groupName);
@@ -86,4 +86,12 @@ CustomizeGroupTab::CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QW
     for (lc::ui::api::ToolbarButton* button : buttonsList) {
         dropModel->addOperation(QString(button->label().c_str()), button->icon());
     }
+}
+
+std::string CustomizeGroupTab::label() const {
+    return _groupName;
+}
+
+QList<QString> CustomizeGroupTab::buttonNames() const {
+    return dropModel->buttonNameList();
 }

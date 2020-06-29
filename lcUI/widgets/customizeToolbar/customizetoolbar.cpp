@@ -9,6 +9,7 @@
 #include <QList>
 
 #include "customizeparenttab.h"
+#include "customizegrouptab.h"
 #include "deleteiconarea.h"
 #include "iconlist.h"
 #include <iostream>
@@ -105,14 +106,58 @@ void CustomizeToolbar::updateButtons() {
 
     for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
         std::vector<lc::ui::api::ToolbarGroup*> groupsList = toolbarTab->groups();
+        bool containsNonButtonGroup = false;
 
         for (lc::ui::api::ToolbarGroup* toolbarGroup : groupsList) {
             if (!toolbarGroup->nonButtonGroup()) {
                 toolbarGroup->clear();
             }
+            else {
+                containsNonButtonGroup = true;
+            }
         }
 
         toolbarTab->clear();
+
+        // remove tab if it only contains button groups
+        if (!containsNonButtonGroup) {
+            _toolbar->removeTab(toolbarTab);
+        }
+    }
+
+    reAddButtons();
+}
+
+void CustomizeToolbar::reAddButtons() {
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+
+    QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->horizontalLayout->itemAt(0)->layout());
+    IconList* iconList = qobject_cast<IconList*>(verticalLayout->itemAt(0)->widget());
+
+    // count - 1 because the last "add group" tab should not be considered
+    for (int i = 0; i < tabWidget->count() - 1; i++) {
+        CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
+
+        // if tab exists, addTab returns the tab
+        lc::ui::api::ToolbarTab* newTab = _toolbar->addTab(parentTab->label().c_str());
+
+        int groupCount = parentTab->count() - 1; // same reason as above for count - 1
+        for (int j = 0; j < groupCount; j++) {
+            CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
+
+            lc::ui::api::ToolbarGroup* newGroup = newTab->addGroup(groupTab->label().c_str());
+
+            // list of buttons in order from group
+            QList<QString> buttonNameList = groupTab->buttonNames();
+
+            for (QString& buttonName : buttonNameList) {
+                lc::ui::api::ToolbarButton* button = iconList->buttonByName(buttonName);
+                if (button != nullptr) {
+                    newGroup->addButton(button);
+                    button->setVisible(true);
+                }
+            }
+        }
     }
 }
 

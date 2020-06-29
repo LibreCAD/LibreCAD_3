@@ -16,9 +16,13 @@ namespace lc {
 
                 CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QWidget* parent = nullptr);
 
+                std::string label() const;
+
+                QList<QString> buttonNames() const;
+
             private:
                 OperationDropModel* dropModel;
-                QString groupName;
+                std::string _groupName;
             };
         }
     }

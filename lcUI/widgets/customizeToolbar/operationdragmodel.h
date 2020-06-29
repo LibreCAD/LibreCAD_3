@@ -28,6 +28,8 @@ namespace lc {
 
                 void arrangeByAscending();
 
+                lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
+
             private:
                 QList<QPair<QString,lc::ui::api::ToolbarButton*>> operations;
                 QMap<QString, lc::ui::api::ToolbarButton*> buttonMap;

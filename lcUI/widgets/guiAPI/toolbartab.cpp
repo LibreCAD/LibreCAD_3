@@ -34,6 +34,11 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
 }
 
 ToolbarGroup* ToolbarTab::addGroup(const char* name) {
+    ToolbarGroup* doesGroupExist = groupByName(name);
+    if (doesGroupExist != nullptr) {
+        return doesGroupExist;
+    }
+
     ToolbarGroup* group = new ToolbarGroup(name);
     addGroup(group);
     return group;

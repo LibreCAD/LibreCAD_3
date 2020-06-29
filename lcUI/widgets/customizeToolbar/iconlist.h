@@ -19,6 +19,8 @@ namespace lc {
 
                 void dropEvent(QDropEvent* e) override;
 
+                lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
+
             private:
                 OperationDragModel* opModel;
             };

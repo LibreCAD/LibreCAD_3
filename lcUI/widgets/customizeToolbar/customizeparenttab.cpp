@@ -12,7 +12,8 @@ using namespace lc::ui::widgets;
 
 CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWidget* parent)
     :
-      QTabWidget(parent)
+    _label(toolbarTab->label()),
+    QTabWidget(parent)
 {
     init();
 
@@ -30,6 +31,7 @@ CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWid
 
 CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent) 
     :
+    _label(label.toStdString()),
     QTabWidget(parent)
 {
     init();
@@ -72,4 +74,8 @@ void CustomizeParentTab::groupTabClosed(int index) {
         removeTab(index);
         setCurrentIndex(0);
     }
+}
+
+std::string CustomizeParentTab::label() const {
+    return _label;
 }
