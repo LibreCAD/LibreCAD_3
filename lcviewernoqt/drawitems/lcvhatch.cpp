@@ -14,15 +14,11 @@ LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
         _hatch(hatch) {
 }
 
-#include <iostream>
 void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-std::cout << "Found loops: "<<_hatch->_loopList.size() <<std::endl;
     for(auto &x:_hatch->_loopList){
-	std::cout << x << " Found objects: "<<x->objList.size() <<std::endl;
         bool processingLine = false; //To make polyline from lines for hatch
         for(auto &y:x->objList){
-            if(auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(y)){//Tested
-		std::cout << "Arc" <<std::endl;
+            if(auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(y)){
                 if (arc->radius() != 0) {
 		std::cout << arc->CCW() << 'x' <<arc->center().x() << 'y' <<arc->center().y() << 'r' <<arc->radius() << 's' <<arc->startAngle() << 'e' <<arc->endAngle() <<std::endl;
                     if (arc->CCW()) {
@@ -31,15 +27,13 @@ std::cout << "Found loops: "<<_hatch->_loopList.size() <<std::endl;
                         painter.arc(arc->center().x(), arc->center().y(), arc->radius(), arc->startAngle(), arc->endAngle());
                     }
                 }
-            }else if(auto line = std::dynamic_pointer_cast<const lc::entity::Line>(y)){//Tested
-		std::cout << "Line" <<std::endl;
+            }else if(auto line = std::dynamic_pointer_cast<const lc::entity::Line>(y)){
                 if(!processingLine){
                     painter.move_to(line->start().x(), line->start().y());
                     processingLine = true;
                 }
                 painter.line_to(line->end().x(), line->end().y());
-            }else if(auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(y)){//Not tested, i used lcad2 for test file creation, it used line instead
-		std::cout << "Polyline" <<std::endl;
+            }else if(auto polyline = std::dynamic_pointer_cast<const lc::entity::LWPolyline>(y)){
                 for( auto &geoItem:polyline->asEntities()){//as geo::Vector or geo::Arc
                     if (auto vector = std::dynamic_pointer_cast<const lc::geo::Vector>(geoItem)) {
                         if(!processingLine){
@@ -56,8 +50,7 @@ std::cout << "Found loops: "<<_hatch->_loopList.size() <<std::endl;
                         }
                     }
                 }
-            }else if(auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(y)){//Tested
-		std::cout << "Ellipse" <<std::endl;
+            }else if(auto ellipse = std::dynamic_pointer_cast<const lc::entity::Ellipse>(y)){
                 if (ellipse->minorRadius() != 0) {
                     painter.ellipse(
                         ellipse->center().x(), ellipse->center().y(),
@@ -66,8 +59,7 @@ std::cout << "Found loops: "<<_hatch->_loopList.size() <<std::endl;
                         ellipse->getAngle()
                     );
                 }
-            }else if(auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(y)){// I cant get spline hatch on v2
-		std::cout << "Spline" <<std::endl;
+            }else if(auto spline = std::dynamic_pointer_cast<const lc::entity::Spline>(y)){// I cant get spline hatch on v1, so this may work or not
                 //copy paste again, i don't know what it means
                 for(const auto &bezier: spline->beziers()) {
                     auto bez = bezier->getCP();
