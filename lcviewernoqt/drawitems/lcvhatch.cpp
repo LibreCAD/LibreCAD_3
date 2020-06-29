@@ -15,8 +15,6 @@ LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
 }
 
 void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    painter.source_rgb(0, 255, 0);
-
     for(auto &x:_hatch->_loopList){
         bool processingLine = false; //To make polyline from lines for hatch
         for(auto &y:x.objList){

@@ -149,7 +149,7 @@ void DXFimpl::addBlock(const DRW_Block& data) {
     }
     _builder->append(std::make_shared<lc::operation::AddBlock>(_document, _currentBlock));
 
-    _blocks.insert(std::pair<std::string, lc::meta::Block_CSPtr>(data.name, _currentBlock));
+    // May need to check if the block already exists: not sure
     _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, _currentBlock));
 }
 
@@ -528,7 +528,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                         data->thickness,
                         isCLosed,
                         coord(data->extPoint),
-                        nullptr
+                        layer
                 );
                 m.objList.push_back(std::move(lcLWPolyline));
             }else if(k->eType == DRW::ETYPE::LINE){//done
@@ -537,6 +537,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 lc::builder::LineBuilder builder;
                 builder.setStart(coord(data->basePoint));
                 builder.setEnd(coord(data->secPoint));
+		builder.setLayer(layer);
                 m.objList.push_back(std::move(builder.build()));
             }else if(k->eType == DRW::ETYPE::ARC){//done
                 auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
@@ -547,6 +548,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 builder.setStartAngle(data->staangle);
                 builder.setEndAngle(data->endangle);
                 builder.setIsCCW((bool) data->isccw);
+		builder.setLayer(layer);
                 m.objList.push_back(std::move(builder.build()));
             }else if(k->eType == DRW::ETYPE::ELLIPSE){//done
                 auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
@@ -557,7 +559,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                                                        data->staparam,
                                                                        data->endparam,
                                                                        data->isccw,
-                                                                       nullptr
+                                                                       layer
                 );
                 m.objList.push_back(std::move(lcEllipse));
             }else if(k->eType == DRW::ETYPE::SPLINE){
@@ -719,9 +721,10 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
     lc::builder::InsertBuilder builder;
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(getBlock(data));
-    builder.setLayer(_document->layerByName(data.layer));
+    auto layer = _document->layerByName(data.layer);
+    builder.setLayer(layer);
     builder.setCoordinate(coord(data.basePoint));
-    builder.setDisplayBlock(_blocks[data.name]);
+    builder.setDisplayBlock(_document->blockByName(data.name));
     builder.setDocument(_document);
 
     _entityBuilder->appendEntity(builder.build());
