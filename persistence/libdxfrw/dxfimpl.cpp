@@ -511,7 +511,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
     lcHatch->setScale(data->scale);
     LOG_WARNING << "deflines " << data->deflines;              /*!< number of pattern definition lines, code 78 */
     for (auto x : data->looplist){
-        auto m = lc::entity::HatchLoop();
+        auto m = std::make_shared<lc::entity::HatchLoop>();
         for(auto k : x->objlist){
             if(k->eType == DRW::ETYPE::LWPOLYLINE){//done
                 auto data = std::dynamic_pointer_cast<DRW_LWPolyline>(k);
@@ -530,7 +530,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                         coord(data->extPoint),
                         layer
                 );
-                m.objList.push_back(std::move(lcLWPolyline));
+                m->objList.push_back(lcLWPolyline);
             }else if(k->eType == DRW::ETYPE::LINE){//done
                 auto data = std::dynamic_pointer_cast<DRW_Line>(k);
                 LOG_WARNING << "line";
@@ -538,18 +538,19 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                 builder.setStart(coord(data->basePoint));
                 builder.setEnd(coord(data->secPoint));
 		builder.setLayer(layer);
-                m.objList.push_back(std::move(builder.build()));
+                m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ARC){//done
                 auto data = std::dynamic_pointer_cast<DRW_Arc>(k);
                 lc::builder::ArcBuilder builder;
-
+                LOG_WARNING << data->staangle <<','<< data->endangle;
                 builder.setCenter(coord(data->basePoint));
                 builder.setRadius(data->radious);
                 builder.setStartAngle(data->staangle);
                 builder.setEndAngle(data->endangle);
+
                 builder.setIsCCW((bool) data->isccw);
 		builder.setLayer(layer);
-                m.objList.push_back(std::move(builder.build()));
+                m->objList.push_back(builder.build());
             }else if(k->eType == DRW::ETYPE::ELLIPSE){//done
                 auto data = std::dynamic_pointer_cast<DRW_Ellipse>(k);
                 auto secPoint = coord(data->secPoint);
@@ -561,7 +562,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                                                        data->isccw,
                                                                        layer
                 );
-                m.objList.push_back(std::move(lcEllipse));
+                m->objList.push_back(lcEllipse);
             }else if(k->eType == DRW::ETYPE::SPLINE){
                 auto data = std::dynamic_pointer_cast<DRW_Spline>(k);
                 auto knotList = data->knotslist;
@@ -583,12 +584,13 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
                                                                      mf,
                                                                      getBlock(*data)
                 );
-                m.objList.push_back(std::move(lcSpline));
+                m->objList.push_back(lcSpline);
             }
         }
-        lcHatch->_loopList.push_back(std::move(m));
-        lcHatch->calculateBoundingBox();//Not good api //@TODO: fix later
+        lcHatch->_loopList.push_back(m);
     }
+	LOG_WARNING << "Hatch size: " << lcHatch->_loopList.size();
+    lcHatch->calculateBoundingBox();//Not good api //@TODO: fix later
     _entityBuilder->appendEntity(lcHatch);
 }
 

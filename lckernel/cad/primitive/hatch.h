@@ -8,12 +8,17 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 
+
+
 namespace lc {
     namespace entity {
-        struct HatchLoop
-        {
-            std::vector<CADEntity_CSPtr> objList;
-        };
+	struct HatchLoop{
+	    std::vector<CADEntity_CSPtr> objList;
+	};
+
+	DECLARE_SHORT_SHARED_PTR(HatchLoop);
+
+
         class Hatch : public std::enable_shared_from_this<Hatch>,
                        public CADEntity{
         public:
@@ -54,9 +59,8 @@ namespace lc {
             double _scale;              /*!< hatch pattern scale, code 41 */
             int _deflines;              /*!< number of pattern definition lines, code 78 */
             geo::Area _boundingBox;     //Bounding box for hatch
-
         public:
-            std::vector<HatchLoop> _loopList;  /*!< polyline list */
+            std::vector<HatchLoop_CSPtr> _loopList;  /*!< polyline list */
             void setPatternName(std::string name){_name = name;};
             void setSolid(int solid){_solid = solid;};
 //            int _associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
