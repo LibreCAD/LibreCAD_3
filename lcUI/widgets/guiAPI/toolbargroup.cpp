@@ -127,3 +127,13 @@ bool ToolbarGroup::nonButtonGroup() const {
 int ToolbarGroup::width() const {
     return _width;
 }
+
+void ToolbarGroup::clear() {
+    std::vector<ToolbarButton*> buttonList = buttons();
+
+    for (lc::ui::api::ToolbarButton* button : buttonList) {
+        auto gridLayout = qobject_cast<QGridLayout*>(this->layout());
+        gridLayout->removeWidget(button);
+        button->setVisible(false);
+    }
+}

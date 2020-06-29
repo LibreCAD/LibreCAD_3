@@ -24,21 +24,26 @@ namespace lc {
             public:
                 CustomizeToolbar(Toolbar* toolbar, QWidget* parent = nullptr);
 
-                void initialize(Toolbar* toolbar);
+                void initialize();
 
                 void addToolbarTab(lc::ui::api::ToolbarTab* newTab);
 
                 ~CustomizeToolbar();
 
+                void closeEvent(QCloseEvent* event) override;
+
+                void updateButtons();
+
             public slots:
                 void addParentTab();
 
             private:
-                void initializeGroupList(Toolbar* toolbar);
+                void initializeGroupList();
                 void initializeParentTab();
 
             private:
                 Ui::CustomizeToolbar* ui;
+                Toolbar* _toolbar;
             };
         }
     }

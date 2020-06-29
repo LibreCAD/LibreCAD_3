@@ -30,6 +30,10 @@ namespace lc{
 
                 void removeItemAt(int x, int y);
 
+                void addOperation(QString buttonName, QIcon buttonIcon);
+
+                bool checkIfAlreadyInModel(QPair<QString, QIcon>& element);
+
             public slots:
                 void setNumRows(int numRows);
 

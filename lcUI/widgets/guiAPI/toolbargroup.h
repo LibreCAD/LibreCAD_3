@@ -112,6 +112,11 @@ namespace lc
                 */
                 bool nonButtonGroup() const;
 
+                /**
+                * \brief Removes all buttons from group (but don't delete button)
+                */
+                void clear();
+
             signals:
                 /**
                 * \brief Signal for group remove

@@ -145,6 +145,10 @@ bool OperationDropModel::dropMimeData(const QMimeData *data,Qt::DropAction actio
             return false;
         }
 
+        if (checkIfAlreadyInModel(element)) {
+            return false;
+        }
+
         operations.push_back(element);
     }
 
@@ -165,6 +169,21 @@ bool OperationDropModel::setData(const QModelIndex &index, const QVariant &value
             QDataStream dataStream(&itemData, QIODevice::ReadOnly);
             QPair<QString, QIcon> element;
             dataStream >> element;
+
+            if (checkIfAlreadyInModel(element)) {
+                // swap the element being dropped on with this element
+                for (QPair<QString, QIcon>& op : operations) {
+                    if (op.first == element.first) {
+                        QPair<QString, QIcon> temp = { op.first, op.second };
+                        op.first = pair.first;
+                        op.second = pair.second;
+
+                        element.first = temp.first;
+                        element.second = temp.second;
+                    }
+                }
+            }
+
             pair.first = element.first;
             pair.second = element.second;
             return true;
@@ -173,6 +192,11 @@ bool OperationDropModel::setData(const QModelIndex &index, const QVariant &value
             QDataStream dataStream(&itemData, QIODevice::ReadOnly);
             QPair<QString, QIcon> element;
             dataStream >> element;
+
+            if (checkIfAlreadyInModel(element)) {
+                return false;
+            }
+
             operations.push_back(element);
             return true;
         }
@@ -226,4 +250,18 @@ void OperationDropModel::setNumCols(int numCols) {
         maxColCount = numCols;
         endInsertColumns();
     }
+}
+
+void OperationDropModel::addOperation(QString buttonName, QIcon buttonIcon) {
+    operations.push_back({ buttonName, buttonIcon });
+}
+
+bool OperationDropModel::checkIfAlreadyInModel(QPair<QString, QIcon>& element) {
+    for (QPair<QString, QIcon>& op : operations) {
+        if (op.first == element.first) {
+            return true;
+        }
+    }
+
+    return false;
 }

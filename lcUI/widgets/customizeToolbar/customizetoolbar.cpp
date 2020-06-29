@@ -15,13 +15,15 @@
 using namespace lc::ui::widgets;
 
 CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::CustomizeToolbar)
+    : 
+    QDialog(parent),
+    _toolbar(toolbar),
+    ui(new Ui::CustomizeToolbar)
 {
     ui->setupUi(this);
 
-    initializeGroupList(toolbar);
-    initialize(toolbar);
+    initializeGroupList();
+    initialize();
     initializeParentTab();
 }
 
@@ -30,13 +32,13 @@ CustomizeToolbar::~CustomizeToolbar()
     delete ui;
 }
 
-void CustomizeToolbar::initializeGroupList(Toolbar* toolbar) {
+void CustomizeToolbar::initializeGroupList() {
     QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->horizontalLayout->itemAt(0)->layout());
     IconList* iconList = new IconList(this);
     verticalLayout->insertWidget(0, iconList);
 
     // initliaze icon list
-    iconList->initialize(toolbar);
+    iconList->initialize(_toolbar);
 
     QSizePolicy sizePolicy1 = iconList->sizePolicy();
     sizePolicy1.setHorizontalStretch(1);
@@ -67,8 +69,8 @@ void CustomizeToolbar::addParentTab() {
     }
 }
 
-void CustomizeToolbar::initialize(Toolbar* toolbar) {
-    QList<lc::ui::api::ToolbarTab*> toolbarTabs = toolbar->tabs();
+void CustomizeToolbar::initialize() {
+    QList<lc::ui::api::ToolbarTab*> toolbarTabs = _toolbar->tabs();
 
     for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
         addToolbarTab(toolbarTab);
@@ -87,4 +89,23 @@ void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
     connect(tb, &QToolButton::clicked, this, &CustomizeToolbar::addParentTab);
 
     tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab(newTab), QString(newTab->label().c_str()));
+}
+
+void CustomizeToolbar::closeEvent(QCloseEvent* e) {
+    updateButtons();
+    QWidget::closeEvent(e);
+}
+
+void CustomizeToolbar::updateButtons() {
+    QList<lc::ui::api::ToolbarTab*> toolbarTabs = _toolbar->tabs();
+
+    for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
+        std::vector<lc::ui::api::ToolbarGroup*> groupsList = toolbarTab->groups();
+
+        for (lc::ui::api::ToolbarGroup* toolbarGroup : groupsList) {
+            if (!toolbarGroup->nonButtonGroup()) {
+                toolbarGroup->clear();
+            }
+        }
+    }
 }

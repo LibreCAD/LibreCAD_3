@@ -81,4 +81,9 @@ CustomizeGroupTab::CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QW
     if (colControl != nullptr) {
         colControl->setValue(dropModel->columnCount());
     }
+
+    // load buttons into the table
+    for (lc::ui::api::ToolbarButton* button : buttonsList) {
+        dropModel->addOperation(QString(button->label().c_str()), button->icon());
+    }
 }
