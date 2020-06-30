@@ -20,7 +20,6 @@ int OperationDragModel::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    // FIXME: Implement me!
     return operations.size();
 }
 
@@ -42,11 +41,6 @@ QVariant OperationDragModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    /*if (role == Qt::UserRole) {
-        return operations.at(index.row());
-    }*/
-
-    // FIXME: Implement me!
     return QVariant();
 }
 
@@ -93,8 +87,15 @@ QMimeData* OperationDragModel::mimeData(const QModelIndexList &indexes) const
 }
 
 void OperationDragModel::addToolbarButtonItem(lc::ui::api::ToolbarButton* button) {
-    operations.push_back({ QString(button->label().c_str()), button });
-    buttonMap[QString(button->label().c_str())] = button;
+    QString buttonLabel = QString(button->label().c_str());
+
+    // if button has already been added, return
+    if (buttonMap.find(buttonLabel) != buttonMap.end()) {
+        return;
+    }
+
+    operations.push_back({ buttonLabel, button });
+    buttonMap[buttonLabel] = button;
 }
 
 void OperationDragModel::arrangeByAscending() {

@@ -140,12 +140,15 @@ void CustomizeToolbar::reAddButtons() {
 
         // if tab exists, addTab returns the tab
         lc::ui::api::ToolbarTab* newTab = _toolbar->addTab(parentTab->label().c_str());
+        
+        // to ensure clones are made when duplicate buttons are encountered
+        QSet<QString> addedButtonsSet;
 
         int groupCount = parentTab->count() - 1; // same reason as above for count - 1
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
 
-            lc::ui::api::ToolbarGroup* newGroup = newTab->addGroup(groupTab->label().c_str());
+            lc::ui::api::ToolbarGroup* newGroup = newTab->addGroup(groupTab->label().c_str(), groupTab->groupWidth());
 
             // list of buttons in order from group
             QList<QString> buttonNameList = groupTab->buttonNames();
@@ -153,6 +156,15 @@ void CustomizeToolbar::reAddButtons() {
             for (QString& buttonName : buttonNameList) {
                 lc::ui::api::ToolbarButton* button = iconList->buttonByName(buttonName);
                 if (button != nullptr) {
+
+                    if (addedButtonsSet.find(buttonName) != addedButtonsSet.end()) {
+                        lc::ui::api::ToolbarButton* clonedButton = button->clone();
+                        newGroup->addButton(clonedButton);
+                        clonedButton->setVisible(true);
+                        continue;
+                    }
+
+                    addedButtonsSet.insert(buttonName);
                     newGroup->addButton(button);
                     button->setVisible(true);
                 }

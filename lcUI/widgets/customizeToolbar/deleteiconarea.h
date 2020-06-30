@@ -7,6 +7,9 @@
 namespace lc {
     namespace ui {
         namespace widgets {
+            /**
+            * \brief Delete icon area
+            */
             class DeleteIconArea : public QLabel
             {
                 Q_OBJECT

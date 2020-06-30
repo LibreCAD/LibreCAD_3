@@ -96,3 +96,18 @@ void ToolbarButton::callbackCalledToggle(bool enabled) {
         callbacks[i](enabled);
     }
 }
+
+ToolbarButton* ToolbarButton::clone() {
+    ToolbarButton* clonedButton = new ToolbarButton(_label.c_str(), "", this->toolTip().toStdString().c_str(), _checkable);
+    clonedButton->setIcon(this->icon());
+
+    for (kaguya::LuaRef luaRef : callbacks) {
+        clonedButton->addCallback(luaRef);
+    }
+
+    for (auto namedCb : namedCallbacks) {
+        clonedButton->namedCallbacks[namedCb.first] = namedCb.second;
+    }
+
+    return clonedButton;
+}

@@ -33,13 +33,13 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
     QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
 }
 
-ToolbarGroup* ToolbarTab::addGroup(const char* name) {
+ToolbarGroup* ToolbarTab::addGroup(const char* name, int width) {
     ToolbarGroup* doesGroupExist = groupByName(name);
     if (doesGroupExist != nullptr) {
         return doesGroupExist;
     }
 
-    ToolbarGroup* group = new ToolbarGroup(name);
+    ToolbarGroup* group = new ToolbarGroup(name, width);
     addGroup(group);
     return group;
 }

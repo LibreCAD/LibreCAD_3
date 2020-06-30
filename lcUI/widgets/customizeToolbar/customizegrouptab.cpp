@@ -95,3 +95,7 @@ std::string CustomizeGroupTab::label() const {
 QList<QString> CustomizeGroupTab::buttonNames() const {
     return dropModel->buttonNameList();
 }
+
+int CustomizeGroupTab::groupWidth() const {
+    return dropModel->columnCount();
+}

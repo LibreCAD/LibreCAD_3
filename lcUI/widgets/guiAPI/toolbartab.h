@@ -43,7 +43,7 @@ namespace lc {
                      * \param name Group name
                      * \return Pointer to created ToolbarGroup
                      */
-                    ToolbarGroup* addGroup(const char* name);
+                    ToolbarGroup* addGroup(const char* name, int width = 3);
 
                     /**
                      * \brief Add new button in given group

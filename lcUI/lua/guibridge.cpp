@@ -245,7 +245,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("removeGroup", static_cast<void(api::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&api::ToolbarTab::removeGroup),
             static_cast<void(api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::removeGroup))
         .addOverloadedFunctions("addGroup", static_cast<void(api::ToolbarTab::*)(api::ToolbarGroup*)>(&api::ToolbarTab::addGroup),
-            static_cast<api::ToolbarGroup * (api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::addGroup))
+            static_cast<api::ToolbarGroup*(api::ToolbarTab::*)(const char*, int)>(&api::ToolbarTab::addGroup),
+            [](api::ToolbarTab& self, const char* name) { return self.addGroup(name); })
     );
 
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
