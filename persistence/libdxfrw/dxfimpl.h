@@ -230,6 +230,9 @@ namespace lc {
 
                 lc::meta::Block_CSPtr getBlock(DRW_Entity const& data) const;
 
+		// this function adds layer too if not found: issue with some files
+                lc::meta::Layer_CSPtr getLayer(DRW_Entity const& data) const;
+
                 /**
                 * Convert from a DRW_Coord to a geo::Coordinate
                 */

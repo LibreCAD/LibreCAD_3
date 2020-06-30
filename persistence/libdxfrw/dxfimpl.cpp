@@ -164,7 +164,7 @@ void DXFimpl::addLine(const DRW_Line& data) {
 
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(getBlock(data));
-    builder.setLayer(_document->layerByName(data.layer));
+    builder.setLayer(getLayer(data));
     builder.setStart(coord(data.basePoint));
     builder.setEnd(coord(data.secPoint));
 
@@ -177,7 +177,7 @@ void DXFimpl::addCircle(const DRW_Circle& data) {
     lc::builder::CircleBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
-    builder.setLayer(_document->layerByName(data.layer));
+    builder.setLayer(getLayer(data));
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
     builder.setBlock(getBlock(data));
@@ -190,7 +190,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
     lc::builder::ArcBuilder builder;
 
     builder.setMetaInfo(getMetaInfo(data));
-    builder.setLayer(_document->layerByName(data.layer));
+    builder.setLayer(getLayer(data));
     builder.setBlock(getBlock(data));
     builder.setCenter(coord(data.basePoint));
     builder.setRadius(data.radious);
@@ -204,7 +204,7 @@ void DXFimpl::addArc(const DRW_Arc& data) {
 void DXFimpl::addEllipse(const DRW_Ellipse& data) {
 	LOG_WARNING << "addEllipse";
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
 
     auto secPoint = coord(data.secPoint);
     auto lcEllipse = std::make_shared<lc::entity::Ellipse>(coord(data.basePoint),
@@ -252,7 +252,7 @@ void DXFimpl::addLayer(const DRW_Layer& data) {
 
 void DXFimpl::addSpline(const DRW_Spline* data) {
 	LOG_WARNING << "addSpline";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
 
     // http://discourse.mcneel.com/t/creating-on-nurbscurve-from-control-points-and-knot-vector/12928/3
@@ -281,7 +281,7 @@ void DXFimpl::addSpline(const DRW_Spline* data) {
 
 void DXFimpl::addText(const DRW_Text& data) {
 	LOG_WARNING << "addText";
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcText = std::make_shared<lc::entity::Text>(coord(data.basePoint),
                                                      data.text, data.height,
@@ -299,7 +299,7 @@ void DXFimpl::addText(const DRW_Text& data) {
 
 void DXFimpl::addPoint(const DRW_Point& data) {
 	LOG_WARNING << "addPoint";
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
     auto lcPoint = std::make_shared<lc::entity::Point>(coord(data.basePoint),
                                                        layer,
@@ -312,7 +312,7 @@ void DXFimpl::addPoint(const DRW_Point& data) {
 
 void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
 	LOG_WARNING << "addDimAlign";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAligned = std::make_shared<lc::entity::DimAligned>(
             coord(data->getDefPoint()),
@@ -334,7 +334,7 @@ void DXFimpl::addDimAlign(const DRW_DimAligned* data) {
 
 void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
 	LOG_WARNING << "addDimLinear";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimLinear = std::make_shared<lc::entity::DimLinear>(
             coord(data->getDefPoint()),
@@ -358,7 +358,7 @@ void DXFimpl::addDimLinear(const DRW_DimLinear* data) {
 
 void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
 	LOG_WARNING << "addDimRadial";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto  lcDimRadial = std::make_shared<lc::entity::DimRadial>(
              coord(data->getCenterPoint()),
@@ -380,7 +380,7 @@ void DXFimpl::addDimRadial(const DRW_DimRadial* data) {
 
 void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
 	LOG_WARNING << "addDimDiametric";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimDiametric = std::make_shared<lc::entity::DimDiametric>(
              coord(data->getDiameter1Point()),
@@ -402,7 +402,7 @@ void DXFimpl::addDimDiametric(const DRW_DimDiametric* data) {
 
 void DXFimpl::addDimAngular(const DRW_DimAngular* data) {
 	LOG_WARNING << "addDimAngular";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(*data);
     auto lcDimAngular = std::make_shared<lc::entity::DimAngular>(
              coord(data->getDefPoint()),
@@ -434,7 +434,7 @@ void DXFimpl::addDimOrdinate(const DRW_DimOrdinate* data) {
 
 void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
 	LOG_WARNING << "addLWPolyline";
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
     std::vector<lc::entity::LWVertex2D> points;
@@ -461,7 +461,7 @@ void DXFimpl::addLWPolyline(const DRW_LWPolyline& data) {
 //Handle polyline as lwpolyline
 void DXFimpl::addPolyline(const DRW_Polyline& data) {
 	LOG_WARNING << "addPolyline";
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
     std::shared_ptr<lc::meta::MetaInfo> mf = getMetaInfo(data);
 
     std::vector<lc::entity::LWVertex2D> points;
@@ -494,7 +494,7 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
     // Loop->objlist contains the 3 entities (copied) that define the hatch areas are the entities selected during hatch
     // loopList seems to contain the same entities, why??
 	LOG_WARNING << "addHatch ";
-    auto layer = _document->layerByName(data->layer);
+    auto layer = getLayer(*data);
     auto mf = getMetaInfo(*data);
     auto lcHatch = std::make_shared<lc::entity::Hatch>(   layer,
                                                            mf,
@@ -610,6 +610,23 @@ lc::meta::Block_CSPtr DXFimpl::getBlock(const DRW_Entity& data) const {
     return block;
 }
 
+lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
+    lc::meta::Layer_CSPtr layer = _document->layerByName(data.layer);
+
+    if (layer==nullptr){
+	    auto col = icol.intToColor(255);
+	    auto lw = getLcLineWidth<lc::meta::MetaLineWidthByValue>(DRW_LW_Conv::lineWidth::width00);
+	    auto lp = _document->linePatternByName("CONTINUOUS");
+	    auto isFrozen = false;
+	    // we need it anyway so,
+	    layer = std::make_shared<lc::meta::Layer>(data.layer, lw->width(), col->color(), lp, isFrozen);
+	    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
+	    _builder->append(al);
+    }
+    LOG_WARNING << layer;
+    return layer;
+}
+
 lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
     std::shared_ptr<lc::meta::MetaInfo> mf = nullptr;
 
@@ -720,13 +737,26 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
 	LOG_WARNING << "addInsert";
+	// Or, this operation can be saved to do in next stage
     lc::builder::InsertBuilder builder;
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(getBlock(data));
-    auto layer = _document->layerByName(data.layer);
+    auto layer = getLayer(data);
     builder.setLayer(layer);
     builder.setCoordinate(coord(data.basePoint));
-    builder.setDisplayBlock(_document->blockByName(data.name));
+
+	// Fix temporarily, i think block should be pointer to this block so we can return promise
+	// I mean we need block even before it is created
+	auto block=_document->blockByName(data.name);
+	if (block==nullptr){
+		block = std::make_shared<lc::meta::Block>(data.name, geo::Coordinate());//some block: wrong
+	    }
+	    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, block));
+
+	    // May need to check if the block already exists: not sure
+	    _handleBlock.insert(std::pair<int, lc::meta::Block_CSPtr>(data.parentHandle, block));
+
+    builder.setDisplayBlock(block);
     builder.setDocument(_document);
 
     _entityBuilder->appendEntity(builder.build());
