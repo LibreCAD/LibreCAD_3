@@ -623,7 +623,6 @@ lc::meta::Layer_CSPtr DXFimpl::getLayer(const DRW_Entity& data) const {
 	    auto al = std::make_shared<lc::operation::AddLayer>(_document, layer);
 	    _builder->append(al);
     }
-    LOG_WARNING << layer;
     return layer;
 }
 
@@ -745,11 +744,11 @@ void DXFimpl::addInsert(const DRW_Insert& data) {
     builder.setLayer(layer);
     builder.setCoordinate(coord(data.basePoint));
 
-	// Fix temporarily, i think block should be pointer to this block so we can return promise
-	// I mean we need block even before it is created
 	auto block=_document->blockByName(data.name);
 	if (block==nullptr){
-		block = std::make_shared<lc::meta::Block>(data.name, geo::Coordinate());//some block: wrong
+		// It requests block like V21_PAKNING , it is already defined or from other file??
+		// These blocks were not declared in loading file
+		block = std::make_shared<lc::meta::Block>(data.name, geo::Coordinate());
 	    }
 	    _builder->append(std::make_shared<lc::operation::AddBlock>(_document, block));
 
