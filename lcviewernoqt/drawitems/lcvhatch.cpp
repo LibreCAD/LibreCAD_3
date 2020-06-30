@@ -20,7 +20,7 @@ void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::
         for(auto &y:x->objList){
             if(auto arc = std::dynamic_pointer_cast<const lc::entity::Arc>(y)){
                 if (arc->radius() != 0) {
-		std::cout << arc->CCW() << 'x' <<arc->center().x() << 'y' <<arc->center().y() << 'r' <<arc->radius() << 's' <<arc->startAngle() << 'e' <<arc->endAngle() <<std::endl;
+		    processingLine = false;
                     if (arc->CCW()) {
                         painter.arcNegative(arc->center().x(), arc->center().y(), arc->radius(), arc->startAngle(), arc->endAngle());
                     } else {

@@ -736,7 +736,6 @@ void DXFimpl::linkImage(const DRW_ImageDef *data) {
 
 void DXFimpl::addInsert(const DRW_Insert& data) {
 	LOG_WARNING << "addInsert";
-	// Or, this operation can be saved to do in next stage
     lc::builder::InsertBuilder builder;
     builder.setMetaInfo(getMetaInfo(data));
     builder.setBlock(getBlock(data));
