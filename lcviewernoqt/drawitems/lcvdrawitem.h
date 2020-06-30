@@ -40,6 +40,9 @@ namespace lc {
                 bool cacheable() const;
                 void cacheable(bool selected);
 
+                bool autostroke() const;
+                void autostroke(bool stroke);
+
                 /**
                  * @brief Return the entity which is drawn
                  * @return Entity
@@ -50,6 +53,7 @@ namespace lc {
                 bool _selectable;
                 bool _selected;
 		bool _cacheable;
+		bool _autostroke;
         };
 
         DECLARE_SHORT_SHARED_PTR(LCVDrawItem)

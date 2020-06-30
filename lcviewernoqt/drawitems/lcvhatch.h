@@ -26,6 +26,7 @@ namespace lc {
 
             private:
                 lc::entity::Hatch_CSPtr _hatch;
+                std::vector<LCVDrawItem_CSPtr> _drawItems;
         };
     }
 }

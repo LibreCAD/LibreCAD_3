@@ -5,8 +5,8 @@ using namespace lc::viewer;
 LCVDrawItem::LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable) :
         _selectable(selectable),
         _selected(false),
-	_cacheable(true) {
-
+	_cacheable(true),
+	_autostroke(true) {
 }
 
 bool LCVDrawItem::selectable() const {
@@ -27,5 +27,13 @@ bool LCVDrawItem::cacheable() const {
 
 void LCVDrawItem::cacheable(bool cache) {
     _cacheable = cache;
+}
+
+bool LCVDrawItem::autostroke() const {
+    return _autostroke;
+}
+
+void LCVDrawItem::autostroke(bool stroke) {
+    _autostroke = stroke;
 }
 
