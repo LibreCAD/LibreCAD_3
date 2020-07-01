@@ -76,7 +76,7 @@ namespace lc {
 
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
-	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const override;
+	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
 
             /**
              * @brief move, moves by an offset
