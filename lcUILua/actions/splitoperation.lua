@@ -1,6 +1,6 @@
 SplitOperation = {
     command_line = "SPLIT",
-    icon = "snap_intersection.svg"
+    icon = "divide.svg"
 }
 SplitOperation.__index = SplitOperation
 

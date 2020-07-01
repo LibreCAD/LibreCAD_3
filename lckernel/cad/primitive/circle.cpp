@@ -68,7 +68,7 @@ std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) c
 	std::vector<CADEntity_CSPtr> out;
 	auto angle = (coord-center()).angle();
 	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE){
-		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, angle+2*M_PI,
+		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle+LCTOLERANCE, angle+2*M_PI-LCTOLERANCE,
 		                                true, layer(), metaInfo(), block());
 		out.push_back(newArc);
 	}
