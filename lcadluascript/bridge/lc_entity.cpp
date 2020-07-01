@@ -1,5 +1,6 @@
 #include <cad/interface/draggable.h>
 #include <cad/interface/snapable.h>
+#include <cad/interface/splitable.h>
 #include <cad/base/cadentity.h>
 #include <cad/primitive/point.h>
 #include <cad/primitive/arc.h>
@@ -21,6 +22,16 @@
 #include <cad/interface/unmanageddraggable.h>
 #include <cad/primitive/customentity.h>
 #include "lc_entity.h"
+
+//Do split if possible
+std::vector<lc::entity::CADEntity_CSPtr> splitHelper(lc::entity::CADEntity_CSPtr e, lc::geo::Coordinate& p){
+	std::vector<lc::entity::CADEntity_CSPtr> out;
+	auto splitable = std::dynamic_pointer_cast<const lc::entity::Splitable>(e);
+	if (splitable){
+		return splitable->splitEntity(p);
+	}
+	return out;
+}
 
 void import_lc_entity_namespace(kaguya::State& state) {
     state["lc"]["entity"] = kaguya::NewTable();
@@ -58,7 +69,12 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("setDragPoints", &lc::entity::Draggable::setDragPoints)
     );
 
-    state["lc"]["entity"]["Arc"].setClass(kaguya::UserdataMetatable<lc::entity::Arc, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable>>()
+    state["lc"]["entity"]["Splitable"].setClass(kaguya::UserdataMetatable<lc::entity::Splitable>()
+        .addFunction("splitEntity", &lc::entity::Splitable::splitEntity)
+	.addStaticFunction("splitHelper", &splitHelper)//Does splitEntity if possible
+    );
+
+    state["lc"]["entity"]["Arc"].setClass(kaguya::UserdataMetatable<lc::entity::Arc, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Arc, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>>()
         .addFunction("accept", &lc::entity::Arc::accept)
         .addFunction("boundingBox", &lc::entity::Arc::boundingBox)
         .addFunction("copy", &lc::entity::Arc::copy)
@@ -79,7 +95,7 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("lineTangentPointsOnEntity", &lc::entity::Tangentable::lineTangentPointsOnEntity)
     );
 
-    state["lc"]["entity"]["Circle"].setClass(kaguya::UserdataMetatable<lc::entity::Circle, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable>>()
+    state["lc"]["entity"]["Circle"].setClass(kaguya::UserdataMetatable<lc::entity::Circle, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Circle, lc::entity::Snapable, lc::entity::Splitable>>()
         .addFunction("accept", &lc::entity::Circle::accept)
         .addFunction("boundingBox", &lc::entity::Circle::boundingBox)
         .addFunction("copy", &lc::entity::Circle::copy)
@@ -199,7 +215,7 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("setDragPoints", &lc::entity::DimRadial::setDragPoints)
     );
 
-    state["lc"]["entity"]["Ellipse"].setClass(kaguya::UserdataMetatable<lc::entity::Ellipse, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Ellipse, lc::entity::Snapable>>()
+    state["lc"]["entity"]["Ellipse"].setClass(kaguya::UserdataMetatable<lc::entity::Ellipse, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Ellipse, lc::entity::Snapable, lc::entity::Splitable>>()
         .addFunction("accept", &lc::entity::Ellipse::accept)
         .addFunction("boundingBox", &lc::entity::Ellipse::boundingBox)
         .addFunction("copy", &lc::entity::Ellipse::copy)
@@ -214,7 +230,7 @@ void import_lc_entity_namespace(kaguya::State& state) {
         .addFunction("snapPoints", &lc::entity::Ellipse::snapPoints)
     );
 
-    state["lc"]["entity"]["Line"].setClass(kaguya::UserdataMetatable<lc::entity::Line, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable>>()
+    state["lc"]["entity"]["Line"].setClass(kaguya::UserdataMetatable<lc::entity::Line, kaguya::MultipleBase<lc::entity::CADEntity, lc::geo::Vector, lc::entity::Snapable, lc::entity::Draggable, lc::entity::Splitable>>()
         .addFunction("accept", &lc::entity::Line::accept)
         .addFunction("boundingBox", &lc::entity::Line::boundingBox)
         .addFunction("copy", &lc::entity::Line::copy)

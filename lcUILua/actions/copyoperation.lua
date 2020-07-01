@@ -100,6 +100,6 @@ function CopyOperation:close()
         luaInterface:deleteEvent('mouseMove', self)
         luaInterface:deleteEvent('point', self)
 
-        luaInterface:triggerEvent('operationFinished')
+        luaInterface:triggerEvent('operationFinished', self.widget)
     end
 end

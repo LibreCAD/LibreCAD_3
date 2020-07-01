@@ -11,7 +11,7 @@ void OpenglPainter::set_manager(Manager* manager)
 
 void OpenglPainter::move_to(double x, double y)
 {
-	if(abs(_pen_x-x)>BBHEURISTIC2 || abs(_pen_y-y)>BBHEURISTIC2){
+	if(abs(_pen_x-x)>BBHEURISTIC2 || abs(_pen_y-y)>BBHEURISTIC2 || _manager->isNew()){
   _manager->jump();
   _manager->addVertex(x,y);
   _pen_x=x;  _pen_y=y;
