@@ -29,11 +29,11 @@ QVariant OperationDragModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     if(role == Qt::DecorationRole || role == Qt::DisplayRole){
-        QPair<QString, lc::ui::api::ToolbarButton*> element = operations.at(index.row());
+        QPair<QString, QIcon> element = operations.at(index.row());
 
         if(role == Qt::DecorationRole)
         {
-          return element.second->icon();
+          return element.second;
         }
         else
         {
@@ -86,29 +86,15 @@ QMimeData* OperationDragModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-void OperationDragModel::addToolbarButtonItem(lc::ui::api::ToolbarButton* button) {
-    QString buttonLabel = QString(button->label().c_str());
-
-    // if button has already been added, return
-    if (buttonMap.find(buttonLabel) != buttonMap.end()) {
-        return;
+void OperationDragModel::addToolbarButtonItem(QString& buttonLabel, QIcon& icon) {
+    if (buttonSet.find(buttonLabel) == buttonSet.end()) {
+        operations.push_back({ buttonLabel, icon });
+        buttonSet.insert(buttonLabel);
     }
-
-    operations.push_back({ buttonLabel, button });
-    buttonMap[buttonLabel] = button;
 }
 
 void OperationDragModel::arrangeByAscending() {
-    std::sort(operations.begin(), operations.end(), [](const QPair<QString, lc::ui::api::ToolbarButton*>& v1, const QPair<QString, lc::ui::api::ToolbarButton*>& v2) {
+    std::sort(operations.begin(), operations.end(), [](const QPair<QString, QIcon>& v1, const QPair<QString, QIcon>& v2) {
         return v1.first < v2.first;
     });
-}
-
-lc::ui::api::ToolbarButton* OperationDragModel::buttonByName(QString& buttonName) {
-    if (buttonMap.find(buttonName) != buttonMap.end()) {
-        return buttonMap[buttonName];
-    }
-    else {
-        return nullptr;
-    }
 }

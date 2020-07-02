@@ -91,6 +91,24 @@ namespace lc {
                      */
                     QList<lc::ui::api::ToolbarTab*> tabs();
 
+                    /**
+                     * \brief Generate buttons map
+                     */
+                    void generateButtonsMap();
+
+                    /**
+                    * \brief Get toolbar button associated with the given button
+                    * \param QString button name
+                    * \return pointer to toolbar button
+                    */
+                    lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
+
+                    /**
+                    * \brief Get list of toolbar button names
+                    * \return list of button name strings
+                    */
+                    QList<QString> buttonNames() const;
+
                 public slots:
                     /**
                      * \brief Set tab label of toolbar tab
@@ -107,6 +125,8 @@ namespace lc {
                     Ui::Toolbar* ui;
                     lc::ui::LuaInterface* luaInterface;
                     QMap<QString, lc::ui::api::ToolbarTab*> _tabs;
+
+                    QMap<QString, lc::ui::api::ToolbarButton*> _buttonsMap;
             };
         }
     }

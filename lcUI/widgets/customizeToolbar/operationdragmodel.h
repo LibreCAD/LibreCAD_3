@@ -2,6 +2,7 @@
 
 #include <QAbstractListModel>
 #include <QIcon>
+#include <QSet>
 
 #include <widgets/guiAPI/toolbarbutton.h>
 
@@ -55,23 +56,16 @@ namespace lc {
                 * \brief Add toolbar button to model
                 * \param pointer to toolbar button
                 */
-                void addToolbarButtonItem(lc::ui::api::ToolbarButton* button);
+                void addToolbarButtonItem(QString& buttonName, QIcon& icon);
 
                 /**
                 * \brief Arrange the icons in the model in ascending order
                 */
                 void arrangeByAscending();
 
-                /**
-                * \brief Get toolbar button associated with the given button
-                * \param QString button name
-                * \return pointer to toolbar button
-                */
-                lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
-
             private:
-                QList<QPair<QString,lc::ui::api::ToolbarButton*>> operations;
-                QMap<QString, lc::ui::api::ToolbarButton*> buttonMap;
+                QList<QPair<QString, QIcon>> operations;
+                QSet<QString> buttonSet;
             };
 
         }

@@ -140,3 +140,40 @@ void Toolbar::setToolbarTabLabel(QString newLabel, QString oldLabel) {
 QList<lc::ui::api::ToolbarTab*> Toolbar::tabs() {
     return _tabs.values();
 }
+
+void Toolbar::generateButtonsMap() {
+    QList<lc::ui::api::ToolbarTab*> toolbarTabs = this->tabs();
+
+    for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
+        std::vector<lc::ui::api::ToolbarGroup*> groupsList = toolbarTab->groups();
+
+        for (lc::ui::api::ToolbarGroup* toolbarGroup : groupsList) {
+            if (!toolbarGroup->nonButtonGroup()) {
+                std::vector<lc::ui::api::ToolbarButton*> toolbarButtons = toolbarGroup->buttons();
+
+                for (lc::ui::api::ToolbarButton* toolbarButton : toolbarButtons)
+                {
+                    QString buttonLabel = QString(toolbarButton->label().c_str());
+                    if (_buttonsMap.find(buttonLabel) != _buttonsMap.end()) {
+                        continue;
+                    }
+
+                    _buttonsMap[buttonLabel] = toolbarButton;
+                }
+            }
+        }
+    }
+}
+
+lc::ui::api::ToolbarButton* Toolbar::buttonByName(QString& buttonName) {
+    if (_buttonsMap.find(buttonName) != _buttonsMap.end()) {
+        return _buttonsMap[buttonName];
+    }
+    else {
+        return nullptr;
+    }
+}
+
+QList<QString> Toolbar::buttonNames() const {
+    return _buttonsMap.keys();
+}

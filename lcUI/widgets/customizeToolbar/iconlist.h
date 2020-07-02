@@ -29,13 +29,6 @@ namespace lc {
                 */
                 void dropEvent(QDropEvent* e) override;
 
-                /**
-                * \brief Get button of given name
-                * \param QString button name
-                * \return pointer to toolbar button
-                */
-                lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
-
             private:
                 OperationDragModel* opModel;
             };

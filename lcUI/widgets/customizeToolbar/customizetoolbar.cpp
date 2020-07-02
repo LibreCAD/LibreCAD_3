@@ -128,9 +128,6 @@ void CustomizeToolbar::updateButtons() {
 void CustomizeToolbar::reAddButtons() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
 
-    QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->horizontalLayout->itemAt(0)->layout());
-    IconList* iconList = qobject_cast<IconList*>(verticalLayout->itemAt(0)->widget());
-
     // count - 1 because the last "add group" tab should not be considered
     for (int i = 0; i < tabWidget->count() - 1; i++) {
         CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
@@ -151,7 +148,7 @@ void CustomizeToolbar::reAddButtons() {
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
-                lc::ui::api::ToolbarButton* button = iconList->buttonByName(buttonName);
+                lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName);
                 if (button != nullptr) {
 
                     if (addedButtonsSet.find(buttonName) != addedButtonsSet.end()) {
@@ -242,9 +239,6 @@ void CustomizeToolbar::readData(std::string data) {
     int buttonsCount = 0;
     int groupWidth = 0;
 
-    QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->horizontalLayout->itemAt(0)->layout());
-    IconList* iconList = qobject_cast<IconList*>(verticalLayout->itemAt(0)->widget());
-
     while (i != std::string::npos) {
         std::string tType = tokenType(data, i);
 
@@ -263,7 +257,7 @@ void CustomizeToolbar::readData(std::string data) {
         }
 
         if (tType == "button") {
-            lc::ui::api::ToolbarButton* button = iconList->buttonByName(QString(tokenButtonText(data, i).c_str()));
+            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(QString(tokenButtonText(data, i).c_str()));
             groupTab->addButton(button);
             buttonsCount++;
         }

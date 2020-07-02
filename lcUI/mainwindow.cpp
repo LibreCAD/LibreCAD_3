@@ -51,6 +51,8 @@ MainWindow::MainWindow()
     luaMenu->addItem("Run script", state["run_luascript"]);
     luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
     luaMenu->addItem("Load Toolbar File", state["run_loadtoolbar"]);
+
+    _toolbar.generateButtonsMap();
 }
 
 MainWindow::~MainWindow()
