@@ -8,6 +8,7 @@
 #include <QTableView>
 
 #include <widgets/toolbar.h>
+#include "customizeparenttab.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class CustomizeToolbar; }
@@ -58,6 +59,33 @@ namespace lc {
                 */
                 void updateButtons();
 
+                /**
+                * \brief Generate toolbar ordering data
+                */
+                std::string generateData();
+
+                /**
+                * \brief Read and update buttons from data
+                */
+                void readData(std::string data);
+
+                /**
+                * \brief Clear all data in the customize toolbar widget
+                */
+                void clearContents();
+
+                /**
+                * \brief Add customize parent tab
+                * \param string tab name
+                */
+                CustomizeParentTab* addParentTabManual(std::string tabName);
+
+                /**
+                * \brief Add toolbar file
+                * \param string file contents
+                */
+                std::string loadFile();
+
             public slots:
                 /**
                 * \brief Slot for add parent tab button in the widget
@@ -75,6 +103,18 @@ namespace lc {
                 void initializeParentTab();
 
                 void reAddButtons();
+
+                void addPlusButton();
+
+                void advanceToken(const std::string& data, int& i) const;
+
+                std::string tokenType(const std::string& data, int i) const;
+
+                std::string tokenLabel(const std::string& data, int i) const;
+
+                std::string tokenWidth(const std::string& data, int i) const;
+
+                std::string tokenButtonText(const std::string& data, int i) const;
 
             private:
                 Ui::CustomizeToolbar* ui;

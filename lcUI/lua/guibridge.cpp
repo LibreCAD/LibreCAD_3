@@ -5,6 +5,7 @@
 #include "documentcanvas.h"
 #include "lcadviewer.h"
 #include "widgets/luascript.h"
+#include "widgets/customizeToolbar/customizetoolbar.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
 #include "widgets/guiAPI/toolbartab.h"
@@ -99,6 +100,13 @@ void addLCBindings(lua_State *L) {
         .setConstructors<widgets::LuaScript(lc::ui::MainWindow*)>()
         .addOverloadedFunctions("show", [](widgets::LuaScript& self) { self.show(); })
 	);
+
+    state["lc"]["CustomizeToolbar"].setClass(kaguya::UserdataMetatable<widgets::CustomizeToolbar>()
+        .setConstructors<widgets::CustomizeToolbar(widgets::Toolbar*)>()
+        .addOverloadedFunctions("show", [](widgets::CustomizeToolbar& self) { self.show(); })
+        .addFunction("loadFile", &widgets::CustomizeToolbar::loadFile)
+        .addFunction("readData", &widgets::CustomizeToolbar::readData)
+    );
 
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
 	    .addFunction("autoScale", &DocumentCanvas::autoScale)

@@ -36,8 +36,6 @@ CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent)
 {
     init();
 
-    insertTab(count() - 1, new CustomizeGroupTab("New Group"), "New Group");
-
     /* TODO ADD RENAME BY DOUBLE CLICKING ON THE GROUP LABEL */
 
     setCurrentIndex(0);
@@ -78,4 +76,26 @@ void CustomizeParentTab::groupTabClosed(int index) {
 
 std::string CustomizeParentTab::label() const {
     return _label;
+}
+
+void CustomizeParentTab::clearContents() {
+    int groupCount = this->count() - 1;
+
+    for (int j = 0; j < groupCount; j++) {
+        CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(this->widget(j));
+        groupTab->clearContents();
+    }
+
+    this->clear();
+}
+
+CustomizeGroupTab* CustomizeParentTab::addGroupTabManual(std::string groupName, int width) {
+    QString text = QString(groupName.c_str());
+    CustomizeGroupTab* groupTab = new CustomizeGroupTab(text, width);
+    if (!text.isEmpty()) {
+        insertTab(count() - 1, groupTab, text);
+        setCurrentIndex(count() - 2);
+    }
+
+    return groupTab;
 }

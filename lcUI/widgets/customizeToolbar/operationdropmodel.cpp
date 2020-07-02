@@ -275,3 +275,7 @@ QList<QString> OperationDropModel::buttonNameList() const {
 
     return nameList;
 }
+
+void OperationDropModel::clearContents() {
+    operations.clear();
+}

@@ -96,6 +96,11 @@ namespace lc{
                 */
                 QList<QString> buttonNameList() const;
 
+                /**
+                * \brief Remove all buttons from the model
+                */
+                void clearContents();
+
             public slots:
                 /**
                 * \brief Set number of rows in the table

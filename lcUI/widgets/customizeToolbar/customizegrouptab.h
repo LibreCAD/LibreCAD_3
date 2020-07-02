@@ -4,6 +4,7 @@
 #include "operationdropmodel.h"
 
 #include <widgets/guiAPI/toolbargroup.h>
+#include <widgets/guiAPI/toolbarbutton.h>
 
 namespace lc {
     namespace ui {
@@ -20,7 +21,7 @@ namespace lc {
                 * \param QString groupName
                 * \param pointer to qwidget parent
                 */
-                CustomizeGroupTab(QString groupName, QWidget* parent = nullptr);
+                CustomizeGroupTab(QString groupName, int width = 3, QWidget* parent = nullptr);
 
                 /**
                 * \brief CustomizeGroupTab constructor
@@ -45,6 +46,23 @@ namespace lc {
                 * \return int width
                 */
                 int groupWidth() const;
+
+                /**
+                * \brief Remove all buttons from group model
+                */
+                void clearContents();
+
+                /**
+                * \brief Add toolbar button
+                * \param pointer to qtoolbarbutton
+                */
+                void addButton(lc::ui::api::ToolbarButton* button);
+
+                /**
+                * \brief Set group width
+                * \param int width
+                */
+                void setWidth(int width, int numElements);
 
             private:
                 OperationDropModel* dropModel;

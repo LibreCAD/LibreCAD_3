@@ -3,7 +3,10 @@
 #include <QWidget>
 #include <QTabWidget>
 
+#include <string>
+
 #include <widgets/guiAPI/toolbartab.h>
+#include <widgets/customizeToolbar/customizegrouptab.h>
 
 namespace lc {
     namespace ui {
@@ -34,6 +37,18 @@ namespace lc {
                 * \brief get label of toolbar group
                 */
                 std::string label() const;
+
+                /**
+                * \brief remove all group tabs from parenttab
+                */
+                void clearContents();
+
+                /**
+                * \brief Add customize group tab
+                * \param string group name
+                * \param pointer to group tab
+                */
+                CustomizeGroupTab* addGroupTabManual(std::string groupName, int width);
 
             public slots:
                 /**

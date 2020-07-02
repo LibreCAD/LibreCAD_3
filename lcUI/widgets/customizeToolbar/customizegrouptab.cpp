@@ -9,7 +9,7 @@
 
 using namespace lc::ui::widgets;
 
-CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
+CustomizeGroupTab::CustomizeGroupTab(QString groupName, int width, QWidget *parent)
     :
       QWidget(parent),
       _groupName(groupName.toStdString())
@@ -30,6 +30,8 @@ CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
 
     QHBoxLayout* tableControlLayout = new QHBoxLayout();
     this->layout()->addItem(tableControlLayout);
+
+    dropModel->setNumCols(width);
 
     QLabel* rowControlLabel = new QLabel("Rows :- ", this);
     QSpinBox* rowControl = new QSpinBox(this);
@@ -58,7 +60,7 @@ CustomizeGroupTab::CustomizeGroupTab(QString groupName, QWidget *parent)
 
 CustomizeGroupTab::CustomizeGroupTab(lc::ui::api::ToolbarGroup* toolbarGroup, QWidget* parent)
     :
-    CustomizeGroupTab(toolbarGroup->label().c_str(), parent)
+    CustomizeGroupTab(toolbarGroup->label().c_str(), 3, parent)
 {
     std::vector<lc::ui::api::ToolbarButton*> buttonsList = toolbarGroup->buttons();
 
@@ -98,4 +100,35 @@ QList<QString> CustomizeGroupTab::buttonNames() const {
 
 int CustomizeGroupTab::groupWidth() const {
     return dropModel->columnCount();
+}
+
+void CustomizeGroupTab::clearContents() {
+    dropModel->clearContents();
+}
+
+void CustomizeGroupTab::addButton(lc::ui::api::ToolbarButton* button) {
+    dropModel->addOperation(QString(button->label().c_str()), button->icon());
+}
+
+void CustomizeGroupTab::setWidth(int width, int numElements) {
+    int nCols = width;
+    int nRows = numElements / nCols;
+
+    if (numElements % nCols != 0) {
+        nRows++;
+    }
+
+    dropModel->setNumCols(nCols);
+    dropModel->setNumRows(nRows);
+
+    QSpinBox* rowControl = this->findChild<QSpinBox*>("rows_control");
+    QSpinBox* colControl = this->findChild<QSpinBox*>("cols_control");
+
+    if (rowControl != nullptr) {
+        rowControl->setValue(dropModel->rowCount());
+    }
+
+    if (colControl != nullptr) {
+        colControl->setValue(dropModel->columnCount());
+    }
 }
