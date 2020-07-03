@@ -45,12 +45,10 @@ MainWindow::MainWindow()
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
     state.dostring("run_customizetoolbar = function() lc.CustomizeToolbar(mainWindow:toolbar()):show() end");
-    state.dostring("run_loadtoolbar = function() local tool = lc.CustomizeToolbar(mainWindow:toolbar()) tool:readData(tool:loadFile()) tool:show() end");
 
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
     luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
-    luaMenu->addItem("Load Toolbar File", state["run_loadtoolbar"]);
 
     _toolbar.generateButtonsMap();
 }

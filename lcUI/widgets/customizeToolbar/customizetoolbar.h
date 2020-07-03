@@ -67,7 +67,7 @@ namespace lc {
                 /**
                 * \brief Read and update buttons from data
                 */
-                void readData(std::string data);
+                void readData();
 
                 /**
                 * \brief Clear all data in the customize toolbar widget
@@ -79,12 +79,6 @@ namespace lc {
                 * \param string tab name
                 */
                 CustomizeParentTab* addParentTabManual(std::string tabName);
-
-                /**
-                * \brief Add toolbar file
-                * \param string file contents
-                */
-                std::string loadFile();
 
             public slots:
                 /**
@@ -105,16 +99,6 @@ namespace lc {
                 void reAddButtons();
 
                 void addPlusButton();
-
-                void advanceToken(const std::string& data, int& i) const;
-
-                std::string tokenType(const std::string& data, int i) const;
-
-                std::string tokenLabel(const std::string& data, int i) const;
-
-                std::string tokenWidth(const std::string& data, int i) const;
-
-                std::string tokenButtonText(const std::string& data, int i) const;
 
             private:
                 Ui::CustomizeToolbar* ui;

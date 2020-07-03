@@ -9,6 +9,8 @@
 #include <QList>
 #include <QFileDialog>
 #include <QTextStream>
+#include <QXmlStreamWriter>
+#include <QFile>
 
 #include "customizegrouptab.h"
 #include "deleteiconarea.h"
@@ -30,6 +32,8 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     initializeGroupList();
     initialize();
     initializeParentTab();
+
+    readData();
 }
 
 CustomizeToolbar::~CustomizeToolbar()
@@ -181,35 +185,47 @@ void CustomizeToolbar::parentTabClosed(int index) {
 std::string CustomizeToolbar::generateData() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
 
-    std::stringstream dataStream;
-    int tabCount = tabWidget->count() - 1;
-    dataStream << "<toolbar>" << "\n";
+    QFile xmlFile("texttoolbar.xml");
+    xmlFile.open(QIODevice::WriteOnly);
+    QXmlStreamWriter streamWriter(&xmlFile);
 
+    streamWriter.setAutoFormatting(true);
+    streamWriter.writeStartDocument();
+
+    streamWriter.writeStartElement("toolbar");
+
+    int tabCount = tabWidget->count() - 1;
     // count - 1 because the last "add group" tab should not be considered
     for (int i = 0; i < tabCount; i++) {
         CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
 
         int groupCount = parentTab->count() - 1;
-        dataStream << "<tab label=\"" << parentTab->label() << "\">" << "\n";
+        streamWriter.writeStartElement("tab");
+        streamWriter.writeAttribute("label", parentTab->label().c_str());
 
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
 
-            dataStream << "<group label=\"" << groupTab->label() << "\" width=" << groupTab->groupWidth() << ">" << "\n";
+            streamWriter.writeStartElement("group");
+            streamWriter.writeAttribute("label", groupTab->label().c_str());
+            streamWriter.writeAttribute("width", QString::number(groupTab->groupWidth()));
 
             // list of buttons in order from group
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
-                dataStream << "<button>\"" << buttonName.toStdString() << "\"</button>" << "\n";
+                streamWriter.writeTextElement("button", buttonName);
             }
-            dataStream << "</group>" << "\n";
+            streamWriter.writeEndElement();
         }
-        dataStream << "</tab>" << "\n";
+        streamWriter.writeEndElement();
     }
 
-    dataStream << "</toolbar>" << "\n";
-    return dataStream.str();
+    streamWriter.writeEndElement();
+    streamWriter.writeEndDocument();
+    xmlFile.close();
+
+    return "";
 }
 
 void CustomizeToolbar::clearContents() {
@@ -224,124 +240,76 @@ void CustomizeToolbar::clearContents() {
     tabWidget->clear();
 }
 
-void CustomizeToolbar::readData(std::string data) {
-    if (data == "") {
+void CustomizeToolbar::readData() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::information(this, tr("Unable to open file"), file.errorString());
         return;
     }
 
+    QXmlStreamReader streamReader(&file);
+
     clearContents();
     addPlusButton();
-
-    int i = 0;
 
     CustomizeParentTab* parentTab = nullptr;
     CustomizeGroupTab* groupTab = nullptr;
     int buttonsCount = 0;
     int groupWidth = 0;
 
-    while (i != std::string::npos) {
-        std::string tType = tokenType(data, i);
+    while (!streamReader.atEnd()) {
+        QString tType = streamReader.name().toString();
+
+        if (!streamReader.isStartElement()) {
+            streamReader.readNextStartElement();
+            continue;
+        }
 
         if (tType == "tab") {
-            parentTab = addParentTabManual(tokenLabel(data, i));
+            QXmlStreamAttributes streamAttributes = streamReader.attributes();
+            std::string tabLabel = "New Tab";
+
+            if (streamAttributes.hasAttribute("label")) {
+                tabLabel = streamAttributes.value("label").toString().toStdString();
+            }
+
+            parentTab = addParentTabManual(tabLabel);
         }
 
         if (tType == "group") {
+            QXmlStreamAttributes streamAttributes = streamReader.attributes();
+            std::string groupLabel = "New Group";
+            int newWidth = 3;
+
+            if (streamAttributes.hasAttribute("label")) {
+                groupLabel = streamAttributes.value("label").toString().toStdString();
+            }
+
+            if (streamAttributes.hasAttribute("width")) {
+                newWidth = streamAttributes.value("width").toString().toInt();
+            }
+
             if (groupTab != nullptr) {
                 groupTab->setWidth(groupWidth, buttonsCount);
                 buttonsCount = 0;
             }
 
-            groupWidth = std::stoi(tokenWidth(data, i));
-            groupTab = parentTab->addGroupTabManual(tokenLabel(data, i), groupWidth);
+            groupWidth = newWidth;
+            groupTab = parentTab->addGroupTabManual(groupLabel, groupWidth);
         }
 
         if (tType == "button") {
-            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(QString(tokenButtonText(data, i).c_str()));
+            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(streamReader.readElementText());
             groupTab->addButton(button);
             buttonsCount++;
         }
 
-        advanceToken(data, i);
+        streamReader.readNextStartElement();
     }
 
     groupTab->setWidth(groupWidth, buttonsCount);
-}
-
-void CustomizeToolbar::advanceToken(const std::string& data, int& i) const {
-    i = data.find("<", i+1);
-    while (i != data.size() && data[i + 1] == '/') {
-        i = data.find("<", i + 1);
-    }
-}
-
-std::string CustomizeToolbar::tokenType(const std::string& data, int i) const{
-    int endtag = data.find(">", i);
-    int space = data.find(" ", i);
-    int endIndex = endtag;
-    if (space != -1) {
-        endIndex = (endtag < space) ? endtag : space;
-    }
-    endIndex = (endIndex < data.size()) ? endIndex : data.size();
-    return data.substr(i + 1, endIndex - i - 1);
-}
-
-std::string CustomizeToolbar::tokenLabel(const std::string& data, int i) const{
-    int endtag = data.find(">", i);
-    int findLabel = data.find("label", i);
-
-    if (findLabel != std::string::npos && findLabel < endtag) {
-        int startQuot = data.find("\"", findLabel);
-        int endQuot = data.find("\"", startQuot+1);
-        return data.substr(startQuot+1, endQuot - startQuot - 1);
-    }
-    else {
-        return "";
-    }
-}
-
-std::string CustomizeToolbar::tokenWidth(const std::string& data, int i) const{
-    int endtag = data.find(">", i);
-    int findWidth = data.find("width=", i);
-
-    if (findWidth != std::string::npos && findWidth < endtag) {
-        int endtag = data.find(">", findWidth);
-        return data.substr(findWidth+6, endtag - findWidth - 6);
-    }
-    else {
-        return "";
-    }
-}
-
-std::string CustomizeToolbar::tokenButtonText(const std::string& data, int i) const {
-    if (tokenType(data, i) != "button") {
-        return "";
-    }
-
-    int endtag = data.find(">", i);
-    int starttag2 = data.find("</", endtag);
-
-    return data.substr(endtag + 2, starttag2 - endtag - 3);
-}
-
-std::string CustomizeToolbar::loadFile() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
-
-    if (fileName.isEmpty())
-    {
-        return "";
-    }
-    else {
-        QFile file(fileName);
-
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::information(this, tr("Unable to open file"),file.errorString());
-            return "";
-        }
-
-        QTextStream textIn(&file);
-        return textIn.readAll().toStdString();
-    }
 }
 
 CustomizeParentTab* CustomizeToolbar::addParentTabManual(std::string tabName) {

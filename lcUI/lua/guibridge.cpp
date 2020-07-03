@@ -104,8 +104,6 @@ void addLCBindings(lua_State *L) {
     state["lc"]["CustomizeToolbar"].setClass(kaguya::UserdataMetatable<widgets::CustomizeToolbar>()
         .setConstructors<widgets::CustomizeToolbar(widgets::Toolbar*)>()
         .addOverloadedFunctions("show", [](widgets::CustomizeToolbar& self) { self.show(); })
-        .addFunction("loadFile", &widgets::CustomizeToolbar::loadFile)
-        .addFunction("readData", &widgets::CustomizeToolbar::readData)
     );
 
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
