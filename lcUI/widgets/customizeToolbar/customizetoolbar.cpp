@@ -33,7 +33,7 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     initialize();
     initializeParentTab();
 
-    readData();
+    loadToolbarFile();
 }
 
 CustomizeToolbar::~CustomizeToolbar()
@@ -97,8 +97,7 @@ void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
 
 void CustomizeToolbar::closeEvent(QCloseEvent* e) {
     updateButtons();
-    std::string toolbar_data = generateData();
-    std::cout << toolbar_data << std::endl;
+    emit customizeWidgetClosed();
     QWidget::closeEvent(e);
 }
 
@@ -182,17 +181,9 @@ void CustomizeToolbar::parentTabClosed(int index) {
     }
 }
 
-std::string CustomizeToolbar::generateData() {
+void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
-
-    QFile xmlFile("texttoolbar.xml");
-    xmlFile.open(QIODevice::WriteOnly);
-    QXmlStreamWriter streamWriter(&xmlFile);
-
-    streamWriter.setAutoFormatting(true);
-    streamWriter.writeStartDocument();
-
-    streamWriter.writeStartElement("toolbar");
+    streamWriter->writeStartElement("toolbar");
 
     int tabCount = tabWidget->count() - 1;
     // count - 1 because the last "add group" tab should not be considered
@@ -200,32 +191,28 @@ std::string CustomizeToolbar::generateData() {
         CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
 
         int groupCount = parentTab->count() - 1;
-        streamWriter.writeStartElement("tab");
-        streamWriter.writeAttribute("label", parentTab->label().c_str());
+        streamWriter->writeStartElement("tab");
+        streamWriter->writeAttribute("label", parentTab->label().c_str());
 
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
 
-            streamWriter.writeStartElement("group");
-            streamWriter.writeAttribute("label", groupTab->label().c_str());
-            streamWriter.writeAttribute("width", QString::number(groupTab->groupWidth()));
+            streamWriter->writeStartElement("group");
+            streamWriter->writeAttribute("label", groupTab->label().c_str());
+            streamWriter->writeAttribute("width", QString::number(groupTab->groupWidth()));
 
             // list of buttons in order from group
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
-                streamWriter.writeTextElement("button", buttonName);
+                streamWriter->writeTextElement("button", buttonName);
             }
-            streamWriter.writeEndElement();
+            streamWriter->writeEndElement();
         }
-        streamWriter.writeEndElement();
+        streamWriter->writeEndElement();
     }
 
-    streamWriter.writeEndElement();
-    streamWriter.writeEndDocument();
-    xmlFile.close();
-
-    return "";
+    streamWriter->writeEndElement();
 }
 
 void CustomizeToolbar::clearContents() {
@@ -240,17 +227,7 @@ void CustomizeToolbar::clearContents() {
     tabWidget->clear();
 }
 
-void CustomizeToolbar::readData() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"), file.errorString());
-        return;
-    }
-
-    QXmlStreamReader streamReader(&file);
-
+void CustomizeToolbar::readData(QXmlStreamReader* streamReader) {
     clearContents();
     addPlusButton();
 
@@ -259,16 +236,22 @@ void CustomizeToolbar::readData() {
     int buttonsCount = 0;
     int groupWidth = 0;
 
-    while (!streamReader.atEnd()) {
-        QString tType = streamReader.name().toString();
+    QString tokenTy = streamReader->name().toString();
+    while (tokenTy != "toolbar" && !streamReader->atEnd()) {
+        streamReader->readNext();
+        tokenTy = streamReader->name().toString();
+    }
 
-        if (!streamReader.isStartElement()) {
-            streamReader.readNextStartElement();
+    while (!streamReader->atEnd()) {
+        QString tType = streamReader->name().toString();
+
+        if (!streamReader->isStartElement()) {
+            streamReader->readNextStartElement();
             continue;
         }
 
         if (tType == "tab") {
-            QXmlStreamAttributes streamAttributes = streamReader.attributes();
+            QXmlStreamAttributes streamAttributes = streamReader->attributes();
             std::string tabLabel = "New Tab";
 
             if (streamAttributes.hasAttribute("label")) {
@@ -279,7 +262,7 @@ void CustomizeToolbar::readData() {
         }
 
         if (tType == "group") {
-            QXmlStreamAttributes streamAttributes = streamReader.attributes();
+            QXmlStreamAttributes streamAttributes = streamReader->attributes();
             std::string groupLabel = "New Group";
             int newWidth = 3;
 
@@ -301,12 +284,12 @@ void CustomizeToolbar::readData() {
         }
 
         if (tType == "button") {
-            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(streamReader.readElementText());
+            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(streamReader->readElementText());
             groupTab->addButton(button);
             buttonsCount++;
         }
 
-        streamReader.readNextStartElement();
+        streamReader->readNextStartElement();
     }
 
     groupTab->setWidth(groupWidth, buttonsCount);
@@ -335,4 +318,19 @@ void CustomizeToolbar::addPlusButton() {
 
     connect(tb, &QToolButton::clicked, this, &CustomizeToolbar::addParentTab);
     connect(tabWidget, &QTabWidget::tabCloseRequested, this, &CustomizeToolbar::parentTabClosed);
+}
+
+void CustomizeToolbar::loadToolbarFile() {
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
+    QFile* file = new QFile(fileName);
+
+    if (!file->open(QIODevice::ReadOnly)) {
+        QMessageBox::information(this, tr("Unable to open file"), file->errorString());
+        return;
+    }
+
+    QXmlStreamReader streamReader(file);
+    readData(&streamReader);
+
+    file->close();
 }

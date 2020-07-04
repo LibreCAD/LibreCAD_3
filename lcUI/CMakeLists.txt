@@ -80,7 +80,9 @@ lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+managers/uisettings.h
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -139,7 +141,9 @@ lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+managers/uisettings.cpp
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui

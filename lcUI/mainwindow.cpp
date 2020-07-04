@@ -44,7 +44,7 @@ MainWindow::MainWindow()
     // add lua script
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
-    state.dostring("run_customizetoolbar = function() lc.CustomizeToolbar(mainWindow:toolbar()):show() end");
+    state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
 
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
@@ -559,4 +559,15 @@ void MainWindow::selectNone()
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
+}
+
+void MainWindow::runCustomizeToolbar() {
+    _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
+    connect(_customizeToolbar, &widgets::CustomizeToolbar::customizeWidgetClosed, this, &MainWindow::writeSettings);
+
+    _customizeToolbar->show();
+}
+
+void MainWindow::writeSettings() {
+    _uiSettings.writeSettings(_customizeToolbar);
 }

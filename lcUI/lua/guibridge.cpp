@@ -191,6 +191,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("findMenuItemByObjectName", &lc::ui::MainWindow::findMenuItemByObjectName)
         .addFunction("menuByName", &lc::ui::MainWindow::menuByName)
         .addFunction("menuByPosition", &lc::ui::MainWindow::menuByPosition)
+        .addFunction("runCustomizeToolbar", &lc::ui::MainWindow::runCustomizeToolbar)
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })

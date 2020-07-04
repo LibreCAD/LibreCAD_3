@@ -62,12 +62,12 @@ namespace lc {
                 /**
                 * \brief Generate toolbar ordering data
                 */
-                std::string generateData();
+                void generateData(QXmlStreamWriter* streamWriter);
 
                 /**
                 * \brief Read and update buttons from data
                 */
-                void readData();
+                void readData(QXmlStreamReader* streamReader);
 
                 /**
                 * \brief Clear all data in the customize toolbar widget
@@ -80,6 +80,12 @@ namespace lc {
                 */
                 CustomizeParentTab* addParentTabManual(std::string tabName);
 
+            signals:
+                /**
+                * \brief Signal for customize widget being closed
+                */
+                void customizeWidgetClosed();
+
             public slots:
                 /**
                 * \brief Slot for add parent tab button in the widget
@@ -90,6 +96,11 @@ namespace lc {
                 * \brief Close button for parent tab clicked which removes the tab
                 */
                 void parentTabClosed(int index);
+
+                /**
+                * \brief Load toolbar file
+                */
+                void loadToolbarFile();
 
             private:
                 void initializeGroupList();
