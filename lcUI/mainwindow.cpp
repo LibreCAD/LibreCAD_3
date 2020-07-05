@@ -51,6 +51,7 @@ MainWindow::MainWindow()
     luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
 
     _toolbar.generateButtonsMap();
+    readUiSettings();
 }
 
 MainWindow::~MainWindow()
@@ -564,10 +565,21 @@ void MainWindow::invertSelection()
 void MainWindow::runCustomizeToolbar() {
     _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
     connect(_customizeToolbar, &widgets::CustomizeToolbar::customizeWidgetClosed, this, &MainWindow::writeSettings);
+    connect(_customizeToolbar, &widgets::CustomizeToolbar::defaultSettingsLoad, this, &MainWindow::loadDefaultSettings);
 
     _customizeToolbar->show();
 }
 
 void MainWindow::writeSettings() {
     _uiSettings.writeSettings(_customizeToolbar);
+}
+
+void MainWindow::readUiSettings() {
+    _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
+    _uiSettings.readSettings(_customizeToolbar);
+    _customizeToolbar->close();
+}
+
+void MainWindow::loadDefaultSettings() {
+    _uiSettings.readSettings(_customizeToolbar, true);
 }

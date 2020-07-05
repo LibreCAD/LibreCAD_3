@@ -80,6 +80,11 @@ namespace lc
             */
             void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
 
+            /**
+            * \brief Read UI settings on program start up
+            */
+            void readUiSettings();
+
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
             /**
@@ -176,6 +181,7 @@ namespace lc
 
             void runCustomizeToolbar();
             void writeSettings();
+            void loadDefaultSettings();
 
         signals:
             void point(lc::geo::Coordinate coordinate);

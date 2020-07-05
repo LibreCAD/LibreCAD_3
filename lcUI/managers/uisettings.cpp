@@ -7,7 +7,12 @@ using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
     QFile settingsFile(settingsFileName);
-    settingsFile.open(QIODevice::WriteOnly);
+
+    if (!settingsFile.open(QIODevice::WriteOnly)) {
+        std::cout << "File could not be opened" << std::endl;
+        return;
+    }
+
     QXmlStreamWriter streamWriter(&settingsFile);
 
     streamWriter.setAutoFormatting(true);
@@ -16,5 +21,19 @@ void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
     customizeToolbar->generateData(&streamWriter);
 
     streamWriter.writeEndDocument();
+    settingsFile.close();
+}
+
+void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings) {
+    QString fileName = defaultSettings ? defaultSettingsFileName : settingsFileName;
+    QFile settingsFile(fileName);
+
+    if (!settingsFile.open(QIODevice::ReadOnly)) {
+        std::cout << "File could not be opened" << std::endl;
+        return;
+    }
+
+    QXmlStreamReader streamReader(&settingsFile);
+    customizeToolbar->readData(&streamReader);
     settingsFile.close();
 }

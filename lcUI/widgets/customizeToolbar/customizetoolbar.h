@@ -85,6 +85,11 @@ namespace lc {
                 * \brief Signal for customize widget being closed
                 */
                 void customizeWidgetClosed();
+                
+                /**
+                * \brief Signal for default settings being clicked
+                */
+                void defaultSettingsLoad();
 
             public slots:
                 /**
@@ -101,6 +106,11 @@ namespace lc {
                 * \brief Load toolbar file
                 */
                 void loadToolbarFile();
+
+                /**
+                * \brief Default button clicked
+                */
+                void defaultButtonClicked();
 
             private:
                 void initializeGroupList();

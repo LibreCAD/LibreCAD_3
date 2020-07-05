@@ -32,8 +32,6 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     initializeGroupList();
     initialize();
     initializeParentTab();
-
-    loadToolbarFile();
 }
 
 CustomizeToolbar::~CustomizeToolbar()
@@ -58,14 +56,23 @@ void CustomizeToolbar::initializeGroupList() {
 }
 
 void CustomizeToolbar::initializeParentTab() {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QWidget* rightSide = ui->horizontalLayout->itemAt(1)->widget();
+
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     tabWidget->setTabsClosable(true);
 
-    QSizePolicy sizePolicy2 = tabWidget->sizePolicy();
+    QSizePolicy sizePolicy2 = rightSide->sizePolicy();
     sizePolicy2.setHorizontalStretch(2);
-    tabWidget->setSizePolicy(sizePolicy2);
+    rightSide->setSizePolicy(sizePolicy2);
 
     tabWidget->setCurrentIndex(0);
+
+    QLayout* buttonsLayout = rightSide->layout()->itemAt(1)->layout();
+    QPushButton* defaultButton = qobject_cast<QPushButton*>(buttonsLayout->itemAt(0)->widget());
+    QPushButton* loadButton = qobject_cast<QPushButton*>(buttonsLayout->itemAt(1)->widget());
+
+    connect(defaultButton, &QPushButton::clicked, this, &CustomizeToolbar::defaultButtonClicked);
+    connect(loadButton, &QPushButton::clicked, this, &CustomizeToolbar::loadToolbarFile);
 }
 
 void CustomizeToolbar::addParentTab() {
@@ -73,7 +80,7 @@ void CustomizeToolbar::addParentTab() {
     QString text = QInputDialog::getText(this, tr("Add tab"),
                                              tr(""), QLineEdit::Normal,
                                              QDir::home().dirName(), &ok);
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     if (ok && !text.isEmpty()){
         tabWidget->insertTab(tabWidget->count()-1, new CustomizeParentTab(text), text);
         tabWidget->setCurrentIndex(tabWidget->count() - 2);
@@ -89,7 +96,7 @@ void CustomizeToolbar::initialize() {
 }
 
 void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     addPlusButton();
 
     tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab(newTab), QString(newTab->label().c_str()));
@@ -129,7 +136,7 @@ void CustomizeToolbar::updateButtons() {
 }
 
 void CustomizeToolbar::reAddButtons() {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
 
     // count - 1 because the last "add group" tab should not be considered
     for (int i = 0; i < tabWidget->count() - 1; i++) {
@@ -175,14 +182,14 @@ void CustomizeToolbar::parentTabClosed(int index) {
     reply = QMessageBox::question(this, "Remove Tab", "Are you sure you want to remove this tab?",
         QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
-        QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+        QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
         tabWidget->removeTab(index);
         tabWidget->setCurrentIndex(0);
     }
 }
 
 void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     streamWriter->writeStartElement("toolbar");
 
     int tabCount = tabWidget->count() - 1;
@@ -216,7 +223,7 @@ void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
 }
 
 void CustomizeToolbar::clearContents() {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     int tabCount = tabWidget->count() - 1;
 
     for (int i = 0; i < tabCount; i++) {
@@ -298,7 +305,7 @@ void CustomizeToolbar::readData(QXmlStreamReader* streamReader) {
 CustomizeParentTab* CustomizeToolbar::addParentTabManual(std::string tabName) {
     QString text = QString(tabName.c_str());
     CustomizeParentTab* newParentTab = new CustomizeParentTab(text);
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     if (!text.isEmpty()) {
         tabWidget->insertTab(tabWidget->count() - 1, newParentTab, text);
         tabWidget->setCurrentIndex(tabWidget->count() - 2);
@@ -308,7 +315,7 @@ CustomizeParentTab* CustomizeToolbar::addParentTabManual(std::string tabName) {
 }
 
 void CustomizeToolbar::addPlusButton() {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget());
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
 
     QToolButton* tb = new QToolButton();
     tb->setText("+");
@@ -333,4 +340,8 @@ void CustomizeToolbar::loadToolbarFile() {
     readData(&streamReader);
 
     file->close();
+}
+
+void CustomizeToolbar::defaultButtonClicked() {
+    emit defaultSettingsLoad();
 }
