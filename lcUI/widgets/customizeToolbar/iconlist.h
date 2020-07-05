@@ -15,6 +15,7 @@ namespace lc {
             class IconList : public QListView
             {
                 Q_OBJECT
+
             public:
                 IconList(QWidget* parent = nullptr);
 

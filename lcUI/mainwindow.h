@@ -109,6 +109,9 @@ namespace lc
             */
             lc::ui::api::Menu* menuByName(const std::string& menuName);
 
+            /**
+            * \brief Get menu by position
+            */
             lc::ui::api::Menu* menuByPosition(int pos);
 
             /**
@@ -179,6 +182,7 @@ namespace lc
             void selectNone();
             void invertSelection();
 
+            // Customize toolbar slots
             void runCustomizeToolbar();
             void writeSettings();
             void loadDefaultSettings();

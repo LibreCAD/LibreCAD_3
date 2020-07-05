@@ -90,6 +90,7 @@ void CustomizeToolbar::addParentTab() {
 void CustomizeToolbar::initialize() {
     QList<lc::ui::api::ToolbarTab*> toolbarTabs = _toolbar->tabs();
 
+    addPlusButton();
     for (lc::ui::api::ToolbarTab* toolbarTab : toolbarTabs) {
         addToolbarTab(toolbarTab);
     }
@@ -97,7 +98,6 @@ void CustomizeToolbar::initialize() {
 
 void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
-    addPlusButton();
 
     tabWidget->insertTab(tabWidget->count() - 1, new CustomizeParentTab(newTab), QString(newTab->label().c_str()));
 }
@@ -160,7 +160,6 @@ void CustomizeToolbar::reAddButtons() {
             for (QString& buttonName : buttonNameList) {
                 lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName);
                 if (button != nullptr) {
-
                     if (addedButtonsSet.find(buttonName) != addedButtonsSet.end()) {
                         lc::ui::api::ToolbarButton* clonedButton = button->clone();
                         newGroup->addButton(clonedButton);
