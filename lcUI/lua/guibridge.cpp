@@ -5,6 +5,7 @@
 #include "documentcanvas.h"
 #include "lcadviewer.h"
 #include "widgets/luascript.h"
+#include "widgets/customizeToolbar/customizetoolbar.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
 #include "widgets/guiAPI/toolbartab.h"
@@ -100,6 +101,11 @@ void addLCBindings(lua_State *L) {
         .addOverloadedFunctions("show", [](widgets::LuaScript& self) { self.show(); })
 	);
 
+    state["lc"]["CustomizeToolbar"].setClass(kaguya::UserdataMetatable<widgets::CustomizeToolbar>()
+        .setConstructors<widgets::CustomizeToolbar(widgets::Toolbar*)>()
+        .addOverloadedFunctions("show", [](widgets::CustomizeToolbar& self) { self.show(); })
+    );
+
 	state["lc"]["DocumentCanvas"].setClass(kaguya::UserdataMetatable<DocumentCanvas>()
 	    .addFunction("autoScale", &DocumentCanvas::autoScale)
 		.addFunction("selectPoint", &DocumentCanvas::selectPoint)
@@ -185,6 +191,7 @@ void addLCBindings(lua_State *L) {
         .addFunction("findMenuItemByObjectName", &lc::ui::MainWindow::findMenuItemByObjectName)
         .addFunction("menuByName", &lc::ui::MainWindow::menuByName)
         .addFunction("menuByPosition", &lc::ui::MainWindow::menuByPosition)
+        .addFunction("runCustomizeToolbar", &lc::ui::MainWindow::runCustomizeToolbar)
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })
@@ -238,14 +245,15 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("removeButton", &api::ToolbarTab::removeButton)
         .addFunction("label", &api::ToolbarTab::label)
         .addFunction("setLabel", &api::ToolbarTab::setLabel)
-        .addFunction("getAllGroups", &api::ToolbarTab::getAllGroups)
+        .addFunction("groups", &api::ToolbarTab::groups)
         .addFunction("remove", &api::ToolbarTab::remove)
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarTab& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarTab& self) { self.setEnabled(false); })
         .addOverloadedFunctions("removeGroup", static_cast<void(api::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&api::ToolbarTab::removeGroup),
             static_cast<void(api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::removeGroup))
         .addOverloadedFunctions("addGroup", static_cast<void(api::ToolbarTab::*)(api::ToolbarGroup*)>(&api::ToolbarTab::addGroup),
-            static_cast<api::ToolbarGroup * (api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::addGroup))
+            static_cast<api::ToolbarGroup*(api::ToolbarTab::*)(const char*, int)>(&api::ToolbarTab::addGroup),
+            [](api::ToolbarTab& self, const char* name) { return self.addGroup(name); })
     );
 
     state["gui"]["ToolbarButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarButton>()
@@ -274,7 +282,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("label", &lc::ui::api::ToolbarGroup::label)
         .addFunction("setLabel", &lc::ui::api::ToolbarGroup::setLabel)
         .addFunction("buttonByName", &lc::ui::api::ToolbarGroup::buttonByName)
-        .addFunction("getAllButtons", &lc::ui::api::ToolbarGroup::getAllButtons)
+        .addFunction("buttons", &lc::ui::api::ToolbarGroup::buttons)
         .addFunction("remove", &lc::ui::api::ToolbarGroup::remove)
         .addFunction("setWidth", &lc::ui::api::ToolbarGroup::setWidth)
         .addOverloadedFunctions("hide", [](lc::ui::api::ToolbarGroup& self) { self.hide(); })

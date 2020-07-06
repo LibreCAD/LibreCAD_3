@@ -93,6 +93,8 @@ namespace lc
                 */
                 kaguya::LuaRef& getCallback(int index);
 
+                ToolbarButton* clone();
+
             signals:
                 /**
                 * \brief Signal to remove this button

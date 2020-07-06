@@ -44,14 +44,14 @@ TEST(ToolbarGroupTest, ButtonTest) {
     EXPECT_EQ(button1, testgroup->buttonByName("TestButton1"));
     EXPECT_EQ(button2, testgroup->buttonByName("TestButton2"));
     EXPECT_EQ(button3, testgroup->buttonByName("TestButton3"));
-    std::vector<ToolbarButton*> buttons = testgroup->getAllButtons();
+    std::vector<ToolbarButton*> buttons = testgroup->buttons();
 
     EXPECT_EQ(3, buttons.size());
     testgroup->removeButton(button1);
     testgroup->removeButton("TestButton2");
     testgroup->removeButton("NonExistentButton");
 
-    buttons = testgroup->getAllButtons();
+    buttons = testgroup->buttons();
     EXPECT_EQ(1, buttons.size());
 }
 

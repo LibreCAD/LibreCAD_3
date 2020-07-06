@@ -69,11 +69,20 @@ widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
 widgets/guiAPI/entitypickervisitor.h
+widgets/customizeToolbar/operationdragmodel.h
+widgets/customizeToolbar/operationdropmodel.h
+widgets/customizeToolbar/iconlist.h
+widgets/customizeToolbar/deleteiconarea.h
+widgets/customizeToolbar/customizetoolbar.h
+widgets/customizeToolbar/customizeparenttab.h
+widgets/customizeToolbar/customizegrouptab.h
 lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+managers/uisettings.h
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 set(UI_srcs
 cadmdichild.cpp
@@ -121,11 +130,20 @@ widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
 widgets/guiAPI/entitypickervisitor.cpp
+widgets/customizeToolbar/operationdragmodel.cpp
+widgets/customizeToolbar/operationdropmodel.cpp
+widgets/customizeToolbar/iconlist.cpp
+widgets/customizeToolbar/deleteiconarea.cpp
+widgets/customizeToolbar/customizetoolbar.cpp
+widgets/customizeToolbar/customizeparenttab.cpp
+widgets/customizeToolbar/customizegrouptab.cpp
 lua/guibridge.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp
-        managers/metainfomanager.cpp managers/metainfomanager.h)
+managers/uisettings.cpp
+managers/metainfomanager.cpp
+managers/metainfomanager.h)
 
 QT5_WRAP_UI(UI_HEADERS
 mainwindow.ui
@@ -142,6 +160,7 @@ widgets/guiAPI/comboboxgui.ui
 widgets/guiAPI/numbergui.ui
 widgets/guiAPI/colorgui.ui
 widgets/guiAPI/entitygui.ui
+widgets/customizeToolbar/customizetoolbar.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui
 dialogs/addlayerdialog.ui
@@ -238,3 +257,4 @@ ${GLEW_LIBRARY})
 # INSTALLATION
 install(TARGETS librecad DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/lcUI/ui" DESTINATION "usr/share/librecad/lcUI")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/default_ui_settings.xml" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
