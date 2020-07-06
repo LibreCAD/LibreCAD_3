@@ -78,7 +78,7 @@ namespace lc
                 * \brief Get all buttons in the group
                 * \return vector of toolbar button pointers
                 */
-                std::vector<ToolbarButton*> getAllButtons();
+                std::vector<ToolbarButton*> buttons();
 
                 /**
                 * \brief Remove button in group
@@ -92,9 +92,30 @@ namespace lc
                 void remove();
 
                 /**
+                * \brief Get width of group
+                * \return int width
+                */
+                int width() const;
+
+                /**
                 * \brief Change number of columns for group
                 */
                 void setWidth(int width);
+
+                /**
+                * \brief Don't show group in customize toolbar widget
+                */
+                void setNonButtonGroup(bool nonButtonGroupIn);
+
+                /**
+                * \brief Is the group a non button group
+                */
+                bool nonButtonGroup() const;
+
+                /**
+                * \brief Removes all buttons from group (but don't delete button) and remove parentship
+                */
+                void clear();
 
             signals:
                 /**
@@ -112,6 +133,7 @@ namespace lc
             private:
                 int _width;
                 int _count;
+                bool _nonButtonGroup;
             };
         }
     }

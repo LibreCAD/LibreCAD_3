@@ -33,8 +33,13 @@ void ToolbarTab::addGroup(ToolbarGroup* group) {
     QObject::connect(group, SIGNAL(removeGroup(ToolbarGroup*)), this, SLOT(removeGroup(ToolbarGroup*)));
 }
 
-ToolbarGroup* ToolbarTab::addGroup(const char* name) {
-    ToolbarGroup* group = new ToolbarGroup(name);
+ToolbarGroup* ToolbarTab::addGroup(const char* name, int width) {
+    ToolbarGroup* doesGroupExist = groupByName(name);
+    if (doesGroupExist != nullptr) {
+        return doesGroupExist;
+    }
+
+    ToolbarGroup* group = new ToolbarGroup(name, width);
     addGroup(group);
     return group;
 }
@@ -62,7 +67,7 @@ ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
 	return nullptr;
 }
 
-std::vector<ToolbarGroup*> ToolbarTab::getAllGroups() {
+std::vector<ToolbarGroup*> ToolbarTab::groups() {
     std::vector<ToolbarGroup*> groupsList;
     auto nbGroups = _layout->count();
 
@@ -122,4 +127,14 @@ void ToolbarTab::setLabel(const char* newLabel) {
 
 void ToolbarTab::remove() {
     emit removeTab(this);
+}
+
+void ToolbarTab::clear() {
+    std::vector<ToolbarGroup*> groupList = this->groups();
+
+    for (ToolbarGroup* group : groupList) {
+        if (!group->nonButtonGroup()) {
+            removeGroup(group);
+        }
+    }
 }

@@ -10,6 +10,8 @@
 #include "widgets/linewidthselect.h"
 #include "widgets/colorselect.h"
 #include "widgets/toolbar.h"
+#include "widgets/customizeToolbar/customizetoolbar.h"
+#include "managers/uisettings.h"
 #include "cadmdichild.h"
 
 #include "widgets/guiAPI/menu.h"
@@ -78,6 +80,11 @@ namespace lc
             */
             void addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options);
 
+            /**
+            * \brief Read UI settings on program start up
+            */
+            void readUiSettings();
+
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
             /**
@@ -102,6 +109,9 @@ namespace lc
             */
             lc::ui::api::Menu* menuByName(const std::string& menuName);
 
+            /**
+            * \brief Get menu by position
+            */
             lc::ui::api::Menu* menuByPosition(int pos);
 
             /**
@@ -172,6 +182,11 @@ namespace lc
             void selectNone();
             void invertSelection();
 
+            // Customize toolbar slots
+            void runCustomizeToolbar();
+            void writeSettings();
+            void loadDefaultSettings();
+
         signals:
             void point(lc::geo::Coordinate coordinate);
 
@@ -188,6 +203,9 @@ namespace lc
             lc::ui::widgets::LinePatternSelect linePatternSelect;
             lc::ui::widgets::LineWidthSelect lineWidthSelect;
             lc::ui::widgets::ColorSelect colorSelect;
+
+            lc::ui::widgets::CustomizeToolbar* _customizeToolbar;
+            lc::ui::UiSettings _uiSettings;
 
             lc::geo::Coordinate lastPoint;
             std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
