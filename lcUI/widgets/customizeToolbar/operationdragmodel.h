@@ -56,7 +56,7 @@ namespace lc {
                 * \brief Add toolbar button to model
                 * \param pointer to toolbar button
                 */
-                void addToolbarButtonItem(QString& buttonName, QIcon& icon);
+                void addToolbarButtonItem(QString buttonName, QIcon icon);
 
                 /**
                 * \brief Arrange the icons in the model in ascending order

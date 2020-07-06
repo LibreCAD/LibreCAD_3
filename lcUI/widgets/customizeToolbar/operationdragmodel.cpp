@@ -86,7 +86,7 @@ QMimeData* OperationDragModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 }
 
-void OperationDragModel::addToolbarButtonItem(QString& buttonLabel, QIcon& icon) {
+void OperationDragModel::addToolbarButtonItem(QString buttonLabel, QIcon icon) {
     if (buttonSet.find(buttonLabel) == buttonSet.end()) {
         operations.push_back({ buttonLabel, icon });
         buttonSet.insert(buttonLabel);

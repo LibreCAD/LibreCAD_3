@@ -101,7 +101,7 @@ namespace lc {
                     * \param QString button name
                     * \return pointer to toolbar button
                     */
-                    lc::ui::api::ToolbarButton* buttonByName(QString& buttonName);
+                    lc::ui::api::ToolbarButton* buttonByName(QString buttonName);
 
                     /**
                     * \brief Get list of toolbar button names

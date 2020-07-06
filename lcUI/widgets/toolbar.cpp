@@ -165,7 +165,7 @@ void Toolbar::generateButtonsMap() {
     }
 }
 
-lc::ui::api::ToolbarButton* Toolbar::buttonByName(QString& buttonName) {
+lc::ui::api::ToolbarButton* Toolbar::buttonByName(QString buttonName) {
     if (_buttonsMap.find(buttonName) != _buttonsMap.end()) {
         return _buttonsMap[buttonName];
     }
