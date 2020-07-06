@@ -523,29 +523,31 @@ void DocumentCanvas::makeSelection(double x, double y, double w, double h, bool 
     // std::cout << *_selectedArea << std::endl;
     _selectedAreaIntersects = occupies;
 
-
+    // remove old new selection
     for(const auto& di: _newSelection) {
         di->selected(false);
     }
+    _newSelection.clear();
 
+    // Refresh: old new selection has been canceled
     for(const auto& di: _selectedDrawables) {
         di->selected(true);
     }
 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> entitiesInSelection;
-
     if (occupies) {
         entitiesInSelection = entityContainer().entitiesFullWithinArea(*_selectedArea);
     }
     else {
         entitiesInSelection = entityContainer().entitiesWithinAndCrossingArea(*_selectedArea);
     }
-    _newSelection.clear();
     entitiesInSelection.each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
         auto di = _entityDrawItem[entity->id()];
-        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
-        _newSelection.push_back(di);
-        di->selected(!entity || iter == _selectedDrawables.end());
+	// add if it does not previously exist
+        auto iter = std::find(_newSelection.begin(), _newSelection.end(), di);
+        if(iter == _newSelection.end())
+		_newSelection.push_back(di);// indicate needs update
+        di->selected(!di->selected());
     });
 }
 
@@ -571,17 +573,20 @@ void DocumentCanvas::makeSelectionDevice(LcPainter& painter, unsigned int x, uns
 void DocumentCanvas::closeSelection() {
     for(const auto& drawable: _newSelection) {
         auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), drawable);
-        if(iter != _selectedDrawables.end()) {
-            drawable->selected(false);
-            _selectedDrawables.erase(iter);
-        }
-        else {
-            drawable->selected(true);
-            _selectedDrawables.push_back(drawable);
+        if(iter == _selectedDrawables.end()) {
+	    if(drawable->selected())
+	            _selectedDrawables.push_back(drawable);
+        }else{
+	    if(!drawable->selected())
+	            _selectedDrawables.erase(iter);
         }
     };
 
     _newSelection.clear();
+    // Refresh
+    for(const auto& di: _selectedDrawables) {
+        di->selected(true);
+    }
 }
 
 void DocumentCanvas::removeSelectionArea() {
@@ -615,9 +620,11 @@ void DocumentCanvas::inverseSelection() {
 
     entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
         lc::viewer::LCVDrawItem_SPtr item = _entityDrawItem[entity->id()];
-        if (item->selected())
+        auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), item);
+        if (iter != _selectedDrawables.end())
         {
             item->selected(false);
+            _selectedDrawables.erase(iter);
         }
         else
         {
@@ -780,7 +787,16 @@ void DocumentCanvas::selectPoint(double x, double y) {
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
     auto entities = entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
-        _entityDrawItem[entity->id()]->selected(!_entityDrawItem[entity->id()]->selected());
+	auto di = _entityDrawItem[entity->id()];
+	auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
+	//if not found in selected drawables
+        if (iter==_selectedDrawables.end()){
+		di->selected(true);
+		_selectedDrawables.push_back(di);
+	}else{
+		di->selected(false);
+		_selectedDrawables.erase(iter);
+	}
     });
 }
 

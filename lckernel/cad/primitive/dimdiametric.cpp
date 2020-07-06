@@ -57,8 +57,7 @@ CADEntity_CSPtr DimDiametric::move(const geo::Coordinate& offset) const {
                                                           this->explicitValue(),
                                                           this->_definitionPoint2 + offset,
                                                           this->_leader,
-                                                          this->layer(),
-                                                          this->metaInfo());
+                                                          this->layer(), metaInfo(), block());
     newDimDiametric->setID(this->id());
     return newDimDiametric;
 }
@@ -73,8 +72,7 @@ CADEntity_CSPtr DimDiametric::copy(const geo::Coordinate& offset) const {
                                                           this->explicitValue(),
                                                           this->_definitionPoint2 + offset,
                                                           this->_leader,
-                                                          this->layer(),
-                                                          this->metaInfo());
+                                                          this->layer(), metaInfo(), block());
     return newDimDiametric;
 }
 
@@ -89,8 +87,7 @@ CADEntity_CSPtr DimDiametric::rotate(const geo::Coordinate& rotation_center, con
             this->explicitValue(),
             this->_definitionPoint2.rotate(rotation_center, rotation_angle),
             this->_leader,
-            this->layer(),
-            this->metaInfo());
+            this->layer(), metaInfo(), block());
     return newDimDiametric;
 }
 
@@ -104,8 +101,7 @@ CADEntity_CSPtr DimDiametric::scale(const geo::Coordinate& scale_center, const g
                                                           this->explicitValue(),
                                                           this->_definitionPoint2.scale(scale_center, scale_factor),
                                                           this->_leader,
-                                                          this->layer(),
-                                                          this->metaInfo());
+                                                          this->layer(), metaInfo(), block());
     return newDimDiametric;
 }
 
@@ -119,8 +115,7 @@ CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Co
                                                           this->explicitValue(),
                                                           this->_definitionPoint2.mirror(axis1, axis2),
                                                           this->_leader,
-                                                          this->layer(),
-                                                          this->metaInfo());
+                                                          this->layer(), metaInfo(), block());
     return newDimDiametric;
 }
 
@@ -178,8 +173,7 @@ CADEntity_CSPtr DimDiametric::setDragPoints(std::map<unsigned int, lc::geo::Coor
                                                       explicitValue(),
                                                       dragPoints.at(2),
                                                       leader(),
-                                                      layer(),
-                                                      metaInfo());
+                                                      layer(), metaInfo(), block());
         newEntity->setID(id());
         return newEntity;
     }

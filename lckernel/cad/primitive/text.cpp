@@ -47,8 +47,8 @@ CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
                                           this->_textgeneration,
                                           this->_halign,
                                           this->_valign,
-                                          layer(),
-                                          metaInfo()
+                                          layer()
+                                          , metaInfo(), block()
     );
     newText->setID(this->id());
     return newText;
@@ -64,8 +64,8 @@ CADEntity_CSPtr Text::copy(const geo::Coordinate& offset) const {
                        this->_textgeneration,
                        this->_halign,
                        this->_valign,
-                       layer(),
-                       metaInfo());
+                       layer()
+                       , metaInfo(), block());
     newText->setID(this->id());
     return newText;
 }
@@ -80,8 +80,8 @@ CADEntity_CSPtr Text::rotate(const geo::Coordinate& rotation_center, double rota
                        this->_textgeneration,
                        this->_halign,
                        this->_valign,
-                       layer(),
-                       metaInfo());
+                       layer()
+                       , metaInfo(), block());
     return newText;
 }
 
@@ -95,8 +95,8 @@ CADEntity_CSPtr Text::scale(const geo::Coordinate& scale_center, const geo::Coor
                        this->_textgeneration,
                        this->_halign,
                        this->_valign,
-                       this->layer(),
-                       this->metaInfo());
+                       this->layer()
+                       , metaInfo(), block());
     newText->setID(this->id());
     return newText;
 }
@@ -147,8 +147,8 @@ CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
                                                 textgeneration(),
                                                 halign(),
                                                 valign(),
-                                                layer(),
-                                                metaInfo()
+                                                layer()
+                                                , metaInfo(), block()
         );
         newEntity->setID(id());
         return newEntity;

@@ -52,6 +52,12 @@ void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CAD
 }
 
 entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
+    //check for block
+    for(auto &it: _blocksEntities){
+        auto out = it.second.entityByID(id);
+	if(out)
+		return out;
+    }
     return _entities.entityByID(id);
 }
 
