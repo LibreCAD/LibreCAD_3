@@ -56,11 +56,11 @@ TEST(ToolbarTabTest, GroupTest) {
     testtab->addGroup("TestGroup2");
     std::vector<ToolbarGroup*> allgroups = testtab->groups();
 
-    EXPECT_EQ(3, allgroups.size());
+    EXPECT_EQ(2, allgroups.size());
     testtab->removeGroup("TestGroup2");
     testtab->removeGroup(testgroup1);
     allgroups = testtab->groups();
-    EXPECT_EQ(1, allgroups.size());
+    EXPECT_EQ(0, allgroups.size());
 }
 
 TEST(ToolbarTabTest, RemoveTest) {

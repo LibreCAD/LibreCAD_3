@@ -381,7 +381,7 @@ lc::ui::api::Menu* MainWindow::menuByPosition(int pos) {
         return nullptr;
     }
 
-    return static_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
+    return dynamic_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
 }
 
 void MainWindow::removeFromMenuMap(std::string menuName) {
@@ -404,14 +404,15 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 void MainWindow::removeMenu(const char* menuLabel) {
     lc::ui::api::Menu* menuremove = menuByName(menuLabel);
     if (menuremove != nullptr) {
-        std::cout << "NOt null" << std::endl;
+        menuremove->remove();
     }
-    menuremove->remove();
 }
 
 void MainWindow::removeMenu(int position) {
     lc::ui::api::Menu* menuremove = menuByPosition(position);
-    menuremove->remove();
+    if (menuremove != nullptr) {
+        menuremove->remove();
+    }
 }
 
 /* Trigger slots */
