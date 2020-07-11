@@ -6,6 +6,7 @@ setmetatable(CreateOperations, {
 
 function CreateOperations:_init(builder, step)
     Operations._init(self)
+    mainWindow:generatePropertyEditor(self.__index["command_line"])
 
     self.prevEntity = nil
     if(builder ~= nil) then

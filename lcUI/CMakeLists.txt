@@ -36,6 +36,7 @@ lcadpaperviewer.h
 mainwindow.h
 windowmanager.h
 operationloader.h
+propertyeditor.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -97,6 +98,7 @@ lcadpaperviewer.cpp
 mainwindow.cpp
 windowmanager.cpp
 operationloader.cpp
+propertyeditor.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp

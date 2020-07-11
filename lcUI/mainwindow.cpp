@@ -584,3 +584,7 @@ void MainWindow::readUiSettings() {
 void MainWindow::loadDefaultSettings() {
     _uiSettings.readSettings(_customizeToolbar, true);
 }
+
+void MainWindow::generatePropertyEditor(std::string operation_name) {
+    
+}
