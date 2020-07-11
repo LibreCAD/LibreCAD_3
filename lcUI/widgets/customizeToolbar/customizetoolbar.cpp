@@ -221,6 +221,59 @@ void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
     streamWriter->writeEndElement();
 }
 
+void CustomizeToolbar::generateDataJSON(rapidjson::Writer<rapidjson::OStreamWrapper>& writer) {
+    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
+    
+    writer.StartObject();
+    writer.Key("toolbar");
+    writer.StartObject();
+    writer.Key("tabs");
+    writer.StartArray();
+
+    int tabCount = tabWidget->count() - 1;
+    // count - 1 because the last "add group" tab should not be considered
+    for (int i = 0; i < tabCount; i++) {
+        CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
+
+        int groupCount = parentTab->count() - 1;
+
+        writer.StartObject();
+        writer.Key("label");
+        writer.String(parentTab->label().c_str());
+        writer.String("groups");
+        writer.StartArray();
+
+        for (int j = 0; j < groupCount; j++) {
+            CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
+
+            writer.StartObject();
+            writer.Key("label");
+            writer.String(groupTab->label().c_str());
+            writer.Key("width");
+            writer.Int(groupTab->groupWidth());
+            writer.String("buttons");
+            writer.StartArray();
+
+            // list of buttons in order from group
+            QList<QString> buttonNameList = groupTab->buttonNames();
+
+            for (QString& buttonName : buttonNameList) {
+                writer.String(buttonName.toStdString().c_str());
+            }
+            
+            writer.EndArray();
+            writer.EndObject();
+        }
+        
+        writer.EndArray();
+        writer.EndObject();
+    }
+
+    writer.EndArray();
+    writer.EndObject();
+    writer.EndObject();
+}
+
 void CustomizeToolbar::clearContents() {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     int tabCount = tabWidget->count() - 1;

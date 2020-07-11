@@ -189,6 +189,10 @@ find_package(Lua 5.2 REQUIRED)
 include_directories(${LUA_INCLUDE_DIR})
 link_directories(${LUA_LIBRARY_DIRS})
 
+#RapidJSON
+find_package(RapidJSON)
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
 # BUILDING CONFIG
 # SEPARATE BUILDING FLAG
 set(SEPARATE_BUILD OFF)

@@ -68,7 +68,7 @@ namespace lc {
                 void setValue(std::vector<lc::entity::CADEntity_CSPtr> newSelectedEntities);
 
                 /**
-                * \brief Add callback for color selected
+                * \brief Add callback for entity selected
                 * \param LuaRef callback
                 */
                 void addCallback(kaguya::LuaRef cb);

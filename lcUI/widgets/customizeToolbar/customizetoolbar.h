@@ -7,6 +7,9 @@
 #include <QListView>
 #include <QTableView>
 
+#include <rapidjson/writer.h>
+#include <rapidjson/ostreamwrapper.h>
+
 #include <widgets/toolbar.h>
 #include "customizeparenttab.h"
 
@@ -63,6 +66,8 @@ namespace lc {
                 * \brief Generate toolbar ordering data
                 */
                 void generateData(QXmlStreamWriter* streamWriter);
+
+                void generateDataJSON(rapidjson::Writer<rapidjson::OStreamWrapper>& writer);
 
                 /**
                 * \brief Read and update buttons from data

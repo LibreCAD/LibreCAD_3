@@ -3,6 +3,12 @@
 #include <QXmlStreamWriter>
 #include <QFile>
 
+#include <rapidjson/document.h>
+#include <rapidjson/ostreamwrapper.h>
+#include <fstream>
+
+#include <iostream>
+
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
@@ -18,10 +24,16 @@ void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
     streamWriter.setAutoFormatting(true);
     streamWriter.writeStartDocument();
 
+    std::ofstream ofs("ui_settings.json");
+    rapidjson::OStreamWrapper osw(ofs);
+    rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
+
     customizeToolbar->generateData(&streamWriter);
+    customizeToolbar->generateDataJSON(writer);
 
     streamWriter.writeEndDocument();
     settingsFile.close();
+    ofs.close();
 }
 
 void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings) {
