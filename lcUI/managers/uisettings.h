@@ -25,8 +25,17 @@ namespace lc
             void readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings = false);
 
         private:
+            /**
+            * \brief Validates with schema file
+            * \param input document 
+            * \return bool, true if validates or any problem with schema document, else returns false
+            */
+            bool validateSettingsDocument(rapidjson::Document& inputDocument);
+
+        private:
             const std::string settingsFileName = "ui_settings.json";
             const std::string defaultSettingsFileName = "default_ui_settings.json";
+            const std::string schemaFileName = "settings_schema.json";
         };
     }
 }
