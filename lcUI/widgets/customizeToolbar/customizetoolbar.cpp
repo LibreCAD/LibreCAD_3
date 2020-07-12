@@ -354,6 +354,49 @@ void CustomizeToolbar::readData(QXmlStreamReader* streamReader) {
     groupTab->setWidth(groupWidth, buttonsCount);
 }
 
+void CustomizeToolbar::readDataJSON(rapidjson::Document& document) {
+    clearContents();
+    addPlusButton();
+
+    const rapidjson::Value& jsonTabs = document["toolbar"]["tabs"];
+    rapidjson::SizeType currentTab = 0;
+
+    while (currentTab < jsonTabs.Size()) {
+        std::string tabLabel = jsonTabs[currentTab]["label"].GetString();
+        CustomizeParentTab* parentTab = parentTab = addParentTabManual(tabLabel);
+
+        const rapidjson::Value& jsonGroups = jsonTabs[currentTab]["groups"];
+        rapidjson::SizeType currentGroup = 0;
+
+        while (currentGroup < jsonGroups.Size()) {
+            std::string groupLabel = "New Group";
+            int newWidth = 3;
+
+            if (jsonGroups[currentGroup].HasMember("label")) {
+                groupLabel = jsonGroups[currentGroup]["label"].GetString();
+            }
+
+            if (jsonGroups[currentGroup].HasMember("width")) {
+                newWidth = jsonGroups[currentGroup]["width"].GetInt();
+            }
+
+            CustomizeGroupTab* groupTab = parentTab->addGroupTabManual(groupLabel, newWidth);
+            int buttonsCount = 0;
+            for (const auto& buttonName : jsonGroups[currentGroup]["buttons"].GetArray()) {
+                lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName.GetString());
+                groupTab->addButton(button);
+
+                buttonsCount++;
+            }
+
+            groupTab->setWidth(newWidth, buttonsCount);
+            currentGroup++;
+        }
+
+        currentTab++;
+    }
+}
+
 CustomizeParentTab* CustomizeToolbar::addParentTabManual(std::string tabName) {
     QString text = QString(tabName.c_str());
     CustomizeParentTab* newParentTab = new CustomizeParentTab(text);

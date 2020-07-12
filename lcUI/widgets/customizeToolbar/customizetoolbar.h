@@ -7,6 +7,7 @@
 #include <QListView>
 #include <QTableView>
 
+#include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/ostreamwrapper.h>
 
@@ -73,6 +74,8 @@ namespace lc {
                 * \brief Read and update buttons from data
                 */
                 void readData(QXmlStreamReader* streamReader);
+
+                void readDataJSON(rapidjson::Document& document);
 
                 /**
                 * \brief Clear all data in the customize toolbar widget

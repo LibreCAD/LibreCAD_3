@@ -5,6 +5,7 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/istreamwrapper.h>
 #include <fstream>
 
 #include <iostream>
@@ -25,11 +26,17 @@ void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
     streamWriter.writeStartDocument();
 
     std::ofstream ofs("ui_settings.json");
+
+    if (ofs.fail()) {
+        std::cout << "File could not be opened" << std::endl;
+        return;
+    }
+
     rapidjson::OStreamWrapper osw(ofs);
     rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
 
     customizeToolbar->generateData(&streamWriter);
-    customizeToolbar->generateDataJSON(writer);
+    //customizeToolbar->generateDataJSON(writer);
 
     streamWriter.writeEndDocument();
     settingsFile.close();
@@ -45,7 +52,23 @@ void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool 
         return;
     }
 
+    std::ifstream infile("ui_settings.json");
+
+    if(infile.fail()){
+        std::cout << "File could not be opened" << std::endl;
+        return;
+    }
+
     QXmlStreamReader streamReader(&settingsFile);
-    customizeToolbar->readData(&streamReader);
+
+    rapidjson::IStreamWrapper isw(infile);
+
+    rapidjson::Document settingsDocument;
+    settingsDocument.ParseStream(isw);
+
+    //customizeToolbar->readData(&streamReader);
+    customizeToolbar->readDataJSON(settingsDocument);
+
+    infile.close();
     settingsFile.close();
 }
