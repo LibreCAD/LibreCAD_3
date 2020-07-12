@@ -12,6 +12,7 @@
 #include <QFile>
 
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/schema.h>
 
 #include "customizegrouptab.h"
 #include "deleteiconarea.h"
@@ -330,9 +331,30 @@ void CustomizeToolbar::loadToolbarFile() {
     }
 
     rapidjson::IStreamWrapper isw(toolbarFile);
-    rapidjson::Document settingsDocument;
-    settingsDocument.ParseStream(isw);
-    readData(settingsDocument);
+    rapidjson::Document toolbarDocument;
+    toolbarDocument.ParseStream(isw);
+
+    std::ifstream schemaFile("settings_schema.json");
+    if (schemaFile.fail()) {
+        std::cout << "Schema file not found" << std::endl;
+        return;
+    }
+
+    rapidjson::IStreamWrapper schemaWrapper(schemaFile);
+    rapidjson::Document schemaDocument;
+    if (schemaDocument.ParseStream(schemaWrapper).HasParseError()) {
+        std::cout << "Schema file is invalid, not json format." << std::endl;
+        return;
+    }
+
+    rapidjson::SchemaDocument schema(schemaDocument);
+    rapidjson::SchemaValidator validator(schema);
+    if (!toolbarDocument.Accept(validator)) {
+        std::cout << "Document does not satisfy the settings schema." << std::endl;
+        return;
+    }
+
+    readData(toolbarDocument);
 
     toolbarFile.close();
 }
