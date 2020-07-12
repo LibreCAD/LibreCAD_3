@@ -25,8 +25,8 @@ namespace lc
             void readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings = false);
 
         private:
-            const QString settingsFileName = "ui_settings.xml";
-            const QString defaultSettingsFileName = "default_ui_settings.xml";
+            const std::string settingsFileName = "ui_settings.json";
+            const std::string defaultSettingsFileName = "default_ui_settings.json";
         };
     }
 }

@@ -9,15 +9,15 @@
 #include <QList>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QXmlStreamWriter>
 #include <QFile>
+
+#include <rapidjson/istreamwrapper.h>
 
 #include "customizegrouptab.h"
 #include "deleteiconarea.h"
 #include "iconlist.h"
-#include <iostream>
 #include <string>
-#include <sstream>
+#include <fstream>
 
 using namespace lc::ui::widgets;
 
@@ -187,41 +187,7 @@ void CustomizeToolbar::parentTabClosed(int index) {
     }
 }
 
-void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
-    QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
-    streamWriter->writeStartElement("toolbar");
-
-    int tabCount = tabWidget->count() - 1;
-    // count - 1 because the last "add group" tab should not be considered
-    for (int i = 0; i < tabCount; i++) {
-        CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
-
-        int groupCount = parentTab->count() - 1;
-        streamWriter->writeStartElement("tab");
-        streamWriter->writeAttribute("label", parentTab->label().c_str());
-
-        for (int j = 0; j < groupCount; j++) {
-            CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
-
-            streamWriter->writeStartElement("group");
-            streamWriter->writeAttribute("label", groupTab->label().c_str());
-            streamWriter->writeAttribute("width", QString::number(groupTab->groupWidth()));
-
-            // list of buttons in order from group
-            QList<QString> buttonNameList = groupTab->buttonNames();
-
-            for (QString& buttonName : buttonNameList) {
-                streamWriter->writeTextElement("button", buttonName);
-            }
-            streamWriter->writeEndElement();
-        }
-        streamWriter->writeEndElement();
-    }
-
-    streamWriter->writeEndElement();
-}
-
-void CustomizeToolbar::generateDataJSON(rapidjson::Writer<rapidjson::OStreamWrapper>& writer) {
+void CustomizeToolbar::generateData(rapidjson::Writer<rapidjson::OStreamWrapper>& writer) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
     
     writer.StartObject();
@@ -286,75 +252,7 @@ void CustomizeToolbar::clearContents() {
     tabWidget->clear();
 }
 
-void CustomizeToolbar::readData(QXmlStreamReader* streamReader) {
-    clearContents();
-    addPlusButton();
-
-    CustomizeParentTab* parentTab = nullptr;
-    CustomizeGroupTab* groupTab = nullptr;
-    int buttonsCount = 0;
-    int groupWidth = 0;
-
-    QString tokenTy = streamReader->name().toString();
-    while (tokenTy != "toolbar" && !streamReader->atEnd()) {
-        streamReader->readNext();
-        tokenTy = streamReader->name().toString();
-    }
-
-    while (!streamReader->atEnd()) {
-        QString tType = streamReader->name().toString();
-
-        if (!streamReader->isStartElement()) {
-            streamReader->readNextStartElement();
-            continue;
-        }
-
-        if (tType == "tab") {
-            QXmlStreamAttributes streamAttributes = streamReader->attributes();
-            std::string tabLabel = "New Tab";
-
-            if (streamAttributes.hasAttribute("label")) {
-                tabLabel = streamAttributes.value("label").toString().toStdString();
-            }
-
-            parentTab = addParentTabManual(tabLabel);
-        }
-
-        if (tType == "group") {
-            QXmlStreamAttributes streamAttributes = streamReader->attributes();
-            std::string groupLabel = "New Group";
-            int newWidth = 3;
-
-            if (streamAttributes.hasAttribute("label")) {
-                groupLabel = streamAttributes.value("label").toString().toStdString();
-            }
-
-            if (streamAttributes.hasAttribute("width")) {
-                newWidth = streamAttributes.value("width").toString().toInt();
-            }
-
-            if (groupTab != nullptr) {
-                groupTab->setWidth(groupWidth, buttonsCount);
-                buttonsCount = 0;
-            }
-
-            groupWidth = newWidth;
-            groupTab = parentTab->addGroupTabManual(groupLabel, groupWidth);
-        }
-
-        if (tType == "button") {
-            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(streamReader->readElementText());
-            groupTab->addButton(button);
-            buttonsCount++;
-        }
-
-        streamReader->readNextStartElement();
-    }
-
-    groupTab->setWidth(groupWidth, buttonsCount);
-}
-
-void CustomizeToolbar::readDataJSON(rapidjson::Document& document) {
+void CustomizeToolbar::readData(rapidjson::Document& document) {
     clearContents();
     addPlusButton();
 
@@ -424,17 +322,19 @@ void CustomizeToolbar::addPlusButton() {
 
 void CustomizeToolbar::loadToolbarFile() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
-    QFile* file = new QFile(fileName);
+    std::ifstream toolbarFile(fileName.toStdString());
 
-    if (!file->open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"), file->errorString());
+    if (toolbarFile.fail()) {
+        QMessageBox::information(this, tr("Unable to open file"), "File opening failed");
         return;
     }
 
-    QXmlStreamReader streamReader(file);
-    readData(&streamReader);
+    rapidjson::IStreamWrapper isw(toolbarFile);
+    rapidjson::Document settingsDocument;
+    settingsDocument.ParseStream(isw);
+    readData(settingsDocument);
 
-    file->close();
+    toolbarFile.close();
 }
 
 void CustomizeToolbar::defaultButtonClicked() {

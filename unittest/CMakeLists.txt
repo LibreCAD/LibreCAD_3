@@ -27,6 +27,10 @@ find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+#RapidJSON
+find_package(RapidJSON)
+include_directories(${RAPIDJSON_INCLUDE_DIRS})
+
 # Coverage
 if(WITH_COVERAGE)
 	include(CodeCoverage)

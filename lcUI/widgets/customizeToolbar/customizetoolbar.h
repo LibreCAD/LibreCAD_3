@@ -66,16 +66,12 @@ namespace lc {
                 /**
                 * \brief Generate toolbar ordering data
                 */
-                void generateData(QXmlStreamWriter* streamWriter);
-
-                void generateDataJSON(rapidjson::Writer<rapidjson::OStreamWrapper>& writer);
+                void generateData(rapidjson::Writer<rapidjson::OStreamWrapper>& writer);
 
                 /**
                 * \brief Read and update buttons from data
                 */
-                void readData(QXmlStreamReader* streamReader);
-
-                void readDataJSON(rapidjson::Document& document);
+                void readData(rapidjson::Document& document);
 
                 /**
                 * \brief Clear all data in the customize toolbar widget

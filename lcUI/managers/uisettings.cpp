@@ -1,7 +1,4 @@
 #include "uisettings.h"
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-#include <QFile>
 
 #include <rapidjson/document.h>
 #include <rapidjson/ostreamwrapper.h>
@@ -13,62 +10,40 @@
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
-    QFile settingsFile(settingsFileName);
+    std::ofstream  settingsFile(settingsFileName);
 
-    if (!settingsFile.open(QIODevice::WriteOnly)) {
+    if (settingsFile.fail()) {
         std::cout << "File could not be opened" << std::endl;
         return;
     }
 
-    QXmlStreamWriter streamWriter(&settingsFile);
-
-    streamWriter.setAutoFormatting(true);
-    streamWriter.writeStartDocument();
-
-    std::ofstream ofs("ui_settings.json");
-
-    if (ofs.fail()) {
-        std::cout << "File could not be opened" << std::endl;
-        return;
-    }
-
-    rapidjson::OStreamWrapper osw(ofs);
+    rapidjson::OStreamWrapper osw(settingsFile);
     rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
 
-    customizeToolbar->generateData(&streamWriter);
-    //customizeToolbar->generateDataJSON(writer);
+    customizeToolbar->generateData(writer);
 
-    streamWriter.writeEndDocument();
     settingsFile.close();
-    ofs.close();
 }
 
 void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings) {
-    QString fileName = defaultSettings ? defaultSettingsFileName : settingsFileName;
-    QFile settingsFile(fileName);
+    std::string fileName = defaultSettings ? defaultSettingsFileName : settingsFileName;
+    std::ifstream settingsFile(fileName);
 
-    if (!settingsFile.open(QIODevice::ReadOnly)) {
-        std::cout << "File could not be opened" << std::endl;
-        return;
+    while(settingsFile.fail()){
+        if (fileName == settingsFileName) {
+            std::cout << "No settings file found, loading default settings." << std::endl;
+            fileName = defaultSettingsFileName;
+            settingsFile.open(fileName);
+        }else{
+            std::cout << "Default settings not found" << std::endl;
+            return;
+        }
     }
 
-    std::ifstream infile("ui_settings.json");
-
-    if(infile.fail()){
-        std::cout << "File could not be opened" << std::endl;
-        return;
-    }
-
-    QXmlStreamReader streamReader(&settingsFile);
-
-    rapidjson::IStreamWrapper isw(infile);
-
+    rapidjson::IStreamWrapper isw(settingsFile);
     rapidjson::Document settingsDocument;
     settingsDocument.ParseStream(isw);
+    customizeToolbar->readData(settingsDocument);
 
-    //customizeToolbar->readData(&streamReader);
-    customizeToolbar->readDataJSON(settingsDocument);
-
-    infile.close();
     settingsFile.close();
 }
