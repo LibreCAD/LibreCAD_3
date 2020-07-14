@@ -28,6 +28,7 @@ matrix:
             - libglm-dev
             - libglew-dev
             - lcov
+            - rapidjson-dev
 
       services:
       - xvfb

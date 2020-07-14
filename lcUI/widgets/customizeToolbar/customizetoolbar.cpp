@@ -9,15 +9,16 @@
 #include <QList>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QXmlStreamWriter>
 #include <QFile>
+
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/schema.h>
 
 #include "customizegrouptab.h"
 #include "deleteiconarea.h"
 #include "iconlist.h"
-#include <iostream>
 #include <string>
-#include <sstream>
+#include <fstream>
 
 using namespace lc::ui::widgets;
 
@@ -187,9 +188,14 @@ void CustomizeToolbar::parentTabClosed(int index) {
     }
 }
 
-void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
+void CustomizeToolbar::generateData(rapidjson::Writer<rapidjson::OStreamWrapper>& writer) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
-    streamWriter->writeStartElement("toolbar");
+    
+    writer.StartObject();
+    writer.Key("toolbar");
+    writer.StartObject();
+    writer.Key("tabs");
+    writer.StartArray();
 
     int tabCount = tabWidget->count() - 1;
     // count - 1 because the last "add group" tab should not be considered
@@ -197,28 +203,42 @@ void CustomizeToolbar::generateData(QXmlStreamWriter* streamWriter) {
         CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
 
         int groupCount = parentTab->count() - 1;
-        streamWriter->writeStartElement("tab");
-        streamWriter->writeAttribute("label", parentTab->label().c_str());
+
+        writer.StartObject();
+        writer.Key("label");
+        writer.String(parentTab->label().c_str());
+        writer.String("groups");
+        writer.StartArray();
 
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
 
-            streamWriter->writeStartElement("group");
-            streamWriter->writeAttribute("label", groupTab->label().c_str());
-            streamWriter->writeAttribute("width", QString::number(groupTab->groupWidth()));
+            writer.StartObject();
+            writer.Key("label");
+            writer.String(groupTab->label().c_str());
+            writer.Key("width");
+            writer.Int(groupTab->groupWidth());
+            writer.String("buttons");
+            writer.StartArray();
 
             // list of buttons in order from group
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
-                streamWriter->writeTextElement("button", buttonName);
+                writer.String(buttonName.toStdString().c_str());
             }
-            streamWriter->writeEndElement();
+            
+            writer.EndArray();
+            writer.EndObject();
         }
-        streamWriter->writeEndElement();
+        
+        writer.EndArray();
+        writer.EndObject();
     }
 
-    streamWriter->writeEndElement();
+    writer.EndArray();
+    writer.EndObject();
+    writer.EndObject();
 }
 
 void CustomizeToolbar::clearContents() {
@@ -233,72 +253,47 @@ void CustomizeToolbar::clearContents() {
     tabWidget->clear();
 }
 
-void CustomizeToolbar::readData(QXmlStreamReader* streamReader) {
+void CustomizeToolbar::readData(rapidjson::Document& document) {
     clearContents();
     addPlusButton();
 
-    CustomizeParentTab* parentTab = nullptr;
-    CustomizeGroupTab* groupTab = nullptr;
-    int buttonsCount = 0;
-    int groupWidth = 0;
+    const rapidjson::Value& jsonTabs = document["toolbar"]["tabs"];
+    rapidjson::SizeType currentTab = 0;
 
-    QString tokenTy = streamReader->name().toString();
-    while (tokenTy != "toolbar" && !streamReader->atEnd()) {
-        streamReader->readNext();
-        tokenTy = streamReader->name().toString();
-    }
+    while (currentTab < jsonTabs.Size()) {
+        std::string tabLabel = jsonTabs[currentTab]["label"].GetString();
+        CustomizeParentTab* parentTab = parentTab = addParentTabManual(tabLabel);
 
-    while (!streamReader->atEnd()) {
-        QString tType = streamReader->name().toString();
+        const rapidjson::Value& jsonGroups = jsonTabs[currentTab]["groups"];
+        rapidjson::SizeType currentGroup = 0;
 
-        if (!streamReader->isStartElement()) {
-            streamReader->readNextStartElement();
-            continue;
-        }
-
-        if (tType == "tab") {
-            QXmlStreamAttributes streamAttributes = streamReader->attributes();
-            std::string tabLabel = "New Tab";
-
-            if (streamAttributes.hasAttribute("label")) {
-                tabLabel = streamAttributes.value("label").toString().toStdString();
-            }
-
-            parentTab = addParentTabManual(tabLabel);
-        }
-
-        if (tType == "group") {
-            QXmlStreamAttributes streamAttributes = streamReader->attributes();
+        while (currentGroup < jsonGroups.Size()) {
             std::string groupLabel = "New Group";
             int newWidth = 3;
 
-            if (streamAttributes.hasAttribute("label")) {
-                groupLabel = streamAttributes.value("label").toString().toStdString();
+            if (jsonGroups[currentGroup].HasMember("label")) {
+                groupLabel = jsonGroups[currentGroup]["label"].GetString();
             }
 
-            if (streamAttributes.hasAttribute("width")) {
-                newWidth = streamAttributes.value("width").toString().toInt();
+            if (jsonGroups[currentGroup].HasMember("width")) {
+                newWidth = jsonGroups[currentGroup]["width"].GetInt();
             }
 
-            if (groupTab != nullptr) {
-                groupTab->setWidth(groupWidth, buttonsCount);
-                buttonsCount = 0;
+            CustomizeGroupTab* groupTab = parentTab->addGroupTabManual(groupLabel, newWidth);
+            int buttonsCount = 0;
+            for (const auto& buttonName : jsonGroups[currentGroup]["buttons"].GetArray()) {
+                lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(buttonName.GetString());
+                groupTab->addButton(button);
+
+                buttonsCount++;
             }
 
-            groupWidth = newWidth;
-            groupTab = parentTab->addGroupTabManual(groupLabel, groupWidth);
+            groupTab->setWidth(newWidth, buttonsCount);
+            currentGroup++;
         }
 
-        if (tType == "button") {
-            lc::ui::api::ToolbarButton* button = _toolbar->buttonByName(streamReader->readElementText());
-            groupTab->addButton(button);
-            buttonsCount++;
-        }
-
-        streamReader->readNextStartElement();
+        currentTab++;
     }
-
-    groupTab->setWidth(groupWidth, buttonsCount);
 }
 
 CustomizeParentTab* CustomizeToolbar::addParentTabManual(std::string tabName) {
@@ -328,17 +323,40 @@ void CustomizeToolbar::addPlusButton() {
 
 void CustomizeToolbar::loadToolbarFile() {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open toolbar customization file"), "", tr("XML (*.xml);TEXT (*.txt);All Files (*)"));
-    QFile* file = new QFile(fileName);
+    std::ifstream toolbarFile(fileName.toStdString());
 
-    if (!file->open(QIODevice::ReadOnly)) {
-        QMessageBox::information(this, tr("Unable to open file"), file->errorString());
+    if (toolbarFile.fail()) {
+        QMessageBox::information(this, tr("Unable to open file"), "File opening failed");
         return;
     }
 
-    QXmlStreamReader streamReader(file);
-    readData(&streamReader);
+    rapidjson::IStreamWrapper isw(toolbarFile);
+    rapidjson::Document toolbarDocument;
+    toolbarDocument.ParseStream(isw);
 
-    file->close();
+    std::ifstream schemaFile("settings_schema.json");
+    if (schemaFile.fail()) {
+        std::cout << "Schema file not found" << std::endl;
+        return;
+    }
+
+    rapidjson::IStreamWrapper schemaWrapper(schemaFile);
+    rapidjson::Document schemaDocument;
+    if (schemaDocument.ParseStream(schemaWrapper).HasParseError()) {
+        std::cout << "Schema file is invalid, not json format." << std::endl;
+        return;
+    }
+
+    rapidjson::SchemaDocument schema(schemaDocument);
+    rapidjson::SchemaValidator validator(schema);
+    if (!toolbarDocument.Accept(validator)) {
+        std::cout << "Document does not satisfy the settings schema." << std::endl;
+        return;
+    }
+
+    readData(toolbarDocument);
+
+    toolbarFile.close();
 }
 
 void CustomizeToolbar::defaultButtonClicked() {
