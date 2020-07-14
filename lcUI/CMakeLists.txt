@@ -54,6 +54,7 @@ widgets/guiAPI/menu.h
 widgets/guiAPI/menuitem.h
 widgets/guiAPI/toolbarbutton.h
 widgets/guiAPI/toolbargroup.h
+widgets/guiAPI/inputguicontainer.h
 widgets/guiAPI/dialogwidget.h
 widgets/guiAPI/inputgui.h
 widgets/guiAPI/textgui.h
@@ -116,6 +117,7 @@ widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
 widgets/guiAPI/toolbarbutton.cpp
 widgets/guiAPI/toolbargroup.cpp
+widgets/guiAPI/inputguicontainer.cpp
 widgets/guiAPI/dialogwidget.cpp
 widgets/guiAPI/inputgui.cpp
 widgets/guiAPI/textgui.cpp

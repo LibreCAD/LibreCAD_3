@@ -1,15 +1,25 @@
-#include "widgets/guiAPI/dialogwidget.h"
+#include <QDockWidget>
+#include <cad/base/cadentity.h>
+#include "widgets/guiAPI/inputguicontainer.h"
+#include "mainwindow.h"
 
 namespace lc
 {
     namespace ui
     {
-        class PropertyEditor
+        class PropertyEditor : public QDockWidget, public api::InputGUIContainer
         {
+            Q_OBJECT
+
         public:
-            static PropertyEditor* GetPropertyEditor();
+            static PropertyEditor* GetPropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
+
+            void clear();
+
+            void addEntity(lc::entity::CADEntity_CSPtr entity);
+
         private:
-            PropertyEditor();
+            PropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
 
         private:
             static PropertyEditor* instance;

@@ -2,6 +2,9 @@
 #include "ui_mainwindow.h"
 
 #include "windowmanager.h"
+#include "propertyeditor.h"
+
+#include "widgets/guiAPI/coordinategui.h"
 
 using namespace lc::ui;
 
@@ -52,6 +55,9 @@ MainWindow::MainWindow()
 
     _toolbar.generateButtonsMap();
     readUiSettings();
+
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, propertyEditor);
 }
 
 MainWindow::~MainWindow()
@@ -435,6 +441,8 @@ void MainWindow::triggerMouseReleased()
     state["mouseRelease"] = kaguya::NewTable();
     state["mouseRelease"]["widget"] = &_cadMdiChild;
     _luaInterface.triggerEvent("selectionChanged", state["mouseRelease"]);
+
+    selectionChanged();
 }
 
 void MainWindow::triggerMouseMoved()
@@ -585,6 +593,19 @@ void MainWindow::loadDefaultSettings() {
     _uiSettings.readSettings(_customizeToolbar, true);
 }
 
-void MainWindow::generatePropertyEditor(std::string operation_name) {
-    
+void MainWindow::selectionChanged() {
+    std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
+    propertyEditor->clear();
+
+    if (selectedEntities.size() == 0) {
+        return;
+    }
+
+    int num = 0;
+    for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
+        propertyEditor->addEntity(selectedEntity);
+        num++;
+    }
+    std::cout << std::endl;
 }

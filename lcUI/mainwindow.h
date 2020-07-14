@@ -124,8 +124,6 @@ namespace lc
             /* --- OTHER FUNCTIONS --- */
             void removeFromMenuMap(std::string menuName);
 
-            void generatePropertyEditor(std::string operation_name);
-
         private:
             /**
             * \brief Add Menu items as actions, replace QAction with MenuItem
@@ -154,6 +152,8 @@ namespace lc
             lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
 
             bool checkForMenuOfSameLabel(const std::string& label);
+
+            void selectionChanged();
 
         public slots:
             // CadMdiChild slots
