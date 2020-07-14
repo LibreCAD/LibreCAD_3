@@ -5,6 +5,8 @@
 #include "propertyeditor.h"
 
 #include "widgets/guiAPI/coordinategui.h"
+#include "widgets/guiAPI/entitygui.h"
+#include "widgets/guiAPI/buttongui.h"
 
 using namespace lc::ui;
 
@@ -58,6 +60,12 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::RightDockWidgetArea, propertyEditor);
+
+    /*-------- TEST   --------*/
+    propertyEditor->addWidget("coordinate1", new lc::ui::api::CoordinateGUI("Coordinate Widget"));
+    propertyEditor->addWidget("entity1", new lc::ui::api::EntityGUI("Entity Widget"));
+    propertyEditor->addWidget("button1", new lc::ui::api::ButtonGUI("Button Widget"));
+    /* END TEST */
 }
 
 MainWindow::~MainWindow()

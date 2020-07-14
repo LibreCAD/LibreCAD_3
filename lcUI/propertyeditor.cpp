@@ -36,3 +36,18 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
     entity->dispatch(entityVisitor);
     std::cout << "Entity Selected :- " << entityVisitor.getEntityInformation() << std::endl;
 }
+
+bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
+    bool success = InputGUIContainer::addWidget(key, guiWidget);
+    guiWidget->setParent(this);
+    this->widget()->layout()->addWidget(guiWidget);
+    return success;
+}
+
+bool PropertyEditor::addWidget(const std::string& key, api::ButtonGUI* buttonWidget) {
+    return InputGUIContainer::addWidget(key, buttonWidget);
+}
+
+bool PropertyEditor::addWidget(const std::string& key, api::CheckBoxGUI* checkboxWidget) {
+    return InputGUIContainer::addWidget(key, checkboxWidget);
+}

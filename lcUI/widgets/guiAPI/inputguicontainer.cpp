@@ -127,3 +127,7 @@ std::vector<std::string> InputGUIContainer::keys() const {
     }
     return listOfKeys;
 }
+
+void InputGUIContainer::setLabel(const std::string& newlabel) {
+    _label = newlabel;
+}

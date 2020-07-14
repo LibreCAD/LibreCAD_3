@@ -27,25 +27,30 @@ namespace lc
                 ~InputGUIContainer();
 
                 /**
+                * \brief Set InputGUIContainer label
+                */
+                void setLabel(const std::string& newlabel);
+
+                /**
                 * \brief Add input gui widget
                 * \param pointer to InputGUI widget
                 * \return successfully added bool
                 */
-                bool addWidget(const std::string& key, InputGUI* guiWidget);
+                virtual bool addWidget(const std::string& key, InputGUI* guiWidget);
 
                 /**
                 * \brief Add button directly (create a button group containing only that button)
                 * \param pointer to ButtonGUI button
                 * \return successfully added bool
                 */
-                bool addWidget(const std::string& key, ButtonGUI* buttonWidget);
+                virtual bool addWidget(const std::string& key, ButtonGUI* buttonWidget);
 
                 /**
                 * \brief Add checkbox directly (create a button group containing only that button)
                 * \param pointer to CheckBoxGUI button
                 * \return successfully added bool
                 */
-                bool addWidget(const std::string& key, CheckBoxGUI* checkboxWidget);
+                virtual bool addWidget(const std::string& key, CheckBoxGUI* checkboxWidget);
 
                 /**
                 * \brief Return list of all input widgets
@@ -71,7 +76,7 @@ namespace lc
                 */
                 std::vector<std::string> keys() const;
 
-            private:
+            protected:
                 std::vector<InputGUI*> _inputWidgets;
                 std::vector<kaguya::LuaRef> _callbacks;
                 std::set<std::string> _addedKeys;
