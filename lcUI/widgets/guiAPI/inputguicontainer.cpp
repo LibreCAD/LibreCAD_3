@@ -71,7 +71,7 @@ bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
     guiWidget->setKey(key);
     //guiWidget->setParent(this);
     //vboxlayout->addWidget(guiWidget);
-    _inputWidgets.push_back(guiWidget);
+    _inputWidgets[key] = guiWidget;
     _addedKeys.insert(key);
     return true;
 }
@@ -99,7 +99,13 @@ bool InputGUIContainer::addWidget(const std::string& key, CheckBoxGUI* checkboxW
 }
 
 const std::vector<InputGUI*>& InputGUIContainer::inputWidgets() {
-    return _inputWidgets;
+    std::vector<InputGUI*> inputGUIList;
+
+    for (std::map<std::string, InputGUI*>::iterator iter = _inputWidgets.begin(); iter != _inputWidgets.end(); ++iter) {
+        inputGUIList.push_back(iter->second);
+    }
+
+    return inputGUIList;
 }
 
 void InputGUIContainer::addFinishCallback(kaguya::LuaRef cb) {
@@ -130,4 +136,10 @@ std::vector<std::string> InputGUIContainer::keys() const {
 
 void InputGUIContainer::setLabel(const std::string& newlabel) {
     _label = newlabel;
+}
+
+void InputGUIContainer::removeInputGUI(const std::string& key) {
+    delete _inputWidgets[key];
+    _inputWidgets.erase(key);
+    _addedKeys.erase(key);
 }

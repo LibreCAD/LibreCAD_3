@@ -21,8 +21,7 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     parentWidget->setLayout(verticalLayout);
 }
 
-PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow)
-{
+PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
     if (instance == nullptr) {
         instance = new PropertyEditor(mainWindow);
     }
@@ -30,22 +29,38 @@ PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow
     return instance;
 }
 
-void PropertyEditor::clear() {
-    for (api::InputGUI* widget : _inputWidgets) {
-        delete widget;
-    }
+void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
+    std::vector<std::string> inputGUIsToRemove;
+    
+    for (std::map<unsigned long, std::vector<std::string>>::iterator iter = _selectedEntity.begin(); iter != _selectedEntity.end(); ++iter) {
+        bool found = false;
 
-    _inputWidgets.clear();
-    _addedKeys.clear();
-    _selectedEntities.clear();
+        for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
+            if (cadEnt->id() == iter->first) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            for (const std::string& keyStr : iter->second) {
+                removeInputGUI(keyStr);
+            }
+
+            iter = _selectedEntity.erase(iter);
+        }
+    }
 }
 
 void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
     api::EntityPickerVisitor entityVisitor;
     entity->dispatch(entityVisitor);
-    std::cout << "Entity Selected :- " << entityVisitor.getEntityInformation() << std::endl;
+    mainWindow->cliCommand()->write("Entity Selected : -" + entityVisitor.getEntityInformation());
     kaguya::State state(mainWindow->luaInterface()->luaState());
-    _selectedEntities.insert(entity);
+
+    if (_selectedEntity.find(entity->id()) == _selectedEntity.end()) {
+        _selectedEntity[entity->id()] = std::vector<std::string>();
+    }
 
     if (entityVisitor.getEntityInformation() == "Circle") {
         if (_addedKeys.find("circle_radius") == _addedKeys.end()) {
@@ -54,14 +69,16 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
             radiusgui->addCallback(state["radiusPropertyCalled"]);
             addWidget("circle_radius", radiusgui);
             state["radiusPropertyCalled"] = nullptr;
+            _selectedEntity[entity->id()].push_back("circle_radius");
         }
 
         if (_addedKeys.find("circle_center") == _addedKeys.end()) {
             lc::ui::api::CoordinateGUI* coordgui = new lc::ui::api::CoordinateGUI("Center");
-            //state.dostring("coordPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('circle_center') end");
-            //coordgui->addOnChangeCallback(state["coordPropertyCalled"]);
+            state.dostring("coordPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('circle_center') end");
+            coordgui->addOnChangeCallback(state["coordPropertyCalled"]);
             addWidget("circle_center", coordgui);
             state["coordPropertyCalled"] = nullptr;
+            _selectedEntity[entity->id()].push_back("circle_center");
         }
     }
 }
@@ -84,15 +101,5 @@ bool PropertyEditor::addWidget(const std::string& key, api::CheckBoxGUI* checkbo
 }
 
 void PropertyEditor::propertyChanged(const std::string& key) {
-    mainWindow->cliCommand()->write("WOOOOHOOOO PROPERTY CHANGES - " + key);
-}
-
-bool PropertyEditor::containsEntity(lc::entity::CADEntity_CSPtr entity) {
-    for (lc::entity::CADEntity_CSPtr curEntity : _selectedEntities) {
-        if (*curEntity == *entity) {
-            return true;
-        }
-    }
-
-    return false;
+    mainWindow->cliCommand()->write("PROPERTY CHANGES - " + key);
 }

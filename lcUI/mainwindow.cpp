@@ -603,19 +603,9 @@ void MainWindow::selectionChanged() {
         return;
     }
     
-    bool containsAllSameEntities = true;
+    propertyEditor->clear(selectedEntities);
 
-    for (lc::entity::CADEntity_CSPtr ent : selectedEntities) {
-        if (!propertyEditor->containsEntity(ent)) {
-            containsAllSameEntities = false;
-        }
-    }
-
-    if (containsAllSameEntities) {
-        return;
-    }
-
-    propertyEditor->clear();
+    _cliCommand.runCommand("CLEAR");
 
     int num = 0;
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {

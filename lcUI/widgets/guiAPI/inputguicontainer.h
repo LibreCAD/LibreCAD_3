@@ -76,8 +76,10 @@ namespace lc
                 */
                 std::vector<std::string> keys() const;
 
+                void removeInputGUI(const std::string& key);
+
             protected:
-                std::vector<InputGUI*> _inputWidgets;
+                std::map<std::string, InputGUI*> _inputWidgets;
                 std::vector<kaguya::LuaRef> _callbacks;
                 std::set<std::string> _addedKeys;
                 lc::ui::MainWindow* mainWindow;
