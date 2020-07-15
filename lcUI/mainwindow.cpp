@@ -60,12 +60,6 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::RightDockWidgetArea, propertyEditor);
-
-    /*-------- TEST   --------*/
-    propertyEditor->addWidget("coordinate1", new lc::ui::api::CoordinateGUI("Coordinate Widget"));
-    propertyEditor->addWidget("entity1", new lc::ui::api::EntityGUI("Entity Widget"));
-    propertyEditor->addWidget("button1", new lc::ui::api::ButtonGUI("Button Widget"));
-    /* END TEST */
 }
 
 MainWindow::~MainWindow()
@@ -604,11 +598,24 @@ void MainWindow::loadDefaultSettings() {
 void MainWindow::selectionChanged() {
     std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
-    propertyEditor->clear();
 
     if (selectedEntities.size() == 0) {
         return;
     }
+    
+    bool containsAllSameEntities = true;
+
+    for (lc::entity::CADEntity_CSPtr ent : selectedEntities) {
+        if (!propertyEditor->containsEntity(ent)) {
+            containsAllSameEntities = false;
+        }
+    }
+
+    if (containsAllSameEntities) {
+        return;
+    }
+
+    propertyEditor->clear();
 
     int num = 0;
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {

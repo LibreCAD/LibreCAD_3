@@ -25,11 +25,17 @@ namespace lc
 
             bool addWidget(const std::string& key, api::CheckBoxGUI* checkboxWidget) override;
 
+            void propertyChanged(const std::string& key);
+
+            bool containsEntity(lc::entity::CADEntity_CSPtr entity);
+
         private:
             PropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
 
         private:
             static PropertyEditor* instance;
+            std::set<lc::entity::CADEntity_CSPtr> _selectedEntities;
+            //std::map<lc::entity::CADEntity_CSPtr, std::string> _selectedEntity;
         };
     }
 }

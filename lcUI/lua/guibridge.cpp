@@ -4,6 +4,7 @@
 #include "cadmdichild.h"
 #include "documentcanvas.h"
 #include "lcadviewer.h"
+#include "propertyeditor.h"
 #include "widgets/luascript.h"
 #include "widgets/customizeToolbar/customizetoolbar.h"
 #include "widgets/clicommand.h"
@@ -195,6 +196,13 @@ void addLCBindings(lua_State *L) {
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })
+    );
+
+    state["lc"]["PropertyEditor"].setClass(kaguya::UserdataMetatable<lc::ui::PropertyEditor>()
+        .addStaticFunction("GetPropertyEditor", []() {
+            return PropertyEditor::GetPropertyEditor(nullptr);
+         })
+        .addFunction("propertyChanged", &lc::ui::PropertyEditor::propertyChanged)
     );
 }
 
