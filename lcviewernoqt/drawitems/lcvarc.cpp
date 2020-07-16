@@ -16,7 +16,8 @@ void LCVArc::draw(LcPainter& painter, const LcDrawOptions &options, const lc::ge
         } else {
             painter.arc(_arc->center().x(), _arc->center().y(), _arc->radius(), _arc->startAngle(), _arc->endAngle());
         }
-        painter.stroke();
+	if(autostroke())
+	        painter.stroke();
     }
 }
 

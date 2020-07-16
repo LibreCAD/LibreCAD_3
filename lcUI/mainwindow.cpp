@@ -170,6 +170,7 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionSelect_All"), &QAction::triggered, this, &MainWindow::selectAll);
     QObject::connect(findMenuItemByObjectName("actionSelect_None"), &QAction::triggered, this, &MainWindow::selectNone);
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
+    QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
 }
 
 /* Menu functions */
@@ -381,7 +382,7 @@ lc::ui::api::Menu* MainWindow::menuByPosition(int pos) {
         return nullptr;
     }
 
-    return static_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
+    return dynamic_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
 }
 
 void MainWindow::removeFromMenuMap(std::string menuName) {
@@ -404,14 +405,15 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 void MainWindow::removeMenu(const char* menuLabel) {
     lc::ui::api::Menu* menuremove = menuByName(menuLabel);
     if (menuremove != nullptr) {
-        std::cout << "NOt null" << std::endl;
+        menuremove->remove();
     }
-    menuremove->remove();
 }
 
 void MainWindow::removeMenu(int position) {
     lc::ui::api::Menu* menuremove = menuByPosition(position);
-    menuremove->remove();
+    if (menuremove != nullptr) {
+        menuremove->remove();
+    }
 }
 
 /* Trigger slots */
@@ -540,26 +542,36 @@ void MainWindow::openFile()
 void MainWindow::undo()
 {
     _cadMdiChild.undoManager()->undo();
+    _cadMdiChild.viewer()->update();
+}
+
+void MainWindow::clearUndoableStack()
+{
+    _cadMdiChild.undoManager()->removeUndoables();
 }
 
 void MainWindow::redo()
 {
     _cadMdiChild.undoManager()->redo();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectAll()
 {
     _cadMdiChild.viewer()->docCanvas()->selectAll();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectNone()
 {
     _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
+    _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::runCustomizeToolbar() {

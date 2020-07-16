@@ -85,6 +85,7 @@ namespace lc
         //----------------Functions adding data to entity--------------------------------
         void setDefault();
         void addDataToCurrentEntity();
+	inline bool isNew(){return _current_vertices.size()==0;};
       };
     }
   }

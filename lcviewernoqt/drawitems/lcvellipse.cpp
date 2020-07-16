@@ -17,7 +17,8 @@ void LCVEllipse::draw(LcPainter& painter, const LcDrawOptions &options, const lc
                 _ellipse->startAngle(), _ellipse->endAngle(),
                 _ellipse->getAngle()
         );
-        painter.stroke();
+	if(autostroke())
+	        painter.stroke();
     }
 }
 

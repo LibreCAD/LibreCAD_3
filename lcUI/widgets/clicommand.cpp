@@ -229,6 +229,10 @@ void CliCommand::closeEvent(QCloseEvent* event)
 
 void CliCommand::runCommand(const char* command)
 {
+    if (_commands_cb.find(command) == _commands_cb.end()) {
+        return;
+    }
+
     if (!_commands_enabled[command]) {
         write(std::string(command) + " command has been disabled.");
         return;

@@ -141,6 +141,7 @@ cad/geometry/geobeziercubic.h
 cad/interface/entitydispatch.h
 cad/interface/metatype.h
 cad/interface/snapable.h
+cad/interface/splitable.h
 cad/interface/snapconstrain.h
 cad/math/lcmath.h
 cad/math/equation.h

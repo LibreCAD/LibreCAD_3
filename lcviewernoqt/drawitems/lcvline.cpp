@@ -18,7 +18,8 @@ LCVLine::LCVLine(const lc::entity::Line_CSPtr& line) :
 void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     painter.move_to(_line->start().x(), _line->start().y());
     painter.line_to(_line->end().x(), _line->end().y());
-    painter.stroke();
+    if(autostroke())
+        painter.stroke();
 }
 
 lc::entity::CADEntity_CSPtr LCVLine::entity() const {

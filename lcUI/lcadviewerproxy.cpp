@@ -25,6 +25,9 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     gridLayout->addWidget(_tabWidget, 0, 0, 1, 1);
 
     _tabWidget->addTab(_modelViewerImpl, tr("Model"));
+    _tabWidget->addTab(_modelViewerImpl, tr("Paper 1"));//Just for init, removed later
+    _tabWidget->addTab(_modelViewerImpl, tr("Paper 2"));
+
     _paperViewers = new LCADPaperViewerImpl(this);
     
     //Connections to receive active View
@@ -44,16 +47,19 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
 
+    _tabWidget->removeTab(1);
+    _tabWidget->removeTab(1);
+
     //For each block create viewport
     auto view = document->blockByName("*Paper_Space");
     auto x = _paperViewers->getViewer();
     x->setDocument(document,view);
-    _tabWidget->addTab(x,"Paper 1");
+    _tabWidget->addTab(x,tr("Paper 1"));
 
     view = document->blockByName("*Paper_Space0");
     x = _paperViewers->getViewer();
     x->setDocument(document,view);
-    _tabWidget->addTab(x,"Paper 2");
+    _tabWidget->addTab(x,tr("Paper 2"));
 }
 
 void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){

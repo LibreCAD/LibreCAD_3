@@ -28,7 +28,7 @@ namespace lc
                 Menu(const char* menuName, QWidget* parent = nullptr);
 
                 /**
-                * \brief Menu Constructor
+                * \brief Menu Constructor (used my moc compiler)
                 * \param pointer to QMenuBar
                 */
                 Menu(QMenuBar* menuBar);

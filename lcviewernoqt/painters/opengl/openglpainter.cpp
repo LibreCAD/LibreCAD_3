@@ -11,13 +11,28 @@ void OpenglPainter::set_manager(Manager* manager)
 
 void OpenglPainter::move_to(double x, double y)
 {
+	if(abs(_pen_x-x)>BBHEURISTIC2 || abs(_pen_y-y)>BBHEURISTIC2 || _manager->isNew()){
   _manager->jump();
   _manager->addVertex(x,y);
   _pen_x=x;  _pen_y=y;
+	}
 }
 
 void OpenglPainter::point(double x, double y, double size, bool deviceCoords)
 {
+	if (deviceCoords){
+		double x = size;
+		double y = size;
+
+		double zeroCornerX = 0.;
+		double zeroCornerY = 0.;
+
+		device_to_user(&zeroCornerX, &zeroCornerY);
+		device_to_user(&x, &y);
+
+		size = (x - zeroCornerX);
+	}
+	circle(x,y,size);
 }
 
 void OpenglPainter::line_to(double x, double y)
@@ -31,7 +46,7 @@ void OpenglPainter::arc(double x, double y, double r, double start, double end)
   if(start<end)
     end-=2*PI;
 
-  _manager->jump();
+  //_manager->jump();
 
   float delta=(std::abs(end-start));
   float angle=0;
@@ -41,7 +56,7 @@ void OpenglPainter::arc(double x, double y, double r, double start, double end)
   {
     angle=start - ( ((float)i)/points)*(delta) ;
               
-    _manager->addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+    _manager->addVertex( (_pen_x=x+r*cos(angle)) , (_pen_y=y+r*sin(angle)) );
   }
 }
 
@@ -50,7 +65,7 @@ void OpenglPainter::arcNegative(double x, double y, double r, double start, doub
   if(start>end)
     end+=2*PI;
 
-  _manager->jump();
+  //_manager->jump();
            
   float delta=(std::abs(end-start));
   float angle=0;
@@ -59,7 +74,7 @@ void OpenglPainter::arcNegative(double x, double y, double r, double start, doub
   for(int i=0;i<points;i++)
   {
     angle=( ((float)i)/points)*(delta) + (start);
-    _manager->addVertex( (x+r*cos(angle)) , (y+r*sin(angle)) );
+    _manager->addVertex( (_pen_x=x+r*cos(angle)) , (_pen_y=y+r*sin(angle)) );
   }
 }
 
@@ -174,6 +189,7 @@ void OpenglPainter::close_path()
 void OpenglPainter::fill()
 {
   _manager->selectFill();
+  stroke();
 }
 
 void OpenglPainter::new_path()

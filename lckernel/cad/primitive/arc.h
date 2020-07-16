@@ -4,6 +4,7 @@
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/splitable.h"
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoarc.h"
 #include "cad/base/cadentity.h"
@@ -16,7 +17,7 @@
 
 namespace lc {
     namespace entity {
-        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable, public Draggable {
+        class Arc : public std::enable_shared_from_this<Arc>, public CADEntity, public geo::Arc, public Snapable, public Draggable, public Splitable{
         friend class builder::ArcBuilder;
 
         public:
@@ -89,6 +90,7 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 
