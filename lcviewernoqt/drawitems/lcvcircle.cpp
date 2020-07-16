@@ -12,7 +12,8 @@ LCVCircle::LCVCircle(const lc::entity::Circle_CSPtr& circle) :
 void LCVCircle::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     if (_circle->radius() != 0) {
         painter.circle(_circle->center().x(), _circle->center().y(), _circle->radius());
-        painter.stroke();
+	if(autostroke())
+	        painter.stroke();
     }
 }
 

@@ -9,7 +9,7 @@ function CreateOperations:_init(builder, step)
 
     self.prevEntity = nil
     if(builder ~= nil) then
-        self.builder = builder() -- is it working?
+        self.builder = builder()
     end
 
     self.step = step

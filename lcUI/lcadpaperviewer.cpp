@@ -5,7 +5,7 @@ using namespace lc::ui;
 using namespace lc::viewer;
 
 #define PAPER_WIDTH 300
-#define PAPER_HEIGHT 200
+#define PAPER_HEIGHT -200
 
 LCADPaperViewer::LCADPaperViewer(QWidget* parent,int id = 0):LCADViewer(parent),_id(id){
     _gradientBackground = std::make_shared<drawable::PaperBackground>(PAPER_WIDTH, PAPER_HEIGHT);
