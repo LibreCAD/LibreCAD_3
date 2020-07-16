@@ -34,7 +34,7 @@ void lc::builder::LWPolylineBuilder::addArcVertex(const lc::geo::Coordinate& ver
 	}else{
 		angle=-vert2.location.angleTo(vert1.location)+vert1.location.angleTo(vert);
 	}
-	angle=lc::maths::Math::correctAngle(angle);
+	//angle=lc::maths::Math::correctAngle(angle);
 	bulge=(1-cos(angle))/sin(angle);
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert1.location, vert1.startWidth, vert1.endWidth, bulge);
 	_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_Bulge));
