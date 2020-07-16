@@ -561,16 +561,19 @@ void MainWindow::redo()
 void MainWindow::selectAll()
 {
     _cadMdiChild.viewer()->docCanvas()->selectAll();
+    selectionChanged();
 }
 
 void MainWindow::selectNone()
 {
     _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    selectionChanged();
 }
 
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
+    selectionChanged();
 }
 
 void MainWindow::runCustomizeToolbar() {
@@ -598,19 +601,10 @@ void MainWindow::loadDefaultSettings() {
 void MainWindow::selectionChanged() {
     std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
-
-    if (selectedEntities.size() == 0) {
-        return;
-    }
     
     propertyEditor->clear(selectedEntities);
 
-    _cliCommand.runCommand("CLEAR");
-
-    int num = 0;
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
         propertyEditor->addEntity(selectedEntity);
-        num++;
     }
-    std::cout << std::endl;
 }

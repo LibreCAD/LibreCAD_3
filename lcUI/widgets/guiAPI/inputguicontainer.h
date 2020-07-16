@@ -65,10 +65,10 @@ namespace lc
                 void addFinishCallback(kaguya::LuaRef cb);
 
                 /**
-                * \brief Generate table containing info of all widgets in dialog
+                * \brief Generate table containing info of all widgets in inputguicontainer
                 * \return LuaRef info table
                 */
-                kaguya::LuaRef generateDialogInfo(lua_State* luastate);
+                kaguya::LuaRef generateInfo(lua_State* luastate);
 
                 /**
                 * \brief Return list of all keys

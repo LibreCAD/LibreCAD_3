@@ -33,6 +33,7 @@ namespace lc
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;
+            std::map<std::string, unsigned long> _widgetKeyToEntity;
         };
     }
 }

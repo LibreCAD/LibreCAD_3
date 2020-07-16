@@ -131,6 +131,7 @@ void CoordinateGUI::pointSelected(lc::geo::Coordinate point) {
         this->setFocus();
         _pointButton->toggled(false);
         _pointButton->setChecked(false);
+        editingFinishedCallbacks();
     }
 }
 

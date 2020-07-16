@@ -112,7 +112,7 @@ void InputGUIContainer::addFinishCallback(kaguya::LuaRef cb) {
     _callbacks.push_back(cb);
 }
 
-kaguya::LuaRef InputGUIContainer::generateDialogInfo(lua_State* luastate) {
+kaguya::LuaRef InputGUIContainer::generateInfo(lua_State* luastate) {
     kaguya::State state(luastate);
     std::string refName = _label + "_table";
     state[refName] = kaguya::NewTable();

@@ -62,7 +62,7 @@ void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
 
 void DialogWidget::finishCallbacks() {
     for (kaguya::LuaRef& cb : _callbacks) {
-        kaguya::LuaRef result = generateDialogInfo(cb.state());
+        kaguya::LuaRef result = generateInfo(cb.state());
         cb(result);
     }
 }
