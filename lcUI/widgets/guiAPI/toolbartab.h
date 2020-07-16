@@ -43,7 +43,7 @@ namespace lc {
                      * \param name Group name
                      * \return Pointer to created ToolbarGroup
                      */
-                    ToolbarGroup* addGroup(const char* name);
+                    ToolbarGroup* addGroup(const char* name, int width = 3);
 
                     /**
                      * \brief Add new button in given group
@@ -62,7 +62,7 @@ namespace lc {
                      * \brief Get list of all groups
                      * \return vector of pointers to ToolbarGroups
                      */
-                    std::vector<ToolbarGroup*> getAllGroups();
+                    std::vector<ToolbarGroup*> groups();
 
 					/**
                      * \brief Get existing button
@@ -100,6 +100,11 @@ namespace lc {
                      * \brief Remove this widget
                      */
                     void remove();
+
+                    /**
+                    * \brief Removes all groups (remove and delete) ONLY BUTTON GROUPS
+                    */
+                    void clear();
 
                 signals:
                     /**

@@ -44,8 +44,14 @@ MainWindow::MainWindow()
     // add lua script
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
+    state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
+
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
+    luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+
+    _toolbar.generateButtonsMap();
+    readUiSettings();
 }
 
 MainWindow::~MainWindow()
@@ -376,7 +382,7 @@ lc::ui::api::Menu* MainWindow::menuByPosition(int pos) {
         return nullptr;
     }
 
-    return static_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
+    return dynamic_cast<lc::ui::api::Menu*>(menuList[pos]->menu());
 }
 
 void MainWindow::removeFromMenuMap(std::string menuName) {
@@ -399,14 +405,15 @@ void MainWindow::removeFromMenuMap(std::string menuName) {
 void MainWindow::removeMenu(const char* menuLabel) {
     lc::ui::api::Menu* menuremove = menuByName(menuLabel);
     if (menuremove != nullptr) {
-        std::cout << "NOt null" << std::endl;
+        menuremove->remove();
     }
-    menuremove->remove();
 }
 
 void MainWindow::removeMenu(int position) {
     lc::ui::api::Menu* menuremove = menuByPosition(position);
-    menuremove->remove();
+    if (menuremove != nullptr) {
+        menuremove->remove();
+    }
 }
 
 /* Trigger slots */
@@ -565,4 +572,26 @@ void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
     _cadMdiChild.viewer()->update();
+}
+
+void MainWindow::runCustomizeToolbar() {
+    _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
+    connect(_customizeToolbar, &widgets::CustomizeToolbar::customizeWidgetClosed, this, &MainWindow::writeSettings);
+    connect(_customizeToolbar, &widgets::CustomizeToolbar::defaultSettingsLoad, this, &MainWindow::loadDefaultSettings);
+
+    _customizeToolbar->show();
+}
+
+void MainWindow::writeSettings() {
+    _uiSettings.writeSettings(_customizeToolbar);
+}
+
+void MainWindow::readUiSettings() {
+    _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
+    _uiSettings.readSettings(_customizeToolbar);
+    _customizeToolbar->close();
+}
+
+void MainWindow::loadDefaultSettings() {
+    _uiSettings.readSettings(_customizeToolbar, true);
 }

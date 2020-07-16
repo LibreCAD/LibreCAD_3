@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>CustomizeToolbar</class>
+    <widget class="QDialog" name="CustomizeToolbar">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>900</width>
+                <height>400</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>CustomizeToolbar</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+                <layout class="QVBoxLayout" name="verticalLayout1">
+                    <item>
+                        <layout class="QHBoxLayout" name="horizontalLayout1">
+                        </layout>
+                    </item>
+                </layout>
+            </item>
+            <item>
+                <widget class="QWidget" name="rightside" native="true">
+                    <layout class="QVBoxLayout" name="verticalLayout2">
+                        <item>
+                            <widget class="QTabWidget" name="tabWidget">
+                                <property name="currentIndex">
+                                    <number>-1</number>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout2">
+                                <item>
+                                    <widget class="QPushButton" name="defaultButton">
+                                        <property name="text">
+                                            <string>Default</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="loadFileButton">
+                                        <property name="text">
+                                            <string>Load</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+        </layout>
+    </widget>
+    <resources/>
+    <connections/>
+</ui>
