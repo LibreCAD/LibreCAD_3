@@ -27,7 +27,10 @@ namespace lc {
                     _layer = entity->_layer;
                     _block = entity->_block;
                     _metaInfo = entity->_metaInfo;
-                    _id->setID(entity->id());
+
+                    if (_id == nullptr) {
+                        _id = new entity::ID(entity->id());
+                    }
                 }
 
                 /**

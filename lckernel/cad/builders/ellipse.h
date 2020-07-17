@@ -26,6 +26,8 @@ namespace lc {
                 bool isReversed() const;
                 void setIsReversed(bool isReversed);
 
+                void copy(entity::Ellipse_CSPtr entity);
+
             private:
                 lc::geo::Coordinate _center;
                 lc::geo::Coordinate _majorPoint;

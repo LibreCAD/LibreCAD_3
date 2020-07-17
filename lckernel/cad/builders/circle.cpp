@@ -246,3 +246,10 @@ lc::entity::Circle_CSPtr lc::builder::CircleBuilder::build()
         return entity::Circle_CSPtr(new entity::Circle(*this));;
     }
 }
+
+void lc::builder::CircleBuilder::copy(entity::Circle_CSPtr entity) {
+    setCenter(entity->center());
+    setRadius(entity->radius());
+
+    lc::builder::CADEntityBuilder(entity);
+}

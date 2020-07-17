@@ -41,3 +41,10 @@ lc::entity::Line_CSPtr LineBuilder::build() {
 
     return entity::Line_CSPtr(new entity::Line(*this));
 }
+
+void LineBuilder::copy(entity::Line_CSPtr entity) {
+    setStart(entity->start());
+    setEnd(entity->end());
+
+    CADEntityBuilder::copy(entity);
+}

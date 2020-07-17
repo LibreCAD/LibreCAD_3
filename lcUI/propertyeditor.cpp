@@ -109,12 +109,32 @@ bool PropertyEditor::addWidget(const std::string& key, api::CheckBoxGUI* checkbo
 void PropertyEditor::propertyChanged(const std::string& key) {
     mainWindow->cliCommand()->write("PROPERTY CHANGES - " + key);
     kaguya::LuaRef propertiesTable = generateInfo(mainWindow->luaInterface()->luaState());
+    lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);
+
+    std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
+
+    entityBuilder->appendEntity(entity);
+    entityBuilder->appendOperation(std::make_shared<lc::operation::Push>());
+    entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
+    entityBuilder->execute();
+
+    propertyVisitor.setPropertyKey(key);
+    propertyVisitor.setPropertyTable(propertiesTable);
+    propertyVisitor.setEntityBuilder(entityBuilder);
+    entity->dispatch(propertyVisitor);
 
     if (key == "circle_radius") {
         double circleRadius = propertiesTable[key].get<double>();
         std::cout << "Value for " << key << " - " << circleRadius << std::endl;
 
-        lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
+
+        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
+
+        lc::builder::CircleBuilder circleBuilder;
+        circleBuilder.copy(oldEntity);
+        circleBuilder.setRadius(circleRadius);*/
+
+        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
         lc::entity::Circle_SPtr changedEntity = std::make_shared<lc::entity::Circle>(
             oldEntity->center(),
             circleRadius,
@@ -130,14 +150,14 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         entityBuilder->execute();
 
         entityBuilder->appendEntity(changedEntity);
-        entityBuilder->execute();
+        entityBuilder->execute();*/
     }
 
     if (key == "circle_center") {
         lc::geo::Coordinate circleCenter = propertiesTable[key].get<lc::geo::Coordinate>();
         std::cout << "Value for " << key << " - " << circleCenter << std::endl;
 
-        lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
+        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
         lc::entity::Circle_SPtr changedEntity = std::make_shared<lc::entity::Circle>(
             circleCenter,
             oldEntity->radius(),
@@ -153,6 +173,6 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         entityBuilder->execute();
 
         entityBuilder->appendEntity(changedEntity);
-        entityBuilder->execute();
+        entityBuilder->execute();*/
     }
 }
