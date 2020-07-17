@@ -134,7 +134,8 @@ QString getExtInfo(){
         QString("Boost Version: %1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100) + "\n" +
         QString("Lua Version: %1").arg(getLuaVersion()) + "<br/>" + 
 	QString("libdxfrw Version: %1").arg(DRW_VERSION) + "<br/>" + 
-	QString("OpenGL Version: %1").arg(getGLVersion())
+	QString("OpenGL Version: %1").arg(getGLVersion()) + "<br/>" +
+	QString("CMake Version: %1").arg(CMAKE_VERSION)
     ;
 }
 
