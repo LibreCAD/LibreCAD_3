@@ -14,14 +14,11 @@ void PropertyVisitor::visit(entity::Circle_CSPtr entity) {
     lc::builder::CircleBuilder circleBuilder;
     circleBuilder.copy(entity);
 
-    circleBuilder.setRadius(entity->radius());
-    circleBuilder.setCenter(entity->center());
-
-    if (propertyKey == "circle_radius") {
+    if (propertyKey == "entity" + std::to_string(entity->id()) + "_radius") {
         double circleRadius = propertiesTable[propertyKey].get<double>();
         circleBuilder.setRadius(circleRadius);
     }
-    else if (propertyKey == "circle_center") {
+    else if (propertyKey == "entity" + std::to_string(entity->id()) + "_center") {
         lc::geo::Coordinate circleCenter = propertiesTable[propertyKey].get<lc::geo::Coordinate>();
         circleBuilder.setCenter(circleCenter);
     }

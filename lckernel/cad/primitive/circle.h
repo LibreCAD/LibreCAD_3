@@ -11,6 +11,9 @@
 #include "cad/interface/snapable.h"
 #include <cad/builders/circle.h>
 
+#include <string>
+#include <map>
+
 namespace lc {
     namespace entity {
 
@@ -91,6 +94,8 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+            CADEntity::PropertiesMap availableProperties() const override;
 
         private:
             Circle(const builder::CircleBuilder& builder);

@@ -108,3 +108,11 @@ CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSP
     return newEntity;
 }
 
+CADEntity::PropertiesMap Circle::availableProperties() const {
+    CADEntity::PropertiesMap propertyValues;
+
+    propertyValues["radius"] = this->radius();
+    propertyValues["center"] = this->center();
+
+    return propertyValues;
+}

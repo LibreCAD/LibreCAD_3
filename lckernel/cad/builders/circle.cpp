@@ -251,5 +251,5 @@ void lc::builder::CircleBuilder::copy(entity::Circle_CSPtr entity) {
     setCenter(entity->center());
     setRadius(entity->radius());
 
-    lc::builder::CADEntityBuilder(entity);
+    lc::builder::CADEntityBuilder::copy(entity);
 }

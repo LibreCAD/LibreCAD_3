@@ -40,3 +40,7 @@ meta::Layer_CSPtr CADEntity::layer() const {
 meta::Block_CSPtr CADEntity::block() const {
     return _block;
 }
+
+CADEntity::PropertiesMap CADEntity::availableProperties() const {
+    return std::map<std::string, boost::variant<double, bool, lc::geo::Coordinate>>();
+}

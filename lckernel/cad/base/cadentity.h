@@ -9,6 +9,8 @@
 #include "cad/meta/layer.h"
 #include "cad/geometry/geoarea.h"
 
+#include <boost/variant.hpp>
+
 namespace lc {
     namespace builder {
         class CADEntityBuilder;
@@ -135,6 +137,12 @@ namespace lc {
              * @return Entity block or nullptr if not defined
              */
             meta::Block_CSPtr block() const;
+
+            typedef boost::variant<double, bool, lc::geo::Coordinate> EntityProperty;
+
+            typedef std::map<std::string, boost::variant<double, bool, lc::geo::Coordinate>> PropertiesMap;
+
+            virtual CADEntity::PropertiesMap availableProperties() const;
 
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);

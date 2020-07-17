@@ -62,31 +62,7 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         _selectedEntity[entity->id()] = std::vector<std::string>();
     }
 
-    if (entityVisitor.getEntityInformation() == "Circle") {
-        lc::entity::Circle_CSPtr circleEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(entity);
-
-        if (_addedKeys.find("circle_radius") == _addedKeys.end()) {
-            lc::ui::api::NumberGUI* radiusgui = new lc::ui::api::NumberGUI("Radius");
-            radiusgui->setValue(circleEntity->radius());
-            state.dostring("radiusPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('circle_radius') end");
-            radiusgui->addCallback(state["radiusPropertyCalled"]);
-            addWidget("circle_radius", radiusgui);
-            state["radiusPropertyCalled"] = nullptr;
-            _selectedEntity[entity->id()].push_back("circle_radius");
-            _widgetKeyToEntity["circle_radius"] = entity->id();
-        }
-
-        if (_addedKeys.find("circle_center") == _addedKeys.end()) {
-            lc::ui::api::CoordinateGUI* coordgui = new lc::ui::api::CoordinateGUI("Center");
-            coordgui->setValue(circleEntity->center());
-            state.dostring("coordPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('circle_center') end");
-            coordgui->addFinishCallback(state["coordPropertyCalled"]);
-            addWidget("circle_center", coordgui);
-            state["coordPropertyCalled"] = nullptr;
-            _selectedEntity[entity->id()].push_back("circle_center");
-            _widgetKeyToEntity["circle_center"] = entity->id();
-        }
-    }
+    createPropertiesWidgets(entity->id(), entity->availableProperties());
 }
 
 bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
@@ -122,57 +98,42 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     propertyVisitor.setPropertyTable(propertiesTable);
     propertyVisitor.setEntityBuilder(entityBuilder);
     entity->dispatch(propertyVisitor);
+}
 
-    if (key == "circle_radius") {
-        double circleRadius = propertiesTable[key].get<double>();
-        std::cout << "Value for " << key << " - " << circleRadius << std::endl;
+void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::CADEntity::PropertiesMap& entityProperties) {
+    kaguya::State state(mainWindow->luaInterface()->luaState());
 
+    for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
+        const std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
+        std::cout << "Key is " << key << std::endl;
 
-        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
+        if (_addedKeys.find(key) == _addedKeys.end()) {
+            // double
+            if (iter->second.which() == 0) {
+                lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(iter->first);
+                numbergui->setValue(boost::get<double>(iter->second));
+                state.dostring("numberPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                numbergui->addCallback(state["numberPropertyCalled"]);
+                addWidget(key, numbergui);
+                state["numberPropertyCalled"] = nullptr;
+            }
 
-        lc::builder::CircleBuilder circleBuilder;
-        circleBuilder.copy(oldEntity);
-        circleBuilder.setRadius(circleRadius);*/
+            // bool
+            if (iter->second.which() == 1) {
+            }
 
-        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
-        lc::entity::Circle_SPtr changedEntity = std::make_shared<lc::entity::Circle>(
-            oldEntity->center(),
-            circleRadius,
-            oldEntity->layer(),
-            oldEntity->metaInfo(),
-            oldEntity->block());
-        changedEntity->setID(oldEntity->id());
+            // coordinate
+            if (iter->second.which() == 2) {
+                lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(iter->first);
+                coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
+                state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);
+                addWidget(key, coordinategui);
+                state["coordinatePropertyCalled"] = nullptr;
+            }
 
-        std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
-        entityBuilder->appendEntity(oldEntity);
-        entityBuilder->appendOperation(std::make_shared<lc::operation::Push>());
-        entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
-        entityBuilder->execute();
-
-        entityBuilder->appendEntity(changedEntity);
-        entityBuilder->execute();*/
-    }
-
-    if (key == "circle_center") {
-        lc::geo::Coordinate circleCenter = propertiesTable[key].get<lc::geo::Coordinate>();
-        std::cout << "Value for " << key << " - " << circleCenter << std::endl;
-
-        /*lc::entity::Circle_CSPtr oldEntity = std::dynamic_pointer_cast<const lc::entity::Circle>(mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]));
-        lc::entity::Circle_SPtr changedEntity = std::make_shared<lc::entity::Circle>(
-            circleCenter,
-            oldEntity->radius(),
-            oldEntity->layer(),
-            oldEntity->metaInfo(),
-            oldEntity->block());
-        changedEntity->setID(oldEntity->id());
-
-        std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
-        entityBuilder->appendEntity(oldEntity);
-        entityBuilder->appendOperation(std::make_shared<lc::operation::Push>());
-        entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
-        entityBuilder->execute();
-
-        entityBuilder->appendEntity(changedEntity);
-        entityBuilder->execute();*/
+            _selectedEntity[entityID].push_back(key);
+            _widgetKeyToEntity[key] = entityID;
+        }
     }
 }

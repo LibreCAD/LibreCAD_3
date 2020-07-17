@@ -66,3 +66,13 @@ void lc::builder::LWPolylineBuilder::removeVertex(int index)
 		_vertices.erase(_vertices.begin() + index);
 	}
 }
+
+void lc::builder::LWPolylineBuilder::copy(entity::LWPolyline_CSPtr entity) {
+    const std::vector<lc::entity::LWVertex2D>& verticesList = entity->vertex();
+
+    for (const lc::entity::LWVertex2D& vert : verticesList) {
+        _vertices.push_back(lc::builder::LWBuilderVertex(vert.location(), vert.startWidth(), vert.endWidth(), vert.bulge()));
+    }
+
+    lc::builder::CADEntityBuilder::copy(entity);
+}

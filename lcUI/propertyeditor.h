@@ -31,6 +31,8 @@ namespace lc
         private:
             PropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
 
+            void createPropertiesWidgets(unsigned long entityID, const lc::entity::CADEntity::PropertiesMap& entityProperties);
+
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;

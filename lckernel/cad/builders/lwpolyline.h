@@ -41,6 +41,8 @@ namespace lc {
 				void removeVertex(int index);
 				const std::vector<lc::builder::LWBuilderVertex>& getVertices();
 				lc::entity::LWPolyline_CSPtr build();
+
+                void copy(entity::LWPolyline_CSPtr entity);
 		private:
 			std::vector<lc::builder::LWBuilderVertex> _vertices;
 			double _currentVertex_Bulge;
