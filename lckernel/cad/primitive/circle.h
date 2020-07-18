@@ -97,6 +97,8 @@ namespace lc {
 
             CADEntity::PropertiesMap availableProperties() const override;
 
+            CADEntity_CSPtr setProperties(const CADEntity::PropertiesMap& propertiesMap) const override;
+
         private:
             Circle(const builder::CircleBuilder& builder);
         };

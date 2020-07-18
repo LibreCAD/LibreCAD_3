@@ -44,3 +44,7 @@ meta::Block_CSPtr CADEntity::block() const {
 CADEntity::PropertiesMap CADEntity::availableProperties() const {
     return std::map<std::string, boost::variant<double, bool, lc::geo::Coordinate>>();
 }
+
+CADEntity_CSPtr CADEntity::setProperties(const CADEntity::PropertiesMap& propertiesMap) const {
+    return nullptr;
+}

@@ -144,6 +144,8 @@ namespace lc {
 
             virtual CADEntity::PropertiesMap availableProperties() const;
 
+            virtual CADEntity_CSPtr setProperties(const CADEntity::PropertiesMap& propertiesMap) const;
+
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);
 

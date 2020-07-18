@@ -37,7 +37,6 @@ mainwindow.h
 windowmanager.h
 operationloader.h
 propertyeditor.h
-propertyvisitor.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -101,7 +100,6 @@ mainwindow.cpp
 windowmanager.cpp
 operationloader.cpp
 propertyeditor.cpp
-propertyvisitor.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp

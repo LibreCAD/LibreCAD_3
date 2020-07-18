@@ -3,7 +3,6 @@
 #include "widgets/guiAPI/inputguicontainer.h"
 #include "widgets/guiAPI/inputgui.h"
 #include "mainwindow.h"
-#include "propertyvisitor.h"
 
 namespace lc
 {
@@ -37,7 +36,6 @@ namespace lc
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;
             std::map<std::string, unsigned long> _widgetKeyToEntity;
-            PropertyVisitor propertyVisitor;
         };
     }
 }

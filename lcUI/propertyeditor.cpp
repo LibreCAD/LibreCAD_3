@@ -53,11 +53,6 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
 }
 
 void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
-    api::EntityPickerVisitor entityVisitor;
-    entity->dispatch(entityVisitor);
-    mainWindow->cliCommand()->write("Entity Selected : -" + entityVisitor.getEntityInformation());
-    kaguya::State state(mainWindow->luaInterface()->luaState());
-
     if (_selectedEntity.find(entity->id()) == _selectedEntity.end()) {
         _selectedEntity[entity->id()] = std::vector<std::string>();
     }
@@ -83,7 +78,6 @@ bool PropertyEditor::addWidget(const std::string& key, api::CheckBoxGUI* checkbo
 }
 
 void PropertyEditor::propertyChanged(const std::string& key) {
-    mainWindow->cliCommand()->write("PROPERTY CHANGES - " + key);
     kaguya::LuaRef propertiesTable = generateInfo(mainWindow->luaInterface()->luaState());
     lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);
 
@@ -94,22 +88,42 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
     entityBuilder->execute();
 
-    propertyVisitor.setPropertyKey(key);
-    propertyVisitor.setPropertyTable(propertiesTable);
-    propertyVisitor.setEntityBuilder(entityBuilder);
-    entity->dispatch(propertyVisitor);
+    auto lastUnderscore = key.find_last_of("_");
+    auto secondLastUnderscore = key.find_last_of("_", lastUnderscore-1);
+
+    std::string entityType = key.substr(lastUnderscore + 1);
+    std::string propertyName = key.substr(secondLastUnderscore + 1, lastUnderscore - secondLastUnderscore - 1);
+
+    lc::entity::CADEntity::PropertiesMap propertiesList;
+
+    if (entityType == "double") {
+        propertiesList[propertyName] = propertiesTable[key].get<double>();
+    }
+
+    if (entityType == "bool") {
+        propertiesList[propertyName] = propertiesTable[key].get<bool>();
+    }
+
+    if (entityType == "coordinate") {
+        propertiesList[propertyName] = propertiesTable[key].get<lc::geo::Coordinate>();
+    }
+
+    lc::entity::CADEntity_CSPtr changedEntity = entity->setProperties(propertiesList);
+
+    entityBuilder->appendEntity(changedEntity);
+    entityBuilder->execute();
 }
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::CADEntity::PropertiesMap& entityProperties) {
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
-        const std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
-        std::cout << "Key is " << key << std::endl;
+        std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
             // double
             if (iter->second.which() == 0) {
+                key += "_double";
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(iter->first);
                 numbergui->setValue(boost::get<double>(iter->second));
                 state.dostring("numberPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
@@ -124,6 +138,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
             // coordinate
             if (iter->second.which() == 2) {
+                key += "_coordinate";
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(iter->first);
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
                 state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
