@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "dialogs/aboutdialog.h"
 #include "windowmanager.h"
 
 using namespace lc::ui;
@@ -45,10 +45,17 @@ MainWindow::MainWindow()
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
     state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
+    state["run_aboutdialog"] = kaguya::function([&]{
+	    auto aboutDialog = new dialog::AboutDialog(this);
+	    aboutDialog->show();
+    });
 
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
     luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+
+    api::Menu* aboutMenu = addMenu("About");
+    aboutMenu->addItem("About", state["run_aboutdialog"]);
 
     _toolbar.generateButtonsMap();
     readUiSettings();
