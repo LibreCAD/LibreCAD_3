@@ -159,3 +159,31 @@ CADEntity_CSPtr Line::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
         return shared_from_this();
     }
 }
+
+PropertiesMap Line::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["startPoint"] = this->start();
+    propertyValues["endPoint"] = this->end();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Line::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate startCoordp = this->start();
+    lc::geo::Coordinate endCoordp = this->end();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "startPoint") {
+            startCoordp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "endPoint") {
+            endCoordp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto lineEntity = std::make_shared<Line>(startCoordp, endCoordp, layer(), metaInfo(), block());
+    lineEntity->setID(this->id());
+    return lineEntity;
+}

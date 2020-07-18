@@ -16,6 +16,34 @@ namespace lc {
         class CADEntityBuilder;
     }
     namespace entity {
+        /* Entity Properties*/
+
+        class AngleProperty
+        {
+        public:
+            AngleProperty()
+                :
+                _value(0)
+            {}
+
+            AngleProperty(double angle)
+                :
+                _value(angle)
+            {}
+
+            double Get() const
+            {
+                return _value;
+            }
+
+        private:
+            double _value;
+        };
+
+        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate> EntityProperty;
+
+        typedef std::map<std::string, boost::variant<AngleProperty, double, bool, lc::geo::Coordinate>> PropertiesMap;
+
         /**
          *Class that all CAD entities must inherit
          *
@@ -138,13 +166,11 @@ namespace lc {
              */
             meta::Block_CSPtr block() const;
 
-            typedef boost::variant<double, bool, lc::geo::Coordinate> EntityProperty;
+            /* Entity Propperties Related Code*/
 
-            typedef std::map<std::string, boost::variant<double, bool, lc::geo::Coordinate>> PropertiesMap;
+            virtual PropertiesMap availableProperties() const;
 
-            virtual CADEntity::PropertiesMap availableProperties() const;
-
-            virtual CADEntity_CSPtr setProperties(const CADEntity::PropertiesMap& propertiesMap) const;
+            virtual CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const;
 
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);

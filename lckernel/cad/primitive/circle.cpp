@@ -108,8 +108,8 @@ CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSP
     return newEntity;
 }
 
-CADEntity::PropertiesMap Circle::availableProperties() const {
-    CADEntity::PropertiesMap propertyValues;
+PropertiesMap Circle::availableProperties() const {
+    PropertiesMap propertyValues;
 
     propertyValues["radius"] = this->radius();
     propertyValues["center"] = this->center();
@@ -117,7 +117,7 @@ CADEntity::PropertiesMap Circle::availableProperties() const {
     return propertyValues;
 }
 
-CADEntity_CSPtr Circle::setProperties(const CADEntity::PropertiesMap& propertiesMap) const {
+CADEntity_CSPtr Circle::setProperties(const PropertiesMap& propertiesMap) const {
     double radiusp = this->radius();
     lc::geo::Coordinate centerp = this->center();
 

@@ -41,10 +41,10 @@ meta::Block_CSPtr CADEntity::block() const {
     return _block;
 }
 
-CADEntity::PropertiesMap CADEntity::availableProperties() const {
-    return std::map<std::string, boost::variant<double, bool, lc::geo::Coordinate>>();
+PropertiesMap CADEntity::availableProperties() const {
+    return std::map<std::string, boost::variant<AngleProperty, double, bool, lc::geo::Coordinate>>();
 }
 
-CADEntity_CSPtr CADEntity::setProperties(const CADEntity::PropertiesMap& propertiesMap) const {
+CADEntity_CSPtr CADEntity::setProperties(const PropertiesMap& propertiesMap) const {
     return nullptr;
 }

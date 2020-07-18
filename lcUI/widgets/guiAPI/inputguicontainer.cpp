@@ -69,8 +69,6 @@ bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
     }
 
     guiWidget->setKey(key);
-    //guiWidget->setParent(this);
-    //vboxlayout->addWidget(guiWidget);
     _inputWidgets[key] = guiWidget;
     _addedKeys.insert(key);
     return true;
@@ -81,9 +79,11 @@ bool InputGUIContainer::addWidget(const std::string& key, ButtonGUI* buttonWidge
         return false;
     }
 
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(key + "_group");
+    std::string horizGroupKey = key + "_group";
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(horizGroupKey);
     horizGroup->addWidget(key, buttonWidget);
     addWidget(horizGroup->label(), horizGroup);
+    _widgetToGroup[key] = horizGroupKey;
     return true;
 }
 
@@ -92,9 +92,11 @@ bool InputGUIContainer::addWidget(const std::string& key, CheckBoxGUI* checkboxW
         return false;
     }
 
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(key + "_group");
+    std::string horizGroupKey = key + "_group";
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(horizGroupKey);
     horizGroup->addWidget(key, checkboxWidget);
     addWidget(horizGroup->label(), horizGroup);
+    _widgetToGroup[key] = horizGroupKey;
     return true;
 }
 
@@ -138,7 +140,34 @@ void InputGUIContainer::setLabel(const std::string& newlabel) {
     _label = newlabel;
 }
 
-void InputGUIContainer::removeInputGUI(const std::string& key) {
+void InputGUIContainer::removeInputGUI(std::string key) {
+    if (_inputWidgets.find(key) == _inputWidgets.end()) {
+        HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[_widgetToGroup[key]]);
+
+        if (isHorizGroup != nullptr) {
+            key = _widgetToGroup[key];
+        }
+    }
+
+    HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[key]);
+    RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(_inputWidgets[key]);
+
+    if (isHorizGroup != nullptr) {
+        std::set<std::string> widgetKeys = isHorizGroup->getKeys();
+
+        for (std::string wkey : widgetKeys) {
+            _addedKeys.erase(wkey);
+        }
+    }
+
+    if (isRadioGroup != nullptr) {
+        std::set<std::string> widgetKeys = isRadioGroup->getKeys();
+
+        for (std::string wkey : widgetKeys) {
+            _addedKeys.erase(wkey);
+        }
+    }
+
     delete _inputWidgets[key];
     _inputWidgets.erase(key);
     _addedKeys.erase(key);

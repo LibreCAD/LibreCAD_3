@@ -30,7 +30,7 @@ namespace lc
         private:
             PropertyEditor(lc::ui::MainWindow* mainWindow = nullptr);
 
-            void createPropertiesWidgets(unsigned long entityID, const lc::entity::CADEntity::PropertiesMap& entityProperties);
+            void createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties);
 
         private:
             static PropertyEditor* instance;

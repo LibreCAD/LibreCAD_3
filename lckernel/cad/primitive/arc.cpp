@@ -165,3 +165,49 @@ CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> d
         return shared_from_this();
     }
 }
+
+PropertiesMap Arc::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["center"] = this->center();
+    propertyValues["radius"] = this->radius();
+    propertyValues["startAngle"] = AngleProperty(this->startAngle());
+    propertyValues["endAngle"] = AngleProperty(this->endAngle());
+    propertyValues["isCCW"] = this->CCW();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Arc::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate centerp = this->center();
+    double radiusp = this->radius();
+    double startAnglep = this->startAngle();
+    double endAnglep = this->endAngle();
+    bool isCCWp = this->CCW();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "center") {
+            centerp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "radius") {
+            radiusp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "startAngle") {
+            startAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "endAngle") {
+            endAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "isCCW") {
+            isCCWp = boost::get<bool>(iter->second);
+        }
+    }
+
+    auto arcEntity = std::make_shared<Arc>(centerp, radiusp, startAnglep, endAnglep, isCCWp, layer(), metaInfo(), block());
+    arcEntity->setID(this->id());
+    return arcEntity;
+}

@@ -5,6 +5,7 @@
 
 #include "widgets/guiAPI/numbergui.h"
 #include "widgets/guiAPI/coordinategui.h"
+#include "widgets/guiAPI/anglegui.h"
 
 using namespace lc::ui;
 
@@ -94,7 +95,11 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     std::string entityType = key.substr(lastUnderscore + 1);
     std::string propertyName = key.substr(secondLastUnderscore + 1, lastUnderscore - secondLastUnderscore - 1);
 
-    lc::entity::CADEntity::PropertiesMap propertiesList;
+    lc::entity::PropertiesMap propertiesList;
+
+    if (entityType == "angle") {
+        propertiesList[propertyName] = lc::entity::AngleProperty(propertiesTable[key].get<double>());
+    }
 
     if (entityType == "double") {
         propertiesList[propertyName] = propertiesTable[key].get<double>();
@@ -114,17 +119,28 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     entityBuilder->execute();
 }
 
-void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::CADEntity::PropertiesMap& entityProperties) {
+void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
         std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
-            // double
+            // angleproperty
             if (iter->second.which() == 0) {
+                key += "_angle";
+                lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
+                anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
+                state.dostring("anglePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                anglegui->addFinishCallback(state["anglePropertyCalled"]);
+                addWidget(key, anglegui);
+                state["anglePropertyCalled"] = nullptr;
+            }
+
+            // double
+            if (iter->second.which() == 1) {
                 key += "_double";
-                lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(iter->first);
+                lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
                 state.dostring("numberPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
                 numbergui->addCallback(state["numberPropertyCalled"]);
@@ -133,13 +149,20 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             }
 
             // bool
-            if (iter->second.which() == 1) {
+            if (iter->second.which() == 2) {
+                key += "_bool";
+                lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
+                checkboxgui->setValue(boost::get<bool>(iter->second));
+                state.dostring("boolPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                checkboxgui->addCallback(state["boolPropertyCalled"]);
+                addWidget(key, checkboxgui);
+                state["boolPropertyCalled"] = nullptr;
             }
 
             // coordinate
-            if (iter->second.which() == 2) {
+            if (iter->second.which() == 3) {
                 key += "_coordinate";
-                lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(iter->first);
+                lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
                 state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
                 coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);

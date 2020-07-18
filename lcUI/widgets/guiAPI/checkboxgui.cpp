@@ -37,3 +37,11 @@ void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
 void CheckBoxGUI::setKey(const std::string& keyIn) {
     _key = keyIn;
 }
+
+bool CheckBoxGUI::value() const {
+    return isChecked();
+}
+
+void CheckBoxGUI::setValue(bool check) {
+    setChecked(check);
+}

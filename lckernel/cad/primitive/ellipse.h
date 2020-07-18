@@ -121,6 +121,10 @@ namespace lc {
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
 
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
+
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 

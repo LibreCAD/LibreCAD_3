@@ -95,9 +95,9 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
-            CADEntity::PropertiesMap availableProperties() const override;
+            PropertiesMap availableProperties() const override;
 
-            CADEntity_CSPtr setProperties(const CADEntity::PropertiesMap& propertiesMap) const override;
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
 
         private:
             Circle(const builder::CircleBuilder& builder);

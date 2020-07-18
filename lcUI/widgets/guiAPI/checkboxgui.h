@@ -54,6 +54,10 @@ namespace lc {
                 */
                 void setKey(const std::string& keyIn);
 
+                bool value() const;
+
+                void setValue(bool check);
+
             public slots:
                 /**
                 * \brief Run all callbacks
