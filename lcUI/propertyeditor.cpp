@@ -7,6 +7,7 @@
 #include "widgets/guiAPI/numbergui.h"
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/anglegui.h"
+#include "widgets/guiAPI/textgui.h"
 
 using namespace lc::ui;
 
@@ -159,6 +160,10 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         propertiesList[propertyName] = propertiesTable[key].get<lc::geo::Coordinate>();
     }
 
+    if (entityType == "text") {
+        propertiesList[propertyName] = propertiesTable[key].get<std::string>();
+    }
+
     lc::entity::CADEntity_CSPtr changedEntity = entity->setProperties(propertiesList);
 
     entityBuilder->appendEntity(changedEntity);
@@ -188,6 +193,11 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
         // coordinate
         if (iter->second.which() == 3) {
             key += "_coordinate";
+        }
+
+        // text (string)
+        if (iter->second.which() == 4) {
+            key += "_text";
         }
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
@@ -229,6 +239,16 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);
                 addWidget(key, coordinategui);
                 state["coordinatePropertyCalled"] = nullptr;
+            }
+
+            // text (string)
+            if (iter->second.which() == 4) {
+                lc::ui::api::TextGUI* textgui = new lc::ui::api::TextGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
+                textgui->setValue(boost::get<std::string>(iter->second));
+                state.dostring("textPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                textgui->addFinishCallback(state["textPropertyCalled"]);
+                addWidget(key, textgui);
+                state["textPropertyCalled"] = nullptr;
             }
 
             _selectedEntity[entityID].push_back(key);

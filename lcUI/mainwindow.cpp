@@ -510,7 +510,7 @@ void MainWindow::triggerTextEntered(QString text)
 {
     kaguya::State state(_luaInterface.luaState());
     state["textEntered"] = kaguya::NewTable();
-    state["textEntered"]["text"] = text;
+    state["textEntered"]["text"] = text.toStdString();
     state["textEntered"]["widget"] = &_cadMdiChild;
     _luaInterface.triggerEvent("text", state["textEntered"]);
 }

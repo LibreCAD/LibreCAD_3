@@ -366,3 +366,50 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
 std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
     return _entities;
 }
+
+PropertiesMap LWPolyline::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["width"] = this->width();
+    propertyValues["elevation"] = this->elevation();
+    propertyValues["thickness"] = this->tickness();
+    propertyValues["closed"] = this->closed();
+    propertyValues["extrusionDirection"] = this->extrusionDirection();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr LWPolyline::setProperties(const PropertiesMap& propertiesMap) const {
+    double widthp = this->width();
+    double elevationp = this->elevation();
+    double ticknessp = this->tickness();
+    bool closedp = this->closed();
+    lc::geo::Coordinate extrusionDirectionp = this->extrusionDirection();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "width") {
+            widthp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "elevation") {
+            elevationp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "thickness") {
+            ticknessp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "closed") {
+            closedp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "extrusionDirection") {
+            extrusionDirectionp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newLWPolyline = std::make_shared<LWPolyline>(vertex(), widthp, elevationp, ticknessp, closedp, extrusionDirectionp, layer(), metaInfo(), block());
+    newLWPolyline->setID(this->id());
+    return newLWPolyline;
+}

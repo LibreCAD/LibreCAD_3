@@ -84,3 +84,43 @@ TextConst::LineSpacingStyle Dimension::lineSpacingStyle() const {
 std::string Dimension::explicitValue() const {
     return _explicitValue;
 }
+
+void Dimension::getDimensionProperties(PropertiesMap& propertyValues) const {
+    propertyValues["definitionPoint"] = this->definitionPoint();
+    propertyValues["middleOfText"] = this->middleOfText();
+    propertyValues["textAngle"] = this->textAngle();
+    propertyValues["lineSpacingFactor"] = this->lineSpacingFactor();
+    propertyValues["explicitValue"] = this->explicitValue();
+}
+
+void Dimension::setDimensionProperties(const PropertiesMap& propertiesMap, lc::geo::Coordinate& definitionPointp, lc::geo::Coordinate& middleOfTextp,
+    double& textAnglep, double& lineSpacingFactorp, std::string& explicitValuep) const {
+    definitionPointp = this->definitionPoint();
+    middleOfTextp = this->middleOfText();
+    textAnglep = this->textAngle();
+    lineSpacingFactorp = this->lineSpacingFactor();
+    explicitValuep = this->explicitValue();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "definitionPoint") {
+            definitionPointp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "middleOfText") {
+            middleOfTextp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "textAngle") {
+            textAnglep = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "lineSpacingFactor") {
+            lineSpacingFactorp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "explicitValue") {
+            explicitValuep = boost::get<std::string>(iter->second);
+        }
+    }
+}

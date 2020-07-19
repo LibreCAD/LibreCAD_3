@@ -40,9 +40,9 @@ namespace lc {
             double _value;
         };
 
-        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate> EntityProperty;
+        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate, std::string> EntityProperty;
 
-        typedef std::map<std::string, boost::variant<AngleProperty, double, bool, lc::geo::Coordinate>> PropertiesMap;
+        typedef std::map<std::string, EntityProperty> PropertiesMap;
 
         /**
          *Class that all CAD entities must inherit
