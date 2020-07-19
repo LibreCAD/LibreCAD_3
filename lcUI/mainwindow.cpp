@@ -59,7 +59,7 @@ MainWindow::MainWindow()
     readUiSettings();
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, propertyEditor);
+    this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 }
 
 MainWindow::~MainWindow()

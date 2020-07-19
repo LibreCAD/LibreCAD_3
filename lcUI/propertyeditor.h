@@ -1,4 +1,5 @@
 #include <QDockWidget>
+#include <QGroupBox>
 #include <cad/base/cadentity.h>
 #include "widgets/guiAPI/inputguicontainer.h"
 #include "widgets/guiAPI/inputgui.h"
@@ -35,7 +36,9 @@ namespace lc
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;
+            std::map<unsigned long, QGroupBox*> _entityGroup;
             std::map<std::string, unsigned long> _widgetKeyToEntity;
+            unsigned long _currentEntity;
         };
     }
 }

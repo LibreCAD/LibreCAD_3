@@ -2,6 +2,7 @@
 
 #include "widgets/guiAPI/entitypickervisitor.h"
 #include <QVBoxLayout>
+#include <QScrollArea>
 
 #include "widgets/guiAPI/numbergui.h"
 #include "widgets/guiAPI/coordinategui.h"
@@ -16,10 +17,18 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     QDockWidget("Property Editor", mainWindow),
     InputGUIContainer("property_editor", mainWindow)
 {
-    QWidget* parentWidget = new QWidget(this);
+    QScrollArea* parentWidget = new QScrollArea(this);
+
+    parentWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    parentWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    parentWidget->setWidgetResizable(true);
+    QWidget* widget = new QWidget(parentWidget);
+    widget->setObjectName("guiContainer");
+    parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
     QVBoxLayout* verticalLayout = new QVBoxLayout();
-    parentWidget->setLayout(verticalLayout);
+    widget->setLayout(verticalLayout);
 }
 
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
@@ -51,6 +60,22 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
             iter = _selectedEntity.erase(iter);
         }
     }
+
+    for (std::map<unsigned long, QGroupBox*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end(); ++iter) {
+        bool found = false;
+
+        for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
+            if (cadEnt->id() == iter->first) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            delete _entityGroup[iter->first];
+            iter = _entityGroup.erase(iter);
+        }
+    }
 }
 
 void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
@@ -58,14 +83,35 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         _selectedEntity[entity->id()] = std::vector<std::string>();
     }
 
+    if (_entityGroup.find(entity->id()) == _entityGroup.end()) {
+        // Get entity information
+        api::EntityPickerVisitor entityVisitor;
+        entity->dispatch(entityVisitor);
+        QString entityInfo = QString(entityVisitor.getEntityInformation().c_str()) + QString(" #") + QString::number(entity->id());
+
+        // Create and add entity group
+        QGroupBox* entityGroup = new QGroupBox(entityInfo);
+        _entityGroup[entity->id()] = entityGroup;
+        QVBoxLayout* entityLayout = new QVBoxLayout();
+        entityGroup->setLayout(entityLayout);
+
+        QWidget* guicontainer = this->widget()->findChild<QWidget*>("guiContainer");
+        guicontainer->layout()->addWidget(entityGroup);
+    }
+
     createPropertiesWidgets(entity->id(), entity->availableProperties());
 }
 
 bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
+    if (_entityGroup.find(_currentEntity) == _entityGroup.end()) {
+        std::cout << "Entity group does not exist" << std::endl;
+        return false;
+    }
+    QGroupBox* entityGroup = _entityGroup[_currentEntity];
+
     bool success = InputGUIContainer::addWidget(key, guiWidget);
     if (success) {
-        guiWidget->setParent(this);
-        this->widget()->layout()->addWidget(guiWidget);
+        entityGroup->layout()->addWidget(guiWidget);
     }
     return success;
 }
@@ -120,15 +166,33 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 }
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
+    _currentEntity = entityID;
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
         std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
+        if (iter->second.which() == 0) {
+            key += "_angle";
+        }
+
+        // double
+        if (iter->second.which() == 1) {
+            key += "_double";
+        }
+
+        // bool
+        if (iter->second.which() == 2) {
+            key += "_bool";
+        }
+
+        // coordinate
+        if (iter->second.which() == 3) {
+            key += "_coordinate";
+        }
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
             // angleproperty
             if (iter->second.which() == 0) {
-                key += "_angle";
                 lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
                 state.dostring("anglePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
@@ -139,7 +203,6 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
             // double
             if (iter->second.which() == 1) {
-                key += "_double";
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
                 state.dostring("numberPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
@@ -150,7 +213,6 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
             // bool
             if (iter->second.which() == 2) {
-                key += "_bool";
                 lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 checkboxgui->setValue(boost::get<bool>(iter->second));
                 state.dostring("boolPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
@@ -161,7 +223,6 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
             // coordinate
             if (iter->second.which() == 3) {
-                key += "_coordinate";
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
                 state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
