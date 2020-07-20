@@ -119,13 +119,13 @@ TEST(CommandLine, NumberTest) {
 
 TEST(CommandLine, EnableCommandTest) {
     QApplication app(argc, argv);
-    CliCommandTest cliTest;
 
     kaguya::State state;
+    CliCommandTest cliTest;
     state.dostring("testvalue = false");
     state.dostring("testfunction = function() testvalue=true end");
 
-    const char* c1 = "COMMAND";
+    const char *c1 = "COMMAND";
     cliTest.addCommand(c1, state["testfunction"]);
 
     EXPECT_TRUE(cliTest.isCommandEnabled("COMMAND"));
@@ -146,12 +146,12 @@ TEST(CommandLine, EnableCommandTest) {
 
 TEST(CommandLine, GetAPITest) {
     QApplication app(argc, argv);
+    kaguya::State state;
     CliCommandTest cliTest;
 
     std::vector<std::string> availableCommands = cliTest.availableCommands();
     std::vector<std::string> commandsEntered = cliTest.commandsHistory();
 
-    kaguya::State state;
     state.dostring("testfunction = function() testvalue=true end");
 
     EXPECT_EQ(0, availableCommands.size());
