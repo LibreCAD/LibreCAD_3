@@ -4,6 +4,7 @@
 #include "radiogroupgui.h"
 #include "coordinategui.h"
 #include "entitygui.h"
+#include "listgui.h"
 
 #include <iostream>
 
@@ -33,6 +34,7 @@ bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
     RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(guiWidget);
     CoordinateGUI* isCoordinate = qobject_cast<CoordinateGUI*>(guiWidget);
     EntityGUI* isEntityGUI = qobject_cast<EntityGUI*>(guiWidget);
+    ListGUI* isListGUI = qobject_cast<ListGUI*>(guiWidget);
 
     if (isHorizGroup != nullptr) {
         std::set<std::string> widgetKeys = isHorizGroup->getKeys();
@@ -66,6 +68,10 @@ bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
 
     if (isEntityGUI != nullptr) {
         isEntityGUI->enableWidgetSelection(mainWindow);
+    }
+
+    if (isListGUI != nullptr) {
+        isListGUI->setMainWindow(mainWindow);
     }
 
     guiWidget->setKey(key);

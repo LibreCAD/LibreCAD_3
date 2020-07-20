@@ -30,6 +30,7 @@
 #include "widgets/guiAPI/numbergui.h"
 #include "widgets/guiAPI/colorgui.h"
 #include "widgets/guiAPI/entitygui.h"
+#include "widgets/guiAPI/listgui.h"
 #include <drawables/tempentities.h>
 #include "mainwindow.h"
 
@@ -320,6 +321,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
         .addFunction("label", &lc::ui::api::InputGUI::label)
         .addFunction("setLabel", &lc::ui::api::InputGUI::setLabel)
+        .addFunction("key", &lc::ui::api::InputGUI::key)
         .addOverloadedFunctions("enable", [](lc::ui::api::InputGUI& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::InputGUI& self) { self.setEnabled(false); })
     );
@@ -427,5 +429,10 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setValue", &lc::ui::api::EntityGUI::setValue)
         .addFunction("addEntity", &lc::ui::api::EntityGUI::addEntity)
         .addFunction("addCallback", &lc::ui::api::EntityGUI::addCallback)
+    );
+
+    state["gui"]["List"].setClass(kaguya::UserdataMetatable<lc::ui::api::ListGUI, lc::ui::api::InputGUI>()
+        .setConstructors<lc::ui::api::ListGUI(std::string)>()
+        .addFunction("addItem", &lc::ui::api::ListGUI::addItem)
     );
 }

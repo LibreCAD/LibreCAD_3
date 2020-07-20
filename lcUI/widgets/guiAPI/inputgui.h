@@ -54,6 +54,8 @@ namespace lc
                 */
                 void setKey(const std::string& keyIn);
 
+                const std::string key() const;
+
             protected:
                 std::string _label;
                 std::string _key;

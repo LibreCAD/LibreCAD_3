@@ -19,3 +19,7 @@ void InputGUI::setLabel(const std::string& newLabel) {
 void InputGUI::setKey(const std::string& keyIn) {
     _key = keyIn;
 }
+
+const std::string InputGUI::key() const {
+    return _key;
+}
