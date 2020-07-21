@@ -19,7 +19,14 @@ namespace lc
                 Q_OBJECT
 
             public:
-                ListGUI(std::string label, QWidget* parent = nullptr);
+                enum class ListType
+                {
+                    NONE,
+                    COORDINATE
+                };
+
+            public:
+                ListGUI(std::string label, ListGUI::ListType listType = ListGUI::ListType::NONE, QWidget* parent = nullptr);
 
                 ~ListGUI();
 
@@ -31,7 +38,18 @@ namespace lc
 
                 void setLabel(const std::string& newLabel) override;
 
+                void setListType(ListGUI::ListType listType);
+
+                void setListType(const std::string& listTypeStr);
+
+                ListType listType() const;
+
                 std::set<std::string> getKeys() const;
+
+            public slots:
+                void plusButtonClicked();
+
+                void minusButtonClicked();
 
             private:
                 Ui::ListGUI* ui;
@@ -39,6 +57,7 @@ namespace lc
                 std::vector<InputGUI*> itemList;
                 std::set<std::string> _addedKeys;
                 lc::ui::MainWindow* mainWindow;
+                ListType _listType;
             };
 
         }

@@ -434,5 +434,6 @@ void addLuaGUIAPIBindings(lua_State* L) {
     state["gui"]["List"].setClass(kaguya::UserdataMetatable<lc::ui::api::ListGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::ListGUI(std::string)>()
         .addFunction("addItem", &lc::ui::api::ListGUI::addItem)
+        .addOverloadedFunctions("setListType", static_cast<void(lc::ui::api::ListGUI::*)(const std::string&)>(&lc::ui::api::ListGUI::setListType))
     );
 }

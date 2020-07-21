@@ -6,16 +6,29 @@
 
 using namespace lc::ui::api;
 
-ListGUI::ListGUI(std::string label, QWidget* parent)
+ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* parent)
     : 
     InputGUI(label, parent),
     ui(new Ui::ListGUI),
-    mainWindow(nullptr)
+    mainWindow(nullptr),
+    _listType(listTypeIn)
 {
     ui->setupUi(this);
 
     listWidget = qobject_cast<QListWidget*>(ui->verticalLayout->itemAt(1)->widget());
     qobject_cast<QLabel*>(ui->verticalLayout->itemAt(0)->widget())->setText(label.c_str());
+
+    QLayout* buttonLayout = ui->verticalLayout->itemAt(2)->layout();
+    QPushButton* plusButton = qobject_cast<QPushButton*>(buttonLayout->itemAt(0)->widget());
+    QPushButton* minusButton = qobject_cast<QPushButton*>(buttonLayout->itemAt(1)->widget());
+
+    connect(plusButton, &QPushButton::clicked, this, &ListGUI::plusButtonClicked);
+    connect(minusButton, &QPushButton::clicked, this, &ListGUI::minusButtonClicked);
+
+    if (listTypeIn == ListType::NONE) {
+        plusButton->setEnabled(false);
+        minusButton->setEnabled(false);
+    }
 }
 
 ListGUI::~ListGUI()
@@ -40,7 +53,6 @@ void ListGUI::addItem(const std::string& key, InputGUI* newitem) {
     }
 
     newitem->setKey(key);
-
     CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(newitem);
     EntityGUI* entitygui = qobject_cast<EntityGUI*>(newitem);
 
@@ -57,6 +69,7 @@ void ListGUI::addItem(const std::string& key, InputGUI* newitem) {
     listWidget->addItem(itemW);
     listWidget->setItemWidget(itemW, newitem);
     itemList.push_back(newitem);
+    _addedKeys.insert(key);
 }
 
 void ListGUI::setMainWindow(lc::ui::MainWindow* mainWindowIn) {
@@ -70,4 +83,54 @@ void ListGUI::setLabel(const std::string& newLabel) {
 
 std::set<std::string> ListGUI::getKeys() const {
     return _addedKeys;
+}
+
+void ListGUI::plusButtonClicked() {
+    if (_listType == ListType::COORDINATE) {
+        std::string newkey = _key + "_coord" + std::to_string(itemList.size());
+        CoordinateGUI* coordWidget = new CoordinateGUI("Coordinate " + std::to_string(itemList.size()));
+        addItem(newkey, coordWidget);
+    }
+}
+
+void ListGUI::minusButtonClicked() {
+    if (_listType == ListType::COORDINATE) {
+        QListWidgetItem* selectedItem = listWidget->currentItem();
+        CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(listWidget->itemWidget(selectedItem));
+        
+        _addedKeys.erase(_addedKeys.find(coordgui->key()));
+        for (std::vector<InputGUI*>::iterator iter = itemList.begin(); iter != itemList.end();++iter) {
+            if ((*iter)->key() == coordgui->key()) {
+                itemList.erase(iter);
+                break;
+            }
+        }
+        selectedItem->setHidden(true);
+    }
+}
+
+void ListGUI::setListType(ListGUI::ListType listTypeIn) {
+    if (listTypeIn == ListType::COORDINATE) {
+        // check if all already added widgets are of type coordinate
+        for (int i = 0; i < itemList.size(); i++) {
+            CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(itemList[i]);
+            if (coordgui == nullptr) {
+                return;
+            }
+        }
+
+        _listType = listTypeIn;
+        qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(0)->widget())->setEnabled(true);
+        qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(1)->widget())->setEnabled(true);
+    }
+}
+
+void ListGUI::setListType(const std::string& listTypeStr) {
+    if (listTypeStr == "coordinate") {
+        setListType(ListType::COORDINATE);
+    }
+}
+
+ListGUI::ListType ListGUI::listType() const {
+    return _listType;
 }
