@@ -48,8 +48,10 @@ function LWPolylineOperations:enterPoint(eventName, data)
 	if(eventName == "mouseMove") then
         self:newData(data["position"])
 		self.tempPoint = true
-	elseif(eventName == "point" or eventName == "number") then
+	elseif(eventName == "point") then
         self:newData(data["position"])
+	elseif(eventName == "text") then
+	self.builder:setWidth(tonumber(data["text"]))
     end
 end
 

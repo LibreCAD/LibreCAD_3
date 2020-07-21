@@ -263,6 +263,7 @@ void import_lc_builder_namespace(kaguya::State& state) {
 		.addFunction("modifyLastVertexLine", &lc::builder::LWPolylineBuilder::modifyLastVertexLine)
 		.addFunction("removeVertex", &lc::builder::LWPolylineBuilder::removeVertex)
 		.addFunction("getVertices", &lc::builder::LWPolylineBuilder::getVertices)
+		.addFunction("setWidth", &lc::builder::LWPolylineBuilder::setWidth)
 		.addFunction("build", &lc::builder::LWPolylineBuilder::build)
 	);
 

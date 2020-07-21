@@ -59,7 +59,7 @@ void lc::builder::LWPolylineBuilder::modifyLastVertex(const geo::Coordinate& dat
 	// This is called after addVertex to apply width...
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, vert.bulge, vert.hintAngle);
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, _currentVertex_StartWidth, _currentVertex_EndWidth, vert.bulge, vert.hintAngle);
 }
 
 void lc::builder::LWPolylineBuilder::modifyLastVertexArc()
@@ -72,14 +72,25 @@ void lc::builder::LWPolylineBuilder::modifyLastVertexArc()
 		angle=M_PI/2;// close at 90 deg
 		}
 	// We can use _currentVertexBulge here but we have to determine angle here too by calculation
-	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, bulge, angle);
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, _currentVertex_StartWidth, _currentVertex_EndWidth, bulge, angle);
+}
+
+void lc::builder::LWPolylineBuilder::setWidth(double width){
+	_currentVertex_StartWidth = width;
+	_currentVertex_EndWidth = width;
+	// Let's make it smooth
+	int n = _vertices.size();
+	if (n>0){
+		lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
+		_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, width, vert.bulge, vert.hintAngle);
+	}
 }
 
 void lc::builder::LWPolylineBuilder::modifyLastVertexLine()
 {
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, 0, 0);
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, _currentVertex_StartWidth, _currentVertex_EndWidth, 0, 0);
 }
 
 const std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder::getVertices()
