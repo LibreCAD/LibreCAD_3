@@ -11,12 +11,14 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
     InputGUI(label, parent),
     ui(new Ui::ListGUI),
     mainWindow(nullptr),
-    _listType(listTypeIn)
+    _listType(listTypeIn),
+    itemIdCount(0)
 {
     ui->setupUi(this);
 
     listWidget = qobject_cast<QListWidget*>(ui->verticalLayout->itemAt(1)->widget());
     qobject_cast<QLabel*>(ui->verticalLayout->itemAt(0)->widget())->setText(label.c_str());
+    listWidget->setMinimumHeight(200);
 
     QLayout* buttonLayout = ui->verticalLayout->itemAt(2)->layout();
     QPushButton* plusButton = qobject_cast<QPushButton*>(buttonLayout->itemAt(0)->widget());
@@ -87,9 +89,15 @@ std::set<std::string> ListGUI::getKeys() const {
 
 void ListGUI::plusButtonClicked() {
     if (_listType == ListType::COORDINATE) {
-        std::string newkey = _key + "_coord" + std::to_string(itemList.size());
-        CoordinateGUI* coordWidget = new CoordinateGUI("Coordinate " + std::to_string(itemList.size()));
+        std::string newkey = _key + "_coord" + std::to_string(itemIdCount);
+        CoordinateGUI* coordWidget = new CoordinateGUI("Coordinate " + std::to_string(itemIdCount));
+        itemIdCount++;
         addItem(newkey, coordWidget);
+
+        for (kaguya::LuaRef& cb : _callbacks) {
+            coordWidget->addFinishCallback(cb);
+            cb();
+        }
     }
 }
 
@@ -106,6 +114,10 @@ void ListGUI::minusButtonClicked() {
             }
         }
         selectedItem->setHidden(true);
+
+        for (kaguya::LuaRef& cb : _callbacks) {
+            cb();
+        }
     }
 }
 
@@ -133,4 +145,24 @@ void ListGUI::setListType(const std::string& listTypeStr) {
 
 ListGUI::ListType ListGUI::listType() const {
     return _listType;
+}
+
+void ListGUI::setValue(std::vector<lc::geo::Coordinate> coords) {
+    for (lc::geo::Coordinate& coord : coords) {
+        std::string newkey = _key + "_coord" + std::to_string(itemIdCount);
+        CoordinateGUI* coordinateGUI = new CoordinateGUI("Coordinate " + std::to_string(itemIdCount));
+        itemIdCount++;
+        coordinateGUI->setValue(coord);
+        addItem(newkey, coordinateGUI);
+    }
+}
+
+void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
+    if (_listType == ListType::COORDINATE) {
+        _callbacks.push_back(cb);
+        for (InputGUI* inputWidget : itemList) {
+            CoordinateGUI* coordWidget = qobject_cast<CoordinateGUI*>(inputWidget);
+            coordWidget->addFinishCallback(cb);
+        }
+    }
 }

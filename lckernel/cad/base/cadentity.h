@@ -40,7 +40,7 @@ namespace lc {
             double _value;
         };
 
-        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate, std::string> EntityProperty;
+        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate, std::string, std::vector<lc::geo::Coordinate>> EntityProperty;
 
         typedef std::map<std::string, EntityProperty> PropertiesMap;
 

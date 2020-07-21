@@ -332,6 +332,7 @@ CADEntity_CSPtr Spline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate
 PropertiesMap Spline::availableProperties() const {
     PropertiesMap propertyValues;
 
+    propertyValues["controlPoints"] = this->controlPoints();
     propertyValues["degree"] = (double)this->degree();
     propertyValues["closed"] = this->closed();
     propertyValues["fitTolerance"] = this->fitTolerance();
@@ -343,6 +344,7 @@ PropertiesMap Spline::availableProperties() const {
 }
 
 CADEntity_CSPtr Spline::setProperties(const PropertiesMap& propertiesMap) const {
+    std::vector<lc::geo::Coordinate> controlPointsp = this->controlPoints();
     int degreep = this->degree();
     bool closedp = this->closed();
     double fitTolerancep = this->fitTolerance();
@@ -352,6 +354,9 @@ CADEntity_CSPtr Spline::setProperties(const PropertiesMap& propertiesMap) const 
 
     for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
     {
+        if (iter->first == "controlPoints") {
+            controlPointsp = boost::get<std::vector<lc::geo::Coordinate>>(iter->second);
+        }
         if (iter->first == "degree") {
             degreep = (int)boost::get<double>(iter->second);
         }
@@ -377,7 +382,7 @@ CADEntity_CSPtr Spline::setProperties(const PropertiesMap& propertiesMap) const 
         }
     }
 
-    auto newSpline = std::make_shared<Spline>(controlPoints(), knotPoints(), fitPoints(), degreep, closedp, fitTolerancep, startTangentp.x(),
+    auto newSpline = std::make_shared<Spline>(controlPointsp, knotPoints(), fitPoints(), degreep, closedp, fitTolerancep, startTangentp.x(),
         startTangentp.y(), startTangentp.z(), endTangentp.x(),endTangentp.y(), endTangentp.z(), normalVectorp.x(), normalVectorp.y(), normalVectorp.z(), flags(), layer(), metaInfo(), block());
     newSpline->setID(this->id());
     return newSpline;

@@ -8,6 +8,7 @@
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/anglegui.h"
 #include "widgets/guiAPI/textgui.h"
+#include "widgets/guiAPI/listgui.h"
 
 using namespace lc::ui;
 
@@ -164,6 +165,10 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         propertiesList[propertyName] = propertiesTable[key].get<std::string>();
     }
 
+    if (entityType == "vector") {
+        propertiesList[propertyName] = propertiesTable[key].get<std::vector<lc::geo::Coordinate>>();
+    }
+
     lc::entity::CADEntity_CSPtr changedEntity = entity->setProperties(propertiesList);
 
     entityBuilder->appendEntity(changedEntity);
@@ -198,6 +203,11 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
         // text (string)
         if (iter->second.which() == 4) {
             key += "_text";
+        }
+
+        // vector
+        if (iter->second.which() == 5) {
+            key += "_vector";
         }
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
@@ -249,6 +259,19 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 textgui->addFinishCallback(state["textPropertyCalled"]);
                 addWidget(key, textgui);
                 state["textPropertyCalled"] = nullptr;
+            }
+
+            if (iter->second.which() == 5) {
+                lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1), lc::ui::api::ListGUI::ListType::COORDINATE);
+                listgui->setMainWindow(mainWindow);
+
+                std::vector<lc::geo::Coordinate> coords = boost::get<std::vector<lc::geo::Coordinate>>(iter->second);
+                listgui->setValue(coords);
+
+                state.dostring("vectorPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                listgui->addCallbackToAll(state["vectorPropertyCalled"]);
+                addWidget(key, listgui);
+                state["vectorPropertyCalled"] = nullptr;
             }
 
             _selectedEntity[entityID].push_back(key);

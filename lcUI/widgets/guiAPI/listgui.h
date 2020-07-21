@@ -42,6 +42,10 @@ namespace lc
 
                 void setListType(const std::string& listTypeStr);
 
+                void addCallbackToAll(kaguya::LuaRef cb);
+
+                void setValue(std::vector<lc::geo::Coordinate> coords);
+
                 ListType listType() const;
 
                 std::set<std::string> getKeys() const;
@@ -58,6 +62,8 @@ namespace lc
                 std::set<std::string> _addedKeys;
                 lc::ui::MainWindow* mainWindow;
                 ListType _listType;
+                std::vector<kaguya::LuaRef> _callbacks;
+                unsigned int itemIdCount;
             };
 
         }
