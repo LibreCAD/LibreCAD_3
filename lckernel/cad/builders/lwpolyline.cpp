@@ -15,14 +15,14 @@ void lc::builder::LWPolylineBuilder::addLineVertex(const lc::geo::Coordinate& ve
 {
 	int n = _vertices.size();
 	if(n<2){
-		_vertices.push_back(lc::builder::LWBuilderVertex(vert, 0));
+		_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_StartWidth, _currentVertex_EndWidth, 0, 0));
 		return;
 	}
 	// There is chance of having arc before it
 	auto vert1 = _vertices[n - 1];
 	auto vert2 = _vertices[n - 2];
 	if(vert2.bulge==0){
-		_vertices.push_back(lc::builder::LWBuilderVertex(vert, 0));
+		_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_StartWidth, _currentVertex_EndWidth, 0, 0));
 		return;
 	}else{
 		// There is arc so create continuation to it
@@ -31,7 +31,7 @@ void lc::builder::LWPolylineBuilder::addLineVertex(const lc::geo::Coordinate& ve
 		auto a = geo::Coordinate(cos(angle),sin(angle));
 		auto magnitude = delta.dot(a);
 		if(magnitude<0)magnitude=0;
-		_vertices.push_back(lc::builder::LWBuilderVertex(vert1.location + a*magnitude, 0));
+		_vertices.push_back(lc::builder::LWBuilderVertex(vert1.location + a*magnitude, _currentVertex_StartWidth, _currentVertex_EndWidth, 0, 0));
 		// This may be changed to requesting length for extruction
 	}
 }
@@ -40,7 +40,7 @@ void lc::builder::LWPolylineBuilder::addArcVertex(const lc::geo::Coordinate& ver
 {
 	int n = _vertices.size();
 	if(n<2){
-		_vertices.push_back(lc::builder::LWBuilderVertex(vert, 0, 0, 1, M_PI/2));
+		_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_StartWidth, _currentVertex_EndWidth, 1, M_PI/2));
 		// If no information than it's semi circle
 		// So bulge is hand coded 1 for now
 		return;
@@ -51,7 +51,7 @@ void lc::builder::LWPolylineBuilder::addArcVertex(const lc::geo::Coordinate& ver
 	angle=-vert2.location.angleTo(vert1.location)+vert1.location.angleTo(vert) - vert2.hintAngle;
 	bulge=(1-cos(angle))/sin(angle);
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert1.location, vert1.startWidth, vert1.endWidth, bulge, angle);
-	_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_Bulge));
+	_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_StartWidth, _currentVertex_EndWidth, _currentVertex_Bulge, 0));
 }
 
 void lc::builder::LWPolylineBuilder::modifyLastVertex(const geo::Coordinate& data)
@@ -75,22 +75,22 @@ void lc::builder::LWPolylineBuilder::modifyLastVertexArc()
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, _currentVertex_StartWidth, _currentVertex_EndWidth, bulge, angle);
 }
 
-void lc::builder::LWPolylineBuilder::setWidth(double width){
-	_currentVertex_StartWidth = width;
-	_currentVertex_EndWidth = width;
-	// Let's make it smooth
-	int n = _vertices.size();
-	if (n>0){
-		lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-		_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, width, vert.bulge, vert.hintAngle);
-	}
-}
-
 void lc::builder::LWPolylineBuilder::modifyLastVertexLine()
 {
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
 	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, _currentVertex_StartWidth, _currentVertex_EndWidth, 0, 0);
+}
+
+void lc::builder::LWPolylineBuilder::setWidth(double width){
+	_currentVertex_StartWidth = width;
+	_currentVertex_EndWidth = width;
+	// Let's make it smooth
+	int n = _vertices.size();
+	if (n>=1){
+		lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
+		_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, width, width, vert.bulge, vert.hintAngle);
+	}
 }
 
 const std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder::getVertices()
