@@ -36,6 +36,7 @@ end
 function LWPolylineOperations:_init_default()
     message("<b>Polyline</b>")
     message("Click on first point or enter coordinates:")
+    message("Enter number for width")
 end
 
 function LWPolylineOperations:enterPoint(eventName, data)

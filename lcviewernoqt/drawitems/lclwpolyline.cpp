@@ -17,8 +17,6 @@ LCLWPolyline::LCLWPolyline(const lc::entity::LWPolyline_CSPtr& lwpolyline) :
     }
 }
 
-
-#include <iostream>
 void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const lc::geo::Area &rect) const {
     bool autoStroke = autostroke();
     auto vertices = _polyLine->vertex();
