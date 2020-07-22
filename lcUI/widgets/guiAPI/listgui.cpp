@@ -12,7 +12,8 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
     ui(new Ui::ListGUI),
     mainWindow(nullptr),
     _listType(listTypeIn),
-    itemIdCount(0)
+    itemIdCount(0),
+    _selectedCoordinate(nullptr)
 {
     ui->setupUi(this);
 
@@ -26,6 +27,7 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
 
     connect(plusButton, &QPushButton::clicked, this, &ListGUI::plusButtonClicked);
     connect(minusButton, &QPushButton::clicked, this, &ListGUI::minusButtonClicked);
+    connect(listWidget, &QListWidget::currentItemChanged, this, &ListGUI::guiItemChanged);
 
     if (listTypeIn == ListType::NONE) {
         plusButton->setEnabled(false);
@@ -164,5 +166,26 @@ void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
             CoordinateGUI* coordWidget = qobject_cast<CoordinateGUI*>(inputWidget);
             coordWidget->addFinishCallback(cb);
         }
+    }
+}
+
+void ListGUI::guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous) {
+    // if called by outside (property editor)
+    if (current == nullptr) {
+        current = listWidget->currentItem();
+    }
+
+    if (_listType == ListType::COORDINATE) {
+        CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(listWidget->itemWidget(current));
+        lc::geo::Coordinate coord = coordgui->value();
+        lc::viewer::drawable::TempEntities_SPtr tempEntities = mainWindow->cadMdiChild()->tempEntities();
+
+        if (_selectedCoordinate != nullptr) {
+            tempEntities->removeEntity(_selectedCoordinate);
+        }
+
+        auto layer = std::make_shared<lc::meta::Layer>("highlightGUI", lc::meta::MetaLineWidthByValue(4), lc::Color(254, 254, 1));
+        _selectedCoordinate = std::make_shared<const lc::entity::Circle>(coord, 10, layer);
+        tempEntities->addEntity(_selectedCoordinate);
     }
 }

@@ -55,6 +55,8 @@ namespace lc
 
                 void minusButtonClicked();
 
+                void guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
+
             private:
                 Ui::ListGUI* ui;
                 QListWidget* listWidget;
@@ -64,6 +66,7 @@ namespace lc
                 ListType _listType;
                 std::vector<kaguya::LuaRef> _callbacks;
                 unsigned int itemIdCount;
+                lc::entity::CADEntity_CSPtr _selectedCoordinate;
             };
 
         }

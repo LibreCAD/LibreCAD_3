@@ -173,6 +173,12 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 
     entityBuilder->appendEntity(changedEntity);
     entityBuilder->execute();
+
+    // after entity has been changed
+    if (entityType == "vector") {
+        api::ListGUI* listgui = qobject_cast<api::ListGUI*>(_inputWidgets[key]);
+        listgui->guiItemChanged(nullptr, nullptr);
+    }
 }
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
