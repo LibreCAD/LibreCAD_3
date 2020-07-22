@@ -131,7 +131,7 @@ QString getLCADInfo(){
 QString getExtInfo(){
     return
         QString("Qt Version: %1").arg(qVersion()) + "<br/>" +
-        QString("Boost Version: %1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100) + "\n" +
+        QString("Boost Version: %1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100) + "<br/>" +
         QString("Lua Version: %1").arg(getLuaVersion()) + "<br/>" + 
 	QString("libdxfrw Version: %1").arg(DRW_VERSION) + "<br/>" + 
 	QString("OpenGL Version: %1").arg(getGLVersion()) + "<br/>" +

@@ -87,9 +87,9 @@ void lc::builder::LWPolylineBuilder::setWidth(double width){
 	_currentVertex_EndWidth = width;
 	// Let's make it smooth
 	int n = _vertices.size();
-	if (n>=1){
+	if (n>=1){//Change endWidth of previous entity to make smooth transition
 		lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-		_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, width, width, vert.bulge, vert.hintAngle);
+		_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, width, vert.bulge, vert.hintAngle);
 	}
 }
 
