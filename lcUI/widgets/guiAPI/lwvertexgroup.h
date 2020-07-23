@@ -26,6 +26,8 @@ namespace lc
 
                 void setKey(const std::string& keyIn) override;
 
+                void setValue(lc::geo::Coordinate coord, double sw, double ew);
+
             private:
                 lc::ui::api::CoordinateGUI* coordgui;
                 lc::ui::api::NumberGUI* startWidth;

@@ -49,11 +49,11 @@ LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
 	:
 	CADEntity(builder),
 	_vertex(generateVertexFromBuilderVertex(builder.getVertices())),
-	_width(1),
-	_elevation(1),
-	_tickness(1),
-	_closed(false),
-	_extrusionDirection(lc::geo::Coordinate(0, 0))
+	_width(builder.width()),
+	_elevation(builder.elevation()),
+	_tickness(builder.thickness()),
+	_closed(builder.closed()),
+	_extrusionDirection(builder.extrusionDirection())
 {
 	generateEntities();
 }

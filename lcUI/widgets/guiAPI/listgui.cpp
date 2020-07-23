@@ -197,6 +197,16 @@ void ListGUI::setValue(std::vector<lc::geo::Coordinate> coords) {
     }
 }
 
+void ListGUI::setValue(std::vector<lc::builder::LWBuilderVertex> builderVertices) {
+    for (lc::builder::LWBuilderVertex& builderVertex : builderVertices) {
+        std::string newkey = _key + "_lwvertex" + std::to_string(itemIdCount);
+        LWVertexGroup* lwVertexGroup = new LWVertexGroup("LWVertex Group " + std::to_string(itemIdCount));
+        itemIdCount++;
+        addItem(newkey, lwVertexGroup);
+        lwVertexGroup->setValue(builderVertex.location, builderVertex.startWidth, builderVertex.endWidth);
+    }
+}
+
 void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
     _callbacks.push_back(cb);
     if (_listType == ListType::COORDINATE) {

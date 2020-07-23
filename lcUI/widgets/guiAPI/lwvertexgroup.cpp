@@ -21,13 +21,10 @@ void LWVertexGroup::setMainWindow(lc::ui::MainWindow* mainWindowIn) {
 void LWVertexGroup::getLuaValue(kaguya::LuaRef& table) {
     HorizontalGroupGUI::getLuaValue(table);
     table[_key] = kaguya::NewTable();
-    std::cout << "Creating table for key " << _key << std::endl;
 
-    table[_key][_key + "Location"] = table[_key + "Location"];
-    std::cout << "Adding location value " << table[_key + "Location"].get<lc::geo::Coordinate>();
-    table[_key][_key + "StartWidth"] = table[_key + "StartWidth"];
-    std::cout << "Adding start width value " << table[_key + "StartWidth"].get<double>();
-    table[_key][_key + "EndWidth"] = table[_key + "EndWidth"];
+    table[_key][_key + "_Location"] = table[_key + "_Location"];
+    table[_key][_key + "_StartWidth"] = table[_key + "_StartWidth"];
+    table[_key][_key + "_EndWidth"] = table[_key + "_EndWidth"];
 }
 
 void LWVertexGroup::setKey(const std::string& keyIn) {
@@ -37,7 +34,13 @@ void LWVertexGroup::setKey(const std::string& keyIn) {
     startWidth = new lc::ui::api::NumberGUI("Start Width");
     endWidth = new lc::ui::api::NumberGUI("End Width");
 
-    addWidget(_key + "Location", coordgui);
-    addWidget(_key + "StartWidth", startWidth);
-    addWidget(_key + "EndWidth", endWidth);
+    addWidget(_key + "_Location", coordgui);
+    addWidget(_key + "_StartWidth", startWidth);
+    addWidget(_key + "_EndWidth", endWidth);
+}
+
+void LWVertexGroup::setValue(lc::geo::Coordinate coord, double sw, double ew) {
+    coordgui->setValue(coord);
+    startWidth->setValue(sw);
+    endWidth->setValue(ew);
 }

@@ -49,6 +49,8 @@ namespace lc
 
                 void setValue(std::vector<lc::geo::Coordinate> coords);
 
+                void setValue(std::vector<lc::builder::LWBuilderVertex> builderVertices);
+
                 ListType listType() const;
 
                 std::set<std::string> getKeys() const;

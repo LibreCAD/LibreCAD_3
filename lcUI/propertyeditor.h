@@ -35,6 +35,8 @@ namespace lc
 
             void createCustomWidgets(lc::entity::CADEntity_CSPtr entity);
 
+            lc::entity::CADEntity_CSPtr customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity);
+
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;

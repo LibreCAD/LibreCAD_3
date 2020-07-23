@@ -10,6 +10,8 @@
 #include "widgets/guiAPI/textgui.h"
 #include "widgets/guiAPI/listgui.h"
 
+#include <cad/builders/lwpolyline.h>
+
 using namespace lc::ui;
 
 PropertyEditor* PropertyEditor::instance = 0;
@@ -170,23 +172,12 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         propertiesList[propertyName] = propertiesTable[key].get<std::vector<lc::geo::Coordinate>>();
     }
 
-    if (entityType == "customLWPolyline") {
-        kaguya::LuaTable entTable = propertiesTable[key];
-        std::vector<kaguya::LuaRef> vertexKeys = entTable.keys();
-        for (kaguya::LuaRef vertexKey : vertexKeys)
-        {
-            std::string vertKey = vertexKey.get<std::string>();
-            kaguya::LuaTable vertexTable = propertiesTable[vertexKey];
-            std::vector<kaguya::LuaRef> vertexPropertiesKeys = vertexTable.keys();
-            for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
-            {
-                mainWindow->cliCommand()->write("Prop Key - " + vertexPropKey.get<std::string>());
-            }
+    // returns nullptr if not custom property
+    lc::entity::CADEntity_CSPtr changedEntity = customPropertyChanged(key, entityType, propertiesTable, entity);
 
-        }
+    if (changedEntity == nullptr) {
+        changedEntity = entity->setProperties(propertiesList);
     }
-
-    lc::entity::CADEntity_CSPtr changedEntity = entity->setProperties(propertiesList);
 
     entityBuilder->appendEntity(changedEntity);
     entityBuilder->execute();
@@ -196,6 +187,54 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         api::ListGUI* listgui = qobject_cast<api::ListGUI*>(_inputWidgets[key]);
         listgui->guiItemChanged(nullptr, nullptr);
     }
+}
+
+lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
+    if (entityType == "customLWPolyline") {
+        kaguya::LuaTable entTable = propertiesTable[key];
+        std::vector<kaguya::LuaRef> vertexKeys = entTable.keys();
+
+        std::vector<lc::builder::LWBuilderVertex> builderVertices;
+        for (kaguya::LuaRef vertexKey : vertexKeys)
+        {
+            std::string vertKey = vertexKey.get<std::string>();
+            kaguya::LuaTable vertexTable = propertiesTable[vertexKey];
+            std::vector<kaguya::LuaRef> vertexPropertiesKeys = vertexTable.keys();
+
+            lc::geo::Coordinate loc;
+            double sWidth;
+            double eWidth;
+
+            for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
+            {
+                std::string propKey = vertexPropKey.get<std::string>();
+                auto lastUnderscore = propKey.find_last_of("_");
+                std::string propType = propKey.substr(lastUnderscore + 1);
+                
+                if (propType == "Location") {
+                    loc = vertexTable[vertexPropKey].get<lc::geo::Coordinate>();
+                }
+
+                if (propType == "StartWidth") {
+                    sWidth = vertexTable[vertexPropKey].get<double>();
+                }
+
+                if (propType == "EndWidth") {
+                    eWidth = vertexTable[vertexPropKey].get<double>();
+                }
+            }
+
+            builderVertices.push_back(lc::builder::LWBuilderVertex(loc, 1, sWidth, eWidth));
+        }
+
+        lc::builder::LWPolylineBuilder lwPolylineBuilder;
+        lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(oldEntity));
+        lwPolylineBuilder.setVertices(builderVertices);
+
+        return lwPolylineBuilder.build();
+    }
+
+    return nullptr;
 }
 
 void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties) {
@@ -315,6 +354,10 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         std::string key = "entity" + std::to_string(entity->id()) + "_" + "customLWPolyline";
         lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI("LWVertex List", lc::ui::api::ListGUI::ListType::LW_VERTEX);
         listgui->setMainWindow(mainWindow);
+        
+        lc::builder::LWPolylineBuilder lwPolylineBuilder;
+        lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity));
+        listgui->setValue(lwPolylineBuilder.getVertices());
 
         state.dostring("customPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
         listgui->addCallbackToAll(state["customPropertyCalled"]);
