@@ -25,6 +25,7 @@ void LWVertexGroup::getLuaValue(kaguya::LuaRef& table) {
     table[_key][_key + "_Location"] = table[_key + "_Location"];
     table[_key][_key + "_StartWidth"] = table[_key + "_StartWidth"];
     table[_key][_key + "_EndWidth"] = table[_key + "_EndWidth"];
+    table[_key][_key + "_Bulge"] = _bulge;
 }
 
 void LWVertexGroup::setKey(const std::string& keyIn) {
@@ -39,8 +40,9 @@ void LWVertexGroup::setKey(const std::string& keyIn) {
     addWidget(_key + "_EndWidth", endWidth);
 }
 
-void LWVertexGroup::setValue(lc::geo::Coordinate coord, double sw, double ew) {
+void LWVertexGroup::setValue(lc::geo::Coordinate coord, double sw, double ew, double bulge) {
     coordgui->setValue(coord);
     startWidth->setValue(sw);
     endWidth->setValue(ew);
+    _bulge = bulge;
 }

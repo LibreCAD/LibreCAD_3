@@ -118,6 +118,8 @@ void MainWindow::operationFinished() {
     // remove operation group
     _toolbar.removeGroupByName("Current operation");
     _cadMdiChild.viewer()->setOperationActive(false);
+
+    selectionChanged();
 }
 
 lc::ui::widgets::CliCommand* MainWindow::cliCommand(){

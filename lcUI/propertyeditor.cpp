@@ -45,7 +45,7 @@ PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow
 
 void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
     std::vector<std::string> inputGUIsToRemove;
-    
+
     for (std::map<unsigned long, std::vector<std::string>>::iterator iter = _selectedEntity.begin(); iter != _selectedEntity.end(); ++iter) {
         bool found = false;
 
@@ -204,6 +204,7 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
             lc::geo::Coordinate loc;
             double sWidth;
             double eWidth;
+            double bulge;
 
             for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
             {
@@ -222,9 +223,13 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
                 if (propType == "EndWidth") {
                     eWidth = vertexTable[vertexPropKey].get<double>();
                 }
+
+                if (propType == "Bulge") {
+                    bulge = vertexTable[vertexPropKey].get<double>();
+                }
             }
 
-            builderVertices.push_back(lc::builder::LWBuilderVertex(loc, 1, sWidth, eWidth));
+            builderVertices.push_back(lc::builder::LWBuilderVertex(loc, sWidth, eWidth, bulge));
         }
 
         lc::builder::LWPolylineBuilder lwPolylineBuilder;

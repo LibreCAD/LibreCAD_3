@@ -26,12 +26,13 @@ namespace lc
 
                 void setKey(const std::string& keyIn) override;
 
-                void setValue(lc::geo::Coordinate coord, double sw, double ew);
+                void setValue(lc::geo::Coordinate coord, double sw, double ew, double bulge);
 
             private:
                 lc::ui::api::CoordinateGUI* coordgui;
                 lc::ui::api::NumberGUI* startWidth;
                 lc::ui::api::NumberGUI* endWidth;
+                double _bulge;
             };
         }
     }

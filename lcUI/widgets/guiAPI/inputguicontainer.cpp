@@ -128,7 +128,9 @@ kaguya::LuaRef InputGUIContainer::generateInfo(lua_State* luastate) {
     std::vector<InputGUI*> inputGUIs = inputWidgets();
 
     for (InputGUI* inputgui : inputGUIs) {
-        inputgui->getLuaValue(table);
+        if (inputgui != nullptr) {
+            inputgui->getLuaValue(table);
+        }
     }
 
     return table;
@@ -151,7 +153,9 @@ void InputGUIContainer::removeInputGUI(std::string key) {
         HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[_widgetToGroup[key]]);
 
         if (isHorizGroup != nullptr) {
+            std::string oldKey = key;
             key = _widgetToGroup[key];
+            _widgetToGroup.erase(oldKey);
         }
     }
 

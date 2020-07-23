@@ -38,6 +38,10 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
 
 ListGUI::~ListGUI()
 {
+    if (_selectedCoordinate != nullptr) {
+        lc::viewer::drawable::TempEntities_SPtr tempEntities = mainWindow->cadMdiChild()->tempEntities();
+        tempEntities->removeEntity(_selectedCoordinate);
+    }
     delete ui;
 }
 
@@ -122,22 +126,24 @@ void ListGUI::plusButtonClicked() {
 }
 
 void ListGUI::minusButtonClicked() {
-    if (_listType == ListType::COORDINATE) {
-        QListWidgetItem* selectedItem = listWidget->currentItem();
-        CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(listWidget->itemWidget(selectedItem));
-        
-        _addedKeys.erase(_addedKeys.find(coordgui->key()));
-        for (std::vector<InputGUI*>::iterator iter = itemList.begin(); iter != itemList.end();++iter) {
-            if ((*iter)->key() == coordgui->key()) {
-                itemList.erase(iter);
-                break;
-            }
-        }
-        selectedItem->setHidden(true);
+    QListWidgetItem* selectedItem = listWidget->currentItem();
+    InputGUI* inputgui = qobject_cast<InputGUI*>(listWidget->itemWidget(selectedItem));
 
-        for (kaguya::LuaRef& cb : _callbacks) {
-            cb();
+    if (_addedKeys.find(inputgui->key()) == _addedKeys.end()) {
+        return;
+    }
+
+    _addedKeys.erase(_addedKeys.find(inputgui->key()));
+    for (std::vector<InputGUI*>::iterator iter = itemList.begin(); iter != itemList.end(); ++iter) {
+        if ((*iter)->key() == inputgui->key()) {
+            itemList.erase(iter);
+            break;
         }
+    }
+    selectedItem->setHidden(true);
+
+    for (kaguya::LuaRef& cb : _callbacks) {
+        cb();
     }
 
     listWidget->setCurrentItem(listWidget->item(0));
@@ -203,7 +209,7 @@ void ListGUI::setValue(std::vector<lc::builder::LWBuilderVertex> builderVertices
         LWVertexGroup* lwVertexGroup = new LWVertexGroup("LWVertex Group " + std::to_string(itemIdCount));
         itemIdCount++;
         addItem(newkey, lwVertexGroup);
-        lwVertexGroup->setValue(builderVertex.location, builderVertex.startWidth, builderVertex.endWidth);
+        lwVertexGroup->setValue(builderVertex.location, builderVertex.startWidth, builderVertex.endWidth, builderVertex.bulge);
     }
 }
 
