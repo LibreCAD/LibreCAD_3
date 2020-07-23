@@ -28,13 +28,16 @@ void LCLWPolyline::draw(LcPainter &painter, const LcDrawOptions &options, const 
 	    }
     }else{// We are in rendering
 	if(vertices.size()<2) return;
-	for(unsigned int n=0;n<vertices.size()-1;n++){
+	auto totalSteps = vertices.size()-1;;
+	if(_polyLine->closed())totalSteps++;
+	for(unsigned int n=0;n<totalSteps;n++){
+		auto n1=(n+1)%vertices.size();
 		double startWidth = vertices[n].startWidth(), endWidth=vertices[n].endWidth();
 		if(startWidth==0 && endWidth==0){
 			_drawItems[n]->draw(painter, options, rect);
 		}else if(vertices[n].bulge()==0){
 			auto vert1 = vertices[n];
-			auto vert2 = vertices[n+1];
+			auto vert2 = vertices[n1];
 			auto angle = vert1.location().angleTo(vert2.location());
 			auto rot = geo::Coordinate(cos(angle+M_PI/2), sin(angle+M_PI/2));
 			//4 points
