@@ -46,3 +46,7 @@ void LWVertexGroup::setValue(lc::geo::Coordinate coord, double sw, double ew, do
     endWidth->setValue(ew);
     _bulge = bulge;
 }
+
+lc::geo::Coordinate LWVertexGroup::location() const {
+    return coordgui->value();
+}

@@ -28,6 +28,8 @@ namespace lc
 
                 void setValue(lc::geo::Coordinate coord, double sw, double ew, double bulge);
 
+                lc::geo::Coordinate location() const;
+
             private:
                 lc::ui::api::CoordinateGUI* coordgui;
                 lc::ui::api::NumberGUI* startWidth;

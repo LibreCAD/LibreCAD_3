@@ -46,7 +46,7 @@ PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow
 void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
     std::vector<std::string> inputGUIsToRemove;
 
-    for (std::map<unsigned long, std::vector<std::string>>::iterator iter = _selectedEntity.begin(); iter != _selectedEntity.end(); ++iter) {
+    for (std::map<unsigned long, std::vector<std::string>>::iterator iter = _selectedEntity.begin(); iter != _selectedEntity.end();) {
         bool found = false;
 
         for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
@@ -63,9 +63,12 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
 
             iter = _selectedEntity.erase(iter);
         }
+        else {
+            ++iter;
+        }
     }
 
-    for (std::map<unsigned long, QGroupBox*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end(); ++iter) {
+    for (std::map<unsigned long, QGroupBox*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end();) {
         bool found = false;
 
         for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
@@ -78,6 +81,9 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
         if (!found) {
             delete _entityGroup[iter->first];
             iter = _entityGroup.erase(iter);
+        }
+        else {
+            ++iter;
         }
     }
 }
@@ -183,7 +189,7 @@ void PropertyEditor::propertyChanged(const std::string& key) {
     entityBuilder->execute();
 
     // after entity has been changed
-    if (entityType == "vector") {
+    if (entityType == "vector" || entityType == "customLWPolyline") {
         api::ListGUI* listgui = qobject_cast<api::ListGUI*>(_inputWidgets[key]);
         listgui->guiItemChanged(nullptr, nullptr);
     }

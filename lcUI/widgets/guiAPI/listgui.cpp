@@ -236,17 +236,29 @@ void ListGUI::guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous
         current = listWidget->currentItem();
     }
 
+    if (_listType == ListType::NONE) {
+        return;
+    }
+
+    lc::geo::Coordinate coord;
+
     if (_listType == ListType::COORDINATE) {
         CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(listWidget->itemWidget(current));
-        lc::geo::Coordinate coord = coordgui->value();
-        lc::viewer::drawable::TempEntities_SPtr tempEntities = mainWindow->cadMdiChild()->tempEntities();
-
-        if (_selectedCoordinate != nullptr) {
-            tempEntities->removeEntity(_selectedCoordinate);
-        }
-
-        auto layer = std::make_shared<lc::meta::Layer>("highlightGUI", lc::meta::MetaLineWidthByValue(4), lc::Color(254, 254, 1));
-        _selectedCoordinate = std::make_shared<const lc::entity::Circle>(coord, 10, layer);
-        tempEntities->addEntity(_selectedCoordinate);
+        coord = coordgui->value();
     }
+
+    if (_listType == ListType::LW_VERTEX) {
+        LWVertexGroup* vertexgroup = qobject_cast<LWVertexGroup*>(listWidget->itemWidget(current));
+        coord = vertexgroup->location();
+    }
+
+    lc::viewer::drawable::TempEntities_SPtr tempEntities = mainWindow->cadMdiChild()->tempEntities();
+
+    if (_selectedCoordinate != nullptr) {
+        tempEntities->removeEntity(_selectedCoordinate);
+    }
+
+    auto layer = std::make_shared<lc::meta::Layer>("highlightGUI", lc::meta::MetaLineWidthByValue(4), lc::Color(254, 254, 1));
+    _selectedCoordinate = std::make_shared<const lc::entity::Circle>(coord, 5, layer);
+    tempEntities->addEntity(_selectedCoordinate);
 }
