@@ -4,6 +4,8 @@
 #include "inputgui.h"
 #include <mainwindow.h>
 
+#include <cad/builders/lwpolyline.h>
+
 namespace Ui {
     class ListGUI;
 }
@@ -22,7 +24,8 @@ namespace lc
                 enum class ListType
                 {
                     NONE,
-                    COORDINATE
+                    COORDINATE,
+                    LW_VERTEX
                 };
 
             public:

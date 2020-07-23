@@ -102,6 +102,7 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
     }
 
     createPropertiesWidgets(entity->id(), entity->availableProperties());
+    createCustomWidgets(entity);
 }
 
 bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
@@ -167,6 +168,22 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 
     if (entityType == "vector") {
         propertiesList[propertyName] = propertiesTable[key].get<std::vector<lc::geo::Coordinate>>();
+    }
+
+    if (entityType == "customLWPolyline") {
+        kaguya::LuaTable entTable = propertiesTable[key];
+        std::vector<kaguya::LuaRef> vertexKeys = entTable.keys();
+        for (kaguya::LuaRef vertexKey : vertexKeys)
+        {
+            std::string vertKey = vertexKey.get<std::string>();
+            kaguya::LuaTable vertexTable = propertiesTable[vertexKey];
+            std::vector<kaguya::LuaRef> vertexPropertiesKeys = vertexTable.keys();
+            for (kaguya::LuaRef vertexPropKey : vertexPropertiesKeys)
+            {
+                mainWindow->cliCommand()->write("Prop Key - " + vertexPropKey.get<std::string>());
+            }
+
+        }
     }
 
     lc::entity::CADEntity_CSPtr changedEntity = entity->setProperties(propertiesList);
@@ -266,7 +283,8 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 addWidget(key, textgui);
                 state["textPropertyCalled"] = nullptr;
             }
-
+            
+            // vector
             if (iter->second.which() == 5) {
                 lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1), lc::ui::api::ListGUI::ListType::COORDINATE);
                 listgui->setMainWindow(mainWindow);
@@ -283,5 +301,27 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             _selectedEntity[entityID].push_back(key);
             _widgetKeyToEntity[key] = entityID;
         }
+    }
+}
+
+void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
+    _currentEntity = entity->id();
+    kaguya::State state(mainWindow->luaInterface()->luaState());
+
+    api::EntityPickerVisitor entityVisitor;
+    entity->dispatch(entityVisitor);
+
+    if (entityVisitor.getEntityInformation() == "LWPolyline") {
+        std::string key = "entity" + std::to_string(entity->id()) + "_" + "customLWPolyline";
+        lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI("LWVertex List", lc::ui::api::ListGUI::ListType::LW_VERTEX);
+        listgui->setMainWindow(mainWindow);
+
+        state.dostring("customPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+        listgui->addCallbackToAll(state["customPropertyCalled"]);
+        addWidget(key, listgui);
+        state["customPropertyCalled"] = nullptr;
+
+        _selectedEntity[entity->id()].push_back(key);
+        _widgetKeyToEntity[key] = entity->id();
     }
 }

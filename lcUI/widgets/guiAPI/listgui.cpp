@@ -3,6 +3,7 @@
 
 #include "coordinategui.h"
 #include "entitygui.h"
+#include "lwvertexgroup.h"
 
 using namespace lc::ui::api;
 
@@ -59,6 +60,7 @@ void ListGUI::addItem(const std::string& key, InputGUI* newitem) {
     newitem->setKey(key);
     CoordinateGUI* coordgui = qobject_cast<CoordinateGUI*>(newitem);
     EntityGUI* entitygui = qobject_cast<EntityGUI*>(newitem);
+    LWVertexGroup* lwVertexGroup = qobject_cast<LWVertexGroup*>(newitem);
 
     if (coordgui != nullptr) {
         coordgui->enableCoordinateSelection(mainWindow);
@@ -66,6 +68,10 @@ void ListGUI::addItem(const std::string& key, InputGUI* newitem) {
 
     if (entitygui != nullptr) {
         entitygui->enableWidgetSelection(mainWindow);
+    }
+
+    if (lwVertexGroup != nullptr) {
+        lwVertexGroup->setMainWindow(mainWindow);
     }
 
     QListWidgetItem* itemW = new QListWidgetItem();
@@ -101,6 +107,18 @@ void ListGUI::plusButtonClicked() {
             cb();
         }
     }
+
+    if (_listType == ListType::LW_VERTEX) {
+        std::string newkey = _key + "_lwvertex" + std::to_string(itemIdCount);
+        LWVertexGroup* lwVertexGroup = new LWVertexGroup("LWVertex Group " + std::to_string(itemIdCount));
+        itemIdCount++;
+        addItem(newkey, lwVertexGroup);
+
+        for (kaguya::LuaRef& cb : _callbacks) {
+            lwVertexGroup->addCallback(cb);
+            cb();
+        }
+    }
 }
 
 void ListGUI::minusButtonClicked() {
@@ -121,6 +139,8 @@ void ListGUI::minusButtonClicked() {
             cb();
         }
     }
+
+    listWidget->setCurrentItem(listWidget->item(0));
 }
 
 void ListGUI::setListType(ListGUI::ListType listTypeIn) {
@@ -137,11 +157,29 @@ void ListGUI::setListType(ListGUI::ListType listTypeIn) {
         qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(0)->widget())->setEnabled(true);
         qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(1)->widget())->setEnabled(true);
     }
+
+    if (listTypeIn == ListType::LW_VERTEX) {
+        // check if all already added widgets are of type coordinate
+        for (int i = 0; i < itemList.size(); i++) {
+            LWVertexGroup* lwvertex = qobject_cast<LWVertexGroup*>(itemList[i]);
+            if (lwvertex == nullptr) {
+                return;
+            }
+        }
+
+        _listType = listTypeIn;
+        qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(0)->widget())->setEnabled(true);
+        qobject_cast<QPushButton*>(ui->verticalLayout->itemAt(2)->layout()->itemAt(1)->widget())->setEnabled(true);
+    }
 }
 
 void ListGUI::setListType(const std::string& listTypeStr) {
     if (listTypeStr == "coordinate") {
         setListType(ListType::COORDINATE);
+    }
+
+    if (listTypeStr == "lwvertex") {
+        setListType(ListType::LW_VERTEX);
     }
 }
 
@@ -160,11 +198,18 @@ void ListGUI::setValue(std::vector<lc::geo::Coordinate> coords) {
 }
 
 void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
+    _callbacks.push_back(cb);
     if (_listType == ListType::COORDINATE) {
-        _callbacks.push_back(cb);
         for (InputGUI* inputWidget : itemList) {
             CoordinateGUI* coordWidget = qobject_cast<CoordinateGUI*>(inputWidget);
             coordWidget->addFinishCallback(cb);
+        }
+    }
+
+    if (_listType == ListType::LW_VERTEX) {
+        for (InputGUI* inputWidget : itemList) {
+            LWVertexGroup* lwVertex = qobject_cast<LWVertexGroup*>(inputWidget);
+            lwVertex->addCallback(cb);
         }
     }
 }

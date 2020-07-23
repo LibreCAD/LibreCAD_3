@@ -33,6 +33,8 @@ namespace lc
 
             void createPropertiesWidgets(unsigned long entityID, const lc::entity::PropertiesMap& entityProperties);
 
+            void createCustomWidgets(lc::entity::CADEntity_CSPtr entity);
+
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;

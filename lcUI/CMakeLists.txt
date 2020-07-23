@@ -61,6 +61,7 @@ widgets/guiAPI/textgui.h
 widgets/guiAPI/buttongui.h
 widgets/guiAPI/checkboxgui.h
 widgets/guiAPI/horizontalgroupgui.h
+widgets/guiAPI/lwvertexgroup.h
 widgets/guiAPI/radiobuttongui.h
 widgets/guiAPI/radiogroupgui.h
 widgets/guiAPI/coordinategui.h
@@ -125,6 +126,7 @@ widgets/guiAPI/textgui.cpp
 widgets/guiAPI/buttongui.cpp
 widgets/guiAPI/checkboxgui.cpp
 widgets/guiAPI/horizontalgroupgui.cpp
+widgets/guiAPI/lwvertexgroup.cpp
 widgets/guiAPI/radiobuttongui.cpp
 widgets/guiAPI/radiogroupgui.cpp
 widgets/guiAPI/coordinategui.cpp
