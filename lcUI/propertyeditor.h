@@ -3,6 +3,7 @@
 #include <cad/base/cadentity.h>
 #include "widgets/guiAPI/inputguicontainer.h"
 #include "widgets/guiAPI/inputgui.h"
+#include <QTreeWidget>
 #include "mainwindow.h"
 
 namespace lc
@@ -91,7 +92,7 @@ namespace lc
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _selectedEntity;
-            std::map<unsigned long, QGroupBox*> _entityGroup;
+            std::map<unsigned long, QTreeWidgetItem*> _entityGroup;
             std::map<std::string, unsigned long> _widgetKeyToEntity;
             unsigned long _currentEntity;
         };

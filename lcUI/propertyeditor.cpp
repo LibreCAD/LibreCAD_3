@@ -9,6 +9,7 @@
 #include "widgets/guiAPI/anglegui.h"
 #include "widgets/guiAPI/textgui.h"
 #include "widgets/guiAPI/listgui.h"
+#include "widgets/guiAPI/horizontalgroupgui.h"
 
 #include <cad/builders/lwpolyline.h>
 
@@ -27,12 +28,12 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     parentWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     parentWidget->setWidgetResizable(true);
-    QWidget* widget = new QWidget(parentWidget);
+    QTreeWidget* widget = new QTreeWidget(parentWidget);
+    widget->setColumnCount(1);
+    widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
-    QVBoxLayout* verticalLayout = new QVBoxLayout();
-    widget->setLayout(verticalLayout);
 }
 
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
@@ -58,9 +59,8 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
 
         if (!found) {
             for (const std::string& keyStr : iter->second) {
-                removeInputGUI(keyStr);
+                removeInputGUI(keyStr, false);
             }
-
             iter = _selectedEntity.erase(iter);
         }
         else {
@@ -68,7 +68,8 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
         }
     }
 
-    for (std::map<unsigned long, QGroupBox*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end();) {
+    QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
+    for (std::map<unsigned long, QTreeWidgetItem*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end();) {
         bool found = false;
 
         for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
@@ -79,6 +80,8 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
         }
 
         if (!found) {
+            guicontainer->removeItemWidget(iter->second, 0);
+            guicontainer->takeTopLevelItem(guicontainer->indexOfTopLevelItem(iter->second));
             delete _entityGroup[iter->first];
             iter = _entityGroup.erase(iter);
         }
@@ -93,20 +96,19 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         _selectedEntity[entity->id()] = std::vector<std::string>();
     }
 
+    QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
+
     if (_entityGroup.find(entity->id()) == _entityGroup.end()) {
         // Get entity information
         api::EntityPickerVisitor entityVisitor;
         entity->dispatch(entityVisitor);
         QString entityInfo = QString(entityVisitor.getEntityInformation().c_str()) + QString(" #") + QString::number(entity->id());
+        QTreeWidgetItem* treeItem = new QTreeWidgetItem();
 
-        // Create and add entity group
-        QGroupBox* entityGroup = new QGroupBox(entityInfo);
-        _entityGroup[entity->id()] = entityGroup;
-        QVBoxLayout* entityLayout = new QVBoxLayout();
-        entityGroup->setLayout(entityLayout);
+        _entityGroup[entity->id()] = treeItem;
+        guicontainer->addTopLevelItem(treeItem);
 
-        QWidget* guicontainer = this->widget()->findChild<QWidget*>("guiContainer");
-        guicontainer->layout()->addWidget(entityGroup);
+        guicontainer->setItemWidget(treeItem, 0, new QLabel(entityInfo));
     }
 
     createPropertiesWidgets(entity->id(), entity->availableProperties());
@@ -118,11 +120,18 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
         std::cout << "Entity group does not exist" << std::endl;
         return false;
     }
-    QGroupBox* entityGroup = _entityGroup[_currentEntity];
+    QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
 
     bool success = InputGUIContainer::addWidget(key, guiWidget);
     if (success) {
-        entityGroup->layout()->addWidget(guiWidget);
+        QTreeWidgetItem* entityChildItem = new QTreeWidgetItem();
+        _entityGroup[_currentEntity]->addChild(entityChildItem);
+        guicontainer->setItemWidget(entityChildItem, 0, new QLabel(guiWidget->label().c_str()));
+
+        QTreeWidgetItem* entityChildProp = new QTreeWidgetItem();
+        entityChildItem->addChild(entityChildProp);
+
+        guicontainer->setItemWidget(entityChildProp, 0, guiWidget);
     }
     return success;
 }

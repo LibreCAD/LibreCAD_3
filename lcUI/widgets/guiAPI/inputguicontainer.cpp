@@ -86,9 +86,9 @@ bool InputGUIContainer::addWidget(const std::string& key, ButtonGUI* buttonWidge
     }
 
     std::string horizGroupKey = key + "_group";
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(horizGroupKey);
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label());
     horizGroup->addWidget(key, buttonWidget);
-    addWidget(horizGroup->label(), horizGroup);
+    addWidget(horizGroupKey, horizGroup);
     _widgetToGroup[key] = horizGroupKey;
     return true;
 }
@@ -99,9 +99,9 @@ bool InputGUIContainer::addWidget(const std::string& key, CheckBoxGUI* checkboxW
     }
 
     std::string horizGroupKey = key + "_group";
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(horizGroupKey);
+    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label());
     horizGroup->addWidget(key, checkboxWidget);
-    addWidget(horizGroup->label(), horizGroup);
+    addWidget(horizGroupKey, horizGroup);
     _widgetToGroup[key] = horizGroupKey;
     return true;
 }
@@ -148,7 +148,7 @@ void InputGUIContainer::setLabel(const std::string& newlabel) {
     _label = newlabel;
 }
 
-void InputGUIContainer::removeInputGUI(std::string key) {
+void InputGUIContainer::removeInputGUI(std::string key, bool deleteWidget) {
     if (_inputWidgets.find(key) == _inputWidgets.end()) {
         HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[_widgetToGroup[key]]);
 
@@ -178,7 +178,9 @@ void InputGUIContainer::removeInputGUI(std::string key) {
         }
     }
 
-    delete _inputWidgets[key];
+    if (deleteWidget) {
+        delete _inputWidgets[key];
+    }
     _inputWidgets.erase(key);
     _addedKeys.erase(key);
 }

@@ -76,7 +76,7 @@ namespace lc
                 */
                 std::vector<std::string> keys() const;
 
-                void removeInputGUI(std::string key);
+                void removeInputGUI(std::string key, bool deleteWidget = true);
 
             protected:
                 std::map<std::string, InputGUI*> _inputWidgets;
