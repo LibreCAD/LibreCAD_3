@@ -1,5 +1,4 @@
 #include <QDialog>
-#include <QGroupBox>
 #include <QPushButton>
 #include <QClipboard>
 #include <QApplication>
@@ -8,8 +7,7 @@
 
 #include <boost/version.hpp>
 #include "version.h"
-#include <tinysplinecxx.cxx>
-#include <lua.h>
+
 #include <drw_base.h>
 extern "C"
 {
@@ -21,7 +19,6 @@ extern "C"
 
 #if __linux__
     #include <sys/utsname.h>
-    #include <stdlib.h>
 
 QString getOsName()
 {
