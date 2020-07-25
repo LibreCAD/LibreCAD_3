@@ -97,16 +97,19 @@ QString getCompiler(){
 }
 
 QString getLuaVersion(){
-    /*lua_State* L = luaL_newstate();
-    luaL_openlibs(L);//add function to return version, can this be done directly?
-    luaL_dostring(L,"function version() return _VERSION end");
-    lua_getglobal(L, "version");
-    lua_call(L, 0, 1);
-    QString lua_version = lua_tostring(L, -1);;
-    lua_pop(L, 1);
-    lua_close(L);
-    return lua_version;*/
-    return QString("");
+    #if defined(Q_CC_MSVC)
+        return QString("");
+    #else
+        lua_State* L = luaL_newstate();
+        luaL_openlibs(L);//add function to return version, can this be done directly?
+        luaL_dostring(L, "function version() return _VERSION end");
+        lua_getglobal(L, "version");
+        lua_call(L, 0, 1);
+        QString lua_version = lua_tostring(L, -1);;
+        lua_pop(L, 1);
+        lua_close(L);
+        return lua_version;
+    #endif
 }
 
 QString getGLVersion(){
@@ -122,10 +125,15 @@ using namespace lc::ui::dialog;
 //Create string of information
 QString getLCADInfo(){
     return
+        #if defined(Q_CC_MSVC)
         QString("Version: %1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR) + "<br/>" +
-        QString("Compiler: %1").arg(getCompiler()) + "<br/>"; //+
-        //QString("Compiled on: %1").arg(BUILD_DATE) + "<br/>" +
-        //QString("Build info: %1").arg(BUILD_INFO)
+        QString("Compiler: %1").arg(getCompiler()) + "<br/>"
+        #else
+        QString("Version: %1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR) + "<br/>" +
+        QString("Compiler: %1").arg(getCompiler()) + "<br/>" +
+        QString("Compiled on: %1").arg(BUILD_DATE) + "<br/>" +
+        QString("Build info: %1").arg(BUILD_INFO)
+        #endif
     ;
 }
 
@@ -135,8 +143,12 @@ QString getExtInfo(){
         QString("Boost Version: %1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100) + "\n" +
         QString("Lua Version: %1").arg(getLuaVersion()) + "<br/>" +
         QString("libdxfrw Version: %1").arg(DRW_VERSION) + "<br/>" +
-        QString("OpenGL Version: %1").arg(getGLVersion()) + "<br/>"; //+
-	//QString("CMake Version: %1").arg(CMAKE_VERSION)
+        QString("OpenGL Version: %1").arg(getGLVersion()) + "<br/>"//+
+
+        #if defined(Q_CC_MSVC)
+        #else
+        + QString("CMake Version: %1").arg(CMAKE_VERSION)
+        #endif
     ;
 }
 
