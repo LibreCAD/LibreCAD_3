@@ -201,6 +201,7 @@ namespace lc
             void selectAll();
             void selectNone();
             void invertSelection();
+            void clearUndoableStack();
 
             // Customize toolbar slots
             void runCustomizeToolbar();

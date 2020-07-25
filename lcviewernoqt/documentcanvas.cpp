@@ -220,7 +220,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                 }
             });
             for(const auto& di: visibleDrawables) {
-                if(painter.isCachingEnabled() )
+                if(painter.isCachingEnabled() && di->cacheable())
                 {    
                     if(painter.isEntityCached( (di->entity())->id() ) == true)
                     {  
@@ -229,7 +229,7 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                     else
                     {
                         drawEntity(painter, di);
-                        cacheEntity((di->entity())->id(), di);
+	                cacheEntity((di->entity())->id(), di);
                     }
                 }
                 else
@@ -688,8 +688,11 @@ LCVDrawItem_SPtr DocumentCanvas::asDrawable(const lc::entity::CADEntity_CSPtr& e
     // Add 'Point' or 'Coordinate'
     auto coord = std::dynamic_pointer_cast<const lc::entity::Point>(entity);
 
+    // Point cannot be cached since it change size(constant size)
     if (coord != nullptr) {
-        return std::make_shared<LCVPoint>(coord);
+        auto di = std::make_shared<LCVPoint>(coord);
+	di->cacheable(false);
+	return di;
     }
 
     // Add 'DimRadial'

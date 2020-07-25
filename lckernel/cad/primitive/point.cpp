@@ -71,4 +71,47 @@ CADEntity_CSPtr Point::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPt
     return newEntity;
 }
 
+// additional options
+geo::Coordinate Point::nearestPointOnPath(const Coordinate& coord) const {
+    return geo::Coordinate(this->x(), this->y());
+}
 
+geo::Coordinate Point::nearestPointOnEntity(const Coordinate& coord) const {
+    return geo::Coordinate(this->x(), this->y());
+}
+
+
+std::vector<EntityCoordinate> Point::snapPoints(const geo::Coordinate& coord,
+                                               const SimpleSnapConstrain & constrain,
+                                               double minDistanceToSnap,
+                                               int maxNumberOfSnapPoints) const {
+    std::vector<EntityCoordinate> points;
+    if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
+	    points.emplace_back(geo::Coordinate(this->x(), this->y()),0);
+    }
+
+    Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
+    return points;
+}
+
+std::map<unsigned int, lc::geo::Coordinate> Point::dragPoints() const {
+	std::map<unsigned int, lc::geo::Coordinate> points;
+	points[0]=(geo::Coordinate(this->x(), this->y()));
+	return points;
+}
+
+CADEntity_CSPtr Point::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+    try {
+	    auto newEntity = std::make_shared<Point>(dragPoints.at(0),
+                                                layer(),
+                                                metaInfo(),
+                                                block()
+        );
+	    newEntity->setID(this->id());
+	    return newEntity;
+    }
+    catch(const std::out_of_range& e) {
+        //A point was not in the map, don't change the entity
+        return shared_from_this();
+    }
+}

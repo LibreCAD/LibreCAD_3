@@ -90,6 +90,22 @@ geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
     return pointOnPath;
 }
 
+std::vector<CADEntity_CSPtr> Arc::splitEntity(const geo::Coordinate& coord) const{
+	std::vector<CADEntity_CSPtr> out;
+	auto angle = (coord-center()).angle();
+	// check if angle is between start and end
+	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE)
+	if (isAngleBetween(angle)){
+		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), this->startAngle(), angle,
+                                        this->CCW(), layer(), metaInfo(), block());
+		out.push_back(newArc);
+		newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, this->endAngle(),
+                                        this->CCW(), layer(), metaInfo(), block());
+		out.push_back(newArc);
+	}
+	return out;
+}
+
 CADEntity_CSPtr Arc::move(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
                                         this->CCW(), layer(), metaInfo(), block());
@@ -157,7 +173,7 @@ std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
 
 CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
+        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), CCW()), layer(), metaInfo());
         newEntity->setID(id());
         return newEntity;
     }

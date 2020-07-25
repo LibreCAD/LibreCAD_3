@@ -9,6 +9,7 @@
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geovector.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/splitable.h"
 #include "cad/interface/draggable.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/meta/layer.h"
@@ -29,7 +30,8 @@ namespace lc {
                      public CADEntity,
                      public geo::Vector,
                      public Snapable,
-                     public Draggable {
+                     public Draggable,
+		     public Splitable {
         friend class builder::LineBuilder;
 
         public:
@@ -74,6 +76,7 @@ namespace lc {
 
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
 
             /**
              * @brief move, moves by an offset

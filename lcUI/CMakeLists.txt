@@ -84,6 +84,7 @@ lua/guibridge.h
 dialogs/addlayerdialog.h
 dialogs/addlinepatterndialog.h
 dialogs/linepatternmanager.h
+dialogs/aboutdialog.h
 managers/uisettings.h
 managers/metainfomanager.cpp
 managers/metainfomanager.h)
@@ -146,6 +147,7 @@ widgets/customizeToolbar/customizetoolbar.cpp
 widgets/customizeToolbar/customizeparenttab.cpp
 widgets/customizeToolbar/customizegrouptab.cpp
 lua/guibridge.cpp
+dialogs/aboutdialog.cpp
 dialogs/addlayerdialog.cpp
 dialogs/addlinepatterndialog.cpp
 dialogs/linepatternmanager.cpp

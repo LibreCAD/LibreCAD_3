@@ -1,6 +1,7 @@
 #include "lwpolyline.h"
 #include "cad/primitive/lwpolyline.h"
 #include "cad/interface/metatype.h"
+#include "cad/math/lcmath.h"
 #include <math.h>
 
 using namespace lc::builder;
@@ -26,23 +27,41 @@ void LWPolylineBuilder::addLineVertex(const lc::geo::Coordinate& vert)
 
 void LWPolylineBuilder::addArcVertex(const lc::geo::Coordinate& vert)
 {
-	_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_Bulge));
+	int n = _vertices.size();
 	_currentVertex_Location = vert;
+	if(n<2){
+		_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_Bulge));
+		return;
+	}
+	auto vert1 = _vertices[n - 1];
+	auto vert2 = _vertices[n - 2];
+	double bulge,angle;
+	if(vert2.bulge==0){
+		angle=-vert2.location.angleTo(vert1.location)+vert1.location.angleTo(vert);
+	}else{
+		angle=-vert2.location.angleTo(vert1.location)+vert1.location.angleTo(vert);
+	}
+	//angle=lc::maths::Math::correctAngle(angle);
+	bulge=(1-cos(angle))/sin(angle);
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert1.location, vert1.startWidth, vert1.endWidth, bulge);
+	_vertices.push_back(lc::builder::LWBuilderVertex(vert, _currentVertex_Bulge));
 }
 
 void LWPolylineBuilder::modifyLastVertex(const geo::Coordinate& data)
 {
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-	_currentVertex_Bulge = tan(data.magnitude() / 4);
-	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, _currentVertex_Bulge);
+	//_currentVertex_Bulge = tan(data.magnitude() / 4);
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, vert.bulge);
 }
 
 void LWPolylineBuilder::modifyLastVertexArc()
 {
 	int n = _vertices.size();
 	lc::builder::LWBuilderVertex& vert = _vertices[n - 1];
-	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, _currentVertex_Bulge);
+	double bulge=vert.bulge;
+	if(bulge==0)bulge=_currentVertex_Bulge;
+	_vertices[n - 1] = lc::builder::LWBuilderVertex(vert.location, vert.startWidth, vert.endWidth, bulge);
 }
 
 void LWPolylineBuilder::modifyLastVertexLine()

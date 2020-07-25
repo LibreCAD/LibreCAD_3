@@ -3,6 +3,7 @@
 #include "cad/const.h"
 #include "cad/interface/entitydispatch.h"
 #include <cad/interface/snapable.h>
+#include "cad/interface/splitable.h"
 
 #include "cad/geometry/geocoordinate.h"
 #include "cad/geometry/geoellipse.h"
@@ -28,7 +29,8 @@ namespace lc {
         class Ellipse : public std::enable_shared_from_this<Ellipse>,
                         public CADEntity,
                         public geo::Ellipse,
-                        public Snapable {
+                        public Snapable,
+		       public Splitable  {
         friend class builder::EllipseBuilder;
         public:
             /**
@@ -120,6 +122,7 @@ namespace lc {
                        int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
 
             PropertiesMap availableProperties() const override;
 

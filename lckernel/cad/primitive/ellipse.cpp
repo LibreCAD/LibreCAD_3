@@ -362,3 +362,32 @@ CADEntity_CSPtr Ellipse::setProperties(const PropertiesMap& propertiesMap) const
     ellipseEntity->setID(this->id());
     return ellipseEntity;
 }
+
+std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) const {
+    std::vector<CADEntity_CSPtr> out;
+    auto angle = (coord - center()).angle();
+    auto nearestPoint = this->nearestPointOnPath(coord);
+    if (nearestPoint.distanceTo(coord) < LCTOLERANCE)
+        if (isAngleBetween(angle)) {
+            auto newellipse = std::make_shared<Ellipse>(this->center(),
+                this->majorP(),
+                this->minorRadius(),
+                this->startAngle(), angle,
+                isReversed(),
+                layer(),
+                metaInfo(),
+                block());
+            out.push_back(newellipse);
+            newellipse = std::make_shared<Ellipse>(this->center(),
+                this->majorP(),
+                this->minorRadius(),
+                angle, this->endAngle(),
+                isReversed(),
+                layer(),
+                metaInfo(),
+                block());
+
+            out.push_back(newellipse);
+        }
+    return out;
+}

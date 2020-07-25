@@ -23,7 +23,7 @@ namespace lc {
 
             private:
                 lc::entity::LWPolyline_CSPtr _polyLine;
-                std::vector<LCVDrawItem_CSPtr> _drawItems;
+                std::vector<LCVDrawItem_SPtr> _drawItems;
         };
     }
 }

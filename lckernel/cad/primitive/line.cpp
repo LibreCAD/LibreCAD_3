@@ -66,6 +66,29 @@ geo::Coordinate Line::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Vector::nearestPointOnPath(coord);
 }
 
+std::vector<CADEntity_CSPtr> Line::splitEntity(const geo::Coordinate& coord) const{
+	std::vector<CADEntity_CSPtr> out;
+	auto nearestPoint = this->nearestPointOnPath(coord);
+	if(nearestPoint.distanceTo(coord)<LCTOLERANCE)
+	if (nearestPoint!=this->start() && nearestPoint!=this->end()){
+	    auto newLine = std::make_shared<Line>(this->start(),
+		                                  nearestPoint,
+		                                  layer(),
+		                                  metaInfo(),
+		                                  block()
+	    );
+	    out.push_back(newLine);
+	    newLine = std::make_shared<Line>(nearestPoint,
+		                                  this->end(),
+		                                  layer(),
+		                                  metaInfo(),
+		                                  block()
+	    );
+	    out.push_back(newLine);
+	}
+	return out;
+}
+
 CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
     auto newLine = std::make_shared<Line>(this->start() + offset,
                                           this->end() + offset,

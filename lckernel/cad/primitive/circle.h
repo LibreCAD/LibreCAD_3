@@ -9,6 +9,7 @@
 #include "cad/base/cadentity.h"
 #include "cad/vo/entitycoordinate.h"
 #include "cad/interface/snapable.h"
+#include "cad/interface/splitable.h"
 #include <cad/builders/circle.h>
 
 #include <string>
@@ -20,7 +21,8 @@ namespace lc {
         class Circle : public std::enable_shared_from_this<Circle>,
                        public CADEntity,
                        public geo::Circle,
-                       public Snapable {
+                       public Snapable,
+		       public Splitable {
         friend class builder::CircleBuilder;
 
         public:
@@ -44,6 +46,7 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
         public:
 
             /**

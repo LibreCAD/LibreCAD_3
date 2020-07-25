@@ -8,10 +8,9 @@ Arc::Arc(Coordinate center, double radius, double startAngle, double endAngle, b
         Base(),
         _center(std::move(center)),
         _radius(radius),
-        _startAngle(maths::Math::correctAngle(startAngle)),
-        _endAngle(maths::Math::correctAngle(endAngle)),
+        _startAngle(startAngle),
+        _endAngle(endAngle),
         _CCW(isCCW) {
-
     if (radius <= 0.0) {
         throw std::runtime_error("Invalid radius");
     }

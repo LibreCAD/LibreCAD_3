@@ -26,7 +26,8 @@ void LCVSpline::draw(LcPainter &painter, const LcDrawOptions &options, const lc:
             painter.line_to(bez[1].x(), bez[1].y());
         }
     }
-    painter.stroke();
+	if(autostroke())
+	    painter.stroke();
 }
 
 lc::entity::CADEntity_CSPtr LCVSpline::entity() const {
