@@ -1,5 +1,4 @@
 #include <QDialog>
-#include <QGroupBox>
 #include <QPushButton>
 #include <QClipboard>
 #include <QApplication>
@@ -9,8 +8,7 @@ using namespace lc::ui::dialog;
 
 #include <boost/version.hpp>
 #include "version.h"
-#include <tinysplinecxx.cxx>
-#include <lua.h>
+
 #include <drw_base.h>
 extern "C"
 {
@@ -34,7 +32,6 @@ o_plain={"%1: %2\n", "### %1\n%2\n", true}
 //OS info
 #if __linux__
     #include <sys/utsname.h>
-    #include <stdlib.h>
 
 QString getOsName(outputConfig& oc)
 {
