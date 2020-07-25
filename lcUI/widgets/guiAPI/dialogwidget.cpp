@@ -41,8 +41,10 @@ std::string DialogWidget::title() const {
 
 bool DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     bool success = InputGUIContainer::addWidget(key, guiWidget);
-    guiWidget->setParent(this);
-    vboxlayout->addWidget(guiWidget);
+    if (success) {
+        guiWidget->setParent(this);
+        vboxlayout->addWidget(guiWidget);
+    }
     return success;
 }
 

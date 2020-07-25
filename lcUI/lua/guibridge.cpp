@@ -305,12 +305,18 @@ void addLuaGUIAPIBindings(lua_State* L) {
             static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))
     );
 
-    state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget>()
+    state["gui"]["InputGUIContainer"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUIContainer>()
+        .addFunction("inputWidgets", &lc::ui::api::InputGUIContainer::inputWidgets)
+        .addFunction("addFinishCallback", &lc::ui::api::InputGUIContainer::addFinishCallback)
+        .addFunction("keys", &lc::ui::api::InputGUIContainer::keys)
+        .addOverloadedFunctions("addWidget", static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::InputGUIContainer::addWidget),
+            static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::InputGUIContainer::addWidget),
+            static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::InputGUIContainer::addWidget))
+    );
+
+    state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget, lc::ui::api::InputGUIContainer>()
         .setConstructors<lc::ui::api::DialogWidget(const std::string&, lc::ui::MainWindow*)>()
-        .addFunction("inputWidgets", &lc::ui::api::DialogWidget::inputWidgets)
         .addFunction("setFinishButton", &lc::ui::api::DialogWidget::setFinishButton)
-        .addFunction("addFinishCallback", &lc::ui::api::DialogWidget::addFinishCallback)
-        .addFunction("keys", &lc::ui::api::DialogWidget::keys)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addWidget", static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
