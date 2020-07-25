@@ -91,8 +91,9 @@ namespace lc
 
         private:
             static PropertyEditor* instance;
-            std::map<unsigned long, std::vector<std::string>> _selectedEntity;
+            std::map<unsigned long, std::vector<std::string>> _entityProperties;
             std::map<unsigned long, QTreeWidgetItem*> _entityGroup;
+            std::set<unsigned long> _selectedEntities;
             std::map<std::string, unsigned long> _widgetKeyToEntity;
             unsigned long _currentEntity;
         };

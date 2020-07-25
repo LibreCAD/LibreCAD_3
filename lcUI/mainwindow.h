@@ -44,16 +44,28 @@ namespace lc
             void ConnectInputEvents();
 
             /**
-            * \brief Gettters for clicommand,cadmdichild and toolbar for use in lua
+            * \brief Getter for clicommand
             */
             lc::ui::widgets::CliCommand* cliCommand();
 
+            /**
+            * \brief Getter for cadmdichild
+            */
             lc::ui::CadMdiChild* cadMdiChild();
 
+            /**
+            * \brief Getter for toolbar
+            */
             lc::ui::widgets::Toolbar* toolbar();
 
+            /**
+            * \brief Getter for layers
+            */
             lc::ui::widgets::Layers* layers();
 
+            /**
+            * \brief Getter for lua interface
+            */
             lc::ui::LuaInterface* luaInterface();
 
             /**
@@ -151,8 +163,14 @@ namespace lc
             */
             lc::ui::api::MenuItem* findMenuItemRecur(QMenu* menu, QString objectName, bool searchByLabel);
 
+            /**
+            * \brief Check if menu of same label already exists
+            */
             bool checkForMenuOfSameLabel(const std::string& label);
 
+            /**
+            * \brief Pass the selected entities to the property editor
+            */
             void selectionChanged();
 
         public slots:

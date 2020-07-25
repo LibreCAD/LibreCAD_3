@@ -76,6 +76,11 @@ namespace lc
                 */
                 std::vector<std::string> keys() const;
 
+                /**
+                * \brief Remove input gui from the input gui container
+                * \param call delete on the input gui widget
+                * \return vector of string keys
+                */
                 void removeInputGUI(std::string key, bool deleteWidget = true);
 
             protected:

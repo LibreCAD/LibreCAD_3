@@ -19,6 +19,7 @@ namespace lc {
                 /**
                 * \brief Horizontal Group GUI Constructor
                 * \param string group label
+                * \param bool change to vertical layout
                 * \param parent qwidget parent
                 */
                 HorizontalGroupGUI(std::string label, bool vertical = false, QWidget* parent = nullptr);

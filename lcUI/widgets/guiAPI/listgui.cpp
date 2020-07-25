@@ -233,6 +233,9 @@ void ListGUI::addCallbackToAll(kaguya::LuaRef cb) {
 void ListGUI::guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous) {
     // if called by outside (property editor)
     if (current == nullptr) {
+        if (listWidget->currentItem() == nullptr) {
+            return;
+        }
         current = listWidget->currentItem();
     }
 

@@ -15,7 +15,7 @@
 
 using namespace lc::ui;
 
-PropertyEditor* PropertyEditor::instance = 0;
+PropertyEditor* PropertyEditor::instance = nullptr;
 
 PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     :
@@ -26,12 +26,13 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
 
     parentWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     parentWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
     parentWidget->setWidgetResizable(true);
+
     QTreeWidget* widget = new QTreeWidget(parentWidget);
     widget->setColumnCount(1);
     widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
+
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
 }
@@ -45,45 +46,30 @@ PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow
 }
 
 void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
-    std::vector<std::string> inputGUIsToRemove;
+    QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
 
-    for (std::map<unsigned long, std::vector<std::string>>::iterator iter = _selectedEntity.begin(); iter != _selectedEntity.end();) {
+    for (std::set<unsigned long>::iterator iter = _selectedEntities.begin(); iter != _selectedEntities.end();) {
         bool found = false;
 
         for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
-            if (cadEnt->id() == iter->first) {
+            if (cadEnt->id() == *iter) {
                 found = true;
                 break;
             }
         }
 
         if (!found) {
-            for (const std::string& keyStr : iter->second) {
+            for (const std::string& keyStr : _entityProperties[*iter]) {
                 removeInputGUI(keyStr, false);
             }
-            iter = _selectedEntity.erase(iter);
-        }
-        else {
-            ++iter;
-        }
-    }
 
-    QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
-    for (std::map<unsigned long, QTreeWidgetItem*>::iterator iter = _entityGroup.begin(); iter != _entityGroup.end();) {
-        bool found = false;
+            guicontainer->removeItemWidget(_entityGroup[*iter], 0);
+            guicontainer->takeTopLevelItem(guicontainer->indexOfTopLevelItem(_entityGroup[*iter]));
+            delete _entityGroup[*iter];
 
-        for (lc::entity::CADEntity_CSPtr cadEnt : selectedEntities) {
-            if (cadEnt->id() == iter->first) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            guicontainer->removeItemWidget(iter->second, 0);
-            guicontainer->takeTopLevelItem(guicontainer->indexOfTopLevelItem(iter->second));
-            delete _entityGroup[iter->first];
-            iter = _entityGroup.erase(iter);
+            _entityProperties.erase(*iter);
+            _entityGroup.erase(*iter);
+            iter = _selectedEntities.erase(iter);
         }
         else {
             ++iter;
@@ -92,13 +78,12 @@ void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEnti
 }
 
 void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
-    if (_selectedEntity.find(entity->id()) == _selectedEntity.end()) {
-        _selectedEntity[entity->id()] = std::vector<std::string>();
-    }
-
     QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
 
-    if (_entityGroup.find(entity->id()) == _entityGroup.end()) {
+    if (_selectedEntities.find(entity->id()) == _selectedEntities.end()) {
+        _selectedEntities.insert(entity->id());
+        _entityProperties[entity->id()] = std::vector<std::string>();
+
         // Get entity information
         api::EntityPickerVisitor entityVisitor;
         entity->dispatch(entityVisitor);
@@ -107,7 +92,6 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
 
         _entityGroup[entity->id()] = treeItem;
         guicontainer->addTopLevelItem(treeItem);
-
         guicontainer->setItemWidget(treeItem, 0, new QLabel(entityInfo));
     }
 
@@ -117,7 +101,6 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
 
 bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
     if (_entityGroup.find(_currentEntity) == _entityGroup.end()) {
-        std::cout << "Entity group does not exist" << std::endl;
         return false;
     }
     QTreeWidget* guicontainer = this->widget()->findChild<QTreeWidget*>("guiContainer");
@@ -150,6 +133,7 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 
     std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(mainWindow->cadMdiChild()->document());
 
+    // delete old entity
     entityBuilder->appendEntity(entity);
     entityBuilder->appendOperation(std::make_shared<lc::operation::Push>());
     entityBuilder->appendOperation(std::make_shared<lc::operation::Remove>());
@@ -194,6 +178,7 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         changedEntity = entity->setProperties(propertiesList);
     }
 
+    // add new entity
     entityBuilder->appendEntity(changedEntity);
     entityBuilder->execute();
 
@@ -263,33 +248,27 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
         std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
-        if (iter->second.which() == 0) {
+
+        switch (iter->second.which())
+        {
+        case 0:
             key += "_angle";
-        }
-
-        // double
-        if (iter->second.which() == 1) {
+            break;
+        case 1:
             key += "_double";
-        }
-
-        // bool
-        if (iter->second.which() == 2) {
+            break;
+        case 2:
             key += "_bool";
-        }
-
-        // coordinate
-        if (iter->second.which() == 3) {
+            break;
+        case 3:
             key += "_coordinate";
-        }
-
-        // text (string)
-        if (iter->second.which() == 4) {
+            break;
+        case 4:
             key += "_text";
-        }
-
-        // vector
-        if (iter->second.which() == 5) {
+            break;
+        case 5:
             key += "_vector";
+            break;
         }
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
@@ -357,7 +336,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 state["vectorPropertyCalled"] = nullptr;
             }
 
-            _selectedEntity[entityID].push_back(key);
+            _entityProperties[entityID].push_back(key);
             _widgetKeyToEntity[key] = entityID;
         }
     }
@@ -384,7 +363,7 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         addWidget(key, listgui);
         state["customPropertyCalled"] = nullptr;
 
-        _selectedEntity[entity->id()].push_back(key);
+        _entityProperties[entity->id()].push_back(key);
         _widgetKeyToEntity[key] = entity->id();
     }
 }
