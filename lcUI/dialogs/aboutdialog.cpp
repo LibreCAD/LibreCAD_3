@@ -94,19 +94,15 @@ QString getCompiler(){
 }
 
 QString getLuaVersion(){
-    #if defined(Q_CC_MSVC)
-        return QString("");
-    #else
-        lua_State* L = luaL_newstate();
-        luaL_openlibs(L);//add function to return version, can this be done directly?
-        luaL_dostring(L, "function version() return _VERSION end");
-        lua_getglobal(L, "version");
-        lua_call(L, 0, 1);
-        QString lua_version = lua_tostring(L, -1);;
-        lua_pop(L, 1);
-        lua_close(L);
-        return lua_version;
-    #endif
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);//add function to return version, can this be done directly?
+    luaL_dostring(L, "function version() return _VERSION end");
+    lua_getglobal(L, "version");
+    lua_call(L, 0, 1);
+    QString lua_version = lua_tostring(L, -1);;
+    lua_pop(L, 1);
+    lua_close(L);
+    return lua_version;
 }
 
 QString getGLVersion(){
