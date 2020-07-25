@@ -4,6 +4,7 @@
 #include <QApplication>
 
 #include "aboutdialog.h"
+using namespace lc::ui::dialog;
 
 #include <boost/version.hpp>
 #include "version.h"
@@ -17,68 +18,103 @@ extern "C"
 }
 #include <GL/glew.h>
 
+struct outputConfig{
+	QString lineFormat;	// 1: field name, 2: value
+	QString bodyFormat;	// 1: header, 2: body
+	bool displayAll;	//if to display all info
+}
+o_htmlDisplay={"<tr><td>%1</td><td>: %2</td></tr>\n", "<b>%1</b>\n<table>%2</table>\n", false},//For display
+o_html={"<tr><td>%1</td><td>: %2</td></tr>\n", "<details>\n<summary>%1</summary>\n<table>%2</table>\n</details>\n", true},
+o_md={"|%1|%2|\n", "```spoiler %1\n|||\n|---|---|\n%2```\n", true},//Table without heading
+o_plain={"%1: %2\n", "### %1\n%2\n", true}
+;
+
+//OS info
 #if __linux__
     #include <sys/utsname.h>
 
-QString getOsName()
+QString getOsName(outputConfig& oc)
 {
-    QString out;
     struct utsname buffer;
     if (uname(&buffer) != 0) {
-       return "Linux";
+       return oc.lineFormat.arg("OS").arg("Linux");
     }
-    out += "system name: " + QString(buffer.sysname) + "<br/>";
-    out += "release: " + QString(buffer.release) + "<br/>";
-    out += "version: " + QString(buffer.version) + "<br/>";
-    out += "machine: " + QString(buffer.machine);
+    QString out;
+    QString machine();
+    out +=
+	oc.lineFormat.arg("system name").arg(buffer.sysname) + 
+    	oc.lineFormat.arg("release").arg(buffer.release) + 
+    	oc.lineFormat.arg("version").arg(buffer.version) +
+    	oc.lineFormat.arg("machine").arg(buffer.machine);
     return out;
 }
 #elif _WIN32 || _WIN64
     // Not tested
     #include <windows.h>
 
-QString getOsName()
+QString getOsName(outputConfig& oc)
 {
     QString out;
 
     #ifdef _WIN32
-    out += "32-bit";
+    out += oc.lineFormat.arg("Compile Arch").arg("32-bit");
     #elif _WIN64
-    out += "64-bit";
+    out += oc.lineFormat.arg("Compile Arch").arg("64-bit");
     #endif
 
     OSVERSIONINFO vi;
     vi.dwOSVersionInfoSize = sizeof(vi);
     if (GetVersionEx(&vi) == 0) return out;
+    QString platform;
     switch (vi.dwPlatformId)
     {
     case VER_PLATFORM_WIN32s:
-        out += " Windows 3.x";
+        platform = "Windows 3.x";
     case VER_PLATFORM_WIN32_WINDOWS:
-        out += vi.dwMinorVersion == 0 ? " Windows 95" : " Windows 98";
+        platform = vi.dwMinorVersion == 0 ? "Windows 95" : "Windows 98";
     case VER_PLATFORM_WIN32_NT:
-        out += " Windows NT";
+        platform = "Windows NT";
     default:
-        out += " Unknown";
+        platform = "Unknown";
     }
+
+
+    out += oc.lineFormat.arg("Platform").arg(platform);
     return out;
 }
 #else
 //From https://stackoverflow.com/questions/15580179/how-do-i-find-the-name-of-an-operating-system
-QString getOsName()
+QString getOsName(outputConfig& oc)
 {
     #if __APPLE__ || __MACH__
-    return "Mac OSX";
+    return oc.lineFormat.arg("OS").arg("Mac OSX");
     #elif __FreeBSD__
-    return "FreeBSD";
+    return oc.lineFormat.arg("OS").arg("FreeBSD");
     #elif __unix || __unix__
-    return "Unix";
+    return oc.lineFormat.arg("OS").arg("Unix");
     #else
-    return "Other";
+    return oc.lineFormat.arg("OS").arg("Other");
     #endif
 }
 #endif
 
+QString getAdditionalOSInfo(outputConfig& oc){//From Qt
+	return
+#if QT_VERSION >= 0x050400
+	oc.lineFormat.arg("System").arg(QSysInfo::prettyProductName()) + 
+	oc.lineFormat.arg("Build Architecture").arg(QSysInfo::buildCpuArchitecture()) + 
+	oc.lineFormat.arg("Current Architecture").arg(QSysInfo::currentCpuArchitecture()) + 
+	oc.lineFormat.arg("Kernel Type").arg(QSysInfo::kernelType()) + 
+	oc.lineFormat.arg("Kernel Version").arg(QSysInfo::kernelVersion()) + 
+	oc.lineFormat.arg("Product Type").arg(QSysInfo::productType()) + 
+	oc.lineFormat.arg("Product Version").arg(QSysInfo::productVersion())
+#else
+	QString()
+#endif
+;
+}
+
+// LCAD info
 QString getCompiler(){
    return 
         #if defined(Q_CC_CLANG)
@@ -93,10 +129,24 @@ QString getCompiler(){
     ;
 }
 
+QString getLCADInfo(outputConfig& oc){
+    return 
+        oc.lineFormat.arg("Version").arg(QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR)) +
+        oc.lineFormat.arg("Compiler").arg(getCompiler())
+        #if defined(Q_CC_MSVC)
+        #else
+        +
+        oc.lineFormat.arg("Compiled on").arg(BUILD_DATE) +
+        oc.lineFormat.arg("Build info").arg(BUILD_INFO)
+        #endif
+    ;
+}
+
+//Ext info
 QString getLuaVersion(){
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);//add function to return version, can this be done directly?
-    luaL_dostring(L, "function version() return _VERSION end");
+    luaL_dostring(L,"function version() return _VERSION end");
     lua_getglobal(L, "version");
     lua_call(L, 0, 1);
     QString lua_version = lua_tostring(L, -1);;
@@ -114,35 +164,30 @@ QString getGLVersion(){
     return QString("%1.%2").arg(gl_major).arg(gl_minor);
 }
 
-using namespace lc::ui::dialog;
-//Create string of information
-QString getLCADInfo(){
+QString getExtInfo(outputConfig& oc){
+    QString boost_info = QString("%1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100);
     return
-        #if defined(Q_CC_MSVC)
-        QString("Version: %1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR) + "<br/>" +
-        QString("Compiler: %1").arg(getCompiler()) + "<br/>"
-        #else
-        QString("Version: %1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR) + "<br/>" +
-        QString("Compiler: %1").arg(getCompiler()) + "<br/>" +
-        QString("Compiled on: %1").arg(BUILD_DATE) + "<br/>" +
-        QString("Build info: %1").arg(BUILD_INFO)
-        #endif
+        oc.lineFormat.arg("Qt Version").arg(qVersion()) +
+        oc.lineFormat.arg("Boost Version").arg(boost_info) +
+        oc.lineFormat.arg("Lua Version").arg(getLuaVersion()) + 
+	oc.lineFormat.arg("libdxfrw Version").arg(DRW_VERSION) + 
+	oc.lineFormat.arg("OpenGL Version").arg(getGLVersion())
+    #if defined(Q_CC_MSVC)
+    #else
+        +
+        oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)
+    #endif    
     ;
 }
 
-QString getExtInfo(){
-    return
-        QString("Qt Version: %1").arg(qVersion()) + "<br/>" +
-        QString("Boost Version: %1.%2.%3").arg(BOOST_VERSION / 100000).arg(BOOST_VERSION / 100 % 1000).arg(BOOST_VERSION % 100) + "\n" +
-        QString("Lua Version: %1").arg(getLuaVersion()) + "<br/>" +
-        QString("libdxfrw Version: %1").arg(DRW_VERSION) + "<br/>" +
-        QString("OpenGL Version: %1").arg(getGLVersion()) + "<br/>"//+
-
-        #if defined(Q_CC_MSVC)
-        #else
-        + QString("CMake Version: %1").arg(CMAKE_VERSION)
-        #endif
-    ;
+// Get formated text
+QString getInfoTextFromConfig(outputConfig& oc){//Info is generated here
+	QString out =
+		oc.bodyFormat.arg("LibreCAD 3").arg(getLCADInfo(oc))+
+		oc.bodyFormat.arg("External Dependencies").arg(getExtInfo(oc));
+	if (oc.displayAll)
+		out+=oc.bodyFormat.arg("OS").arg(getOsName(oc)+getAdditionalOSInfo(oc));
+	return out;
 }
 
 
@@ -154,41 +199,38 @@ AboutDialog::AboutDialog(QWidget* parent) :
 
     auto layout = new QVBoxLayout;
     setLayout(layout);
-    _info = QString("\
-		<b>LibreCAD 3</b><br/>%1<br/><br/>\
-		<b>External Dependencies</b><br/>%2<br/><br/>\
-		<b>OS</b><br/>%3<br/>%4"
-	)
-	.arg(getLCADInfo())
-	.arg(getExtInfo())
-	.arg(getOsName()).arg(
-		#if QT_VERSION >= 0x050400
-			QString("System") + ": " + QSysInfo::prettyProductName() + "<br/>" + 
-			QString("Build Architecture") + ": " + QSysInfo::buildCpuArchitecture() + "<br/>" + 
-			QString("Current Architecture") + ": " + QSysInfo::currentCpuArchitecture() + "<br/>" + 
-			QString("Kernel Type") + ": " + QSysInfo::kernelType() + "<br/>" + 
-			QString("Kernel Version") + ": " + QSysInfo::kernelVersion() + "<br/>" + 
-			QString("Product Type") + ": " + QSysInfo::productType() + "<br/>" + 
-			QString("Product Version") + ": " + QSysInfo::productVersion()
-		#endif		
-	);
 
-    auto app_info = new QLabel(_info);
-    app_info->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    auto app_info = new QLabel(getInfoTextFromConfig(o_htmlDisplay));
+    // app_info->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    // No interaction for table
     layout->addWidget(app_info);
 
     QString links
     (
-        QString("<a href=\"https://github.com/LibreCAD/LibreCAD_3/graphs/contributors\">%1</a>").arg(tr("Contributors"))
-        + "<br/>" +
-        QString("<a href=\"https://github.com/LibreCAD/LibreCAD_3/blob/master/LICENSE\">%1</a>").arg(tr("License"))
+        QString("<div><a href=\"https://github.com/LibreCAD/LibreCAD_3/graphs/contributors\">%1</a></div>").arg(tr("Contributors")) +
+        QString("<div><a href=\"https://github.com/LibreCAD/LibreCAD_3/blob/master/LICENSE\">%1</a></div>").arg(tr("License")) +
+        QString("<div><a href=\"https://github.com/LibreCAD/LibreCAD_3/tree/master\">%2</a></div>").arg("The Code")
     );
 
-    auto copy_button = new QPushButton(tr("Copy"));
-    // copy_button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-    layout->addWidget(copy_button);
+    auto button_all = new QWidget(this);
+    auto button_layout = new QHBoxLayout;
+    button_all->setLayout(button_layout);
+    layout->addWidget(button_all);
 
-    connect(copy_button, SIGNAL(released()), this, SLOT(copyClick()));
+    auto copy_button = new QPushButton(tr("Copy Plain Text"));
+    copy_button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    button_layout->addWidget(copy_button);
+    connect(copy_button, SIGNAL(released()), this, SLOT(copyClickPlain()));
+
+    copy_button = new QPushButton(tr("Copy HTML (Github)"));
+    copy_button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    button_layout->addWidget(copy_button);
+    connect(copy_button, SIGNAL(released()), this, SLOT(copyClickHTML()));
+
+    copy_button = new QPushButton(tr("Copy MD (Zulip)"));
+    copy_button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    button_layout->addWidget(copy_button);
+    connect(copy_button, SIGNAL(released()), this, SLOT(copyClickMD()));
 
     auto links_label = new QLabel(links);
     links_label->setOpenExternalLinks(true);
@@ -196,7 +238,17 @@ AboutDialog::AboutDialog(QWidget* parent) :
     layout->addWidget(links_label);
 }
 
-void AboutDialog::copyClick(){
+void AboutDialog::copyClickPlain(){
         QClipboard* clipboard = QApplication::clipboard();
-        clipboard->setText(_info);
+        clipboard->setText(getInfoTextFromConfig(o_plain));
+}
+
+void AboutDialog::copyClickHTML(){
+        QClipboard* clipboard = QApplication::clipboard();
+        clipboard->setText(getInfoTextFromConfig(o_html));
+}
+
+void AboutDialog::copyClickMD(){
+        QClipboard* clipboard = QApplication::clipboard();
+        clipboard->setText(getInfoTextFromConfig(o_md));
 }

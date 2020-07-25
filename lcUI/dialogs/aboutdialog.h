@@ -9,12 +9,12 @@ namespace lc {
         namespace dialog {
             class AboutDialog : public QDialog {
                 Q_OBJECT
-
                 public:
                     AboutDialog(QWidget* parent = 0);
-		    QString _info;
                 private slots:
-		    void copyClick();
+		    void copyClickPlain();
+		    void copyClickHTML();
+		    void copyClickMD();
             };
         }
     }

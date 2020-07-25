@@ -229,7 +229,7 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
                 }
             }
 
-            builderVertices.push_back(lc::builder::LWBuilderVertex(loc, sWidth, eWidth, bulge));
+            builderVertices.push_back(lc::builder::LWBuilderVertex(loc, sWidth, eWidth, bulge, 0));
         }
 
         lc::builder::LWPolylineBuilder lwPolylineBuilder;

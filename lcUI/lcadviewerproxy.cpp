@@ -25,8 +25,8 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     gridLayout->addWidget(_tabWidget, 0, 0, 1, 1);
 
     _tabWidget->addTab(_modelViewerImpl, tr("Model"));
-    _tabWidget->addTab(_modelViewerImpl, tr("Paper 1"));//Just for init, removed later
-    _tabWidget->addTab(_modelViewerImpl, tr("Paper 2"));
+    _tabWidget->addTab(_modelViewerImpl, tr("Model"));//Just for init, removed later
+    _tabWidget->addTab(_modelViewerImpl, tr("Model"));
 
     _paperViewers = new LCADPaperViewerImpl(this);
     
