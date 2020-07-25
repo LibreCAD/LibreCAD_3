@@ -14,6 +14,11 @@ TEST(BuilderTest, Process) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
+
     auto layer = std::make_shared<lc::meta::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
@@ -50,6 +55,11 @@ TEST(BuilderTest, Undo) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
 
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
+
     auto layer = std::make_shared<lc::meta::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);
 
@@ -78,6 +88,11 @@ TEST(BuilderTest, Undo) {
 TEST(BuilderTest, Redo) {
     auto document = std::make_shared<DocumentImpl>(std::make_shared<StorageManagerImpl>());
     auto builder = std::make_shared<lc::operation::Builder>(document, "Test");
+
+    //Remove existing blocks
+    for(auto& block : document->blocks()) {
+        document->removeDocumentMetaType(block);
+    }
 
     auto layer = std::make_shared<lc::meta::Layer>("1");
     auto addLayer = std::make_shared<lc::operation::AddLayer>(document, layer);

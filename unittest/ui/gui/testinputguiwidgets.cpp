@@ -78,6 +78,8 @@ TEST(InputGUIWidgetsTest, TestGetLuaValue) {
 }
 
 TEST(InputGUIWidgetsTest, AngleGUITest) {
+    kaguya::State state;
+
     QApplication app(argc, argv);
     lc::ui::api::DialogWidget dialogWidget("TestDialog", nullptr);
     lc::ui::api::AngleGUI angleGUI("TestAngle");
@@ -90,7 +92,6 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
     float diff = angleGUI.value() - 3.14;
     EXPECT_TRUE(diff < 0.01 || diff < -0.01);
 
-    kaguya::State state;
     state.dostring("cb1 = function(ang) testValue=ang end");
     angleGUI.addOnChangeCallback(state["cb1"]);
     angleGUI.setValue(5);
@@ -100,11 +101,11 @@ TEST(InputGUIWidgetsTest, AngleGUITest) {
 }
 
 TEST(InputGUIWidgetsTest, TextAndNumberGUITest) {
+    kaguya::State state;
     QApplication app(argc, argv);
     lc::ui::api::TextGUI textGUI("TestText");
     lc::ui::api::NumberGUI numberGUI("TestNumber");
 
-    kaguya::State state;
     state.dostring("cb1 = function(tex) testValue=tex end");
     state.dostring("cb2 = function(num) testValue2=num end");
     textGUI.addOnChangeCallback(state["cb1"]);
