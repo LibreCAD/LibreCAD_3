@@ -36,6 +36,7 @@ end
 function LWPolylineOperations:_init_default()
     message("<b>Polyline</b>")
     message("Click on first point or enter coordinates:")
+    message("Enter number for width")
 end
 
 function LWPolylineOperations:enterPoint(eventName, data)
@@ -48,8 +49,11 @@ function LWPolylineOperations:enterPoint(eventName, data)
 	if(eventName == "mouseMove") then
         self:newData(data["position"])
 		self.tempPoint = true
-	elseif(eventName == "point" or eventName == "number") then
+	elseif(eventName == "point") then
         self:newData(data["position"])
+	elseif(eventName == "number") then
+	self.builder:setWidth(data["number"])
+	print(data["number"])
     end
 end
 
