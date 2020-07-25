@@ -64,6 +64,7 @@ namespace lc {
                 lc::geo::Coordinate extrusionDirection() const;
 
                 void copy(entity::LWPolyline_CSPtr entity);
+
 		private:
 			std::vector<lc::builder::LWBuilderVertex> _vertices;
 			double _currentVertex_Bulge;

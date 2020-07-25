@@ -247,29 +247,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
     for (auto iter = entityProperties.cbegin(); iter != entityProperties.cend(); ++iter) {
-        std::string key = "entity" + std::to_string(entityID) + "_" + iter->first;
-
-        switch (iter->second.which())
-        {
-        case 0:
-            key += "_angle";
-            break;
-        case 1:
-            key += "_double";
-            break;
-        case 2:
-            key += "_bool";
-            break;
-        case 3:
-            key += "_coordinate";
-            break;
-        case 4:
-            key += "_text";
-            break;
-        case 5:
-            key += "_vector";
-            break;
-        }
+        std::string key = generatePropertyKey(entityID, iter->first, iter->second.which());
 
         if (_addedKeys.find(key) == _addedKeys.end()) {
             // angleproperty
@@ -366,4 +344,32 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         _entityProperties[entity->id()].push_back(key);
         _widgetKeyToEntity[key] = entity->id();
     }
+}
+
+std::string PropertyEditor::generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const {
+    std::string key = "entity" + std::to_string(entityID) + "_" + propKey;
+
+    switch (propType)
+    {
+    case 0:
+        key += "_angle";
+        break;
+    case 1:
+        key += "_double";
+        break;
+    case 2:
+        key += "_bool";
+        break;
+    case 3:
+        key += "_coordinate";
+        break;
+    case 4:
+        key += "_text";
+        break;
+    case 5:
+        key += "_vector";
+        break;
+    }
+
+    return key;
 }

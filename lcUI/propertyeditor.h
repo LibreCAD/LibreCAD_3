@@ -89,6 +89,11 @@ namespace lc
             */
             lc::entity::CADEntity_CSPtr customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity);
 
+            /**
+            * \brief Helper function to generate the property key
+            */
+            std::string generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const;
+
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _entityProperties;

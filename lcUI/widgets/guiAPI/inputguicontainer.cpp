@@ -18,7 +18,6 @@ InputGUIContainer::InputGUIContainer(const std::string& label, lc::ui::MainWindo
 }
 
 InputGUIContainer::~InputGUIContainer() {
-
 }
 
 bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
