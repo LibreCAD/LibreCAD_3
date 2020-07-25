@@ -19,9 +19,10 @@ LCADModelViewerImpl::LCADModelViewerImpl(QWidget* parent):QWidget(parent),_docum
     auto v=getViewer();
     v->setFocused(true);
     splitter->addWidget(v);
-    splitter->addWidget(getViewer());
+    //splitter->addWidget(getViewer());
     //Hide the second view, can be accessed by splitter
-    splitter->setSizes(QList<int>() << 1 << 0);
+    //splitter->setSizes(QList<int>() << 1 << 0); 
+    // add these lines only when requested for second viewer
 };
 
 void LCADModelViewerImpl::setDocument(std::shared_ptr<lc::storage::Document> document){

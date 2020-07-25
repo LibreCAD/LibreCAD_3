@@ -52,7 +52,7 @@ void OpenglPainter::arc(double x, double y, double r, double start, double end)
   float angle=0;
   long points=CURVE_POINTS;
 
-  for(int i=0;i<points;i++)
+  for(int i=0;i<points+1;i++)
   {
     angle=start - ( ((float)i)/points)*(delta) ;
               
@@ -71,7 +71,7 @@ void OpenglPainter::arcNegative(double x, double y, double r, double start, doub
   float angle=0;
   long points=CURVE_POINTS;
             
-  for(int i=0;i<points;i++)
+  for(int i=0;i<points+1;i++)
   {
     angle=( ((float)i)/points)*(delta) + (start);
     _manager->addVertex( (_pen_x=x+r*cos(angle)) , (_pen_y=y+r*sin(angle)) );
@@ -119,7 +119,7 @@ void OpenglPainter::ellipse(double cx, double cy, double rx, double ry, double s
   long points=CURVE_POINTS;
   float tx,ty,TX,TY;
             
-  for(int i=0;i<=points;i++)
+  for(int i=0;i<=points+1;i++)
   {
     EA=( ((float)i)/points)*(delta) + (Esa);
                
