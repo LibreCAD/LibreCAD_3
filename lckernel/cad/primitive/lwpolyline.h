@@ -157,7 +157,7 @@ namespace lc {
                                                              int maxNumberOfSnapPoints) const override;
 
             virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
-            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
             nearestPointOnPath2(const geo::Coordinate &coord) const;
 
 	        virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;

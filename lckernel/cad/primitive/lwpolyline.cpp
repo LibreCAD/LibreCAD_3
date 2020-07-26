@@ -290,15 +290,17 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate& coord) con
     return std::get<0>(info);
 }
 
-std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
 LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
     const auto &&entities = asEntities();
 
     double minimumDistance = std::numeric_limits<double>::max();
     std::shared_ptr<const geo::Vector> nearestVector = nullptr;
     std::shared_ptr<const geo::Arc> nearestArc = nullptr;
+    unsigned int index=0;
     geo::Coordinate nearestCoordinate;
-    for (auto &geoItem : entities) {
+    for (unsigned int i=0;i<entities.size();i++) {
+    	auto geoItem = entities[i];
         if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
             auto npoe = vector->nearestPointOnPath(coord);
             auto thisDistance = npoe.distanceTo(coord);
@@ -306,6 +308,7 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestVector = vector;
+                index=i;
             }
         } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
             auto npoe = arc->nearestPointOnPath(coord);
@@ -314,12 +317,13 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestArc = arc;
+                index=i;
             }
         } else {
             std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
         }
     }
-    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc);
+    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc, index);
 }
 
 
@@ -368,40 +372,17 @@ std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
 }
 
 std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coord) const{
-  	std::vector<CADEntity_CSPtr> out;
+    std::vector<CADEntity_CSPtr> out;
     std::vector<LWVertex2D> newVertex;
     std::vector<LWVertex2D> newVertex2;
-    unsigned int index = 0, i;
+    unsigned int i;
     if (_vertex.size()<2)return out;
     //Copy from nearestPointOnPath2
-    const auto &&entities = asEntities();
-    double minimumDistance = std::numeric_limits<double>::max();
-    std::shared_ptr<const geo::Arc> nearestArc = nullptr;
-    geo::Coordinate nearestCoordinate;
-    for (i=0;i<entities.size();i++) {
-        auto geoItem = entities[i];
-        if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
-            auto npoe = vector->nearestPointOnPath(coord);
-            auto thisDistance = npoe.distanceTo(coord);
-            if (thisDistance < minimumDistance) {
-                minimumDistance = thisDistance;
-                nearestCoordinate = npoe;
-                nearestArc = nullptr;
-                index=i;
-            }
-        } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
-            auto npoe = arc->nearestPointOnPath(coord);
-            auto thisDistance = npoe.distanceTo(coord);
-            if (thisDistance < minimumDistance) {
-                minimumDistance = thisDistance;
-                nearestCoordinate = npoe;
-                nearestArc = arc;
-                index=i;
-            }
-        } else {
-            std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
-        }
-    }
+    auto &&info = nearestPointOnPath2(coord);
+    auto nearestCoordinate = std::get<0>(info);
+    auto nearestArc = std::get<2>(info);
+    auto index = std::get<3>(info);
+    auto minimumDistance=coord.distanceTo(nearestCoordinate);
     if (minimumDistance>LCTOLERANCE) return out;
     for(i=0;i<_vertex.size();i++){
         if(i==index){//divide here
