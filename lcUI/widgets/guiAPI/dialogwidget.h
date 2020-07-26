@@ -48,20 +48,6 @@ namespace lc {
                 bool addWidget(const std::string& key, InputGUI* guiWidget) override;
 
                 /**
-                * \brief Add button directly (create a button group containing only that button)
-                * \param pointer to ButtonGUI button
-                * \return successfully added bool
-                */
-                bool addWidget(const std::string& key, ButtonGUI* buttonWidget) override;
-
-                /**
-                * \brief Add checkbox directly (create a button group containing only that button)
-                * \param pointer to CheckBoxGUI button
-                * \return successfully added bool
-                */
-                bool addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) override;
-
-                /**
                 * \brief Set title of dialog widget
                 * \param string new title
                 */

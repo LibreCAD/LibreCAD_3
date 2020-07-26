@@ -79,33 +79,7 @@ bool InputGUIContainer::addWidget(const std::string& key, InputGUI* guiWidget) {
     return true;
 }
 
-bool InputGUIContainer::addWidget(const std::string& key, ButtonGUI* buttonWidget) {
-    if (buttonWidget == nullptr) {
-        return false;
-    }
-
-    std::string horizGroupKey = key + "_group";
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(buttonWidget->label());
-    horizGroup->addWidget(key, buttonWidget);
-    addWidget(horizGroupKey, horizGroup);
-    _widgetToGroup[key] = horizGroupKey;
-    return true;
-}
-
-bool InputGUIContainer::addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) {
-    if (checkboxWidget == nullptr) {
-        return false;
-    }
-
-    std::string horizGroupKey = key + "_group";
-    HorizontalGroupGUI* horizGroup = new HorizontalGroupGUI(checkboxWidget->label());
-    horizGroup->addWidget(key, checkboxWidget);
-    addWidget(horizGroupKey, horizGroup);
-    _widgetToGroup[key] = horizGroupKey;
-    return true;
-}
-
-const std::vector<InputGUI*>& InputGUIContainer::inputWidgets() {
+std::vector<InputGUI*> InputGUIContainer::inputWidgets() {
     std::vector<InputGUI*> inputGUIList;
 
     for (std::map<std::string, InputGUI*>::iterator iter = _inputWidgets.begin(); iter != _inputWidgets.end(); ++iter) {
@@ -148,16 +122,6 @@ void InputGUIContainer::setLabel(const std::string& newlabel) {
 }
 
 void InputGUIContainer::removeInputGUI(std::string key, bool deleteWidget) {
-    if (_inputWidgets.find(key) == _inputWidgets.end()) {
-        HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[_widgetToGroup[key]]);
-
-        if (isHorizGroup != nullptr) {
-            std::string oldKey = key;
-            key = _widgetToGroup[key];
-            _widgetToGroup.erase(oldKey);
-        }
-    }
-
     HorizontalGroupGUI* isHorizGroup = qobject_cast<HorizontalGroupGUI*>(_inputWidgets[key]);
     RadioGroupGUI* isRadioGroup = qobject_cast<RadioGroupGUI*>(_inputWidgets[key]);
 

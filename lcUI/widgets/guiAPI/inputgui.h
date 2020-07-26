@@ -54,6 +54,10 @@ namespace lc
                 */
                 virtual void setKey(const std::string& keyIn);
 
+                /**
+                * \brief Get input gui key
+                * \return string gui key
+                */
                 const std::string key() const;
 
             protected:

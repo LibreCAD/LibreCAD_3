@@ -119,14 +119,6 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
     return success;
 }
 
-bool PropertyEditor::addWidget(const std::string& key, api::ButtonGUI* buttonWidget) {
-    return InputGUIContainer::addWidget(key, buttonWidget);
-}
-
-bool PropertyEditor::addWidget(const std::string& key, api::CheckBoxGUI* checkboxWidget) {
-    return InputGUIContainer::addWidget(key, checkboxWidget);
-}
-
 void PropertyEditor::propertyChanged(const std::string& key) {
     kaguya::LuaRef propertiesTable = generateInfo(mainWindow->luaInterface()->luaState());
     lc::entity::CADEntity_CSPtr entity = mainWindow->cadMdiChild()->storageManager()->entityByID(_widgetKeyToEntity[key]);

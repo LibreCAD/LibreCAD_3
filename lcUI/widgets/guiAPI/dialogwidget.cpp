@@ -48,17 +48,9 @@ bool DialogWidget::addWidget(const std::string& key, InputGUI* guiWidget) {
     return success;
 }
 
-bool DialogWidget::addWidget(const std::string& key, ButtonGUI* buttonWidget) {
-    return InputGUIContainer::addWidget(key, buttonWidget);
-}
-
-bool DialogWidget::addWidget(const std::string& key, CheckBoxGUI* checkboxWidget) {
-    return InputGUIContainer::addWidget(key, checkboxWidget);
-}
-
 void DialogWidget::setFinishButton(ButtonGUI* buttonWidget) {
     if (buttonWidget != nullptr) {
-        connect(buttonWidget, &ButtonGUI::clicked, this, &DialogWidget::finishCallbacks);
+        connect(buttonWidget->_pushButton, &QPushButton::clicked, this, &DialogWidget::finishCallbacks);
     }
 }
 

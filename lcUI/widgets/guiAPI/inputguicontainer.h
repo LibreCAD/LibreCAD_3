@@ -39,24 +39,10 @@ namespace lc
                 virtual bool addWidget(const std::string& key, InputGUI* guiWidget);
 
                 /**
-                * \brief Add button directly (create a button group containing only that button)
-                * \param pointer to ButtonGUI button
-                * \return successfully added bool
-                */
-                virtual bool addWidget(const std::string& key, ButtonGUI* buttonWidget);
-
-                /**
-                * \brief Add checkbox directly (create a button group containing only that button)
-                * \param pointer to CheckBoxGUI button
-                * \return successfully added bool
-                */
-                virtual bool addWidget(const std::string& key, CheckBoxGUI* checkboxWidget);
-
-                /**
                 * \brief Return list of all input widgets
                 * \return vector of pointer of InputGUI widgets
                 */
-                const std::vector<InputGUI*>& inputWidgets();
+                std::vector<InputGUI*> inputWidgets();
 
                 /**
                 * \brief Add lua callback for dialog finish

@@ -1,23 +1,23 @@
 #include "checkboxgui.h"
 
+#include <QVBoxLayout>
+
 using namespace lc::ui::api;
 
 CheckBoxGUI::CheckBoxGUI(std::string label, bool checked, QWidget* parent)
     :
-    QCheckBox(QString(label.c_str()), parent),
-    _label(label)
+    InputGUI(label, parent)
 {
-    this->setChecked(checked);
-    connect(this, &CheckBoxGUI::stateChanged, this, &CheckBoxGUI::callbackCalled);
-}
-
-std::string CheckBoxGUI::label() const {
-    return _label;
+    _checkBox = new QCheckBox(QString(label.c_str()));
+    this->setLayout(new QVBoxLayout());
+    this->layout()->addWidget(_checkBox);
+    _checkBox->setChecked(checked);
+    connect(_checkBox, &QCheckBox::stateChanged, this, &CheckBoxGUI::callbackCalled);
 }
 
 void CheckBoxGUI::setLabel(const std::string& newLabel) {
-    _label = newLabel;
-    this->setText(QString(newLabel.c_str()));
+    InputGUI::setLabel(newLabel);
+    _checkBox->setText(QString(newLabel.c_str()));
 }
 
 void CheckBoxGUI::addCallback(kaguya::LuaRef cb) {
@@ -31,17 +31,13 @@ void CheckBoxGUI::callbackCalled(int state) {
 }
 
 void CheckBoxGUI::getLuaValue(kaguya::LuaRef& table) {
-    table[_key] = isChecked();
-}
-
-void CheckBoxGUI::setKey(const std::string& keyIn) {
-    _key = keyIn;
+    table[_key] = _checkBox->isChecked();
 }
 
 bool CheckBoxGUI::value() const {
-    return isChecked();
+    return _checkBox->isChecked();
 }
 
 void CheckBoxGUI::setValue(bool check) {
-    setChecked(check);
+    _checkBox->setChecked(check);
 }

@@ -45,20 +45,6 @@ namespace lc
             bool addWidget(const std::string& key, api::InputGUI* guiWidget) override;
 
             /**
-            * \brief Add button gui widget to property editor
-            * \param string key
-            * \param pointer to ButtonGUI
-            */
-            bool addWidget(const std::string& key, api::ButtonGUI* buttonWidget) override;
-
-            /**
-            * \brief Add checkbox gui widget to property editor
-            * \param string key
-            * \param pointer to CheckBoxGUI
-            */
-            bool addWidget(const std::string& key, api::CheckBoxGUI* checkboxWidget) override;
-
-            /**
             * \brief Function called by lua callbacks when a key is changed
             * \param string key of property widget changed
             */

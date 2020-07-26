@@ -260,7 +260,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("removeGroup", static_cast<void(api::ToolbarTab::*)(lc::ui::api::ToolbarGroup*)>(&api::ToolbarTab::removeGroup),
             static_cast<void(api::ToolbarTab::*)(const char*)>(&api::ToolbarTab::removeGroup))
         .addOverloadedFunctions("addGroup", static_cast<void(api::ToolbarTab::*)(api::ToolbarGroup*)>(&api::ToolbarTab::addGroup),
-            static_cast<api::ToolbarGroup*(api::ToolbarTab::*)(const char*, int)>(&api::ToolbarTab::addGroup),
+            static_cast<api::ToolbarGroup * (api::ToolbarTab::*)(const char*, int)>(&api::ToolbarTab::addGroup),
             [](api::ToolbarTab& self, const char* name) { return self.addGroup(name); })
     );
 
@@ -282,7 +282,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarButton& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addCallback", static_cast<void(lc::ui::api::ToolbarButton::*)(kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback),
-            static_cast<void(lc::ui::api::ToolbarButton::*)(const char*,kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback))
+            static_cast<void(lc::ui::api::ToolbarButton::*)(const char*, kaguya::LuaRef)>(&lc::ui::api::ToolbarButton::addCallback))
     );
 
     state["gui"]["ToolbarGroup"].setClass(kaguya::UserdataMetatable<lc::ui::api::ToolbarGroup>()
@@ -299,8 +299,8 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addOverloadedFunctions("enable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::ToolbarGroup& self) { self.setEnabled(false); })
         .addOverloadedFunctions("addButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::addButton),
-            static_cast<lc::ui::api::ToolbarButton*(lc::ui::api::ToolbarGroup::*)(const char*, const char*)>(&lc::ui::api::ToolbarGroup::addButton),
-            static_cast<lc::ui::api::ToolbarButton*(lc::ui::api::ToolbarGroup::*)(const char*, const char*, kaguya::LuaRef)>(&lc::ui::api::ToolbarGroup::addButton))
+            static_cast<lc::ui::api::ToolbarButton * (lc::ui::api::ToolbarGroup::*)(const char*, const char*)>(&lc::ui::api::ToolbarGroup::addButton),
+            static_cast<lc::ui::api::ToolbarButton * (lc::ui::api::ToolbarGroup::*)(const char*, const char*, kaguya::LuaRef)>(&lc::ui::api::ToolbarGroup::addButton))
         .addOverloadedFunctions("removeButton", static_cast<void(lc::ui::api::ToolbarGroup::*)(lc::ui::api::ToolbarButton*)>(&lc::ui::api::ToolbarGroup::removeButton),
             static_cast<void(lc::ui::api::ToolbarGroup::*)(const char*)>(&lc::ui::api::ToolbarGroup::removeButton))
     );
@@ -309,9 +309,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("inputWidgets", &lc::ui::api::InputGUIContainer::inputWidgets)
         .addFunction("addFinishCallback", &lc::ui::api::InputGUIContainer::addFinishCallback)
         .addFunction("keys", &lc::ui::api::InputGUIContainer::keys)
-        .addOverloadedFunctions("addWidget", static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::InputGUIContainer::addWidget),
-            static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::InputGUIContainer::addWidget),
-            static_cast<bool(lc::ui::api::InputGUIContainer::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::InputGUIContainer::addWidget))
+        .addFunction("addWidget", &lc::ui::api::InputGUIContainer::addWidget)
     );
 
     state["gui"]["DialogWidget"].setClass(kaguya::UserdataMetatable<lc::ui::api::DialogWidget, lc::ui::api::InputGUIContainer>()
@@ -319,9 +317,7 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("setFinishButton", &lc::ui::api::DialogWidget::setFinishButton)
         .addOverloadedFunctions("enable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(true); })
         .addOverloadedFunctions("disable", [](lc::ui::api::DialogWidget& self) { self.setEnabled(false); })
-        .addOverloadedFunctions("addWidget", static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::InputGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::ButtonGUI*)>(&lc::ui::api::DialogWidget::addWidget),
-            static_cast<bool(lc::ui::api::DialogWidget::*)(const std::string&, lc::ui::api::CheckBoxGUI*)>(&lc::ui::api::DialogWidget::addWidget))
+        .addFunction("addWidget", &lc::ui::api::DialogWidget::addWidget)
     );
 
     state["gui"]["InputGUI"].setClass(kaguya::UserdataMetatable<lc::ui::api::InputGUI>()
@@ -340,20 +336,18 @@ void addLuaGUIAPIBindings(lua_State* L) {
         .addFunction("addOnChangeCallback", &lc::ui::api::TextGUI::addOnChangeCallback)
     );
 
-    state["gui"]["Button"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI>()
+    state["gui"]["Button"].setClass(kaguya::UserdataMetatable<lc::ui::api::ButtonGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::ButtonGUI(std::string)>()
-        .addFunction("label", &lc::ui::api::ButtonGUI::label)
         .addFunction("setLabel", &lc::ui::api::ButtonGUI::setLabel)
         .addFunction("addCallback", &lc::ui::api::ButtonGUI::addCallback)
     );
 
-    state["gui"]["CheckBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::CheckBoxGUI>()
+    state["gui"]["CheckBox"].setClass(kaguya::UserdataMetatable<lc::ui::api::CheckBoxGUI, lc::ui::api::InputGUI>()
         .setConstructors<lc::ui::api::CheckBoxGUI(std::string), lc::ui::api::CheckBoxGUI(std::string, bool)>()
-        .addFunction("label", &lc::ui::api::CheckBoxGUI::label)
         .addFunction("setLabel", &lc::ui::api::CheckBoxGUI::setLabel)
         .addFunction("addCallback", &lc::ui::api::CheckBoxGUI::addCallback)
-        .addOverloadedFunctions("checked", [](lc::ui::api::CheckBoxGUI& self) { self.isChecked(); })
-        .addOverloadedFunctions("setChecked", [](lc::ui::api::CheckBoxGUI& self, bool check) { self.setChecked(check); })
+        .addFunction("value", &lc::ui::api::CheckBoxGUI::value)
+        .addFunction("setValue", &lc::ui::api::CheckBoxGUI::setValue)
     );
 
     state["gui"]["RadioButton"].setClass(kaguya::UserdataMetatable<lc::ui::api::RadioButtonGUI>()
