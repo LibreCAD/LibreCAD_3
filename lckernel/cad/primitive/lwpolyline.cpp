@@ -366,3 +366,97 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
 std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
     return _entities;
 }
+
+std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coord) const{
+  	std::vector<CADEntity_CSPtr> out;
+    std::vector<LWVertex2D> newVertex;
+    unsigned int index = 0, i;
+    if (_vertex.size()<2)return out;
+    //Copy from nearestPointOnPath2
+    const auto &&entities = asEntities();
+    double minimumDistance = std::numeric_limits<double>::max();
+    std::shared_ptr<const geo::Arc> nearestArc = nullptr;
+    geo::Coordinate nearestCoordinate;
+    for (i=0;i<entities.size();i++) {
+        auto geoItem = entities[i];
+        if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
+            auto npoe = vector->nearestPointOnPath(coord);
+            auto thisDistance = npoe.distanceTo(coord);
+            if (thisDistance < minimumDistance) {
+                minimumDistance = thisDistance;
+                nearestCoordinate = npoe;
+                nearestArc = nullptr;
+                index=i;
+            }
+        } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
+            auto npoe = arc->nearestPointOnPath(coord);
+            auto thisDistance = npoe.distanceTo(coord);
+            if (thisDistance < minimumDistance) {
+                minimumDistance = thisDistance;
+                nearestCoordinate = npoe;
+                nearestArc = arc;
+                index=i;
+            }
+        } else {
+            std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
+        }
+    }
+    if (minimumDistance>LCTOLERANCE) return out;
+    for(i=0;i<_vertex.size();i++){
+        if(i==index){//divide here
+            //interpolated values
+            double dist = _vertex[i].location().distanceTo(_vertex[i+1].location());
+            double dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
+            double dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
+            double endWidth=_vertex[i].startWidth()
+                +(_vertex[i].endWidth()-_vertex[i].startWidth())
+                *dist1
+                /dist;
+            double startWidth=_vertex[i].endWidth()
+                +(_vertex[i].startWidth()-_vertex[i].endWidth())
+                *dist2
+                /dist;
+            double bulge1 = 0;
+            double bulge2 = 0;
+            if (_vertex[i].bulge()!=0){
+                //determine bulge for arc
+                bulge1 = (
+                        nearestArc->radius() 
+                        - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist1/2,2.)))
+                    )*2/dist1;
+                if (bulge1*_vertex[i].bulge()<0)bulge1=-bulge1;
+                bulge2 = (
+                        nearestArc->radius()
+                        - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist2/2,2.)))
+                    )*2/dist2;
+                if (bulge2*_vertex[i].bulge()<0)bulge2=-bulge2;
+            };
+            newVertex.push_back(LWVertex2D(
+                 _vertex[i].location(),
+                 bulge1,
+                 _vertex[i].startWidth(),
+                 endWidth
+                ));
+            newVertex.push_back(LWVertex2D(
+                 nearestCoordinate,
+                 bulge2,
+                 startWidth,
+                 _vertex[i].endWidth()
+                ));
+        }else{
+            newVertex.push_back(_vertex[i]);
+        }
+    }
+    //Create new entity from vertices
+    auto newEntity = std::make_shared<LWPolyline>(newVertex,
+                                                      width(),
+                                                      elevation(),
+                                                      tickness(),
+                                                      closed(),
+                                                      extrusionDirection(),
+                                                      layer()
+                                                      , metaInfo(), block()
+        );    
+    out.push_back(newEntity);
+    return out;
+}

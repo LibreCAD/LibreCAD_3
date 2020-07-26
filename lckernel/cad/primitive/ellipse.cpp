@@ -311,7 +311,6 @@ geo::Coordinate Ellipse::nearestPointOnPath(const geo::Coordinate &coord) const 
     return geo::Ellipse::nearestPointOnPath(coord);
 }
 
-#include <iostream>
 std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
     auto angle = this->center().angleTo(coord)-this->getAngle();
@@ -352,10 +351,5 @@ std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) 
             out.push_back(newellipse);
         }
     }
-/*
-	if (this->isAngleBetween(angle+this->getAngle()){
-
-    }
-*/
 	return out;
 }
