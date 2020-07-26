@@ -230,7 +230,7 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
     }
 
     auto checkPoint = [&](geo::Coordinate cord) {
-        if (isAngleBetween(this->getAngle()+getEllipseAngle(cord))) {
+        if (isAngleBetween(getEllipseAngle(cord))) {
             resPoints.push_back(cord);
         }
     };
@@ -266,7 +266,7 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
         minorP = minorP.rotate(M_PI / 2);
         minorP = minorP * this->minorRadius();
 
-        //if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) { // Why this condition
+        if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) { // Why this condition
             //add Ellipse vertices
             tmp = center() + majorP();
             if (this->isAngleBetween(this->getAngle()+0)) { // Change to absolute values
@@ -287,7 +287,7 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
             if (this->isAngleBetween(this->getAngle()-M_PI / 2)) {
                 resPoints.emplace_back(tmp, ind++);
             }
-        //}
+        }
     }
 
     // Any where on entity path
