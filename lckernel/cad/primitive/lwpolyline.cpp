@@ -370,6 +370,7 @@ std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
 std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coord) const{
   	std::vector<CADEntity_CSPtr> out;
     std::vector<LWVertex2D> newVertex;
+    std::vector<LWVertex2D> newVertex2;
     unsigned int index = 0, i;
     if (_vertex.size()<2)return out;
     //Copy from nearestPointOnPath2
@@ -445,13 +446,32 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
                  bulge2,
                  width,
                  _vertex[i].endWidth()
+                ));//This is end point for 1
+            newVertex2.push_back(LWVertex2D(
+                 nearestCoordinate,
+                 bulge2,
+                 width,
+                 _vertex[i].endWidth()
                 ));
         }else{
-            newVertex.push_back(_vertex[i]);
+            if(i<index)
+                newVertex.push_back(_vertex[i]);
+            else
+            	newVertex2.push_back(_vertex[i]);
         }
     }
     //Create new entity from vertices
     auto newEntity = std::make_shared<LWPolyline>(newVertex,
+                                                      width(),
+                                                      elevation(),
+                                                      tickness(),
+                                                      closed(),
+                                                      extrusionDirection(),
+                                                      layer()
+                                                      , metaInfo(), block()
+        );    
+    out.push_back(newEntity);
+    newEntity = std::make_shared<LWPolyline>(newVertex2,
                                                       width(),
                                                       elevation(),
                                                       tickness(),
