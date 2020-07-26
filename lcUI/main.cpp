@@ -26,5 +26,6 @@ int main(int argc, char* argv[]) {
 	}catch(const char* e){
 		std::cerr << "Program terminated throwing" << std::endl;
 		std::cerr << e << std::endl;
+		throw(e);//trigger for debugger
 	}
 }

@@ -388,7 +388,7 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
         if(i==index){//divide here
             //interpolated values
             double dist1, dist2;
-            if (_vertex[i].bulge()!=0){            
+            if (_vertex[i].bulge()==0){ 
             	dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
             	dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
             }else{
