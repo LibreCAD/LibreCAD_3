@@ -405,17 +405,20 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
     for(i=0;i<_vertex.size();i++){
         if(i==index){//divide here
             //interpolated values
-            double dist = _vertex[i].location().distanceTo(_vertex[i+1].location());
-            double dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
-            double dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
-            double endWidth=_vertex[i].startWidth()
+            double dist1, dist2;
+            if (_vertex[i].bulge()!=0){            
+            	dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
+            	dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
+            }else{
+		auto angle=nearestArc->center().angleTo(nearestCoordinate);
+		dist1=abs(angle-nearestArc->startAngle())*nearestArc->radius();
+		dist2=abs(nearestArc->endAngle()-angle)*nearestArc->radius();
+            }
+            double dist=dist1+dist2;
+            double width=_vertex[i].startWidth()
                 +(_vertex[i].endWidth()-_vertex[i].startWidth())
                 *dist1
-                /dist;
-            double startWidth=_vertex[i].endWidth()
-                +(_vertex[i].startWidth()-_vertex[i].endWidth())
-                *dist2
-                /dist;
+                /dist; // Not good for arc
             double bulge1 = 0;
             double bulge2 = 0;
             if (_vertex[i].bulge()!=0){
@@ -435,12 +438,12 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
                  _vertex[i].location(),
                  bulge1,
                  _vertex[i].startWidth(),
-                 endWidth
+                 width
                 ));
             newVertex.push_back(LWVertex2D(
                  nearestCoordinate,
                  bulge2,
-                 startWidth,
+                 width,
                  _vertex[i].endWidth()
                 ));
         }else{
