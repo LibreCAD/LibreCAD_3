@@ -124,6 +124,12 @@ namespace lc {
                  */
                 double getEllipseAngle(const Coordinate& coord) const;
 
+                /**
+                 * @brief Check angle if it is between arc
+                 * The angle here is absolute angle, since in most cases it is used
+                 * @param angle angle abs.
+                 * @return is angle inside ellipse arc
+                 */
                 bool isAngleBetween(double angle) const {
                     if (!isArc())
                         return true;
