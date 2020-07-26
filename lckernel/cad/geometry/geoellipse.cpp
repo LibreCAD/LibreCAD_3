@@ -172,7 +172,7 @@ Coordinate Ellipse::nearestPointOnEntity(const Coordinate& coord) const {
     std::vector<Coordinate> potentialPoints = this->findPotentialNearestPoints(coord);
 
     for (const auto& verifiedPoint: potentialPoints) {
-        if (this->isAngleBetween(verifiedPoint.angle())) {
+        if (this->isAngleBetween(this->center().angleTo(verifiedPoint))) {
             double d = verifiedPoint.distanceTo(coord);
             if (d < minDist) {
                 minDist = verifiedPoint.distanceTo(coord);
