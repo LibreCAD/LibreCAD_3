@@ -400,7 +400,7 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
             double width=_vertex[i].startWidth()
                 +(_vertex[i].endWidth()-_vertex[i].startWidth())
                 *dist1
-                /dist; // Not good for arc
+                /dist; 
             double bulge1 = 0;
             double bulge2 = 0;
             if (_vertex[i].bulge()!=0){
