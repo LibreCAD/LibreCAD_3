@@ -52,10 +52,13 @@ function TrimOperation:_init(id)
     message("<b>TRIM</b>")
     message(tostring(#self.toTrim) .. " items selected")
 
-    if(#self.toTrim > 0) then
+    if(#self.toTrim == 1) then
         luaInterface:registerEvent('point', self)
 	luaInterface:registerEvent("selectionChanged", self)
         message("Select limit entity or Give split point")
+    elseif (#self.toTrim > 1) then
+    	self:selectionChanged() -- this should not be done this way
+    	-- for now split in intersection
     else
         self.finished = true
         message('select some entities to trim')
@@ -65,7 +68,7 @@ end
 
 function TrimOperation:onEvent(eventName, data)
     if(eventName == "selectionChanged") then
-        self:selectionChanged()
+        self:selectionChanged()-- this is not working
     elseif(eventName == "point") then
         self:newPoint(data["position"])
     end
@@ -73,31 +76,38 @@ end
 
 -- return newEntities based on trim point
 function TrimOperation:trimPoint(point)
-	print(#self.toTrim)
+	--print(#self.toTrim)
+	local nextToTrim = {}
+	local nextStep = {} --add to next step
 	for k, entity in pairs(self.toTrim) do
 		local entities = lc.entity.Splitable.splitHelper(entity, point)
 		    if(#entities > 0) then
 		    	--split sucessful
 		    	print('split on main entity')
 			for k2, entity2 in pairs(entities) do
-				table.insert(self.newEntities, entity2)
+				table.insert(nextStep, entity2)
 			end
-			table.remove(self.toTrim, k)
 			table.insert(self.oldEntities, entity) -- remove old
+		    else
+		    	table.insert(nextToTrim, entity)
 	    	    end
 	end
+	self.toTrim=nextToTrim
+	
 	-- if it splits new created entity
---	for k, entity in pairs(self.newEntities) do
---		local entities = lc.entity.Splitable.splitHelper(self.entity, point)
---		    if(#entities > 0) then
---		    	--split sucessful
---		    	print('split on new entity')
---			for k2, entity2 in pairs(self.toTrim) do
---				table.insert(self.newEntities, entity2)
---			end
---			table.remove(self.newEntity, entity) -- we do not need it
---	    	    end
---	end
+	for k, entity in pairs(self.newEntities) do
+		local entities = lc.entity.Splitable.splitHelper(entity, point)
+		    if(#entities > 0) then
+		    	--split sucessful
+		    	print('split on new entity')
+			for k2, entity2 in pairs(entities) do
+				table.insert(nextStep, entity2)
+			end
+			table.remove(self.newEntities, k) -- we do not need it
+	    	    end
+	end
+	--
+	for k,v in pairs(nextStep) do table.insert(self.newEntities, v) end
 end
 
 -- Split point given
@@ -110,177 +120,18 @@ end
 
 -- limit entity selected
 function TrimOperation:selectionChanged()
-    if(self.toTrim == nil) then
-        local window = mainWindow:cadMdiChild()
-        local nbEntities = #window:selection()
-        if(nbEntities == 1) then
-            if(self.limit == nil) then
-                self.limit = window:selection()[1]
-
-                message("Select entity to trim")
-            elseif(self.toTrim == nil) then
-                self.toTrim = window:selection()[1]
-
-                self:getIntersectionPoints()
-            end
-        elseif(nbEntities > 1) then
-            message("Select only one entity")
-        end
-    end
-end
-
-function TrimOperation:getIntersectionPoints()
-    local intersect = lc.maths.IntersectMany({self.toTrim, self.limit})
+    self.selection = mainWindow:cadMdiChild():selection()
+    --print(#self.selection)
+    local intersect = lc.maths.IntersectMany(self.selection)
     self.intersectionPoints = intersect:result()
-
-    if(#self.intersectionPoints == 0) then
-        message("No intersection found")
-
-        self:close()
-    elseif(#self.intersectionPoints >= 1) then
-        message("Click on the part of the entity to remove")
-    end
-end
-
-function TrimOperation:trim()
-    local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
-    b:appendEntity(self.toTrim)
-
-    b:appendOperation(lc.operation.Push())
-    b:appendOperation(lc.operation.Remove())
-    b:processStack()
-
-    if(self.toTrim.entityType == "line") then
-        local point = self.toTrim:nearestPointOnEntity(self.toRemovePoint)
-        local start = self.toTrim:start()
-        local finish = self.toTrim:finish()
-
-        local startToPoint = point:distanceTo(start)
-
-        local previousIntersect = start
-        local previousIntersectDistance = 0
-
-        local nextIntersect = finish
-        local nextIntersectDistance = start:distanceTo(finish)
-
-        for k, v in pairs(self.intersectionPoints) do
-            local startToIntersect = start:distanceTo(v)
-
-            if(startToIntersect < startToPoint and startToIntersect > previousIntersectDistance) then
-                previousIntersect = v
-                previousIntersectDistance = startToIntersect
-            elseif(startToIntersect > startToPoint and startToIntersect < nextIntersectDistance) then
-                nextIntersect = v
-                nextIntersectDistance = startToIntersect
-            end
-        end
-
-        if(previousIntersect == start) then
-            b:appendEntity(Line(nextIntersect, finish, self.toTrim:layer()))
-        elseif(nextIntersect == finish) then
-            b:appendEntity(Line(start, previousIntersect, self.toTrim:layer()))
-        else
-            b:appendEntity(Line(start, previousIntersect, self.toTrim:layer()))
-            b:appendEntity(Line(nextIntersect, finish, self.toTrim:layer()))
-        end
-    elseif(self.toTrim.entityType == "circle") then
-        if(#self.intersectionPoints < 2) then
-            message("Circle need at least two intersection points")
-
-            self:close()
-            return
-        end
-
-        local center = self.toTrim:center()
-        local selectedPoint = self.toTrim:nearestPointOnEntity(self.toRemovePoint)
-        local selectedAngle = center:angleTo(selectedPoint)
-
-        local intersectAngles = {}
-        local previousAngle
-        local nextAngle
-
-        for k, v in pairs(self.intersectionPoints) do
-            table.insert(intersectAngles, center:angleTo(v))
-        end
-        table.sort(intersectAngles)
-
-        for i, v in ipairs(intersectAngles) do
-            if(selectedAngle < v) then
-                if(i > 1) then
-                    previousAngle = intersectAngles[i - 1]
-                    nextAngle = v
-                    break
-                else
-                    previousAngle = v
-                    nextAngle = intersectAngles[#intersectAngles]
-                    break
-                end
-            elseif(i == #intersectAngles) then
-                previousAngle = v
-                nextAngle = intersectAngles[1]
-                break
-            end
-        end
-
-        b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), previousAngle, nextAngle, false, self.toTrim:layer()))
-
-    elseif(self.toTrim.entityType == "arc") then
-        local center = self.toTrim:center()
-        local startAngle
-        local endAngle
-
-        if(self.toTrim:CCW()) then
-            startAngle = self.toTrim:startAngle()
-            endAngle = self.toTrim:endAngle()
-        else
-            startAngle = self.toTrim:endAngle()
-            endAngle = self.toTrim:startAngle()
-        end
-
-        local selectedAngle = center:angleTo(self.toRemovePoint)
-        local intersectAngles = {startAngle, endAngle}
-        local previousAngle
-        local nextAngle
-
-        for k, v in pairs(self.intersectionPoints) do
-            table.insert(intersectAngles, center:angleTo(v))
-        end
-        table.sort(intersectAngles)
-
-        for i, v in ipairs(intersectAngles) do
-            if(selectedAngle < v) then
-                if(i > 1) then
-                    message("first")
-                    previousAngle = intersectAngles[i - 1]
-                    nextAngle = v
-                    break
-                else
-                    message("second")
-                    previousAngle = v
-                    nextAngle = intersectAngles[#intersectAngles]
-                    break
-                end
-            elseif(i == #intersectAngles) then
-                message("third")
-                previousAngle = v
-                nextAngle = intersectAngles[1]
-                break
-            end
-        end
-
-        if(nextIntersectAngle ~= endAngle) then
-            b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), nextAngle, endAngle, true, self.toTrim:layer()))
-        end
-        if(previousIntersectAngle ~= startAngle) then
-            b:appendEntity(lc.entity.Arc(center, self.toTrim:radius(), startAngle, previousAngle, true, self.toTrim:layer()))
-        end
-    else
-        message("Unsupported entity")
-    end
-
-    b:execute()
-
-    self:close()
+	--print(#self.intersectionPoints)
+	for k, point in pairs(self.intersectionPoints) do
+		print("point")
+		self:trimPoint(point)
+	end
+	self:replaceEntities()
+	-- should continue this way
+        -- message("Click on the part of the entity to remove")
 end
 
 function TrimOperation:close()
