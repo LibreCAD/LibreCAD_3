@@ -116,6 +116,16 @@ namespace lc {
                 */
                 void defaultButtonClicked();
 
+                /**
+                * \brief Cancel button clicked
+                */
+                void cancelButtonClicked();
+
+                /**
+                * \brief Cancel button clicked
+                */
+                void okButtonClicked();
+
             private:
                 void initializeGroupList();
 
@@ -128,6 +138,7 @@ namespace lc {
             private:
                 Ui::CustomizeToolbar* ui;
                 Toolbar* _toolbar;
+                bool _saveOnClose;
             };
         }
     }

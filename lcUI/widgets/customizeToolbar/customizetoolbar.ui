@@ -34,6 +34,9 @@
                         </item>
                         <item>
                             <layout class="QHBoxLayout" name="horizontalLayout2">
+                                <property name="spacing">
+                                    <number>100</number>
+                                </property>
                                 <item>
                                     <widget class="QPushButton" name="defaultButton">
                                         <property name="text">
@@ -45,6 +48,27 @@
                                     <widget class="QPushButton" name="loadFileButton">
                                         <property name="text">
                                             <string>Load</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                            </layout>
+                        </item>
+                        <item>
+                            <layout class="QHBoxLayout" name="horizontalLayout3">
+                                <property name="spacing">
+                                    <number>100</number>
+                                </property>
+                                <item>
+                                    <widget class="QPushButton" name="okButton">
+                                        <property name="text">
+                                            <string>Ok</string>
+                                        </property>
+                                    </widget>
+                                </item>
+                                <item>
+                                    <widget class="QPushButton" name="cancelButton">
+                                        <property name="text">
+                                            <string>Cancel</string>
                                         </property>
                                     </widget>
                                 </item>

@@ -26,6 +26,7 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     : 
     QDialog(parent),
     _toolbar(toolbar),
+    _saveOnClose(true),
     ui(new Ui::CustomizeToolbar)
 {
     ui->setupUi(this);
@@ -72,8 +73,14 @@ void CustomizeToolbar::initializeParentTab() {
     QPushButton* defaultButton = qobject_cast<QPushButton*>(buttonsLayout->itemAt(0)->widget());
     QPushButton* loadButton = qobject_cast<QPushButton*>(buttonsLayout->itemAt(1)->widget());
 
+    QLayout* buttonsLayout2 = rightSide->layout()->itemAt(2)->layout();
+    QPushButton* okButton = qobject_cast<QPushButton*>(buttonsLayout2->itemAt(0)->widget());
+    QPushButton* cancelButton = qobject_cast<QPushButton*>(buttonsLayout2->itemAt(1)->widget());
+
     connect(defaultButton, &QPushButton::clicked, this, &CustomizeToolbar::defaultButtonClicked);
     connect(loadButton, &QPushButton::clicked, this, &CustomizeToolbar::loadToolbarFile);
+    connect(okButton, &QPushButton::clicked, this, &CustomizeToolbar::okButtonClicked);
+    connect(cancelButton, &QPushButton::clicked, this, &CustomizeToolbar::cancelButtonClicked);
 }
 
 void CustomizeToolbar::addParentTab() {
@@ -104,8 +111,10 @@ void CustomizeToolbar::addToolbarTab(lc::ui::api::ToolbarTab* newTab) {
 }
 
 void CustomizeToolbar::closeEvent(QCloseEvent* e) {
-    updateButtons();
-    emit customizeWidgetClosed();
+    if (_saveOnClose) {
+        updateButtons();
+        emit customizeWidgetClosed();
+    }
     QWidget::closeEvent(e);
 }
 
@@ -361,4 +370,14 @@ void CustomizeToolbar::loadToolbarFile() {
 
 void CustomizeToolbar::defaultButtonClicked() {
     emit defaultSettingsLoad();
+}
+
+void CustomizeToolbar::cancelButtonClicked() {
+    _saveOnClose = false;
+    close();
+}
+
+void CustomizeToolbar::okButtonClicked() {
+    _saveOnClose = true;
+    close();
 }
