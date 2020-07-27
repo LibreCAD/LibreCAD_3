@@ -610,6 +610,7 @@ void MainWindow::writeSettings() {
 
 void MainWindow::readUiSettings() {
     _customizeToolbar = new widgets::CustomizeToolbar(toolbar());
+    _customizeToolbar->setCloseMode(widgets::CustomizeToolbar::CloseMode::Save);
     _uiSettings.readSettings(_customizeToolbar);
     _customizeToolbar->close();
 }

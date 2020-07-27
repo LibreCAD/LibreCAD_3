@@ -45,8 +45,6 @@ CustomizeGroupTab::CustomizeGroupTab(QString groupName, int width, QWidget *pare
 
     rowControl->setMinimum(1);
     colControl->setMinimum(1);
-    rowControl->setMaximum(5);
-    colControl->setMaximum(5);
 
     connect(rowControl, QOverload<int>::of(&QSpinBox::valueChanged), dropModel, &OperationDropModel::setNumRows);
     connect(colControl, QOverload<int>::of(&QSpinBox::valueChanged), dropModel, &OperationDropModel::setNumCols);
