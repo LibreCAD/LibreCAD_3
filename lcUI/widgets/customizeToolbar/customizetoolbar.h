@@ -30,6 +30,13 @@ namespace lc {
                 Q_OBJECT
 
             public:
+                enum class CloseMode
+                {
+                    Save,
+                    Cancel,
+                    Ask
+                };
+            public:
                 /**
                 * \brief CustomizeToolbar constructor
                 * \param pointer to Toolbar toolbar
@@ -83,6 +90,11 @@ namespace lc {
                 * \param string tab name
                 */
                 CustomizeParentTab* addParentTabManual(std::string tabName);
+
+                /**
+                * \brief Set close mode for customize toolbar
+                */
+                void setCloseMode(CloseMode closeMode);
 
             signals:
                 /**
@@ -138,7 +150,10 @@ namespace lc {
             private:
                 Ui::CustomizeToolbar* ui;
                 Toolbar* _toolbar;
-                bool _saveOnClose;
+                // 0 - ask user if data changed
+                // 1 - save and close
+                // 2 - close without saving
+                CloseMode _saveOnClose;
             };
         }
     }
