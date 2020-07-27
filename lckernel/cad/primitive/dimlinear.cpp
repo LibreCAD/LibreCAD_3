@@ -196,3 +196,47 @@ CADEntity_CSPtr DimLinear::setDragPoints(std::map<unsigned int, lc::geo::Coordin
         return shared_from_this();
     }
 }
+
+PropertiesMap DimLinear::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    getDimensionProperties(propertyValues);
+    propertyValues["definitionPoint2"] = this->definitionPoint2();
+    propertyValues["definitionPoint3"] = this->definitionPoint3();
+    propertyValues["angle"] = this->angle();
+    propertyValues["oblique"] = this->oblique();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr DimLinear::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate definitionPointp, middleOfTextp;
+    double textAnglep, lineSpacingFactorp;
+    std::string explicitValuep;
+    lc::geo::Coordinate definitionPoint2p = this->definitionPoint2();
+    lc::geo::Coordinate definitionPoint3p = this->definitionPoint3();
+    double anglep = this->angle();
+    double obliquep = this->oblique();
+
+    setDimensionProperties(propertiesMap, definitionPointp, middleOfTextp, textAnglep, lineSpacingFactorp, explicitValuep);
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "definitionPoint2") {
+            definitionPoint2p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "angle") {
+            anglep = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "oblique") {
+            obliquep = boost::get<double>(iter->second);
+        }
+    }
+
+    auto newDimLin = std::make_shared<DimLinear>(definitionPointp, middleOfTextp, attachmentPoint(), textAnglep, lineSpacingFactorp,
+        lineSpacingStyle(), explicitValuep, definitionPoint2p, definitionPoint3p, anglep, obliquep, layer(), metaInfo(), block());
+    newDimLin->setID(this->id());
+    return newDimLin;
+}

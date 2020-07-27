@@ -9,11 +9,41 @@
 #include "cad/meta/layer.h"
 #include "cad/geometry/geoarea.h"
 
+#include <boost/variant.hpp>
+
 namespace lc {
     namespace builder {
         class CADEntityBuilder;
     }
     namespace entity {
+        /* Entity Properties*/
+
+        class AngleProperty
+        {
+        public:
+            AngleProperty()
+                :
+                _value(0)
+            {}
+
+            AngleProperty(double angle)
+                :
+                _value(angle)
+            {}
+
+            double Get() const
+            {
+                return _value;
+            }
+
+        private:
+            double _value;
+        };
+
+        typedef boost::variant<AngleProperty, double, bool, lc::geo::Coordinate, std::string, std::vector<lc::geo::Coordinate>> EntityProperty;
+
+        typedef std::map<std::string, EntityProperty> PropertiesMap;
+
         /**
          *Class that all CAD entities must inherit
          *
@@ -135,6 +165,12 @@ namespace lc {
              * @return Entity block or nullptr if not defined
              */
             meta::Block_CSPtr block() const;
+
+            /* Entity Propperties Related Code*/
+
+            virtual PropertiesMap availableProperties() const;
+
+            virtual CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const;
 
         protected:
             CADEntity(const lc::builder::CADEntityBuilder& builder);

@@ -1,22 +1,22 @@
 #include "buttongui.h"
 
+#include <QVBoxLayout>
+
 using namespace lc::ui::api;
 
 ButtonGUI::ButtonGUI(std::string label, QWidget* parent)
     :
-    QPushButton(QString(label.c_str()), parent),
-    _label(label)
+    InputGUI(label, parent)
 {
-    connect(this, &ButtonGUI::clicked, this, &ButtonGUI::callbackCalled);
-}
-
-std::string ButtonGUI::label() const {
-    return _label;
+    _pushButton = new QPushButton(QString(label.c_str()));
+    this->setLayout(new QVBoxLayout());
+    this->layout()->addWidget(_pushButton);
+    connect(_pushButton, &QPushButton::clicked, this, &ButtonGUI::callbackCalled);
 }
 
 void ButtonGUI::setLabel(const std::string& newLabel) {
-    _label = newLabel;
-    this->setText(QString(newLabel.c_str()));
+    InputGUI::setLabel(newLabel);
+    _pushButton->setText(QString(newLabel.c_str()));
 }
 
 void ButtonGUI::addCallback(kaguya::LuaRef cb) {
@@ -29,6 +29,9 @@ void ButtonGUI::callbackCalled() {
     }
 }
 
-void ButtonGUI::setKey(const std::string& keyIn) {
-    _key = keyIn;
+void ButtonGUI::getLuaValue(kaguya::LuaRef& table) {
+}
+
+void ButtonGUI::click() {
+    _pushButton->click();
 }

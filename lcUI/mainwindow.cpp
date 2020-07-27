@@ -2,6 +2,11 @@
 #include "ui_mainwindow.h"
 #include "dialogs/aboutdialog.h"
 #include "windowmanager.h"
+#include "propertyeditor.h"
+
+#include "widgets/guiAPI/coordinategui.h"
+#include "widgets/guiAPI/entitygui.h"
+#include "widgets/guiAPI/buttongui.h"
 
 using namespace lc::ui;
 
@@ -59,6 +64,9 @@ MainWindow::MainWindow()
 
     _toolbar.generateButtonsMap();
     readUiSettings();
+
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 }
 
 MainWindow::~MainWindow()
@@ -117,6 +125,8 @@ void MainWindow::operationFinished() {
     // remove operation group
     _toolbar.removeGroupByName("Current operation");
     _cadMdiChild.viewer()->setOperationActive(false);
+
+    selectionChanged();
 }
 
 lc::ui::widgets::CliCommand* MainWindow::cliCommand(){
@@ -443,6 +453,8 @@ void MainWindow::triggerMouseReleased()
     state["mouseRelease"] = kaguya::NewTable();
     state["mouseRelease"]["widget"] = &_cadMdiChild;
     _luaInterface.triggerEvent("selectionChanged", state["mouseRelease"]);
+
+    selectionChanged();
 }
 
 void MainWindow::triggerMouseMoved()
@@ -508,7 +520,7 @@ void MainWindow::triggerTextEntered(QString text)
 {
     kaguya::State state(_luaInterface.luaState());
     state["textEntered"] = kaguya::NewTable();
-    state["textEntered"]["text"] = text;
+    state["textEntered"]["text"] = text.toStdString();
     state["textEntered"]["widget"] = &_cadMdiChild;
     _luaInterface.triggerEvent("text", state["textEntered"]);
 }
@@ -566,18 +578,21 @@ void MainWindow::redo()
 void MainWindow::selectAll()
 {
     _cadMdiChild.viewer()->docCanvas()->selectAll();
+    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::selectNone()
 {
     _cadMdiChild.viewer()->docCanvas()->removeSelection();
+    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 
 void MainWindow::invertSelection()
 {
     _cadMdiChild.viewer()->docCanvas()->inverseSelection();
+    selectionChanged();
     _cadMdiChild.viewer()->update();
 }
 
@@ -601,4 +616,15 @@ void MainWindow::readUiSettings() {
 
 void MainWindow::loadDefaultSettings() {
     _uiSettings.readSettings(_customizeToolbar, true);
+}
+
+void MainWindow::selectionChanged() {
+    std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
+    
+    propertyEditor->clear(selectedEntities);
+
+    for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
+        propertyEditor->addEntity(selectedEntity);
+    }
 }

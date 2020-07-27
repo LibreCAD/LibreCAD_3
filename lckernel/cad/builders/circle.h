@@ -38,6 +38,8 @@ namespace lc {
                 void modifyForTempEntity(bool val);
                 bool checkValues(bool throwExceptions = false) const override;
 
+                void copy(entity::Circle_CSPtr entity);
+
             private:
                 geo::Coordinate _center;
                 double _radius;

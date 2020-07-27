@@ -53,3 +53,13 @@ lc::entity::Arc_CSPtr ArcBuilder::build() {
 
     return entity::Arc_CSPtr(new entity::Arc(*this));
 }
+
+void ArcBuilder::copy(entity::Arc_CSPtr entity) {
+    setCenter(entity->center());
+    setRadius(entity->radius());
+    setStartAngle(entity->startAngle());
+    setEndAngle(entity->endAngle());
+    setIsCCW(entity->CCW());
+
+    CADEntityBuilder::copy(entity);
+}

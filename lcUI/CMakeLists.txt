@@ -36,6 +36,7 @@ lcadpaperviewer.h
 mainwindow.h
 windowmanager.h
 operationloader.h
+propertyeditor.h
 widgets/clicommand.h
 widgets/luascript.h
 widgets/toolbar.h
@@ -53,12 +54,14 @@ widgets/guiAPI/menu.h
 widgets/guiAPI/menuitem.h
 widgets/guiAPI/toolbarbutton.h
 widgets/guiAPI/toolbargroup.h
+widgets/guiAPI/inputguicontainer.h
 widgets/guiAPI/dialogwidget.h
 widgets/guiAPI/inputgui.h
 widgets/guiAPI/textgui.h
 widgets/guiAPI/buttongui.h
 widgets/guiAPI/checkboxgui.h
 widgets/guiAPI/horizontalgroupgui.h
+widgets/guiAPI/lwvertexgroup.h
 widgets/guiAPI/radiobuttongui.h
 widgets/guiAPI/radiogroupgui.h
 widgets/guiAPI/coordinategui.h
@@ -68,6 +71,7 @@ widgets/guiAPI/comboboxgui.h
 widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
+widgets/guiAPI/listgui.h
 widgets/guiAPI/entitypickervisitor.h
 widgets/customizeToolbar/operationdragmodel.h
 widgets/customizeToolbar/operationdropmodel.h
@@ -98,6 +102,7 @@ lcadpaperviewer.cpp
 mainwindow.cpp
 windowmanager.cpp
 operationloader.cpp
+propertyeditor.cpp
 widgets/clicommand.cpp
 widgets/luascript.cpp
 widgets/toolbar.cpp
@@ -115,12 +120,14 @@ widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
 widgets/guiAPI/toolbarbutton.cpp
 widgets/guiAPI/toolbargroup.cpp
+widgets/guiAPI/inputguicontainer.cpp
 widgets/guiAPI/dialogwidget.cpp
 widgets/guiAPI/inputgui.cpp
 widgets/guiAPI/textgui.cpp
 widgets/guiAPI/buttongui.cpp
 widgets/guiAPI/checkboxgui.cpp
 widgets/guiAPI/horizontalgroupgui.cpp
+widgets/guiAPI/lwvertexgroup.cpp
 widgets/guiAPI/radiobuttongui.cpp
 widgets/guiAPI/radiogroupgui.cpp
 widgets/guiAPI/coordinategui.cpp
@@ -130,6 +137,7 @@ widgets/guiAPI/comboboxgui.cpp
 widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
+widgets/guiAPI/listgui.cpp
 widgets/guiAPI/entitypickervisitor.cpp
 widgets/customizeToolbar/operationdragmodel.cpp
 widgets/customizeToolbar/operationdropmodel.cpp
@@ -162,6 +170,7 @@ widgets/guiAPI/comboboxgui.ui
 widgets/guiAPI/numbergui.ui
 widgets/guiAPI/colorgui.ui
 widgets/guiAPI/entitygui.ui
+widgets/guiAPI/listgui.ui
 widgets/customizeToolbar/customizetoolbar.ui
 widgets/layers.ui
 widgets/linepatternpathpart.ui

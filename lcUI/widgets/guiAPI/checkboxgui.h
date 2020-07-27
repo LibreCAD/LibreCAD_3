@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QCheckBox>
 
+#include "inputgui.h"
+
 #include <kaguya/kaguya.hpp>
 
 namespace lc {
@@ -11,7 +13,7 @@ namespace lc {
             /**
             * \brief CheckBox GUI Widget
             */
-            class CheckBoxGUI : public QCheckBox
+            class CheckBoxGUI : public InputGUI
             {
                 Q_OBJECT
 
@@ -23,12 +25,6 @@ namespace lc {
                 * \param parent qwidget parent
                 */
                 CheckBoxGUI(std::string label, bool checked=false, QWidget* parent = nullptr);
-
-                /**
-                * \brief Return label of the checkbox
-                * \return string label
-                */
-                std::string label() const;
 
                 /**
                 * \brief Set label of checkbox
@@ -46,13 +42,11 @@ namespace lc {
                 * \brief Return lua value
                 * \param LuaRef value
                 */
-                void getLuaValue(kaguya::LuaRef& table);
+                void getLuaValue(kaguya::LuaRef& table) override;
 
-                /**
-                * \brief Set gui key for the lua table
-                * \param string gui key
-                */
-                void setKey(const std::string& keyIn);
+                bool value() const;
+
+                void setValue(bool check);
 
             public slots:
                 /**
@@ -61,9 +55,8 @@ namespace lc {
                 void callbackCalled(int state);
 
             private:
-                std::string _label;
                 std::vector<kaguya::LuaRef> _callbacks;
-                std::string _key;
+                QCheckBox* _checkBox;
             };
         }
     }

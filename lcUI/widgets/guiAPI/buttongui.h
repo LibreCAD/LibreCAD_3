@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QPushButton>
 
+#include "inputgui.h"
 #include <kaguya/kaguya.hpp>
 
 namespace lc {
@@ -11,7 +12,7 @@ namespace lc {
             /**
             * \brief Button GUI Widget
             */
-            class ButtonGUI : public QPushButton
+            class ButtonGUI : public InputGUI
             {
                 Q_OBJECT
 
@@ -24,16 +25,15 @@ namespace lc {
                 ButtonGUI(std::string label, QWidget* parent = nullptr);
 
                 /**
-                * \brief Return label of the button
-                * \return string label
-                */
-                std::string label() const;
-
-                /**
                 * \brief Set label of button
                 * \param string new label
                 */
-                void setLabel(const std::string& newLabel);
+                void setLabel(const std::string& newLabel) override;
+
+                /**
+                * \brief Do nothing since button does not have a value
+                */
+                void getLuaValue(kaguya::LuaRef& table) override;
 
                 /**
                 * \brief Add button callback
@@ -42,10 +42,12 @@ namespace lc {
                 void addCallback(kaguya::LuaRef cb);
 
                 /**
-                * \brief Set gui key for the lua table
-                * \param string gui key
+                * \brief Click the button
                 */
-                void setKey(const std::string& keyIn);
+                void click();
+
+            public:
+                QPushButton* _pushButton;
 
             public slots:
                 /**
@@ -54,9 +56,7 @@ namespace lc {
                 void callbackCalled();
 
             private:
-                std::string _label;
                 std::vector<kaguya::LuaRef> _callbacks;
-                std::string _key;
             };
         }
     }

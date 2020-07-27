@@ -132,3 +132,18 @@ void lc::builder::SplineBuilder::removeFitPoint(int index) {
         _fitPoints.erase(_fitPoints.begin() + index);
     }
 }
+
+void lc::builder::SplineBuilder::copy(entity::Spline_CSPtr entity) {
+    setDegree(entity->degree());
+    setClosed(entity->closed());
+    setFitTolerance(entity->fitTolerance());
+    setStartTangent(lc::geo::Coordinate(entity->startTanX(), entity->startTanY(), entity->startTanZ()));
+    setEndTangent(lc::geo::Coordinate(entity->endTanX(), entity->endTanY(), entity->endTanZ()));
+    setNormalVector(lc::geo::Coordinate(entity->nX(), entity->nY(), entity->nZ()));
+    setControlPoints(entity->controlPoints());
+    setKnotPoints(entity->knotPoints());
+    setFitPoints(entity->fitPoints());
+    setFlags(entity->flags());
+
+    CADEntityBuilder::copy(entity);
+}
