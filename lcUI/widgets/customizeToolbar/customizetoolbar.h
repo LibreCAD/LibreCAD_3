@@ -122,7 +122,7 @@ namespace lc {
                 void cancelButtonClicked();
 
                 /**
-                * \brief Cancel button clicked
+                * \brief ok button clicked
                 */
                 void okButtonClicked();
 

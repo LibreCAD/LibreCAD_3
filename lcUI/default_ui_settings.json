@@ -1,1 +1,31 @@
-{"toolbar":{"tabs":[{"label":"Quick Access","groups":[{"label":"Creation","width":3,"buttons":["LineOperations","CircleOperations","ArcOperations","EllipseOperations","LWPolylineOperations","SplineOperations"]},{"label":"Modify","width":3,"buttons":["CopyOperation","MoveOperation","RemoveOperation","RotateOperation","ScaleOperation","TrimOperation"]},{"label":"Dimensions","width":3,"buttons":["DimAlignedOperations","DimAngularOperations","DimDiametricOperations","DimLinearOperations","DimRadialOperations"]},{"label":"Snap Options","width":2,"buttons":["SnapGrid","SnapIntersection","SnapEntity","SnapMiddle"]}]}]}}
+{
+    "toolbar": {
+        "tabs": [
+            {
+                "label": "Quick Access",
+                "groups": [
+                    {
+                        "label": "Creation",
+                        "width": 3,
+                        "buttons": [ "LineOperations", "PointOperations", "EllipseOperations", "SplineOperations", "LWPolylineOperations", "CircleOperations", "ArcOperations" ]
+                    },
+                    {
+                        "label": "Modify",
+                        "width": 3,
+                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation" ]
+                    },
+                    {
+                        "label": "Dimensions",
+                        "width": 3,
+                        "buttons": [ "DimAngularOperations", "DimAlignedOperations", "DimLinearOperations", "DimRadialOperations", "DimDiametricOperations" ]
+                    },
+                    {
+                        "label": "Snap Options",
+                        "width": 2,
+                        "buttons": [ "SnapGrid", "SnapIntersection", "SnapMiddle", "SnapEntity" ]
+                    }
+                ]
+            }
+        ]
+    }
+}

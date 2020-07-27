@@ -26,7 +26,7 @@ CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
     : 
     QDialog(parent),
     _toolbar(toolbar),
-    _saveOnClose(true),
+    _saveOnClose(false),
     ui(new Ui::CustomizeToolbar)
 {
     ui->setupUi(this);
