@@ -1,5 +1,3 @@
---TODO: may not work, it should be moved to C++
-
 TrimOperation = {
     command_line = "TRIM",
     icon = "modifytrim.png"
@@ -15,28 +13,102 @@ setmetatable(TrimOperation, {
     end,
 })
 
+-- Replace old entities with new entities in document
+function TrimOperation:replaceEntities()
+	oldEntities=self.oldEntities
+	newEntities=self.newEntities
+
+	if (#oldEntities==0) then--no operation
+		return
+	end
+	
+	local b = lc.operation.EntityBuilder(mainWindow:cadMdiChild():document())
+	for k, entity in pairs(oldEntities) do
+		b:appendEntity(entity)
+	end
+	b:appendOperation(lc.operation.Push())
+	b:appendOperation(lc.operation.Remove())
+
+	b:processStack()
+	for k, entity in pairs(newEntities) do
+		b:appendEntity(entity)
+	end
+	b:execute()
+	message('sucess')
+end
+
 function TrimOperation:_init(id)
     Operations._init(self)
 
     self.limit = nil
-    self.toTrim = nil
     self.intersectionPoints = {}
-    self.toRemovePoint = nil
+    self.newEntities = {} -- entities to add
+    self.oldEntities = {} -- entities to remove
 
-    luaInterface:registerEvent("point", self)
-    luaInterface:registerEvent("selectionChanged", self)
+    self.selection = mainWindow:cadMdiChild():selection()
+    --lets copy to totrim
+    self.toTrim = self.selection
+    
+    message("<b>TRIM</b>")
+    message(tostring(#self.toTrim) .. " items selected")
 
-    message("Select limit entity")
+    if(#self.toTrim > 0) then
+        luaInterface:registerEvent('point', self)
+	luaInterface:registerEvent("selectionChanged", self)
+        message("Select limit entity or Give split point")
+    else
+        self.finished = true
+        message('select some entities to trim')
+        luaInterface:triggerEvent('operationFinished')
+    end
 end
 
 function TrimOperation:onEvent(eventName, data)
     if(eventName == "selectionChanged") then
         self:selectionChanged()
     elseif(eventName == "point") then
-        self:newPoint(data)
+        self:newPoint(data["position"])
     end
 end
 
+-- return newEntities based on trim point
+function TrimOperation:trimPoint(point)
+	print(#self.toTrim)
+	for k, entity in pairs(self.toTrim) do
+		local entities = lc.entity.Splitable.splitHelper(entity, point)
+		    if(#entities > 0) then
+		    	--split sucessful
+		    	print('split on main entity')
+			for k2, entity2 in pairs(entities) do
+				table.insert(self.newEntities, entity2)
+			end
+			table.remove(self.toTrim, k)
+			table.insert(self.oldEntities, entity) -- remove old
+	    	    end
+	end
+	-- if it splits new created entity
+--	for k, entity in pairs(self.newEntities) do
+--		local entities = lc.entity.Splitable.splitHelper(self.entity, point)
+--		    if(#entities > 0) then
+--		    	--split sucessful
+--		    	print('split on new entity')
+--			for k2, entity2 in pairs(self.toTrim) do
+--				table.insert(self.newEntities, entity2)
+--			end
+--			table.remove(self.newEntity, entity) -- we do not need it
+--	    	    end
+--	end
+end
+
+-- Split point given
+function TrimOperation:newPoint(point)
+	--print(point)
+	self:trimPoint(point)
+	self:replaceEntities()
+	self:close()
+end
+
+-- limit entity selected
 function TrimOperation:selectionChanged()
     if(self.toTrim == nil) then
         local window = mainWindow:cadMdiChild()
@@ -54,14 +126,6 @@ function TrimOperation:selectionChanged()
         elseif(nbEntities > 1) then
             message("Select only one entity")
         end
-    end
-end
-
-function TrimOperation:newPoint(point)
-    if(#self.intersectionPoints >= 1) then
-        self.toRemovePoint = Operations:getCoordinate(point)
-
-        self:trim()
     end
 end
 
