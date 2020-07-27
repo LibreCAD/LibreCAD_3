@@ -119,6 +119,11 @@ namespace lc {
             */
             std::string explicitValue() const;
 
+            void getDimensionProperties(PropertiesMap& propertyValues) const;
+
+            void setDimensionProperties(const PropertiesMap& propertiesMap, lc::geo::Coordinate& definitionPointp, lc::geo::Coordinate& middleOfTextp,
+                double& textAnglep, double& lineSpacingFactorp, std::string& explicitValuep) const;
+
         private:
             const geo::Coordinate _definitionPoint;
             const geo::Coordinate _middleOfText;

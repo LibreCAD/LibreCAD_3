@@ -185,3 +185,39 @@ CADEntity_CSPtr DimRadial::setDragPoints(std::map<unsigned int, lc::geo::Coordin
         return shared_from_this();
     }
 }
+
+PropertiesMap DimRadial::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    getDimensionProperties(propertyValues);
+    propertyValues["definitionPoint2"] = this->definitionPoint2();
+    propertyValues["leader"] = this->leader();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr DimRadial::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate definitionPointp, middleOfTextp;
+    double textAnglep, lineSpacingFactorp;
+    std::string explicitValuep;
+    lc::geo::Coordinate definitionPoint2p = this->definitionPoint2();
+    double leaderp = this->leader();
+
+    setDimensionProperties(propertiesMap, definitionPointp, middleOfTextp, textAnglep, lineSpacingFactorp, explicitValuep);
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "definitionPoint2") {
+            definitionPoint2p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "leader") {
+            leaderp = boost::get<double>(iter->second);
+        }
+    }
+
+    auto newDimRad = std::make_shared<DimRadial>(definitionPointp, middleOfTextp, attachmentPoint(), textAnglep, lineSpacingFactorp,
+        lineSpacingStyle(), explicitValuep, definitionPoint2p, leaderp, layer(), metaInfo(), block());
+    newDimRad->setID(this->id());
+    return newDimRad;
+}

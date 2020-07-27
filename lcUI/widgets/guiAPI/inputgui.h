@@ -52,7 +52,13 @@ namespace lc
                 * \brief Set gui key for the lua table
                 * \param string gui key
                 */
-                void setKey(const std::string& keyIn);
+                virtual void setKey(const std::string& keyIn);
+
+                /**
+                * \brief Get input gui key
+                * \return string gui key
+                */
+                const std::string key() const;
 
             protected:
                 std::string _label;

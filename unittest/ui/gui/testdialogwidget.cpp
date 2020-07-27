@@ -10,6 +10,7 @@
 #include <widgets/guiAPI/textgui.h>
 
 #include "../uitests.h"
+#include <iostream>
 
 TEST(DialogWidgetTest, AddTest) {
     QApplication app(argc, argv);
@@ -34,14 +35,14 @@ TEST(DialogWidgetTest, AddTest) {
     EXPECT_FALSE(success3);
     EXPECT_TRUE(success4);
 
-    const std::vector<lc::ui::api::InputGUI*>& guiWidgets = dialogWidget.inputWidgets();
+    std::vector<lc::ui::api::InputGUI*> guiWidgets = dialogWidget.inputWidgets();
     for (lc::ui::api::InputGUI* gui : guiWidgets) {
-        EXPECT_TRUE(gui->label() == "TestAngle" || gui->label() == "testbutton_group" || gui->label() == "testcheckbox_group");
+            EXPECT_TRUE(gui->label() == "TestAngle" || gui->label() == "TestButton" || gui->label() == "TestCheckBox");
     }
 
     std::vector<std::string> keysList = dialogWidget.keys();
     for (std::string key : keysList) {
-        EXPECT_TRUE(key == "testangle" || key == "testbutton_group" || key == "testcheckbox_group" || key == "testcheckbox");
+        EXPECT_TRUE(key == "testangle" || key == "testbutton" || key == "testcheckbox");
     }
 }
 
@@ -67,7 +68,7 @@ TEST(DialogWidgetTest, CallbackTest) {
     state.dostring("cb1 = function(tab) valuetable=tab end");
 
     dialogWidget.addFinishCallback(state["cb1"]);
-    button1.clicked();
+    button1.click();
 
     EXPECT_EQ("TEST", state["valuetable"]["testtext"].get<std::string>());
     EXPECT_EQ(5, state["valuetable"]["testslider"].get<int>());

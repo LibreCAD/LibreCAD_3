@@ -1,3 +1,5 @@
+#pragma once
+
 #include "inputgui.h"
 #include <QHBoxLayout>
 
@@ -17,9 +19,10 @@ namespace lc {
                 /**
                 * \brief Horizontal Group GUI Constructor
                 * \param string group label
+                * \param bool change to vertical layout
                 * \param parent qwidget parent
                 */
-                HorizontalGroupGUI(std::string label, QWidget* parent = nullptr);
+                HorizontalGroupGUI(std::string label, bool vertical = false, QWidget* parent = nullptr);
 
                 /**
                 * \brief add button to group
@@ -39,9 +42,9 @@ namespace lc {
                 */
                 std::set<std::string> getKeys();
 
-            private:
+            protected:
                 std::vector<QWidget*> _widgets;
-                QHBoxLayout* qhboxlayout;
+                QLayout* qboxlayout;
                 std::set<std::string> _addedKeys;
                 std::set<std::string> _buttonKeys;
             };

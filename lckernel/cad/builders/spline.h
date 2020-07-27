@@ -60,6 +60,8 @@ namespace lc {
 
                 lc::entity::Spline_CSPtr build() const;
 
+                void copy(entity::Spline_CSPtr entity);
+
             private:
                 std::vector<geo::Coordinate> _controlPoints;
                 std::vector<double> _knotPoints;

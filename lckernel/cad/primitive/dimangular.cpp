@@ -233,3 +233,51 @@ CADEntity_CSPtr DimAngular::setDragPoints(std::map<unsigned int, lc::geo::Coordi
         return shared_from_this();
     }
 }
+
+PropertiesMap DimAngular::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    getDimensionProperties(propertyValues);
+    propertyValues["defLine11"] = this->defLine11();
+    propertyValues["defLine12"] = this->defLine12();
+    propertyValues["defLine21"] = this->defLine21();
+    propertyValues["defLine22"] = this->defLine22();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr DimAngular::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate definitionPointp, middleOfTextp;
+    double textAnglep, lineSpacingFactorp;
+    std::string explicitValuep;
+    lc::geo::Coordinate defLine11p = this->defLine11();
+    lc::geo::Coordinate defLine12p = this->defLine12();
+    lc::geo::Coordinate defLine21p = this->defLine21();
+    lc::geo::Coordinate defLine22p = this->defLine22();
+
+    setDimensionProperties(propertiesMap, definitionPointp, middleOfTextp, textAnglep, lineSpacingFactorp, explicitValuep);
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "defLine11") {
+            defLine11p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "defLine12") {
+            defLine12p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "defLine21") {
+            defLine21p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "defLine22") {
+            defLine22p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newDimAngular = std::make_shared<DimAngular>(definitionPointp, middleOfTextp, attachmentPoint(), textAnglep, lineSpacingFactorp,
+        lineSpacingStyle(), explicitValuep, defLine11p, defLine12p,defLine21p, defLine22p, layer(), metaInfo(), block());
+    newDimAngular->setID(this->id());
+    return newDimAngular;
+}
