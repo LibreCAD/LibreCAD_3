@@ -52,7 +52,7 @@ void OpenglPainter::arc(double x, double y, double r, double start, double end)
   float angle=0;
   long points=CURVE_POINTS;
 
-  for(int i=0;i<points+1;i++)
+  for(int i=0;i<=points;i++)
   {
     angle=start - ( ((float)i)/points)*(delta) ;
               
@@ -71,7 +71,7 @@ void OpenglPainter::arcNegative(double x, double y, double r, double start, doub
   float angle=0;
   long points=CURVE_POINTS;
             
-  for(int i=0;i<points+1;i++)
+  for(int i=0;i<=points;i++)
   {
     angle=( ((float)i)/points)*(delta) + (start);
     _manager->addVertex( (_pen_x=x+r*cos(angle)) , (_pen_y=y+r*sin(angle)) );
@@ -94,35 +94,27 @@ void OpenglPainter::circle(double x, double y, double r)
 void OpenglPainter::ellipse(double cx, double cy, double rx, double ry, double sa, double ea, double ra)
 {
   _manager->jump();
-        
+
   float Esa= atan( (rx/ry)* tan(sa) );   //Finding eccentric angles
   float Eea= atan( (rx/ry)* tan(ea) );
 
-  if(sa>(PI/2) && sa<=(3*(PI/2)) )      //2nd-3rd Quadrant
-    Esa+=PI;
+  //Extending to general term
+  Esa += ceil((sa-M_PI/2)/M_PI)*M_PI;
+  Eea += ceil((ea-M_PI/2)/M_PI)*M_PI;
 
-  if(sa>(3*(PI/2)))  // 4th Quadrant
-    Esa+=2*PI;   
-
-  if(ea>(PI/2) && ea<=(3*(PI/2)) )       //2nd-3rd Quadrant
-    Eea+=PI;
-
-  if(ea>(3*(PI/2)))   // 4th Quadrant
-    Eea+=2*PI;   
+  if (Eea<=Esa)
+    Eea += 2*M_PI;
 
   float delta=(std::abs(Eea-Esa));
-  if(ea==sa)                           // 360 full
-  
-  delta=2*PI;
 
   float EA=0;
   long points=CURVE_POINTS;
   float tx,ty,TX,TY;
             
-  for(int i=0;i<=points+1;i++)
+  for(int i=0;i<=points;i++)
   {
     EA=( ((float)i)/points)*(delta) + (Esa);
-               
+  
     tx=rx*cos(EA);                       // parametric equation
     ty=ry*sin(EA);
               

@@ -32,9 +32,9 @@ namespace lc {
                 lc::geo::Coordinate _center;
                 lc::geo::Coordinate _majorPoint;
                 double _minorRadius;
-                double  _startAngle;
-                double _endAngle;
-                bool _isReversed;
+                double  _startAngle=0;
+                double _endAngle=0;
+                bool _isReversed=false;
         };
     }
 }

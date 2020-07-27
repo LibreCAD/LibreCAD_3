@@ -230,7 +230,7 @@ std::vector<lc::geo::Coordinate> Ellipse::findBoxPoints() const {
     }
 
     auto checkPoint = [&](geo::Coordinate cord) {
-        if (isAngleBetween(getEllipseAngle(cord))) {
+        if (isAngleBetween(this->getAngle()+getEllipseAngle(cord))) {
             resPoints.push_back(cord);
         }
     };
@@ -266,28 +266,28 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
         minorP = minorP.rotate(M_PI / 2);
         minorP = minorP * this->minorRadius();
 
-        if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) {
+        //if (sin(this->getAngle()) != 0 && cos(this->getAngle()) != 0) { // Why this condition
             //add Ellipse vertices
             tmp = center() + majorP();
-            if (this->isAngleBetween(0)) {
+            if (this->isAngleBetween(this->getAngle()+0)) { // Change to absolute values
                 resPoints.emplace_back(tmp, ind++);
             }
 
             tmp = center() - majorP();
-            if (this->isAngleBetween(M_PI)) {
+            if (this->isAngleBetween(this->getAngle()+M_PI)) {
                 resPoints.emplace_back(tmp, ind++);
             }
 
             tmp = center() + minorP;
-            if (this->isAngleBetween(M_PI / 2)) {
+            if (this->isAngleBetween(this->getAngle()+M_PI / 2)) {
                 resPoints.emplace_back(tmp, ind++);
             }
 
             tmp = center() - minorP;
-            if (this->isAngleBetween(-M_PI / 2)) {
+            if (this->isAngleBetween(this->getAngle()-M_PI / 2)) {
                 resPoints.emplace_back(tmp, ind++);
             }
-        }
+        //}
     }
 
     // Any where on entity path
@@ -309,6 +309,55 @@ std::vector<EntityCoordinate> Ellipse::snapPoints(const geo::Coordinate &coord,
 
 geo::Coordinate Ellipse::nearestPointOnPath(const geo::Coordinate &coord) const {
     return geo::Ellipse::nearestPointOnPath(coord);
+}
+
+#include <iostream>
+std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) const{
+	std::vector<CADEntity_CSPtr> out;
+    auto angle = this->center().angleTo(coord)-this->getAngle();
+    if (angle<this->startAngle())
+        angle+=2*M_PI;
+	auto nearestPoint = this->nearestPointOnPath(coord);
+	if(nearestPoint.distanceTo(coord)<LCTOLERANCE){
+        if(this->isArc()){
+            if (this->isAngleBetween(angle)){
+                auto newellipse = std::make_shared<Ellipse>(this->center(),
+                                                        this->majorP(),
+                                                        this->minorRadius(),
+                                                        this->startAngle(), angle,
+                                                        isReversed(),
+                                                        layer(),
+                                                        metaInfo(),
+                                                        block());
+                    out.push_back(newellipse);
+                newellipse = std::make_shared<Ellipse>(this->center(),
+                                                        this->majorP(),
+                                                        this->minorRadius(),
+                                                        angle, this->endAngle(),
+                                                        isReversed(),
+                                                        layer(),
+                                                        metaInfo(),
+                                                        block());
+                out.push_back(newellipse);
+            }
+        }else{
+            auto newellipse = std::make_shared<Ellipse>(this->center(),
+                                        this->majorP(),
+                                        this->minorRadius(),
+                                        angle, angle+2*M_PI-1.5*LCARCTOLERANCE,//Break to arc
+                                        false,
+                                        layer(),
+                                        metaInfo(),
+                                        block());
+            out.push_back(newellipse);
+        }
+    }
+/*
+	if (this->isAngleBetween(angle+this->getAngle()){
+
+    }
+*/
+	return out;
 }
 
 PropertiesMap Ellipse::availableProperties() const {
@@ -361,33 +410,4 @@ CADEntity_CSPtr Ellipse::setProperties(const PropertiesMap& propertiesMap) const
     auto ellipseEntity = std::make_shared<Ellipse>(centerp, majorPointp, minorRadiusp, startAnglep, endAnglep, reversedp, layer(), metaInfo(), block());
     ellipseEntity->setID(this->id());
     return ellipseEntity;
-}
-
-std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) const {
-    std::vector<CADEntity_CSPtr> out;
-    auto angle = (coord - center()).angle();
-    auto nearestPoint = this->nearestPointOnPath(coord);
-    if (nearestPoint.distanceTo(coord) < LCTOLERANCE)
-        if (isAngleBetween(angle)) {
-            auto newellipse = std::make_shared<Ellipse>(this->center(),
-                this->majorP(),
-                this->minorRadius(),
-                this->startAngle(), angle,
-                isReversed(),
-                layer(),
-                metaInfo(),
-                block());
-            out.push_back(newellipse);
-            newellipse = std::make_shared<Ellipse>(this->center(),
-                this->majorP(),
-                this->minorRadius(),
-                angle, this->endAngle(),
-                isReversed(),
-                layer(),
-                metaInfo(),
-                block());
-
-            out.push_back(newellipse);
-        }
-    return out;
 }
