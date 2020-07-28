@@ -173,7 +173,7 @@ std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
 
 CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), CCW()), layer(), metaInfo());
+        auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
         newEntity->setID(id());
         return newEntity;
     }
