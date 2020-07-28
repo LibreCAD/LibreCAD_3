@@ -105,6 +105,8 @@ geo::Coordinate Arc::nearestPointOnEntity(const geo::Coordinate &coord) const {
 std::vector<CADEntity_CSPtr> Arc::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
 	auto angle = (coord-center()).angle();
+	if(angle<this->startAngle())
+		angle+=2*M_PI;
 	// check if angle is between start and end
 	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE)
 	if (isAngleBetween(angle)){

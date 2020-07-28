@@ -132,6 +132,8 @@ function TrimOperation:selectionChanged()
 	self:replaceEntities()
 	-- should continue this way
         -- message("Click on the part of the entity to remove")
+        
+        luaInterface:triggerEvent('operationFinished')
 end
 
 function TrimOperation:close()
