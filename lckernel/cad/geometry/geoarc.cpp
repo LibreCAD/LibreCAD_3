@@ -61,7 +61,6 @@ Arc Arc::createArcBulge(const Coordinate &p1, const Coordinate &p2, const double
     }
 
     auto center = geo::Coordinate(angle) * h + middle;
-
     return Arc(center, radius, center.angleTo(p1), center.angleTo(p2), isCCW);
 }
 
@@ -91,7 +90,7 @@ Coordinate Arc::nearestPointOnEntity(const Coordinate &coord) const {
     // if the angle is between start and stop then calculate the nearest point
     // on it's entity
     if (isAngleBetween(angle)) {
-        return center() + angle * radius();
+        return center() + Coordinate((coord - center()).angle()) * radius();
     }
 
     // Find out if angle is closer to start or end and return the appropriate coordinate
@@ -161,11 +160,19 @@ double Arc::angle() const {
 }
 
 double Arc::bulge() const {
-    double bulge = std::tan(angle()/4.0);
+    auto ang=angle();
+    auto d=startP().distanceTo(endP());
+    auto k=d/(2.*tan(ang/2.));
+    auto h=radius();
+    if(ang<M_PI && CCW())
+    	h+=k;
+    else
+    	h-=k;
 
-    if(!CCW()) {
-        bulge *= -1;
-    }
-
+    auto bulge=h*2/d;
+    
+    if(!CCW())
+    	bulge*=-1;
+    
     return bulge;
 }

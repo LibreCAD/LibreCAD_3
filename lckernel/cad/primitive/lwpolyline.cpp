@@ -290,6 +290,11 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate& coord) con
     return std::get<0>(info);
 }
 
+geo::Coordinate LWPolyline::nearestPointOnEntity(const geo::Coordinate& coord) const {
+	//@TODO: check and modify it
+    return this->nearestPointOnPath(coord);
+}
+
 std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
 LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
     const auto &&entities = asEntities();

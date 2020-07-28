@@ -33,7 +33,8 @@ namespace lc {
                                double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
 
                     virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
-
+                    virtual lc::geo::Coordinate nearestPointOnEntity(const lc::geo::Coordinate& coord) const override;
+                    
                 private:
                     double gridSize();
 

@@ -311,6 +311,10 @@ geo::Coordinate Ellipse::nearestPointOnPath(const geo::Coordinate &coord) const 
     return geo::Ellipse::nearestPointOnPath(coord);
 }
 
+geo::Coordinate Ellipse::nearestPointOnEntity(const geo::Coordinate &coord) const {
+    return geo::Ellipse::nearestPointOnEntity(coord);
+}
+
 std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
     auto angle = this->center().angleTo(coord)-this->getAngle();
@@ -343,7 +347,7 @@ std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) 
             auto newellipse = std::make_shared<Ellipse>(this->center(),
                                         this->majorP(),
                                         this->minorRadius(),
-                                        angle, angle+2*M_PI-1.5*LCARCTOLERANCE,//Break to arc
+                                        angle, angle-1.5*LCARCTOLERANCE,//Break to arc
                                         false,
                                         layer(),
                                         metaInfo(),

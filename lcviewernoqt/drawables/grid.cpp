@@ -156,3 +156,7 @@ std::vector<lc::EntityCoordinate> Grid::snapPoints(const lc::geo::Coordinate& co
 lc::geo::Coordinate Grid::nearestPointOnPath(const lc::geo::Coordinate& coord) const {
     throw std::runtime_error("nearestPointOnPath not available for grid");
 }
+
+lc::geo::Coordinate Grid::nearestPointOnEntity(const lc::geo::Coordinate& coord) const {
+    throw std::runtime_error("nearestPointOnEntity not available for grid");
+}

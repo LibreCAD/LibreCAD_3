@@ -64,6 +64,10 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate &coord) const {
     return geo::Circle::nearestPointOnPath(coord);
 }
 
+geo::Coordinate Circle::nearestPointOnEntity(const geo::Coordinate &coord) const {
+    return geo::Circle::nearestPointOnEntity(coord);
+}
+
 std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
 	auto angle = (coord-center()).angle();
