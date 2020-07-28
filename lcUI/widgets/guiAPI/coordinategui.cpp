@@ -14,6 +14,7 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     ui(new Ui::CoordinateGUI)
 {
     ui->setupUi(this);
+    _type = "coordinate";
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _xcoordEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(2)->widget());
@@ -140,4 +141,16 @@ void CoordinateGUI::togglePointSelection(bool toggle) {
     if (toggle) {
         mainWindow->activateWindow();
     }
+}
+
+void CoordinateGUI::copyValue(QDataStream& stream) {
+    lc::geo::Coordinate coord = value();
+    stream << coord.x() << coord.y() << coord.z();
+}
+
+void CoordinateGUI::pasteValue(QDataStream& stream) {
+    double x, y, z;
+    stream >> x >> y >> z;
+    setValue(lc::geo::Coordinate(x, y, z));
+    editingFinishedCallbacks();
 }

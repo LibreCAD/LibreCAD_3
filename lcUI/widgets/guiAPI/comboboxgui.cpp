@@ -8,6 +8,7 @@ ComboBoxGUI::ComboBoxGUI(std::string label, QWidget* parent)
     InputGUI(label, parent),
     ui(new Ui::ComboBoxGUI)
 {
+    _type = "combobox";
     ui->setupUi(this);
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
@@ -65,4 +66,15 @@ void ComboBoxGUI::setValue(int index) {
 
 void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void ComboBoxGUI::copyValue(QDataStream& stream) {
+    stream << QString(value().c_str());
+}
+
+void ComboBoxGUI::pasteValue(QDataStream& stream) {
+    QString val;
+    stream >> val;
+    setValue(val.toStdString());
+    activatedCallbacks(_comboBox->currentIndex());
 }

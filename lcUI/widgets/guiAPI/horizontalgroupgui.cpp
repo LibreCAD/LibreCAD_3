@@ -10,6 +10,7 @@ HorizontalGroupGUI::HorizontalGroupGUI(std::string label, bool vertical, QWidget
     :
     InputGUI(label, parent)
 {
+    _type = "horizontalgroup";
     if (vertical) {
         qboxlayout = new QVBoxLayout();
     }
@@ -73,4 +74,10 @@ void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
 
 std::set<std::string> HorizontalGroupGUI::getKeys() {
     return _addedKeys;
+}
+
+void HorizontalGroupGUI::copyValue(QDataStream& stream) {
+}
+
+void HorizontalGroupGUI::pasteValue(QDataStream& stream) {
 }

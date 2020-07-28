@@ -12,6 +12,7 @@
 #include "widgets/guiAPI/horizontalgroupgui.h"
 
 #include <cad/builders/lwpolyline.h>
+#include "widgets/widgettitlebar.h"
 
 using namespace lc::ui;
 
@@ -35,6 +36,10 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
 
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
+
+    widgets::WidgetTitleBar* titleBar = new widgets::WidgetTitleBar("Property Editor", this,
+        widgets::WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+    this->setTitleBarWidget(titleBar);
 }
 
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
@@ -364,4 +369,10 @@ std::string PropertyEditor::generatePropertyKey(unsigned long entityID, const st
     }
 
     return key;
+}
+
+void PropertyEditor::closeEvent(QCloseEvent* event)
+{
+    this->widget()->hide();
+    event->ignore();
 }

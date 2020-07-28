@@ -80,6 +80,8 @@ namespace lc
             */
             std::string generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const;
 
+            void closeEvent(QCloseEvent* event);
+
         private:
             static PropertyEditor* instance;
             std::map<unsigned long, std::vector<std::string>> _entityProperties;

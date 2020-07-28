@@ -13,6 +13,7 @@ AngleGUI::AngleGUI(std::string label, QWidget* parent)
 {
     ui->setupUi(this);
 
+    _type = "angle";
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _lineEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(1)->widget());
     _angleTypeButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(2)->widget());
@@ -139,4 +140,15 @@ void AngleGUI::setValue(double val) {
 
 void AngleGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void AngleGUI::copyValue(QDataStream& stream) {
+    stream << value();
+}
+
+void AngleGUI::pasteValue(QDataStream& stream) {
+    double val;
+    stream >> val;
+    setValue(val);
+    editingFinishedCallbacks();
 }

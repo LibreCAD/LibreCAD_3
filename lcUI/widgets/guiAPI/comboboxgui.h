@@ -85,6 +85,17 @@ namespace lc
                 */
                 void activatedCallbacks(int index);
 
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 Ui::ComboBoxGUI* ui;
                 QLabel* _textLabel;

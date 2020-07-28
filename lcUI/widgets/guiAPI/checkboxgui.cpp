@@ -8,6 +8,7 @@ CheckBoxGUI::CheckBoxGUI(std::string label, bool checked, QWidget* parent)
     :
     InputGUI(label, parent)
 {
+    _type = "checkbox";
     _checkBox = new QCheckBox(QString(label.c_str()));
     this->setLayout(new QVBoxLayout());
     this->layout()->addWidget(_checkBox);
@@ -40,4 +41,15 @@ bool CheckBoxGUI::value() const {
 
 void CheckBoxGUI::setValue(bool check) {
     _checkBox->setChecked(check);
+}
+
+void CheckBoxGUI::copyValue(QDataStream& stream) {
+    stream << value();
+}
+
+void CheckBoxGUI::pasteValue(QDataStream& stream) {
+    bool val;
+    stream >> val;
+    setValue(val);
+    callbackCalled(_checkBox->isChecked());
 }

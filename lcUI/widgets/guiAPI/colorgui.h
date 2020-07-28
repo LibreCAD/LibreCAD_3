@@ -72,6 +72,17 @@ namespace lc {
                 */
                 void changeColor();
 
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 QColor getIdealTextColor(const QColor& rBackgroundColor) const;
 

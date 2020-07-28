@@ -6,6 +6,7 @@ RadioGroupGUI::RadioGroupGUI(std::string label, QWidget* parent)
     :
     InputGUI(label, parent)
 {
+    _type = "radiogroup";
     qbuttongroup = new QButtonGroup(this);
     qhboxlayout = new QHBoxLayout();
     this->setLayout(qhboxlayout);
@@ -40,4 +41,10 @@ void RadioGroupGUI::getLuaValue(kaguya::LuaRef& table) {
 
 std::set<std::string> RadioGroupGUI::getKeys() {
     return _addedKeys;
+}
+
+void RadioGroupGUI::copyValue(QDataStream& stream) {
+}
+
+void RadioGroupGUI::pasteValue(QDataStream& stream) {
 }

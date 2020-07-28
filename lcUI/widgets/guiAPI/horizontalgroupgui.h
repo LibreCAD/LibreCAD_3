@@ -43,6 +43,17 @@ namespace lc {
                 std::set<std::string> getKeys();
 
             protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
+            protected:
                 std::vector<QWidget*> _widgets;
                 QLayout* qboxlayout;
                 std::set<std::string> _addedKeys;

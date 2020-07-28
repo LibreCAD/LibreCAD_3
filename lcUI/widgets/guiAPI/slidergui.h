@@ -80,6 +80,17 @@ namespace lc
                 */
                 void updateValueDisplay(int value);
 
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 Ui::SliderGUI* ui;
                 QLabel* _textLabel;

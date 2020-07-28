@@ -8,6 +8,7 @@ ButtonGUI::ButtonGUI(std::string label, QWidget* parent)
     :
     InputGUI(label, parent)
 {
+    _type = "button";
     _pushButton = new QPushButton(QString(label.c_str()));
     this->setLayout(new QVBoxLayout());
     this->layout()->addWidget(_pushButton);
@@ -34,4 +35,10 @@ void ButtonGUI::getLuaValue(kaguya::LuaRef& table) {
 
 void ButtonGUI::click() {
     _pushButton->click();
+}
+
+void ButtonGUI::copyValue(QDataStream& stream) {
+}
+
+void ButtonGUI::pasteValue(QDataStream& stream) {
 }

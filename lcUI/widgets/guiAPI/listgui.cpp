@@ -17,6 +17,7 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
     _selectedCoordinate(nullptr)
 {
     ui->setupUi(this);
+    _type = "list";
 
     listWidget = qobject_cast<QListWidget*>(ui->verticalLayout->itemAt(1)->widget());
     qobject_cast<QLabel*>(ui->verticalLayout->itemAt(0)->widget())->setText(label.c_str());
@@ -265,3 +266,10 @@ void ListGUI::guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous
     _selectedCoordinate = std::make_shared<const lc::entity::Circle>(coord, 5, layer);
     tempEntities->addEntity(_selectedCoordinate);
 }
+
+void ListGUI::copyValue(QDataStream& stream) {
+}
+
+void ListGUI::pasteValue(QDataStream& stream) {
+}
+

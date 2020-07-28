@@ -112,6 +112,17 @@ namespace lc {
                 */
                 void togglePointSelection(bool toggle);
 
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 /**
                 * \brief Helper function to generate the required tooltip

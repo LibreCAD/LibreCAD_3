@@ -71,6 +71,17 @@ namespace lc
                 */
                 void valueChangedCallbacks(double val);
 
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 Ui::NumberGUI* ui;
                 QLabel* _textLabel;

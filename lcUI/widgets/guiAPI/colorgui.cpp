@@ -12,7 +12,8 @@ ColorGUI::ColorGUI(std::string label, QWidget* parent)
     ui(new Ui::ColorGUI)
 {
     ui->setupUi(this);
-
+    
+    _type = "color";
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _colorButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(1)->widget());
     ui->horizontalLayout->insertStretch(1);
@@ -78,4 +79,22 @@ void ColorGUI::colorSelectedCallbacks() {
     for (kaguya::LuaRef& cb : _callbacks) {
         cb(value());
     }
+}
+
+void ColorGUI::copyValue(QDataStream& stream) {
+    double r, g, b, a;
+    lc::Color val = value();
+    r = val.red();
+    g = val.green();
+    b = val.blue();
+    a = val.alpha();
+    stream << r << g << b << a;
+}
+
+void ColorGUI::pasteValue(QDataStream& stream) {
+    double r, g, b, a;
+    stream >> r >> g >> b >> a;
+    lc::Color col(r, g, b, a);
+    setValue(col);
+    colorSelectedCallbacks();
 }

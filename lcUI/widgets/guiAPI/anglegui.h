@@ -105,6 +105,16 @@ namespace lc {
 
                 AngleType angleType;
 
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 Ui::AngleGUI* ui;
                 QLabel* _textLabel;
