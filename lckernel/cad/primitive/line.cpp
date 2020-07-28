@@ -72,7 +72,7 @@ geo::Coordinate Line::nearestPointOnEntity(const geo::Coordinate& coord) const {
 
 std::vector<CADEntity_CSPtr> Line::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
-	auto nearestPoint = this->nearestPointOnPath(coord);
+	auto nearestPoint = this->nearestPointOnEntity(coord);
 	if(nearestPoint.distanceTo(coord)<LCTOLERANCE){
 	    auto newLine = std::make_shared<Line>(this->start(),
 		                                  nearestPoint,

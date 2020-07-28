@@ -3,7 +3,12 @@ TrimOperation = {
     icon = "modifytrim.png"
 }
 TrimOperation.__index = TrimOperation
-
+-----------------------------------
+-- Use as
+-- First move entities to trim in self.toTrim
+-- then split it using function TrimOperation:trimPoint(point)
+-- finally commit it using function TrimOperation:replaceEntities()
+-----------------------------------
 setmetatable(TrimOperation, {
     __index = Operations,
     __call = function (o, ...)
@@ -76,22 +81,23 @@ end
 
 -- return newEntities based on trim point
 function TrimOperation:trimPoint(point)
+	--do not use table.remove
 	--print(#self.toTrim)
 	local nextToTrim = {}
-	local nextStep = {} --add to next step
+	local nextNewEntities={}
 	for k, entity in pairs(self.toTrim) do
 		local entities = lc.entity.Splitable.splitHelper(entity, point)
 		    if(#entities > 0) then
 		    	--split sucessful
 		    	print('split on main entity')
 			for k2, entity2 in pairs(entities) do
-				table.insert(nextStep, entity2)
+				table.insert(nextNewEntities, entity2)
 			end
 			table.insert(self.oldEntities, entity) -- remove old
 		    else
 		    	table.insert(nextToTrim, entity)
 	    	    end
-	end
+	end	
 	self.toTrim=nextToTrim
 	
 	-- if it splits new created entity
@@ -101,13 +107,13 @@ function TrimOperation:trimPoint(point)
 		    	--split sucessful
 		    	print('split on new entity')
 			for k2, entity2 in pairs(entities) do
-				table.insert(nextStep, entity2)
+				table.insert(nextNewEntities, entity2)
 			end
-			table.remove(self.newEntities, k) -- we do not need it
+		    else
+			table.insert(nextNewEntities, entity)
 	    	    end
 	end
-	--
-	for k,v in pairs(nextStep) do table.insert(self.newEntities, v) end
+	self.newEntities = nextNewEntities
 end
 
 -- Split point given
