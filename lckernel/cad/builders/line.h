@@ -46,6 +46,8 @@ namespace lc {
                 */
                 double getLineAngle(lc::entity::CADEntity_CSPtr entity) const;
 
+                void copy(entity::Line_CSPtr entity);
+
             private:
                 geo::Coordinate _start;
                 geo::Coordinate _end;

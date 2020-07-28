@@ -125,6 +125,10 @@ namespace lc {
             geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;            
 	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
 
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
+
         public:
             virtual void accept(GeoEntityVisitor &v) const override { v.visit(*this); }
 

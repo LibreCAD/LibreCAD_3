@@ -357,3 +357,55 @@ std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) 
     }
 	return out;
 }
+
+PropertiesMap Ellipse::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["center"] = this->center();
+    propertyValues["majorPoint"] = this->majorP();
+    propertyValues["minorRadius"] = this->minorRadius();
+    propertyValues["startAngle"] = AngleProperty(this->startAngle());
+    propertyValues["endAngle"] = AngleProperty(this->endAngle());
+    propertyValues["reversed"] = this->isReversed();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Ellipse::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate centerp = this->center();
+    lc::geo::Coordinate majorPointp = this->majorP();
+    double minorRadiusp = this->minorRadius();
+    double startAnglep = this->startAngle();
+    double endAnglep = this->endAngle();
+    bool reversedp = this->isReversed();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "center") {
+            centerp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "majorPoint") {
+            majorPointp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "minorRadius") {
+            minorRadiusp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "startAngle") {
+            startAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "endAngle") {
+            endAnglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+
+        if (iter->first == "reversed") {
+            reversedp = boost::get<bool>(iter->second);
+        }
+    }
+
+    auto ellipseEntity = std::make_shared<Ellipse>(centerp, majorPointp, minorRadiusp, startAnglep, endAnglep, reversedp, layer(), metaInfo(), block());
+    ellipseEntity->setID(this->id());
+    return ellipseEntity;
+}

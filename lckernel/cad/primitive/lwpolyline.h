@@ -242,6 +242,10 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
+
         public:
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;

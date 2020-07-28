@@ -6,12 +6,17 @@
 
 using namespace lc::ui::api;
 
-HorizontalGroupGUI::HorizontalGroupGUI(std::string label, QWidget* parent)
+HorizontalGroupGUI::HorizontalGroupGUI(std::string label, bool vertical, QWidget* parent)
     :
     InputGUI(label, parent)
 {
-    qhboxlayout = new QHBoxLayout();
-    this->setLayout(qhboxlayout);
+    if (vertical) {
+        qboxlayout = new QVBoxLayout();
+    }
+    else {
+        qboxlayout = new QHBoxLayout();
+    }
+    this->setLayout(qboxlayout);
 }
 
 void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
@@ -44,7 +49,7 @@ void HorizontalGroupGUI::addWidget(const std::string& key, QWidget* newWidget) {
 
     newWidget->setParent(this);
     _widgets.push_back(newWidget);
-    qhboxlayout->addWidget(newWidget);
+    qboxlayout->addWidget(newWidget);
 }
 
 void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {

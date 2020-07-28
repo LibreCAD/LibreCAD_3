@@ -101,8 +101,11 @@ lc::geo::Coordinate CoordinateGUI::value() const {
 }
 
 void CoordinateGUI::setValue(lc::geo::Coordinate coord) {
+    // so that textChanged isn't emitted twice
+    _xcoordEdit->blockSignals(true);
     _xcoordEdit->setText(QString::number(coord.x()));
     _ycoordEdit->setText(QString::number(coord.y()));
+    _xcoordEdit->blockSignals(false);
 }
 
 void CoordinateGUI::getLuaValue(kaguya::LuaRef& table) {
@@ -122,11 +125,13 @@ void CoordinateGUI::enableCoordinateSelection(lc::ui::MainWindow* mainWindow) {
 
 void CoordinateGUI::pointSelected(lc::geo::Coordinate point) {
     if (_pointSelectionEnabled) {
+        _coordinate = point;
         this->setValue(point);
         parentWidget()->activateWindow();
         this->setFocus();
         _pointButton->toggled(false);
         _pointButton->setChecked(false);
+        editingFinishedCallbacks();
     }
 }
 

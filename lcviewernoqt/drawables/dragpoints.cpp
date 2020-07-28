@@ -22,6 +22,7 @@ void DragPoints::onDraw(lc::viewer::event::DrawEvent const &event) const {
 	double size = (x - zeroCornerX);
 
 	event.painter().source_rgb(255, 255, 255);
+    event.painter().line_width(1.0);
 
 	for(const auto& point : _points) {
 		event.painter().rectangle(point.x() - size / 2, point.y() - size / 2, size, size);

@@ -49,11 +49,11 @@ LWPolyline::LWPolyline(lc::builder::LWPolylineBuilder& builder)
 	:
 	CADEntity(builder),
 	_vertex(generateVertexFromBuilderVertex(builder.getVertices())),
-	_width(1),
-	_elevation(1),
-	_tickness(1),
-	_closed(false),
-	_extrusionDirection(lc::geo::Coordinate(0, 0))
+	_width(builder.width()),
+	_elevation(builder.elevation()),
+	_tickness(builder.thickness()),
+	_closed(builder.closed()),
+	_extrusionDirection(builder.extrusionDirection())
 {
 	generateEntities();
 }
@@ -468,4 +468,51 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
         );    
     out.push_back(newEntity);
     return out;
+}
+
+PropertiesMap LWPolyline::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["width"] = this->width();
+    propertyValues["elevation"] = this->elevation();
+    propertyValues["thickness"] = this->tickness();
+    propertyValues["closed"] = this->closed();
+    propertyValues["extrusionDirection"] = this->extrusionDirection();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr LWPolyline::setProperties(const PropertiesMap& propertiesMap) const {
+    double widthp = this->width();
+    double elevationp = this->elevation();
+    double ticknessp = this->tickness();
+    bool closedp = this->closed();
+    lc::geo::Coordinate extrusionDirectionp = this->extrusionDirection();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "width") {
+            widthp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "elevation") {
+            elevationp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "thickness") {
+            ticknessp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "closed") {
+            closedp = boost::get<bool>(iter->second);
+        }
+
+        if (iter->first == "extrusionDirection") {
+            extrusionDirectionp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newLWPolyline = std::make_shared<LWPolyline>(vertex(), widthp, elevationp, ticknessp, closedp, extrusionDirectionp, layer(), metaInfo(), block());
+    newLWPolyline->setID(this->id());
+    return newLWPolyline;
 }

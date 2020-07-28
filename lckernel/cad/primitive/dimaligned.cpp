@@ -189,3 +189,38 @@ CADEntity_CSPtr DimAligned::setDragPoints(std::map<unsigned int, lc::geo::Coordi
     }
 }
 
+PropertiesMap DimAligned::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    getDimensionProperties(propertyValues);
+    propertyValues["definitionPoint2"] = this->definitionPoint2();
+    propertyValues["definitionPoint3"] = this->definitionPoint3();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr DimAligned::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate definitionPointp, middleOfTextp;
+    double textAnglep, lineSpacingFactorp;
+    std::string explicitValuep;
+    lc::geo::Coordinate definitionPoint2p = this->definitionPoint2();
+    lc::geo::Coordinate definitionPoint3p = this->definitionPoint3();
+
+    setDimensionProperties(propertiesMap, definitionPointp, middleOfTextp, textAnglep, lineSpacingFactorp, explicitValuep);
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "definitionPoint2") {
+            definitionPoint2p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "definitionPoint3") {
+            definitionPoint3p = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newDimAligned = std::make_shared<DimAligned>(definitionPointp, middleOfTextp, attachmentPoint(), textAnglep, lineSpacingFactorp,
+        lineSpacingStyle(), explicitValuep, definitionPoint2p, definitionPoint3p, layer(), metaInfo(), block());
+    newDimAligned->setID(this->id());
+    return newDimAligned;
+}

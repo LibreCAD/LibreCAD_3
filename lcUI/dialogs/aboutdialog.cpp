@@ -54,7 +54,7 @@ QString getOsName(outputConfig& oc)
 
 QString getOsName(outputConfig& oc)
 {
-    Qstring out;
+    QString out;
 
     #ifdef _WIN32
     out += oc.lineFormat.arg("Compile Arch").arg("32-bit");
@@ -132,9 +132,13 @@ QString getCompiler(){
 QString getLCADInfo(outputConfig& oc){
     return 
         oc.lineFormat.arg("Version").arg(QString("%1.%2").arg(VERSION_MAJOR).arg(VERSION_MINOR)) +
-        oc.lineFormat.arg("Compiler").arg(getCompiler()) +
+        oc.lineFormat.arg("Compiler").arg(getCompiler())
+        #if defined(Q_CC_MSVC)
+        #else
+        +
         oc.lineFormat.arg("Compiled on").arg(BUILD_DATE) +
         oc.lineFormat.arg("Build info").arg(BUILD_INFO)
+        #endif
     ;
 }
 
@@ -167,8 +171,12 @@ QString getExtInfo(outputConfig& oc){
         oc.lineFormat.arg("Boost Version").arg(boost_info) +
         oc.lineFormat.arg("Lua Version").arg(getLuaVersion()) + 
 	oc.lineFormat.arg("libdxfrw Version").arg(DRW_VERSION) + 
-	oc.lineFormat.arg("OpenGL Version").arg(getGLVersion()) +
-	oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)
+	oc.lineFormat.arg("OpenGL Version").arg(getGLVersion())
+    #if defined(Q_CC_MSVC)
+    #else
+        +
+        oc.lineFormat.arg("CMake Version").arg(CMAKE_VERSION)
+    #endif    
     ;
 }
 

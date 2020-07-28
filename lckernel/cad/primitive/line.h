@@ -128,6 +128,10 @@ namespace lc {
                 ed.visit(shared_from_this());
             }
 
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
+
         private:
             Line(const builder::LineBuilder& builder);
         };

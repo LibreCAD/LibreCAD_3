@@ -26,6 +26,8 @@ namespace lc {
 
                 entity::Arc_CSPtr build();
 
+                void copy(entity::Arc_CSPtr entity);
+
             private:
                 geo::Coordinate _center;
                 double _radius;

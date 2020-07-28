@@ -124,3 +124,31 @@ CADEntity_CSPtr Circle::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSP
     return newEntity;
 }
 
+PropertiesMap Circle::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["radius"] = this->radius();
+    propertyValues["center"] = this->center();
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Circle::setProperties(const PropertiesMap& propertiesMap) const {
+    double radiusp = this->radius();
+    lc::geo::Coordinate centerp = this->center();
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter)
+    {
+        if (iter->first == "radius") {
+            radiusp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "center") {
+            centerp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto newCircle = std::make_shared<Circle>(centerp, radiusp, layer(), metaInfo(), block());
+    newCircle->setID(this->id());
+    return newCircle;
+}

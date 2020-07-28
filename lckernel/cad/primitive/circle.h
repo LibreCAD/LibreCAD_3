@@ -12,6 +12,9 @@
 #include "cad/interface/splitable.h"
 #include <cad/builders/circle.h>
 
+#include <string>
+#include <map>
+
 namespace lc {
     namespace entity {
 
@@ -95,6 +98,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
 
         private:
             Circle(const builder::CircleBuilder& builder);
