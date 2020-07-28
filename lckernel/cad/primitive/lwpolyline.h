@@ -156,8 +156,8 @@ namespace lc {
                                                              double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const override;
 
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
-            virtual geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
             std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
             nearestPointOnPath2(const geo::Coordinate &coord) const;
 

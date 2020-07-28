@@ -28,12 +28,12 @@ namespace lc {
 
                     virtual void draw(event::DrawEvent const& event) const;
 
-                    virtual std::vector<lc::EntityCoordinate>
+                    std::vector<lc::EntityCoordinate>
                     snapPoints(const lc::geo::Coordinate& coord, const lc::SimpleSnapConstrain& constrain,
                                double minDistanceToSnap, int maxNumberOfSnapPoints) const override;
 
-                    virtual lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
-                    virtual lc::geo::Coordinate nearestPointOnEntity(const lc::geo::Coordinate& coord) const override;
+                    lc::geo::Coordinate nearestPointOnPath(const lc::geo::Coordinate& coord) const override;
+                    lc::geo::Coordinate nearestPointOnEntity(const lc::geo::Coordinate& coord) const override;
                     
                 private:
                     double gridSize();
