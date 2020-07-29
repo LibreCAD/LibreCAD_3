@@ -34,6 +34,9 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
 
+    widget->setStyleSheet("QTreeWidget::item{ background: rgb(252, 255, 247); border : 1px solid rgb(156, 220, 31); margin-left: 2; padding-left: 5px;}");
+    widget->setColumnWidth(0, 200);
+
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
 
@@ -94,7 +97,6 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         entity->dispatch(entityVisitor);
         QString entityInfo = QString(entityVisitor.getEntityInformation().c_str()) + QString(" #") + QString::number(entity->id());
         QTreeWidgetItem* treeItem = new QTreeWidgetItem();
-
         _entityGroup[entity->id()] = treeItem;
         guicontainer->addTopLevelItem(treeItem);
         guicontainer->setItemWidget(treeItem, 0, new QLabel(entityInfo));

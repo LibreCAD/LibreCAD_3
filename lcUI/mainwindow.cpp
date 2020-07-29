@@ -625,6 +625,13 @@ void MainWindow::selectionChanged() {
     
     propertyEditor->clear(selectedEntities);
 
+    if (selectedEntities.size() == 0) {
+        propertyEditor->hide();
+    }
+    else {
+        propertyEditor->show();
+    }
+
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
         propertyEditor->addEntity(selectedEntity);
     }
