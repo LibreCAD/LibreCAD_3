@@ -34,7 +34,7 @@ WidgetTitleBar::WidgetTitleBar( const QString& title,
 	m_pExpandButton->setIcon(icon1);
 	m_pCloseButton->setIcon(icon2);
 
-	m_pExpandButton->hide();
+    m_pExpandButton->hide();
 
 	connect(m_pExpandButton, SIGNAL(clicked()), this, SLOT(expandButtonTriggered()));
 	connect(m_pCloseButton, SIGNAL(clicked()), this, SLOT(closeButtonTriggered()));
@@ -54,7 +54,9 @@ void WidgetTitleBar::expandButtonTriggered()
 		setVerticalLayout();
 	}
 
+    pDock->widget()->setMinimumWidth(_oldSize.width());
 	pDock->widget()->show();
+    pDock->widget()->setMinimumWidth(0);
 }
 
 void WidgetTitleBar::closeButtonTriggered()
@@ -71,6 +73,7 @@ void WidgetTitleBar::closeButtonTriggered()
 		setHorizontalLayout();
 	}
 
+    _oldSize = pDock->widget()->size();
 	pDock->close();
 }
 

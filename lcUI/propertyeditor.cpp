@@ -100,6 +100,7 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         _entityGroup[entity->id()] = treeItem;
         guicontainer->addTopLevelItem(treeItem);
         guicontainer->setItemWidget(treeItem, 0, new QLabel(entityInfo));
+        treeItem->setExpanded(true);
     }
 
     createPropertiesWidgets(entity->id(), entity->availableProperties());
@@ -119,6 +120,7 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
         guicontainer->setItemWidget(entityChildItem, 0, new QLabel(guiWidget->label().c_str()));
         guiWidget->hideLabel();
         guicontainer->setItemWidget(entityChildItem, 1, guiWidget);
+        entityChildItem->setSizeHint(1, guiWidget->sizeHint());
     }
     return success;
 }
