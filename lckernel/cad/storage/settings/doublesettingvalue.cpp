@@ -12,7 +12,7 @@ DoubleSettingValue::DoubleSettingValue(double value) {
 }
 
 double DoubleSettingValue::getDouble() const noexcept {
-    std::cout << _value << std::endl;
+    //std::cout << _value << std::endl;
     return _value;
 }
 
