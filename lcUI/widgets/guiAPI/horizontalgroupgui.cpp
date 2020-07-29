@@ -11,6 +11,8 @@ HorizontalGroupGUI::HorizontalGroupGUI(std::string label, bool vertical, QWidget
     InputGUI(label, parent)
 {
     _type = "horizontalgroup";
+    setCopyPasteEnabled(false);
+
     if (vertical) {
         qboxlayout = new QVBoxLayout();
     }

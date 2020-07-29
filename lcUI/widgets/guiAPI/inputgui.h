@@ -87,10 +87,16 @@ namespace lc
                 */
                 virtual void pasteValue(QDataStream& stream) = 0;
 
+                /**
+                * \brief Enable or disable menu for the given widgets
+                */
+                void setCopyPasteEnabled(bool enable);
+
             protected:
                 std::string _label;
                 std::string _key;
                 std::string _type;
+                bool _copyPasteEnabled;
             };
         }
     }

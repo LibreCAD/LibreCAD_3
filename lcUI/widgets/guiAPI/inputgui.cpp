@@ -10,7 +10,8 @@ using namespace lc::ui::api;
 InputGUI::InputGUI(std::string _label, QWidget* parent)
     :
     QWidget(parent),
-    _label(_label)
+    _label(_label),
+    _copyPasteEnabled(true)
 {}
 
 std::string InputGUI::label() const {
@@ -53,23 +54,29 @@ void InputGUI::pasteEvent() {
 }
 
 void InputGUI::contextMenuEvent(QContextMenuEvent* event) {
-    QMenu menu(this);
-    QAction* copyAction = new QAction("Copy");
-    connect(copyAction, &QAction::triggered, this, &InputGUI::copyEvent);
-    menu.addAction(copyAction);
+    if (_copyPasteEnabled) {
+        QMenu menu(this);
+        QAction* copyAction = new QAction("Copy");
+        connect(copyAction, &QAction::triggered, this, &InputGUI::copyEvent);
+        menu.addAction(copyAction);
 
-    const QMimeData* mimeData = QApplication::clipboard()->mimeData();
-    QByteArray itemData = mimeData->data("application/x-propertydata");
-    QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-    QString guiType;
-    dataStream >> guiType;
+        const QMimeData* mimeData = QApplication::clipboard()->mimeData();
+        QByteArray itemData = mimeData->data("application/x-propertydata");
+        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
+        QString guiType;
+        dataStream >> guiType;
 
-    // Only show paste option if selection of same type
-    if (guiType.toStdString() == _type) {
-        QAction* pasteAction = new QAction("Paste");
-        menu.addAction(pasteAction);
-        connect(pasteAction, &QAction::triggered, this, &InputGUI::pasteEvent);
+        // Only show paste option if selection of same type
+        if (guiType.toStdString() == _type) {
+            QAction* pasteAction = new QAction("Paste");
+            menu.addAction(pasteAction);
+            connect(pasteAction, &QAction::triggered, this, &InputGUI::pasteEvent);
+        }
+
+        menu.exec(event->globalPos());
     }
+}
 
-    menu.exec(event->globalPos());
+void InputGUI::setCopyPasteEnabled(bool enable) {
+    _copyPasteEnabled = enable;
 }

@@ -18,6 +18,7 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
 {
     ui->setupUi(this);
     _type = "list";
+    setCopyPasteEnabled(false);
 
     listWidget = qobject_cast<QListWidget*>(ui->verticalLayout->itemAt(1)->widget());
     qobject_cast<QLabel*>(ui->verticalLayout->itemAt(0)->widget())->setText(label.c_str());

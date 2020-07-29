@@ -15,6 +15,7 @@ EntityGUI::EntityGUI(std::string label, QWidget* parent)
 {
     _type = "entity";
     ui->setupUi(this);
+    setCopyPasteEnabled(false);
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _entityList = qobject_cast<QListWidget*>(ui->horizontalLayout->itemAt(1)->widget());

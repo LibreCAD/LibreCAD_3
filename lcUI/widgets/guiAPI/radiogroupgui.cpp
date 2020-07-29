@@ -7,6 +7,7 @@ RadioGroupGUI::RadioGroupGUI(std::string label, QWidget* parent)
     InputGUI(label, parent)
 {
     _type = "radiogroup";
+    setCopyPasteEnabled(false);
     qbuttongroup = new QButtonGroup(this);
     qhboxlayout = new QHBoxLayout();
     this->setLayout(qhboxlayout);
