@@ -46,6 +46,11 @@ namespace lc {
                 */
                 void click();
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public:
                 QPushButton* _pushButton;
 

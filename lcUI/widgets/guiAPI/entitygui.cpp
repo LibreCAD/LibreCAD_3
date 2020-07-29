@@ -142,3 +142,7 @@ void EntityGUI::copyValue(QDataStream& stream) {
 
 void EntityGUI::pasteValue(QDataStream& stream) {
 }
+
+void EntityGUI::hideLabel() {
+    _textLabel->hide();
+}

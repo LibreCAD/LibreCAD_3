@@ -274,3 +274,7 @@ void ListGUI::copyValue(QDataStream& stream) {
 void ListGUI::pasteValue(QDataStream& stream) {
 }
 
+void ListGUI::hideLabel() {
+    ui->verticalLayout->itemAt(0)->widget()->hide();
+}
+

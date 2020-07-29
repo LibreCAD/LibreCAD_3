@@ -98,3 +98,7 @@ void ColorGUI::pasteValue(QDataStream& stream) {
     setValue(col);
     colorSelectedCallbacks();
 }
+
+void ColorGUI::hideLabel() {
+    _textLabel->hide();
+}

@@ -53,3 +53,7 @@ void CheckBoxGUI::pasteValue(QDataStream& stream) {
     setValue(val);
     callbackCalled(_checkBox->isChecked());
 }
+
+void CheckBoxGUI::hideLabel() {
+    _checkBox->setText("");
+}

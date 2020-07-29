@@ -112,6 +112,11 @@ namespace lc
                 */
                 std::set<std::string> getKeys() const;
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Slot for the plus add button being clicked (button is disabled for NONE list type)

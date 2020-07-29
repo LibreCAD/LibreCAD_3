@@ -50,6 +50,11 @@ namespace lc
                 virtual void getLuaValue(kaguya::LuaRef& table) = 0;
 
                 /**
+                * \brief Hide label of the input gui
+                */
+                virtual void hideLabel() = 0;
+
+                /**
                 * \brief copy input gui value to the clipboard event
                 */
                 void copyEvent();

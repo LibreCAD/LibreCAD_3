@@ -12,11 +12,12 @@ AngleGUI::AngleGUI(std::string label, QWidget* parent)
     ui(new Ui::AngleGUI)
 {
     ui->setupUi(this);
+    ui->horizontalLayout->insertStretch(1);
 
     _type = "angle";
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
-    _lineEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(1)->widget());
-    _angleTypeButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(2)->widget());
+    _lineEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(2)->widget());
+    _angleTypeButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(3)->widget());
 
     _angleTypeButton->setStyleSheet("padding-left: 1px; padding-right: 1px;");
     _textLabel->setText(QString(this->label().c_str()));
@@ -151,4 +152,8 @@ void AngleGUI::pasteValue(QDataStream& stream) {
     stream >> val;
     setValue(val);
     editingFinishedCallbacks();
+}
+
+void AngleGUI::hideLabel() {
+    _textLabel->hide();
 }

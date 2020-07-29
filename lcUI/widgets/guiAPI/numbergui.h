@@ -64,6 +64,11 @@ namespace lc
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Run value changed callbacks

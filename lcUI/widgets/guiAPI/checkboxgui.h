@@ -44,9 +44,20 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Get value
+                */
                 bool value() const;
 
+                /**
+                * \brief Set value as checked or unchecked
+                */
                 void setValue(bool check);
+
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
 
             public slots:
                 /**

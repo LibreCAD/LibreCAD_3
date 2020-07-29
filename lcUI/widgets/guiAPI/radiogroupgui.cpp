@@ -49,3 +49,6 @@ void RadioGroupGUI::copyValue(QDataStream& stream) {
 
 void RadioGroupGUI::pasteValue(QDataStream& stream) {
 }
+
+void RadioGroupGUI::hideLabel() {
+}

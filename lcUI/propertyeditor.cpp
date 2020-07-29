@@ -30,7 +30,7 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     parentWidget->setWidgetResizable(true);
 
     QTreeWidget* widget = new QTreeWidget(parentWidget);
-    widget->setColumnCount(1);
+    widget->setColumnCount(2);
     widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
 
@@ -115,11 +115,8 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
         QTreeWidgetItem* entityChildItem = new QTreeWidgetItem();
         _entityGroup[_currentEntity]->addChild(entityChildItem);
         guicontainer->setItemWidget(entityChildItem, 0, new QLabel(guiWidget->label().c_str()));
-
-        QTreeWidgetItem* entityChildProp = new QTreeWidgetItem();
-        entityChildItem->addChild(entityChildProp);
-
-        guicontainer->setItemWidget(entityChildProp, 0, guiWidget);
+        guiWidget->hideLabel();
+        guicontainer->setItemWidget(entityChildItem, 1, guiWidget);
     }
     return success;
 }

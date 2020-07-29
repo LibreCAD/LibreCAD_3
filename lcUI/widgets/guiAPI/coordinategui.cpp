@@ -154,3 +154,7 @@ void CoordinateGUI::pasteValue(QDataStream& stream) {
     setValue(lc::geo::Coordinate(x, y, z));
     editingFinishedCallbacks();
 }
+
+void CoordinateGUI::hideLabel() {
+    _textLabel->hide();
+}

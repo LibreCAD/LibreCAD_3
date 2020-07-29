@@ -42,3 +42,6 @@ void ButtonGUI::copyValue(QDataStream& stream) {
 
 void ButtonGUI::pasteValue(QDataStream& stream) {
 }
+
+void ButtonGUI::hideLabel() {
+}

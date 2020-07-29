@@ -66,6 +66,11 @@ namespace lc {
                 */
                 void colorSelectedCallbacks();
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Slot called when color is changed
