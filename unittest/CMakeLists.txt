@@ -27,6 +27,10 @@ find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+include_directories(${GTest_INCLUDE_DIRS})
+link_directories(${GTest_LIBRARY_DIRS})
+include_directories(${GLEW_INCLUDE_DIR})
+
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
@@ -104,8 +108,8 @@ if(WITH_QT_UI)
             #ui/testluaui.cpp
             #ui/testluaoperations.cpp
             ui/uitests.cpp
-            ui/testlayers.cpp
-            ui/testlinepatterns.cpp
+            #ui/testlayers.cpp
+            #ui/testlinepatterns.cpp
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp

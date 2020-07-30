@@ -1,0 +1,6 @@
+#include <build_constants.h>
+
+__declspec(dllexport) const char* BUILD_DATE = "${BUILD_DATE}";
+__declspec(dllexport) const char* BUILD_INFO = "${BUILD_INFO}";
+__declspec(dllexport) const char* CMAKE_VERSION = "${CMAKE_VERSION}";
+__declspec(dllexport) const char* SETTINGS_PATH = "${SETTINGS_PATH}";

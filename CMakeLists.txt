@@ -77,14 +77,17 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(Boost_USE_MULTITHREADED ON)
 
+# settings path
+set(SETTINGS_PATH "${CMAKE_INSTALL_PREFIX}/bin")
+
 # Add dirent.h if compiler is MSVC
 if(MSVC)
     include_directories("third_party/msvc_dirent")
 endif()
 
 #Try to find version
-if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/version.h")
-    file(READ "${CMAKE_SOURCE_DIR}/lckernel/version.h" FILE_VERSION_H REGEX "^#define")
+if(EXISTS "${CMAKE_SOURCE_DIR}/lckernel/build_constants.h")
+    file(READ "${CMAKE_SOURCE_DIR}/lckernel/build_constants.h" FILE_VERSION_H REGEX "^#define")
     string(REGEX REPLACE ".*#define VERSION_MAJOR ([0-9]+).*" "\\1" VERSION_MAJOR ${FILE_VERSION_H})
     string(REGEX REPLACE ".*#define VERSION_MINOR ([0-9]+).*" "\\1" VERSION_MINOR ${FILE_VERSION_H})
 endif()
