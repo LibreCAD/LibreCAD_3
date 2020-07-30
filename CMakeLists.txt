@@ -78,7 +78,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(Boost_USE_MULTITHREADED ON)
 
 # settings path
-set(SETTINGS_PATH "${CMAKE_INSTALL_PREFIX}/bin")
+set(SETTINGS_PATH "${PROJECT_BINARY_DIR}/bin")
 
 # Add dirent.h if compiler is MSVC
 if(MSVC)

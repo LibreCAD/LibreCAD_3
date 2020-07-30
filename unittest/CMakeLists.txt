@@ -108,8 +108,8 @@ if(WITH_QT_UI)
             #ui/testluaui.cpp
             #ui/testluaoperations.cpp
             ui/uitests.cpp
-            #ui/testlayers.cpp
-            #ui/testlinepatterns.cpp
+            ui/testlayers.cpp
+            ui/testlinepatterns.cpp
             ui/testcommandline.cpp
             ui/testcolorselect.cpp
             ui/testlinewidthselect.cpp

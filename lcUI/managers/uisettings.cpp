@@ -34,7 +34,7 @@ void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool 
         if (fileName == settingsFileName) {
             std::cout << "No settings file found, loading default settings." << std::endl;
             fileName = defaultSettingsFileName;
-            settingsFile.open(fileName);
+            settingsFile.open(_filePaths["settings_load"] + fileName);
         }else{
             std::cout << "Default settings not found" << std::endl;
             return;

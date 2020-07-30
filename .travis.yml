@@ -16,6 +16,7 @@ matrix:
             - libpango1.0-dev
             - libboost-all-dev
             - libqt5svg5-dev
+            - libqt5gui5
             - libgtest-dev
             - libeigen3-dev
             - libcurl4-gnutls-dev
