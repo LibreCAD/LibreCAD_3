@@ -200,9 +200,7 @@ void addLCBindings(lua_State *L) {
     );
 
     state["lc"]["PropertyEditor"].setClass(kaguya::UserdataMetatable<lc::ui::PropertyEditor>()
-        .addStaticFunction("GetPropertyEditor", []() {
-            return PropertyEditor::GetPropertyEditor(nullptr);
-         })
+        .addStaticFunction("GetPropertyEditor", &lc::ui::PropertyEditor::GetPropertyEditor)
         .addFunction("propertyChanged", &lc::ui::PropertyEditor::propertyChanged)
     );
 }

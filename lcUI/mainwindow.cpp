@@ -623,7 +623,7 @@ void MainWindow::loadDefaultSettings() {
 
 void MainWindow::selectionChanged() {
     std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
-    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     
     propertyEditor->clear(selectedEntities);
 
