@@ -67,6 +67,8 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
+
+    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65 , 35 }, Qt::Horizontal);
 }
 
 MainWindow::~MainWindow()

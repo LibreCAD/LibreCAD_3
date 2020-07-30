@@ -23,8 +23,12 @@ CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
     ui->horizontalLayout->insertStretch(1);
     _pointButton->setStyleSheet("padding-left: 1px; padding-right: 1px;");
 
-    QDoubleValidator* doubleValidator = new QDoubleValidator(this);
-    doubleValidator->setDecimals(3);
+    QDoubleValidator* doubleValidator = new QDoubleValidator(-1000000, 1000000, 4, this);
+    doubleValidator->setNotation(QDoubleValidator::StandardNotation);
+
+    QFontMetrics fm = _xcoordEdit->fontMetrics();
+    _xcoordEdit->setFixedWidth(fm.averageCharWidth() * 17);
+    _ycoordEdit->setFixedWidth(fm.averageCharWidth() * 17);
 
     _textLabel->setText(QString(this->label().c_str()));
     _xcoordEdit->setValidator(doubleValidator);

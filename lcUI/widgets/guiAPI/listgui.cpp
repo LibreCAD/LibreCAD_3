@@ -199,6 +199,7 @@ void ListGUI::setValue(std::vector<lc::geo::Coordinate> coords) {
     for (lc::geo::Coordinate& coord : coords) {
         std::string newkey = _key + "_coord" + std::to_string(itemIdCount);
         CoordinateGUI* coordinateGUI = new CoordinateGUI("Coordinate " + std::to_string(itemIdCount));
+        coordinateGUI->hideLabel();
         itemIdCount++;
         coordinateGUI->setValue(coord);
         addItem(newkey, coordinateGUI);

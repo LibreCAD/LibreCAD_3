@@ -34,7 +34,8 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
 
-    widget->setStyleSheet("QTreeWidget::item{ background: rgb(252, 255, 247); border : 1px solid rgb(156, 220, 31); margin-left: 2; padding-left: 5px;}");
+    this->setStyleSheet("QTreeWidget{background: rgb(252, 255, 247)}");
+    widget->setStyleSheet("QTreeWidget::item{ border : 1px solid rgb(156, 220, 31); margin-left: 2; padding-left: 5px;} QTreeView::item:selected {border : 3px solid rgb(156, 220, 31)}");
     widget->setColumnWidth(0, 200);
 
     parentWidget->setWidget(widget);

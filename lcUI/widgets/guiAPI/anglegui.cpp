@@ -27,6 +27,9 @@ AngleGUI::AngleGUI(std::string label, QWidget* parent)
     doubleValidator->setDecimals(3);
     _lineEdit->setValidator(doubleValidator);
 
+    QFontMetrics fm = _lineEdit->fontMetrics();
+    _lineEdit->setFixedWidth(fm.averageCharWidth() * 17);
+
     connect(_angleTypeButton, &QPushButton::clicked, this, &AngleGUI::toggleUnit);
     connect(_lineEdit, &QLineEdit::editingFinished, this, &AngleGUI::editingFinishedCallbacks);
     connect(_lineEdit, &QLineEdit::textChanged, this, &AngleGUI::textChangedCallbacks);

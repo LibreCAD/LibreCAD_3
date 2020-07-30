@@ -54,9 +54,9 @@ void WidgetTitleBar::expandButtonTriggered()
 		setVerticalLayout();
 	}
 
-    pDock->widget()->setMinimumWidth(_oldSize.width());
+    pDock->setMinimumWidth(_oldSize.width());
 	pDock->widget()->show();
-    pDock->widget()->setMinimumWidth(0);
+    pDock->setMinimumWidth(0);
 }
 
 void WidgetTitleBar::closeButtonTriggered()
@@ -73,7 +73,7 @@ void WidgetTitleBar::closeButtonTriggered()
 		setHorizontalLayout();
 	}
 
-    _oldSize = pDock->widget()->size();
+    _oldSize = pDock->size();
 	pDock->close();
 }
 
