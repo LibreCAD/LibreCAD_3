@@ -1,7 +1,7 @@
 #include "inputgui.h"
 
 #include <QMimeData>
-#include <QClipBoard>
+#include <QClipboard>
 #include <QApplication>
 #include <QMenu>
 
