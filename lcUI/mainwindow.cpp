@@ -151,11 +151,11 @@ lc::ui::LuaInterface* MainWindow::luaInterface() {
 
 void MainWindow::ConnectInputEvents()
 {   
-    // CadMdiChild connections
-    QObject::connect(_cadMdiChild.viewerProxy(), &LCADViewerProxy::mousePressEvent, this, &MainWindow::triggerMousePressed);
-    QObject::connect(_cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
-    QObject::connect(_cadMdiChild.viewerProxy(), &LCADViewerProxy::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
-    QObject::connect(_cadMdiChild.viewerProxy(), &LCADViewerProxy::keyPressEvent, this, &MainWindow::triggerKeyPressed);
+    // CadMdiChild connections, main window should not know about proxy
+    QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressEventx, this, &MainWindow::triggerKeyPressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressed, &_cliCommand, &widgets::CliCommand::onKeyPressed);
 
     // CliCommand connections

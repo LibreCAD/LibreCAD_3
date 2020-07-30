@@ -33,6 +33,10 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->addWidget(_viewerProxy, 0, 0, 1, 1);
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
     connect(this,SIGNAL(keyPressEventx(int)),_viewerProxy,SIGNAL(keyPressEvent(int)));
+        // it CadMdi knows about proxy
+    QObject::connect(_viewerProxy, &LCADViewerProxy::mousePressEvent, this, &CadMdiChild::mousePressEvent);
+    QObject::connect(_viewerProxy, &LCADViewerProxy::mouseReleaseEvent, this, &CadMdiChild::mouseReleaseEvent);
+    QObject::connect(_viewerProxy, &LCADViewerProxy::mouseMoveEvent, this, &CadMdiChild::mouseMoveEvent);
 }
 
 CadMdiChild::~CadMdiChild() {
