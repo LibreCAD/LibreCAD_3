@@ -152,6 +152,10 @@ lc::ui::LuaInterface* MainWindow::luaInterface() {
     return &_luaInterface;
 }
 
+lc::ui::ContextMenuManager* MainWindow::contextMenuManager() {
+    return &_contextMenuManager;
+}
+
 void MainWindow::ConnectInputEvents()
 {   
     // CadMdiChild connections

@@ -153,6 +153,8 @@ void OperationLoader::initializeOperation(const std::string& vkey)
             addOperationToolbarOptions(vkey, opkey);
         }
     }
+
+    addContextMenuOperations(vkey);
 }
 
 
@@ -259,4 +261,11 @@ void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const 
         mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
     }
     _L["operation_op"] = nullptr;
+}
+
+void OperationLoader::addContextMenuOperations(const std::string& vkey) {
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
+    lc::ui::ContextMenuManager* contextMenuManager = mWindow->contextMenuManager();
+
+    contextMenuManager->addOperation(vkey, groupNames[vkey]);
 }

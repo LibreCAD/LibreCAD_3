@@ -70,6 +70,11 @@ namespace lc
             lc::ui::LuaInterface* luaInterface();
 
             /**
+            * \brief Getter for context menu manager
+            */
+            lc::ui::ContextMenuManager* contextMenuManager();
+
+            /**
             * \brief Connect existing menu item to lua callback function
             * \param itemName item name , callback - function callback
             */

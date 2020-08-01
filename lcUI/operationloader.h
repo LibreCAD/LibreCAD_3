@@ -56,6 +56,11 @@ namespace lc
              */
             void addOperationToolbarOptions(const std::string& vkey, const std::string& opkey);
 
+            /**
+             * \brief Add operation to context menu
+             */
+            void addContextMenuOperations(const std::string& vkey);
+
         private:
             /**
              * \brief Load lua folder eg, createActions
