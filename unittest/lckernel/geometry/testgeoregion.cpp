@@ -18,4 +18,7 @@ TEST(lc__geo__RegionTest, creation) {
 	//display BBOX
 	std::cout << bbox << std::endl;
 	//Check for point in and out
+	// (10,10) should be in but (95,95) should be out.
+	ASSERT_TRUE(reg.isPointInside(lc::geo::Coordinate(10, 10)));
+	ASSERT_FALSE(reg.isPointInside(lc::geo::Coordinate(95, 95)));
 }

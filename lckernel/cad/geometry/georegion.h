@@ -30,6 +30,13 @@ namespace lc {
                  * @return lc::geo::Area 
                  */
                 const lc::geo::Area boundingBox() const {return _boundingBox;};
+
+                /**
+                 * @brief return entities
+                 * 
+                 * @return const std::vector<lc::entity::CADEntity_CSPtr>& 
+                 */
+                const std::vector<lc::entity::CADEntity_CSPtr>& entities() const {return _objList;};
             private:
                 std::vector<lc::entity::CADEntity_CSPtr> _objList;
                 lc::geo::Area _boundingBox;
@@ -63,8 +70,16 @@ namespace lc {
                  * 
                  * @return bool
                  */
-                bool isPointInside(geo::Coordinate&) const;
-                
+                bool isPointInside(const geo::Coordinate&) const;
+
+
+                /**
+                 * @brief Get intersection with line
+                 * 
+                 * @return std::vector<lc::geo::Coordinate> 
+                 */
+                std::vector<lc::geo::Coordinate> getLineIntersection(const lc::geo::Vector&) const;
+
                 /**
                  * @brief Bounding box for region
                  * 

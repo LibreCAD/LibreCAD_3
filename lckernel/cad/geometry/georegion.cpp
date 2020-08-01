@@ -23,9 +23,25 @@ unsigned int Region::numLoops() const{
     return _loopList.size();
 }
 
-bool Region::isPointInside(geo::Coordinate& testPoint) const{
-    throw("Not implemented");
-};
+std::vector<lc::geo::Coordinate> Region::getLineIntersection(const lc::geo::Vector& i1) const{
+    lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, LCTOLERANCE);
+    for(auto &x: _loopList){
+        for(auto &y: x.entities())
+            visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, i1, *y.get());
+    }
+    return intersect.result();
+}
+
+bool Region::isPointInside(const geo::Coordinate& testPoint) const{
+    auto bbox = boundingBox();
+    auto minP = bbox.minP();
+    auto testLine = lc::geo::Vector(minP, testPoint);
+    auto intersect = getLineIntersection(testLine);
+    if(intersect.size()%2==0)
+        return false;
+    else
+        return true;
+}
 
 lc::geo::Area Region::boundingBox() const{
     lc::geo::Area boundingBox=_loopList[0].boundingBox();
@@ -33,4 +49,4 @@ lc::geo::Area Region::boundingBox() const{
         boundingBox = boundingBox.merge(x.boundingBox());
     }
     return boundingBox;
-};
+}
