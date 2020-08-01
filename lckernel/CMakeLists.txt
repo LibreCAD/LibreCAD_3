@@ -35,6 +35,7 @@ cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/geometry/geobeziercubic.cpp
+cad/geometry/georegion.cpp
 cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
