@@ -51,10 +51,9 @@ namespace lc {
                 void setDestroyCallback(kaguya::LuaRef destroyCallback);
 
                 void keyPressEvent(QKeyEvent* event);
-
-                LCADViewerProxy* viewerProxy() {return _viewerProxy;};
-
                 lc::meta::Block_CSPtr activeViewport() const{return _viewerProxy->activeViewport();};
+	    private://Add this as private
+                LCADViewerProxy* viewerProxy() {return _viewerProxy;};
 
             public slots:
 
@@ -66,7 +65,12 @@ namespace lc {
 
                 void keyPressed(QKeyEvent* event);
                 void keyPressEventx(int key); //temporary soln, need custom event handlers
-		
+                
+     	signals:
+            void mouseMoveEvent();
+            void mousePressEvent();
+            void mouseReleaseEvent();
+                        
             public:
                 QWidget* view() const;
 

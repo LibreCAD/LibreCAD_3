@@ -48,7 +48,7 @@ void EntityGUI::enableWidgetSelection(lc::ui::MainWindow* mainWindowIn) {
     this->mainWindow = mainWindowIn;
     if (mainWindow != nullptr) {
         lc::ui::CadMdiChild* cadMdiChild = mainWindow->cadMdiChild();
-        connect(cadMdiChild->viewerProxy(), &LCADViewerProxy::mouseReleaseEvent, this, &EntityGUI::entitySelected);
+        connect(cadMdiChild, &lc::ui::CadMdiChild::mouseReleaseEvent, this, &EntityGUI::entitySelected);
     }
 }
 

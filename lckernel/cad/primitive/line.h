@@ -72,7 +72,8 @@ namespace lc {
                                                              double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const override;
 
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;            
 
             virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
             virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;

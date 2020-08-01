@@ -86,6 +86,10 @@ geo::Coordinate Spline::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Spline::nearestPointOnPath(coord);
 }
 
+geo::Coordinate Spline::nearestPointOnEntity(const geo::Coordinate& coord) const {
+    return geo::Spline::nearestPointOnEntity(coord);
+}
+
 CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
     std::vector<geo::Coordinate> control_pts;
 
