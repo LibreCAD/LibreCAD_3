@@ -129,6 +129,10 @@ geo::Coordinate Insert::nearestPointOnPath(const geo::Coordinate& coord) const {
     return _position;
 }
 
+geo::Coordinate Insert::nearestPointOnEntity(const geo::Coordinate& coord) const {
+    return _position;
+}
+
 const storage::Document_SPtr& Insert::document() const {
     return _document;
 }

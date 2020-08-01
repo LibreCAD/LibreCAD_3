@@ -783,13 +783,27 @@ void DocumentCanvas::selectPoint(double x, double y) {
     double zeroY = 0.;
     double w = 5;
     double h = 5;
+
     device_to_user(&zeroX, &zeroY);
     device_to_user(&w, &h);
     w = w - zeroX;
+    auto point = geo::Coordinate(x,y);
+    double mwh = sqrt(2)*w;
 
     lc::geo::Area selectionArea(lc::geo::Coordinate(x - w, y - w), w * 2, w * 2);
     auto entities = entityContainer().entitiesWithinAndCrossingAreaFast(selectionArea);
     entities.each< const lc::entity::CADEntity >([=](lc::entity::CADEntity_CSPtr entity) {
+    	//Check if it is on entity
+	auto snapable = std::dynamic_pointer_cast<const lc::entity::Snapable>(entity); 
+ 
+ 	if(snapable){
+	    	auto nearestPoint = snapable->nearestPointOnEntity(point);
+	    	auto distance = nearestPoint.distanceTo(point);
+	    	//std::cout << nearestPoint << std::endl;
+	    	//std::cout << point << std::endl;
+	    	if (distance>mwh)
+	    		return;
+    	};
 	auto di = _entityDrawItem[entity->id()];
 	auto iter = std::find(_selectedDrawables.begin(), _selectedDrawables.end(), di);
 	//if not found in selected drawables
