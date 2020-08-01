@@ -17,7 +17,8 @@ MainWindow::MainWindow()
     lineWidthSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _cliCommand(this),
-    _toolbar(&_luaInterface, this)
+    _toolbar(&_luaInterface, this),
+    _contextMenuManager(_luaInterface.luaState())
 {
     ui->setupUi(this);
     // new document and set mainwindow attributes
@@ -64,6 +65,8 @@ MainWindow::MainWindow()
 
     _toolbar.generateButtonsMap();
     readUiSettings();
+
+    _cadMdiChild.viewer()->setContextMenuManager(&_contextMenuManager);
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);

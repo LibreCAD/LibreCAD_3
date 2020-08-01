@@ -5,6 +5,7 @@
 #include <QOpenGLContext>
 #include <QSurfaceFormat>
 #include <cad/logger/logger.h>
+#include "widgets/guiAPI/menu.h"
 using namespace lc;
 using namespace lc::ui;
 
@@ -19,7 +20,8 @@ LCADViewer::LCADViewer(QWidget *parent) :
     _scaleLineWidth(false),
     _backgroundPainter(nullptr),
     _documentPainter(nullptr),
-    _foregroundPainter(nullptr)
+    _foregroundPainter(nullptr),
+    _contextMenuManager(nullptr)
      {
     setMouseTracking(true);
     this->_altKeyActive = false;
@@ -394,4 +396,18 @@ void LCADViewer::updateDocument()
 
 const std::shared_ptr<lc::viewer::DocumentCanvas>& LCADViewer::docCanvas() const {
     return _docCanvas;
+}
+
+void LCADViewer::setContextMenuManager(lc::ui::ContextMenuManager* contextMenuManager) {
+    _contextMenuManager = contextMenuManager;
+}
+
+void LCADViewer::contextMenuEvent(QContextMenuEvent* event) {
+    if (_contextMenuManager == nullptr) {
+        return;
+    }
+
+    lc::ui::api::Menu menu("ContextMenu", this);
+    _contextMenuManager->generateMenu(&menu, documentCanvas()->selectedEntities().asVector());
+    menu.exec(event->globalPos());
 }
