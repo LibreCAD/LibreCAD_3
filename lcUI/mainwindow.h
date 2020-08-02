@@ -102,6 +102,11 @@ namespace lc
             */
             void readUiSettings();
 
+            /**
+            * \brief Run the last operation
+            */
+            void runLastOperation();
+
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
             /**
@@ -239,6 +244,9 @@ namespace lc
 
             QMap<QString, api::Menu*> menuMap;
             int _contextMenuManagerId;
+
+            kaguya::LuaRef _oldOperation;
+            std::string _oldOpInitMethod;
         };
     }
 }

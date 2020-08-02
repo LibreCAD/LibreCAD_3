@@ -123,6 +123,9 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     else {
         op[init_method.c_str()](op);
     }
+
+    _oldOperation = operation;
+    _oldOpInitMethod = init_method;
 }
 
 void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
@@ -201,6 +204,10 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
     QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
     QObject::connect(findMenuItemByObjectName("actionAuto_Scale"), &QAction::triggered, this, &MainWindow::autoScale);
+}
+
+void MainWindow::runLastOperation() {
+    runOperation(_oldOperation, _oldOpInitMethod);
 }
 
 /* Menu functions */

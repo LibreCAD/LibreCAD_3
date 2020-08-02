@@ -51,6 +51,10 @@ namespace lc
              */
             void addOperation(const std::string& key, const std::string& groupName);
 
+            void activeCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
+
+            void inactiveCommands(api::Menu* menu);
+
         private:
             std::string cleanOperationName(const std::string& opName) const;
 
