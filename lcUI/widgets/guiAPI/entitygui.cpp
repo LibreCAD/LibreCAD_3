@@ -13,7 +13,9 @@ EntityGUI::EntityGUI(std::string label, QWidget* parent)
     _entitySelectionEnabled(false),
     ui(new Ui::EntityGUI)
 {
+    _type = "entity";
     ui->setupUi(this);
+    setCopyPasteEnabled(false);
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _entityList = qobject_cast<QListWidget*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -133,4 +135,14 @@ void EntityGUI::entityItemSelected(lc::entity::CADEntity_CSPtr entity) {
     mainWindow->cadMdiChild()->viewer()->documentCanvas()->selectEntity(entity);
     mainWindow->activateWindow();
     parentWidget()->activateWindow();
+}
+
+void EntityGUI::copyValue(QDataStream& stream) {
+}
+
+void EntityGUI::pasteValue(QDataStream& stream) {
+}
+
+void EntityGUI::hideLabel() {
+    _textLabel->hide();
 }

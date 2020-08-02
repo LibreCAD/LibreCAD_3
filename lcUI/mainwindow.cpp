@@ -67,6 +67,8 @@ MainWindow::MainWindow()
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
+
+    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65 , 35 }, Qt::Horizontal);
 }
 
 MainWindow::~MainWindow()
@@ -627,11 +629,18 @@ void MainWindow::loadDefaultSettings() {
 
 void MainWindow::selectionChanged() {
     std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
-    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor();
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     
     propertyEditor->clear(selectedEntities);
 
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
         propertyEditor->addEntity(selectedEntity);
+    }
+
+    if (selectedEntities.size() == 0) {
+        propertyEditor->hide();
+    }
+    else {
+        propertyEditor->show();
     }
 }

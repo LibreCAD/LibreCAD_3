@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QMetaObject>
 #include <QWidget>
+#include <QContextMenuEvent>
 
 #include <kaguya/kaguya.hpp>
 
@@ -49,6 +50,21 @@ namespace lc
                 virtual void getLuaValue(kaguya::LuaRef& table) = 0;
 
                 /**
+                * \brief Hide label of the input gui
+                */
+                virtual void hideLabel() = 0;
+
+                /**
+                * \brief copy input gui value to the clipboard event
+                */
+                void copyEvent();
+
+                /**
+                * \brief paste value from clipboard to the input gui event
+                */
+                void pasteEvent();
+
+                /**
                 * \brief Set gui key for the lua table
                 * \param string gui key
                 */
@@ -61,8 +77,31 @@ namespace lc
                 const std::string key() const;
 
             protected:
+                /**
+                * \brief Context menu for input gui
+                */
+                void contextMenuEvent(QContextMenuEvent* event) override;
+
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                virtual void copyValue(QDataStream& stream) = 0;
+
+                /**
+                * \brief Paste widget value to the clipboard
+                */
+                virtual void pasteValue(QDataStream& stream) = 0;
+
+                /**
+                * \brief Enable or disable menu for the given widgets
+                */
+                void setCopyPasteEnabled(bool enable);
+
+            protected:
                 std::string _label;
                 std::string _key;
+                std::string _type;
+                bool _copyPasteEnabled;
             };
         }
     }

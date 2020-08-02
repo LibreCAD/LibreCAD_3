@@ -71,6 +71,11 @@ namespace lc {
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished
@@ -81,6 +86,17 @@ namespace lc {
                 * \brief Run callbacks for text changed
                 */
                 void textChangedCallbacks(const QString& changedText);
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 Ui::TextGUI* ui;

@@ -115,3 +115,23 @@ CADEntity_CSPtr Point::setDragPoints(std::map<unsigned int, lc::geo::Coordinate>
         return shared_from_this();
     }
 }
+
+PropertiesMap Point::availableProperties() const {
+    PropertiesMap propertyValues;
+    propertyValues["coordinate"] = lc::geo::Coordinate(this->x(), this->y(), this->z());
+    return propertyValues;
+}
+
+CADEntity_CSPtr Point::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate coordp = lc::geo::Coordinate(this->x(), this->y(), this->z());
+
+    for (auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "coordinate") {
+            coordp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+    }
+
+    auto pointEntity = std::make_shared<Point>(coordp, layer(), metaInfo(), block());
+    pointEntity->setID(this->id());
+    return pointEntity;
+}

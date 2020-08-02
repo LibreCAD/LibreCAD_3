@@ -27,6 +27,10 @@ find_package(Boost REQUIRED COMPONENTS log)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+include_directories(${GTest_INCLUDE_DIRS})
+link_directories(${GTest_LIBRARY_DIRS})
+include_directories(${GLEW_INCLUDE_DIR})
+
 #RapidJSON
 find_package(RapidJSON)
 include_directories(${RAPIDJSON_INCLUDE_DIRS})
