@@ -4,7 +4,6 @@
 using namespace lc;
 using namespace geo;
 
-
 TEST(lc__geo__RegionTest, creation) {
 	std::vector<lc::entity::CADEntity_CSPtr> loopData;
 	//Create a circle
@@ -21,4 +20,5 @@ TEST(lc__geo__RegionTest, creation) {
 	// (10,10) should be in but (95,95) should be out.
 	ASSERT_TRUE(reg.isPointInside(lc::geo::Coordinate(10, 10)));
 	ASSERT_FALSE(reg.isPointInside(lc::geo::Coordinate(95, 95)));
+	ASSERT_FALSE(reg.isPointInside(lc::geo::Coordinate(1000, 1000)));
 }

@@ -50,3 +50,65 @@ lc::geo::Area Region::boundingBox() const{
     }
     return boundingBox;
 }
+
+Region Region::move(const geo::Coordinate &offset) const{
+	Region reg;
+	for(auto &x: _loopList){
+		std::vector<lc::entity::CADEntity_CSPtr> loopData;
+		for(auto &y: x.entities())
+			loopData.push_back(y->move(offset));
+		Loop loop(loopData);
+		reg.addLoop(loop);
+	}
+	return reg;
+}
+
+Region Region::copy(const geo::Coordinate &offset) const{
+	Region reg;
+	for(auto &x: _loopList){
+		std::vector<lc::entity::CADEntity_CSPtr> loopData;
+		for(auto &y: x.entities())
+			loopData.push_back(y->copy(offset));
+		Loop loop(loopData);
+		reg.addLoop(loop);
+	}
+	return reg;
+}
+
+Region Region::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const{
+	Region reg;
+	for(auto &x: _loopList){
+		std::vector<lc::entity::CADEntity_CSPtr> loopData;
+		for(auto &y: x.entities())
+			loopData.push_back(y->rotate(rotation_center, rotation_angle));
+		Loop loop(loopData);
+		reg.addLoop(loop);
+	}
+	return reg;
+}
+
+Region Region::scale(const geo::Coordinate &scale_center,
+                          const geo::Coordinate &scale_factor) const{
+	Region reg;
+	for(auto &x: _loopList){
+		std::vector<lc::entity::CADEntity_CSPtr> loopData;
+		for(auto &y: x.entities())
+			loopData.push_back(y->scale(scale_center, scale_factor));
+		Loop loop(loopData);
+		reg.addLoop(loop);
+	}
+	return reg;
+}
+
+Region Region::mirror(const geo::Coordinate& axis1,
+    const geo::Coordinate& axis2) const{
+	Region reg;
+	for(auto &x: _loopList){
+		std::vector<lc::entity::CADEntity_CSPtr> loopData;
+		for(auto &y: x.entities())
+			loopData.push_back(y->mirror(axis1, axis2));
+		Loop loop(loopData);
+		reg.addLoop(loop);
+	}
+	return reg;
+}

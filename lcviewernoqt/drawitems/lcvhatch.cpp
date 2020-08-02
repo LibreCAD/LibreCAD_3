@@ -13,8 +13,8 @@ using namespace lc::viewer;
 LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
         LCVDrawItem(hatch, true),
         _hatch(hatch) {
-    for(auto &x:_hatch->_loopList){
-        for(auto &y:x->objList){
+    for(auto &x:_hatch->getRegion().loopList()){
+        for(auto &y:x.entities()){
 		auto di = DocumentCanvas::asDrawable(y);
 		di->autostroke(false);
 		_drawItems.push_back(di);

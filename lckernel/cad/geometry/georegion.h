@@ -86,6 +86,17 @@ namespace lc {
                  * @return lc::geo::Area 
                  */
                 lc::geo::Area boundingBox() const;
+                
+                //For entity operation
+		Region move(const geo::Coordinate &offset) const;
+		Region copy(const geo::Coordinate &offset) const;
+		Region rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const;
+		Region scale(const geo::Coordinate &scale_center,
+                                          const geo::Coordinate &scale_factor) const;
+		Region mirror(const geo::Coordinate& axis1,
+                    const geo::Coordinate& axis2) const;
+                    
+               const std::vector<Loop>& loopList() const {return _loopList;}
             private:
                 std::vector<Loop> _loopList;
         };
