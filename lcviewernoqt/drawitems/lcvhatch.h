@@ -20,7 +20,9 @@ namespace lc {
                  * @param LcDrawOptions options
                  * @param geo::Area rect
                  */
-                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+                void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+                void drawSolidOne(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+                void drawSolidMore(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
 
                 lc::entity::CADEntity_CSPtr entity() const override;
 

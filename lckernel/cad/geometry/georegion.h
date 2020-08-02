@@ -97,8 +97,9 @@ namespace lc {
                     const geo::Coordinate& axis2) const;
                     
                const std::vector<Loop>& loopList() const {return _loopList;}
+               
             private:
-                std::vector<Loop> _loopList;
+            	std::vector<Loop> _loopList;
         };
     }
 }
