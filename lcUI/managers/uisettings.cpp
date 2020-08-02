@@ -11,7 +11,7 @@
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
-    std::ofstream  settingsFile(settingsFileName);
+    std::ofstream  settingsFile(_filePaths["settings_load"] + settingsFileName);
 
     if (settingsFile.fail()) {
         std::cout << "File could not be opened" << std::endl;
@@ -28,13 +28,13 @@ void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
 
 void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings) {
     std::string fileName = defaultSettings ? defaultSettingsFileName : settingsFileName;
-    std::ifstream settingsFile(fileName);
+    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
 
     while(settingsFile.fail()){
         if (fileName == settingsFileName) {
             std::cout << "No settings file found, loading default settings." << std::endl;
             fileName = defaultSettingsFileName;
-            settingsFile.open(fileName);
+            settingsFile.open(_filePaths["settings_load"] + fileName);
         }else{
             std::cout << "Default settings not found" << std::endl;
             return;
@@ -60,7 +60,7 @@ void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool 
 }
 
 bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
-    std::ifstream schemaFile(schemaFileName);
+    std::ifstream schemaFile(_filePaths["settings_load"] + schemaFileName);
 
     if (schemaFile.fail()) {
         std::cout << "Schema file not found" << std::endl;

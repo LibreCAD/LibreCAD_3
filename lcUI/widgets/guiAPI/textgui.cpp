@@ -77,3 +77,7 @@ void TextGUI::pasteValue(QDataStream& stream) {
     setValue(val.toStdString());
     editingFinishedCallbacks();
 }
+
+void TextGUI::hideLabel() {
+    _textLabel->hide();
+}

@@ -64,3 +64,7 @@ void NumberGUI::pasteValue(QDataStream& stream) {
     stream >> val;
     setValue(val);
 }
+
+void NumberGUI::hideLabel() {
+    _textLabel->hide();
+}

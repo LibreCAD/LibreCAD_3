@@ -9,6 +9,8 @@
 #include "cad/geometry/geobase.h"
 #include "cad/interface/snapable.h"
 #include "cad/interface/draggable.h"
+#include "cad/interface/splitable.h"
+
 #include <vector>
 
 #include <cad/builders/lwpolyline.h>
@@ -94,7 +96,9 @@ namespace lc {
         class LWPolyline : public std::enable_shared_from_this<LWPolyline>,
                            public CADEntity,
                            public Snapable,
-                           public Draggable {
+                           public Draggable,
+		                   public Splitable
+        {
         public:
 
             /**
@@ -152,10 +156,12 @@ namespace lc {
                                                              double minDistanceToSnap,
                                                              int maxNumberOfSnapPoints) const override;
 
-            virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
-            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+            geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
+            std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
             nearestPointOnPath2(const geo::Coordinate &coord) const;
 
+	        virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
         private:
             /**
              * @brief Generate entities of the polyline

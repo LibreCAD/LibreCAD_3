@@ -201,7 +201,7 @@ void Manager::addDataToCurrentEntity()
 {
 	appendVertexData();
 	if (_vertex_data.empty()) {
-		LOG_WARNING << "Vertex data is empty. Ignoring." << std::endl;
+		LOG_DEBUG << "Vertex data is empty. Ignoring.";
 	}
 	else {
 		_current_gl_entity->loadVertexData(&_vertex_data[0].x, _vertex_data.size() * (4 * sizeof(float)), _jumps);

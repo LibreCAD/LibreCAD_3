@@ -57,5 +57,5 @@ TEST(lc__entity__EllipseTest, snapPoints) {
 
     Ellipse el2(geo::Coordinate(0.,0.),geo::Coordinate(20.,0.), 10, 0, 0, false, nullptr,nullptr);
     auto res2 = el2.snapPoints(geo::Coordinate(20.,10.), flag, 30, 10);
-    ASSERT_EQ(res2.size(), 7);
+    ASSERT_EQ(res2.size(), 4);
 }

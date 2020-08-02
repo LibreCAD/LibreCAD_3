@@ -64,11 +64,15 @@ geo::Coordinate Circle::nearestPointOnPath(const geo::Coordinate &coord) const {
     return geo::Circle::nearestPointOnPath(coord);
 }
 
+geo::Coordinate Circle::nearestPointOnEntity(const geo::Coordinate &coord) const {
+    return geo::Circle::nearestPointOnEntity(coord);
+}
+
 std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
 	auto angle = (coord-center()).angle();
 	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE){
-		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle+LCTOLERANCE, angle+2*M_PI-LCTOLERANCE,
+		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, angle-1.5*LCTOLERANCE,
 		                                true, layer(), metaInfo(), block());
 		out.push_back(newArc);
 	}

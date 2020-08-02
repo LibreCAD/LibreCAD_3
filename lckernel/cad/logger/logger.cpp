@@ -103,7 +103,7 @@ namespace lc {
                                  << expr::smessage);
             //Add filter too
             pSink->set_filter(
-                expr::attr<SeverityLevel>("Severity").or_default(LOG_SEVERITY_INFO) >= LOG_SEVERITY_INFO // warning or greater, or
+                expr::attr<SeverityLevel>("Severity").or_default(LOG_SEVERITY_INFO) > LOG_SEVERITY_INFO // warning or greater, or
                 || expr::begins_with(expr::attr<std::string>("Tag").or_default(std::string()), "IMPORTANT")); //specially tagged
         }
 

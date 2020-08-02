@@ -74,3 +74,7 @@ void ComboBoxGUI::copyValue(QDataStream& stream) {
 
 void ComboBoxGUI::pasteValue(QDataStream& stream) {
 }
+
+void ComboBoxGUI::hideLabel() {
+    _textLabel->hide();
+}

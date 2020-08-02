@@ -90,9 +90,23 @@ geo::Coordinate Arc::nearestPointOnPath(const geo::Coordinate &coord) const {
     return pointOnPath;
 }
 
+geo::Coordinate Arc::nearestPointOnEntity(const geo::Coordinate &coord) const {
+    const geo::Coordinate pointOnEntity = geo::Arc::nearestPointOnEntity(coord);
+    /*
+    double vl1 = (center() - coord).magnitude();
+    double vl2 = (pointOnPath - coord).magnitude();
+    if (vl1 < vl2) {
+        return center();
+    } */
+
+    return pointOnEntity;
+}
+
 std::vector<CADEntity_CSPtr> Arc::splitEntity(const geo::Coordinate& coord) const{
 	std::vector<CADEntity_CSPtr> out;
 	auto angle = (coord-center()).angle();
+	if(angle<this->startAngle())
+		angle+=2*M_PI;
 	// check if angle is between start and end
 	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE)
 	if (isAngleBetween(angle)){
@@ -171,7 +185,7 @@ std::map<unsigned int, lc::geo::Coordinate> Arc::dragPoints() const {
 }
 
 
-CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
+CADEntity_CSPtr Arc::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {//bulge expenced down
     try {
         auto newEntity = std::make_shared<Arc>(geo::Arc::createArcBulge(dragPoints.at(0), dragPoints.at(1), bulge()), layer(), metaInfo());
         newEntity->setID(id());

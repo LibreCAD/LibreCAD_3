@@ -73,6 +73,11 @@ namespace lc {
                 */
                 void addCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Called when entities are selected by the user in the cadmdichild

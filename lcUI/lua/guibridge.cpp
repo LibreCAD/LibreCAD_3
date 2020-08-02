@@ -72,11 +72,12 @@ void addLCBindings(lua_State *L) {
 		.addFunction("activeLayer", &CadMdiChild::activeLayer)
 		.addFunction("metaInfoManager", &CadMdiChild::metaInfoManager)
 		.addFunction("getFilename", &CadMdiChild::getFilename)
-		.addFunction("viewerProxy", &CadMdiChild::viewerProxy)
+		//.addFunction("viewerProxy", &CadMdiChild::viewerProxy)
 		.addFunction("activeViewport", &CadMdiChild::activeViewport)
 	);
 
-    state["lc"]["LCADViewerProxy"].setClass(kaguya::UserdataMetatable<LCADViewerProxy>());
+    //state["lc"]["LCADViewerProxy"].setClass(kaguya::UserdataMetatable<LCADViewerProxy>());
+    // not available outside
 
 	state["lc"]["Cursor"].setClass(kaguya::UserdataMetatable<drawable::Cursor>()
 	    .addFunction("position", &drawable::Cursor::position)
@@ -200,9 +201,7 @@ void addLCBindings(lua_State *L) {
     );
 
     state["lc"]["PropertyEditor"].setClass(kaguya::UserdataMetatable<lc::ui::PropertyEditor>()
-        .addStaticFunction("GetPropertyEditor", []() {
-            return PropertyEditor::GetPropertyEditor(nullptr);
-         })
+        .addStaticFunction("GetPropertyEditor", &lc::ui::PropertyEditor::GetPropertyEditor)
         .addFunction("propertyChanged", &lc::ui::PropertyEditor::propertyChanged)
     );
 }

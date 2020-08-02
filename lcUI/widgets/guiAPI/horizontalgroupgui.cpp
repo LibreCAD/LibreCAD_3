@@ -83,3 +83,6 @@ void HorizontalGroupGUI::copyValue(QDataStream& stream) {
 
 void HorizontalGroupGUI::pasteValue(QDataStream& stream) {
 }
+
+void HorizontalGroupGUI::hideLabel() {
+}

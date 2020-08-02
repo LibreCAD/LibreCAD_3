@@ -1,6 +1,6 @@
 #include "checkboxgui.h"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 using namespace lc::ui::api;
 
@@ -10,9 +10,11 @@ CheckBoxGUI::CheckBoxGUI(std::string label, bool checked, QWidget* parent)
 {
     _type = "checkbox";
     _checkBox = new QCheckBox(QString(label.c_str()));
-    this->setLayout(new QVBoxLayout());
+    this->setLayout(new QHBoxLayout());
     this->layout()->addWidget(_checkBox);
     _checkBox->setChecked(checked);
+
+    qobject_cast<QHBoxLayout*>(this->layout())->insertStretch(0);
     connect(_checkBox, &QCheckBox::stateChanged, this, &CheckBoxGUI::callbackCalled);
 }
 
@@ -52,4 +54,8 @@ void CheckBoxGUI::pasteValue(QDataStream& stream) {
     stream >> val;
     setValue(val);
     callbackCalled(_checkBox->isChecked());
+}
+
+void CheckBoxGUI::hideLabel() {
+    _checkBox->setText("");
 }

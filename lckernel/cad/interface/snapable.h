@@ -35,7 +35,14 @@ namespace lc {
                  */
                 virtual geo::Coordinate nearestPointOnPath(const geo::Coordinate& coord) const = 0;
 
-
+                /*!
+                 * \brief Find the nearest point on for the coordinate \em coord
+                 * For arc it should be within the end and start angle
+                 * \param coord Coordinate to lookup the nearest coordinate from
+                 * \sa lc::entity::CADEntity
+                 */
+                virtual geo::Coordinate nearestPointOnEntity(const geo::Coordinate& coord) const = 0;
+                
                 /**
                  * Remove point's from vector if the distance to references is > distance
                  */

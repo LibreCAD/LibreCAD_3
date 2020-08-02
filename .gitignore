@@ -30,3 +30,6 @@ unittest/rendering/res/*.out
 
 # Conan
 conan/
+
+# Auto generated build constants
+/lckernel/build_constants.cpp

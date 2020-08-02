@@ -14,7 +14,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # SOURCE FILES
 set(lckernel_srcs
-version.cpp
+build_constants.cpp
 cad/base/cadentity.cpp
 cad/base/id.cpp
 cad/base/metainfo.cpp
@@ -35,6 +35,7 @@ cad/geometry/geoellipse.cpp
 cad/geometry/geospline.cpp
 cad/geometry/geobezier.cpp
 cad/geometry/geobeziercubic.cpp
+cad/geometry/georegion.cpp
 cad/math/lcmath.cpp
 cad/math/equation.cpp
 cad/math/intersectionhandler.cpp
@@ -95,7 +96,7 @@ cad/objects/layout.cpp
 
 # HEADER FILES
 set(lckernel_hdrs
-version.h
+build_constants.h
 cad/const.h
 cad/base/id.h
 cad/base/cadentity.h
@@ -179,7 +180,6 @@ cad/primitive/textconst.h
 cad/tools/string_helper.h
 cad/primitive/image.h
 cad/math/helpermethods.h
-version.h
 cad/meta/block.h
 cad/builders/cadentity.h
 cad/builders/line.h
@@ -245,8 +245,8 @@ endif()
 #Create version.cpp
 add_custom_command(
         PRE_BUILD
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp
-        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp
+        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
 )
 

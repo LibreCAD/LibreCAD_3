@@ -16,7 +16,7 @@
 
 using namespace lc::ui;
 
-PropertyEditor* PropertyEditor::instance = nullptr;
+std::map<lc::ui::MainWindow*, PropertyEditor*> PropertyEditor::instances;
 
 PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     :
@@ -30,9 +30,13 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     parentWidget->setWidgetResizable(true);
 
     QTreeWidget* widget = new QTreeWidget(parentWidget);
-    widget->setColumnCount(1);
+    widget->setColumnCount(2);
     widget->setHeaderHidden(true);
     widget->setObjectName("guiContainer");
+
+    this->setStyleSheet("QTreeWidget{background: rgb(252, 255, 247)}");
+    widget->setStyleSheet("QTreeWidget::item{ border : 1px solid rgb(156, 220, 31); margin-left: 2; padding-left: 5px;} QTreeView::item:selected {border : 3px solid rgb(156, 220, 31)}");
+    widget->setColumnWidth(0, 200);
 
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
@@ -43,11 +47,11 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
 }
 
 PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
-    if (instance == nullptr) {
-        instance = new PropertyEditor(mainWindow);
+    if (instances.find(mainWindow) == instances.end()) {
+        instances[mainWindow] = new PropertyEditor(mainWindow);
     }
 
-    return instance;
+    return instances[mainWindow];
 }
 
 void PropertyEditor::clear(std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
@@ -94,10 +98,10 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         entity->dispatch(entityVisitor);
         QString entityInfo = QString(entityVisitor.getEntityInformation().c_str()) + QString(" #") + QString::number(entity->id());
         QTreeWidgetItem* treeItem = new QTreeWidgetItem();
-
         _entityGroup[entity->id()] = treeItem;
         guicontainer->addTopLevelItem(treeItem);
         guicontainer->setItemWidget(treeItem, 0, new QLabel(entityInfo));
+        treeItem->setExpanded(true);
     }
 
     createPropertiesWidgets(entity->id(), entity->availableProperties());
@@ -115,11 +119,9 @@ bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget)
         QTreeWidgetItem* entityChildItem = new QTreeWidgetItem();
         _entityGroup[_currentEntity]->addChild(entityChildItem);
         guicontainer->setItemWidget(entityChildItem, 0, new QLabel(guiWidget->label().c_str()));
-
-        QTreeWidgetItem* entityChildProp = new QTreeWidgetItem();
-        entityChildItem->addChild(entityChildProp);
-
-        guicontainer->setItemWidget(entityChildProp, 0, guiWidget);
+        guiWidget->hideLabel();
+        guicontainer->setItemWidget(entityChildItem, 1, guiWidget);
+        entityChildItem->setSizeHint(1, guiWidget->sizeHint());
     }
     return success;
 }
@@ -251,7 +253,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             if (iter->second.which() == 0) {
                 lc::ui::api::AngleGUI* anglegui = new lc::ui::api::AngleGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 anglegui->setValue(boost::get<lc::entity::AngleProperty>(iter->second).Get());
-                state.dostring("anglePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("anglePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 anglegui->addFinishCallback(state["anglePropertyCalled"]);
                 addWidget(key, anglegui);
                 state["anglePropertyCalled"] = nullptr;
@@ -261,7 +263,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             if (iter->second.which() == 1) {
                 lc::ui::api::NumberGUI* numbergui = new lc::ui::api::NumberGUI(std::string(1,std::toupper(iter->first[0])) + iter->first.substr(1));
                 numbergui->setValue(boost::get<double>(iter->second));
-                state.dostring("numberPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("numberPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 numbergui->addCallback(state["numberPropertyCalled"]);
                 addWidget(key, numbergui);
                 state["numberPropertyCalled"] = nullptr;
@@ -271,7 +273,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             if (iter->second.which() == 2) {
                 lc::ui::api::CheckBoxGUI* checkboxgui = new lc::ui::api::CheckBoxGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 checkboxgui->setValue(boost::get<bool>(iter->second));
-                state.dostring("boolPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("boolPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 checkboxgui->addCallback(state["boolPropertyCalled"]);
                 addWidget(key, checkboxgui);
                 state["boolPropertyCalled"] = nullptr;
@@ -281,7 +283,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             if (iter->second.which() == 3) {
                 lc::ui::api::CoordinateGUI* coordinategui = new lc::ui::api::CoordinateGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 coordinategui->setValue(boost::get<lc::geo::Coordinate>(iter->second));
-                state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("coordinatePropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 coordinategui->addFinishCallback(state["coordinatePropertyCalled"]);
                 addWidget(key, coordinategui);
                 state["coordinatePropertyCalled"] = nullptr;
@@ -291,7 +293,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
             if (iter->second.which() == 4) {
                 lc::ui::api::TextGUI* textgui = new lc::ui::api::TextGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1));
                 textgui->setValue(boost::get<std::string>(iter->second));
-                state.dostring("textPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("textPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 textgui->addFinishCallback(state["textPropertyCalled"]);
                 addWidget(key, textgui);
                 state["textPropertyCalled"] = nullptr;
@@ -305,7 +307,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 std::vector<lc::geo::Coordinate> coords = boost::get<std::vector<lc::geo::Coordinate>>(iter->second);
                 listgui->setValue(coords);
 
-                state.dostring("vectorPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+                state.dostring("vectorPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
                 listgui->addCallbackToAll(state["vectorPropertyCalled"]);
                 addWidget(key, listgui);
                 state["vectorPropertyCalled"] = nullptr;
@@ -333,7 +335,7 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity));
         listgui->setValue(lwPolylineBuilder.getVertices());
 
-        state.dostring("customPropertyCalled = function() lc.PropertyEditor:GetPropertyEditor():propertyChanged('" + key + "') end");
+        state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
         listgui->addCallbackToAll(state["customPropertyCalled"]);
         addWidget(key, listgui);
         state["customPropertyCalled"] = nullptr;

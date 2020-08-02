@@ -91,6 +91,11 @@ namespace lc {
                 */
                 void enableCoordinateSelection(lc::ui::MainWindow* mainWindow);
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished

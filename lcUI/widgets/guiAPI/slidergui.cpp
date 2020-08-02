@@ -68,3 +68,7 @@ void SliderGUI::pasteValue(QDataStream& stream) {
     stream >> val;
     setValue(val);
 }
+
+void SliderGUI::hideLabel() {
+    _textLabel->hide();
+}
