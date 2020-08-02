@@ -290,15 +290,22 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate& coord) con
     return std::get<0>(info);
 }
 
-std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>>
+geo::Coordinate LWPolyline::nearestPointOnEntity(const geo::Coordinate& coord) const {
+	//@TODO: check and modify it
+    return this->nearestPointOnPath(coord);
+}
+
+std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
 LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
     const auto &&entities = asEntities();
 
     double minimumDistance = std::numeric_limits<double>::max();
     std::shared_ptr<const geo::Vector> nearestVector = nullptr;
     std::shared_ptr<const geo::Arc> nearestArc = nullptr;
+    unsigned int index=0;
     geo::Coordinate nearestCoordinate;
-    for (auto &geoItem : entities) {
+    for (unsigned int i=0;i<entities.size();i++) {
+    	auto geoItem = entities[i];
         if (auto vector = std::dynamic_pointer_cast<const geo::Vector>(geoItem)) {
             auto npoe = vector->nearestPointOnPath(coord);
             auto thisDistance = npoe.distanceTo(coord);
@@ -306,6 +313,7 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestVector = vector;
+                index=i;
             }
         } else if (auto arc = std::dynamic_pointer_cast<const geo::Arc>(geoItem)) {
             auto npoe = arc->nearestPointOnPath(coord);
@@ -314,12 +322,13 @@ LWPolyline::nearestPointOnPath2(const geo::Coordinate& coord) const {
                 minimumDistance = thisDistance;
                 nearestCoordinate = npoe;
                 nearestArc = arc;
+                index=i;
             }
         } else {
             std::cerr << "Unknown entity found in LWPolyline during boundingBox generation" << std::endl;
         }
     }
-    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc);
+    return std::make_tuple(nearestCoordinate, nearestVector, nearestArc, index);
 }
 
 
@@ -365,6 +374,100 @@ CADEntity_CSPtr LWPolyline::setDragPoints(std::map<unsigned int, lc::geo::Coordi
 
 std::vector<CADEntity_CSPtr> const LWPolyline::asEntities() const {
     return _entities;
+}
+
+std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coord) const{
+    std::vector<CADEntity_CSPtr> out;
+    std::vector<LWVertex2D> newVertex;
+    std::vector<LWVertex2D> newVertex2;
+    unsigned int i;
+    if (_vertex.size()<2)return out;
+    //Copy from nearestPointOnPath2
+    auto &&info = nearestPointOnPath2(coord);
+    auto nearestCoordinate = std::get<0>(info);
+    auto nearestArc = std::get<2>(info);
+    auto index = std::get<3>(info);
+    auto minimumDistance=coord.distanceTo(nearestCoordinate);
+    if (minimumDistance>LCTOLERANCE) return out;
+    for(i=0;i<_vertex.size();i++){
+        if(i==index){//divide here
+            //interpolated values
+            double dist1, dist2;
+            if (_vertex[i].bulge()==0){ 
+            	dist1 = _vertex[i].location().distanceTo(nearestCoordinate);
+            	dist2 = _vertex[i+1].location().distanceTo(nearestCoordinate);
+            }else{
+		auto angle=nearestArc->center().angleTo(nearestCoordinate);
+		dist1=abs(angle-nearestArc->startAngle())*nearestArc->radius();
+		dist2=abs(nearestArc->endAngle()-angle)*nearestArc->radius();
+            }
+            double dist=dist1+dist2;
+            double width=_vertex[i].startWidth()
+                +(_vertex[i].endWidth()-_vertex[i].startWidth())
+                *dist1
+                /dist; 
+            double bulge1 = 0;
+            double bulge2 = 0;
+            if (_vertex[i].bulge()!=0){
+                //determine bulge for arc
+                bulge1 = (
+                        nearestArc->radius() 
+                        - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist1/2,2.)))
+                    )*2/dist1;
+                if (bulge1*_vertex[i].bulge()<0)bulge1=-bulge1;
+                bulge2 = (
+                        nearestArc->radius()
+                        - sqrt((nearestArc->radius()*nearestArc->radius() - pow(dist2/2,2.)))
+                    )*2/dist2;
+                if (bulge2*_vertex[i].bulge()<0)bulge2=-bulge2;
+            };
+            newVertex.push_back(LWVertex2D(
+                 _vertex[i].location(),
+                 bulge1,
+                 _vertex[i].startWidth(),
+                 width
+                ));
+            newVertex.push_back(LWVertex2D(
+                 nearestCoordinate,
+                 bulge2,
+                 width,
+                 _vertex[i].endWidth()
+                ));//This is end point for 1
+            newVertex2.push_back(LWVertex2D(
+                 nearestCoordinate,
+                 bulge2,
+                 width,
+                 _vertex[i].endWidth()
+                ));
+        }else{
+            if(i<index)
+                newVertex.push_back(_vertex[i]);
+            else
+            	newVertex2.push_back(_vertex[i]);
+        }
+    }
+    //Create new entity from vertices
+    auto newEntity = std::make_shared<LWPolyline>(newVertex,
+                                                      width(),
+                                                      elevation(),
+                                                      tickness(),
+                                                      closed(),
+                                                      extrusionDirection(),
+                                                      layer()
+                                                      , metaInfo(), block()
+        );    
+    out.push_back(newEntity);
+    newEntity = std::make_shared<LWPolyline>(newVertex2,
+                                                      width(),
+                                                      elevation(),
+                                                      tickness(),
+                                                      closed(),
+                                                      extrusionDirection(),
+                                                      layer()
+                                                      , metaInfo(), block()
+        );    
+    out.push_back(newEntity);
+    return out;
 }
 
 PropertiesMap LWPolyline::availableProperties() const {

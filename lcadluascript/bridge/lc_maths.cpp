@@ -17,7 +17,10 @@ void import_lc_maths_namespace(kaguya::State& state) {
     );
 
     state["lc"]["maths"]["IntersectMany"].setClass(kaguya::UserdataMetatable<lc::maths::IntersectMany>()
-        .setConstructors<lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double)>()
+        .setConstructors<
+        	lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>, lc::maths::Intersect::Method, double),
+        	lc::maths::IntersectMany(std::vector<lc::entity::CADEntity_CSPtr>)
+        	>()
         .addFunction("result", &lc::maths::IntersectMany::result)
     );
 

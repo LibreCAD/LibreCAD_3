@@ -69,6 +69,7 @@
      <addaction name="actionSelect_None"/>
      <addaction name="actionInvert_Selection"/>
     </widget>
+    <addaction name="actionAuto_Scale"/>    
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
     <addaction name="separator"/>
@@ -248,6 +249,11 @@
   <action name="actionSelect_All">
    <property name="text">
     <string>&amp;Select All</string>
+   </property>
+  </action>
+  <action name="actionAuto_Scale">
+   <property name="text">
+    <string>&amp;Auto Scale</string>
    </property>
   </action>
   <action name="actionSelect_None">

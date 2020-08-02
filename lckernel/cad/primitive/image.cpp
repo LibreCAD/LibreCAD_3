@@ -91,6 +91,10 @@ geo::Coordinate Image::nearestPointOnPath(const geo::Coordinate& coord) const {
     return geo::Coordinate();
 }
 
+geo::Coordinate Image::nearestPointOnEntity(const geo::Coordinate& coord) const {
+	return geo::Coordinate();
+}
+
 CADEntity_CSPtr Image::move(const geo::Coordinate& offset) const {
     auto newImage = std::make_shared<Image>(_name,
                                             _base + offset,

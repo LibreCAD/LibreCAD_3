@@ -64,6 +64,7 @@ namespace lc {
                                                      int maxNumberOfSnapPoints) const override;
 
             geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
+            geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
 
             /**
              * @brief move, moves by an offset
