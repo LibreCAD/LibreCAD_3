@@ -4,6 +4,7 @@
 #include <cad/base/cadentity.h>
 #include <kaguya/kaguya.hpp>
 
+#include "mainwindow.h"
 #include "widgets/guiAPI/menu.h"
 
 namespace lc
@@ -17,10 +18,25 @@ namespace lc
         {
         public:
             /**
-             * \brief Constructor for ContextMenuManager
-             * \param luaState lua state
+             * \brief Get Context Menu
+             * \param MainWindow pointer
+             * \return pointer to ContextMenuManager
              */
-            ContextMenuManager(lua_State* luastate);
+            static ContextMenuManager* GetContextMenuManager(lc::ui::MainWindow* mainWindowIn);
+
+            /**
+             * \brief Get Context Menu
+             * \param int instance id
+             * \return pointer to ContextMenuManager
+             */
+            static ContextMenuManager* GetContextMenuManager(int instanceIdIn);
+
+            /**
+             * \brief Get Instance Id of context for the given mainwindow
+             * \param MainWindow pointer
+             * \return int instance id
+             */
+            static int GetInstanceId(lc::ui::MainWindow* mainWindowIn);
 
             /**
              * \brief Generate menu for the selected entities / no entity selected
@@ -36,8 +52,21 @@ namespace lc
             void addOperation(const std::string& key, const std::string& groupName);
 
         private:
+            std::string cleanOperationName(const std::string& opName) const;
+
+            /**
+             * \brief Constructor for ContextMenuManager
+             * \param MainWindow pointer
+             */
+            ContextMenuManager(lc::ui::MainWindow* mainWindowIn);
+
+        private:
+            static std::map<lc::ui::MainWindow*, int> instancesId;
+            static std::map<int, ContextMenuManager*> instances;
             kaguya::State _L;
             std::map<std::string, std::vector<std::string>> _operationMap;
+            lc::ui::MainWindow* _mainWindow;
+            static int _instanceCount;
         };
     }
 }

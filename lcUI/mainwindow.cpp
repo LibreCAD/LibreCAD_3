@@ -3,6 +3,7 @@
 #include "dialogs/aboutdialog.h"
 #include "windowmanager.h"
 #include "propertyeditor.h"
+#include "managers/contextmenumanager.h"
 
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
@@ -17,9 +18,11 @@ MainWindow::MainWindow()
     lineWidthSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _cliCommand(this),
-    _toolbar(&_luaInterface, this),
-    _contextMenuManager(_luaInterface.luaState())
+    _toolbar(&_luaInterface, this)
 {
+    ContextMenuManager::GetContextMenuManager(this);
+    _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
+
     ui->setupUi(this);
     // new document and set mainwindow attributes
     _cadMdiChild.newDocument();
@@ -66,7 +69,7 @@ MainWindow::MainWindow()
     _toolbar.generateButtonsMap();
     readUiSettings();
 
-    _cadMdiChild.viewer()->setContextMenuManager(&_contextMenuManager);
+    _cadMdiChild.viewer()->setContextMenuManagerId(_contextMenuManagerId);
 
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
@@ -152,8 +155,8 @@ lc::ui::LuaInterface* MainWindow::luaInterface() {
     return &_luaInterface;
 }
 
-lc::ui::ContextMenuManager* MainWindow::contextMenuManager() {
-    return &_contextMenuManager;
+int MainWindow::contextMenuManagerId() {
+    return _contextMenuManagerId;
 }
 
 void MainWindow::ConnectInputEvents()

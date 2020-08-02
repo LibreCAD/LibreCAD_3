@@ -31,7 +31,6 @@
 #include "painters/createpainter.h"
 
 #include <QOpenGLDebugMessage>
-#include "managers/contextmenumanager.h"
 
 namespace lc {
     namespace ui {
@@ -96,7 +95,7 @@ namespace lc {
 
                 void updateHelper();
 
-                void setContextMenuManager(lc::ui::ContextMenuManager* contextMenuManager);
+                void setContextMenuManagerId(int contextMenuManagerId);
 
             protected:
                 void paintGL();
@@ -175,7 +174,7 @@ namespace lc {
                 lc::viewer::LcPainter* _documentPainter;
                 lc::viewer::LcPainter* _foregroundPainter;
 
-                lc::ui::ContextMenuManager* _contextMenuManager;
+                int _contextMenuManagerId;
         };
     }
 }

@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
+#include "managers/contextmenumanager.h"
 
 #include <QDir>
 #include <QString>
@@ -265,7 +266,6 @@ void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const 
 
 void OperationLoader::addContextMenuOperations(const std::string& vkey) {
     MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
-    lc::ui::ContextMenuManager* contextMenuManager = mWindow->contextMenuManager();
-
+    lc::ui::ContextMenuManager* contextMenuManager = ContextMenuManager::GetContextMenuManager(mWindow->contextMenuManagerId());
     contextMenuManager->addOperation(vkey, groupNames[vkey]);
 }

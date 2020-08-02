@@ -11,7 +11,6 @@
 #include "widgets/colorselect.h"
 #include "widgets/toolbar.h"
 #include "widgets/customizeToolbar/customizetoolbar.h"
-#include "managers/contextmenumanager.h"
 #include "managers/uisettings.h"
 #include "cadmdichild.h"
 
@@ -70,9 +69,9 @@ namespace lc
             lc::ui::LuaInterface* luaInterface();
 
             /**
-            * \brief Getter for context menu manager
+            * \brief Get context menu manager id for mainwindow
             */
-            lc::ui::ContextMenuManager* contextMenuManager();
+            int contextMenuManagerId();
 
             /**
             * \brief Connect existing menu item to lua callback function
@@ -238,7 +237,7 @@ namespace lc
             std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
 
             QMap<QString, api::Menu*> menuMap;
-            lc::ui::ContextMenuManager _contextMenuManager;
+            int _contextMenuManagerId;
         };
     }
 }
