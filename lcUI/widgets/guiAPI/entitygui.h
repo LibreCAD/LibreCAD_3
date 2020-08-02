@@ -73,6 +73,11 @@ namespace lc {
                 */
                 void addCallback(kaguya::LuaRef cb);
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Called when entities are selected by the user in the cadmdichild
@@ -91,6 +96,17 @@ namespace lc {
                 * \param QListWidgetItem pointer previous item
                 */
                 void itemChangedCallbacks(QListWidgetItem* current, QListWidgetItem* previous);
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 QString getEntityInformation(lc::entity::CADEntity_CSPtr entity);

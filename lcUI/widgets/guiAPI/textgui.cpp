@@ -13,6 +13,7 @@ TextGUI::TextGUI(std::string label, QWidget* parent)
     ui(new Ui::TextGUI)
 {
     ui->setupUi(this);
+    _type = "text";
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _lineEdit = qobject_cast<QLineEdit*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -64,4 +65,19 @@ void TextGUI::textChangedCallbacks(const QString& changedText) {
 
 void TextGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void TextGUI::copyValue(QDataStream& stream) {
+    stream << QString(value().c_str());
+}
+
+void TextGUI::pasteValue(QDataStream& stream) {
+    QString val;
+    stream >> val;
+    setValue(val.toStdString());
+    editingFinishedCallbacks();
+}
+
+void TextGUI::hideLabel() {
+    _textLabel->hide();
 }

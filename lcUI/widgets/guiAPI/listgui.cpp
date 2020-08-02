@@ -17,6 +17,8 @@ ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* paren
     _selectedCoordinate(nullptr)
 {
     ui->setupUi(this);
+    _type = "list";
+    setCopyPasteEnabled(false);
 
     listWidget = qobject_cast<QListWidget*>(ui->verticalLayout->itemAt(1)->widget());
     qobject_cast<QLabel*>(ui->verticalLayout->itemAt(0)->widget())->setText(label.c_str());
@@ -197,6 +199,7 @@ void ListGUI::setValue(std::vector<lc::geo::Coordinate> coords) {
     for (lc::geo::Coordinate& coord : coords) {
         std::string newkey = _key + "_coord" + std::to_string(itemIdCount);
         CoordinateGUI* coordinateGUI = new CoordinateGUI("Coordinate " + std::to_string(itemIdCount));
+        coordinateGUI->hideLabel();
         itemIdCount++;
         coordinateGUI->setValue(coord);
         addItem(newkey, coordinateGUI);
@@ -265,3 +268,14 @@ void ListGUI::guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous
     _selectedCoordinate = std::make_shared<const lc::entity::Circle>(coord, 5, layer);
     tempEntities->addEntity(_selectedCoordinate);
 }
+
+void ListGUI::copyValue(QDataStream& stream) {
+}
+
+void ListGUI::pasteValue(QDataStream& stream) {
+}
+
+void ListGUI::hideLabel() {
+    ui->verticalLayout->itemAt(0)->widget()->hide();
+}
+

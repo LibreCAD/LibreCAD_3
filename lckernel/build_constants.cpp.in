@@ -1,0 +1,6 @@
+#include <build_constants.h>
+
+EXPORT_API const char* BUILD_DATE = "${BUILD_DATE}";
+EXPORT_API const char* BUILD_INFO = "${BUILD_INFO}";
+EXPORT_API const char* CMAKE_VERSION = "${CMAKE_VERSION}";
+EXPORT_API const char* SETTINGS_PATH = "${SETTINGS_PATH}";

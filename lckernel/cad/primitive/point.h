@@ -105,6 +105,10 @@ namespace lc {
             virtual void dispatch(EntityDispatch &ed) const override {
                 ed.visit(shared_from_this());
             }
+
+            PropertiesMap availableProperties() const override;
+
+            CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
         };
 
         DECLARE_SHORT_SHARED_PTR(Point)

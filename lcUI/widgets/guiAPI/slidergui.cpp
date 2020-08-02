@@ -9,6 +9,7 @@ SliderGUI::SliderGUI(std::string label, int setMin, int setMax, QWidget* parent)
     ui(new Ui::SliderGUI)
 {
     ui->setupUi(this);
+    _type = "slider";
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _slider = qobject_cast<QSlider*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -56,4 +57,18 @@ void SliderGUI::setValue(int val) {
 
 void SliderGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void SliderGUI::copyValue(QDataStream& stream) {
+    stream << value();
+}
+
+void SliderGUI::pasteValue(QDataStream& stream) {
+    int val;
+    stream >> val;
+    setValue(val);
+}
+
+void SliderGUI::hideLabel() {
+    _textLabel->hide();
 }

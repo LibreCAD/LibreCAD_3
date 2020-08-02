@@ -9,6 +9,7 @@ NumberGUI::NumberGUI(std::string label, double minVal, double maxVal, QWidget* p
     ui(new Ui::NumberGUI)
 {
     ui->setupUi(this);
+    _type = "number";
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _spinBox = qobject_cast<QDoubleSpinBox*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -52,4 +53,18 @@ void NumberGUI::setValue(double val) {
 
 void NumberGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void NumberGUI::copyValue(QDataStream& stream) {
+    stream << value();
+}
+
+void NumberGUI::pasteValue(QDataStream& stream) {
+    double val;
+    stream >> val;
+    setValue(val);
+}
+
+void NumberGUI::hideLabel() {
+    _textLabel->hide();
 }

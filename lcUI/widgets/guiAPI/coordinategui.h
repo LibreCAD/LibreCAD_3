@@ -91,6 +91,11 @@ namespace lc {
                 */
                 void enableCoordinateSelection(lc::ui::MainWindow* mainWindow);
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Run callbacks for editing finished
@@ -111,6 +116,17 @@ namespace lc {
                 * \brief Enable/disable point selection through mouse
                 */
                 void togglePointSelection(bool toggle);
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 /**

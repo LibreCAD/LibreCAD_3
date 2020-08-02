@@ -41,6 +41,22 @@ namespace lc {
                 */
                 std::set<std::string> getKeys();
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
+
             private:
                 QButtonGroup* qbuttongroup;
                 QHBoxLayout* qhboxlayout;

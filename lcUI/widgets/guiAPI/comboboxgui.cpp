@@ -9,6 +9,8 @@ ComboBoxGUI::ComboBoxGUI(std::string label, QWidget* parent)
     ui(new Ui::ComboBoxGUI)
 {
     ui->setupUi(this);
+    _type = "combobox";
+    setCopyPasteEnabled(false);
 
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _comboBox = qobject_cast<QComboBox*>(ui->horizontalLayout->itemAt(1)->widget());
@@ -65,4 +67,14 @@ void ComboBoxGUI::setValue(int index) {
 
 void ComboBoxGUI::getLuaValue(kaguya::LuaRef& table) {
     table[_key] = value();
+}
+
+void ComboBoxGUI::copyValue(QDataStream& stream) {
+}
+
+void ComboBoxGUI::pasteValue(QDataStream& stream) {
+}
+
+void ComboBoxGUI::hideLabel() {
+    _textLabel->hide();
 }

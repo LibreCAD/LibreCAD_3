@@ -13,7 +13,7 @@ namespace lc {
                     /**
                      * @brief Construct an empty ModuleSettings
                      */
-                    ModuleSettings() = default;
+                    ModuleSettings();
 
                     /**
                      * @brief Construct a ModuleSettings with the given settings
@@ -40,6 +40,8 @@ namespace lc {
                      */
                     void set(const std::string& name, ISettingValue& value);
 
+                protected:
+                    std::map<std::string, std::string> _filePaths;
 
                 private:
                     std::map<std::string, ISettingValue*> _settings;
