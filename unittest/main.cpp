@@ -3,7 +3,7 @@
  * Nothing should be included here except gtest.h to prevent recompilation of a single test taking too much time.
  */
 #include <iostream>
-#include <version.h>
+#include <build_constants.h>
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {

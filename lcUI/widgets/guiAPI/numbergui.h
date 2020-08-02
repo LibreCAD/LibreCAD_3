@@ -64,12 +64,28 @@ namespace lc
                 */
                 void getLuaValue(kaguya::LuaRef& table) override;
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Run value changed callbacks
                 * \param double changed value
                 */
                 void valueChangedCallbacks(double val);
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 Ui::NumberGUI* ui;

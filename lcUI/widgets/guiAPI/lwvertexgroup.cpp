@@ -35,6 +35,11 @@ void LWVertexGroup::setKey(const std::string& keyIn) {
     startWidth = new lc::ui::api::NumberGUI("Start Width");
     endWidth = new lc::ui::api::NumberGUI("End Width");
 
+    coordgui->hideLabel();
+    startWidth->layout()->removeItem(startWidth->layout()->itemAt(1));
+    endWidth->layout()->removeItem(endWidth->layout()->itemAt(1));
+    qboxlayout->setContentsMargins(QMargins(0, 0, 0, 0));
+
     addWidget(_key + "_Location", coordgui);
     addWidget(_key + "_StartWidth", startWidth);
     addWidget(_key + "_EndWidth", endWidth);

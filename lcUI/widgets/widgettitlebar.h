@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QStylePainter>
+#include <QSize>
 
 namespace lc {
 	namespace ui {
@@ -107,6 +108,7 @@ namespace lc {
 
 				// enums for hide options
 				TitleBarOptions hideOptions;
+                QSize _oldSize;
 
 				// functions to switch to horizontal or vertical layouts
 				void setHorizontalLayout();

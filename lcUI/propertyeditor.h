@@ -80,8 +80,10 @@ namespace lc
             */
             std::string generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const;
 
+            void closeEvent(QCloseEvent* event);
+
         private:
-            static PropertyEditor* instance;
+            static std::map<lc::ui::MainWindow*,PropertyEditor*> instances;
             std::map<unsigned long, std::vector<std::string>> _entityProperties;
             std::map<unsigned long, QTreeWidgetItem*> _entityGroup;
             std::set<unsigned long> _selectedEntities;

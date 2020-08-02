@@ -112,6 +112,11 @@ namespace lc
                 */
                 std::set<std::string> getKeys() const;
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public slots:
                 /**
                 * \brief Slot for the plus add button being clicked (button is disabled for NONE list type)
@@ -127,6 +132,17 @@ namespace lc
                 * \brief Slot for current item selection being changed
                 */
                 void guiItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 Ui::ListGUI* ui;

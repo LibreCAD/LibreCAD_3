@@ -46,6 +46,11 @@ namespace lc {
                 */
                 void click();
 
+                /**
+                * \brief Hide widget label
+                */
+                void hideLabel() override;
+
             public:
                 QPushButton* _pushButton;
 
@@ -54,6 +59,17 @@ namespace lc {
                 * \brief Run all callbacks
                 */
                 void callbackCalled();
+
+            protected:
+                /**
+                * \brief Copy widget value to the clipboard
+                */
+                void copyValue(QDataStream& stream) override;
+
+                /**
+                * \brief Set widget value from clipboard
+                */
+                void pasteValue(QDataStream& stream) override;
 
             private:
                 std::vector<kaguya::LuaRef> _callbacks;
