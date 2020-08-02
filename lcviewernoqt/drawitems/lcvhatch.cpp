@@ -12,38 +12,15 @@ using namespace lc::viewer;
 LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
         LCVDrawItem(hatch, true),
         _hatch(hatch) {
-        if(hatch->getRegion().numLoops()==1)// This must be fixed later
-        	return;
-    // More than one loop, use faster method with no holes, may be 
-    // May be Region must determine which is suitable for it or slower method
-    for(auto &x:_hatch->getRegion().loopList()){
-        for(auto &y:x.entities()){
-		auto di = DocumentCanvas::asDrawable(y);
-		di->autostroke(false);
-		_drawItems.push_back(di);
-	}
-	_drawItems.push_back(nullptr);
-    }
 }
 
-void LCVHatch::drawSolidOne(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-   for(const auto& drawItem : _drawItems) {
-	if(drawItem){
-	        drawItem->draw(painter, options, rect);
-	}else{
-		painter.close_path();
-		painter.fill();
-	}
-    }
-}
-
-void LCVHatch::drawSolidMore(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+void LCVHatch::drawSolid(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
 	// Hatch for solid fill based on approximation
     auto& reg = _hatch->getRegion();
     auto bbox = reg.boundingBox();
     auto minP = bbox.minP();
     auto maxP = bbox.maxP();
-    unsigned int APPROX_POINTS = 200;
+    unsigned int APPROX_POINTS = 300;
     float delta = (maxP.y() - minP.y())/(float)APPROX_POINTS;
     std::vector<float> oldI;
     float oldIY=minP.y();
@@ -99,10 +76,7 @@ void LCVHatch::drawSolidMore(LcPainter& painter, const LcDrawOptions &options, c
 }
 
 void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-        if(_hatch->getRegion().numLoops()==1)
-        	drawSolidMore(painter, options, rect);
-        else
-		drawSolidOne(painter, options, rect);
+        	drawSolid(painter, options, rect);
 }
 
 lc::entity::CADEntity_CSPtr LCVHatch::entity() const {
