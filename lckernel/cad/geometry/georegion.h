@@ -98,7 +98,7 @@ namespace lc {
                     
                const std::vector<Loop>& loopList() const {return _loopList;}
             private:
-                std::vector<Loop> _loopList;
+            	std::vector<Loop> _loopList;
         };
     }
 }
