@@ -228,8 +228,9 @@ void DocumentCanvas::render(LcPainter& painter, PainterType type) {
                     }
                     else
                     {
-                        drawEntity(painter, di);
 	                cacheEntity((di->entity())->id(), di);
+                        drawCachedEntity(painter, di);
+
                     }
                 }
                 else
