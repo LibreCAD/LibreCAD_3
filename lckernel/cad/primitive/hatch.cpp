@@ -58,7 +58,7 @@ const geo::Area Hatch::boundingBox() const {
 
 CADEntity_CSPtr Hatch::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newHatch =  std::make_shared<Hatch>(layer, metaInfo, block);
-    newHatch->setRegion(_region.move(0));
+    newHatch->setRegion(_region.move(lc::geo::Coordinate(0,0)));
     newHatch->setID(this->id());
     return newHatch;
 }
