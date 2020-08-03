@@ -54,14 +54,18 @@ namespace lc {
         public:
             const lc::geo::Region& getRegion() const {return _region;}
             void setRegion(lc::geo::Region reg) {_region=reg;}
+            const std::string& getPatternName() const {return _name;}
             void setPatternName(std::string name){_name = name;}
+            bool isSolid() const {return _solid;}
             void setSolid(int solid){_solid = solid;}
 //            int _associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
             void setHatchStyle(int hstyle){_hstyle = _hstyle;}
             void setHatchPattern(int hpattern){_hpattern = hpattern;}
 //            int _doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
 //            int _loopsnum;              /*!< namber of boundary paths (loops), code 91 */
+	    double getAngle() {return _angle;}
             void setAngle(double angle){_angle = angle;}
+            double getScale() {return _scale;}
             void setScale(double scale){_scale = scale;}
         };
         DECLARE_SHORT_SHARED_PTR(Hatch)
