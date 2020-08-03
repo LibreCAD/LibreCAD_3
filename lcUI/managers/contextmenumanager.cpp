@@ -70,34 +70,7 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
     menu->addItem(cancelItem);
 
     // Snap commands
-    api::Menu* snapMenu = new api::Menu("Snap");
-    api::MenuItem* snapGridItem = new api::MenuItem("Grid");
-    api::MenuItem* snapIntersectionItem = new api::MenuItem("Intersection");
-    api::MenuItem* snapMiddleItem = new api::MenuItem("Middle");
-    api::MenuItem* snapEntityItem = new api::MenuItem("Entity");
-
-    snapGridItem->setCheckable(true);
-    snapIntersectionItem->setCheckable(true);
-    snapMiddleItem->setCheckable(true);
-    snapEntityItem->setCheckable(true);
-
-    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end");
-    snapGridItem->addCheckedCallback(_L["contextmenu_op"]);
-
-    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
-    snapIntersectionItem->addCheckedCallback(_L["contextmenu_op"]);
-
-    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
-    snapMiddleItem->addCheckedCallback(_L["contextmenu_op"]);
-
-    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
-    snapEntityItem->addCheckedCallback(_L["contextmenu_op"]);
-
-    snapMenu->addItem(snapGridItem);
-    snapMenu->addItem(snapIntersectionItem);
-    snapMenu->addItem(snapMiddleItem);
-    snapMenu->addItem(snapEntityItem);
-    menu->addMenu(snapMenu);
+    addSnapCommands(menu);
 }
 
 void ContextMenuManager::inactiveCommands(api::Menu* menu) {
@@ -186,4 +159,45 @@ std::string ContextMenuManager::cleanOperationName(const std::string& opName) co
     std::string result = opName;
     result = result.substr(0, result.find("Operation"));
     return result;
+}
+
+void ContextMenuManager::addSnapCommands(api::Menu* menu) {
+    api::Menu* snapMenu = new api::Menu("Snap");
+    api::MenuItem* snapGridItem = new api::MenuItem("Grid");
+    api::MenuItem* snapIntersectionItem = new api::MenuItem("Intersection");
+    api::MenuItem* snapMiddleItem = new api::MenuItem("Middle");
+    api::MenuItem* snapEntityItem = new api::MenuItem("Entity");
+
+    snapGridItem->setCheckable(true);
+    snapIntersectionItem->setCheckable(true);
+    snapMiddleItem->setCheckable(true);
+    snapEntityItem->setCheckable(true);
+
+    // check current state of snaps
+    const viewer::manager::SnapManagerImpl_SPtr snapManager = _mainWindow->cadMdiChild()->getSnapManager();
+
+    snapGridItem->setChecked(snapManager->isGridSnappable());
+    snapIntersectionItem->setChecked(snapManager->isIntersectionsSnappable());
+    lc::SimpleSnapConstrain snapConstrain = snapManager->snapConstrain();
+    snapMiddleItem->setChecked(snapConstrain.hasConstrain(lc::SimpleSnapConstrain::LOGICAL));
+    snapEntityItem->setChecked(snapConstrain.hasConstrain(lc::SimpleSnapConstrain::ON_ENTITY));
+
+    // add callbacks
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) mainWindow:toolbar():updateSnapButtons(mainWindow:cadMdiChild():getSnapManager()) end");
+    snapGridItem->addCheckedCallback(_L["contextmenu_op"]);
+
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) mainWindow:toolbar():updateSnapButtons(mainWindow:cadMdiChild():getSnapManager()) end");
+    snapIntersectionItem->addCheckedCallback(_L["contextmenu_op"]);
+
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) mainWindow:toolbar():updateSnapButtons(mainWindow:cadMdiChild():getSnapManager()) end");
+    snapMiddleItem->addCheckedCallback(_L["contextmenu_op"]);
+
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) mainWindow:toolbar():updateSnapButtons(mainWindow:cadMdiChild():getSnapManager()) end");
+    snapEntityItem->addCheckedCallback(_L["contextmenu_op"]);
+
+    snapMenu->addItem(snapGridItem);
+    snapMenu->addItem(snapIntersectionItem);
+    snapMenu->addItem(snapMiddleItem);
+    snapMenu->addItem(snapEntityItem);
+    menu->addMenu(snapMenu);
 }

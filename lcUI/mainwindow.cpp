@@ -208,7 +208,9 @@ void MainWindow::ConnectInputEvents()
 }
 
 void MainWindow::runLastOperation() {
-    runOperation(_oldOperation, _oldOpInitMethod);
+    if (!_oldOperation.isNilref()) {
+        runOperation(_oldOperation, _oldOpInitMethod);
+    }
 }
 
 /* Menu functions */

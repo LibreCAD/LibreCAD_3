@@ -66,6 +66,8 @@ namespace lc
              */
             ContextMenuManager(lc::ui::MainWindow* mainWindowIn);
 
+            void addSnapCommands(api::Menu* menu);
+
         private:
             static std::map<lc::ui::MainWindow*, int> instancesId;
             static std::map<int, ContextMenuManager*> instances;

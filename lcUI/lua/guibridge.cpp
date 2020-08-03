@@ -140,6 +140,7 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar>()
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
+        .addFunction("updateSnapButtons", &widgets::Toolbar::updateSnapButtons)
         .addOverloadedFunctions("addTab", static_cast<api::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
             static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::addTab))
         .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::removeTab),
