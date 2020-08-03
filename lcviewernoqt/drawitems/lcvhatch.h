@@ -22,6 +22,7 @@ namespace lc {
                  */
                 void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
                 void drawSolid(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+                void drawPattern(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
 
                 lc::entity::CADEntity_CSPtr entity() const override;
 
