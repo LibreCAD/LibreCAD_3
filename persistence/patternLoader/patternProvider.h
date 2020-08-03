@@ -1,12 +1,15 @@
 #pragma once
 #include <string>
 #include <map>
+#include <cad/base/cadentity.h>
+#include <cad/storage/documentimpl.h>
+#include <cad/storage/storagemanagerimpl.h>
+#include <cad/objects/pattern.h>
 
-class Pattern{
-	int width;
-	int height;
-};
-
+namespace lc{
+	namespace persistence{
+	typedef struct lc::objects::Pattern Pattern;
+	
 class PatternProvider {
             public:
                 static PatternProvider* Instance();
@@ -21,3 +24,6 @@ class PatternProvider {
                 std::map<std::string, std::string> _patternLocation;
                 std::map<std::string, Pattern> _patterns;
 };
+
+	}
+}

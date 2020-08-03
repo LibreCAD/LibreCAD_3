@@ -218,6 +218,7 @@ cad/base/cadobject.h
 cad/objects/layout.h
 settings.h
 cad/tools/maphelper.h
+cad/objects/pattern.h
 )
 
 # Boost logging

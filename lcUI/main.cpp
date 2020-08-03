@@ -15,7 +15,7 @@ int main2(int argc, char* argv[]) {
     QApplication a(argc, argv);
 
     LOGGER;//Init logger
-    PatternProvider::Instance();//Init pattern loader
+    lc::persistence::PatternProvider::Instance();//Init pattern loader
 
     lc::ui::WindowManager::init();
 

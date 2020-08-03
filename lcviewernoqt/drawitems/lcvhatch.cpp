@@ -75,8 +75,17 @@ void LCVHatch::drawSolid(LcPainter& painter, const LcDrawOptions &options, const
     }
 }
 
+void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+    for(const auto& entity : _hatch->getPattern().entities) {
+        DocumentCanvas::asDrawable(entity)->draw(painter, options, rect);
+    }
+}
+
 void LCVHatch::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+	if(_hatch->isSolid())
         	drawSolid(painter, options, rect);
+        else
+        	drawPattern(painter, options, rect);
 }
 
 lc::entity::CADEntity_CSPtr LCVHatch::entity() const {
