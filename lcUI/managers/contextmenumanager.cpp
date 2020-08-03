@@ -52,8 +52,10 @@ void ContextMenuManager::addOperation(const std::string& key, const std::string&
 }
 
 void ContextMenuManager::generateMenu(api::Menu* menu, std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
-    if (selectedEntities.size() > 0) {
+    if (_mainWindow->cadMdiChild()->viewer()->operationActive()) {
         activeCommands(menu, selectedEntities);
+    }else if (selectedEntities.size() > 0) {
+        selectedCommands(menu, selectedEntities);
     }
     else {
         inactiveCommands(menu);
@@ -61,37 +63,41 @@ void ContextMenuManager::generateMenu(api::Menu* menu, std::vector<lc::entity::C
 }
 
 void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
-    api::Menu* groupMenu = new api::Menu("Modify");
+    // Cancel command
+    api::MenuItem* cancelItem = new api::MenuItem("Cancel");
+    _L.dostring("contextmenu_op = function() finish_operation() end");
+    cancelItem->addCallback(_L["contextmenu_op"]);
+    menu->addItem(cancelItem);
 
-    for (const std::string& opName : _operationMap["Modify"]) {
-        lc::ui::api::MenuItem* opItem = new lc::ui::api::MenuItem(cleanOperationName(opName).c_str());
-        _L.dostring("contextmenu_op = function() run_basic_operation(" + opName + ") end");
-        opItem->addCallback(_L["contextmenu_op"]);
-        groupMenu->addItem(opItem);
-    }
+    // Snap commands
+    api::Menu* snapMenu = new api::Menu("Snap");
+    api::MenuItem* snapGridItem = new api::MenuItem("Grid");
+    api::MenuItem* snapIntersectionItem = new api::MenuItem("Intersection");
+    api::MenuItem* snapMiddleItem = new api::MenuItem("Middle");
+    api::MenuItem* snapEntityItem = new api::MenuItem("Entity");
 
-    menu->addMenu(groupMenu);
+    snapGridItem->setCheckable(true);
+    snapIntersectionItem->setCheckable(true);
+    snapMiddleItem->setCheckable(true);
+    snapEntityItem->setCheckable(true);
 
-    // Select commands
-    api::Menu* selectMenu = new api::Menu("Select");
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setGridSnappable(enabled) end");
+    snapGridItem->addCheckedCallback(_L["contextmenu_op"]);
 
-    api::MenuItem* selectAllItem = new api::MenuItem("Select All");
-    api::MenuItem* selectNoneItem = new api::MenuItem("Select None");
-    api::MenuItem* selectInverted = new api::MenuItem("Invert Selection");
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setIntersectionSnappable(enabled) end");
+    snapIntersectionItem->addCheckedCallback(_L["contextmenu_op"]);
 
-    _L.dostring("contextmenu_op = function() mainWindow:selectAll() end");
-    selectAllItem->addCallback(_L["contextmenu_op"]);
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setMiddleSnappable(enabled) end");
+    snapMiddleItem->addCheckedCallback(_L["contextmenu_op"]);
 
-    _L.dostring("contextmenu_op = function() mainWindow:selectNone() end");
-    selectNoneItem->addCallback(_L["contextmenu_op"]);
+    _L.dostring("contextmenu_op = function(enabled) mainWindow:cadMdiChild():getSnapManager():setEntitySnappable(enabled) end");
+    snapEntityItem->addCheckedCallback(_L["contextmenu_op"]);
 
-    _L.dostring("contextmenu_op = function() mainWindow:invertSelection() end");
-    selectInverted->addCallback(_L["contextmenu_op"]);
-
-    selectMenu->addItem(selectAllItem);
-    selectMenu->addItem(selectNoneItem);
-    selectMenu->addItem(selectInverted);
-    menu->addMenu(selectMenu);
+    snapMenu->addItem(snapGridItem);
+    snapMenu->addItem(snapIntersectionItem);
+    snapMenu->addItem(snapMiddleItem);
+    snapMenu->addItem(snapEntityItem);
+    menu->addMenu(snapMenu);
 }
 
 void ContextMenuManager::inactiveCommands(api::Menu* menu) {
@@ -142,6 +148,38 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
     }
 
     menu->addMenu(groupMenu2);
+}
+
+void ContextMenuManager::selectedCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
+    // Modify commands
+    api::Menu* groupMenu = new api::Menu("Modify");
+    for (const std::string& opName : _operationMap["Modify"]) {
+        lc::ui::api::MenuItem* opItem = new lc::ui::api::MenuItem(cleanOperationName(opName).c_str());
+        _L.dostring("contextmenu_op = function() run_basic_operation(" + opName + ") end");
+        opItem->addCallback(_L["contextmenu_op"]);
+        groupMenu->addItem(opItem);
+    }
+    menu->addMenu(groupMenu);
+
+    // Select commands
+    api::Menu* selectMenu = new api::Menu("Select");
+    api::MenuItem* selectAllItem = new api::MenuItem("Select All");
+    api::MenuItem* selectNoneItem = new api::MenuItem("Select None");
+    api::MenuItem* selectInverted = new api::MenuItem("Invert Selection");
+
+    _L.dostring("contextmenu_op = function() mainWindow:selectAll() end");
+    selectAllItem->addCallback(_L["contextmenu_op"]);
+
+    _L.dostring("contextmenu_op = function() mainWindow:selectNone() end");
+    selectNoneItem->addCallback(_L["contextmenu_op"]);
+
+    _L.dostring("contextmenu_op = function() mainWindow:invertSelection() end");
+    selectInverted->addCallback(_L["contextmenu_op"]);
+
+    selectMenu->addItem(selectAllItem);
+    selectMenu->addItem(selectNoneItem);
+    selectMenu->addItem(selectInverted);
+    menu->addMenu(selectMenu);
 }
 
 std::string ContextMenuManager::cleanOperationName(const std::string& opName) const {

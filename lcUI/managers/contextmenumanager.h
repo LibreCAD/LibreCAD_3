@@ -53,6 +53,8 @@ namespace lc
 
             void activeCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
 
+            void selectedCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
+
             void inactiveCommands(api::Menu* menu);
 
         private:

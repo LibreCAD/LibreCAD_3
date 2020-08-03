@@ -317,7 +317,9 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
             break;
     }
   
-    emit mousePressEvent();
+    if (event->buttons() != Qt::RightButton) {
+        emit mousePressEvent();
+    }
 }
 
 
@@ -351,14 +353,17 @@ std::shared_ptr<lc::viewer::DocumentCanvas> LCADViewer::documentCanvas() const {
     return _docCanvas;
 }
 
-void LCADViewer::setOperationActive(bool operationActive) {
-    _operationActive = operationActive;
+void LCADViewer::setOperationActive(bool operationActiveIn) {
+    _operationActive = operationActiveIn;
 
-    if(!operationActive) {
+    if(!operationActiveIn) {
         documentCanvas()->removeSelection();
     }
 }
 
+bool LCADViewer::operationActive() const {
+    return _operationActive;
+}
 
 void LCADViewer::paintGL()
 {

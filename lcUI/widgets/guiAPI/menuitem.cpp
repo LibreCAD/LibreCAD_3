@@ -20,6 +20,7 @@ MenuItem::MenuItem(const char* menuItemName, QWidget* parent)
 {
     this->setObjectName(menuItemName);
     connect(this, &MenuItem::triggered, this, &MenuItem::itemTriggered);
+    connect(this, &MenuItem::toggled, this, &MenuItem::itemToggled);
 }
 
 std::string MenuItem::label() {
@@ -49,6 +50,10 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
     
     addCallback(callback);
     namedCallbacks[cb_name] = callbacks.size() - 1;
+}
+
+void MenuItem::addCheckedCallback(kaguya::LuaRef callback) {
+    _checkedCallbacks.push_back(callback);
 }
 
 void MenuItem::removeCallback(const char* cb_name) {
@@ -171,6 +176,12 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 void MenuItem::itemTriggered() {
     for (int i = 0; i < callbacks.size(); i++) {
         callbacks[i]();
+    }
+}
+
+void MenuItem::itemToggled(bool toggle) {
+    for (int i = 0; i < _checkedCallbacks.size(); i++) {
+        _checkedCallbacks[i](toggle);
     }
 }
 

@@ -89,7 +89,9 @@ namespace lc {
                     documentCanvas()->autoScale(*_documentPainter);
                 }
 
-                void setOperationActive(bool operationActive);
+                void setOperationActive(bool operationActiveIn);
+
+                bool operationActive() const;
 
                 const std::shared_ptr<lc::viewer::DocumentCanvas>& docCanvas() const;
 

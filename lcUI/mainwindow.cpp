@@ -85,6 +85,7 @@ MainWindow::~MainWindow()
 void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method){
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
+    _cadMdiChild.viewer()->setOperationActive(true);
     kaguya::State state(_luaInterface.luaState());
 
     // if current operation had extra operation _toolbar icons, add them
