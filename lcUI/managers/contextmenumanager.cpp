@@ -81,10 +81,10 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
     _L.dostring("contextmenu_op = function() mainWindow:runLastOperation() end");
     lastCommandItem->addCallback(_L["contextmenu_op"]);
 
-    _L.dostring("contextmenu_op = function() mainWindow:undo() mainWindow:undo() end");
+    _L.dostring("contextmenu_op = function() mainWindow:undo() end");
     undoItem->addCallback(_L["contextmenu_op"]);
 
-    _L.dostring("contextmenu_op = function() mainWindow:redo() mainWindow:redo() end");
+    _L.dostring("contextmenu_op = function() mainWindow:redo() end");
     redoItem->addCallback(_L["contextmenu_op"]);
 
     menu->addItem(lastCommandItem);

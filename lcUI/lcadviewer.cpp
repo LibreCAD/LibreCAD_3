@@ -299,7 +299,7 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
     QWidget::mousePressEvent(event);
 
     startSelectPos = event->pos();
-   if(!_operationActive) {
+   if(!_operationActive && event->buttons() != Qt::RightButton) {
         _dragManager->onMousePress();
     }
 
