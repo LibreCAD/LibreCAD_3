@@ -71,6 +71,12 @@ namespace lc
             void createCustomWidgets(lc::entity::CADEntity_CSPtr entity);
 
             /**
+            * \brief Helper function to create widgets for layers/metatypes
+            * \param pointer to CADEntity
+            */
+            void createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr entity);
+
+            /**
             * \brief Helper function that deals with when a custom property widget value is changed
             */
             lc::entity::CADEntity_CSPtr customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity);

@@ -3,6 +3,7 @@
 #include <QComboBox>
 #include <QString>
 
+#include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 #include <widgets/linepatternpainter.h>
 #include <managers/metainfomanager.h>

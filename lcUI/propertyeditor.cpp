@@ -10,6 +10,7 @@
 #include "widgets/guiAPI/textgui.h"
 #include "widgets/guiAPI/listgui.h"
 #include "widgets/guiAPI/horizontalgroupgui.h"
+#include "widgets/guiAPI/lineselectgui.h"
 
 #include <cad/builders/lwpolyline.h>
 #include "widgets/widgettitlebar.h"
@@ -106,6 +107,7 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
 
     createPropertiesWidgets(entity->id(), entity->availableProperties());
     createCustomWidgets(entity);
+    createLayerAndMetaTypeWidgets(entity);
 }
 
 bool PropertyEditor::addWidget(const std::string& key, api::InputGUI* guiWidget) {
@@ -343,6 +345,10 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         _entityProperties[entity->id()].push_back(key);
         _widgetKeyToEntity[key] = entity->id();
     }
+}
+
+void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr entity) {
+    addWidget("testkey", new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), "Line Select"));
 }
 
 std::string PropertyEditor::generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const {
