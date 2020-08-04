@@ -12,7 +12,7 @@
                     {
                         "label": "Modify",
                         "width": 3,
-                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation" ]
+                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation", "AreaOperation", "HatchOperation" ]
                     },
                     {
                         "label": "Dimensions",

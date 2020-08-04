@@ -9,6 +9,7 @@
 #include <cad/geometry/geoellipse.h>
 #include <cad/geometry/geocircle.h>
 #include <cad/geometry/geospline.h>
+#include <cad/geometry/georegion.h>
 #include "lc_geo.h"
 
 void import_lc_geo_namespace(kaguya::State& state) {
@@ -227,5 +228,10 @@ void import_lc_geo_namespace(kaguya::State& state) {
         .addFunction("startTanY", &lc::geo::Spline::startTanY)
         .addFunction("startTanZ", &lc::geo::Spline::startTanZ)
         .addFunction("trimAtPoint", &lc::geo::Spline::trimAtPoint)
+    );
+    
+    state["lc"]["geo"]["Region"].setClass(kaguya::UserdataMetatable<lc::geo::Region>()
+     .setConstructors<lc::geo::Region(), lc::geo::Region(std::vector<lc::entity::CADEntity_CSPtr>)>()
+     .addFunction("Area", &lc::geo::Region::Area)
     );
 }
