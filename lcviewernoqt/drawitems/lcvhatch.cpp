@@ -76,17 +76,14 @@ void LCVHatch::drawSolid(LcPainter& painter, const LcDrawOptions &options, const
     }
 }
 
-// This fails when intersection fails
-// Looks like polyline instersection is not working properly
-void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+std::vector<lc::entity::CADEntity_CSPtr> getPatterrnEntitiesFromHatch(const lc::entity::Hatch_CSPtr& hatch){
     std::vector<lc::entity::CADEntity_CSPtr> entities;
-    std::vector<lc::entity::CADEntity_CSPtr> finalEntities;
-    auto& reg = _hatch->getRegion();
+    auto& reg = hatch->getRegion();
     auto bbox = reg.boundingBox();
-    auto scale = _hatch->getScale();
-    auto angle = _hatch->getAngle();
-    float hsize = _hatch->getPattern().boundingBox.maxP().x();
-    float vsize = _hatch->getPattern().boundingBox.maxP().y();
+    auto scale = hatch->getScale();
+    auto angle = hatch->getAngle();
+    float hsize = hatch->getPattern().boundingBox.maxP().x();
+    float vsize = hatch->getPattern().boundingBox.maxP().y();
 
     int xmin,xmax,ymin,ymax;
     xmin = floor(bbox.minP().x()/hsize/scale);
@@ -98,7 +95,7 @@ void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, con
     if(angle!=0){xmin-=1;ymin-=1;xmax+=1;ymax+=1;}
     for(int i=xmin;i<=xmax;i++)
         for(int j=ymin;j<=ymax;j++){
-		for(const auto& entity : _hatch->getPattern().entities) {
+		for(const auto& entity : hatch->getPattern().entities) {
         		entities.push_back(
         			entity
         			->scale(lc::geo::Coordinate(0,0), lc::geo::Coordinate(scale,scale))
@@ -107,6 +104,16 @@ void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, con
         		));
     		}
         }
+   return entities;
+};
+
+// This fails when intersection fails
+// Looks like polyline instersection is not working properly
+void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
+    auto& reg = _hatch->getRegion();
+    auto bbox = reg.boundingBox();
+    std::vector<lc::entity::CADEntity_CSPtr> entities = getPatterrnEntitiesFromHatch(_hatch);
+    std::vector<lc::entity::CADEntity_CSPtr> finalEntities;
     for(const auto& entity : entities) {
     	if (!entity->boundingBox().overlaps(bbox))//optimization
     		continue;// It decreased the rendering time from ~5sec to <1s
