@@ -107,8 +107,25 @@ std::vector<lc::entity::CADEntity_CSPtr> getPatterrnEntitiesFromHatch(const lc::
    return entities;
 };
 
+void trimEntities(std::vector<lc::geo::Coordinate> cutPoints, std::vector<lc::entity::CADEntity_CSPtr>& spiltedEntities){
+    	for(auto& cutPoint : cutPoints){
+	    	std::vector<lc::entity::CADEntity_CSPtr> tempEntities;
+    		for(auto& se: spiltedEntities){
+    			if (auto splitable2 = std::dynamic_pointer_cast<const lc::entity::Splitable>(se)){
+    				auto ent2 = splitable2->splitEntity(cutPoint);
+    				if(ent2.size()==0)
+    					tempEntities.push_back(se);
+    				else
+    					for(auto& jsx: ent2)
+    						tempEntities.push_back(jsx);
+    			}
+    		}
+		spiltedEntities=tempEntities;
+    	}
+    	//return spiltedEntities;
+}
+
 // This fails when intersection fails
-// Looks like polyline instersection is not working properly
 void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
     auto& reg = _hatch->getRegion();
     auto bbox = reg.boundingBox();
@@ -133,20 +150,7 @@ void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, con
 	    }else{
 	    	std::vector<lc::entity::CADEntity_CSPtr> spiltedEntities;
 	    	spiltedEntities.push_back(entity);
-	    	for(auto& cutPoint : cutPoints){
-   		    	std::vector<lc::entity::CADEntity_CSPtr> tempEntities;
-	    		for(auto& se: spiltedEntities){
-	    			if (auto splitable2 = std::dynamic_pointer_cast<const lc::entity::Splitable>(se)){
-	    				auto ent2 = splitable2->splitEntity(cutPoint);
-	    				if(ent2.size()==0)
-	    					tempEntities.push_back(se);
-	    				else
-	    					for(auto& jsx: ent2)
-	    						tempEntities.push_back(jsx);
-	    			}
-	    		}
-   			spiltedEntities=tempEntities;
-	    	}
+		trimEntities(cutPoints, spiltedEntities);
 	    	for(auto& se: spiltedEntities)
 	    		if(auto splitable2 = std::dynamic_pointer_cast<const lc::entity::Splitable>(se))
 	    			if(reg.isPointInside(splitable2->representingPoint()))
