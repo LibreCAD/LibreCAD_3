@@ -19,6 +19,7 @@ lcviewernoqt/painters/opengl/resources/res.cpp
 lckernel/version.cpp
 cmake-build-debug
 unittest/rendering/res/*.out
+lckernel/build_constants.cpp
 
 # macOS
 .DS_Store
