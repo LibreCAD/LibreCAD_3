@@ -30,7 +30,10 @@ PatternProvider::PatternProvider(){
            		_patternLocation[filename] = entry.path().string();
         	}
         }
-        loadPattern(filename);//load something in cache
+        //Create empty to load if nothing exists
+	Pattern x;
+        x.name = "NULL";
+     	_patterns["NULL"] = x;
 }
 
 #include <iostream>
