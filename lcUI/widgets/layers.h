@@ -101,6 +101,12 @@ namespace lc {
                      */
                     void replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr newLayer);
 
+                    /**
+                     * \brief Get list of all layers
+                     * \return vector of layers
+                     */
+                    std::vector<lc::meta::Layer_CSPtr> layers() const;
+
                 signals:
 
                     void layerChanged(lc::meta::Layer_CSPtr layer);

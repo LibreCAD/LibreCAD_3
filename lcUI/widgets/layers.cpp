@@ -320,3 +320,7 @@ void Layers::replaceLayerAPI(const char* oldLayerName, lc::meta::Layer_CSPtr new
     lc::meta::Layer_CSPtr oldLayer = model->layerByName(oldLayerName);
     replaceLayer(oldLayer, newLayer);
 }
+
+std::vector<lc::meta::Layer_CSPtr> Layers::layers() const {
+    return model->layers();
+}

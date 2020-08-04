@@ -26,6 +26,10 @@ ComboBoxGUI::~ComboBoxGUI()
     delete ui;
 }
 
+void ComboBoxGUI::removeStretch() {
+    ui->horizontalLayout->removeItem(ui->horizontalLayout->itemAt(1));
+}
+
 void ComboBoxGUI::setLabel(const std::string& newLabel) {
     InputGUI::setLabel(newLabel);
     _textLabel->setText(QString(newLabel.c_str()));

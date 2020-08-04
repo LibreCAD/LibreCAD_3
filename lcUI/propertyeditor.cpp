@@ -11,6 +11,7 @@
 #include "widgets/guiAPI/listgui.h"
 #include "widgets/guiAPI/horizontalgroupgui.h"
 #include "widgets/guiAPI/lineselectgui.h"
+#include "widgets/guiAPI/comboboxgui.h"
 
 #include <cad/builders/lwpolyline.h>
 #include "widgets/widgettitlebar.h"
@@ -183,6 +184,14 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 
     if (entityType == "lineSelect") {
         changedEntity = entity->modify(entity->layer(), _metaInfoManager->metaInfo(), entity->block());
+    }
+
+    if (entityType == "layer") {
+        std::string layerName = propertiesTable[key].get<std::string>();
+        lc::meta::Layer_CSPtr layer = mainWindow->layers()->layerByName(layerName.c_str());
+        if (layer != nullptr) {
+            changedEntity = entity->modify(layer, entity->metaInfo(), entity->block());
+        }
     }
 
     // add new entity
@@ -366,6 +375,23 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     addWidget(key, lineSelectGUI);
     _entityProperties[entityID].push_back(key);
     _widgetKeyToEntity[key] = entityID;
+
+    std::string key2 = "entity" + std::to_string(entityID) + "_" + "layer";
+    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key2 + "') end");
+
+    std::vector<lc::meta::Layer_CSPtr> layersList = mainWindow->layers()->layers();
+    lc::ui::api::ComboBoxGUI* layerGUI = new lc::ui::api::ComboBoxGUI("Layer");
+    layerGUI->removeStretch();
+
+    for (lc::meta::Layer_CSPtr layer : layersList) {
+        layerGUI->addItem(layer->name());
+    }
+
+    layerGUI->setValue(entity->layer()->name());
+    layerGUI->addCallback(state["customPropertyCalled"]);
+    addWidget(key2, layerGUI);
+    _entityProperties[entityID].push_back(key2);
+    _widgetKeyToEntity[key2] = entityID;
 }
 
 std::string PropertyEditor::generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const {
