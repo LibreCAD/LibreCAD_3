@@ -79,19 +79,20 @@ void LCVHatch::drawSolid(LcPainter& painter, const LcDrawOptions &options, const
 // This fails when intersection fails
 // Looks like polyline instersection is not working properly
 void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    //Assume all patterns are 100x100
     std::vector<lc::entity::CADEntity_CSPtr> entities;
     std::vector<lc::entity::CADEntity_CSPtr> finalEntities;
     auto& reg = _hatch->getRegion();
     auto bbox = reg.boundingBox();
     auto scale = _hatch->getScale();
     auto angle = _hatch->getAngle();
+    float hsize = _hatch->getPattern().boundingBox.maxP().x();
+    float vsize = _hatch->getPattern().boundingBox.maxP().y();
 
     int xmin,xmax,ymin,ymax;
-    xmin = floor(bbox.minP().x()/100/scale);
-    ymin = floor(bbox.minP().y()/100/scale);
-    xmax = floor(bbox.maxP().x()/100/scale);
-    ymax = floor(bbox.maxP().y()/100/scale);
+    xmin = floor(bbox.minP().x()/hsize/scale);
+    ymin = floor(bbox.minP().y()/hsize/scale);
+    xmax = floor(bbox.maxP().x()/vsize/scale);
+    ymax = floor(bbox.maxP().y()/vsize/scale);
     
     //Create new entities for the bounding box
     if(angle!=0){xmin-=1;ymin-=1;xmax+=1;ymax+=1;}
@@ -102,7 +103,7 @@ void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, con
         			entity
         			->scale(lc::geo::Coordinate(0,0), lc::geo::Coordinate(scale,scale))
         			->rotate(lc::geo::Coordinate(0,0), angle)
-        			->move(lc::geo::Coordinate(i*scale*100,j*scale*100)
+        			->move(lc::geo::Coordinate(i*scale*hsize,j*scale*vsize)
         		));
     		}
         }
