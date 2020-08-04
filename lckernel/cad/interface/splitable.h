@@ -11,8 +11,15 @@ namespace lc {
           */
         class Splitable {
             public:
+            	/**
+            	* return multiple entities if it was splited in point
+            	*/
 		virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const = 0;
-		//@TODO: add function two determine two points are in same side of entity for trim, or maybe lua operation auto removes selected entities
+		
+		/**
+		* return any point within entity, need not need to be middle
+		*/
+		virtual lc::geo::Coordinate representingPoint() const = 0;
         };
 
         DECLARE_SHORT_SHARED_PTR(Splitable)

@@ -7,6 +7,7 @@
 #include "cad/primitive/spline.h"
 #include "cad/primitive/lwpolyline.h"
 #include <documentcanvas.h>
+#include <cad/math/intersect.h>
 
 using namespace lc::viewer;
 LCVHatch::LCVHatch(const lc::entity::Hatch_CSPtr& hatch) :
@@ -75,8 +76,78 @@ void LCVHatch::drawSolid(LcPainter& painter, const LcDrawOptions &options, const
     }
 }
 
+// This fails when intersection fails
+// Looks like polyline instersection is not working properly
 void LCVHatch::drawPattern(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {
-    for(const auto& entity : _hatch->getPattern().entities) {
+    //Assume all patterns are 100x100
+    std::vector<lc::entity::CADEntity_CSPtr> entities;
+    std::vector<lc::entity::CADEntity_CSPtr> finalEntities;
+    auto& reg = _hatch->getRegion();
+    auto bbox = reg.boundingBox();
+    auto scale = _hatch->getScale();
+    auto angle = _hatch->getAngle();
+
+    int xmin,xmax,ymin,ymax;
+    xmin = floor(bbox.minP().x()/100/scale);
+    ymin = floor(bbox.minP().y()/100/scale);
+    xmax = floor(bbox.maxP().x()/100/scale);
+    ymax = floor(bbox.maxP().y()/100/scale);
+    
+    //Create new entities for the bounding box
+    if(angle!=0){xmin-=1;ymin-=1;xmax+=1;ymax+=1;}
+    for(int i=xmin;i<=xmax;i++)
+        for(int j=ymin;j<=ymax;j++){
+		for(const auto& entity : _hatch->getPattern().entities) {
+        		entities.push_back(
+        			entity
+        			->scale(lc::geo::Coordinate(0,0), lc::geo::Coordinate(scale,scale))
+        			->rotate(lc::geo::Coordinate(0,0), angle)
+        			->move(lc::geo::Coordinate(i*scale*100,j*scale*100)
+        		));
+    		}
+        }
+    for(const auto& entity : entities) {
+    	if (!entity->boundingBox().overlaps(bbox))//optimization
+    		continue;// It decreased the rendering time from ~5sec to <1s
+    	if (auto splitable = std::dynamic_pointer_cast<const lc::entity::Splitable>(entity)){
+	    lc::maths::Intersect intersect(lc::maths::Intersect::OnEntity, LCTOLERANCE);    	    
+	    for(auto &x: reg.loopList()){
+	    	//if(!entity->boundingBox().overlaps(x.boundingBox())) continue;//not needed i think
+		for(auto &y: x.entities()){
+	    	    if(entity->boundingBox().overlaps(y->boundingBox()))
+		    	visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *y.get(), *entity.get());
+		}
+	    }
+	    auto cutPoints = intersect.result();
+	    if(cutPoints.size()==0){
+		if(reg.isPointInside(splitable->representingPoint()))
+			finalEntities.push_back(entity);
+	    }else{
+	    	std::vector<lc::entity::CADEntity_CSPtr> spiltedEntities;
+	    	spiltedEntities.push_back(entity);
+	    	for(auto& cutPoint : cutPoints){
+   		    	std::vector<lc::entity::CADEntity_CSPtr> tempEntities;
+	    		for(auto& se: spiltedEntities){
+	    			if (auto splitable2 = std::dynamic_pointer_cast<const lc::entity::Splitable>(se)){
+	    				auto ent2 = splitable2->splitEntity(cutPoint);
+	    				if(ent2.size()==0)
+	    					tempEntities.push_back(se);
+	    				else
+	    					for(auto& jsx: ent2)
+	    						tempEntities.push_back(jsx);
+	    			}
+	    		}
+   			spiltedEntities=tempEntities;
+	    	}
+	    	for(auto& se: spiltedEntities)
+	    		if(auto splitable2 = std::dynamic_pointer_cast<const lc::entity::Splitable>(se))
+	    			if(reg.isPointInside(splitable2->representingPoint()))
+	    				finalEntities.push_back(se);
+	    }
+    	}
+    }
+    
+    for(const auto& entity : finalEntities) {
         DocumentCanvas::asDrawable(entity)->draw(painter, options, rect);
     }
 }

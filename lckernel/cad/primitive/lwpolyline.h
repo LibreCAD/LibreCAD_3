@@ -162,6 +162,7 @@ namespace lc {
             nearestPointOnPath2(const geo::Coordinate &coord) const;
 
 	        virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
+	        virtual lc::geo::Coordinate representingPoint() const;
         private:
             /**
              * @brief Generate entities of the polyline

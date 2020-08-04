@@ -67,9 +67,9 @@ namespace lc {
             //void setHatchPattern(int hpattern){_hpattern = hpattern;}
 //            int _doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
 //            int _loopsnum;              /*!< namber of boundary paths (loops), code 91 */
-	    double getAngle() {return _angle;}
+	    double getAngle() const {return _angle;}
             void setAngle(const double& angle){_angle = angle;}
-            double getScale() {return _scale;}
+            double getScale() const {return _scale;}
             void setScale(const double& scale){_scale = scale;}
         };
         DECLARE_SHORT_SHARED_PTR(Hatch)
