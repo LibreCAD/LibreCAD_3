@@ -358,6 +358,7 @@ void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr e
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
     lc::ui::api::LineSelectGUI* lineSelectGUI = new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), _metaInfoManager, "Meta Info");
+    lineSelectGUI->setEntityMetaInfo(entity);
     std::string key = "entity" + std::to_string(entityID) + "_" + "lineSelect";
     state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
 

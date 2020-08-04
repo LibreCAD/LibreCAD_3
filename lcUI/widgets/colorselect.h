@@ -59,6 +59,11 @@ namespace lc {
                      */
                     void setColor(const lc::Color& color);
 
+                    /**
+                     * \brief Set color by layer
+                     */
+                    void setByLayer();
+
                 signals:
                     void colorChanged();
 

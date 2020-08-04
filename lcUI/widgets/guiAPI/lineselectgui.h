@@ -19,6 +19,8 @@ namespace lc {
 
                 void addCallback(kaguya::LuaRef cb);
 
+                void setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity);
+
             public slots:
                 void metaInfoManagerChanged();
 

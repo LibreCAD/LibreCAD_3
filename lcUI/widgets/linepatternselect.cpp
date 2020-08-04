@@ -80,6 +80,17 @@ lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     }
 }
 
+void LinePatternSelect::setLinePattern(const lc::meta::DxfLinePattern_CSPtr& linePattern) {
+    auto linePatterns = _document->linePatterns();
+    auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::meta::DxfLinePattern_CSPtr& item) {
+        return item->name() == linePattern->name();
+        });
+
+    if (position != linePatterns.end()) {
+        setCurrentIndex(findData(QString(linePattern->name().c_str())));
+    }
+}
+
 QIcon LinePatternSelect::generateQIcon(lc::meta::DxfLinePatternByValue_CSPtr linePattern) {
     QPixmap pixmap(qIconSize);
 

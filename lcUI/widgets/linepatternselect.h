@@ -70,6 +70,12 @@ namespace lc {
                      */
                     lc::meta::DxfLinePattern_CSPtr linePattern();
 
+                    /**
+                     * \brief Set line pattern
+                     * \param Pointer to DxfLinePattern
+                     */
+                    void setLinePattern(const lc::meta::DxfLinePattern_CSPtr& linePattern);
+
                 signals:
                     void linePatternChanged();
 

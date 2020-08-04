@@ -1,6 +1,7 @@
 #include "lineselectgui.h"
 
 #include <QVBoxLayout>
+#include "cad/interface/metatype.h"
 
 using namespace lc::ui::api;
 
@@ -31,6 +32,25 @@ void LineSelectGUI::metaInfoManagerChanged() {
 
 void LineSelectGUI::addCallback(kaguya::LuaRef cb) {
     _callbacks.push_back(cb);
+}
+
+void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
+    auto lineWidthInfo = entity->metaInfo<lc::meta::MetaLineWidthByValue>("_LINEWIDTH");
+    auto lineColorInfo = entity->metaInfo<lc::meta::MetaColorByValue>("_COLOR");
+    auto linePatternInfo = entity->metaInfo<lc::meta::DxfLinePatternByValue>("_LINEPATTERN");
+    
+    _lineWidthSelect.setWidth(lineWidthInfo);
+
+    if (lineColorInfo != nullptr) {
+        _colorSelect.setColor(lineColorInfo->color());
+    }
+    else {
+        _colorSelect.setByLayer();
+    }
+
+    if (linePatternInfo != nullptr) {
+        _linePatternSelect.setLinePattern(linePatternInfo);
+    }
 }
 
 void LineSelectGUI::getLuaValue(kaguya::LuaRef& table) {
