@@ -11,11 +11,16 @@ namespace lc {
             class LineSelectGUI : public InputGUI
             {
             public:
-                LineSelectGUI(CadMdiChild* mdiChild, std::string label, QWidget* parent = nullptr);
+                LineSelectGUI(CadMdiChild* mdiChild, MetaInfoManager_SPtr metaInfoManager, std::string label, QWidget* parent = nullptr);
 
                 void getLuaValue(kaguya::LuaRef& table) override;
 
                 void hideLabel() override;
+
+                void addCallback(kaguya::LuaRef cb);
+
+            public slots:
+                void metaInfoManagerChanged();
 
             protected:
                 void copyValue(QDataStream& stream) override;
@@ -26,6 +31,7 @@ namespace lc {
                 lc::ui::widgets::LinePatternSelect _linePatternSelect;
                 lc::ui::widgets::LineWidthSelect _lineWidthSelect;
                 lc::ui::widgets::ColorSelect _colorSelect;
+                std::vector<kaguya::LuaRef> _callbacks;
             };
         }
     }

@@ -54,6 +54,10 @@ void LinePatternSelect::setDocument(lc::storage::Document_SPtr document) {
     createEntries();
 }
 
+void LinePatternSelect::setMetaInfoManager(MetaInfoManager_SPtr metaInfoManager) {
+    _metaInfoManager = metaInfoManager;
+}
+
 lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     if(currentText() == BY_LAYER) {
         return nullptr;
@@ -104,6 +108,7 @@ void LinePatternSelect::onActivated(const QString& text) {
     }
     else if(_metaInfoManager != nullptr) {
         _metaInfoManager->setLinePattern(linePattern());
+        emit linePatternChanged();
     }
 }
 
@@ -144,6 +149,7 @@ void LinePatternSelect::on_addLinePatternEvent(const lc::event::AddLinePatternEv
 
     if(_metaInfoManager != nullptr) {
         _metaInfoManager->setLinePattern(linePattern());
+        emit linePatternChanged();
     }
 }
 

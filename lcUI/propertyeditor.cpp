@@ -42,6 +42,8 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     parentWidget->setWidget(widget);
     this->setWidget(parentWidget);
 
+    _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
+
     widgets::WidgetTitleBar* titleBar = new widgets::WidgetTitleBar("Property Editor", this,
         widgets::WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
     this->setTitleBarWidget(titleBar);
@@ -177,6 +179,10 @@ void PropertyEditor::propertyChanged(const std::string& key) {
 
     if (changedEntity == nullptr) {
         changedEntity = entity->setProperties(propertiesList);
+    }
+
+    if (entityType == "lineSelect") {
+        changedEntity = entity->modify(entity->layer(), _metaInfoManager->metaInfo(), entity->block());
     }
 
     // add new entity
@@ -348,7 +354,17 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
 }
 
 void PropertyEditor::createLayerAndMetaTypeWidgets(lc::entity::CADEntity_CSPtr entity) {
-    addWidget("testkey", new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), "Line Select"));
+    unsigned long entityID = entity->id();
+    kaguya::State state(mainWindow->luaInterface()->luaState());
+
+    lc::ui::api::LineSelectGUI* lineSelectGUI = new lc::ui::api::LineSelectGUI(mainWindow->cadMdiChild(), _metaInfoManager, "Meta Info");
+    std::string key = "entity" + std::to_string(entityID) + "_" + "lineSelect";
+    state.dostring("customPropertyCalled = function() lc.PropertyEditor.GetPropertyEditor(mainWindow):propertyChanged('" + key + "') end");
+
+    lineSelectGUI->addCallback(state["customPropertyCalled"]);
+    addWidget(key, lineSelectGUI);
+    _entityProperties[entityID].push_back(key);
+    _widgetKeyToEntity[key] = entityID;
 }
 
 std::string PropertyEditor::generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const {

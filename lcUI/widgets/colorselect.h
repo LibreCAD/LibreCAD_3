@@ -59,6 +59,9 @@ namespace lc {
                      */
                     void setColor(const lc::Color& color);
 
+                signals:
+                    void colorChanged();
+
                 public slots:
 
                     /**

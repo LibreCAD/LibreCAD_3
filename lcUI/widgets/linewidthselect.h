@@ -51,6 +51,9 @@ namespace lc {
                      */
                     void setWidth(const lc::meta::MetaLineWidth_CSPtr& lineWidth);
 
+                signals:
+                    void lineWidthChanged();
+
                 public slots:
 
                     /**

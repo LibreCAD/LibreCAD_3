@@ -95,6 +95,7 @@ namespace lc
             std::set<unsigned long> _selectedEntities;
             std::map<std::string, unsigned long> _widgetKeyToEntity;
             unsigned long _currentEntity;
+            ui::MetaInfoManager_SPtr _metaInfoManager;
         };
     }
 }

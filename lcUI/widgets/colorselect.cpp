@@ -108,6 +108,7 @@ void ColorSelect::updateMetaInfoManager() {
     }
 
     _metaInfoManager->setColor(metaColor());
+    emit colorChanged();
 }
 
 lc::meta::MetaColor_CSPtr ColorSelect::metaColor() {

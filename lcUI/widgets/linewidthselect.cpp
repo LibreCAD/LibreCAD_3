@@ -119,20 +119,19 @@ void LineWidthSelect::updateMetaInfoManager() {
 
     if(currentText() == BY_LAYER) {
         _metaInfoManager->setLineWidth(nullptr);
-        return;
-    }
-
-    if(currentText() == BY_BLOCK) {
+    }else if(currentText() == BY_BLOCK) {
         _metaInfoManager->setLineWidth(std::make_shared<const lc::meta::MetaLineWidthByBlock>());
-        return;
+    }
+    else {
+        try {
+            _metaInfoManager->setLineWidth(std::make_shared<lc::meta::MetaLineWidthByValue>(values.at(currentText())));
+        }
+        catch (std::out_of_range& e) {
+            _metaInfoManager->setLineWidth(nullptr);
+        }
     }
 
-    try {
-        _metaInfoManager->setLineWidth(std::make_shared<lc::meta::MetaLineWidthByValue>(values.at(currentText())));
-    }
-    catch (std::out_of_range& e) {
-        _metaInfoManager->setLineWidth(nullptr);
-    }
+    emit lineWidthChanged();
 }
 
 lc::meta::MetaLineWidth_CSPtr LineWidthSelect::lineWidth() {
