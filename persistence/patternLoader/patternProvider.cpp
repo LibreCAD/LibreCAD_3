@@ -19,17 +19,18 @@ PatternProvider* PatternProvider::Instance() {
 PatternProvider::PatternProvider(){
 	//load all patterns path
 	std::string filename;
-	for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(PATTERN_RESOURCE_PATH), {})){
-		boost::filesystem::path pathObj(entry);
-		if(pathObj.has_stem())
-        	{
-           		// return the stem (file name without extension) from path object
-           		filename =  pathObj.stem().string();
-           		std::transform(filename.begin(), filename.end(),filename.begin(), ::tolower);
-           		LOG_INFO << "Pattern:" << filename << "-" << entry << std::endl;
-           		_patternLocation[filename] = entry.path().string();
-        	}
-        }
+	if(boost::filesystem::exists(PATTERN_RESOURCE_PATH))
+		for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(PATTERN_RESOURCE_PATH), {})){
+			boost::filesystem::path pathObj(entry);
+			if(pathObj.has_stem())
+			{
+		   		// return the stem (file name without extension) from path object
+		   		filename =  pathObj.stem().string();
+		   		std::transform(filename.begin(), filename.end(),filename.begin(), ::tolower);
+		   		LOG_INFO << "Pattern:" << filename << "-" << entry << std::endl;
+		   		_patternLocation[filename] = entry.path().string();
+			}
+		}
         //Create empty to load if nothing exists
 	Pattern x;
         x.name = "NULL";

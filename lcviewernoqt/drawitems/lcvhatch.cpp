@@ -107,7 +107,7 @@ std::vector<lc::entity::CADEntity_CSPtr> getPatterrnEntitiesFromHatch(const lc::
    return entities;
 };
 
-void trimEntities(std::vector<lc::geo::Coordinate> cutPoints, std::vector<lc::entity::CADEntity_CSPtr>& spiltedEntities){
+void trimEntities(const std::vector<lc::geo::Coordinate>& cutPoints, std::vector<lc::entity::CADEntity_CSPtr>& spiltedEntities){
     	for(auto& cutPoint : cutPoints){
 	    	std::vector<lc::entity::CADEntity_CSPtr> tempEntities;
     		for(auto& se: spiltedEntities){
@@ -122,7 +122,6 @@ void trimEntities(std::vector<lc::geo::Coordinate> cutPoints, std::vector<lc::en
     		}
 		spiltedEntities=tempEntities;
     	}
-    	//return spiltedEntities;
 }
 
 // This fails when intersection fails
