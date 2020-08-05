@@ -208,19 +208,22 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
     std::string entityName = _mainWindow->lastOperationName();
 
     if (_transitionMap.find(entityName) != _transitionMap.end()) {
-        for (auto transition : _transitionMap[entityName]) {
-            std::cout << "Function Name - " << transition.first;
-            for (std::string transitionFunc : transition.second) {
-                std::cout << transitionFunc << ",";
-            }
-            std::cout << std::endl;
-        }
-
         kaguya::LuaRef currentOp = _mainWindow->currentOperation();
         kaguya::LuaRef stepName = currentOp["step"];
 
         if (!stepName.isNilref()) {
-            std::cout << "Current step - " << stepName.get<std::string>() << std::endl;
+            std::string step = stepName.get<std::string>();
+
+            if (_transitionMap[entityName].find(step) != _transitionMap[entityName].end()) {
+                std::vector<std::string> transitions = _transitionMap[entityName][step];
+
+                for (std::string transition : transitions) {
+                    api::MenuItem* menuItem = new api::MenuItem(transition.c_str());
+                    _L.dostring("contextmenu_op = function() mainWindow:currentOperation().step = '" + transition + "' end");
+                    menuItem->addCallback(_L["contextmenu_op"]);
+                    menu->addItem(menuItem);
+                }
+            }
         }
     }
 }

@@ -15,7 +15,14 @@ LineOperations = {
         polygon_corcor = "actionPolygonCorCor"
     },
     context_transitions = {
-        setSecondPoint = {"LineWithPointAngleLength"}
+        setSecondPoint = {"LineWithPointAngleLength", "HorizontalLine", "VerticalLine"},
+        LineWithPointAngleLength = {"setSecondPoint", "HorizontalLine", "VerticalLine"},
+        HorizontalLine = {"setSecondPoint", "LineWithPointAngleLength", "VerticalLine"},
+        VerticalLine = {"setSecondPoint", "LineWithPointAngleLength", "HorizontalLine"},
+        LineParallelToLine = {"LineOrthogonalToLine"},
+        LineOrthogonalToLine = {"LineParallelToLine"},
+        PolygonWithCenterPoint = {"PolygonWithCenterTangent"},
+        PolygonWithCenterTangent = {"PolygonWithCenterPoint"}
     }
 }
 LineOperations.__index = LineOperations
@@ -623,9 +630,4 @@ function LineOperations:close()
         end
     end
     CreateOperations.close(self)
-end
-
-function LineOperations:getStep()
-    message("getStep - " .. self.step)
-    return self.step
 end
