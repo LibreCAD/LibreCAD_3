@@ -1,4 +1,5 @@
 DimLinearOperations = {
+    name = "DimLinearOperations",
     command_line = "DIMLINEAR",
     icon = "dim_linear.svg",
     description = "Linear Dimension",

@@ -107,6 +107,16 @@ namespace lc
             */
             void runLastOperation();
 
+            /**
+            * \brief Return the last operation
+            */
+            std::string lastOperationName();
+
+            /**
+            * \brief Return the current operation
+            */
+            kaguya::LuaRef currentOperation();
+
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
             /**

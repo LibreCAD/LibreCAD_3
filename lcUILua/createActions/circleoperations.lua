@@ -1,4 +1,5 @@
 CircleOperations = {
+    name = "CircleOperations",
     command_line = "CIRCLE",
     icon = "circle.svg",
     menu_actions = {

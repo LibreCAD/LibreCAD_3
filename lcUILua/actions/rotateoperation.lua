@@ -1,4 +1,5 @@
 RotateOperation = {
+    name = "RotateOperation",
     command_line = "ROTATE",
     icon = "modifyrotate.png"
 }

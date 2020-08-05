@@ -664,3 +664,11 @@ void MainWindow::selectionChanged() {
         propertyEditor->show();
     }
 }
+
+std::string MainWindow::lastOperationName() {
+    return _oldOperation["name"].get<std::string>();
+}
+
+kaguya::LuaRef MainWindow::currentOperation() {
+    return _luaInterface.operation();
+}

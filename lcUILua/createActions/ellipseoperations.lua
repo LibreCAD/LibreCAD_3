@@ -1,4 +1,5 @@
 EllipseOperations = {
+    name = "EllipseOperations",
     command_line = {
         "ELLIPSE",
         ARCELLIPSE = "arc"

@@ -1,4 +1,5 @@
 LWPolylineOperations = {
+    name = "LWPolylineOperations",
     command_line = "POLYLINE",
     icon = "polylines.svg",
     description = "Polyline",

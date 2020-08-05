@@ -1,4 +1,5 @@
 MoveOperation = {
+    name = "MoveOperation",
     command_line = "MOVE",
     icon = "modifymove.png"
 }

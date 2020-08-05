@@ -71,6 +71,8 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
 
     // Snap commands
     addSnapCommands(menu);
+
+    operationContextCommands(menu, selectedEntities);
 }
 
 void ContextMenuManager::inactiveCommands(api::Menu* menu) {
@@ -200,4 +202,33 @@ void ContextMenuManager::addSnapCommands(api::Menu* menu) {
     snapMenu->addItem(snapMiddleItem);
     snapMenu->addItem(snapEntityItem);
     menu->addMenu(snapMenu);
+}
+
+void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
+    std::string entityName = _mainWindow->lastOperationName();
+
+    if (_transitionMap.find(entityName) != _transitionMap.end()) {
+        for (auto transition : _transitionMap[entityName]) {
+            std::cout << "Function Name - " << transition.first;
+            for (std::string transitionFunc : transition.second) {
+                std::cout << transitionFunc << ",";
+            }
+            std::cout << std::endl;
+        }
+
+        kaguya::LuaRef currentOp = _mainWindow->currentOperation();
+        kaguya::LuaRef stepName = currentOp["step"];
+
+        if (!stepName.isNilref()) {
+            std::cout << "Current step - " << stepName.get<std::string>() << std::endl;
+        }
+    }
+}
+
+void ContextMenuManager::addTransition(std::string entityName, std::string fname, std::vector<std::string> transitionList) {
+    if (_transitionMap.find(entityName) == _transitionMap.end()) {
+        _transitionMap[entityName] = std::map<std::string, std::vector<std::string>>();
+    }
+
+    _transitionMap[entityName][fname] = transitionList;
 }

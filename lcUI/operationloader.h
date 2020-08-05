@@ -61,6 +61,11 @@ namespace lc
              */
             void addContextMenuOperations(const std::string& vkey);
 
+            /**
+             * \brief Add context transitions for lua operations
+             */
+            void addContextTransitions(const std::string& vkey, const std::string& opkey);
+
         private:
             /**
              * \brief Load lua folder eg, createActions

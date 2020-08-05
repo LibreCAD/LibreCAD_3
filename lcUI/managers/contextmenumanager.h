@@ -51,11 +51,30 @@ namespace lc
              */
             void addOperation(const std::string& key, const std::string& groupName);
 
+            /**
+             * \brief Add commands for active state
+             */
             void activeCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
 
+            /**
+             * \brief Add commands for selected state
+             */
             void selectedCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
 
+            /**
+             * \brief Add commands for inactive state
+             */
             void inactiveCommands(api::Menu* menu);
+
+            /**
+             * \brief Add commands for the current operation
+             */
+            void operationContextCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities);
+
+            /**
+             * \brief Add transition to the transitions map
+             */
+            void addTransition(std::string entityName, std::string fname, std::vector<std::string> transitionList);
 
         private:
             std::string cleanOperationName(const std::string& opName) const;
@@ -75,6 +94,7 @@ namespace lc
             std::map<std::string, std::vector<std::string>> _operationMap;
             lc::ui::MainWindow* _mainWindow;
             static int _instanceCount;
+            std::map<std::string, std::map<std::string, std::vector<std::string>>> _transitionMap;
         };
     }
 }
