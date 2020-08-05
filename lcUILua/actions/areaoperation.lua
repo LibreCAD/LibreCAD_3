@@ -22,7 +22,6 @@ function AreaOperation:_init(id)
 
     if(#self.selection > 0) then
         self.origin = nil
-        self.tempEntities = {}
         local reg = lc.geo.Region(self.selection)
         local area = reg:Area()
         message('Area\t: ' .. tostring(area))
