@@ -120,3 +120,13 @@ function LWPolylineOperations:createLine()
 
     message("Give line coordinates")
 end
+
+function LWPolylineOperations:contextMenuOptions(menu)
+    if(self.currentVertex == "line") then
+        local item = gui.MenuItem("Arc", function() mainWindow:currentOperation():createArc() end)
+        menu:addItem(item)
+    elseif(self.currentVertex == "arc") then
+        local item1 = gui.MenuItem("Line", function() mainWindow:currentOperation():createLine() end)
+        menu:addItem(item1)
+    end
+end

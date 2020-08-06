@@ -69,10 +69,10 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
     cancelItem->addCallback(_L["contextmenu_op"]);
     menu->addItem(cancelItem);
 
+    operationContextCommands(menu, selectedEntities);
+
     // Snap commands
     addSnapCommands(menu);
-
-    operationContextCommands(menu, selectedEntities);
 }
 
 void ContextMenuManager::inactiveCommands(api::Menu* menu) {
@@ -163,6 +163,22 @@ std::string ContextMenuManager::cleanOperationName(const std::string& opName) co
     return result;
 }
 
+std::string ContextMenuManager::cleanTransitionName(const std::string& transitionName) const {
+    std::string result;
+    int n = transitionName.size();
+    int last = 0;
+
+    for (int i = 1; i < n; i++) {
+        if (transitionName[i] >= 'A' && transitionName[i] <= 'Z') {
+            result += transitionName.substr(last, i-last) + " ";
+            last = i;
+        }
+    }
+
+    result += transitionName.substr(last);
+    return result;
+}
+
 void ContextMenuManager::addSnapCommands(api::Menu* menu) {
     api::Menu* snapMenu = new api::Menu("Snap");
     api::MenuItem* snapGridItem = new api::MenuItem("Grid");
@@ -206,9 +222,9 @@ void ContextMenuManager::addSnapCommands(api::Menu* menu) {
 
 void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
     std::string entityName = _mainWindow->lastOperationName();
+    kaguya::LuaRef currentOp = _mainWindow->currentOperation();
 
     if (_transitionMap.find(entityName) != _transitionMap.end()) {
-        kaguya::LuaRef currentOp = _mainWindow->currentOperation();
         kaguya::LuaRef stepName = currentOp["step"];
 
         if (!stepName.isNilref()) {
@@ -218,12 +234,19 @@ void ContextMenuManager::operationContextCommands(api::Menu* menu, const std::ve
                 std::vector<std::string> transitions = _transitionMap[entityName][step];
 
                 for (std::string transition : transitions) {
-                    api::MenuItem* menuItem = new api::MenuItem(transition.c_str());
+                    api::MenuItem* menuItem = new api::MenuItem(cleanTransitionName(transition).c_str());
                     _L.dostring("contextmenu_op = function() mainWindow:currentOperation().step = '" + transition + "' end");
                     menuItem->addCallback(_L["contextmenu_op"]);
                     menu->addItem(menuItem);
                 }
             }
+        }
+    }
+
+    if (!currentOp.isNilref()) {
+        kaguya::LuaRef otherOptions = currentOp["contextMenuOptions"];
+        if (!otherOptions.isNilref()) {
+            otherOptions(currentOp, menu);
         }
     }
 }

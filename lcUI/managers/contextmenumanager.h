@@ -79,6 +79,8 @@ namespace lc
         private:
             std::string cleanOperationName(const std::string& opName) const;
 
+            std::string cleanTransitionName(const std::string& transitionName) const;
+
             /**
              * \brief Constructor for ContextMenuManager
              * \param MainWindow pointer
