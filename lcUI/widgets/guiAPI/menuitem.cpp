@@ -53,6 +53,9 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
 }
 
 void MenuItem::addCheckedCallback(kaguya::LuaRef callback) {
+    if (!isCheckable()) {
+        this->setCheckable(true);
+    }
     _checkedCallbacks.push_back(callback);
 }
 

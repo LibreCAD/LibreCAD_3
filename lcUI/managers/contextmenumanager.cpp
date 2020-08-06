@@ -71,6 +71,15 @@ void ContextMenuManager::activeCommands(api::Menu* menu, const std::vector<lc::e
 
     operationContextCommands(menu, selectedEntities);
 
+    // PAN command
+    api::MenuItem* panItem = new api::MenuItem("PAN");
+    panItem->setCheckable(true);
+    _L.dostring("ispaused = mainWindow:currentOperation():isPaused()");
+    panItem->setChecked(_L["ispaused"].get<bool>());
+    _L.dostring("contextmenu_op = function(enablePan) mainWindow:currentOperation():pauseCreation(enablePan) end");
+    panItem->addCheckedCallback(_L["contextmenu_op"]);
+    menu->addItem(panItem);
+
     // Snap commands
     addSnapCommands(menu);
 }
