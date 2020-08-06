@@ -85,6 +85,7 @@ void ColorSelect::setColor(const lc::Color& color) {
 
 void ColorSelect::setByLayer() {
     setCurrentText(BY_LAYER);
+    updateMetaInfoManager();
 }
 
 void ColorSelect::setMetaInfoManager(lc::ui::MetaInfoManager_SPtr metaInfoManager) {

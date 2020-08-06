@@ -86,6 +86,9 @@ namespace lc
             */
             std::string generatePropertyKey(unsigned long entityID, const std::string& propKey, int propType) const;
 
+            /**
+            * \brief Override close event
+            */
             void closeEvent(QCloseEvent* event);
 
         private:

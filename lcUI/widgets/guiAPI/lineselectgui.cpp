@@ -48,23 +48,17 @@ void LineSelectGUI::setEntityMetaInfo(lc::entity::CADEntity_CSPtr entity) {
         _colorSelect.setByLayer();
     }
 
-    if (linePatternInfo != nullptr) {
-        _linePatternSelect.setLinePattern(linePatternInfo);
-    }
+    _linePatternSelect.setLinePattern(linePatternInfo);
 }
 
 void LineSelectGUI::getLuaValue(kaguya::LuaRef& table) {
-
 }
 
 void LineSelectGUI::hideLabel() {
-
 }
 
 void LineSelectGUI::copyValue(QDataStream& stream) {
-
 }
 
 void LineSelectGUI::pasteValue(QDataStream& stream) {
-
 }

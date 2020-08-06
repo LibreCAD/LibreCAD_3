@@ -81,13 +81,18 @@ lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
 }
 
 void LinePatternSelect::setLinePattern(const lc::meta::DxfLinePattern_CSPtr& linePattern) {
+    if (linePattern == nullptr) {
+        _metaInfoManager->setLinePattern(nullptr);
+        return;
+    }
+
     auto linePatterns = _document->linePatterns();
     auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::meta::DxfLinePattern_CSPtr& item) {
         return item->name() == linePattern->name();
         });
 
     if (position != linePatterns.end()) {
-        setCurrentIndex(findData(QString(linePattern->name().c_str())));
+        setCurrentText(QString((*position)->name().c_str()));
     }
 }
 
