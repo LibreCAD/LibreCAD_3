@@ -79,6 +79,10 @@ std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) c
 	return out;
 }
 
+lc::geo::Coordinate Circle::representingPoint() const{
+	return this->center() + lc::geo::Coordinate(this->radius(), 0);
+}
+
 CADEntity_CSPtr Circle::move(const geo::Coordinate &offset) const {
     auto newCircle = std::make_shared<Circle>(this->center() + offset, this->radius(), layer(), metaInfo(), block());
     newCircle->setID(this->id());

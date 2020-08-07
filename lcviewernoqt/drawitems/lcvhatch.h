@@ -21,14 +21,13 @@ namespace lc {
                  * @param geo::Area rect
                  */
                 void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
-                void drawSolidOne(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
-                void drawSolidMore(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+                void drawSolid(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+                void drawPattern(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
 
                 lc::entity::CADEntity_CSPtr entity() const override;
 
             private:
                 lc::entity::Hatch_CSPtr _hatch;
-                std::vector<LCVDrawItem_CSPtr> _drawItems;
         };
     }
 }
