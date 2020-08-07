@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(LCKERNEL)
 
+#TODO: Fix this
+set(PATTERN_RESOURCE_PATH ${CMAKE_SOURCE_DIR}/res/hatch)
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/res/hatch"
+		DESTINATION "${FINAL_INSTALL_DIR}/usr/share/librecad"
+)
+
 #Include TinySpline
 add_definitions("-DTINYSPLINE_DOUBLE_PRECISION")
 set(CMAKE_EXPORT_COMPILE_COMMANDS OFF)
@@ -212,6 +218,7 @@ cad/base/cadobject.h
 cad/objects/layout.h
 settings.h
 cad/tools/maphelper.h
+cad/objects/pattern.h
 )
 
 # Boost logging
@@ -246,7 +253,7 @@ endif()
 add_custom_command(
         PRE_BUILD
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/build_constants.cpp
-        COMMAND ${CMAKE_COMMAND} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
+        COMMAND ${CMAKE_COMMAND} -DPATTERN_RESOURCE_PATH=${PATTERN_RESOURCE_PATH} -DDIR=${CMAKE_CURRENT_SOURCE_DIR} -DSETTINGS_PATH=${SETTINGS_PATH} -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SetBuildInfo.cmake"
         DEPENDS always_rebuild
 )
 

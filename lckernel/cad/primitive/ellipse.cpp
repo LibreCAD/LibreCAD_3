@@ -358,6 +358,13 @@ std::vector<CADEntity_CSPtr> Ellipse::splitEntity(const geo::Coordinate& coord) 
 	return out;
 }
 
+lc::geo::Coordinate Ellipse::representingPoint() const{
+	if(this->isReversed())//is reversed same as ccw?
+		return this->getPoint((this->startAngle()+this->endAngle())/2.+M_PI);
+	else
+		return this->getPoint((this->startAngle()+this->endAngle())/2.);
+}
+
 PropertiesMap Ellipse::availableProperties() const {
     PropertiesMap propertyValues;
 

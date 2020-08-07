@@ -120,6 +120,14 @@ std::vector<CADEntity_CSPtr> Arc::splitEntity(const geo::Coordinate& coord) cons
 	return out;
 }
 
+lc::geo::Coordinate Arc::representingPoint() const{
+	if(this->CCW())
+		return this->center() + lc::geo::Coordinate((this->startAngle()+this->endAngle())/2.+M_PI) * this->radius();	
+	else
+		return this->center() + lc::geo::Coordinate((this->startAngle()+this->endAngle())/2.) * this->radius();
+}
+
+
 CADEntity_CSPtr Arc::move(const geo::Coordinate &offset) const {
     auto newArc = std::make_shared<Arc>(this->center() + offset, this->radius(), this->startAngle(), this->endAngle(),
                                         this->CCW(), layer(), metaInfo(), block());

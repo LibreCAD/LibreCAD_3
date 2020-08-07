@@ -92,6 +92,10 @@ std::vector<CADEntity_CSPtr> Line::splitEntity(const geo::Coordinate& coord) con
 	return out;
 }
 
+lc::geo::Coordinate Line::representingPoint() const{
+	return (this->start() + this->end())/2;
+}
+
 CADEntity_CSPtr Line::move(const geo::Coordinate& offset) const {
     auto newLine = std::make_shared<Line>(this->start() + offset,
                                           this->end() + offset,

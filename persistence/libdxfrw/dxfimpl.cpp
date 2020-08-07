@@ -1,6 +1,8 @@
 #include "dxfimpl.h"
 #include "../generic/helpers.h"
 
+#include "../patternLoader/patternProvider.h"
+
 #include <cad/primitive/circle.h>
 #include <cad/primitive/hatch.h>
 #include <cad/primitive/arc.h>
@@ -503,9 +505,15 @@ void DXFimpl::addHatch(const DRW_Hatch* data) {
     );
 	lcHatch->setPatternName(data->name);
 	lcHatch->setSolid(data->solid);
+	LOG_WARNING << "name " << data->name;
+	LOG_WARNING << "solid " << data->solid;
+	if(!data->solid){
+		//Load pattern from dxf
+		lcHatch->setPattern(lc::persistence::PatternProvider::Instance()->getPattern(data->name));
+	}
     LOG_WARNING << "associative " << data->associative;           /*!< associativity, code 71, associatve=1, non-assoc.=0 */
-    lcHatch->setHatchStyle(data->hstyle);
-    lcHatch->setHatchPattern(data->hpattern);
+    //lcHatch->setHatchStyle(data->hstyle);
+    //lcHatch->setHatchPattern(data->hpattern);
     LOG_WARNING << "double flag " << data->doubleflag;            /*!< hatch pattern double flag, code 77, double=1, single=0 */
     LOG_WARNING << "loopsnum " <<data->loopsnum;              /*!< namber of boundary paths (loops), code 91 */
     lcHatch->setAngle(data->angle);

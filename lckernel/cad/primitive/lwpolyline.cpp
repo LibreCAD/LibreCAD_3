@@ -470,6 +470,12 @@ std::vector<CADEntity_CSPtr> LWPolyline::splitEntity(const geo::Coordinate& coor
     return out;
 }
 
+lc::geo::Coordinate LWPolyline::representingPoint() const{
+    const auto &&entities = asEntities();
+    auto first = std::dynamic_pointer_cast<const lc::entity::Splitable>(entities[0]);
+    return first->representingPoint();
+}
+
 PropertiesMap LWPolyline::availableProperties() const {
     PropertiesMap propertyValues;
 

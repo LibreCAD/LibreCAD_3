@@ -5,6 +5,7 @@
 #include "cad/logger/logger.h"
 #include "windowmanager.h"
 #include <iostream>
+#include <patternLoader/patternProvider.h>
 
 int main2(int argc, char* argv[]) {
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
@@ -14,6 +15,7 @@ int main2(int argc, char* argv[]) {
     QApplication a(argc, argv);
 
     LOGGER;//Init logger
+    lc::persistence::PatternProvider::Instance();//Init pattern loader
 
     lc::ui::WindowManager::init();
 
