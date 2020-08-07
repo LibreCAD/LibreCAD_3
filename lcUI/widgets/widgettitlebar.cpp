@@ -124,5 +124,5 @@ void WidgetTitleBar::setVerticalLayout()
 	m_pLabel->hide();
 
 	// enable DockWidgetVerticalTitleBar feature
-	pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
+	pDock->setFeatures(pDock->features() | QDockWidget::DockWidgetVerticalTitleBar);
 }
