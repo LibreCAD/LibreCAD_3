@@ -7,15 +7,17 @@ message("***** LibreCAD persistence *****")
 
 # HEADER FILES
 set(persistence_srcs
-        libdxfrw/dxfimpl.cpp
         file.cpp
+	patternLoader/patternProvider.cpp
+        libdxfrw/dxfimpl.cpp
         libopencad_interface/libopencad.cpp
         generic/helpers.cpp
 )
 
 set(persistence_hdrs
-        libdxfrw/dxfimpl.h
         file.h
+	patternLoader/patternProvider.h
+        libdxfrw/dxfimpl.h
         libopencad_interface/libopencad.h
         generic/helpers.h
 )

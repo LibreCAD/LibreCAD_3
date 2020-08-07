@@ -54,6 +54,10 @@ void LinePatternSelect::setDocument(lc::storage::Document_SPtr document) {
     createEntries();
 }
 
+void LinePatternSelect::setMetaInfoManager(MetaInfoManager_SPtr metaInfoManager) {
+    _metaInfoManager = metaInfoManager;
+}
+
 lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     if(currentText() == BY_LAYER) {
         return nullptr;
@@ -73,6 +77,22 @@ lc::meta::DxfLinePattern_CSPtr LinePatternSelect::linePattern() {
     }
     else {
         return nullptr;
+    }
+}
+
+void LinePatternSelect::setLinePattern(const lc::meta::DxfLinePattern_CSPtr& linePattern) {
+    if (linePattern == nullptr) {
+        _metaInfoManager->setLinePattern(nullptr);
+        return;
+    }
+
+    auto linePatterns = _document->linePatterns();
+    auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::meta::DxfLinePattern_CSPtr& item) {
+        return item->name() == linePattern->name();
+        });
+
+    if (position != linePatterns.end()) {
+        setCurrentText(QString((*position)->name().c_str()));
     }
 }
 
@@ -104,6 +124,7 @@ void LinePatternSelect::onActivated(const QString& text) {
     }
     else if(_metaInfoManager != nullptr) {
         _metaInfoManager->setLinePattern(linePattern());
+        emit linePatternChanged();
     }
 }
 
@@ -144,6 +165,7 @@ void LinePatternSelect::on_addLinePatternEvent(const lc::event::AddLinePatternEv
 
     if(_metaInfoManager != nullptr) {
         _metaInfoManager->setLinePattern(linePattern());
+        emit linePatternChanged();
     }
 }
 

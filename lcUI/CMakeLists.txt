@@ -73,6 +73,7 @@ widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
 widgets/guiAPI/listgui.h
 widgets/guiAPI/entitypickervisitor.h
+widgets/guiAPI/lineselectgui.h
 widgets/customizeToolbar/operationdragmodel.h
 widgets/customizeToolbar/operationdropmodel.h
 widgets/customizeToolbar/iconlist.h
@@ -117,6 +118,7 @@ widgets/linepatternmodel.cpp
 widgets/linewidthselect.cpp
 widgets/colorselect.cpp
 widgets/widgettitlebar.cpp
+widgets/guiAPI/lineselectgui.cpp
 widgets/guiAPI/menu.cpp
 widgets/guiAPI/menuitem.cpp
 widgets/guiAPI/toolbarbutton.cpp

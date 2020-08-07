@@ -69,6 +69,8 @@ namespace lc {
 
                     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
+                    std::vector<lc::meta::Layer_CSPtr> layers() const;
+
                 signals:
 
                     /**

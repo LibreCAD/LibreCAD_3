@@ -13,3 +13,4 @@ extern IMPORT_API const char* BUILD_DATE;
 extern IMPORT_API const char* BUILD_INFO;
 extern IMPORT_API const char* CMAKE_VERSION;
 extern IMPORT_API const char* SETTINGS_PATH;
+extern IMPORT_API const char* PATTERN_RESOURCE_PATH;

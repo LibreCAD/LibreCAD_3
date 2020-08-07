@@ -54,6 +54,11 @@ namespace lc {
                  */
                 Region();
                 /**
+                 * @ Region with one loop only
+                 *
+                */
+                Region(std::vector<lc::entity::CADEntity_CSPtr>);
+                /**
                  * @brief add a loop to region
                  *
                  */
@@ -71,8 +76,12 @@ namespace lc {
                  * @return bool
                  */
                 bool isPointInside(const geo::Coordinate&) const;
-
-
+		/**
+		 * @ Get perimeter and area
+		 *
+		*/
+		double Area() const;
+		
                 /**
                  * @brief Get intersection with line
                  * 
