@@ -17,7 +17,8 @@ MainWindow::MainWindow()
     lineWidthSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _cliCommand(this),
-    _toolbar(&_luaInterface, this)
+    _toolbar(&_luaInterface, this),
+    _layers(nullptr, this)
 {
     ui->setupUi(this);
     // new document and set mainwindow attributes
@@ -58,6 +59,14 @@ MainWindow::MainWindow()
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
     luaMenu->addItem("Customize Toolbar", state["run_customizetoolbar"]);
+
+    api::Menu* viewMenu = addMenu("View");
+    state.dostring("changeLayout = function() mainWindow:changeDockLayout(1) end");
+    viewMenu->addItem("Default Layout 1", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:changeDockLayout(2) end");
+    viewMenu->addItem("Default Layout 2", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
+    viewMenu->addItem("Default Layout 3", state["changeLayout"]);
 
     api::Menu* aboutMenu = addMenu("About");
     aboutMenu->addItem("About", state["run_aboutdialog"]);
@@ -642,5 +651,32 @@ void MainWindow::selectionChanged() {
     }
     else {
         propertyEditor->show();
+    }
+}
+
+void MainWindow::changeDockLayout(int i) {
+    if (i == 1) {
+        addDockWidget(Qt::RightDockWidgetArea, &_layers);
+        addDockWidget(Qt::BottomDockWidgetArea, &_cliCommand);
+        addDockWidget(Qt::TopDockWidgetArea, &_toolbar);
+        PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+        addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
+        resizeDocks({ &_cliCommand, propertyEditor }, { 65 , 35 }, Qt::Horizontal);
+    }
+
+    if (i == 2) {
+        addDockWidget(Qt::LeftDockWidgetArea, &_layers);
+        addDockWidget(Qt::BottomDockWidgetArea, &_cliCommand);
+        addDockWidget(Qt::TopDockWidgetArea, &_toolbar);
+        PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+        addDockWidget(Qt::RightDockWidgetArea, propertyEditor);
+    }
+
+    if (i == 3) {
+        addDockWidget(Qt::LeftDockWidgetArea, &_layers);
+        addDockWidget(Qt::BottomDockWidgetArea, &_cliCommand);
+        addDockWidget(Qt::TopDockWidgetArea, &_toolbar);
+        PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+        addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
     }
 }
