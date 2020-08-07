@@ -83,6 +83,11 @@ namespace lc
                 */
                 void hideLabel() override;
 
+                /**
+                * \brief Remove horizontal stretch
+                */
+                void removeStretch();
+
             public slots:
                 /**
                 * \brief Run callbacks

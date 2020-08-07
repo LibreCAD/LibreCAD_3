@@ -100,3 +100,7 @@ lc::meta::Layer_CSPtr LayerModel::layerByName(const std::string& layerName) {
 
     return nullptr;
 }
+
+std::vector<lc::meta::Layer_CSPtr> LayerModel::layers() const {
+    return _layers;
+}

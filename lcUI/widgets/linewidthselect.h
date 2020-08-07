@@ -3,6 +3,7 @@
 #include <QComboBox>
 #include <QString>
 
+#include <cad/meta/layer.h>
 #include <cad/meta/metalinewidth.h>
 #include <widgets/linepatternpainter.h>
 #include <managers/metainfomanager.h>
@@ -49,6 +50,9 @@ namespace lc {
                      * Does nothing if the width is not present in the values.
                      */
                     void setWidth(const lc::meta::MetaLineWidth_CSPtr& lineWidth);
+
+                signals:
+                    void lineWidthChanged();
 
                 public slots:
 

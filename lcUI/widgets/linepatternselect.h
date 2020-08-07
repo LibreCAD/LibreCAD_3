@@ -59,10 +59,25 @@ namespace lc {
                     void setMdiChild(CadMdiChild* mdiChild = nullptr);
 
                     /**
+                     * \brief Set meta info manager
+                     * \param metainfomanager
+                     */
+                    void setMetaInfoManager(MetaInfoManager_SPtr metaInfoManager = nullptr);
+
+                    /**
                      * \brief Return selected line pattern
                      * \return Pointer to DxfLinePattern
                      */
                     lc::meta::DxfLinePattern_CSPtr linePattern();
+
+                    /**
+                     * \brief Set line pattern
+                     * \param Pointer to DxfLinePattern
+                     */
+                    void setLinePattern(const lc::meta::DxfLinePattern_CSPtr& linePattern);
+
+                signals:
+                    void linePatternChanged();
 
                 public slots:
 
