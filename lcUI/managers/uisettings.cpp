@@ -11,18 +11,52 @@
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
-    std::ofstream  settingsFile(_filePaths["settings_load"] + settingsFileName);
+    std::string fileName = settingsFileName;
+    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
 
-    if (settingsFile.fail()) {
+    while (settingsFile.fail()) {
+        if (fileName == settingsFileName) {
+            std::cout << "No settings file found, loading default settings." << std::endl;
+            fileName = defaultSettingsFileName;
+            settingsFile.open(_filePaths["settings_load"] + fileName);
+        }
+        else {
+            std::cout << "Default settings not found" << std::endl;
+            return;
+        }
+    }
+
+    rapidjson::IStreamWrapper isw(settingsFile);
+    rapidjson::Document settingsDocument;
+
+    if (settingsDocument.ParseStream(isw).HasParseError()) {
+        std::cout << "Error with settings document, not in json format" << std::endl;
+        return;
+    }
+
+    if (!validateSettingsDocument(settingsDocument)) {
+        settingsFile.close();
+        return;
+    }
+
+    std::ofstream outFile(_filePaths["settings_load"] + settingsFileName);
+
+    if (outFile.fail()) {
         std::cout << "File could not be opened" << std::endl;
         return;
     }
 
-    rapidjson::OStreamWrapper osw(settingsFile);
+    rapidjson::OStreamWrapper osw(outFile);
     rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
 
-    customizeToolbar->generateData(writer);
+    if (settingsDocument.HasMember("toolbar")) {
+        settingsDocument.RemoveMember("toolbar");
+    }
 
+    customizeToolbar->generateData(settingsDocument);
+    settingsDocument.Accept(writer);
+
+    outFile.close();
     settingsFile.close();
 }
 
@@ -94,7 +128,7 @@ bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
 }
 
 void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int propertyp) {
-    std::string fileName = settingsFileName;
+    std::string fileName = "testfile.json";
     std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
 
     while (settingsFile.fail()) {
@@ -121,6 +155,8 @@ void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int property
         settingsFile.close();
         return;
     }
+
+    settingsFile.close();
 
     std::ofstream outFile(_filePaths["settings_load"] + "testfile.json");
 
@@ -150,11 +186,11 @@ void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int property
         dockPositions.PushBack(posValue, settingsDocument.GetAllocator());
     }
 
+    settingsDocument.RemoveMember("dockPositions");
     settingsDocument.AddMember("dockPositions", dockPositions, settingsDocument.GetAllocator());
     settingsDocument.Accept(writer);
 
     outFile.close();
-    settingsFile.close();
 }
 
 std::map<std::string, int> UiSettings::readDockSettings() {

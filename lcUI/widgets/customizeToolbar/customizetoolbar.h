@@ -73,7 +73,7 @@ namespace lc {
                 /**
                 * \brief Generate toolbar ordering data
                 */
-                void generateData(rapidjson::Writer<rapidjson::OStreamWrapper>& writer);
+                void generateData(rapidjson::Document& document);
 
                 /**
                 * \brief Read and update buttons from data
