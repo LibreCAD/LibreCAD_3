@@ -11,86 +11,20 @@
 using namespace lc::ui;
 
 void UiSettings::writeSettings(widgets::CustomizeToolbar* customizeToolbar) {
-    std::string fileName = settingsFileName;
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
-
-    while (settingsFile.fail()) {
-        if (fileName == settingsFileName) {
-            std::cout << "No settings file found, loading default settings." << std::endl;
-            fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
-        }
-        else {
-            std::cout << "Default settings not found" << std::endl;
-            return;
-        }
-    }
-
-    rapidjson::IStreamWrapper isw(settingsFile);
-    rapidjson::Document settingsDocument;
-
-    if (settingsDocument.ParseStream(isw).HasParseError()) {
-        std::cout << "Error with settings document, not in json format" << std::endl;
-        return;
-    }
-
-    if (!validateSettingsDocument(settingsDocument)) {
-        settingsFile.close();
-        return;
-    }
-
-    std::ofstream outFile(_filePaths["settings_load"] + settingsFileName);
-
-    if (outFile.fail()) {
-        std::cout << "File could not be opened" << std::endl;
-        return;
-    }
-
-    rapidjson::OStreamWrapper osw(outFile);
-    rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
-
+    rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
     if (settingsDocument.HasMember("toolbar")) {
         settingsDocument.RemoveMember("toolbar");
     }
 
     customizeToolbar->generateData(settingsDocument);
-    settingsDocument.Accept(writer);
-
-    outFile.close();
-    settingsFile.close();
+    writeSettingsFile(settingsDocument);
 }
 
 void UiSettings::readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings) {
     std::string fileName = defaultSettings ? defaultSettingsFileName : settingsFileName;
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
-
-    while(settingsFile.fail()){
-        if (fileName == settingsFileName) {
-            std::cout << "No settings file found, loading default settings." << std::endl;
-            fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
-        }else{
-            std::cout << "Default settings not found" << std::endl;
-            return;
-        }
-    }
-
-    rapidjson::IStreamWrapper isw(settingsFile);
-    rapidjson::Document settingsDocument;
-
-    if (settingsDocument.ParseStream(isw).HasParseError()) {
-        std::cout << "Erro with settings document, not in json format" << std::endl;
-        return;
-    }
-
-    if (!validateSettingsDocument(settingsDocument)) {
-        settingsFile.close();
-        return;
-    }
+    rapidjson::Document settingsDocument = getSettingsDocument(fileName);
 
     customizeToolbar->readData(settingsDocument);
-
-    settingsFile.close();
 }
 
 bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
@@ -128,48 +62,9 @@ bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
 }
 
 void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int propertyp) {
-    std::string fileName = "testfile.json";
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
-
-    while (settingsFile.fail()) {
-        if (fileName == settingsFileName) {
-            std::cout << "No settings file found, loading default settings." << std::endl;
-            fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
-        }
-        else {
-            std::cout << "Default settings not found" << std::endl;
-            return;
-        }
-    }
-
-    rapidjson::IStreamWrapper isw(settingsFile);
-    rapidjson::Document settingsDocument;
-
-    if (settingsDocument.ParseStream(isw).HasParseError()) {
-        std::cout << "Erro with settings document, not in json format" << std::endl;
-        return;
-    }
-
-    if (!validateSettingsDocument(settingsDocument)) {
-        settingsFile.close();
-        return;
-    }
-
-    settingsFile.close();
-
-    std::ofstream outFile(_filePaths["settings_load"] + "testfile.json");
-
-    if (outFile.fail()) {
-        std::cout << "File could not be opened" << std::endl;
-        return;
-    }
-
-    rapidjson::OStreamWrapper osw(outFile);
-    rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
-
+    rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
     rapidjson::Value dockPositions(rapidjson::kArrayType);
-    /* Write Dock Settings  */
+
     std::map<std::string, int> positions = {
         {"Toolbar", toolp},
         {"CliCommand", clip},
@@ -186,41 +81,16 @@ void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int property
         dockPositions.PushBack(posValue, settingsDocument.GetAllocator());
     }
 
-    settingsDocument.RemoveMember("dockPositions");
-    settingsDocument.AddMember("dockPositions", dockPositions, settingsDocument.GetAllocator());
-    settingsDocument.Accept(writer);
+    if (settingsDocument.HasMember("dockPositions")) {
+        settingsDocument.RemoveMember("dockPositions");
+    }
 
-    outFile.close();
+    settingsDocument.AddMember("dockPositions", dockPositions, settingsDocument.GetAllocator());
+    writeSettingsFile(settingsDocument);
 }
 
 std::map<std::string, int> UiSettings::readDockSettings() {
-    std::string fileName = "testfile.json";
-    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
-
-    while (settingsFile.fail()) {
-        if (fileName == settingsFileName) {
-            std::cout << "No settings file found, loading default settings." << std::endl;
-            fileName = defaultSettingsFileName;
-            settingsFile.open(_filePaths["settings_load"] + fileName);
-        }
-        else {
-            std::cout << "Default settings not found" << std::endl;
-            return std::map<std::string, int>();
-        }
-    }
-
-    rapidjson::IStreamWrapper isw(settingsFile);
-    rapidjson::Document settingsDocument;
-
-    if (settingsDocument.ParseStream(isw).HasParseError()) {
-        std::cout << "Erro with settings document, not in json format" << std::endl;
-        return std::map<std::string, int>();
-    }
-
-    if (!validateSettingsDocument(settingsDocument)) {
-        settingsFile.close();
-        return std::map<std::string, int>();
-    }
+    rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
 
     std::map<std::string, int> result;
 
@@ -237,4 +107,51 @@ std::map<std::string, int> UiSettings::readDockSettings() {
     }
 
     return result;
+}
+
+rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {
+    std::ifstream settingsFile(_filePaths["settings_load"] + fileName);
+
+    while (settingsFile.fail()) {
+        if (fileName == settingsFileName) {
+            std::cout << "No settings file found, loading default settings." << std::endl;
+            fileName = defaultSettingsFileName;
+            settingsFile.open(_filePaths["settings_load"] + fileName);
+        }
+        else {
+            std::cout << "Default settings not found" << std::endl;
+            return rapidjson::Document();;
+        }
+    }
+
+    rapidjson::IStreamWrapper isw(settingsFile);
+    rapidjson::Document settingsDocument;
+
+    if (settingsDocument.ParseStream(isw).HasParseError()) {
+        std::cout << "Error with settings document, not in json format" << std::endl;
+        return rapidjson::Document();
+    }
+
+    if (!validateSettingsDocument(settingsDocument)) {
+        settingsFile.close();
+        return rapidjson::Document();
+    }
+
+    settingsFile.close();
+    return std::move(settingsDocument);
+}
+
+void UiSettings::writeSettingsFile(rapidjson::Document& document) {
+    std::ofstream outFile(_filePaths["settings_load"] + settingsFileName);
+
+    if (outFile.fail()) {
+        std::cout << "File could not be opened" << std::endl;
+        return;
+    }
+
+    rapidjson::OStreamWrapper osw(outFile);
+    rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
+
+    document.Accept(writer);
+    outFile.close();
 }

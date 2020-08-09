@@ -24,8 +24,14 @@ namespace lc
             */
             void readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings = false);
 
+            /**
+            * \brief Write the dock settings to the document file
+            */
             void writeDockSettings(int layerp, int clip, int toolp, int propertyp);
 
+            /**
+            * \brief Read the dock settings
+            */
             std::map<std::string, int> readDockSettings();
 
         private:
@@ -35,6 +41,16 @@ namespace lc
             * \return bool, true if validates or any problem with schema document, else returns false
             */
             bool validateSettingsDocument(rapidjson::Document& inputDocument);
+
+            /**
+            * \brief Get the settings document by reading the given file
+            */
+            rapidjson::Document getSettingsDocument(std::string fileName);
+
+            /**
+            * \brief Write the settings document to the settings file
+            */
+            void writeSettingsFile(rapidjson::Document& document);
 
         private:
             const std::string settingsFileName = "ui_settings.json";
