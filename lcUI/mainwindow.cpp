@@ -686,17 +686,23 @@ void MainWindow::changeDockLayout(int i) {
 }
 
 void MainWindow::saveDockLayout() {
-    _cliCommand.write("Save Dock Layout");
-    _cliCommand.write("CliCommand - " + std::to_string(this->dockWidgetArea(&_cliCommand)));
     int layersPos = this->dockWidgetArea(&_layers);
     int cliCommandPos = this->dockWidgetArea(&_cliCommand);
     int toolbarPos = this->dockWidgetArea(&_toolbar);
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     int propertyEditorPos = this->dockWidgetArea(propertyEditor);
 
-
+    _uiSettings.writeDockSettings(layersPos, cliCommandPos, toolbarPos, propertyEditorPos);
 }
 
 void MainWindow::loadDockLayout() {
-    _cliCommand.write("Load Dock Layout");
+    std::map<std::string, int> dockPositions = _uiSettings.readDockSettings();
+
+    if (dockPositions.size() > 0) {
+        addDockWidget((Qt::DockWidgetArea)dockPositions["Layers"], &_layers);
+        addDockWidget((Qt::DockWidgetArea)dockPositions["CliCommand"], &_cliCommand);
+        addDockWidget((Qt::DockWidgetArea)dockPositions["Toolbar"], &_toolbar);
+        PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+        addDockWidget((Qt::DockWidgetArea)dockPositions["PropertyEditor"], propertyEditor);
+    }
 }

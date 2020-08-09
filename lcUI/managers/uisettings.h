@@ -26,6 +26,8 @@ namespace lc
 
             void writeDockSettings(int layerp, int clip, int toolp, int propertyp);
 
+            std::map<std::string, int> readDockSettings();
+
         private:
             /**
             * \brief Validates with schema file
