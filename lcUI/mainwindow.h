@@ -138,8 +138,19 @@ namespace lc
 
             /**
             * \brief Change the dock layout
+            * \brief configuration number
             */
             void changeDockLayout(int i);
+
+            /**
+            * \brief Save the dock layout
+            */
+            void saveDockLayout();
+
+            /**
+            * \brief Load dock layout
+            */
+            void loadDockLayout();
 
         private:
             /**

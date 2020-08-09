@@ -24,6 +24,8 @@ namespace lc
             */
             void readSettings(widgets::CustomizeToolbar* customizeToolbar, bool defaultSettings = false);
 
+            void writeDockSettings(int layerp, int clip, int toolp, int propertyp);
+
         private:
             /**
             * \brief Validates with schema file

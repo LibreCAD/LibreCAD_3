@@ -67,6 +67,10 @@ MainWindow::MainWindow()
     viewMenu->addItem("Default Layout 2", state["changeLayout"]);
     state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
     viewMenu->addItem("Default Layout 3", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:loadDockLayout() end");
+    viewMenu->addItem("Load Dock Layout", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:saveDockLayout() end");
+    viewMenu->addItem("Save Dock Layout", state["changeLayout"]);
 
     api::Menu* aboutMenu = addMenu("About");
     aboutMenu->addItem("About", state["run_aboutdialog"]);
@@ -679,4 +683,20 @@ void MainWindow::changeDockLayout(int i) {
         PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
         addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
     }
+}
+
+void MainWindow::saveDockLayout() {
+    _cliCommand.write("Save Dock Layout");
+    _cliCommand.write("CliCommand - " + std::to_string(this->dockWidgetArea(&_cliCommand)));
+    int layersPos = this->dockWidgetArea(&_layers);
+    int cliCommandPos = this->dockWidgetArea(&_cliCommand);
+    int toolbarPos = this->dockWidgetArea(&_toolbar);
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    int propertyEditorPos = this->dockWidgetArea(propertyEditor);
+
+
+}
+
+void MainWindow::loadDockLayout() {
+    _cliCommand.write("Load Dock Layout");
 }

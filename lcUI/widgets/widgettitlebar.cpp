@@ -60,9 +60,15 @@ void WidgetTitleBar::expandButtonTriggered()
 		setVerticalLayout();
 	}
 
-    pDock->setMinimumWidth(_oldSize.width());
-	pDock->widget()->show();
-    pDock->setMinimumWidth(0);
+    if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden){
+        pDock->setMinimumWidth(_oldSize.width());
+    }
+
+    pDock->widget()->show();
+
+    if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden) {
+        pDock->setMinimumWidth(0);
+    }
 }
 
 void WidgetTitleBar::closeButtonTriggered()

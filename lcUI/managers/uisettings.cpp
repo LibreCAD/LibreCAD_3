@@ -92,3 +92,7 @@ bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
 
     return true;
 }
+
+void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int propertyp) {
+
+}
