@@ -140,6 +140,7 @@ void addLCBindings(lua_State *L) {
 	state["lc"]["Toolbar"].setClass(kaguya::UserdataMetatable<widgets::Toolbar>()
 		.addFunction("tabByName", &widgets::Toolbar::tabByName)
         .addFunction("removeGroupByName", &widgets::Toolbar::removeGroupByName)
+        .addFunction("updateSnapButtons", &widgets::Toolbar::updateSnapButtons)
         .addOverloadedFunctions("addTab", static_cast<api::ToolbarTab*(widgets::Toolbar::*)(const char*)>(&widgets::Toolbar::addTab),
             static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::addTab))
         .addOverloadedFunctions("removeTab", static_cast<void(widgets::Toolbar::*)(api::ToolbarTab*)>(&widgets::Toolbar::removeTab),
@@ -195,6 +196,13 @@ void addLCBindings(lua_State *L) {
         .addFunction("menuByName", &lc::ui::MainWindow::menuByName)
         .addFunction("menuByPosition", &lc::ui::MainWindow::menuByPosition)
         .addFunction("runCustomizeToolbar", &lc::ui::MainWindow::runCustomizeToolbar)
+        .addFunction("undo", &lc::ui::MainWindow::undo)
+        .addFunction("redo", &lc::ui::MainWindow::redo)
+        .addFunction("selectAll", &lc::ui::MainWindow::selectAll)
+        .addFunction("selectNone", &lc::ui::MainWindow::selectNone)
+        .addFunction("invertSelection", &lc::ui::MainWindow::invertSelection)
+        .addFunction("runLastOperation", &lc::ui::MainWindow::runLastOperation)
+        .addFunction("currentOperation", &lc::ui::MainWindow::currentOperation)
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })

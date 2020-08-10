@@ -1,7 +1,7 @@
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
 
-#ifdef Q_CC_MSVC
+#ifdef _MSC_VER
 #define EXPORT_API __declspec(dllexport)
 #define IMPORT_API __declspec(dllimport)
 #else

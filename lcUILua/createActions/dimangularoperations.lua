@@ -1,4 +1,5 @@
 DimAngularOperations = {
+    name = "DimAngularOperations",
     command_line = "DIMANGULAR",
     icon = "dim_angular.svg",
     description = "Angular Dimension",

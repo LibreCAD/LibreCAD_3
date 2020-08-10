@@ -18,6 +18,10 @@ function CreateOperations:_init(builder, step)
 end
 
 function CreateOperations:onEvent(eventName, data)
+    if(self.step == 'PAUSE') then
+        return
+    end
+
     if(self.step ~= nil) then
         self[self.step](self, eventName, data)
     end
@@ -93,4 +97,24 @@ end
 
 function CreateOperations:manualClose()
     self:close() --if not defined manually
+end
+
+function CreateOperations:pauseCreation(pause)
+    if(pause) then
+        self.lastStep = self.step
+        self.step = 'PAUSE'
+    else
+        if(self.lastStep == nil) then
+            return
+        end
+        self.step = self.lastStep 
+    end
+end
+
+function CreateOperations:isPaused()
+    if(self.step == 'PAUSE') then
+        return true
+    else
+        return false
+    end
 end

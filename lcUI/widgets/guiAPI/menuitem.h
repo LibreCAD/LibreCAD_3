@@ -53,6 +53,12 @@ namespace lc
                 void addCallback(kaguya::LuaRef callback);
 
                 /**
+                * \brief add checked callback for item
+                * \param LuaRef callback
+                */
+                void addCheckedCallback(kaguya::LuaRef callback);
+
+                /**
                 * \brief add named callback for item
                 * \param string callback name to identiy callback
                 * \param LuaRef callback
@@ -100,6 +106,8 @@ namespace lc
             public slots:
                 void itemTriggered();
 
+                void itemToggled(bool toggle);
+
             private:
                 void updateOtherPositionsAfterRemove();
 
@@ -107,6 +115,7 @@ namespace lc
 
             private:
                 std::vector<kaguya::LuaRef> callbacks;
+                std::vector<kaguya::LuaRef> _checkedCallbacks;
                 std::unordered_map<std::string, int> namedCallbacks;
                 int _position;
             };

@@ -89,11 +89,15 @@ namespace lc {
                     documentCanvas()->autoScale(*_documentPainter);
                 }
 
-                void setOperationActive(bool operationActive);
+                void setOperationActive(bool operationActiveIn);
+
+                bool operationActive() const;
 
                 const std::shared_ptr<lc::viewer::DocumentCanvas>& docCanvas() const;
 
                 void updateHelper();
+
+                void setContextMenuManagerId(int contextMenuManagerId);
 
             protected:
                 void paintGL();
@@ -111,6 +115,8 @@ namespace lc {
                 virtual void keyReleaseEvent(QKeyEvent* event);
 
                 void resizeGL(int w, int h);
+
+                void contextMenuEvent(QContextMenuEvent* event) override;
 
             signals:
                 void mouseMoveEvent();
@@ -169,6 +175,8 @@ namespace lc {
                 lc::viewer::LcPainter* _backgroundPainter;
                 lc::viewer::LcPainter* _documentPainter;
                 lc::viewer::LcPainter* _foregroundPainter;
+
+                int _contextMenuManagerId;
         };
     }
 }

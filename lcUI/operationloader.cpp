@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "widgets/clicommand.h"
 #include "widgets/toolbar.h"
+#include "managers/contextmenumanager.h"
 
 #include <QDir>
 #include <QString>
@@ -38,7 +39,8 @@ void OperationLoader::loadLuaOperations(const std::string& luaPath) {
         "menu_actions",
         "icon",
         "description",
-        "operation_options"
+        "operation_options",
+        "context_transitions"
     };
 
     /* Loop through all keys to search for the ones containing "Operation" in their name,
@@ -138,7 +140,7 @@ void OperationLoader::initializeOperation(const std::string& vkey)
             addOperationCommandLine(vkey, opkey);
         }
 
-        //menu actions
+        // menu actions
         if (opkey == "menu_actions") {
             addOperationMenuAction(vkey, opkey);
         }
@@ -152,7 +154,14 @@ void OperationLoader::initializeOperation(const std::string& vkey)
         if (opkey == "operation_options") {
             addOperationToolbarOptions(vkey, opkey);
         }
+
+        // context transitions
+        if (opkey == "context_transitions") {
+            addContextTransitions(vkey, opkey);
+        }
     }
+
+    addContextMenuOperations(vkey);
 }
 
 
@@ -259,4 +268,27 @@ void OperationLoader::addOperationToolbarOptions(const std::string& vkey, const 
         mWindow->addOperationOptions(_L[vkey]["command_line"], optionsList);
     }
     _L["operation_op"] = nullptr;
+}
+
+void OperationLoader::addContextMenuOperations(const std::string& vkey) {
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
+    lc::ui::ContextMenuManager* contextMenuManager = ContextMenuManager::GetContextMenuManager(mWindow->contextMenuManagerId());
+    contextMenuManager->addOperation(vkey, groupNames[vkey]);
+}
+
+void OperationLoader::addContextTransitions(const std::string& vkey, const std::string& opkey) {
+    MainWindow* mWindow = static_cast<MainWindow*>(qmainWindow);
+    lc::ui::ContextMenuManager* contextMenuManager = ContextMenuManager::GetContextMenuManager(mWindow->contextMenuManagerId());
+    std::map<std::string, kaguya::LuaRef> functionNames = _L[vkey][opkey];
+
+    for (auto fName : functionNames) {
+        std::vector<kaguya::LuaRef> transitionList = _L[vkey][opkey][fName.first];
+        std::vector<std::string> transList;
+
+        for (kaguya::LuaRef transitionFunc : transitionList) {
+            transList.push_back(transitionFunc.get<std::string>());
+        }
+
+        contextMenuManager->addTransition(_L[vkey]["name"], fName.first, transList);
+    }
 }

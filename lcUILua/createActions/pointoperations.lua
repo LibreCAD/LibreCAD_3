@@ -1,4 +1,5 @@
 PointOperations = {
+    name = "PointOperations",
     command_line = "POINT",
     icon = "point.svg",
     descreption = "Point",

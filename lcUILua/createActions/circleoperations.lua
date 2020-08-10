@@ -1,4 +1,5 @@
 CircleOperations = {
+    name = "CircleOperations",
     command_line = "CIRCLE",
     icon = "circle.svg",
     menu_actions = {
@@ -8,6 +9,12 @@ CircleOperations = {
         p3 = "action3_Point_Circle_2",
         t2 = "actionTan_Tan_Radius",
         t3 = "actionTan_Tan_Tan"
+    },
+    context_transitions = {
+        CircleWithCenterRadius = {"CircleWithCenterDiameter"},
+        CircleWithCenterDiameter = {"CircleWithCenterRadius"},
+        CircleWith2Points = {"CircleWith3Points"},
+        CircleWith3Points = {"CircleWith2Points"}
     }
 }
 CircleOperations.__index = CircleOperations

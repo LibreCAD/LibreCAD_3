@@ -1,4 +1,5 @@
 ScaleOperation = {
+    name = "ScaleOperation",
     command_line = "SCALE",
     icon = "scale.png"
 }

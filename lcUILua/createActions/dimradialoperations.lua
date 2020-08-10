@@ -1,4 +1,5 @@
 DimRadialOperations = {
+    name = "DimRadialOperations",
     command_line = "DIMRADIAL",
     icon = "dim_radial.svg",
     menu_actions = {

@@ -7,6 +7,8 @@
 #include "guiAPI/toolbartab.h"
 #include "guiAPI/toolbarbutton.h"
 
+#include <managers/snapmanagerimpl.h>
+
 namespace Ui {
 	class Toolbar;
 }
@@ -108,6 +110,11 @@ namespace lc {
                     * \return list of button name strings
                     */
                     QList<QString> buttonNames() const;
+
+                    /**
+                     * \brief Update snap buttons (could be changed elsewhere e.g. context menu)
+                     */
+                    void updateSnapButtons(const viewer::manager::SnapManagerImpl_SPtr snapManager);
 
                 public slots:
                     /**

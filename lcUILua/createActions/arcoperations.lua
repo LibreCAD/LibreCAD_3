@@ -1,4 +1,5 @@
 ArcOperations = {
+    name = "ArcOperations",
     command_line = "ARC",
     icon = "arc.svg",
     menu_actions = {
