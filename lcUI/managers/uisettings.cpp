@@ -61,16 +61,9 @@ bool UiSettings::validateSettingsDocument(rapidjson::Document& inputDocument) {
     return true;
 }
 
-void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int propertyp) {
+void UiSettings::writeDockSettings(const std::map<std::string, int>& positions, std::map<std::string, int>& proportions) {
     rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
     rapidjson::Value dockPositions(rapidjson::kArrayType);
-
-    std::map<std::string, int> positions = {
-        {"Toolbar", toolp},
-        {"CliCommand", clip},
-        {"Layers", layerp},
-        {"PropertyEditor", propertyp}
-    };
 
     for (auto iter = positions.begin(); iter != positions.end(); ++iter) {
         rapidjson::Value posValue(rapidjson::kObjectType);
@@ -78,6 +71,11 @@ void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int property
         widgetname.SetString(iter->first.c_str(), iter->first.size(), settingsDocument.GetAllocator());
         posValue.AddMember("widget", widgetname, settingsDocument.GetAllocator());
         posValue.AddMember("position", rapidjson::Value(iter->second), settingsDocument.GetAllocator());
+
+        if (proportions.find(iter->first) != proportions.end()) {
+            posValue.AddMember("proportion", rapidjson::Value(proportions[iter->first]), settingsDocument.GetAllocator());
+        }
+
         dockPositions.PushBack(posValue, settingsDocument.GetAllocator());
     }
 
@@ -89,10 +87,9 @@ void UiSettings::writeDockSettings(int layerp, int clip, int toolp, int property
     writeSettingsFile(settingsDocument);
 }
 
-std::map<std::string, int> UiSettings::readDockSettings() {
+std::map<std::string, int> UiSettings::readDockSettings(std::map<std::string, int>& proportions) {
     rapidjson::Document settingsDocument = getSettingsDocument(settingsFileName);
-
-    std::map<std::string, int> result;
+    std::map<std::string, int> positions;
 
     if (settingsDocument.HasMember("dockPositions")) {
         rapidjson::Value dockPositions = settingsDocument["dockPositions"].GetArray();
@@ -101,12 +98,17 @@ std::map<std::string, int> UiSettings::readDockSettings() {
             if (iter->HasMember("widget") && iter->HasMember("position")) {
                 std::string widgetName = (*iter)["widget"].GetString();
                 int pos = (*iter)["position"].GetInt();
-                result[widgetName] = pos;
+                positions[widgetName] = pos;
+
+                if (iter->HasMember("proportion")) {
+                    int prop = (*iter)["proportion"].GetInt();
+                    proportions[widgetName] = prop;
+                }
             }
         }
     }
 
-    return result;
+    return positions;
 }
 
 rapidjson::Document UiSettings::getSettingsDocument(std::string fileName) {

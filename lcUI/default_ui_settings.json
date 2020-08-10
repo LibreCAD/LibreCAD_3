@@ -12,7 +12,7 @@
                     {
                         "label": "Modify",
                         "width": 3,
-                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "RotateOperation", "TrimOperation" ]
+                        "buttons": [ "MoveOperation", "RemoveOperation", "CopyOperation", "ScaleOperation", "SplitOperation", "RotateOperation", "TrimOperation" ]
                     },
                     {
                         "label": "Dimensions",
@@ -31,7 +31,8 @@
     "dockPositions": [
         {
             "widget": "CliCommand",
-            "position": 8
+            "position": 8,
+            "proportion": 65
         },
         {
             "widget": "Layers",
@@ -39,7 +40,8 @@
         },
         {
             "widget": "PropertyEditor",
-            "position": 8
+            "position": 8,
+            "proportion": 35
         },
         {
             "widget": "Toolbar",

@@ -27,12 +27,12 @@ namespace lc
             /**
             * \brief Write the dock settings to the document file
             */
-            void writeDockSettings(int layerp, int clip, int toolp, int propertyp);
+            void writeDockSettings(const std::map<std::string, int>& positions, std::map<std::string, int>& proportions);
 
             /**
             * \brief Read the dock settings
             */
-            std::map<std::string, int> readDockSettings();
+            std::map<std::string, int> readDockSettings(std::map<std::string, int>& proportions);
 
         private:
             /**

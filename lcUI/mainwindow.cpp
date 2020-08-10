@@ -692,17 +692,80 @@ void MainWindow::saveDockLayout() {
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     int propertyEditorPos = this->dockWidgetArea(propertyEditor);
 
-    _uiSettings.writeDockSettings(layersPos, cliCommandPos, toolbarPos, propertyEditorPos);
+    std::map<std::string, int> positions = {
+        {"Toolbar", toolbarPos},
+        {"CliCommand", cliCommandPos},
+        {"Layers", layersPos},
+        {"PropertyEditor", propertyEditorPos}
+    };
+
+    std::map<std::string, int> widths = {
+        {"Toolbar", _toolbar.width()},
+        {"CliCommand", _cliCommand.width()},
+        {"Layers", _layers.width()},
+        {"PropertyEditor", propertyEditor->width()}
+    };
+
+    std::map<int, int> posCount;
+    std::map<int, int> posWidth;
+    for (auto iter = positions.begin(); iter != positions.end(); ++iter) {
+        if (posCount.find(iter->second) == posCount.end()) {
+            posCount[iter->second] = 0;
+            posWidth[iter->second] = 0;
+        }
+        posCount[iter->second]++;
+        posWidth[iter->second] += widths[iter->first];
+    }
+
+    std::map<std::string, int> posProportions;
+
+    for (auto iter = positions.begin(); iter != positions.end(); ++iter) {
+        if (posCount[iter->second] > 1) {
+            int percent = std::round(((double)widths[iter->first] / (double)posWidth[iter->second]) * 100);
+            posProportions[iter->first] = percent;
+        }
+    }
+
+    _uiSettings.writeDockSettings(positions, posProportions);
 }
 
 void MainWindow::loadDockLayout() {
-    std::map<std::string, int> dockPositions = _uiSettings.readDockSettings();
+    std::map<std::string, int> dockProportions;
+    std::map<std::string, int> dockPositions = _uiSettings.readDockSettings(dockProportions);
+
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    std::map<std::string, QDockWidget*> dockWidgets = {
+        {"Layers", &_layers},
+        {"CliCommand", &_cliCommand},
+        {"Toolbar", &_toolbar},
+        {"PropertyEditor", propertyEditor}
+    };
+
+    std::map<int, QList<QDockWidget*>> resizeWidgets;
+    std::map<int, QList<int>> resizeProportions;
 
     if (dockPositions.size() > 0) {
-        addDockWidget((Qt::DockWidgetArea)dockPositions["Layers"], &_layers);
-        addDockWidget((Qt::DockWidgetArea)dockPositions["CliCommand"], &_cliCommand);
-        addDockWidget((Qt::DockWidgetArea)dockPositions["Toolbar"], &_toolbar);
-        PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
-        addDockWidget((Qt::DockWidgetArea)dockPositions["PropertyEditor"], propertyEditor);
+        for (auto iter = dockWidgets.begin(); iter != dockWidgets.end(); ++iter) {
+            int pos = dockPositions[iter->first];
+            addDockWidget((Qt::DockWidgetArea)pos, iter->second);
+
+            if (dockProportions.find(iter->first) != dockProportions.end()) {
+                if (resizeWidgets.find(pos) == resizeWidgets.end()) {
+                    resizeWidgets[pos] = QList<QDockWidget*>();
+                    resizeProportions[pos] = QList<int>();
+                }
+
+                resizeWidgets[pos].append(iter->second);
+                resizeProportions[pos].append(dockProportions[iter->first]);
+            }
+        }
+
+        for (auto iter = resizeWidgets.begin(); iter != resizeWidgets.end(); ++iter) {
+            bool horiz = true;
+            if ((iter->first == (int)Qt::LeftDockWidgetArea) || (iter->first == (int)Qt::RightDockWidgetArea)) {
+                horiz = false;
+            }
+            resizeDocks(iter->second, resizeProportions[iter->first], (horiz) ? Qt::Horizontal : Qt::Vertical);
+        }
     }
 }
