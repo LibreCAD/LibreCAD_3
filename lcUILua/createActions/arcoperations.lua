@@ -5,6 +5,8 @@ ArcOperations = {
     menu_actions = {
         p3 = "action3_Point_Arc",
         cse = "actionCenter_Start_End_2",
+        csa = "actionCenter_Start_Angle_2",
+        csl = "actionCenter_Start_Length_2",
         sce = "actionStart_Center_End_2",
         sca = "actionStart_Center_Angle_2",
         scl = "actionStart_Center_Length"
@@ -12,7 +14,10 @@ ArcOperations = {
     context_transitions = {
         ArcWithSCE = {"ArcWithSCA", "ArcWithSCL"},
         ArcWithSCA = {"ArcWithSCE", "ArcWithSCL"},
-        ArcWithSCL = {"ArcWithSCE", "ArcWithSCA"}
+        ArcWithSCL = {"ArcWithSCE", "ArcWithSCA"},
+        ArcWithCSE = {"ArcWithCSA", "ArcWithCSL"},
+        ArcWithCSA = {"ArcWithCSE", "ArcWithCSL"},
+        ArcWithCSL = {"ArcWithCSE", "ArcWithCSA"}
     }
 }
 ArcOperations.__index = ArcOperations
@@ -28,7 +33,6 @@ setmetatable(ArcOperations, {
 
 function ArcOperations:_init()
     CreateOperations._init(self, lc.builder.ArcBuilder, "ArcWith3Points")
-    mainWindow:cliCommand():returnText(true)
     self.builder:setRadius(10)
     self.Arc_FirstPoint = nil
     self.Arc_SecondPoint = nil
@@ -53,6 +57,18 @@ function ArcOperations:_init_cse()
     message("<b>Arc - Center Start End</b>")
     message("Provide Center Point:")
 	self.step = "ArcWithCSE"
+end
+
+function ArcOperations:_init_csa()
+    message("<b>Arc - Center Start Angle</b>")
+    message("Provide Center Point:")
+	self.step = "ArcWithCSA"
+end
+
+function ArcOperations:_init_csl()
+    message("<b>Arc - Center Start Length</b>")
+    message("Provide Center Point:")
+	self.step = "ArcWithCSL"
 end
 
 function ArcOperations:_init_sce()
@@ -155,7 +171,6 @@ function ArcOperations:ArcWithSCA(eventName, data) -- Create Arc with Start, Cen
         self.builder:setCenter(data["position"])
         self.builder:setRadius(Operations:getDistance(data["position"], self.Arc_FirstPoint))
         message("Enter angle:")
-        mainWindow:cliCommand():returnText(false)
     elseif(eventName == "number" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_ThirdPoint) then
         local startAngle = Operations:getAngle(self.builder:center(), self.Arc_FirstPoint)
         local angleCalc = data["number"] * 3.1416/180
@@ -182,6 +197,61 @@ function ArcOperations:ArcWithSCL(eventName, data) -- Create Arc with Start, Cen
         self.Arc_Center = data["position"]
         self.builder:setCenter(data["position"])
         self.builder:setRadius(Operations:getDistance(data["position"], self.Arc_FirstPoint))
+        message("Enter length:")
+        mainWindow:cliCommand():returnText(false)
+    elseif(eventName == "number" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_StartAngle) then
+        local startAngle = Operations:getAngle(self.builder:center(), self.Arc_FirstPoint)
+        local angleCalc = data["number"] / self.builder:radius()
+        self.builder:setStartAngle(startAngle)
+        self.builder:setEndAngle((2 * 3.1415) + startAngle + angleCalc)
+        self:createEntity()
+    elseif(eventName == "mouseMove" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_StartAngle) then
+        local angleCalc = self.Arc_FirstPoint:distanceTo(data["position"]) / self.builder:radius()
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        self.builder:setEndAngle((2 * 3.1415) + Operations:getAngle(self.builder:center(), self.Arc_FirstPoint) + angleCalc)
+    elseif(eventName == "point" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_StartAngle) then
+        local angleCalc = self.Arc_FirstPoint:distanceTo(data["position"]) / self.builder:radius()
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        self.builder:setEndAngle((2 * 3.1415) + Operations:getAngle(self.builder:center(), self.Arc_FirstPoint) + angleCalc)
+        self:createEntity()
+    end
+end
+
+function ArcOperations:ArcWithCSA(eventName, data) -- Create Arc with Center Start and Angle.
+    if(eventName == "point" and not self.Arc_Center) then
+        self.Arc_Center = data["position"]
+        self.builder:setCenter(data["position"])
+        message("Provide Start Point:")
+    elseif(eventName == "point" and self.Arc_Center and not self.Arc_FirstPoint) then
+        self.Arc_FirstPoint = data["position"]
+        self.builder:setRadius(Operations:getDistance(self.builder:center(), data["position"]))
+        message("Enter Angle:")
+    elseif(eventName == "number" and self.Arc_Center and self.Arc_FirstPoint) then
+        local startAngle = Operations:getAngle(self.builder:center(), self.Arc_FirstPoint)
+        local angleCalc = data["number"] * 3.1416/180
+        self.builder:setStartAngle(startAngle)
+        self.builder:setEndAngle((2 * 3.1415) + (startAngle + angleCalc))
+        self:createEntity()
+    elseif(eventName == "mouseMove" and self.Arc_Center and self.Arc_FirstPoint) then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        local angleCalc = self.Arc_FirstPoint:distanceTo(data["position"]) * 0.01
+        self.builder:setEndAngle((2 * 3.1415) + Operations:getAngle(self.builder:center(), self.Arc_FirstPoint) + angleCalc)
+    elseif(eventName == "point" and self.Arc_Center and self.Arc_FirstPoint) then
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        local angleCalc = self.Arc_FirstPoint:distanceTo(data["position"]) * 0.01
+        self.builder:setEndAngle((2 * 3.1415) + Operations:getAngle(self.builder:center(), self.Arc_FirstPoint) + angleCalc)
+        self:createEntity()
+    end
+end
+
+function ArcOperations:ArcWithCSL(eventName, data) -- Create Arc with Center, Start and Length
+    if(eventName == "point" and not self.Arc_Center) then
+        self.Arc_Center = data["position"]
+        self.builder:setCenter(data["position"])
+        message("Provide Start Point:")
+    elseif(eventName == "point" and self.Arc_Center and not self.Arc_FirstPoint) then
+        self.Arc_FirstPoint = data["position"]
+        self.builder:setRadius(Operations:getDistance(self.builder:center(), data["position"]))
         message("Enter length:")
         mainWindow:cliCommand():returnText(false)
     elseif(eventName == "number" and self.Arc_Center and self.Arc_FirstPoint and not self.Arc_StartAngle) then
