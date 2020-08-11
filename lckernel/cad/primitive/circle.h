@@ -48,6 +48,7 @@ namespace lc {
             geo::Coordinate nearestPointOnPath(const geo::Coordinate &coord) const override;
             geo::Coordinate nearestPointOnEntity(const geo::Coordinate &coord) const override;
 	    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
+	    virtual lc::geo::Coordinate representingPoint() const;
         public:
 
             /**

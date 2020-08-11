@@ -1,4 +1,5 @@
 CopyOperation = {
+    name = "CopyOperation",
     command_line = "COPY",
     icon = "move_copy.svg"
 }

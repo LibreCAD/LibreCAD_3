@@ -1,4 +1,5 @@
 TrimOperation = {
+    name = "TrimOperation",
     command_line = "TRIM",
     icon = "modifytrim.png"
 }

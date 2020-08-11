@@ -1,4 +1,5 @@
 SplineOperations = {
+    name = "SplineOperations",
     command_line = "SPLINE",
     icon = "spline.svg",
     menu_actions = {

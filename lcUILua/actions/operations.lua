@@ -39,3 +39,23 @@ end
 
 function Operations:close()
 end
+
+function Operations:pauseCreation(pause)
+    if(pause) then
+        self.lastStep = self.step
+        self.step = 'PAUSE'
+    else
+        if(self.lastStep == nil) then
+            return
+        end
+        self.step = self.lastStep 
+    end
+end
+
+function Operations:isPaused()
+    if(self.step == 'PAUSE') then
+        return true
+    else
+        return false
+    end
+end

@@ -1,4 +1,5 @@
 DimDiametricOperations = {
+    name = "DimDiametricOperations",
     command_line = "DIMDIAMETRIC",
     icon = "dim_diametric.svg",
     description = "Diametric Dimension",

@@ -3,6 +3,7 @@
 #include "dialogs/aboutdialog.h"
 #include "windowmanager.h"
 #include "propertyeditor.h"
+#include "managers/contextmenumanager.h"
 
 #include "widgets/guiAPI/coordinategui.h"
 #include "widgets/guiAPI/entitygui.h"
@@ -20,6 +21,9 @@ MainWindow::MainWindow()
     _toolbar(&_luaInterface, this),
     _layers(nullptr, this)
 {
+    ContextMenuManager::GetContextMenuManager(this);
+    _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
+
     ui->setupUi(this);
     // new document and set mainwindow attributes
     _cadMdiChild.newDocument();
@@ -78,6 +82,8 @@ MainWindow::MainWindow()
     _toolbar.generateButtonsMap();
     readUiSettings();
 
+    _cadMdiChild.viewer()->setContextMenuManagerId(_contextMenuManagerId);
+
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 
@@ -92,6 +98,7 @@ MainWindow::~MainWindow()
 void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method){
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
+    _cadMdiChild.viewer()->setOperationActive(true);
     kaguya::State state(_luaInterface.luaState());
 
     // if current operation had extra operation _toolbar icons, add them
@@ -130,6 +137,9 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
     else {
         op[init_method.c_str()](op);
     }
+
+    _oldOperation = operation;
+    _oldOpInitMethod = init_method;
 }
 
 void MainWindow::addOperationOptions(std::string operation, std::vector<kaguya::LuaRef> options) {
@@ -162,6 +172,10 @@ lc::ui::widgets::Layers* MainWindow::layers() {
 
 lc::ui::LuaInterface* MainWindow::luaInterface() {
     return &_luaInterface;
+}
+
+int MainWindow::contextMenuManagerId() {
+    return _contextMenuManagerId;
 }
 
 void MainWindow::ConnectInputEvents()
@@ -204,6 +218,12 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(findMenuItemByObjectName("actionInvert_Selection"), &QAction::triggered, this, &MainWindow::invertSelection);
     QObject::connect(findMenuItemByObjectName("actionClear_Undoable_Stack"), &QAction::triggered, this, &MainWindow::clearUndoableStack);
     QObject::connect(findMenuItemByObjectName("actionAuto_Scale"), &QAction::triggered, this, &MainWindow::autoScale);
+}
+
+void MainWindow::runLastOperation() {
+    if (!_oldOperation.isNilref()) {
+        runOperation(_oldOperation, _oldOpInitMethod);
+    }
 }
 
 /* Menu functions */
@@ -656,6 +676,14 @@ void MainWindow::selectionChanged() {
     else {
         propertyEditor->show();
     }
+}
+
+std::string MainWindow::lastOperationName() {
+    return _oldOperation["name"].get<std::string>();
+}
+
+kaguya::LuaRef MainWindow::currentOperation() {
+    return _luaInterface.operation();
 }
 
 void MainWindow::changeDockLayout(int i) {

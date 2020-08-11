@@ -1,4 +1,5 @@
 RemoveOperation = {
+    name = "RemoveOperation",
     command_line = "REMOVE",
     icon = "delete.svg"
 }

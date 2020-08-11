@@ -69,6 +69,11 @@ namespace lc
             lc::ui::LuaInterface* luaInterface();
 
             /**
+            * \brief Get context menu manager id for mainwindow
+            */
+            int contextMenuManagerId();
+
+            /**
             * \brief Connect existing menu item to lua callback function
             * \param itemName item name , callback - function callback
             */
@@ -96,6 +101,21 @@ namespace lc
             * \brief Read UI settings on program start up
             */
             void readUiSettings();
+
+            /**
+            * \brief Run the last operation
+            */
+            void runLastOperation();
+
+            /**
+            * \brief Return the last operation
+            */
+            std::string lastOperationName();
+
+            /**
+            * \brief Return the current operation
+            */
+            kaguya::LuaRef currentOperation();
 
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
@@ -138,7 +158,6 @@ namespace lc
 
             /**
             * \brief Change the dock layout
-            * \brief configuration number
             */
             void changeDockLayout(int i);
 
@@ -249,6 +268,10 @@ namespace lc
             std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;
 
             QMap<QString, api::Menu*> menuMap;
+            int _contextMenuManagerId;
+
+            kaguya::LuaRef _oldOperation;
+            std::string _oldOpInitMethod;
         };
     }
 }

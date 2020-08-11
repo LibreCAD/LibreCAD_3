@@ -177,3 +177,16 @@ lc::ui::api::ToolbarButton* Toolbar::buttonByName(QString buttonName) {
 QList<QString> Toolbar::buttonNames() const {
     return _buttonsMap.keys();
 }
+
+void Toolbar::updateSnapButtons(const viewer::manager::SnapManagerImpl_SPtr snapManager) {
+    lc::ui::api::ToolbarButton* snapGridButton = buttonByName("SnapGrid");
+    lc::ui::api::ToolbarButton* snapIntersectionButton = buttonByName("SnapIntersection");
+    lc::ui::api::ToolbarButton* snapMiddleButton = buttonByName("SnapMiddle");
+    lc::ui::api::ToolbarButton* snapEntityButton = buttonByName("SnapEntity");
+
+    snapGridButton->setChecked(snapManager->isGridSnappable());
+    snapIntersectionButton->setChecked(snapManager->isIntersectionsSnappable());
+    lc::SimpleSnapConstrain snapConstrain = snapManager->snapConstrain();
+    snapMiddleButton->setChecked(snapConstrain.hasConstrain(lc::SimpleSnapConstrain::LOGICAL));
+    snapEntityButton->setChecked(snapConstrain.hasConstrain(lc::SimpleSnapConstrain::ON_ENTITY));
+}

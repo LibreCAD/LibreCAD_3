@@ -5,6 +5,9 @@
 #include <QOpenGLContext>
 #include <QSurfaceFormat>
 #include <cad/logger/logger.h>
+#include "widgets/guiAPI/menu.h"
+#include "managers/contextmenumanager.h"
+
 using namespace lc;
 using namespace lc::ui;
 
@@ -296,7 +299,7 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
     QWidget::mousePressEvent(event);
 
     startSelectPos = event->pos();
-   if(!_operationActive) {
+   if(!_operationActive && event->buttons() != Qt::RightButton) {
         _dragManager->onMousePress();
     }
 
@@ -314,7 +317,9 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
             break;
     }
   
-    emit mousePressEvent();
+    if (event->buttons() != Qt::RightButton) {
+        emit mousePressEvent();
+    }
 }
 
 
@@ -348,14 +353,17 @@ std::shared_ptr<lc::viewer::DocumentCanvas> LCADViewer::documentCanvas() const {
     return _docCanvas;
 }
 
-void LCADViewer::setOperationActive(bool operationActive) {
-    _operationActive = operationActive;
+void LCADViewer::setOperationActive(bool operationActiveIn) {
+    _operationActive = operationActiveIn;
 
-    if(!operationActive) {
+    if(!operationActiveIn) {
         documentCanvas()->removeSelection();
     }
 }
 
+bool LCADViewer::operationActive() const {
+    return _operationActive;
+}
 
 void LCADViewer::paintGL()
 {
@@ -394,4 +402,14 @@ void LCADViewer::updateDocument()
 
 const std::shared_ptr<lc::viewer::DocumentCanvas>& LCADViewer::docCanvas() const {
     return _docCanvas;
+}
+
+void LCADViewer::setContextMenuManagerId(int contextMenuManagerId) {
+    _contextMenuManagerId = contextMenuManagerId;
+}
+
+void LCADViewer::contextMenuEvent(QContextMenuEvent* event) {
+    lc::ui::api::Menu menu("ContextMenu", this);
+    ContextMenuManager::GetContextMenuManager(_contextMenuManagerId)->generateMenu(&menu, documentCanvas()->selectedEntities().asVector());
+    menu.exec(event->globalPos());
 }

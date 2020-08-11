@@ -1,4 +1,5 @@
 LineOperations = {
+    name = "LineOperations",
     command_line = "LINE",
     icon = "linesnormal.png",
     menu_actions = {
@@ -12,6 +13,16 @@ LineOperations = {
         polygon_cencor = "actionPolygonCenCor",
         polygon_centan = "actionPolygonCenTan",
         polygon_corcor = "actionPolygonCorCor"
+    },
+    context_transitions = {
+        setSecondPoint = {"LineWithPointAngleLength", "HorizontalLine", "VerticalLine"},
+        LineWithPointAngleLength = {"setSecondPoint", "HorizontalLine", "VerticalLine"},
+        HorizontalLine = {"setSecondPoint", "LineWithPointAngleLength", "VerticalLine"},
+        VerticalLine = {"setSecondPoint", "LineWithPointAngleLength", "HorizontalLine"},
+        LineParallelToLine = {"LineOrthogonalToLine"},
+        LineOrthogonalToLine = {"LineParallelToLine"},
+        PolygonWithCenterPoint = {"PolygonWithCenterTangent"},
+        PolygonWithCenterTangent = {"PolygonWithCenterPoint"}
     }
 }
 LineOperations.__index = LineOperations
@@ -42,6 +53,7 @@ function LineOperations:_init_p2()
     --message("Options: <b><u>C</u>ontinuous</b>, <u>S</u>egment")  TODO: Multiple lines in single command.
     message("Click on first point or enter coordinates:")
     self.step = "setFirstPoint"
+    message("Self.step - " .. self.step)
 end
 
 function LineOperations:_init_pal()
@@ -99,6 +111,7 @@ end
 function LineOperations:setFirstPoint(eventName, data)
     if(eventName == "point") then
         self.builder:setStartPoint(data["position"])
+        self.firstPoint = data["position"]
         message("Click on second point or enter coordinates or enter line length")
         self.step = "setSecondPoint"
     end
@@ -137,44 +150,44 @@ function LineOperations:setSecondPoint(eventName, data)
 end
 
 function LineOperations:LineWithPointAngleLength(eventName, data)
-    if(eventName == "point" and not self.startPoint) then
+    if(eventName == "point" and not self.firstPoint) then
         self.builder:setStartPoint(data["position"])
-        self.startPoint = data["position"]
+        self.firstPoint = data["position"]
         message("Click to select angle or enter angle (in degrees):")
-    elseif(eventName == "mouseMove" and self.startPoint and not self.angle) then
+    elseif(eventName == "mouseMove" and self.firstPoint and not self.angle) then
         local angle = self.builder:startPoint():angleTo(data["position"])
         local p2 = lc.geo.Coordinate(50,0)
         p2 = p2:rotate(angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
-    elseif(eventName == "point" and self.startPoint and not self.angle) then
+        self.builder:setEndPoint(self.firstPoint:add(p2))
+    elseif(eventName == "point" and self.firstPoint and not self.angle) then
         self.angle = self.builder:startPoint():angleTo(data["position"])
         local p2 = lc.geo.Coordinate(50,0)
         p2 = p2:rotate(self.angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
+        self.builder:setEndPoint(self.firstPoint:add(p2))
         message("Enter length or click on point to at required length")
-    elseif(eventName == "number" and self.startPoint and not self.angle) then
+    elseif(eventName == "number" and self.firstPoint and not self.angle) then
         self.angle = data["number"] * (3.14159265) / 180
         local p2 = lc.geo.Coordinate(50,0)
         p2 = p2:rotate(self.angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
+        self.builder:setEndPoint(self.firstPoint:add(p2))
         message("Enter length or click on point to at required length")
-    elseif(eventName == "mouseMove" and self.startPoint and self.angle) then
-        local length = data["position"]:sub(self.startPoint):magnitude()
+    elseif(eventName == "mouseMove" and self.firstPoint and self.angle) then
+        local length = data["position"]:sub(self.firstPoint):magnitude()
         local p2 = lc.geo.Coordinate(length,0)
         p2 = p2:rotate(self.angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
-    elseif(eventName == "point" and self.startPoint and self.angle) then
-        local length = data["position"]:sub(self.startPoint):magnitude()
+        self.builder:setEndPoint(self.firstPoint:add(p2))
+    elseif(eventName == "point" and self.firstPoint and self.angle) then
+        local length = data["position"]:sub(self.firstPoint):magnitude()
         local p2 = lc.geo.Coordinate(length,0)
         p2 = p2:rotate(self.angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
+        self.builder:setEndPoint(self.firstPoint:add(p2))
         self:createEntity()
         self:close()
-    elseif(eventName == "number" and self.startPoint and self.angle) then
+    elseif(eventName == "number" and self.firstPoint and self.angle) then
         local length = data["number"]
         local p2 = lc.geo.Coordinate(length,0)
         p2 = p2:rotate(self.angle)
-        self.builder:setEndPoint(self.startPoint:add(p2))
+        self.builder:setEndPoint(self.firstPoint:add(p2))
         self:createEntity()
         self:close()
     end

@@ -15,6 +15,11 @@ Loop::Loop(std::vector<entity::CADEntity_CSPtr> loop): _objList(loop){
 Region::Region(){   
 }
 
+Region::Region(std::vector<lc::entity::CADEntity_CSPtr> entities){
+	Loop loop(entities);
+	addLoop(loop);
+}
+
 void Region::addLoop(Loop loop){
     _loopList.push_back(loop);
 }
@@ -111,4 +116,51 @@ Region Region::mirror(const geo::Coordinate& axis1,
 		reg.addLoop(loop);
 	}
 	return reg;
+}
+
+// Approximate function, change if possible
+double Region::Area() const{
+	double area=0.;
+
+    auto bbox = boundingBox();
+    auto minP = bbox.minP();
+    auto maxP = bbox.maxP();
+    unsigned int APPROX_POINTS = 500;
+    float delta = (maxP.y() - minP.y())/(float)APPROX_POINTS;
+    std::vector<float> oldI;
+    float extraSize=-delta;//Comensation if odd intersection is found, delta for first run
+    std::vector<float> oldOk;
+    for (float i=minP.y(); i<=maxP.y(); i+=delta)
+    {
+	    std::vector<lc::geo::Coordinate> newIc = getLineIntersection(
+	    		lc::geo::Vector(
+	    			lc::geo::Coordinate(minP.x()-delta, i),
+	    			lc::geo::Coordinate(maxP.x()+delta, i)
+	    			)
+	    	);
+	    std::vector<float> newI;
+	    for (auto &i : newIc){
+	    	newI.push_back(i.x());
+	    }//sort
+	    sort(newI.begin(), newI.end()); 
+	    if (newI.size()!=oldI.size() || newI.size()%2!=0){
+	    	//Proper block not found, approximate with newerData
+	    	extraSize += delta;
+	    	oldI = newI;
+	    	continue;
+	    }
+	    //Counter for old and new loop
+	    for(unsigned int x=0;x<newI.size();x+=2){
+	    	    area += (delta+extraSize)*((oldI[x+1]-oldI[x])+(newI[x+1]-newI[x]))/2;
+	    }
+	    extraSize=0.;
+	    oldI = newI;
+	    oldOk = newI;
+    }
+    if(extraSize!=0){//Last size failed too
+        for(unsigned int x=0;x<oldOk.size();x+=2){
+    	    area += extraSize*(oldOk[x+1]-oldOk[x]);
+	}
+    }
+	return area;
 }
