@@ -173,29 +173,29 @@ TEST(MenuTest, MenuInBarRemoveTest) {
     lc::ui::api::Menu* menu3 = new lc::ui::api::Menu("Menu3");
     mainWindow->addMenu(menu3);
 
-    EXPECT_EQ(5, menu1->position());
-    EXPECT_EQ(6, menu2->position());
-    EXPECT_EQ(7, menu3->position());
-
-    menu3->setPosition(4);
-
     EXPECT_EQ(6, menu1->position());
     EXPECT_EQ(7, menu2->position());
-    EXPECT_EQ(4, menu3->position());
+    EXPECT_EQ(8, menu3->position());
+
+    menu3->setPosition(5);
+
+    EXPECT_EQ(7, menu1->position());
+    EXPECT_EQ(8, menu2->position());
+    EXPECT_EQ(5, menu3->position());
 
     menu1->remove();
 
-    EXPECT_EQ(6, menu2->position());
-    EXPECT_EQ(4, menu3->position());
+    EXPECT_EQ(7, menu2->position());
+    EXPECT_EQ(5, menu3->position());
 
     lc::ui::api::Menu* menu4 = mainWindow->addMenu("Menu4");
 
-    EXPECT_EQ(6, menu2->position());
-    EXPECT_EQ(4, menu3->position());
-    EXPECT_EQ(7, menu4->position());
+    EXPECT_EQ(7, menu2->position());
+    EXPECT_EQ(5, menu3->position());
+    EXPECT_EQ(8, menu4->position());
 
     menu3->remove();
 
-    EXPECT_EQ(5, menu2->position());
-    EXPECT_EQ(6, menu4->position());
+    EXPECT_EQ(6, menu2->position());
+    EXPECT_EQ(7, menu4->position());
 }
