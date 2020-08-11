@@ -1,4 +1,5 @@
 AreaOperation = {
+    name = "AreaOperation",
     command_line = "AREA",
     icon = "infoarea.png"
 }
@@ -26,10 +27,11 @@ function AreaOperation:_init(id)
         local area = reg:Area()
         message('Area\t: ' .. tostring(area))
         message('Error ~= 0.01 %')--i think
-    else
         self.finished = true
-        luaInterface:triggerEvent('operationFinished')
     end
+
+    self.finished = true
+    luaInterface:triggerEvent('operationFinished')
 end
 
 function AreaOperation:close()
