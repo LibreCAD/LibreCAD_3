@@ -35,6 +35,13 @@ LCADViewer::LCADViewer(QWidget *parent) :
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
+    
+    // This list work in reverse lower loads first
+    _hookManager.append("select", [&](lc::ui::HookEvent& e)->bool{return selectHandler(e);});    
+    _hookManager.append("drag", [&](lc::ui::HookEvent& e)->bool{return dragHandler(e);});
+    _hookManager.append("pan", [&](lc::ui::HookEvent& e)->bool{return panHandler(e);});
+    // Inside lambdas to can capture context
+    //   bind would be better here but not sure
 }
 
 void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
@@ -258,10 +265,27 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
+bool LCADViewer::dragHandler(lc::ui::HookEvent& e){
+	std::cout << "Drag" << std::endl;
+	e.grab();
+	return false;
+};
+
+bool LCADViewer::selectHandler(lc::ui::HookEvent& e){
+	std::cout << "Select" << std::endl;
+	return false;
+};
+
+bool LCADViewer::panHandler(lc::ui::HookEvent& e){
+	std::cout << "Pan" << std::endl;
+	return false;
+};
+
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
-
  _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
+ _hookManager.onMouseEvent("move", event);
+/*
     _dragManager->onMouseMove();
 
     // Selection by area
@@ -290,6 +314,7 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
             updateDocument();
         }
     }
+*/
     emit mouseMoveEvent();
     update();
 }
@@ -297,7 +322,8 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 void LCADViewer::mousePressEvent(QMouseEvent *event) 
 {
     QWidget::mousePressEvent(event);
-
+ _hookManager.onMouseEvent("press", event);    
+/*
     startSelectPos = event->pos();
    if(!_operationActive && event->buttons() != Qt::RightButton) {
         _dragManager->onMousePress();
@@ -318,13 +344,15 @@ void LCADViewer::mousePressEvent(QMouseEvent *event)
     }
   
     if (event->buttons() != Qt::RightButton) {
-        emit mousePressEvent();
     }
+    */
+    emit mousePressEvent();
 }
 
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
-    startSelectPos = QPoint();
+ _hookManager.onMouseEvent("release", event);
+/*    startSelectPos = QPoint();
 
     _dragManager->onMouseRelease();
 
@@ -343,7 +371,7 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
 
     _docCanvas->removeSelectionArea();
     updateDocument();
-
+*/
     emit mouseReleaseEvent();
 
     update();
