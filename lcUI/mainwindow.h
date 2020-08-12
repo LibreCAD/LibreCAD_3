@@ -12,6 +12,7 @@
 #include "widgets/toolbar.h"
 #include "widgets/customizeToolbar/customizetoolbar.h"
 #include "managers/uisettings.h"
+#include "managers/copymanager.h"
 #include "cadmdichild.h"
 
 #include "widgets/guiAPI/menu.h"
@@ -116,6 +117,16 @@ namespace lc
             * \brief Return the current operation
             */
             kaguya::LuaRef currentOperation();
+
+            /**
+            * \brief Copy selected entities to the clipboard
+            */
+            void copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities);
+            
+            /**
+            * \brief Paste entites from the clipboard
+            */
+            void pasteEvent();
 
             /* ------------ MENU GUI FUNCTIONS ---------------- */
 
@@ -253,6 +264,7 @@ namespace lc
 
             lc::ui::widgets::CustomizeToolbar* _customizeToolbar;
             lc::ui::UiSettings _uiSettings;
+            lc::ui::CopyManager _copyManager;
 
             lc::geo::Coordinate lastPoint;
             std::map<std::string, std::vector<kaguya::LuaRef>> operation_options;

@@ -204,6 +204,8 @@ void addLCBindings(lua_State *L) {
         .addFunction("runLastOperation", &lc::ui::MainWindow::runLastOperation)
         .addFunction("currentOperation", &lc::ui::MainWindow::currentOperation)
         .addFunction("changeDockLayout", &lc::ui::MainWindow::changeDockLayout)
+        .addFunction("copySelectedEntities", &lc::ui::MainWindow::copySelectedEntities)
+        .addFunction("pasteEvent", &lc::ui::MainWindow::pasteEvent)
         .addOverloadedFunctions("addMenu", static_cast<lc::ui::api::Menu*(lc::ui::MainWindow::*)(const std::string&)>(&lc::ui::MainWindow::addMenu), static_cast<void(lc::ui::MainWindow::*)(lc::ui::api::Menu*)>(&lc::ui::MainWindow::addMenu))
         .addOverloadedFunctions("removeMenu", static_cast<void(lc::ui::MainWindow::*)(const char*)>(&lc::ui::MainWindow::removeMenu), static_cast<void(lc::ui::MainWindow::*)(int)>(&lc::ui::MainWindow::removeMenu))
         .addOverloadedFunctions("runOperation", &lc::ui::MainWindow::runOperation, [](lc::ui::MainWindow& self, kaguya::LuaRef operation) { self.runOperation(operation); })

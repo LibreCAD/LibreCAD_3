@@ -708,3 +708,11 @@ void MainWindow::changeDockLayout(int i) {
         addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
     }
 }
+
+void MainWindow::copySelectedEntities(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
+    _copyManager.copyEntitiesToClipboard(cadEntities);
+}
+
+void MainWindow::pasteEvent() {
+    _copyManager.pasteEvent();
+}

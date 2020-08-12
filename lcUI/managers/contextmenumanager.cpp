@@ -102,6 +102,12 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
     menu->addItem(undoItem);
     menu->addItem(redoItem);
 
+    // paste command
+    api::MenuItem* pasteItem = new api::MenuItem("Paste");
+    _L.dostring("contextmenu_op = function() mainWindow:pasteEvent() end");
+    pasteItem->addCallback(_L["contextmenu_op"]);
+    menu->addItem(pasteItem);
+
     // Select commands
     api::Menu* selectMenu = new api::Menu("Select");
     api::MenuItem* selectAllItem = new api::MenuItem("Select All");
@@ -135,6 +141,12 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
 }
 
 void ContextMenuManager::selectedCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
+    // Copy Command
+    api::MenuItem* copyItem = new api::MenuItem("Copy");
+    _L.dostring("contextmenu_op = function() mainWindow:copySelectedEntities(mainWindow:cadMdiChild():selection()) end");
+    copyItem->addCallback(_L["contextmenu_op"]);
+    menu->addItem(copyItem);
+
     // Modify commands
     api::Menu* groupMenu = new api::Menu("Modify");
     for (const std::string& opName : _operationMap["Modify"]) {
