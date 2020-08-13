@@ -9,7 +9,8 @@ ArcOperations = {
         csl = "actionCenter_Start_Length_2",
         sce = "actionStart_Center_End_2",
         sca = "actionStart_Center_Angle_2",
-        scl = "actionStart_Center_Length"
+        scl = "actionStart_Center_Length",
+        sea = "actionStart_End_Angle_3"
     },
     context_transitions = {
         ArcWithSCE = {"ArcWithSCA", "ArcWithSCL"},
@@ -87,6 +88,12 @@ function ArcOperations:_init_scl()
     message("<b>Arc - Start Center Angle</b>")
     message("Provide Start Point:")
 	self.step = "ArcWithSCL"
+end
+
+function ArcOperations:_init_sea()
+    message("<b>Arc - Start End Angle</b>")
+    message("Provide Start Point:")
+	self.step = "ArcWithSEA"
 end
 
 function ArcOperations:ArcWith3Points(eventName, data)
@@ -272,6 +279,40 @@ function ArcOperations:ArcWithCSL(eventName, data) -- Create Arc with Center, St
     end
 end
 
+function ArcOperations:ArcWithSEA(eventName, data) -- Create Arc with Start, End and Angle
+    if(eventName == "point" and not self.Arc_FirstPoint) then
+        self.Arc_FirstPoint = data["position"]
+        message("Provide End Point:")
+    elseif(eventName == "point" and self.Arc_FirstPoint and not self.Arc_EndPoint) then
+        self.Arc_EndPoint = data["position"]
+        message("Enter angle:")
+    elseif(eventName == "number" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
+        self.Arc_Center = self:GetArcCenterFromStartEndAngle(data["number"])
+        self.builder:setCenter(self.Arc_Center)
+        self.builder:setRadius(self.Arc_Center:distanceTo(self.Arc_FirstPoint))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        self:createEntity()
+    elseif(eventName == "mouseMove" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
+        local mid_point = self.Arc_FirstPoint:mid(self.Arc_EndPoint)
+        local angle = mid_point:distanceTo(data["position"]) * 0.2
+        local arcCenter = self:GetArcCenterFromStartEndAngle(angle)
+        self.builder:setCenter(arcCenter)
+        self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+    elseif(eventName == "point" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
+       local mid_point = self.Arc_FirstPoint:mid(self.Arc_EndPoint)
+        local angle = mid_point:distanceTo(data["position"]) * 0.2
+        local arcCenter = self:GetArcCenterFromStartEndAngle(angle)
+        self.builder:setCenter(arcCenter)
+        self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
+        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        self:createEntity()
+    end
+end
+
 function ArcOperations:Circumcenter(Point1,Point2,Point3)
     local Angle1=Point1:angleBetween(Point2,Point3)
     local Angle2=Point2:angleBetween(Point3,Point1)
@@ -285,4 +326,13 @@ end
 function ArcOperations:CheckCCW(P1,P2,P3)
     local K = ((P2:y() - P1:y()) * ( P3:x() - P2:x() ) ) - ( (P2:x() - P1:x() ) * ( P3:y() - P2:y() ) )
     if (K > 0) then return false else return true end
+end
+
+function ArcOperations:GetArcCenterFromStartEndAngle(angle)
+    local mid_point = self.Arc_FirstPoint:mid(self.Arc_EndPoint)
+    local perpendicular_vector = self.Arc_FirstPoint:sub(self.Arc_EndPoint):rotate(3.1416/2):norm()
+    local angleInRad = angle * 3.1416/180
+    local y = self.Arc_FirstPoint:distanceTo(self.Arc_EndPoint)
+    local x = y/(2 * math.tan(angleInRad/2.0))
+    return mid_point:add(perpendicular_vector:multiply(x))
 end
