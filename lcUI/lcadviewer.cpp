@@ -266,6 +266,7 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 }
 
 bool LCADViewer::dragHandler(lc::ui::HookEvent& e){
+	//It shouldn't happen during operation
 	std::cout << "Drag" << std::endl;
 	return false;
 };
@@ -313,21 +314,39 @@ bool LCADViewer::selectHandler(lc::ui::HookEvent& e){
 };
 
 bool LCADViewer::panHandler(lc::ui::HookEvent& e){
+	/**
+	* Pan, work with middle mouse only
+	* Check click, move and release
+	*/
 	std::cout << "Pan" << std::endl;
-    /*if (_altKeyActive || _mouseScrollKeyActive) {
-        if (!startSelectPos.isNull()) {
-            auto translateX = event->pos().x()-startSelectPos.x();
-            auto translateY = event->pos().y()-startSelectPos.y();
-            startSelectPos = event->pos();
-            for(auto pair : imagemaps) {
-                _docCanvas->pan(*pair.first, translateX, translateY);
-            }
-            
-            updateBackground();
-            updateDocument();
-            update();
-        }
-    }*/
+	if(e.eventType=="pressMouseEvent"){
+		if (e.mouseEvent->buttons() != Qt::MiddleButton)return false;
+		startSelectPos = e.mouseEvent->pos();// Save it
+		_mouseScrollKeyActive = true;
+		e.grab();// Grab we are selecting now no interference
+	}else if(e.eventType=="moveMouseEvent"){
+		if (startSelectPos.isNull())return false;// No info about it
+		if (_altKeyActive || _mouseScrollKeyActive) {
+			if (!startSelectPos.isNull()) {
+			    auto translateX = e.mouseEvent->pos().x()-startSelectPos.x();
+			    auto translateY = e.mouseEvent->pos().y()-startSelectPos.y();
+			    startSelectPos = e.mouseEvent->pos();
+			    for(auto pair : imagemaps) {
+				_docCanvas->pan(*pair.first, translateX, translateY);
+			    }
+			    
+			    updateBackground();
+			    updateDocument();
+			    update();
+			}
+		}
+	}else if(e.eventType=="releaseMouseEvent"){
+		if (startSelectPos.isNull())return false;// No info about it
+		startSelectPos=QPoint();
+		e.free();
+		_mouseScrollKeyActive = false;
+		return true;
+	}
 	return false;
 };
 
