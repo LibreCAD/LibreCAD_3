@@ -267,17 +267,67 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
 
 bool LCADViewer::dragHandler(lc::ui::HookEvent& e){
 	std::cout << "Drag" << std::endl;
-	e.grab();
 	return false;
 };
 
+// Select should always be at last
 bool LCADViewer::selectHandler(lc::ui::HookEvent& e){
-	std::cout << "Select" << std::endl;
+	/**
+	* Select works this way
+	* if we click and release mouse, no move point mode
+	* else area mode
+	*/
+	// We need to add stronger check if some handler come after it
+	if(e.eventType=="pressMouseEvent"){
+		if (e.mouseEvent->buttons() != Qt::LeftButton)return false;
+		startSelectPos = e.mouseEvent->pos();// Save it
+		e.grab();// Grab we are selecting now no interference
+	}else if(e.eventType=="moveMouseEvent"){
+	        if (!startSelectPos.isNull()) {
+		    bool occopies = startSelectPos.x() < e.mouseEvent->pos().x();
+		    _docCanvas->makeSelectionDevice(
+			*_documentPainter,
+			std::min(startSelectPos.x(), e.mouseEvent->pos().x()) , std::min(startSelectPos.y(), e.mouseEvent->pos().y()),
+			std::abs(startSelectPos.x() - e.mouseEvent->pos().x()),
+			std::abs(startSelectPos.y() - e.mouseEvent->pos().y()), occopies);
+
+		    updateDocument();
+		}
+	}else if(e.eventType=="releaseMouseEvent"){
+		if (startSelectPos.isNull())return false;
+		if(startSelectPos==e.mouseEvent->pos()){//Point select
+			double x = startSelectPos.x();
+			double y = startSelectPos.y();
+			_documentPainter->device_to_user(&x, &y);
+			docCanvas()->selectPoint(x, y);	
+		}else{//Rectangular select
+			_docCanvas->closeSelection();
+			_docCanvas->removeSelectionArea();
+		}
+		updateDocument();
+		startSelectPos=QPoint();
+		e.free();
+		return true;
+	}
 	return false;
 };
 
 bool LCADViewer::panHandler(lc::ui::HookEvent& e){
 	std::cout << "Pan" << std::endl;
+    /*if (_altKeyActive || _mouseScrollKeyActive) {
+        if (!startSelectPos.isNull()) {
+            auto translateX = event->pos().x()-startSelectPos.x();
+            auto translateY = event->pos().y()-startSelectPos.y();
+            startSelectPos = event->pos();
+            for(auto pair : imagemaps) {
+                _docCanvas->pan(*pair.first, translateX, translateY);
+            }
+            
+            updateBackground();
+            updateDocument();
+            update();
+        }
+    }*/
 	return false;
 };
 
@@ -368,6 +418,7 @@ void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
         default: {    
         } break;
     }
+    _docCanvas->closeSelection();
 
     _docCanvas->removeSelectionArea();
     updateDocument();
