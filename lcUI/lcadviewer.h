@@ -9,8 +9,6 @@
 #include <QOpenGLWidget>
 #include <QOpenGLContext>
 
-
-
 #include "cad/storage/document.h"
 #include "cad/storage/entitycontainer.h"
 #include "drawitems/lcvdrawitem.h"
@@ -25,6 +23,7 @@
 #include <events/selecteditemsevent.h>
 
 #include <managers/dragmanager.h>
+#include <managers/hookmanager.h>
 
 #include "documentcanvas.h"
 
@@ -135,6 +134,10 @@ namespace lc {
                 void messageLogged(const QOpenGLDebugMessage &msg);
 
             private:
+            	bool dragHandler(lc::ui::HookEvent&);
+           	bool selectHandler(lc::ui::HookEvent&);
+           	bool panHandler(lc::ui::HookEvent&);
+           	
                 void initializeGL();
 
                 void createPainters(unsigned int width, unsigned int height);
@@ -171,6 +174,7 @@ namespace lc {
                 std::shared_ptr<lc::storage::Document> _document;
                 std::shared_ptr<lc::viewer::manager::SnapManager> _snapManager;
                 lc::viewer::manager::DragManager_SPtr _dragManager;
+                lc::ui::HookManager _hookManager;
 
                 lc::viewer::LcPainter* _backgroundPainter;
                 lc::viewer::LcPainter* _documentPainter;

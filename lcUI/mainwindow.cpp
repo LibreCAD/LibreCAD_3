@@ -576,7 +576,6 @@ void MainWindow::triggerCommandEntered(QString command)
 void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)
 {
     lastPoint = coordinate;
-    _cadMdiChild.viewer()->docCanvas()->selectPoint(coordinate.x(), coordinate.y());
 }
 
 void MainWindow::newFile()

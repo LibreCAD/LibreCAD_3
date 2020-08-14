@@ -63,8 +63,6 @@ namespace lc {
                     unsigned int _size;
                     lc::geo::Area _toleranceArea;
 
-                    std::vector<lc::geo::Coordinate> closeEntitiesDragPoints();
-
                     std::vector<lc::geo::Coordinate> selectedEntitiesDragPoints();
 
                     void moveEntities();
@@ -79,7 +77,7 @@ namespace lc {
                     lc::operation::EntityBuilder_SPtr _entityBuilder;
 
                     lc::geo::Coordinate _selectedPoint;
-                    lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> _selectedEntities;
+                    std::vector<lc::entity::CADEntity_CSPtr> _replacementEntities;
 
                     Nano::Signal<void(const lc::viewer::event::DragPointsEvent&)> _dragPointsEvent;
             };

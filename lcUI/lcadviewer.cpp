@@ -35,6 +35,13 @@ LCADViewer::LCADViewer(QWidget *parent) :
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setOption(QSurfaceFormat::DebugContext);
     setFormat(format);
+    
+    // This list work in reverse lower loads first
+    _hookManager.append("select", [&](lc::ui::HookEvent& e)->bool{return selectHandler(e);});    
+    _hookManager.append("drag", [&](lc::ui::HookEvent& e)->bool{return dragHandler(e);});
+    _hookManager.append("pan", [&](lc::ui::HookEvent& e)->bool{return panHandler(e);});
+    // Inside lambdas to can capture context
+    //   bind would be better here but not sure
 }
 
 void LCADViewer::messageLogged(const QOpenGLDebugMessage &msg)
@@ -258,38 +265,113 @@ void LCADViewer::wheelEvent(QWheelEvent *event) {
     this->update();
 }
 
+bool LCADViewer::dragHandler(lc::ui::HookEvent& e){
+	//It shouldn't happen during operation
+	// And should be strong check
+	// Drag 
+	// Left click check if clicked in any drag point
+	// After that only move
+	// And finally release leaves hook
+	if(_operationActive)return false;
+	if(e.eventType=="pressMouseEvent"){
+		if (e.mouseEvent->buttons() != Qt::LeftButton)return false;
+		_dragManager->onMousePress();
+		if(_dragManager->entityDragged())
+			e.grab();// Grab we are dragging now no interference
+	}else if(e.eventType=="moveMouseEvent"){
+		_dragManager->onMouseMove();
+	}else if(e.eventType=="releaseMouseEvent"){
+		bool grabbed=_dragManager->entityDragged();
+		_dragManager->onMouseRelease();	
+		if(grabbed){//If we have grabbed
+			e.free();
+			return true;
+			}
+	}
+	return false;
+};
+
+// Select should always be at last
+bool LCADViewer::selectHandler(lc::ui::HookEvent& e){
+	/**
+	* Select works this way
+	* if we click and release mouse, no move point mode
+	* else area mode
+	*/
+	// We need to add stronger check if some handler come after it
+	if(e.eventType=="pressMouseEvent"){
+		if (e.mouseEvent->buttons() != Qt::LeftButton)return false;
+		startSelectPos = e.mouseEvent->pos();// Save it
+		e.grab();// Grab we are selecting now no interference
+	}else if(e.eventType=="moveMouseEvent"){
+	        if (!startSelectPos.isNull()) {
+		    bool occopies = startSelectPos.x() < e.mouseEvent->pos().x();
+		    _docCanvas->makeSelectionDevice(
+			*_documentPainter,
+			std::min(startSelectPos.x(), e.mouseEvent->pos().x()) , std::min(startSelectPos.y(), e.mouseEvent->pos().y()),
+			std::abs(startSelectPos.x() - e.mouseEvent->pos().x()),
+			std::abs(startSelectPos.y() - e.mouseEvent->pos().y()), occopies);
+
+		    updateDocument();
+		}
+	}else if(e.eventType=="releaseMouseEvent"){
+		if (startSelectPos.isNull())return false;
+		if(startSelectPos==e.mouseEvent->pos()){//Point select
+			double x = startSelectPos.x();
+			double y = startSelectPos.y();
+			_documentPainter->device_to_user(&x, &y);
+			docCanvas()->selectPoint(x, y);	
+		}else{//Rectangular select
+			_docCanvas->closeSelection();
+			_docCanvas->removeSelectionArea();
+		}
+		updateDocument();
+		startSelectPos=QPoint();
+		e.free();
+		return true;
+	}
+	return false;
+};
+
+bool LCADViewer::panHandler(lc::ui::HookEvent& e){
+	/**
+	* Pan, work with middle mouse only
+	* Check click, move and release
+	*/
+	if(e.eventType=="pressMouseEvent"){
+		if (e.mouseEvent->buttons() != Qt::MiddleButton)return false;
+		startSelectPos = e.mouseEvent->pos();// Save it
+		_mouseScrollKeyActive = true;
+		e.grab();// Grab we are selecting now no interference
+	}else if(e.eventType=="moveMouseEvent"){
+		if (startSelectPos.isNull())return false;// No info about it
+		if (_altKeyActive || _mouseScrollKeyActive) {
+			if (!startSelectPos.isNull()) {
+			    auto translateX = e.mouseEvent->pos().x()-startSelectPos.x();
+			    auto translateY = e.mouseEvent->pos().y()-startSelectPos.y();
+			    startSelectPos = e.mouseEvent->pos();
+			    for(auto pair : imagemaps) {
+				_docCanvas->pan(*pair.first, translateX, translateY);
+			    }
+			    
+			    updateBackground();
+			    updateDocument();
+			}
+		}
+	}else if(e.eventType=="releaseMouseEvent"){
+		if (startSelectPos.isNull())return false;// No info about it
+		startSelectPos=QPoint();
+		e.free();
+		_mouseScrollKeyActive = false;
+		return true;
+	}
+	return false;
+};
+
 void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
-
  _snapManager->setDeviceLocation(event->pos().x(), event->pos().y());
-    _dragManager->onMouseMove();
-
-    // Selection by area
-    if (_altKeyActive || _mouseScrollKeyActive) {
-        if (!startSelectPos.isNull()) {
-            auto translateX = event->pos().x()-startSelectPos.x();
-            auto translateY = event->pos().y()-startSelectPos.y();
-            startSelectPos = event->pos();
-            for(auto pair : imagemaps) {
-                _docCanvas->pan(*pair.first, translateX, translateY);
-            }  
-            
-            updateBackground();
-            updateDocument();
-            update();
-        }
-    } else {
-        if (!startSelectPos.isNull()) {
-            bool occopies = startSelectPos.x() < event->pos().x();
-            _docCanvas->makeSelectionDevice(
-                *_documentPainter,
-                std::min(startSelectPos.x(), event->pos().x()) , std::min(startSelectPos.y(), event->pos().y()),
-                std::abs(startSelectPos.x() - event->pos().x()),
-                std::abs(startSelectPos.y() - event->pos().y()), occopies);
-
-            updateDocument();
-        }
-    }
+ _hookManager.onMouseEvent("move", event);
     emit mouseMoveEvent();
     update();
 }
@@ -297,55 +379,14 @@ void LCADViewer::mouseMoveEvent(QMouseEvent *event) {
 void LCADViewer::mousePressEvent(QMouseEvent *event) 
 {
     QWidget::mousePressEvent(event);
-
-    startSelectPos = event->pos();
-   if(!_operationActive && event->buttons() != Qt::RightButton) {
-        _dragManager->onMousePress();
-    }
-
-    if(_dragManager->entityDragged()) {
-        startSelectPos = QPoint();
-    }
-
-    switch (event->buttons()) {
-        case Qt::MiddleButton: {
-            _mouseScrollKeyActive = true;
-        }
-            break;
-
-        default:
-            break;
-    }
-  
-    if (event->buttons() != Qt::RightButton) {
-        emit mousePressEvent();
-    }
+ _hookManager.onMouseEvent("press", event);    
+    emit mousePressEvent();
 }
 
 
 void LCADViewer::mouseReleaseEvent(QMouseEvent *event) {
-    startSelectPos = QPoint();
-
-    _dragManager->onMouseRelease();
-
-    _docCanvas->closeSelection();
-
-    std::vector<lc::EntityDistance> emptyList;
-    //  MouseReleaseEvent e(this, _lastMousePosition, event, emptyList);
-    //  emit mouseReleaseEvent(e);
-    switch (event->button()) {
-        case Qt::MiddleButton: {
-            _mouseScrollKeyActive = false;
-        } break;
-        default: {    
-        } break;
-    }
-
-    _docCanvas->removeSelectionArea();
-    updateDocument();
-
+ _hookManager.onMouseEvent("release", event);
     emit mouseReleaseEvent();
-
     update();
 }
 

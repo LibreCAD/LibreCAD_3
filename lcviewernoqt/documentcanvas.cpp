@@ -577,8 +577,10 @@ void DocumentCanvas::closeSelection() {
 	    if(drawable->selected())
 	            _selectedDrawables.push_back(drawable);
         }else{
-	    if(!drawable->selected())
+	    if(!drawable->selected()){
 	            _selectedDrawables.erase(iter);
+	            drawable->selected(false);
+	    }
         }
     };
 
@@ -615,7 +617,7 @@ void DocumentCanvas::removeSelection() {
 }
 
 void DocumentCanvas::inverseSelection() {
-    _selectedDrawables.clear();
+	std::vector<lc::viewer::LCVDrawItem_SPtr> selectedDrawables;
     _newSelection.clear();
 
     entityContainer().each< const lc::entity::CADEntity >([&](lc::entity::CADEntity_CSPtr entity) {
@@ -624,14 +626,14 @@ void DocumentCanvas::inverseSelection() {
         if (iter != _selectedDrawables.end())
         {
             item->selected(false);
-            _selectedDrawables.erase(iter);
         }
         else
         {
             item->selected(true);
-            _selectedDrawables.push_back(item);
+            selectedDrawables.push_back(item);
         }
     });
+    _selectedDrawables = selectedDrawables;
 }
 
 Nano::Signal<void(lc::viewer::event::DrawEvent const & event)> & DocumentCanvas::background ()  {
