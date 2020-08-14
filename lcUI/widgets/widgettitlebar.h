@@ -88,6 +88,12 @@ namespace lc {
 				WidgetTitleBar( const QString& title,
 								QDockWidget* parent,
 								const TitleBarOptions hideOptions);
+
+                void setTitleBarOrientation(TitleBarOptions options);
+
+            public slots:
+                void determineTitleBarOrientation();
+
 			protected slots:
 				void expandButtonTriggered();
 				void closeButtonTriggered();
@@ -109,6 +115,9 @@ namespace lc {
 				// enums for hide options
 				TitleBarOptions hideOptions;
                 QSize _oldSize;
+
+                QDockWidget::DockWidgetFeatures expandedFeatures;
+                bool closed;
 
 				// functions to switch to horizontal or vertical layouts
 				void setHorizontalLayout();

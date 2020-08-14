@@ -135,6 +135,11 @@ void ContextMenuManager::inactiveCommands(api::Menu* menu) {
 }
 
 void ContextMenuManager::selectedCommands(api::Menu* menu, const std::vector<lc::entity::CADEntity_CSPtr>& selectedEntities) {
+    api::MenuItem* lastCommandItem = new api::MenuItem("Last Command");
+    _L.dostring("contextmenu_op = function() mainWindow:runLastOperation() end");
+    lastCommandItem->addCallback(_L["contextmenu_op"]);
+    menu->addItem(lastCommandItem);
+
     // Modify commands
     api::Menu* groupMenu = new api::Menu("Modify");
     for (const std::string& opName : _operationMap["Modify"]) {

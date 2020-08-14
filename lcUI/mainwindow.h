@@ -156,6 +156,21 @@ namespace lc
             /* --- OTHER FUNCTIONS --- */
             void removeFromMenuMap(std::string menuName);
 
+            /**
+            * \brief Change the dock layout
+            */
+            void changeDockLayout(int i);
+
+            /**
+            * \brief Save the dock layout
+            */
+            void saveDockLayout();
+
+            /**
+            * \brief Load dock layout
+            */
+            void loadDockLayout();
+
         private:
             /**
             * \brief Add Menu items as actions, replace QAction with MenuItem
