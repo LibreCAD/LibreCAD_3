@@ -27,5 +27,25 @@
                 ]
             }
         ]
-    }
+    },
+    "dockPositions": [
+        {
+            "widget": "CliCommand",
+            "position": 8,
+            "proportion": 65
+        },
+        {
+            "widget": "Layers",
+            "position": 2
+        },
+        {
+            "widget": "PropertyEditor",
+            "position": 8,
+            "proportion": 35
+        },
+        {
+            "widget": "Toolbar",
+            "position": 4
+        }
+    ]
 }

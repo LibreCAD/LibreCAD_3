@@ -1,6 +1,8 @@
 #include "widgettitlebar.h"
 #include "layers.h"
 
+#include <QMainWindow>
+
 using namespace lc;
 using namespace lc::ui;
 using namespace lc::ui::widgets;
@@ -8,9 +10,10 @@ using namespace lc::ui::widgets;
 WidgetTitleBar::WidgetTitleBar( const QString& title,
 								QDockWidget* parent,
 								WidgetTitleBar::TitleBarOptions hideOptions)
-	: QWidget(parent), m_pMainHLayout(nullptr), m_pMainVLayout(nullptr)
+	: QWidget(parent), m_pMainHLayout(nullptr), m_pMainVLayout(nullptr), closed(false)
 {
 	pDock = parent;
+    expandedFeatures = pDock->features();
 
 	this->hideOptions = hideOptions;
 
@@ -38,10 +41,13 @@ WidgetTitleBar::WidgetTitleBar( const QString& title,
 
 	connect(m_pExpandButton, SIGNAL(clicked()), this, SLOT(expandButtonTriggered()));
 	connect(m_pCloseButton, SIGNAL(clicked()), this, SLOT(closeButtonTriggered()));
+
+    connect(pDock, &QDockWidget::dockLocationChanged, this, &widgets::WidgetTitleBar::determineTitleBarOrientation);
 }
 
 void WidgetTitleBar::expandButtonTriggered()
 {
+    closed = false;
 	m_pCloseButton->show();
 	m_pExpandButton->hide();
 
@@ -54,13 +60,20 @@ void WidgetTitleBar::expandButtonTriggered()
 		setVerticalLayout();
 	}
 
-    pDock->setMinimumWidth(_oldSize.width());
-	pDock->widget()->show();
-    pDock->setMinimumWidth(0);
+    if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden){
+        pDock->setMinimumWidth(_oldSize.width());
+    }
+
+    pDock->widget()->show();
+
+    if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden) {
+        pDock->setMinimumWidth(0);
+    }
 }
 
 void WidgetTitleBar::closeButtonTriggered()
 {
+    closed = true;
 	m_pCloseButton->hide();
 	m_pExpandButton->show();
 
@@ -99,7 +112,12 @@ void WidgetTitleBar::setHorizontalLayout()
 	m_pRLabel->hide();
 
 	// disable DockWidgetVerticalTitleBar feature
-	pDock->setFeatures(pDock->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
+    if (closed) {
+        pDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    }
+    else {
+        pDock->setFeatures(expandedFeatures & ~QDockWidget::DockWidgetVerticalTitleBar);
+    }
 }
 
 void WidgetTitleBar::setVerticalLayout()
@@ -124,5 +142,42 @@ void WidgetTitleBar::setVerticalLayout()
 	m_pLabel->hide();
 
 	// enable DockWidgetVerticalTitleBar feature
-	pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
+    if (closed) {
+        pDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
+    }
+    else {
+        pDock->setFeatures(expandedFeatures | QDockWidget::DockWidgetVerticalTitleBar);
+    }
+}
+
+void WidgetTitleBar::determineTitleBarOrientation() {
+    QMainWindow* mainWindow = qobject_cast<QMainWindow*>(pDock->parentWidget());
+
+    if (mainWindow != nullptr) {
+        Qt::DockWidgetArea widgetArea = mainWindow->dockWidgetArea(pDock);
+        
+        if (widgetArea == Qt::TopDockWidgetArea || widgetArea == Qt::BottomDockWidgetArea) {
+            setTitleBarOrientation(TitleBarOptions::HorizontalOnHidden);
+        }
+        else if(widgetArea == Qt::LeftDockWidgetArea || widgetArea == Qt::RightDockWidgetArea){
+            setTitleBarOrientation(TitleBarOptions::VerticalOnHidden);
+        }
+    }
+}
+
+void WidgetTitleBar::setTitleBarOrientation(TitleBarOptions options) {
+    if (this->hideOptions == options) {
+        return;
+    }
+
+    this->hideOptions = options;
+
+    if (hideOptions == WidgetTitleBar::TitleBarOptions::VerticalOnHidden)
+    {
+        setHorizontalLayout();
+    }
+    else if (hideOptions == WidgetTitleBar::TitleBarOptions::HorizontalOnHidden)
+    {
+        setVerticalLayout();
+    }
 }

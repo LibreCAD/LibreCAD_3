@@ -215,57 +215,54 @@ void CustomizeToolbar::parentTabClosed(int index) {
     }
 }
 
-void CustomizeToolbar::generateData(rapidjson::Writer<rapidjson::OStreamWrapper>& writer) {
+void CustomizeToolbar::generateData(rapidjson::Document& document) {
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
-    
-    writer.StartObject();
-    writer.Key("toolbar");
-    writer.StartObject();
-    writer.Key("tabs");
-    writer.StartArray();
+
+    rapidjson::Value toolbarData(rapidjson::kObjectType);
+    rapidjson::Value tabsData(rapidjson::kArrayType);
 
     int tabCount = tabWidget->count() - 1;
     // count - 1 because the last "add group" tab should not be considered
     for (int i = 0; i < tabCount; i++) {
         CustomizeParentTab* parentTab = qobject_cast<CustomizeParentTab*>(tabWidget->widget(i));
-
         int groupCount = parentTab->count() - 1;
 
-        writer.StartObject();
-        writer.Key("label");
-        writer.String(parentTab->label().c_str());
-        writer.String("groups");
-        writer.StartArray();
+        rapidjson::Value tabData(rapidjson::kObjectType);
+        rapidjson::Value labelData;
+        labelData.SetString(parentTab->label().c_str(), parentTab->label().size(), document.GetAllocator());
+        tabData.AddMember("label", labelData, document.GetAllocator());
+
+        rapidjson::Value groupsData(rapidjson::kArrayType);
 
         for (int j = 0; j < groupCount; j++) {
             CustomizeGroupTab* groupTab = qobject_cast<CustomizeGroupTab*>(parentTab->widget(j));
+            rapidjson::Value groupData(rapidjson::kObjectType);
 
-            writer.StartObject();
-            writer.Key("label");
-            writer.String(groupTab->label().c_str());
-            writer.Key("width");
-            writer.Int(groupTab->groupWidth());
-            writer.String("buttons");
-            writer.StartArray();
+            rapidjson::Value labelData;
+            labelData.SetString(groupTab->label().c_str(), groupTab->label().size(), document.GetAllocator());
+            groupData.AddMember("label", labelData, document.GetAllocator());
+            groupData.AddMember("width", groupTab->groupWidth(), document.GetAllocator());
+
+            rapidjson::Value buttonsData(rapidjson::kArrayType);
 
             // list of buttons in order from group
             QList<QString> buttonNameList = groupTab->buttonNames();
 
             for (QString& buttonName : buttonNameList) {
-                writer.String(buttonName.toStdString().c_str());
+                rapidjson::Value buttonData;
+                buttonData.SetString(buttonName.toStdString().c_str(), buttonName.size(), document.GetAllocator());
+                buttonsData.PushBack(buttonData, document.GetAllocator());
             }
-            
-            writer.EndArray();
-            writer.EndObject();
+
+            groupData.AddMember("buttons", buttonsData, document.GetAllocator());
+            groupsData.PushBack(groupData, document.GetAllocator());
         }
-        
-        writer.EndArray();
-        writer.EndObject();
+        tabData.AddMember("groups", groupsData, document.GetAllocator());
+        tabsData.PushBack(tabData, document.GetAllocator());
     }
 
-    writer.EndArray();
-    writer.EndObject();
-    writer.EndObject();
+    toolbarData.AddMember("tabs", tabsData, document.GetAllocator());
+    document.AddMember("toolbar", toolbarData, document.GetAllocator());
 }
 
 void CustomizeToolbar::clearContents() {
