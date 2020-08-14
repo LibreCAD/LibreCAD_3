@@ -36,6 +36,7 @@ namespace lc{
                  * 
                  */
                 void free();
+                
             private:
                 /**
                  * @brief pointer to function of current handler
