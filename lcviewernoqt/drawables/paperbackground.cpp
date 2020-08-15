@@ -16,14 +16,15 @@ void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     painter.rectangle(updateRect.minP().x(), updateRect.minP().y(), updateRect.width(), updateRect.height());
     painter.fill();
     painter.pattern_destroy(patId);
-    painter.stroke();
-
-    painter.source_rgb(0., 0., 0.);
-    painter.rectangle(0, 0, _width, _height);
-    painter.stroke();
+    //painter.stroke();
 
     painter.source_rgb(1., 1., 1.);
     painter.rectangle(0, 0, _width, _height);
     painter.fill();
+    //painter.stroke();
+    
+    painter.source_rgb(0., 0., 0.);
+    painter.rectangle(0, 0, _width, _height);
     painter.stroke();
+
 }

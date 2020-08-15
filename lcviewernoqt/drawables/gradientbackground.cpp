@@ -18,5 +18,5 @@ void GradientBackground::draw(lc::viewer::event::DrawEvent const & event) const 
     painter.rectangle(updateRect.minP().x(), updateRect.minP().y(), updateRect.width(), updateRect.height());
     painter.fill();
     painter.pattern_destroy(patId);
-    painter.stroke();
+    //painter.stroke();
 }
