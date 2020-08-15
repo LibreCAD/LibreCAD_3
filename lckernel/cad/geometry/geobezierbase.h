@@ -140,7 +140,7 @@ public:
      */
     virtual BB_CSPtr mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const = 0;
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 

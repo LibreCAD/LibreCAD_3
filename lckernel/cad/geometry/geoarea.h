@@ -243,7 +243,7 @@ public:
         return Vector(Coordinate(_maxP.x(), _minP.y()), Coordinate(_maxP.x(), _maxP.y()));
     }
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 

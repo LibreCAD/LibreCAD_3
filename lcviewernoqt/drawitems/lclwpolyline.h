@@ -18,6 +18,10 @@ public:
      * @param geo::Area rect
      */
     void draw(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const override;
+    // Draw without stoke
+    void drawNoStoke(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
+    // Draw with stoke
+    void drawStoke(LcPainter& painter, const LcDrawOptions& options, const lc::geo::Area& rect) const;
 
     lc::entity::CADEntity_CSPtr entity() const override;
 
