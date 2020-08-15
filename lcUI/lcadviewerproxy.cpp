@@ -6,7 +6,7 @@ using namespace lc::ui;
 
 using namespace lc::ui;
 
-LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
+LCADViewerProxy::LCADViewerProxy(QWidget* parent=0) {
     auto gridLayout = new QGridLayout(this);
     gridLayout->setHorizontalSpacing(0);
     gridLayout->setVerticalSpacing(0);
@@ -29,7 +29,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     _tabWidget->addTab(_modelViewerImpl, tr("Model"));
 
     _paperViewers = new LCADPaperViewerImpl(this);
-    
+
     //Connections to receive active View
     connect(_modelViewerImpl, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
     connect(_paperViewers, SIGNAL(setActiveView(LCADViewer*,bool)), this, SLOT(setActive(LCADViewer*,bool)));
@@ -43,7 +43,7 @@ LCADViewerProxy::LCADViewerProxy(QWidget* parent=0){
     connect(_activeView, SIGNAL(keyPressEvent(int)), this, SIGNAL(keyPressEvent(int)));
 }
 
-void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document){
+void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> document) {
     _modelViewerImpl->setDocument(document);
     _paperViewers->setDocument(document);
 
@@ -62,8 +62,8 @@ void LCADViewerProxy::setDocument(std::shared_ptr<lc::storage::Document> documen
     _tabWidget->addTab(x,tr("Paper 2"));
 }
 
-void LCADViewerProxy::setActive(LCADViewer* view,bool isModel){
-    if(view!=_activeView){
+void LCADViewerProxy::setActive(LCADViewer* view,bool isModel) {
+    if(view!=_activeView) {
         _isModel = isModel;
         disconnect(_activeView, SIGNAL(mouseMoveEvent()), this, SIGNAL(mouseMoveEvent()));
         disconnect(_activeView, SIGNAL(mousePressEvent()), this, SIGNAL(mousePressEvent()));

@@ -15,27 +15,27 @@ Text::Text(geo::Coordinate insertion_point,
            meta::Layer_CSPtr layer,
            meta::MetaInfo_CSPtr metaInfo,
            meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        _insertion_point(std::move(insertion_point)),
-        _text_value(std::move(text_value)),
-        _height(height),
-        _angle(angle),
-        _style(std::move(style)),
-        _textgeneration(textgeneration),
-        _valign(valign),
-        _halign(halign) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    _insertion_point(std::move(insertion_point)),
+    _text_value(std::move(text_value)),
+    _height(height),
+    _angle(angle),
+    _style(std::move(style)),
+    _textgeneration(textgeneration),
+    _valign(valign),
+    _halign(halign) {
 }
 
 Text::Text(const Text_CSPtr& other, bool sameID) :
-        CADEntity(other, sameID),
-        _insertion_point(other->_insertion_point),
-        _text_value(other->_text_value),
-        _height(other->_height),
-        _angle(other->_angle),
-        _style(other->_style),
-        _textgeneration(other->_textgeneration),
-        _valign(other->_valign),
-        _halign(other->_halign) {
+    CADEntity(other, sameID),
+    _insertion_point(other->_insertion_point),
+    _text_value(other->_text_value),
+    _height(other->_height),
+    _angle(other->_angle),
+    _style(other->_style),
+    _textgeneration(other->_textgeneration),
+    _valign(other->_valign),
+    _halign(other->_halign) {
 }
 
 CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
@@ -49,7 +49,7 @@ CADEntity_CSPtr Text::move(const geo::Coordinate& offset) const {
                                           this->_valign,
                                           layer()
                                           , metaInfo(), block()
-    );
+                                         );
     newText->setID(this->id());
     return newText;
 }
@@ -123,7 +123,7 @@ CADEntity_CSPtr Text::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr
                        layer,
                        metaInfo,
                        block
-    );
+                   );
     newText->setID(this->id());
 
     return newText;
@@ -149,7 +149,7 @@ CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
                                                 valign(),
                                                 layer()
                                                 , metaInfo(), block()
-        );
+                                               );
         newEntity->setID(id());
         return newEntity;
     }

@@ -5,66 +5,66 @@
 #include "undoable.h"
 
 namespace lc {
-    namespace storage {
-        class Document;
+namespace storage {
+class Document;
 
-        DECLARE_SHORT_SHARED_PTR(Document)
+DECLARE_SHORT_SHARED_PTR(Document)
 
-        class StorageManager;
-    }
+class StorageManager;
+}
 
-    namespace operation {
+namespace operation {
 
 
-        /**
-         * An operation is a grouped set of 'things' we can do on a document
-         * Only one operation can run at a time because the document needs to get locked
-         * during an operation.
-         *
-         * @param document
-         */
-        class DocumentOperation : public Undoable, public std::enable_shared_from_this<operation::DocumentOperation> {
-            friend class lc::storage::Document;
-            friend class Builder;
+/**
+ * An operation is a grouped set of 'things' we can do on a document
+ * Only one operation can run at a time because the document needs to get locked
+ * during an operation.
+ *
+ * @param document
+ */
+class DocumentOperation : public Undoable, public std::enable_shared_from_this<operation::DocumentOperation> {
+    friend class lc::storage::Document;
+    friend class Builder;
 
-            public:
-                DocumentOperation(storage::Document_SPtr document, const std::string& description);
-                storage::Document_SPtr document() const;
+public:
+    DocumentOperation(storage::Document_SPtr document, const std::string& description);
+    storage::Document_SPtr document() const;
 
-                /*!
-                 * \brief execute this operation
-                 */
-                virtual void execute();
+    /*!
+     * \brief execute this operation
+     */
+    virtual void execute();
 
-                virtual ~DocumentOperation() {}
+    virtual ~DocumentOperation() {}
 
-            private:
+private:
 
-                /**
-                 * This function gets called when an operation starts and when the document is locked for you
-                 * so you can do your work
-                 */
-                void process();
-                /**
-                 * This function will get called when the process of this operation starts
-                 */
-                virtual void start() const {};
+    /**
+     * This function gets called when an operation starts and when the document is locked for you
+     * so you can do your work
+     */
+    void process();
+    /**
+     * This function will get called when the process of this operation starts
+     */
+    virtual void start() const {};
 
-                /**
-                 * This function will get called when the process of this operation is finished
-                 */
-                virtual void finnish() const {};
+    /**
+     * This function will get called when the process of this operation is finished
+     */
+    virtual void finnish() const {};
 
-                storage::Document_SPtr _document;
-            protected:
-                /**
-                 * This function gets called when an operation starts and when the document is locked for you
-                 * so you can do your work
-                 */
-                virtual void processInternal() = 0;
+    storage::Document_SPtr _document;
+protected:
+    /**
+     * This function gets called when an operation starts and when the document is locked for you
+     * so you can do your work
+     */
+    virtual void processInternal() = 0;
 
-        };
+};
 
-        DECLARE_SHORT_SHARED_PTR(DocumentOperation)
-    }
+DECLARE_SHORT_SHARED_PTR(DocumentOperation)
+}
 }

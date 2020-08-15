@@ -119,7 +119,7 @@ void LineWidthSelect::updateMetaInfoManager() {
 
     if(currentText() == BY_LAYER) {
         _metaInfoManager->setLineWidth(nullptr);
-    }else if(currentText() == BY_BLOCK) {
+    } else if(currentText() == BY_BLOCK) {
         _metaInfoManager->setLineWidth(std::make_shared<const lc::meta::MetaLineWidthByBlock>());
     }
     else {

@@ -5,95 +5,95 @@
 #include <QDoubleSpinBox>
 #include "inputgui.h"
 
-namespace Ui { 
-    class NumberGUI;
+namespace Ui {
+class NumberGUI;
 }
 
 namespace lc
 {
-    namespace ui
-    {
-        namespace api
-        {
-            class NumberGUI : public InputGUI
-            {
-                Q_OBJECT
+namespace ui
+{
+namespace api
+{
+class NumberGUI : public InputGUI
+{
+    Q_OBJECT
 
-            public:
-                /**
-                * \brief NumberGUI constructor
-                * \param string gui label
-                * \param double minimum value
-                * \param double maximum value
-                * \param parent qwidget parent
-                */
-                NumberGUI(std::string label, double minVal=-10000, double maxVal=10000, QWidget* parent = nullptr);
+public:
+    /**
+    * \brief NumberGUI constructor
+    * \param string gui label
+    * \param double minimum value
+    * \param double maximum value
+    * \param parent qwidget parent
+    */
+    NumberGUI(std::string label, double minVal=-10000, double maxVal=10000, QWidget* parent = nullptr);
 
-                /**
-                * \brief NumberGUI destructor
-                */
-                ~NumberGUI();
+    /**
+    * \brief NumberGUI destructor
+    */
+    ~NumberGUI();
 
-                /**
-                * \brief Add lua callbacks for value changed signal
-                * \param LuaRef callback
-                */
-                void addCallback(kaguya::LuaRef cb);
+    /**
+    * \brief Add lua callbacks for value changed signal
+    * \param LuaRef callback
+    */
+    void addCallback(kaguya::LuaRef cb);
 
-                /**
-                * \brief Overriden set SLider GUI widget label
-                * \param string gui label
-                */
-                void setLabel(const std::string& newLabel) override;
+    /**
+    * \brief Overriden set SLider GUI widget label
+    * \param string gui label
+    */
+    void setLabel(const std::string& newLabel) override;
 
-                /**
-                * \brief Return number
-                * \return double value
-                */
-                double value() const;
+    /**
+    * \brief Return number
+    * \return double value
+    */
+    double value() const;
 
-                /**
-                * \brief Set number value
-                * \param double value
-                */
-                void setValue(double val);
+    /**
+    * \brief Set number value
+    * \param double value
+    */
+    void setValue(double val);
 
-                /**
-                * \brief Return lua value
-                * \param LuaRef value
-                */
-                void getLuaValue(kaguya::LuaRef& table) override;
+    /**
+    * \brief Return lua value
+    * \param LuaRef value
+    */
+    void getLuaValue(kaguya::LuaRef& table) override;
 
-                /**
-                * \brief Hide widget label
-                */
-                void hideLabel() override;
+    /**
+    * \brief Hide widget label
+    */
+    void hideLabel() override;
 
-            public slots:
-                /**
-                * \brief Run value changed callbacks
-                * \param double changed value
-                */
-                void valueChangedCallbacks(double val);
+public slots:
+    /**
+    * \brief Run value changed callbacks
+    * \param double changed value
+    */
+    void valueChangedCallbacks(double val);
 
-            protected:
-                /**
-                * \brief Copy widget value to the clipboard
-                */
-                void copyValue(QDataStream& stream) override;
+protected:
+    /**
+    * \brief Copy widget value to the clipboard
+    */
+    void copyValue(QDataStream& stream) override;
 
-                /**
-                * \brief Set widget value from clipboard
-                */
-                void pasteValue(QDataStream& stream) override;
+    /**
+    * \brief Set widget value from clipboard
+    */
+    void pasteValue(QDataStream& stream) override;
 
-            private:
-                Ui::NumberGUI* ui;
-                QLabel* _textLabel;
-                QDoubleSpinBox* _spinBox;
+private:
+    Ui::NumberGUI* ui;
+    QLabel* _textLabel;
+    QDoubleSpinBox* _spinBox;
 
-                std::vector<kaguya::LuaRef> _callbacks;
-            };
-        }
-    }
+    std::vector<kaguya::LuaRef> _callbacks;
+};
+}
+}
 }

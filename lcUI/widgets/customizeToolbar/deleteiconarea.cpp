@@ -10,7 +10,7 @@ using namespace lc::ui::widgets;
 
 DeleteIconArea::DeleteIconArea(QWidget* parent)
     :
-      QLabel("Delete", parent)
+    QLabel("Delete", parent)
 {
     setMinimumHeight(50);
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
@@ -35,7 +35,7 @@ void DeleteIconArea::dropEvent(QDropEvent *event)
     this->setStyleSheet("border: 1px solid black");
     const QMimeData* mimeData = event->mimeData();
 
-    if (event->dropAction() == Qt::IgnoreAction || !mimeData->hasFormat("application/x-dnditemdata")){
+    if (event->dropAction() == Qt::IgnoreAction || !mimeData->hasFormat("application/x-dnditemdata")) {
         return;
     }
 
@@ -47,13 +47,13 @@ void DeleteIconArea::dropEvent(QDropEvent *event)
     bool isFromDropModel;
     dataStream >> isFromDropModel;
 
-    if(!isFromDropModel){
+    if(!isFromDropModel) {
         return;
     }
 
     QTableView* parentTableView = qobject_cast<QTableView*>(event->source());
 
-    if(parentTableView == nullptr){
+    if(parentTableView == nullptr) {
         return;
     }
 

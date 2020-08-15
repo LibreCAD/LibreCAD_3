@@ -99,10 +99,10 @@ void Spline::populateCurve() {
         splineCurve.setControlPoints(ts_controlPoints);
     }
     catch (std::runtime_error& e) {
-	LOG_ERROR << e.what() << std::endl;
+        LOG_ERROR << e.what() << std::endl;
         splineCurve = tinyspline::BSpline();
     }
-    
+
     auto beziers = splineCurve.toBeziers();
 
     int nbBeziers = ts_bspline_num_control_points(beziers.data()) / splineCurve.order();

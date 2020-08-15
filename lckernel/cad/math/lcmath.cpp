@@ -182,7 +182,7 @@ std::vector<double> Math::sexticSolver(const std::vector<double>& ce) {
 *ToDo, need a robust algorithm to locate zero terms, better handling of tolerances
 **/
 std::vector<double> Math::quarticSolverFull(const std::vector<double>& ce) {
-   //  std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
+    //  std::cout<<ce[4]<<"*y^4+("<<ce[3]<<")*y^3+("<<ce[2]<<"*y^2+("<<ce[1]<<")*y+("<<ce[0]<<")==0"<<std::endl;
 
     std::vector<double> roots(0, 0.);
 
@@ -426,7 +426,7 @@ std::vector<lc::geo::Coordinate> Math::simultaneousQuadraticSolverMixed(const st
         Eigen::Matrix2d M;
         Eigen::Vector2d V;
         M << m[0][0], m[0][1],
-             m[1][0], m[1][1];
+        m[1][0], m[1][1];
         V << -m[0][2], -m[1][2];
         Eigen::Vector2d sn = M.colPivHouseholderQr().solve(V);
         ret.emplace_back(geo::Coordinate(sn[0], sn[1]));

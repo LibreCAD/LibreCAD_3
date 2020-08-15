@@ -11,10 +11,10 @@
 
 using namespace lc::ui;
 
-OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState) 
+OperationLoader::OperationLoader(const std::string& luaPath, QMainWindow* qmainWindow, kaguya::State& luaState)
     :
     qmainWindow(qmainWindow),
-    _L(luaState){
+    _L(luaState) {
     loadLuaOperations(luaPath);
 }
 
@@ -180,7 +180,9 @@ void OperationLoader::addOperationCommandLine(const std::string& vkey, const std
             std::string key = commandKey.get<std::string>();
 
             // if key is digits only i.e. if no key provided, connect it to default init
-            if (std::find_if(key.begin(), key.end(), [](unsigned char c) {return !std::isdigit(c); }) == key.end())
+            if (std::find_if(key.begin(), key.end(), [](unsigned char c) {
+            return !std::isdigit(c);
+            }) == key.end())
             {
                 // connect to default init function
                 _L.dostring("run_op = function() run_basic_operation(" + vkey + ") end");

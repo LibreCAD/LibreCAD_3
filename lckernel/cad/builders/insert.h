@@ -4,28 +4,28 @@
 #include "cadentity.h"
 
 namespace lc {
-    namespace builder {
-        class InsertBuilder : public CADEntityBuilder {
-            public:
-                InsertBuilder();
-                virtual ~InsertBuilder() = default;
+namespace builder {
+class InsertBuilder : public CADEntityBuilder {
+public:
+    InsertBuilder();
+    virtual ~InsertBuilder() = default;
 
-                const meta::Block_CSPtr& displayBlock() const;
-                InsertBuilder* setDisplayBlock(const meta::Block_CSPtr& displayBlock);
+    const meta::Block_CSPtr& displayBlock() const;
+    InsertBuilder* setDisplayBlock(const meta::Block_CSPtr& displayBlock);
 
-                const geo::Coordinate& coordinate() const;
-                InsertBuilder* setCoordinate(const geo::Coordinate& coordinate);
+    const geo::Coordinate& coordinate() const;
+    InsertBuilder* setCoordinate(const geo::Coordinate& coordinate);
 
-                const storage::Document_SPtr& document() const;
-                InsertBuilder* setDocument(const storage::Document_SPtr& document);
+    const storage::Document_SPtr& document() const;
+    InsertBuilder* setDocument(const storage::Document_SPtr& document);
 
-                bool checkValues(bool throwExceptions = false) const override;
-                entity::Insert_CSPtr build();
+    bool checkValues(bool throwExceptions = false) const override;
+    entity::Insert_CSPtr build();
 
-            private:
-                storage::Document_SPtr _document;
-                meta::Block_CSPtr _displayBlock;
-                geo::Coordinate _coordinate;
-        };
-    }
+private:
+    storage::Document_SPtr _document;
+    meta::Block_CSPtr _displayBlock;
+    geo::Coordinate _coordinate;
+};
+}
 }

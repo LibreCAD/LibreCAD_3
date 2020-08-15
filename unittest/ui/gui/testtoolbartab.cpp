@@ -52,7 +52,7 @@ TEST(ToolbarTabTest, GroupTest) {
 
     EXPECT_EQ(testgroup1, testtab->groupByName("TestGroup1"));
     EXPECT_EQ(testgroup2, testtab->groupByName("TestGroup2"));
-    
+
     testtab->addGroup("TestGroup2");
     std::vector<ToolbarGroup*> allgroups = testtab->groups();
 

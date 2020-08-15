@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace lc::viewer::drawable;
 
-PaperBackground::PaperBackground(int width,int height) : _width(width), _height(height){
+PaperBackground::PaperBackground(int width,int height) : _width(width), _height(height) {
 }
 
 void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
@@ -22,7 +22,7 @@ void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     painter.rectangle(0, 0, _width, _height);
     painter.fill();
     //painter.stroke();
-    
+
     painter.source_rgb(0., 0., 0.);
     painter.rectangle(0, 0, _width, _height);
     painter.stroke();

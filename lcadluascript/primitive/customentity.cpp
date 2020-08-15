@@ -5,13 +5,13 @@ using namespace lc;
 using namespace entity;
 
 LuaCustomEntity::LuaCustomEntity(const lc::builder::CustomEntityBuilder& builder) :
-        CustomEntity(builder),
-        _snapPoints(builder.snapFunction()),
-        _nearestPoint(builder.nearestPointFunction()),
-        _dragPoints(builder.dragPointsFunction()),
-        _newDragPoint(builder.newDragPointFunction()),
-        _dragPointClick(builder.dragPointsClickedFunction()),
-        _dragPointRelease(builder.dragPointsReleasedFunction()) {
+    CustomEntity(builder),
+    _snapPoints(builder.snapFunction()),
+    _nearestPoint(builder.nearestPointFunction()),
+    _dragPoints(builder.dragPointsFunction()),
+    _newDragPoint(builder.newDragPointFunction()),
+    _dragPointClick(builder.dragPointsClickedFunction()),
+    _dragPointRelease(builder.dragPointsReleasedFunction()) {
 }
 
 LuaCustomEntity::LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEntity_CSPtr& customEntity, bool sameID) :
@@ -26,9 +26,9 @@ LuaCustomEntity::LuaCustomEntity(const Insert_CSPtr& insert, const LuaCustomEnti
 }
 
 std::vector<EntityCoordinate> LuaCustomEntity::snapPoints(const geo::Coordinate& coord,
-                                                       const SimpleSnapConstrain& simpleSnapConstrain,
-                                                       double minDistanceToSnap,
-                                                       int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain& simpleSnapConstrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     auto snapPointsDupl = _snapPoints; //Dirty hack to call Lua function from a const function
     auto points = snapPointsDupl.call<std::vector<EntityCoordinate>>(shared_from_this(), coord, simpleSnapConstrain, minDistanceToSnap, maxNumberOfSnapPoints);
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);

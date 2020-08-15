@@ -18,8 +18,8 @@ void lc::builder::DimAlignedBuilder::setDefinitionPoint3(const lc::geo::Coordina
 }
 
 void lc::builder::DimAlignedBuilder::dimAuto(lc::geo::Coordinate p2,
-                                             lc::geo::Coordinate p3,
-                                             lc::geo::Coordinate middleOfText) {
+        lc::geo::Coordinate p3,
+        lc::geo::Coordinate middleOfText) {
 
     auto nearestPoint = geo::Vector(p2, p3).nearestPointOnPath(middleOfText);
     auto distance = nearestPoint.distanceTo(middleOfText);

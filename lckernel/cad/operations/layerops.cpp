@@ -8,8 +8,8 @@ using namespace operation;
 /** AddLayer                                                                                          ***/
 /********************************************************************************************************/
 AddLayer::AddLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) :
-        DocumentOperation(std::move(document), "AddLayer"),
-        _layer(std::move(layer)) {
+    DocumentOperation(std::move(document), "AddLayer"),
+    _layer(std::move(layer)) {
 }
 
 void AddLayer::processInternal() {
@@ -28,8 +28,8 @@ void AddLayer::redo() const {
 /** RemoveLayer                                                                                       ***/
 /********************************************************************************************************/
 RemoveLayer::RemoveLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr layer) :
-        DocumentOperation(std::move(document), "RemoveLayer"),
-        _layer(std::move(layer)) {
+    DocumentOperation(std::move(document), "RemoveLayer"),
+    _layer(std::move(layer)) {
 }
 
 void RemoveLayer::processInternal() {
@@ -64,9 +64,9 @@ void RemoveLayer::redo() const {
 /** ReplaceLayer                                                                                       ***/
 /********************************************************************************************************/
 ReplaceLayer::ReplaceLayer(std::shared_ptr<storage::Document> document, meta::Layer_CSPtr oldLayer, meta::Layer_CSPtr newLayer) :
-        DocumentOperation(std::move(document), "ReplaceLayer"),
-        _oldLayer(std::move(oldLayer)),
-        _newLayer(std::move(newLayer)) {
+    DocumentOperation(std::move(document), "ReplaceLayer"),
+    _oldLayer(std::move(oldLayer)),
+    _newLayer(std::move(newLayer)) {
 }
 
 void ReplaceLayer::processInternal() {

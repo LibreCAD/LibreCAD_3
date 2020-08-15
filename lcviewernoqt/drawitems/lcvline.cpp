@@ -11,8 +11,8 @@
 using namespace lc::viewer;
 
 LCVLine::LCVLine(const lc::entity::Line_CSPtr& line) :
-        LCVDrawItem(line, true),
-        _line(line) {
+    LCVDrawItem(line, true),
+    _line(line) {
 }
 
 void LCVLine::draw(LcPainter& painter, const LcDrawOptions &options, const lc::geo::Area& rect) const {

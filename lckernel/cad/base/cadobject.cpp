@@ -7,5 +7,5 @@ CADObject::CADObject(const CADObject_CSPtr& cadObject) {
 }
 
 CADObject::CADObject(const CADObject_CSPtr& cadObject, bool sameID)
-        {
+{
 }

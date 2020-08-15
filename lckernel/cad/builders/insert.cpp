@@ -5,14 +5,14 @@ using namespace lc;
 using namespace builder;
 
 InsertBuilder::InsertBuilder() :
-        _displayBlock(nullptr) {
+    _displayBlock(nullptr) {
 }
 
-bool InsertBuilder::checkValues(bool throwExceptions) const{
+bool InsertBuilder::checkValues(bool throwExceptions) const {
     if (!throwExceptions) {
         return CADEntityBuilder::checkValues(throwExceptions) &&
-            _displayBlock != nullptr &&
-            _document != nullptr;
+               _displayBlock != nullptr &&
+               _document != nullptr;
     }
     else {
         if (_displayBlock == nullptr) {

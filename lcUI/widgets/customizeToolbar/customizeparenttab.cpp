@@ -29,7 +29,7 @@ CustomizeParentTab::CustomizeParentTab(lc::ui::api::ToolbarTab* toolbarTab, QWid
     setCurrentIndex(0);
 }
 
-CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent) 
+CustomizeParentTab::CustomizeParentTab(QString label, QWidget* parent)
     :
     _label(label.toStdString()),
     QTabWidget(parent)
@@ -56,9 +56,9 @@ void CustomizeParentTab::init() {
 void CustomizeParentTab::addGroupTab() {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Add group"),
-                                             tr(""), QLineEdit::Normal,
-                                             QDir::home().dirName(), &ok);
-    if (ok && !text.isEmpty()){
+                                         tr(""), QLineEdit::Normal,
+                                         QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
         insertTab(count()-1, new CustomizeGroupTab(text), text);
         setCurrentIndex(count() - 2);
     }
@@ -67,7 +67,7 @@ void CustomizeParentTab::addGroupTab() {
 void CustomizeParentTab::groupTabClosed(int index) {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Remove Group", "Are you sure you want to remove this group?",
-        QMessageBox::Yes | QMessageBox::No);
+                                  QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         removeTab(index);
         setCurrentIndex(0);

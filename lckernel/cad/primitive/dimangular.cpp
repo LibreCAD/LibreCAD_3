@@ -20,19 +20,19 @@ DimAngular::DimAngular(
     meta::Layer_CSPtr layer,
     meta::MetaInfo_CSPtr metaInfo,
     meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        Dimension(std::move(definitionPoint),
-                  std::move(middleOfText),
-                  attachmentPoint,
-                  textAngle,
-                  lineSpacingFactor,
-                  lineSpacingStyle,
-                  std::move(explicitValue)
-        ),
-        _defLine11(std::move(defLine11)),
-        _defLine12(std::move(defLine12)),
-        _defLine21(std::move(defLine21)),
-        _defLine22(std::move(defLine22)) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    Dimension(std::move(definitionPoint),
+              std::move(middleOfText),
+              attachmentPoint,
+              textAngle,
+              lineSpacingFactor,
+              lineSpacingStyle,
+              std::move(explicitValue)
+             ),
+    _defLine11(std::move(defLine11)),
+    _defLine12(std::move(defLine12)),
+    _defLine21(std::move(defLine21)),
+    _defLine22(std::move(defLine22)) {
 
 }
 
@@ -59,97 +59,97 @@ DimAngular::DimAngular(const lc::builder::DimAngularBuilder& builder) :
 
 CADEntity_CSPtr DimAngular::move(const geo::Coordinate& offset) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-            definitionPoint() + offset,
-            middleOfText() + offset,
-            attachmentPoint(),
-            textAngle(),
-            lineSpacingFactor(),
-            lineSpacingStyle(),
-            explicitValue(),
-            _defLine11 + offset,
-            _defLine12 + offset,
-            _defLine21 + offset,
-            _defLine22 + offset,
-            layer(),
-            metaInfo()
-    );
+                             definitionPoint() + offset,
+                             middleOfText() + offset,
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11 + offset,
+                             _defLine12 + offset,
+                             _defLine21 + offset,
+                             _defLine22 + offset,
+                             layer(),
+                             metaInfo()
+                         );
     newDimAngular->setID(this->id());
     return newDimAngular;
 }
 
 CADEntity_CSPtr DimAngular::copy(const geo::Coordinate& offset) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-            definitionPoint() + offset,
-            middleOfText() + offset,
-            attachmentPoint(),
-            textAngle(),
-            lineSpacingFactor(),
-            lineSpacingStyle(),
-            explicitValue(),
-            _defLine11 + offset,
-            _defLine12 + offset,
-            _defLine21 + offset,
-            _defLine22 + offset,
-            layer(),
-            metaInfo()
-    );
+                             definitionPoint() + offset,
+                             middleOfText() + offset,
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11 + offset,
+                             _defLine12 + offset,
+                             _defLine21 + offset,
+                             _defLine22 + offset,
+                             layer(),
+                             metaInfo()
+                         );
     return newDimAngular;
 }
 
 CADEntity_CSPtr DimAngular::rotate(const geo::Coordinate& rotation_center, const double rotation_angle) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-            definitionPoint().rotate(rotation_center, rotation_angle),
-            middleOfText().rotate(rotation_center, rotation_angle), 
-            attachmentPoint(), 
-            textAngle(), 
-            lineSpacingFactor(), 
-            lineSpacingStyle(), 
-            explicitValue(), 
-            _defLine11.rotate(rotation_center, rotation_angle), 
-            _defLine12.rotate(rotation_center, rotation_angle), 
-            _defLine21.rotate(rotation_center, rotation_angle), 
-            _defLine22.rotate(rotation_center, rotation_angle), 
-            layer(), 
-            metaInfo()
-    );
+                             definitionPoint().rotate(rotation_center, rotation_angle),
+                             middleOfText().rotate(rotation_center, rotation_angle),
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11.rotate(rotation_center, rotation_angle),
+                             _defLine12.rotate(rotation_center, rotation_angle),
+                             _defLine21.rotate(rotation_center, rotation_angle),
+                             _defLine22.rotate(rotation_center, rotation_angle),
+                             layer(),
+                             metaInfo()
+                         );
     return newDimAngular;
 }
 
 CADEntity_CSPtr DimAngular::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-            definitionPoint().scale(scale_center, scale_factor),
-            middleOfText().scale(scale_center, scale_factor), 
-            attachmentPoint(), 
-            textAngle(), 
-            lineSpacingFactor(), 
-            lineSpacingStyle(), 
-            explicitValue(), 
-            _defLine11.scale(scale_center, scale_factor), 
-            _defLine12.scale(scale_center, scale_factor), 
-            _defLine21.scale(scale_center, scale_factor), 
-            _defLine22.scale(scale_center, scale_factor), 
-            layer(), 
-            metaInfo()
-    );
+                             definitionPoint().scale(scale_center, scale_factor),
+                             middleOfText().scale(scale_center, scale_factor),
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11.scale(scale_center, scale_factor),
+                             _defLine12.scale(scale_center, scale_factor),
+                             _defLine21.scale(scale_center, scale_factor),
+                             _defLine22.scale(scale_center, scale_factor),
+                             layer(),
+                             metaInfo()
+                         );
     return newDimAngular;
 }
 
 CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coordinate& axis2) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-            definitionPoint().mirror(axis1,axis2),
-            middleOfText().mirror(axis1,axis2), 
-            attachmentPoint(), 
-            textAngle(), 
-            lineSpacingFactor(), 
-            lineSpacingStyle(), 
-            explicitValue(), 
-            _defLine11.mirror(axis1,axis2), 
-            _defLine12.mirror(axis1,axis2), 
-            _defLine21.mirror(axis1,axis2), 
-            _defLine22.mirror(axis1,axis2), 
-            layer(), 
-            metaInfo()
-    );
+                             definitionPoint().mirror(axis1,axis2),
+                             middleOfText().mirror(axis1,axis2),
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11.mirror(axis1,axis2),
+                             _defLine12.mirror(axis1,axis2),
+                             _defLine21.mirror(axis1,axis2),
+                             _defLine22.mirror(axis1,axis2),
+                             layer(),
+                             metaInfo()
+                         );
     return newDimAngular;
 }
 
@@ -160,21 +160,21 @@ const geo::Area DimAngular::boundingBox() const {
 
 CADEntity_CSPtr DimAngular::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newDimAngular = std::make_shared<DimAngular>(
-        definitionPoint(),
-        middleOfText(),
-        attachmentPoint(),
-        textAngle(),
-        lineSpacingFactor(),
-        lineSpacingStyle(),
-        explicitValue(),
-        _defLine11,
-        _defLine12,
-        _defLine21,
-        _defLine22,
-        layer,
-        metaInfo,
-        block
-    );
+                             definitionPoint(),
+                             middleOfText(),
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             _defLine11,
+                             _defLine12,
+                             _defLine21,
+                             _defLine22,
+                             layer,
+                             metaInfo,
+                             block
+                         );
 
     return newDimAngular;
 }
@@ -212,20 +212,20 @@ std::map<unsigned int, geo::Coordinate> DimAngular::dragPoints() const {
 CADEntity_CSPtr DimAngular::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
         auto newEntity = std::make_shared<DimAngular>(
-            dragPoints.at(0),
-            dragPoints.at(1),
-            attachmentPoint(),
-            textAngle(),
-            lineSpacingFactor(),
-            lineSpacingStyle(),
-            explicitValue(),
-            dragPoints.at(2),
-            dragPoints.at(3),
-            dragPoints.at(4),
-            dragPoints.at(5),
-            layer(),
-            metaInfo()
-        );
+                             dragPoints.at(0),
+                             dragPoints.at(1),
+                             attachmentPoint(),
+                             textAngle(),
+                             lineSpacingFactor(),
+                             lineSpacingStyle(),
+                             explicitValue(),
+                             dragPoints.at(2),
+                             dragPoints.at(3),
+                             dragPoints.at(4),
+                             dragPoints.at(5),
+                             layer(),
+                             metaInfo()
+                         );
         newEntity->setID(id());
         return newEntity;
     }
@@ -277,7 +277,7 @@ CADEntity_CSPtr DimAngular::setProperties(const PropertiesMap& propertiesMap) co
     }
 
     auto newDimAngular = std::make_shared<DimAngular>(definitionPointp, middleOfTextp, attachmentPoint(), textAnglep, lineSpacingFactorp,
-        lineSpacingStyle(), explicitValuep, defLine11p, defLine12p,defLine21p, defLine22p, layer(), metaInfo(), block());
+                         lineSpacingStyle(), explicitValuep, defLine11p, defLine12p,defLine21p, defLine22p, layer(), metaInfo(), block());
     newDimAngular->setID(this->id());
     return newDimAngular;
 }

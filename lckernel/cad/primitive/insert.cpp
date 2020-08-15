@@ -112,9 +112,9 @@ entity::CADEntity_CSPtr entity::Insert::setDragPoints(std::map<unsigned int, lc:
 }
 
 std::vector<lc::EntityCoordinate> entity::Insert::snapPoints(const geo::Coordinate& coord,
-                                                             const SimpleSnapConstrain& simpleSnapConstrain,
-                                                             double minDistanceToSnap,
-                                                             int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain& simpleSnapConstrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
 
     if ((bool) (simpleSnapConstrain.constrain() & SimpleSnapConstrain::LOGICAL)) {

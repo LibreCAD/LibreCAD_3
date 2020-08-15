@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace maths;
 std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
-                                                    const Equation& l2) {
+        const Equation& l2) {
     std::vector<lc::geo::Coordinate> ret;
     const auto &m1 = l1.Matrix();
     const auto &m2 = l2.Matrix();
@@ -11,7 +11,7 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
     Eigen::Vector2d V;
 
     M << m1(2,0) + m1(0,2), m1(2,1) + m1(1,2),
-            m2(2,0) + m2(0,2), m2(2,1) + m2(1,2);
+    m2(2,0) + m2(0,2), m2(2,1) + m2(1,2);
     V << -m1(2,2), -m2(2,2);
 
     Eigen::Vector2d R = M.colPivHouseholderQr().solve(V);
@@ -20,7 +20,7 @@ std::vector<geo::Coordinate> Intersection::LineLine(const Equation& l1,
 }
 
 std::vector<lc::geo::Coordinate> Intersection::LineQuad(const Equation& l1,
-                                                        const Equation& q1) {
+        const Equation& q1) {
     auto&& tcoords = QuadQuad(l1.flipXY(), q1.flipXY());
     std::transform(tcoords.begin(), tcoords.end(), tcoords.begin(), [](const lc::geo::Coordinate &c) {
         return c.flipXY();
@@ -36,7 +36,7 @@ std::vector<lc::geo::Coordinate> Intersection::QuadQuad(const Equation& l1, cons
     if (std::abs(m1(0, 0)) < LCTOLERANCE && std::abs(m1(0, 1)) < LCTOLERANCE
             &&
             std::abs(m2(0, 0)) < LCTOLERANCE && std::abs(m2(0, 1)) < LCTOLERANCE
-            ) {
+       ) {
         if (std::abs(m1(1, 1)) < LCTOLERANCE && std::abs(m2(1, 1)) < LCTOLERANCE) {
             return LineLine(l1, l2);
         }
@@ -161,12 +161,12 @@ std::vector<geo::Coordinate> Intersection::bezierEllipse(const geo::BB_CSPtr& B,
 
 
     auto C = geo::Ellipse(E.center() - E.center(), E.majorP(), E.minorRadius(), E.startAngle(), E.endAngle())
-            .georotate(geo::Coordinate(0,0), -E.getAngle())
-            .geoscale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
+             .georotate(geo::Coordinate(0,0), -E.getAngle())
+             .geoscale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
 
     auto bez = B->move(-E.center())
-            ->rotate(geo::Coordinate(0,0), E.getAngle())
-            ->scale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
+               ->rotate(geo::Coordinate(0,0), E.getAngle())
+               ->scale(geo::Coordinate(0,0), geo::Coordinate(1/E.ratio(),1));
 
 
     auto points = B->getCP();
@@ -240,8 +240,8 @@ void Intersection::bezBez(const geo::BB_CSPtr& B1,const geo::BB_CSPtr& B2, std::
 }
 
 std::vector<geo::Coordinate> Intersection::bezCircleIntersect(const lc::geo::BB_CSPtr& bez,
-                                                              const geo::Coordinate &ec,
-                                                              double rx, double ry) {
+        const geo::Coordinate &ec,
+        double rx, double ry) {
     std::vector<geo::Coordinate> results;
     auto coords = bez->getCP();
     auto p1 = coords.at(0);
@@ -271,23 +271,23 @@ std::vector<geo::Coordinate> Intersection::bezCircleIntersect(const lc::geo::BB_
     auto rxrx  = rx*rx;
     auto ryry  = ry*ry;
     auto roots = lc::maths::Math::sexticSolver({
-            c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
+        c3.x()*c3.x()*ryry + c3.y()*c3.y()*rxrx,
 
-            2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
+        2*(c3.x()*c2.x()*ryry + c3.y()*c2.y()*rxrx),
 
-            2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
+        2*(c3.x()*c1.x()*ryry + c3.y()*c1.y()*rxrx) + c2.x()*c2.x()*ryry + c2.y()*c2.y()*rxrx,
 
-            2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
-                2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
+        2*c3.x()*ryry*(c0.x() - ec.x()) + 2*c3.y()*rxrx*(c0.y() - ec.y()) +
+        2*(c2.x()*c1.x()*ryry + c2.y()*c1.y()*rxrx),
 
-            2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
-                c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
+        2*c2.x()*ryry*(c0.x() - ec.x()) + 2*c2.y()*rxrx*(c0.y() - ec.y()) +
+        c1.x()*c1.x()*ryry + c1.y()*c1.y()*rxrx,
 
-            2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
+        2*c1.x()*ryry*(c0.x() - ec.x()) + 2*c1.y()*rxrx*(c0.y() - ec.y()),
 
-            c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
-                c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
-        });
+        c0.x()*c0.x()*ryry - 2*c0.y()*ec.y()*rxrx - 2*c0.x()*ec.x()*ryry +
+        c0.y()*c0.y()*rxrx + ec.x()*ec.x()*ryry + ec.y()*ec.y()*rxrx - rxrx*ryry
+    });
 
     for(const auto& t : roots) {
         if(t > 0.000000000 && t < 1.000000000) {

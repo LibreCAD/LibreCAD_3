@@ -89,7 +89,7 @@ void LinePatternSelect::setLinePattern(const lc::meta::DxfLinePattern_CSPtr& lin
     auto linePatterns = _document->linePatterns();
     auto position = std::find_if(linePatterns.begin(), linePatterns.end(), [&](const lc::meta::DxfLinePattern_CSPtr& item) {
         return item->name() == linePattern->name();
-        });
+    });
 
     if (position != linePatterns.end()) {
         setCurrentText(QString((*position)->name().c_str()));

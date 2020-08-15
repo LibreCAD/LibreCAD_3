@@ -23,7 +23,7 @@
 using namespace lc::ui::widgets;
 
 CustomizeToolbar::CustomizeToolbar(Toolbar* toolbar, QWidget *parent)
-    : 
+    :
     QDialog(parent),
     _toolbar(toolbar),
     _saveOnClose(CloseMode::Ask),
@@ -86,10 +86,10 @@ void CustomizeToolbar::initializeParentTab() {
 void CustomizeToolbar::addParentTab() {
     bool ok;
     QString text = QInputDialog::getText(this, tr("Add tab"),
-                                             tr(""), QLineEdit::Normal,
-                                             QDir::home().dirName(), &ok);
+                                         tr(""), QLineEdit::Normal,
+                                         QDir::home().dirName(), &ok);
     QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
-    if (ok && !text.isEmpty()){
+    if (ok && !text.isEmpty()) {
         tabWidget->insertTab(tabWidget->count()-1, new CustomizeParentTab(text), text);
         tabWidget->setCurrentIndex(tabWidget->count() - 2);
     }
@@ -172,7 +172,7 @@ void CustomizeToolbar::reAddButtons() {
 
         // if tab exists, addTab returns the tab
         lc::ui::api::ToolbarTab* newTab = _toolbar->addTab(parentTab->label().c_str());
-        
+
         // to ensure clones are made when duplicate buttons are encountered
         QSet<QString> addedButtonsSet;
 
@@ -207,7 +207,7 @@ void CustomizeToolbar::reAddButtons() {
 void CustomizeToolbar::parentTabClosed(int index) {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Remove Tab", "Are you sure you want to remove this tab?",
-        QMessageBox::Yes | QMessageBox::No);
+                                  QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         QTabWidget* tabWidget = qobject_cast<QTabWidget*>(ui->horizontalLayout->itemAt(1)->widget()->layout()->itemAt(0)->widget());
         tabWidget->removeTab(index);

@@ -7,8 +7,8 @@
 using namespace lc::viewer;
 
 LCDimLinear::LCDimLinear(const lc::entity::DimLinear_CSPtr& dimLinear) :
-        LCVDrawItem(dimLinear, true),
-        _dimLinear(dimLinear) {
+    LCVDrawItem(dimLinear, true),
+    _dimLinear(dimLinear) {
 }
 
 /**
@@ -25,27 +25,27 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
     const double capSize = 10.;
 
     const lc::geo::Coordinate &firstPoint = (_dimLinear->definitionPoint2().magnitude() <= _dimLinear->definitionPoint3().magnitude())
-                                          ? _dimLinear->definitionPoint2() : _dimLinear->definitionPoint3();
-                                          
+                                            ? _dimLinear->definitionPoint2() : _dimLinear->definitionPoint3();
+
     const lc::geo::Coordinate &secondPoint = (_dimLinear->definitionPoint2().magnitude() <= _dimLinear->definitionPoint3().magnitude())
-                                           ? _dimLinear->definitionPoint3() : _dimLinear->definitionPoint2();
-                                           
+            ? _dimLinear->definitionPoint3() : _dimLinear->definitionPoint2();
+
     const lc::geo::Coordinate& mousePos = _dimLinear->middleOfText();
 
     /* TODO maybe need to check for vertical too ?
      * assume firstPoint is always on left side...
      */
     if (!(mousePos.x() <= firstPoint.x() || mousePos.x() >= secondPoint.x())
-        && !(mousePos.y() >= firstPoint.y() && mousePos.y() <= secondPoint.y())) {
+            && !(mousePos.y() >= firstPoint.y() && mousePos.y() <= secondPoint.y())) {
         isHorizontal = true;
     }
 
     // Decide to show the explicit value or the measured value
     std::string value = lc::tools::StringHelper::dim_value(
-            _dimLinear->explicitValue(),
-            options.linearFormat(),
-            isHorizontal ? std::abs(dx) : std::abs(dy)
-    );
+                            _dimLinear->explicitValue(),
+                            options.linearFormat(),
+                            isHorizontal ? std::abs(dx) : std::abs(dy)
+                        );
 
     // get text size
     painter.save();
@@ -142,25 +142,25 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
     if (isHorizontal && shortOnSpace) {
         // TODO on short left or right side ?
         this->drawText(
-                value,
-                (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
-                _dimLinear->attachmentPoint(),
-                {mousePos.x() + capSize * 2.5, mousePos.y()},
-                painter,
-                options,
-                rect
+            value,
+            (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
+            _dimLinear->attachmentPoint(),
+        {mousePos.x() + capSize * 2.5, mousePos.y()},
+        painter,
+        options,
+        rect
         );
 
     }
     else if (isHorizontal) {
         this->drawText(
-                value,
-                (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
-                _dimLinear->attachmentPoint(),
-                _dimLinear->middleOfText(),
-                painter,
-                options,
-                rect
+            value,
+            (isHorizontal ? 0. : (90. / 180.) * M_PI) + _dimLinear->textAngle(),
+            _dimLinear->attachmentPoint(),
+            _dimLinear->middleOfText(),
+            painter,
+            options,
+            rect
         );
 
     }
@@ -176,13 +176,13 @@ void LCDimLinear::draw(LcPainter& painter, const LcDrawOptions &options, const l
         const double rotationAngle = mousePos.x() >= secondPoint.x() ? -90. / 180. : 90. / 180.;
 
         this->drawText(
-                value,
-                (rotationAngle * M_PI) + _dimLinear->textAngle(),
-                _dimLinear->attachmentPoint(),
-                _dimLinear->middleOfText(),
-                painter,
-                options,
-                rect
+            value,
+            (rotationAngle * M_PI) + _dimLinear->textAngle(),
+            _dimLinear->attachmentPoint(),
+            _dimLinear->middleOfText(),
+            painter,
+            options,
+            rect
         );
 
     }

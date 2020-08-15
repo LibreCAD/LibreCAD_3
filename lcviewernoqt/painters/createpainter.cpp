@@ -7,15 +7,15 @@
 #include <painters/opengl/openglrenderpainter.h>
 
 namespace lc {
-    namespace viewer {
+namespace viewer {
 #ifdef WITH_CAIRO
-        LcPainter* createCairoImagePainter(unsigned char* data, const unsigned int width, const unsigned int height) {
-            return new LcCairoPainter<CairoPainter::backend::Image>(data, width, height);
-        }
+LcPainter* createCairoImagePainter(unsigned char* data, const unsigned int width, const unsigned int height) {
+    return new LcCairoPainter<CairoPainter::backend::Image>(data, width, height);
+}
 #endif
 
-        LcPainter* createOpenGLPainter(unsigned char* data, const unsigned int width, const unsigned int height) {
-           return new OpenglRenderPainter(width,height);
-        }
-    }
+LcPainter* createOpenGLPainter(unsigned char* data, const unsigned int width, const unsigned int height) {
+    return new OpenglRenderPainter(width,height);
+}
+}
 }

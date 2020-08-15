@@ -12,8 +12,8 @@ using namespace operation;
 /** AddLinePattern                                                                                          ***/
 /********************************************************************************************************/
 AddLinePattern::AddLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern) :
-        DocumentOperation(std::move(document), "AddLinePattern"),
-        _linePattern(std::move(linePattern)) {
+    DocumentOperation(std::move(document), "AddLinePattern"),
+    _linePattern(std::move(linePattern)) {
 }
 
 void AddLinePattern::processInternal() {
@@ -32,8 +32,8 @@ void AddLinePattern::redo() const {
 /** RemoveLinePattern                                                                                       ***/
 /********************************************************************************************************/
 RemoveLinePattern::RemoveLinePattern(storage::Document_SPtr document, meta::DxfLinePattern_CSPtr linePattern) :
-        DocumentOperation(std::move(document), "RemoveLinePattern"),
-        _linePattern(std::move(linePattern)) {
+    DocumentOperation(std::move(document), "RemoveLinePattern"),
+    _linePattern(std::move(linePattern)) {
 }
 
 void RemoveLinePattern::processInternal() {
@@ -55,9 +55,9 @@ void RemoveLinePattern::redo() const {
 ReplaceLinePattern::ReplaceLinePattern(storage::Document_SPtr document,
                                        meta::DxfLinePattern_CSPtr oldLinePattern,
                                        meta::DxfLinePattern_CSPtr newLinePattern) :
-        DocumentOperation(std::move(document), "ReplaceLinePattern"),
-        _oldLinePattern(std::move(oldLinePattern)),
-        _newLinePattern(std::move(newLinePattern)) {
+    DocumentOperation(std::move(document), "ReplaceLinePattern"),
+    _oldLinePattern(std::move(oldLinePattern)),
+    _newLinePattern(std::move(newLinePattern)) {
 }
 
 void ReplaceLinePattern::processInternal() {

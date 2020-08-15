@@ -15,10 +15,10 @@ std::string DxfLinePattern::description() const {
 }
 
 DxfLinePatternByValue::DxfLinePatternByValue(std::string name, std::string description, std::vector<double> path, const double length) :
-        _name(std::move(name)),
-        _description(std::move(description)),
-        _path(std::move(path)),
-        _length(length) {
+    _name(std::move(name)),
+    _description(std::move(description)),
+    _path(std::move(path)),
+    _length(length) {
     assert(!tools::StringHelper::isBlank(_name) && "Name of DxfLinePatternByValue must be given");
     // Continues has a path length of 0 assert(_path.size() > 0 && "Path length must be > 0");
 }

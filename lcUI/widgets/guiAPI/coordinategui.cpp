@@ -7,7 +7,7 @@
 using namespace lc::ui::api;
 
 CoordinateGUI::CoordinateGUI(std::string label, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     _pointSelectionEnabled(false),
     mainWindow(nullptr),

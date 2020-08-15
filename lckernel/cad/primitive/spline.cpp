@@ -8,74 +8,74 @@ using namespace lc;
 using namespace entity;
 
 Spline::Spline(
-        const std::vector<geo::Coordinate>& controlPoints,
-        const std::vector<double>& knotPoints,
-        const std::vector<geo::Coordinate>& fitPoints,
-        int degree, bool closed, double fitTolerance,
-        double stanx, double stany, double stanz,
-        double etanx, double etany, double etanz,
-        double nx, double ny, double nz,
-        enum Spline::splineflag flags,
-        meta::Layer_CSPtr layer,
-        meta::MetaInfo_CSPtr metaInfo,
-        meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Spline(controlPoints,
-                    knotPoints,
-                    fitPoints,
-                    degree,
-                    closed,
-                    fitTolerance,
-                    stanx, stany, stanz,
-                    etanx, etany, etanz,
-                    nx, ny, nz,
-                    flags
-        ) {
-	calculateBoundingBox();
+    const std::vector<geo::Coordinate>& controlPoints,
+    const std::vector<double>& knotPoints,
+    const std::vector<geo::Coordinate>& fitPoints,
+    int degree, bool closed, double fitTolerance,
+    double stanx, double stany, double stanz,
+    double etanx, double etany, double etanz,
+    double nx, double ny, double nz,
+    enum Spline::splineflag flags,
+    meta::Layer_CSPtr layer,
+    meta::MetaInfo_CSPtr metaInfo,
+    meta::Block_CSPtr block) :
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Spline(controlPoints,
+                knotPoints,
+                fitPoints,
+                degree,
+                closed,
+                fitTolerance,
+                stanx, stany, stanz,
+                etanx, etany, etanz,
+                nx, ny, nz,
+                flags
+               ) {
+    calculateBoundingBox();
 }
 
 Spline::Spline(const lc::builder::SplineBuilder& builder) :
     CADEntity(builder),
     geo::Spline(builder.controlPoints(),
-            builder.knotPoints(),
-            builder.fitPoints(),
-            builder.degree(),
-            builder.closed(),
-            builder.fitTolerance(),
-            builder.startTangent().x(),
-            builder.startTangent().y(),
-            builder.startTangent().z(),
-            builder.endTangent().x(),
-            builder.endTangent().y(),
-            builder.endTangent().z(),
-            builder.normalVector().x(),
-            builder.normalVector().y(),
-            builder.normalVector().z(),
-            builder.flags()) {
+                builder.knotPoints(),
+                builder.fitPoints(),
+                builder.degree(),
+                builder.closed(),
+                builder.fitTolerance(),
+                builder.startTangent().x(),
+                builder.startTangent().y(),
+                builder.startTangent().z(),
+                builder.endTangent().x(),
+                builder.endTangent().y(),
+                builder.endTangent().z(),
+                builder.normalVector().x(),
+                builder.normalVector().y(),
+                builder.normalVector().z(),
+                builder.flags()) {
 
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :
-        CADEntity(other, sameID),
-        geo::Spline(
-                other->controlPoints(),
-                other->knotPoints(),
-                other->fitPoints(),
-                other->degree(),
-                other->closed(),
-                other->fitTolerance(),
-                other->startTanX(), other->startTanY(), other->startTanZ(),
-                other->endTanX(), other->endTanY(), other->endTanZ(),
-                other->nX(), other->nY(), other->nZ(),
-                other->flags()
-        ),
-        _boundingBox(other->boundingBox()) {
+    CADEntity(other, sameID),
+    geo::Spline(
+        other->controlPoints(),
+        other->knotPoints(),
+        other->fitPoints(),
+        other->degree(),
+        other->closed(),
+        other->fitTolerance(),
+        other->startTanX(), other->startTanY(), other->startTanZ(),
+        other->endTanX(), other->endTanY(), other->endTanZ(),
+        other->nX(), other->nY(), other->nZ(),
+        other->flags()
+    ),
+    _boundingBox(other->boundingBox()) {
 }
 
 std::vector<EntityCoordinate> Spline::snapPoints(const geo::Coordinate& coord,
-                                                 const SimpleSnapConstrain & constrain,
-                                                 double minDistanceToSnap,
-                                                 int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain & constrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     /* TODO implement
      * fix compiler warning
      */
@@ -98,24 +98,24 @@ CADEntity_CSPtr Spline::move(const geo::Coordinate& offset) const {
     }
 
     auto newSpline = std::make_shared<Spline>(control_pts,
-                                              knotPoints(),
-                                              fitPoints(),
-                                              degree(),
-                                              closed(),
-                                              fitTolerance(),
-                                              startTanX(),
-                                              startTanY(),
-                                              startTanZ(),
-                                              endTanX(),
-                                              endTanY(),
-                                              endTanZ(),
-                                              nX(),
-                                              nY(),
-                                              nZ(),
-                                              flags(),
-                                              layer()
-                                              , metaInfo(), block()
-    );
+                     knotPoints(),
+                     fitPoints(),
+                     degree(),
+                     closed(),
+                     fitTolerance(),
+                     startTanX(),
+                     startTanY(),
+                     startTanZ(),
+                     endTanX(),
+                     endTanY(),
+                     endTanZ(),
+                     nX(),
+                     nY(),
+                     nZ(),
+                     flags(),
+                     layer()
+                     , metaInfo(), block()
+                                             );
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -128,24 +128,24 @@ CADEntity_CSPtr Spline::copy(const geo::Coordinate& offset) const {
     }
 
     auto newSpline = std::make_shared<Spline>(control_pts,
-                                              knotPoints(),
-                                              fitPoints(),
-                                              degree(),
-                                              closed(),
-                                              fitTolerance(),
-                                              startTanX(),
-                                              startTanY(),
-                                              startTanZ(),
-                                              endTanX(),
-                                              endTanY(),
-                                              endTanZ(),
-                                              nX(),
-                                              nY(),
-                                              nZ(),
-                                              flags(),
-                                              layer()
-                                              , metaInfo(), block()
-    );
+                     knotPoints(),
+                     fitPoints(),
+                     degree(),
+                     closed(),
+                     fitTolerance(),
+                     startTanX(),
+                     startTanY(),
+                     startTanZ(),
+                     endTanX(),
+                     endTanY(),
+                     endTanZ(),
+                     nX(),
+                     nY(),
+                     nZ(),
+                     flags(),
+                     layer()
+                     , metaInfo(), block()
+                                             );
     return newSpline;
 }
 
@@ -159,24 +159,24 @@ CADEntity_CSPtr Spline::rotate(const geo::Coordinate& rotation_center, double ro
     auto normal = geo::Coordinate(nX(), nY(), nZ()).rotate(rotation_angle);
 
     auto newSpline = std::make_shared<Spline>(control_pts,
-                                              knotPoints(),
-                                              fitPoints(),
-                                              degree(),
-                                              closed(),
-                                              fitTolerance(),
-                                              startTanX(),
-                                              startTanY(),
-                                              startTanZ(),
-                                              endTanX(),
-                                              endTanY(),
-                                              endTanZ(),
-                                              normal.x(),
-                                              normal.y(),
-                                              normal.z(),
-                                              flags(),
-                                              layer()
-                                              , metaInfo(), block()
-    );
+                     knotPoints(),
+                     fitPoints(),
+                     degree(),
+                     closed(),
+                     fitTolerance(),
+                     startTanX(),
+                     startTanY(),
+                     startTanZ(),
+                     endTanX(),
+                     endTanY(),
+                     endTanZ(),
+                     normal.x(),
+                     normal.y(),
+                     normal.z(),
+                     flags(),
+                     layer()
+                     , metaInfo(), block()
+                                             );
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -189,24 +189,24 @@ CADEntity_CSPtr Spline::scale(const geo::Coordinate& scale_center, const geo::Co
     }
 
     auto newSpline = std::make_shared<Spline>(control_pts,
-                                              knotPoints(),
-                                              fitPoints(),
-                                              degree(),
-                                              closed(),
-                                              fitTolerance(),
-                                              startTanX(),
-                                              startTanY(),
-                                              startTanZ(),
-                                              endTanX(),
-                                              endTanY(),
-                                              endTanZ(),
-                                              nX(),
-                                              nY(),
-                                              nZ(),
-                                              flags(),
-                                              layer()
-                                              , metaInfo(), block()
-    );
+                     knotPoints(),
+                     fitPoints(),
+                     degree(),
+                     closed(),
+                     fitTolerance(),
+                     startTanX(),
+                     startTanY(),
+                     startTanZ(),
+                     endTanX(),
+                     endTanY(),
+                     endTanZ(),
+                     nX(),
+                     nY(),
+                     nZ(),
+                     flags(),
+                     layer()
+                     , metaInfo(), block()
+                                             );
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -219,24 +219,24 @@ CADEntity_CSPtr Spline::mirror(const geo::Coordinate& axis1, const geo::Coordina
     }
 
     auto newSpline = std::make_shared<Spline>(control_pts,
-                                              knotPoints(),
-                                              fitPoints(),
-                                              degree(),
-                                              closed(),
-                                              fitTolerance(),
-                                              startTanX(),
-                                              startTanY(),
-                                              startTanZ(),
-                                              endTanX(),
-                                              endTanY(),
-                                              endTanZ(),
-                                              nX(),
-                                              nY(),
-                                              nZ(),
-                                              flags(),
-                                              layer()
-                                              , metaInfo(), block()
-    );
+                     knotPoints(),
+                     fitPoints(),
+                     degree(),
+                     closed(),
+                     fitTolerance(),
+                     startTanX(),
+                     startTanY(),
+                     startTanZ(),
+                     endTanX(),
+                     endTanY(),
+                     endTanZ(),
+                     nX(),
+                     nY(),
+                     nZ(),
+                     flags(),
+                     layer()
+                     , metaInfo(), block()
+                                             );
     newSpline->setID(this->id());
     return newSpline;
 }
@@ -247,31 +247,31 @@ const geo::Area Spline::boundingBox() const {
 
 CADEntity_CSPtr Spline::modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newSpline = std::make_shared<Spline>(
-            controlPoints(),
-            knotPoints(),
-            fitPoints(),
-            degree(),
-            closed(),
-            fitTolerance(),
-            startTanX(), startTanY(), startTanZ(),
-            endTanX(), endTanY(), endTanZ(),
-            nX(), nY(), nZ(), flags(),
-            layer,
-            metaInfo,
-            block
-    );
+                         controlPoints(),
+                         knotPoints(),
+                         fitPoints(),
+                         degree(),
+                         closed(),
+                         fitTolerance(),
+                         startTanX(), startTanY(), startTanZ(),
+                         endTanX(), endTanY(), endTanZ(),
+                         nX(), nY(), nZ(), flags(),
+                         layer,
+                         metaInfo,
+                         block
+                     );
     newSpline->setID(id());
 
     return newSpline;
 }
 
 void Spline::calculateBoundingBox() {
-	//TODO: better bounding box generation
-	_boundingBox = geo::Area(this->controlPoints()[0], this->controlPoints()[0]);
-	
-	for(const auto& cp : this->controlPoints()) {
-		_boundingBox = _boundingBox.merge(cp);
-	}
+    //TODO: better bounding box generation
+    _boundingBox = geo::Area(this->controlPoints()[0], this->controlPoints()[0]);
+
+    for(const auto& cp : this->controlPoints()) {
+        _boundingBox = _boundingBox.merge(cp);
+    }
 }
 
 
@@ -289,7 +289,7 @@ std::map<unsigned int, lc::geo::Coordinate> Spline::dragPoints() const {
         dragpoints[i] = point;
         i++;
     }
-    
+
     return dragpoints;
 }
 
@@ -312,17 +312,17 @@ CADEntity_CSPtr Spline::setDragPoints(std::map<unsigned int, lc::geo::Coordinate
         }
 
         auto newEntity = std::make_shared<Spline>(controlPoints,
-                                                    knotPoints(),
-                                                    fitPoints,
-                                                    degree(),
-                                                    closed(),
-                                                    fitTolerance(),
-                                                    startTanX(), startTanY(), startTanZ(),
-                                                    endTanX(), endTanY(), endTanZ(),
-                                                    nX(), nY(), nZ(),
-                                                    flags(),
-                                                    layer()
-                                                    , metaInfo(), block());
+                         knotPoints(),
+                         fitPoints,
+                         degree(),
+                         closed(),
+                         fitTolerance(),
+                         startTanX(), startTanY(), startTanZ(),
+                         endTanX(), endTanY(), endTanZ(),
+                         nX(), nY(), nZ(),
+                         flags(),
+                         layer()
+                         , metaInfo(), block());
 
         newEntity->setID(id());
 
@@ -387,7 +387,7 @@ CADEntity_CSPtr Spline::setProperties(const PropertiesMap& propertiesMap) const 
     }
 
     auto newSpline = std::make_shared<Spline>(controlPointsp, knotPoints(), fitPoints(), degreep, closedp, fitTolerancep, startTangentp.x(),
-        startTangentp.y(), startTangentp.z(), endTangentp.x(),endTangentp.y(), endTangentp.z(), normalVectorp.x(), normalVectorp.y(), normalVectorp.z(), flags(), layer(), metaInfo(), block());
+                     startTangentp.y(), startTangentp.z(), endTangentp.x(),endTangentp.y(), endTangentp.z(), normalVectorp.x(), normalVectorp.y(), normalVectorp.z(), flags(), layer(), metaInfo(), block());
     newSpline->setID(this->id());
     return newSpline;
 }

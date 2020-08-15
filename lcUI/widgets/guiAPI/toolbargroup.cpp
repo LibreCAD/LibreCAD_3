@@ -4,7 +4,7 @@
 
 using namespace lc::ui::api;
 
-ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent) 
+ToolbarGroup::ToolbarGroup(const char* groupName, int width, QWidget* parent)
     :
     QGroupBox(groupName, parent),
     _width(width),

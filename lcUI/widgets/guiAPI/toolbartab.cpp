@@ -6,22 +6,22 @@
 using namespace lc::ui::api;
 
 ToolbarTab::ToolbarTab(const char* tabName, QWidget *parent) :
-		QWidget(parent),
-        _label(tabName),
-		ui(new Ui::ToolbarTab) {
-	ui->setupUi(this);
+    QWidget(parent),
+    _label(tabName),
+    ui(new Ui::ToolbarTab) {
+    ui->setupUi(this);
 
-	if(ui->container->layout() == nullptr) {
-		_layout = new QHBoxLayout();
-		ui->container->setLayout(_layout);
-	}
-	else {
-		_layout = qobject_cast<QHBoxLayout*>(ui->container->layout());
+    if(ui->container->layout() == nullptr) {
+        _layout = new QHBoxLayout();
+        ui->container->setLayout(_layout);
+    }
+    else {
+        _layout = qobject_cast<QHBoxLayout*>(ui->container->layout());
 
-		if(_layout == nullptr) {
-			throw std::runtime_error("Wrong layout for ToolbarTab container");
-		}
-	}
+        if(_layout == nullptr) {
+            throw std::runtime_error("Wrong layout for ToolbarTab container");
+        }
+    }
 }
 
 void ToolbarTab::addGroup(ToolbarGroup* group) {
@@ -54,17 +54,17 @@ void ToolbarTab::addButton(ToolbarButton* button, const char* groupName) {
 }
 
 ToolbarGroup* ToolbarTab::groupByName(const char* groupName) {
-	auto nbGroups = _layout->count();
+    auto nbGroups = _layout->count();
 
-	for (int i = 0; i < nbGroups; i++) {
-		auto groupBox = qobject_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
+    for (int i = 0; i < nbGroups; i++) {
+        auto groupBox = qobject_cast<ToolbarGroup*>(_layout->itemAt(i)->widget());
 
-		if (groupBox != nullptr && groupBox->title() == groupName) {
-			return groupBox;
-		}
-	}
+        if (groupBox != nullptr && groupBox->title() == groupName) {
+            return groupBox;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 std::vector<ToolbarGroup*> ToolbarTab::groups() {
@@ -83,17 +83,17 @@ std::vector<ToolbarGroup*> ToolbarTab::groups() {
 }
 
 ToolbarButton* ToolbarTab::buttonByText(ToolbarGroup* groupBox, const char* buttonText) {
-	auto nbButtons = groupBox->layout()->count();
+    auto nbButtons = groupBox->layout()->count();
 
-	for (int i = 0; i < nbButtons; i++) {
-		auto button = qobject_cast<ToolbarButton*>(groupBox->layout()->itemAt(i)->widget());
+    for (int i = 0; i < nbButtons; i++) {
+        auto button = qobject_cast<ToolbarButton*>(groupBox->layout()->itemAt(i)->widget());
 
-		if(button != nullptr && button->label() == buttonText) {
-			return button;
-		}
-	}
+        if(button != nullptr && button->label() == buttonText) {
+            return button;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 void ToolbarTab::removeGroup(const char* groupName) {

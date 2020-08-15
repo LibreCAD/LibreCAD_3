@@ -20,10 +20,10 @@ QVariant OperationDropModel::headerData(int section, Qt::Orientation orientation
 
     if(orientation == Qt::Horizontal)
     {
-        if(section < maxColCount){
+        if(section < maxColCount) {
             return tr((groupName + QString::number(section)).toStdString().c_str());
         }
-        else{
+        else {
             return QVariant();
         }
     }
@@ -57,10 +57,10 @@ QVariant OperationDropModel::data(const QModelIndex &index, int role) const
 
     QPair<QString, QIcon> element = operations.at(ind);
 
-    if(role == Qt::DisplayRole){
+    if(role == Qt::DisplayRole) {
         return element.first;
     }
-    else if(role == Qt::DecorationRole){
+    else if(role == Qt::DecorationRole) {
         return element.second;
     }
 
@@ -141,7 +141,7 @@ bool OperationDropModel::dropMimeData(const QMimeData *data,Qt::DropAction actio
     }
     else
     {
-        if(operations.size() == maxRowCount * maxColCount){
+        if(operations.size() == maxRowCount * maxColCount) {
             return false;
         }
 
@@ -163,7 +163,7 @@ bool OperationDropModel::setData(const QModelIndex &index, const QVariant &value
     {
         int ind = index.row() * maxColCount + index.column();
 
-        if(ind >= 0 && ind < operations.size()){
+        if(ind >= 0 && ind < operations.size()) {
             QPair<QString, QIcon>& pair = operations[index.row() * maxColCount + index.column()];
             QByteArray itemData = value.value<QByteArray>();
             QDataStream dataStream(&itemData, QIODevice::ReadOnly);
@@ -187,7 +187,7 @@ bool OperationDropModel::setData(const QModelIndex &index, const QVariant &value
             pair.first = element.first;
             pair.second = element.second;
             return true;
-        } else if(ind >= operations.size()){
+        } else if(ind >= operations.size()) {
             QByteArray itemData = value.value<QByteArray>();
             QDataStream dataStream(&itemData, QIODevice::ReadOnly);
             QPair<QString, QIcon> element;
@@ -206,7 +206,7 @@ bool OperationDropModel::setData(const QModelIndex &index, const QVariant &value
 
 void OperationDropModel::removeItemAt(int row, int col) {
     int ind = row * maxColCount + col;
-    if(ind < 0 || ind >= operations.size()){
+    if(ind < 0 || ind >= operations.size()) {
         return;
     }
     operations.removeAt(ind);
@@ -216,14 +216,14 @@ void OperationDropModel::removeItemAt(int row, int col) {
 }
 
 void OperationDropModel::setNumRows(int numRows) {
-    if(numRows < maxRowCount){
+    if(numRows < maxRowCount) {
         beginRemoveRows(QModelIndex(), numRows, maxRowCount-1);
-        while(operations.size() > numRows * maxColCount){
+        while(operations.size() > numRows * maxColCount) {
             operations.removeLast();
         }
         maxRowCount = numRows;
         endRemoveRows();
-    }else{
+    } else {
         beginInsertRows(QModelIndex(), maxRowCount, numRows-1);
         maxRowCount = numRows;
         endInsertRows();
@@ -231,21 +231,21 @@ void OperationDropModel::setNumRows(int numRows) {
 }
 
 void OperationDropModel::setNumCols(int numCols) {
-    if(numCols < maxColCount){
+    if(numCols < maxColCount) {
         beginRemoveColumns(QModelIndex(), numCols, maxColCount-1);
         QList<QPair<QString, QIcon>>::Iterator iter = operations.begin();
         int index = 0;
         while (iter != operations.end()) {
-            if (index % maxColCount == maxColCount-1){
+            if (index % maxColCount == maxColCount-1) {
                 iter = operations.erase(iter);
-            }else{
+            } else {
                 iter++;
             }
             index++;
         }
         maxColCount = numCols;
         endRemoveColumns();
-    }else{
+    } else {
         beginInsertColumns(QModelIndex(), maxColCount, numCols-1);
         maxColCount = numCols;
         endInsertColumns();

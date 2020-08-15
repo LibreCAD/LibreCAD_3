@@ -8,31 +8,31 @@
 #include "cad/meta/layer.h"
 
 namespace lc {
-    namespace object {
-        /**
-         *Class that all CAD objects must inherit
-         *
-         */
-        class CADObject {
-        DECLARE_SHORT_SHARED_PTR(CADObject)
-        public:
-            CADObject() = default;
+namespace object {
+/**
+ *Class that all CAD objects must inherit
+ *
+ */
+class CADObject {
+    DECLARE_SHORT_SHARED_PTR(CADObject)
+public:
+    CADObject() = default;
 
-            /*!
-             * \brief CADObject Constructor
-             *             
-             */
-            CADObject(const CADObject_CSPtr& cadObject, bool sameID);
+    /*!
+     * \brief CADObject Constructor
+     *
+     */
+    CADObject(const CADObject_CSPtr& cadObject, bool sameID);
 
-            CADObject(const CADObject_CSPtr& cadObject);
+    CADObject(const CADObject_CSPtr& cadObject);
 
-            virtual ~CADObject() = default;
-        protected:
+    virtual ~CADObject() = default;
+protected:
 
-        private:
+private:
 
-        };
+};
 
-        DECLARE_SHORT_SHARED_PTR(CADObject)
-    }
+DECLARE_SHORT_SHARED_PTR(CADObject)
+}
 }

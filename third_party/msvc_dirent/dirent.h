@@ -306,8 +306,8 @@ static void rewinddir (DIR* dirp);
 static void _wrewinddir (_WDIR* dirp);
 
 static int scandir (const char *dirname, struct dirent ***namelist,
-    int (*filter)(const struct dirent*),
-    int (*compare)(const struct dirent**, const struct dirent**));
+                    int (*filter)(const struct dirent*),
+                    int (*compare)(const struct dirent**, const struct dirent**));
 
 static int alphasort (const struct dirent **a, const struct dirent **b);
 
@@ -420,7 +420,8 @@ _wopendir(
     case '/':
     case ':':
         /* Directory ends in path separator, e.g. c:\temp\ */
-        /*NOP*/;
+        /*NOP*/
+        ;
         break;
 
     default:
@@ -592,8 +593,8 @@ dirent_first(
 
     /* Open directory and retrieve the first entry */
     dirp->handle = FindFirstFileExW(
-        dirp->patt, FindExInfoStandard, &dirp->data,
-        FindExSearchNameMatch, NULL, 0);
+                       dirp->patt, FindExInfoStandard, &dirp->data,
+                       FindExSearchNameMatch, NULL, 0);
     if (dirp->handle != INVALID_HANDLE_VALUE) {
 
         /* a directory entry is now waiting in memory */
@@ -697,7 +698,7 @@ opendir(
 
         /* Convert directory name to wide-character string */
         error = dirent_mbstowcs_s(
-            &n, wname, PATH_MAX + 1, dirname, PATH_MAX + 1);
+                    &n, wname, PATH_MAX + 1, dirname, PATH_MAX + 1);
         if (error) {
             /*
              * Cannot convert file name to wide-character string.  This
@@ -767,7 +768,7 @@ readdir_r(
 
         /* Attempt to convert file name to multi-byte string */
         error = dirent_wcstombs_s(
-            &n, entry->d_name, PATH_MAX + 1, datap->cFileName, PATH_MAX + 1);
+                    &n, entry->d_name, PATH_MAX + 1, datap->cFileName, PATH_MAX + 1);
 
         /*
          * If the file name cannot be represented by a multi-byte string,
@@ -781,8 +782,8 @@ readdir_r(
          */
         if (error  &&  datap->cAlternateFileName[0] != '\0') {
             error = dirent_wcstombs_s(
-                &n, entry->d_name, PATH_MAX + 1,
-                datap->cAlternateFileName, PATH_MAX + 1);
+                        &n, entry->d_name, PATH_MAX + 1,
+                        datap->cAlternateFileName, PATH_MAX + 1);
         }
 
         if (!error) {
@@ -972,7 +973,7 @@ scandir(
                      * exit.
                      */
                     qsort (files, size, sizeof (void*),
-                        (int (*) (const void*, const void*)) compare);
+                           (int (*) (const void*, const void*)) compare);
                     break;
 
                 }

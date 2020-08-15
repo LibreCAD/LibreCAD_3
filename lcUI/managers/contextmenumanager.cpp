@@ -54,7 +54,7 @@ void ContextMenuManager::addOperation(const std::string& key, const std::string&
 void ContextMenuManager::generateMenu(api::Menu* menu, std::vector<lc::entity::CADEntity_CSPtr> selectedEntities) {
     if (_mainWindow->cadMdiChild()->viewer()->operationActive()) {
         activeCommands(menu, selectedEntities);
-    }else if (selectedEntities.size() > 0) {
+    } else if (selectedEntities.size() > 0) {
         selectedCommands(menu, selectedEntities);
     }
     else {
