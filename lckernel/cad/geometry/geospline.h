@@ -116,7 +116,7 @@ public:
      */
     Coordinate nearestPointOnEntity(const Coordinate &coord) const;
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 

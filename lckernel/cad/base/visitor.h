@@ -162,7 +162,7 @@ template <typename IVisitor, typename C, typename...Ts> struct IVisitorImpl;
 template <typename IVisitor, typename C, typename T, typename...Ts>
 struct IVisitorImpl<IVisitor, C, T, Ts...> : IVisitorImpl<IVisitor, C, Ts...>
 {
-    virtual void visit(const T& t) override {
+    void visit(const T& t) override {
         C::visit(t);    // NOLINT
     }
 };
@@ -170,7 +170,7 @@ struct IVisitorImpl<IVisitor, C, T, Ts...> : IVisitorImpl<IVisitor, C, Ts...>
 template <typename IVisitor, typename C, typename T>
 struct IVisitorImpl<IVisitor, C, T> : IVisitor, C
 {
-    virtual void visit(const T& t) override {
+    void visit(const T& t) override {
         C::visit(t);    // NOLINT
     }
 };

@@ -118,7 +118,7 @@ public:
         return maths::Equation(0,0,0,normal.x(),normal.y(),- normal.dot(this->end()));
     }
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 

@@ -41,11 +41,11 @@ public:
         return maths::Equation(1., 0.,1., 0., 0., -_radius* _radius).move(_center);
     }
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 
-    virtual std::vector<Coordinate> lineTangentPointsOnEntity(const lc::geo::Coordinate& extPoint) override;
+    std::vector<Coordinate> lineTangentPointsOnEntity(const lc::geo::Coordinate& extPoint) override;
 
 private:
     friend std::ostream& operator<<(std::ostream& os, const Circle& c) {

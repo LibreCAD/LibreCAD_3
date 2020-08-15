@@ -112,7 +112,7 @@ public:
     // test of the given angle is between the start and end angle of this arc.
     bool isAngleBetween(double angle) const;
 
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 
