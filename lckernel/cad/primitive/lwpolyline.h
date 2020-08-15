@@ -151,7 +151,7 @@ public:
     }
 
 public:
-    virtual std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
+    std::vector<EntityCoordinate> snapPoints(const geo::Coordinate &coord,
             const SimpleSnapConstrain &constrain,
             double minDistanceToSnap,
             int maxNumberOfSnapPoints) const override;
@@ -161,8 +161,8 @@ public:
     std::tuple<geo::Coordinate, std::shared_ptr<const geo::Vector>, std::shared_ptr<const geo::Arc>, unsigned int>
     nearestPointOnPath2(const geo::Coordinate &coord) const;
 
-    virtual std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
-    virtual lc::geo::Coordinate representingPoint() const;
+    std::vector<CADEntity_CSPtr> splitEntity(const geo::Coordinate& coord) const;
+    lc::geo::Coordinate representingPoint() const;
 private:
     /**
      * @brief Generate entities of the polyline
@@ -190,14 +190,14 @@ public:
      * @param geo::Coordinate offset
      * @return CADEntity_CSPtr moved entity
      */
-    virtual CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
+    CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
 
     /**
      * @brief copy, copies by an offset
      * @param geo::Coordinate offset
      * @return CADEntity_CSPtr copied entity
      */
-    virtual CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
+    CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
 
     /**
      * @brief rotate, rotate operation
@@ -205,7 +205,7 @@ public:
      * @param double rotation_angle
      * @return CADEntity_CSPtr rotated entity
      */
-    virtual CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
+    CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
 
     /**
      * @brief scale, scales the entity
@@ -213,11 +213,11 @@ public:
      * @param double scale_factor
      * @return
      */
-    virtual CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
+    CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
                                   const geo::Coordinate &scale_factor) const override;
 
 
-    virtual CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
+    CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
                                    const geo::Coordinate& axis2) const override {
         return NULL; // TODO: no return statement, not implemented in lwpolyline.cpp
     }
@@ -225,9 +225,9 @@ public:
      * @brief boundingBox of the entity
      * @return geo::Area area
      */
-    virtual const geo::Area boundingBox() const override;
+    const geo::Area boundingBox() const override;
 
-    virtual CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
+    CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;
 
     /**
      * Return a vector of entities for this polyline
@@ -237,11 +237,11 @@ public:
 
 
 public:
-    virtual void accept(GeoEntityVisitor &v) const override {
+    void accept(GeoEntityVisitor &v) const override {
         v.visit(*this);
     }
 
-    virtual void dispatch(EntityDispatch &ed) const override {
+    void dispatch(EntityDispatch &ed) const override {
         ed.visit(shared_from_this());
     }
 
@@ -250,8 +250,8 @@ public:
     CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
 
 public:
-    virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
-    virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+    std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+    CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 };
 
 DECLARE_SHORT_SHARED_PTR(LWPolyline)

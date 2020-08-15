@@ -26,5 +26,4 @@ void PaperBackground::draw(lc::viewer::event::DrawEvent const & event) const {
     painter.source_rgb(0., 0., 0.);
     painter.rectangle(0, 0, _width, _height);
     painter.stroke();
-
 }

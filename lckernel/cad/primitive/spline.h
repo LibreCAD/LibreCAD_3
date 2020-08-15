@@ -115,8 +115,8 @@ public:
         ed.visit(shared_from_this());
     }
 
-    virtual std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
-    virtual CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+    std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
+    CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
 
     PropertiesMap availableProperties() const override;
 
