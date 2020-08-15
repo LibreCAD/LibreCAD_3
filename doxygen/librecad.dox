@@ -243,7 +243,7 @@ SEPARATE_MEMBER_PAGES  = NO
 # The TAB_SIZE tag can be used to set the number of spaces in a tab. Doxygen
 # uses this value to replace tabs by spaces in code fragments.
 # Minimum value: 1, maximum value: 16, default value: 4.
-# this value was 8 in old conf -------------------------------------
+# this value was 8 in old conf
 
 TAB_SIZE               = 4 
 
@@ -856,7 +856,7 @@ INPUT_ENCODING         = UTF-8
 # *.doc (to be provided as doxygen C comment), *.txt (to be provided as doxygen
 # C comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08, *.f, *.for, *.tcl, *.vhd,
 # *.vhdl, *.ucf, *.qsf and *.ice.
-# old conf use *.cpp *.h only ----------------------------------------------
+# old conf use *.cpp *.h only
 FILE_PATTERNS          = *.c \ 
                          *.cc \
                          *.cxx \
