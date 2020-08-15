@@ -27,7 +27,7 @@ TEST(MenuTest, MenuLabelTest) {
     insideMenu2->setLabel("NEWINSIDEMENU2");
 
     EXPECT_EQ("NEWINSIDEMENU2", insideMenu2->label());
-    
+
     EXPECT_EQ(insideMenu2, testMenu->menuByName("NEWINSIDEMENU2"));
     EXPECT_EQ(nullptr,testMenu->menuByName("INSIDEMENU2"));
 

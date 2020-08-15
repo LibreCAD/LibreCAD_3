@@ -16,13 +16,13 @@
 using namespace lc::lua;
 
 static const luaL_Reg loadedlibs[] = {
-        {"_G", luaopen_base},
-        {LUA_LOADLIBNAME, luaopen_package},
-        {LUA_COLIBNAME, luaopen_coroutine},
-        {LUA_TABLIBNAME, luaopen_table},
-        {LUA_STRLIBNAME, luaopen_string},
-        {LUA_MATHLIBNAME, luaopen_math},
-        {nullptr, nullptr}
+    {"_G", luaopen_base},
+    {LUA_LOADLIBNAME, luaopen_package},
+    {LUA_COLIBNAME, luaopen_coroutine},
+    {LUA_TABLIBNAME, luaopen_table},
+    {LUA_STRLIBNAME, luaopen_string},
+    {LUA_MATHLIBNAME, luaopen_math},
+    {nullptr, nullptr}
 };
 
 LCLua::LCLua(lua_State* L) :
@@ -31,7 +31,7 @@ LCLua::LCLua(lua_State* L) :
 
     kaguya::State s(_L);
     s["registerPlugin"].setFunction([](const std::string& name, kaguya::LuaRef onNewWaitingEntityFunction) {
-            LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
+        LuaCustomEntityManager::getInstance().registerPlugin(name, onNewWaitingEntityFunction);
     });
 }
 
@@ -49,13 +49,13 @@ void LCLua::addLuaLibs() {
     s["openFile"].setFunction(&openFile);
 
     s["FILE"].setClass(kaguya::UserdataMetatable<FILE>()
-        .addStaticFunction("read", [](FILE* file, const size_t len) {
-            return read(file, len);
-        })
-        .addStaticFunction("write", [](FILE* file, const char* content) {
-            return write(file, content);
-        })
-    );
+    .addStaticFunction("read", [](FILE* file, const size_t len) {
+        return read(file, len);
+    })
+    .addStaticFunction("write", [](FILE* file, const char* content) {
+        return write(file, content);
+    })
+                      );
 
     if(_f_openFileDialog == nullptr) {
         s["openFileDialog"].setFunction([]() {
@@ -91,15 +91,15 @@ FILE* LCLua::openFile(const char* path, const char* mode) {
 }
 
 std::string LCLua::read(FILE* file, size_t len) {
-	char* buf = new char[len + 1];
+    char* buf = new char[len + 1];
 
     size_t n = fread(buf, sizeof(char), len, file);
     buf[n] = '\0';
 
     auto bufferStr = std::string(buf);
-	delete buf;
+    delete buf;
 
-	return bufferStr;
+    return bufferStr;
 }
 
 void LCLua::write(FILE* file, const char* content) {

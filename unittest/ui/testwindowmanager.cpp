@@ -7,7 +7,7 @@
 
 //REMEMBER THAT MAINWINDOWS IS COMMON FOR ALL TESTS, SO KEEP THAT IN MIND
 
-TEST(WindowManagerTest, InitializationTest){
+TEST(WindowManagerTest, InitializationTest) {
     QApplication app(argc, argv);
     lc::ui::WindowManager::init();
     lc::ui::WindowManager::getMainWindows()[0]->hide();

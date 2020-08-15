@@ -11,19 +11,19 @@
 using namespace lc::storage;
 
 Document::Document():
-        _beginProcessEvent(),
-        _commitProcessEvent(),
-        _addEntityEvent(),
-        _replaceEntityEvent(),
-        _removeEntityEvent(),
-        _addLayerEvent(),
-        _addViewportEvent(),
-        _replaceLayerEvent(),
-        _removeLayerEvent(),
-        _addLinePatternEvent(),
-        _replaceLinePatternEvent(),
-        _removeLinePatternEvent(),
-        _newWaitingCustomEntityEvent() {
+    _beginProcessEvent(),
+    _commitProcessEvent(),
+    _addEntityEvent(),
+    _replaceEntityEvent(),
+    _removeEntityEvent(),
+    _addLayerEvent(),
+    _addViewportEvent(),
+    _replaceLayerEvent(),
+    _removeLayerEvent(),
+    _addLinePatternEvent(),
+    _replaceLinePatternEvent(),
+    _removeLinePatternEvent(),
+    _newWaitingCustomEntityEvent() {
     storage::DocumentList::getInstance().addDocument(this);
 }
 

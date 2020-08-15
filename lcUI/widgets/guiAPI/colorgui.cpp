@@ -12,7 +12,7 @@ ColorGUI::ColorGUI(std::string label, QWidget* parent)
     ui(new Ui::ColorGUI)
 {
     ui->setupUi(this);
-    
+
     _type = "color";
     _textLabel = qobject_cast<QLabel*>(ui->horizontalLayout->itemAt(0)->widget());
     _colorButton = qobject_cast<QPushButton*>(ui->horizontalLayout->itemAt(1)->widget());

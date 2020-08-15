@@ -118,7 +118,7 @@ TEST(LayersTest, EditionDialog) {
 
     auto width = 0.13;
     auto color = lc::Color(1, 2, 3, 4);
-    auto linePattern = std::make_shared<const lc::meta::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double>{1, -1, 0, -1}, 3);
+    auto linePattern = std::make_shared<const lc::meta::DxfLinePatternByValue>("LP", "Line Pattern", std::vector<double> {1, -1, 0, -1}, 3);
     auto layer = std::make_shared<const lc::meta::Layer>("Layer", lc::meta::MetaLineWidthByValue(width), color, linePattern, false);
 
     auto operation = std::make_shared<lc::operation::AddLinePattern>(document, linePattern);
@@ -132,9 +132,9 @@ TEST(LayersTest, EditionDialog) {
     EXPECT_EQ(linePattern->name(), layerDialog.linePatternName());
     EXPECT_EQ(width, layerDialog.lineWidthValue());
     EXPECT_TRUE(
-            color.red() == dialogColor.red() &&
-            color.green() == dialogColor.green() &&
-            color.blue() == dialogColor.blue()
+        color.red() == dialogColor.red() &&
+        color.green() == dialogColor.green() &&
+        color.blue() == dialogColor.blue()
     );
 }
 
@@ -229,7 +229,7 @@ TEST(LayersTest, ButtonClickTest) {
     bool found = false;
     const QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget *widget : topLevelWidgets) {
-        if(widget->objectName().toStdString() == "AddLayerDialog"){
+        if(widget->objectName().toStdString() == "AddLayerDialog") {
             found = true;
             break;
         }

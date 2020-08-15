@@ -11,7 +11,7 @@
 using namespace lc::ui;
 
 LuaInterface::LuaInterface() :
-	_pluginManager(_L.state(), "gui"){
+    _pluginManager(_L.state(), "gui") {
 }
 
 LuaInterface::~LuaInterface() {
@@ -21,10 +21,10 @@ LuaInterface::~LuaInterface() {
 }
 
 void LuaInterface::initLua(QMainWindow* mainWindow) {
-	auto lcLua = lc::lua::LCLua(_L.state());
+    auto lcLua = lc::lua::LCLua(_L.state());
     lcLua.setF_openFileDialog(&LuaInterface::openFileDialog);
     lcLua.addLuaLibs();
-	lcLua.importLCKernel();
+    lcLua.importLCKernel();
 
     luaOpenGUIBridge(_L.state());
 
@@ -38,22 +38,22 @@ void LuaInterface::initLua(QMainWindow* mainWindow) {
     lc::ui::OperationLoader opLoader(luaPath, mainWindow, _L);
 
     if (s) {
-		const char* out = lua_tostring(_L.state(), -1);
-		if (out == nullptr) {
-			LOG_WARNING << "Lua output null" << std::endl;
-		}
-		else {
-			LOG_INFO << "Lua output:" << out << std::endl;
-		}
+        const char* out = lua_tostring(_L.state(), -1);
+        if (out == nullptr) {
+            LOG_WARNING << "Lua output null" << std::endl;
+        }
+        else {
+            LOG_INFO << "Lua output:" << out << std::endl;
+        }
         lua_pop(_L.state(), 1);
     }
 
-	_pluginManager.loadPlugins();
+    _pluginManager.loadPlugins();
 }
 
 QWidget* LuaInterface::loadUiFile(const char* fileName) {
-	QUiLoader uiLoader;
-	QFile file(fileName);
+    QUiLoader uiLoader;
+    QFile file(fileName);
     file.open(QFile::ReadOnly);
 
     QWidget* widget = uiLoader.load(&file);
@@ -64,11 +64,11 @@ QWidget* LuaInterface::loadUiFile(const char* fileName) {
 }
 
 void LuaInterface::hideUI(bool hidden) {
-	_L["hideUI"] = hidden;
+    _L["hideUI"] = hidden;
 }
 
 lua_State* LuaInterface::luaState() {
-	return _L.state();
+    return _L.state();
 }
 
 std::vector<std::string> LuaInterface::pluginList(const char* path) {
@@ -109,7 +109,7 @@ void LuaInterface::setOperation(kaguya::LuaRef operation) {
 }
 
 void LuaInterface::finishOperation() {
-    if(!_operation.isNilref() && !_operation["close"].isNilref()){
+    if(!_operation.isNilref() && !_operation["close"].isNilref()) {
         _operation["close"](_operation);
     }
 }

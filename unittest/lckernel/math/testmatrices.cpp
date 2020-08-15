@@ -71,8 +71,8 @@ TEST(QM, LineLine) {
     auto eq2 = _l2.equation();
 
     std::vector<lc::geo::Coordinate> x = lc::maths::Intersection::LineLine(eq1, eq2);
-        EXPECT_DOUBLE_EQ(x[0].x(), 2.5) << "X differs";
-        EXPECT_DOUBLE_EQ(x[0].y(), 2.5) << "Y differs";
+    EXPECT_DOUBLE_EQ(x[0].x(), 2.5) << "X differs";
+    EXPECT_DOUBLE_EQ(x[0].y(), 2.5) << "Y differs";
 }
 
 TEST(QM, LineQuad) {

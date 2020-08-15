@@ -13,36 +13,36 @@ Dimension::Dimension(geo::Coordinate definitionPoint,
                      double lineSpacingFactor,
                      TextConst::LineSpacingStyle lineSpacingStyle,
                      std::string explicitValue) :
-        _definitionPoint(std::move(definitionPoint)),
-        _middleOfText(std::move(middleOfText)),
-        _attachmentPoint(attachmentPoint),
-        _textAngle(textAngle),
-        _lineSpacingFactor(lineSpacingFactor),
-        _lineSpacingStyle(lineSpacingStyle),
-        _explicitValue(std::move(explicitValue)) {
+    _definitionPoint(std::move(definitionPoint)),
+    _middleOfText(std::move(middleOfText)),
+    _attachmentPoint(attachmentPoint),
+    _textAngle(textAngle),
+    _lineSpacingFactor(lineSpacingFactor),
+    _lineSpacingStyle(lineSpacingStyle),
+    _explicitValue(std::move(explicitValue)) {
 }
 
 Dimension::Dimension(geo::Coordinate definitionPoint,
                      geo::Coordinate middleOfText,
                      TextConst::AttachmentPoint attachmentPoint,
                      double textAngle) :
-        _definitionPoint(std::move(definitionPoint)),
-        _middleOfText(std::move(middleOfText)),
-        _attachmentPoint(attachmentPoint),
-        _textAngle(textAngle),
-        _lineSpacingFactor(1.),
-        _lineSpacingStyle(TextConst::LineSpacingStyle::AtLeast),
-        _explicitValue("<>")  {
+    _definitionPoint(std::move(definitionPoint)),
+    _middleOfText(std::move(middleOfText)),
+    _attachmentPoint(attachmentPoint),
+    _textAngle(textAngle),
+    _lineSpacingFactor(1.),
+    _lineSpacingStyle(TextConst::LineSpacingStyle::AtLeast),
+    _explicitValue("<>")  {
 }
 
 Dimension::Dimension(const Dimension& other) :
-        _definitionPoint(other.definitionPoint()),
-        _middleOfText(other._middleOfText),
-        _attachmentPoint(other._attachmentPoint),
-        _textAngle(other._textAngle),
-        _lineSpacingFactor(other._lineSpacingFactor),
-        _lineSpacingStyle(other._lineSpacingStyle),
-        _explicitValue(other._explicitValue) {
+    _definitionPoint(other.definitionPoint()),
+    _middleOfText(other._middleOfText),
+    _attachmentPoint(other._attachmentPoint),
+    _textAngle(other._textAngle),
+    _lineSpacingFactor(other._lineSpacingFactor),
+    _lineSpacingStyle(other._lineSpacingStyle),
+    _explicitValue(other._explicitValue) {
 
 }
 
@@ -94,7 +94,7 @@ void Dimension::getDimensionProperties(PropertiesMap& propertyValues) const {
 }
 
 void Dimension::setDimensionProperties(const PropertiesMap& propertiesMap, lc::geo::Coordinate& definitionPointp, lc::geo::Coordinate& middleOfTextp,
-    double& textAnglep, double& lineSpacingFactorp, std::string& explicitValuep) const {
+                                       double& textAnglep, double& lineSpacingFactorp, std::string& explicitValuep) const {
     definitionPointp = this->definitionPoint();
     middleOfTextp = this->middleOfText();
     textAnglep = this->textAngle();

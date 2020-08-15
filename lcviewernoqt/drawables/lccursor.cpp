@@ -14,10 +14,10 @@ Cursor::Cursor(int cursorSize,
                const std::shared_ptr<DocumentCanvas>& view,
                const lc::Color& xAxisColor,
                const lc::Color& yAxisColor) :
-        _xAxisColor(xAxisColor),
-        _yAxisColor(yAxisColor),
-        _cursorSize(cursorSize),
-        _locationEvent() {
+    _xAxisColor(xAxisColor),
+    _yAxisColor(yAxisColor),
+    _cursorSize(cursorSize),
+    _locationEvent() {
 
 }
 
@@ -79,5 +79,5 @@ Nano::Signal<void(const lc::viewer::event::LocationEvent&)>& Cursor::locationEve
 }
 
 lc::geo::Coordinate Cursor::position() const {
-	return { _lastSnapEvent.snapPoint().x(), _lastSnapEvent.snapPoint().y() };
+    return { _lastSnapEvent.snapPoint().x(), _lastSnapEvent.snapPoint().y() };
 }

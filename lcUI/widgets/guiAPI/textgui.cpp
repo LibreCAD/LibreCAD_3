@@ -8,7 +8,7 @@
 using namespace lc::ui::api;
 
 TextGUI::TextGUI(std::string label, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     ui(new Ui::TextGUI)
 {

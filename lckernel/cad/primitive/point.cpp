@@ -6,14 +6,14 @@ using namespace entity;
 
 Point::Point(double x, double y,
              meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Coordinate(x, y) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Coordinate(x, y) {
 }
 
 Point::Point(geo::Coordinate coord,
              meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Coordinate(std::move(coord)) {
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Coordinate(std::move(coord)) {
 }
 
 Point::Point(const Point_CSPtr& other, bool sameID) : CADEntity(other, sameID),  geo::Coordinate(other->x(), other->y()) {
@@ -62,10 +62,10 @@ const geo::Area Point::boundingBox() const {
 
 CADEntity_CSPtr Point::modify(meta::Layer_CSPtr layer, const meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const {
     auto newEntity = std::make_shared<Point>(this->x(), this->y(),
-                                             layer,
-                                             metaInfo,
-                                             block
-    );
+                     layer,
+                     metaInfo,
+                     block
+                                            );
     newEntity->setID(this->id());
 
     return newEntity;
@@ -82,12 +82,12 @@ geo::Coordinate Point::nearestPointOnEntity(const Coordinate& coord) const {
 
 
 std::vector<EntityCoordinate> Point::snapPoints(const geo::Coordinate& coord,
-                                               const SimpleSnapConstrain & constrain,
-                                               double minDistanceToSnap,
-                                               int maxNumberOfSnapPoints) const {
+        const SimpleSnapConstrain & constrain,
+        double minDistanceToSnap,
+        int maxNumberOfSnapPoints) const {
     std::vector<EntityCoordinate> points;
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
-	    points.emplace_back(geo::Coordinate(this->x(), this->y()),0);
+        points.emplace_back(geo::Coordinate(this->x(), this->y()),0);
     }
 
     Snapable::snapPointsCleanup(points, coord, maxNumberOfSnapPoints, minDistanceToSnap);
@@ -95,20 +95,20 @@ std::vector<EntityCoordinate> Point::snapPoints(const geo::Coordinate& coord,
 }
 
 std::map<unsigned int, lc::geo::Coordinate> Point::dragPoints() const {
-	std::map<unsigned int, lc::geo::Coordinate> points;
-	points[0]=(geo::Coordinate(this->x(), this->y()));
-	return points;
+    std::map<unsigned int, lc::geo::Coordinate> points;
+    points[0]=(geo::Coordinate(this->x(), this->y()));
+    return points;
 }
 
 CADEntity_CSPtr Point::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const {
     try {
-	    auto newEntity = std::make_shared<Point>(dragPoints.at(0),
-                                                layer(),
-                                                metaInfo(),
-                                                block()
-        );
-	    newEntity->setID(this->id());
-	    return newEntity;
+        auto newEntity = std::make_shared<Point>(dragPoints.at(0),
+                         layer(),
+                         metaInfo(),
+                         block()
+                                                );
+        newEntity->setID(this->id());
+        return newEntity;
     }
     catch(const std::out_of_range& e) {
         //A point was not in the map, don't change the entity

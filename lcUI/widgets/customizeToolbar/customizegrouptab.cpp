@@ -11,8 +11,8 @@ using namespace lc::ui::widgets;
 
 CustomizeGroupTab::CustomizeGroupTab(QString groupName, int width, QWidget *parent)
     :
-      QWidget(parent),
-      _groupName(groupName.toStdString())
+    QWidget(parent),
+    _groupName(groupName.toStdString())
 {
     QTableView* tableView = new QTableView(this);
     dropModel = new OperationDropModel(groupName);

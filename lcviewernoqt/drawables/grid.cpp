@@ -8,12 +8,12 @@ using namespace lc;
 using namespace lc::viewer::drawable;
 
 Grid::Grid(int minimumGridSpacing, const lc::Color& major, const lc::Color& minor, int numMinorLines, double convUnit) :
-       _majorColor(major),
-       _minorColor(minor),
-       _minimumGridSpacing(minimumGridSpacing),
-       _numMinorLines(numMinorLines),
-       _convUnit(convUnit),
-       _lastGridSize(1) {
+    _majorColor(major),
+    _minorColor(minor),
+    _minimumGridSpacing(minimumGridSpacing),
+    _numMinorLines(numMinorLines),
+    _convUnit(convUnit),
+    _lastGridSize(1) {
 }
 
 void Grid::draw(lc::viewer::event::DrawEvent const & event) const {

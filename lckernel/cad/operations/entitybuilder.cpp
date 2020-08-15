@@ -5,7 +5,7 @@ using namespace lc;
 using namespace operation;
 
 EntityBuilder::EntityBuilder(const std::shared_ptr<storage::Document>& document) :
-        DocumentOperation(document, "EntityBuilder") {
+    DocumentOperation(document, "EntityBuilder") {
 }
 
 EntityBuilder* EntityBuilder::appendEntity(entity::CADEntity_CSPtr cadEntity) {

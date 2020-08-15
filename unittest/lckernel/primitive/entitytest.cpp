@@ -32,8 +32,8 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset1));
     builder->execute();
 
-    
-    
+
+
     line = std::make_shared<Line>(geo::Coordinate(110., 0.), geo::Coordinate(100., 110.), layer, nullptr);
     builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset2(20.0, 20.0);
@@ -43,19 +43,19 @@ std::vector<Line_CSPtr> entitytest::LineMove() {
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset2));
     builder->execute();
 
-    
-    
+
+
     line = std::make_shared<Line>(geo::Coordinate(550., 60.), geo::Coordinate(90., -100.), layer, nullptr);
     builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset3(-20.0, 20.0);
-    
+
     builder->appendEntity(line);
     builder->appendOperation(std::make_shared<lc::operation::Push>());
     builder->appendOperation(std::make_shared<lc::operation::Move>(_offset3));
     builder->execute();
 
-    
-    
+
+
     line = std::make_shared<Line>(geo::Coordinate(200., 750.), geo::Coordinate(-100., 100.), layer, nullptr);
     builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset4(-20.0, -20.0);
@@ -184,7 +184,7 @@ std::vector<Line_CSPtr> entitytest::LineRotate() {
 std::vector<Line_CSPtr> entitytest::LineScale() {
     auto _document = generateDocument();
     auto layer = _document->allLayers().begin()->second;
-    
+
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(10.0, 10.0);
     geo::Coordinate _ratio1(5.0, 5.0);
@@ -231,7 +231,7 @@ std::vector<Line_CSPtr> entitytest::LineScale() {
 std::vector<Circle_CSPtr> entitytest::CircleMove() {
     auto _document = generateDocument();
     auto layer = _document->allLayers().begin()->second;
-    
+
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _offset1(0.0, 0.0);
     builder->appendEntity(std::make_shared<Circle>(geo::Coordinate(0., 0.), 50., layer, nullptr));
@@ -508,7 +508,7 @@ std::vector<Arc_CSPtr> entitytest::ArcCopy() {
 std::vector<Arc_CSPtr> entitytest::ArcRotate() {
     auto _document = generateDocument();
     auto layer = _document->allLayers().begin()->second;
-    
+
     auto builder = std::make_shared<operation::EntityBuilder>(_document);
     geo::Coordinate _center1(9700., 555.);
     double angle1 = 15;

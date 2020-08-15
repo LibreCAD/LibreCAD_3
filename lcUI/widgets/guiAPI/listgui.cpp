@@ -8,7 +8,7 @@
 using namespace lc::ui::api;
 
 ListGUI::ListGUI(std::string label, ListGUI::ListType listTypeIn, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     ui(new Ui::ListGUI),
     mainWindow(nullptr),

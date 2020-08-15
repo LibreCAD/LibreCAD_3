@@ -23,7 +23,7 @@ ColorSelect::ColorSelect(lc::ui::MetaInfoManager_SPtr metaInfoManager, QWidget *
 
     insertSeparator(count());
 
-    for(const auto& color : QColor::colorNames()){
+    for(const auto& color : QColor::colorNames()) {
         QPixmap pixmap(qIconSize);
         pixmap.fill(color);
         addItem(QIcon(pixmap), color);

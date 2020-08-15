@@ -32,9 +32,9 @@ CliCommand::CliCommand(QWidget* parent) :
     ui->command->setCompleter(_completer.get());
 
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar( "Cli Command", this,
-													WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
-	this->setTitleBarWidget(titleBar);
+    WidgetTitleBar* titleBar = new WidgetTitleBar( "Cli Command", this,
+            WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+    this->setTitleBarWidget(titleBar);
 }
 
 CliCommand::~CliCommand() {
@@ -102,7 +102,7 @@ void CliCommand::onReturnPressed() {
                 emit textEntered(text);
             }
             else {
-                enterCommand(text); 
+                enterCommand(text);
             }
         }
     }
@@ -175,37 +175,37 @@ void CliCommand::enterCoordinate(QString coordinate) {
 
 void CliCommand::enterNumber(double number) {
     write((QString("Number: %1").arg(number)).toStdString().c_str());
-    emit numberEntered(number); 
+    emit numberEntered(number);
 }
 
 void CliCommand::onKeyPressed(QKeyEvent *event) {
     switch(event->key()) {
-        case Qt::Key_Up:
+    case Qt::Key_Up:
 
-            if(_historyIndex + 1 < _history.size()) {
-                _historyIndex++;
-                ui->command->setText(_history[_historyIndex]);
-            }
-            break;
+        if(_historyIndex + 1 < _history.size()) {
+            _historyIndex++;
+            ui->command->setText(_history[_historyIndex]);
+        }
+        break;
 
-        case Qt::Key_Down:
-            if(_historyIndex > 0) {
-                _historyIndex--;
-                ui->command->setText(_history[_historyIndex]);
-            }
-            else {
-                _historyIndex = -1;
-                ui->command->clear();
-            }
-            break;
+    case Qt::Key_Down:
+        if(_historyIndex > 0) {
+            _historyIndex--;
+            ui->command->setText(_history[_historyIndex]);
+        }
+        else {
+            _historyIndex = -1;
+            ui->command->clear();
+        }
+        break;
 
-        case Qt::Key_Escape:
-            emit finishOperation();
-            break;
+    case Qt::Key_Escape:
+        emit finishOperation();
+        break;
 
-        default:
-            ui->command->event(event);
-            break;
+    default:
+        ui->command->event(event);
+        break;
     }
 }
 
@@ -223,8 +223,8 @@ void CliCommand::commandActive(bool commandActive) {
 
 void CliCommand::closeEvent(QCloseEvent* event)
 {
-	this->widget()->hide();
-	event->ignore();
+    this->widget()->hide();
+    event->ignore();
 }
 
 void CliCommand::runCommand(const char* command)

@@ -21,16 +21,16 @@ const kaguya::LuaRef& CustomEntityBuilder::snapFunction() const {
     return _snapFunction;
 }
 
-bool CustomEntityBuilder::checkValues(bool throwExceptions) const{
-    if (!throwExceptions){
+bool CustomEntityBuilder::checkValues(bool throwExceptions) const {
+    if (!throwExceptions) {
         return InsertBuilder::checkValues(throwExceptions) &&
-            _snapFunction.type() == LUA_TFUNCTION &&
-            _nearestPointFunction.type() == LUA_TFUNCTION &&
-            _dragPointsFunction.type() == LUA_TFUNCTION &&
-            _newDragPointFunction.type() == LUA_TFUNCTION &&
-            _dragPointsClickedFunction.type() == LUA_TFUNCTION &&
-            _dragPointsReleasedFunction.type() == LUA_TFUNCTION;
-    }else
+               _snapFunction.type() == LUA_TFUNCTION &&
+               _nearestPointFunction.type() == LUA_TFUNCTION &&
+               _dragPointsFunction.type() == LUA_TFUNCTION &&
+               _newDragPointFunction.type() == LUA_TFUNCTION &&
+               _dragPointsClickedFunction.type() == LUA_TFUNCTION &&
+               _dragPointsReleasedFunction.type() == LUA_TFUNCTION;
+    } else
     {
         if (_snapFunction.type() != LUA_TFUNCTION) {
             throw std::runtime_error("Snap function callback MUST be a function");

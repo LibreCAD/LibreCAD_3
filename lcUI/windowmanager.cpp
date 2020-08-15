@@ -17,7 +17,7 @@ void WindowManager::init()
 
 void WindowManager::newFile(MainWindow* prevWindow)
 {
-    for (auto iter=mainWindows.begin();iter!=mainWindows.end();++iter)
+    for (auto iter=mainWindows.begin(); iter!=mainWindows.end(); ++iter)
     {
         if (*iter == prevWindow)
         {

@@ -4,7 +4,7 @@
 using namespace lc::ui::api;
 
 ComboBoxGUI::ComboBoxGUI(std::string label, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     ui(new Ui::ComboBoxGUI)
 {

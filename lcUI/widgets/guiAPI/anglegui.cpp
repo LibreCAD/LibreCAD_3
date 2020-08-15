@@ -6,7 +6,7 @@
 using namespace lc::ui::api;
 
 AngleGUI::AngleGUI(std::string label, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     angleType(AngleGUI::AngleType::Degrees),
     ui(new Ui::AngleGUI)

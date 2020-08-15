@@ -3,10 +3,10 @@
 using namespace lc::viewer;
 
 LCVDrawItem::LCVDrawItem(const lc::entity::CADEntity_CSPtr& entity, bool selectable) :
-        _selectable(selectable),
-        _selected(false),
-	_cacheable(true),
-	_autostroke(true) {
+    _selectable(selectable),
+    _selected(false),
+    _cacheable(true),
+    _autostroke(true) {
 }
 
 bool LCVDrawItem::selectable() const {

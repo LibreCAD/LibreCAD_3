@@ -9,22 +9,22 @@
   */
 
 namespace lc {
-    namespace viewer {
-        namespace drawable {
-            typedef struct _cairo cairo_t;
+namespace viewer {
+namespace drawable {
+typedef struct _cairo cairo_t;
 
-            class GradientBackground {
-                public:
-                    GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
+class GradientBackground {
+public:
+    GradientBackground(const lc::Color& topColor, const lc::Color& bottomColor);
 
-                    ~GradientBackground() = default;
+    ~GradientBackground() = default;
 
-                    void draw(event::DrawEvent const& event) const;
+    void draw(event::DrawEvent const& event) const;
 
-                private:
-                    const lc::Color _topColor;
-                    const lc::Color _bottomColor;
-            };
-        }
-    }
+private:
+    const lc::Color _topColor;
+    const lc::Color _bottomColor;
+};
+}
+}
 }

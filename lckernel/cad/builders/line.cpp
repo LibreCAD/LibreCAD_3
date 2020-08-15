@@ -4,8 +4,8 @@
 using namespace lc::builder;
 
 LineBuilder::LineBuilder() :
-        _start(),
-        _end() {
+    _start(),
+    _end() {
 }
 
 const lc::geo::Coordinate& LineBuilder::start() const {

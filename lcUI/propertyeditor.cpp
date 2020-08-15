@@ -46,11 +46,11 @@ PropertyEditor::PropertyEditor(lc::ui::MainWindow* mainWindow)
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
 
     widgets::WidgetTitleBar* titleBar = new widgets::WidgetTitleBar("Property Editor", this,
-        widgets::WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+            widgets::WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
     this->setTitleBarWidget(titleBar);
 }
 
-PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow){
+PropertyEditor* PropertyEditor::GetPropertyEditor(lc::ui::MainWindow* mainWindow) {
     if (instances.find(mainWindow) == instances.end()) {
         instances[mainWindow] = new PropertyEditor(mainWindow);
     }
@@ -227,7 +227,7 @@ lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::str
                 std::string propKey = vertexPropKey.get<std::string>();
                 auto lastUnderscore = propKey.find_last_of("_");
                 std::string propType = propKey.substr(lastUnderscore + 1);
-                
+
                 if (propType == "Location") {
                     loc = vertexTable[vertexPropKey].get<lc::geo::Coordinate>();
                 }
@@ -315,7 +315,7 @@ void PropertyEditor::createPropertiesWidgets(unsigned long entityID, const lc::e
                 addWidget(key, textgui);
                 state["textPropertyCalled"] = nullptr;
             }
-            
+
             // vector
             if (iter->second.which() == 5) {
                 lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI(std::string(1, std::toupper(iter->first[0])) + iter->first.substr(1), lc::ui::api::ListGUI::ListType::COORDINATE);
@@ -347,7 +347,7 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
         std::string key = "entity" + std::to_string(entity->id()) + "_" + "customLWPolyline";
         lc::ui::api::ListGUI* listgui = new lc::ui::api::ListGUI("LWVertex List", lc::ui::api::ListGUI::ListType::LW_VERTEX);
         listgui->setMainWindow(mainWindow);
-        
+
         lc::builder::LWPolylineBuilder lwPolylineBuilder;
         lwPolylineBuilder.copy(std::dynamic_pointer_cast<const lc::entity::LWPolyline>(entity));
         listgui->setValue(lwPolylineBuilder.getVertices());

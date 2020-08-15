@@ -4,7 +4,7 @@
 using namespace lc::ui::api;
 
 SliderGUI::SliderGUI(std::string label, int setMin, int setMax, QWidget* parent)
-    : 
+    :
     InputGUI(label, parent),
     ui(new Ui::SliderGUI)
 {
