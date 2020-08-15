@@ -2,7 +2,7 @@
 #include "ui_entitygui.h"
 
 #include "cadmdichild.h"
-#include "entitypickervisitor.h"
+#include "entitynamevisitor.h"
 
 using namespace lc::ui::api;
 
@@ -100,7 +100,7 @@ void EntityGUI::addEntity(lc::entity::CADEntity_CSPtr entity) {
 
 QString EntityGUI::getEntityInformation(lc::entity::CADEntity_CSPtr entity) {
     int numId = entity->id();
-    EntityPickerVisitor entityVisitor;
+    EntityNameVisitor entityVisitor;
     entity->dispatch(entityVisitor);
     QString entityInfo = QString(entityVisitor.getEntityInformation().c_str());
 

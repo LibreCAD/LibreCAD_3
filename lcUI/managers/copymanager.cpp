@@ -8,19 +8,20 @@
 #include <rapidjson/writer.h>
 
 #include <cad/base/cadentity.h>
-#include "widgets/guiAPI/entitypickervisitor.h"
+#include "widgets/guiAPI/entitynamevisitor.h"
 
 #include <iostream>
 #include <sstream>
 
 using namespace lc::ui;
 
-CopyManager::CopyManager() {
-
-}
+CopyManager::CopyManager(CadMdiChild* cadMdiChild) 
+    :
+    _cadMdiChild(cadMdiChild)
+{}
 
 void CopyManager::copyEntitiesToClipboard(const std::vector<lc::entity::CADEntity_CSPtr>& cadEntities) {
-    lc::ui::api::EntityPickerVisitor entityPickerVisitor;
+    lc::ui::api::EntityNameVisitor entityNameVisitor;
 
     rapidjson::Document entityDocument;
     entityDocument.Parse("{}");
@@ -30,10 +31,10 @@ void CopyManager::copyEntitiesToClipboard(const std::vector<lc::entity::CADEntit
         lc::entity::PropertiesMap propertiesMap = cadEntity->availableProperties();
         rapidjson::Value entityValue(rapidjson::kObjectType);
 
-        cadEntity->dispatch(entityPickerVisitor);
+        cadEntity->dispatch(entityNameVisitor);
 
         rapidjson::Value entityName;
-        std::string entityNameStr = entityPickerVisitor.getEntityInformation();
+        std::string entityNameStr = entityNameVisitor.getEntityInformation();
         entityName.SetString(entityNameStr.c_str(), entityNameStr.size(), entityDocument.GetAllocator());
         entityValue.AddMember("name", entityName, entityDocument.GetAllocator());
 
@@ -68,9 +69,8 @@ void CopyManager::pasteEvent() {
     if (mimeData->hasText()) {
         std::string jsonData = mimeData->text().toStdString();
         rapidjson::Document entityDocument;
-        std::cout << "JSON data - " << jsonData << std::endl;
         entityDocument.Parse(jsonData.c_str());
-        //readEntities(entityDocument);
+        readEntities(entityDocument);
     }
 }
 
@@ -79,26 +79,79 @@ void CopyManager::readEntities(rapidjson::Document& document) {
         rapidjson::Value entitiesList = document["entities"].GetArray();
 
         for (rapidjson::Value::ConstValueIterator iter = entitiesList.Begin(); iter != entitiesList.End(); ++iter) {
+            std::string entityName;
+            lc::entity::PropertiesMap propertiesMap;
+            
             if (iter->HasMember("name")) {
                 const rapidjson::Value& entityNameVal = (*iter)["name"];
-                std::cout << entityNameVal.GetString() << std::endl;
+                entityName = entityNameVal.GetString();
             }
 
-            //lc::entity::PropertiesMap propertiesMap;
             if (iter->HasMember("properties")) {
                 const rapidjson::Value& propertiesList = (*iter)["properties"];
 
                 for (rapidjson::Value::ConstValueIterator propertyIter = propertiesList.Begin(); propertyIter != propertiesList.End(); ++propertyIter) {
-                    std::string propertyName = propertyIter->GetString();
-                    std::cout << "Reading property - " << propertyName << std::endl;
+                    std::string propertyKey;
+                    propertyKey = (*propertyIter)["key"].GetString();
+                    propertiesMap[propertyKey] = getEntityPropertyFromJSONValue(*propertyIter);
                 }
             }
+
+            createEntity(entityName, propertiesMap);
         }
     }
 }
 
-void CopyManager::createEntity(const std::string& entityName, const lc::entity::PropertiesMap& propertiesList) {
+lc::entity::EntityProperty CopyManager::getEntityPropertyFromJSONValue(const rapidjson::Value& value) {
+    std::string propertyType = value["type"].GetString();
 
+    if (propertyType == "angle") {
+        return lc::entity::AngleProperty(value["value"].GetDouble());
+    }
+    else if (propertyType == "double") {
+        return value["value"].GetDouble();
+    }
+    else if (propertyType == "bool") {
+        return value["value"].GetBool();
+    }
+    else if (propertyType == "coordinate") {
+        const rapidjson::Value& val = value["value"];
+        double x = val["x"].GetDouble();
+        double y = val["y"].GetDouble();
+        return lc::geo::Coordinate(x,y);
+    }
+    else if (propertyType == "text") {
+        return value["value"].GetString();
+    }
+    else if (propertyType == "vector_coordinate") {
+        std::vector<lc::geo::Coordinate> coords;
+        for (const auto& coord : value["value"].GetArray()) {
+            double x = coord["x"].GetDouble();
+            double y = coord["y"].GetDouble();
+            coords.push_back(lc::geo::Coordinate(x, y));
+        }
+        return coords;
+    }
+    else {
+        return (double)-1;
+    }
+}
+
+void CopyManager::createEntity(const std::string& entityName, const lc::entity::PropertiesMap& propertiesList) {
+    if (_cadMdiChild != nullptr) {
+        std::shared_ptr<lc::operation::EntityBuilder> entityBuilder = std::make_shared<lc::operation::EntityBuilder>(_cadMdiChild->document());
+        lc::entity::CADEntity_CSPtr newEntity = nullptr;
+
+        if (entityName == "Line") {
+            newEntity = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), _cadMdiChild->activeLayer());
+            newEntity = newEntity->setProperties(propertiesList);
+        }
+
+        if (newEntity != nullptr) {
+            entityBuilder->appendEntity(newEntity);
+            entityBuilder->execute();
+        }
+    }
 }
 
 rapidjson::Value CopyManager::propertyValue(const std::string key, const lc::entity::EntityProperty& entityProperty, rapidjson::Document& document) {

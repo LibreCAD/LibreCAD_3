@@ -7,7 +7,7 @@ namespace lc
     {
         namespace api
         {
-            class EntityPickerVisitor : public lc::EntityDispatch
+            class EntityNameVisitor : public lc::EntityDispatch
             {
             public:
                 void visit(entity::Line_CSPtr) override;

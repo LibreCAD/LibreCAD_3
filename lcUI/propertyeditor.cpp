@@ -1,6 +1,6 @@
 #include "propertyeditor.h"
 
-#include "widgets/guiAPI/entitypickervisitor.h"
+#include "widgets/guiAPI/entitynamevisitor.h"
 #include <QVBoxLayout>
 #include <QScrollArea>
 
@@ -98,7 +98,7 @@ void PropertyEditor::addEntity(lc::entity::CADEntity_CSPtr entity) {
         _entityProperties[entity->id()] = std::vector<std::string>();
 
         // Get entity information
-        api::EntityPickerVisitor entityVisitor;
+        api::EntityNameVisitor entityVisitor;
         entity->dispatch(entityVisitor);
         QString entityInfo = QString(entityVisitor.getEntityInformation().c_str()) + QString(" #") + QString::number(entity->id());
         QTreeWidgetItem* treeItem = new QTreeWidgetItem();
@@ -340,7 +340,7 @@ void PropertyEditor::createCustomWidgets(lc::entity::CADEntity_CSPtr entity) {
     _currentEntity = entity->id();
     kaguya::State state(mainWindow->luaInterface()->luaState());
 
-    api::EntityPickerVisitor entityVisitor;
+    api::EntityNameVisitor entityVisitor;
     entity->dispatch(entityVisitor);
 
     if (entityVisitor.getEntityInformation() == "LWPolyline") {

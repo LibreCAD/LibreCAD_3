@@ -72,7 +72,7 @@ widgets/guiAPI/numbergui.h
 widgets/guiAPI/colorgui.h
 widgets/guiAPI/entitygui.h
 widgets/guiAPI/listgui.h
-widgets/guiAPI/entitypickervisitor.h
+widgets/guiAPI/entitynamevisitor.h
 widgets/guiAPI/lineselectgui.h
 widgets/customizeToolbar/operationdragmodel.h
 widgets/customizeToolbar/operationdropmodel.h
@@ -142,7 +142,7 @@ widgets/guiAPI/numbergui.cpp
 widgets/guiAPI/colorgui.cpp
 widgets/guiAPI/entitygui.cpp
 widgets/guiAPI/listgui.cpp
-widgets/guiAPI/entitypickervisitor.cpp
+widgets/guiAPI/entitynamevisitor.cpp
 widgets/customizeToolbar/operationdragmodel.cpp
 widgets/customizeToolbar/operationdropmodel.cpp
 widgets/customizeToolbar/iconlist.cpp

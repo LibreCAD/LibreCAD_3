@@ -19,7 +19,8 @@ MainWindow::MainWindow()
     colorSelect(_cadMdiChild.metaInfoManager(), this, true, true),
     _cliCommand(this),
     _toolbar(&_luaInterface, this),
-    _layers(nullptr, this)
+    _layers(nullptr, this),
+    _copyManager(&_cadMdiChild)
 {
     ContextMenuManager::GetContextMenuManager(this);
     _contextMenuManagerId = ContextMenuManager::GetInstanceId(this);
