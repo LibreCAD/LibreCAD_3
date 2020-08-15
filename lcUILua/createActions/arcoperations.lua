@@ -44,6 +44,7 @@ function ArcOperations:_init()
     self.Arc_SecondPoint = nil
     self.Arc_ThirdPoint = nil
     self.Arc_Center = nil
+    self.Arc_Direction = 1
 end
 
 function ArcOperations:_init_default()
@@ -307,8 +308,13 @@ function ArcOperations:ArcWithSEA(eventName, data) -- Create Arc with Start, End
         self.Arc_Center = self:GetArcCenterFromStartEndAngle(data["number"] * 3.1416/180)
         self.builder:setCenter(self.Arc_Center)
         self.builder:setRadius(self.Arc_Center:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
         self:createEntity()
     elseif(eventName == "mouseMove" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
         local mid_point = self.Arc_FirstPoint:mid(self.Arc_EndPoint)
@@ -316,16 +322,26 @@ function ArcOperations:ArcWithSEA(eventName, data) -- Create Arc with Start, End
         local arcCenter = self:GetArcCenterFromStartEndAngle(angle * 3.1416/180)
         self.builder:setCenter(arcCenter)
         self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
     elseif(eventName == "point" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
        local mid_point = self.Arc_FirstPoint:mid(self.Arc_EndPoint)
         local angle = mid_point:distanceTo(data["position"]) * 0.5
         local arcCenter = self:GetArcCenterFromStartEndAngle(angle * 3.1416/180)
         self.builder:setCenter(arcCenter)
         self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
         self:createEntity()
     end
 end
@@ -348,8 +364,13 @@ function ArcOperations:ArcWithSER(eventName, data) -- Create Arc with Start, End
         self.Arc_Center = self:GetArcCenterFromStartEndAngle(angle)
         self.builder:setCenter(self.Arc_Center)
         self.builder:setRadius(self.Arc_Center:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
         self:createEntity()
     elseif(eventName == "mouseMove" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
         local radius = self.Arc_FirstPoint:distanceTo(data["position"])
@@ -362,8 +383,13 @@ function ArcOperations:ArcWithSER(eventName, data) -- Create Arc with Start, End
         local arcCenter = self:GetArcCenterFromStartEndAngle(angle)
         self.builder:setCenter(arcCenter)
         self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
     elseif(eventName == "point" and self.Arc_FirstPoint and self.Arc_EndPoint and not self.Arc_Angle) then
         local radius = self.Arc_FirstPoint:distanceTo(data["position"])
         local x = self.Arc_FirstPoint:distanceTo(self.Arc_EndPoint)/2
@@ -375,8 +401,13 @@ function ArcOperations:ArcWithSER(eventName, data) -- Create Arc with Start, End
         local arcCenter = self:GetArcCenterFromStartEndAngle(angle)
         self.builder:setCenter(arcCenter)
         self.builder:setRadius(arcCenter:distanceTo(self.Arc_FirstPoint))
-        self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
-        self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        if self.Arc_Direction == 1 then
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+        else
+            self.builder:setStartAngle(Operations:getAngle(self.builder:center(), self.Arc_EndPoint))
+            self.builder:setEndAngle(Operations:getAngle(self.builder:center(), self.Arc_FirstPoint))
+        end
         self:createEntity()
     end
 end
@@ -422,5 +453,20 @@ function ArcOperations:GetArcCenterFromStartEndAngle(angle)
     local perpendicular_vector = self.Arc_FirstPoint:sub(self.Arc_EndPoint):rotate(3.1416/2):norm()
     local y = self.Arc_FirstPoint:distanceTo(self.Arc_EndPoint)
     local x = y/(2 * math.tan(angle/2.0))
-    return mid_point:add(perpendicular_vector:multiply(x))
+    return mid_point:add(perpendicular_vector:multiply(x * self.Arc_Direction))
+end
+
+function ArcOperations:switchDirection()
+    if(self.Arc_Direction ~= nil) then
+        if self.Arc_Direction == 1 then
+            self.Arc_Direction = -1
+        else
+            self.Arc_Direction = 1
+        end
+    end
+end
+
+function ArcOperations:contextMenuOptions(menu)
+    local item = gui.MenuItem("Switch Direction", function() mainWindow:currentOperation():switchDirection() end)
+    menu:addItem(item)
 end
