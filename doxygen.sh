@@ -1,12 +1,18 @@
 #!/bin/bash
+OUTPUT_DIRECTORY=doc
+MODULES=( lcadluascript persistence lckernel lcUI lcviewernoqt luacmdinterface unittest )
+EXCLUDE_PATTERNS="*/nano-signal-slot/* */tinyspline/* */libopencad/*"
+#kaguya is outside MODULES
 
 #This file generate Doxygen documentation
 #Maybe we should execute the following commands with CMake.
 
-(cat librecad.dox; echo "INPUT=lcadluascript"; echo "OUTPUT_DIRECTORY=doc/lcadluascript"; echo "EXCLUDE_PATTERNS = */lua-intf/*") | doxygen -
-(cat librecad.dox; echo "INPUT=persistence"; echo "OUTPUT_DIRECTORY=doc/persistence") | doxygen -
-(cat librecad.dox; echo "INPUT=lckernel"; echo "OUTPUT_DIRECTORY=doc/lckernel"; echo "EXCLUDE_PATTERNS = */nano-signal-slot/*") | doxygen -
-(cat librecad.dox; echo "INPUT=lcUI"; echo "OUTPUT_DIRECTORY=doc/lcUI") | doxygen -
-(cat librecad.dox; echo "INPUT=lcviewernoqt"; echo "OUTPUT_DIRECTORY=doc/lcviewernoqt") | doxygen -
-(cat librecad.dox; echo "INPUT=luacmdinterface"; echo "OUTPUT_DIRECTORY=doc/luacmdinterface") | doxygen -
-(cat librecad.dox; echo "INPUT=unittest"; echo "OUTPUT_DIRECTORY=doc/unittest") | doxygen -
+if [ ! -r "$OUTPUT_DIRECTORY" ]; then
+    echo "Creating directory $OUTPUT_DIRECTORY"
+    mkdir "$OUTPUT_DIRECTORY"
+fi
+
+for module in ${MODULES[@]}
+do
+    (cat librecad.dox; echo "INPUT=$module"; echo "OUTPUT_DIRECTORY=doc/$module"; echo "EXCLUDE_PATTERNS = $EXCLUDE_PATTERNS") | doxygen -
+done
