@@ -143,9 +143,5 @@ const std::vector<BB_CSPtr> Spline::beziers() const {
 }
 
 void Spline::trimAtPoint(const geo::Coordinate& c) {
-    for(const auto & bez : _beziers) {
-        if(bez->boundingBox().inArea(c)) {
-
-        }
-    }
+    /// @todo implement
 }
