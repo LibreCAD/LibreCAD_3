@@ -182,7 +182,7 @@ void MainWindow::ConnectInputEvents()
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseMoveEvent, this, &MainWindow::triggerMouseMoved);
-    QObject::connect(&_cadMdiChild, &CadMdiChild::mouseMoveEvent, this, &MainWindow::triggerSelectionChanged);
+    QObject::connect(&_cadMdiChild, &CadMdiChild::selectionChangeEvent, this, &MainWindow::triggerSelectionChanged);
     QObject::connect(&_cadMdiChild, &CadMdiChild::selectionChangeEvent, this, &MainWindow::selectionChanged);
     QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressEventx, this, &MainWindow::triggerKeyPressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::keyPressed, &_cliCommand, &widgets::CliCommand::onKeyPressed);

@@ -592,7 +592,8 @@ void DocumentCanvas::closeSelection() {
     for(const auto& di: _selectedDrawables) {
         di->selected(true);
     }
-    _selectionChanged();
+    if(_updatedSelection.size())
+        _selectionChanged();
 }
 
 void DocumentCanvas::removeSelectionArea() {
@@ -850,6 +851,8 @@ void DocumentCanvas::selectPoint(double x, double y) {
             _updatedSelection.push_back(di);
         }
     });
+    if(_updatedSelection.size())
+        _selectionChanged();
 }
 
 void DocumentCanvas::selectEntity(lc::entity::CADEntity_CSPtr entityPtr) {
