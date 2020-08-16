@@ -466,7 +466,21 @@ function ArcOperations:switchDirection()
     end
 end
 
+function ArcOperations:setCCW(ccw)
+    self.builder:setIsCCW(ccw)
+end
+
 function ArcOperations:contextMenuOptions(menu)
-    local item = gui.MenuItem("Switch Direction", function() mainWindow:currentOperation():switchDirection() end)
-    menu:addItem(item)
+    if (self.step == "ArcWithSEA" or self.step == "ArcWithSER") then
+        local item = gui.MenuItem("Switch Direction", function() mainWindow:currentOperation():switchDirection() end)
+        menu:addItem(item)
+    end
+
+    if (self.step == "ArcWithSCE" or self.step == "ArcWithSCA" or self.step == "ArcWithSCL" or self.step == "ArcWithCSE" or self.step == "ArcWithCSA" or self.step == "ArcWithCSL") then
+        local item = gui.MenuItem("CCW")
+        item:setCheckable(true)
+        item:setChecked(self.builder:isCCW())
+        item:addCheckedCallback(function(ccw) mainWindow:currentOperation():setCCW(ccw) end)
+        menu:addItem(item)
+    end
 end
