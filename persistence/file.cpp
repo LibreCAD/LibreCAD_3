@@ -31,10 +31,10 @@ File::Type File::open(lc::storage::Document_SPtr document, const std::string& pa
         dxfRW R(path.c_str());
         R.read(&F, true);
 
-        //TODO: create better mapping
+        /// @todo create better mapping
         switch(R.getVersion()) {
-        case DRW::UNKNOWNV: //TODO: handle this
-            version = Type::LIBDXFRW_DXF_R12; //TODO: not supported ?
+        case DRW::UNKNOWNV: /// @todo handle this
+            version = Type::LIBDXFRW_DXF_R12; /// @todo not supported ?
             break;
         case DRW::AC1006:
             version = Type::LIBDXFRW_DXF_R12;
