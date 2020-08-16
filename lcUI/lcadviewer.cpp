@@ -186,8 +186,7 @@ void LCADViewer::on_commitProcessEvent(const lc::event::CommitProcessEvent& even
 
 void LCADViewer::_selectionChanged() {
     _dragManager->onSelectionChanged();
-    emit selectionChanged();
-    update();
+    emit selectionChangeEvent();
 }
 
 /**

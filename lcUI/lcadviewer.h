@@ -124,7 +124,7 @@ signals:
 
     void mouseReleaseEvent();
 
-    void selectionChanged();
+    void selectionChangeEvent();
 
     void keyPressEvent(int);
 

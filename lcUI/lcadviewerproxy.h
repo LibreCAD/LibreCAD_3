@@ -52,6 +52,7 @@ signals:
     void mouseMoveEvent();
     void mousePressEvent();
     void mouseReleaseEvent();
+    void selectionChangeEvent();
     void keyPressEvent(int);
 public slots:
     void setActive(LCADViewer* view,bool isModel);
