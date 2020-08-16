@@ -27,7 +27,6 @@ DimDiametric::DimDiametric(geo::Coordinate definitionPoint,
               std::move(explicitValue)),
     _leader(leader),
     _definitionPoint2(std::move(definitionPoint2)) {
-
 }
 
 DimDiametric::DimDiametric(const DimDiametric_CSPtr& other, bool sameID) :
@@ -35,7 +34,6 @@ DimDiametric::DimDiametric(const DimDiametric_CSPtr& other, bool sameID) :
     Dimension(*other),
     _leader(other->_leader),
     _definitionPoint2(other->definitionPoint2()) {
-
 }
 
 
@@ -44,7 +42,6 @@ DimDiametric::DimDiametric(const lc::builder::DimDiametricBuilder& builder) :
     Dimension(builder),
     _leader(builder.leader()),
     _definitionPoint2(builder.definitionPoint2()) {
-
 }
 
 CADEntity_CSPtr DimDiametric::move(const geo::Coordinate& offset) const {

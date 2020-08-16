@@ -28,7 +28,6 @@ DimRadial::DimRadial(geo::Coordinate definitionPoint,
              ),
     _leader(leader),
     _definitionPoint2(std::move(definitionPoint2)) {
-
 }
 
 DimRadial::DimRadial(const DimRadial_CSPtr& other, bool sameID) :
@@ -36,7 +35,6 @@ DimRadial::DimRadial(const DimRadial_CSPtr& other, bool sameID) :
     Dimension(*other),
     _leader(other->_leader),
     _definitionPoint2(other->_definitionPoint2) {
-
 }
 
 DimRadial::DimRadial(const lc::builder::DimRadialBuilder& builder) :
@@ -44,7 +42,6 @@ DimRadial::DimRadial(const lc::builder::DimRadialBuilder& builder) :
     Dimension(builder),
     _leader(builder.leader()),
     _definitionPoint2(builder.definitionPoint2()) {
-
 }
 
 CADEntity_CSPtr DimRadial::move(const geo::Coordinate& offset) const {

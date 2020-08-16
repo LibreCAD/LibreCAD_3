@@ -683,7 +683,6 @@ lc::meta::MetaInfo_SPtr DXFimpl::getMetaInfo(const DRW_Entity& data) const {
         mf->add(linePattern);
     }
 
-
     return mf;
 }
 
@@ -1384,7 +1383,6 @@ void DXFimpl::writeBlock(const lc::meta::Block_CSPtr& block) {
  * EXTRA Utilities
  *****************************************/
 lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
-
     lc::AngleFormat af;
 
     switch (num) {
@@ -1409,12 +1407,10 @@ lc::AngleFormat DXFimpl::numberToAngleFormat(int num) {
     return af;
 }
 
-
 /**
  * Converts AngleFormat enum to DXF number.
  */
 int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
-
     int num;
 
     switch (af) {
@@ -1439,8 +1435,6 @@ int DXFimpl::angleFormatToNumber(lc::AngleFormat af) {
     return num;
 }
 
-
-
 /**
  * converts a DXF units setting (e.g. INSUNITSs) to a units enum.
  */
@@ -1452,8 +1446,6 @@ lc::Units DXFimpl::numberToUnit(int num) {
         return lc::Units::None;
     }
 }
-
-
 
 /**
  * Converst a units enum into a DXF units number e.g. for INSUNITSs.

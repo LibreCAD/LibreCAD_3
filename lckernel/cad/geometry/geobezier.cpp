@@ -21,7 +21,6 @@ const std::vector<geo::Coordinate> Bezier::getCP() const {
 
 
 const Area Bezier::boundingBox() const {
-
     /*
      * T = A-B/(A - 2B + C)
      */
@@ -49,7 +48,6 @@ const Area Bezier::boundingBox() const {
 }
 
 Coordinate Bezier::nearestPointOnPath(const Coordinate& coord) const {
-
     /*
      * Difference between nearest point on path and
      * nearest point on entity for a bezier curve is that
@@ -176,7 +174,6 @@ const std::vector<Coordinate> Bezier::Curve(double precession) {
 }
 
 const double Bezier::length() const {
-
     auto  Bx = 2*(_pointB.x() - _pointA.x());
     auto  By = 2*(_pointB.y() - _pointA.y());
     auto  Ax = _pointA.x() - (_pointB.x()*2.0) + _pointC.x();

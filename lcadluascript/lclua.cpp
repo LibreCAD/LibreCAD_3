@@ -86,7 +86,6 @@ std::string LCLua::runString(const char* code) {
 
 FILE* LCLua::openFile(const char* path, const char* mode) {
     //TODO: check if the file can be opened
-
     return fopen(path, mode);
 }
 

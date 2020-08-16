@@ -141,7 +141,7 @@ const geo::Coordinate nearest = line.nearestPointOnPath(arc.center());
 double dist = arc.center().distanceTo(nearest);
 
 // special case: arc touches line (tangent):
-// TODO: We properly should add a tolorance here ??
+/// TODO: We properly should add a tolorance here ??
 if (fabs(dist - arc.radius()) < _tolerance) {
     _intersectionPoints.push_back(nearest);
     return;

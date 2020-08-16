@@ -13,7 +13,6 @@ Ellipse::Ellipse(Coordinate center, Coordinate majorP, double minorRadius, doubl
     _startAngle(startAngle),
     _endAngle(endAngle),
     _isReversed(reversed) {
-
 }
 
 const Coordinate Ellipse::center() const {

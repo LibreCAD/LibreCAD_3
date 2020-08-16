@@ -52,7 +52,6 @@ Spline::Spline(const lc::builder::SplineBuilder& builder) :
                 builder.normalVector().y(),
                 builder.normalVector().z(),
                 builder.flags()) {
-
 }
 
 Spline::Spline(const Spline_CSPtr& other, bool sameID) :

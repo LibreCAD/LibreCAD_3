@@ -12,7 +12,6 @@
 using namespace lc;
 using namespace entity;
 
-
 LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
                        double width,
                        double elevation,
@@ -29,9 +28,7 @@ LWPolyline::LWPolyline(std::vector<LWVertex2D> vertex,
     _tickness(thickness),
     _closed(closed),
     _extrusionDirection(std::move(extrusionDirection)) {
-
     generateEntities();
-
 }
 
 LWPolyline::LWPolyline(const LWPolyline_CSPtr& other, bool sameID) :

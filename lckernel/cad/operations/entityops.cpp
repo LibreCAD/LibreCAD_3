@@ -53,7 +53,6 @@ std::vector<entity::CADEntity_CSPtr> Loop::process(
         }
     }
 
-
     // run the operation queue
     std::vector<entity::CADEntity_CSPtr> entitySet2(entities);
 

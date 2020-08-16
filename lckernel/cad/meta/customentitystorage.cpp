@@ -13,7 +13,6 @@ CustomEntityStorage::CustomEntityStorage(std::string pluginName,
     _pluginName(std::move(pluginName)),
     _entityName(std::move(entityName)),
     _params(std::move(params)) {
-
 }
 
 const std::string& CustomEntityStorage::pluginName() const {

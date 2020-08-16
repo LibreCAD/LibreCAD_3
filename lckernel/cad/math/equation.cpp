@@ -8,11 +8,9 @@ using namespace lc;
 using namespace maths;
 
 Equation::Equation() : matrix_(Eigen::Matrix3d::Zero()) {
-
 }
 
 Equation::Equation(Eigen::Matrix3d &mat) : matrix_(mat) {
-
 }
 
 Equation& Equation::operator = (const Equation& qm) {

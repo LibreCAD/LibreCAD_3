@@ -4,7 +4,6 @@ using namespace lc;
 using namespace lc::storage;
 
 StorageManagerImpl::StorageManagerImpl() : StorageManager() {
-
 }
 
 void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
@@ -48,7 +47,7 @@ void StorageManagerImpl::removeEntity(entity::CADEntity_CSPtr entity) {
 
 void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>& entities) {
     _entities.combine(entities);
-    // TODO add metadata types where they do not exists
+    /// @todo add metadata types where they do not exists
 }
 
 entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
