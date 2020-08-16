@@ -29,6 +29,11 @@ namespace lc
             */
             static void openFile();
 
+            /**
+            * \brief Remove window from window manager
+            */
+            static void removeWindow(MainWindow* mainWindow);
+
             static std::vector<MainWindow*>& getMainWindows();
 
         public:

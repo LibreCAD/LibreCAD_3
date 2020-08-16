@@ -144,10 +144,43 @@ void CopyManager::createEntity(const std::string& entityName, const lc::entity::
 
         if (entityName == "Line") {
             newEntity = std::make_shared<lc::entity::Line>(lc::geo::Coordinate(), lc::geo::Coordinate(), _cadMdiChild->activeLayer());
-            newEntity = newEntity->setProperties(propertiesList);
+        }
+        else if (entityName == "Point") {
+            newEntity = std::make_shared<lc::entity::Point>(lc::geo::Coordinate(), _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "Circle") {
+            newEntity = std::make_shared<lc::entity::Circle>(lc::geo::Coordinate(), 1, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "Arc") {
+            newEntity = std::make_shared<lc::entity::Arc>(lc::geo::Coordinate(), 1, 1, 1, false, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "Ellipse") {
+            newEntity = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(), lc::geo::Coordinate(), 1, 1, 1, false, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "Spline") {
+            newEntity = std::make_shared<lc::entity::Spline>(std::vector<geo::Coordinate>(),std::vector<double>(), std::vector<geo::Coordinate>(),1, false, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, lc::geo::Spline::splineflag::CLOSED, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "DimAligned") {
+            newEntity = std::make_shared<lc::entity::DimAligned>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), lc::geo::Coordinate(), _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "DimAngular") {
+            newEntity = std::make_shared<lc::entity::DimAngular>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), lc::geo::Coordinate(), lc::geo::Coordinate(), lc::geo::Coordinate(), _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "DimDiametric") {
+            newEntity = std::make_shared<lc::entity::DimDiametric>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), 1, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "DimLinear") {
+            newEntity = std::make_shared<lc::entity::DimLinear>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), lc::geo::Coordinate(), 1, 1, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "DimRadial") {
+            newEntity = std::make_shared<lc::entity::DimRadial>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), 1, _cadMdiChild->activeLayer());
+        }
+        else if (entityName == "LWPolyline") {
+            newEntity = std::make_shared<lc::entity::LWPolyline>(std::vector<lc::entity::LWVertex2D>(), 1, 1, 1, false, lc::geo::Coordinate(), _cadMdiChild->activeLayer());
         }
 
         if (newEntity != nullptr) {
+            newEntity = newEntity->setProperties(propertiesList);
             entityBuilder->appendEntity(newEntity);
             entityBuilder->execute();
         }

@@ -89,6 +89,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+    WindowManager::removeWindow(this);
     delete ui;
 }
 

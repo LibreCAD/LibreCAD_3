@@ -17,16 +17,6 @@ void WindowManager::init()
 
 void WindowManager::newFile(MainWindow* prevWindow)
 {
-    for (auto iter=mainWindows.begin();iter!=mainWindows.end();++iter)
-    {
-        if (*iter == prevWindow)
-        {
-            (*iter)->close();
-            iter = mainWindows.erase(iter);
-            break;
-        }
-    }
-
     MainWindow* window = new MainWindow();
     window->showMaximized();
     mainWindows.push_back(window);
@@ -38,6 +28,18 @@ void WindowManager::openFile()
     window->cadMdiChild()->openFile();
     window->showMaximized();
     mainWindows.push_back(window);
+}
+
+void WindowManager::removeWindow(MainWindow* mainWindow) 
+{
+    for (auto iter = mainWindows.begin(); iter != mainWindows.end(); ++iter)
+    {
+        if (*iter == mainWindow)
+        {
+            iter = mainWindows.erase(iter);
+            break;
+        }
+    }
 }
 
 std::vector<MainWindow*>& WindowManager::getMainWindows()
