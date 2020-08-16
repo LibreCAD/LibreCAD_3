@@ -238,6 +238,11 @@ public:
      */
     virtual std::unordered_set<entity::Insert_CSPtr> waitingCustomEntities(const std::string& pluginName) = 0;
 
+    /**
+     * @return Find entity by ID
+     */
+    virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
+
 public:
     friend class lc::operation::DocumentOperation;
 

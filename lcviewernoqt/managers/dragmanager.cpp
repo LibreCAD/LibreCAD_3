@@ -84,7 +84,6 @@ void DragManager::onMousePress() {
 
     _entityDragged=false;
     std::vector<lc::viewer::LCVDrawItem_SPtr> selectedDrawables = _docCanvas->selectedDrawables();
-    _docCanvas->removeSelection(); //Clears selection
     if(selectedDrawables.empty()) {
         return;
     }
@@ -134,6 +133,7 @@ void DragManager::onMouseRelease() {
         }
         _builder->execute();
         _replacementEntities.clear();
+        _docCanvas->updateSelection();
 
         _entityDragged = false;
     }

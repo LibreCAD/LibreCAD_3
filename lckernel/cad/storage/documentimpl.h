@@ -50,6 +50,8 @@ public:
 
     std::vector<meta::DxfLinePatternByValue_CSPtr> linePatterns() const override;
 
+    entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const override;
+
 protected:
     void execute(const operation::DocumentOperation_SPtr& operation) override;
 

@@ -176,6 +176,11 @@ public:
     */
     void inverseSelection();
 
+    /**
+    * @brief Updates the selected entities based on ID
+    */
+    void updateSelection();
+
     std::vector<lc::viewer::LCVDrawItem_SPtr>& selectedDrawables();
 
     lc::storage::EntityContainer<lc::entity::CADEntity_CSPtr> selectedEntities();
@@ -187,6 +192,7 @@ public:
 
     Nano::Signal<void(event::DrawEvent const& drawEvent)>& background();
     Nano::Signal<void(event::DrawEvent const& drawEvent)>& foreground();
+    Nano::Signal<void()>& selectionChanged();
 
     /**
      * Return the underlaying document
@@ -262,6 +268,7 @@ private:
     //Signals
     Nano::Signal<void(event::DrawEvent const& event)> _background;
     Nano::Signal<void(event::DrawEvent const& event)> _foreground;
+    Nano::Signal<void()> _selectionChanged;
 
     // Maximum and minimum allowed scale factors
     double _zoomMin;
@@ -283,6 +290,7 @@ private:
 
     std::vector<lc::viewer::LCVDrawItem_SPtr> _selectedDrawables;
     std::vector<lc::viewer::LCVDrawItem_SPtr> _newSelection;
+    std::vector<lc::viewer::LCVDrawItem_SPtr> _updatedSelection;
 
     std::function<void(double*, double*)> _deviceToUser;
 

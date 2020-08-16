@@ -203,6 +203,8 @@ void PropertyEditor::propertyChanged(const std::string& key) {
         api::ListGUI* listgui = qobject_cast<api::ListGUI*>(_inputWidgets[key]);
         listgui->guiItemChanged(nullptr, nullptr);
     }
+
+    mainWindow->cadMdiChild()->viewer()->docCanvas()->updateSelection();
 }
 
 lc::entity::CADEntity_CSPtr PropertyEditor::customPropertyChanged(const std::string& key, const std::string& entityType, kaguya::LuaRef propertiesTable, lc::entity::CADEntity_CSPtr oldEntity) {
