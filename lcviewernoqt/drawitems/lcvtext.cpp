@@ -6,8 +6,8 @@
 using namespace lc::viewer;
 
 LCVText::LCVText(const lc::entity::Text_CSPtr& text) :
-        LCVDrawItem(text, true),
-        _text(text) {
+    LCVDrawItem(text, true),
+    _text(text) {
 }
 
 /**
@@ -33,54 +33,54 @@ void LCVText::draw(LcPainter& painter, const LcDrawOptions &options, const lc::g
     // The idea of height() * .2 is just a average basline offset. Don't this value to seriously,
     // we could get it from font exists but that sounds over exaggerating for the moment.
     switch (_text->valign()) {
-        case lc::TextConst::VAMiddle:
-            alignX += 0.0;
-            alignY += -_text->height() / 2. + (_text->height() * .2);
-            break;
+    case lc::TextConst::VAMiddle:
+        alignX += 0.0;
+        alignY += -_text->height() / 2. + (_text->height() * .2);
+        break;
 
-        case lc::TextConst::VABottom:
-            alignX += 0.0;
-            alignY += -_text->height() + (_text->height() * .2);
-            break;
+    case lc::TextConst::VABottom:
+        alignX += 0.0;
+        alignY += -_text->height() + (_text->height() * .2);
+        break;
 
-        case lc::TextConst::VABaseline:
-            alignX += 0.0;
-            alignY += 0.0;
-            break;
+    case lc::TextConst::VABaseline:
+        alignX += 0.0;
+        alignY += 0.0;
+        break;
 
-        case lc::TextConst::VATop:
-            alignX += 0.0;
-            alignY += 0.0 + (_text->height() * .2);
-            break;
+    case lc::TextConst::VATop:
+        alignX += 0.0;
+        alignY += 0.0 + (_text->height() * .2);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     // Horizontal Align:
     switch (_text->halign()) {
-        case lc::TextConst::HALeft:
-            alignX += - te.width;
-            alignY += 0.;
-            break;
+    case lc::TextConst::HALeft:
+        alignX += - te.width;
+        alignY += 0.;
+        break;
 
-        case lc::TextConst::HACenter:
-            alignX += - te.width / 2.0;
-            alignY += 0.;
-            break;
+    case lc::TextConst::HACenter:
+        alignX += - te.width / 2.0;
+        alignY += 0.;
+        break;
 
-        case lc::TextConst::HAMiddle:
-            alignX += - te.width / 2.0;
-            alignY += 0.;
-            break;
+    case lc::TextConst::HAMiddle:
+        alignX += - te.width / 2.0;
+        alignY += 0.;
+        break;
 
-        case lc::TextConst::HARight:
-            alignX += 0.;
-            alignY += 0.;
-            break;
+    case lc::TextConst::HARight:
+        alignX += 0.;
+        alignY += 0.;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     painter.save();

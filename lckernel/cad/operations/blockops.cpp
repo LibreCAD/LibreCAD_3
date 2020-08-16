@@ -64,10 +64,10 @@ void ReplaceBlock::processInternal() {
     for(const auto& entity : entities) {
         document()->removeEntity(entity);
         document()->insertEntity(entity->modify(
-                entity->layer(),
-                entity->metaInfo(),
-                _newBlock
-        ));
+                                     entity->layer(),
+                                     entity->metaInfo(),
+                                     _newBlock
+                                 ));
     }
 
     document()->removeDocumentMetaType(_oldBlock);

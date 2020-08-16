@@ -15,9 +15,9 @@ void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
             EntityContainer<entity::CADEntity_CSPtr> ec;
             ec.insert(entity);
             _blocksEntities.insert(std::pair<std::string, EntityContainer<entity::CADEntity_CSPtr>>(
-                    entity->block()->name(),
-                    ec
-            ));
+                                       entity->block()->name(),
+                                       ec
+                                   ));
         }
         else {
             it->second.insert(entity);
@@ -29,8 +29,8 @@ void StorageManagerImpl::insertEntity(entity::CADEntity_CSPtr entity) {
 }
 
 void StorageManagerImpl::removeEntity(entity::CADEntity_CSPtr entity) {
-   if (entity->block() != nullptr) 
-   {
+    if (entity->block() != nullptr)
+    {
         auto it = _blocksEntities.find(entity->block()->name());
 
         if (it == _blocksEntities.end()) {
@@ -40,10 +40,10 @@ void StorageManagerImpl::removeEntity(entity::CADEntity_CSPtr entity) {
             it->second.remove(entity);
         }
     }
-    
+
 
     else
-    _entities.remove(entity);
+        _entities.remove(entity);
 }
 
 void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CADEntity_CSPtr>& entities) {
@@ -53,10 +53,10 @@ void StorageManagerImpl::insertEntityContainer(const EntityContainer<entity::CAD
 
 entity::CADEntity_CSPtr StorageManagerImpl::entityByID(ID_DATATYPE id) const {
     //check for block
-    for(auto &it: _blocksEntities){
+    for(auto &it: _blocksEntities) {
         auto out = it.second.entityByID(id);
-	if(out)
-		return out;
+        if(out)
+            return out;
     }
     return _entities.entityByID(id);
 }
@@ -134,14 +134,14 @@ meta::DocumentMetaType_CSPtr StorageManagerImpl::_metaDataTypeByName(const std::
 }
 
 EntityContainer<entity::CADEntity_CSPtr> StorageManagerImpl::entitiesByBlock(meta::Block_CSPtr block) const {
-    if(block){
+    if(block) {
         try {
             return _blocksEntities.at(block->name());
         }
         catch (std::out_of_range& e) {
             return EntityContainer<entity::CADEntity_CSPtr>();
         }
-    }else{
+    } else {
         return _entities;
     };
 }

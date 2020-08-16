@@ -12,22 +12,22 @@ Circle::Circle(const geo::Coordinate &center,
                meta::Layer_CSPtr layer,
                meta::MetaInfo_CSPtr metaInfo,
                meta::Block_CSPtr block) :
-        CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
-        geo::Circle(center, radius){
+    CADEntity(std::move(layer), std::move(metaInfo), std::move(block)),
+    geo::Circle(center, radius) {
 }
 
 
 Circle::Circle(const Circle_CSPtr& other, bool sameID) : CADEntity(other, sameID),
-                                                        geo::Circle(other->center(), other->radius()) {
+    geo::Circle(other->center(), other->radius()) {
 }
 
 Circle::Circle(const builder::CircleBuilder& builder) :
     CADEntity(builder),
-    geo::Circle(builder.center(), builder.radius()){
+    geo::Circle(builder.center(), builder.radius()) {
 }
 
 std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, const SimpleSnapConstrain &constrain,
-                                                 double minDistanceToSnap, int maxNumberOfSnapPoints) const {
+        double minDistanceToSnap, int maxNumberOfSnapPoints) const {
 
     std::vector<EntityCoordinate> points;
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::LOGICAL)) {
@@ -50,7 +50,7 @@ std::vector<EntityCoordinate> Circle::snapPoints(const geo::Coordinate &coord, c
     }
 
     if ((bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITY) ||
-        (bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
+            (bool) (constrain.constrain() & SimpleSnapConstrain::ON_ENTITYPATH)) {
         geo::Coordinate npoe = nearestPointOnPath(coord);
         points.emplace_back(npoe, -1);
     }
@@ -68,19 +68,19 @@ geo::Coordinate Circle::nearestPointOnEntity(const geo::Coordinate &coord) const
     return geo::Circle::nearestPointOnEntity(coord);
 }
 
-std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) const{
-	std::vector<CADEntity_CSPtr> out;
-	auto angle = (coord-center()).angle();
-	if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE){
-		auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, angle-1.5*LCTOLERANCE,
-		                                true, layer(), metaInfo(), block());
-		out.push_back(newArc);
-	}
-	return out;
+std::vector<CADEntity_CSPtr> Circle::splitEntity(const geo::Coordinate& coord) const {
+    std::vector<CADEntity_CSPtr> out;
+    auto angle = (coord-center()).angle();
+    if (abs(coord.distanceTo(this->center())-this->radius()) < LCTOLERANCE) {
+        auto newArc = std::make_shared<Arc>(this->center(), this->radius(), angle, angle-1.5*LCTOLERANCE,
+                                            true, layer(), metaInfo(), block());
+        out.push_back(newArc);
+    }
+    return out;
 }
 
-lc::geo::Coordinate Circle::representingPoint() const{
-	return this->center() + lc::geo::Coordinate(this->radius(), 0);
+lc::geo::Coordinate Circle::representingPoint() const {
+    return this->center() + lc::geo::Coordinate(this->radius(), 0);
 }
 
 CADEntity_CSPtr Circle::move(const geo::Coordinate &offset) const {
@@ -96,7 +96,7 @@ CADEntity_CSPtr Circle::copy(const geo::Coordinate &offset) const {
 
 CADEntity_CSPtr Circle::rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const {
     auto newCircle = std::make_shared<Circle>(this->center().rotate(rotation_center, rotation_angle), this->radius(),
-                                              layer(), metaInfo(), block());
+                     layer(), metaInfo(), block());
     newCircle->setID(this->id());
     return newCircle;
 }
@@ -105,14 +105,14 @@ CADEntity_CSPtr Circle::scale(const geo::Coordinate &scale_center, const geo::Co
     // TODO return ellipse if scalefactor.x != scalefactor.y
 
     auto newCircle = std::make_shared<Circle>(this->center().scale(scale_center, scale_factor),
-                                              this->radius() * fabs(scale_factor.x()), layer(), metaInfo(), block());
+                     this->radius() * fabs(scale_factor.x()), layer(), metaInfo(), block());
     newCircle->setID(this->id());
     return newCircle;
 }
 
 CADEntity_CSPtr Circle::mirror(const geo::Coordinate &axis1, const geo::Coordinate &axis2) const {
     auto newCircle = std::make_shared<Circle>(this->center().mirror(axis1, axis2),
-                                              this->radius(), layer(), metaInfo(), block());
+                     this->radius(), layer(), metaInfo(), block());
     newCircle->setID(this->id());
     return newCircle;
 }

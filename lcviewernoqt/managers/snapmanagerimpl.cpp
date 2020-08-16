@@ -10,13 +10,13 @@ using namespace lc::viewer;
 using namespace lc::viewer::manager;
 
 SnapManagerImpl::SnapManagerImpl(DocumentCanvas_SPtr view, lc::entity::Snapable_CSPtr grid, double distanceToSnap) :
-        _grid(std::move(grid)),
-        _gridSnappable(false),
-        _snapIntersections(false),
-        _distanceToSnap(distanceToSnap),
-        _view(std::move(view)),
-        _snapConstrain(SimpleSnapConstrain(lc::SimpleSnapConstrain::NONE, 0, 0.))
-        {
+    _grid(std::move(grid)),
+    _gridSnappable(false),
+    _snapIntersections(false),
+    _distanceToSnap(distanceToSnap),
+    _view(std::move(view)),
+    _snapConstrain(SimpleSnapConstrain(lc::SimpleSnapConstrain::NONE, 0, 0.))
+{
 
 }
 
@@ -53,7 +53,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // person can 'pick' a entity onceand then it would stay in the list of entities to
     // consider for snapping. THis will mostly lickly be lines only
     std::vector<lc::EntityDistance> entities = _view->entityContainer().getEntityPathsNearCoordinate(location,
-                                                                                                  realDistanceForPixels, _snapConstrain);
+            realDistanceForPixels, _snapConstrain);
     std::sort(entities.begin(), entities.end(), lc::EntityDistanceSorter(location));
 
     // Emit Snappoint event if a entity intersects with a other entity
@@ -99,7 +99,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
             if (captr) {
                 // Locale snap points
                 std::vector<lc::EntityCoordinate> sp = captr->snapPoints(location, _snapConstrain,
-                                                                         realDistanceForPixels, 10);
+                                                       realDistanceForPixels, 10);
                 // When a snappoint was found, emit it
                 if (!sp.empty()) {
                     event::SnapPointEvent snapEvent(sp.at(0).coordinate());
@@ -115,7 +115,7 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
     // If no entity was found to snap against, then snap to grid
     if (_gridSnappable) {
         std::vector<lc::EntityCoordinate> points = _grid->snapPoints(location, _snapConstrain, realDistanceForPixels,
-                                                                     1);
+                1);
         if (!points.empty()) {
             auto event = event::SnapPointEvent(points.at(0).coordinate());
             _snapPointEvent(event);
@@ -123,8 +123,8 @@ void SnapManagerImpl::setDeviceLocation(int x, int y) {
         }
     }
 
-	//If no snap points found show cursor at mouse pos
-	_snapPointEvent(event::SnapPointEvent(location));
+    //If no snap points found show cursor at mouse pos
+    _snapPointEvent(event::SnapPointEvent(location));
 
     // FIXME: Currently sending a snapEvent so the cursor gets updated, what we really want is some sort of a release snap event
     // but only when we had a snap, but just lost it
@@ -151,20 +151,20 @@ bool SnapManagerImpl::isIntersectionsSnappable() const {
     return _snapIntersections;
 }
 
-void SnapManagerImpl::setMiddleSnappable(bool enabled){
-	if(enabled){
-		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::LOGICAL);
-	}else{
-		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::LOGICAL);
-	}
+void SnapManagerImpl::setMiddleSnappable(bool enabled) {
+    if(enabled) {
+        _snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+    } else {
+        _snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::LOGICAL);
+    }
 }
 
-void SnapManagerImpl::setEntitySnappable(bool enabled){
-	if(enabled){
-		_snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
-	}else{
-		_snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
-	}
+void SnapManagerImpl::setEntitySnappable(bool enabled) {
+    if(enabled) {
+        _snapConstrain = _snapConstrain.enableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+    } else {
+        _snapConstrain = _snapConstrain.disableConstrain(lc::SimpleSnapConstrain::ON_ENTITY);
+    }
 }
 
 Nano::Signal<void(const lc::viewer::event::SnapPointEvent &)> &SnapManagerImpl::snapPointEvents() {

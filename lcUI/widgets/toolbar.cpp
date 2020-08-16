@@ -7,23 +7,23 @@
 using namespace lc::ui::widgets;
 
 Toolbar::Toolbar(lc::ui::LuaInterface* luaInterface, QWidget* parent) :
-	QDockWidget(parent),
-	ui(new Ui::Toolbar),
+    QDockWidget(parent),
+    ui(new Ui::Toolbar),
     luaInterface(luaInterface) {
 
-	ui->setupUi(this);
-	setTitleBarWidget(nullptr);
-	setWidget(ui->tabWidget);
+    ui->setupUi(this);
+    setTitleBarWidget(nullptr);
+    setWidget(ui->tabWidget);
 
 
-	WidgetTitleBar* titleBar = new WidgetTitleBar( "Toolbar", this,
-													WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
+    WidgetTitleBar* titleBar = new WidgetTitleBar( "Toolbar", this,
+            WidgetTitleBar::TitleBarOptions::HorizontalOnHidden);
 
-	this->setTitleBarWidget(titleBar);
+    this->setTitleBarWidget(titleBar);
 }
 
 Toolbar::~Toolbar() {
-	delete ui;
+    delete ui;
 }
 
 lc::ui::api::ToolbarTab* Toolbar::addTab(const char* name) {
@@ -51,14 +51,14 @@ void Toolbar::addTab(lc::ui::api::ToolbarTab* newTab) {
 }
 
 void Toolbar::removeTab(lc::ui::api::ToolbarTab* page) {
-	if(page == nullptr) {
-		return;
-	}
+    if(page == nullptr) {
+        return;
+    }
 
     _tabs.remove(page->label().c_str());
 
-	auto index = ui->tabWidget->indexOf(page);
-	ui->tabWidget->removeTab(index);
+    auto index = ui->tabWidget->indexOf(page);
+    ui->tabWidget->removeTab(index);
 }
 
 void Toolbar::removeTab(const char* tabName) {
@@ -66,24 +66,24 @@ void Toolbar::removeTab(const char* tabName) {
 }
 
 lc::ui::api::ToolbarTab* Toolbar::tabByName(const char *name) {
-	auto nbTab = ui->tabWidget->count();
+    auto nbTab = ui->tabWidget->count();
 
-	for(int i = 0; i < nbTab; i++) {
-		if(ui->tabWidget->tabText(i) == name) {
-			return qobject_cast<lc::ui::api::ToolbarTab*>(ui->tabWidget->widget(i));
-		}
-	}
+    for(int i = 0; i < nbTab; i++) {
+        if(ui->tabWidget->tabText(i) == name) {
+            return qobject_cast<lc::ui::api::ToolbarTab*>(ui->tabWidget->widget(i));
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 void Toolbar::closeEvent(QCloseEvent* event)
 {
-	this->widget()->hide();
-	event->ignore();
+    this->widget()->hide();
+    event->ignore();
 }
 
-void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect){
+void Toolbar::initializeToolbar(QWidget* linePatternSelect, QWidget* lineWidthSelect, QWidget* colorSelect) {
     lc::ui::api::ToolbarTab* quickAccessTab = addTab("Quick Access");
 
     // Add metaInfoGroup and the select widgets

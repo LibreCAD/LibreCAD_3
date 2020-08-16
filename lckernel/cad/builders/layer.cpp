@@ -35,7 +35,7 @@ bool LayerBuilder::isFrozen() const {
 
 LayerBuilder* LayerBuilder::setName(const std::string& name) {
     _name = name;
-    
+
     return this;
 }
 

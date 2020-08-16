@@ -30,7 +30,7 @@ MainWindow::MainWindow()
     setWindowTitle(QObject::tr("LibreCAD"));
     setUnifiedTitleAndToolBarOnMac(true);
     setCentralWidget(&_cadMdiChild);
-    
+
     _layers.setMdiChild(&_cadMdiChild);
 
     // add widgets to correct positions
@@ -55,9 +55,9 @@ MainWindow::MainWindow()
     kaguya::State state(_luaInterface.luaState());
     state.dostring("run_luascript = function() lc.LuaScript(mainWindow):show() end");
     state.dostring("run_customizetoolbar = function() mainWindow:runCustomizeToolbar() end");
-    state["run_aboutdialog"] = kaguya::function([&]{
-	    auto aboutDialog = new dialog::AboutDialog(this);
-	    aboutDialog->show();
+    state["run_aboutdialog"] = kaguya::function([&] {
+        auto aboutDialog = new dialog::AboutDialog(this);
+        aboutDialog->show();
     });
 
     api::Menu* luaMenu = addMenu("Lua");
@@ -71,6 +71,10 @@ MainWindow::MainWindow()
     viewMenu->addItem("Default Layout 2", state["changeLayout"]);
     state.dostring("changeLayout = function() mainWindow:changeDockLayout(3) end");
     viewMenu->addItem("Default Layout 3", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:loadDockLayout() end");
+    viewMenu->addItem("Load Dock Layout", state["changeLayout"]);
+    state.dostring("changeLayout = function() mainWindow:saveDockLayout() end");
+    viewMenu->addItem("Save Dock Layout", state["changeLayout"]);
 
     api::Menu* aboutMenu = addMenu("About");
     aboutMenu->addItem("About", state["run_aboutdialog"]);
@@ -83,7 +87,7 @@ MainWindow::MainWindow()
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
 
-    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65 , 35 }, Qt::Horizontal);
+    this->resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
 }
 
 MainWindow::~MainWindow()
@@ -91,7 +95,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method){
+void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_method) {
     _cliCommand.setFocus();
     _luaInterface.finishOperation();
     _cadMdiChild.viewer()->setOperationActive(true);
@@ -107,7 +111,7 @@ void MainWindow::runOperation(kaguya::LuaRef operation, const std::string& init_
                 // run operation which adds option icon to _toolbar
                 op();
             }
-        }else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
+        } else if (operation_options.find(operation["command_line"]) != operation_options.end()) {
             std::vector<kaguya::LuaRef>& options = operation_options[operation["command_line"]];
 
             for (auto op : options) {
@@ -150,7 +154,7 @@ void MainWindow::operationFinished() {
     selectionChanged();
 }
 
-lc::ui::widgets::CliCommand* MainWindow::cliCommand(){
+lc::ui::widgets::CliCommand* MainWindow::cliCommand() {
     return &_cliCommand;
 }
 
@@ -175,7 +179,7 @@ int MainWindow::contextMenuManagerId() {
 }
 
 void MainWindow::ConnectInputEvents()
-{   
+{
     // CadMdiChild connections, main window should not know about proxy
     QObject::connect(&_cadMdiChild, &CadMdiChild::mousePressEvent, this, &MainWindow::triggerMousePressed);
     QObject::connect(&_cadMdiChild, &CadMdiChild::mouseReleaseEvent, this, &MainWindow::triggerMouseReleased);
@@ -271,7 +275,7 @@ void MainWindow::addActionsAsMenuItem(lc::ui::api::Menu* menu) {
             menu->removeAction(action);
             menuItemsToBeAdded.push_back(sep);
         }
-        else{
+        else {
             lc::ui::api::MenuItem* newMenuItem = new lc::ui::api::MenuItem(action->text().toStdString().c_str());
 
             QString oldObjectName = action->objectName();
@@ -328,7 +332,7 @@ lc::ui::api::MenuItem* MainWindow::findMenuItemByObjectName(std::string objectNa
 
 api::MenuItem* MainWindow::findMenuItemBy(std::string objectName, bool searchByLabel) {
     QString name = QString(objectName.c_str());
-    
+
     for (auto key : menuMap.keys())
     {
         api::MenuItem* foundIt = findMenuItemRecur(menuMap[key], name, searchByLabel);
@@ -358,7 +362,7 @@ api::MenuItem* MainWindow::findMenuItemRecur(QMenu* menu, QString objectName, bo
                     return static_cast<api::MenuItem*>(action);
                 }
             }
-            else{ 
+            else {
                 if (objectName == action->objectName()) {
                     return static_cast<api::MenuItem*>(action);
                 }
@@ -572,7 +576,6 @@ void MainWindow::triggerCommandEntered(QString command)
 void MainWindow::triggerPoint(lc::geo::Coordinate coordinate)
 {
     lastPoint = coordinate;
-    _cadMdiChild.viewer()->docCanvas()->selectPoint(coordinate.x(), coordinate.y());
 }
 
 void MainWindow::newFile()
@@ -628,9 +631,9 @@ void MainWindow::invertSelection()
     _cadMdiChild.viewer()->update();
 }
 
-void MainWindow::autoScale(){
-	_cadMdiChild.viewer()->autoScale();
-	_cadMdiChild.viewer()->update();	
+void MainWindow::autoScale() {
+    _cadMdiChild.viewer()->autoScale();
+    _cadMdiChild.viewer()->update();
 };
 
 void MainWindow::runCustomizeToolbar() {
@@ -659,7 +662,7 @@ void MainWindow::loadDefaultSettings() {
 void MainWindow::selectionChanged() {
     std::vector<lc::entity::CADEntity_CSPtr> selectedEntities = _cadMdiChild.selection();
     PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
-    
+
     propertyEditor->clear(selectedEntities);
 
     for (lc::entity::CADEntity_CSPtr selectedEntity : selectedEntities) {
@@ -689,7 +692,7 @@ void MainWindow::changeDockLayout(int i) {
         addDockWidget(Qt::TopDockWidgetArea, &_toolbar);
         PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
         addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
-        resizeDocks({ &_cliCommand, propertyEditor }, { 65 , 35 }, Qt::Horizontal);
+        resizeDocks({ &_cliCommand, propertyEditor }, { 65, 35 }, Qt::Horizontal);
     }
 
     if (i == 2) {
@@ -706,5 +709,90 @@ void MainWindow::changeDockLayout(int i) {
         addDockWidget(Qt::TopDockWidgetArea, &_toolbar);
         PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
         addDockWidget(Qt::BottomDockWidgetArea, propertyEditor);
+    }
+}
+
+void MainWindow::saveDockLayout() {
+    int layersPos = this->dockWidgetArea(&_layers);
+    int cliCommandPos = this->dockWidgetArea(&_cliCommand);
+    int toolbarPos = this->dockWidgetArea(&_toolbar);
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    int propertyEditorPos = this->dockWidgetArea(propertyEditor);
+
+    std::map<std::string, int> positions = {
+        {"Toolbar", toolbarPos},
+        {"CliCommand", cliCommandPos},
+        {"Layers", layersPos},
+        {"PropertyEditor", propertyEditorPos}
+    };
+
+    std::map<std::string, int> widths = {
+        {"Toolbar", _toolbar.width()},
+        {"CliCommand", _cliCommand.width()},
+        {"Layers", _layers.width()},
+        {"PropertyEditor", propertyEditor->width()}
+    };
+
+    std::map<int, int> posCount;
+    std::map<int, int> posWidth;
+    for (auto iter = positions.begin(); iter != positions.end(); ++iter) {
+        if (posCount.find(iter->second) == posCount.end()) {
+            posCount[iter->second] = 0;
+            posWidth[iter->second] = 0;
+        }
+        posCount[iter->second]++;
+        posWidth[iter->second] += widths[iter->first];
+    }
+
+    std::map<std::string, int> posProportions;
+
+    for (auto iter = positions.begin(); iter != positions.end(); ++iter) {
+        if (posCount[iter->second] > 1) {
+            int percent = std::round(((double)widths[iter->first] / (double)posWidth[iter->second]) * 100);
+            posProportions[iter->first] = percent;
+        }
+    }
+
+    _uiSettings.writeDockSettings(positions, posProportions);
+}
+
+void MainWindow::loadDockLayout() {
+    std::map<std::string, int> dockProportions;
+    std::map<std::string, int> dockPositions = _uiSettings.readDockSettings(dockProportions);
+
+    PropertyEditor* propertyEditor = PropertyEditor::GetPropertyEditor(this);
+    std::map<std::string, QDockWidget*> dockWidgets = {
+        {"Layers", &_layers},
+        {"CliCommand", &_cliCommand},
+        {"Toolbar", &_toolbar},
+        {"PropertyEditor", propertyEditor}
+    };
+
+    std::map<int, QList<QDockWidget*>> resizeWidgets;
+    std::map<int, QList<int>> resizeProportions;
+
+    if (dockPositions.size() > 0) {
+        for (auto iter = dockWidgets.begin(); iter != dockWidgets.end(); ++iter) {
+            int pos = dockPositions[iter->first];
+            addDockWidget((Qt::DockWidgetArea)pos, iter->second);
+
+            if (dockProportions.find(iter->first) != dockProportions.end()) {
+                if (resizeWidgets.find(pos) == resizeWidgets.end()) {
+                    resizeWidgets[pos] = QList<QDockWidget*>();
+                    resizeProportions[pos] = QList<int>();
+                }
+
+                resizeWidgets[pos].append(iter->second);
+                resizeProportions[pos].append(dockProportions[iter->first]);
+            }
+        }
+
+        for (auto iter = resizeWidgets.begin(); iter != resizeWidgets.end(); ++iter) {
+            bool horiz = true;
+            if ((iter->first == (int)Qt::LeftDockWidgetArea) || (iter->first == (int)Qt::RightDockWidgetArea)) {
+                horiz = false;
+            }
+            resizeDocks(iter->second, resizeProportions[iter->first], (horiz) ? Qt::Horizontal : Qt::Vertical);
+        }
     }
 }

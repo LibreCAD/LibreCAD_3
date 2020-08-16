@@ -10,19 +10,19 @@ using namespace lc::ui::widgets;
 Q_DECLARE_METATYPE(lc::geo::Coordinate);
 
 class CliCommandTest : public CliCommand {
-	public:
-		CliCommandTest() : CliCommand() {
-            qRegisterMetaType<lc::geo::Coordinate>();
-        }
+public:
+    CliCommandTest() : CliCommand() {
+        qRegisterMetaType<lc::geo::Coordinate>();
+    }
 
-		/* @brief testCommand
-		 * simulate a command
-		 * @param QString
-		 */
-		void testCommand(QString command) {
-			auto enterEvent = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+    /* @brief testCommand
+     * simulate a command
+     * @param QString
+     */
+    void testCommand(QString command) {
+        auto enterEvent = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
 
-			setText(command);
-			onKeyPressed(&enterEvent);
-		}
+        setText(command);
+        onKeyPressed(&enterEvent);
+    }
 };

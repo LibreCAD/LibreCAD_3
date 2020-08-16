@@ -25,9 +25,10 @@ TEST(BEZIER_QUADRATIC, NORMAL) {
     auto p2 = lc::geo::Coordinate(50,50);
     auto p3 = lc::geo::Coordinate(230, 50);
 
-std::vector<double> values = {-90, -96.3402, -104.036, -113.199, -123.69,
-                            -135, -146.31, -156.801, -165.964, -173.66,
-                             -180 };
+    std::vector<double> values = {-90, -96.3402, -104.036, -113.199, -123.69,
+                                  -135, -146.31, -156.801, -165.964, -173.66,
+                                  -180
+                                 };
 
     auto z = 0;
     auto bb = lc::geo::Bezier(p1,p2,p3);
@@ -183,7 +184,8 @@ TEST(SPLINE, SPLINELINE) {
 
     auto line = geo::Vector(p1,p2);
     std::vector<geo::Coordinate> cp = { {52.25, 57.25},
-    {114.75, -4.5}, {174.5, 19.75}, {193.25, 77}, {239.75, 54}};
+        {114.75, -4.5}, {174.5, 19.75}, {193.25, 77}, {239.75, 54}
+    };
 
     auto degree = 2;
     auto spline_ = geo::Spline(cp, {}, {}, degree, false, 0, 0,0,0, 0,0,0, 0,0,0, static_cast<geo::Spline::splineflag>(1));

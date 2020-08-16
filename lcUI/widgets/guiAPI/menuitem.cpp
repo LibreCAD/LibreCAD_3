@@ -47,7 +47,7 @@ void MenuItem::addCallback(const char* cb_name, kaguya::LuaRef callback) {
     if (namedCallbacks.find(cb_name) != namedCallbacks.end()) {
         return;
     }
-    
+
     addCallback(callback);
     namedCallbacks[cb_name] = callbacks.size() - 1;
 }
@@ -150,7 +150,7 @@ void MenuItem::updateOtherPositionsAfterRemove() {
 
     for (QWidget* widget : widgets) {
         QMenu* menu = qobject_cast<QMenu*>(widget);
-        
+
         if (menu == nullptr) {
             return;
         }

@@ -11,70 +11,70 @@
 #include "cad/operations/undoable.h"
 
 namespace lc {
-    namespace storage {
-        /**
-         * UndoManagerImpl manages a stack of operations and allows for
-         * undo or re-do operations that where done on a canvas
-         * @param maximumUndoLevels
-         */
-        class UndoManagerImpl : public UndoManager {
-            public:
-                UndoManagerImpl(unsigned int maximumUndoLevels);
+namespace storage {
+/**
+ * UndoManagerImpl manages a stack of operations and allows for
+ * undo or re-do operations that where done on a canvas
+ * @param maximumUndoLevels
+ */
+class UndoManagerImpl : public UndoManager {
+public:
+    UndoManagerImpl(unsigned int maximumUndoLevels);
 
-                virtual ~UndoManagerImpl() = default;
+    virtual ~UndoManagerImpl() = default;
 
-                /*!
-                 * \brief redo an operation.
-                 * \sa lc::Undoable
-                 * \sa lc::UndoManager
-                 * \sa lc::UndoManagerImpl
-                 */
-                virtual void redo();
+    /*!
+     * \brief redo an operation.
+     * \sa lc::Undoable
+     * \sa lc::UndoManager
+     * \sa lc::UndoManagerImpl
+     */
+    virtual void redo();
 
-                /*!
-                 * \brief undo an operation.
-                 * \sa lc::Undoable
-                 * \sa lc::UndoManager
-                 * \sa lc::UndoManagerImpl
-                 */
-                virtual void undo();
+    /*!
+     * \brief undo an operation.
+     * \sa lc::Undoable
+     * \sa lc::UndoManager
+     * \sa lc::UndoManagerImpl
+     */
+    virtual void undo();
 
-                /*!
-                 * \brief Check if undo can be done
-                 * \sa lc::Undoable
-                 * \sa lc::UndoManager
-                 * \sa lc::UndoManagerImpl
-                 * \return
-                 */
-                virtual bool canUndo() const;
+    /*!
+     * \brief Check if undo can be done
+     * \sa lc::Undoable
+     * \sa lc::UndoManager
+     * \sa lc::UndoManagerImpl
+     * \return
+     */
+    virtual bool canUndo() const;
 
-                /*!
-                 * \brief Check if redo can be done
-                 * \sa lc::Undoable
-                 * \sa lc::UndoManager
-                 * \sa lc::UndoManagerImpl
-                 * \return
-                 */
-                virtual bool canRedo() const;
+    /*!
+     * \brief Check if redo can be done
+     * \sa lc::Undoable
+     * \sa lc::UndoManager
+     * \sa lc::UndoManagerImpl
+     * \return
+     */
+    virtual bool canRedo() const;
 
-                /*!
-                 * \brief Clears the Undo/Redo stack.
-                 * \sa lc::Undoable
-                 * \sa lc::UndoManager
-                 * \sa lc::UndoManagerImpl
-                 * \return
-                 */
-                virtual void removeUndoables();
+    /*!
+     * \brief Clears the Undo/Redo stack.
+     * \sa lc::Undoable
+     * \sa lc::UndoManager
+     * \sa lc::UndoManagerImpl
+     * \return
+     */
+    virtual void removeUndoables();
 
-            private:
-                std::vector<operation::Undoable_SPtr> _unDoables; /*!< Undo list */
-                std::stack<operation::Undoable_SPtr> _reDoables; /*!< Redo stack */
-                const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
+private:
+    std::vector<operation::Undoable_SPtr> _unDoables; /*!< Undo list */
+    std::stack<operation::Undoable_SPtr> _reDoables; /*!< Redo stack */
+    const unsigned int _maximumUndoLevels; /*!< Maximum undo level */
 
-            public:
-                void on_CommitProcessEvent(const lc::event::CommitProcessEvent& event);
-        };
+public:
+    void on_CommitProcessEvent(const lc::event::CommitProcessEvent& event);
+};
 
-        DECLARE_SHORT_SHARED_PTR(UndoManagerImpl)
-    }
+DECLARE_SHORT_SHARED_PTR(UndoManagerImpl)
+}
 }

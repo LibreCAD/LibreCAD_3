@@ -8,7 +8,7 @@ using namespace lc;
 using namespace lc::storage;
 
 UndoManagerImpl::UndoManagerImpl(unsigned int maximumUndoLevels) :
-        _maximumUndoLevels(maximumUndoLevels) {
+    _maximumUndoLevels(maximumUndoLevels) {
 
 }
 

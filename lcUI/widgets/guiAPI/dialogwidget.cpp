@@ -12,7 +12,7 @@
 using namespace lc::ui::api;
 
 DialogWidget::DialogWidget(const std::string& dialogTitle, lc::ui::MainWindow* mainWindow, QWidget* parent)
-    : 
+    :
     QDialog(parent),
     InputGUIContainer(dialogTitle, mainWindow),
     ui(new Ui::DialogWidget)

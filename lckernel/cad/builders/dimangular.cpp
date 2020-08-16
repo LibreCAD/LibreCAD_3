@@ -34,8 +34,8 @@ void lc::builder::DimAngularBuilder::setDefLine22(const lc::geo::Coordinate& def
 }
 
 void lc::builder::DimAngularBuilder::dimAuto(const lc::geo::Coordinate& center,
-                                             const lc::geo::Coordinate& p1,
-                                             const lc::geo::Coordinate& p2) {
+        const lc::geo::Coordinate& p1,
+        const lc::geo::Coordinate& p2) {
     _definitionPoint = center;
     _middleOfText = p1.mid(p2);
     _defLine11 = center;

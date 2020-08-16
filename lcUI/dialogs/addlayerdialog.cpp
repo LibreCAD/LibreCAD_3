@@ -9,9 +9,9 @@ AddLayerDialog::AddLayerDialog(lc::storage::Document_SPtr document, QWidget* par
 }
 
 AddLayerDialog::AddLayerDialog(lc::meta::Layer_CSPtr oldLayer, lc::storage::Document_SPtr document, QWidget* parent) :
-        QDialog(parent),
-        ui(new Ui::AddLayerDialog),
-        _oldLayer(std::move(oldLayer)) {
+    QDialog(parent),
+    ui(new Ui::AddLayerDialog),
+    _oldLayer(std::move(oldLayer)) {
 
     ui->setupUi(this);
 
@@ -64,19 +64,19 @@ void AddLayerDialog::accept() {
 
     if(linePattern == nullptr) {
         layer = std::make_shared<const lc::meta::Layer>(
-                ui->name->text().toStdString(),
-                *lineWidth,
-                colorSelect->color()
-        );
+                    ui->name->text().toStdString(),
+                    *lineWidth,
+                    colorSelect->color()
+                );
     }
     else {
         layer = std::make_shared<const lc::meta::Layer>(
-                ui->name->text().toStdString(),
-                *lineWidth,
-                colorSelect->color(),
-                linePattern,
-                false
-        );
+                    ui->name->text().toStdString(),
+                    *lineWidth,
+                    colorSelect->color(),
+                    linePattern,
+                    false
+                );
     }
 
     if(_oldLayer == nullptr) {

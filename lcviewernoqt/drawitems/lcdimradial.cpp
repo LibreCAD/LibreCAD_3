@@ -7,8 +7,8 @@
 using namespace lc::viewer;
 
 LCDimRadial::LCDimRadial(const lc::entity::DimRadial_CSPtr& dimRadial) :
-        LCVDrawItem(dimRadial, true),
-        _dimRadial(dimRadial) {
+    LCVDrawItem(dimRadial, true),
+    _dimRadial(dimRadial) {
 }
 
 /**
@@ -25,15 +25,15 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
     //const bool mouseIsInside = mousePos.distanceTo(_dimRadial->definitionPoint()) < radiusCircle;
     // FIXME this should not be fixed
     const double capSize = 2.;
-    
+
     std::string value = lc::tools::StringHelper::dim_value(_dimRadial->explicitValue(), options.radialFormat(), radiusCircle);
-    
+
     /* get text size  */
     painter.save();
     painter.font_size(options.dimTextHeight(), false);
     TextExtends te = painter.text_extends(value.c_str());
     painter.restore();
-    
+
     // Draw line
     EndCaps endCaps;
 
@@ -42,16 +42,16 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
 
     if (textisInside && textFitsInside) {
         auto tLinePos = (_dimRadial->definitionPoint2().x() > mousePos.x())
-                ? lc::geo::Coordinate(mousePos.x() - (te.width + capSize), mousePos.y())
-                : lc::geo::Coordinate(mousePos.x() + (te.width + capSize), mousePos.y());
+                        ? lc::geo::Coordinate(mousePos.x() - (te.width + capSize), mousePos.y())
+                        : lc::geo::Coordinate(mousePos.x() + (te.width + capSize), mousePos.y());
         auto tMText = (_dimRadial->definitionPoint2().x() > mousePos.x())
-                ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2))
-                : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2));
+                      ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2))
+                      : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y() - (te.width/4 + capSize/2));
 
         if (_dimRadial->definitionPoint2().y() <= mousePos.y()) {
             tMText = (_dimRadial->definitionPoint2().x() > mousePos.x())
-                    ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y())
-                    : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y());
+                     ? lc::geo::Coordinate(mousePos.x() - (te.width/2 + capSize/2), mousePos.y())
+                     : lc::geo::Coordinate(mousePos.x() + (te.width/2 + capSize/2), mousePos.y());
         }
 
         painter.move_to(_dimRadial->definitionPoint2().x(), _dimRadial->definitionPoint2().y());
@@ -67,8 +67,8 @@ void LCDimRadial::draw(LcPainter& painter, const LcDrawOptions &options, const l
         auto p2 = _dimRadial->definitionPoint2().moveTo(center, -(te.width + capSize));
 
         auto tLinePos = (_dimRadial->definitionPoint2().x() < mousePos.x())
-                ? lc::geo::Coordinate(p2.x() - (te.width + capSize), p2.y())
-                : lc::geo::Coordinate(p2.x() + (te.width + capSize), p2.y());
+                        ? lc::geo::Coordinate(p2.x() - (te.width + capSize), p2.y())
+                        : lc::geo::Coordinate(p2.x() + (te.width + capSize), p2.y());
         lc::geo::Coordinate tMText;
 
         if (_dimRadial->definitionPoint2().x() < mousePos.x() && _dimRadial->definitionPoint2().y() < mousePos.y()) {

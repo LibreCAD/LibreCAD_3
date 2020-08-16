@@ -37,7 +37,7 @@ TEST(DialogWidgetTest, AddTest) {
 
     std::vector<lc::ui::api::InputGUI*> guiWidgets = dialogWidget.inputWidgets();
     for (lc::ui::api::InputGUI* gui : guiWidgets) {
-            EXPECT_TRUE(gui->label() == "TestAngle" || gui->label() == "TestButton" || gui->label() == "TestCheckBox");
+        EXPECT_TRUE(gui->label() == "TestAngle" || gui->label() == "TestButton" || gui->label() == "TestCheckBox");
     }
 
     std::vector<std::string> keysList = dialogWidget.keys();

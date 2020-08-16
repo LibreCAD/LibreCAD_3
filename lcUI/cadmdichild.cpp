@@ -33,16 +33,16 @@ CadMdiChild::CadMdiChild(QWidget* parent) :
     gridLayout->addWidget(_viewerProxy, 0, 0, 1, 1);
     _metaInfoManager = std::make_shared<lc::ui::MetaInfoManager>();
     connect(this,SIGNAL(keyPressEventx(int)),_viewerProxy,SIGNAL(keyPressEvent(int)));
-        // it CadMdi knows about proxy
+    // it CadMdi knows about proxy
     QObject::connect(_viewerProxy, &LCADViewerProxy::mousePressEvent, this, &CadMdiChild::mousePressEvent);
     QObject::connect(_viewerProxy, &LCADViewerProxy::mouseReleaseEvent, this, &CadMdiChild::mouseReleaseEvent);
     QObject::connect(_viewerProxy, &LCADViewerProxy::mouseMoveEvent, this, &CadMdiChild::mouseMoveEvent);
 }
 
 CadMdiChild::~CadMdiChild() {
-	if(_destroyCallback) {
-		_destroyCallback();
-	}
+    if(_destroyCallback) {
+        _destroyCallback();
+    }
 }
 
 
@@ -80,7 +80,7 @@ bool CadMdiChild::openFile() {
     filterList += (it->second+"(*."+it->first+")").c_str();
     it++;
     while(it != availableTypes.end()) {
-	    filterList += (";;"+it->second+"(*."+it->first+")").c_str();
+        filterList += (";;"+it->second+"(*."+it->first+")").c_str();
         it++;
     }
     filterList+=";;All Files(*.*)";
@@ -110,9 +110,9 @@ bool CadMdiChild::openFile() {
     return true;
 }
 
-void CadMdiChild::saveFile(){
-	if (_filename == "")saveAsFile();
-	else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
+void CadMdiChild::saveFile() {
+    if (_filename == "")saveAsFile();
+    else lc::persistence::File::save(_document, _filename, _fileType);// @TODO Needs to fix it later
 }
 
 void CadMdiChild::saveAsFile() {
@@ -130,7 +130,7 @@ void CadMdiChild::saveAsFile() {
     filterList = (it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
     it++;
     while(it != availableTypes.end()) {
-	    filterList += (";;"+it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
+        filterList += (";;"+it->second+"(*."+lc::persistence::File::getExtensionForFileType(it->first)+")").c_str();
         it++;
     }
 
@@ -187,11 +187,11 @@ lc::storage::UndoManager_SPtr CadMdiChild::undoManager() const {
 }
 
 std::shared_ptr<drawable::Cursor> CadMdiChild::cursor() const {
-	return _viewerProxy->cursor();
+    return _viewerProxy->cursor();
 }
 
 void CadMdiChild::setDestroyCallback(kaguya::LuaRef destroyCallback) {
-	_destroyCallback = std::move(destroyCallback);
+    _destroyCallback = std::move(destroyCallback);
 }
 
 void CadMdiChild::keyPressEvent(QKeyEvent *event) {

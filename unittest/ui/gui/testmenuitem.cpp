@@ -35,7 +35,7 @@ TEST(MenuItemTest, ItemLabelTest) {
     MainWindow* mainWindow = new MainWindow();
 
     lc::ui::api::MenuItem* testItem1 = new lc::ui::api::MenuItem("LABEL_TEST");
-    
+
     EXPECT_EQ("LABEL_TEST", testItem1->label());
 
     testItem1->setLabel("CHANGED_LABEL");
@@ -46,7 +46,7 @@ TEST(MenuItemTest, ItemLabelTest) {
 TEST(MenuItemTest, ItemCallbackTest) {
     QApplication app(argc, argv);
     MainWindow* mainWindow = new MainWindow();
-    
+
     lc::ui::LuaInterface* luaInterface = mainWindow->luaInterface();
     kaguya::State state(luaInterface->luaState());
 

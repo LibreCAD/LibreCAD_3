@@ -60,29 +60,29 @@ lc::meta::Layer_SPtr lc::persistence::LibOpenCad::addLayer(const CADLayer& layer
 
 void lc::persistence::LibOpenCad::addGeometry(const lc::meta::Layer_SPtr& layer, const CADGeometry* geometry) {
     switch(geometry->getType()) {
-        case CADGeometry::ARC:
-            addArc(layer, (CADArc*) geometry);
-            break;
+    case CADGeometry::ARC:
+        addArc(layer, (CADArc*) geometry);
+        break;
 
-        case CADGeometry::LINE:
-            addLine(layer, (CADLine*) geometry);
-            break;
+    case CADGeometry::LINE:
+        addLine(layer, (CADLine*) geometry);
+        break;
 
-        case CADGeometry::CIRCLE:
-            addCircle(layer, (CADCircle*) geometry);
-            break;
+    case CADGeometry::CIRCLE:
+        addCircle(layer, (CADCircle*) geometry);
+        break;
 
-        case CADGeometry::ELLIPSE:
-            addEllipse(layer, (CADEllipse*) geometry);
-            break;
+    case CADGeometry::ELLIPSE:
+        addEllipse(layer, (CADEllipse*) geometry);
+        break;
 
-        case CADGeometry::LWPOLYLINE:
-            addLWPolyline(layer, (CADLWPolyline*) geometry);
-            break;
+    case CADGeometry::LWPOLYLINE:
+        addLWPolyline(layer, (CADLWPolyline*) geometry);
+        break;
 
-        default: //TODO: implement missing entities
-        case CADGeometry::UNDEFINED:
-            break;
+    default: //TODO: implement missing entities
+    case CADGeometry::UNDEFINED:
+        break;
     }
 }
 
@@ -90,45 +90,45 @@ void lc::persistence::LibOpenCad::addArc(lc::meta::Layer_SPtr layer, const CADAr
     auto position = arc->getPosition();
 
     auto lcArc = std::make_shared<lc::entity::Arc>(
-            toLcPostiton(position), arc->getRadius(), arc->getStartingAngle(), arc->getEndingAngle(),
-            true, layer, metaInfo(arc));
+                     toLcPostiton(position), arc->getRadius(), arc->getStartingAngle(), arc->getEndingAngle(),
+                     true, layer, metaInfo(arc));
 
     _entityBuilder->appendEntity(lcArc);
 }
 
 void lc::persistence::LibOpenCad::addLine(lc::meta::Layer_SPtr layer, const CADLine* line) {
     auto lcLine = std::make_shared<lc::entity::Line>(
-            toLcPostiton(line->getStart().getPosition()),
-            toLcPostiton(line->getEnd().getPosition()),
-            layer,
-            metaInfo(line)
-    );
+                      toLcPostiton(line->getStart().getPosition()),
+                      toLcPostiton(line->getEnd().getPosition()),
+                      layer,
+                      metaInfo(line)
+                  );
 
     _entityBuilder->appendEntity(lcLine);
 }
 
 void lc::persistence::LibOpenCad::addCircle(lc::meta::Layer_SPtr layer, const CADCircle* circle) {
     auto lcCircle = std::make_shared<lc::entity::Circle>(
-            toLcPostiton(circle->getPosition()),
-            circle->getRadius(),
-            layer,
-            metaInfo(circle)
-    );
+                        toLcPostiton(circle->getPosition()),
+                        circle->getRadius(),
+                        layer,
+                        metaInfo(circle)
+                    );
 
     _entityBuilder->appendEntity(lcCircle);
 }
 
 void lc::persistence::LibOpenCad::addEllipse(lc::meta::Layer_SPtr layer, const CADEllipse* ellipse) {
     auto lcEllipse = std::make_shared<lc::entity::Ellipse>(
-            toLcPostiton(ellipse->getPosition()),
-            toLcPostiton(ellipse->getSMAxis()),
-            ellipse->getRadius(),
-            ellipse->getStartingAngle(),
-            ellipse->getEndingAngle(),
-            false,
-            layer,
-            metaInfo(ellipse)
-    );
+                         toLcPostiton(ellipse->getPosition()),
+                         toLcPostiton(ellipse->getSMAxis()),
+                         ellipse->getRadius(),
+                         ellipse->getStartingAngle(),
+                         ellipse->getEndingAngle(),
+                         false,
+                         layer,
+                         metaInfo(ellipse)
+                     );
 
     _entityBuilder->appendEntity(lcEllipse);
 }
@@ -140,20 +140,20 @@ void lc::persistence::LibOpenCad::addLWPolyline(lc::meta::Layer_SPtr layer, cons
     for(size_t i = 0; i < count; i++) {
         const auto& vertex = lwPolyline->getVertex(i);
         lcVertices.emplace_back(
-                lc::geo::Coordinate(vertex.getX(), vertex.getY(), vertex.getZ())
+            lc::geo::Coordinate(vertex.getX(), vertex.getY(), vertex.getZ())
         );
     }
 
     auto lcLWPolyline = std::make_shared<lc::entity::LWPolyline>(
-            lcVertices,
-            lwPolyline->getConstWidth(),
-            lwPolyline->getElevation(),
-            lwPolyline->getThickness(),
-            lwPolyline->isClosed(),
-            toLcPostiton(lwPolyline->getVectExtrusion()),
-            layer,
-            metaInfo(lwPolyline)
-    );
+                            lcVertices,
+                            lwPolyline->getConstWidth(),
+                            lwPolyline->getElevation(),
+                            lwPolyline->getThickness(),
+                            lwPolyline->isClosed(),
+                            toLcPostiton(lwPolyline->getVectExtrusion()),
+                            layer,
+                            metaInfo(lwPolyline)
+                        );
 
     _entityBuilder->appendEntity(lcLWPolyline);
 }

@@ -4,14 +4,14 @@
 
 
 namespace lc {
-    namespace event {
-        class AddViewportEvent {
-            public:
-                AddViewportEvent() {
-                }
-
-
-            private:
-        };
+namespace event {
+class AddViewportEvent {
+public:
+    AddViewportEvent() {
     }
+
+
+private:
+};
+}
 }

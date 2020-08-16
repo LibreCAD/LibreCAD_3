@@ -60,7 +60,7 @@ void HorizontalGroupGUI::getLuaValue(kaguya::LuaRef& table) {
         InputGUI* inpgui = qobject_cast<InputGUI*>(inputWidget);
         if (inpgui != nullptr) {
             inpgui->getLuaValue(table);
-        }else {
+        } else {
             CheckBoxGUI* checkbox = qobject_cast<CheckBoxGUI*>(inputWidget);
             if (checkbox != nullptr) {
                 checkbox->getLuaValue(table);

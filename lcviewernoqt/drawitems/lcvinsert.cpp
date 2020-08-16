@@ -3,8 +3,8 @@
 using namespace lc::viewer;
 
 LCVInsert::LCVInsert(lc::entity::Insert_CSPtr& insert) :
-        LCVDrawItem(insert, true),
-        _insert(insert) {
+    LCVDrawItem(insert, true),
+    _insert(insert) {
 
     _offset = _insert->position() - _insert->displayBlock()->base();
 
@@ -32,7 +32,7 @@ void LCVInsert::append(const lc::entity::CADEntity_CSPtr& entity) {
 }
 
 void LCVInsert::draw(lc::viewer::LcPainter& _painter, const lc::viewer::LcDrawOptions& options,
-                               const lc::geo::Area& updateRect) const {
+                     const lc::geo::Area& updateRect) const {
     for(auto entity : _entities) {
         entity.second->draw(_painter, options, updateRect);
     }
