@@ -64,8 +64,6 @@ struct EntityCoordinateSorter {
 
     const geo::Coordinate _reference;
 };
-
-
 }
 
 // ENTITYCOORDINATE_H

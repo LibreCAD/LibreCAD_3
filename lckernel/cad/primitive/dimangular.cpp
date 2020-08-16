@@ -154,7 +154,7 @@ CADEntity_CSPtr DimAngular::mirror(const geo::Coordinate& axis1, const geo::Coor
 }
 
 const geo::Area DimAngular::boundingBox() const {
-    // TODO create proper bounding box for DimAngular
+    /// @todo create proper bounding box for DimAngular
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 

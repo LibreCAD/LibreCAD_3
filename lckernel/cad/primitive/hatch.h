@@ -26,10 +26,10 @@ public:
 
     CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, const double rotation_angle) const override;
     CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
-                                  const geo::Coordinate &scale_factor) const override;
+                          const geo::Coordinate &scale_factor) const override;
 
     CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                                   const geo::Coordinate& axis2) const override;
+                           const geo::Coordinate& axis2) const override;
 
     const geo::Area boundingBox() const override;
 

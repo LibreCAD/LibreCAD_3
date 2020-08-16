@@ -126,7 +126,7 @@ CADEntity_CSPtr LWPolyline::rotate(const geo::Coordinate& rotation_center, doubl
 CADEntity_CSPtr LWPolyline::scale(const geo::Coordinate& scale_center, const geo::Coordinate& scale_factor) const {
     std::vector<LWVertex2D> newVertex;
     if (scale_factor.x() != scale_factor.y()) {
-        // TODO decide what to do with non-uniform scale factors
+        /// @todo decide what to do with non-uniform scale factors
     }
     for (auto& vertex : _vertex) {
         newVertex.emplace_back(vertex.location().scale(scale_center, scale_factor),
@@ -291,7 +291,7 @@ geo::Coordinate LWPolyline::nearestPointOnPath(const geo::Coordinate& coord) con
 }
 
 geo::Coordinate LWPolyline::nearestPointOnEntity(const geo::Coordinate& coord) const {
-    //@TODO: check and modify it
+    /// @todo check and modify it
     return this->nearestPointOnPath(coord);
 }
 

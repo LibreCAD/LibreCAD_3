@@ -308,7 +308,7 @@ void Intersect::geovisit(const geo::Vector& v1, const geo::Vector& v2) {
     const double num = ((p4.x() - p3.x()) * (p1.y() - p3.y()) - (p4.y() - p3.y()) * (p1.x() - p3.x()));
     const double div = ((p4.y() - p3.y()) * (p2.x() - p1.x()) - (p4.x() - p3.x()) * (p2.y() - p1.y()));
 
-    // TODO: We properly should add a tolorance here ??
+    /// @todo We properly should add a tolorance here ??
     if (std::abs(div) > _tolerance) {
         double u = num / div;
         double xs = p1.x() + u * (p2.x() - p1.x());
@@ -541,7 +541,7 @@ IntersectAgainstOthers::IntersectAgainstOthers(std::vector<entity::CADEntity_CSP
 
 std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
     Intersect intersect(_method, _tolerance);
-    /*FIXME unused
+    /*** @todo fixme unused
     for (auto &other : _others) {
         for (auto &entity : _entities) {
                visitorDispatcher<bool, lc::GeoEntityVisitor>(intersect, *other.get(), *entity.get());
@@ -555,8 +555,6 @@ std::vector<lc::geo::Coordinate> IntersectAgainstOthers::result() const {
 #else
     std::cerr << "Intersection function requires implementation" << std::endl;
 #endif // __GNUC__
-
-
 
     return intersect.result();
 }

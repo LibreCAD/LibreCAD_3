@@ -5,7 +5,7 @@
 
 namespace lc {
 namespace meta {
-class CustomEntityStorage; //TODO: rename, as this does not store entities
+class CustomEntityStorage; /// @todo rename, as this does not store entities
 
 DECLARE_SHORT_SHARED_PTR(CustomEntityStorage);
 

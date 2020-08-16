@@ -15,24 +15,46 @@ namespace lc {
 namespace storage {
 class StorageManager {
 public:
+    /**
+     * @brief insertEntity
+     * \param entity::CADEntity_CSPtr
+     */
     virtual void insertEntity(entity::CADEntity_CSPtr) = 0;
 
+    /**
+     * @brief insertEntityContainer
+     * \param EntityContainer<entity::CADEntity_CSPtr>
+     */
     virtual void insertEntityContainer(const EntityContainer <entity::CADEntity_CSPtr>&) = 0;
 
+    /**
+     * @brief remove Entity from the container
+     * \param entity::CADEntity_CSPtr
+     */
     virtual void removeEntity(entity::CADEntity_CSPtr) = 0;
 
+    /**
+      * @brief return entity By ID
+      * @param id
+      * @return entity::CADEntity_CSPtr entity
+      */
     virtual entity::CADEntity_CSPtr entityByID(ID_DATATYPE id) const = 0;
 
+    /**
+     * @brief Returns entities By Layer
+     * @param layer
+     * @return EntityContainer<entity::CADEntity_CSPtr> entities on layer
+     * @Deprecated use entityContainer()->entitiesByLayer()
+     */
     virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByLayer(meta::Layer_CSPtr layer) const = 0;
 
     virtual EntityContainer <entity::CADEntity_CSPtr> entitiesByBlock(meta::Block_CSPtr block) const = 0;
 
-    /*!
-     * \brief layer
-     * Return a single document layer
-     * \param layerName
-     * \return
-     */
+    /**
+    * @brief returns layer By Name
+    * @param layerName
+    * @return Layer_CSPtr layer
+    */
     virtual meta::Layer_CSPtr layerByName(const std::string& layerName) const = 0;
 
     virtual meta::Block_CSPtr blockByName(const std::string& blockName) const = 0;

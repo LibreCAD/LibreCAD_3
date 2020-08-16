@@ -120,7 +120,7 @@ CADEntity_CSPtr DimDiametric::mirror(const geo::Coordinate& axis1, const geo::Co
 }
 
 const geo::Area DimDiametric::boundingBox() const {
-    // TODO create proper bounding box for DimLinear
+    /// @todo create proper bounding box for DimLinear
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 

@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Linepattern Builder
+*/
+
 #pragma once
 
 #include <cad/const.h>

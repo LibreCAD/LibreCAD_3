@@ -79,5 +79,3 @@ public:
 DECLARE_SHORT_SHARED_PTR(Snapable)
 }
 }
-
-

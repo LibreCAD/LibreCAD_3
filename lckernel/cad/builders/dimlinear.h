@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Dimlinear builder
+*/
+
 #pragma once
 
 #include "dimension.h"

@@ -282,7 +282,7 @@ BB_CSPtr Bezier::offset(const geo::Coordinate& offset) const {
 //        y_.push_back(bez2.y());
 //    }
 
-    return nullptr; // TODO: no return statement
+    return nullptr; /// @todo no return statement
 }
 
 BB_CSPtr Bezier::splitAtT(double t) const {

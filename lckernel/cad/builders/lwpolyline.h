@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Builder for LWPolyline
+*/
+
 #pragma once
 
 #include "cadentity.h"

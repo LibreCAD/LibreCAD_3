@@ -130,7 +130,6 @@ std::vector<Coordinate> Ellipse::findPotentialNearestPoints(const Coordinate &co
         return pnp;
     }
 
-
     for(double root : roots) {
         double const s=twoby*root/(twoax-twoa2b2*root); //sine
         double const d2=twoa2b2+(twoax-2.*root*twoa2b2)*root+twoby*s;

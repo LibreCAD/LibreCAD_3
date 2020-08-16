@@ -73,5 +73,5 @@ void ReplaceBlock::processInternal() {
     document()->removeDocumentMetaType(_oldBlock);
     document()->addDocumentMetaType(_newBlock);
 
-    //TODO: should we modify the inserts ?
+    /// @todo should we modify the inserts ?
 }

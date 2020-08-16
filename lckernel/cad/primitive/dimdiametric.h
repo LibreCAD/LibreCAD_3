@@ -43,44 +43,13 @@ private:
     DimDiametric(const lc::builder::DimDiametricBuilder& builder);
 
 public:
-    /**
-    * @brief move, moves by an offset
-    * @param geo::Coordinate offset
-    * @return CADEntity_CSPtr moved entity
-    */
     CADEntity_CSPtr move(const geo::Coordinate &offset) const override;
-
-    /**
-    * @brief copy, copies by an offset
-    * @param geo::Coordinate offset
-    * @return CADEntity_CSPtr copied entity
-    */
     CADEntity_CSPtr copy(const geo::Coordinate &offset) const override;
-
-    /**
-    * @brief rotate, rotate operation
-    * @param geo::Coordinate rotation_center
-    * @param double rotation_angle
-    * @return CADEntity_CSPtr rotated entity
-    */
     CADEntity_CSPtr rotate(const geo::Coordinate &rotation_center, double rotation_angle) const override;
-
-    /**
-    * @brief scale, scales the entity
-    * @param geo::Coordinate scale_center
-    * @param double scale_factor
-    * @return
-    */
     CADEntity_CSPtr scale(const geo::Coordinate &scale_center,
-                                  const geo::Coordinate &scale_factor) const override;
-
+                          const geo::Coordinate &scale_factor) const override;
     CADEntity_CSPtr mirror(const geo::Coordinate& axis1,
-                                   const geo::Coordinate& axis2) const override;
-
-    /**
-    * @brief boundingBox of the entity
-    * @return geo::Area area
-    */
+                           const geo::Coordinate& axis2) const override;
     const geo::Area boundingBox() const override;
 
     CADEntity_CSPtr modify(meta::Layer_CSPtr layer, meta::MetaInfo_CSPtr metaInfo, meta::Block_CSPtr block) const override;

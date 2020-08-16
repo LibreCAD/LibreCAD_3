@@ -3,7 +3,7 @@
 using namespace lc;
 using namespace lc::meta;
 
-//TODO: get a real ID
+/// @todo get a real ID
 
 CustomEntityStorage::CustomEntityStorage(std::string pluginName,
         std::string entityName,

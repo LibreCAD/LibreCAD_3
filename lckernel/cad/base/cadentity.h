@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* This file CADEntity which is base class of all entities
+*/
+
 #pragma once
 
 #include <cad/meta/block.h>

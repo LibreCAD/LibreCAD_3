@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* This file implements CADObject
+*/
+
 #pragma once
 
 #include <cad/meta/block.h>
@@ -27,6 +34,7 @@ public:
     CADObject(const CADObject_CSPtr& cadObject);
 
     virtual ~CADObject() = default;
+
 protected:
 
 private:

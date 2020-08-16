@@ -106,7 +106,6 @@ const std::vector<lc::builder::LWBuilderVertex>& lc::builder::LWPolylineBuilder:
 lc::entity::LWPolyline_CSPtr lc::builder::LWPolylineBuilder::build()
 {
     checkValues(true);
-
     return lc::entity::LWPolyline_CSPtr(new lc::entity::LWPolyline(*this));
 }
 
@@ -122,17 +121,14 @@ void lc::builder::LWPolylineBuilder::removeVertex(int index)
 
 void lc::builder::LWPolylineBuilder::copy(entity::LWPolyline_CSPtr entity) {
     const std::vector<lc::entity::LWVertex2D>& verticesList = entity->vertex();
-
     for (const lc::entity::LWVertex2D& vert : verticesList) {
         _vertices.push_back(lc::builder::LWBuilderVertex(vert.location(), vert.startWidth(), vert.endWidth(), vert.bulge(), 0));
     }
-
     _width = entity->width();
     _elevation = entity->elevation();
     _thickness = entity->tickness();
     _closed = entity->closed();
     _extrusionDirection = entity->extrusionDirection();
-
     lc::builder::CADEntityBuilder::copy(entity);
 }
 
@@ -158,7 +154,6 @@ lc::geo::Coordinate lc::builder::LWPolylineBuilder::extrusionDirection() const {
 
 void lc::builder::LWPolylineBuilder::setVertices(const std::vector<lc::builder::LWBuilderVertex>& builderVertices) {
     _vertices.clear();
-
     for (const LWBuilderVertex& vert : builderVertices) {
         _vertices.push_back(vert);
     }

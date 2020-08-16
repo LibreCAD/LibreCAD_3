@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* This file defines metainfo
+*/
+
 #pragma once
 
 #include <unordered_map>
@@ -10,7 +17,7 @@ namespace meta {
 /**
  * Container to hold meta data for an entity
  */
-// TODO: Container to store meta information on an entity
+/// @todo Container to store meta information on an entity
 class MetaInfo
     : public std::enable_shared_from_this<MetaInfo>,
       public std::unordered_map<std::string, EntityMetaType_CSPtr> {
@@ -19,7 +26,6 @@ public:
     std::shared_ptr<MetaInfo> add(EntityMetaType_CSPtr mt);
 
     // std::shared_ptr<MetaInfo> add(std::string name, MetaType_CSPtr mi);
-
     virtual ~MetaInfo() = default;
 
     static std::shared_ptr<MetaInfo> create() {

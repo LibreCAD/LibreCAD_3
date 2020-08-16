@@ -127,7 +127,7 @@ CADEntity_CSPtr DimAligned::mirror(const geo::Coordinate& axis1,
 }
 
 const geo::Area DimAligned::boundingBox() const {
-    // TODO create proper bounding box for DimAligned
+    /// @todo create proper bounding box for DimAligned
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 

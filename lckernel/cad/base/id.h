@@ -1,7 +1,13 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* This file implements ID
+*/
+
 #pragma once
 
 #include <atomic>
-
 
 #define ID_DATATYPE unsigned long
 

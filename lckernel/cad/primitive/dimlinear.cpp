@@ -124,7 +124,7 @@ CADEntity_CSPtr DimLinear::scale(const geo::Coordinate& scale_center, const geo:
 }
 
 const geo::Area DimLinear::boundingBox() const {
-    // TODO create proper bounding box for DimLinear
+    /// @todo create proper bounding box for DimLinear
     return geo::Area(this->middleOfText(), 0., 0.);
 }
 

@@ -1,3 +1,10 @@
+/**
+* @file
+* @section DESCRIPTION
+*
+* Layer Builder
+*/
+
 #pragma once
 
 #include <cad/meta/metalinewidth.h>

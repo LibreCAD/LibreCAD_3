@@ -45,7 +45,7 @@ public:
     virtual ~MetaColorByValue() = default;
 
     virtual const std::string id() const override {
-        // TODO create proper ID
+        /// @todo create proper ID
         return LCMETANAME() + "_" + std::to_string(red()) + "_" + std::to_string(green()) + "_" +
                std::to_string(blue());
     }

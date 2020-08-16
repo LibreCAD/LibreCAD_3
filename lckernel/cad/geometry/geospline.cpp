@@ -68,15 +68,13 @@ double Spline::fitTolerance() const {
 }
 
 Coordinate Spline::nearestPointOnPath(const Coordinate &coord) const {
-    /* TODO implement
-     * fix compiler warning
-     */
+    /// @todo implement
+    /// @todo fix compiler warning
     return Coordinate(coord);//Force the intersection for now
 }
 Coordinate Spline::nearestPointOnEntity(const Coordinate &coord) const {
-    /* TODO implement
-     * fix compiler warning
-     */
+    /// @todo implement
+    /// @todo fix compiler warning
     return Coordinate();
 }
 
@@ -85,9 +83,7 @@ void Spline::populateCurve() {
 
     try {
         auto nbControlPoints = _controlPoints.size();
-
         splineCurve = tinyspline::BSpline(nbControlPoints, 3, degree(), TS_CLAMPED);
-
         //Set control points
         std::vector<tinyspline::real> ts_controlPoints;
         for (const auto& cp : _controlPoints) {
@@ -95,7 +91,6 @@ void Spline::populateCurve() {
             ts_controlPoints.push_back(cp.y());
             ts_controlPoints.push_back(cp.z());
         }
-
         splineCurve.setControlPoints(ts_controlPoints);
     }
     catch (std::runtime_error& e) {
@@ -122,7 +117,6 @@ void Spline::populateCurve() {
                 bez.push_back(cp);
                 j = j + 3;
             }
-
             _beziers.push_back(std::make_shared<Bezier>(bez.at(0),bez.at(1),bez.at(2)));
         }
     } else if(splineCurve.degree() == 3) {
