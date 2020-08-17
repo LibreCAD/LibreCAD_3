@@ -121,7 +121,8 @@ lc::entity::EntityProperty CopyManager::getEntityPropertyFromJSONValue(const rap
         return lc::geo::Coordinate(x,y);
     }
     else if (propertyType == "text") {
-        return value["value"].GetString();
+        std::string val = value["value"].GetString();
+        return val;
     }
     else if (propertyType == "vector_coordinate") {
         std::vector<lc::geo::Coordinate> coords;
@@ -158,7 +159,7 @@ void CopyManager::createEntity(const std::string& entityName, const lc::entity::
             newEntity = std::make_shared<lc::entity::Ellipse>(lc::geo::Coordinate(), lc::geo::Coordinate(), 1, 1, 1, false, _cadMdiChild->activeLayer());
         }
         else if (entityName == "Spline") {
-            newEntity = std::make_shared<lc::entity::Spline>(std::vector<geo::Coordinate>(),std::vector<double>(), std::vector<geo::Coordinate>(),1, false, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, lc::geo::Spline::splineflag::CLOSED, _cadMdiChild->activeLayer());
+            newEntity = std::make_shared<lc::entity::Spline>(std::vector<geo::Coordinate>({lc::geo::Coordinate()}), std::vector<double>(), std::vector<geo::Coordinate>(), 1, false, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, lc::geo::Spline::splineflag::CLOSED, _cadMdiChild->activeLayer());
         }
         else if (entityName == "DimAligned") {
             newEntity = std::make_shared<lc::entity::DimAligned>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), lc::geo::Coordinate(), _cadMdiChild->activeLayer());
@@ -176,7 +177,8 @@ void CopyManager::createEntity(const std::string& entityName, const lc::entity::
             newEntity = std::make_shared<lc::entity::DimRadial>(lc::geo::Coordinate(), lc::geo::Coordinate(), lc::TextConst::AttachmentPoint::Middle_center, 1, 1, lc::TextConst::LineSpacingStyle::AtLeast, "", lc::geo::Coordinate(), 1, _cadMdiChild->activeLayer());
         }
         else if (entityName == "LWPolyline") {
-            newEntity = std::make_shared<lc::entity::LWPolyline>(std::vector<lc::entity::LWVertex2D>(), 1, 1, 1, false, lc::geo::Coordinate(), _cadMdiChild->activeLayer());
+            // need to figure out a way to copy lwvertex2d list
+            //newEntity = std::make_shared<lc::entity::LWPolyline>(std::vector<lc::entity::LWVertex2D>({lc::entity::LWVertex2D(lc::geo::Coordinate())}), 1, 1, 1, false, lc::geo::Coordinate(), _cadMdiChild->activeLayer());
         }
 
         if (newEntity != nullptr) {
