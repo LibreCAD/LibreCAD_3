@@ -24,8 +24,8 @@ TEST(WindowManagerTest, NewFileTest) {
     lc::ui::MainWindow* prevWindow = lc::ui::WindowManager::getMainWindows()[0];
     lc::ui::WindowManager::newFile(prevWindow);
 
-    lc::ui::WindowManager::getMainWindows()[0]->hide();
+    lc::ui::WindowManager::getMainWindows()[1]->hide();
 
-    EXPECT_EQ(1, lc::ui::WindowManager::getMainWindows().size());
-    EXPECT_TRUE(prevWindow != lc::ui::WindowManager::getMainWindows()[0]);
+    EXPECT_EQ(2, lc::ui::WindowManager::getMainWindows().size());
+    EXPECT_TRUE(prevWindow == lc::ui::WindowManager::getMainWindows()[0]);
 }
