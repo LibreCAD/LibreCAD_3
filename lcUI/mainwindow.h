@@ -4,6 +4,7 @@
 #include <kaguya/kaguya.hpp>
 
 #include <QMainWindow>
+#include <QShortcut>
 #include "widgets/clicommand.h"
 #include "widgets/layers.h"
 #include "widgets/linepatternselect.h"
@@ -274,6 +275,10 @@ namespace lc
 
             kaguya::LuaRef _oldOperation;
             std::string _oldOpInitMethod;
+
+            // Shortcuts
+            QShortcut* copyShortcut;
+            QShortcut* pasteShortcut;
         };
     }
 }
