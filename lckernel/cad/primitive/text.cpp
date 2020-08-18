@@ -26,6 +26,21 @@ Text::Text(geo::Coordinate insertion_point,
     _halign(halign) {
 }
 
+Text::Text(const builder::TextBuilder& builder)
+    :
+    CADEntity(builder),
+    _insertion_point(builder.insertionPoint()),
+    _text_value(builder.textValue()),
+    _height(1),
+    _angle(0),
+    _style(""),
+    _textgeneration(lc::TextConst::DrawingDirection::None),
+    _halign(lc::TextConst::HAlign::HACenter),
+    _valign(lc::TextConst::VAlign::VAMiddle)
+{
+
+}
+
 Text::Text(const Text_CSPtr& other, bool sameID) :
     CADEntity(other, sameID),
     _insertion_point(other->_insertion_point),

@@ -11,10 +11,13 @@
 #include "cad/primitive/textconst.h"
 #include <cad/primitive/point.h>
 #include "cad/interface/draggable.h"
+#include <cad/builders/text.h>
 
 namespace lc {
 namespace entity {
 class Text : public std::enable_shared_from_this<Text>, public CADEntity, virtual public Visitable, public Draggable {
+    friend class builder::TextBuilder;
+
 public:
     /**
     * @brief Text, default constructor
@@ -44,6 +47,10 @@ public:
 
     Text(const Text_CSPtr &other, bool sameID);
 
+private:
+    Text(const builder::TextBuilder& builder);
+
+public:
     const geo::Coordinate _insertion_point;
     const std::string _text_value;
     const double _height;

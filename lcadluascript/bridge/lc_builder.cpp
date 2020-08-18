@@ -11,6 +11,7 @@
 #include <cad/builders/ellipse.h>
 #include <cad/builders/line.h>
 #include <cad/builders/spline.h>
+#include <cad/builders/text.h>
 #include <cad/builders/insert.h>
 #include <cad/primitive/insert.h>
 #include "lc_builder.h"
@@ -278,4 +279,13 @@ void import_lc_builder_namespace(kaguya::State& state) {
             .addFunction("setDisplayBlock", &lc::builder::InsertBuilder::setDisplayBlock)
             .addFunction("setDocument", &lc::builder::InsertBuilder::setDocument)
                                                     );
+
+    state["lc"]["builder"]["TextBuilder"].setClass(kaguya::UserdataMetatable<lc::builder::TextBuilder, lc::builder::CADEntityBuilder>()
+        .setConstructors<lc::builder::TextBuilder()>()
+        .addFunction("build", &lc::builder::TextBuilder::build)
+        .addFunction("insertionPoint", &lc::builder::TextBuilder::insertionPoint)
+        .addFunction("setInsertionPoint", &lc::builder::TextBuilder::setInsertionPoint)
+        .addFunction("textValue", &lc::builder::TextBuilder::textValue)
+        .addFunction("setTextValue", &lc::builder::TextBuilder::setTextValue)
+    );
 }
