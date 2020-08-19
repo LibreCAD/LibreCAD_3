@@ -21,12 +21,17 @@ namespace lc {
 
             TextBuilder* setHeight(double heightIn);
 
+            double angle() const;
+
+            TextBuilder* setAngle(double angleIn);
+
             entity::Text_CSPtr build();
 
         private:
             lc::geo::Coordinate _insertionPoint;
             std::string _textValue;
             double _height;
+            double _angle;
         };
     }
 }

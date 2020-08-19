@@ -5,7 +5,8 @@ using namespace lc::builder;
 
 TextBuilder::TextBuilder() 
     :
-    _height(100)
+    _height(100),
+    _angle(0)
 {
 
 }
@@ -34,6 +35,15 @@ double TextBuilder::height() const {
 
 TextBuilder* TextBuilder::setHeight(double heightIn) {
     _height = heightIn;
+    return this;
+}
+
+double TextBuilder::angle() const {
+    return _angle;
+}
+
+TextBuilder* TextBuilder::setAngle(double angleIn) {
+    _angle = angleIn;
     return this;
 }
 

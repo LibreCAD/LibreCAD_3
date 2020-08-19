@@ -45,9 +45,24 @@ function TextOperations:enterHeight(eventName, data)
     elseif(eventName == "point") then
         local dist = self.builder:insertionPoint():distanceTo(data["position"])
         self.builder:setHeight(dist)
-        self:createEntity()
+        self.step = "enterAngle"
     elseif(eventName == "number") then
         self.builder:setHeight(data["number"])
+        self.step = "enterAngle"
+    end
+end
+
+function TextOperations:enterAngle(eventName, data)
+    if(eventName == "mouseMove") then
+        local ang = self.builder:insertionPoint():distanceTo(data["position"]) * 0.05
+        self.builder:setAngle(ang)
+        message("Enter angle of text (in degrees)")
+    elseif(eventName == "point") then
+        local ang = self.builder:insertionPoint():distanceTo(data["position"]) * 0.05
+        self.builder:setAngle(ang)
+        self:createEntity()
+    elseif(eventName == "number") then
+        self.builder:setAngle(data["number"] * 3.1416/180)
         self:createEntity()
     end
 end

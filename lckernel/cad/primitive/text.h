@@ -147,6 +147,10 @@ public:
 public:
     std::map<unsigned int, lc::geo::Coordinate> dragPoints() const override;
     CADEntity_CSPtr setDragPoints(std::map<unsigned int, lc::geo::Coordinate> dragPoints) const override;
+
+    PropertiesMap availableProperties() const override;
+
+    CADEntity_CSPtr setProperties(const PropertiesMap& propertiesMap) const override;
 };
 
 DECLARE_SHORT_SHARED_PTR(Text)

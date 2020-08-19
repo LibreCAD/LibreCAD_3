@@ -32,7 +32,7 @@ Text::Text(const builder::TextBuilder& builder)
     _insertion_point(builder.insertionPoint()),
     _text_value(builder.textValue()),
     _height(builder.height()),
-    _angle(0),
+    _angle(builder.angle()),
     _style(""),
     _textgeneration(lc::TextConst::DrawingDirection::None),
     _halign(lc::TextConst::HAlign::HACenter),
@@ -171,4 +171,44 @@ CADEntity_CSPtr Text::setDragPoints(std::map<unsigned int, lc::geo::Coordinate> 
     catch(std::out_of_range& e) {
         return shared_from_this();
     }
+}
+
+PropertiesMap Text::availableProperties() const {
+    PropertiesMap propertyValues;
+
+    propertyValues["insertionPoint"] = this->insertion_point();
+    propertyValues["textValue"] = this->text_value();
+    propertyValues["height"] = this->height();
+    propertyValues["angle"] = AngleProperty(this->angle());
+
+    return propertyValues;
+}
+
+CADEntity_CSPtr Text::setProperties(const PropertiesMap& propertiesMap) const {
+    lc::geo::Coordinate insertionPointp = this->insertion_point();
+    std::string textValuep = this->text_value();
+    double heightp = this->height();
+    double anglep = this->angle();
+
+    for(auto iter = propertiesMap.begin(); iter != propertiesMap.end(); ++iter) {
+        if (iter->first == "insertionPoint") {
+            insertionPointp = boost::get<lc::geo::Coordinate>(iter->second);
+        }
+
+        if (iter->first == "textValue") {
+            textValuep = boost::get<std::string>(iter->second);
+        }
+
+        if (iter->first == "height") {
+            heightp = boost::get<double>(iter->second);
+        }
+
+        if (iter->first == "angle") {
+            anglep = boost::get<AngleProperty>(iter->second).Get();
+        }
+    }
+
+    auto textEntity = std::make_shared<Text>(insertionPointp, textValuep, heightp, anglep, style(), textgeneration(), halign(), valign(), layer(), metaInfo(), block());
+    textEntity->setID(this->id());
+    return textEntity;
 }
