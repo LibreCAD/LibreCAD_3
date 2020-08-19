@@ -287,5 +287,7 @@ void import_lc_builder_namespace(kaguya::State& state) {
         .addFunction("setInsertionPoint", &lc::builder::TextBuilder::setInsertionPoint)
         .addFunction("textValue", &lc::builder::TextBuilder::textValue)
         .addFunction("setTextValue", &lc::builder::TextBuilder::setTextValue)
+        .addFunction("height", &lc::builder::TextBuilder::height)
+        .addFunction("setHeight", &lc::builder::TextBuilder::setHeight)
     );
 }

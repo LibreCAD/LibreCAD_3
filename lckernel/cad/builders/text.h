@@ -17,11 +17,16 @@ namespace lc {
 
             TextBuilder* setTextValue(const std::string& text);
 
+            double height() const;
+
+            TextBuilder* setHeight(double heightIn);
+
             entity::Text_CSPtr build();
 
         private:
             lc::geo::Coordinate _insertionPoint;
             std::string _textValue;
+            double _height;
         };
     }
 }

@@ -31,7 +31,7 @@ Text::Text(const builder::TextBuilder& builder)
     CADEntity(builder),
     _insertion_point(builder.insertionPoint()),
     _text_value(builder.textValue()),
-    _height(1),
+    _height(builder.height()),
     _angle(0),
     _style(""),
     _textgeneration(lc::TextConst::DrawingDirection::None),

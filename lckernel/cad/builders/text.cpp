@@ -3,7 +3,10 @@
 
 using namespace lc::builder;
 
-TextBuilder::TextBuilder() {
+TextBuilder::TextBuilder() 
+    :
+    _height(100)
+{
 
 }
 
@@ -22,6 +25,15 @@ const std::string& TextBuilder::textValue() const {
 
 TextBuilder* TextBuilder::setTextValue(const std::string& text) {
     _textValue = text;
+    return this;
+}
+
+double TextBuilder::height() const {
+    return _height;
+}
+
+TextBuilder* TextBuilder::setHeight(double heightIn) {
+    _height = heightIn;
     return this;
 }
 
