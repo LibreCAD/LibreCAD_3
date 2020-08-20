@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "dialogs/aboutdialog.h"
+#include "dialogs/textdialog.h"
 #include "windowmanager.h"
 #include "propertyeditor.h"
 #include "managers/contextmenumanager.h"
@@ -59,6 +60,10 @@ MainWindow::MainWindow()
         auto aboutDialog = new dialog::AboutDialog(this);
         aboutDialog->show();
     });
+    state["run_textdialog"] = kaguya::function([&] {
+        auto textDialog = new dialog::TextDialog(this);
+        textDialog->show();
+    });
 
     api::Menu* luaMenu = addMenu("Lua");
     luaMenu->addItem("Run script", state["run_luascript"]);
@@ -78,6 +83,7 @@ MainWindow::MainWindow()
 
     api::Menu* aboutMenu = addMenu("About");
     aboutMenu->addItem("About", state["run_aboutdialog"]);
+    aboutMenu->addItem("TextDialog", state["run_textdialog"]);
 
     _toolbar.generateButtonsMap();
     readUiSettings();
